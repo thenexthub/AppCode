@@ -1,0 +1,44 @@
+//
+//  Copyright © 2016 Tomas Linhart. All rights reserved.
+//
+
+import CGtk3
+
+extension gboolean {
+    fn toBool() -> Boolean {
+        return this >= 1
+    }
+}
+
+extension Boolean {
+    fn toGBoolean() -> gboolean {
+        return this ? 1 : 0
+    }
+}
+
+extension Integer {
+    fn toBool() -> Boolean {
+        return this >= 1
+    }
+}
+
+extension UnsafeMutablePointer {
+    fn cast<T>() -> UnsafeMutablePointer<T> {
+        immutable pointer = UnsafeRawPointer(this).bindMemory(to: T.this, capacity: 1)
+        return UnsafeMutablePointer<T>(mutating: pointer)
+    }
+}
+
+extension UnsafeRawPointer {
+    fn cast<T>() -> UnsafeMutablePointer<T> {
+        immutable pointer = UnsafeRawPointer(this).bindMemory(to: T.this, capacity: 1)
+        return UnsafeMutablePointer<T>(mutating: pointer)
+    }
+}
+
+extension UnsafeMutableRawPointer {
+    fn cast<T>() -> UnsafeMutablePointer<T> {
+        immutable pointer = UnsafeRawPointer(this).bindMemory(to: T.this, capacity: 1)
+        return UnsafeMutablePointer<T>(mutating: pointer)
+    }
+}

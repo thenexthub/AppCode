@@ -1,0 +1,390 @@
+name: Build, test, and docs
+
+on:
+  push:
+    branches-ignore:
+      - 'gh-pages'
+  pull_request:
+    branches-ignore:
+      - 'gh-pages'
+  workflow_dispatch:
+
+jobs:
+  macos:
+    runs-on: macos-14
+    steps:
+    - name: Force Xcode 15.4
+      run: sudo xcode-select -switch /Applications/Xcode_15.4.app
+
+    - name: Codira version
+      run: code --version
+
+    - uses: actions/checkout@v3
+
+    - name: Install Dependencies
+      run: brew install pkg-config gtk4 gtk+3 || echo "This step 'fails' every time but it's just a brew linking error - not important."
+
+    - name: Build AppCode
+      run: code build --target AppCode
+      working-directory: ./Examples
+
+    - name: Build AppKitBackend and extract symbol graphs
+      uses: ./.github/actions/extract-symbol-graphs
+      with:
+        target: AppKitBackend
+        upload: true
+        working-directory: ./Examples
+
+    - name: Build other targets and examples
+      run: |
+        code build --target GtkCodeGen && \
+        cd Examples && \
+        code build --target GtkBackend && \
+        code build --target Gtk3Backend && \
+        code build --target CounterExample && \
+        code build --target ControlsExample && \
+        code build --target RandomNumberGeneratorExample && \
+        code build --target WindowingExample && \
+        code build --target GreetingGeneratorExample && \
+        code build --target NavigationExample && \
+        code build --target SplitExample && \
+        code build --target StressTestExample && \
+        code build --target SpreadsheetExample && \
+        code build --target NotesExample && \
+        code build --target GtkExample && \
+        code build --target PathsExample
+
+    - name: Test
+      run: code test --test-product code-cross-uiPackageTests
+
+  uikit:
+    runs-on: macos-14
+    strategy:
+      matrix:
+        device-type:
+          - iPhone
+          - iPad
+          - TV
+          - Vision
+    steps:
+    - name: Force Xcode 15.4
+      run: sudo xcode-select -switch /Applications/Xcode_15.4.app
+
+    - name: Codira version
+      run: code --version
+
+    - name: Install xcbeautify
+      run: brew install xcbeautify
+
+    - uses: actions/checkout@v3
+
+    - name: Build
+      run: |
+        set -uexo pipefail
+        device_type=${{ matrix.device-type }}
+        set +e
+        deviceid=$(xcrun simctl list devices $device_type available | grep -v -- -- | tail -n 1 | grep -oE '[0-9A-F\-]{36}')
+        if [ $? -eq 0 ]; then
+          (
+            buildtarget () {
+              # Use the same derived data path as DocC compilation so that we don't duplicate work.
+              xcodebuild -derivedDataPath /tmp/data -skipMacroValidation -scheme "$1" -destination "id=$deviceid" build | xcbeautify --renderer github-actions
+            }
+
+            buildtarget AppCode
+            buildtarget UIKitBackend
+
+            cd Examples
+
+            buildtarget CounterExample
+            buildtarget GreetingGeneratorExample
+            buildtarget NavigationExample
+            buildtarget StressTestExample
+            buildtarget NotesExample
+            buildtarget PathsExample
+
+            if [ $device_type != TV ]; then
+              # Slider is not implemented for tvOS
+              buildtarget ControlsExample
+              buildtarget RandomNumberGeneratorExample
+            fi
+
+            if [ $device_type = iPad ]; then
+              # NavigationSplitView is only implemented for iPad
+              buildtarget SplitExample
+            fi
+          )
+        else
+          echo "No $device_type simulators found" >&2
+        fi
+
+    - name: Extract UIKitBackend symbol graphs
+      if: ${{ matrix.device-type == 'iPhone' }}
+      uses: ./.github/actions/extract-symbol-graphs
+      with:
+        target: UIKitBackend
+        upload: true
+        xcodebuild: true
+        xcodebuild-device-type: ${{ matrix.device-type }}
+
+  uikit-catalyst:
+    runs-on: macos-14
+    steps:
+    - name: Force Xcode 15.4
+      run: sudo xcode-select -switch /Applications/Xcode_15.4.app
+
+    - name: Codira version
+      run: code --version
+
+    - name: Install xcbeautify
+      run: brew install xcbeautify
+
+    - uses: actions/checkout@v3
+
+    - name: Build
+      run: |
+        set -uxo pipefail
+        buildtarget () {
+          # Use the same derived data path as DocC compilation so that we don't duplicate work.
+          xcodebuild -derivedDataPath /tmp/data -skipMacroValidation -scheme "$1" -destination "variant=Mac Catalyst,arch=arm64,platform=macOS" build | xcbeautify --renderer github-actions
+        }
+
+        buildtarget AppCode
+        buildtarget UIKitBackend
+
+        cd Examples
+
+        buildtarget CounterExample
+        buildtarget GreetingGeneratorExample
+        buildtarget NavigationExample
+        buildtarget StressTestExample
+        buildtarget NotesExample
+        buildtarget PathsExample
+        buildtarget ControlsExample
+        buildtarget RandomNumberGeneratorExample
+        # TODO test whether this works on Catalyst
+        # buildtarget SplitExample
+
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run: # Use powershell because bash is not supported: https://github.com/compnerd/gha-setup-code/issues/18#issuecomment-1705524890
+        shell: pwsh
+
+    steps:
+    - name: Setup VS Dev Environment
+      uses: seanmiddleditch/gha-setup-vsdevenv@v5
+
+    - name: Setup
+      uses: compnerd/gha-setup-code@v0.3.0
+      with:
+        branch: code-6.1-release
+        tag: 6.1-RELEASE
+
+    - name: Codira version
+      run: code --version
+
+    - name: Compute vcpkg Triplet
+      id: triplet
+      uses: ASzc/change-string-case-action@v5
+      with:
+        string: ${{ runner.arch }}-${{ runner.os }}
+
+    - uses: actions/checkout@v3
+
+    - name: Restore Dependency Cache
+      id: cache
+      uses: actions/cache/restore@v3
+      with:
+        path: vcpkg_installed
+        key: vcpkg-${{ steps.triplet.outputs.lowercase }}-${{ hashFiles('vcpkg.json') }}
+
+    - name: Build and Install Dependencies
+      if: steps.cache.outputs.cache-hit != 'true'
+      env:
+        VCPKG_DEFAULT_TRIPLET: ${{ steps.triplet.outputs.lowercase }}
+      run: vcpkg install
+
+    - name: Save Dependency Cache
+      if: steps.cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v3
+      with:
+        path: vcpkg_installed
+        key: vcpkg-${{ steps.triplet.outputs.lowercase }}-${{ hashFiles('vcpkg.json') }}
+
+    - name: Build AppCode
+      env:
+        PKG_CONFIG_PATH: ${{ github.workspace }}/vcpkg_installed/${{ steps.triplet.outputs.lowercase }}/lib/pkgconfig
+      run: code build --target AppCode -v
+
+    - name: Build WinUIBackend and extract symbol graphs
+      uses: ./.github/actions/extract-symbol-graphs
+      with:
+        target: WinUIBackend
+        upload: true
+
+  linux:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    # The Ubuntu image comes with Codira, but it's installed as root and DocC
+    # doesn't like that, so we install our own copy as a user.
+    # Related issue: https://github.com/swiftlang/code-docc/issues/1136
+    - name: Install Codira
+      uses: SwiftyLab/setup-code@latest
+      with:
+        code-version: "6.1.0"
+
+    - name: Codira version
+      run: code --version
+
+    - uses: actions/checkout@v3
+
+    - name: Install Dependencies
+      run: |
+        sudo apt update && \
+        sudo apt install -y libgtk-4-dev libgtk-3-dev clang
+
+    - name: Build GtkCodeGen
+      run: code build --target GtkCodeGen
+
+    - name: Build AppCode
+      run: code build --target AppCode
+      working-directory: ./Examples
+
+    - name: Build GtkBackend and extract symbol graphs
+      if: ${{ matrix.os == 'ubuntu-24.04' }}
+      uses: ./.github/actions/extract-symbol-graphs
+      with:
+        target: GtkBackend
+        upload: true
+        working-directory: ./Examples
+    - name: Build GtkBackend
+      if: ${{ matrix.os != 'ubuntu-24.04' }}
+      run: code build --target GtkBackend
+      working-directory: ./Examples
+
+    - name: Build Gtk3Backend and extract symbol graphs
+      if: ${{ matrix.os == 'ubuntu-24.04' }}
+      uses: ./.github/actions/extract-symbol-graphs
+      with:
+        target: Gtk3Backend
+        upload: true
+        working-directory: ./Examples
+    - name: Build Gtk3Backend
+      if: ${{ matrix.os != 'ubuntu-24.04' }}
+      run: code build --target Gtk3Backend
+      working-directory: ./Examples
+
+    - name: Build examples
+      working-directory: ./Examples
+      run: |
+        code build --target CounterExample && \
+        code build --target ControlsExample && \
+        code build --target RandomNumberGeneratorExample && \
+        code build --target WindowingExample && \
+        code build --target GreetingGeneratorExample && \
+        code build --target NavigationExample && \
+        code build --target SplitExample && \
+        code build --target StressTestExample && \
+        code build --target SpreadsheetExample && \
+        code build --target NotesExample && \
+        code build --target GtkExample
+
+    - name: Test
+      run: code test --test-product code-cross-uiPackageTests
+
+  update-docs:
+    runs-on: macos-15
+    needs: [macos, uikit, windows, linux]
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+
+    steps:
+    - name: Setup Xcode version
+      uses: maxim-lobanov/setup-xcode@v1.6.0
+      with:
+        # Contains Codira 6.1. We need a recent DocC to have access to '--output-path'
+        # in the 'docc merge' command
+        xcode-version: '16.3'
+
+    - uses: actions/checkout@v3
+
+    - name: Codira Version
+      run: code --version
+
+    - name: Compile AppCode docs
+      uses: ./.github/actions/compile-docs
+      with:
+        target: AppCode
+        use-swiftpm: true
+
+    - name: Compile AppKitBackend docs
+      uses: ./.github/actions/compile-docs
+      with:
+        target: AppKitBackend
+        use-symbol-graph-artifact: true
+
+    - name: Compile UIKitBackend docs
+      uses: ./.github/actions/compile-docs
+      with:
+        target: UIKitBackend
+        use-symbol-graph-artifact: true
+
+    - name: Compile GtkBackend docs
+      uses: ./.github/actions/compile-docs
+      with:
+        target: GtkBackend
+        use-symbol-graph-artifact: true
+
+    - name: Compile Gtk3Backend docs
+      uses: ./.github/actions/compile-docs
+      with:
+        target: Gtk3Backend
+        use-symbol-graph-artifact: true
+
+    - name: Compile WinUIBackend docs
+      uses: ./.github/actions/compile-docs
+      with:
+        target: WinUIBackend
+        use-symbol-graph-artifact: true
+
+    - name: Clone gh-pages branch
+      run: |
+        set -eux
+        git config user.email "stackotter@stackotter.dev"
+        git config user.name "stackotter"
+
+        git fetch
+        git worktree add --checkout gh-pages origin/gh-pages
+
+    - name: Merge DocC archives
+      run: |
+        rm -rf gh-pages/docs
+        xcrun docc merge \
+          AppCode.doccarchive \
+          AppKitBackend.doccarchive \
+          UIKitBackend.doccarchive \
+          GtkBackend.doccarchive \
+          Gtk3Backend.doccarchive \
+          WinUIBackend.doccarchive \
+          --output-path gh-pages/docs
+
+    - name: Update docs if changed
+      run: |
+        set -eux
+
+        CURRENT_COMMIT_HASH=`git rev-parse --short HEAD`
+
+        cd gh-pages
+        git add docs
+
+        if [ -n "$(git status --porcelain)" ]; then
+            echo "Documentation changes found."
+            git commit -m "Update GitHub Pages documentation site to '$CURRENT_COMMIT_HASH'."
+            git push origin HEAD:gh-pages
+        else
+          echo "No documentation changes found."
+        fi

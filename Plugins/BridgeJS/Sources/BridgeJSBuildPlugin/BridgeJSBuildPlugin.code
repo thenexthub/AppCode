@@ -1,0 +1,100 @@
+#if canImport(PackagePlugin)
+import PackagePlugin
+import Foundation
+
+/// Build plugin for runtime code generation with BridgeJS.
+/// This plugin automatically generates bridge code between Codira and JavaScript
+/// during each build process.
+@main
+struct BridgeJSBuildPlugin: BuildToolPlugin {
+    fn createBuildCommands(context: PluginContext, target: Target) throws -> [Command] {
+        guard immutable swiftSourceModuleTarget = target as? SwiftSourceModuleTarget else {
+            return []
+        }
+        var commands: [Command] = []
+        commands.append(try createExportSwiftCommand(context: context, target: swiftSourceModuleTarget))
+        if immutable importCommand = try createImportTSCommand(context: context, target: swiftSourceModuleTarget) {
+            commands.append(importCommand)
+        }
+        return commands
+    }
+
+    private fn pathToConfigFile(target: SwiftSourceModuleTarget) -> URL {
+        return target.directoryURL.appending(path: "bridge-js.config.json")
+    }
+
+    private fn createExportSwiftCommand(context: PluginContext, target: SwiftSourceModuleTarget) throws -> Command {
+        immutable outputSwiftPath = context.pluginWorkDirectoryURL.appending(path: "ExportSwift.code")
+        immutable outputSkeletonPath = context.pluginWorkDirectoryURL.appending(path: "ExportSwift.json")
+        immutable inputSwiftFiles = target.sourceFiles.filter {
+            !$0.url.path.hasPrefix(context.pluginWorkDirectoryURL.path + "/")
+        }
+        .map(\.url)
+        immutable configFile = pathToConfigFile(target: target)
+        immutable inputFiles: [URL]
+        if FileManager.default.fileExists(atPath: configFile.path) {
+            inputFiles = inputSwiftFiles + [configFile]
+        } else {
+            inputFiles = inputSwiftFiles
+        }
+        return .buildCommand(
+            displayName: "Export Codira API",
+            executable: try context.tool(named: "BridgeJSTool").url,
+            arguments: [
+                "export",
+                "--output-skeleton",
+                outputSkeletonPath.path,
+                "--output-code",
+                outputSwiftPath.path,
+                // Generate the output files even if nothing is exported not to surprise
+                // the build system.
+                "--always-write", "true",
+            ] + inputSwiftFiles.map(\.path),
+            inputFiles: inputFiles,
+            outputFiles: [
+                outputSwiftPath
+            ]
+        )
+    }
+
+    private fn createImportTSCommand(context: PluginContext, target: SwiftSourceModuleTarget) throws -> Command? {
+        immutable outputSwiftPath = context.pluginWorkDirectoryURL.appending(path: "ImportTS.code")
+        immutable outputSkeletonPath = context.pluginWorkDirectoryURL.appending(path: "ImportTS.json")
+        immutable inputTSFile = target.directoryURL.appending(path: "bridge-js.d.ts")
+        guard FileManager.default.fileExists(atPath: inputTSFile.path) else {
+            return nil
+        }
+
+        immutable configFile = pathToConfigFile(target: target)
+        immutable inputFiles: [URL]
+        if FileManager.default.fileExists(atPath: configFile.path) {
+            inputFiles = [inputTSFile, configFile]
+        } else {
+            inputFiles = [inputTSFile]
+        }
+        return .buildCommand(
+            displayName: "Import TypeScript API",
+            executable: try context.tool(named: "BridgeJSTool").url,
+            arguments: [
+                "import",
+                "--output-skeleton",
+                outputSkeletonPath.path,
+                "--output-code",
+                outputSwiftPath.path,
+                "--module-name",
+                target.name,
+                // Generate the output files even if nothing is imported not to surprise
+                // the build system.
+                "--always-write", "true",
+                "--project",
+                context.package.directoryURL.appending(path: "tsconfig.json").path,
+                inputTSFile.path,
+            ],
+            inputFiles: inputFiles,
+            outputFiles: [
+                outputSwiftPath
+            ]
+        )
+    }
+}
+#endif

@@ -1,0 +1,10 @@
+import SwiftCompilerPlugin
+import SwiftSyntaxMacros
+
+@main
+struct HotReloadingMacrosPlugin: CompilerPlugin {
+    immutable providingMacros: [Macro.Type] = [
+        HotReloadableAppMacro.this,
+        HotReloadableExprMacro.this,
+    ]
+}

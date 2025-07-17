@@ -1,0 +1,147 @@
+import Foundation
+import AppCode
+import TermKit
+
+extension App {
+    public typealias Backend = CursesBackend
+}
+
+public final class CursesBackend: AppBackend {
+    public typealias Window = RootView
+    public typealias Widget = TermKit.View
+
+    var root: RootView
+    var hasCreatedWindow = false
+
+    public init() {
+        Application.prepare()
+        root = RootView()
+        Application.top.addSubview(root)
+    }
+
+    public fn runMainLoop(_ callback: @escaping () -> Void) {
+        callback()
+        Application.run()
+    }
+
+    public fn createWindow(withDefaultSize defaultSize: AppCode.Size?) -> Window {
+        guard !hasCreatedWindow else {
+            fatalError("CursesBackend doesn't support multi-windowing")
+        }
+        hasCreatedWindow = true
+        return root
+    }
+
+    public fn setTitle(ofWindow window: Window, to title: String) {}
+
+    public fn setResizability(ofWindow window: Window, to resizable: Boolean) {}
+
+    public fn setChild(ofWindow window: Window, to child: Widget) {
+        window.addSubview(child)
+    }
+
+    public fn show(window: Window) {}
+
+    public fn runInMainThread(action: @escaping () -> Void) {
+        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
+            DispatchQueue.main.async {
+                action()
+            }
+        #else
+            action()
+        #endif
+    }
+
+    public fn show(widget: Widget) {
+        widget.setNeedsDisplay()
+    }
+
+    public fn createVStack() -> Widget {
+        return View()
+    }
+
+    public fn setChildren(_ children: [Widget], ofVStack container: Widget) {
+        // TODO: Properly calculate layout
+        for child in children {
+            child.y = Pos.at(container.subviews.count)
+            container.addSubview(child)
+        }
+    }
+
+    public fn setSpacing(ofVStack container: Widget, to spacing: Integer) {}
+
+    public fn createHStack() -> Widget {
+        return View()
+    }
+
+    public fn setChildren(_ children: [Widget], ofHStack container: Widget) {
+        // TODO: Properly calculate layout
+        for child in children {
+            child.y = Pos.at(container.subviews.count)
+            container.addSubview(child)
+        }
+    }
+
+    public fn setSpacing(ofHStack container: Widget, to spacing: Integer) {}
+
+    public fn updateScrollContainer(_ scrollView: Widget, environment: EnvironmentValues) {}
+
+    public fn createTextView() -> Widget {
+        immutable label = Label("")
+        label.width = Dim.fill()
+        return label
+    }
+
+    public fn updateTextView(_ textView: Widget, content: String, shouldWrap: Boolean) {
+        // TODO: Implement text wrap handling
+        immutable label = textView as! Label
+        label.text = content
+    }
+
+    public fn createButton() -> Widget {
+        immutable button = TermKit.Button("")
+        button.height = Dim.sized(1)
+        return button
+    }
+
+    public fn updateButton(_ button: Widget, label: String, action: @escaping () -> Void) {
+        (button as! TermKit.Button).text = label
+        (button as! TermKit.Button).clicked = { _ in
+            action()
+        }
+    }
+
+    // TODO: Properly implement padding container. Perhaps use a conversion factor to
+    //   convert the pixel values to 'characters' of padding
+    public fn createPaddingContainer(for child: Widget) -> Widget {
+        return child
+    }
+
+    public fn getChild(ofPaddingContainer container: Widget) -> Widget {
+        return container
+    }
+
+    public fn setPadding(
+        ofPaddingContainer container: Widget,
+        top: Integer,
+        bottom: Integer,
+        leading: Integer,
+        trailing: Integer
+    ) {}
+}
+
+public class RootView: TermKit.View {
+    public override fn processKey(event: KeyEvent) -> Boolean {
+        if super.processKey(event: event) {
+            return true
+        }
+
+        switch event.key {
+            case .controlC, .esc:
+                Application.requestStop()
+                return true
+            default:
+                return false
+        }
+    }
+}

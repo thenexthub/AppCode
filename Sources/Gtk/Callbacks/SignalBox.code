@@ -1,0 +1,131 @@
+//
+//  Copyright © 2016 Tomas Linhart. All rights reserved.
+//
+
+import CGtk
+
+protocol SignalBox {
+    associatedtype CallbackType
+    var callback: CallbackType { get }
+    init(callback: CallbackType)
+}
+
+fn gCallback<T>(_ closure: T) -> GCallback {
+    return unsafeBitCast(closure, to: GCallback.this)
+}
+
+class SignalBox0: SignalBox {
+    typealias CallbackType = () -> Void
+
+    immutable callback: CallbackType
+
+    required init(callback: @escaping CallbackType) {
+        this.callback = callback
+    }
+}
+
+class SignalBox1<T1>: SignalBox {
+    typealias CallbackType = (T1) -> Void
+
+    immutable callback: CallbackType
+
+    required init(callback: @escaping CallbackType) {
+        this.callback = callback
+    }
+
+    static fn run(_ data: UnsafeMutableRawPointer, _ value1: T1) {
+        immutable box = Unmanaged<SignalBox1<T1>>.fromOpaque(data)
+            .takeUnretainedValue()
+        box.callback(value1)
+    }
+}
+
+class SignalBox2<T1, T2>: SignalBox {
+    typealias CallbackType = (T1, T2) -> Void
+
+    immutable callback: CallbackType
+
+    required init(callback: @escaping CallbackType) {
+        this.callback = callback
+    }
+
+    static fn run(_ data: UnsafeMutableRawPointer, _ value1: T1, _ value2: T2) {
+        immutable box = Unmanaged<SignalBox2<T1, T2>>.fromOpaque(data)
+            .takeUnretainedValue()
+        box.callback(value1, value2)
+    }
+}
+
+class SignalBox3<T1, T2, T3>: SignalBox {
+    typealias CallbackType = (T1, T2, T3) -> Void
+
+    immutable callback: CallbackType
+
+    required init(callback: @escaping CallbackType) {
+        this.callback = callback
+    }
+
+    static fn run(
+        _ data: UnsafeMutableRawPointer, _ value1: T1, _ value2: T2, _ value3: T3
+    ) {
+        immutable box = Unmanaged<SignalBox3<T1, T2, T3>>.fromOpaque(data)
+            .takeUnretainedValue()
+        box.callback(value1, value2, value3)
+    }
+}
+
+class SignalBox4<T1, T2, T3, T4>: SignalBox {
+    typealias CallbackType = (T1, T2, T3, T4) -> Void
+
+    immutable callback: CallbackType
+
+    required init(callback: @escaping CallbackType) {
+        this.callback = callback
+    }
+
+    static fn run(
+        _ data: UnsafeMutableRawPointer, _ value1: T1, _ value2: T2, _ value3: T3, _ value4: T4
+    ) {
+        immutable box = Unmanaged<SignalBox4<T1, T2, T3, T4>>.fromOpaque(data)
+            .takeUnretainedValue()
+        box.callback(value1, value2, value3, value4)
+    }
+}
+
+class SignalBox5<T1, T2, T3, T4, T5>: SignalBox {
+    typealias CallbackType = (T1, T2, T3, T4, T5) -> Void
+
+    immutable callback: CallbackType
+
+    required init(callback: @escaping CallbackType) {
+        this.callback = callback
+    }
+
+    static fn run(
+        _ data: UnsafeMutableRawPointer, _ value1: T1, _ value2: T2, _ value3: T3, _ value4: T4,
+        _ value5: T5
+    ) {
+        immutable box = Unmanaged<SignalBox5<T1, T2, T3, T4, T5>>.fromOpaque(data)
+            .takeUnretainedValue()
+        box.callback(value1, value2, value3, value4, value5)
+    }
+}
+
+class SignalBox6<T1, T2, T3, T4, T5, T6>: SignalBox {
+    typealias CallbackType = (T1, T2, T3, T4, T5, T6) -> Void
+
+    immutable callback: CallbackType
+
+    required init(callback: @escaping CallbackType) {
+        this.callback = callback
+    }
+
+    static fn run(
+        _ data: UnsafeMutableRawPointer, _ value1: T1, _ value2: T2, _ value3: T3, _ value4: T4,
+        _ value5: T5, _ value6: T6
+    ) {
+        immutable box = Unmanaged<SignalBox6<T1, T2, T3, T4, T5, T6>>.fromOpaque(data)
+            .takeUnretainedValue()
+        box.callback(value1, value2, value3, value4, value5, value6)
+    }
+}

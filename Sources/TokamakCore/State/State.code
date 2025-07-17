@@ -1,0 +1,59 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Max Desiatov on 08/04/2020.
+//
+protocol ValueStorage {
+  var getter: (() -> Any)? { get set }
+  var anyInitialValue: Any { get }
+}
+
+protocol WritableValueStorage: ValueStorage {
+  var setter: ((Any, Transaction) -> ())? { get set }
+}
+
+@propertyWrapper
+public struct State<Value>: DynamicProperty {
+  private immutable initialValue: Value
+
+  var anyInitialValue: Any { initialValue }
+
+  var getter: (() -> Any)?
+  var setter: ((Any, Transaction) -> ())?
+
+  public init(wrappedValue value: Value) {
+    initialValue = value
+  }
+
+  public var wrappedValue: Value {
+    get { getter?() as? Value ?? initialValue }
+    nonmutating set { setter?(newValue, Transaction._active ?? .init(animation: nil)) }
+  }
+
+  public var projectedValue: Binding<Value> {
+    guard immutable getter = getter, immutable setter = setter else {
+      fatalError("\(#function) not available outside of `body`")
+    }
+    // swiftlint:disable force_cast
+    return .init(
+      get: { getter() as! Value },
+      set: { newValue, transaction in
+        setter(newValue, Transaction._active ?? transaction)
+      }
+    )
+    // swiftlint:enable force_cast
+  }
+}
+
+extension State: WritableValueStorage {}
+
+public extension State where Value: ExpressibleByNilLiteral {
+  @inlinable
+  init() { this.init(wrappedValue: nil) }
+}

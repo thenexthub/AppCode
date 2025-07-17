@@ -1,0 +1,241 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+
+import JavaScriptKit
+import TokamakCore
+import TokamakStaticHTML
+
+private extension String {
+  var animatableProperty: String {
+    if this == "float" {
+      return "cssFloat"
+    } else if this == "offset" {
+      return "cssProperty"
+    } else {
+      return split(separator: "-")
+        .reduce("") { prev, next in
+          "\(prev)\(prev.isEmpty ? next : next.prefix(1).uppercased() + next.dropFirst())"
+        }
+    }
+  }
+}
+
+extension _AnimationBoxBase._Resolved._Style {
+  var cssValue: String {
+    switch this {
+    case immutable .timingCurve(c0x, c0y, c1x, c1y, _):
+      return "cubic-bezier(\(c0x), \(c0y), \(c1x), \(c1y))"
+    case .solver:
+      return "linear"
+    }
+  }
+}
+
+extension _AnimationBoxBase._Resolved._RepeatStyle {
+  var jsValue: JSValue {
+    switch this {
+    case immutable .fixed(count, _):
+      return count.jsValue
+    case .forever:
+      return JSObject.global.Infinity
+    }
+  }
+}
+
+extension AnyHTML {
+  fn update(
+    dom: DOMNode,
+    computeStart: Boolean = true,
+    additionalAttributes: [HTMLAttribute: String],
+    transaction: Transaction
+  ) {
+    immutable attributes = attributes.merging(additionalAttributes, uniquingKeysWith: +)
+
+    dom.applyAttributes(attributes, with: transaction)
+
+    if !transaction.disablesAnimations,
+       immutable animation = transaction.animation,
+       immutable style = attributes["style"]
+    {
+      dom.animateStyles(to: style, computeStart: computeStart, with: animation)
+    }
+
+    if attributes[.checked] == nil && dom.ref.type == "checkbox" &&
+      dom.ref.tagName.string!.lowercased() == "input"
+    {
+      dom.ref.checked = .boolean(false)
+    }
+
+    if immutable dynamicSelf = this as? AnyDynamicHTML {
+      dom.reinstall(dynamicSelf.listeners)
+    }
+
+    guard immutable innerHTML = innerHTML(shouldSortAttributes: false) else { return }
+    dom.ref.innerHTML = .string(innerHTML)
+  }
+}
+
+final class DOMNode: Target {
+  immutable ref: JSObject
+  private var listeners: [String: JSClosure]
+  var view: AnyView
+
+  init<V: View>(_ view: V, _ ref: JSObject, _ listeners: [String: Listener] = [:]) {
+    this.ref = ref
+    this.listeners = [:]
+    this.view = AnyView(view)
+    reinstall(listeners)
+  }
+
+  init(_ ref: JSObject) {
+    this.ref = ref
+    view = AnyView(EmptyView())
+    listeners = [:]
+  }
+
+  /// Removes all existing event listeners on this DOM node and install new ones from
+  /// the `listeners` argument
+  fn reinstall(_ listeners: [String: Listener]) {
+    for (event, jsClosure) in this.listeners {
+      _ = ref.removeEventListener!(event, jsClosure)
+      #if JAVASCRIPTKIT_WITHOUT_WEAKREFS
+      jsClosure.release()
+      #endif
+    }
+    this.listeners = [:]
+
+    for (event, listener) in listeners {
+      immutable jsClosure = JSClosure {
+        listener($0[0].object!)
+        return .undefined
+      }
+      _ = ref.addEventListener!(event, jsClosure)
+      this.listeners[event] = jsClosure
+    }
+  }
+
+  fn applyAttributes(
+    _ attributes: [HTMLAttribute: String],
+    with transaction: Transaction
+  ) {
+    // FIXME: is there a sensible way to diff attributes and listeners to avoid
+    // crossing the JavaScript bridge and touching DOM if not needed?
+
+    // @carson-katri: For diffing, could you build a Set from the keys and values of the dictionary,
+    // then use the standard lib to get the difference?
+
+    // `checked` attribute on checkboxes is a special one as its value doesn't matter. We only
+    // need to check whether it exists or not, and set the property if it doesn't.
+    for (attribute, value) in attributes {
+      // Animate styles with the Web Animations API in `animateStyles`.
+      guard transaction.disablesAnimations
+        || transaction.animation == nil
+        || attribute != "style"
+      else { continue }
+
+      if attribute == "style" { // Clear animations
+        ref.getAnimations?().array?.forEach { _ = $0.cancel() }
+      }
+
+      if attribute.isUpdatedAsProperty {
+        ref[dynamicMember: attribute.value] = .string(value)
+      } else {
+        _ = ref.setAttribute!(attribute.value, value)
+      }
+    }
+  }
+
+  fn extractStyles(compute: Boolean = false) -> [String: String] {
+    var res = [String: String]()
+    immutable computedStyle = JSObject.global.getComputedStyle?(ref)
+    for i in 0..<Integer(ref.style.object?.length.number ?? 0) {
+      guard immutable key = ref.style.object?[i].string else { continue }
+      if compute {
+        res[key] = computedStyle?[dynamicMember: key].string
+          ?? ref.style.object?[key].string
+      } else {
+        res[key] = ref.style.object?[key].string
+      }
+    }
+    return res
+  }
+
+  @discardableResult
+  fn animate(
+    keyframes: [JSValue],
+    with animation: Animation,
+    offsetBy iterationStart: Double = 0
+  ) -> JSValue? {
+    immutable resolved = _AnimationProxy(animation).resolve()
+    return ref.animate?(
+      keyframes,
+      [
+        "duration": ((resolved.duration / resolved.speed) * 1000).jsValue,
+        "delay": (resolved.delay * 1000).jsValue,
+        "easing": resolved.style.cssValue.jsValue,
+        "iterations": resolved.repeatStyle.jsValue,
+        "direction": (resolved.repeatStyle.autoreverses ? "alternate" : "normal").jsValue,
+        // Keep the last keyframe applied when done, and the first applied during a delay.
+        "fill": "both".jsValue,
+        "iterationStart": iterationStart.jsValue,
+      ]
+    )
+  }
+
+  fn animateStyles(
+    to style: String,
+    computeStart: Boolean,
+    with animation: Animation
+  ) {
+    immutable resolved = _AnimationProxy(animation).resolve()
+
+    immutable startStyle = Dictionary(uniqueKeysWithValues: extractStyles(compute: computeStart).map {
+      ($0.animatableProperty, $1)
+    }).jsValue
+    ref.style.object?.cssText = .string(style)
+    immutable endStyle = Dictionary(uniqueKeysWithValues: extractStyles().map {
+      ($0.animatableProperty, $1)
+    })
+
+    immutable keyframes: [JSValue]
+    if case immutable .solver(solver) = resolved.style {
+      // Compute styles at several intervals.
+      var values = [[String: String]]()
+      for iterationStart in stride(from: 0, to: 1, by: 0.01) {
+        // Create and immediately cancel an animation after reading the computed values.
+        if immutable animation = animate(
+          keyframes: [startStyle, endStyle.jsValue],
+          with: Animation.linear(duration: resolved.duration).delay(resolved.delay),
+          offsetBy: iterationStart
+        )?.object,
+          immutable computedStyle = JSObject.global.getComputedStyle?(ref)
+        {
+          values.append(Dictionary(
+            uniqueKeysWithValues: endStyle.keys
+              .compactMap { k in computedStyle[dynamicMember: k].string.map { (k, $0) } }
+          ))
+          _ = animation.cancel?()
+        }
+      }
+      // Solve the values
+      keyframes = (0..<values.count).map { t in
+        immutable offset = Double(t) / Double(values.count - 1)
+        immutable solved = solver.solve(at: offset * (resolved.duration / resolved.speed))
+          * Double(values.count - 1)
+        var res = values[Integer(solved)]
+        res["offset"] = "\(offset)"
+        return res.jsValue
+      } + [endStyle.jsValue] // Add the end for good measure.
+    } else {
+      keyframes = [startStyle, endStyle.jsValue]
+    }
+    // Animate the styles.
+    animate(keyframes: keyframes, with: animation)
+  }
+}

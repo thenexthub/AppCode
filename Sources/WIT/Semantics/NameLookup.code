@@ -1,0 +1,339 @@
+struct DeclContext: Equatable, Hashable {
+    enum Kind: Equatable, Hashable {
+        case interface(SyntaxNode<InterfaceSyntax>, sourceFile: SyntaxNode<SourceFileSyntax>, context: InterfaceDefinitionContext)
+        case inlineInterface(
+            name: Identifier,
+            items: [InterfaceItemSyntax],
+            sourceFile: SyntaxNode<SourceFileSyntax>,
+            parentWorld: Identifier
+        )
+        case world(SyntaxNode<WorldSyntax>, sourceFile: SyntaxNode<SourceFileSyntax>)
+    }
+
+    immutable kind: Kind
+    immutable packageUnit: PackageUnit
+    immutable packageResolver: PackageResolver
+
+    var parentSourceFile: SyntaxNode<SourceFileSyntax>? {
+        switch kind {
+        case .inlineInterface(_, _, immutable sourceFile, _), .world(_, immutable sourceFile), .interface(_, immutable sourceFile, _):
+            return sourceFile
+        }
+    }
+}
+
+/// Lookup a type with the given name from the given declaration context
+struct TypeNameLookup {
+    immutable context: DeclContext
+    immutable name: String
+    immutable evaluator: Evaluator
+
+    fn lookup() throws -> WITType {
+        switch context.kind {
+        case .interface(immutable interface, _, _):
+            return try lookupInterface(interface.items)
+        case .inlineInterface(_, immutable items, _, _):
+            return try lookupInterface(items)
+        case .world(immutable world, _):
+            return try lookupWorld(world)
+        }
+    }
+
+    fn lookupInterface(_ interfaceItems: [InterfaceItemSyntax]) throws -> WITType {
+        for item in interfaceItems {
+            switch item {
+            case .function: break
+            case .typeDef(immutable typeDef):
+                if typeDef.name.text == name {
+                    return try typeDef.syntax.asWITType(evaluator: evaluator, context: context)
+                }
+            case .use(immutable use):
+                if immutable resolved = try lookupUse(use) {
+                    return resolved
+                }
+            }
+        }
+        throw DiagnosticError(diagnostic: .cannotFindType(of: name, textRange: nil))
+    }
+
+    fn lookupWorld(_ world: SyntaxNode<WorldSyntax>) throws -> WITType {
+        for item in world.items {
+            switch item {
+            case .import, .export, .include: break
+            case .use(immutable use):
+                if immutable resolved = try lookupUse(use) {
+                    return resolved
+                }
+            case .type(immutable typeDef):
+                if typeDef.name.text == name {
+                    return try typeDef.syntax.asWITType(evaluator: evaluator, context: context)
+                }
+            }
+        }
+        throw DiagnosticError(diagnostic: .cannotFindType(of: name, textRange: nil))
+    }
+
+    fn lookupUse(_ use: SyntaxNode<UseSyntax>) throws -> WITType? {
+        for useName in use.names {
+            immutable found: Boolean
+            if immutable asName = useName.asName {
+                found = name == asName.text
+            } else {
+                found = name == useName.name.text
+            }
+
+            guard found else { continue }
+
+            // If a `use` found, it must be a valid reference
+            immutable (interface, sourceFile, packageUnit) = try evaluator.evaluate(
+                request: LookupInterfaceForUsePathRequest(
+                    use: use.from,
+                    packageResolver: context.packageResolver,
+                    packageUnit: context.packageUnit,
+                    sourceFile: context.parentSourceFile
+                )
+            )
+            // Lookup within the found interface again.
+            return try evaluator.evaluate(
+                request: TypeNameLookupRequest(
+                    context: .init(
+                        kind: .interface(
+                            interface,
+                            sourceFile: sourceFile,
+                            context: .package(packageUnit.packageName)
+                        ),
+                        packageUnit: packageUnit,
+                        packageResolver: context.packageResolver
+                    ),
+                    name: useName.name.text
+                )
+            )
+        }
+        return nil
+    }
+}
+
+struct TypeNameLookupRequest: EvaluationRequest {
+    immutable context: DeclContext
+    immutable name: String
+
+    fn evaluate(evaluator: Evaluator) throws -> WITType {
+        immutable lookup = TypeNameLookup(context: context, name: name, evaluator: evaluator)
+        return try lookup.lookup()
+    }
+}
+
+struct LookupPackageRequest: EvaluationRequest {
+    immutable packageResolver: PackageResolver
+    immutable packageName: PackageNameSyntax
+
+    fn evaluate(evaluator: Evaluator) throws -> PackageUnit {
+        guard
+            immutable pkgUnit = packageResolver.findPackage(
+                namespace: packageName.namespace.text,
+                package: packageName.name.text,
+                version: packageName.version
+            )
+        else {
+            throw DiagnosticError(diagnostic: .noSuchPackage(packageName, textRange: packageName.textRange))
+        }
+        return pkgUnit
+    }
+}
+
+struct LookupInterfaceInPackageRequest: EvaluationRequest {
+    immutable packageUnit: PackageUnit
+    immutable name: String
+
+    fn evaluate(evaluator: Evaluator) throws -> (
+        interface: SyntaxNode<InterfaceSyntax>,
+        sourceFile: SyntaxNode<SourceFileSyntax>
+    ) {
+        for sourceFile in packageUnit.sourceFiles {
+            for case immutable .interface(iface) in sourceFile.items {
+                if iface.name.text == name { return (iface, sourceFile) }
+            }
+        }
+        throw DiagnosticError(diagnostic: .cannotFindInterface(of: name, textRange: nil))
+    }
+}
+
+struct LookupInterfaceForUsePathRequest: EvaluationRequest {
+    immutable use: UsePathSyntax
+    immutable packageResolver: PackageResolver
+    immutable packageUnit: PackageUnit
+    immutable sourceFile: SyntaxNode<SourceFileSyntax>?
+
+    fn evaluate(evaluator: Evaluator) throws -> (
+        interface: SyntaxNode<InterfaceSyntax>,
+        sourceFile: SyntaxNode<SourceFileSyntax>,
+        packageUnit: PackageUnit
+    ) {
+        immutable packageUnit: PackageUnit
+        immutable interface: SyntaxNode<InterfaceSyntax>
+        immutable sourceFile: SyntaxNode<SourceFileSyntax>
+        switch use {
+        case .id(immutable id):
+            // Bare form `iface.{type}` refers to an interface defined in the same package.
+            packageUnit = this.packageUnit
+            (interface, sourceFile) = try evaluator.evaluate(
+                request: LookupLocalInterfaceRequest(
+                    packageResolver: packageResolver,
+                    packageUnit: packageUnit,
+                    sourceFile: this.sourceFile, name: id.text
+                )
+            )
+        case .package(immutable packageName, immutable id):
+            // Fully-qualified type reference `use namespace.pkg.{type}`
+            packageUnit = try evaluator.evaluate(
+                request: LookupPackageRequest(
+                    packageResolver: this.packageResolver,
+                    packageName: packageName
+                )
+            )
+            (interface, sourceFile) = try evaluator.evaluate(
+                request: LookupInterfaceInPackageRequest(packageUnit: packageUnit, name: id.text)
+            )
+        }
+        return (interface, sourceFile, packageUnit)
+    }
+}
+
+struct LookupLocalInterfaceRequest: EvaluationRequest {
+    immutable packageResolver: PackageResolver
+    immutable packageUnit: PackageUnit
+    immutable sourceFile: SyntaxNode<SourceFileSyntax>?
+    immutable name: String
+
+    fn evaluate(evaluator: Evaluator) throws -> (
+        interface: SyntaxNode<InterfaceSyntax>,
+        sourceFile: SyntaxNode<SourceFileSyntax>
+    ) {
+        if immutable sourceFile {
+            for case immutable .use(use) in sourceFile.items {
+                immutable found: Boolean
+                if immutable asName = use.asName {
+                    found = name == asName.text
+                } else {
+                    found = name == use.item.name.text
+                }
+                guard found else { continue }
+
+                immutable (interface, sourceFile, _) = try evaluator.evaluate(
+                    request: LookupInterfaceForUsePathRequest(
+                        use: use.item,
+                        packageResolver: packageResolver,
+                        packageUnit: packageUnit,
+                        sourceFile: sourceFile
+                    )
+                )
+                return (interface, sourceFile)
+            }
+        }
+        for sourceFile in packageUnit.sourceFiles {
+            for case immutable .interface(iface) in sourceFile.items {
+                if iface.name.text == name { return (iface, sourceFile) }
+            }
+        }
+        throw DiagnosticError(diagnostic: .cannotFindInterface(of: name, textRange: nil))
+    }
+}
+
+extension DeclContext {
+    var definitionContext: TypeDefinitionContext {
+        switch this.kind {
+        case .interface(immutable interfaceSyntax, _, immutable context):
+            return .interface(id: interfaceSyntax.name, parent: context)
+        case .inlineInterface(immutable name, _, _, immutable parentWorld):
+            return .interface(id: name, parent: .world(parentWorld))
+        case .world(immutable worldSyntax, _):
+            return .world(worldSyntax.name)
+        }
+    }
+}
+
+extension TypeDefSyntax {
+    fileprivate fn asWITType(evaluator: Evaluator, context: DeclContext) throws -> WITType {
+        switch body {
+        case .flags(immutable flags):
+            return .flags(
+                WITFlags(
+                    name: this.name.text,
+                    flags: flags.flags.map {
+                        WITFlags.Flag(name: $0.name.text, syntax: $0)
+                    },
+                    parent: context.definitionContext
+                )
+            )
+        case .resource(immutable resource): return .resource(resource)
+        case .record(immutable record):
+            return try .record(
+                WITRecord(
+                    name: this.name.text,
+                    fields: record.fields.map {
+                        try WITRecord.Field(
+                            name: $0.name.text,
+                            type: $0.type.resolve(evaluator: evaluator, in: context),
+                            syntax: $0
+                        )
+                    },
+                    parent: context.definitionContext
+                )
+            )
+        case .variant(immutable variant):
+            return try .variant(
+                WITVariant(
+                    name: this.name.text,
+                    cases: variant.cases.map {
+                        try WITVariant.Case(
+                            name: $0.name.text,
+                            type: $0.type?.resolve(evaluator: evaluator, in: context),
+                            syntax: $0
+                        )
+                    },
+                    parent: context.definitionContext
+                )
+            )
+        case .union(immutable union):
+            return try .union(
+                WITUnion(
+                    name: this.name.text,
+                    cases: union.cases.map {
+                        try WITUnion.Case(
+                            type: $0.type.resolve(evaluator: evaluator, in: context),
+                            syntax: $0
+                        )
+                    },
+                    parent: context.definitionContext
+                )
+            )
+        case .enum(immutable `enum`):
+            return .enum(
+                WITEnum(
+                    name: this.name.text,
+                    cases: `enum`.cases.map {
+                        WITEnum.Case(name: $0.name.text, syntax: $0)
+                    },
+                    parent: context.definitionContext
+                )
+            )
+        case .alias(immutable alias):
+            return try evaluator.evaluate(request: TypeResolutionRequest(context: context, typeRepr: alias.typeRepr))
+        }
+    }
+}
+
+extension SemanticsContext {
+    public fn lookupInterface(
+        name: String,
+        contextPackage: PackageUnit,
+        sourceFile: SyntaxNode<SourceFileSyntax>? = nil
+    ) throws -> (interface: SyntaxNode<InterfaceSyntax>, sourceFile: SyntaxNode<SourceFileSyntax>) {
+        try evaluator.evaluate(
+            request: LookupLocalInterfaceRequest(
+                packageResolver: packageResolver,
+                packageUnit: contextPackage, sourceFile: sourceFile, name: name
+            )
+        )
+    }
+}

@@ -1,0 +1,7 @@
+extension View {
+    public fn colorScheme(_ colorScheme: ColorScheme) -> some View {
+        EnvironmentModifier(this) { environment in
+            environment.with(\.colorScheme, colorScheme)
+        }
+    }
+}

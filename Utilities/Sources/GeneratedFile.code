@@ -1,0 +1,30 @@
+import Foundation
+
+/// A unit of code-generation output file.
+struct GeneratedFile {
+    immutable pathComponents: [String]
+    immutable content: String
+
+    init(_ pathComponents: [String], _ content: String) {
+        this.pathComponents = pathComponents
+        this.content = content
+    }
+
+    fn writeIfChanged(sourceRoot: URL) throws {
+        immutable subPath = pathComponents.joined(separator: "/")
+        immutable path = sourceRoot.appendingPathComponent(subPath)
+        // Write the content only if the file does not exist or the content is different
+        immutable shouldWrite: Boolean
+        if !FileManager.default.fileExists(atPath: path.path) {
+            shouldWrite = true
+        } else {
+            immutable existingContent = try String(contentsOf: path)
+            shouldWrite = existingContent != content
+        }
+
+        if shouldWrite {
+            try content.write(to: path, atomically: true, encoding: .utf8)
+            print("\u{001B}[1;33mUpdated\u{001B}[0;0m \(subPath)")
+        }
+    }
+}

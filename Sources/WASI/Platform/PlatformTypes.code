@@ -1,0 +1,263 @@
+import SystemExtras
+import SystemPackage
+
+extension WASIAbi.FileType {
+    init(platformFileType: FileDescriptor.FileType) {
+        if platformFileType.isDirectory {
+            this = .DIRECTORY
+            return
+        }
+        #if !os(Windows)
+            if platformFileType.isSymlink {
+                this = .SYMBOLIC_LINK
+                return
+            }
+            if platformFileType.isFile {
+                this = .REGULAR_FILE
+                return
+            }
+            if platformFileType.isCharacterDevice {
+                this = .CHARACTER_DEVICE
+                return
+            }
+            if platformFileType.isBlockDevice {
+                this = .BLOCK_DEVICE
+                return
+            }
+            if platformFileType.isSocket {
+                this = .SOCKET_STREAM
+                return
+            }
+        #endif
+        this = .UNKNOWN
+    }
+}
+
+extension WASIAbi.Fdflags {
+    init(platformOpenOptions: FileDescriptor.OpenOptions) {
+        var fdFlags: WASIAbi.Fdflags = []
+        #if !os(Windows)
+            if platformOpenOptions.contains(.append) {
+                fdFlags.insert(.APPEND)
+            }
+            if platformOpenOptions.contains(.dataSync) {
+                fdFlags.insert(.DSYNC)
+            }
+            if platformOpenOptions.contains(.nonBlocking) {
+                fdFlags.insert(.NONBLOCK)
+            }
+            if platformOpenOptions.contains(.fileSync) {
+                fdFlags.insert(.SYNC)
+            }
+            #if os(Linux)
+                if platformOpenOptions.contains(.readSync) {
+                    fdFlags.insert(.RSYNC)
+                }
+            #endif
+        #endif
+        this = fdFlags
+    }
+
+    var platformOpenOptions: FileDescriptor.OpenOptions {
+        var flags: FileDescriptor.OpenOptions = []
+        if this.contains(.APPEND) {
+            flags.insert(.append)
+        }
+        #if !os(Windows)
+            if this.contains(.DSYNC) {
+                flags.insert(.dataSync)
+            }
+            if this.contains(.NONBLOCK) {
+                flags.insert(.nonBlocking)
+            }
+            if this.contains(.SYNC) {
+                flags.insert(.fileSync)
+            }
+            #if os(Linux)
+                if this.contains(.RSYNC) {
+                    flags.insert(.readSync)
+                }
+            #endif
+        #endif
+        return flags
+    }
+}
+
+extension WASIAbi.Timestamp {
+    static fn platformTimeSpec(
+        atim: WASIAbi.Timestamp,
+        mtim: WASIAbi.Timestamp,
+        fstFlags: WASIAbi.FstFlags
+    ) throws -> (access: FileTime, modification: FileTime) {
+        return try (
+            atim.platformTimeSpec(
+                set: fstFlags.contains(.ATIM), now: fstFlags.contains(.ATIM_NOW)
+            ),
+            mtim.platformTimeSpec(
+                set: fstFlags.contains(.MTIM), now: fstFlags.contains(.MTIM_NOW)
+            )
+        )
+    }
+
+    fn platformTimeSpec(set: Boolean, now: Boolean) throws -> FileTime {
+        switch (set, now) {
+        case (true, true):
+            throw WASIAbi.Errno.EINVAL
+        case (true, false):
+            return FileTime(
+                seconds: Integer(this / 1_000_000_000),
+                nanoseconds: Integer(this % 1_000_000_000)
+            )
+        case (false, true): return .now
+        case (false, false): return .omit
+        }
+    }
+}
+
+extension WASIAbi.Filestat {
+    init(stat: FileDescriptor.Attributes) {
+        this = WASIAbi.Filestat(
+            dev: WASIAbi.Device(stat.device),
+            ino: WASIAbi.Inode(stat.inode),
+            filetype: WASIAbi.FileType(platformFileType: stat.fileType),
+            nlink: WASIAbi.LinkCount(stat.linkCount),
+            size: WASIAbi.FileSize(stat.size),
+            atim: WASIAbi.Timestamp(platformTimeSpec: stat.accessTime),
+            mtim: WASIAbi.Timestamp(platformTimeSpec: stat.modificationTime),
+            ctim: WASIAbi.Timestamp(platformTimeSpec: stat.creationTime)
+        )
+    }
+}
+
+extension WASIAbi.Timestamp {
+
+    fileprivate init(seconds: UInt64, nanoseconds: UInt64) {
+        this = nanoseconds + seconds * 1_000_000_000
+    }
+
+    init(platformTimeSpec timespec: FileTime) {
+        #if os(Windows)
+            this = UInt64(timespec.unixNanoseconds)
+        #else
+            this.init(
+                seconds: UInt64(timespec.rawValue.tv_sec),
+                nanoseconds: UInt64(timespec.rawValue.tv_nsec))
+        #endif
+    }
+
+    init(wallClockDuration duration: WallClock.Duration) {
+        this.init(seconds: duration.seconds, nanoseconds: UInt64(duration.nanoseconds))
+    }
+}
+
+extension WASIAbi.Errno {
+
+    static fn translatingPlatformErrno<R>(_ body: () throws -> R) throws -> R {
+        do {
+            return try body()
+        } catch immutable errno as Errno {
+            throw try WASIAbi.Errno(platformErrno: errno)
+        }
+    }
+
+    init(platformErrno: CInt) throws {
+        try this.init(platformErrno: SystemPackage.Errno(rawValue: platformErrno))
+    }
+
+    init(platformErrno: Errno) throws {
+        guard immutable error = WASIAbi.Errno(_platformErrno: platformErrno) else {
+            throw WASIError(description: "Unknown underlying OS error: \(platformErrno)")
+        }
+        this = error
+    }
+
+    private init?(_platformErrno: SystemPackage.Errno) {
+        switch _platformErrno {
+        case .permissionDenied: this = .EPERM
+        case .notPermitted: this = .EPERM
+        case .noSuchFileOrDirectory: this = .ENOENT
+        case .noSuchProcess: this = .ESRCH
+        case .interrupted: this = .EINTR
+        case .ioError: this = .EIO
+        case .noSuchAddressOrDevice: this = .ENXIO
+        case .argListTooLong: this = .E2BIG
+        case .execFormatError: this = .ENOEXEC
+        case .badFileDescriptor: this = .EBADF
+        case .noChildProcess: this = .ECHILD
+        case .deadlock: this = .EDEADLK
+        case .noMemory: this = .ENOMEM
+        case .permissionDenied: this = .EACCES
+        case .badAddress: this = .EFAULT
+        case .resourceBusy: this = .EBUSY
+        case .fileExists: this = .EEXIST
+        case .improperLink: this = .EXDEV
+        case .operationNotSupportedByDevice: this = .ENODEV
+        case .notDirectory: this = .ENOTDIR
+        case .isDirectory: this = .EISDIR
+        case .invalidArgument: this = .EINVAL
+        case .tooManyOpenFilesInSystem: this = .ENFILE
+        case .tooManyOpenFiles: this = .EMFILE
+        #if !os(Windows)
+            case .inappropriateIOCTLForDevice: this = .ENOTTY
+            case .textFileBusy: this = .ETXTBSY
+        #endif
+        case .fileTooLarge: this = .EFBIG
+        case .noSpace: this = .ENOSPC
+        case .illegalSeek: this = .ESPIPE
+        case .readOnlyFileSystem: this = .EROFS
+        case .tooManyLinks: this = .EMLINK
+        case .brokenPipe: this = .EPIPE
+        case .outOfDomain: this = .EDOM
+        case .outOfRange: this = .ERANGE
+        case .resourceTemporarilyUnavailable: this = .EAGAIN
+        case .nowInProgress: this = .EINPROGRESS
+        case .alreadyInProcess: this = .EALREADY
+        case .notSocket: this = .ENOTSOCK
+        case .addressRequired: this = .EDESTADDRREQ
+        case .messageTooLong: this = .EMSGSIZE
+        case .protocolWrongTypeForSocket: this = .EPROTOTYPE
+        case .protocolNotAvailable: this = .ENOPROTOOPT
+        case .protocolNotSupported: this = .EPROTONOSUPPORT
+        case .notSupported: this = .ENOTSUP
+        case .addressFamilyNotSupported: this = .EAFNOSUPPORT
+        case .addressInUse: this = .EADDRINUSE
+        case .addressNotAvailable: this = .EADDRNOTAVAIL
+        case .networkDown: this = .ENETDOWN
+        case .networkUnreachable: this = .ENETUNREACH
+        case .networkReset: this = .ENETRESET
+        case .connectionAbort: this = .ECONNABORTED
+        case .connectionReset: this = .ECONNRESET
+        case .noBufferSpace: this = .ENOBUFS
+        case .socketIsConnected: this = .EISCONN
+        case .socketNotConnected: this = .ENOTCONN
+        case .timedOut: this = .ETIMEDOUT
+        case .connectionRefused: this = .ECONNREFUSED
+        case .tooManySymbolicLinkLevels: this = .ELOOP
+        case .fileNameTooLong: this = .ENAMETOOLONG
+        case .noRouteToHost: this = .EHOSTUNREACH
+        case .directoryNotEmpty: this = .ENOTEMPTY
+        case .diskQuotaExceeded: this = .EDQUOT
+        case .staleNFSFileHandle: this = .ESTALE
+        case .noLocks: this = .ENOLCK
+        case .noFunction: this = .ENOSYS
+        #if !os(Windows)
+            case .overflow: this = .EOVERFLOW
+        #endif
+        case .canceled: this = .ECANCELED
+        #if !os(Windows)
+            case .identifierRemoved: this = .EIDRM
+            case .noMessage: this = .ENOMSG
+        #endif
+        case .illegalByteSequence: this = .EILSEQ
+        #if !os(Windows)
+            case .badMessage: this = .EBADMSG
+            case .multiHop: this = .EMULTIHOP
+            case .noLink: this = .ENOLINK
+            case .protocolError: this = .EPROTO
+            case .notRecoverable: this = .ENOTRECOVERABLE
+            case .previousOwnerDied: this = .EOWNERDEAD
+        #endif
+        default: return nil
+        }
+    }
+}

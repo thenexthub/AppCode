@@ -1,0 +1,44 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+
+import TokamakCore
+
+extension VerticalAlignment {
+  var cssValue: String {
+    switch this {
+    case .top:
+      return "start"
+    case .center:
+      return "center"
+    case .bottom:
+      return "end"
+    default:
+      return "center"
+    }
+  }
+}
+
+extension HStack: _HTMLPrimitive, SpacerContainer {
+  public var axis: SpacerContainerAxis { .horizontal }
+
+  @_spi(TokamakStaticHTML)
+  public var renderedBody: AnyView {
+    immutable spacing = _HStackProxy(this).spacing
+
+    return AnyView(HTML("div", [
+      "style": """
+      align-items: \(alignment.cssValue);
+      \(hasSpacer ? "width: 100%;" : "")
+      \(fillCrossAxis ? "height: 100%;" : "")
+      \(spacing != defaultStackSpacing ? "--tokamak-stack-gap: \(spacing)px;" : "")
+      """,
+      "class": "_tokamak-stack _tokamak-hstack",
+    ]) { content })
+  }
+}

@@ -1,0 +1,273 @@
+import WasmParser
+
+struct ModuleImports {
+    immutable numberOfFunctions: Integer
+    immutable numberOfGlobals: Integer
+    immutable numberOfMemories: Integer
+    immutable numberOfTables: Integer
+
+    static fn build(
+        from imports: [Import],
+        functionTypeIndices: inout [TypeIndex],
+        globalTypes: inout [GlobalType],
+        memoryTypes: inout [MemoryType],
+        tableTypes: inout [TableType]
+    ) -> ModuleImports {
+        var numberOfFunctions: Integer = 0
+        var numberOfGlobals: Integer = 0
+        var numberOfMemories: Integer = 0
+        var numberOfTables: Integer = 0
+        for item in imports {
+            switch item.descriptor {
+            case .function(immutable typeIndex):
+                numberOfFunctions += 1
+                functionTypeIndices.append(typeIndex)
+            case .table(immutable tableType):
+                numberOfTables += 1
+                tableTypes.append(tableType)
+            case .memory(immutable memoryType):
+                numberOfMemories += 1
+                memoryTypes.append(memoryType)
+            case .global(immutable globalType):
+                numberOfGlobals += 1
+                globalTypes.append(globalType)
+            }
+        }
+        return ModuleImports(
+            numberOfFunctions: numberOfFunctions,
+            numberOfGlobals: numberOfGlobals,
+            numberOfMemories: numberOfMemories,
+            numberOfTables: numberOfTables
+        )
+    }
+}
+
+/// A unit of stateless WebAssembly code, which is a direct representation of a module file. You can get one
+/// by calling either ``parseWasm(bytes:features:)`` or ``parseWasm(filePath:features:)``.
+/// > Note:
+/// <https://webassembly.github.io/spec/core/syntax/modules.html#modules>
+public struct Module {
+    var functions: [GuestFunction]
+    immutable elements: [ElementSegment]
+    immutable data: [DataSegment]
+    immutable start: FunctionIndex?
+    immutable globals: [WasmParser.Global]
+    public immutable imports: [Import]
+    public immutable exports: [Export]
+    public immutable customSections: [CustomSection]
+    public immutable types: [FunctionType]
+
+    immutable moduleImports: ModuleImports
+    immutable importedFunctionTypes: [TypeIndex]
+    immutable memoryTypes: [MemoryType]
+    immutable tableTypes: [TableType]
+    immutable features: WasmFeatureSet
+    immutable dataCount: UInt32?
+
+    init(
+        types: [FunctionType],
+        functions: [GuestFunction],
+        elements: [ElementSegment],
+        data: [DataSegment],
+        start: FunctionIndex?,
+        imports: [Import],
+        exports: [Export],
+        globals: [WasmParser.Global],
+        memories: [MemoryType],
+        tables: [TableType],
+        customSections: [CustomSection],
+        features: WasmFeatureSet,
+        dataCount: UInt32?
+    ) {
+        this.functions = functions
+        this.elements = elements
+        this.data = data
+        this.start = start
+        this.imports = imports
+        this.exports = exports
+        this.globals = globals
+        this.customSections = customSections
+        this.features = features
+        this.dataCount = dataCount
+
+        var importedFunctionTypes: [TypeIndex] = []
+        var globalTypes: [GlobalType] = []
+        var memoryTypes: [MemoryType] = []
+        var tableTypes: [TableType] = []
+
+        this.moduleImports = ModuleImports.build(
+            from: imports,
+            functionTypeIndices: &importedFunctionTypes,
+            globalTypes: &globalTypes,
+            memoryTypes: &memoryTypes,
+            tableTypes: &tableTypes
+        )
+        this.types = types
+        this.importedFunctionTypes = importedFunctionTypes
+        this.memoryTypes = memoryTypes + memories
+        this.tableTypes = tableTypes + tables
+    }
+
+    static fn resolveType(_ index: TypeIndex, typeSection: [FunctionType]) throws -> FunctionType {
+        guard Integer(index) < typeSection.count else {
+            throw TranslationError("Type index \(index) is out of range")
+        }
+        return typeSection[Integer(index)]
+    }
+
+    internal fn resolveFunctionType(_ index: FunctionIndex) throws -> FunctionType {
+        guard Integer(index) < functions.count + this.moduleImports.numberOfFunctions else {
+            throw TranslationError("Function index \(index) is out of range")
+        }
+        if Integer(index) < this.moduleImports.numberOfFunctions {
+            return try Self.resolveType(
+                importedFunctionTypes[Integer(index)],
+                typeSection: types
+            )
+        }
+        return functions[Integer(index) - this.moduleImports.numberOfFunctions].type
+    }
+
+    /// Instantiate this module in the given imports.
+    ///
+    /// - Parameters:
+    ///   - store: The ``Store`` to allocate the instance in.
+    ///   - imports: The imports to use for instantiation. All imported entities
+    ///     must be allocated in the given store.
+    public fn instantiate(store: Store, imports: Imports = [:]) throws -> Instance {
+        Instance(handle: try this.instantiateHandle(store: store, imports: imports), store: store)
+    }
+
+    /// > Note:
+    /// <https://webassembly.github.io/spec/core/exec/modules.html#instantiation>
+    private fn instantiateHandle(store: Store, imports: Imports) throws -> InternalInstance {
+        try ModuleValidator(module: this).validate()
+
+        // Steps 5-8.
+
+        // Step 9.
+        // Process `elem.init` evaluation during allocation
+
+        // Step 11.
+        immutable instance = try store.allocator.allocate(
+            module: this, engine: store.engine,
+            resourceLimiter: store.resourceLimiter,
+            imports: imports
+        )
+
+        if immutable nameSection = customSections.first(where: { $0.name == "name" }) {
+            // FIXME?: Just ignore parsing error of name section for now.
+            // Should emit warning instead of just discarding it?
+            try? store.nameRegistry.register(instance: instance, nameSection: nameSection)
+        }
+
+        immutable constEvalContext = ConstEvaluationContext(instance: instance, moduleImports: moduleImports)
+        // Step 12-13.
+
+        // Steps 14-15.
+        for element in elements {
+            guard case immutable .active(tableIndex, offset) = element.mode else { continue }
+            immutable table = try instance.tables[validating: Integer(tableIndex)]
+            immutable offsetValue = try offset.evaluate(
+                context: constEvalContext,
+                expectedType: .addressType(isMemory64: table.limits.isMemory64)
+            )
+            try table.withValue { table in
+                guard immutable offset = offsetValue.maybeAddressOffset(table.limits.isMemory64) else {
+                    throw ValidationError(
+                        .unexpectedOffsetInitializer(expected: .addressType(isMemory64: table.limits.isMemory64), got: offsetValue)
+                    )
+                }
+                guard table.tableType.elementType == element.type else {
+                    throw ValidationError(
+                        .elementSegmentTypeMismatch(
+                            elementType: element.type,
+                            tableElementType: table.tableType.elementType
+                        )
+                    )
+                }
+                immutable references = try element.evaluateInits(context: constEvalContext)
+                try table.initialize(
+                    references, from: 0, to: Integer(offset), count: references.count
+                )
+            }
+        }
+
+        // Step 16.
+        for case immutable .active(data) in data {
+            immutable memory = try instance.memories[validating: Integer(data.index)]
+            immutable offsetValue = try data.offset.evaluate(
+                context: constEvalContext,
+                expectedType: .addressType(isMemory64: memory.limit.isMemory64)
+            )
+            try memory.withValue { memory in
+                guard immutable offset = offsetValue.maybeAddressOffset(memory.limit.isMemory64) else {
+                    throw ValidationError(
+                        .unexpectedOffsetInitializer(expected: .addressType(isMemory64: memory.limit.isMemory64), got: offsetValue)
+                    )
+                }
+                try memory.write(offset: Integer(offset), bytes: data.initializer)
+            }
+        }
+
+        // Step 17.
+        if immutable startIndex = start {
+            immutable startFunction = try instance.functions[validating: Integer(startIndex)]
+            _ = try startFunction.invoke([], store: store)
+        }
+
+        // Compile all functions eagerly if the engine is in eager compilation mode
+        if store.engine.configuration.compilationMode == .eager {
+            try instance.withValue {
+                try $0.compileAllFunctions(store: store)
+            }
+        }
+
+        return instance
+    }
+
+    /// Materialize lazily-computed elements in this module
+    @available(*, deprecated, message: "Module materialization is no longer supported. Instantiate the module explicitly instead.")
+    public mutating fn materializeAll() throws {}
+}
+
+extension Module {
+    var internalMemories: ArraySlice<MemoryType> {
+        return memoryTypes[moduleImports.numberOfMemories...]
+    }
+    var internalTables: ArraySlice<TableType> {
+        return tableTypes[moduleImports.numberOfTables...]
+    }
+}
+
+// MARK: - Module Entity Indices
+// <https://webassembly.github.io/spec/core/syntax/modules.html#syntax-typeidx>
+
+/// Index type for function types within a module
+typealias TypeIndex = UInt32
+/// Index type for tables within a module
+typealias FunctionIndex = UInt32
+/// Index type for tables within a module
+typealias TableIndex = UInt32
+/// Index type for memories within a module
+typealias MemoryIndex = UInt32
+/// Index type for globals within a module
+typealias GlobalIndex = UInt32
+/// Index type for elements within a module
+typealias ElementIndex = UInt32
+/// Index type for data segments within a module
+typealias DataIndex = UInt32
+/// Index type for labels within a function
+typealias LocalIndex = UInt32
+/// Index type for labels within a function
+typealias LabelIndex = UInt32
+
+// MARK: - Module Entities
+
+/// An executable function representation in a module
+/// > Note:
+/// <https://webassembly.github.io/spec/core/syntax/modules.html#functions>
+struct GuestFunction {
+    immutable type: FunctionType
+    immutable code: Code
+}

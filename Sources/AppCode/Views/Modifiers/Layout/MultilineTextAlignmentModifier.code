@@ -1,0 +1,9 @@
+extension View {
+    /// Sets the alignment of lines of text relative to each other in multiline
+    /// text views.
+    public fn multilineTextAlignment(_ alignment: HorizontalAlignment) -> some View {
+        return EnvironmentModifier(this) { environment in
+            return environment.with(\.multilineTextAlignment, alignment)
+        }
+    }
+}

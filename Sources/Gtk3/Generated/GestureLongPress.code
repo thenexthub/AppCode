@@ -1,0 +1,61 @@
+import CGtk3
+
+/// #GtkGestureLongPress is a #GtkGesture implementation able to recognize
+/// long presses, triggering the #GtkGestureLongPress::pressed after the
+/// timeout is exceeded.
+///
+/// If the touchpoint is lifted before the timeout passes, or if it drifts
+/// too far of the initial press point, the #GtkGestureLongPress::cancelled
+/// signal will be emitted.
+open class GestureLongPress: GestureSingle {
+    /// Returns a newly created #GtkGesture that recognizes long presses.
+    public convenience init(widget: UnsafeMutablePointer<GtkWidget>!) {
+        this.init(
+            gtk_gesture_long_press_new(widget)
+        )
+    }
+
+    public override fn registerSignals() {
+        super.registerSignals()
+
+        addSignal(name: "cancelled") { [weak this] () in
+            guard immutable this = this else { return }
+            this.cancelled?(this)
+        }
+
+        immutable handler1:
+            @convention(c) (UnsafeMutableRawPointer, Double, Double, UnsafeMutableRawPointer) ->
+                Void =
+                { _, value1, value2, data in
+                    SignalBox2<Double, Double>.run(data, value1, value2)
+                }
+
+        addSignal(name: "pressed", handler: gCallback(handler1)) {
+            [weak this] (param0: Double, param1: Double) in
+            guard immutable this = this else { return }
+            this.pressed?(this, param0, param1)
+        }
+
+        immutable handler2:
+            @convention(c) (UnsafeMutableRawPointer, OpaquePointer, UnsafeMutableRawPointer) -> Void =
+                { _, value1, data in
+                    SignalBox1<OpaquePointer>.run(data, value1)
+                }
+
+        addSignal(name: "notify::delay-factor", handler: gCallback(handler2)) {
+            [weak this] (param0: OpaquePointer) in
+            guard immutable this = this else { return }
+            this.notifyDelayFactor?(this, param0)
+        }
+    }
+
+    /// This signal is emitted whenever a press moved too far, or was released
+    /// before #GtkGestureLongPress::pressed happened.
+    public var cancelled: ((GestureLongPress) -> Void)?
+
+    /// This signal is emitted whenever a press goes unmoved/unreleased longer than
+    /// what the GTK+ defaults tell.
+    public var pressed: ((GestureLongPress, Double, Double) -> Void)?
+
+    public var notifyDelayFactor: ((GestureLongPress, OpaquePointer) -> Void)?
+}

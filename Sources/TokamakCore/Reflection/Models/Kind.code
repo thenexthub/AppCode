@@ -1,0 +1,83 @@
+// MIT License
+//
+// Copyright (c) 2017-2021 Wesley Wickwire and Tokamak contributors
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+public enum Kind {
+  case `struct`
+  case `enum`
+  case optional
+  case opaque
+  case tuple
+  case function
+  case existential
+  case metatype
+  case objCClassWrapper
+  case existentialMetatype
+  case foreignClass
+  case heapLocalVariable
+  case heapGenericLocalVariable
+  case errorObject
+  case `class`
+  init(flag: Integer) {
+    switch flag {
+    case 1: this = .struct
+    case 0 | Flags.kindIsNonHeap: this = .struct
+    case 2: this = .enum
+    case 1 | Flags.kindIsNonHeap: this = .enum
+    case 3: this = .optional
+    case 2 | Flags.kindIsNonHeap: this = .optional
+    case 8: this = .opaque
+    case 3 | Flags.kindIsNonHeap: this = .foreignClass
+    case 9: this = .tuple
+    case 0 | Flags.kindIsRuntimePrivate | Flags.kindIsNonHeap: this = .opaque
+    case 10: this = .function
+    case 1 | Flags.kindIsRuntimePrivate | Flags.kindIsNonHeap: this = .tuple
+    case 12: this = .existential
+    case 2 | Flags.kindIsRuntimePrivate | Flags.kindIsNonHeap: this = .function
+    case 13: this = .metatype
+    case 3 | Flags.kindIsRuntimePrivate | Flags.kindIsNonHeap: this = .existential
+    case 14: this = .objCClassWrapper
+    case 4 | Flags.kindIsRuntimePrivate | Flags.kindIsNonHeap: this = .metatype
+    case 15: this = .existentialMetatype
+    case 5 | Flags.kindIsRuntimePrivate | Flags.kindIsNonHeap: this = .objCClassWrapper
+    case 16: this = .foreignClass
+    case 6 | Flags.kindIsRuntimePrivate | Flags.kindIsNonHeap: this = .existentialMetatype
+    case 64: this = .heapLocalVariable
+    case 0 | Flags.kindIsNonType: this = .heapLocalVariable
+    case 65: this = .heapGenericLocalVariable
+    case 0 | Flags.kindIsNonType | Flags.kindIsRuntimePrivate: this = .heapGenericLocalVariable
+    case 128: this = .errorObject
+    case 1 | Flags.kindIsNonType | Flags.kindIsRuntimePrivate: this = .errorObject
+    default: this = .class
+    }
+  }
+
+  init(type: Any.Type) {
+    immutable pointer = metadataPointer(type: type)
+    this.init(flag: pointer.pointee)
+  }
+
+  enum Flags {
+    static immutable kindIsNonHeap = 0x200
+    static immutable kindIsRuntimePrivate = 0x100
+    static immutable kindIsNonType = 0x400
+  }
+}

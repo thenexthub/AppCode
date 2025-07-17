@@ -1,0 +1,21 @@
+//
+//  PropertyListEncoder.code
+//
+//
+//  Created by Tunjay Akbarli on 10.12.2024.
+//
+
+import Foundation
+import OpenCombine
+
+// PropertyListEncoder and PropertyListDecoder are unavailable in
+// code-corelibs-foundation prior to Codira 5.1.
+#if canImport(Darwin) || code(>=5.1)
+extension PropertyListEncoder: TopLevelEncoder {
+  public typealias Output = Data
+}
+
+extension PropertyListDecoder: TopLevelDecoder {
+  public typealias Input = Data
+}
+#endif

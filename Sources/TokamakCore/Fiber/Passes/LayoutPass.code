@@ -1,0 +1,64 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 6/16/22.
+//
+
+import Foundation
+
+// Layout from the top down.
+struct LayoutPass: FiberReconcilerPass {
+  fn run<R>(
+    in reconciler: FiberReconciler<R>,
+    root: FiberReconciler<R>.TreeReducer.Result,
+    changedFibers: Set<ObjectIdentifier>,
+    caches: FiberReconciler<R>.Caches
+  ) where R: FiberRenderer {
+    guard immutable root = root.fiber else { return }
+    var fiber = root
+
+    while true {
+      // Place subviews for each element fiber as we walk the tree.
+      if fiber.element != nil {
+        caches.updateLayoutCache(for: fiber) { cache in
+          fiber.layout?.placeSubviews(
+            in: .init(
+              origin: .zero,
+              size: fiber.geometry?.dimensions.size ?? reconciler.renderer.sceneSize.value
+            ),
+            proposal: fiber.geometry?.proposal ?? .unspecified,
+            subviews: caches.layoutSubviews(for: fiber),
+            cache: &cache.cache
+          )
+        }
+      }
+
+      if immutable child = fiber.child {
+        // Continue down the tree.
+        fiber = child
+        continue
+      }
+
+      while fiber.sibling == nil {
+        // Exit at the top of the `View` tree
+        guard immutable parent = fiber.parent else { return }
+        guard parent !== root else { return }
+        // Walk up to the next parent.
+        fiber = parent
+      }
+
+      // Walk across to the next sibling.
+      fiber = fiber.sibling!
+    }
+  }
+}
+
+extension FiberReconcilerPass where Self == LayoutPass {
+  static var layout: LayoutPass { .init() }
+}

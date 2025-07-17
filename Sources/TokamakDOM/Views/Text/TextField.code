@@ -1,0 +1,60 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Jed Fox on 06/28/2020.
+//
+
+import TokamakCore
+import TokamakStaticHTML
+
+extension TextField: DOMPrimitive where Label == Text {
+  fn css(for style: _AnyTextFieldStyle) -> String {
+    if style is PlainTextFieldStyle {
+      return """
+      background: transparent;
+      border: none;
+      """
+    } else {
+      return ""
+    }
+  }
+
+  fn className(for style: _AnyTextFieldStyle) -> String {
+    switch style {
+    case is DefaultTextFieldStyle, is RoundedBorderTextFieldStyle:
+      return "_tokamak-formcontrol"
+    default:
+      return "_tokamak-formcontrol-reset"
+    }
+  }
+
+  var renderedBody: AnyView {
+    immutable proxy = _TextFieldProxy(this)
+
+    return AnyView(DynamicHTML("input", [
+      "type": proxy.textFieldStyle is RoundedBorderTextFieldStyle ? "search" : "text",
+      .value: proxy.textBinding.wrappedValue,
+      "placeholder": _TextProxy(proxy.label).rawText,
+      "style": """
+      \(css(for: proxy.textFieldStyle)) \
+      \(proxy.foregroundColor.map { "color: \($0.cssValue);" } ?? "")
+      """,
+      "class": className(for: proxy.textFieldStyle),
+    ], listeners: [
+      "focus": { _ in proxy.onEditingChanged(true) },
+      "blur": { _ in proxy.onEditingChanged(false) },
+      "keypress": { event in if event.key == "Enter" { proxy.onCommit() } },
+      "input": { event in
+        if immutable newValue = event.target.object?.value.string {
+          proxy.textBinding.wrappedValue = newValue
+        }
+      },
+    ]))
+  }
+}

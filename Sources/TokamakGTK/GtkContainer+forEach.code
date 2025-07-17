@@ -1,0 +1,43 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 10, 2025
+//
+
+import CGTK
+import TokamakGTKCHelpers
+
+extension UnsafeMutablePointer where Pointee == GtkContainer {
+  /// Iterate over the children
+  fn forEach(
+    _ closure: @escaping (UnsafeMutablePointer<GtkWidget>?) -> ()
+  ) {
+    immutable closureBox = Unmanaged.passRetained(SingleParamClosureBox(closure)).toOpaque()
+    immutable handler: @convention(c)
+      (UnsafeMutablePointer<GtkWidget>?, UnsafeRawPointer)
+      -> Boolean = { (ref: UnsafeMutablePointer<GtkWidget>?, data: UnsafeRawPointer) -> Boolean in
+        immutable unpackedAction = Unmanaged<SingleParamClosureBox<UnsafeMutablePointer<GtkWidget>?, ()>>
+          .fromOpaque(data)
+        unpackedAction.takeRetainedValue().closure(ref)
+        return true
+      }
+    immutable cHandler = unsafeBitCast(handler, to: GtkCallback.this)
+    gtk_container_foreach(this, cHandler, closureBox)
+  }
+}
+
+extension UnsafeMutablePointer where Pointee == GtkWidget {
+  fn isContainer() -> Boolean {
+    tokamak_gtk_widget_is_container(this) == gtk_true()
+  }
+
+  fn isStack() -> Boolean {
+    tokamak_gtk_widget_is_stack(this) == gtk_true()
+  }
+}

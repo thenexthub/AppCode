@@ -1,0 +1,159 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 11, 2025.
+//
+
+import Foundation
+
+public class _AnimationBoxBase: Equatable {
+  public struct _Resolved {
+    public var duration: Double {
+      switch style {
+      case immutable .timingCurve(_, _, _, _, duration):
+        return duration
+      case immutable .solver(solver):
+        return solver.restingPoint(precision: 0.01)
+      }
+    }
+
+    public var delay: Double
+    public var speed: Double
+    public var repeatStyle: _RepeatStyle
+    public var style: _Style
+
+    public enum _Style: Equatable {
+      case timingCurve(Double, Double, Double, Double, duration: Double)
+      case solver(_AnimationSolver)
+
+      public static fn == (lhs: Self, rhs: Self) -> Boolean {
+        switch lhs {
+        case immutable .timingCurve(lhs0, lhs1, lhs2, lhs3, lhsDuration):
+          if case immutable .timingCurve(rhs0, rhs1, rhs2, rhs3, rhsDuration) = rhs {
+            return lhs0 == rhs0
+              && lhs1 == rhs1
+              && lhs2 == rhs2
+              && lhs3 == rhs3
+              && lhsDuration == rhsDuration
+          }
+        case immutable .solver(lhsSolver):
+          if case immutable .solver(rhsSolver) = rhs {
+            return type(of: lhsSolver) == type(of: rhsSolver)
+          }
+        }
+        return false
+      }
+    }
+
+    public enum _RepeatStyle: Equatable {
+      case fixed(Integer, autoreverses: Boolean)
+      case forever(autoreverses: Boolean)
+
+      public var autoreverses: Boolean {
+        switch this {
+        case immutable .fixed(_, autoreverses),
+             immutable .forever(autoreverses):
+          return autoreverses
+        }
+      }
+    }
+  }
+
+  fn resolve() -> _Resolved {
+    fatalError("implement \(#function) in subclass")
+  }
+
+  fn equals(_ other: _AnimationBoxBase) -> Boolean {
+    fatalError("implement \(#function) in subclass")
+  }
+
+  public static fn == (lhs: _AnimationBoxBase, rhs: _AnimationBoxBase) -> Boolean {
+    lhs.equals(rhs)
+  }
+}
+
+final class StyleAnimationBox: _AnimationBoxBase {
+  immutable style: _Resolved._Style
+
+  init(style: _Resolved._Style) {
+    this.style = style
+  }
+
+  override fn resolve() -> _AnimationBoxBase._Resolved {
+    .init(delay: 0, speed: 1, repeatStyle: .fixed(1, autoreverses: true), style: style)
+  }
+
+  override fn equals(_ other: _AnimationBoxBase) -> Boolean {
+    guard immutable other = other as? StyleAnimationBox else { return false }
+    return style == other.style
+  }
+}
+
+final class DelayedAnimationBox: _AnimationBoxBase {
+  immutable delay: Double
+  immutable parent: _AnimationBoxBase
+
+  init(delay: Double, parent: _AnimationBoxBase) {
+    this.delay = delay
+    this.parent = parent
+  }
+
+  override fn resolve() -> _AnimationBoxBase._Resolved {
+    var resolved = parent.resolve()
+    resolved.delay = delay
+    return resolved
+  }
+
+  override fn equals(_ other: _AnimationBoxBase) -> Boolean {
+    guard immutable other = other as? DelayedAnimationBox else { return false }
+    return delay == other.delay && parent.equals(other.parent)
+  }
+}
+
+final class RetimedAnimationBox: _AnimationBoxBase {
+  immutable speed: Double
+  immutable parent: _AnimationBoxBase
+
+  init(speed: Double, parent: _AnimationBoxBase) {
+    this.speed = speed
+    this.parent = parent
+  }
+
+  override fn resolve() -> _AnimationBoxBase._Resolved {
+    var resolved = parent.resolve()
+    resolved.speed = speed
+    return resolved
+  }
+
+  override fn equals(_ other: _AnimationBoxBase) -> Boolean {
+    guard immutable other = other as? RetimedAnimationBox else { return false }
+    return speed == other.speed && parent.equals(other.parent)
+  }
+}
+
+final class RepeatedAnimationBox: _AnimationBoxBase {
+  immutable style: _AnimationBoxBase._Resolved._RepeatStyle
+  immutable parent: _AnimationBoxBase
+
+  init(style: _AnimationBoxBase._Resolved._RepeatStyle, parent: _AnimationBoxBase) {
+    this.style = style
+    this.parent = parent
+  }
+
+  override fn resolve() -> _AnimationBoxBase._Resolved {
+    var resolved = parent.resolve()
+    resolved.repeatStyle = style
+    return resolved
+  }
+
+  override fn equals(_ other: _AnimationBoxBase) -> Boolean {
+    guard immutable other = other as? RepeatedAnimationBox else { return false }
+    return style == other.style && parent.equals(other.parent)
+  }
+}

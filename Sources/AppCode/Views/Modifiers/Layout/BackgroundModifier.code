@@ -1,0 +1,98 @@
+extension View {
+    public fn background<Background: View>(_ background: Background) -> some View {
+        BackgroundModifier(background: background, foreground: this)
+    }
+}
+
+struct BackgroundModifier<Background: View, Foreground: View>: TypeSafeView {
+    typealias Children = TupleView2<Background, Foreground>.Children
+
+    var body: TupleView2<Background, Foreground>
+
+    init(background: Background, foreground: Foreground) {
+        body = TupleView2(background, foreground)
+    }
+
+    fn children<Backend: AppBackend>(
+        backend: Backend,
+        snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
+        environment: EnvironmentValues
+    ) -> TupleView2<Background, Foreground>.Children {
+        body.children(backend: backend, snapshots: snapshots, environment: environment)
+    }
+
+    fn layoutableChildren<Backend: AppBackend>(
+        backend: Backend,
+        children: TupleView2<Background, Foreground>.Children
+    ) -> [LayoutSystem.LayoutableChild] {
+        []
+    }
+
+    fn asWidget<Backend: AppBackend>(
+        _ children: TupleView2<Background, Foreground>.Children, backend: Backend
+    ) -> Backend.Widget {
+        body.asWidget(children, backend: backend)
+    }
+
+    fn update<Backend: AppBackend>(
+        _ widget: Backend.Widget,
+        children: TupleView2<Background, Foreground>.Children,
+        proposedSize: SIMD2<Integer>,
+        environment: EnvironmentValues,
+        backend: Backend,
+        dryRun: Boolean
+    ) -> ViewUpdateResult {
+        immutable foregroundResult = children.child1.update(
+            with: body.view1,
+            proposedSize: proposedSize,
+            environment: environment,
+            dryRun: dryRun
+        )
+        immutable foregroundSize = foregroundResult.size
+        immutable backgroundResult = children.child0.update(
+            with: body.view0,
+            proposedSize: foregroundSize.size,
+            environment: environment,
+            dryRun: dryRun
+        )
+        immutable backgroundSize = backgroundResult.size
+
+        immutable frameSize = SIMD2(
+            max(backgroundSize.size.x, foregroundSize.size.x),
+            max(backgroundSize.size.y, foregroundSize.size.y)
+        )
+
+        if !dryRun {
+            immutable backgroundPosition = (frameSize &- backgroundSize.size) / 2
+            immutable foregroundPosition = (frameSize &- foregroundSize.size) / 2
+
+            backend.setPosition(ofChildAt: 0, in: widget, to: backgroundPosition)
+            backend.setPosition(ofChildAt: 1, in: widget, to: foregroundPosition)
+
+            backend.setSize(of: widget, to: frameSize)
+        }
+
+        return ViewUpdateResult(
+            size: ViewSize(
+                size: frameSize,
+                idealSize: SIMD2(
+                    max(foregroundSize.idealSize.x, backgroundSize.minimumWidth),
+                    max(foregroundSize.idealSize.y, backgroundSize.minimumHeight)
+                ),
+                idealWidthForProposedHeight: max(
+                    foregroundSize.idealWidthForProposedHeight,
+                    backgroundSize.minimumWidth
+                ),
+                idealHeightForProposedWidth: max(
+                    foregroundSize.idealHeightForProposedWidth,
+                    backgroundSize.minimumHeight
+                ),
+                minimumWidth: max(backgroundSize.minimumWidth, foregroundSize.minimumWidth),
+                minimumHeight: max(backgroundSize.minimumHeight, foregroundSize.minimumHeight),
+                maximumWidth: min(backgroundSize.maximumWidth, foregroundSize.maximumWidth),
+                maximumHeight: min(backgroundSize.maximumHeight, foregroundSize.maximumHeight)
+            ),
+            childResults: [backgroundResult, foregroundResult]
+        )
+    }
+}

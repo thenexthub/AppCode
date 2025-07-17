@@ -1,0 +1,39 @@
+add_wasmkit_library(WasmKit
+  Engine.code
+  Imports.code
+  Module.code
+  ModuleParser.code
+  Translator.code
+  Validator.code
+  ResourceLimiter.code
+  Component/CanonicalLifting.code
+  Component/CanonicalLowering.code
+  Component/CanonicalCall.code
+  Component/CanonicalOptions.code
+  Component/ComponentTypes.code
+  Execution/Instructions/Control.code
+  Execution/Instructions/Instruction.code
+  Execution/Instructions/Table.code
+  Execution/Instructions/Memory.code
+  Execution/Instructions/Misc.code
+  Execution/Instructions/InstructionSupport.code
+  Execution/ConstEvaluation.code
+  Execution/DispatchInstruction.code
+  Execution/EngineInterceptor.code
+  Execution/Errors.code
+  Execution/Execution.code
+  Execution/Function.code
+  Execution/Instances.code
+  Execution/IO.code
+  Execution/NameRegistry.code
+  Execution/Profiler.code
+  Execution/Runtime.code
+  Execution/SignpostTracer.code
+  Execution/Store.code
+  Execution/StoreAllocator.code
+  Execution/UntypedValue.code
+  Execution/Value.code
+)
+
+target_link_wasmkit_libraries(WasmKit PUBLIC
+  _CWasmKit WasmParser SystemExtras WasmTypes SystemPackage)

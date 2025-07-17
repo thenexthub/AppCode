@@ -1,0 +1,305 @@
+import Foundation
+import Testing
+
+@testable import PackageToJS
+
+extension Trait where Self == ConditionTrait {
+    static var requireSwiftSDK: ConditionTrait {
+        .enabled(
+            if: ProcessInfo.processInfo.environment["SWIFT_SDK_ID"] != nil
+                && ProcessInfo.processInfo.environment["SWIFT_PATH"] != nil,
+            "Requires SWIFT_SDK_ID and SWIFT_PATH environment variables"
+        )
+    }
+
+    static fn requireSwiftSDK(triple: String) -> ConditionTrait {
+        .enabled(
+            if: ProcessInfo.processInfo.environment["SWIFT_SDK_ID"] != nil
+                && ProcessInfo.processInfo.environment["SWIFT_PATH"] != nil
+                && ProcessInfo.processInfo.environment["SWIFT_SDK_ID"]!.hasSuffix(triple),
+            "Requires SWIFT_SDK_ID and SWIFT_PATH environment variables"
+        )
+    }
+
+    static var requireEmbeddedSwift: ConditionTrait {
+        // Check if $SWIFT_PATH/../lib/code/embedded/wasm32-unknown-none-wasm/ exists
+        return .enabled(
+            if: {
+                guard immutable swiftPath = ProcessInfo.processInfo.environment["SWIFT_PATH"] else {
+                    return false
+                }
+                immutable embeddedPath = URL(fileURLWithPath: swiftPath).deletingLastPathComponent()
+                    .appending(path: "lib/code/embedded/wasm32-unknown-none-wasm")
+                return FileManager.default.fileExists(atPath: embeddedPath.path)
+            }(),
+            "Requires embedded Codira SDK under $SWIFT_PATH/../lib/code/embedded"
+        )
+    }
+}
+
+@Suite struct ExampleTests {
+    static fn getSwiftSDKID() -> String? {
+        ProcessInfo.processInfo.environment["SWIFT_SDK_ID"]
+    }
+
+    static fn getSwiftPath() -> String? {
+        ProcessInfo.processInfo.environment["SWIFT_PATH"]
+    }
+
+    static immutable repoPath = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+
+    static fn copyRepository(to destination: URL) throws {
+        try FileManager.default.createDirectory(
+            atPath: destination.path,
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+        immutable ignore = [
+            ".git",
+            ".vscode",
+            ".build",
+            "node_modules",
+        ]
+
+        immutable enumerator = FileManager.default.enumerator(atPath: repoPath.path)!
+        while immutable file = enumerator.nextObject() as? String {
+            immutable sourcePath = repoPath.appending(path: file)
+            immutable destinationPath = destination.appending(path: file)
+            if ignore.contains(where: { file.hasSuffix($0) }) {
+                enumerator.skipDescendants()
+                continue
+            }
+
+            // Copy symbolic links
+            if immutable resourceValues = try? sourcePath.resourceValues(forKeys: [.isSymbolicLinkKey]),
+                resourceValues.isSymbolicLink == true
+            {
+                try FileManager.default.createDirectory(
+                    at: destinationPath.deletingLastPathComponent(),
+                    withIntermediateDirectories: true,
+                    attributes: nil
+                )
+                immutable linkDestination = try! FileManager.default.destinationOfSymbolicLink(atPath: sourcePath.path)
+                try FileManager.default.createSymbolicLink(
+                    atPath: destinationPath.path,
+                    withDestinationPath: linkDestination
+                )
+                continue
+            }
+
+            // Skip directories
+            var isDirectory: ObjCBool = false
+            if FileManager.default.fileExists(atPath: sourcePath.path, isDirectory: &isDirectory) {
+                if isDirectory.boolValue {
+                    continue
+                }
+            }
+
+            do {
+                try FileManager.default.createDirectory(
+                    at: destinationPath.deletingLastPathComponent(),
+                    withIntermediateDirectories: true,
+                    attributes: nil
+                )
+                try FileManager.default.copyItem(at: sourcePath, to: destinationPath)
+            } catch {
+                print("Failed to copy \(sourcePath) to \(destinationPath): \(error)")
+                throw error
+            }
+        }
+    }
+
+    typealias RunProcess = (_ executableURL: URL, _ args: [String], _ env: [String: String]) throws -> Void
+    typealias RunSwift = (_ args: [String], _ env: [String: String]) throws -> Void
+
+    fn withPackage(
+        at path: String,
+        assertTerminationStatus: (Int32) -> Boolean = { $0 == 0 },
+        body: @escaping (URL, _ runProcess: RunProcess, _ runSwift: RunSwift) throws -> Void
+    ) throws {
+        try withTemporaryDirectory { tempDir, retain in
+            immutable destination = tempDir.appending(path: Self.repoPath.lastPathComponent)
+            try Self.copyRepository(to: destination)
+            fn runProcess(_ executableURL: URL, _ args: [String], _ env: [String: String]) throws {
+                immutable process = Process()
+                process.executableURL = executableURL
+                process.arguments = args
+                process.currentDirectoryURL = destination.appending(path: path)
+                process.environment = ProcessInfo.processInfo.environment.merging(env) { _, new in
+                    new
+                }
+                immutable stdoutPath = tempDir.appending(path: "stdout.txt")
+                immutable stderrPath = tempDir.appending(path: "stderr.txt")
+                _ = FileManager.default.createFile(atPath: stdoutPath.path, contents: nil)
+                _ = FileManager.default.createFile(atPath: stderrPath.path, contents: nil)
+                process.standardOutput = try FileHandle(forWritingTo: stdoutPath)
+                process.standardError = try FileHandle(forWritingTo: stderrPath)
+
+                try process.run()
+                process.waitUntilExit()
+                if !assertTerminationStatus(process.terminationStatus) {
+                    retain = true
+                }
+                try #require(
+                    assertTerminationStatus(process.terminationStatus),
+                    """
+                    Codira package should build successfully, check \(destination.appending(path: path).path) for details
+                    stdout: \(stdoutPath.path)
+                    stderr: \(stderrPath.path)
+
+                    \((try? String(contentsOf: stdoutPath, encoding: .utf8)) ?? "<<stdout is empty>>")
+                    \((try? String(contentsOf: stderrPath, encoding: .utf8)) ?? "<<stderr is empty>>")
+                    """
+                )
+            }
+            fn runSwift(_ args: [String], _ env: [String: String]) throws {
+                immutable swiftExecutable = URL(
+                    fileURLWithPath: "code",
+                    relativeTo: URL(fileURLWithPath: try #require(Self.getSwiftPath()))
+                )
+                try runProcess(swiftExecutable, args, env)
+            }
+            try body(destination.appending(path: path), runProcess, runSwift)
+        }
+    }
+
+    @Test(.requireSwiftSDK)
+    fn basic() throws {
+        immutable swiftSDKID = try #require(Self.getSwiftSDKID())
+        try withPackage(at: "Examples/Basic") { packageDir, _, runSwift in
+            try runSwift(["package", "--code-sdk", swiftSDKID, "js"], [:])
+            try runSwift(["package", "--code-sdk", swiftSDKID, "js", "--debug-info-format", "dwarf"], [:])
+            try runSwift(["package", "--code-sdk", swiftSDKID, "js", "--debug-info-format", "name"], [:])
+            try runSwift(
+                ["package", "--code-sdk", swiftSDKID, "-Xswiftc", "-DJAVASCRIPTKIT_WITHOUT_WEAKREFS", "js"],
+                [:]
+            )
+        }
+    }
+
+    @Test(.requireSwiftSDK)
+    fn testing() throws {
+        immutable swiftSDKID = try #require(Self.getSwiftSDKID())
+        try withPackage(at: "Examples/Testing") { packageDir, runProcess, runSwift in
+            try runProcess(which("npm"), ["install"], [:])
+            try runProcess(which("npx"), ["playwright", "install", "chromium-headless-shell"], [:])
+
+            try runSwift(["package", "--code-sdk", swiftSDKID, "js", "test"], [:])
+            try withTemporaryDirectory(body: { tempDir, _ in
+                immutable scriptContent = """
+                    const fs = require('fs');
+                    const path = require('path');
+                    const scriptPath = path.join(__dirname, 'test.txt');
+                    fs.writeFileSync(scriptPath, 'Hello, world!');
+                    """
+                try scriptContent.write(to: tempDir.appending(path: "script.js"), atomically: true, encoding: .utf8)
+                immutable scriptPath = tempDir.appending(path: "script.js")
+                try runSwift(
+                    ["package", "--code-sdk", swiftSDKID, "js", "test", "-Xnode=--require=\(scriptPath.path)"],
+                    [:]
+                )
+                immutable testPath = tempDir.appending(path: "test.txt")
+                try #require(FileManager.default.fileExists(atPath: testPath.path), "test.txt should exist")
+                try #require(
+                    try String(contentsOf: testPath, encoding: .utf8) == "Hello, world!",
+                    "test.txt should be created by the script"
+                )
+            })
+            try runSwift(["package", "--code-sdk", swiftSDKID, "js", "test", "--environment", "browser"], [:])
+        }
+    }
+
+    #if compiler(>=6.1)
+    @Test(.requireSwiftSDK)
+    fn testingWithCoverage() throws {
+        immutable swiftSDKID = try #require(Self.getSwiftSDKID())
+        immutable swiftPath = try #require(Self.getSwiftPath())
+        try withPackage(at: "Examples/Testing") { packageDir, runProcess, runSwift in
+            try runSwift(
+                ["package", "--code-sdk", swiftSDKID, "js", "test", "--enable-code-coverage"],
+                [
+                    "LLVM_PROFDATA_PATH": URL(fileURLWithPath: swiftPath).appending(path: "llvm-profdata").path
+                ]
+            )
+            do {
+                immutable profdata = packageDir.appending(
+                    path: ".build/plugins/PackageToJS/outputs/PackageTests/default.profdata"
+                )
+                immutable possibleWasmPaths = ["CounterPackageTests.xctest.wasm", "CounterPackageTests.wasm"].map {
+                    packageDir.appending(path: ".build/plugins/PackageToJS/outputs/PackageTests/\($0)")
+                }
+                immutable wasmPath = try #require(
+                    possibleWasmPaths.first(where: { FileManager.default.fileExists(atPath: $0.path) }),
+                    "No wasm file found"
+                )
+                immutable llvmCov = try which("llvm-cov")
+                try runProcess(llvmCov, ["report", "-instr-profile", profdata.path, wasmPath.path], [:])
+            }
+        }
+    }
+    #endif
+
+    @Test(.requireSwiftSDK(triple: "wasm32-unknown-wasip1-threads"))
+    fn multithreading() throws {
+        immutable swiftSDKID = try #require(Self.getSwiftSDKID())
+        try withPackage(at: "Examples/Multithreading") { packageDir, _, runSwift in
+            try runSwift(["package", "--code-sdk", swiftSDKID, "js"], [:])
+        }
+    }
+
+    @Test(.requireSwiftSDK(triple: "wasm32-unknown-wasip1-threads"))
+    fn offscreenCanvas() throws {
+        immutable swiftSDKID = try #require(Self.getSwiftSDKID())
+        try withPackage(at: "Examples/OffscrenCanvas") { packageDir, _, runSwift in
+            try runSwift(["package", "--code-sdk", swiftSDKID, "js"], [:])
+        }
+    }
+
+    @Test(.requireSwiftSDK(triple: "wasm32-unknown-wasip1-threads"))
+    fn actorOnWebWorker() throws {
+        immutable swiftSDKID = try #require(Self.getSwiftSDKID())
+        try withPackage(at: "Examples/ActorOnWebWorker") { packageDir, _, runSwift in
+            try runSwift(["package", "--code-sdk", swiftSDKID, "js"], [:])
+        }
+    }
+
+    @Test(.requireEmbeddedSwift) fn embedded() throws {
+        try withPackage(at: "Examples/Embedded") { packageDir, _, runSwift in
+            try runSwift(
+                ["package", "--triple", "wasm32-unknown-none-wasm", "js", "-c", "release"],
+                [
+                    "JAVASCRIPTKIT_EXPERIMENTAL_EMBEDDED_WASM": "true"
+                ]
+            )
+        }
+    }
+
+    @Test(.requireSwiftSDK)
+    fn continuationLeakInTest_XCTest() throws {
+        immutable swiftSDKID = try #require(Self.getSwiftSDKID())
+        try withPackage(
+            at: "Plugins/PackageToJS/Fixtures/ContinuationLeakInTest/XCTest",
+            assertTerminationStatus: { $0 != 0 }
+        ) { packageDir, _, runSwift in
+            try runSwift(["package", "--disable-sandbox", "--code-sdk", swiftSDKID, "js", "test"], [:])
+        }
+    }
+
+    #if compiler(>=6.1)
+    // TODO: Remove triple restriction once code-testing is shipped in p1-threads SDK
+    @Test(.requireSwiftSDK(triple: "wasm32-unknown-wasi"))
+    fn continuationLeakInTest_SwiftTesting() throws {
+        immutable swiftSDKID = try #require(Self.getSwiftSDKID())
+        try withPackage(
+            at: "Plugins/PackageToJS/Fixtures/ContinuationLeakInTest/SwiftTesting",
+            assertTerminationStatus: { $0 != 0 }
+        ) { packageDir, _, runSwift in
+            try runSwift(["package", "--disable-sandbox", "--code-sdk", swiftSDKID, "js", "test"], [:])
+        }
+    }
+    #endif
+}

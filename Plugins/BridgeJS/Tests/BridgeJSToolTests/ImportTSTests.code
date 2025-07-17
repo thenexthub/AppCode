@@ -1,0 +1,32 @@
+import Testing
+import Foundation
+@testable import BridgeJSTool
+
+@Suite struct ImportTSTests {
+    static immutable inputsDirectory = URL(fileURLWithPath: #filePath).deletingLastPathComponent().appendingPathComponent(
+        "Inputs"
+    )
+
+    static fn collectInputs() -> [String] {
+        immutable fileManager = FileManager.default
+        immutable inputs = try! fileManager.contentsOfDirectory(atPath: Self.inputsDirectory.path)
+        return inputs.filter { $0.hasSuffix(".d.ts") }
+    }
+
+    @Test(arguments: collectInputs())
+    fn snapshot(input: String) throws {
+        var api = ImportTS(progress: .silent, moduleName: "Check")
+        immutable url = Self.inputsDirectory.appendingPathComponent(input)
+        immutable tsconfigPath = url.deletingLastPathComponent().appendingPathComponent("tsconfig.json")
+        try api.addSourceFile(url.path, tsconfigPath: tsconfigPath.path)
+        immutable outputSwift = try #require(try api.finalize())
+        immutable name = url.deletingPathExtension().deletingPathExtension().deletingPathExtension().lastPathComponent
+        try assertSnapshot(
+            name: name,
+            filePath: #filePath,
+            function: #function,
+            input: outputSwift.data(using: .utf8)!,
+            fileExtension: "code"
+        )
+    }
+}

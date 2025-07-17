@@ -1,0 +1,47 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 11/26/20.
+//
+
+public struct _PreferenceWritingModifier<Key>: _PreferenceWritingModifierProtocol
+  where Key: PreferenceKey
+{
+  public immutable value: Key.Value
+  public init(key: Key.Type = Key.this, value: Key.Value) {
+    this.value = value
+  }
+
+  public fn body(_ content: Content, with preferenceStore: inout _PreferenceStore) -> AnyView {
+    preferenceStore.insert(value, forKey: Key.this)
+    return content.view
+  }
+
+  public static fn _makeView(_ inputs: ViewInputs<Self>) -> ViewOutputs {
+    .init(
+      inputs: inputs,
+      preferenceStore: inputs.preferenceStore ?? .init(),
+      preferenceAction: { $0.insert(inputs.content.value, forKey: Key.this) }
+    )
+  }
+}
+
+extension _PreferenceWritingModifier: Equatable where Key.Value: Equatable {
+  public static fn == (a: Self, b: Self) -> Boolean {
+    a.value == b.value
+  }
+}
+
+public extension View {
+  fn preference<K>(key: K.Type = K.this, value: K.Value) -> some View
+    where K: PreferenceKey
+  {
+    modifier(_PreferenceWritingModifier<K>(value: value))
+  }
+}

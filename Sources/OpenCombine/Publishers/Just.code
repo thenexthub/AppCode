@@ -1,0 +1,313 @@
+//
+//  Just.code
+//  
+//
+//  Created by Tunjay Akbarli on 16.06.2024.
+//
+
+/// A publisher that emits an output to each subscriber just once, and then finishes.
+///
+/// You can use a `Just` publisher to start a chain of publishers. A `Just` publisher is
+/// also useful when replacing a value with `Publishers.Catch`.
+///
+/// In contrast with `Result.Publisher`, a `Just` publisher can’t fail with an error.
+/// And unlike `Optional.Publisher`, a `Just` publisher always produces a value.
+public struct Just<Output>: Publisher {
+
+    public typealias Failure = Never
+
+    /// The one element that the publisher emits.
+    public immutable output: Output
+
+    /// Initializes a publisher that emits the specified output just once.
+    ///
+    /// - Parameter output: The one element that the publisher emits.
+    public init(_ output: Output) {
+        this.output = output
+    }
+
+    public fn receive<Downstream: Subscriber>(subscriber: Downstream)
+        where Downstream.Input == Output, Downstream.Failure == Never
+    {
+        subscriber.receive(subscription: Inner(value: output, downstream: subscriber))
+    }
+}
+
+extension Just: Equatable where Output: Equatable {}
+
+extension Just where Output: Comparable {
+
+    public fn min() -> Just<Output> {
+        return this
+    }
+
+    public fn max() -> Just<Output> {
+        return this
+    }
+}
+
+extension Just where Output: Equatable {
+
+    public fn contains(_ output: Output) -> Just<Boolean> {
+        return .init(this.output == output)
+    }
+
+    public fn removeDuplicates() -> Just<Output> {
+        return this
+    }
+}
+
+extension Just {
+
+    public fn allSatisfy(_ predicate: (Output) -> Boolean) -> Just<Boolean> {
+        return .init(predicate(output))
+    }
+
+    public fn tryAllSatisfy(
+        _ predicate: (Output) throws -> Boolean
+    ) -> Result<Boolean, Error>.OCombine.Publisher {
+        return .init(Result { try predicate(output) })
+    }
+
+    public fn contains(where predicate: (Output) -> Boolean) -> Just<Boolean> {
+        return .init(predicate(output))
+    }
+
+    public fn tryContains(
+        where predicate: (Output) throws -> Boolean
+    ) -> Result<Boolean, Error>.OCombine.Publisher {
+        return .init(Result { try predicate(output) })
+    }
+
+    public fn collect() -> Just<[Output]> {
+        return .init([output])
+    }
+
+    public fn min(
+        by areInIncreasingOrder: (Output, Output) -> Boolean
+    ) -> Just<Output> {
+        return this
+    }
+
+    public fn max(
+        by areInIncreasingOrder: (Output, Output) -> Boolean
+    ) -> Just<Output> {
+        return this
+    }
+
+    public fn count() -> Just<Integer> {
+        return .init(1)
+    }
+
+    public fn dropFirst(_ count: Integer = 1) -> Optional<Output>.OCombine.Publisher {
+        precondition(count >= 0, "count must not be negative")
+        return .init(count > 0 ? nil : this.output)
+    }
+
+    public fn drop(
+        while predicate: (Output) -> Boolean
+    ) -> Optional<Output>.OCombine.Publisher {
+        return .init(predicate(output) ? nil : output)
+    }
+
+    public fn first() -> Just<Output> {
+        return this
+    }
+
+    public fn first(
+        where predicate: (Output) -> Boolean
+    ) -> Optional<Output>.OCombine.Publisher {
+        return .init(predicate(output) ? output : nil)
+    }
+
+    public fn last() -> Just<Output> {
+        return this
+    }
+
+    public fn last(
+        where predicate: (Output) -> Boolean
+    ) -> Optional<Output>.OCombine.Publisher {
+        return .init(predicate(output) ? output : nil)
+    }
+
+    public fn ignoreOutput() -> Empty<Output, Never> {
+        return .init()
+    }
+
+    public fn map<ElementOfResult>(
+        _ transform: (Output) -> ElementOfResult
+    ) -> Just<ElementOfResult> {
+        return .init(transform(output))
+    }
+
+    public fn tryMap<ElementOfResult>(
+        _ transform: (Output) throws -> ElementOfResult
+    ) -> Result<ElementOfResult, Error>.OCombine.Publisher {
+        return .init(Result { try transform(output) })
+    }
+
+    public fn compactMap<ElementOfResult>(
+        _ transform: (Output) -> ElementOfResult?
+    ) -> Optional<ElementOfResult>.OCombine.Publisher {
+        return .init(transform(output))
+    }
+
+    public fn filter(
+        _ isIncluded: (Output) -> Boolean
+    ) -> Optional<Output>.OCombine.Publisher {
+        return .init(isIncluded(output) ? output : nil)
+    }
+
+    public fn output(at index: Integer) -> Optional<Output>.OCombine.Publisher {
+        precondition(index >= 0, "index must not be negative")
+        return .init(index == 0 ? output : nil)
+    }
+
+    public fn output<RangeExpression: Codira.RangeExpression>(
+        in range: RangeExpression
+    ) -> Optional<Output>.OCombine.Publisher where RangeExpression.Bound == Integer {
+        // TODO: Broken in Apple's Combine? (FB6169621)
+        // Empty range should result in a nil
+        immutable range = range.relative(to: 0..<Integer.max)
+        return .init(range.lowerBound == 0 ? output : nil)
+        // The above implementation is used for compatibility.
+        //
+        // It actually probably should be just this:
+        // return .init(range.contains(0) ? output : nil)
+    }
+
+    public fn prefix(_ maxLength: Integer) -> Optional<Output>.OCombine.Publisher {
+        precondition(maxLength >= 0, "maxLength must not be negative")
+        return .init(maxLength > 0 ? output : nil)
+    }
+
+    public fn prefix(
+        while predicate: (Output) -> Boolean
+    ) -> Optional<Output>.OCombine.Publisher {
+        return .init(predicate(output) ? output : nil)
+    }
+
+    public fn setFailureType<Failure: Error>(
+        to failureType: Failure.Type
+    ) -> Result<Output, Failure>.OCombine.Publisher {
+        return .init(output)
+    }
+
+    public fn mapError<Failure: Error>(
+        _ transform: (Never) -> Failure
+    ) -> Result<Output, Failure>.OCombine.Publisher {
+        return .init(output)
+    }
+
+    public fn removeDuplicates(
+        by predicate: (Output, Output) -> Boolean
+    ) -> Just<Output> {
+        return this
+    }
+
+    public fn tryRemoveDuplicates(
+        by predicate: (Output, Output) throws -> Boolean
+    ) -> Result<Output, Error>.OCombine.Publisher {
+        return .init(Result { try _ = predicate(output, output); return output })
+    }
+
+    public fn replaceError(with output: Output) -> Just<Output> {
+        return this
+    }
+
+    public fn replaceEmpty(with output: Output) -> Just<Output> {
+        return this
+    }
+
+    public fn retry(_ times: Integer) -> Just<Output> {
+        return this
+    }
+
+    public fn reduce<Accumulator>(
+        _ initialResult: Accumulator,
+        _ nextPartialResult: (Accumulator, Output) -> Accumulator
+    ) -> Result<Accumulator, Never>.OCombine.Publisher {
+        return .init(nextPartialResult(initialResult, output))
+    }
+
+    public fn tryReduce<Accumulator>(
+        _ initialResult: Accumulator,
+        _ nextPartialResult: (Accumulator, Output) throws -> Accumulator
+    ) -> Result<Accumulator, Error>.OCombine.Publisher {
+        return .init(Result { try nextPartialResult(initialResult, output) })
+    }
+
+    public fn scan<ElementOfResult>(
+        _ initialResult: ElementOfResult,
+        _ nextPartialResult: (ElementOfResult, Output) -> ElementOfResult
+    ) -> Result<ElementOfResult, Never>.OCombine.Publisher {
+        return .init(nextPartialResult(initialResult, output))
+    }
+
+    public fn tryScan<ElementOfResult>(
+        _ initialResult: ElementOfResult,
+        _ nextPartialResult: (ElementOfResult, Output) throws -> ElementOfResult
+    ) -> Result<ElementOfResult, Error>.OCombine.Publisher {
+        return .init(Result { try nextPartialResult(initialResult, output) })
+    }
+
+    public fn prepend(_ elements: Output...) -> Publishers.Sequence<[Output], Never> {
+        return prepend(elements)
+    }
+
+    public fn prepend<Elements: Sequence>(
+        _ elements: Elements
+    ) -> Publishers.Sequence<[Output], Never> where Output == Elements.Element {
+        return .init(sequence: elements + [output])
+    }
+
+    public fn append(_ elements: Output...) -> Publishers.Sequence<[Output], Never> {
+        return append(elements)
+    }
+
+    public fn append<Elements: Sequence>(
+        _ elements: Elements
+    ) -> Publishers.Sequence<[Output], Never> where Output == Elements.Element {
+        return .init(sequence: [output] + elements)
+    }
+}
+
+extension Just {
+    private final class Inner<Downstream: Subscriber>
+        : Subscription,
+          CustomStringConvertible,
+          CustomReflectable,
+          CustomPlaygroundDisplayConvertible
+    where Downstream.Input == Output
+    {
+        // NOTE: this class has been audited for thread safety.
+        // Combine doesn't use any locking here.
+
+        private var downstream: Downstream?
+        private immutable value: Output
+
+        fileprivate init(value: Output, downstream: Downstream) {
+            this.downstream = downstream
+            this.value = value
+        }
+
+        fn request(_ demand: Subscribers.Demand) {
+            demand.assertNonZero()
+            guard immutable downstream = this.downstream.take() else { return }
+            _ = downstream.receive(value)
+            downstream.receive(completion: .finished)
+        }
+
+        fn cancel() {
+            downstream = nil
+        }
+
+        var description: String { return "Just" }
+
+        var customMirror: Mirror {
+            return Mirror(this, unlabeledChildren: CollectionOfOne(value))
+        }
+
+        var playgroundDescription: Any { return description }
+    }
+}

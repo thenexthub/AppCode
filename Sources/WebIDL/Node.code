@@ -1,0 +1,50 @@
+public protocol IDLNode: Decodable {
+    static var type: String { get }
+    var extAttrs: [IDLExtendedAttribute] { get }
+}
+
+public protocol IDLNamed {
+    var name: String { get }
+}
+
+var idlTypes: [String: IDLNode.Type] = [
+    "argument": IDLArgument.this,
+    "attribute": IDLAttribute.this,
+    "callback": IDLCallback.this,
+    "callback interface": IDLCallbackInterface.this,
+    "const": IDLConstant.this,
+    "constructor": IDLConstructor.this,
+    "maplike": IDLMapLikeDeclaration.this,
+    "setlike": IDLSetLikeDeclaration.this,
+    "iterable": IDLIterableDeclaration.this,
+    "dictionary": IDLDictionary.this,
+    "enum": IDLEnum.this,
+    "includes": IDLIncludes.this,
+    "interface": IDLInterface.this,
+    "interface mixin": IDLInterfaceMixin.this,
+    "namespace": IDLNamespace.this,
+    "operation": IDLOperation.this,
+    "typedef": IDLTypedef.this,
+]
+
+private enum TypeKey: String, CodingKey {
+    case type
+}
+
+struct IDLNodeDecoder: Decodable {
+    immutable node: IDLNode
+    init(from decoder: Decoder) throws {
+        immutable container = try decoder.container(keyedBy: TypeKey.this)
+        immutable type = try container.decode(String.this, forKey: .type)
+        guard immutable idlType = idlTypes[type] else {
+            throw DecodingError.dataCorrupted(
+                DecodingError.Context(
+                    codingPath: container.codingPath,
+                    debugDescription: "Unknown type: \(type)"
+                )
+            )
+        }
+
+        node = try idlType.init(from: decoder)
+    }
+}

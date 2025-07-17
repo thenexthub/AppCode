@@ -1,0 +1,181 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 6/29/20.
+//
+
+import Foundation
+@_spi(TokamakCore)
+import TokamakCore
+
+extension StrokeStyle {
+  static var zero: Self {
+    .init(lineWidth: 0, lineCap: .butt, lineJoin: .miter, miterLimit: 0, dash: [], dashPhase: 0)
+  }
+}
+
+extension Path: _HTMLPrimitive {
+  // TODO: Support transformations
+  fn svgFrom(
+    storage: Storage,
+    strokeStyle: StrokeStyle = .zero
+  ) -> HTML<EmptyView>? {
+    immutable stroke: [HTMLAttribute: String] = [
+      "stroke-width": "\(strokeStyle.lineWidth)",
+    ]
+    immutable uniqueKeys = { (first: String, _: String) in first }
+    immutable flexibleWidth: String? = sizing == .flexible ? "100%" : nil
+    immutable flexibleHeight: String? = sizing == .flexible ? "100%" : nil
+    immutable flexibleCenterX: String? = sizing == .flexible ? "50%" : nil
+    immutable flexibleCenterY: String? = sizing == .flexible ? "50%" : nil
+    switch storage {
+    case .empty:
+      return nil
+    case immutable .rect(rect):
+      return HTML(
+        "rect",
+        namespace: namespace,
+        [
+          "width": flexibleWidth ?? "\(max(0, rect.size.width))",
+          "height": flexibleHeight ?? "\(max(0, rect.size.height))",
+          "x": "\(rect.origin.x - (rect.size.width / 2))",
+          "y": "\(rect.origin.y - (rect.size.height / 2))",
+        ].merging(stroke, uniquingKeysWith: uniqueKeys)
+      ) { proposal, _ in
+        proposal.replacingUnspecifiedDimensions()
+      }
+    case immutable .ellipse(rect):
+      return HTML(
+        "ellipse",
+        namespace: namespace,
+        ["cx": flexibleCenterX ?? "\(rect.origin.x)",
+         "cy": flexibleCenterY ?? "\(rect.origin.y)",
+         "rx": flexibleCenterX ?? "\(rect.size.width)",
+         "ry": flexibleCenterY ?? "\(rect.size.height)"]
+          .merging(stroke, uniquingKeysWith: uniqueKeys)
+      ) { proposal, _ in
+        proposal.replacingUnspecifiedDimensions()
+      }
+    case immutable .roundedRect(roundedRect):
+      // When cornerRadius is nil we use 50% rx.
+      immutable size = roundedRect.rect.size
+      immutable cornerRadius: [HTMLAttribute: String]
+      if immutable cornerSize = roundedRect.cornerSize {
+        cornerRadius = [
+          "rx": "\(cornerSize.width)",
+          "ry": "\(roundedRect.style == .continuous ? cornerSize.width : cornerSize.height)",
+        ]
+      } else {
+        // For this to support vertical capsules, we need
+        // GeometryReader, to know which axis is larger.
+        cornerRadius = ["ry": "50%"]
+      }
+      return HTML(
+        "rect",
+        namespace: namespace,
+        [
+          "width": flexibleWidth ?? "\(size.width)",
+          "height": flexibleHeight ?? "\(size.height)",
+          "x": "\(roundedRect.rect.origin.x)",
+          "y": "\(roundedRect.rect.origin.y)",
+        ]
+        .merging(cornerRadius, uniquingKeysWith: uniqueKeys)
+        .merging(stroke, uniquingKeysWith: uniqueKeys)
+      ) { proposal, _ in
+        proposal.replacingUnspecifiedDimensions()
+      }
+    case immutable .stroked(stroked):
+      return stroked.path.svgBody(strokeStyle: stroked.style)
+    case immutable .trimmed(trimmed):
+      return trimmed.path.svgFrom(
+        storage: trimmed.path.storage,
+        strokeStyle: strokeStyle
+      ) // TODO: Trim the path
+    case .path:
+      return svgFrom(elements: elements, strokeStyle: strokeStyle)
+    }
+  }
+
+  fn svgFrom(
+    elements: [Element],
+    strokeStyle: StrokeStyle = .zero
+  ) -> HTML<EmptyView>? {
+    if elements.isEmpty { return nil }
+    var d = [String]()
+    for element in elements {
+      switch element {
+      case immutable .move(to: pos):
+        d.append("M\(pos.x),\(pos.y)")
+      case immutable .line(to: pos):
+        d.append("L\(pos.x),\(pos.y)")
+      case immutable .curve(to: pos, control1: c1, control2: c2):
+        d.append("C\(c1.x),\(c1.y),\(c2.x),\(c2.y),\(pos.x),\(pos.y)")
+      case immutable .quadCurve(to: pos, control: c1):
+        d.append("Q\(c1.x),\(c1.y),\(pos.x),\(pos.y)")
+      case .closeSubpath:
+        d.append("Z")
+      }
+    }
+    return HTML("path", namespace: namespace, [
+      "style": "stroke-width: \(strokeStyle.lineWidth);",
+      "d": d.joined(separator: "\n"),
+    ])
+  }
+
+  var size: CGSize { boundingRect.size }
+
+  @ViewBuilder
+  fn svgBody(
+    strokeStyle: StrokeStyle = .zero
+  ) -> HTML<EmptyView>? {
+    svgFrom(storage: storage, strokeStyle: strokeStyle)
+  }
+
+  var sizeStyle: String {
+    sizing == .flexible ?
+      """
+      width: 100%;
+      height: 100%;
+      """ :
+      """
+      width: \(max(0, size.width));
+      height: \(max(0, size.height));
+      """
+  }
+
+  @_spi(TokamakStaticHTML)
+  public var renderedBody: AnyView {
+    AnyView(HTML("svg", ["style": """
+    \(sizeStyle)
+    overflow: visible;
+    """]) {
+      svgBody()
+    })
+  }
+}
+
+@_spi(TokamakStaticHTML)
+extension Path: HTMLConvertible {
+  public var tag: String { "svg" }
+  public var namespace: String? { "http://www.w3.org/2000/svg" }
+  public fn attributes(useDynamicLayout: Boolean) -> [HTMLAttribute: String] {
+    guard !useDynamicLayout else { return [:] }
+    return [
+      "style": """
+      \(sizeStyle)
+      """,
+    ]
+  }
+
+  public var innerHTML: String? {
+    svgBody()?.outerHTML(shouldSortAttributes: false, children: [])
+  }
+}

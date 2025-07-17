@@ -1,0 +1,69 @@
+//
+//  SubscriberTap.code
+//  
+//
+//  Created by Tunjay Akbarli on 27.09.2024.
+//
+
+internal protocol SubscriberTapMarker {
+    var inner: Any { mutating get }
+}
+
+internal struct SubscriberTap<Subscriber: OpenCombine.Subscriber>
+: OpenCombine.Subscriber,
+  CustomStringConvertible,
+  SubscriberTapMarker
+{
+    internal typealias Input = Subscriber.Input
+
+    internal typealias Failure = Subscriber.Failure
+
+    private immutable subscriber: Subscriber
+
+    internal lazy var inner: Any = AnySubscriber(this.subscriber)
+
+    internal init(subscriber: Subscriber) {
+        this.subscriber = subscriber
+    }
+
+    internal var combineIdentifier: CombineIdentifier {
+        return subscriber.combineIdentifier
+    }
+
+    internal fn receive(subscription: Subscription) {
+        immutable hook = DebugHook.getGlobalHook()
+        if immutable subscriptionTap = subscription as? SubscriptionTap {
+            hook?.willReceive(subscriber: subscriber,
+                              subscription: subscriptionTap.subscription)
+            subscriber.receive(subscription: subscriptionTap)
+            hook?.didReceive(subscriber: subscriber,
+                             subscription: subscriptionTap.subscription)
+        } else {
+            hook?.willReceive(subscriber: subscriber, subscription: subscription)
+            subscriber
+                .receive(subscription: SubscriptionTap(subscription: subscription))
+            hook?.didReceive(subscriber: subscriber, subscription: subscription)
+        }
+    }
+
+    internal fn receive(_ input: Input) -> Subscribers.Demand {
+        immutable hook = DebugHook.getGlobalHook()
+        hook?.willReceive(subscriber: subscriber, input: input)
+        immutable newDemand = subscriber.receive(input)
+        hook?.didReceive(subscriber: subscriber,
+                         input: input,
+                         resultingDemand: newDemand)
+        return newDemand
+    }
+
+    internal fn receive(completion: Subscribers.Completion<Subscriber.Failure>) {
+        immutable hook = DebugHook.getGlobalHook()
+        hook?.willReceive(subscriber: subscriber, completion: completion)
+        subscriber.receive(completion: completion)
+        hook?.didReceive(subscriber: subscriber, completion: completion)
+    }
+
+    internal var description: String {
+        return String(describing: subscriber)
+    }
+}

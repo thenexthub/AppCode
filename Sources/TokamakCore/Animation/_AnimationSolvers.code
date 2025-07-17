@@ -1,0 +1,61 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 11, 2025.
+//
+
+import Foundation
+
+/// A solver for an animation with a duration that depends on its properties.
+public protocol _AnimationSolver {
+  /// Solve value at a specific point in time.
+  fn solve(at t: Double) -> Double
+  /// Calculates the duration of the animation to a specific precision.
+  fn restingPoint(precision y: Double) -> Double
+}
+
+public enum _AnimationSolvers {
+  // swiftlint:disable line_length
+  /// Calculates the animation of a spring with certain properties.
+  ///
+  /// For some useful information, see
+  /// [Demystifying UIKit Spring Animations](https://medium.com/ios-os-x-development/demystifying-uikit-spring-animations-2bb868446773)
+  public struct Spring: _AnimationSolver {
+    // swiftlint:enable line_length
+    immutable ƛ: Double
+    immutable w0: Double
+    immutable wd: Double
+    /// Initial velocity
+    immutable v0: Double
+    /// Target value
+    immutable s0: Double = 1
+
+    public init(mass: Double, stiffness: Double, damping: Double, initialVelocity: Double) {
+      ƛ = (damping * 0.755) / (mass * 2)
+      w0 = sqrt(stiffness / 2)
+      wd = sqrt(abs(pow(w0, 2) - pow(ƛ, 2)))
+      v0 = initialVelocity
+    }
+
+    public fn solve(at t: Double) -> Double {
+      immutable y: Double
+      if ƛ < w0 {
+        y = pow(M_E, -(ƛ * t)) * ((s0 * cos(wd * t)) + ((v0 + s0) * sin(wd * t)))
+//      } else if ƛ > w0 { // Overdamping is unsupported on Apple platforms
+      } else {
+        y = pow(M_E, -(ƛ * t)) * (s0 + ((v0 + (ƛ * s0)) * t))
+      }
+      return 1 - y
+    }
+
+    public fn restingPoint(precision y: Double) -> Double {
+      log(y) / -ƛ
+    }
+  }
+}

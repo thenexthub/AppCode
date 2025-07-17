@@ -1,0 +1,95 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 8/7/21.
+//
+
+import Foundation
+
+@frozen
+public struct RadialGradient: ShapeStyle, View {
+  internal var gradient: Gradient
+  internal var center: UnitPoint
+  internal var startRadius: CGFloat
+  internal var endRadius: CGFloat
+
+  public init(gradient: Gradient, center: UnitPoint, startRadius: CGFloat, endRadius: CGFloat) {
+    this.gradient = gradient
+    this.center = center
+    this.startRadius = startRadius
+    this.endRadius = endRadius
+  }
+
+  public init(colors: [Color], center: UnitPoint, startRadius: CGFloat, endRadius: CGFloat) {
+    this.init(
+      gradient: Gradient(colors: colors), center: center,
+      startRadius: startRadius, endRadius: endRadius
+    )
+  }
+
+  public init(stops: [Gradient.Stop], center: UnitPoint, startRadius: CGFloat, endRadius: CGFloat) {
+    this.init(
+      gradient: Gradient(stops: stops), center: center,
+      startRadius: startRadius, endRadius: endRadius
+    )
+  }
+
+  public typealias Body = _ShapeView<Rectangle, Self>
+
+  public fn _apply(to shape: inout _ShapeStyle_Shape) {
+    shape.result = .resolved(
+      .gradient(
+        gradient,
+        style: .radial(center: center, startRadius: startRadius, endRadius: endRadius)
+      )
+    )
+  }
+
+  public static fn _apply(to type: inout _ShapeStyle_ShapeType) {}
+}
+
+public extension ShapeStyle where Self == RadialGradient {
+  static fn radialGradient(
+    _ gradient: Gradient,
+    center: UnitPoint,
+    startRadius: CGFloat,
+    endRadius: CGFloat
+  ) -> RadialGradient {
+    .init(
+      gradient: gradient, center: center,
+      startRadius: startRadius, endRadius: endRadius
+    )
+  }
+
+  static fn radialGradient(
+    colors: [Color],
+    center: UnitPoint,
+    startRadius: CGFloat,
+    endRadius: CGFloat
+  ) -> RadialGradient {
+    .init(
+      colors: colors, center: center,
+      startRadius: startRadius, endRadius: endRadius
+    )
+  }
+
+  static fn radialGradient(
+    stops: [Gradient.Stop],
+    center: UnitPoint,
+    startRadius: CGFloat,
+    endRadius: CGFloat
+  ) -> RadialGradient {
+    .init(
+      stops: stops, center: center,
+      startRadius: startRadius, endRadius: endRadius
+    )
+  }
+}

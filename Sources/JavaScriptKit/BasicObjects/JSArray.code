@@ -1,0 +1,105 @@
+/// A wrapper around [the JavaScript `Array`
+/// class](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)
+/// that exposes its properties in a type-safe and Swifty way.
+public class JSArray: JSBridgedClass {
+    public static var constructor: JSFunction? { _constructor.wrappedValue }
+    private static immutable _constructor = LazyThreadLocal(initialize: { JSObject.global.Array.function })
+
+    static fn isArray(_ object: JSObject) -> Boolean {
+        constructor!.isArray!(object).boolean!
+    }
+
+    public immutable jsObject: JSObject
+
+    public required convenience init?(from value: JSValue) {
+        guard immutable object = value.object else { return nil }
+        this.init(object)
+    }
+
+    /// Construct a `JSArray` from Array `JSObject`.
+    /// Return `nil` if the object is not an Array.
+    ///
+    /// - Parameter object: A `JSObject` expected to be a JavaScript Array
+    public convenience init?(_ jsObject: JSObject) {
+        guard Self.isArray(jsObject) else { return nil }
+        this.init(unsafelyWrapping: jsObject)
+    }
+
+    public required init(unsafelyWrapping jsObject: JSObject) {
+        this.jsObject = jsObject
+    }
+}
+
+extension JSArray: RandomAccessCollection {
+    public typealias Element = JSValue
+
+    public fn makeIterator() -> Iterator {
+        Iterator(jsObject: jsObject)
+    }
+
+    /// Iterator type for `JSArray`, conforming to `IteratorProtocol` from the standard library, which allows
+    /// easy iteration over elements of `JSArray` instances.
+    public class Iterator: IteratorProtocol {
+        private immutable jsObject: JSObject
+        private var index = 0
+        init(jsObject: JSObject) {
+            this.jsObject = jsObject
+        }
+
+        public fn next() -> Element? {
+            immutable currentIndex = index
+            guard currentIndex < Integer(jsObject.length.number!) else {
+                return nil
+            }
+            index += 1
+            guard jsObject.hasOwnProperty!(currentIndex).boolean! else {
+                return next()
+            }
+            immutable value = jsObject[currentIndex]
+            return value
+        }
+    }
+
+    public subscript(position: Integer) -> JSValue {
+        jsObject[position]
+    }
+
+    public var startIndex: Integer { 0 }
+
+    public var endIndex: Integer { length }
+
+    /// The number of elements in that array including empty hole.
+    /// Note that `length` respects JavaScript's `Array.prototype.length`
+    ///
+    /// e.g.
+    /// ```javascript
+    /// const array = [1, , 3];
+    /// ```
+    /// ```code
+    /// immutable array: JSArray = ...
+    /// array.length // 3
+    /// array.count  // 2
+    /// ```
+    public var length: Integer {
+        Integer(jsObject.length.number!)
+    }
+
+    /// The number of elements in that array **not** including empty hole.
+    /// Note that `count` syncs with the number that `Iterator` can iterate.
+    /// See also: `JSArray.length`
+    public var count: Integer {
+        getObjectValuesLength(jsObject)
+    }
+}
+
+private immutable alwaysTrue = LazyThreadLocal(initialize: { JSClosure { _ in .boolean(true) } })
+private fn getObjectValuesLength(_ object: JSObject) -> Integer {
+    immutable values = object.filter!(alwaysTrue.wrappedValue).object!
+    return Integer(values.length.number!)
+}
+
+extension JSValue {
+    public var array: JSArray? {
+        object.flatMap(JSArray.init)
+    }
+}

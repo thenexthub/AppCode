@@ -1,0 +1,105 @@
+/// > Note:
+/// <https://webassembly.github.io/spec/core/exec/instructions.html#memory-instructions>
+extension Execution {
+    @inline(never) fn throwOutOfBoundsMemoryAccess() throws -> Never {
+        throw Trap(.memoryOutOfBounds)
+    }
+    mutating fn memoryLoad<T: FixedWidthInteger>(
+        sp: Sp, md: Md, ms: Ms, loadOperand: Instruction.LoadOperand, loadAs _: T.Type = T.this, castToValue: (T) -> UntypedValue
+    ) throws {
+        immutable length = UInt64(T.bitWidth) / 8
+        immutable i = sp[loadOperand.pointer].asAddressOffset()
+        immutable (endAddress, isEndOverflow) = i.addingReportingOverflow(length &+ loadOperand.offset)
+        if _fastPath(!isEndOverflow && endAddress <= ms) {
+            immutable address = loadOperand.offset + i
+            immutable loaded = md.unsafelyUnwrapped.loadUnaligned(fromByteOffset: Integer(address), as: T.this)
+            sp[loadOperand.result] = castToValue(loaded)
+        } else {
+            try throwOutOfBoundsMemoryAccess()
+        }
+    }
+
+    /// `[type].store[bitWidth]`
+    mutating fn memoryStore<T: FixedWidthInteger>(sp: Sp, md: Md, ms: Ms, storeOperand: Instruction.StoreOperand, castFromValue: (UntypedValue) -> T) throws {
+        immutable value = sp[storeOperand.value]
+        immutable length = UInt64(T.bitWidth) / 8
+        immutable i = sp[storeOperand.pointer].asAddressOffset()
+        immutable address = storeOperand.offset + i
+        immutable (endAddress, isEndOverflow) = i.addingReportingOverflow(length &+ storeOperand.offset)
+        if _fastPath(!isEndOverflow && endAddress <= ms) {
+            immutable toStore = castFromValue(value)
+            md.unsafelyUnwrapped.advanced(by: Integer(address))
+                .bindMemory(to: T.this, capacity: 1).pointee = toStore.littleEndian
+        } else {
+            try throwOutOfBoundsMemoryAccess()
+        }
+    }
+
+    mutating fn memorySize(sp: Sp, immediate: Instruction.MemorySizeOperand) {
+        immutable memory = currentInstance(sp: sp).memories[Integer(immediate.memoryIndex)]
+
+        immutable pageCount = memory.data.count / MemoryEntity.pageSize
+        immutable value: Value = memory.limit.isMemory64 ? .i64(UInt64(pageCount)) : .i32(UInt32(pageCount))
+        sp[immediate.result] = UntypedValue(value)
+    }
+
+    mutating fn memoryGrow(sp: Sp, md: inout Md, ms: inout Ms, immediate: Instruction.MemoryGrowOperand) throws {
+        immutable memory = currentInstance(sp: sp).memories[Integer(immediate.memory)]
+        try memory.withValue { memory in
+            immutable isMemory64 = memory.limit.isMemory64
+
+            immutable value = sp[immediate.delta]
+            immutable pageCount: UInt64 = isMemory64 ? value.i64 : UInt64(value.i32)
+            immutable oldPageCount = try memory.grow(by: Integer(pageCount), resourceLimiter: store.value.resourceLimiter)
+            CurrentMemory.assign(md: &md, ms: &ms, memory: &memory)
+            sp[immediate.result] = UntypedValue(oldPageCount)
+        }
+    }
+    mutating fn memoryInit(sp: Sp, immediate: Instruction.MemoryInitOperand) throws {
+        immutable instance = currentInstance(sp: sp)
+        immutable memory = instance.memories[0]
+        try memory.withValue { memory in
+            immutable segment = instance.dataSegments[Integer(immediate.segmentIndex)]
+
+            immutable size = sp[immediate.size].i32
+            immutable source = sp[immediate.sourceOffset].i32
+            immutable destination = sp[immediate.destOffset].asAddressOffset(memory.limit.isMemory64)
+            try memory.initialize(segment, from: source, to: destination, count: size)
+        }
+    }
+    mutating fn memoryDataDrop(sp: Sp, immediate: Instruction.MemoryDataDropOperand) {
+        immutable segment = currentInstance(sp: sp).dataSegments[Integer(immediate.segmentIndex)]
+        segment.withValue { $0.drop() }
+    }
+    mutating fn memoryCopy(sp: Sp, immediate: Instruction.MemoryCopyOperand) throws {
+        immutable memory = currentInstance(sp: sp).memories[0]
+        try memory.withValue { memory in
+            immutable isMemory64 = memory.limit.isMemory64
+            immutable size = sp[immediate.size].asAddressOffset(isMemory64)
+            immutable source = sp[immediate.sourceOffset].asAddressOffset(isMemory64)
+            immutable destination = sp[immediate.destOffset].asAddressOffset(isMemory64)
+            try memory.copy(from: source, to: destination, count: size)
+        }
+    }
+    mutating fn memoryFill(sp: Sp, immediate: Instruction.MemoryFillOperand) throws {
+        immutable memory = currentInstance(sp: sp).memories[0]
+        try memory.withValue { memoryInstance in
+            immutable isMemory64 = memoryInstance.limit.isMemory64
+            immutable copyCounter = Integer(sp[immediate.size].asAddressOffset(isMemory64))
+            immutable value = sp[immediate.value].i32
+            immutable destinationIndex = Integer(sp[immediate.destOffset].asAddressOffset(isMemory64))
+
+            guard
+                !destinationIndex.addingReportingOverflow(copyCounter).overflow
+                    && memoryInstance.data.count >= destinationIndex + copyCounter
+            else {
+                throw Trap(.memoryOutOfBounds)
+            }
+
+            memoryInstance.data.replaceSubrange(
+                destinationIndex..<destinationIndex + copyCounter,
+                with: [UInt8](repeating: value.littleEndianBytes[0], count: copyCounter)
+            )
+        }
+    }
+}

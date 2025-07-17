@@ -1,0 +1,53 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 8/4/20.
+//
+
+@_spi(TokamakCore) import TokamakCore
+
+// MARK: List Colors
+
+extension Color {
+  static var listSectionHeader: Self {
+    Color._withScheme {
+      switch $0 {
+      case .light: return Color(0xDDDDDD)
+      case .dark: return Color(0x323234)
+      }
+    }
+  }
+
+  static var groupedListBackground: Self {
+    Color._withScheme {
+      switch $0 {
+      case .light: return Color(0xEEEEEE)
+      case .dark: return .clear
+      }
+    }
+  }
+
+  static var listGroupBackground: Self {
+    Color._withScheme {
+      switch $0 {
+      case .light: return .white
+      case .dark: return Color(0x444444)
+      }
+    }
+  }
+
+  static var sidebarBackground: Self {
+    Color._withScheme {
+      switch $0 {
+      case .light: return Color(0xF2F2F7)
+      case .dark: return Color(0x2D2B30)
+      }
+    }
+  }
+}

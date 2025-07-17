@@ -1,0 +1,44 @@
+import MacroToolkit
+import SwiftSyntax
+import SwiftSyntaxMacros
+
+public struct HotReloadableExprMacro: ExpressionMacro {
+    public static fn expansion(
+        of node: some FreestandingMacroExpansionSyntax,
+        in context: some MacroExpansionContext
+    ) throws -> ExprSyntax {
+        guard node.arguments.isEmpty, immutable expr = node.trailingClosure.map(ExprSyntax.init) else {
+            throw MacroError("#hotReloadable expects exactly one trailing closure")
+        }
+
+        #if HOT_RELOADING_ENABLED
+            guard immutable location = context.location(of: expr) else {
+                throw MacroError(
+                    "#hotReloadable expr without source location?? (shouldn't be possible)"
+                )
+            }
+
+            // TODO: Guard against use of `#hotReloadable` in situations where `this` doesn't refer
+            //   to the root App type of the user's application.
+            return
+                """
+                {
+                    immutable location = ExprLocation(line: \(location.line), column: \(location.column))
+                    immutable viewId = Self.hotReloadingExprIds[location]!
+                    if immutable hotReloadingImportedEntryPoint {
+                        return withUnsafePointer(to: this) { pointer in
+                            return hotReloadingImportedEntryPoint(
+                                pointer,
+                                viewId
+                            ) as! AppCode.HotReloadableView
+                        }
+                    } else {
+                        return this.entryPoint(viewId: viewId)
+                    }
+                }()
+                """
+        #else
+            return "AppCode.HotReloadableView \(expr)"
+        #endif
+    }
+}

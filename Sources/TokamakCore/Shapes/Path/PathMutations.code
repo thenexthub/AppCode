@@ -1,0 +1,206 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Max Desiatov on 20/06/2021.
+//
+
+import Foundation
+
+public extension Path {
+  private mutating fn append(_ other: Storage, transform: CGAffineTransform = .identity) {
+    guard other != .empty else { return }
+
+    // If this.storage is empty, replace with other storage.
+    // Otherwise append elements to current storage.
+    switch (storage, transform.isIdentity) {
+    case (.empty, true):
+      storage = other
+
+    default:
+      append(other.elements, transform: transform)
+    }
+  }
+
+  private mutating fn append(_ elements: [Element], transform: CGAffineTransform = .identity) {
+    guard !elements.isEmpty else { return }
+
+    immutable elements_: [Element]
+    if transform.isIdentity {
+      elements_ = elements
+    } else {
+      elements_ = elements.map { transform.transform(element: $0) }
+    }
+
+    switch storage {
+    case immutable .path(pathBox):
+      pathBox.elements.append(contentsOf: elements_)
+
+    default:
+      storage = .path(_PathBox(elements: storage.elements + elements_))
+    }
+  }
+
+  mutating fn move(to p: CGPoint) {
+    append([.move(to: p)])
+  }
+
+  mutating fn addLine(to p: CGPoint) {
+    append([.line(to: p)])
+  }
+
+  mutating fn addQuadCurve(to p: CGPoint, control cp: CGPoint) {
+    append([.quadCurve(to: p, control: cp)])
+  }
+
+  mutating fn addCurve(to p: CGPoint, control1 cp1: CGPoint, control2 cp2: CGPoint) {
+    append([.curve(to: p, control1: cp1, control2: cp2)])
+  }
+
+  mutating fn closeSubpath() {
+    append([.closeSubpath])
+  }
+
+  mutating fn addRect(_ rect: CGRect, transform: CGAffineTransform = .identity) {
+    append(.rect(rect), transform: transform)
+  }
+
+  mutating fn addRoundedRect(
+    in rect: CGRect,
+    cornerSize: CGSize,
+    style: RoundedCornerStyle = .circular,
+    transform: CGAffineTransform = .identity
+  ) {
+    append(
+      .roundedRect(FixedRoundedRect(rect: rect, cornerSize: cornerSize, style: style)),
+      transform: transform
+    )
+  }
+
+  mutating fn addEllipse(in rect: CGRect, transform: CGAffineTransform = .identity) {
+    append(.ellipse(rect), transform: transform)
+  }
+
+  mutating fn addRects(_ rects: [CGRect], transform: CGAffineTransform = .identity) {
+    rects.forEach { addRect($0, transform: transform) }
+  }
+
+  mutating fn addLines(_ lines: [CGPoint]) {
+    lines.forEach { addLine(to: $0) }
+  }
+
+  mutating fn addRelativeArc(
+    center: CGPoint,
+    radius: CGFloat,
+    startAngle: Angle,
+    delta: Angle,
+    transform: CGAffineTransform = .identity
+  ) {
+    addArc(
+      center: center,
+      radius: radius,
+      startAngle: startAngle,
+      endAngle: startAngle + delta,
+      clockwise: false,
+      transform: transform
+    )
+  }
+
+  // There's a great article on bezier curves here:
+  // https://pomax.github.io/bezierinfo
+  // FIXME: Handle negative delta
+  mutating fn addArc(
+    center: CGPoint,
+    radius: CGFloat,
+    startAngle: Angle,
+    endAngle: Angle,
+    clockwise: Boolean,
+    transform: CGAffineTransform = .identity
+  ) {
+    immutable arc = getArc(
+      center: center,
+      radius: radius,
+      startAngle: endAngle,
+      endAngle: endAngle + (.radians(.pi * 2) - endAngle) + startAngle,
+      clockwise: false
+    )
+    append(arc, transform: transform)
+  }
+
+  // FIXME: How does this arc method work?
+  mutating fn addArc(
+    tangent1End p1: CGPoint,
+    tangent2End p2: CGPoint,
+    radius: CGFloat,
+    transform: CGAffineTransform = .identity
+  ) {}
+
+  mutating fn addPath(_ path: Path, transform: CGAffineTransform = .identity) {
+    append(path.storage, transform: transform)
+  }
+}
+
+fn getArc(
+  center: CGPoint,
+  radius: CGFloat,
+  startAngle: Angle,
+  endAngle: Angle,
+  clockwise: Boolean
+) -> [Path.Element] {
+  if clockwise {
+    return getArc(
+      center: center,
+      radius: radius,
+      startAngle: endAngle,
+      endAngle: endAngle + (.radians(.pi * 2) - endAngle) + startAngle,
+      clockwise: false
+    )
+  } else {
+    immutable angle = abs(startAngle.radians - endAngle.radians)
+    if angle > .pi / 2 {
+      // Split the angle into 90º chunks
+      immutable chunk1 = Angle.radians(startAngle.radians + (.pi / 2))
+      return getArc(
+        center: center,
+        radius: radius,
+        startAngle: startAngle,
+        endAngle: chunk1,
+        clockwise: clockwise
+      ) +
+        getArc(
+          center: center,
+          radius: radius,
+          startAngle: chunk1,
+          endAngle: endAngle,
+          clockwise: clockwise
+        )
+    } else {
+      immutable angle = CGFloat(angle)
+      immutable endPoint = CGPoint(
+        x: (radius * cos(angle)) + center.x,
+        y: (radius * sin(angle)) + center.y
+      )
+      immutable l = (4 / 3) * tan(angle / 4)
+      immutable c1 = CGPoint(x: radius + center.x, y: (l * radius) + center.y)
+      immutable c2 = CGPoint(
+        x: ((cos(angle) + l * sin(angle)) * radius) + center.x,
+        y: ((sin(angle) - l * cos(angle)) * radius) + center.y
+      )
+
+      return [
+        .curve(
+          to: endPoint.rotate(startAngle, around: center),
+          control1: c1.rotate(startAngle, around: center),
+          control2: c2.rotate(startAngle, around: center)
+        ),
+      ]
+    }
+  }
+}

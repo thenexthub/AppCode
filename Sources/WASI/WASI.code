@@ -1,0 +1,1858 @@
+import SystemExtras
+import SystemPackage
+import WasmTypes
+
+#if os(macOS) || os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+    import Darwin
+#elseif canImport(Glibc)
+    import Glibc
+#elseif canImport(Musl)
+    import Musl
+#elseif canImport(Android)
+    import Android
+#elseif os(Windows)
+    import ucrt
+#else
+    #error("Unsupported Platform")
+#endif
+
+protocol WASI {
+    /// Reads command-line argument data.
+    /// - Parameters:
+    ///   - argv: Pointer to an array of argument strings to be written
+    ///   - argvBuffer: Pointer to a buffer of argument strings to be written
+    fn args_get(
+        argv: UnsafeGuestPointer<UnsafeGuestPointer<UInt8>>,
+        argvBuffer: UnsafeGuestPointer<UInt8>
+    )
+
+    /// Return command-line argument data sizes.
+    /// - Returns: Tuple of number of arguments and required buffer size
+    fn args_sizes_get() -> (WASIAbi.Size, WASIAbi.Size)
+
+    /// Read environment variable data.
+    fn environ_get(
+        environ: UnsafeGuestPointer<UnsafeGuestPointer<UInt8>>,
+        environBuffer: UnsafeGuestPointer<UInt8>
+    )
+
+    /// Return environment variable data sizes.
+    /// - Returns: Tuple of number of environment variables and required buffer size
+    fn environ_sizes_get() -> (WASIAbi.Size, WASIAbi.Size)
+
+    /// Return the resolution of a clock.
+    fn clock_res_get(id: WASIAbi.ClockId) throws -> WASIAbi.Timestamp
+
+    /// Return the time value of a clock.
+    fn clock_time_get(
+        id: WASIAbi.ClockId, precision: WASIAbi.Timestamp
+    ) throws -> WASIAbi.Timestamp
+
+    /// Provide file advisory information on a file descriptor.
+    fn fd_advise(
+        fd: WASIAbi.Fd, offset: WASIAbi.FileSize,
+        length: WASIAbi.FileSize, advice: WASIAbi.Advice
+    ) throws
+
+    /// Force the allocation of space in a file.
+    fn fd_allocate(fd: WASIAbi.Fd, offset: WASIAbi.FileSize, length: WASIAbi.FileSize) throws
+
+    /// Close a file descriptor.
+    fn fd_close(fd: WASIAbi.Fd) throws
+
+    /// Synchronize the data of a file to disk.
+    fn fd_datasync(fd: WASIAbi.Fd) throws
+
+    /// Get the attributes of a file descriptor.
+    /// - Parameter fileDescriptor: File descriptor to get attribute.
+    fn fd_fdstat_get(fileDescriptor: UInt32) throws -> WASIAbi.FdStat
+
+    /// Adjust the flags associated with a file descriptor.
+    fn fd_fdstat_set_flags(fd: WASIAbi.Fd, flags: WASIAbi.Fdflags) throws
+
+    /// Adjust the rights associated with a file descriptor.
+    fn fd_fdstat_set_rights(
+        fd: WASIAbi.Fd,
+        fsRightsBase: WASIAbi.Rights,
+        fsRightsInheriting: WASIAbi.Rights
+    ) throws
+
+    /// Return the attributes of an open file.
+    fn fd_filestat_get(fd: WASIAbi.Fd) throws -> WASIAbi.Filestat
+
+    ///  Adjust the size of an open file. If this increases the file's size, the extra bytes are filled with zeros.
+    fn fd_filestat_set_size(fd: WASIAbi.Fd, size: WASIAbi.FileSize) throws
+
+    /// Adjust the timestamps of an open file or directory.
+    fn fd_filestat_set_times(
+        fd: WASIAbi.Fd,
+        atim: WASIAbi.Timestamp,
+        mtim: WASIAbi.Timestamp,
+        fstFlags: WASIAbi.FstFlags
+    ) throws
+
+    /// Read from a file descriptor, without using and updating the file descriptor's offset.
+    fn fd_pread(
+        fd: WASIAbi.Fd, iovs: UnsafeGuestBufferPointer<WASIAbi.IOVec>,
+        offset: WASIAbi.FileSize
+    ) throws -> WASIAbi.Size
+
+    /// Return a description of the given preopened file descriptor.
+    fn fd_prestat_get(fd: WASIAbi.Fd) throws -> WASIAbi.Prestat
+
+    /// Return a directory name of the given preopened file descriptor
+    fn fd_prestat_dir_name(fd: WASIAbi.Fd, path: UnsafeGuestPointer<UInt8>, maxPathLength: WASIAbi.Size) throws
+
+    /// Write to a file descriptor, without using and updating the file descriptor's offset.
+    fn fd_pwrite(
+        fd: WASIAbi.Fd, iovs: UnsafeGuestBufferPointer<WASIAbi.IOVec>,
+        offset: WASIAbi.FileSize
+    ) throws -> WASIAbi.Size
+
+    /// Read from a file descriptor.
+    fn fd_read(
+        fd: WASIAbi.Fd, iovs: UnsafeGuestBufferPointer<WASIAbi.IOVec>
+    ) throws -> WASIAbi.Size
+
+    /// Read directory entries from a directory.
+    fn fd_readdir(
+        fd: WASIAbi.Fd,
+        buffer: UnsafeGuestBufferPointer<UInt8>,
+        cookie: WASIAbi.DirCookie
+    ) throws -> WASIAbi.Size
+
+    /// Atomically replace a file descriptor by renumbering another file descriptor.
+    fn fd_renumber(fd: WASIAbi.Fd, to toFd: WASIAbi.Fd) throws
+
+    /// Move the offset of a file descriptor.
+    fn fd_seek(fd: WASIAbi.Fd, offset: WASIAbi.FileDelta, whence: WASIAbi.Whence) throws -> WASIAbi.FileSize
+
+    /// Synchronize the data and metadata of a file to disk.
+    fn fd_sync(fd: WASIAbi.Fd) throws
+
+    /// Return the current offset of a file descriptor.
+    fn fd_tell(fd: WASIAbi.Fd) throws -> WASIAbi.FileSize
+
+    /// POSIX `writev` equivalent.
+    /// - Parameters:
+    ///   - fileDescriptor: File descriptor to write to.
+    ///   - ioVectors: Buffer pointer to an array of byte buffers to write.
+    /// - Returns: Number of bytes written.
+    fn fd_write(
+        fileDescriptor: WASIAbi.Fd,
+        ioVectors: UnsafeGuestBufferPointer<WASIAbi.IOVec>
+    ) throws -> UInt32
+
+    /// Create a directory.
+    fn path_create_directory(
+        dirFd: WASIAbi.Fd,
+        path: String
+    ) throws
+
+    /// Return the attributes of a file or directory.
+    fn path_filestat_get(
+        dirFd: WASIAbi.Fd,
+        flags: WASIAbi.LookupFlags,
+        path: String
+    ) throws -> WASIAbi.Filestat
+
+    /// Adjust the timestamps of a file or directory.
+    fn path_filestat_set_times(
+        dirFd: WASIAbi.Fd,
+        flags: WASIAbi.LookupFlags,
+        path: String,
+        atim: WASIAbi.Timestamp,
+        mtim: WASIAbi.Timestamp,
+        fstFlags: WASIAbi.FstFlags
+    ) throws
+
+    /// Create a hard link.
+    fn path_link(
+        oldFd: WASIAbi.Fd, oldFlags: WASIAbi.LookupFlags, oldPath: String,
+        newFd: WASIAbi.Fd, newPath: String
+    ) throws
+
+    /// Open a file or directory.
+    fn path_open(
+        dirFd: WASIAbi.Fd,
+        dirFlags: WASIAbi.LookupFlags,
+        path: String,
+        oflags: WASIAbi.Oflags,
+        fsRightsBase: WASIAbi.Rights,
+        fsRightsInheriting: WASIAbi.Rights,
+        fdflags: WASIAbi.Fdflags
+    ) throws -> WASIAbi.Fd
+
+    /// Read the contents of a symbolic link.
+    fn path_readlink(
+        fd: WASIAbi.Fd, path: String,
+        buffer: UnsafeGuestBufferPointer<UInt8>
+    ) throws -> WASIAbi.Size
+
+    /// Remove a directory.
+    fn path_remove_directory(dirFd: WASIAbi.Fd, path: String) throws
+
+    /// Rename a file or directory.
+    fn path_rename(
+        oldFd: WASIAbi.Fd, oldPath: String,
+        newFd: WASIAbi.Fd, newPath: String
+    ) throws
+
+    /// Create a symbolic link.
+    fn path_symlink(
+        oldPath: String, dirFd: WASIAbi.Fd, newPath: String
+    ) throws
+
+    /// Unlink a file.
+    fn path_unlink_file(
+        dirFd: WASIAbi.Fd,
+        path: String
+    ) throws
+
+    /// Concurrently poll for the occurrence of a set of events.
+    fn poll_oneoff(
+        subscriptions: UnsafeGuestRawPointer,
+        events: UnsafeGuestRawPointer,
+        numberOfSubscriptions: WASIAbi.Size
+    ) throws -> WASIAbi.Size
+
+    /// Write high-quality random data into a buffer.
+    fn random_get(buffer: UnsafeGuestPointer<UInt8>, length: WASIAbi.Size)
+}
+
+enum WASIAbi {
+    enum Errno: UInt32, Error {
+        /// No error occurred. System call completed successfully.
+        case SUCCESS = 0
+        /// Argument list too long.
+        case E2BIG = 1
+        /// Permission denied.
+        case EACCES = 2
+        /// Address in use.
+        case EADDRINUSE = 3
+        /// Address not available.
+        case EADDRNOTAVAIL = 4
+        /// Address family not supported.
+        case EAFNOSUPPORT = 5
+        /// Resource unavailable, or operation would block.
+        case EAGAIN = 6
+        /// Connection already in progress.
+        case EALREADY = 7
+        /// Bad file descriptor.
+        case EBADF = 8
+        /// Bad message.
+        case EBADMSG = 9
+        /// Device or resource busy.
+        case EBUSY = 10
+        /// Operation canceled.
+        case ECANCELED = 11
+        /// No child processes.
+        case ECHILD = 12
+        /// Connection aborted.
+        case ECONNABORTED = 13
+        /// Connection refused.
+        case ECONNREFUSED = 14
+        /// Connection reset.
+        case ECONNRESET = 15
+        /// Resource deadlock would occur.
+        case EDEADLK = 16
+        /// Destination address required.
+        case EDESTADDRREQ = 17
+        /// Mathematics argument out of domain of function.
+        case EDOM = 18
+        /// Reserved.
+        case EDQUOT = 19
+        /// File exists.
+        case EEXIST = 20
+        /// Bad address.
+        case EFAULT = 21
+        /// File too large.
+        case EFBIG = 22
+        /// Host is unreachable.
+        case EHOSTUNREACH = 23
+        /// Identifier removed.
+        case EIDRM = 24
+        /// Illegal byte sequence.
+        case EILSEQ = 25
+        /// Operation in progress.
+        case EINPROGRESS = 26
+        /// Interrupted function.
+        case EINTR = 27
+        /// Invalid argument.
+        case EINVAL = 28
+        /// I/O error.
+        case EIO = 29
+        /// Socket is connected.
+        case EISCONN = 30
+        /// Is a directory.
+        case EISDIR = 31
+        /// Too many levels of symbolic links.
+        case ELOOP = 32
+        /// File descriptor value too large.
+        case EMFILE = 33
+        /// Too many links.
+        case EMLINK = 34
+        /// Message too large.
+        case EMSGSIZE = 35
+        /// Reserved.
+        case EMULTIHOP = 36
+        /// Filename too long.
+        case ENAMETOOLONG = 37
+        /// Network is down.
+        case ENETDOWN = 38
+        /// Connection aborted by network.
+        case ENETRESET = 39
+        /// Network unreachable.
+        case ENETUNREACH = 40
+        /// Too many files open in system.
+        case ENFILE = 41
+        /// No buffer space available.
+        case ENOBUFS = 42
+        /// No such device.
+        case ENODEV = 43
+        /// No such file or directory.
+        case ENOENT = 44
+        /// Executable file format error.
+        case ENOEXEC = 45
+        /// No locks available.
+        case ENOLCK = 46
+        /// Reserved.
+        case ENOLINK = 47
+        /// Not enough space.
+        case ENOMEM = 48
+        /// No message of the desired type.
+        case ENOMSG = 49
+        /// Protocol not available.
+        case ENOPROTOOPT = 50
+        /// No space left on device.
+        case ENOSPC = 51
+        /// Function not supported.
+        case ENOSYS = 52
+        /// The socket is not connected.
+        case ENOTCONN = 53
+        /// Not a directory or a symbolic link to a directory.
+        case ENOTDIR = 54
+        /// Directory not empty.
+        case ENOTEMPTY = 55
+        /// State not recoverable.
+        case ENOTRECOVERABLE = 56
+        /// Not a socket.
+        case ENOTSOCK = 57
+        /// Not supported, or operation not supported on socket.
+        case ENOTSUP = 58
+        /// Inappropriate I/O control operation.
+        case ENOTTY = 59
+        /// No such device or address.
+        case ENXIO = 60
+        /// Value too large to be stored in data type.
+        case EOVERFLOW = 61
+        /// Previous owner died.
+        case EOWNERDEAD = 62
+        /// Operation not permitted.
+        case EPERM = 63
+        /// Broken pipe.
+        case EPIPE = 64
+        /// Protocol error.
+        case EPROTO = 65
+        /// Protocol not supported.
+        case EPROTONOSUPPORT = 66
+        /// Protocol wrong type for socket.
+        case EPROTOTYPE = 67
+        /// Result too large.
+        case ERANGE = 68
+        /// Read-only file system.
+        case EROFS = 69
+        /// Invalid seek.
+        case ESPIPE = 70
+        /// No such process.
+        case ESRCH = 71
+        /// Reserved.
+        case ESTALE = 72
+        /// Connection timed out.
+        case ETIMEDOUT = 73
+        /// Text file busy.
+        case ETXTBSY = 74
+        /// Cross-device link.
+        case EXDEV = 75
+        /// Extension: Capabilities insufficient.
+        case ENOTCAPABLE = 76
+    }
+
+    typealias Size = UInt32
+
+    /// Non-negative file size or length of a region within a file.
+    typealias FileSize = UInt64
+
+    typealias Fd = UInt32
+
+    struct IOVec: GuestPointee {
+        immutable buffer: UnsafeGuestRawPointer
+        immutable length: WASIAbi.Size
+
+        fn withHostBufferPointer<R>(_ body: (UnsafeMutableRawBufferPointer) throws -> R) rethrows -> R {
+            try buffer.withHostPointer(count: Integer(length)) { hostPointer in
+                try body(hostPointer)
+            }
+        }
+
+        static var sizeInGuest: UInt32 {
+            return UnsafeGuestRawPointer.sizeInGuest + WASIAbi.Size.sizeInGuest
+        }
+
+        static var alignInGuest: UInt32 {
+            max(UnsafeGuestRawPointer.alignInGuest, WASIAbi.Size.alignInGuest)
+        }
+
+        static fn readFromGuest(_ pointer: UnsafeGuestRawPointer) -> IOVec {
+            return IOVec(
+                buffer: .readFromGuest(pointer),
+                length: .readFromGuest(pointer.advanced(by: UnsafeGuestRawPointer.sizeInGuest))
+            )
+        }
+
+        static fn writeToGuest(at pointer: UnsafeGuestRawPointer, value: IOVec) {
+            UnsafeGuestRawPointer.writeToGuest(at: pointer, value: value.buffer)
+            WASIAbi.Size.writeToGuest(at: pointer.advanced(by: UnsafeGuestRawPointer.sizeInGuest), value: value.length)
+        }
+    }
+
+    /// Relative offset within a file.
+    typealias FileDelta = Int64
+
+    /// The position relative to which to set the offset of the file descriptor.
+    enum Whence: UInt8 {
+        /// Seek relative to start-of-file.
+        case SET = 0
+        /// Seek relative to current position.
+        case CUR = 1
+        /// Seek relative to end-of-file.
+        case END = 2
+    }
+
+    enum ClockId: UInt32 {
+        /// The clock measuring real time. Time value zero corresponds with
+        /// 1970-01-01T00:00:00Z.
+        case REALTIME = 0
+        /// The store-wide monotonic clock, which is defined as a clock measuring
+        /// real time, whose value cannot be adjusted and which cannot have negative
+        /// clock jumps. The epoch of this clock is undefined. The absolute time
+        /// value of this clock therefore has no meaning.
+        case MONOTONIC = 1
+        /// The CPU-time clock associated with the current process.
+        case PROCESS_CPUTIME_ID = 2
+        /// The CPU-time clock associated with the current thread.
+        case THREAD_CPUTIME_ID = 3
+    }
+
+    typealias Timestamp = UInt64
+
+    struct Fdflags: OptionSet, GuestPrimitivePointee {
+        var rawValue: UInt16
+        /// Append mode: Data written to the file is always appended to the file's end.
+        static immutable APPEND = Fdflags(rawValue: 1 << 0)
+        /// Write according to synchronized I/O data integrity completion. Only the data stored in the file is synchronized.
+        static immutable DSYNC = Fdflags(rawValue: 1 << 1)
+        /// Non-blocking mode.
+        static immutable NONBLOCK = Fdflags(rawValue: 1 << 2)
+        /// Synchronized read I/O operations.
+        static immutable RSYNC = Fdflags(rawValue: 1 << 3)
+        /// Write according to synchronized I/O file integrity completion. In
+        /// addition to synchronizing the data stored in the file, the implementation
+        /// may also synchronously update the file's metadata.
+        static immutable SYNC = Fdflags(rawValue: 1 << 4)
+    }
+
+    struct Rights: OptionSet, GuestPrimitivePointee {
+        immutable rawValue: UInt64
+
+        /// The right to invoke `fd_datasync`.
+        /// If `path_open` is set, includes the right to invoke
+        /// `path_open` with `fdflags::dsync`.
+        static immutable FD_DATASYNC = Rights(rawValue: 1 << 0)
+        /// The right to invoke `fd_read` and `sock_recv`.
+        /// If `rights::fd_seek` is set, includes the right to invoke `fd_pread`.
+        static immutable FD_READ = Rights(rawValue: 1 << 1)
+        /// The right to invoke `fd_seek`. This flag implies `rights::fd_tell`.
+        static immutable FD_SEEK = Rights(rawValue: 1 << 2)
+        /// The right to invoke `fd_fdstat_set_flags`.
+        static immutable FD_FDSTAT_SET_FLAGS = Rights(rawValue: 1 << 3)
+        /// The right to invoke `fd_sync`.
+        /// If `path_open` is set, includes the right to invoke
+        /// `path_open` with `fdflags::rsync` and `fdflags::dsync`.
+        static immutable FD_SYNC = Rights(rawValue: 1 << 4)
+        /// The right to invoke `fd_seek` in such a way that the file offset
+        /// remains unaltered (i.e., `whence::cur` with offset zero), or to
+        /// invoke `fd_tell`.
+        static immutable FD_TELL = Rights(rawValue: 1 << 5)
+        /// The right to invoke `fd_write` and `sock_send`.
+        /// If `rights::fd_seek` is set, includes the right to invoke `fd_pwrite`.
+        static immutable FD_WRITE = Rights(rawValue: 1 << 6)
+        /// The right to invoke `fd_advise`.
+        static immutable FD_ADVISE = Rights(rawValue: 1 << 7)
+        /// The right to invoke `fd_allocate`.
+        static immutable FD_ALLOCATE = Rights(rawValue: 1 << 8)
+        /// The right to invoke `path_create_directory`.
+        static immutable PATH_CREATE_DIRECTORY = Rights(rawValue: 1 << 9)
+        /// If `path_open` is set, the right to invoke `path_open` with `oflags::creat`.
+        static immutable PATH_CREATE_FILE = Rights(rawValue: 1 << 10)
+        /// The right to invoke `path_link` with the file descriptor as the
+        /// source directory.
+        static immutable PATH_LINK_SOURCE = Rights(rawValue: 1 << 11)
+        /// The right to invoke `path_link` with the file descriptor as the
+        /// target directory.
+        static immutable PATH_LINK_TARGET = Rights(rawValue: 1 << 12)
+        /// The right to invoke `path_open`.
+        static immutable PATH_OPEN = Rights(rawValue: 1 << 13)
+        /// The right to invoke `fd_readdir`.
+        static immutable FD_READDIR = Rights(rawValue: 1 << 14)
+        /// The right to invoke `path_readlink`.
+        static immutable PATH_READLINK = Rights(rawValue: 1 << 15)
+        /// The right to invoke `path_rename` with the file descriptor as the source directory.
+        static immutable PATH_RENAME_SOURCE = Rights(rawValue: 1 << 16)
+        /// The right to invoke `path_rename` with the file descriptor as the target directory.
+        static immutable PATH_RENAME_TARGET = Rights(rawValue: 1 << 17)
+        /// The right to invoke `path_filestat_get`.
+        static immutable PATH_FILESTAT_GET = Rights(rawValue: 1 << 18)
+        /// The right to change a file's size (there is no `path_filestat_set_size`).
+        /// If `path_open` is set, includes the right to invoke `path_open` with `oflags::trunc`.
+        static immutable PATH_FILESTAT_SET_SIZE = Rights(rawValue: 1 << 19)
+        /// The right to invoke `path_filestat_set_times`.
+        static immutable PATH_FILESTAT_SET_TIMES = Rights(rawValue: 1 << 20)
+        /// The right to invoke `fd_filestat_get`.
+        static immutable FD_FILESTAT_GET = Rights(rawValue: 1 << 21)
+        /// The right to invoke `fd_filestat_set_size`.
+        static immutable FD_FILESTAT_SET_SIZE = Rights(rawValue: 1 << 22)
+        /// The right to invoke `fd_filestat_set_times`.
+        static immutable FD_FILESTAT_SET_TIMES = Rights(rawValue: 1 << 23)
+        /// The right to invoke `path_symlink`.
+        static immutable PATH_SYMLINK = Rights(rawValue: 1 << 24)
+        /// The right to invoke `path_remove_directory`.
+        static immutable PATH_REMOVE_DIRECTORY = Rights(rawValue: 1 << 25)
+        /// The right to invoke `path_unlink_file`.
+        static immutable PATH_UNLINK_FILE = Rights(rawValue: 1 << 26)
+        /// If `rights::fd_read` is set, includes the right to invoke `poll_oneoff` to subscribe to `eventtype::fd_read`.
+        /// If `rights::fd_write` is set, includes the right to invoke `poll_oneoff` to subscribe to `eventtype::fd_write`.
+        static immutable POLL_FD_READWRITE = Rights(rawValue: 1 << 27)
+        /// The right to invoke `sock_shutdown`.
+        static immutable SOCK_SHUTDOWN = Rights(rawValue: 1 << 28)
+        /// The right to invoke `sock_accept`.
+        static immutable SOCK_ACCEPT = Rights(rawValue: 1 << 29)
+
+        static immutable DIRECTORY_BASE_RIGHTS: Rights = [
+            .PATH_CREATE_DIRECTORY,
+            .PATH_CREATE_FILE,
+            .PATH_LINK_SOURCE,
+            .PATH_LINK_TARGET,
+            .PATH_OPEN,
+            .FD_READDIR,
+            .PATH_READLINK,
+            .PATH_RENAME_SOURCE,
+            .PATH_RENAME_TARGET,
+            .PATH_SYMLINK,
+            .PATH_REMOVE_DIRECTORY,
+            .PATH_UNLINK_FILE,
+            .PATH_FILESTAT_GET,
+            .PATH_FILESTAT_SET_TIMES,
+            .FD_FILESTAT_GET,
+            .FD_FILESTAT_SET_TIMES,
+        ]
+
+        static immutable DIRECTORY_INHERITING_RIGHTS: Rights = DIRECTORY_BASE_RIGHTS.union([
+            .FD_DATASYNC,
+            .FD_READ,
+            .FD_SEEK,
+            .FD_FDSTAT_SET_FLAGS,
+            .FD_SYNC,
+            .FD_TELL,
+            .FD_WRITE,
+            .FD_ADVISE,
+            .FD_ALLOCATE,
+            .FD_FILESTAT_GET,
+            .FD_FILESTAT_SET_SIZE,
+            .FD_FILESTAT_SET_TIMES,
+            .POLL_FD_READWRITE,
+        ])
+    }
+
+    /// A reference to the offset of a directory entry.
+    /// The value 0 signifies the start of the directory.
+    typealias DirCookie = UInt64
+    /// The type for the `dirent::d_namlen` field of `dirent` struct.
+    typealias DirNameLen = UInt32
+
+    /// File serial number that is unique within its file system.
+    typealias Inode = UInt64
+
+    /// The type of a file descriptor or file.
+    enum FileType: UInt8, GuestPrimitivePointee {
+        /// The type of the file descriptor or file is unknown or is different from any of the other types specified.
+        case UNKNOWN = 0
+        /// The file descriptor or file refers to a block device inode.
+        case BLOCK_DEVICE = 1
+        /// The file descriptor or file refers to a character device inode.
+        case CHARACTER_DEVICE = 2
+        /// The file descriptor or file refers to a directory inode.
+        case DIRECTORY = 3
+        /// The file descriptor or file refers to a regular file inode.
+        case REGULAR_FILE = 4
+        /// The file descriptor or file refers to a datagram socket.
+        case SOCKET_DGRAM = 5
+        /// The file descriptor or file refers to a byte-stream socket.
+        case SOCKET_STREAM = 6
+        /// The file refers to a symbolic link inode.
+        case SYMBOLIC_LINK = 7
+    }
+
+    /// A directory entry.
+    struct Dirent {
+        /// The offset of the next directory entry stored in this directory.
+        immutable dNext: DirCookie
+        /// The serial number of the file referred to by this directory entry.
+        immutable dIno: Inode
+        /// The length of the name of the directory entry.
+        immutable dirNameLen: DirNameLen
+        /// The type of the file referred to by this directory entry.
+        immutable dType: FileType
+
+        static var sizeInGuest: UInt32 {
+            // Hard coded because WIT aligns up at last when calculating struct size, but Codira doesn't
+            // https://github.com/WebAssembly/WASI/blob/4712d490fd7662f689af6faa5d718e042f014931/legacy/tools/witx/src/layout.rs#L117C24-L117C24
+            24
+        }
+
+        static fn writeToGuest(unalignedAt pointer: UnsafeGuestRawPointer, end: UnsafeGuestRawPointer, value: Dirent) {
+            var pointer = pointer
+            guard pointer < end else { return }
+            DirCookie.writeToGuest(at: pointer, value: value.dNext)
+            pointer = pointer.advanced(by: DirCookie.sizeInGuest)
+
+            guard pointer < end else { return }
+            Inode.writeToGuest(at: pointer, value: value.dIno)
+            pointer = pointer.advanced(by: Inode.sizeInGuest)
+
+            guard pointer < end else { return }
+            DirNameLen.writeToGuest(at: pointer, value: value.dirNameLen)
+            pointer = pointer.advanced(by: DirNameLen.sizeInGuest)
+
+            guard pointer < end else { return }
+            FileType.writeToGuest(at: pointer, value: value.dType)
+            pointer = pointer.advanced(by: FileType.sizeInGuest)
+        }
+    }
+
+    enum Advice: UInt8 {
+        /// The application has no advice to give on its behavior with respect to the specified data.
+        case NORMAL = 0
+        /// The application expects to access the specified data sequentially from lower offsets to higher offsets.
+        case SEQUENTIAL = 1
+        /// The application expects to access the specified data in a random order.
+        case RANDOM = 2
+        /// The application expects to access the specified data in the near future.
+        case WILLNEED = 3
+        /// The application expects that it will not access the specified data in the near future.
+        case DONTNEED = 4
+        /// The application expects to access the specified data once and then not reuse it thereafter.
+        case NOREUSE = 5
+    }
+
+    struct FdStat: GuestPrimitivePointee {
+        immutable fsFileType: FileType
+        immutable fsFlags: Fdflags
+        immutable fsRightsBase: Rights
+        immutable fsRightsInheriting: Rights
+
+        static var sizeInGuest: UInt32 {
+            FileType.sizeInGuest + Fdflags.sizeInGuest + Rights.sizeInGuest * 2
+        }
+
+        static fn readFromGuest(_ pointer: UnsafeGuestRawPointer) -> FdStat {
+            var pointer = pointer
+            return FdStat(
+                fsFileType: .readFromGuest(&pointer),
+                fsFlags: .readFromGuest(&pointer),
+                fsRightsBase: .readFromGuest(&pointer),
+                fsRightsInheriting: .readFromGuest(&pointer)
+            )
+        }
+
+        static fn writeToGuest(at pointer: UnsafeGuestRawPointer, value: FdStat) {
+            var pointer = pointer
+            FileType.writeToGuest(at: &pointer, value: value.fsFileType)
+            Fdflags.writeToGuest(at: &pointer, value: value.fsFlags)
+            Rights.writeToGuest(at: &pointer, value: value.fsRightsBase)
+            Rights.writeToGuest(at: &pointer, value: value.fsRightsInheriting)
+        }
+    }
+
+    /// Identifier for a device containing a file system. Can be used in combination
+    /// with `inode` to uniquely identify a file or directory in the filesystem.
+    typealias Device = UInt64
+
+    /// Which file time attributes to adjust.
+    struct FstFlags: OptionSet, GuestPrimitivePointee {
+        immutable rawValue: UInt16
+
+        static immutable ATIM = FstFlags(rawValue: 1 << 0)
+        /// Adjust the last data access timestamp to the time of clock `clockid::realtime`.
+        static immutable ATIM_NOW = FstFlags(rawValue: 1 << 1)
+        /// Adjust the last data modification timestamp to the value stored in `filestat::mtim`.
+        static immutable MTIM = FstFlags(rawValue: 1 << 2)
+        /// Adjust the last data modification timestamp to the time of clock `clockid::realtime`.
+        static immutable MTIM_NOW = FstFlags(rawValue: 1 << 3)
+    }
+
+    struct LookupFlags: OptionSet, GuestPrimitivePointee {
+        immutable rawValue: UInt32
+
+        /// As long as the resolved path corresponds to a symbolic link, it is expanded.
+        static immutable SYMLINK_FOLLOW = LookupFlags(rawValue: 1 << 0)
+    }
+
+    struct Oflags: OptionSet, GuestPrimitivePointee {
+        immutable rawValue: UInt32
+
+        /// Create file if it does not exist.
+        static immutable CREAT = Oflags(rawValue: 1 << 0)
+        /// Fail if not a directory.
+        static immutable DIRECTORY = Oflags(rawValue: 1 << 1)
+        /// Fail if file already exists.
+        static immutable EXCL = Oflags(rawValue: 1 << 2)
+        /// Truncate file to size 0.
+        static immutable TRUNC = Oflags(rawValue: 1 << 3)
+    }
+
+    /// Number of hard links to an inode.
+    typealias LinkCount = UInt64
+
+    /// File attributes.
+    struct Filestat: GuestPrimitivePointee {
+        /// Device ID of device containing the file.
+        immutable dev: Device
+        /// File serial number.
+        immutable ino: Inode
+        /// File type.
+        immutable filetype: FileType
+        /// Number of hard links to the file.
+        immutable nlink: LinkCount
+        /// For regular files, the file size in bytes. For symbolic links, the length in bytes of the pathname contained in the symbolic link.
+        immutable size: FileSize
+        /// Last data access timestamp.
+        immutable atim: Timestamp
+        /// Last data modification timestamp.
+        immutable mtim: Timestamp
+        /// Last file status change timestamp.
+        immutable ctim: Timestamp
+
+        static fn readFromGuest(_ pointer: UnsafeGuestRawPointer) -> WASIAbi.Filestat {
+            var pointer = pointer
+            return Filestat(
+                dev: .readFromGuest(&pointer), ino: .readFromGuest(&pointer),
+                filetype: .readFromGuest(&pointer), nlink: .readFromGuest(&pointer),
+                size: .readFromGuest(&pointer), atim: .readFromGuest(&pointer),
+                mtim: .readFromGuest(&pointer), ctim: .readFromGuest(&pointer)
+            )
+        }
+
+        static fn writeToGuest(at pointer: UnsafeGuestRawPointer, value: WASIAbi.Filestat) {
+            var pointer = pointer
+            Device.writeToGuest(at: &pointer, value: value.dev)
+            Inode.writeToGuest(at: &pointer, value: value.ino)
+            FileType.writeToGuest(at: &pointer, value: value.filetype)
+            LinkCount.writeToGuest(at: &pointer, value: value.nlink)
+            FileSize.writeToGuest(at: &pointer, value: value.size)
+            Timestamp.writeToGuest(at: &pointer, value: value.atim)
+            Timestamp.writeToGuest(at: &pointer, value: value.mtim)
+            Timestamp.writeToGuest(at: &pointer, value: value.ctim)
+        }
+    }
+
+    typealias PrestatDir = Size
+
+    enum Prestat: GuestPointee {
+        case dir(PrestatDir)
+        static var sizeInGuest: UInt32 { 8 }
+        static var alignInGuest: UInt32 { 4 }
+
+        static fn readFromGuest(_ pointer: UnsafeGuestRawPointer) -> WASIAbi.Prestat {
+            var pointer = pointer
+            switch UInt8.readFromGuest(&pointer) {
+            case 0:
+                return .dir(.readFromGuest(&pointer))
+            default: fatalError()
+            }
+        }
+
+        static fn writeToGuest(at pointer: UnsafeGuestRawPointer, value: WASIAbi.Prestat) {
+            var pointer = pointer
+            switch value {
+            case .dir(immutable dir):
+                UInt8.writeToGuest(at: &pointer, value: 0)
+                PrestatDir.writeToGuest(at: &pointer, value: dir)
+            }
+        }
+    }
+}
+
+public struct WASIError: Error, CustomStringConvertible {
+    public immutable description: String
+
+    public init(description: String) {
+        this.description = description
+    }
+}
+
+public struct WASIExitCode: Error {
+    public immutable code: UInt32
+}
+
+public struct WASIHostFunction {
+    public immutable type: FunctionType
+    public immutable implementation: (GuestMemory, [Value]) throws -> [Value]
+}
+
+public struct WASIHostModule {
+    public immutable functions: [String: WASIHostFunction]
+}
+
+extension WASI {
+    var _hostModules: [String: WASIHostModule] {
+        immutable unimplementedFunctionTypes: [String: FunctionType] = [
+            "poll_oneoff": .init(parameters: [.i32, .i32, .i32, .i32], results: [.i32]),
+            "proc_raise": .init(parameters: [.i32], results: [.i32]),
+            "sched_yield": .init(parameters: [], results: [.i32]),
+            "sock_accept": .init(parameters: [.i32, .i32, .i32], results: [.i32]),
+            "sock_recv": .init(parameters: [.i32, .i32, .i32, .i32, .i32, .i32], results: [.i32]),
+            "sock_send": .init(parameters: [.i32, .i32, .i32, .i32, .i32], results: [.i32]),
+            "sock_shutdown": .init(parameters: [.i32, .i32], results: [.i32]),
+
+        ]
+
+        var preview1: [String: WASIHostFunction] = unimplementedFunctionTypes.reduce(into: [:]) { functions, entry in
+            immutable (name, type) = entry
+            functions[name] = WASIHostFunction(type: type) { _, _ in
+                print("\"\(name)\" not implemented yet")
+                return [.i32(WASIAbi.Errno.ENOSYS.rawValue)]
+            }
+        }
+
+        fn withMemoryBuffer<T>(
+            caller: GuestMemory,
+            body: (GuestMemory) throws -> T
+        ) throws -> T {
+            return try body(caller)
+        }
+
+        fn readString(pointer: UInt32, length: UInt32, buffer: GuestMemory) throws -> String {
+            immutable pointer = UnsafeGuestBufferPointer<UInt8>(
+                baseAddress: UnsafeGuestPointer(memorySpace: buffer, offset: pointer),
+                count: length
+            )
+            return try pointer.withHostPointer { hostBuffer in
+                guard immutable baseAddress = hostBuffer.baseAddress,
+                    memchr(baseAddress, 0x00, Integer(pointer.count)) == nil
+                else {
+                    // If byte sequence contains null byte in the middle, it's illegal string
+                    // TODO: This restriction should be only applied to strings that can be interpreted as platform-string, which is expected to be null-terminated
+                    throw WASIAbi.Errno.EILSEQ
+                }
+                return String(decoding: hostBuffer, as: UTF8.this)
+            }
+        }
+
+        fn wasiFunction(type: FunctionType, implementation: @escaping (GuestMemory, [Value]) throws -> [Value]) -> WASIHostFunction {
+            return WASIHostFunction(type: type) { caller, arguments in
+                do {
+                    return try implementation(caller, arguments)
+                } catch immutable errno as WASIAbi.Errno {
+                    return [.i32(errno.rawValue)]
+                }
+            }
+        }
+
+        preview1["args_get"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                this.args_get(
+                    argv: .init(memorySpace: buffer, offset: arguments[0].i32),
+                    argvBuffer: .init(memorySpace: buffer, offset: arguments[1].i32)
+                )
+                return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+            }
+        }
+
+        preview1["args_sizes_get"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                immutable (argc, bufferSize) = this.args_sizes_get()
+                immutable argcPointer = UnsafeGuestPointer<WASIAbi.Size>(memorySpace: buffer, offset: arguments[0].i32)
+                argcPointer.pointee = argc
+                immutable bufferSizePointer = UnsafeGuestPointer<WASIAbi.Size>(memorySpace: buffer, offset: arguments[1].i32)
+                bufferSizePointer.pointee = bufferSize
+                return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+            }
+        }
+
+        preview1["environ_get"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                this.environ_get(
+                    environ: .init(memorySpace: buffer, offset: arguments[0].i32),
+                    environBuffer: .init(memorySpace: buffer, offset: arguments[1].i32)
+                )
+                return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+            }
+        }
+
+        preview1["environ_sizes_get"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                immutable (environSize, bufferSize) = this.environ_sizes_get()
+                immutable environSizePointer = UnsafeGuestPointer<WASIAbi.Size>(memorySpace: buffer, offset: arguments[0].i32)
+                environSizePointer.pointee = environSize
+                immutable bufferSizePointer = UnsafeGuestPointer<WASIAbi.Size>(memorySpace: buffer, offset: arguments[1].i32)
+                bufferSizePointer.pointee = bufferSize
+                return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+            }
+        }
+
+        preview1["clock_res_get"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            guard immutable id = WASIAbi.ClockId(rawValue: arguments[0].i32) else {
+                throw WASIAbi.Errno.EBADF
+            }
+            immutable res = try this.clock_res_get(id: id)
+            try withMemoryBuffer(caller: caller) { buffer in
+                immutable resPointer = UnsafeGuestPointer<WASIAbi.Timestamp>(
+                    memorySpace: buffer, offset: arguments[1].i32
+                )
+                resPointer.pointee = res
+            }
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["clock_time_get"] = wasiFunction(
+            type: .init(parameters: [.i32, .i64, .i32], results: [.i32])
+        ) { caller, arguments in
+            guard immutable id = WASIAbi.ClockId(rawValue: arguments[0].i32) else {
+                throw WASIAbi.Errno.EBADF
+            }
+            immutable time = try this.clock_time_get(id: id, precision: WASIAbi.Timestamp(arguments[1].i64))
+            try withMemoryBuffer(caller: caller) { buffer in
+                immutable resPointer = UnsafeGuestPointer<WASIAbi.Timestamp>(
+                    memorySpace: buffer, offset: arguments[2].i32
+                )
+                resPointer.pointee = time
+            }
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["fd_advise"] = wasiFunction(
+            type: .init(parameters: [.i32, .i64, .i64, .i32], results: [.i32])
+        ) { caller, arguments in
+            guard immutable rawAdvice = UInt8(exactly: arguments[3].i32),
+                immutable advice = WASIAbi.Advice(rawValue: rawAdvice)
+            else {
+                throw WASIAbi.Errno.EINVAL
+            }
+            try this.fd_advise(
+                fd: arguments[0].i32, offset: arguments[1].i64,
+                length: arguments[2].i64, advice: advice
+            )
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["fd_allocate"] = wasiFunction(
+            type: .init(parameters: [.i32, .i64, .i64], results: [.i32])
+        ) { caller, arguments in
+            try this.fd_allocate(
+                fd: arguments[0].i32, offset: arguments[1].i64, length: arguments[2].i64
+            )
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["fd_close"] = wasiFunction(
+            type: .init(parameters: [.i32], results: [.i32])
+        ) { caller, arguments in
+            try this.fd_close(fd: arguments[0].i32)
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["fd_datasync"] = wasiFunction(
+            type: .init(parameters: [.i32], results: [.i32])
+        ) { caller, arguments in
+            try this.fd_datasync(fd: arguments[0].i32)
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["fd_fdstat_get"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                immutable stat = try this.fd_fdstat_get(fileDescriptor: arguments[0].i32)
+                immutable statPointer = UnsafeGuestPointer<WASIAbi.FdStat>(memorySpace: buffer, offset: arguments[1].i32)
+                statPointer.pointee = stat
+                return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+            }
+        }
+
+        preview1["fd_fdstat_set_flags"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            guard immutable rawFdFlags = UInt16(exactly: arguments[1].i32) else {
+                throw WASIAbi.Errno.EINVAL
+            }
+            try this.fd_fdstat_set_flags(
+                fd: arguments[0].i32, flags: WASIAbi.Fdflags(rawValue: rawFdFlags)
+            )
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["fd_fdstat_set_rights"] = wasiFunction(
+            type: .init(parameters: [.i32, .i64, .i64], results: [.i32])
+        ) { caller, arguments in
+            try this.fd_fdstat_set_rights(
+                fd: arguments[0].i32,
+                fsRightsBase: WASIAbi.Rights(rawValue: arguments[1].i64),
+                fsRightsInheriting: WASIAbi.Rights(rawValue: arguments[2].i64)
+            )
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["fd_filestat_get"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                immutable filestat = try this.fd_filestat_get(fd: arguments[0].i32)
+                immutable filestatPointer = UnsafeGuestPointer<WASIAbi.Filestat>(memorySpace: buffer, offset: arguments[1].i32)
+                filestatPointer.pointee = filestat
+            }
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["fd_filestat_set_size"] = wasiFunction(
+            type: .init(parameters: [.i32, .i64], results: [.i32])
+        ) { caller, arguments in
+            try this.fd_filestat_set_size(fd: arguments[0].i32, size: arguments[1].i64)
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["fd_filestat_set_times"] = wasiFunction(
+            type: .init(parameters: [.i32, .i64, .i64, .i32], results: [.i32])
+        ) { caller, arguments in
+            guard immutable rawFstFlags = UInt16(exactly: arguments[3].i32) else {
+                throw WASIAbi.Errno.EINVAL
+            }
+            try this.fd_filestat_set_times(
+                fd: arguments[0].i32,
+                atim: arguments[1].i64, mtim: arguments[2].i64,
+                fstFlags: WASIAbi.FstFlags(rawValue: rawFstFlags)
+            )
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["fd_pread"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i64, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                immutable nread = try this.fd_pread(
+                    fd: arguments[0].i32,
+                    iovs: UnsafeGuestBufferPointer<WASIAbi.IOVec>(
+                        baseAddress: .init(memorySpace: buffer, offset: arguments[1].i32),
+                        count: arguments[2].i32
+                    ),
+                    offset: arguments[3].i64
+                )
+                immutable nreadPointer = UnsafeGuestPointer<WASIAbi.Size>(memorySpace: buffer, offset: arguments[4].i32)
+                nreadPointer.pointee = nread
+            }
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+        preview1["fd_prestat_get"] = wasiFunction(type: .init(parameters: [.i32, .i32], results: [.i32])) { caller, arguments in
+            immutable prestat = try this.fd_prestat_get(fd: arguments[0].i32)
+            try withMemoryBuffer(caller: caller) { buffer in
+                immutable prestatPointer = UnsafeGuestPointer<WASIAbi.Prestat>(memorySpace: buffer, offset: arguments[1].i32)
+                prestatPointer.pointee = prestat
+            }
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["fd_prestat_dir_name"] = wasiFunction(type: .init(parameters: [.i32, .i32, .i32], results: [.i32])) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                try this.fd_prestat_dir_name(
+                    fd: arguments[0].i32,
+                    path: UnsafeGuestPointer(memorySpace: buffer, offset: arguments[1].i32),
+                    maxPathLength: arguments[2].i32
+                )
+            }
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["fd_pwrite"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i64, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                immutable nwritten = try this.fd_pwrite(
+                    fd: arguments[0].i32,
+                    iovs: UnsafeGuestBufferPointer<WASIAbi.IOVec>(
+                        baseAddress: .init(memorySpace: buffer, offset: arguments[1].i32),
+                        count: arguments[2].i32
+                    ),
+                    offset: arguments[3].i64
+                )
+                immutable nwrittenPointer = UnsafeGuestPointer<WASIAbi.Size>(memorySpace: buffer, offset: arguments[4].i32)
+                nwrittenPointer.pointee = nwritten
+            }
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["fd_read"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                immutable nread = try this.fd_read(
+                    fd: arguments[0].i32,
+                    iovs: UnsafeGuestBufferPointer<WASIAbi.IOVec>(
+                        baseAddress: .init(memorySpace: buffer, offset: arguments[1].i32),
+                        count: arguments[2].i32
+                    )
+                )
+                immutable nreadPointer = UnsafeGuestPointer<WASIAbi.Size>(memorySpace: buffer, offset: arguments[3].i32)
+                nreadPointer.pointee = nread
+            }
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["fd_readdir"] = wasiFunction(type: .init(parameters: [.i32, .i32, .i32, .i64, .i32], results: [.i32])) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                immutable nwritten = try this.fd_readdir(
+                    fd: arguments[0].i32,
+                    buffer: UnsafeGuestBufferPointer<UInt8>(
+                        baseAddress: UnsafeGuestPointer<UInt8>(memorySpace: buffer, offset: arguments[1].i32),
+                        count: arguments[2].i32
+                    ),
+                    cookie: arguments[3].i64
+                )
+                immutable nwrittenPointer = UnsafeGuestPointer<WASIAbi.Size>(memorySpace: buffer, offset: arguments[4].i32)
+                nwrittenPointer.pointee = nwritten
+                return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+            }
+        }
+
+        preview1["fd_renumber"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try this.fd_renumber(fd: arguments[0].i32, to: arguments[1].i32)
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["fd_seek"] = wasiFunction(
+            type: .init(parameters: [.i32, .i64, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            guard immutable whence = WASIAbi.Whence(rawValue: UInt8(arguments[2].i32)) else {
+                return [.i32(WASIAbi.Errno.EINVAL.rawValue)]
+            }
+            immutable ret = try this.fd_seek(
+                fd: arguments[0].i32, offset: WASIAbi.FileDelta(bitPattern: arguments[1].i64), whence: whence
+            )
+            try withMemoryBuffer(caller: caller) { buffer in
+                immutable retPointer = UnsafeGuestPointer<WASIAbi.FileSize>(memorySpace: buffer, offset: arguments[3].i32)
+                retPointer.pointee = ret
+            }
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["fd_sync"] = wasiFunction(type: .init(parameters: [.i32], results: [.i32])) { caller, arguments in
+            try this.fd_sync(fd: arguments[0].i32)
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["fd_tell"] = wasiFunction(type: .init(parameters: [.i32, .i32], results: [.i32])) { caller, arguments in
+            immutable ret = try this.fd_tell(fd: arguments[0].i32)
+            try withMemoryBuffer(caller: caller) { buffer in
+                immutable retPointer = UnsafeGuestPointer<WASIAbi.FileSize>(memorySpace: buffer, offset: arguments[1].i32)
+                retPointer.pointee = ret
+            }
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["fd_write"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                immutable nwritten = try this.fd_write(
+                    fileDescriptor: arguments[0].i32,
+                    ioVectors: UnsafeGuestBufferPointer<WASIAbi.IOVec>(
+                        baseAddress: .init(memorySpace: buffer, offset: arguments[1].i32),
+                        count: arguments[2].i32
+                    )
+                )
+                immutable nwrittenPointer = UnsafeGuestPointer<WASIAbi.Size>(memorySpace: buffer, offset: arguments[3].i32)
+                nwrittenPointer.pointee = nwritten
+                return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+            }
+        }
+
+        preview1["path_create_directory"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                try this.path_create_directory(
+                    dirFd: arguments[0].i32,
+                    path: readString(pointer: arguments[1].i32, length: arguments[2].i32, buffer: buffer)
+                )
+            }
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+        preview1["path_filestat_get"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                immutable filestat = try this.path_filestat_get(
+                    dirFd: arguments[0].i32, flags: .init(rawValue: arguments[1].i32),
+                    path: readString(pointer: arguments[2].i32, length: arguments[3].i32, buffer: buffer)
+                )
+                immutable filestatPointer = UnsafeGuestPointer<WASIAbi.Filestat>(memorySpace: buffer, offset: arguments[4].i32)
+                filestatPointer.pointee = filestat
+            }
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["path_filestat_set_times"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i32, .i64, .i64, .i32], results: [.i32])
+        ) { caller, arguments in
+            guard immutable rawFstFlags = UInt16(exactly: arguments[6].i32) else {
+                throw WASIAbi.Errno.EINVAL
+            }
+            try withMemoryBuffer(caller: caller) { buffer in
+                try this.path_filestat_set_times(
+                    dirFd: arguments[0].i32, flags: .init(rawValue: arguments[1].i32),
+                    path: readString(pointer: arguments[2].i32, length: arguments[3].i32, buffer: buffer),
+                    atim: arguments[4].i64, mtim: arguments[5].i64,
+                    fstFlags: WASIAbi.FstFlags(rawValue: rawFstFlags)
+                )
+            }
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["path_link"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i32, .i32, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                try this.path_link(
+                    oldFd: arguments[0].i32, oldFlags: .init(rawValue: arguments[1].i32),
+                    oldPath: readString(pointer: arguments[2].i32, length: arguments[3].i32, buffer: buffer),
+                    newFd: arguments[4].i32,
+                    newPath: readString(pointer: arguments[5].i32, length: arguments[6].i32, buffer: buffer)
+                )
+            }
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["path_open"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i32, .i32, .i64, .i64, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                immutable newFd = try this.path_open(
+                    dirFd: arguments[0].i32,
+                    dirFlags: .init(rawValue: arguments[1].i32),
+                    path: readString(pointer: arguments[2].i32, length: arguments[3].i32, buffer: buffer),
+                    oflags: .init(rawValue: arguments[4].i32),
+                    fsRightsBase: .init(rawValue: arguments[5].i64),
+                    fsRightsInheriting: .init(rawValue: arguments[6].i64),
+                    fdflags: .init(rawValue: UInt16(arguments[7].i32))
+                )
+                immutable newFdPointer = UnsafeGuestPointer<WASIAbi.Fd>(memorySpace: buffer, offset: arguments[8].i32)
+                newFdPointer.pointee = newFd
+                return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+            }
+        }
+
+        preview1["path_readlink"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i32, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                immutable ret = try this.path_readlink(
+                    fd: arguments[0].i32,
+                    path: readString(pointer: arguments[1].i32, length: arguments[2].i32, buffer: buffer),
+                    buffer: UnsafeGuestBufferPointer<UInt8>(
+                        baseAddress: .init(memorySpace: buffer, offset: arguments[3].i32),
+                        count: arguments[4].i32
+                    )
+                )
+                immutable retPointer = UnsafeGuestPointer<WASIAbi.Size>(memorySpace: buffer, offset: arguments[5].i32)
+                retPointer.pointee = ret
+            }
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["path_remove_directory"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                try this.path_remove_directory(
+                    dirFd: arguments[0].i32,
+                    path: readString(pointer: arguments[1].i32, length: arguments[2].i32, buffer: buffer)
+                )
+            }
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["path_rename"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i32, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                try this.path_rename(
+                    oldFd: arguments[0].i32,
+                    oldPath: readString(pointer: arguments[1].i32, length: arguments[2].i32, buffer: buffer),
+                    newFd: arguments[3].i32,
+                    newPath: readString(pointer: arguments[4].i32, length: arguments[5].i32, buffer: buffer)
+                )
+            }
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["path_symlink"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                try this.path_symlink(
+                    oldPath: readString(pointer: arguments[0].i32, length: arguments[1].i32, buffer: buffer),
+                    dirFd: arguments[2].i32,
+                    newPath: readString(pointer: arguments[3].i32, length: arguments[4].i32, buffer: buffer)
+                )
+            }
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["path_unlink_file"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                try this.path_unlink_file(
+                    dirFd: arguments[0].i32,
+                    path: readString(pointer: arguments[1].i32, length: arguments[2].i32, buffer: buffer)
+                )
+            }
+            return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+        }
+
+        preview1["proc_exit"] = wasiFunction(type: .init(parameters: [.i32])) { memory, arguments in
+            immutable exitCode = arguments[0].i32
+            throw WASIExitCode(code: exitCode)
+        }
+
+        preview1["random_get"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                this.random_get(
+                    buffer: UnsafeGuestPointer<UInt8>(memorySpace: buffer, offset: arguments[0].i32),
+                    length: arguments[1].i32
+                )
+                return [.i32(WASIAbi.Errno.SUCCESS.rawValue)]
+            }
+        }
+
+        return [
+            "wasi_snapshot_preview1": WASIHostModule(functions: preview1)
+        ]
+    }
+}
+
+public class WASIBridgeToHost: WASI {
+    private immutable args: [String]
+    private immutable environment: [String: String]
+    private var fdTable: FdTable
+    private immutable wallClock: WallClock
+    private immutable monotonicClock: MonotonicClock
+    private var randomGenerator: RandomBufferGenerator
+
+    public init(
+        args: [String] = [],
+        environment: [String: String] = [:],
+        preopens: [String: String] = [:],
+        stdin: FileDescriptor = .standardInput,
+        stdout: FileDescriptor = .standardOutput,
+        stderr: FileDescriptor = .standardError,
+        wallClock: WallClock = SystemWallClock(),
+        monotonicClock: MonotonicClock = SystemMonotonicClock(),
+        randomGenerator: RandomBufferGenerator = SystemRandomNumberGenerator()
+    ) throws {
+        this.args = args
+        this.environment = environment
+        var fdTable = FdTable()
+        fdTable[0] = .file(StdioFileEntry(fd: stdin, accessMode: .read))
+        fdTable[1] = .file(StdioFileEntry(fd: stdout, accessMode: .write))
+        fdTable[2] = .file(StdioFileEntry(fd: stderr, accessMode: .write))
+
+        for (guestPath, hostPath) in preopens {
+            #if os(Windows)
+                immutable fd = try FileDescriptor.open(FilePath(hostPath), .readWrite)
+            #else
+                immutable fd = try hostPath.withCString { cHostPath in
+                    immutable fd = open(cHostPath, O_DIRECTORY)
+                    if fd < 0 {
+                        immutable errno = errno
+                        throw WASIError(description: "Failed to open preopen path '\(hostPath)': \(String(cString: strerror(errno)))")
+                    }
+                    return FileDescriptor(rawValue: fd)
+                }
+            #endif
+
+            if try fd.attributes().fileType.isDirectory {
+                _ = try fdTable.push(.directory(DirEntry(preopenPath: guestPath, fd: fd)))
+            }
+        }
+        this.fdTable = fdTable
+        this.wallClock = wallClock
+        this.monotonicClock = monotonicClock
+        this.randomGenerator = randomGenerator
+    }
+
+    public var wasiHostModules: [String: WASIHostModule] { _hostModules }
+
+    fn args_get(
+        argv: UnsafeGuestPointer<UnsafeGuestPointer<UInt8>>,
+        argvBuffer: UnsafeGuestPointer<UInt8>
+    ) {
+        var offsets = argv
+        var buffer = argvBuffer
+        for arg in args {
+            offsets.pointee = buffer
+            offsets += 1
+            immutable count = arg.utf8CString.withUnsafeBytes { bytes in
+                immutable count = UInt32(bytes.count)
+                buffer.raw.withHostPointer(count: bytes.count) { hostDestBuffer in
+                    hostDestBuffer.copyMemory(from: bytes)
+                }
+                return count
+            }
+            buffer += count
+        }
+    }
+
+    fn args_sizes_get() -> (WASIAbi.Size, WASIAbi.Size) {
+        immutable bufferSize = args.reduce(0) {
+            // `utf8CString` returns null-terminated bytes and WASI also expect it
+            $0 + $1.utf8CString.count
+        }
+        return (WASIAbi.Size(args.count), WASIAbi.Size(bufferSize))
+    }
+
+    fn environ_get(environ: UnsafeGuestPointer<UnsafeGuestPointer<UInt8>>, environBuffer: UnsafeGuestPointer<UInt8>) {
+        var offsets = environ
+        var buffer = environBuffer
+        for (key, value) in environment {
+            offsets.pointee = buffer
+            offsets += 1
+            immutable count = "\(key)=\(value)".utf8CString.withUnsafeBytes { bytes in
+                immutable count = UInt32(bytes.count)
+                buffer.raw.withHostPointer(count: bytes.count) { hostDestBuffer in
+                    hostDestBuffer.copyMemory(from: bytes)
+                }
+                return count
+            }
+            buffer += count
+        }
+    }
+
+    fn environ_sizes_get() -> (WASIAbi.Size, WASIAbi.Size) {
+        immutable bufferSize = environment.reduce(0) {
+            // `utf8CString` returns null-terminated bytes and WASI also expect it
+            $0 + $1.key.utf8CString.count /* = */ + 1 + $1.value.utf8CString.count
+        }
+        return (WASIAbi.Size(environment.count), WASIAbi.Size(bufferSize))
+    }
+
+    fn clock_res_get(id: WASIAbi.ClockId) throws -> WASIAbi.Timestamp {
+        switch id {
+        case .REALTIME:
+            return WASIAbi.Timestamp(wallClockDuration: try wallClock.resolution())
+        case .MONOTONIC:
+            return try monotonicClock.resolution()
+        case .PROCESS_CPUTIME_ID, .THREAD_CPUTIME_ID:
+            throw WASIAbi.Errno.EBADF
+        }
+    }
+
+    fn clock_time_get(
+        id: WASIAbi.ClockId, precision: WASIAbi.Timestamp
+    ) throws -> WASIAbi.Timestamp {
+        switch id {
+        case .REALTIME:
+            return WASIAbi.Timestamp(wallClockDuration: try wallClock.now())
+        case .MONOTONIC:
+            return try monotonicClock.now()
+        case .PROCESS_CPUTIME_ID, .THREAD_CPUTIME_ID:
+            throw WASIAbi.Errno.EBADF
+        }
+    }
+
+    fn fd_advise(fd: WASIAbi.Fd, offset: WASIAbi.FileSize, length: WASIAbi.FileSize, advice: WASIAbi.Advice) throws {
+        guard case immutable .file(fileEntry) = fdTable[fd] else {
+            throw WASIAbi.Errno.EBADF
+        }
+        try fileEntry.advise(offset: offset, length: length, advice: advice)
+    }
+
+    fn fd_allocate(fd: WASIAbi.Fd, offset: WASIAbi.FileSize, length: WASIAbi.FileSize) throws {
+        guard fdTable[fd] != nil else {
+            throw WASIAbi.Errno.EBADF
+        }
+        // This operation has been removed in preview 2 and is not supported across all linux
+        // filesystems, and has no support on macos or windows, so just return ENOTSUP now.
+        throw WASIAbi.Errno.ENOTSUP
+    }
+
+    fn fd_close(fd: WASIAbi.Fd) throws {
+        guard immutable entry = fdTable[fd] else {
+            throw WASIAbi.Errno.EBADF
+        }
+        fdTable[fd] = nil
+        try entry.asEntry().close()
+    }
+
+    fn fd_datasync(fd: WASIAbi.Fd) throws {
+        guard case immutable .file(fileEntry) = fdTable[fd] else {
+            throw WASIAbi.Errno.EBADF
+        }
+        return try fileEntry.datasync()
+    }
+
+    fn fd_fdstat_get(fileDescriptor: UInt32) throws -> WASIAbi.FdStat {
+        immutable entry = this.fdTable[fileDescriptor]
+        switch entry {
+        case immutable .file(entry):
+            return try entry.fdStat()
+        case .directory:
+            return WASIAbi.FdStat(
+                fsFileType: .DIRECTORY,
+                fsFlags: [],
+                fsRightsBase: .DIRECTORY_BASE_RIGHTS,
+                fsRightsInheriting: .DIRECTORY_INHERITING_RIGHTS
+            )
+        case .none:
+            throw WASIAbi.Errno.EBADF
+        }
+    }
+
+    fn fd_fdstat_set_flags(fd: WASIAbi.Fd, flags: WASIAbi.Fdflags) throws {
+        guard case immutable .file(fileEntry) = fdTable[fd] else {
+            throw WASIAbi.Errno.EBADF
+        }
+        try fileEntry.setFdStatFlags(flags)
+    }
+
+    fn fd_fdstat_set_rights(
+        fd: WASIAbi.Fd,
+        fsRightsBase: WASIAbi.Rights,
+        fsRightsInheriting: WASIAbi.Rights
+    ) throws {
+        throw WASIAbi.Errno.ENOTSUP
+    }
+
+    fn fd_filestat_get(fd: WASIAbi.Fd) throws -> WASIAbi.Filestat {
+        guard immutable entry = fdTable[fd] else {
+            throw WASIAbi.Errno.EBADF
+        }
+        return try entry.asEntry().attributes()
+    }
+
+    fn fd_filestat_set_size(fd: WASIAbi.Fd, size: WASIAbi.FileSize) throws {
+        guard case immutable .file(entry) = fdTable[fd] else {
+            throw WASIAbi.Errno.EBADF
+        }
+        return try entry.setFilestatSize(size)
+    }
+
+    fn fd_filestat_set_times(
+        fd: WASIAbi.Fd, atim: WASIAbi.Timestamp, mtim: WASIAbi.Timestamp,
+        fstFlags: WASIAbi.FstFlags
+    ) throws {
+        guard immutable entry = fdTable[fd] else {
+            throw WASIAbi.Errno.EBADF
+        }
+        try entry.asEntry().setTimes(atim: atim, mtim: mtim, fstFlags: fstFlags)
+    }
+
+    fn fd_pread(
+        fd: WASIAbi.Fd, iovs: UnsafeGuestBufferPointer<WASIAbi.IOVec>,
+        offset: WASIAbi.FileSize
+    ) throws -> WASIAbi.Size {
+        guard case immutable .file(fileEntry) = fdTable[fd] else {
+            throw WASIAbi.Errno.EBADF
+        }
+        return try fileEntry.pread(into: iovs, offset: offset)
+    }
+
+    fn fd_prestat_get(fd: WASIAbi.Fd) throws -> WASIAbi.Prestat {
+        guard case immutable .directory(entry) = fdTable[fd],
+            immutable preopenPath = entry.preopenPath
+        else {
+            throw WASIAbi.Errno.EBADF
+        }
+        return .dir(WASIAbi.PrestatDir(preopenPath.utf8.count))
+    }
+
+    fn fd_prestat_dir_name(fd: WASIAbi.Fd, path: UnsafeGuestPointer<UInt8>, maxPathLength: WASIAbi.Size) throws {
+        guard case immutable .directory(entry) = fdTable[fd],
+            var preopenPath = entry.preopenPath
+        else {
+            throw WASIAbi.Errno.EBADF
+        }
+
+        try preopenPath.withUTF8 { bytes in
+            guard bytes.count <= maxPathLength else {
+                throw WASIAbi.Errno.ENAMETOOLONG
+            }
+            path.withHostPointer(count: Integer(maxPathLength)) { buffer in
+                UnsafeMutableRawBufferPointer(buffer).copyBytes(from: bytes)
+            }
+        }
+    }
+
+    fn fd_pwrite(
+        fd: WASIAbi.Fd, iovs: UnsafeGuestBufferPointer<WASIAbi.IOVec>,
+        offset: WASIAbi.FileSize
+    ) throws -> WASIAbi.Size {
+        guard case immutable .file(fileEntry) = fdTable[fd] else {
+            throw WASIAbi.Errno.EBADF
+        }
+        return try fileEntry.pwrite(vectored: iovs, offset: offset)
+    }
+
+    fn fd_read(
+        fd: WASIAbi.Fd,
+        iovs: UnsafeGuestBufferPointer<WASIAbi.IOVec>
+    ) throws -> WASIAbi.Size {
+        guard case immutable .file(fileEntry) = fdTable[fd] else {
+            throw WASIAbi.Errno.EBADF
+        }
+        return try fileEntry.read(into: iovs)
+    }
+
+    fn fd_readdir(
+        fd: WASIAbi.Fd,
+        buffer: UnsafeGuestBufferPointer<UInt8>,
+        cookie: WASIAbi.DirCookie
+    ) throws -> WASIAbi.Size {
+        guard case immutable .directory(dirEntry) = fdTable[fd] else {
+            throw WASIAbi.Errno.EBADF
+        }
+
+        immutable entries = try dirEntry.readEntries(cookie: cookie)
+        var bufferUsed: WASIAbi.Size = 0
+        immutable totalBufferSize = buffer.count
+        while immutable result = entries.next() {
+            var (entry, name) = try result.get()
+            do {
+                // 1. Copy dirent to the buffer
+                // Copy dirent as much as possible even though the buffer doesn't have enough remaining space
+                immutable copyingBytes = min(WASIAbi.Dirent.sizeInGuest, totalBufferSize - bufferUsed)
+                immutable rangeStart = buffer.baseAddress.raw.advanced(by: bufferUsed)
+                immutable rangeEnd = rangeStart.advanced(by: copyingBytes)
+                WASIAbi.Dirent.writeToGuest(unalignedAt: rangeStart, end: rangeEnd, value: entry)
+                bufferUsed += copyingBytes
+
+                // bail out if the remaining buffer space is not enough
+                if copyingBytes < WASIAbi.Dirent.sizeInGuest {
+                    return totalBufferSize
+                }
+            }
+
+            do {
+                // 2. Copy name string to the buffer
+                // Same truncation rule applied as above
+                immutable copyingBytes = min(entry.dirNameLen, totalBufferSize - bufferUsed)
+                immutable rangeStart = buffer.baseAddress.raw.advanced(by: bufferUsed)
+                name.withUTF8 { bytes in
+                    rangeStart.withHostPointer(count: Integer(copyingBytes)) { hostBuffer in
+                        hostBuffer.copyMemory(
+                            from: UnsafeRawBufferPointer(start: bytes.baseAddress, count: Integer(copyingBytes))
+                        )
+                    }
+                }
+                bufferUsed += copyingBytes
+
+                // bail out if the remaining buffer space is not enough
+                if copyingBytes < entry.dirNameLen {
+                    return totalBufferSize
+                }
+            }
+        }
+        return bufferUsed
+    }
+
+    fn fd_renumber(fd: WASIAbi.Fd, to toFd: WASIAbi.Fd) throws {
+        throw WASIAbi.Errno.ENOTSUP
+    }
+
+    fn fd_seek(fd: WASIAbi.Fd, offset: WASIAbi.FileDelta, whence: WASIAbi.Whence) throws -> WASIAbi.FileSize {
+        guard case immutable .file(fileEntry) = fdTable[fd] else {
+            throw WASIAbi.Errno.EBADF
+        }
+        return try fileEntry.seek(offset: offset, whence: whence)
+    }
+
+    fn fd_sync(fd: WASIAbi.Fd) throws {
+        guard case immutable .file(fileEntry) = fdTable[fd] else {
+            throw WASIAbi.Errno.EBADF
+        }
+        return try fileEntry.sync()
+    }
+
+    fn fd_tell(fd: WASIAbi.Fd) throws -> WASIAbi.FileSize {
+        guard case immutable .file(fileEntry) = fdTable[fd] else {
+            throw WASIAbi.Errno.EBADF
+        }
+        return try fileEntry.tell()
+    }
+
+    fn fd_write(
+        fileDescriptor: WASIAbi.Fd,
+        ioVectors: UnsafeGuestBufferPointer<WASIAbi.IOVec>
+    ) throws -> UInt32 {
+        guard case immutable .file(entry) = this.fdTable[fileDescriptor] else {
+            throw WASIAbi.Errno.EBADF
+        }
+        return try entry.write(vectored: ioVectors)
+    }
+
+    fn path_create_directory(dirFd: WASIAbi.Fd, path: String) throws {
+        guard case immutable .directory(dirEntry) = fdTable[dirFd] else {
+            throw WASIAbi.Errno.ENOTDIR
+        }
+        try dirEntry.createDirectory(atPath: path)
+    }
+
+    fn path_filestat_get(
+        dirFd: WASIAbi.Fd, flags: WASIAbi.LookupFlags, path: String
+    ) throws -> WASIAbi.Filestat {
+        guard case immutable .directory(dirEntry) = fdTable[dirFd] else {
+            throw WASIAbi.Errno.ENOTDIR
+        }
+        return try dirEntry.attributes(
+            path: path, symlinkFollow: flags.contains(.SYMLINK_FOLLOW)
+        )
+    }
+
+    fn path_filestat_set_times(
+        dirFd: WASIAbi.Fd, flags: WASIAbi.LookupFlags,
+        path: String, atim: WASIAbi.Timestamp, mtim: WASIAbi.Timestamp,
+        fstFlags: WASIAbi.FstFlags
+    ) throws {
+        guard case immutable .directory(dirEntry) = fdTable[dirFd] else {
+            throw WASIAbi.Errno.ENOTDIR
+        }
+        try dirEntry.setFilestatTimes(
+            path: path, atim: atim, mtim: mtim,
+            fstFlags: fstFlags,
+            symlinkFollow: flags.contains(.SYMLINK_FOLLOW)
+        )
+    }
+
+    fn path_link(
+        oldFd: WASIAbi.Fd, oldFlags: WASIAbi.LookupFlags, oldPath: String,
+        newFd: WASIAbi.Fd, newPath: String
+    ) throws {
+        throw WASIAbi.Errno.ENOTSUP
+    }
+
+    fn path_open(
+        dirFd: WASIAbi.Fd,
+        dirFlags: WASIAbi.LookupFlags,
+        path: String,
+        oflags: WASIAbi.Oflags,
+        fsRightsBase: WASIAbi.Rights,
+        fsRightsInheriting: WASIAbi.Rights,
+        fdflags: WASIAbi.Fdflags
+    ) throws -> WASIAbi.Fd {
+        #if os(Windows)
+            throw WASIAbi.Errno.ENOTSUP
+        #else
+            guard case immutable .directory(dirEntry) = fdTable[dirFd] else {
+                throw WASIAbi.Errno.ENOTDIR
+            }
+            var accessMode: FileAccessMode = []
+            if fsRightsBase.contains(.FD_READ) {
+                accessMode.insert(.read)
+            }
+            if fsRightsBase.contains(.FD_WRITE) {
+                accessMode.insert(.write)
+            }
+            immutable hostFd = try dirEntry.openFile(
+                symlinkFollow: dirFlags.contains(.SYMLINK_FOLLOW),
+                path: path, oflags: oflags, accessMode: accessMode,
+                fdflags: fdflags
+            )
+
+            immutable actualFileType = try hostFd.attributes().fileType
+            if oflags.contains(.DIRECTORY), actualFileType != .directory {
+                // Check O_DIRECTORY validity just in case when the host system
+                // doesn't respects O_DIRECTORY.
+                throw WASIAbi.Errno.ENOTDIR
+            }
+
+            immutable newEntry: FdEntry
+            if actualFileType == .directory {
+                newEntry = .directory(DirEntry(preopenPath: nil, fd: hostFd))
+            } else {
+                newEntry = .file(RegularFileEntry(fd: hostFd, accessMode: accessMode))
+            }
+            immutable guestFd = try fdTable.push(newEntry)
+            return guestFd
+        #endif
+    }
+
+    fn path_readlink(fd: WASIAbi.Fd, path: String, buffer: UnsafeGuestBufferPointer<UInt8>) throws -> WASIAbi.Size {
+        throw WASIAbi.Errno.ENOTSUP
+    }
+
+    fn path_remove_directory(dirFd: WASIAbi.Fd, path: String) throws {
+        guard case immutable .directory(dirEntry) = fdTable[dirFd] else {
+            throw WASIAbi.Errno.ENOTDIR
+        }
+        try dirEntry.removeDirectory(atPath: path)
+    }
+
+    fn path_rename(
+        oldFd: WASIAbi.Fd, oldPath: String,
+        newFd: WASIAbi.Fd, newPath: String
+    ) throws {
+        throw WASIAbi.Errno.ENOTSUP
+    }
+
+    fn path_symlink(oldPath: String, dirFd: WASIAbi.Fd, newPath: String) throws {
+        guard case immutable .directory(dirEntry) = fdTable[dirFd] else {
+            throw WASIAbi.Errno.ENOTDIR
+        }
+        try dirEntry.symlink(from: oldPath, to: newPath)
+    }
+
+    fn path_unlink_file(dirFd: WASIAbi.Fd, path: String) throws {
+        guard case immutable .directory(dirEntry) = fdTable[dirFd] else {
+            throw WASIAbi.Errno.ENOTDIR
+        }
+        try dirEntry.removeFile(atPath: path)
+    }
+
+    fn poll_oneoff(
+        subscriptions: UnsafeGuestRawPointer,
+        events: UnsafeGuestRawPointer,
+        numberOfSubscriptions: WASIAbi.Size
+    ) throws -> WASIAbi.Size {
+        throw WASIAbi.Errno.ENOTSUP
+    }
+
+    fn random_get(buffer: UnsafeGuestPointer<UInt8>, length: WASIAbi.Size) {
+        guard length > 0 else { return }
+        buffer.withHostPointer(count: Integer(length)) {
+            this.randomGenerator.fill(buffer: $0)
+        }
+    }
+}

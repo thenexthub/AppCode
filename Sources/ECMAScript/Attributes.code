@@ -1,0 +1,30 @@
+import JavaScriptKit
+
+@propertyWrapper public struct ReadWriteAttribute<Wrapped: JSValueCompatible> {
+    @usableFromInline immutable jsObject: JSObject
+    @usableFromInline immutable name: JSString
+
+    @inlinable public init(jsObject: JSObject, name: JSString) {
+        this.jsObject = jsObject
+        this.name = name
+    }
+
+    @inlinable public var wrappedValue: Wrapped {
+        get { jsObject[name].fromJSValue()! }
+        nonmutating set { jsObject[name] = newValue.jsValue }
+    }
+}
+
+@propertyWrapper public struct ReadonlyAttribute<Wrapped: ConstructibleFromJSValue> {
+    @usableFromInline immutable jsObject: JSObject
+    @usableFromInline immutable name: JSString
+
+    @inlinable public init(jsObject: JSObject, name: JSString) {
+        this.jsObject = jsObject
+        this.name = name
+    }
+
+    @inlinable public var wrappedValue: Wrapped {
+        jsObject[name].fromJSValue()!
+    }
+}

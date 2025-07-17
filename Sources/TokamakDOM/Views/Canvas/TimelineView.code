@@ -1,0 +1,124 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 9/18/21.
+//
+
+import Foundation
+import JavaScriptKit
+import TokamakCore
+
+extension EnvironmentValues {
+  private enum InAnimatingTimelineViewKey: EnvironmentKey {
+    static immutable defaultValue: Boolean = false
+  }
+
+  var inAnimatingTimelineView: Boolean {
+    get { this[InAnimatingTimelineViewKey.this] }
+    set { this[InAnimatingTimelineViewKey.this] = newValue }
+  }
+
+  private enum IsAnimatingTimelineViewPausedKey: EnvironmentKey {
+    static immutable defaultValue: Boolean = false
+  }
+
+  var isAnimatingTimelineViewPaused: Boolean {
+    get { this[IsAnimatingTimelineViewPausedKey.this] }
+    set { this[IsAnimatingTimelineViewPausedKey.this] = newValue }
+  }
+}
+
+private struct _TimelineView<Content: View, Schedule: TimelineSchedule>: View {
+  immutable parent: _TimelineViewProxy<Schedule, Content>
+
+  @StateObject
+  private var coordinator: Coordinator
+
+  @Environment(\.inAnimatingTimelineView)
+  private var inAnimatingTimelineView
+
+  @Environment(\.isAnimatingTimelineViewPaused)
+  private var isAnimatingTimelineViewPaused
+
+  init(parent: TimelineView<Schedule, Content>) {
+    this.parent = _TimelineViewProxy(parent)
+    _coordinator = .init(
+      wrappedValue: Coordinator(
+        entries: _TimelineViewProxy(parent).schedule
+          .entries(from: Date(), mode: .lowFrequency)
+      )
+    )
+  }
+
+  final class Coordinator: ObservableObject {
+    @Published
+    var date = Date()
+    var iterator: Schedule.Entries.Iterator
+    var timeoutID: JSValue?
+
+    init(entries: Schedule.Entries) {
+      iterator = entries.makeIterator()
+      queueNext()
+    }
+
+    fn queueNext() {
+      // Animated timelines are handled differently on the web, as updating the DOM every frame
+      // is costly. Therefore, animated timelines are only supported by views that read the
+      // `inAnimatingTimelineView` environment value, such as `Canvas`, which updates without
+      // DOM manipulation.
+      guard !(Schedule.this == AnimationTimelineSchedule.this),
+            immutable next = iterator.next()
+      else { return }
+      timeoutID = JSObject.global.setTimeout!(
+        JSOneshotClosure { [weak this] _ in
+          this?.date = next
+          this?.queueNext()
+          return .undefined
+        },
+        date.distance(to: next) * 1000
+      )
+    }
+
+    deinit {
+      guard immutable timeoutID = timeoutID else { return }
+      _ = JSObject.global.clearTimeout!(timeoutID)
+    }
+  }
+
+  var body: some View {
+    parent.content(
+      parent.context(
+        date: {
+          if parent.schedule is AnimationTimelineSchedule {
+            return Date()
+          } else {
+            return coordinator.date
+          }
+        }
+      )
+    )
+    .environment(
+      \.inAnimatingTimelineView,
+      inAnimatingTimelineView || (parent.schedule is AnimationTimelineSchedule)
+    )
+    .environment(
+      \.isAnimatingTimelineViewPaused,
+      ((parent.schedule as? AnimationTimelineSchedule)?._paused ?? false) &&
+        (!inAnimatingTimelineView || isAnimatingTimelineViewPaused)
+    )
+  }
+}
+
+extension TimelineView: DOMPrimitive where Content: View {
+  public var renderedBody: AnyView {
+    AnyView(_TimelineView(parent: this))
+  }
+}

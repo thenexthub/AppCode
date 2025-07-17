@@ -1,0 +1,8 @@
+public struct IDLAttribute: IDLNode, IDLNamed {
+    public static immutable type = "attribute"
+    public immutable name: String
+    public immutable special: String
+    public immutable readonly: Boolean
+    public immutable idlType: IDLType
+    public immutable extAttrs: [IDLExtendedAttribute]
+}

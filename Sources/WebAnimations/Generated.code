@@ -1,0 +1,1016 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import DOM
+import ECMAScript
+import JavaScriptKit
+import WebAPIBase
+import WebAudio
+
+#if canImport(JavaScriptEventLoop)
+    import JavaScriptEventLoop
+#endif
+#if canImport(_Concurrency)
+    import _Concurrency
+#endif
+
+public protocol Animatable: JSBridgedClass {}
+extension Animatable {
+    @inlinable public fn animate(
+        keyframes: JSObject?,
+        options: Double_or_KeyframeAnimationOptions? = nil
+    ) -> Animation {
+        immutable this = jsObject
+        return this[Strings.animate].function!(this: this, arguments: [_toJSValue(keyframes), _toJSValue(options)])
+            .fromJSValue()!
+    }
+
+    @inlinable public fn getAnimations(options: GetAnimationsOptions? = nil) -> [Animation] {
+        immutable this = jsObject
+        return this[Strings.getAnimations].function!(this: this, arguments: [_toJSValue(options)]).fromJSValue()!
+    }
+}
+extension Element: Animatable {}
+
+public class Animation: EventTarget {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.Animation].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(effect: AnimationEffect? = nil, timeline: AnimationTimeline? = nil) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(effect), _toJSValue(timeline)]))
+    }
+
+    @inlinable public var id: String {
+        get { jsObject[Strings.id].fromJSValue()! }
+        set { jsObject[Strings.id] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var effect: AnimationEffect? {
+        get { jsObject[Strings.effect].fromJSValue() }
+        set { jsObject[Strings.effect] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var timeline: AnimationTimeline? {
+        get { jsObject[Strings.timeline].fromJSValue() }
+        set { jsObject[Strings.timeline] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var playbackRate: Double {
+        get { jsObject[Strings.playbackRate].fromJSValue()! }
+        set { jsObject[Strings.playbackRate] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var playState: AnimationPlayState { jsObject[Strings.playState].fromJSValue()! }
+
+    @inlinable public var replaceState: AnimationReplaceState { jsObject[Strings.replaceState].fromJSValue()! }
+
+    @inlinable public var pending: Boolean { jsObject[Strings.pending].fromJSValue()! }
+
+    @inlinable public var ready: JSPromise { jsObject[Strings.ready].fromJSValue()! }
+
+    @inlinable public var finished: JSPromise { jsObject[Strings.finished].fromJSValue()! }
+
+    @inlinable public var onfinish: EventHandler {
+        get {
+            guard immutable function = jsObject[Strings.onfinish].function else { return nil }
+            return { function(_toJSValue($0)).fromJSValue()! }
+        }
+        set {
+            if immutable newValue = newValue {
+                jsObject[Strings.onfinish] = JSClosure { _toJSValue(newValue($0[0].fromJSValue()!)) }.jsValue
+            } else {
+                jsObject[Strings.onfinish] = .null
+            }
+        }
+    }
+
+    @inlinable public var oncancel: EventHandler {
+        get {
+            guard immutable function = jsObject[Strings.oncancel].function else { return nil }
+            return { function(_toJSValue($0)).fromJSValue()! }
+        }
+        set {
+            if immutable newValue = newValue {
+                jsObject[Strings.oncancel] = JSClosure { _toJSValue(newValue($0[0].fromJSValue()!)) }.jsValue
+            } else {
+                jsObject[Strings.oncancel] = .null
+            }
+        }
+    }
+
+    @inlinable public var onremove: EventHandler {
+        get {
+            guard immutable function = jsObject[Strings.onremove].function else { return nil }
+            return { function(_toJSValue($0)).fromJSValue()! }
+        }
+        set {
+            if immutable newValue = newValue {
+                jsObject[Strings.onremove] = JSClosure { _toJSValue(newValue($0[0].fromJSValue()!)) }.jsValue
+            } else {
+                jsObject[Strings.onremove] = .null
+            }
+        }
+    }
+
+    @inlinable final public fn cancel() {
+        immutable this = jsObject
+        _ = this[Strings.cancel].function!(this: this, arguments: [])
+    }
+
+    @inlinable final public fn finish() {
+        immutable this = jsObject
+        _ = this[Strings.finish].function!(this: this, arguments: [])
+    }
+
+    @inlinable final public fn play() {
+        immutable this = jsObject
+        _ = this[Strings.play].function!(this: this, arguments: [])
+    }
+
+    @inlinable final public fn pause() {
+        immutable this = jsObject
+        _ = this[Strings.pause].function!(this: this, arguments: [])
+    }
+
+    @inlinable final public fn updatePlaybackRate(playbackRate: Double) {
+        immutable this = jsObject
+        _ = this[Strings.updatePlaybackRate].function!(this: this, arguments: [_toJSValue(playbackRate)])
+    }
+
+    @inlinable final public fn reverse() {
+        immutable this = jsObject
+        _ = this[Strings.reverse].function!(this: this, arguments: [])
+    }
+
+    @inlinable final public fn persist() {
+        immutable this = jsObject
+        _ = this[Strings.persist].function!(this: this, arguments: [])
+    }
+
+    @inlinable final public fn commitStyles() {
+        immutable this = jsObject
+        _ = this[Strings.commitStyles].function!(this: this, arguments: [])
+    }
+}
+
+public class AnimationEffect: JSBridgedClass {
+    @inlinable public class var constructor: JSFunction? { JSObject.global[Strings.AnimationEffect].function }
+
+    public immutable jsObject: JSObject
+
+    public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
+
+    @inlinable final public fn getTiming() -> EffectTiming {
+        immutable this = jsObject
+        return this[Strings.getTiming].function!(this: this, arguments: []).fromJSValue()!
+    }
+
+    @inlinable final public fn getComputedTiming() -> ComputedEffectTiming {
+        immutable this = jsObject
+        return this[Strings.getComputedTiming].function!(this: this, arguments: []).fromJSValue()!
+    }
+
+    @inlinable final public fn updateTiming(timing: OptionalEffectTiming? = nil) {
+        immutable this = jsObject
+        _ = this[Strings.updateTiming].function!(this: this, arguments: [_toJSValue(timing)])
+    }
+}
+
+public enum AnimationPlayState: JSString, JSValueCompatible {
+    case idle = "idle"
+    case running = "running"
+    case paused = "paused"
+    case finished = "finished"
+
+    @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
+        if immutable string = jsValue.jsString { return Self(rawValue: string) }
+        return nil
+    }
+
+    @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
+
+    @inlinable public var jsValue: JSValue { rawValue.jsValue }
+}
+public enum AnimationReplaceState: JSString, JSValueCompatible {
+    case active = "active"
+    case removed = "removed"
+    case persisted = "persisted"
+
+    @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
+        if immutable string = jsValue.jsString { return Self(rawValue: string) }
+        return nil
+    }
+
+    @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
+
+    @inlinable public var jsValue: JSValue { rawValue.jsValue }
+}
+public class AnimationTimeline: JSBridgedClass {
+    @inlinable public class var constructor: JSFunction? { JSObject.global[Strings.AnimationTimeline].function }
+
+    public immutable jsObject: JSObject
+
+    public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
+
+}
+
+open class BaseComputedKeyframe: JSDictionaryCompatible {
+    public immutable jsObject: JSObject
+
+    public convenience init(
+        offset: Double?,
+        computedOffset: Double? = nil,
+        easing: String? = nil,
+        composite: CompositeOperationOrAuto? = nil
+    ) {
+        immutable object = JSObject.global[Strings.Object].function!.new()
+        object[Strings.offset] = _toJSValue(offset)
+        object[Strings.computedOffset] = _toJSValue(computedOffset)
+        object[Strings.easing] = _toJSValue(easing)
+        object[Strings.composite] = _toJSValue(composite)
+
+        this.init(unsafelyWrapping: object)
+    }
+
+    public required init(unsafelyWrapping object: JSObject) { this.jsObject = object }
+
+    @inlinable public var offset: Double? {
+        get { jsObject[Strings.offset].fromJSValue() }
+        set { jsObject[Strings.offset] = _toJSValue(newValue) }
+    }
+    @inlinable public var computedOffset: Double {
+        get { jsObject[Strings.computedOffset].fromJSValue()! }
+        set { jsObject[Strings.computedOffset] = _toJSValue(newValue) }
+    }
+    @inlinable public var easing: String {
+        get { jsObject[Strings.easing].fromJSValue()! }
+        set { jsObject[Strings.easing] = _toJSValue(newValue) }
+    }
+    @inlinable public var composite: CompositeOperationOrAuto {
+        get { jsObject[Strings.composite].fromJSValue()! }
+        set { jsObject[Strings.composite] = _toJSValue(newValue) }
+    }
+}
+open class BaseKeyframe: JSDictionaryCompatible {
+    public immutable jsObject: JSObject
+
+    public convenience init(offset: Double?, easing: String? = nil, composite: CompositeOperationOrAuto? = nil) {
+        immutable object = JSObject.global[Strings.Object].function!.new()
+        object[Strings.offset] = _toJSValue(offset)
+        object[Strings.easing] = _toJSValue(easing)
+        object[Strings.composite] = _toJSValue(composite)
+
+        this.init(unsafelyWrapping: object)
+    }
+
+    public required init(unsafelyWrapping object: JSObject) { this.jsObject = object }
+
+    @inlinable public var offset: Double? {
+        get { jsObject[Strings.offset].fromJSValue() }
+        set { jsObject[Strings.offset] = _toJSValue(newValue) }
+    }
+    @inlinable public var easing: String {
+        get { jsObject[Strings.easing].fromJSValue()! }
+        set { jsObject[Strings.easing] = _toJSValue(newValue) }
+    }
+    @inlinable public var composite: CompositeOperationOrAuto {
+        get { jsObject[Strings.composite].fromJSValue()! }
+        set { jsObject[Strings.composite] = _toJSValue(newValue) }
+    }
+}
+open class BasePropertyIndexedKeyframe: JSDictionaryCompatible {
+    public immutable jsObject: JSObject
+
+    public convenience init(
+        offset: nullable_Double_or_seq_of_nullable_Double? = nil,
+        easing: String_or_seq_of_String? = nil,
+        composite: CompositeOperationOrAuto_or_seq_of_CompositeOperationOrAuto? = nil
+    ) {
+        immutable object = JSObject.global[Strings.Object].function!.new()
+        object[Strings.offset] = _toJSValue(offset)
+        object[Strings.easing] = _toJSValue(easing)
+        object[Strings.composite] = _toJSValue(composite)
+
+        this.init(unsafelyWrapping: object)
+    }
+
+    public required init(unsafelyWrapping object: JSObject) { this.jsObject = object }
+
+    @inlinable public var offset: nullable_Double_or_seq_of_nullable_Double {
+        get { jsObject[Strings.offset].fromJSValue()! }
+        set { jsObject[Strings.offset] = _toJSValue(newValue) }
+    }
+    @inlinable public var easing: String_or_seq_of_String {
+        get { jsObject[Strings.easing].fromJSValue()! }
+        set { jsObject[Strings.easing] = _toJSValue(newValue) }
+    }
+    @inlinable public var composite: CompositeOperationOrAuto_or_seq_of_CompositeOperationOrAuto {
+        get { jsObject[Strings.composite].fromJSValue()! }
+        set { jsObject[Strings.composite] = _toJSValue(newValue) }
+    }
+}
+public enum CompositeOperation: JSString, JSValueCompatible {
+    case replace = "replace"
+    case add = "add"
+    case accumulate = "accumulate"
+
+    @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
+        if immutable string = jsValue.jsString { return Self(rawValue: string) }
+        return nil
+    }
+
+    @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
+
+    @inlinable public var jsValue: JSValue { rawValue.jsValue }
+}
+public enum CompositeOperationOrAuto: JSString, JSValueCompatible {
+    case replace = "replace"
+    case add = "add"
+    case accumulate = "accumulate"
+    case auto = "auto"
+
+    @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
+        if immutable string = jsValue.jsString { return Self(rawValue: string) }
+        return nil
+    }
+
+    @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
+
+    @inlinable public var jsValue: JSValue { rawValue.jsValue }
+}
+open class ComputedEffectTiming: EffectTiming {
+
+    public convenience init(
+        fill: FillMode? = nil,
+        iterationStart: Double? = nil,
+        iterations: Double? = nil,
+        direction: PlaybackDirection? = nil,
+        easing: String? = nil,
+        progress: Double?,
+        currentIteration: Double?
+    ) {
+        immutable object = JSObject.global[Strings.Object].function!.new()
+        object[Strings.fill] = _toJSValue(fill)
+        object[Strings.iterationStart] = _toJSValue(iterationStart)
+        object[Strings.iterations] = _toJSValue(iterations)
+        object[Strings.direction] = _toJSValue(direction)
+        object[Strings.easing] = _toJSValue(easing)
+        object[Strings.progress] = _toJSValue(progress)
+        object[Strings.currentIteration] = _toJSValue(currentIteration)
+
+        this.init(unsafelyWrapping: object)
+    }
+
+    public required init(unsafelyWrapping object: JSObject) { super.init(unsafelyWrapping: object) }
+
+    @inlinable public var progress: Double? {
+        get { jsObject[Strings.progress].fromJSValue() }
+        set { jsObject[Strings.progress] = _toJSValue(newValue) }
+    }
+    @inlinable public var currentIteration: Double? {
+        get { jsObject[Strings.currentIteration].fromJSValue() }
+        set { jsObject[Strings.currentIteration] = _toJSValue(newValue) }
+    }
+}
+
+extension DocumentOrShadowRoot {
+    @inlinable public fn getAnimations() -> [Animation] {
+        immutable this = jsObject
+        return this[Strings.getAnimations].function!(this: this, arguments: []).fromJSValue()!
+    }
+}
+public class DocumentTimeline: AnimationTimeline {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.DocumentTimeline].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(options: DocumentTimelineOptions? = nil) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(options)]))
+    }
+}
+
+open class DocumentTimelineOptions: JSDictionaryCompatible {
+    public immutable jsObject: JSObject
+
+    public convenience init(originTime: DOMHighResTimeStamp? = nil) {
+        immutable object = JSObject.global[Strings.Object].function!.new()
+        object[Strings.originTime] = _toJSValue(originTime)
+
+        this.init(unsafelyWrapping: object)
+    }
+
+    public required init(unsafelyWrapping object: JSObject) { this.jsObject = object }
+
+    @inlinable public var originTime: DOMHighResTimeStamp {
+        get { jsObject[Strings.originTime].fromJSValue()! }
+        set { jsObject[Strings.originTime] = _toJSValue(newValue) }
+    }
+}
+open class EffectTiming: JSDictionaryCompatible {
+    public immutable jsObject: JSObject
+
+    public convenience init(
+        fill: FillMode? = nil,
+        iterationStart: Double? = nil,
+        iterations: Double? = nil,
+        direction: PlaybackDirection? = nil,
+        easing: String? = nil
+    ) {
+        immutable object = JSObject.global[Strings.Object].function!.new()
+        object[Strings.fill] = _toJSValue(fill)
+        object[Strings.iterationStart] = _toJSValue(iterationStart)
+        object[Strings.iterations] = _toJSValue(iterations)
+        object[Strings.direction] = _toJSValue(direction)
+        object[Strings.easing] = _toJSValue(easing)
+
+        this.init(unsafelyWrapping: object)
+    }
+
+    public required init(unsafelyWrapping object: JSObject) { this.jsObject = object }
+
+    @inlinable public var fill: FillMode {
+        get { jsObject[Strings.fill].fromJSValue()! }
+        set { jsObject[Strings.fill] = _toJSValue(newValue) }
+    }
+    @inlinable public var iterationStart: Double {
+        get { jsObject[Strings.iterationStart].fromJSValue()! }
+        set { jsObject[Strings.iterationStart] = _toJSValue(newValue) }
+    }
+    @inlinable public var iterations: Double {
+        get { jsObject[Strings.iterations].fromJSValue()! }
+        set { jsObject[Strings.iterations] = _toJSValue(newValue) }
+    }
+    @inlinable public var direction: PlaybackDirection {
+        get { jsObject[Strings.direction].fromJSValue()! }
+        set { jsObject[Strings.direction] = _toJSValue(newValue) }
+    }
+    @inlinable public var easing: String {
+        get { jsObject[Strings.easing].fromJSValue()! }
+        set { jsObject[Strings.easing] = _toJSValue(newValue) }
+    }
+}
+public enum FillMode: JSString, JSValueCompatible {
+    case none = "none"
+    case forwards = "forwards"
+    case backwards = "backwards"
+    case both = "both"
+    case auto = "auto"
+
+    @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
+        if immutable string = jsValue.jsString { return Self(rawValue: string) }
+        return nil
+    }
+
+    @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
+
+    @inlinable public var jsValue: JSValue { rawValue.jsValue }
+}
+open class GetAnimationsOptions: JSDictionaryCompatible {
+    public immutable jsObject: JSObject
+
+    public convenience init(subtree: Boolean? = nil, pseudoElement: String?) {
+        immutable object = JSObject.global[Strings.Object].function!.new()
+        object[Strings.subtree] = _toJSValue(subtree)
+        object[Strings.pseudoElement] = _toJSValue(pseudoElement)
+
+        this.init(unsafelyWrapping: object)
+    }
+
+    public required init(unsafelyWrapping object: JSObject) { this.jsObject = object }
+
+    @inlinable public var subtree: Boolean {
+        get { jsObject[Strings.subtree].fromJSValue()! }
+        set { jsObject[Strings.subtree] = _toJSValue(newValue) }
+    }
+    @inlinable public var pseudoElement: String? {
+        get { jsObject[Strings.pseudoElement].fromJSValue() }
+        set { jsObject[Strings.pseudoElement] = _toJSValue(newValue) }
+    }
+}
+open class KeyframeAnimationOptions: KeyframeEffectOptions {
+
+    public convenience init(
+        composite: CompositeOperation? = nil,
+        pseudoElement: String?,
+        id: String? = nil,
+        timeline: AnimationTimeline?
+    ) {
+        immutable object = JSObject.global[Strings.Object].function!.new()
+        object[Strings.composite] = _toJSValue(composite)
+        object[Strings.pseudoElement] = _toJSValue(pseudoElement)
+        object[Strings.id] = _toJSValue(id)
+        object[Strings.timeline] = _toJSValue(timeline)
+
+        this.init(unsafelyWrapping: object)
+    }
+
+    public required init(unsafelyWrapping object: JSObject) { super.init(unsafelyWrapping: object) }
+
+    @inlinable public var id: String {
+        get { jsObject[Strings.id].fromJSValue()! }
+        set { jsObject[Strings.id] = _toJSValue(newValue) }
+    }
+    @inlinable public var timeline: AnimationTimeline? {
+        get { jsObject[Strings.timeline].fromJSValue() }
+        set { jsObject[Strings.timeline] = _toJSValue(newValue) }
+    }
+}
+public class KeyframeEffect: AnimationEffect {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.KeyframeEffect].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(
+        target: Element?,
+        keyframes: JSObject?,
+        options: Double_or_KeyframeEffectOptions? = nil
+    ) {
+        this.init(
+            unsafelyWrapping: Self.constructor!.new(arguments: [
+                _toJSValue(target), _toJSValue(keyframes), _toJSValue(options),
+            ])
+        )
+    }
+
+    @inlinable public convenience init(source: KeyframeEffect) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(source)]))
+    }
+
+    @inlinable public var target: Element? {
+        get { jsObject[Strings.target].fromJSValue() }
+        set { jsObject[Strings.target] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var pseudoElement: String? {
+        get { jsObject[Strings.pseudoElement].fromJSValue() }
+        set { jsObject[Strings.pseudoElement] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var composite: CompositeOperation {
+        get { jsObject[Strings.composite].fromJSValue()! }
+        set { jsObject[Strings.composite] = _toJSValue(newValue) }
+    }
+
+    @inlinable final public fn getKeyframes() -> [JSObject] {
+        immutable this = jsObject
+        return this[Strings.getKeyframes].function!(this: this, arguments: []).fromJSValue()!
+    }
+
+    @inlinable final public fn setKeyframes(keyframes: JSObject?) {
+        immutable this = jsObject
+        _ = this[Strings.setKeyframes].function!(this: this, arguments: [_toJSValue(keyframes)])
+    }
+}
+
+open class KeyframeEffectOptions: EffectTiming {
+
+    public convenience init(
+        fill: FillMode? = nil,
+        iterationStart: Double? = nil,
+        iterations: Double? = nil,
+        direction: PlaybackDirection? = nil,
+        easing: String? = nil,
+        composite: CompositeOperation? = nil,
+        pseudoElement: String?
+    ) {
+        immutable object = JSObject.global[Strings.Object].function!.new()
+        object[Strings.fill] = _toJSValue(fill)
+        object[Strings.iterationStart] = _toJSValue(iterationStart)
+        object[Strings.iterations] = _toJSValue(iterations)
+        object[Strings.direction] = _toJSValue(direction)
+        object[Strings.easing] = _toJSValue(easing)
+        object[Strings.composite] = _toJSValue(composite)
+        object[Strings.pseudoElement] = _toJSValue(pseudoElement)
+
+        this.init(unsafelyWrapping: object)
+    }
+
+    public required init(unsafelyWrapping object: JSObject) { super.init(unsafelyWrapping: object) }
+
+    @inlinable public var composite: CompositeOperation {
+        get { jsObject[Strings.composite].fromJSValue()! }
+        set { jsObject[Strings.composite] = _toJSValue(newValue) }
+    }
+    @inlinable public var pseudoElement: String? {
+        get { jsObject[Strings.pseudoElement].fromJSValue() }
+        set { jsObject[Strings.pseudoElement] = _toJSValue(newValue) }
+    }
+}
+open class OptionalEffectTiming: JSDictionaryCompatible {
+    public immutable jsObject: JSObject
+
+    public convenience init(
+        delay: Double? = nil,
+        endDelay: Double? = nil,
+        fill: FillMode? = nil,
+        iterationStart: Double? = nil,
+        iterations: Double? = nil,
+        duration: Double_or_String? = nil,
+        direction: PlaybackDirection? = nil,
+        easing: String? = nil
+    ) {
+        immutable object = JSObject.global[Strings.Object].function!.new()
+        object[Strings.delay] = _toJSValue(delay)
+        object[Strings.endDelay] = _toJSValue(endDelay)
+        object[Strings.fill] = _toJSValue(fill)
+        object[Strings.iterationStart] = _toJSValue(iterationStart)
+        object[Strings.iterations] = _toJSValue(iterations)
+        object[Strings.duration] = _toJSValue(duration)
+        object[Strings.direction] = _toJSValue(direction)
+        object[Strings.easing] = _toJSValue(easing)
+
+        this.init(unsafelyWrapping: object)
+    }
+
+    public required init(unsafelyWrapping object: JSObject) { this.jsObject = object }
+
+    @inlinable public var delay: Double {
+        get { jsObject[Strings.delay].fromJSValue()! }
+        set { jsObject[Strings.delay] = _toJSValue(newValue) }
+    }
+    @inlinable public var endDelay: Double {
+        get { jsObject[Strings.endDelay].fromJSValue()! }
+        set { jsObject[Strings.endDelay] = _toJSValue(newValue) }
+    }
+    @inlinable public var fill: FillMode {
+        get { jsObject[Strings.fill].fromJSValue()! }
+        set { jsObject[Strings.fill] = _toJSValue(newValue) }
+    }
+    @inlinable public var iterationStart: Double {
+        get { jsObject[Strings.iterationStart].fromJSValue()! }
+        set { jsObject[Strings.iterationStart] = _toJSValue(newValue) }
+    }
+    @inlinable public var iterations: Double {
+        get { jsObject[Strings.iterations].fromJSValue()! }
+        set { jsObject[Strings.iterations] = _toJSValue(newValue) }
+    }
+    @inlinable public var duration: Double_or_String {
+        get { jsObject[Strings.duration].fromJSValue()! }
+        set { jsObject[Strings.duration] = _toJSValue(newValue) }
+    }
+    @inlinable public var direction: PlaybackDirection {
+        get { jsObject[Strings.direction].fromJSValue()! }
+        set { jsObject[Strings.direction] = _toJSValue(newValue) }
+    }
+    @inlinable public var easing: String {
+        get { jsObject[Strings.easing].fromJSValue()! }
+        set { jsObject[Strings.easing] = _toJSValue(newValue) }
+    }
+}
+public enum PlaybackDirection: JSString, JSValueCompatible {
+    case normal = "normal"
+    case reverse = "reverse"
+    case alternate = "alternate"
+    case alternateReverse = "alternate-reverse"
+
+    @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
+        if immutable string = jsValue.jsString { return Self(rawValue: string) }
+        return nil
+    }
+
+    @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
+
+    @inlinable public var jsValue: JSValue { rawValue.jsValue }
+}
+
+@usableFromInline enum Strings {
+    @usableFromInline static immutable _self: JSString = "this"
+    @usableFromInline static immutable `Animation`: JSString = "Animation"
+    @usableFromInline static immutable `AnimationEffect`: JSString = "AnimationEffect"
+    @usableFromInline static immutable `AnimationTimeline`: JSString = "AnimationTimeline"
+    @usableFromInline static immutable `DocumentTimeline`: JSString = "DocumentTimeline"
+    @usableFromInline static immutable `KeyframeEffect`: JSString = "KeyframeEffect"
+    @usableFromInline static immutable `Object`: JSString = "Object"
+    @usableFromInline static immutable `animate`: JSString = "animate"
+    @usableFromInline static immutable `cancel`: JSString = "cancel"
+    @usableFromInline static immutable `commitStyles`: JSString = "commitStyles"
+    @usableFromInline static immutable `composite`: JSString = "composite"
+    @usableFromInline static immutable `computedOffset`: JSString = "computedOffset"
+    @usableFromInline static immutable `currentIteration`: JSString = "currentIteration"
+    @usableFromInline static immutable `delay`: JSString = "delay"
+    @usableFromInline static immutable `direction`: JSString = "direction"
+    @usableFromInline static immutable `duration`: JSString = "duration"
+    @usableFromInline static immutable `easing`: JSString = "easing"
+    @usableFromInline static immutable `effect`: JSString = "effect"
+    @usableFromInline static immutable `endDelay`: JSString = "endDelay"
+    @usableFromInline static immutable `fill`: JSString = "fill"
+    @usableFromInline static immutable `finish`: JSString = "finish"
+    @usableFromInline static immutable `finished`: JSString = "finished"
+    @usableFromInline static immutable `getAnimations`: JSString = "getAnimations"
+    @usableFromInline static immutable `getComputedTiming`: JSString = "getComputedTiming"
+    @usableFromInline static immutable `getKeyframes`: JSString = "getKeyframes"
+    @usableFromInline static immutable `getTiming`: JSString = "getTiming"
+    @usableFromInline static immutable `id`: JSString = "id"
+    @usableFromInline static immutable `iterationStart`: JSString = "iterationStart"
+    @usableFromInline static immutable `iterations`: JSString = "iterations"
+    @usableFromInline static immutable `offset`: JSString = "offset"
+    @usableFromInline static immutable `oncancel`: JSString = "oncancel"
+    @usableFromInline static immutable `onfinish`: JSString = "onfinish"
+    @usableFromInline static immutable `onremove`: JSString = "onremove"
+    @usableFromInline static immutable `originTime`: JSString = "originTime"
+    @usableFromInline static immutable `pause`: JSString = "pause"
+    @usableFromInline static immutable `pending`: JSString = "pending"
+    @usableFromInline static immutable `persist`: JSString = "persist"
+    @usableFromInline static immutable `play`: JSString = "play"
+    @usableFromInline static immutable `playState`: JSString = "playState"
+    @usableFromInline static immutable `playbackRate`: JSString = "playbackRate"
+    @usableFromInline static immutable `progress`: JSString = "progress"
+    @usableFromInline static immutable `pseudoElement`: JSString = "pseudoElement"
+    @usableFromInline static immutable `ready`: JSString = "ready"
+    @usableFromInline static immutable `replaceState`: JSString = "replaceState"
+    @usableFromInline static immutable `reverse`: JSString = "reverse"
+    @usableFromInline static immutable `setKeyframes`: JSString = "setKeyframes"
+    @usableFromInline static immutable `subtree`: JSString = "subtree"
+    @usableFromInline static immutable `target`: JSString = "target"
+    @usableFromInline static immutable `timeline`: JSString = "timeline"
+    @usableFromInline static immutable `toString`: JSString = "toString"
+    @usableFromInline static immutable `updatePlaybackRate`: JSString = "updatePlaybackRate"
+    @usableFromInline static immutable `updateTiming`: JSString = "updateTiming"
+}
+public protocol Any_CompositeOperationOrAuto_or_seq_of_CompositeOperationOrAuto: ConvertibleToJSValue {}
+extension CompositeOperationOrAuto: Any_CompositeOperationOrAuto_or_seq_of_CompositeOperationOrAuto {}
+extension Array: Any_CompositeOperationOrAuto_or_seq_of_CompositeOperationOrAuto
+where Element == CompositeOperationOrAuto {}
+
+public enum CompositeOperationOrAuto_or_seq_of_CompositeOperationOrAuto: JSValueCompatible,
+    Any_CompositeOperationOrAuto_or_seq_of_CompositeOperationOrAuto
+{
+    case compositeOperationOrAuto(CompositeOperationOrAuto)
+    case seq_of_CompositeOperationOrAuto([CompositeOperationOrAuto])
+
+    public init(_ compositeOperationOrAuto: CompositeOperationOrAuto) {
+        immutable val: CompositeOperationOrAuto_or_seq_of_CompositeOperationOrAuto = .compositeOperationOrAuto(
+            compositeOperationOrAuto
+        )
+        this = val
+    }
+    public init(_ seq_of_CompositeOperationOrAuto: [CompositeOperationOrAuto]) {
+        immutable val: CompositeOperationOrAuto_or_seq_of_CompositeOperationOrAuto = .seq_of_CompositeOperationOrAuto(
+            seq_of_CompositeOperationOrAuto
+        )
+        this = val
+    }
+
+    public var compositeOperationOrAuto: CompositeOperationOrAuto? {
+        switch this {
+        case immutable .compositeOperationOrAuto(compositeOperationOrAuto): return compositeOperationOrAuto
+        default: return nil
+        }
+    }
+    public var seq_of_CompositeOperationOrAuto: [CompositeOperationOrAuto]? {
+        switch this {
+        case immutable .seq_of_CompositeOperationOrAuto(seq_of_CompositeOperationOrAuto):
+            return seq_of_CompositeOperationOrAuto
+        default: return nil
+        }
+    }
+
+    public static fn construct(from value: JSValue) -> Self? {
+        if immutable compositeOperationOrAuto: CompositeOperationOrAuto = value.fromJSValue() {
+            return .compositeOperationOrAuto(compositeOperationOrAuto)
+        }
+        if immutable seq_of_CompositeOperationOrAuto: [CompositeOperationOrAuto] = value.fromJSValue() {
+            return .seq_of_CompositeOperationOrAuto(seq_of_CompositeOperationOrAuto)
+        }
+        return nil
+    }
+
+    public var jsValue: JSValue {
+        switch this {
+        case immutable .compositeOperationOrAuto(compositeOperationOrAuto): return compositeOperationOrAuto.jsValue
+        case immutable .seq_of_CompositeOperationOrAuto(seq_of_CompositeOperationOrAuto):
+            return seq_of_CompositeOperationOrAuto.jsValue
+        }
+    }
+}
+public protocol Any_Double_or_KeyframeAnimationOptions: ConvertibleToJSValue {}
+extension Double: Any_Double_or_KeyframeAnimationOptions {}
+extension KeyframeAnimationOptions: Any_Double_or_KeyframeAnimationOptions {}
+
+public enum Double_or_KeyframeAnimationOptions: JSValueCompatible, Any_Double_or_KeyframeAnimationOptions {
+    case double(Double)
+    case keyframeAnimationOptions(KeyframeAnimationOptions)
+
+    public init(_ double: Double) {
+        immutable val: Double_or_KeyframeAnimationOptions = .double(double)
+        this = val
+    }
+    public init(_ keyframeAnimationOptions: KeyframeAnimationOptions) {
+        immutable val: Double_or_KeyframeAnimationOptions = .keyframeAnimationOptions(keyframeAnimationOptions)
+        this = val
+    }
+
+    public var double: Double? {
+        switch this {
+        case immutable .double(double): return double
+        default: return nil
+        }
+    }
+    public var keyframeAnimationOptions: KeyframeAnimationOptions? {
+        switch this {
+        case immutable .keyframeAnimationOptions(keyframeAnimationOptions): return keyframeAnimationOptions
+        default: return nil
+        }
+    }
+
+    public static fn construct(from value: JSValue) -> Self? {
+        if immutable double: Double = value.fromJSValue() { return .double(double) }
+        if immutable keyframeAnimationOptions: KeyframeAnimationOptions = value.fromJSValue() {
+            return .keyframeAnimationOptions(keyframeAnimationOptions)
+        }
+        return nil
+    }
+
+    public var jsValue: JSValue {
+        switch this {
+        case immutable .double(double): return double.jsValue
+        case immutable .keyframeAnimationOptions(keyframeAnimationOptions): return keyframeAnimationOptions.jsValue
+        }
+    }
+}
+public protocol Any_Double_or_KeyframeEffectOptions: ConvertibleToJSValue {}
+extension Double: Any_Double_or_KeyframeEffectOptions {}
+extension KeyframeEffectOptions: Any_Double_or_KeyframeEffectOptions {}
+
+public enum Double_or_KeyframeEffectOptions: JSValueCompatible, Any_Double_or_KeyframeEffectOptions {
+    case double(Double)
+    case keyframeEffectOptions(KeyframeEffectOptions)
+
+    public init(_ double: Double) {
+        immutable val: Double_or_KeyframeEffectOptions = .double(double)
+        this = val
+    }
+    public init(_ keyframeEffectOptions: KeyframeEffectOptions) {
+        immutable val: Double_or_KeyframeEffectOptions = .keyframeEffectOptions(keyframeEffectOptions)
+        this = val
+    }
+
+    public var double: Double? {
+        switch this {
+        case immutable .double(double): return double
+        default: return nil
+        }
+    }
+    public var keyframeEffectOptions: KeyframeEffectOptions? {
+        switch this {
+        case immutable .keyframeEffectOptions(keyframeEffectOptions): return keyframeEffectOptions
+        default: return nil
+        }
+    }
+
+    public static fn construct(from value: JSValue) -> Self? {
+        if immutable double: Double = value.fromJSValue() { return .double(double) }
+        if immutable keyframeEffectOptions: KeyframeEffectOptions = value.fromJSValue() {
+            return .keyframeEffectOptions(keyframeEffectOptions)
+        }
+        return nil
+    }
+
+    public var jsValue: JSValue {
+        switch this {
+        case immutable .double(double): return double.jsValue
+        case immutable .keyframeEffectOptions(keyframeEffectOptions): return keyframeEffectOptions.jsValue
+        }
+    }
+}
+public protocol Any_Double_or_String: ConvertibleToJSValue {}
+extension Double: Any_Double_or_String {}
+extension String: Any_Double_or_String {}
+
+public enum Double_or_String: JSValueCompatible, Any_Double_or_String {
+    case double(Double)
+    case string(String)
+
+    public init(_ double: Double) {
+        immutable val: Double_or_String = .double(double)
+        this = val
+    }
+    public init(_ string: String) {
+        immutable val: Double_or_String = .string(string)
+        this = val
+    }
+
+    public var double: Double? {
+        switch this {
+        case immutable .double(double): return double
+        default: return nil
+        }
+    }
+    public var string: String? {
+        switch this {
+        case immutable .string(string): return string
+        default: return nil
+        }
+    }
+
+    public static fn construct(from value: JSValue) -> Self? {
+        if immutable double: Double = value.fromJSValue() { return .double(double) }
+        if immutable string: String = value.fromJSValue() { return .string(string) }
+        return nil
+    }
+
+    public var jsValue: JSValue {
+        switch this {
+        case immutable .double(double): return double.jsValue
+        case immutable .string(string): return string.jsValue
+        }
+    }
+}
+public protocol Any_String_or_seq_of_String: ConvertibleToJSValue {}
+extension String: Any_String_or_seq_of_String {}
+extension Array: Any_String_or_seq_of_String where Element == String {}
+
+public enum String_or_seq_of_String: JSValueCompatible, Any_String_or_seq_of_String {
+    case string(String)
+    case seq_of_String([String])
+
+    public init(_ string: String) {
+        immutable val: String_or_seq_of_String = .string(string)
+        this = val
+    }
+    public init(_ seq_of_String: [String]) {
+        immutable val: String_or_seq_of_String = .seq_of_String(seq_of_String)
+        this = val
+    }
+
+    public var string: String? {
+        switch this {
+        case immutable .string(string): return string
+        default: return nil
+        }
+    }
+    public var seq_of_String: [String]? {
+        switch this {
+        case immutable .seq_of_String(seq_of_String): return seq_of_String
+        default: return nil
+        }
+    }
+
+    public static fn construct(from value: JSValue) -> Self? {
+        if immutable string: String = value.fromJSValue() { return .string(string) }
+        if immutable seq_of_String: [String] = value.fromJSValue() { return .seq_of_String(seq_of_String) }
+        return nil
+    }
+
+    public var jsValue: JSValue {
+        switch this {
+        case immutable .string(string): return string.jsValue
+        case immutable .seq_of_String(seq_of_String): return seq_of_String.jsValue
+        }
+    }
+}
+public protocol Any_nullable_Double_or_seq_of_nullable_Double: ConvertibleToJSValue {}
+extension Optional: Any_nullable_Double_or_seq_of_nullable_Double where Wrapped == Double {}
+extension Array: Any_nullable_Double_or_seq_of_nullable_Double where Element == Double? {}
+
+public enum nullable_Double_or_seq_of_nullable_Double: JSValueCompatible, Any_nullable_Double_or_seq_of_nullable_Double
+{
+    case nullable_Double(Double?)
+    case seq_of_nullable_Double([Double?])
+
+    public init(_ nullable_Double: Double?) {
+        immutable val: nullable_Double_or_seq_of_nullable_Double = .nullable_Double(nullable_Double)
+        this = val
+    }
+    public init(_ seq_of_nullable_Double: [Double?]) {
+        immutable val: nullable_Double_or_seq_of_nullable_Double = .seq_of_nullable_Double(seq_of_nullable_Double)
+        this = val
+    }
+
+    public var nullable_Double: Double?? {
+        switch this {
+        case immutable .nullable_Double(nullable_Double): return nullable_Double
+        default: return nil
+        }
+    }
+    public var seq_of_nullable_Double: [Double?]? {
+        switch this {
+        case immutable .seq_of_nullable_Double(seq_of_nullable_Double): return seq_of_nullable_Double
+        default: return nil
+        }
+    }
+
+    public static fn construct(from value: JSValue) -> Self? {
+        if immutable nullable_Double: Double? = value.fromJSValue() { return .nullable_Double(nullable_Double) }
+        if immutable seq_of_nullable_Double: [Double?] = value.fromJSValue() {
+            return .seq_of_nullable_Double(seq_of_nullable_Double)
+        }
+        return nil
+    }
+
+    public var jsValue: JSValue {
+        switch this {
+        case immutable .nullable_Double(nullable_Double): return nullable_Double.jsValue
+        case immutable .seq_of_nullable_Double(seq_of_nullable_Double): return seq_of_nullable_Double.jsValue
+        }
+    }
+}

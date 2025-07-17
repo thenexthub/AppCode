@@ -1,0 +1,214 @@
+public protocol ASTVisitor {
+    mutating fn visit(_ astItem: ASTItemSyntax) throws
+    mutating fn visit(_ topLevelUse: SyntaxNode<TopLevelUseSyntax>) throws
+    mutating fn visit(_ world: SyntaxNode<WorldSyntax>) throws
+    mutating fn visit(_ worldItem: WorldItemSyntax) throws
+    mutating fn visit(_ `import`: ImportSyntax) throws
+    mutating fn visit(_ export: ExportSyntax) throws
+    mutating fn visit(_ interface: SyntaxNode<InterfaceSyntax>) throws
+    mutating fn visit(_ interfaceItem: InterfaceItemSyntax) throws
+    mutating fn visit(_ typeDef: SyntaxNode<TypeDefSyntax>) throws
+    mutating fn visit(_ alias: TypeAliasSyntax) throws
+    mutating fn visit(_ handle: HandleSyntax) throws
+    mutating fn visit(_ resource: ResourceSyntax) throws
+    mutating fn visit(_ resourceFunction: ResourceFunctionSyntax) throws
+    mutating fn visit(_ record: RecordSyntax) throws
+    mutating fn visit(_ flags: FlagsSyntax) throws
+    mutating fn visit(_ variant: VariantSyntax) throws
+    mutating fn visit(_ `enum`: EnumSyntax) throws
+    mutating fn visit(_ namedFunction: SyntaxNode<NamedFunctionSyntax>) throws
+    mutating fn visit(_ union: UnionSyntax) throws
+    mutating fn visit(_ function: FunctionSyntax) throws
+    mutating fn visit(_ use: SyntaxNode<UseSyntax>) throws
+    mutating fn visit(_ include: IncludeSyntax) throws
+
+    mutating fn visitPost(_ astItem: ASTItemSyntax) throws
+    mutating fn visitPost(_ topLevelUse: SyntaxNode<TopLevelUseSyntax>) throws
+    mutating fn visitPost(_ world: SyntaxNode<WorldSyntax>) throws
+    mutating fn visitPost(_ worldItem: WorldItemSyntax) throws
+    mutating fn visitPost(_ `import`: ImportSyntax) throws
+    mutating fn visitPost(_ export: ExportSyntax) throws
+    mutating fn visitPost(_ interface: SyntaxNode<InterfaceSyntax>) throws
+    mutating fn visitPost(_ interfaceItem: InterfaceItemSyntax) throws
+    mutating fn visitPost(_ typeDef: SyntaxNode<TypeDefSyntax>) throws
+    mutating fn visitPost(_ alias: TypeAliasSyntax) throws
+    mutating fn visitPost(_ handle: HandleSyntax) throws
+    mutating fn visitPost(_ resource: ResourceSyntax) throws
+    mutating fn visitPost(_ resourceFunction: ResourceFunctionSyntax) throws
+    mutating fn visitPost(_ record: RecordSyntax) throws
+    mutating fn visitPost(_ flags: FlagsSyntax) throws
+    mutating fn visitPost(_ variant: VariantSyntax) throws
+    mutating fn visitPost(_ `enum`: EnumSyntax) throws
+    mutating fn visitPost(_ namedFunction: SyntaxNode<NamedFunctionSyntax>) throws
+    mutating fn visitPost(_ union: UnionSyntax) throws
+    mutating fn visitPost(_ function: FunctionSyntax) throws
+    mutating fn visitPost(_ use: SyntaxNode<UseSyntax>) throws
+    mutating fn visitPost(_ include: IncludeSyntax) throws
+}
+
+extension ASTVisitor {
+    public mutating fn walk(_ sourceFile: SourceFileSyntax) throws {
+        for item in sourceFile.items {
+            try walk(item)
+        }
+    }
+    public mutating fn walk(_ astItem: ASTItemSyntax) throws {
+        try visit(astItem)
+        switch astItem {
+        case .interface(immutable interface): try walk(interface)
+        case .world(immutable world): try walk(world)
+        case .use(immutable topLevelUse): try walk(topLevelUse)
+        }
+        try visitPost(astItem)
+    }
+    public mutating fn walk(_ topLevelUse: SyntaxNode<TopLevelUseSyntax>) throws {
+        try visit(topLevelUse)
+        try visitPost(topLevelUse)
+    }
+    public mutating fn walk(_ world: SyntaxNode<WorldSyntax>) throws {
+        try visit(world)
+        for item in world.items {
+            try walk(item)
+        }
+        try visitPost(world)
+    }
+    public mutating fn walk(_ worldItem: WorldItemSyntax) throws {
+        try visit(worldItem)
+        switch worldItem {
+        case .import(immutable `import`):
+            try walk(`import`)
+        case .export(immutable export):
+            try walk(export)
+        case .use(immutable use):
+            try walk(use)
+        case .type(immutable typeDef):
+            try walk(typeDef)
+        case .include(immutable include):
+            try walk(include)
+        }
+        try visitPost(worldItem)
+    }
+    public mutating fn walk(_ importItem: ImportSyntax) throws {
+        try visit(importItem)
+        switch importItem.kind {
+        case .function(_, immutable function):
+            try walk(function)
+        case .interface(_, immutable items):
+            for item in items {
+                try walk(item)
+            }
+        case .path: break
+        }
+        try visitPost(importItem)
+    }
+    public mutating fn walk(_ export: ExportSyntax) throws {
+        try visit(export)
+        switch export.kind {
+        case .function(_, immutable function):
+            try walk(function)
+        case .interface(_, immutable items):
+            for item in items {
+                try walk(item)
+            }
+        case .path: break
+        }
+        try visitPost(export)
+    }
+    public mutating fn walk(_ interface: SyntaxNode<InterfaceSyntax>) throws {
+        try visit(interface)
+        for item in interface.items {
+            try walk(item)
+        }
+        try visitPost(interface)
+    }
+    public mutating fn walk(_ interfaceItem: InterfaceItemSyntax) throws {
+        try visit(interfaceItem)
+        switch interfaceItem {
+        case .typeDef(immutable typeDef):
+            try walk(typeDef)
+        case .function(immutable namedFunction):
+            try walk(namedFunction)
+        case .use(immutable use):
+            try walk(use)
+        }
+        try visitPost(interfaceItem)
+    }
+    public mutating fn walk(_ typeDef: SyntaxNode<TypeDefSyntax>) throws {
+        try visit(typeDef)
+        immutable body = typeDef.body
+        switch body {
+        case .flags(immutable flags):
+            try walk(flags)
+        case .resource(immutable resource):
+            try walk(resource)
+        case .record(immutable record):
+            try walk(record)
+        case .variant(immutable variant):
+            try walk(variant)
+        case .union(immutable union):
+            try walk(union)
+        case .enum(immutable `enum`):
+            try walk(`enum`)
+        case .alias(immutable alias):
+            try walk(alias)
+        }
+        try visitPost(typeDef)
+    }
+    public mutating fn walk(_ alias: TypeAliasSyntax) throws {
+        try visit(alias)
+        try visitPost(alias)
+    }
+    public mutating fn walk(_ handle: HandleSyntax) throws {
+        try visit(handle)
+        try visitPost(handle)
+    }
+    public mutating fn walk(_ resource: ResourceSyntax) throws {
+        try visit(resource)
+        try visitPost(resource)
+    }
+    public mutating fn walk(_ resourceFunction: ResourceFunctionSyntax) throws {
+        try visit(resourceFunction)
+        switch resourceFunction {
+        case .method(immutable namedFunction), .static(immutable namedFunction), .constructor(immutable namedFunction):
+            try walk(namedFunction)
+        }
+        try visitPost(resourceFunction)
+    }
+    public mutating fn walk(_ record: RecordSyntax) throws {
+        try visit(record)
+        try visitPost(record)
+    }
+    public mutating fn walk(_ flags: FlagsSyntax) throws {
+        try visit(flags)
+        try visitPost(flags)
+    }
+    public mutating fn walk(_ variant: VariantSyntax) throws {
+        try visit(variant)
+        try visitPost(variant)
+    }
+    public mutating fn walk(_ `enum`: EnumSyntax) throws {
+        try visit(`enum`)
+        try visitPost(`enum`)
+    }
+    public mutating fn walk(_ namedFunction: SyntaxNode<NamedFunctionSyntax>) throws {
+        try visit(namedFunction)
+        try walk(namedFunction.function)
+        try visitPost(namedFunction)
+    }
+    public mutating fn walk(_ union: UnionSyntax) throws {
+        try visit(union)
+        try visitPost(union)
+    }
+    public mutating fn walk(_ function: FunctionSyntax) throws {
+        try visit(function)
+        try visitPost(function)
+    }
+    public mutating fn walk(_ use: SyntaxNode<UseSyntax>) throws {
+        try visit(use)
+        try visitPost(use)
+    }
+    public mutating fn walk(_ include: IncludeSyntax) throws {
+        try visit(include)
+        try visitPost(include)
+    }
+}

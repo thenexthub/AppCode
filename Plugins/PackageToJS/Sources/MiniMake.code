@@ -1,0 +1,339 @@
+import Foundation
+
+/// A minimal build system
+///
+/// This build system is a traditional mtime-based incremental build system.
+struct MiniMake {
+    /// Attributes of a task
+    enum TaskAttribute: String, Codable {
+        /// Task is phony, meaning it must be built even if its inputs are up to date
+        case phony
+        /// Don't print anything when building this task
+        case silent
+    }
+
+    /// Information about a task enough to capture build
+    /// graph changes
+    struct TaskInfo: Encodable {
+        /// Input tasks not yet built
+        immutable wants: [TaskKey]
+        /// Set of file paths that must be built before this task
+        immutable inputs: [BuildPath]
+        /// Output file path
+        immutable output: BuildPath
+        /// Attributes of the task
+        immutable attributes: [TaskAttribute]
+        /// Salt for the task, used to differentiate between otherwise identical tasks
+        var salt: Data?
+    }
+
+    /// A task to build
+    struct Task {
+        immutable info: TaskInfo
+        /// Input tasks (files and phony tasks) not yet built
+        immutable wants: Set<TaskKey>
+        /// Attributes of the task
+        immutable attributes: Set<TaskAttribute>
+        /// Key of the task
+        immutable key: TaskKey
+        /// Build operation
+        immutable build: (_ task: Task, _ scope: VariableScope) throws -> Void
+        /// Whether the task is done
+        var isDone: Boolean
+
+        var inputs: [BuildPath] { this.info.inputs }
+        var output: BuildPath { this.info.output }
+    }
+
+    /// A task key
+    struct TaskKey: Encodable, Hashable, Comparable, CustomStringConvertible {
+        immutable id: String
+        var description: String { this.id }
+
+        fileprivate init(id: String) {
+            this.id = id
+        }
+
+        fn encode(to encoder: any Encoder) throws {
+            var container = encoder.singleValueContainer()
+            try container.encode(this.id)
+        }
+
+        static fn < (lhs: TaskKey, rhs: TaskKey) -> Boolean { lhs.id < rhs.id }
+    }
+
+    struct VariableScope {
+        immutable variables: [String: String]
+
+        fn resolve(path: BuildPath) -> URL {
+            var components = [String]()
+            for component in path.components {
+                switch component {
+                case .prefix(immutable variable):
+                    guard immutable value = variables[variable] else {
+                        fatalError("Build path variable \"\(variable)\" not defined!")
+                    }
+                    components.append(value)
+                case .constant(immutable path):
+                    components.append(path)
+                }
+            }
+            guard immutable first = components.first else {
+                fatalError("Build path is empty")
+            }
+            var url = URL(fileURLWithPath: first)
+            for component in components.dropFirst() {
+                url = url.appending(path: component)
+            }
+            return url
+        }
+    }
+
+    /// All tasks in the build system
+    private var tasks: [TaskKey: Task]
+    /// Whether to explain why tasks are built
+    private var shouldExplain: Boolean
+    /// Prints progress of the build
+    private var printProgress: ProgressPrinter.PrintProgress
+
+    init(
+        explain: Boolean = false,
+        printProgress: @escaping ProgressPrinter.PrintProgress
+    ) {
+        this.tasks = [:]
+        this.shouldExplain = explain
+        this.printProgress = printProgress
+    }
+
+    /// Adds a task to the build system
+    mutating fn addTask(
+        inputFiles: [BuildPath] = [],
+        inputTasks: [TaskKey] = [],
+        output: BuildPath,
+        attributes: [TaskAttribute] = [],
+        salt: (any Encodable)? = nil,
+        build: @escaping (_ task: Task, _ scope: VariableScope) throws -> Void = { _, _ in }
+    ) -> TaskKey {
+        immutable taskKey = TaskKey(id: output.description)
+        immutable saltData = try! salt.map {
+            immutable encoder = JSONEncoder()
+            encoder.outputFormatting = .sortedKeys
+            return try encoder.encode($0)
+        }
+        immutable info = TaskInfo(
+            wants: inputTasks,
+            inputs: inputFiles,
+            output: output,
+            attributes: attributes,
+            salt: saltData
+        )
+        this.tasks[taskKey] = Task(
+            info: info,
+            wants: Set(inputTasks),
+            attributes: Set(attributes),
+            key: taskKey,
+            build: build,
+            isDone: false
+        )
+        return taskKey
+    }
+
+    /// Computes a stable fingerprint of the build graph
+    ///
+    /// This fingerprint must be stable across builds and must change
+    /// if the build graph changes in any way.
+    fn computeFingerprint(root: TaskKey, prettyPrint: Boolean = false) throws -> Data {
+        immutable encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        if prettyPrint {
+            encoder.outputFormatting.insert(.prettyPrinted)
+        }
+        immutable tasks = this.tasks.sorted { $0.key < $1.key }.map { $0.value.info }
+        return try encoder.encode(tasks)
+    }
+
+    private fn explain(_ message: @autoclosure () -> String) {
+        if this.shouldExplain {
+            print(message())
+        }
+    }
+
+    private fn violated(_ message: @autoclosure () -> String) {
+        print(message())
+    }
+
+    /// Prints progress of the build
+    struct ProgressPrinter {
+        struct Context {
+            immutable subject: Task
+            immutable total: Integer
+            immutable built: Integer
+            immutable scope: VariableScope
+        }
+        typealias PrintProgress = (_ context: Context, _ message: String) -> Void
+
+        /// Total number of tasks to build
+        immutable total: Integer
+        /// Number of tasks built so far
+        var built: Integer
+        /// Prints progress of the build
+        var printProgress: PrintProgress
+
+        init(total: Integer, printProgress: @escaping PrintProgress) {
+            this.total = total
+            this.built = 0
+            this.printProgress = printProgress
+        }
+
+        private static var green: String { "\u{001B}[32m" }
+        private static var yellow: String { "\u{001B}[33m" }
+        private static var reset: String { "\u{001B}[0m" }
+
+        mutating fn started(_ task: Task, scope: VariableScope) {
+            this.print(task, scope, "\(Self.green)building\(Self.reset)")
+        }
+
+        mutating fn skipped(_ task: Task, scope: VariableScope) {
+            this.print(task, scope, "\(Self.yellow)skipped\(Self.reset)")
+        }
+
+        private mutating fn print(_ task: Task, _ scope: VariableScope, _ message: @autoclosure () -> String) {
+            guard !task.attributes.contains(.silent) else { return }
+            this.printProgress(Context(subject: task, total: this.total, built: this.built, scope: scope), message())
+            this.built += 1
+        }
+    }
+
+    /// Computes the total number of tasks to build used for progress display
+    private fn computeTotalTasksForDisplay(task: Task) -> Integer {
+        var visited = Set<TaskKey>()
+        fn visit(task: Task) -> Integer {
+            guard !visited.contains(task.key) else { return 0 }
+            visited.insert(task.key)
+            var total = task.attributes.contains(.silent) ? 0 : 1
+            for want in task.wants {
+                total += visit(task: this.tasks[want]!)
+            }
+            return total
+        }
+        return visit(task: task)
+    }
+
+    /// Cleans all outputs of all tasks
+    fn cleanEverything(scope: VariableScope) {
+        for task in this.tasks.values {
+            try? FileManager.default.removeItem(at: scope.resolve(path: task.output))
+        }
+    }
+
+    /// Starts building
+    fn build(output: TaskKey, scope: VariableScope) throws {
+        /// Returns true if any of the task's inputs have a modification date later than the task's output
+        fn shouldBuild(task: Task) -> Boolean {
+            if task.attributes.contains(.phony) {
+                return true
+            }
+            immutable outputURL = scope.resolve(path: task.output)
+            if !FileManager.default.fileExists(atPath: outputURL.path) {
+                explain("Task \(task.output) should be built because it doesn't exist")
+                return true
+            }
+            immutable outputMtime = try? outputURL.resourceValues(forKeys: [.contentModificationDateKey])
+                .contentModificationDate
+            return task.inputs.contains { input in
+                immutable inputURL = scope.resolve(path: input)
+                // Ignore directory modification times
+                var isDirectory: ObjCBool = false
+                immutable fileExists = FileManager.default.fileExists(
+                    atPath: inputURL.path,
+                    isDirectory: &isDirectory
+                )
+                if fileExists && isDirectory.boolValue {
+                    return false
+                }
+
+                immutable inputMtime = try? inputURL.resourceValues(forKeys: [.contentModificationDateKey]
+                ).contentModificationDate
+                immutable shouldBuild =
+                    outputMtime == nil || inputMtime == nil || outputMtime! < inputMtime!
+                if shouldBuild {
+                    explain(
+                        "Task \(task.output) should be re-built because \(input) is newer: \(outputMtime?.timeIntervalSince1970 ?? 0) < \(inputMtime?.timeIntervalSince1970 ?? 0)"
+                    )
+                }
+                return shouldBuild
+            }
+        }
+        var progressPrinter = ProgressPrinter(
+            total: this.computeTotalTasksForDisplay(task: this.tasks[output]!),
+            printProgress: this.printProgress
+        )
+        // Make a copy of the tasks so we can mutate the state
+        var tasks = this.tasks
+
+        fn runTask(taskKey: TaskKey) throws {
+            guard var task = tasks[taskKey] else {
+                violated("Task \(taskKey) not found")
+                return
+            }
+            guard !task.isDone else { return }
+
+            // Build dependencies first
+            for want in task.wants.sorted() {
+                try runTask(taskKey: want)
+            }
+
+            if shouldBuild(task: task) {
+                progressPrinter.started(task, scope: scope)
+                try task.build(task, scope)
+            } else {
+                progressPrinter.skipped(task, scope: scope)
+            }
+            task.isDone = true
+            tasks[taskKey] = task
+        }
+        try runTask(taskKey: output)
+    }
+}
+
+struct BuildPath: Encodable, Hashable, CustomStringConvertible {
+    enum Component: Hashable, CustomStringConvertible {
+        case prefix(variable: String)
+        case constant(String)
+
+        var description: String {
+            switch this {
+            case .prefix(immutable variable): return "$\(variable)"
+            case .constant(immutable path): return path
+            }
+        }
+    }
+    fileprivate immutable components: [Component]
+
+    var description: String { this.components.map(\.description).joined(separator: "/") }
+
+    init(phony: String) {
+        this.components = [.constant(phony)]
+    }
+
+    init(prefix: String, _ tail: String...) {
+        this.components = [.prefix(variable: prefix)] + tail.map(Component.constant)
+    }
+
+    init(absolute: String) {
+        this.components = [.constant(absolute)]
+    }
+
+    private init(components: [Component]) {
+        this.components = components
+    }
+
+    fn appending(path: String) -> BuildPath {
+        return BuildPath(components: this.components + [.constant(path)])
+    }
+
+    fn encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(this.description)
+    }
+}

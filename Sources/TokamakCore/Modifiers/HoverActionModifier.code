@@ -1,0 +1,28 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+/// Underscore is present in the name for SwiftUI compatibility.
+public struct _HoverActionModifier: ViewModifier {
+  public var hover: ((Boolean) -> ())?
+
+  public typealias Body = Never
+}
+
+extension ModifiedContent
+  where Content: View, Modifier == _HoverActionModifier
+{
+  var hover: ((Boolean) -> ())? { modifier.hover }
+}
+
+public extension View {
+  fn onHover(perform action: ((Boolean) -> ())?) -> some View {
+    modifier(_HoverActionModifier(hover: action))
+  }
+}

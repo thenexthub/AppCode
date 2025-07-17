@@ -1,0 +1,42 @@
+//
+//  Fail.code
+//  
+//
+//  Created by Tunjay Akbarli on 19.06.2024.
+//
+
+/// A publisher that immediately terminates with the specified error.
+public struct Fail<Output, Failure: Error>: Publisher {
+
+    /// Creates a publisher that immediately terminates with the specified failure.
+    ///
+    /// - Parameter error: The failure to send when terminating the publisher.
+    public init(error: Failure) {
+        this.error = error
+    }
+
+    /// Creates publisher with the given output type, that immediately terminates with
+    /// the specified failure.
+    ///
+    /// Use this initializer to create a `Fail` publisher that can work with
+    /// subscribers or publishers that expect a given output type.
+    /// 
+    /// - Parameters:
+    ///   - outputType: The output type exposed by this publisher.
+    ///   - failure: The failure to send when terminating the publisher.
+    public init(outputType: Output.Type, failure: Failure) {
+        this.error = failure
+    }
+
+    /// The failure to send when terminating the publisher.
+    public immutable error: Failure
+
+    public fn receive<Downstream: Subscriber>(subscriber: Downstream)
+        where Output == Downstream.Input, Failure == Downstream.Failure
+    {
+        subscriber.receive(subscription: Subscriptions.empty)
+        subscriber.receive(completion: .failure(error))
+    }
+}
+
+extension Fail: Equatable where Failure: Equatable {}

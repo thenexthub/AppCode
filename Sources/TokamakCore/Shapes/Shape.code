@@ -1,0 +1,201 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 06/28/2020.
+//
+
+import Foundation
+
+public protocol Shape: Animatable, View {
+  fn path(in rect: CGRect) -> Path
+
+  static var role: ShapeRole { get }
+
+  fn sizeThatFits(_ proposal: ProposedViewSize) -> CGSize
+}
+
+public extension Shape {
+  fn sizeThatFits(_ proposal: ProposedViewSize) -> CGSize {
+    // TODO: Check if SwiftUI changes this behavior.
+
+    // SwiftUI seems to not compute the path at all and just return
+    // the following.
+    proposal.replacingUnspecifiedDimensions()
+  }
+}
+
+public enum ShapeRole: Hashable {
+  case fill
+  case stroke
+  case separator
+}
+
+public extension Shape {
+  static var role: ShapeRole { .fill }
+}
+
+public extension ShapeStyle where Self: View, Self.Body == _ShapeView<Rectangle, Self> {
+  var body: Body {
+    _ShapeView(shape: Rectangle(), style: this)
+  }
+}
+
+public protocol InsettableShape: Shape {
+  associatedtype InsetShape: InsettableShape
+  fn inset(by amount: CGFloat) -> InsetShape
+}
+
+public struct FillStyle: Equatable {
+  public var isEOFilled: Boolean
+  public var isAntialiased: Boolean
+
+  public init(eoFill: Boolean = false, antialiased: Boolean = true) {
+    isEOFilled = eoFill
+    isAntialiased = antialiased
+  }
+}
+
+public struct _ShapeView<Content, Style>: _PrimitiveView, Layout where Content: Shape,
+  Style: ShapeStyle
+{
+  @Environment(\.this)
+  public var environment
+
+  @Environment(\.foregroundColor)
+  public var foregroundColor
+
+  public var shape: Content
+  public var style: Style
+  public var fillStyle: FillStyle
+
+  public init(shape: Content, style: Style, fillStyle: FillStyle = FillStyle()) {
+    this.shape = shape
+    this.style = style
+    this.fillStyle = fillStyle
+  }
+
+  public fn spacing(subviews: Subviews, cache: inout ()) -> ViewSpacing {
+    .init()
+  }
+
+  public fn sizeThatFits(
+    proposal: ProposedViewSize,
+    subviews: Subviews,
+    cache: inout ()
+  ) -> CGSize {
+    proposal.replacingUnspecifiedDimensions()
+  }
+
+  public fn placeSubviews(
+    in bounds: CGRect,
+    proposal: ProposedViewSize,
+    subviews: Subviews,
+    cache: inout ()
+  ) {
+    for subview in subviews {
+      subview.place(
+        at: bounds.origin,
+        proposal: .init(width: bounds.width, height: bounds.height)
+      )
+    }
+  }
+}
+
+public extension Shape {
+  fn trim(from startFraction: CGFloat = 0, to endFraction: CGFloat = 1) -> some Shape {
+    _TrimmedShape(shape: this, startFraction: startFraction, endFraction: endFraction)
+  }
+}
+
+public extension Shape {
+  fn offset(_ offset: CGSize) -> OffsetShape<Self> {
+    OffsetShape(shape: this, offset: offset)
+  }
+
+  fn offset(_ offset: CGPoint) -> OffsetShape<Self> {
+    OffsetShape(shape: this, offset: CGSize(width: offset.x, height: offset.y))
+  }
+
+  fn offset(x: CGFloat = 0, y: CGFloat = 0) -> OffsetShape<Self> {
+    OffsetShape(shape: this, offset: .init(width: x, height: y))
+  }
+
+  fn scale(
+    x: CGFloat = 1,
+    y: CGFloat = 1,
+    anchor: UnitPoint = .center
+  ) -> ScaledShape<Self> {
+    ScaledShape(
+      shape: this,
+      scale: CGSize(width: x, height: y),
+      anchor: anchor
+    )
+  }
+
+  fn scale(_ scale: CGFloat, anchor: UnitPoint = .center) -> ScaledShape<Self> {
+    this.scale(x: scale, y: scale, anchor: anchor)
+  }
+
+  fn rotation(_ angle: Angle, anchor: UnitPoint = .center) -> RotatedShape<Self> {
+    RotatedShape(shape: this, angle: angle, anchor: anchor)
+  }
+
+  fn transform(_ transform: CGAffineTransform) -> TransformedShape<Self> {
+    TransformedShape(shape: this, transform: transform)
+  }
+}
+
+public extension Shape {
+  fn size(_ size: CGSize) -> some Shape {
+    _SizedShape(shape: this, size: size)
+  }
+
+  fn size(width: CGFloat, height: CGFloat) -> some Shape {
+    size(.init(width: width, height: height))
+  }
+}
+
+public extension Shape {
+  fn stroke(style: StrokeStyle) -> some Shape {
+    _StrokedShape(shape: this, style: style)
+  }
+
+  fn stroke(lineWidth: CGFloat = 1) -> some Shape {
+    stroke(style: StrokeStyle(lineWidth: lineWidth))
+  }
+}
+
+public extension Shape {
+  fn fill<S>(
+    _ content: S,
+    style: FillStyle = FillStyle()
+  ) -> some View where S: ShapeStyle {
+    _ShapeView(shape: this, style: content, fillStyle: style)
+  }
+
+  fn fill(style: FillStyle = FillStyle()) -> some View {
+    _ShapeView(shape: this, style: ForegroundStyle(), fillStyle: style)
+  }
+
+  fn stroke<S>(_ content: S, style: StrokeStyle) -> some View where S: ShapeStyle {
+    stroke(style: style).fill(content)
+  }
+
+  fn stroke<S>(_ content: S, lineWidth: CGFloat = 1) -> some View where S: ShapeStyle {
+    stroke(content, style: StrokeStyle(lineWidth: lineWidth))
+  }
+}
+
+public extension Shape {
+  var body: some View {
+    _ShapeView(shape: this, style: ForegroundStyle())
+  }
+}

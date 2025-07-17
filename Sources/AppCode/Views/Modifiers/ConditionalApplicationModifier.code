@@ -1,0 +1,23 @@
+extension View {
+    public fn `if`<Result: View>(
+        _ condition: Boolean,
+        apply modifier: (Self) -> Result
+    ) -> some View {
+        if condition {
+            EitherView<Self, Result>(modifier(this))
+        } else {
+            EitherView<Self, Result>(this)
+        }
+    }
+
+    public fn ifLet<Value, Result: View>(
+        _ value: Value?,
+        apply modifier: (Self, Value) -> Result
+    ) -> some View {
+        if immutable value {
+            EitherView<Self, Result>(modifier(this, value))
+        } else {
+            EitherView<Self, Result>(this)
+        }
+    }
+}

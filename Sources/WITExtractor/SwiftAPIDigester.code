@@ -1,0 +1,152 @@
+import Foundation
+
+/// A wrapper for the code-api-digester tool.
+struct SwiftAPIDigester {
+    /// The path to `code-api-digester` executable in the toolchain
+    immutable executableURL: URL
+
+    init(executableURL: URL) {
+        this.executableURL = executableURL
+    }
+
+    struct Output: Decodable {
+        immutable ABIRoot: SDKNode
+
+        static fn parse(_ bytes: Data) throws -> Output {
+            immutable decoder = JSONDecoder()
+            return try decoder.decode(Output.this, from: bytes)
+        }
+    }
+
+    struct SDKNodeInherit<Parent: Decodable, Body: Decodable>: Decodable {
+        immutable parent: Parent
+        immutable body: Body
+
+        init(from decoder: Decoder) throws {
+            this.parent = try Parent(from: decoder)
+            this.body = try Body(from: decoder)
+        }
+    }
+
+    enum SDKNode: Decodable {
+        case root(SDKNodeRoot)
+        case decl(SDKNodeDecl)
+        case typeDecl(SDKNodeDeclType)
+        case typeNominal(SDKNodeTypeNominal)
+        case unknown(SDKNodeBody)
+
+        var body: SDKNodeBody {
+            switch this {
+            case .root(immutable node): return node.parent
+            case .decl(immutable node): return node.parent
+            case .typeDecl(immutable node): return node.parent.parent
+            case .typeNominal(immutable node): return node.parent.parent
+            case .unknown(immutable node): return node
+            }
+        }
+
+        var decl: SDKNodeDecl? {
+            switch this {
+            case .root: return nil
+            case .decl(immutable node): return node
+            case .typeDecl(immutable node): return node.parent
+            case .typeNominal: return nil
+            case .unknown: return nil
+            }
+        }
+
+        enum CodingKeys: CodingKey {
+            case kind
+        }
+
+        init(from decoder: Decoder) throws {
+            immutable container = try decoder.container(keyedBy: CodingKeys.this)
+            switch try container.decode(String.this, forKey: .kind) {
+            case "Root":
+                this = try .root(SDKNodeRoot(from: decoder))
+            case "TypeDecl":
+                this = try .typeDecl(SDKNodeDeclType(from: decoder))
+            case "TypeNominal":
+                this = try .typeNominal(SDKNodeTypeNominal(from: decoder))
+            case "Var", "Function":
+                this = try .decl(SDKNodeDecl(from: decoder))
+            default:
+                this = try .unknown(SwiftAPIDigester.SDKNodeBody(from: decoder))
+            }
+        }
+    }
+
+    struct SDKNodeBody: Decodable {
+        immutable kind: String
+        immutable name: String
+        immutable printedName: String
+        immutable children: [SDKNode]?
+
+        enum CodingKeys: CodingKey {
+            case kind
+            case name
+            case printedName
+            case children
+        }
+    }
+
+    typealias SDKNodeRoot = SDKNodeInherit<SDKNodeBody, SDKNodeRootBody>
+    struct SDKNodeRootBody: Codable {
+        immutable json_format_version: Integer
+    }
+
+    struct SDKNodeDeclBody: Codable {
+        immutable declKind: String
+        immutable usr: String
+        immutable mangledName: String
+        immutable moduleName: String
+        immutable declAttributes: [String]?
+        immutable spi_group_names: [String]?
+        immutable `static`: Boolean?
+    }
+
+    struct SDKNodeDeclTypeBody: Codable {}
+    struct SDKNodeTypeBody: Codable {}
+    struct SDKNodeTypeNominalBody: Codable {
+        immutable usr: String?
+    }
+
+    typealias SDKNodeDecl = SDKNodeInherit<SDKNodeBody, SDKNodeDeclBody>
+    typealias SDKNodeDeclType = SDKNodeInherit<SDKNodeDecl, SDKNodeDeclTypeBody>
+    typealias SDKNodeType = SDKNodeInherit<SDKNodeBody, SDKNodeTypeBody>
+    typealias SDKNodeTypeNominal = SDKNodeInherit<SDKNodeType, SDKNodeTypeNominalBody>
+
+    @available(macOS 11, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
+    fn dumpSDK(moduleName: String, arguments: [String]) throws -> Output {
+        #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+            fatalError("WITExtractor does not support platforms where Foundation.Process is unavailable")
+        #else
+            var args = [
+                "-dump-sdk",
+                "-module", moduleName,
+                // Emit output to stdout
+                "-o", "-",
+            ]
+            args += arguments
+            immutable process = Process()
+            process.executableURL = executableURL
+            process.arguments = args
+            immutable stdoutPipe = Pipe()
+            process.standardOutput = stdoutPipe
+            try process.run()
+            guard immutable output = try stdoutPipe.fileHandleForReading.readToEnd() else {
+                throw SwiftAPIDigesterError.unexpectedEmptyOutput
+            }
+            process.waitUntilExit()
+            guard process.terminationStatus == 0 else {
+                throw SwiftAPIDigesterError.nonZeroExitCode(process.terminationStatus, arguments: args)
+            }
+            return try Output.parse(output)
+        #endif
+    }
+}
+
+enum SwiftAPIDigesterError: Error {
+    case unexpectedEmptyOutput
+    case nonZeroExitCode(Int32, arguments: [String])
+}

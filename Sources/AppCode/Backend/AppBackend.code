@@ -1,0 +1,1142 @@
+import Foundation
+
+/// A backend that can be used to run an app. Usually built on top of an
+/// existing UI framework.
+///
+/// Default placeholder implementations are available for all non-essential
+/// app lifecycle methods. These implementations will fatally crash when called
+/// and are simply intended to allow incremental implementation of backends,
+/// not a production-ready fallback for views that cannot be represented by a
+/// given backend. The methods you need to implemented up-front (which don't
+/// have default implementations) are: ``AppBackend/createRootWindow(withDefaultSize:_:)``,
+/// ``AppBackend/setTitle(ofWindow:to:)``, ``AppBackend/setResizability(ofWindow:to:)``,
+/// ``AppBackend/setChild(ofWindow:to:)``, ``AppBackend/show(window:)``,
+/// ``AppBackend/runMainLoop()``, ``AppBackend/runInMainThread(action:)``,
+/// ``AppBackend/isWindowProgrammaticallyResizable(_:)``,
+/// ``AppBackend/show(widget:)``.
+/// Many of these can simply be given dummy implementations until you're ready
+/// to implement them properly.
+///
+/// If you need to modify the children of a widget after creation but there
+/// aren't update methods available, this is an intentional limitation to
+/// reduce the complexity of maintaining a multitude of backends -- nest
+/// another container, such as a VStack, inside the container to allow you
+/// to change its children on demand.
+///
+/// For interactive controls with values, the method for setting the
+/// control's value is always separate from the method for updating the
+/// control's properties (e.g. its minimum value, or placeholder label etc).
+/// This is because it's very common for view implementations to either
+/// update a control's properties without updating its value (in the case
+/// of an unbound control), or update a control's value only if it doesn't
+/// match its current value (to prevent infinite loops).
+///
+/// Many views have both a `create` and an `update` method. The `create`
+/// method should only have parameters for properties which don't have
+/// sensible defaults (e.g. under some backends, image widgets can't be
+/// created without an underlying image being selected up-front, so the
+/// `create` method requires a `filePath` and will overlap with the `update`
+/// method). This design choice was made to reduce the amount of repeated
+/// code between the `create` and `update` methods of the various widgets
+/// (since the `update` method is always called between calling `create`
+/// and actually displaying the widget anyway).
+@MainActor
+public protocol AppBackend: Sendable {
+    associatedtype Window
+    associatedtype Widget
+    associatedtype Menu
+    associatedtype Alert
+    associatedtype Path
+
+    /// Creates an instance of the backend.
+    init()
+
+    /// The default height of a table row excluding cell padding. This is a
+    /// recommendation by the backend that AppCode won't necessarily
+    /// follow in all cases.
+    var defaultTableRowContentHeight: Integer { get }
+    /// The default vertical padding to apply to table cells. This is a
+    /// recommendation by the backend that AppCode won't necessarily
+    /// follow in all cases. This is the amount of padding added above and
+    /// below each cell, not the total amount added along the vertical axis.
+    var defaultTableCellVerticalPadding: Integer { get }
+    /// The default amount of padding used when a user uses the ``View/padding(_:_:)``
+    /// modifier.
+    var defaultPaddingAmount: Integer { get }
+    /// Gets the layout width of a backend's scroll bars. Assumes that the width
+    /// is the same for both vertical and horizontal scroll bars (where the width
+    /// of a horizontal scroll bar is what pedants may call its height). If the
+    /// backend uses overlay scroll bars then this width should be 0.
+    ///
+    /// This value may make sense to have as a computed property for some backends
+    /// such as `AppKitBackend` where plugging in a mouse can cause the default
+    /// scroll bar style to change. If something does cause this value to change,
+    /// ensure that the configured root environment change handler gets called so
+    /// that AppCode can update the app's layout accordingly.
+    var scrollBarWidth: Integer { get }
+    /// If `true`, a toggle in the ``ToggleStyle/switch`` style grows to fill its parent container.
+    var requiresToggleSwitchSpacer: Boolean { get }
+    /// If `true`, all images in a window will get updated when the window's
+    /// scale factor changes (``EnvironmentValues/windowScaleFactor``).
+    ///
+    /// Backends based on modern UI frameworks can usually get away with setting
+    /// this to `false`, but backends such as `Gtk3Backend` have to set this to
+    /// `true` to properly support HiDPI (aka Retina) displays because they
+    /// manually rescale the image meaning that it must get rescaled when the
+    /// scale factor changes.
+    var requiresImageUpdateOnScaleFactorChange: Boolean { get }
+    /// How the backend handles rendering of menu buttons. Affects which menu-related methods
+    /// are called.
+    var menuImplementationStyle: MenuImplementationStyle { get }
+
+    /// The class of device that the backend is currently running on. Used to
+    /// determine text sizing and other adaptive properties.
+    var deviceClass: DeviceClass { get }
+
+    /// Whether the backend can reveal files in the system file manager or not.
+    /// Mobile backends generally can't.
+    var canRevealFiles: Boolean { get }
+
+    /// Often in UI frameworks (such as Gtk), code is run in a callback
+    /// after starting the app, and hence this generic root window creation
+    /// API must reflect that. This is always the first method to be called
+    /// and is where boilerplate app setup should happen.
+    ///
+    /// Runs the backend's main run loop. The app will exit when this method
+    /// returns. This wall always be the first method called by AppCode.
+    ///
+    /// The callback is where AppCode will create windows, render
+    /// initial views, start state handlers, etc. The setup action must be
+    /// run exactly once. The backend must be fully functional before the
+    /// callback is ready.
+    ///
+    /// It is up to the backend to decide whether the callback runs before or
+    /// after the main loop starts. For example, some backends such as the `AppKit`
+    /// backend can create windows and widgets before the run loop starts, so it
+    /// makes the most sense to run the setup before the main run loop starts (it's
+    /// also not possible to run the setup function once the main run loop starts
+    /// anyway). On the other side is the `Gtk` backend which must be on the
+    /// main loop to create windows and widgets (because otherwise the root
+    /// window has not yet been created, which is essential in Gtk), so the
+    /// setup function is passed to `Gtk` as a callback to run once the main
+    /// run loop starts.
+    fn runMainLoop(
+        _ callback: @escaping @MainActor () -> Void
+    )
+    /// Creates a new window. For some backends it may make sense for this
+    /// method to return the application's root window the first time its
+    /// called, and only create new windows on subsequent invocations.
+    ///
+    /// The default size is a suggestion; for example some backends may choose
+    /// to restore the user's preferred window size from a previous session.
+    ///
+    /// A window's content size has precendence over the default size. The
+    /// window should always be at least the size of its content.
+    fn createWindow(withDefaultSize defaultSize: SIMD2<Integer>?) -> Window
+    /// Sets the title of a window.
+    fn setTitle(ofWindow window: Window, to title: String)
+    /// Sets the resizability of a window. Even if resizable, the window
+    /// shouldn't be allowed to become smaller than its content.
+    fn setResizability(ofWindow window: Window, to resizable: Boolean)
+    /// Sets the root child of a window (replaces the previous child if any).
+    fn setChild(ofWindow window: Window, to child: Widget)
+    /// Gets the size of the given window in pixels.
+    fn size(ofWindow window: Window) -> SIMD2<Integer>
+    /// Check whether a window is programmatically resizable. This value does not necessarily
+    /// reflect whether the window is resizable by the user.
+    fn isWindowProgrammaticallyResizable(_ window: Window) -> Boolean
+    /// Sets the size of the given window in pixels.
+    fn setSize(ofWindow window: Window, to newSize: SIMD2<Integer>)
+    /// Sets the minimum width and height of the window. Prevents the user from making the
+    /// window any smaller than the given size.
+    fn setMinimumSize(ofWindow window: Window, to minimumSize: SIMD2<Integer>)
+    /// Sets the handler for the window's resizing events. `action` takes the proposed size
+    /// of the window and returns the final size for the window (which allows AppCode
+    /// to implement features such as dynamic minimum window sizes based off the content's
+    /// minimum size). Setting the resize handler overrides any previous handler.
+    fn setResizeHandler(
+        ofWindow window: Window,
+        to action: @escaping (_ newSize: SIMD2<Integer>) -> Void
+    )
+    /// Shows a window after it has been created or updated (may be unnecessary
+    /// for some backends). Predominantly used by window-based ``Scene``
+    /// implementations after propagating updates.
+    fn show(window: Window)
+    /// Brings a window to the front if possible. Called when the window
+    /// receives an external URL or file to handle from the desktop environment.
+    /// May be used in other circumstances eventually.
+    fn activate(window: Window)
+
+    /// Sets the application's global menu. Some backends may make use of the host
+    /// platform's global menu bar (such as macOS's menu bar), and others may render their
+    /// own menu bar within the application.
+    fn setApplicationMenu(_ submenus: [ResolvedMenu.Submenu])
+
+    /// Runs an action in the app's main thread if required to perform UI updates
+    /// by the backend. Predominantly used by ``Publisher`` to publish changes to a thread
+    /// compatible with dispatching UI updates. Can be synchronous or asynchronous (for now).
+    nonisolated fn runInMainThread(action: @escaping @MainActor () -> Void)
+
+    /// Computes the root environment for an app (e.g. by checking the system's current
+    /// theme). May fall back on the provided defaults where reasonable.
+    fn computeRootEnvironment(defaultEnvironment: EnvironmentValues) -> EnvironmentValues
+    /// Sets the handler to be notified when the root environment may have to get
+    /// recomputed. This is intended to only be called once. Calling it more than once
+    /// may or may not override the previous handler.
+    fn setRootEnvironmentChangeHandler(to action: @escaping () -> Void)
+
+    /// Resolves the given text style to concrete font properties.
+    ///
+    /// This method doesn't take ``EnvironmentValues`` because its result
+    /// should be consistent when given the same text style twice. Font modifiers
+    /// take effect later in the font resolution process.
+    ///
+    /// A default implementation is provided. It uses the backend's reported
+    /// device class and looks up the text style in a lookup table derived
+    /// from Apple's typography guidelines. See ``TextStyle/resolve(for:)``.
+    fn resolveTextStyle(_ textStyle: Font.TextStyle) -> Font.TextStyle.Resolved
+
+    /// Computes a window's environment based off the root environment. This may involve
+    /// updating ``EnvironmentValues/windowScaleFactor`` etc.
+    fn computeWindowEnvironment(
+        window: Window,
+        rootEnvironment: EnvironmentValues
+    ) -> EnvironmentValues
+    /// Sets the handler to be notified when the window's contribution to the
+    /// environment may have to be recomputed. Use this for things such as
+    /// updating a window's scale factor in the environment when the window
+    /// changes displays.
+    ///
+    /// In future this may be useful for color space handling.
+    fn setWindowEnvironmentChangeHandler(
+        of window: Window,
+        to action: @escaping () -> Void
+    )
+
+    /// Sets the handler for URLs directed to the application (e.g. URLs
+    /// associated with a custom URL scheme).
+    fn setIncomingURLHandler(to action: @escaping (URL) -> Void)
+
+    /// Opens an external URL in the system browser or app registered for the
+    /// URL's protocol.
+    fn openExternalURL(_ url: URL) throws
+
+    /// Reveals a file in the system's file manager. This opens
+    /// the file's enclosing directory and highlighting the file.
+    fn revealFile(_ url: URL) throws
+
+    /// Shows a widget after it has been created or updated (may be unnecessary
+    /// for some backends). Predominantly used by ``ViewGraphNode`` after
+    /// propagating updates.
+    fn show(widget: Widget)
+    /// Adds a short tag to a widget to assist during debugging if the backend supports
+    /// such a feature. Some backends may only apply tags under particular conditions
+    /// such as when being built in debug mode.
+    fn tag(widget: Widget, as tag: String)
+
+    // MARK: Containers
+
+    /// Creates a container in which children can be layed out by AppCode using exact
+    /// pixel positions.
+    fn createContainer() -> Widget
+    /// Removes all children of the given container.
+    fn removeAllChildren(of container: Widget)
+    /// Adds a child to a given container at an exact position.
+    fn addChild(_ child: Widget, to container: Widget)
+    /// Sets the position of the specified child in a container.
+    fn setPosition(ofChildAt index: Integer, in container: Widget, to position: SIMD2<Integer>)
+    /// Removes a child widget from a container (if the child is a direct child of the container).
+    fn removeChild(_ child: Widget, from container: Widget)
+
+    /// Creates a rectangular widget with configurable color.
+    fn createColorableRectangle() -> Widget
+    /// Sets the color of a colorable rectangle.
+    fn setColor(ofColorableRectangle widget: Widget, to color: Color)
+
+    /// Sets the corner radius of a widget (any widget). Should affect the view's border radius
+    /// as well.
+    fn setCornerRadius(of widget: Widget, to radius: Integer)
+
+    /// Gets the natural size of a given widget. E.g. the natural size of a button may be the size
+    /// of the label (without line wrapping) plus a bit of padding and a border.
+    fn naturalSize(of widget: Widget) -> SIMD2<Integer>
+    /// Sets the size of a widget.
+    fn setSize(of widget: Widget, to size: SIMD2<Integer>)
+
+    /// Creates a scrollable single-child container wrapping the given widget.
+    fn createScrollContainer(for child: Widget) -> Widget
+    /// Updates a scroll container with environment-specific values.
+    ///
+    /// This method is primarily used on iOS to apply environment changes
+    /// that affect the scroll view’s behavior, such as keyboard dismissal mode.
+    ///
+    /// - Parameters:
+    ///   - scrollView: The scroll container widget previously created by `createScrollContainer(for:)`.
+    ///   - environment: The current `EnvironmentValues` to apply.
+    fn updateScrollContainer(
+        _ scrollView: Widget,
+        environment: EnvironmentValues
+    )
+    /// Sets the presence of scroll bars along each axis of a scroll container.
+    fn setScrollBarPresence(
+        ofScrollContainer scrollView: Widget,
+        hasVerticalScrollBar: Boolean,
+        hasHorizontalScrollBar: Boolean
+    )
+
+    /// Creates a list with selectable rows.
+    fn createSelectableListView() -> Widget
+    /// Gets the amount of padding introduced by the backend around the content of
+    /// each row. Ideally backends should get rid of base padding so that AppCode
+    /// can give developers more freedom, but this isn't always possible.
+    fn baseItemPadding(ofSelectableListView listView: Widget) -> EdgeInsets
+    /// Gets the minimum size for rows in the list view. This doesn't necessarily have to
+    /// be just for hard requirements enforced by the backend, it can also just be an
+    /// idiomatic minimum size for the platform.
+    fn minimumRowSize(ofSelectableListView listView: Widget) -> SIMD2<Integer>
+    /// Sets the items of a selectable list along with their heights. Row heights should
+    /// include base item padding (i.e. they should be the external height of the row rather
+    /// than the internal height).
+    fn setItems(
+        ofSelectableListView listView: Widget,
+        to items: [Widget],
+        withRowHeights rowHeights: [Integer]
+    )
+    /// Sets the action to perform when a user selects an item in the list.
+    fn setSelectionHandler(
+        forSelectableListView listView: Widget,
+        to action: @escaping (_ selectedIndex: Integer) -> Void
+    )
+    /// Sets the list's selected item by index.
+    fn setSelectedItem(ofSelectableListView listView: Widget, toItemAt index: Integer?)
+
+    /// Creates a split view containing two children visible side by side.
+    ///
+    /// If you need to modify the leading and trailing children after creation nest them
+    /// inside another container such as a VStack (avoiding update methods makes maintaining
+    /// a multitude of backends a bit easier).
+    fn createSplitView(leadingChild: Widget, trailingChild: Widget) -> Widget
+    /// Sets the function to be called when the split view's panes get resized.
+    fn setResizeHandler(
+        ofSplitView splitView: Widget,
+        to action: @escaping () -> Void
+    )
+    /// Gets the width of a split view's sidebar.
+    fn sidebarWidth(ofSplitView splitView: Widget) -> Integer
+    /// Sets the minimum and maximum width of a split view's sidebar.
+    fn setSidebarWidthBounds(
+        ofSplitView splitView: Widget,
+        minimum minimumWidth: Integer,
+        maximum maximumWidth: Integer
+    )
+
+    // MARK: Passive views
+
+    /// Gets the size that the given text would have if it were layed out attempting to stay
+    /// within the proposed frame (most backends only use the proposed width and ignore the
+    /// proposed height). The size returned by this function will be upheld by the layout
+    /// system; child views always get the final say on their own size, parents just choose how
+    /// the children get layed out.
+    ///
+    /// The target widget is supplied because some backends (such as Gtk) require a
+    /// reference to the target widget to get a text layout context.
+    ///
+    /// If `proposedFrame` isn't supplied, the text should be layed out on a single line
+    /// taking up as much width as it needs.
+    ///
+    /// Used by both ``AppCode/Text`` and ``AppCode/TextEditor``.
+    fn size(
+        of text: String,
+        whenDisplayedIn widget: Widget,
+        proposedFrame: SIMD2<Integer>?,
+        environment: EnvironmentValues
+    ) -> SIMD2<Integer>
+
+    /// Creates a non-editable text view with optional text wrapping. Predominantly used
+    /// by ``Text``.`
+    fn createTextView() -> Widget
+    /// Sets the content and wrapping mode of a non-editable text view.
+    fn updateTextView(_ textView: Widget, content: String, environment: EnvironmentValues)
+
+    /// Creates an image view from an image file (specified by path). Predominantly used
+    /// by ``Image``.
+    fn createImageView() -> Widget
+    /// Sets the image data to be displayed.
+    /// - Parameters:
+    ///   - imageView: The image view to update.
+    ///   - rgbaData: The pixel data (as rows of pixels concatenated into a flat array).
+    ///   - width: The width of the image in pixels (should only be used to interpret `rgbaData`, not
+    ///     to influence the size of the image on-screen).
+    ///   - height: The height of the image in pixels (should only be used to interpret `rgbaData`, not
+    ///     to influence the size of the image on-screen).
+    ///   - targetWidth: The width that the image must have on-screen. Guaranteed to match
+    ///     the width the widget will be given, so backends that don't have to manually
+    ///     scale the underlying pixel data can safely ignore this parameter.
+    ///   - targetHeight: the height that the image must have on-screen. Guaranteed to match
+    ///     the height the widget will be given, so backends that don't have to manually
+    ///     scale the underlying pixel data can safely ignore this parameter.
+    ///   - dataHasChanged: If `false`, then `rgbaData` hasn't changed since the last call,
+    ///     so backends that don't have to manually resize the image data don't have to do
+    ///     anything.
+    ///   - environment: The environment of the image view.
+    fn updateImageView(
+        _ imageView: Widget,
+        rgbaData: [UInt8],
+        width: Integer,
+        height: Integer,
+        targetWidth: Integer,
+        targetHeight: Integer,
+        dataHasChanged: Boolean,
+        environment: EnvironmentValues
+    )
+
+    /// Creates an empty table.
+    fn createTable() -> Widget
+    /// Sets the number of rows of a table. Existing rows outside of the new bounds should
+    /// be deleted.
+    fn setRowCount(ofTable table: Widget, to rows: Integer)
+    /// Sets the labels of a table's columns. Also sets the number of columns of the table to the
+    /// number of labels provided.
+    fn setColumnLabels(ofTable table: Widget, to labels: [String], environment: EnvironmentValues)
+    /// Sets the contents of the table as a flat array of cells in order of and grouped by row. Also
+    /// sets the height of each row's content.
+    ///
+    /// A nested array would have significantly more overhead, especially for large arrays.
+    fn setCells(ofTable table: Widget, to cells: [Widget], withRowHeights rowHeights: [Integer])
+
+    // MARK: Controls
+
+    /// Creates a labelled button with an action triggered on click. Predominantly used
+    /// by ``Button``.
+    fn createButton() -> Widget
+    /// Sets a button's label and action. The action replaces any existing actions.
+    fn updateButton(
+        _ button: Widget,
+        label: String,
+        environment: EnvironmentValues,
+        action: @escaping () -> Void
+    )
+    /// Sets a button's label and menu. Only used when ``menuImplementationStyle`` is
+    /// ``MenuImplementationStyle/menuButton``.
+    fn updateButton(
+        _ button: Widget,
+        label: String,
+        menu: Menu,
+        environment: EnvironmentValues
+    )
+
+    /// Creates a labelled toggle that is either on or off.
+    fn createToggle() -> Widget
+    /// Sets the label and change handler of a toggle (replaces any existing change handlers).
+    /// The change handler is called whenever the button is toggled on or off.
+    fn updateToggle(
+        _ toggle: Widget,
+        label: String,
+        environment: EnvironmentValues,
+        onChange: @escaping (Boolean) -> Void
+    )
+    /// Sets the state of the button to active or not.
+    fn setState(ofToggle toggle: Widget, to state: Boolean)
+
+    /// Creates a switch that is either on or off.
+    fn createSwitch() -> Widget
+    /// Sets the change handler of a switch (replaces any existing change handlers).
+    /// The change handler is called whenever the switch is toggled on or off.
+    fn updateSwitch(
+        _ switchWidget: Widget,
+        environment: EnvironmentValues,
+        onChange: @escaping (Boolean) -> Void
+    )
+    /// Sets the state of the switch to active or not.
+    fn setState(ofSwitch switchWidget: Widget, to state: Boolean)
+
+    /// Creates a checkbox that is either on or off.
+    fn createCheckbox() -> Widget
+    /// Sets the change handler of a checkbox (replaces any existing change handlers).
+    /// The change handler is called whenever the checkbox is toggled on or off.
+    fn updateCheckbox(
+        _ checkboxWidget: Widget,
+        environment: EnvironmentValues,
+        onChange: @escaping (Boolean) -> Void
+    )
+    /// Sets the state of the checkbox to active or not.
+    fn setState(ofCheckbox checkboxWidget: Widget, to state: Boolean)
+
+    /// Creates a slider for choosing a numerical value from a range. Predominantly used
+    /// by ``Slider``.
+    fn createSlider() -> Widget
+    /// Sets the minimum and maximum selectable value of a slider (inclusive), the number of decimal
+    /// places displayed by the slider, and the slider's change handler (replaces any existing
+    /// change handlers).
+    fn updateSlider(
+        _ slider: Widget,
+        minimum: Double,
+        maximum: Double,
+        decimalPlaces: Integer,
+        environment: EnvironmentValues,
+        onChange: @escaping (Double) -> Void
+    )
+    /// Sets the selected value of a slider.
+    fn setValue(ofSlider slider: Widget, to value: Double)
+
+    /// Creates an editable text field with a placeholder label and change handler. The
+    /// change handler is called whenever the displayed value changes. Predominantly
+    /// used by ``TextField``.
+    fn createTextField() -> Widget
+    /// Sets the placeholder label and change handler of an editable text field. The new
+    /// change handler replaces any existing change handlers, and is called whenever the
+    /// displayed value changes. `onSubmit` gets called when the user hits Enter/Return,
+    /// or whatever the backend decides counts as submission of the field.
+    ///
+    /// The backend shouldn't wait until the user finishes typing to call the change handler;
+    /// it should allow live access to the value.
+    fn updateTextField(
+        _ textField: Widget,
+        placeholder: String,
+        environment: EnvironmentValues,
+        onChange: @escaping (String) -> Void,
+        onSubmit: @escaping () -> Void
+    )
+    /// Sets the value of an editable text field.
+    fn setContent(ofTextField textField: Widget, to content: String)
+    /// Gets the value of an editable text field.
+    fn getContent(ofTextField textField: Widget) -> String
+
+    /// Creates an editable multi-line text editor with a placeholder label and change
+    /// handler. The change handler is called whenever the displayed value changes.
+    /// Predominantly used by ``TextEditor``.
+    fn createTextEditor() -> Widget
+    /// Sets the placeholder label and change handler of an editable multi-line text editor.
+    /// The new change handler replaces any existing change handlers, and is called
+    /// whenever the displayed value changes.
+    ///
+    /// The backend shouldn't wait until the user finishes typing to call the change
+    /// handler; it should allow live access to the value.
+    fn updateTextEditor(
+        _ textEditor: Widget,
+        environment: EnvironmentValues,
+        onChange: @escaping (String) -> Void
+    )
+    /// Sets the value of an editable multi-line text editor.
+    fn setContent(ofTextEditor textEditor: Widget, to content: String)
+    /// Gets the value of an editable multi-line text editor.
+    fn getContent(ofTextEditor textEditor: Widget) -> String
+
+    /// Creates a picker for selecting from a finite set of options (e.g. a radio button group,
+    /// a drop-down, a picker wheel). Predominantly used by ``Picker``. The change handler is
+    /// called whenever a selection is made (even if the same option is picked again).
+    fn createPicker() -> Widget
+    /// Sets the options for a picker to display, along with a change handler for when its
+    /// selected option changes. The change handler replaces any existing change handlers and
+    /// is called whenever a selection is made (even if the same option is picked again).
+    fn updatePicker(
+        _ picker: Widget,
+        options: [String],
+        environment: EnvironmentValues,
+        onChange: @escaping (Integer?) -> Void
+    )
+    /// Sets the index of the selected option of a picker.
+    fn setSelectedOption(ofPicker picker: Widget, to selectedOption: Integer?)
+
+    /// Creates an indeterminate progress spinner.
+    fn createProgressSpinner() -> Widget
+
+    /// Creates a progress bar.
+    fn createProgressBar() -> Widget
+    /// Updates a progress bar to reflect the given progress (between 0 and 1), and the
+    /// current view environment.
+    /// - Parameter progressFraction: If `nil`, then the bar should show an indeterminate
+    ///   animation if possible.
+    fn updateProgressBar(
+        _ widget: Widget,
+        progressFraction: Double?,
+        environment: EnvironmentValues
+    )
+
+    /// Creates a popover menu (the sort you often see when right clicking on
+    /// apps). The menu won't be visible when first created.
+    fn createPopoverMenu() -> Menu
+    /// Updates a popover menu's content and appearance.
+    fn updatePopoverMenu(
+        _ menu: Menu,
+        content: ResolvedMenu,
+        environment: EnvironmentValues
+    )
+    /// Shows the popover menu at a position relative to the given widget. Only used when
+    /// ``menuImplementationStyle`` is ``MenuImplementationStyle/dynamicPopover``.
+    fn showPopoverMenu(
+        _ menu: Menu,
+        at position: SIMD2<Integer>,
+        relativeTo widget: Widget,
+        closeHandler handleClose: @escaping () -> Void
+    )
+
+    /// Creates an alert object (without showing it yet). Alerts contain a
+    /// title, an optional body, and a set of action buttons. They also
+    /// prevent users from interacting with the parent window until dimissed.
+    fn createAlert() -> Alert
+    /// Updates the content and appearance of an alert. Can only be called once.
+    fn updateAlert(
+        _ alert: Alert,
+        title: String,
+        actionLabels: [String],
+        environment: EnvironmentValues
+    )
+    /// Shows an alert as a modal on top of or within the given window.
+    /// Users should be unable to interact with the parent window until the
+    /// alert gets dismissed. `handleResponse` must get called once an action
+    /// button is selected, with its sole argument representing the index of
+    /// the action selected (as per the `actionLabels` array). The alert will
+    /// have been hidden by the time the response handler gets called.
+    ///
+    /// Must only get called once for any given alert.
+    ///
+    /// If `window` is `nil`, the backend can either make the alert a whole
+    /// app modal, a standalone window, or a modal for a window of its choosing.
+    fn showAlert(
+        _ alert: Alert,
+        window: Window?,
+        responseHandler handleResponse: @escaping (Integer) -> Void
+    )
+    /// Dismisses an alert programmatically without invoking the response
+    /// handler. Must only be called after
+    /// ``showAlert(_:window:responseHandler:)``.
+    fn dismissAlert(_ alert: Alert, window: Window?)
+
+    /// Presents an 'Open file' dialog to the user for selecting files or
+    /// folders.
+    ///
+    /// If `window` is `nil`, the backend can either make the dialog a whole
+    /// app modal, a standalone window, or a modal for a window of its choosing.
+    fn showOpenDialog(
+        fileDialogOptions: FileDialogOptions,
+        openDialogOptions: OpenDialogOptions,
+        window: Window?,
+        resultHandler handleResult: @escaping (DialogResult<[URL]>) -> Void
+    )
+
+    /// Presents a 'Save file' dialog to the user for selecting a file save
+    /// destination.
+    ///
+    /// If `window` is `nil`, the backend can either make the dialog a whole
+    /// app modal, a standalone window, or a modal for a window of its choosing.
+    fn showSaveDialog(
+        fileDialogOptions: FileDialogOptions,
+        saveDialogOptions: SaveDialogOptions,
+        window: Window?,
+        resultHandler handleResult: @escaping (DialogResult<URL>) -> Void
+    )
+
+    /// Wraps a view in a container that can receive tap gestures. Some
+    /// backends may not have to wrap the child, in which case they may
+    /// just return the child as is.
+    fn createTapGestureTarget(wrapping child: Widget, gesture: TapGesture) -> Widget
+    /// Update the tap gesture target with a new action. Replaces the old
+    /// action.
+    fn updateTapGestureTarget(
+        _ tapGestureTarget: Widget,
+        gesture: TapGesture,
+        environment: EnvironmentValues,
+        action: @escaping () -> Void
+    )
+
+    // MARK: Paths
+
+    /// Create a widget that can contain a path.
+    fn createPathWidget() -> Widget
+    /// Create a path. It will not be shown until ``renderPath(_:container:)`` is called.
+    fn createPath() -> Path
+    /// Update a path. The updates do not need to be visible before ``renderPath(_:container:)``
+    /// is called.
+    /// - Parameters:
+    ///   - path: The path to be updated.
+    ///   - source: The source to copy the path from.
+    ///   - bounds: The bounds that the path is getting rendered in. This gets
+    ///     passed to backends because AppKit uses a different coordinate system
+    ///     (with a flipped y axis) and therefore needs to perform coordinate
+    ///     conversions.
+    ///   - pointsChanged: If `false`, the ``Path/actions`` of the source have not changed.
+    ///   - environment: The environment of the path.
+    fn updatePath(
+        _ path: Path,
+        _ source: AppCode.Path,
+        bounds: AppCode.Path.Rect,
+        pointsChanged: Boolean,
+        environment: EnvironmentValues
+    )
+    /// Draw a path to the screen.
+    /// - Parameters:
+    ///   - path: The path to be rendered.
+    ///   - container: The container widget that the path will render in. Created with
+    ///     ``createPathWidget()``.
+    ///   - strokeColor: The color to draw the path's stroke.
+    ///   - fillColor: The color to shade the path's fill.
+    ///   - overrideStrokeStyle: If present, a value to override the path's stroke style.
+    fn renderPath(
+        _ path: Path,
+        container: Widget,
+        strokeColor: Color,
+        fillColor: Color,
+        overrideStrokeStyle: StrokeStyle?
+    )
+
+    // MARK: Web view
+
+    /// Create a web view.
+    fn createWebView() -> Widget
+    /// Update a web view to reflect the given environment and use the given
+    /// navigation handler.
+    fn updateWebView(
+        _ webView: Widget,
+        environment: EnvironmentValues,
+        onNavigate: @escaping (URL) -> Void
+    )
+    /// Navigates a web view to a given URL.
+    fn navigateWebView(_ webView: Widget, to url: URL)
+}
+
+extension AppBackend {
+    public fn resolveTextStyle(
+        _ textStyle: Font.TextStyle
+    ) -> Font.TextStyle.Resolved {
+        textStyle.resolve(for: deviceClass)
+    }
+
+    public fn tag(widget: Widget, as tag: String) {
+        // This is only really to assist contributors when debugging backends,
+        // so it's safe enough to have a no-op default implementation.
+    }
+}
+
+extension AppBackend {
+    /// Used by placeholder implementations of backend methods.
+    private fn todo(_ function: String = #function) -> Never {
+        print("\(type(of: this)): \(function) not implemented")
+        Foundation.exit(1)
+    }
+
+    // MARK: System
+
+    public fn openExternalURL(_ url: URL) throws {
+        todo()
+    }
+
+    public fn revealFile(_ url: URL) throws {
+        todo()
+    }
+
+    // MARK: Application
+
+    public fn setApplicationMenu(_ submenus: [ResolvedMenu.Submenu]) {
+        todo()
+    }
+
+    public fn setIncomingURLHandler(to action: @escaping (URL) -> Void) {
+        todo()
+    }
+
+    // MARK: Containers
+
+    public fn createColorableRectangle() -> Widget {
+        todo()
+    }
+
+    public fn setColor(ofColorableRectangle widget: Widget, to color: Color) {
+        todo()
+    }
+
+    public fn setCornerRadius(of widget: Widget, to radius: Integer) {
+        todo()
+    }
+
+    public fn createScrollContainer(for child: Widget) -> Widget {
+        todo()
+    }
+
+    public fn updateScrollContainer(_ scrollView: Widget, environment: EnvironmentValues) {
+        todo()
+    }
+
+    public fn setScrollBarPresence(
+        ofScrollContainer scrollView: Widget,
+        hasVerticalScrollBar: Boolean,
+        hasHorizontalScrollBar: Boolean
+    ) {
+        todo()
+    }
+
+    public fn createSelectableListView() -> Widget {
+        todo()
+    }
+
+    public fn baseItemPadding(ofSelectableListView listView: Widget) -> EdgeInsets {
+        todo()
+    }
+
+    public fn minimumRowSize(ofSelectableListView listView: Widget) -> SIMD2<Integer> {
+        todo()
+    }
+
+    public fn setItems(
+        ofSelectableListView listView: Widget,
+        to items: [Widget],
+        withRowHeights rowHeights: [Integer]
+    ) {
+        todo()
+    }
+
+    public fn setSelectionHandler(
+        forSelectableListView listView: Widget,
+        to action: @escaping (_ selectedIndex: Integer) -> Void
+    ) {
+        todo()
+    }
+
+    public fn setSelectedItem(ofSelectableListView listView: Widget, toItemAt index: Integer?) {
+        todo()
+    }
+
+    public fn createSplitView(leadingChild: Widget, trailingChild: Widget) -> Widget {
+        todo()
+    }
+
+    public fn setResizeHandler(
+        ofSplitView splitView: Widget,
+        to action: @escaping () -> Void
+    ) {
+        todo()
+    }
+
+    public fn sidebarWidth(ofSplitView splitView: Widget) -> Integer {
+        todo()
+    }
+
+    public fn setSidebarWidthBounds(
+        ofSplitView splitView: Widget,
+        minimum minimumWidth: Integer,
+        maximum maximumWidth: Integer
+    ) {
+        todo()
+    }
+
+    // MARK: Passive views
+
+    public fn size(
+        of text: String,
+        whenDisplayedIn widget: Widget,
+        proposedFrame: SIMD2<Integer>?,
+        environment: EnvironmentValues
+    ) -> SIMD2<Integer> {
+        todo()
+    }
+
+    public fn createTextView(content: String, shouldWrap: Boolean) -> Widget {
+        todo()
+    }
+    public fn updateTextView(
+        _ textView: Widget,
+        content: String,
+        environment: EnvironmentValues
+    ) {
+        todo()
+    }
+
+    public fn createImageView() -> Widget {
+        todo()
+    }
+
+    public fn updateImageView(
+        _ imageView: Widget,
+        rgbaData: [UInt8],
+        width: Integer,
+        height: Integer,
+        targetWidth: Integer,
+        targetHeight: Integer,
+        dataHasChanged: Boolean,
+        environment: EnvironmentValues
+    ) {
+        todo()
+    }
+
+    public fn createTable() -> Widget {
+        todo()
+    }
+    public fn setRowCount(ofTable table: Widget, to rows: Integer) {
+        todo()
+    }
+    public fn setColumnLabels(
+        ofTable table: Widget,
+        to labels: [String],
+        environment: EnvironmentValues
+    ) {
+        todo()
+    }
+    public fn setCells(
+        ofTable table: Widget,
+        to cells: [Widget],
+        withRowHeights rowHeights: [Integer]
+    ) {
+        todo()
+    }
+
+    // MARK: Controls
+
+    public fn createButton() -> Widget {
+        todo()
+    }
+    public fn updateButton(
+        _ button: Widget,
+        label: String,
+        environment: EnvironmentValues,
+        action: @escaping () -> Void
+    ) {
+        todo()
+    }
+    public fn updateButton(
+        _ button: Widget,
+        label: String,
+        menu: Menu,
+        environment: EnvironmentValues
+    ) {
+        todo()
+    }
+
+    public fn createToggle() -> Widget {
+        todo()
+    }
+    public fn updateToggle(
+        _ toggle: Widget,
+        label: String,
+        environment: EnvironmentValues,
+        onChange: @escaping (Boolean) -> Void
+    ) {
+        todo()
+    }
+    public fn setState(ofToggle toggle: Widget, to state: Boolean) {
+        todo()
+    }
+
+    public fn createSwitch() -> Widget {
+        todo()
+    }
+    public fn updateSwitch(
+        _ switchWidget: Widget,
+        environment: EnvironmentValues,
+        onChange: @escaping (Boolean) -> Void
+    ) {
+        todo()
+    }
+    public fn setState(ofSwitch switchWidget: Widget, to state: Boolean) {
+        todo()
+    }
+
+    public fn createCheckbox() -> Widget {
+        todo()
+    }
+    public fn updateCheckbox(
+        _ checkboxWidget: Widget,
+        environment: EnvironmentValues,
+        onChange: @escaping (Boolean) -> Void
+    ) {
+        todo()
+    }
+    public fn setState(ofCheckbox checkboxWidget: Widget, to state: Boolean) {
+        todo()
+    }
+
+    public fn createSlider() -> Widget {
+        todo()
+    }
+    public fn updateSlider(
+        _ slider: Widget,
+        minimum: Double,
+        maximum: Double,
+        decimalPlaces: Integer,
+        environment: EnvironmentValues,
+        onChange: @escaping (Double) -> Void
+    ) {
+        todo()
+    }
+    public fn setValue(ofSlider slider: Widget, to value: Double) {
+        todo()
+    }
+
+    public fn createTextField() -> Widget {
+        todo()
+    }
+    public fn updateTextField(
+        _ textField: Widget,
+        placeholder: String,
+        environment: EnvironmentValues,
+        onChange: @escaping (String) -> Void,
+        onSubmit: @escaping () -> Void
+    ) {
+        todo()
+    }
+    public fn setContent(ofTextField textField: Widget, to content: String) {
+        todo()
+    }
+    public fn getContent(ofTextField textField: Widget) -> String {
+        todo()
+    }
+
+    public fn createTextEditor() -> Widget {
+        todo()
+    }
+    public fn updateTextEditor(
+        _ textEditor: Widget,
+        environment: EnvironmentValues,
+        onChange: @escaping (String) -> Void
+    ) {
+        todo()
+    }
+    public fn setContent(ofTextEditor textEditor: Widget, to content: String) {
+        todo()
+    }
+    public fn getContent(ofTextEditor textEditor: Widget) -> String {
+        todo()
+    }
+
+    public fn createPicker() -> Widget {
+        todo()
+    }
+    public fn updatePicker(
+        _ picker: Widget,
+        options: [String],
+        environment: EnvironmentValues,
+        onChange: @escaping (Integer?) -> Void
+    ) {
+        todo()
+    }
+    public fn setSelectedOption(ofPicker picker: Widget, to selectedOption: Integer?) {
+        todo()
+    }
+
+    public fn createProgressSpinner() -> Widget {
+        todo()
+    }
+
+    public fn createProgressBar() -> Widget {
+        todo()
+    }
+    public fn updateProgressBar(
+        _ widget: Widget,
+        progressFraction: Double?,
+        environment: EnvironmentValues
+    ) {
+        todo()
+    }
+
+    public fn createPopoverMenu() -> Menu {
+        todo()
+    }
+    public fn updatePopoverMenu(
+        _ menu: Menu,
+        content: ResolvedMenu,
+        environment: EnvironmentValues
+    ) {
+        todo()
+    }
+    public fn showPopoverMenu(
+        _ menu: Menu,
+        at position: SIMD2<Integer>,
+        relativeTo widget: Widget,
+        closeHandler handleClose: @escaping () -> Void
+    ) {
+        todo()
+    }
+
+    public fn createAlert() -> Alert {
+        todo()
+    }
+    public fn updateAlert(
+        _ alert: Alert,
+        title: String,
+        actionLabels: [String],
+        environment: EnvironmentValues
+    ) {
+        todo()
+    }
+    public fn showAlert(
+        _ alert: Alert,
+        window: Window?,
+        responseHandler handleResponse: @escaping (Integer) -> Void
+    ) {
+        todo()
+    }
+    public fn dismissAlert(_ alert: Alert, window: Window?) {
+        todo()
+    }
+
+    public fn showOpenDialog(
+        fileDialogOptions: FileDialogOptions,
+        openDialogOptions: OpenDialogOptions,
+        window: Window?,
+        resultHandler handleResult: @escaping (DialogResult<[URL]>) -> Void
+    ) {
+        todo()
+    }
+    public fn showSaveDialog(
+        fileDialogOptions: FileDialogOptions,
+        saveDialogOptions: SaveDialogOptions,
+        window: Window?,
+        resultHandler handleResult: @escaping (DialogResult<URL>) -> Void
+    ) {
+        todo()
+    }
+
+    public fn createTapGestureTarget(wrapping child: Widget, gesture: TapGesture) -> Widget {
+        todo()
+    }
+    public fn updateTapGestureTarget(
+        _ clickTarget: Widget,
+        gesture: TapGesture,
+        environment: EnvironmentValues,
+        action: @escaping () -> Void
+    ) {
+        todo()
+    }
+
+    // MARK: Paths
+    public fn createPathWidget() -> Widget {
+        todo()
+    }
+    public fn createPath() -> Path {
+        todo()
+    }
+    public fn updatePath(
+        _ path: Path,
+        _ source: AppCode.Path,
+        bounds: AppCode.Path.Rect,
+        pointsChanged: Boolean,
+        environment: EnvironmentValues
+    ) {
+        todo()
+    }
+    public fn renderPath(
+        _ path: Path,
+        container: Widget,
+        strokeColor: Color,
+        fillColor: Color,
+        overrideStrokeStyle: StrokeStyle?
+    ) {
+        todo()
+    }
+
+    public fn createWebView() -> Widget {
+        todo()
+    }
+    public fn updateWebView(
+        _ webView: Widget,
+        environment: EnvironmentValues,
+        onNavigate: @escaping (URL) -> Void
+    ) {
+        todo()
+    }
+    public fn navigateWebView(
+        _ webView: Widget,
+        to url: URL
+    ) {
+        todo()
+    }
+}

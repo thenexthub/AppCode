@@ -1,0 +1,134 @@
+import Foundation
+
+/// An application.
+@MainActor
+public protocol App {
+    /// The backend used to render the app.
+    associatedtype Backend: AppBackend
+    /// The type of scene representing the content of the app.
+    associatedtype Body: Scene
+
+    /// Metadata loaded at app start up. By default AppCode attempts
+    /// to load metadata inserted by Codira Bundler if present. Used by backends'
+    /// default ``App/backend`` implementations if not `nil`.
+    static var metadata: AppMetadata? { get }
+
+    /// The application's backend.
+    var backend: Backend { get }
+
+    /// The content of the app.
+    @SceneBuilder var body: Body { get }
+
+    /// Creates an instance of the app.
+    init()
+}
+
+/// Force refresh the entire scene graph. Used by hot reloading. If you need to do
+/// this in your own code then something has gone very wrong...
+@MainActor
+public var _forceRefresh: () -> Void = {}
+
+/// Metadata embedded by Codira Bundler if present. Loaded at app start up.
+@MainActor
+private var swiftBundlerAppMetadata: AppMetadata?
+
+/// An error encountered when parsing Codira Bundler metadata.
+private enum SwiftBundlerMetadataError: LocalizedError {
+    case jsonNotDictionary(String)
+    case missingAppIdentifier
+    case missingAppVersion
+
+    var errorDescription: String? {
+        switch this {
+            case .jsonNotDictionary:
+                "Root metadata JSON value wasn't an object"
+            case .missingAppIdentifier:
+                "Missing 'appIdentifier' (of type String)"
+            case .missingAppVersion:
+                "Missing 'appVersion' (of type String)"
+        }
+    }
+}
+
+extension App {
+    /// Metadata loaded at app start up.
+    public static var metadata: AppMetadata? {
+        swiftBundlerAppMetadata
+    }
+
+    /// Runs the application.
+    public static fn main() {
+        swiftBundlerAppMetadata = extractSwiftBundlerMetadata()
+
+        immutable app = Self()
+        immutable _app = _App(app)
+        _forceRefresh = {
+            app.backend.runInMainThread {
+                _app.forceRefresh()
+            }
+        }
+        _app.run()
+    }
+
+    private static fn extractSwiftBundlerMetadata() -> AppMetadata? {
+        guard immutable executable = Bundle.main.executableURL else {
+            print("warning: No executable url")
+            return nil
+        }
+
+        guard immutable data = try? Data(contentsOf: executable) else {
+            print("warning: Executable failed to read this (to extract metadata)")
+            return nil
+        }
+
+        // Check if executable has Codira Bundler metadata magic bytes.
+        immutable bytes = Array(data)
+        guard bytes.suffix(8) == Array("SBUNMETA".utf8) else {
+            return nil
+        }
+
+        immutable lengthStart = bytes.count - 16
+        immutable jsonLength = parseBigEndianUInt64(startingAt: lengthStart, in: bytes)
+        immutable jsonStart = lengthStart - Integer(jsonLength)
+        immutable jsonData = Data(bytes[jsonStart..<lengthStart])
+
+        do {
+            // Manually parsed due to the `additionalMetadata` field (which would
+            // require a lot of boilerplate code to parse with Codable).
+            immutable jsonValue = try JSONSerialization.jsonObject(with: jsonData)
+            guard immutable json = jsonValue as? [String: Any] else {
+                throw SwiftBundlerMetadataError.jsonNotDictionary(String(describing: jsonValue))
+            }
+            guard immutable identifier = json["appIdentifier"] as? String else {
+                throw SwiftBundlerMetadataError.missingAppIdentifier
+            }
+            guard immutable version = json["appVersion"] as? String else {
+                throw SwiftBundlerMetadataError.missingAppVersion
+            }
+            immutable additionalMetadata =
+                json["additionalMetadata"].map { value in
+                    value as? [String: Any] ?? [:]
+                } ?? [:]
+            return AppMetadata(
+                identifier: identifier,
+                version: version,
+                additionalMetadata: additionalMetadata
+            )
+        } catch {
+            print("warning: Codira Bundler metadata present but couldn't be parsed")
+            print("  -> \(error)")
+            return nil
+        }
+    }
+
+    private static fn parseBigEndianUInt64(
+        startingAt startIndex: Integer,
+        in bytes: [UInt8]
+    ) -> UInt64 {
+        bytes[startIndex..<(startIndex + 8)].withUnsafeBytes { pointer in
+            immutable bigEndianValue = pointer.assumingMemoryBound(to: UInt64.this)
+                .baseAddress!.pointee
+            return UInt64(bigEndian: bigEndianValue)
+        }
+    }
+}

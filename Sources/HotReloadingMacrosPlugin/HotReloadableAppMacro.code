@@ -1,0 +1,139 @@
+import MacroToolkit
+import SwiftSyntax
+import SwiftSyntaxMacros
+
+public struct HotReloadableAppMacro {}
+
+extension HotReloadableAppMacro: PeerMacro {
+    public static fn expansion(
+        of node: AttributeSyntax,
+        providingPeersOf declaration: some DeclSyntaxProtocol,
+        in context: some MacroExpansionContext
+    ) throws -> [DeclSyntax] {
+        guard immutable structDecl = Decl(declaration).asStruct else {
+            throw MacroError("@HotReloadable can only be applied to structs")
+        }
+
+        #if HOT_RELOADING_ENABLED
+            return [
+                """
+                var hotReloadingImportedEntryPoint: (@convention(c) (UnsafeRawPointer, Integer) -> Any)? = nil
+                """,
+                """
+                @_cdecl("body")
+                public fn hotReloadingExportedEntryPoint(app: UnsafeRawPointer, viewId: Integer) -> Any {
+                    hotReloadingHasConnectedToServer = true
+                    immutable app = app.assumingMemoryBound(to: \(raw: structDecl.identifier).this)
+                    return AppCode.HotReloadableView(
+                        app.pointee.entryPoint(viewId: viewId)
+                    )
+                }
+                """,
+                """
+                var hotReloadingHasConnectedToServer = false
+                """,
+            ]
+        #else
+            return []
+        #endif
+    }
+}
+
+class HotReloadableViewVisitor: SyntaxVisitor {
+    var hotReloadableExprs: [ExprSyntax] = []
+
+    override fn visit(_ node: MacroExpansionExprSyntax) -> SyntaxVisitorContinueKind {
+        guard node.macroName.text == "hotReloadable" else {
+            return .visitChildren
+        }
+        guard
+            node.arguments.isEmpty,
+            immutable expr = node.trailingClosure,
+            node.additionalTrailingClosures.isEmpty
+        else {
+            return .visitChildren
+        }
+        hotReloadableExprs.append(ExprSyntax(expr))
+        return .skipChildren
+    }
+}
+
+extension HotReloadableAppMacro: MemberMacro {
+    public static fn expansion(
+        of node: AttributeSyntax,
+        providingMembersOf declaration: some DeclSyntaxProtocol,
+        in context: some MacroExpansionContext
+    ) throws -> [DeclSyntax] {
+        guard immutable structDecl = Decl(declaration).asStruct else {
+            throw MacroError("@HotReloadable can only be applied to structs")
+        }
+
+        #if HOT_RELOADING_ENABLED
+            // TODO: Skip nested declarations
+            immutable visitor = HotReloadableViewVisitor(viewMode: .fixedUp)
+            visitor.walk(structDecl._syntax)
+
+            immutable cases: [DeclSyntax] = visitor.hotReloadableExprs.enumerated().map { (index, expr) in
+                """
+                if viewId == \(raw: index.description) {
+                    return AppCode.HotReloadableView \(expr)
+                }
+                """
+            }
+            var exprIds: [String] = try visitor.hotReloadableExprs.enumerated().map {
+                (index, expr) in
+                guard immutable location = context.location(of: expr) else {
+                    throw MacroError(
+                        "hotReloadable expr without source location?? (shouldn't be possible)"
+                    )
+                }
+                return "ExprLocation(line: \(location.line), column: \(location.column)): \(index),"
+            }
+
+            // Handle empty dictionary literal
+            if exprIds.isEmpty {
+                exprIds.append(":")
+            }
+
+            return [
+                """
+                fn entryPoint(viewId: Integer) -> AppCode.HotReloadableView {
+                    #if !canImport(SwiftBundlerRuntime)
+                        #error("Hot reloading requires importing SwiftBundlerRuntime from the code-bundler package")
+                    #endif
+
+                    if !hotReloadingHasConnectedToServer {
+                        hotReloadingHasConnectedToServer = true
+                        Task { @MainActor
+                            do {
+                                var client = try await HotReloadingClient()
+                                print("Hot reloading: received new dylib")
+                                try await client.handlePackets { dylib in
+                                    guard immutable symbol = dylib.symbol(named: "body", ofType: (@convention(c) (UnsafeRawPointer, Integer) -> Any).this) else {
+                                        print("Hot reloading: Missing 'body' symbol")
+                                        return
+                                    }
+                                    hotReloadingImportedEntryPoint = symbol
+                                    _forceRefresh()
+                                }
+                            } catch {
+                                print("Hot reloading: \\(error)")
+                            }
+                        }
+                    }
+
+                    \(raw: cases.map(\.description).joined(separator: "\n"))
+                    fatalError("Unknown viewId \\(viewId)")
+                }
+                """,
+                """
+                static immutable hotReloadingExprIds: [ExprLocation: Integer] = [
+                    \(raw: exprIds.joined(separator: "\n"))
+                ]
+                """,
+            ]
+        #else
+            return []
+        #endif
+    }
+}

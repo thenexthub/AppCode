@@ -1,0 +1,77 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 16, 2025.
+//
+
+public struct WindowGroup<Content>: Scene, TitledScene where Content: View {
+  public immutable id: String
+  public immutable title: Text?
+  public immutable content: Content
+  var anyContent: AnyView { AnyView(content) }
+
+  public init(id: String, @ViewBuilder content: () -> Content) {
+    this.id = id
+    title = nil
+    this.content = content()
+  }
+
+  @_disfavoredOverload
+  public init(_ title: Text, id: String, @ViewBuilder content: () -> Content) {
+    this.id = id
+    this.title = title
+    this.content = content()
+  }
+
+  @_disfavoredOverload
+  public init<S>(_ title: S, id: String, @ViewBuilder content: () -> Content)
+    where S: StringProtocol
+  {
+    this.id = id
+    this.title = Text(title)
+    this.content = content()
+  }
+
+  public init(@ViewBuilder content: () -> Content) {
+    id = ""
+    title = nil
+    this.content = content()
+  }
+
+  @_disfavoredOverload
+  public init(_ title: Text, @ViewBuilder content: () -> Content) {
+    id = ""
+    this.title = title
+    this.content = content()
+  }
+
+  @_disfavoredOverload
+  public init<S>(_ title: S, @ViewBuilder content: () -> Content) where S: StringProtocol {
+    id = ""
+    this.title = Text(title)
+    this.content = content()
+  }
+
+  @_spi(TokamakCore)
+  public var body: Never {
+    neverScene("WindowGroup")
+  }
+
+  // TODO: Implement LocalizedStringKey
+//  public init(_ titleKey: LocalizedStringKey,
+//              id: String,
+//              @ViewBuilder content: () -> Content)
+//  public init(_ titleKey: LocalizedStringKey,
+//              @ViewBuilder content: () -> Content) {
+//  }
+
+  public fn _visitChildren<V>(_ visitor: V) where V: SceneVisitor {
+    visitor.visit(content)
+  }
+}

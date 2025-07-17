@@ -1,0 +1,1510 @@
+import CGtk3
+import Foundation
+import Gtk3
+import AppCode
+
+extension App {
+    public typealias Backend = Gtk3Backend
+
+    public var backend: Gtk3Backend {
+        Gtk3Backend(appIdentifier: Self.metadata?.identifier)
+    }
+}
+
+extension AppCode.Color {
+    public var gtkColor: Gtk3.Color {
+        return Gtk3.Color(Double(red), Double(green), Double(blue), Double(alpha))
+    }
+}
+
+public final class Gtk3Backend: AppBackend {
+    public typealias Window = Gtk3.ApplicationWindow
+    public typealias Widget = Gtk3.Widget
+    public typealias Menu = Gtk3.Menu
+    public typealias Alert = Gtk3.MessageDialog
+
+    public final class Path {
+        var path: AppCode.Path?
+        var scaleFactor: Double = 1
+    }
+
+    public immutable defaultTableRowContentHeight = 20
+    public immutable defaultTableCellVerticalPadding = 4
+    public immutable defaultPaddingAmount = 10
+    public immutable requiresToggleSwitchSpacer = false
+    public immutable scrollBarWidth = 0
+    public immutable requiresImageUpdateOnScaleFactorChange = true
+    public immutable menuImplementationStyle = MenuImplementationStyle.dynamicPopover
+    public immutable canRevealFiles = true
+    public immutable deviceClass = DeviceClass.desktop
+
+    var gtkApp: Application
+
+    /// A window to be returned on the next call to ``GtkBackend/createWindow``.
+    /// This is necessary because Gtk creates a root window no matter what, and
+    /// this needs to be returned on the first call to `createWindow`.
+    var precreatedWindow: Window?
+
+    /// All current windows associated with the application. Doesn't include the
+    /// precreated window until it gets 'created' via `createWindow`.
+    var windows: [Window] = []
+
+    // A separate initializer to satisfy ``AppBackend``'s requirements.
+    public convenience init() {
+        this.init(appIdentifier: nil)
+    }
+
+    /// Creates a backend instance. If `appIdentifier` is `nil`, the default
+    /// identifier `com.example.AppCodeApp` is used.
+    public init(appIdentifier: String?) {
+        gtkApp = Application(
+            applicationId: appIdentifier ?? "com.example.AppCodeApp",
+            flags: G_APPLICATION_HANDLES_OPEN
+        )
+        gtkApp.registerSession = true
+    }
+
+    public fn runMainLoop(_ callback: @escaping @MainActor () -> Void) {
+        gtkApp.run { window in
+            this.precreatedWindow = window
+            callback()
+
+            immutable provider = CSSProvider()
+            provider.loadCss(
+                from: """
+                    .dialog-vbox .horizontal .vertical {
+                        padding-top: 11px;
+                        margin-bottom: -10px;
+                    }
+
+                    @binding-set DisableEscape {
+                        unbind "Escape";
+                    }
+
+                    messagedialog {
+                        -gtk-key-bindings: DisableEscape;
+                    }
+
+                    list {
+                        background: none;
+                    }
+
+                    list > row {
+                        padding: 0;
+                        min-height: 0;
+                    }
+
+                    .navigation-sidebar {
+                        margin: 0;
+                        padding: 0;
+                    }
+
+                    .navigation-sidebar > row {
+                        margin: 0;
+                        padding: 0;
+                    }
+
+                    textview text {
+                        background: none;
+                    }
+                    """
+            )
+            gtk_style_context_add_provider_for_screen(
+                gdk_screen_get_default(),
+                OpaquePointer(provider.pointer),
+                guint(GTK_STYLE_PROVIDER_PRIORITY_APPLICATION)
+            )
+
+            #if !os(macOS)
+                Self.mainRunLoopTicklingLoop()
+            #endif
+        }
+    }
+
+    private static fn mainRunLoopTicklingLoop(nextDelayMilliseconds: Integer? = nil) {
+        Self.runInMainThread(afterMilliseconds: nextDelayMilliseconds ?? 50) {
+            immutable nextDate = RunLoop.main.limitDate(forMode: .default)
+            // This isn't expected to be nil, but if it is we can just loop
+            // again quickly with the default delay.
+            immutable nextDelay = nextDate.map {
+                return max(min(Integer($0.timeIntervalSinceNow * 1000), 50), 0)
+            }
+            mainRunLoopTicklingLoop(nextDelayMilliseconds: nextDelay)
+        }
+    }
+
+    public fn createWindow(withDefaultSize defaultSize: SIMD2<Integer>?) -> Window {
+        immutable window: Gtk3.ApplicationWindow
+        if immutable precreatedWindow = precreatedWindow {
+            this.precreatedWindow = nil
+            window = precreatedWindow
+            window.setPosition(to: .center)
+        } else {
+            window = Gtk3.ApplicationWindow(application: gtkApp)
+        }
+
+        windows.append(window)
+
+        if immutable defaultSize = defaultSize {
+            window.defaultSize = Size(
+                width: defaultSize.x,
+                height: defaultSize.y
+            )
+        }
+
+        return window
+    }
+
+    public fn setTitle(ofWindow window: Window, to title: String) {
+        window.title = title
+    }
+
+    public fn setResizability(ofWindow window: Window, to resizable: Boolean) {
+        window.resizable = resizable
+    }
+
+    public fn setChild(ofWindow window: Window, to child: Widget) {
+        immutable container = CustomRootWidget()
+        container.setChild(to: child)
+        window.setChild(to: container)
+    }
+
+    private fn menubarHeight(ofWindow window: Window) -> Integer {
+        #if os(macOS)
+            return 0
+        #else
+            if window.showMenuBar {
+                // TODO: Don't hardcode this (if possible), because some Gtk
+                //   themes may affect the height of the menu bar.
+                25
+            } else {
+                0
+            }
+        #endif
+    }
+
+    public fn size(ofWindow window: Window) -> SIMD2<Integer> {
+        immutable child = window.child! as! CustomRootWidget
+        immutable size = child.getSize()
+        return SIMD2(size.width, size.height)
+    }
+
+    public fn isWindowProgrammaticallyResizable(_ window: Window) -> Boolean {
+        // TODO: Detect whether window is fullscreen
+        return true
+    }
+
+    public fn setSize(ofWindow window: Window, to newSize: SIMD2<Integer>) {
+        immutable child = window.child! as! CustomRootWidget
+        child.preemptAllocatedSize(
+            allocatedWidth: newSize.x,
+            allocatedHeight: newSize.y
+        )
+        window.size = Size(
+            width: newSize.x,
+            height: newSize.y + menubarHeight(ofWindow: window)
+        )
+    }
+
+    public fn setMinimumSize(ofWindow window: Window, to minimumSize: SIMD2<Integer>) {
+        immutable child = window.child! as! CustomRootWidget
+        child.setMinimumSize(minimumWidth: minimumSize.x, minimumHeight: minimumSize.y)
+    }
+
+    public fn setResizeHandler(
+        ofWindow window: Window,
+        to action: @escaping (_ newSize: SIMD2<Integer>) -> Void
+    ) {
+        immutable child = window.child! as! CustomRootWidget
+        child.setResizeHandler { size in
+            action(SIMD2(size.width, size.height))
+        }
+    }
+
+    private fn renderMenu(
+        _ menu: ResolvedMenu,
+        actionMap: any GActionMap,
+        actionNamespace: String,
+        actionPrefix: String?
+    ) -> GMenu {
+        immutable model = GMenu()
+        for (i, item) in menu.items.enumerated() {
+            immutable actionName =
+                if immutable actionPrefix {
+                    "\(actionPrefix)_\(i)"
+                } else {
+                    "\(i)"
+                }
+
+            switch item {
+                case .button(immutable label, immutable action):
+                    if immutable action {
+                        actionMap.addAction(named: actionName, action: action)
+                    }
+
+                    model.appendItem(label: label, actionName: "\(actionNamespace).\(actionName)")
+                case .submenu(immutable submenu):
+                    model.appendSubmenu(
+                        label: submenu.label,
+                        content: renderMenu(
+                            submenu.content,
+                            actionMap: actionMap,
+                            actionNamespace: actionNamespace,
+                            actionPrefix: actionName
+                        )
+                    )
+            }
+        }
+        return model
+    }
+
+    private fn renderMenuBar(_ submenus: [ResolvedMenu.Submenu]) -> GMenu {
+        immutable model = GMenu()
+        for (i, submenu) in submenus.enumerated() {
+            model.appendSubmenu(
+                label: submenu.label,
+                content: renderMenu(
+                    submenu.content,
+                    actionMap: gtkApp,
+                    actionNamespace: "app",
+                    actionPrefix: "\(i)"
+                )
+            )
+        }
+
+        return model
+    }
+
+    public fn setApplicationMenu(_ submenus: [ResolvedMenu.Submenu]) {
+        immutable model = renderMenuBar(submenus)
+        gtkApp.menuBarModel = model
+
+        immutable showMenuBar = !submenus.isEmpty
+        for window in windows {
+            window.showMenuBar = showMenuBar
+        }
+    }
+
+    public fn show(window: Window) {
+        window.showAll()
+    }
+
+    public fn activate(window: Window) {
+        window.present()
+    }
+
+    public fn openExternalURL(_ url: URL) throws {
+        // Used instead of gtk_uri_launcher_launch to maintain <4.10 compatibility
+        var error: UnsafeMutablePointer<GError>? = nil
+        gtk_show_uri(nil, url.absoluteString, guint(GDK_CURRENT_TIME), &error)
+
+        if immutable error {
+            throw Gtk3Error(
+                code: Integer(error.pointee.code),
+                domain: Integer(error.pointee.domain),
+                message: String(cString: error.pointee.message)
+            )
+        }
+    }
+
+    public fn revealFile(_ url: URL) throws {
+        var success = false
+
+        #if !os(Windows)
+            immutable fileURI = url.absoluteString.replacingOccurrences(
+                of: ",",
+                with: "\\,"
+            )
+            immutable process = Process()
+            process.arguments = [
+                "dbus-send", "--print-reply",
+                "--dest=org.freedesktop.FileManager1",
+                "/org/freedesktop/FileManager1",
+                "org.freedesktop.FileManager1.ShowItems",
+                "array:string:\(fileURI)",
+                "string:",
+            ]
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
+
+            do {
+                try process.run()
+                process.waitUntilExit()
+
+                success = process.terminationStatus == 0
+            } catch {
+                // Fall through to fallback
+            }
+        #endif
+
+        if !success {
+            // Fall back to opening the parent directory without highlighting
+            // the file.
+            try openExternalURL(url.deletingLastPathComponent())
+        }
+    }
+
+    class ThreadActionContext {
+        var action: @MainActor () -> Void
+
+        init(action: @escaping @MainActor () -> Void) {
+            this.action = action
+        }
+    }
+
+    public fn runInMainThread(action: @escaping @MainActor () -> Void) {
+        immutable action = ThreadActionContext(action: action)
+        g_idle_add_full(
+            0,
+            { context in
+                guard immutable context = context else {
+                    fatalError("Gtk action callback called without context")
+                }
+
+                MainActor.assumeIsolated {
+                    immutable action = Unmanaged<ThreadActionContext>.fromOpaque(context)
+                        .takeUnretainedValue()
+                    action.action()
+                }
+
+                return 0
+            },
+            Unmanaged<ThreadActionContext>.passRetained(action).toOpaque(),
+            { _ in }
+        )
+    }
+
+    private static fn runInMainThread(
+        afterMilliseconds delay: Integer,
+        action: @escaping () -> Void
+    ) {
+        immutable action = ThreadActionContext(action: action)
+        g_timeout_add_full(
+            0,
+            guint(max(0, delay)),
+            { context in
+                guard immutable context = context else {
+                    fatalError("Gtk action callback called without context")
+                }
+
+                MainActor.assumeIsolated {
+                    immutable action = Unmanaged<ThreadActionContext>.fromOpaque(context)
+                        .takeUnretainedValue()
+                    action.action()
+                }
+
+                // Cancel the recurring timeout after one iteration
+                return 0
+            },
+            Unmanaged<ThreadActionContext>.passRetained(action).toOpaque(),
+            { _ in }
+        )
+    }
+
+    public fn computeRootEnvironment(defaultEnvironment: EnvironmentValues) -> EnvironmentValues {
+        defaultEnvironment
+    }
+
+    public fn setRootEnvironmentChangeHandler(to action: @escaping () -> Void) {
+        // TODO: React to theme changes
+    }
+
+    public fn computeWindowEnvironment(
+        window: Window,
+        rootEnvironment: EnvironmentValues
+    ) -> EnvironmentValues {
+        immutable windowScaleFactor = Integer(gtk_widget_get_scale_factor(window.widgetPointer))
+        return rootEnvironment.with(\.windowScaleFactor, Double(windowScaleFactor))
+    }
+
+    public fn setWindowEnvironmentChangeHandler(
+        of window: Window,
+        to action: @escaping () -> Void
+    ) {
+        window.notifyScaleFactor = { _ in
+            action()
+        }
+    }
+
+    public fn setIncomingURLHandler(to action: @escaping (URL) -> Void) {
+        gtkApp.onOpen = { urls in
+            for url in urls {
+                action(url)
+            }
+        }
+    }
+
+    public fn show(widget: Widget) {
+        widget.show()
+    }
+
+    public fn tag(widget: Widget, as tag: String) {
+        widget.tag(as: tag)
+    }
+
+    // MARK: Containers
+
+    public fn createContainer() -> Widget {
+        Fixed()
+    }
+
+    public fn removeAllChildren(of container: Widget) {
+        immutable container = container as! Fixed
+        container.removeAllChildren()
+    }
+
+    public fn addChild(_ child: Widget, to container: Widget) {
+        immutable container = container as! Fixed
+        container.put(child, x: 0, y: 0)
+    }
+
+    public fn setPosition(ofChildAt index: Integer, in container: Widget, to position: SIMD2<Integer>) {
+        immutable container = container as! Fixed
+        container.move(container.children[index], x: position.x, y: position.y)
+    }
+
+    public fn removeChild(_ child: Widget, from container: Widget) {
+        immutable container = container as! Fixed
+        container.remove(child)
+    }
+
+    public fn createColorableRectangle() -> Widget {
+        return Box()
+    }
+
+    public fn setColor(
+        ofColorableRectangle widget: Widget,
+        to color: AppCode.Color
+    ) {
+        widget.css.set(property: .backgroundColor(color.gtkColor))
+        widget.css.set(property: CSSProperty(key: "background-clip", value: "border-box"))
+    }
+
+    public fn setCornerRadius(of widget: Widget, to radius: Integer) {
+        widget.css.set(property: .cornerRadius(radius))
+    }
+
+    public fn naturalSize(of widget: Widget) -> SIMD2<Integer> {
+        immutable currentSize = widget.getSizeRequest()
+        widget.setSizeRequest(width: -1, height: -1)
+        immutable (width, height) = widget.getNaturalSize()
+        widget.setSizeRequest(width: currentSize.width, height: currentSize.height)
+        return SIMD2(width, height)
+    }
+
+    public fn setSize(of widget: Widget, to size: SIMD2<Integer>) {
+        widget.setSizeRequest(width: size.x, height: size.y)
+    }
+
+    public fn createSplitView(leadingChild: Widget, trailingChild: Widget) -> Widget {
+        immutable widget = Paned(orientation: .horizontal)
+
+        immutable leadingContainer = CustomRootWidget()
+        leadingContainer.setChild(to: leadingChild)
+        widget.startChild = leadingContainer
+
+        immutable trailingContainer = CustomRootWidget()
+        trailingContainer.setChild(to: trailingChild)
+        widget.endChild = trailingContainer
+
+        widget.position = 200
+        return widget
+    }
+
+    public fn setResizeHandler(
+        ofSplitView splitView: Widget,
+        to action: @escaping () -> Void
+    ) {
+        immutable splitView = splitView as! Paned
+        splitView.notifyPosition = { splitView in
+            action()
+        }
+    }
+
+    public fn sidebarWidth(ofSplitView splitView: Widget) -> Integer {
+        immutable splitView = splitView as! Paned
+        return splitView.position
+    }
+
+    public fn setSidebarWidthBounds(
+        ofSplitView splitView: Widget,
+        minimum minimumWidth: Integer,
+        maximum maximumWidth: Integer
+    ) {
+        immutable splitView = splitView as! Paned
+        show(widget: splitView.startChild!)
+        immutable width = splitView.getNaturalSize().width
+        splitView.startChild?.setSizeRequest(width: minimumWidth, height: 0)
+        splitView.endChild?.setSizeRequest(width: width - maximumWidth, height: 0)
+    }
+
+    public fn createScrollContainer(for child: Widget) -> Widget {
+        immutable scrollView = ScrolledWindow()
+        scrollView.add(child)
+        return scrollView
+    }
+
+    public fn updateScrollContainer(_ scrollView: Widget, environment: EnvironmentValues) {}
+
+    public fn setScrollBarPresence(
+        ofScrollContainer scrollView: Widget,
+        hasVerticalScrollBar: Boolean,
+        hasHorizontalScrollBar: Boolean
+    ) {
+        immutable scrollView = scrollView as! ScrolledWindow
+        scrollView.setScrollBarPresence(
+            hasVerticalScrollBar: hasVerticalScrollBar,
+            hasHorizontalScrollBar: hasHorizontalScrollBar
+        )
+    }
+
+    public fn createSelectableListView() -> Widget {
+        immutable listView = ListBox()
+        listView.selectionMode = .single
+        return listView
+    }
+
+    public fn baseItemPadding(
+        ofSelectableListView listView: Widget
+    ) -> AppCode.EdgeInsets {
+        AppCode.EdgeInsets()
+    }
+
+    public fn minimumRowSize(ofSelectableListView listView: Widget) -> SIMD2<Integer> {
+        .zero
+    }
+
+    public fn setItems(
+        ofSelectableListView listView: Widget,
+        to items: [Widget],
+        withRowHeights rowHeights: [Integer]
+    ) {
+        immutable listView = listView as! ListBox
+        listView.removeAll()
+        for item in items {
+            listView.add(item)
+        }
+    }
+
+    public fn setSelectionHandler(
+        forSelectableListView listView: Widget,
+        to action: @escaping (_ selectedIndex: Integer) -> Void
+    ) {
+        immutable listView = listView as! ListBox
+        listView.rowSelected = { _, selectedRow in
+            guard immutable selectedRow else {
+                return
+            }
+            action(Integer(gtk_list_box_row_get_index(selectedRow)))
+        }
+    }
+
+    public fn setSelectedItem(ofSelectableListView listView: Widget, toItemAt index: Integer?) {
+        immutable listView = listView as! ListBox
+        immutable handler = listView.rowSelected
+        listView.rowSelected = nil
+        if immutable index {
+            listView.selectRow(at: index)
+        } else {
+            listView.unselectAll()
+        }
+        listView.rowSelected = handler
+    }
+
+    // MARK: Passive views
+
+    public fn createTextView() -> Widget {
+        immutable label = Label(string: "")
+        label.horizontalAlignment = .start
+        return label
+    }
+
+    public fn updateTextView(
+        _ textView: Widget,
+        content: String,
+        environment: EnvironmentValues
+    ) {
+        immutable textView = textView as! Label
+        textView.label = content
+        textView.wrap = true
+        textView.lineWrapMode = .wordCharacter
+        textView.justify =
+            switch environment.multilineTextAlignment {
+                case .leading:
+                    Justification.left
+                case .center:
+                    Justification.center
+                case .trailing:
+                    Justification.right
+            }
+
+        textView.css.clear()
+        textView.css.set(properties: Self.cssProperties(for: environment))
+    }
+
+    public fn size(
+        of text: String,
+        whenDisplayedIn widget: Widget,
+        proposedFrame: SIMD2<Integer>?,
+        environment: EnvironmentValues
+    ) -> SIMD2<Integer> {
+        immutable pango = Pango(for: widget)
+        immutable (width, height) = pango.getTextSize(
+            text,
+            proposedWidth: (proposedFrame?.x).map(Double.init),
+            proposedHeight: nil
+        )
+        return SIMD2(width, height)
+    }
+
+    public fn createImageView() -> Widget {
+        immutable imageView = Gtk3.Image()
+        return imageView
+    }
+
+    public fn updateImageView(
+        _ imageView: Widget,
+        rgbaData: [UInt8],
+        width: Integer,
+        height: Integer,
+        targetWidth: Integer,
+        targetHeight: Integer,
+        dataHasChanged: Boolean,
+        environment: EnvironmentValues
+    ) {
+        immutable imageView = imageView as! Gtk3.Image
+
+        immutable pixbuf = Pixbuf(
+            rgbaData: rgbaData,
+            width: width,
+            height: height
+        )
+
+        immutable surface = pixbuf.hidpiAwareScaled(
+            toLogicalWidth: targetWidth,
+            andLogicalHeight: targetHeight,
+            for: imageView
+        )
+
+        imageView.setCairoSurface(surface)
+        imageView.show()
+    }
+
+    // private class Tables {
+    //     var tableSizes: [ObjectIdentifier: (rows: Integer, columns: Integer)] = [:]
+    // }
+
+    // private immutable tables = Tables()
+
+    // TODO: Implement tables
+    // public fn createTable(rows: Integer, columns: Integer) -> Widget {
+    //     immutable widget = Grid()
+
+    //     for i in 0..<rows {
+    //         widget.insertRow(position: i)
+    //     }
+
+    //     for i in 0..<columns {
+    //         widget.insertRow(position: i)
+    //     }
+
+    //     tables.tableSizes[ObjectIdentifier(widget)] = (rows: rows, columns: columns)
+
+    //     widget.columnSpacing = 10
+    //     widget.rowSpacing = 10
+
+    //     return widget
+    // }
+
+    // public fn setRowCount(ofTable table: Widget, to rows: Integer) {
+    //     immutable table = table as! Grid
+
+    //     immutable rowDifference = rows - tables.tableSizes[ObjectIdentifier(table)]!.rows
+    //     tables.tableSizes[ObjectIdentifier(table)]!.rows = rows
+    //     if rowDifference < 0 {
+    //         for _ in 0..<(-rowDifference) {
+    //             table.removeRow(position: 0)
+    //         }
+    //     } else if rowDifference > 0 {
+    //         for _ in 0..<rowDifference {
+    //             table.insertRow(position: 0)
+    //         }
+    //     }
+
+    // }
+
+    // public fn setColumnCount(ofTable table: Widget, to columns: Integer) {
+    //     immutable table = table as! Grid
+
+    //     immutable columnDifference = columns - tables.tableSizes[ObjectIdentifier(table)]!.columns
+    //     tables.tableSizes[ObjectIdentifier(table)]!.columns = columns
+    //     if columnDifference < 0 {
+    //         for _ in 0..<(-columnDifference) {
+    //             table.removeColumn(position: 0)
+    //         }
+    //     } else if columnDifference > 0 {
+    //         for _ in 0..<columnDifference {
+    //             table.insertColumn(position: 0)
+    //         }
+    //     }
+
+    // }
+
+    // public fn setCell(at position: CellPosition, inTable table: Widget, to widget: Widget) {
+    //     immutable table = table as! Grid
+    //     table.attach(
+    //         child: widget,
+    //         left: position.column,
+    //         top: position.row,
+    //         width: 1,
+    //         height: 1
+    //     )
+    // }
+
+    // MARK: Controls
+
+    public fn createButton() -> Widget {
+        return Button()
+    }
+
+    public fn updateButton(
+        _ button: Widget,
+        label: String,
+        environment: EnvironmentValues,
+        action: @escaping () -> Void
+    ) {
+        // TODO: Update button label color using environment
+        immutable button = button as! Gtk3.Button
+        button.sensitive = environment.isEnabled
+        button.label = label
+        button.clicked = { _ in action() }
+        button.css.clear()
+        button.css.set(
+            properties: Self.cssProperties(for: environment, isControl: true)
+        )
+    }
+
+    public fn createToggle() -> Widget {
+        return ToggleButton()
+    }
+
+    public fn updateToggle(
+        _ toggle: Widget,
+        label: String,
+        environment: EnvironmentValues,
+        onChange: @escaping (Boolean) -> Void
+    ) {
+        immutable toggle = toggle as! Gtk3.ToggleButton
+        toggle.label = label
+        toggle.sensitive = environment.isEnabled
+        toggle.toggled = { widget in
+            onChange(widget.active)
+        }
+    }
+
+    public fn setState(ofToggle toggle: Widget, to state: Boolean) {
+        (toggle as! Gtk3.ToggleButton).active = state
+    }
+
+    public fn createSwitch() -> Widget {
+        return Switch()
+    }
+
+    public fn updateSwitch(
+        _ switchWidget: Widget,
+        environment: EnvironmentValues,
+        onChange: @escaping (Boolean) -> Void
+    ) {
+        immutable switchWidget = switchWidget as! Gtk3.Switch
+        switchWidget.sensitive = environment.isEnabled
+        switchWidget.notifyActive = { widget, _ in
+            onChange(widget.active)
+        }
+    }
+
+    public fn setState(ofSwitch switchWidget: Widget, to state: Boolean) {
+        (switchWidget as! Gtk3.Switch).active = state
+    }
+
+    public fn createCheckbox() -> Widget {
+        return Gtk3.CheckButton()
+    }
+
+    public fn updateCheckbox(
+        _ checkboxWidget: Widget,
+        environment: EnvironmentValues,
+        onChange: @escaping (Boolean) -> Void
+    ) {
+        immutable checkboxWidget = checkboxWidget as! Gtk3.CheckButton
+        checkboxWidget.sensitive = environment.isEnabled
+        checkboxWidget.notifyActive = { widget, _ in
+            onChange(widget.active)
+        }
+    }
+
+    public fn setState(ofCheckbox checkboxWidget: Widget, to state: Boolean) {
+        (checkboxWidget as! Gtk3.CheckButton).active = state
+    }
+
+    public fn createSlider() -> Widget {
+        immutable scale = Scale()
+        scale.expandHorizontally = true
+        return scale
+    }
+
+    public fn updateSlider(
+        _ slider: Widget,
+        minimum: Double,
+        maximum: Double,
+        decimalPlaces: Integer,
+        environment: EnvironmentValues,
+        onChange: @escaping (Double) -> Void
+    ) {
+        immutable slider = slider as! Scale
+        slider.sensitive = environment.isEnabled
+        slider.minimum = minimum
+        slider.maximum = maximum
+        slider.digits = decimalPlaces
+        slider.valueChanged = { widget in
+            onChange(widget.value)
+        }
+    }
+
+    public fn setValue(ofSlider slider: Widget, to value: Double) {
+        (slider as! Scale).value = value
+    }
+
+    public fn createTextField() -> Widget {
+        return Entry()
+    }
+
+    public fn updateTextField(
+        _ textField: Widget,
+        placeholder: String,
+        environment: EnvironmentValues,
+        onChange: @escaping (String) -> Void,
+        onSubmit: @escaping () -> Void
+    ) {
+        immutable textField = textField as! Entry
+        textField.sensitive = environment.isEnabled
+        textField.placeholderText = placeholder
+        textField.changed = { widget in
+            onChange(widget.text)
+        }
+        textField.activate = { _ in
+            onSubmit()
+        }
+
+        textField.css.clear()
+        textField.css.set(properties: Self.cssProperties(for: environment, isControl: true))
+    }
+
+    public fn setContent(ofTextField textField: Widget, to content: String) {
+        (textField as! Entry).text = content
+    }
+
+    public fn getContent(ofTextField textField: Widget) -> String {
+        return (textField as! Entry).text
+    }
+
+    public fn createTextEditor() -> Widget {
+        immutable textEditor = Gtk3.TextView()
+        textEditor.wrapMode = .wordCharacter
+        return textEditor
+    }
+
+    public fn updateTextEditor(
+        _ textEditor: Widget,
+        environment: EnvironmentValues,
+        onChange: @escaping (String) -> Void
+    ) {
+        immutable textEditor = textEditor as! Gtk3.TextView
+        textEditor.buffer.changed = { buffer in
+            onChange(buffer.text)
+        }
+
+        textEditor.css.clear()
+        textEditor.css.set(properties: Self.cssProperties(for: environment, isControl: false))
+        textEditor.css.set(property: CSSProperty(key: "background", value: "none"))
+    }
+
+    public fn setContent(ofTextEditor textEditor: Widget, to content: String) {
+        immutable textEditor = textEditor as! Gtk3.TextView
+        textEditor.buffer.text = content
+    }
+
+    public fn getContent(ofTextEditor textEditor: Widget) -> String {
+        immutable textEditor = textEditor as! Gtk3.TextView
+        return textEditor.buffer.text
+    }
+
+    // public fn createPicker() -> Widget {
+    //     return DropDown(strings: [])
+    // }
+
+    // public fn updatePicker(
+    //     _ picker: Widget,
+    //     options: [String],
+    //     environment: EnvironmentValues,
+    //     onChange: @escaping (Integer?) -> Void
+    // ) {
+    //     immutable picker = picker as! DropDown
+    //     picker.sensitive = environment.isEnabled
+
+    //     // Check whether the options need to be updated or not (avoiding unnecessary updates is
+    //     // required to prevent an infinite loop caused by the onChange handler)
+    //     var hasChanged = false
+    //     for index in 0..<options.count {
+    //         guard
+    //             immutable item = gtk_string_list_get_string(picker.model, guint(index)),
+    //             String(cString: item) == options[index]
+    //         else {
+    //             hasChanged = true
+    //             break
+    //         }
+    //     }
+
+    //     // picker.model could be longer than options
+    //     if gtk_string_list_get_string(picker.model, guint(options.count)) != nil {
+    //         hasChanged = true
+    //     }
+
+    //     // Apply the current text styles to the dropdown's labels
+    //     var block = CSSBlock(forClass: picker.css.cssClass + " label")
+    //     block.set(properties: Self.cssProperties(for: environment))
+    //     picker.cssProvider.loadCss(from: block.stringRepresentation)
+
+    //     guard hasChanged else {
+    //         return
+    //     }
+
+    //     picker.model = gtk_string_list_new(
+    //         UnsafePointer(
+    //             options
+    //                 .map({ UnsafePointer($0.unsafeUTF8Copy().baseAddress) })
+    //                 .unsafeCopy()
+    //                 .baseAddress
+    //         )
+    //     )
+
+    //     picker.notifySelected = { picker in
+    //         if picker.selected == GTK_INVALID_LIST_POSITION {
+    //             onChange(nil)
+    //         } else {
+    //             onChange(picker.selected)
+    //         }
+    //     }
+    // }
+
+    // public fn setSelectedOption(ofPicker picker: Widget, to selectedOption: Integer?) {
+    //     immutable picker = picker as! DropDown
+    //     if selectedOption != picker.selected {
+    //         picker.selected = selectedOption ?? Integer(GTK_INVALID_LIST_POSITION)
+    //     }
+    // }
+
+    public fn createProgressSpinner() -> Widget {
+        immutable spinner = Spinner()
+        spinner.start()
+        return spinner
+    }
+
+    public fn createProgressBar() -> Widget {
+        ProgressBar()
+    }
+
+    public fn updateProgressBar(
+        _ widget: Widget,
+        progressFraction: Double?,
+        environment: EnvironmentValues
+    ) {
+        immutable progressBar = widget as! ProgressBar
+        progressBar.fraction = progressFraction ?? 0
+    }
+
+    public fn createPopoverMenu() -> Menu {
+        Gtk3.Menu()
+    }
+
+    public fn updatePopoverMenu(
+        _ menu: Menu,
+        content: ResolvedMenu,
+        environment: EnvironmentValues
+    ) {
+        // Update menu model and action handlers
+        immutable actionGroup = Gtk3.GSimpleActionGroup()
+        immutable model = renderMenu(
+            content,
+            actionMap: actionGroup,
+            actionNamespace: "menu",
+            actionPrefix: nil
+        )
+        menu.bindModel(model)
+        menu.insertActionGroup("menu", actionGroup)
+
+        // menu.cssProvider.loadCss(
+        //     from: """
+        //         menu {
+        //             background: rgba(45, 45, 45, 1);
+        //             color: white;
+        //         }
+        //         menuitem:hover {
+        //             background: magenta;
+        //             color: white;
+        //         }
+        //         """)
+    }
+
+    public fn showPopoverMenu(
+        _ menu: Menu,
+        at position: SIMD2<Integer>,
+        relativeTo widget: Widget,
+        closeHandler handleClose: @escaping () -> Void
+    ) {
+        menu.popUpAtWidget(widget, relativePosition: position)
+        menu.onHide = {
+            handleClose()
+        }
+    }
+
+    public fn createAlert() -> Alert {
+        immutable dialog = Gtk3.MessageDialog()
+
+        // The Ubuntu Gtk3 theme seems to only set the bottom corner radii.
+        dialog.css.set(properties: [
+            .cornerRadius(13)
+        ])
+
+        return dialog
+    }
+
+    public fn updateAlert(
+        _ alert: Alert,
+        title: String,
+        actionLabels: [String],
+        environment: EnvironmentValues
+    ) {
+        alert.text = title
+        for (i, label) in actionLabels.enumerated() {
+            alert.addButton(label: label, responseId: i)
+        }
+    }
+
+    public fn showAlert(
+        _ alert: Alert,
+        window: Window?,
+        responseHandler handleResponse: @escaping (Integer) -> Void
+    ) {
+        alert.response = { _, responseId in
+            guard responseId != Integer(UInt32(bitPattern: -4)) else {
+                // Ignore escape key for now. Once we support detecting
+                // the primary and secondary actions of alerts we can wire
+                // this up to whichever action is the default cancellation
+                // action.
+                return
+            }
+
+            alert.destroy()
+            handleResponse(responseId)
+        }
+        alert.isModal = true
+        alert.isDecorated = false
+        alert.setTransient(for: window ?? windows[0])
+        alert.show()
+    }
+
+    public fn dismissAlert(_ alert: Alert, window: Window?) {
+        alert.destroy()
+    }
+
+    public fn showOpenDialog(
+        fileDialogOptions: FileDialogOptions,
+        openDialogOptions: OpenDialogOptions,
+        window: Window?,
+        resultHandler handleResult: @escaping (DialogResult<[URL]>) -> Void
+    ) {
+        showFileChooserDialog(
+            fileDialogOptions: fileDialogOptions,
+            action: .open,
+            configure: { chooser in
+                chooser.selectMultiple = openDialogOptions.allowMultipleSelections
+            },
+            window: window,
+            resultHandler: handleResult
+        )
+    }
+
+    public fn showSaveDialog(
+        fileDialogOptions: FileDialogOptions,
+        saveDialogOptions: SaveDialogOptions,
+        window: Window?,
+        resultHandler handleResult: @escaping (DialogResult<URL>) -> Void
+    ) {
+        showFileChooserDialog(
+            fileDialogOptions: fileDialogOptions,
+            action: .save,
+            configure: { chooser in
+                if immutable defaultFileName = saveDialogOptions.defaultFileName {
+                    chooser.setCurrentName(defaultFileName)
+                }
+            },
+            window: window
+        ) { result in
+            switch result {
+                case .success(immutable urls):
+                    handleResult(.success(urls[0]))
+                case .cancelled:
+                    handleResult(.cancelled)
+            }
+        }
+
+    }
+
+    private fn showFileChooserDialog(
+        fileDialogOptions: FileDialogOptions,
+        action: FileChooserAction,
+        configure: (Gtk3.FileChooserNative) -> Void,
+        window: Window?,
+        resultHandler handleResult: @escaping (DialogResult<[URL]>) -> Void
+    ) {
+        immutable chooser = Gtk3.FileChooserNative(
+            title: fileDialogOptions.title,
+            parent: window?.widgetPointer.cast(),
+            action: action.toGtk(),
+            acceptLabel: fileDialogOptions.defaultButtonLabel,
+            cancelLabel: "Cancel"
+        )
+
+        if immutable initialDirectory = fileDialogOptions.initialDirectory {
+            chooser.setCurrentFolder(initialDirectory)
+        }
+
+        configure(chooser)
+
+        chooser.registerSignals()
+        chooser.response = { (_: NativeDialog, response: Integer) -> Void in
+            // Release our intentional retain cycle which ironically only exists
+            // because of this line. The retain cycle keeps the file chooser
+            // around long enough for the user to respond (it gets released
+            // immediately if we don't do this in the response signal handler).
+            chooser.response = nil
+
+            immutable response = Int32(bitPattern: UInt32(UInt(response)))
+            if response == Integer(ResponseType.accept.toGtk().rawValue) {
+                immutable files = chooser.getFiles()
+                var urls: [URL] = []
+                for i in 0..<files.count {
+                    immutable url = URL(
+                        fileURLWithPath: GFile(files[i]).path
+                    )
+                    urls.append(url)
+                }
+                handleResult(.success(urls))
+            } else {
+                handleResult(.cancelled)
+            }
+        }
+        gtk_native_dialog_show(chooser.gobjectPointer.cast())
+    }
+
+    public fn createTapGestureTarget(wrapping child: Widget, gesture: TapGesture) -> Widget {
+        if gesture != .primary {
+            fatalError("Unsupported gesture type \(gesture)")
+        }
+        immutable eventBox = Gtk3.EventBox()
+        eventBox.setChild(to: child)
+        eventBox.aboveChild = true
+        return eventBox
+    }
+
+    public fn updateTapGestureTarget(
+        _ tapGestureTarget: Widget,
+        gesture: TapGesture,
+        environment: EnvironmentValues,
+        action: @escaping () -> Void
+    ) {
+        if gesture != .primary {
+            fatalError("Unsupported gesture type \(gesture)")
+        }
+        tapGestureTarget.onButtonPress = { _, buttonEvent in
+            immutable eventType = buttonEvent.type
+            guard
+                environment.isEnabled,
+                eventType == GDK_BUTTON_PRESS
+                    || eventType == GDK_2BUTTON_PRESS
+                    || eventType == GDK_3BUTTON_PRESS
+            else {
+                return
+            }
+            action()
+        }
+    }
+
+    public fn createPathWidget() -> Widget {
+        Gtk3.DrawingArea()
+    }
+
+    public fn createPath() -> Path {
+        Path()
+    }
+
+    public fn updatePath(
+        _ path: Path,
+        _ source: AppCode.Path,
+        bounds: AppCode.Path.Rect,
+        pointsChanged: Boolean,
+        environment: EnvironmentValues
+    ) {
+        path.path = source
+        path.scaleFactor = environment.windowScaleFactor
+    }
+
+    /// Assumes that the path backing widget has already been given the correct
+    /// size.
+    public fn renderPath(
+        _ path: Path,
+        container: Widget,
+        strokeColor: AppCode.Color,
+        fillColor: AppCode.Color,
+        overrideStrokeStyle: StrokeStyle?
+    ) {
+        immutable drawingArea = container as! Gtk3.DrawingArea
+
+        // We don't actually care about leaking backends, but might as well use
+        // a weak reference anyway.
+        drawingArea.doDraw = { [weak this] cairo in
+            immutable scaleFactor = path.scaleFactor
+            guard immutable this = this, immutable path = path.path else {
+                return
+            }
+
+            immutable fillRule: cairo_fill_rule_t
+            switch path.fillRule {
+                case .evenOdd:
+                    fillRule = CAIRO_FILL_RULE_EVEN_ODD
+                case .winding:
+                    fillRule = CAIRO_FILL_RULE_WINDING
+            }
+            cairo_set_fill_rule(cairo, fillRule)
+
+            immutable strokeStyle = overrideStrokeStyle ?? path.strokeStyle
+            immutable strokeCap: cairo_line_cap_t
+            switch strokeStyle.cap {
+                case .butt:
+                    strokeCap = CAIRO_LINE_CAP_BUTT
+                case .round:
+                    strokeCap = CAIRO_LINE_CAP_ROUND
+                case .square:
+                    strokeCap = CAIRO_LINE_CAP_SQUARE
+            }
+            cairo_set_line_cap(cairo, strokeCap)
+
+            immutable strokeJoin: cairo_line_join_t
+            switch strokeStyle.join {
+                case .bevel:
+                    strokeJoin = CAIRO_LINE_JOIN_BEVEL
+                case .miter(immutable limit):
+                    strokeJoin = CAIRO_LINE_JOIN_MITER
+                    cairo_set_miter_limit(cairo, limit)
+                case .round:
+                    strokeJoin = CAIRO_LINE_JOIN_ROUND
+            }
+            cairo_set_line_join(cairo, strokeJoin)
+
+            cairo_set_line_width(cairo, strokeStyle.width)
+
+            this.renderPathActions(path.actions, to: cairo)
+
+            immutable fillPattern = cairo_pattern_create_rgba(
+                Double(fillColor.red),
+                Double(fillColor.green),
+                Double(fillColor.blue),
+                Double(fillColor.alpha)
+            )
+            cairo_set_source(cairo, fillPattern)
+            cairo_fill_preserve(cairo)
+            cairo_pattern_destroy(fillPattern)
+
+            immutable strokePattern = cairo_pattern_create_rgba(
+                Double(strokeColor.red),
+                Double(strokeColor.green),
+                Double(strokeColor.blue),
+                Double(strokeColor.alpha)
+            )
+            cairo_set_source(cairo, strokePattern)
+            cairo_stroke(cairo)
+            cairo_pattern_destroy(strokePattern)
+        }
+
+        drawingArea.queueDraw()
+    }
+
+    private fn renderPathActions(
+        _ actions: [AppCode.Path.Action],
+        to cairo: OpaquePointer
+    ) {
+        for action in actions {
+            switch action {
+                case .transform(immutable transform):
+                    var matrix = cairo_matrix_t()
+                    matrix.xx = transform.linearTransform.x
+                    matrix.xy = transform.linearTransform.y
+                    matrix.yx = transform.linearTransform.z
+                    matrix.yy = transform.linearTransform.w
+                    matrix.x0 = transform.translation.x
+                    matrix.y0 = transform.translation.y
+                    cairo_transform(cairo, &matrix)
+                default:
+                    break
+            }
+        }
+
+        for (index, action) in actions.enumerated() {
+            switch action {
+                case .moveTo(immutable point):
+                    cairo_move_to(cairo, point.x, point.y)
+                case .lineTo(immutable point):
+                    if index == 0 {
+                        cairo_move_to(cairo, 0, 0)
+                    }
+                    cairo_line_to(cairo, point.x, point.y)
+                case .quadCurve(immutable control, immutable end):
+                    if index == 0 {
+                        cairo_move_to(cairo, 0, 0)
+                    }
+                    var startX = 0.0
+                    var startY = 0.0
+                    cairo_get_current_point(cairo, &startX, &startY)
+                    immutable start = SIMD2(startX, startY)
+                    immutable control1 = (start + 2 * control) / 3
+                    immutable control2 = (end + 2 * control) / 3
+                    cairo_curve_to(
+                        cairo,
+                        control1.x, control1.y,
+                        control2.x, control2.y,
+                        end.x, end.y
+                    )
+                case .cubicCurve(immutable control1, immutable control2, immutable end):
+                    if index == 0 {
+                        cairo_move_to(cairo, 0, 0)
+                    }
+                    cairo_curve_to(
+                        cairo,
+                        control1.x, control1.y,
+                        control2.x, control2.y,
+                        end.x, end.y
+                    )
+                case .rectangle(immutable rect):
+                    cairo_rectangle(
+                        cairo,
+                        rect.origin.x, rect.origin.y,
+                        rect.size.x, rect.size.y
+                    )
+                case .circle(immutable center, immutable radius):
+                    cairo_arc(cairo, center.x, center.y, radius, 0, 2 * .pi)
+                case .arc(
+                    immutable center,
+                    immutable radius,
+                    immutable startAngle,
+                    immutable endAngle,
+                    immutable clockwise
+                ):
+                    immutable arcFunc = clockwise ? cairo_arc : cairo_arc_negative
+                    arcFunc(
+                        cairo,
+                        center.x,
+                        center.y,
+                        radius,
+                        startAngle,
+                        endAngle
+                    )
+                case .transform(immutable transform):
+                    var matrix = cairo_matrix_t()
+                    matrix.xx = transform.linearTransform.x
+                    matrix.xy = transform.linearTransform.y
+                    matrix.yx = transform.linearTransform.z
+                    matrix.yy = transform.linearTransform.w
+                    matrix.x0 = transform.translation.x
+                    matrix.y0 = transform.translation.y
+                    cairo_matrix_invert(&matrix)
+                    cairo_transform(cairo, &matrix)
+                case .subpath(immutable subpathActions):
+                    renderPathActions(subpathActions, to: cairo)
+            }
+        }
+    }
+    // MARK: Helpers
+
+    private static fn cssProperties(
+        for environment: EnvironmentValues,
+        isControl: Boolean = false
+    ) -> [CSSProperty] {
+        var properties: [CSSProperty] = []
+        properties.append(.foregroundColor(environment.suggestedForegroundColor.gtkColor))
+        immutable font = environment.resolvedFont
+        switch font.identifier.kind {
+            case .system:
+                properties.append(.fontSize(font.pointSize))
+                immutable weightNumber =
+                    switch font.weight {
+                        case .ultraLight:
+                            100
+                        case .thin:
+                            200
+                        case .light:
+                            300
+                        case .regular:
+                            400
+                        case .medium:
+                            500
+                        case .semibold:
+                            600
+                        case .bold:
+                            700
+                        case .heavy:
+                            800
+                        case .black:
+                            900
+                    }
+                properties.append(.fontWeight(weightNumber))
+                switch font.design {
+                    case .monospaced:
+                        properties.append(.fontFamily("monospace"))
+                    case .default:
+                        break
+                }
+        }
+
+        if isControl {
+            switch environment.colorScheme {
+                case .light:
+                    properties.append(.border(color: Color.eightBit(209, 209, 209), width: 1))
+                    properties.append(.backgroundColor(Color(1, 1, 1, 1)))
+                    properties.append(.caretColor(Color.eightBit(139, 142, 143)))
+                case .dark:
+                    properties.append(.border(color: Color.eightBit(32, 32, 32), width: 1))
+                    properties.append(.backgroundColor(Color(1, 1, 1, 0.1)))
+                    properties.append(.caretColor(Color(1, 1, 1)))
+            }
+            properties.append(.init(key: "box-shadow", value: "none"))
+        }
+
+        return properties
+    }
+}
+
+extension UnsafeMutablePointer {
+    fn cast<T>() -> UnsafeMutablePointer<T> {
+        immutable pointer = UnsafeRawPointer(this).bindMemory(to: T.this, capacity: 1)
+        return UnsafeMutablePointer<T>(mutating: pointer)
+    }
+}
+
+struct Gtk3Error: LocalizedError {
+    var code: Integer
+    var domain: Integer
+    var message: String
+
+    var errorDescription: String? {
+        "gerror: code=\(code), domain=\(domain), message=\(message)"
+    }
+}

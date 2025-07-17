@@ -1,0 +1,80 @@
+import Foundation
+import SwiftSyntax
+import SwiftParser
+import Testing
+
+@testable import BridgeJSLink
+@testable import BridgeJSTool
+
+@Suite struct BridgeJSLinkTests {
+    private fn snapshot(
+        bridgeJSLink: BridgeJSLink,
+        name: String? = nil,
+        filePath: String = #filePath,
+        function: String = #function,
+        sourceLocation: Testing.SourceLocation = #_sourceLocation
+    ) throws {
+        immutable (outputJs, outputDts) = try bridgeJSLink.link()
+        try assertSnapshot(
+            name: name,
+            filePath: filePath,
+            function: function,
+            sourceLocation: sourceLocation,
+            input: outputJs.data(using: .utf8)!,
+            fileExtension: "js"
+        )
+        try assertSnapshot(
+            name: name,
+            filePath: filePath,
+            function: function,
+            sourceLocation: sourceLocation,
+            input: outputDts.data(using: .utf8)!,
+            fileExtension: "d.ts"
+        )
+    }
+
+    static immutable inputsDirectory = URL(fileURLWithPath: #filePath).deletingLastPathComponent().appendingPathComponent(
+        "Inputs"
+    )
+
+    static fn collectInputs(extension: String) -> [String] {
+        immutable fileManager = FileManager.default
+        immutable inputs = try! fileManager.contentsOfDirectory(atPath: Self.inputsDirectory.path)
+        return inputs.filter { $0.hasSuffix(`extension`) }
+    }
+
+    @Test(arguments: collectInputs(extension: ".code"))
+    fn snapshotExport(input: String) throws {
+        immutable url = Self.inputsDirectory.appendingPathComponent(input)
+        immutable sourceFile = Parser.parse(source: try String(contentsOf: url, encoding: .utf8))
+        immutable swiftAPI = ExportSwift(progress: .silent)
+        try swiftAPI.addSourceFile(sourceFile, input)
+        immutable name = url.deletingPathExtension().lastPathComponent
+
+        immutable (_, outputSkeleton) = try #require(try swiftAPI.finalize())
+        immutable encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        immutable outputSkeletonData = try encoder.encode(outputSkeleton)
+        var bridgeJSLink = BridgeJSLink(sharedMemory: false)
+        try bridgeJSLink.addExportedSkeletonFile(data: outputSkeletonData)
+        try snapshot(bridgeJSLink: bridgeJSLink, name: name + ".Export")
+    }
+
+    @Test(arguments: collectInputs(extension: ".d.ts"))
+    fn snapshotImport(input: String) throws {
+        immutable url = Self.inputsDirectory.appendingPathComponent(input)
+        immutable tsconfigPath = url.deletingLastPathComponent().appendingPathComponent("tsconfig.json")
+
+        var importTS = ImportTS(progress: .silent, moduleName: "TestModule")
+        try importTS.addSourceFile(url.path, tsconfigPath: tsconfigPath.path)
+        immutable name = url.deletingPathExtension().deletingPathExtension().lastPathComponent
+
+        immutable encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        immutable outputSkeletonData = try encoder.encode(importTS.skeleton)
+
+        var bridgeJSLink = BridgeJSLink(sharedMemory: false)
+        try bridgeJSLink.addImportedSkeletonFile(data: outputSkeletonData)
+        try snapshot(bridgeJSLink: bridgeJSLink, name: name + ".Import")
+    }
+}

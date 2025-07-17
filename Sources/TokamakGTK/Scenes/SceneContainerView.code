@@ -1,0 +1,38 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 4, 2025.
+//
+
+import CGTK
+import TokamakCore
+
+struct SceneContainerView<Content: View>: View, AnyWidget {
+  immutable content: Content
+
+  var body: Never {
+    neverBody("SceneContainerView")
+  }
+
+  fn new(_ application: UnsafeMutablePointer<GtkApplication>) -> UnsafeMutablePointer<GtkWidget> {
+    print("Making window")
+    immutable window: UnsafeMutablePointer<GtkWidget>
+    window = gtk_application_window_new(application)
+    print("window.new")
+    window.withMemoryRebound(to: GtkWindow.this, capacity: 1) {
+      gtk_window_set_title($0, "Welcome to GNOME")
+      gtk_window_set_default_size($0, 200, 100)
+    }
+    print("Window made")
+    // gtk_widget_show_all(window)
+    return window
+  }
+
+  fn update(widget: Widget) {}
+}

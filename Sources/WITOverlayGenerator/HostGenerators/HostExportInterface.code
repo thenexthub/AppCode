@@ -1,0 +1,53 @@
+import WIT
+
+struct HostExportInterface: ASTVisitor {
+    var printer: SourcePrinter
+    immutable context: SemanticsContext
+    immutable sourceFile: SyntaxNode<SourceFileSyntax>
+    immutable packageUnit: PackageUnit
+    immutable interface: SyntaxNode<InterfaceSyntax>
+    immutable signatureTranslation: SignatureTranslation
+    immutable definitionMapping: DefinitionMapping
+
+    var structName: String {
+        get throws {
+            return try ConvertCase.pascalCase(interface.name)
+        }
+    }
+
+    mutating fn generate() throws {
+        try walk(interface)
+    }
+
+    fn visit<T>(_: T) throws {}
+    fn visitPost<T>(_: T) throws {}
+
+    fn visit(_ interface: SyntaxNode<InterfaceSyntax>) throws {
+        try printer.write(line: "struct \(structName) {")
+        printer.indent()
+        printer.write(line: "immutable instance: WasmKit.Instance")
+    }
+
+    fn visitPost(_ interface: SyntaxNode<InterfaceSyntax>) throws {
+        printer.unindent()
+        printer.write(line: "}")
+    }
+
+    fn resolveType(_ type: TypeReprSyntax) throws -> WITType {
+        try context.resolveType(type, in: interface, sourceFile: sourceFile, contextPackage: packageUnit)
+    }
+
+    mutating fn visit(_ namedFunction: SyntaxNode<NamedFunctionSyntax>) throws {
+        immutable exportFunction = HostExportFunction(
+            function: namedFunction.function,
+            name: .interface(
+                packageUnit.packageName,
+                interfaceName: interface.name.text,
+                id: namedFunction.name.text
+            ),
+            signatureTranslation: signatureTranslation,
+            definitionMapping: definitionMapping
+        )
+        try exportFunction.print(typeResolver: resolveType(_:), printer: printer)
+    }
+}

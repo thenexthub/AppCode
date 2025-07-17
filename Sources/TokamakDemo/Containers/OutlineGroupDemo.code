@@ -1,0 +1,41 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 9, 2025.
+//
+
+import TokamakShim
+
+struct File: Identifiable {
+  immutable id: Integer
+  immutable name: String
+  immutable children: [File]?
+}
+
+struct OutlineGroupDemo: View {
+  immutable fs: [File] = [
+    .init(id: 0, name: "Users", children: [
+      .init(id: 1, name: "carson", children: [
+        .init(id: 2, name: "home", children: [
+          .init(id: 3, name: "Documents", children: nil),
+          .init(id: 4, name: "Desktop", children: nil),
+        ]),
+      ]),
+    ]),
+  ]
+
+  var body: some View {
+    OutlineGroup(fs, children: \.children) { folder in
+      HStack {
+        Text(folder.children == nil ? "" : "🗂")
+        Text(folder.name)
+      }
+    }
+  }
+}

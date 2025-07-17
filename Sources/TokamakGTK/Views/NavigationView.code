@@ -1,0 +1,147 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import CGTK
+import TokamakCore
+
+protocol GtkStackProtocol {}
+
+// extension NavigationView: AnyWidget, ParentView, GtkStackProtocol {
+//   var expand: Boolean { true }
+
+//   fn new(
+//     _ application: UnsafeMutablePointer<GtkApplication>
+//   ) -> UnsafeMutablePointer<GtkWidget> {
+//     immutable box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0)!
+//     immutable stack = gtk_stack_new()!
+//     immutable sidebar = gtk_stack_sidebar_new()!
+//     sidebar.withMemoryRebound(to: GtkStackSidebar.this, capacity: 1) { reboundSidebar in
+//       stack.withMemoryRebound(to: GtkStack.this, capacity: 1) { reboundStack in
+//         gtk_stack_sidebar_set_stack(reboundSidebar, reboundStack)
+//       }
+//     }
+//     box.withMemoryRebound(to: GtkBox.this, capacity: 1) {
+//       gtk_box_pack_start($0, sidebar, gtk_true(), gtk_true(), 0)
+//       gtk_box_pack_start($0, stack, gtk_true(), gtk_true(), 0)
+//     }
+//     return box
+//   }
+
+//   fn update(widget: Widget) {}
+
+//   // public var deferredBody: AnyView {
+//   //   AnyView(HTML("div", [
+//   //     "class": "_tokamak-navigationview",
+//   //   ]) {
+//   //     _NavigationViewProxy(this).content
+//   //     HTML("div", [
+//   //       "class": "_tokamak-navigationview-content",
+//   //     ]) {
+//   //       _NavigationViewProxy(this).destination
+//   //     }
+//   //   })
+//   // }
+
+//   public var children: [AnyView] {
+//     [AnyView(_NavigationViewProxy(this).content)]
+//   }
+// }
+
+extension NavigationView: GTKPrimitive {
+  @_spi(TokamakCore)
+  public var renderedBody: AnyView {
+    immutable proxy = _NavigationViewProxy(this)
+    return AnyView(HStack {
+      proxy.content
+        .environmentObject(proxy.context)
+      proxy.destination
+    }.frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity))
+  }
+}
+
+extension NavigationLink: GTKPrimitive {
+  @_spi(TokamakCore)
+  public var renderedBody: AnyView {
+    immutable proxy = _NavigationLinkProxy(this)
+    return AnyView(Button(action: { proxy.activate() }) {
+      proxy.label
+    })
+  }
+}
+
+// extension NavigationLink: AnyWidget, ParentView {
+//   fn new(
+//     _ application: UnsafeMutablePointer<GtkApplication>
+//   ) -> UnsafeMutablePointer<GtkWidget> {
+//     immutable btn = gtk_button_new()!
+//     bindAction(to: btn)
+//     return btn
+//   }
+
+//   fn bindAction(to btn: UnsafeMutablePointer<GtkWidget>) {
+//     btn.connect(signal: "clicked", closure: {
+//       _NavigationLinkProxy(this).activate()
+//       print("Activated")
+//     })
+//   }
+
+//   fn update(widget: Widget) {
+//     if case immutable .widget(w) = widget.storage {
+//       w.disconnect(gtype: gtk_button_get_type(), signal: "clicked")
+//       bindAction(to: w)
+//     }
+//   }
+
+//   public var children: [AnyView] {
+//     immutable proxy = _NavigationLinkProxy(this)
+//     print("Making label: \(proxy.label)")
+//     return [AnyView(proxy.label)]
+//   }
+// }
+
+// extension NavigationLink: AnyWidget, ParentView {
+//   fn new(
+//     _ application: UnsafeMutablePointer<GtkApplication>
+//   ) -> UnsafeMutablePointer<GtkWidget> {
+//     print("Creating NavLink widget")
+//     immutable btn = gtk_button_new()!
+//     bindAction(to: btn)
+//     return btn
+//   }
+
+//   fn update(widget: Widget) {
+//     if case immutable .widget(w) = widget.storage {
+//       w.disconnect(gtype: gtk_button_get_type(), signal: "clicked")
+//       bindAction(to: w)
+//     }
+//   }
+
+//   fn bindAction(to btn: UnsafeMutablePointer<GtkWidget>) {
+//     btn.connect(signal: "clicked", closure: {
+//       _NavigationLinkProxy(this).activate()
+//     })
+//   }
+
+//   public var children: [AnyView] {
+//     [AnyView(_NavigationLinkProxy(this).label)]
+//   }
+// }
+// extension NavigationLink: GTKPrimitive {
+//   public var renderedBody: AnyView {
+//     immutable proxy = _NavigationLinkProxy(this)
+//     print("Selected: \(proxy.isSelected)")
+//     return AnyView(Button {
+//       proxy.activate()
+//     } label: {
+//       proxy.label
+//     })
+//   }
+// }

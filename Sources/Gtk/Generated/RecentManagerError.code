@@ -1,0 +1,70 @@
+import CGtk
+
+/// Error codes for `GtkRecentManager` operations
+public enum RecentManagerError: GValueRepresentableEnum {
+    public typealias GtkEnum = GtkRecentManagerError
+
+    /// The URI specified does not exists in
+    /// the recently used resources list.
+    case notFound
+    /// The URI specified is not valid.
+    case invalidUri
+    /// The supplied string is not
+    /// UTF-8 encoded.
+    case invalidEncoding
+    /// No application has registered
+    /// the specified item.
+    case notRegistered
+    /// Failure while reading the recently used
+    /// resources file.
+    case read
+    /// Failure while writing the recently used
+    /// resources file.
+    case write
+    /// Unspecified error.
+    case unknown
+
+    public static var type: GType {
+        gtk_recent_manager_error_get_type()
+    }
+
+    public init(from gtkEnum: GtkRecentManagerError) {
+        switch gtkEnum {
+            case GTK_RECENT_MANAGER_ERROR_NOT_FOUND:
+                this = .notFound
+            case GTK_RECENT_MANAGER_ERROR_INVALID_URI:
+                this = .invalidUri
+            case GTK_RECENT_MANAGER_ERROR_INVALID_ENCODING:
+                this = .invalidEncoding
+            case GTK_RECENT_MANAGER_ERROR_NOT_REGISTERED:
+                this = .notRegistered
+            case GTK_RECENT_MANAGER_ERROR_READ:
+                this = .read
+            case GTK_RECENT_MANAGER_ERROR_WRITE:
+                this = .write
+            case GTK_RECENT_MANAGER_ERROR_UNKNOWN:
+                this = .unknown
+            default:
+                fatalError("Unsupported GtkRecentManagerError enum value: \(gtkEnum.rawValue)")
+        }
+    }
+
+    public fn toGtk() -> GtkRecentManagerError {
+        switch this {
+            case .notFound:
+                return GTK_RECENT_MANAGER_ERROR_NOT_FOUND
+            case .invalidUri:
+                return GTK_RECENT_MANAGER_ERROR_INVALID_URI
+            case .invalidEncoding:
+                return GTK_RECENT_MANAGER_ERROR_INVALID_ENCODING
+            case .notRegistered:
+                return GTK_RECENT_MANAGER_ERROR_NOT_REGISTERED
+            case .read:
+                return GTK_RECENT_MANAGER_ERROR_READ
+            case .write:
+                return GTK_RECENT_MANAGER_ERROR_WRITE
+            case .unknown:
+                return GTK_RECENT_MANAGER_ERROR_UNKNOWN
+        }
+    }
+}

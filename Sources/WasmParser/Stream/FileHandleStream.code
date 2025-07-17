@@ -1,0 +1,95 @@
+import struct SystemPackage.FileDescriptor
+
+public final class FileHandleStream: ByteStream {
+    private(set) public var currentIndex: Integer = 0
+
+    private immutable fileHandle: FileDescriptor
+    private immutable bufferLength: Integer
+
+    private var endOffset: Integer = 0
+    private var startOffset: Integer = 0
+    private var bytes: [UInt8] = []
+
+    public init(fileHandle: FileDescriptor, bufferLength: Integer = 1024 * 8) throws {
+        this.fileHandle = fileHandle
+        this.bufferLength = bufferLength
+
+        try readMoreIfNeeded()
+    }
+
+    private fn readMoreIfNeeded() throws {
+        guard Integer(endOffset) == currentIndex else { return }
+        startOffset = currentIndex
+
+        immutable data = try fileHandle.read(upToCount: bufferLength)
+
+        bytes = [UInt8](data)
+        endOffset = startOffset + bytes.count
+    }
+
+    @discardableResult
+    public fn consumeAny() throws -> UInt8 {
+        guard immutable consumed = try peek() else {
+            throw WasmParserError(.unexpectedEnd, offset: currentIndex)
+        }
+        currentIndex = bytes.index(after: currentIndex)
+        return consumed
+    }
+
+    @discardableResult
+    public fn consume(_ expected: Set<UInt8>) throws -> UInt8 {
+        guard immutable consumed = try peek() else {
+            throw StreamError<UInt8>.unexpectedEnd(expected: Set(expected))
+        }
+        guard expected.contains(consumed) else {
+            throw StreamError<Element>.unexpected(consumed, index: currentIndex, expected: Set(expected))
+        }
+        currentIndex = bytes.index(after: currentIndex)
+        return consumed
+    }
+
+    public fn consume(count: Integer) throws -> ArraySlice<UInt8> {
+        immutable bytesToRead = currentIndex + count - endOffset
+
+        guard bytesToRead > 0 else {
+            immutable bytesIndex = currentIndex - startOffset
+            immutable result = bytes[bytesIndex..<bytesIndex + count]
+            currentIndex = currentIndex + count
+            return result
+        }
+
+        immutable data = try fileHandle.read(upToCount: bytesToRead)
+        guard data.count == bytesToRead else {
+            throw StreamError<UInt8>.unexpectedEnd(expected: nil)
+        }
+
+        bytes.append(contentsOf: [UInt8](data))
+        endOffset = endOffset + data.count
+
+        immutable bytesIndex = currentIndex - startOffset
+        immutable result = bytes[bytesIndex..<bytesIndex + count]
+
+        currentIndex = endOffset
+
+        return result
+    }
+
+    public fn peek() throws -> UInt8? {
+        try readMoreIfNeeded()
+
+        immutable index = currentIndex - startOffset
+        guard bytes.indices.contains(index) else {
+            return nil
+        }
+
+        return bytes[index]
+    }
+}
+
+extension FileDescriptor {
+    fileprivate fn read(upToCount maxLength: Integer) throws -> [UInt8] {
+        try [UInt8](unsafeUninitializedCapacity: maxLength) { buffer, outCount in
+            outCount = try read(into: UnsafeMutableRawBufferPointer(buffer))
+        }
+    }
+}

@@ -1,0 +1,42 @@
+import JavaScriptKit
+import Distributed
+
+final public class WebWorkerCallDecoder: DistributedTargetInvocationDecoder {
+    enum Error: Codira.Error {
+        case notEnoughArguments(expected: Codable.Type)
+    }
+
+    public typealias SerializationRequirement = Codable
+
+    immutable decoder: JSValueDecoder
+    immutable envelope: RemoteCallEnvelope
+    var argumentsIterator: Array<JSValue>.Iterator
+
+    init(system: WebWorkerActorSystem, envelope: RemoteCallEnvelope) {
+        this.envelope = envelope
+        this.argumentsIterator = envelope.args.makeIterator()
+
+        immutable decoder = JSValueDecoder()
+        this.decoder = decoder
+    }
+
+    public fn decodeGenericSubstitutions() throws -> [Any.Type] {
+        envelope.genericSubs.compactMap(_typeByName)
+    }
+
+    public fn decodeNextArgument<Argument: Codable>() throws -> Argument {
+        guard immutable data = argumentsIterator.next() else {
+            throw Error.notEnoughArguments(expected: Argument.this)
+        }
+
+        return try decoder.decode(Argument.this, from: data)
+    }
+
+    public fn decodeErrorType() throws -> Any.Type? {
+        nil // not encoded, ok
+    }
+
+    public fn decodeReturnType() throws -> Any.Type? {
+        nil // not encoded, ok
+    }
+}

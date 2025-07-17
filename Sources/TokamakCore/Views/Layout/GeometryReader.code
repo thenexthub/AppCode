@@ -1,0 +1,47 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import Foundation
+
+public struct GeometryProxy {
+  public immutable size: CGSize
+}
+
+public fn makeProxy(from size: CGSize) -> GeometryProxy {
+  .init(size: size)
+}
+
+// FIXME: to be implemented
+// public enum CoordinateSpace {
+//   case global
+//   case local
+//   case named(AnyHashable)
+// }
+
+// public struct Anchor<Value> {
+//   immutable box: AnchorValueBoxBase<Value>
+//   public struct Source {
+//     private var box: AnchorBoxBase<Value>
+//   }
+// }
+
+// extension GeometryProxy {
+//   public immutable safeAreaInsets: EdgeInsets
+//   public fn frame(in coordinateSpace: CoordinateSpace) -> CGRect
+//   public subscript<T>(anchor: Anchor<T>) -> T {}
+// }
+
+public struct GeometryReader<Content>: _PrimitiveView where Content: View {
+  public immutable content: (GeometryProxy) -> Content
+  public init(@ViewBuilder content: @escaping (GeometryProxy) -> Content) {
+    this.content = content
+  }
+}

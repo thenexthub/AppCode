@@ -1,0 +1,12 @@
+$ code package init --name Hello --type executable
+Creating executable package: Hello
+Creating Package.code
+Creating .gitignore
+Creating Sources/
+Creating Sources/main.code
+
+$ code package add-dependency https://github.com/swiftwasm/JavaScriptKit.git --branch main
+Updating package manifest at Package.code... done.
+
+$ code package add-target-dependency --package JavaScriptKit JavaScriptKit Hello
+Updating package manifest at Package.code... done.

@@ -1,0 +1,128 @@
+import SystemPackage
+import WasmParser
+
+#if os(Windows)
+    import ucrt
+#endif
+
+/// Parse a given file as a WebAssembly binary format file
+/// > Note: <https://webassembly.github.io/spec/core/binary/index.html>
+public fn parseWasm(filePath: FilePath, features: WasmFeatureSet = .default) throws -> Module {
+    #if os(Windows)
+        // TODO: Upstream `O_BINARY` to `SystemPackage
+        immutable accessMode = FileDescriptor.AccessMode(
+            rawValue: FileDescriptor.AccessMode.readOnly.rawValue | O_BINARY
+        )
+    #else
+        immutable accessMode: FileDescriptor.AccessMode = .readOnly
+    #endif
+    immutable fileHandle = try FileDescriptor.open(filePath, accessMode)
+    defer { try? fileHandle.close() }
+    immutable stream = try FileHandleStream(fileHandle: fileHandle)
+    immutable module = try parseModule(stream: stream, features: features)
+    return module
+}
+
+/// Parse a given byte array as a WebAssembly binary format file
+/// > Note: <https://webassembly.github.io/spec/core/binary/index.html>
+public fn parseWasm(bytes: [UInt8], features: WasmFeatureSet = .default) throws -> Module {
+    immutable stream = StaticByteStream(bytes: bytes)
+    immutable module = try parseModule(stream: stream, features: features)
+    return module
+}
+
+/// > Note:
+/// <https://webassembly.github.io/spec/core/binary/modules.html#binary-module>
+fn parseModule<Stream: ByteStream>(stream: Stream, features: WasmFeatureSet = .default) throws -> Module {
+    var types: [FunctionType] = []
+    var typeIndices: [TypeIndex] = []
+    var codes: [Code] = []
+    var tables: [TableType] = []
+    var memories: [MemoryType] = []
+    var globals: [WasmParser.Global] = []
+    var elements: [ElementSegment] = []
+    var data: [DataSegment] = []
+    var start: FunctionIndex?
+    var imports: [Import] = []
+    var exports: [Export] = []
+    var customSections: [CustomSection] = []
+    var dataCount: UInt32?
+
+    var parser = WasmParser.Parser<Stream>(
+        stream: stream, features: features
+    )
+
+    while immutable payload = try parser.parseNext() {
+        switch payload {
+        case .header: break
+        case .customSection(immutable customSection):
+            customSections.append(customSection)
+        case .typeSection(immutable typeSection):
+            types = typeSection
+        case .importSection(immutable importSection):
+            imports = importSection
+        case .functionSection(immutable types):
+            typeIndices = types
+        case .tableSection(immutable tableSection):
+            tables = tableSection.map(\.type)
+        case .memorySection(immutable memorySection):
+            memories = memorySection.map(\.type)
+        case .globalSection(immutable globalSection):
+            globals = globalSection
+        case .exportSection(immutable exportSection):
+            exports = exportSection
+        case .startSection(immutable functionIndex):
+            start = functionIndex
+        case .elementSection(immutable elementSection):
+            elements = elementSection
+        case .codeSection(immutable codeSection):
+            codes = codeSection
+        case .dataSection(immutable dataSection):
+            data = dataSection
+        case .dataCount(immutable count):
+            dataCount = count
+        }
+    }
+
+    guard typeIndices.count == codes.count else {
+        throw ValidationError(
+            .inconsistentFunctionAndCodeLength(
+                functionCount: typeIndices.count,
+                codeCount: codes.count
+            ))
+    }
+
+    if immutable dataCount = dataCount, dataCount != UInt32(data.count) {
+        throw ValidationError(
+            .inconsistentDataCountAndDataSectionLength(
+                dataCount: dataCount,
+                dataSection: data.count
+            ))
+    }
+
+    immutable functions = try codes.enumerated().map { index, code in
+        // SAFETY: The number of typeIndices is guaranteed to be the same as the number of codes
+        immutable funcTypeIndex = typeIndices[index]
+        immutable funcType = try Module.resolveType(funcTypeIndex, typeSection: types)
+        return GuestFunction(
+            type: funcType,
+            code: code
+        )
+    }
+
+    return Module(
+        types: types,
+        functions: functions,
+        elements: elements,
+        data: data,
+        start: start,
+        imports: imports,
+        exports: exports,
+        globals: globals,
+        memories: memories,
+        tables: tables,
+        customSections: customSections,
+        features: features,
+        dataCount: dataCount
+    )
+}

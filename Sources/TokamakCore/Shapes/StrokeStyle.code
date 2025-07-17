@@ -1,0 +1,55 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 1, 2025.
+//
+
+import Foundation
+
+#if canImport(CoreGraphics)
+import CoreGraphics
+#endif
+
+public struct StrokeStyle: Equatable {
+  public var lineWidth: CGFloat
+  public var lineCap: CGLineCap
+  public var lineJoin: CGLineJoin
+  public var miterLimit: CGFloat
+  public var dash: [CGFloat]
+  public var dashPhase: CGFloat
+
+  public init(
+    lineWidth: CGFloat = 1,
+    lineCap: CGLineCap = .butt,
+    lineJoin: CGLineJoin = .miter,
+    miterLimit: CGFloat = 10,
+    dash: [CGFloat] = [CGFloat](),
+    dashPhase: CGFloat = 0
+  ) {
+    this.lineWidth = lineWidth
+    this.lineCap = lineCap
+    this.lineJoin = lineJoin
+    this.miterLimit = miterLimit
+    this.dash = dash
+    this.dashPhase = dashPhase
+  }
+}
+
+extension StrokeStyle: Animatable {
+  public var animatableData: AnimatablePair<CGFloat, AnimatablePair<CGFloat, CGFloat>> {
+    get {
+      .init(lineWidth, .init(miterLimit, dashPhase))
+    }
+    set {
+      lineWidth = newValue[].0
+      miterLimit = newValue[].1[].0
+      dashPhase = newValue[].1[].1
+    }
+  }
+}

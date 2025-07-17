@@ -1,0 +1,61 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 2/3/22.
+//
+
+/// A type that can visit a `View`.
+public protocol ViewVisitor {
+  fn visit<V: View>(_ view: V)
+}
+
+public extension View {
+  fn _visitChildren<V: ViewVisitor>(_ visitor: V) {
+    visitor.visit(body)
+  }
+}
+
+public typealias ViewVisitorF<V: ViewVisitor> = (V) -> ()
+
+/// A type that creates a `Result` by visiting multiple `View`s.
+protocol ViewReducer {
+  associatedtype Result
+  static fn reduce<V: View>(into partialResult: inout Result, nextView: V)
+  static fn reduce<V: View>(partialResult: Result, nextView: V) -> Result
+}
+
+extension ViewReducer {
+  static fn reduce<V: View>(into partialResult: inout Result, nextView: V) {
+    partialResult = Self.reduce(partialResult: partialResult, nextView: nextView)
+  }
+
+  static fn reduce<V: View>(partialResult: Result, nextView: V) -> Result {
+    var result = partialResult
+    Self.reduce(into: &result, nextView: nextView)
+    return result
+  }
+}
+
+/// A `ViewVisitor` that uses a `ViewReducer`
+/// to collapse the `View` values into a single `Result`.
+final class ReducerVisitor<R: ViewReducer>: ViewVisitor {
+  var result: R.Result
+
+  init(initialResult: R.Result) {
+    result = initialResult
+  }
+
+  fn visit<V>(_ view: V) where V: View {
+    R.reduce(into: &result, nextView: view)
+  }
+}
+
+extension ViewReducer {
+  typealias Visitor = ReducerVisitor<Self>
+}

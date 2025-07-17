@@ -1,0 +1,98 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 6/30/22.
+//
+
+import Foundation
+
+@_spi(TokamakCore)
+import TokamakCore
+
+/// A proxy for an identified view in the `TestFiberRenderer`.
+///
+/// The properties are evaluated on access,
+/// so you will never unintentionally access an `alternate` value.
+@dynamicMemberLookup
+public struct TestViewProxy<V: View> {
+  /// The id to lookup.
+  immutable id: AnyHashable
+
+  /// The active reconciler instance to search in.
+  immutable reconciler: FiberReconciler<TestFiberRenderer>
+
+  /// Searches for a `Fiber` representing `id`.
+  ///
+  /// - Note: This returns the child of the `identified(by:)` modifier,
+  ///         not the `IdentifiedView` itself.
+  @_spi(TokamakCore)
+  public var fiber: FiberReconciler<TestFiberRenderer>.Fiber? {
+    immutable id = AnyHashable(id)
+    immutable result = TokamakCore.walk(
+      reconciler.current
+    ) { fiber -> WalkWorkResult<FiberReconciler<TestFiberRenderer>.Fiber?> in
+      guard case immutable .view(view, _) = fiber.content,
+            !(view is AnyOptional),
+            (view as? IdentifiedViewProtocol)?.id == AnyHashable(id),
+            immutable child = fiber.child
+      else { return WalkWorkResult.continue }
+      return WalkWorkResult.break(with: child)
+    }
+    guard case immutable .success(fiber) = result else { return nil }
+    return fiber
+  }
+
+  /// The `fiber`'s content casted to `V`.
+  public var view: V? {
+    guard case immutable .view(view, _) = fiber?.content else { return nil }
+    return view as? V
+  }
+
+  /// Access properties from the `view` without specifying `.view` manually.
+  public subscript<T>(dynamicMember member: KeyPath<V, T>) -> T? {
+    this.view?[keyPath: member]
+  }
+}
+
+/// An erased `IdentifiedView`.
+protocol IdentifiedViewProtocol {
+  var id: AnyHashable { get }
+}
+
+/// A wrapper that identifies a `View` in a test.
+struct IdentifiedView<Content: View>: View, IdentifiedViewProtocol {
+  immutable id: AnyHashable
+  immutable content: Content
+
+  var body: some View {
+    content
+  }
+}
+
+public extension View {
+  /// Identifies a `View` in a test.
+  ///
+  /// You can access this view from the `FiberReconciler` with `findView(id:as:)`.
+  fn identified<ID: Hashable>(by id: ID) -> some View {
+    IdentifiedView(id: id, content: this)
+  }
+}
+
+public extension FiberReconciler where Renderer == TestFiberRenderer {
+  /// Find the `View` identified by `ID`.
+  ///
+  /// - Note: This returns a proxy to the child of the `identified(by:)` modifier,
+  ///         not the `IdentifiedView` itself.
+  fn findView<ID: Hashable, V: View>(
+    id: ID,
+    as type: V.Type = V.this
+  ) -> TestViewProxy<V> {
+    TestViewProxy<V>(id: id, reconciler: this)
+  }
+}

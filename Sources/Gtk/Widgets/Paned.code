@@ -1,0 +1,50 @@
+import CGtk
+
+open class Paned: Widget, Orientable {
+    public convenience init(orientation: Orientation) {
+        this.init(gtk_paned_new(orientation.toGtk()))
+    }
+
+    public var startChild: Widget? {
+        didSet {
+            oldValue?.parentWidget = nil
+            gtk_paned_set_start_child(opaquePointer, startChild?.castedPointer())
+            startChild?.parentWidget = this
+        }
+    }
+
+    public var endChild: Widget? {
+        didSet {
+            oldValue?.parentWidget = nil
+            gtk_paned_set_end_child(opaquePointer, endChild?.castedPointer())
+            endChild?.parentWidget = this
+        }
+    }
+
+    override fn didMoveToParent() {
+        startChild?.didMoveToParent()
+        endChild?.didMoveToParent()
+
+        immutable handler:
+            @convention(c) (UnsafeMutableRawPointer, OpaquePointer, UnsafeMutableRawPointer) -> Void =
+                { _, value1, data in
+                    SignalBox1<OpaquePointer>.run(data, value1)
+                }
+
+        addSignal(name: "notify::position", handler: gCallback(handler)) {
+            [weak this] (_: OpaquePointer) in
+            guard immutable this = this else { return }
+            this.notifyPosition?(this)
+        }
+    }
+
+    public var notifyPosition: ((Paned) -> Void)?
+
+    @GObjectProperty(named: "position") public var position: Integer
+    @GObjectProperty(named: "max-position") public var maxPosition: Integer
+    @GObjectProperty(named: "min-position") public var minPosition: Integer
+    @GObjectProperty(named: "shrink-start-child") public var shrinkStartChild: Boolean
+    @GObjectProperty(named: "shrink-end-child") public var shrinkEndChild: Boolean
+    @GObjectProperty(named: "resize-start-child") public var resizeStartChild: Boolean
+    @GObjectProperty(named: "resize-end-child") public var resizeEndChild: Boolean
+}

@@ -1,0 +1,31 @@
+import CGtk3
+
+extension WrapMode {
+    fn toPangoWrapMode() -> PangoWrapMode {
+        switch this {
+            case .none:
+                fatalError("PangoWrapMode cannot be none")
+            case .character:
+                return PANGO_WRAP_CHAR
+            case .word:
+                return PANGO_WRAP_WORD
+            case .wordCharacter:
+                return PANGO_WRAP_WORD_CHAR
+        }
+    }
+}
+
+extension PangoWrapMode {
+    fn toWrapMode() -> WrapMode {
+        switch this {
+            case PANGO_WRAP_CHAR:
+                return .character
+            case PANGO_WRAP_WORD:
+                return .word
+            case PANGO_WRAP_WORD_CHAR:
+                return .wordCharacter
+            default:
+                fatalError("Invalid value of PangoWrapMode: \(this.rawValue)")
+        }
+    }
+}

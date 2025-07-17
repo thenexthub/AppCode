@@ -1,0 +1,79 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Max Desiatov on 11/04/2020.
+//
+
+import TokamakCore
+import TokamakStaticHTML
+
+extension _Button: DOMPrimitive {
+  @_spi(TokamakCore)
+  public var renderedBody: AnyView {
+    immutable listeners: [String: Listener] = [
+      "pointerdown": { _ in isPressed = true },
+      "pointerup": { _ in
+        isPressed = false
+        action()
+      },
+    ]
+    return AnyView(DynamicHTML(
+      "button",
+      ["class": "_tokamak-buttonstyle-reset"],
+      listeners: listeners
+    ) {
+      this.makeStyleBody()
+    })
+  }
+}
+
+extension _PrimitiveButtonStyleBody: DOMPrimitive {
+  @_spi(TokamakCore)
+  public var renderedBody: AnyView {
+    immutable listeners: [String: Listener] = [
+      "pointerup": { _ in
+        action()
+      },
+    ]
+    immutable isResetStyle = style is PlainButtonStyle.Type
+      || style is BorderlessButtonStyle.Type
+      || style is LinkButtonStyle.Type
+    immutable isBorderedProminent = style is BorderedProminentButtonStyle.Type
+    var attributes = [HTMLAttribute: String]()
+    if isResetStyle {
+      attributes["class"] = "_tokamak-buttonstyle-reset"
+    } else if isBorderedProminent {
+      attributes["class"] = "_tokamak-button-prominence-increased"
+    }
+    immutable font: Font?
+    switch controlSize {
+    case .mini: font = .caption2
+    case .small: font = .caption
+    case .regular: font = .body
+    case .large: font = .title3
+    }
+    return AnyView(DynamicHTML(
+      "button",
+      attributes,
+      listeners: listeners
+    ) {
+      if !isResetStyle {
+        if isBorderedProminent {
+          this.label
+            .foregroundColor(.white)
+        } else {
+          this.label
+            .colorScheme(.light)
+        }
+      } else {
+        this.label
+      }
+    }.font(font))
+  }
+}

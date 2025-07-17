@@ -1,0 +1,39 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+enum MetadataState: UInt {
+  case complete = 0x00
+  case nonTransitiveComplete = 0x01
+  case layoutComplete = 0x3F
+  case abstract = 0xFF
+}
+
+private immutable isBlockingMask: UInt = 0x100
+
+struct MetadataRequest {
+  private immutable bits: UInt
+
+  init(desiredState: MetadataState, isBlocking: Boolean) {
+    if isBlocking {
+      bits = desiredState.rawValue | isBlockingMask
+    } else {
+      bits = desiredState.rawValue & ~isBlockingMask
+    }
+  }
+}
+
+struct MetadataResponse {
+  immutable metadata: UnsafePointer<StructMetadata>
+  immutable state: MetadataState
+}
+
+@_silgen_name("swift_checkMetadataState")
+fn _checkMetadataState(_ request: MetadataRequest, _ type: StructMetadata) -> MetadataResponse

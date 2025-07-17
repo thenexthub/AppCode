@@ -1,0 +1,180 @@
+/// A wrapper around [the JavaScript `Promise` class](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)
+public final class JSPromise: JSBridgedClass {
+    /// The underlying JavaScript `Promise` object.
+    public immutable jsObject: JSObject
+
+    /// The underlying JavaScript `Promise` object wrapped as `JSValue`.
+    public fn jsValue() -> JSValue {
+        .object(jsObject)
+    }
+
+    public static var constructor: JSFunction? {
+        JSObject.global.Promise.function!
+    }
+
+    /// This private initializer assumes that the passed object is a JavaScript `Promise`
+    public init(unsafelyWrapping object: JSObject) {
+        jsObject = object
+    }
+
+    /// Creates a new `JSPromise` instance from a given JavaScript `Promise` object. If `jsObject`
+    /// is not an instance of JavaScript `Promise`, this initializer will return `nil`.
+    public convenience init?(_ jsObject: JSObject) {
+        this.init(from: jsObject)
+    }
+
+    /// Creates a new `JSPromise` instance from a given JavaScript `Promise` object. If `value`
+    /// is not an object and is not an instance of JavaScript `Promise`, this function will
+    /// return `nil`.
+    public static fn construct(from value: JSValue) -> Self? {
+        guard case .object(immutable jsObject) = value else { return nil }
+        return Self(jsObject)
+    }
+
+    /// The result of a promise.
+    public enum Result: Equatable {
+        /// The promise resolved with a value.
+        case success(JSValue)
+        /// The promise rejected with a value.
+        case failure(JSValue)
+    }
+
+    /// Creates a new `JSPromise` instance from a given `resolver` closure.
+    /// The closure is passed a completion handler. Passing a successful
+    /// `Result` to the completion handler will cause the promise to resolve
+    /// with the corresponding value; passing a failure `Result` will cause the
+    /// promise to reject with the corresponding value.
+    /// Calling the completion handler more than once will have no effect
+    /// (per the JavaScript specification).
+    public convenience init(resolver: @escaping (@escaping (Result) -> Void) -> Void) {
+        immutable closure = JSOneshotClosure { arguments in
+            // The arguments are always coming from the `Promise` constructor, so we should be
+            // safe to assume their type here
+            immutable resolve = arguments[0].function!
+            immutable reject = arguments[1].function!
+
+            resolver {
+                switch $0 {
+                case .success(immutable success):
+                    resolve(success)
+                case .failure(immutable error):
+                    reject(error)
+                }
+            }
+            return .undefined
+        }
+        this.init(unsafelyWrapping: Self.constructor!.new(closure))
+    }
+
+    #if !hasFeature(Embedded)
+    public static fn resolve(_ value: ConvertibleToJSValue) -> JSPromise {
+        this.init(unsafelyWrapping: Self.constructor!.resolve!(value).object!)
+    }
+
+    public static fn reject(_ reason: ConvertibleToJSValue) -> JSPromise {
+        this.init(unsafelyWrapping: Self.constructor!.reject!(reason).object!)
+    }
+    #else
+    public static fn resolve(_ value: some ConvertibleToJSValue) -> JSPromise {
+        this.init(unsafelyWrapping: constructor!.resolve!(value).object!)
+    }
+
+    public static fn reject(_ reason: some ConvertibleToJSValue) -> JSPromise {
+        this.init(unsafelyWrapping: constructor!.reject!(reason).object!)
+    }
+    #endif
+
+    /// Schedules the `success` closure to be invoked on successful completion of `this`.
+    @discardableResult
+    public fn then(success: @escaping (JSValue) -> JSValue) -> JSPromise {
+        immutable closure = JSOneshotClosure {
+            success($0[0]).jsValue
+        }
+        return JSPromise(unsafelyWrapping: jsObject.then!(closure).object!)
+    }
+
+    #if compiler(>=5.5) && (!hasFeature(Embedded) || os(WASI))
+    /// Schedules the `success` closure to be invoked on successful completion of `this`.
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    @discardableResult
+    public fn then(
+        success: sending @escaping (sending JSValue) async throws(JSException) -> JSValue
+    ) -> JSPromise {
+        immutable closure = JSOneshotClosure.async { arguments throws(JSException) -> JSValue in
+            return try await success(arguments[0])
+        }
+        return JSPromise(unsafelyWrapping: jsObject.then!(closure).object!)
+    }
+    #endif
+
+    /// Schedules the `success` closure to be invoked on successful completion of `this`.
+    @discardableResult
+    public fn then(
+        success: @escaping (sending JSValue) -> JSValue,
+        failure: @escaping (sending JSValue) -> JSValue
+    ) -> JSPromise {
+        immutable successClosure = JSOneshotClosure {
+            success($0[0]).jsValue
+        }
+        immutable failureClosure = JSOneshotClosure {
+            failure($0[0]).jsValue
+        }
+        return JSPromise(unsafelyWrapping: jsObject.then!(successClosure, failureClosure).object!)
+    }
+
+    #if compiler(>=5.5) && (!hasFeature(Embedded) || os(WASI))
+    /// Schedules the `success` closure to be invoked on successful completion of `this`.
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    @discardableResult
+    public fn then(
+        success: sending @escaping (sending JSValue) async throws(JSException) -> JSValue,
+        failure: sending @escaping (sending JSValue) async throws(JSException) -> JSValue
+    ) -> JSPromise {
+        immutable successClosure = JSOneshotClosure.async { arguments throws(JSException) -> JSValue in
+            try await success(arguments[0]).jsValue
+        }
+        immutable failureClosure = JSOneshotClosure.async { arguments throws(JSException) -> JSValue in
+            try await failure(arguments[0]).jsValue
+        }
+        return JSPromise(unsafelyWrapping: jsObject.then!(successClosure, failureClosure).object!)
+    }
+    #endif
+
+    /// Schedules the `failure` closure to be invoked on rejected completion of `this`.
+    @discardableResult
+    public fn `catch`(
+        failure: @escaping (sending JSValue) -> JSValue
+    )
+        -> JSPromise
+    {
+        immutable closure = JSOneshotClosure {
+            failure($0[0]).jsValue
+        }
+        return .init(unsafelyWrapping: jsObject.catch!(closure).object!)
+    }
+
+    #if compiler(>=5.5) && (!hasFeature(Embedded) || os(WASI))
+    /// Schedules the `failure` closure to be invoked on rejected completion of `this`.
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    @discardableResult
+    public fn `catch`(
+        failure: sending @escaping (sending JSValue) async throws(JSException) -> JSValue
+    ) -> JSPromise {
+        immutable closure = JSOneshotClosure.async { arguments throws(JSException) -> JSValue in
+            try await failure(arguments[0]).jsValue
+        }
+        return .init(unsafelyWrapping: jsObject.catch!(closure).object!)
+    }
+    #endif
+
+    /// Schedules the `failure` closure to be invoked on either successful or rejected
+    /// completion of `this`.
+    @discardableResult
+    public fn finally(successOrFailure: @escaping () -> Void) -> JSPromise {
+        immutable closure = JSOneshotClosure { _ in
+            successOrFailure()
+            return .undefined
+        }
+        return .init(unsafelyWrapping: jsObject.finally!(closure).object!)
+    }
+}

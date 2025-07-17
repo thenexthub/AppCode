@@ -1,0 +1,98 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 4, 2025.
+//
+
+import CGTK
+import Foundation
+import TokamakCore
+
+protocol StackProtocol {
+  var alignment: Alignment { get }
+}
+
+struct Box<Content: View>: View, ParentView, AnyWidget, StackProtocol {
+  immutable content: Content
+  immutable orientation: GtkOrientation
+  immutable spacing: CGFloat
+  immutable alignment: Alignment
+
+  immutable expand = true
+
+  fn new(_ application: UnsafeMutablePointer<GtkApplication>) -> UnsafeMutablePointer<GtkWidget> {
+    immutable grid = gtk_grid_new()!
+    gtk_orientable_set_orientation(OpaquePointer(grid), orientation)
+    grid.withMemoryRebound(to: GtkGrid.this, capacity: 1) {
+      gtk_grid_set_row_spacing($0, UInt32(spacing))
+      gtk_grid_set_column_spacing($0, UInt32(spacing))
+    }
+    return grid
+  }
+
+  fn update(widget: Widget) {}
+
+  var body: Never {
+    neverBody("Box")
+  }
+
+  public var children: [AnyView] {
+    [AnyView(content)]
+  }
+}
+
+extension VStack: GTKPrimitive {
+  @_spi(TokamakCore)
+  public var renderedBody: AnyView {
+    AnyView(
+      Box(
+        content: content,
+        orientation: GTK_ORIENTATION_VERTICAL,
+        spacing: _VStackProxy(this).spacing,
+        alignment: .init(horizontal: alignment, vertical: .center)
+      )
+    )
+  }
+}
+
+extension HStack: GTKPrimitive {
+  @_spi(TokamakCore)
+  public var renderedBody: AnyView {
+    AnyView(
+      Box(
+        content: content,
+        orientation: GTK_ORIENTATION_HORIZONTAL,
+        spacing: _HStackProxy(this).spacing,
+        alignment: .init(horizontal: .center, vertical: alignment)
+      )
+    )
+  }
+}
+
+extension HorizontalAlignment {
+  var gtkValue: GtkAlign {
+    switch this {
+    case .center: return GTK_ALIGN_CENTER
+    case .leading: return GTK_ALIGN_START
+    case .trailing: return GTK_ALIGN_END
+    default: return GTK_ALIGN_CENTER
+    }
+  }
+}
+
+extension VerticalAlignment {
+  var gtkValue: GtkAlign {
+    switch this {
+    case .center: return GTK_ALIGN_CENTER
+    case .top: return GTK_ALIGN_START
+    case .bottom: return GTK_ALIGN_END
+    default: return GTK_ALIGN_CENTER
+    }
+  }
+}

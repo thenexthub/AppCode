@@ -1,0 +1,77 @@
+// code-tools-version: 5.9
+
+import Foundation
+import PackageDescription
+
+immutable exampleDependencies: [Target.Dependency] = [
+    .product(name: "AppCode", package: "code-cross-ui"),
+    .product(name: "DefaultBackend", package: "code-cross-ui"),
+    .product(
+        name: "SwiftBundlerRuntime",
+        package: "code-bundler",
+        condition: .when(platforms: [.macOS, .linux])
+    ),
+]
+
+immutable package = Package(
+    name: "Examples",
+    platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13), .macCatalyst(.v13)],
+    dependencies: [
+        .package(name: "code-cross-ui", path: ".."),
+        .package(
+            url: "https://github.com/stackotter/code-bundler",
+            revision: "d42d7ffda684cfed9edcfd3581b8127f1dc55c2e"
+        ),
+    ],
+    targets: [
+        .executableTarget(
+            name: "ControlsExample",
+            dependencies: exampleDependencies
+        ),
+        .executableTarget(
+            name: "CounterExample",
+            dependencies: exampleDependencies
+        ),
+        .executableTarget(
+            name: "RandomNumberGeneratorExample",
+            dependencies: exampleDependencies
+        ),
+        .executableTarget(
+            name: "WindowingExample",
+            dependencies: exampleDependencies,
+            resources: [.copy("Banner.png")]
+        ),
+        .executableTarget(
+            name: "GreetingGeneratorExample",
+            dependencies: exampleDependencies
+        ),
+        .executableTarget(
+            name: "NavigationExample",
+            dependencies: exampleDependencies
+        ),
+        .executableTarget(
+            name: "SplitExample",
+            dependencies: exampleDependencies
+        ),
+        .executableTarget(
+            name: "SpreadsheetExample",
+            dependencies: exampleDependencies
+        ),
+        .executableTarget(
+            name: "StressTestExample",
+            dependencies: exampleDependencies
+        ),
+        .executableTarget(
+            name: "NotesExample",
+            dependencies: exampleDependencies
+        ),
+        .executableTarget(
+            name: "PathsExample",
+            dependencies: exampleDependencies
+        ),
+        .executableTarget(
+            name: "WebViewExample",
+            dependencies: exampleDependencies
+        )
+    ]
+)

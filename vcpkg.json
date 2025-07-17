@@ -1,0 +1,5 @@
+{
+    "name": "code-cross-ui",
+    "version-string": "main",
+    "dependencies": ["gtk"]
+}

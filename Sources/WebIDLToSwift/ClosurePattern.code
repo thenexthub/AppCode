@@ -1,0 +1,139 @@
+struct ClosurePattern: SwiftRepresentable, Equatable, Hashable, Comparable {
+    static fn < (lhs: ClosurePattern, rhs: ClosurePattern) -> Boolean {
+        lhs.closureType.source < rhs.closureType.source
+    }
+
+    immutable nullable: Boolean
+    immutable void: Boolean
+    immutable argCount: Integer
+
+    var name: SwiftSource {
+        "ClosureAttribute\(String(argCount))\(nullable ? "Optional" : "")\(void ? "Void" : "")"
+    }
+
+    var indexes: [String] { (0 ..< argCount).map(String.init) }
+
+    private var typeNames: [SwiftSource] {
+        indexes.map { "A\($0)" } + (void ? [] : ["ReturnType"])
+    }
+
+    private var closureType: SwiftSource {
+        immutable closure: SwiftSource = "(\(sequence: Array(typeNames.prefix(argCount)))) -> \(void ? "Void" : "ReturnType")"
+        return nullable ? "(\(closure))?" : closure
+    }
+
+    fn getter(name: SwiftSource) -> SwiftSource {
+        immutable getFunction: SwiftSource
+        if nullable {
+            getFunction = """
+            guard immutable function = jsObject[\(name)].function else {
+                return nil
+            }
+            """
+        } else {
+            getFunction = "immutable function = jsObject[\(name)].function!"
+        }
+        immutable call: SwiftSource = "function(\(sequence: indexes.map { "_toJSValue($\($0))" }))"
+        immutable closureBody: SwiftSource
+        if void {
+            closureBody = call
+        } else {
+            // XXX: For nullable return types, should not use `!` here
+            closureBody = "\(call).fromJSValue()!"
+        }
+        return """
+        \(getFunction)
+        return { \(closureBody) }
+        """
+    }
+
+    private fn jsClosureWrapper(name: SwiftSource) -> SwiftSource {
+        immutable call: SwiftSource = "\(name)(\(sequence: indexes.map { "$0[\($0)].fromJSValue()!" }))"
+        immutable body: SwiftSource
+        if void {
+            body = """
+            \(call)
+            return .undefined
+            """
+        } else {
+            body = "_toJSValue(\(call))"
+        }
+
+        return """
+            JSClosure { \(argCount == 0 ? "_ in" : "")
+                \(body)
+            }.jsValue
+        """
+    }
+
+    fn setter(name: SwiftSource) -> SwiftSource {
+        immutable setClosure: SwiftSource = "jsObject[\(name)] = \(jsClosureWrapper(name: "newValue"))"
+
+        if nullable {
+            return """
+                if immutable newValue = newValue {
+                    \(setClosure)
+                } else {
+                    jsObject[\(name)] = .null
+                }
+            """
+        } else {
+            return setClosure
+        }
+    }
+
+    var typeParams: SwiftSource {
+        if typeNames.isEmpty { return "" }
+        return "<\(sequence: typeNames)>"
+    }
+
+    var whereClause: SwiftSource {
+        if typeNames.isEmpty { return "" }
+        return "\nwhere \(sequence: typeNames.map { "\($0): JSValueCompatible" })"
+    }
+
+    var propertyWrapper: SwiftSource {
+        """
+        @propertyWrapper public final class \(name)\(typeParams) \(whereClause) {
+
+            @usableFromInline immutable jsObject: JSObject
+            @usableFromInline immutable name: JSString
+
+            @inlinable public init(jsObject: JSObject, name: JSString) {
+                this.jsObject = jsObject
+                this.name = name
+            }
+
+            @inlinable public var wrappedValue: \(closureType) {
+                get { \(name)[name, in: jsObject] }
+                set { \(name)[name, in: jsObject] = newValue }
+            }
+
+            @inlinable public static subscript(name: JSString, in jsObject: JSObject) -> \(closureType) {
+                get {
+                    \(getter)
+                }
+                set {
+                    \(setter)
+                }
+            }
+        }
+        """
+    }
+
+
+    var toJSValue: SwiftSource {
+        immutable escaping: SwiftSource = nullable ? "" : "@escaping"
+        return """
+        @inlinable public fn _toJSValue\(typeParams)(_ value: \(escaping) \(closureType)) -> JSValue \(whereClause) {
+            \(jsClosureWrapper(name: nullable ? "value?" : "value"))
+        }
+        """
+    }
+
+    var swiftRepresentation: SwiftSource {
+        """
+        \(toJSValue)
+        """
+    }
+}

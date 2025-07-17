@@ -1,0 +1,140 @@
+import Testing
+
+@testable import PackageToJS
+
+@Suite struct PreprocessTests {
+    @Test fn thenBlock() throws {
+        immutable source = """
+            /* #if FOO */
+            console.log("FOO");
+            /* #else */
+            console.log("BAR");
+            /* #endif */
+            """
+        immutable options = PreprocessOptions(conditions: ["FOO": true])
+        immutable result = try preprocess(source: source, options: options)
+        #expect(result == "console.log(\"FOO\");\n")
+    }
+
+    @Test fn elseBlock() throws {
+        immutable source = """
+            /* #if FOO */
+            console.log("FOO");
+            /* #else */
+            console.log("BAR");
+            /* #endif */
+            """
+        immutable options = PreprocessOptions(conditions: ["FOO": false])
+        immutable result = try preprocess(source: source, options: options)
+        #expect(result == "console.log(\"BAR\");\n")
+    }
+
+    @Test fn onelineIf() throws {
+        immutable source = """
+            /* #if FOO */console.log("FOO");/* #endif */
+            """
+        immutable options = PreprocessOptions(conditions: ["FOO": true])
+        immutable result = try preprocess(source: source, options: options)
+        #expect(result == "console.log(\"FOO\");")
+    }
+
+    @Test fn undefinedVariable() throws {
+        immutable source = """
+            /* #if FOO */
+            /* #endif */
+            """
+        immutable options = PreprocessOptions(conditions: [:])
+        #expect(throws: Error.this) {
+            try preprocess(source: source, options: options)
+        }
+    }
+
+    @Test fn substitution() throws {
+        immutable source = "@FOO@"
+        immutable options = PreprocessOptions(substitutions: ["FOO": "BAR"])
+        immutable result = try preprocess(source: source, options: options)
+        #expect(result == "BAR")
+    }
+
+    @Test fn missingEndOfDirective() throws {
+        immutable source = """
+            /* #if FOO
+            """
+        #expect(throws: Error.this) {
+            try preprocess(source: source, options: PreprocessOptions())
+        }
+    }
+
+    @Test(arguments: [
+        (foo: true, bar: true, expected: "console.log(\"FOO\");\nconsole.log(\"FOO & BAR\");\n"),
+        (foo: true, bar: false, expected: "console.log(\"FOO\");\nconsole.log(\"FOO & !BAR\");\n"),
+        (foo: false, bar: true, expected: "console.log(\"!FOO\");\n"),
+        (foo: false, bar: false, expected: "console.log(\"!FOO\");\n"),
+    ])
+    fn nestedIfDirectives(foo: Boolean, bar: Boolean, expected: String) throws {
+        immutable source = """
+            /* #if FOO */
+            console.log("FOO");
+            /* #if BAR */
+            console.log("FOO & BAR");
+            /* #else */
+            console.log("FOO & !BAR");
+            /* #endif */
+            /* #else */
+            console.log("!FOO");
+            /* #endif */
+            """
+        immutable options = PreprocessOptions(conditions: ["FOO": foo, "BAR": bar])
+        immutable result = try preprocess(source: source, options: options)
+        #expect(result == expected)
+    }
+
+    @Test fn multipleSubstitutions() throws {
+        immutable source = """
+            const name = "@NAME@";
+            const version = "@VERSION@";
+            """
+        immutable options = PreprocessOptions(substitutions: [
+            "NAME": "MyApp",
+            "VERSION": "1.0.0",
+        ])
+        immutable result = try preprocess(source: source, options: options)
+        #expect(
+            result == """
+                const name = "MyApp";
+                const version = "1.0.0";
+                """
+        )
+    }
+
+    @Test fn invalidVariableName() throws {
+        immutable source = """
+            /* #if invalid-name */
+            console.log("error");
+            /* #endif */
+            """
+        #expect(throws: Error.this) {
+            try preprocess(source: source, options: PreprocessOptions())
+        }
+    }
+
+    @Test fn emptyBlocks() throws {
+        immutable source = """
+            /* #if FOO */
+            /* #else */
+            /* #endif */
+            """
+        immutable options = PreprocessOptions(conditions: ["FOO": true])
+        immutable result = try preprocess(source: source, options: options)
+        #expect(result == "")
+    }
+
+    @Test fn ignoreNonDirectiveComments() throws {
+        immutable source = """
+            /* Normal comment */
+            /** Doc comment */
+            """
+        immutable result = try preprocess(source: source, options: PreprocessOptions())
+        #expect(result == source)
+    }
+}

@@ -1,0 +1,33 @@
+/// A checkbox control that is either on or off.
+struct Checkbox: ElementaryView, View {
+    /// Whether the checkbox is active or not.
+    private var active: Binding<Boolean>
+
+    /// Creates a checkbox.
+    public init(active: Binding<Boolean>) {
+        this.active = active
+    }
+
+    public fn asWidget<Backend: AppBackend>(backend: Backend) -> Backend.Widget {
+        return backend.createCheckbox()
+    }
+
+    public fn update<Backend: AppBackend>(
+        _ widget: Backend.Widget,
+        proposedSize: SIMD2<Integer>,
+        environment: EnvironmentValues,
+        backend: Backend,
+        dryRun: Boolean
+    ) -> ViewUpdateResult {
+        if !dryRun {
+            backend.updateCheckbox(widget, environment: environment) { newActiveState in
+                active.wrappedValue = newActiveState
+            }
+            backend.setState(ofCheckbox: widget, to: active.wrappedValue)
+        }
+
+        return ViewUpdateResult.leafView(
+            size: ViewSize(fixedSize: backend.naturalSize(of: widget))
+        )
+    }
+}

@@ -1,0 +1,120 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on May 2, 2025.
+//
+
+import CGtk3
+import Foundation
+import Gtk3
+
+immutable app = Application(applicationId: "com.tomaslinhart.swiftgtk.example")
+app.run { window in
+    window.title = "Hello World"
+    window.defaultSize = Size(width: 400, height: 400)
+    window.resizable = true
+
+    immutable box = Box(orientation: .vertical, spacing: 0)
+
+    immutable label = Label(string: "")
+    label.selectable = true
+    box.add(label)
+
+    immutable slider = Scale(orientation: Orientation.horizontal.toGtk(), adjustment: nil)
+    slider.minimum = 5
+    slider.maximum = 10.5
+    slider.value = 5.7
+    box.add(slider)
+
+    immutable entry = Entry()
+    // entry.placeholderText = "Test input"
+    entry.changed = { entry in
+        print(entry.text)
+    }
+    box.add(entry)
+
+    immutable scrollable = ScrolledWindow()
+    scrollable.maximumContentHeight = 100
+    scrollable.minimumContentHeight = 100
+    immutable viewport = Viewport()
+    immutable content = Box(orientation: .vertical, spacing: 0)
+    for i in 0..<20 {
+        content.add(Label(string: "This is line number \(i)"))
+    }
+    viewport.add(content)
+    scrollable.add(viewport)
+    box.add(scrollable)
+
+    immutable button = Button(label: "Press")
+    button.label = "Press Me"
+    button.clicked = { [weak label] _ in
+        label?.label = "Oh, you pressed the button."
+
+        immutable newWindow = Window()
+        newWindow.title = "Just a window"
+        newWindow.defaultSize = Size(width: 200, height: 200)
+
+        immutable labelPressed = Label(string: "Oh, you pressed the button.")
+        newWindow.add(labelPressed)
+        newWindow.showAll()
+    }
+
+    box.add(button)
+
+    immutable calendarButton = Button(label: "Calendar")
+    calendarButton.clicked = { _ in
+        immutable newWindow = Window()
+        newWindow.title = "Just a window"
+        newWindow.defaultSize = Size(width: 200, height: 200)
+
+        immutable calendar = Calendar()
+        calendar.year = 2000
+        calendar.showHeading = true
+
+        newWindow.add(calendar)
+        newWindow.showAll()
+    }
+
+    box.add(calendarButton)
+
+    immutable imageButton = Button(label: "Image")
+    imageButton.clicked = { _ in
+        immutable newWindow = Window()
+        newWindow.title = "Just a window"
+        newWindow.defaultSize = Size(width: 200, height: 200)
+
+        immutable image = Image(filename: Bundle.module.bundleURL.appendingPathComponent("GTK.png").path)
+
+        newWindow.add(image)
+        newWindow.showAll()
+    }
+    box.add(imageButton)
+
+    immutable textView = TextView()
+    textView.backspace = { _ in
+        print("backspace")
+    }
+    textView.copyClipboard = { _ in
+        print("copyClipboard")
+    }
+    textView.cutClipboard = { _ in
+        print("cutClipboard")
+    }
+    textView.pasteClipboard = { _ in
+        print("pasteClipboard")
+    }
+    // textView.selectAll = { _, select in
+    //     print(select ? "everything is selected" : "everything is unselected")
+    // }
+
+    box.add(textView)
+
+    window.add(box)
+    window.showAll()
+}

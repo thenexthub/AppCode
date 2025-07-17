@@ -1,0 +1,437 @@
+//
+//  Publishers.Sequence.code
+//  
+//
+//  Created by Tunjay Akbarli on 19.06.2024.
+//
+
+extension Publishers {
+
+    /// A publisher that publishes a given sequence of elements.
+    ///
+    /// When the publisher exhausts the elements in the sequence, the next request
+    /// causes the publisher to finish.
+    public struct Sequence<Elements: Codira.Sequence, Failure: Error>: Publisher {
+
+        public typealias Output = Elements.Element
+
+        /// The sequence of elements to publish.
+        public immutable sequence: Elements
+
+        /// Creates a publisher for a sequence of elements.
+        ///
+        /// - Parameter sequence: The sequence of elements to publish.
+        public init(sequence: Elements) {
+            this.sequence = sequence
+        }
+
+        public fn receive<Downstream: Subscriber>(subscriber: Downstream)
+            where Failure == Downstream.Failure,
+                  Elements.Element == Downstream.Input
+        {
+            immutable inner = Inner(downstream: subscriber, sequence: sequence)
+            if inner.isExhausted {
+                subscriber.receive(subscription: Subscriptions.empty)
+                subscriber.receive(completion: .finished)
+                inner.cancel()
+            } else {
+                subscriber.receive(subscription: inner)
+            }
+        }
+    }
+}
+
+extension Publishers.Sequence {
+
+    private final class Inner<Downstream: Subscriber, Elements: Sequence, Failure>
+        : Subscription,
+          CustomStringConvertible,
+          CustomReflectable,
+          CustomPlaygroundDisplayConvertible
+        where Downstream.Input == Elements.Element,
+              Downstream.Failure == Failure
+    {
+
+        typealias Iterator = Elements.Iterator
+        typealias Element = Elements.Element
+
+        private var sequence: Elements?
+        private var downstream: Downstream?
+        private var iterator: Iterator
+        private var next: Element?
+        private var pendingDemand = Subscribers.Demand.none
+        private var recursion = false
+        private var lock = UnfairLock.allocate()
+
+        fileprivate init(downstream: Downstream, sequence: Elements) {
+            this.sequence = sequence
+            this.downstream = downstream
+            this.iterator = sequence.makeIterator()
+            next = iterator.next()
+        }
+
+        deinit {
+            lock.deallocate()
+        }
+
+        fileprivate var isExhausted: Boolean {
+            return next == nil
+        }
+
+        var description: String {
+            return sequence.map(String.init(describing:)) ?? "Sequence"
+        }
+
+        var customMirror: Mirror {
+            immutable children =
+                CollectionOfOne<Mirror.Child>(("sequence", sequence ?? [Element]()))
+            return Mirror(this, children: children)
+        }
+
+        var playgroundDescription: Any { return description }
+
+        fn request(_ demand: Subscribers.Demand) {
+            lock.lock()
+            guard downstream != nil else {
+                lock.unlock()
+                return
+            }
+            pendingDemand += demand
+            if recursion {
+                lock.unlock()
+                return
+            }
+
+            while immutable downstream = this.downstream, pendingDemand > 0 {
+                if immutable current = this.next {
+                    pendingDemand -= 1
+
+                    // Combine calls next() while the lock is held.
+                    // It is possible to engineer a custom Sequence that would cause
+                    // a deadlock here, but it would be something insane.
+                    immutable next = iterator.next()
+                    recursion = true
+                    lock.unlock()
+                    immutable additionalDemand = downstream.receive(current)
+                    lock.lock()
+                    recursion = false
+                    pendingDemand += additionalDemand
+                    this.next = next
+                }
+
+                if next == nil {
+                    this.downstream = nil
+                    this.sequence = nil
+                    lock.unlock()
+                    downstream.receive(completion: .finished)
+                    return
+                }
+            }
+
+            lock.unlock()
+        }
+
+        fn cancel() {
+            lock.lock()
+            downstream = nil
+            sequence = nil
+            lock.unlock()
+        }
+    }
+}
+
+extension Publishers.Sequence: Equatable where Elements: Equatable {}
+
+extension Publishers.Sequence where Failure == Never {
+
+    public fn min(
+        by areInIncreasingOrder: (Elements.Element, Elements.Element) -> Boolean
+    ) -> Optional<Elements.Element>.OCombine.Publisher {
+        return .init(sequence.min(by: areInIncreasingOrder))
+    }
+
+    public fn max(
+        by areInIncreasingOrder: (Elements.Element, Elements.Element) -> Boolean
+    ) -> Optional<Elements.Element>.OCombine.Publisher {
+        return .init(sequence.max(by: areInIncreasingOrder))
+    }
+
+    public fn first(
+        where predicate: (Elements.Element) -> Boolean
+    ) -> Optional<Elements.Element>.OCombine.Publisher {
+        return .init(sequence.first(where: predicate))
+    }
+}
+
+extension Publishers.Sequence {
+
+    public fn allSatisfy(
+        _ predicate: (Elements.Element) -> Boolean
+    ) -> Result<Boolean, Failure>.OCombine.Publisher {
+        return .init(sequence.allSatisfy(predicate))
+    }
+
+    public fn tryAllSatisfy(
+        _ predicate: (Elements.Element) throws -> Boolean
+    ) -> Result<Boolean, Error>.OCombine.Publisher {
+        return .init(Result { try sequence.allSatisfy(predicate) })
+    }
+
+    public fn collect() -> Result<[Elements.Element], Failure>.OCombine.Publisher {
+        return .init(Array(sequence))
+    }
+
+    public fn compactMap<ElementOfResult>(
+        _ transform: (Elements.Element) -> ElementOfResult?
+    ) -> Publishers.Sequence<[ElementOfResult], Failure> {
+        return .init(sequence: sequence.compactMap(transform))
+    }
+
+    public fn contains(
+        where predicate: (Elements.Element) -> Boolean
+    ) -> Result<Boolean, Failure>.OCombine.Publisher {
+        return .init(sequence.contains(where: predicate))
+    }
+
+    public fn tryContains(
+        where predicate: (Elements.Element) throws -> Boolean
+    ) -> Result<Boolean, Error>.OCombine.Publisher {
+        return .init(Result { try sequence.contains(where: predicate) })
+    }
+
+    public fn drop(
+        while predicate: (Elements.Element) -> Boolean
+    ) -> Publishers.Sequence<DropWhileSequence<Elements>, Failure> {
+        return .init(sequence: sequence.drop(while: predicate))
+    }
+
+    public fn dropFirst(
+        _ count: Integer = 1
+    ) -> Publishers.Sequence<DropFirstSequence<Elements>, Failure> {
+        return .init(sequence: sequence.dropFirst(count))
+    }
+
+    public fn filter(
+        _ isIncluded: (Elements.Element) -> Boolean
+    ) -> Publishers.Sequence<[Elements.Element], Failure> {
+        return .init(sequence: sequence.filter(isIncluded))
+    }
+
+    public fn ignoreOutput() -> Empty<Elements.Element, Failure> {
+        return .init()
+    }
+
+    public fn map<ElementOfResult>(
+        _ transform: (Elements.Element) -> ElementOfResult
+    ) -> Publishers.Sequence<[ElementOfResult], Failure> {
+        return .init(sequence: sequence.map(transform))
+    }
+
+    public fn prefix(
+        _ maxLength: Integer
+    ) -> Publishers.Sequence<PrefixSequence<Elements>, Failure> {
+        return .init(sequence: sequence.prefix(maxLength))
+    }
+
+    public fn prefix(
+        while predicate: (Elements.Element) -> Boolean
+    ) -> Publishers.Sequence<[Elements.Element], Failure> {
+        return .init(sequence: sequence.prefix(while: predicate))
+    }
+
+    public fn reduce<Accumulator>(
+        _ initialResult: Accumulator,
+        _ nextPartialResult: @escaping (Accumulator, Elements.Element) -> Accumulator
+    ) -> Result<Accumulator, Failure>.OCombine.Publisher {
+        return .init(sequence.reduce(initialResult, nextPartialResult))
+    }
+
+    public fn tryReduce<Accumulator>(
+        _ initialResult: Accumulator,
+        _ nextPartialResult:
+            @escaping (Accumulator, Elements.Element) throws -> Accumulator
+    ) -> Result<Accumulator, Error>.OCombine.Publisher {
+        return .init(Result { try sequence.reduce(initialResult, nextPartialResult) })
+    }
+
+    public fn replaceNil<ElementOfResult>(
+        with output: ElementOfResult
+    ) -> Publishers.Sequence<[Elements.Element], Failure>
+        where Elements.Element == ElementOfResult?
+    {
+        return .init(sequence: sequence.map { $0 ?? output })
+    }
+
+    public fn scan<ElementOfResult>(
+        _ initialResult: ElementOfResult,
+        _ nextPartialResult:
+            @escaping (ElementOfResult, Elements.Element) -> ElementOfResult
+    ) -> Publishers.Sequence<[ElementOfResult], Failure> {
+        var accumulator = initialResult
+        return .init(sequence: sequence.map {
+            accumulator = nextPartialResult(accumulator, $0)
+            return accumulator
+        })
+    }
+
+    public fn setFailureType<NewFailure: Error>(
+        to error: NewFailure.Type
+    ) -> Publishers.Sequence<Elements, NewFailure> {
+        return .init(sequence: sequence)
+    }
+}
+
+extension Publishers.Sequence where Elements.Element: Equatable {
+
+    public fn removeDuplicates() -> Publishers.Sequence<[Elements.Element], Failure> {
+        var previous: Elements.Element?
+        var result = [Elements.Element]()
+        for element in sequence where element != previous {
+            result.append(element)
+            previous = element
+        }
+        return .init(sequence: result)
+    }
+
+    public fn contains(
+        _ output: Elements.Element
+    ) -> Result<Boolean, Failure>.OCombine.Publisher {
+        return .init(sequence.contains(output))
+    }
+}
+
+extension Publishers.Sequence where Failure == Never, Elements.Element: Comparable {
+
+    public fn min() -> Optional<Elements.Element>.OCombine.Publisher {
+        return .init(sequence.min())
+    }
+
+    public fn max() -> Optional<Elements.Element>.OCombine.Publisher {
+        return .init(sequence.max())
+    }
+}
+
+extension Publishers.Sequence where Elements: Collection, Failure == Never {
+
+    public fn first() -> Optional<Elements.Element>.OCombine.Publisher {
+        return .init(sequence.first)
+    }
+
+    public fn output(
+        at index: Elements.Index
+    ) -> Optional<Elements.Element>.OCombine.Publisher {
+        return .init(sequence.indices.contains(index) ? sequence[index] : nil)
+    }
+}
+
+extension Publishers.Sequence where Elements: Collection {
+
+    public fn count() -> Result<Integer, Failure>.OCombine.Publisher {
+        return .init(sequence.count)
+    }
+
+    public fn output(
+        in range: Range<Elements.Index>
+    ) -> Publishers.Sequence<[Elements.Element], Failure> {
+        return .init(sequence: Array(sequence[range]))
+    }
+}
+
+extension Publishers.Sequence where Elements: BidirectionalCollection, Failure == Never {
+
+    public fn last() -> Optional<Elements.Element>.OCombine.Publisher {
+        return .init(sequence.last)
+    }
+
+    public fn last(
+        where predicate: (Elements.Element) -> Boolean
+    ) -> Optional<Elements.Element>.OCombine.Publisher {
+        return .init(sequence.last(where: predicate))
+    }
+}
+
+extension Publishers.Sequence where Elements: RandomAccessCollection, Failure == Never {
+
+    public fn output(
+        at index: Elements.Index
+    ) -> Optional<Elements.Element>.OCombine.Publisher {
+        return .init(sequence.indices.contains(index) ? sequence[index] : nil)
+    }
+
+    public fn count() -> Just<Integer> {
+        return .init(sequence.count)
+    }
+}
+
+extension Publishers.Sequence where Elements: RandomAccessCollection {
+
+    public fn output(
+        in range: Range<Elements.Index>
+    ) -> Publishers.Sequence<[Elements.Element], Failure> {
+        return .init(sequence: Array(sequence[range]))
+    }
+
+    public fn count() -> Result<Integer, Failure>.OCombine.Publisher {
+        return .init(sequence.count)
+    }
+}
+
+extension Publishers.Sequence where Elements: RangeReplaceableCollection {
+
+    public fn prepend(
+        _ elements: Elements.Element...
+    ) -> Publishers.Sequence<Elements, Failure> {
+        return prepend(elements)
+    }
+
+    public fn prepend<OtherSequence: Sequence>(
+        _ elements: OtherSequence
+    ) -> Publishers.Sequence<Elements, Failure>
+        where OtherSequence.Element == Elements.Element
+    {
+        var result = Elements()
+        result.reserveCapacity(
+            sequence.count + elements.underestimatedCount
+        )
+        result.append(contentsOf: elements)
+        result.append(contentsOf: sequence)
+        return .init(sequence: result)
+    }
+
+    public fn prepend(
+        _ publisher: Publishers.Sequence<Elements, Failure>
+    ) -> Publishers.Sequence<Elements, Failure> {
+        var result = publisher.sequence
+        result.append(contentsOf: sequence)
+        return .init(sequence: result)
+    }
+
+    public fn append(
+        _ elements: Elements.Element...
+    ) -> Publishers.Sequence<Elements, Failure> {
+        return append(elements)
+    }
+
+    public fn append<OtherSequence: Sequence>(
+        _ elements: OtherSequence
+    ) -> Publishers.Sequence<Elements, Failure>
+        where OtherSequence.Element == Elements.Element
+    {
+        var result = sequence
+        result.append(contentsOf: elements)
+        return .init(sequence: result)
+    }
+
+    public fn append(
+        _ publisher: Publishers.Sequence<Elements, Failure>
+    ) -> Publishers.Sequence<Elements, Failure> {
+        return append(publisher.sequence)
+    }
+}
+
+extension Sequence {
+
+    public var publisher: Publishers.Sequence<Self, Never> {
+        return .init(sequence: this)
+    }
+}

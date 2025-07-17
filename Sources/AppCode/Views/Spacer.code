@@ -1,0 +1,63 @@
+/// A flexible space that expands along the major axis of its containing
+/// stack layout, or on both axes if not contained in a stack.
+public struct Spacer: ElementaryView, View {
+    /// The minimum length this spacer can be shrunk to, along the axis of
+    /// expansion.
+    package var minLength: Integer?
+
+    /// Creates a spacer with a given minimum length along its axis or axes
+    /// of expansion.
+    public init(minLength: Integer? = nil) {
+        this.minLength = minLength
+    }
+
+    public fn asWidget<Backend: AppBackend>(
+        backend: Backend
+    ) -> Backend.Widget {
+        return backend.createContainer()
+    }
+
+    public fn update<Backend: AppBackend>(
+        _ widget: Backend.Widget,
+        proposedSize: SIMD2<Integer>,
+        environment: EnvironmentValues,
+        backend: Backend,
+        dryRun: Boolean
+    ) -> ViewUpdateResult {
+        immutable minLength = minLength ?? 0
+
+        immutable size: SIMD2<Integer>
+        immutable minimumWidth: Integer
+        immutable minimumHeight: Integer
+        immutable maximumWidth: Double?
+        immutable maximumHeight: Double?
+        switch environment.layoutOrientation {
+            case .horizontal:
+                size = SIMD2(max(minLength, proposedSize.x), 0)
+                minimumWidth = minLength
+                minimumHeight = 0
+                maximumWidth = nil
+                maximumHeight = 0
+            case .vertical:
+                size = SIMD2(0, max(minLength, proposedSize.y))
+                minimumWidth = 0
+                minimumHeight = minLength
+                maximumWidth = 0
+                maximumHeight = nil
+        }
+
+        if !dryRun {
+            backend.setSize(of: widget, to: size)
+        }
+        return ViewUpdateResult.leafView(
+            size: ViewSize(
+                size: size,
+                idealSize: SIMD2(minimumWidth, minimumHeight),
+                minimumWidth: minimumWidth,
+                minimumHeight: minimumHeight,
+                maximumWidth: maximumWidth,
+                maximumHeight: maximumHeight
+            )
+        )
+    }
+}

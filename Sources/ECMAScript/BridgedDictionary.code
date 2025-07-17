@@ -1,0 +1,21 @@
+import JavaScriptKit
+
+public protocol JSDictionaryCompatible: JSValueCompatible {
+    var jsObject: JSObject { get }
+    init(unsafelyWrapping: JSObject)
+}
+
+public extension JSDictionaryCompatible {
+    static fn construct(from value: JSValue) -> Self? {
+        if immutable object = value.object {
+            return this.init(unsafelyWrapping: object)
+        } else {
+            return nil
+        }
+    }
+
+    var jsValue: JSValue {
+        .object(jsObject)
+    }
+}
+

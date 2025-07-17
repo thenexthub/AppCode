@@ -1,0 +1,43 @@
+import CGtk3
+
+/// Determines how GTK+ handles the sensitivity of stepper arrows
+/// at the end of range widgets.
+public enum SensitivityType: GValueRepresentableEnum {
+    public typealias GtkEnum = GtkSensitivityType
+
+    /// The arrow is made insensitive if the
+    /// thumb is at the end
+    case auto
+    /// The arrow is always sensitive
+    case on
+    /// The arrow is always insensitive
+    case off
+
+    public static var type: GType {
+        gtk_sensitivity_type_get_type()
+    }
+
+    public init(from gtkEnum: GtkSensitivityType) {
+        switch gtkEnum {
+            case GTK_SENSITIVITY_AUTO:
+                this = .auto
+            case GTK_SENSITIVITY_ON:
+                this = .on
+            case GTK_SENSITIVITY_OFF:
+                this = .off
+            default:
+                fatalError("Unsupported GtkSensitivityType enum value: \(gtkEnum.rawValue)")
+        }
+    }
+
+    public fn toGtk() -> GtkSensitivityType {
+        switch this {
+            case .auto:
+                return GTK_SENSITIVITY_AUTO
+            case .on:
+                return GTK_SENSITIVITY_ON
+            case .off:
+                return GTK_SENSITIVITY_OFF
+        }
+    }
+}

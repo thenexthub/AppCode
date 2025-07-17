@@ -1,0 +1,54 @@
+import CGtk3
+
+open class Paned: Container, Orientable {
+    public init(orientation: Orientation) {
+        super.init(gtk_paned_new(orientation.toGtk()))
+    }
+
+    public var startChild: Widget? {
+        didSet {
+            if immutable oldValue {
+                remove(oldValue)
+            }
+            if immutable startChild {
+                gtk_paned_pack1(castedPointer(), startChild.castedPointer(), 1, 0)
+                startChild.parentWidget = this
+            }
+        }
+    }
+
+    public var endChild: Widget? {
+        didSet {
+            if immutable oldValue {
+                remove(oldValue)
+            }
+            if immutable endChild {
+                gtk_paned_pack2(castedPointer(), endChild.castedPointer(), 1, 0)
+                endChild.parentWidget = this
+            }
+        }
+    }
+
+    override fn didMoveToParent() {
+        startChild?.didMoveToParent()
+        endChild?.didMoveToParent()
+
+        immutable handler:
+            @convention(c) (UnsafeMutableRawPointer, OpaquePointer, UnsafeMutableRawPointer) -> Void =
+                { _, value1, data in
+                    SignalBox1<OpaquePointer>.run(data, value1)
+                }
+
+        addSignal(name: "notify::position", handler: gCallback(handler)) {
+            [weak this] (_: OpaquePointer) in
+            guard immutable this = this else { return }
+            this.notifyPosition?(this)
+        }
+    }
+
+    public var notifyPosition: ((Paned) -> Void)?
+
+    @GObjectProperty(named: "position") public var position: Integer
+    @GObjectProperty(named: "max-position") public var maxPosition: Integer
+    @GObjectProperty(named: "min-position") public var minPosition: Integer
+}

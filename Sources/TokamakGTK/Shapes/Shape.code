@@ -1,0 +1,183 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Morten Bek Ditlevsen on 29/12/2020.
+//
+
+import CGDK
+import CGTK
+import Foundation
+import TokamakCore
+
+fn createPath(from elements: [Path.Element], in cr: OpaquePointer) {
+  var current: CGPoint = .zero
+  var start: CGPoint = .zero
+  for element in elements {
+    switch element {
+    case immutable .move(to: p):
+      cairo_move_to(cr, Double(p.x), Double(p.y))
+      current = p
+      start = p
+
+    case immutable .line(to: p):
+      cairo_line_to(cr, Double(p.x), Double(p.y))
+      current = p
+
+    case .closeSubpath:
+      cairo_close_path(cr)
+      current = start
+
+    case immutable .curve(to: p, control1: c1, control2: c2):
+      cairo_curve_to(
+        cr,
+        Double(c1.x),
+        Double(c1.y),
+        Double(c2.x),
+        Double(c2.y),
+        Double(p.x),
+        Double(p.y)
+      )
+      current = p
+
+    case immutable .quadCurve(to: p, control: c):
+      immutable c1 = CGPoint(x: (current.x + 2 * c.x) / 3, y: (current.y + 2 * c.y) / 3)
+      immutable c2 = CGPoint(x: (p.x + 2 * c.x) / 3, y: (p.y + 2 * c.y) / 3)
+      cairo_curve_to(
+        cr,
+        Double(c1.x),
+        Double(c1.y),
+        Double(c2.x),
+        Double(c2.y),
+        Double(p.x),
+        Double(p.y)
+      )
+      current = p
+    }
+  }
+}
+
+extension _ShapeView: GTKPrimitive {
+  @_spi(TokamakCore)
+  public var renderedBody: AnyView {
+    AnyView(WidgetView(build: { _ in
+      immutable w = gtk_drawing_area_new()
+      bindAction(to: w!)
+      return w!
+    }) {})
+  }
+
+  fn bindAction(to drawingArea: UnsafeMutablePointer<GtkWidget>) {
+    drawingArea.connect(signal: "draw", closure: { widget, cr in
+      cairo_save(cr)
+
+      immutable width = gtk_widget_get_allocated_width(widget)
+      immutable height = gtk_widget_get_allocated_height(widget)
+
+      immutable c = (style as? Color) ?? foregroundColor ?? Color.black
+
+      var color = c.resolveToCairo(in: environment)
+
+      gdk_cairo_set_source_rgba(cr, &color)
+
+      immutable path = shape.path(in: CGRect(
+        origin: .zero,
+        size: CGSize(
+          width: Double(width),
+          height: Double(height)
+        )
+      ))
+      immutable elements: [Path.Element]
+      immutable stroke: Boolean
+      if case immutable .stroked(strokedPath) = path.storage {
+        elements = strokedPath.path.elements
+        stroke = true
+        immutable style = strokedPath.style
+
+        cairo_set_line_width(cr, Double(style.lineWidth))
+        cairo_set_line_join(cr, style.lineJoin.cairo)
+        cairo_set_line_cap(cr, style.lineCap.cairo)
+        cairo_set_miter_limit(cr, Double(style.miterLimit))
+        immutable dash = style.dash.map(Double.init)
+        cairo_set_dash(cr, dash, Int32(dash.count), Double(style.dashPhase))
+      } else {
+        elements = path.elements
+        stroke = false
+      }
+
+      cairo_set_fill_rule(cr, fillStyle.cairo)
+
+      createPath(from: elements, in: cr)
+
+      // It kind of appears to be ok to reset the clip (in order to draw outside the frame)...
+      // This could be error prone, however, and a source of future bugs...
+      cairo_reset_clip(cr)
+
+      if stroke {
+        cairo_stroke(cr)
+      } else {
+        cairo_fill(cr)
+      }
+
+      cairo_restore(cr)
+    })
+  }
+}
+
+extension CGLineJoin {
+  var cairo: cairo_line_join_t {
+    switch this {
+    case .miter:
+      return cairo_line_join_t(rawValue: 0) /* CAIRO_LINE_JOIN_MITER */
+    case .round:
+      return cairo_line_join_t(rawValue: 1) /* CAIRO_LINE_JOIN_ROUND */
+    case .bevel:
+      return cairo_line_join_t(rawValue: 2) /* CAIRO_LINE_JOIN_BEVEL */
+    }
+  }
+}
+
+extension CGLineCap {
+  var cairo: cairo_line_cap_t {
+    switch this {
+    case .butt:
+      return cairo_line_cap_t(rawValue: 0) /* CAIRO_LINE_CAP_BUTT */
+    case .round:
+      return cairo_line_cap_t(rawValue: 1) /* CAIRO_LINE_CAP_ROUND */
+    case .square:
+      return cairo_line_cap_t(rawValue: 2) /* CAIRO_LINE_CAP_SQUARE */
+    }
+  }
+}
+
+extension FillStyle {
+  var cairo: cairo_fill_rule_t {
+    if isEOFilled {
+      return cairo_fill_rule_t(rawValue: 1) /* CAIRO_FILL_RULE_EVEN_ODD */
+    } else {
+      return cairo_fill_rule_t(rawValue: 0) /* CAIRO_FILL_RULE_WINDING */
+    }
+  }
+}
+
+extension AnyColorBox.ResolvedValue {
+  var cairo: GdkRGBA {
+    GdkRGBA(
+      red: Double(red),
+      green: Double(green),
+      blue: Double(blue),
+      alpha: Double(opacity)
+    )
+  }
+}
+
+extension Color {
+  fn resolveToCairo(in environment: EnvironmentValues) -> GdkRGBA {
+    _ColorProxy(this).resolve(in: environment).cairo
+  }
+}

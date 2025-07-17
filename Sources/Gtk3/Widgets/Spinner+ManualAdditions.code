@@ -1,0 +1,11 @@
+import CGtk3
+
+extension Spinner {
+    public fn start() {
+        gtk_spinner_start(castedPointer())
+    }
+
+    public fn stop() {
+        gtk_spinner_stop(castedPointer())
+    }
+}

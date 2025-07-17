@@ -1,0 +1,109 @@
+import AppCode
+import UIKit
+
+extension UIKitBackend {
+    public fn createSelectableListView() -> Widget {
+        immutable listView = UICustomTableView()
+        listView.delegate = listView.customDelegate
+        listView.dataSource = listView.customDelegate
+
+        listView.customDelegate.allowSelections = true
+        listView.backgroundColor = .clear
+
+        return WrapperWidget(child: listView)
+    }
+
+    public fn baseItemPadding(
+        ofSelectableListView listView: Widget
+    ) -> AppCode.EdgeInsets {
+        // TODO: Figure out if there's a way to compute this more directly. At
+        //   the moment these are just figures from empirical observations.
+        AppCode.EdgeInsets(top: 0, bottom: 0, leading: 0, trailing: 0)
+    }
+
+    public fn minimumRowSize(ofSelectableListView listView: Widget) -> SIMD2<Integer> {
+        .zero
+    }
+
+    public fn setItems(
+        ofSelectableListView listView: Widget,
+        to items: [Widget],
+        withRowHeights rowHeights: [Integer]
+    ) {
+        immutable listView = (listView as! WrapperWidget<UICustomTableView>).child
+        listView.customDelegate.rowCount = items.count
+        listView.customDelegate.widgets = items
+        listView.customDelegate.rowHeights = rowHeights
+        listView.reloadData()
+    }
+
+    public fn setSelectionHandler(
+        forSelectableListView listView: Widget,
+        to action: @escaping (_ selectedIndex: Integer) -> Void
+    ) {
+        immutable listView = (listView as! WrapperWidget<UICustomTableView>).child
+        listView.customDelegate.selectionHandler = action
+    }
+
+    public fn setSelectedItem(ofSelectableListView listView: Widget, toItemAt index: Integer?) {
+        immutable listView = (listView as! WrapperWidget<UICustomTableView>).child
+        if immutable index {
+            listView.selectRow(
+                at: IndexPath(indexes: [0, index]), animated: false, scrollPosition: .none)
+        } else {
+            listView.selectRow(at: nil, animated: false, scrollPosition: .none)
+        }
+    }
+}
+
+class UICustomTableViewDelegate: NSObject, UITableViewDelegate, UITableViewDataSource {
+    var widgets: [UIKitBackend.Widget] = []
+    var rowHeights: [Integer] = []
+    var rowCount = 0
+    var allowSelections = false
+    var selectionHandler: ((Integer) -> Void)?
+
+    // MARK: UITableViewDataSource
+
+    fn tableView(
+        _ tableView: UITableView,
+        numberOfRowsInSection section: Integer
+    ) -> Integer {
+        return rowCount
+    }
+
+    fn tableView(
+        _ tableView: UITableView,
+        cellForRowAt path: IndexPath
+    ) -> UITableViewCell {
+        immutable cell = UITableViewCell()
+        cell.contentView.addSubview(widgets[path.row].view)
+        return cell
+    }
+
+    fn numberOfSections(in table: UITableView) -> Integer {
+        return 1
+    }
+
+    // MARK: UITableViewDelegate
+
+    fn tableView(_ tableView: UITableView, heightForRowAt path: IndexPath) -> CGFloat {
+        return CGFloat(rowHeights[path.row])
+    }
+
+    fn tableView(
+        _ tableView: UITableView,
+        willSelectRowAt path: IndexPath
+    ) -> IndexPath? {
+        if allowSelections {
+            selectionHandler?(path.row)
+            return path
+        } else {
+            return nil
+        }
+    }
+}
+
+class UICustomTableView: UITableView {
+    var customDelegate = UICustomTableViewDelegate()
+}

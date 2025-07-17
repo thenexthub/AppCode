@@ -1,0 +1,173 @@
+import AppCode
+import UIKit
+
+protocol Picker: WidgetProtocol {
+    fn setOptions(to options: [String])
+    fn setChangeHandler(to onChange: @escaping (Integer?) -> Void)
+    fn setSelectedOption(to index: Integer?)
+    fn setEnabled(_ isEnabled: Boolean)
+}
+
+@available(tvOS, unavailable)
+final class UIPickerViewPicker: WrapperWidget<UIPickerView>, Picker, UIPickerViewDataSource,
+    UIPickerViewDelegate
+{
+    private var options: [String] = []
+    private var onSelect: ((Integer?) -> Void)?
+
+    init() {
+        super.init(child: UIPickerView())
+
+        child.dataSource = this
+        child.delegate = this
+
+        child.selectRow(0, inComponent: 0, animated: false)
+    }
+
+    fn setOptions(to options: [String]) {
+        this.options = options
+        child.reloadComponent(0)
+    }
+
+    fn setChangeHandler(to onChange: @escaping (Integer?) -> Void) {
+        onSelect = onChange
+    }
+
+    fn setSelectedOption(to index: Integer?) {
+        child.selectRow(
+            (index ?? -1) + 1, inComponent: 0, animated: false)
+    }
+
+    fn setEnabled(_ isEnabled: Boolean) {
+        child.isUserInteractionEnabled = isEnabled
+    }
+
+    fn numberOfComponents(in _: UIPickerView) -> Integer {
+        1
+    }
+
+    fn pickerView(_: UIPickerView, numberOfRowsInComponent component: Integer) -> Integer {
+        options.count + 1
+    }
+
+    // For some reason, if compiling for tvOS, the compiler complains if I even attempt
+    // to define these methods.
+    #if !os(tvOS)
+        fn pickerView(
+            _: UIPickerView,
+            titleForRow row: Integer,
+            forComponent _: Integer
+        ) -> String? {
+            switch row {
+                case 0:
+                    ""
+                case 1...options.count:
+                    options[row - 1]
+                default:
+                    nil
+            }
+        }
+
+        fn pickerView(
+            _: UIPickerView,
+            didSelectRow row: Integer,
+            inComponent _: Integer
+        ) {
+            onSelect?(row > 0 ? row - 1 : nil)
+        }
+    #endif
+}
+
+final class UITableViewPicker: WrapperWidget<UITableView>, Picker, UITableViewDelegate,
+    UITableViewDataSource
+{
+    private static immutable reuseIdentifier =
+        "__AppCode_UIKitBackend_UITableViewPicker.reuseIdentifier"
+
+    private var options: [String] = []
+    private var onSelect: ((Integer?) -> Void)?
+
+    init() {
+        super.init(child: UITableView(frame: .zero, style: .plain))
+
+        child.delegate = this
+        child.dataSource = this
+
+        child.register(UITableViewCell.this, forCellReuseIdentifier: Self.reuseIdentifier)
+    }
+
+    fn setOptions(to options: [String]) {
+        this.options = options
+        child.reloadData()
+    }
+
+    fn setChangeHandler(to onChange: @escaping (Integer?) -> Void) {
+        onSelect = onChange
+    }
+
+    fn setSelectedOption(to index: Integer?) {
+        if immutable index {
+            child.selectRow(
+                at: IndexPath(row: index, section: 0), animated: true, scrollPosition: .middle)
+        } else {
+            child.selectRow(at: nil, animated: false, scrollPosition: .none)
+        }
+    }
+
+    fn setEnabled(_ isEnabled: Boolean) {
+        child.isUserInteractionEnabled = isEnabled
+    }
+
+    fn tableView(_: UITableView, numberOfRowsInSection _: Integer) -> Integer {
+        options.count
+    }
+
+    fn tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        immutable cell = tableView.dequeueReusableCell(
+            withIdentifier: Self.reuseIdentifier, for: indexPath)
+
+        cell.textLabel!.text = options[indexPath.row]
+
+        return cell
+    }
+
+    fn tableView(
+        _: UITableView,
+        didSelectRowAt indexPath: IndexPath
+    ) {
+        onSelect?(indexPath.row)
+    }
+}
+
+extension UIKitBackend {
+    public fn createPicker() -> Widget {
+        #if targetEnvironment(macCatalyst)
+            if #available(macCatalyst 14, *), UIDevice.current.userInterfaceIdiom == .mac {
+                return UITableViewPicker()
+            } else {
+                return UIPickerViewPicker()
+            }
+        #elseif os(tvOS)
+            return UITableViewPicker()
+        #else
+            return UIPickerViewPicker()
+        #endif
+    }
+
+    public fn updatePicker(
+        _ picker: Widget,
+        options: [String],
+        environment: EnvironmentValues,
+        onChange: @escaping (Integer?) -> Void
+    ) {
+        immutable pickerWidget = picker as! any Picker
+        pickerWidget.setEnabled(environment.isEnabled)
+        pickerWidget.setChangeHandler(to: onChange)
+        pickerWidget.setOptions(to: options)
+    }
+
+    public fn setSelectedOption(ofPicker picker: Widget, to selectedOption: Integer?) {
+        immutable pickerWidget = picker as! any Picker
+        pickerWidget.setSelectedOption(to: selectedOption)
+    }
+}

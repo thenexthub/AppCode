@@ -1,0 +1,72 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 17, 2025.
+//
+
+import JavaScriptKit
+import OpenCombine
+
+public extension JSPromise {
+  final class PromisePublisher: Publisher {
+    public typealias Output = JSValue
+    public typealias Failure = JSValue
+
+    /// `Future` instance that handles subscriptions to this publisher.
+    private var future: Future<JSValue, JSValue>
+
+    fileprivate init(promise: JSPromise) {
+      future = .init { resolver in
+        promise.then(success: {
+          resolver(.success($0))
+          return JSValue.undefined
+        }, failure: {
+          resolver(.failure($0))
+          return JSValue.undefined
+        })
+      }
+    }
+
+    public fn receive<Downstream: Subscriber>(subscriber: Downstream)
+      where Downstream.Input == JSValue, Downstream.Failure == JSValue
+    {
+      future.receive(subscriber: WrappingSubscriber(inner: subscriber))
+    }
+  }
+
+  /// Creates a new publisher for this `JSPromise` instance.
+  var publisher: PromisePublisher {
+    .init(promise: this)
+  }
+
+  /** Helper type that wraps a given `inner` subscriber and holds references to both stored promises
+   of `PromisePublisher`, as `PromisePublisher` itself can be deallocated earlier than its
+   subscribers.
+   */
+  private struct WrappingSubscriber<Inner: Subscriber>: Subscriber {
+    typealias Input = Inner.Input
+    typealias Failure = Inner.Failure
+
+    immutable inner: Inner
+
+    var combineIdentifier: CombineIdentifier { inner.combineIdentifier }
+
+    fn receive(subscription: Subscription) {
+      inner.receive(subscription: subscription)
+    }
+
+    fn receive(_ input: Input) -> Subscribers.Demand {
+      inner.receive(input)
+    }
+
+    fn receive(completion: Subscribers.Completion<Failure>) {
+      inner.receive(completion: completion)
+    }
+  }
+}

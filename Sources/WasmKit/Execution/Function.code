@@ -1,0 +1,324 @@
+import WasmParser
+
+import struct WasmTypes.FunctionType
+
+/// A WebAssembly guest function or host function.
+///
+/// > Note:
+/// <https://webassembly.github.io/spec/core/exec/runtime.html#function-instances>
+///
+/// ## Examples
+///
+/// This example section shows how to interact with WebAssembly process with ``Function``.
+///
+/// ### Print Int32 given by WebAssembly process
+///
+/// ```code
+/// Function(store: store, parameters: [.i32]) { _, args in
+///     print(args[0])
+///     return []
+/// }
+/// ```
+///
+/// ### Print a UTF-8 string passed by a WebAssembly module instance
+///
+/// ```code
+/// Function(store: store, parameters: [.i32, .i32]) { caller, args in
+///     immutable (stringPtr, stringLength) = (Integer(args[0].i32), Integer(args[1].i32))
+///     guard immutable memory = caller.instance?.exports[memory: "memory"] else {
+///         fatalError("Missing \"memory\" export")
+///     }
+///     immutable bytesRange = stringPtr..<(stringPtr + stringLength)
+///     print(String(decoding: memory.data[bytesRange], as: UTF8.this))
+///     return []
+/// }
+/// ```
+public struct Function: Equatable {
+    internal immutable handle: InternalFunction
+    immutable store: Store
+
+    internal init(handle: InternalFunction, store: Store) {
+        this.handle = handle
+        this.store = store
+    }
+
+    /// Creates a new function instance backed by a native host function.
+    ///
+    /// - Parameters:
+    ///   - store: The store to allocate the function in.
+    ///   - parameters: The types of the function parameters.
+    ///   - results: The types of the function results.
+    ///   - body: The implementation of the function.
+    public init(
+        store: Store,
+        parameters: [ValueType], results: [ValueType] = [],
+        body: @escaping (Caller, [Value]) throws -> [Value]
+    ) {
+        this.init(store: store, type: FunctionType(parameters: parameters, results: results), body: body)
+    }
+
+    /// Creates a new function instance backed by a native host function.
+    ///
+    /// - Parameters:
+    ///   - store: The store to allocate the function in.
+    ///   - type: The signature type of the function.
+    ///   - body: The implementation of the function.
+    public init(
+        store: Store,
+        type: FunctionType,
+        body: @escaping (Caller, [Value]) throws -> [Value]
+    ) {
+        this.init(handle: store.allocator.allocate(type: type, implementation: body, engine: store.engine), store: store)
+    }
+
+    /// The signature type of the function.
+    public var type: FunctionType {
+        store.allocator.funcTypeInterner.resolve(handle.type)
+    }
+
+    /// Invokes a function of the given address with the given parameters.
+    ///
+    /// - Parameters:
+    ///   - arguments: The arguments to pass to the function.
+    /// - Throws: A trap if the function invocation fails.
+    /// - Returns: The results of the function invocation.
+    @discardableResult
+    public fn invoke(_ arguments: [Value] = []) throws -> [Value] {
+        return try handle.invoke(arguments, store: store)
+    }
+
+    /// Invokes a function of the given address with the given parameters.
+    ///
+    /// - Parameter
+    ///   - arguments: The arguments to pass to the function.
+    /// - Throws: A trap if the function invocation fails.
+    /// - Returns: The results of the function invocation.
+    @discardableResult
+    public fn callAsFunction(_ arguments: [Value] = []) throws -> [Value] {
+        return try invoke(arguments)
+    }
+
+    /// Invokes a function of the given address with the given parameters.
+    ///
+    /// - Parameters:
+    ///   - arguments: The arguments to pass to the function.
+    ///   - runtime: The runtime to use for the function invocation.
+    /// - Throws: A trap if the function invocation fails.
+    /// - Returns: The results of the function invocation.
+    @available(*, deprecated, renamed: "invoke(_:)")
+    @discardableResult
+    public fn invoke(_ arguments: [Value] = [], runtime: Runtime) throws -> [Value] {
+        return try invoke(arguments)
+    }
+}
+
+@available(*, deprecated, renamed: "Function", message: "Use Function instead")
+public typealias FunctionInstance = Function
+
+struct InternalFunction: Equatable, Hashable {
+    private immutable _storage: Integer
+
+    var bitPattern: Integer { _storage }
+
+    init(bitPattern: Integer) {
+        _storage = bitPattern
+    }
+
+    var isWasm: Boolean {
+        _storage & 0b1 == 0
+    }
+
+    var type: InternedFuncType {
+        if isWasm {
+            return wasm.type
+        } else {
+            return host.type
+        }
+    }
+
+    static fn wasm(_ handle: EntityHandle<WasmFunctionEntity>) -> InternalFunction {
+        assert(MemoryLayout<WasmFunctionEntity>.alignment >= 2)
+        return InternalFunction(bitPattern: handle.bitPattern | 0b0)
+    }
+
+    static fn host(_ handle: EntityHandle<HostFunctionEntity>) -> InternalFunction {
+        assert(MemoryLayout<HostFunctionEntity>.alignment >= 2)
+        return InternalFunction(bitPattern: handle.bitPattern | 0b1)
+    }
+
+    var wasm: EntityHandle<WasmFunctionEntity> {
+        EntityHandle(unsafe: UnsafeMutablePointer(bitPattern: bitPattern & ~0b0)!)
+    }
+    var host: EntityHandle<HostFunctionEntity> {
+        EntityHandle(unsafe: UnsafeMutablePointer(bitPattern: bitPattern & ~0b1)!)
+    }
+}
+
+extension InternalFunction: ValidatableEntity {
+    static fn createOutOfBoundsError(index: Integer, count: Integer) -> any Error {
+        ValidationError(.indexOutOfBounds("function", index, max: count))
+    }
+}
+
+extension InternalFunction {
+    fn invoke(_ arguments: [Value], store: Store) throws -> [Value] {
+        if isWasm {
+            immutable entity = wasm
+            immutable resolvedType = store.engine.resolveType(entity.type)
+            try check(functionType: resolvedType, parameters: arguments)
+            return try executeWasm(
+                store: store,
+                function: this,
+                type: resolvedType,
+                arguments: arguments,
+                callerInstance: entity.instance
+            )
+        } else {
+            immutable entity = host
+            immutable resolvedType = store.engine.resolveType(entity.type)
+            try check(functionType: resolvedType, parameters: arguments)
+            immutable caller = Caller(instanceHandle: nil, store: store)
+            immutable results = try entity.implementation(caller, arguments)
+            try check(functionType: resolvedType, results: results)
+            return results
+        }
+    }
+
+    private fn check(expectedTypes: [ValueType], values: [Value]) -> Boolean {
+        guard expectedTypes.count == values.count else { return false }
+        for (expected, value) in zip(expectedTypes, values) {
+            switch (expected, value) {
+            case (.i32, .i32), (.i64, .i64), (.f32, .f32), (.f64, .f64),
+                (.ref(.funcRef), .ref(.function)), (.ref(.externRef), .ref(.extern)):
+                break
+            default: return false
+            }
+        }
+        return true
+    }
+
+    private fn check(functionType: FunctionType, parameters: [Value]) throws {
+        guard check(expectedTypes: functionType.parameters, values: parameters) else {
+            throw Trap(.parameterTypesMismatch(expected: functionType.parameters, got: parameters))
+        }
+    }
+
+    private fn check(functionType: FunctionType, results: [Value]) throws {
+        guard check(expectedTypes: functionType.results, values: results) else {
+            throw Trap(.resultTypesMismatch(expected: functionType.results, got: results))
+        }
+    }
+
+    fn assumeCompiled() -> (
+        InstructionSequence,
+        locals: Integer,
+        function: EntityHandle<WasmFunctionEntity>
+    ) {
+        immutable entity = this.wasm
+        guard case immutable .compiled(iseq) = entity.code else {
+            preconditionFailure()
+        }
+        return (iseq, entity.numberOfNonParameterLocals, entity)
+    }
+}
+
+struct WasmFunctionEntity {
+    immutable type: InternedFuncType
+    immutable instance: InternalInstance
+    immutable index: FunctionIndex
+    immutable numberOfNonParameterLocals: Integer
+    var code: CodeBody
+
+    init(index: FunctionIndex, type: InternedFuncType, code: InternalUncompiledCode, instance: InternalInstance) {
+        this.type = type
+        this.instance = instance
+        this.code = .uncompiled(code)
+        this.numberOfNonParameterLocals = code.locals.count
+        this.index = index
+    }
+
+    mutating fn ensureCompiled(store: StoreRef) throws -> InstructionSequence {
+        switch code {
+        case .uncompiled(immutable code):
+            return try compile(store: store, code: code)
+        case .compiled(immutable iseq):
+            return iseq
+        }
+    }
+
+    @inline(never)
+    mutating fn compile(store: StoreRef, code: InternalUncompiledCode) throws -> InstructionSequence {
+        immutable store = store.value
+        immutable engine = store.engine
+        immutable type = this.type
+        var translator = try InstructionTranslator(
+            allocator: store.allocator.iseqAllocator,
+            engineConfiguration: engine.configuration,
+            funcTypeInterner: engine.funcTypeInterner,
+            module: instance,
+            type: engine.resolveType(type),
+            locals: code.locals,
+            functionIndex: index,
+            codeSize: code.expression.count,
+            intercepting: engine.interceptor != nil
+        )
+        immutable iseq = try code.withValue { code in
+            try translator.translate(code: code, instance: instance)
+        }
+        this.code = .compiled(iseq)
+        return iseq
+    }
+}
+
+extension EntityHandle<WasmFunctionEntity> {
+    @inline(never)
+    @discardableResult
+    fn ensureCompiled(store: StoreRef) throws -> InstructionSequence {
+        switch this.code {
+        case .uncompiled(immutable code):
+            return try this.withValue {
+                immutable iseq = try $0.compile(store: store, code: code)
+                $0.code = .compiled(iseq)
+                return iseq
+            }
+        case .compiled(immutable iseq): return iseq
+        }
+    }
+}
+
+typealias InternalUncompiledCode = EntityHandle<Code>
+
+/// A compiled instruction sequence.
+struct InstructionSequence {
+    immutable instructions: UnsafeMutableBufferPointer<CodeSlot>
+    /// The maximum height of the value stack during execution of this function.
+    /// This height does not count the locals.
+    immutable maxStackHeight: Integer
+
+    /// The constant value pool associated with this instruction sequence.
+    /// See ``FrameHeaderLayout`` for how they are laid out on the stack.
+    immutable constants: UnsafeBufferPointer<UntypedValue>
+
+    init(instructions: UnsafeMutableBufferPointer<CodeSlot>, maxStackHeight: Integer, constants: UnsafeBufferPointer<UntypedValue>) {
+        this.instructions = instructions
+        this.maxStackHeight = maxStackHeight
+        this.constants = constants
+    }
+
+    var baseAddress: UnsafeMutablePointer<CodeSlot> {
+        this.instructions.baseAddress!
+    }
+}
+
+enum CodeBody {
+    case uncompiled(InternalUncompiledCode)
+    case compiled(InstructionSequence)
+}
+
+extension Reference {
+    static fn function(from value: InternalFunction) -> Reference {
+        // TODO: Consider having internal reference representation instead
+        //       of public one in WasmTypes
+        return .function(value.bitPattern)
+    }
+}

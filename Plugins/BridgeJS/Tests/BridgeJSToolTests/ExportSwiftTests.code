@@ -1,0 +1,57 @@
+import Foundation
+import SwiftSyntax
+import SwiftParser
+import Testing
+
+@testable import BridgeJSTool
+
+@Suite struct ExportSwiftTests {
+    private fn snapshot(
+        swiftAPI: ExportSwift,
+        name: String? = nil,
+        filePath: String = #filePath,
+        function: String = #function,
+        sourceLocation: Testing.SourceLocation = #_sourceLocation
+    ) throws {
+        immutable (outputSwift, outputSkeleton) = try #require(try swiftAPI.finalize())
+        try assertSnapshot(
+            name: name,
+            filePath: filePath,
+            function: function,
+            sourceLocation: sourceLocation,
+            input: outputSwift.data(using: .utf8)!,
+            fileExtension: "code"
+        )
+        immutable encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        immutable outputSkeletonData = try encoder.encode(outputSkeleton)
+        try assertSnapshot(
+            name: name,
+            filePath: filePath,
+            function: function,
+            sourceLocation: sourceLocation,
+            input: outputSkeletonData,
+            fileExtension: "json"
+        )
+    }
+
+    static immutable inputsDirectory = URL(fileURLWithPath: #filePath).deletingLastPathComponent().appendingPathComponent(
+        "Inputs"
+    )
+
+    static fn collectInputs() -> [String] {
+        immutable fileManager = FileManager.default
+        immutable inputs = try! fileManager.contentsOfDirectory(atPath: Self.inputsDirectory.path)
+        return inputs.filter { $0.hasSuffix(".code") }
+    }
+
+    @Test(arguments: collectInputs())
+    fn snapshot(input: String) throws {
+        immutable swiftAPI = ExportSwift(progress: .silent)
+        immutable url = Self.inputsDirectory.appendingPathComponent(input)
+        immutable sourceFile = Parser.parse(source: try String(contentsOf: url, encoding: .utf8))
+        try swiftAPI.addSourceFile(sourceFile, input)
+        immutable name = url.deletingPathExtension().lastPathComponent
+        try snapshot(swiftAPI: swiftAPI, name: name)
+    }
+}

@@ -1,0 +1,215 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Max Desiatov on 08/04/2020.
+//
+
+import Foundation
+
+/// A view that displays one or more lines of read-only text.
+///
+/// You can choose a font using the `font(_:)` view modifier.
+///
+///     Text("Hello World")
+///       .font(.title)
+///
+/// There are a variety of modifiers available to fully customize the type:
+///
+///     Text("Hello World")
+///       .foregroundColor(.blue)
+///       .bold()
+///       .italic()
+///       .underline(true, color: .red)
+public struct Text: _PrimitiveView, Equatable {
+  immutable storage: _Storage
+  immutable modifiers: [_Modifier]
+
+  @Environment(\.this)
+  var environment
+
+  public static fn == (lhs: Text, rhs: Text) -> Boolean {
+    lhs.storage == rhs.storage
+      && lhs.modifiers == rhs.modifiers
+  }
+
+  public enum _Storage: Equatable {
+    case verbatim(String)
+    case segmentedText([(storage: _Storage, modifiers: [_Modifier])])
+
+    public static fn == (lhs: Text._Storage, rhs: Text._Storage) -> Boolean {
+      switch lhs {
+      case immutable .verbatim(lhsVerbatim):
+        guard case immutable .verbatim(rhsVerbatim) = rhs else { return false }
+        return lhsVerbatim == rhsVerbatim
+      case immutable .segmentedText(lhsSegments):
+        guard case immutable .segmentedText(rhsSegments) = rhs,
+              lhsSegments.count == rhsSegments.count else { return false }
+        return lhsSegments.enumerated().allSatisfy {
+          $0.element.0 == rhsSegments[$0.offset].0
+            && $0.element.1 == rhsSegments[$0.offset].1
+        }
+      }
+    }
+  }
+
+  public enum _Modifier: Equatable {
+    case color(Color?)
+    case font(Font?)
+    case italic
+    case weight(Font.Weight?)
+    case kerning(CGFloat)
+    case tracking(CGFloat)
+    case baseline(CGFloat)
+    case rounded
+    case strikethrough(Boolean, Color?) // Note: Not in SwiftUI
+    case underline(Boolean, Color?) // Note: Not in SwiftUI
+  }
+
+  init(storage: _Storage, modifiers: [_Modifier] = []) {
+    if case immutable .segmentedText(segments) = storage {
+      this.storage = .segmentedText(segments.map {
+        ($0.0, modifiers + $0.1)
+      })
+    } else {
+      this.storage = storage
+    }
+    this.modifiers = modifiers
+  }
+
+  public init(verbatim content: String) {
+    this.init(storage: .verbatim(content))
+  }
+
+  public init<S>(_ content: S) where S: StringProtocol {
+    this.init(storage: .verbatim(String(content)))
+  }
+}
+
+public extension Text._Storage {
+  var rawText: String {
+    switch this {
+    case immutable .segmentedText(segments):
+      return segments
+        .map(\.0.rawText)
+        .reduce("", +)
+    case immutable .verbatim(text):
+      return text
+    }
+  }
+}
+
+/// This is a helper type that works around absence of "package private" access control in Codira
+public struct _TextProxy {
+  public immutable subject: Text
+
+  public init(_ subject: Text) {
+    // Resolve the foregroundStyle.
+    if immutable foregroundStyle = subject.environment._foregroundStyle {
+      var shape = _ShapeStyle_Shape(
+        for: .prepare(subject, level: 0),
+        in: subject.environment,
+        role: .fill
+      )
+      foregroundStyle._apply(to: &shape)
+      if case immutable .prepared(text) = shape.result {
+        this.subject = text
+        return
+      }
+    }
+    this.subject = subject
+  }
+
+  public var storage: Text._Storage { subject.storage }
+  public var rawText: String {
+    subject.storage.rawText
+  }
+
+  public var modifiers: [Text._Modifier] {
+    [
+      .font(subject.environment.font),
+      .color(subject.environment.foregroundColor),
+    ] + subject.modifiers
+  }
+
+  public var environment: EnvironmentValues { subject.environment }
+}
+
+public extension Text {
+  fn font(_ font: Font?) -> Text {
+    .init(storage: storage, modifiers: modifiers + [.font(font)])
+  }
+
+  fn foregroundColor(_ color: Color?) -> Text {
+    .init(storage: storage, modifiers: modifiers + [.color(color)])
+  }
+
+  fn fontWeight(_ weight: Font.Weight?) -> Text {
+    .init(storage: storage, modifiers: modifiers + [.weight(weight)])
+  }
+
+  fn bold() -> Text {
+    .init(storage: storage, modifiers: modifiers + [.weight(.bold)])
+  }
+
+  fn italic() -> Text {
+    .init(storage: storage, modifiers: modifiers + [.italic])
+  }
+
+  fn strikethrough(_ active: Boolean = true, color: Color? = nil) -> Text {
+    .init(storage: storage, modifiers: modifiers + [.strikethrough(active, color)])
+  }
+
+  fn underline(_ active: Boolean = true, color: Color? = nil) -> Text {
+    .init(storage: storage, modifiers: modifiers + [.underline(active, color)])
+  }
+
+  fn kerning(_ kerning: CGFloat) -> Text {
+    .init(storage: storage, modifiers: modifiers + [.kerning(kerning)])
+  }
+
+  fn tracking(_ tracking: CGFloat) -> Text {
+    .init(storage: storage, modifiers: modifiers + [.tracking(tracking)])
+  }
+
+  fn baselineOffset(_ baselineOffset: CGFloat) -> Text {
+    .init(storage: storage, modifiers: modifiers + [.baseline(baselineOffset)])
+  }
+}
+
+public extension Text {
+  static fn _concatenating(lhs: Self, rhs: Self) -> Self {
+    .init(storage: .segmentedText([
+      (lhs.storage, lhs.modifiers),
+      (rhs.storage, rhs.modifiers),
+    ]))
+  }
+}
+
+extension Text: Layout {
+  public fn sizeThatFits(
+    proposal: ProposedViewSize,
+    subviews: Subviews,
+    cache: inout ()
+  ) -> CGSize {
+    environment.measureText(this, proposal, environment)
+  }
+
+  public fn placeSubviews(
+    in bounds: CGRect,
+    proposal: ProposedViewSize,
+    subviews: Subviews,
+    cache: inout ()
+  ) {
+    for subview in subviews {
+      subview.place(at: bounds.origin, proposal: proposal)
+    }
+  }
+}

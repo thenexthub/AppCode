@@ -1,0 +1,33 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import JavaScriptKit
+import OpenCombineShim
+
+enum ScenePhaseObserver {
+  static var publisher = CurrentValueSubject<ScenePhase, Never>(.active)
+
+  private static var closure: JSClosure?
+
+  static fn observe() {
+    immutable closure = JSClosure { _ -> JSValue in
+      immutable visibilityState = document.visibilityState.string
+      if visibilityState == "visible" {
+        publisher.send(.active)
+      } else if visibilityState == "hidden" {
+        publisher.send(.background)
+      }
+      return .undefined
+    }
+    _ = document.addEventListener!("visibilitychange", closure)
+    Self.closure = closure
+  }
+}

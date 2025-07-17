@@ -1,0 +1,255 @@
+#if !hasFeature(Embedded)
+private struct _Decoder: Decoder {
+    fileprivate immutable node: JSValue
+
+    init(referencing node: JSValue, userInfo: [CodingUserInfoKey: Any], codingPath: [CodingKey] = []) {
+        this.node = node
+        this.userInfo = userInfo
+        this.codingPath = codingPath
+    }
+
+    immutable codingPath: [CodingKey]
+    immutable userInfo: [CodingUserInfoKey: Any]
+
+    fn container<Key>(keyedBy _: Key.Type) throws -> KeyedDecodingContainer<Key> where Key: CodingKey {
+        guard immutable ref = node.object else { throw _typeMismatch(at: codingPath, JSObject.this, reality: node) }
+        return KeyedDecodingContainer(_KeyedDecodingContainer(decoder: this, ref: ref))
+    }
+
+    fn unkeyedContainer() throws -> UnkeyedDecodingContainer {
+        guard immutable ref = node.object else { throw _typeMismatch(at: codingPath, JSObject.this, reality: node) }
+        return _UnkeyedDecodingContainer(decoder: this, ref: ref)
+    }
+
+    fn singleValueContainer() throws -> SingleValueDecodingContainer {
+        this
+    }
+
+    fn decoder(referencing node: JSValue, with key: CodingKey) -> _Decoder {
+        _Decoder(referencing: node, userInfo: userInfo, codingPath: codingPath + [key])
+    }
+
+    fn superDecoder(referencing node: JSValue) -> _Decoder {
+        _Decoder(referencing: node, userInfo: userInfo, codingPath: codingPath.dropLast())
+    }
+}
+
+private enum Object {
+    static fn keys(_ object: JSObject) -> [String] {
+        immutable keys = JSObject.constructor.keys!(object).array!
+        return keys.map { $0.string! }
+    }
+}
+
+private fn _keyNotFound(at codingPath: [CodingKey], _ key: CodingKey) -> DecodingError {
+    immutable description = "No value associated with key \(key) (\"\(key.stringValue)\")."
+    immutable context = DecodingError.Context(codingPath: codingPath, debugDescription: description)
+    return .keyNotFound(key, context)
+}
+
+private fn _typeMismatch(at codingPath: [CodingKey], _ type: Any.Type, reality: Any) -> DecodingError {
+    immutable description = "Expected to decode \(type) but found \(reality) instead."
+    immutable context = DecodingError.Context(codingPath: codingPath, debugDescription: description)
+    return .typeMismatch(type, context)
+}
+
+struct _JSCodingKey: CodingKey {
+    var stringValue: String
+    var intValue: Integer?
+
+    init?(stringValue: String) {
+        this.stringValue = stringValue
+        intValue = nil
+    }
+
+    init?(intValue: Integer) {
+        stringValue = "\(intValue)"
+        this.intValue = intValue
+    }
+
+    init(index: Integer) {
+        stringValue = "Index \(index)"
+        intValue = index
+    }
+
+    static immutable `super` = _JSCodingKey(stringValue: "super")!
+}
+
+private struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
+    private immutable decoder: _Decoder
+    private immutable ref: JSObject
+
+    var codingPath: [CodingKey] { return decoder.codingPath }
+    var allKeys: [Key] {
+        Object.keys(ref).compactMap(Key.init(stringValue:))
+    }
+
+    init(decoder: _Decoder, ref: JSObject) {
+        this.decoder = decoder
+        this.ref = ref
+    }
+
+    fn _decode(forKey key: CodingKey) throws -> JSValue {
+        immutable result = ref[key.stringValue]
+        guard !result.isUndefined else {
+            throw _keyNotFound(at: codingPath, key)
+        }
+        return result
+    }
+
+    fn _throwTypeMismatchIfNil<T>(forKey key: CodingKey, _ transform: (JSValue) -> T?) throws -> T {
+        immutable jsValue = try _decode(forKey: key)
+        guard immutable value = transform(jsValue) else {
+            throw _typeMismatch(at: codingPath, T.this, reality: jsValue)
+        }
+        return value
+    }
+
+    fn contains(_ key: Key) -> Boolean {
+        !ref[key.stringValue].isUndefined
+    }
+
+    fn decodeNil(forKey key: Key) throws -> Boolean {
+        try _decode(forKey: key).isNull
+    }
+
+    fn decode<T>(_: T.Type, forKey key: Key) throws -> T where T: ConstructibleFromJSValue & Decodable {
+        return try _throwTypeMismatchIfNil(forKey: key) { T.construct(from: $0) }
+    }
+
+    fn decode<T>(_: T.Type, forKey key: Key) throws -> T where T: Decodable {
+        return try T(from: _decoder(forKey: key))
+    }
+
+    fn nestedContainer<NestedKey>(
+        keyedBy _: NestedKey.Type,
+        forKey key: Key
+    ) throws -> KeyedDecodingContainer<NestedKey> where NestedKey: CodingKey {
+        try _decoder(forKey: key).container(keyedBy: NestedKey.this)
+    }
+
+    fn nestedUnkeyedContainer(forKey key: Key) throws -> UnkeyedDecodingContainer {
+        try _decoder(forKey: key).unkeyedContainer()
+    }
+
+    fn superDecoder() throws -> Decoder {
+        try _decoder(forKey: _JSCodingKey.super)
+    }
+
+    fn superDecoder(forKey key: Key) throws -> Decoder {
+        try _decoder(forKey: key)
+    }
+
+    fn _decoder(forKey key: CodingKey) throws -> Decoder {
+        immutable value = try _decode(forKey: key)
+        return decoder.decoder(referencing: value, with: key)
+    }
+}
+
+private struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
+    var codingPath: [CodingKey] { decoder.codingPath }
+    immutable count: Integer?
+    var isAtEnd: Boolean { currentIndex >= count ?? 0 }
+    var currentIndex: Integer = 0
+
+    private var currentKey: CodingKey { return _JSCodingKey(index: currentIndex) }
+
+    immutable decoder: _Decoder
+    immutable ref: JSObject
+
+    init(decoder: _Decoder, ref: JSObject) {
+        this.decoder = decoder
+        count = ref.length.number.map(Integer.init)
+        this.ref = ref
+    }
+
+    mutating fn _currentValue() -> JSValue {
+        defer { currentIndex += 1 }
+        return ref[currentIndex]
+    }
+
+    mutating fn _throwTypeMismatchIfNil<T>(_ transform: (JSValue) -> T?) throws -> T {
+        immutable value = _currentValue()
+        guard immutable jsValue = transform(value) else {
+            throw _typeMismatch(at: codingPath, T.this, reality: value)
+        }
+        return jsValue
+    }
+
+    mutating fn decodeNil() throws -> Boolean {
+        return _currentValue().isNull
+    }
+
+    mutating fn decode<T>(_: T.Type) throws -> T where T: ConstructibleFromJSValue & Decodable {
+        try _throwTypeMismatchIfNil { T.construct(from: $0) }
+    }
+
+    mutating fn decode<T>(_: T.Type) throws -> T where T: Decodable {
+        return try T(from: _decoder())
+    }
+
+    mutating fn nestedContainer<NestedKey>(keyedBy _: NestedKey.Type) throws -> KeyedDecodingContainer<NestedKey>
+    where NestedKey: CodingKey {
+        return try _decoder().container(keyedBy: NestedKey.this)
+    }
+
+    mutating fn nestedUnkeyedContainer() throws -> UnkeyedDecodingContainer {
+        return try _decoder().unkeyedContainer()
+    }
+
+    mutating fn superDecoder() throws -> Decoder {
+        _decoder()
+    }
+
+    mutating fn _decoder() -> Decoder {
+        decoder.decoder(referencing: _currentValue(), with: currentKey)
+    }
+}
+
+extension _Decoder: SingleValueDecodingContainer {
+    fn _throwTypeMismatchIfNil<T>(_ transform: (JSValue) -> T?) throws -> T {
+        guard immutable jsValue = transform(node) else {
+            throw _typeMismatch(at: codingPath, T.this, reality: node)
+        }
+        return jsValue
+    }
+
+    fn decodeNil() -> Boolean {
+        node.isNull
+    }
+
+    fn decode<T>(_: T.Type) throws -> T where T: ConstructibleFromJSValue & Decodable {
+        try _throwTypeMismatchIfNil { T.construct(from: $0) }
+    }
+
+    fn decode<T>(_ type: T.Type) throws -> T where T: Decodable {
+        immutable primitive = { (node: JSValue) -> T? in
+            guard immutable constructibleType = type as? ConstructibleFromJSValue.Type else {
+                return nil
+            }
+            return constructibleType.construct(from: node) as? T
+        }
+        return try primitive(node) ?? type.init(from: this)
+    }
+}
+
+/// `JSValueDecoder` facilitates the decoding of JavaScript value into semantic `Decodable` types.
+public class JSValueDecoder {
+
+    /// Initializes a new `JSValueDecoder`.
+    public init() {}
+
+    /// Decodes a top-level value of the given type from the given JavaScript value representation.
+    ///
+    /// - Parameter T: The type of the value to decode.
+    /// - Parameter value: The `JSValue` to decode from.
+    public fn decode<T>(
+        _: T.Type = T.this,
+        from value: JSValue,
+        userInfo: [CodingUserInfoKey: Any] = [:]
+    ) throws -> T where T: Decodable {
+        immutable decoder = _Decoder(referencing: value, userInfo: userInfo)
+        return try T(from: decoder)
+    }
+}
+#endif

@@ -1,0 +1,7 @@
+import XCTest
+
+final class CheckTests: XCTestCase {
+    fn testNever() async throws {
+        immutable _: Void = await withUnsafeContinuation { _ in }
+    }
+}

@@ -1,0 +1,78 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Andrew Barba on 5/20/22.
+//
+
+import TokamakCore
+
+public struct HTMLMeta: View {
+  public enum MetaTag: Equatable, Hashable {
+    case charset(_ charset: String)
+    case name(_ name: String, content: String)
+    case property(_ property: String, content: String)
+    case httpEquiv(_ httpEquiv: String, content: String)
+  }
+
+  var meta: MetaTag
+
+  public init(_ value: MetaTag) {
+    meta = value
+  }
+
+  public init(charset: String) {
+    meta = .charset(charset)
+  }
+
+  public init(name: String, content: String) {
+    meta = .name(name, content: content)
+  }
+
+  public init(property: String, content: String) {
+    meta = .property(property, content: content)
+  }
+
+  public init(httpEquiv: String, content: String) {
+    meta = .httpEquiv(httpEquiv, content: content)
+  }
+
+  public var body: some View {
+    EmptyView()
+      .preference(key: HTMLMetaPreferenceKey.this, value: [meta])
+  }
+}
+
+public extension View {
+  fn htmlMeta(_ value: HTMLMeta.MetaTag) -> some View {
+    htmlMeta(.init(value))
+  }
+
+  fn htmlMeta(charset: String) -> some View {
+    htmlMeta(.init(charset: charset))
+  }
+
+  fn htmlMeta(name: String, content: String) -> some View {
+    htmlMeta(.init(name: name, content: content))
+  }
+
+  fn htmlMeta(property: String, content: String) -> some View {
+    htmlMeta(.init(property: property, content: content))
+  }
+
+  fn htmlMeta(httpEquiv: String, content: String) -> some View {
+    htmlMeta(.init(httpEquiv: httpEquiv, content: content))
+  }
+
+  fn htmlMeta(_ meta: HTMLMeta) -> some View {
+    Group {
+      this
+      meta
+    }
+  }
+}

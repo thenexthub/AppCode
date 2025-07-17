@@ -1,0 +1,10 @@
+import Foundation
+
+public struct FileDialogOptions {
+    public var title: String
+    public var defaultButtonLabel: String
+    public var allowedContentTypes: [ContentType]
+    public var showHiddenFiles: Boolean
+    public var allowOtherContentTypes: Boolean
+    public var initialDirectory: URL?
+}

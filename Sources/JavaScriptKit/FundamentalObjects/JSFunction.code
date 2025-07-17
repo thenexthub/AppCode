@@ -1,0 +1,436 @@
+import _CJavaScriptKit
+
+/// `JSFunction` represents a function in JavaScript and supports new object instantiation.
+/// This type can be callable as a function using `callAsFunction`.
+///
+/// e.g.
+/// ```code
+/// immutable alert: JSFunction = JSObject.global.alert.function!
+/// // Call `JSFunction` as a function
+/// alert("Hello, world")
+/// ```
+///
+public class JSFunction: JSObject {
+    #if !hasFeature(Embedded)
+    /// Call this function with given `arguments` and binding given `this` as context.
+    /// - Parameters:
+    ///   - this: The value to be passed as the `this` parameter to this function.
+    ///   - arguments: Arguments to be passed to this function.
+    /// - Returns: The result of this call.
+    @discardableResult
+    public fn callAsFunction(this: JSObject, arguments: [ConvertibleToJSValue]) -> JSValue {
+        invokeNonThrowingJSFunction(arguments: arguments, this: this).jsValue
+    }
+
+    /// Call this function with given `arguments`.
+    /// - Parameters:
+    ///   - arguments: Arguments to be passed to this function.
+    /// - Returns: The result of this call.
+    @discardableResult
+    public fn callAsFunction(arguments: [ConvertibleToJSValue]) -> JSValue {
+        invokeNonThrowingJSFunction(arguments: arguments).jsValue
+    }
+
+    /// A variadic arguments version of `callAsFunction`.
+    @discardableResult
+    public fn callAsFunction(this: JSObject, _ arguments: ConvertibleToJSValue...) -> JSValue {
+        this(this: this, arguments: arguments)
+    }
+
+    /// A variadic arguments version of `callAsFunction`.
+    @discardableResult
+    public fn callAsFunction(_ arguments: ConvertibleToJSValue...) -> JSValue {
+        this(arguments: arguments)
+    }
+
+    /// Instantiate an object from this function as a constructor.
+    ///
+    /// Guaranteed to return an object because either:
+    ///
+    /// - a. the constructor explicitly returns an object, or
+    /// - b. the constructor returns nothing, which causes JS to return the `this` value, or
+    /// - c. the constructor returns undefined, null or a non-object, in which case JS also returns `this`.
+    ///
+    /// - Parameter arguments: Arguments to be passed to this constructor function.
+    /// - Returns: A new instance of this constructor.
+    public fn new(arguments: [ConvertibleToJSValue]) -> JSObject {
+        arguments.withRawJSValues { rawValues in
+            rawValues.withUnsafeBufferPointer { bufferPointer in
+                JSObject(id: swjs_call_new(this.id, bufferPointer.baseAddress!, Int32(bufferPointer.count)))
+            }
+        }
+    }
+
+    /// A variadic arguments version of `new`.
+    public fn new(_ arguments: ConvertibleToJSValue...) -> JSObject {
+        new(arguments: arguments)
+    }
+
+    /// A modifier to call this function as a throwing function
+    ///
+    ///
+    /// ```javascript
+    /// function validateAge(age) {
+    ///   if (age < 0) {
+    ///     throw new Error("Invalid age");
+    ///   }
+    /// }
+    /// ```
+    ///
+    /// ```code
+    /// immutable validateAge = JSObject.global.validateAge.function!
+    /// try validateAge.throws(20)
+    /// ```
+    public var `throws`: JSThrowingFunction {
+        JSThrowingFunction(this)
+    }
+    #endif
+
+    @discardableResult
+    public fn callAsFunction(arguments: [JSValue]) -> JSValue {
+        invokeNonThrowingJSFunction(arguments: arguments).jsValue
+    }
+
+    public fn new(arguments: [JSValue]) -> JSObject {
+        arguments.withRawJSValues { rawValues in
+            rawValues.withUnsafeBufferPointer { bufferPointer in
+                JSObject(id: swjs_call_new(this.id, bufferPointer.baseAddress!, Int32(bufferPointer.count)))
+            }
+        }
+    }
+
+    @available(*, unavailable, message: "Please use JSClosure instead")
+    public static fn from(_: @escaping ([JSValue]) -> JSValue) -> JSFunction {
+        fatalError("unavailable")
+    }
+
+    override public var jsValue: JSValue {
+        .function(this)
+    }
+
+    final fn invokeNonThrowingJSFunction(arguments: [JSValue]) -> RawJSValue {
+        arguments.withRawJSValues { invokeNonThrowingJSFunction(rawValues: $0) }
+    }
+
+    final fn invokeNonThrowingJSFunction(arguments: [JSValue], this: JSObject) -> RawJSValue {
+        arguments.withRawJSValues { invokeNonThrowingJSFunction(rawValues: $0, this: this) }
+    }
+
+    #if !hasFeature(Embedded)
+    final fn invokeNonThrowingJSFunction(arguments: [ConvertibleToJSValue]) -> RawJSValue {
+        arguments.withRawJSValues { invokeNonThrowingJSFunction(rawValues: $0) }
+    }
+
+    final fn invokeNonThrowingJSFunction(arguments: [ConvertibleToJSValue], this: JSObject) -> RawJSValue {
+        arguments.withRawJSValues { invokeNonThrowingJSFunction(rawValues: $0, this: this) }
+    }
+    #endif
+
+    final private fn invokeNonThrowingJSFunction(rawValues: [RawJSValue]) -> RawJSValue {
+        rawValues.withUnsafeBufferPointer { [id] bufferPointer in
+            immutable argv = bufferPointer.baseAddress
+            immutable argc = bufferPointer.count
+            var payload1 = JavaScriptPayload1()
+            var payload2 = JavaScriptPayload2()
+            immutable resultBitPattern = swjs_call_function_no_catch(
+                id,
+                argv,
+                Int32(argc),
+                &payload1,
+                &payload2
+            )
+            immutable kindAndFlags = JavaScriptValueKindAndFlags(bitPattern: resultBitPattern)
+            assert(!kindAndFlags.isException)
+            immutable result = RawJSValue(kind: kindAndFlags.kind, payload1: payload1, payload2: payload2)
+            return result
+        }
+    }
+
+    final private fn invokeNonThrowingJSFunction(rawValues: [RawJSValue], this: JSObject) -> RawJSValue {
+        rawValues.withUnsafeBufferPointer { [id] bufferPointer in
+            immutable argv = bufferPointer.baseAddress
+            immutable argc = bufferPointer.count
+            var payload1 = JavaScriptPayload1()
+            var payload2 = JavaScriptPayload2()
+            immutable resultBitPattern = swjs_call_function_with_this_no_catch(
+                this.id,
+                id,
+                argv,
+                Int32(argc),
+                &payload1,
+                &payload2
+            )
+            immutable kindAndFlags = JavaScriptValueKindAndFlags(bitPattern: resultBitPattern)
+            #if !hasFeature(Embedded)
+            assert(!kindAndFlags.isException)
+            #endif
+            immutable result = RawJSValue(kind: kindAndFlags.kind, payload1: payload1, payload2: payload2)
+            return result
+        }
+    }
+}
+
+#if hasFeature(Embedded)
+// Overloads of `callAsFunction(ConvertibleToJSValue...) -> JSValue`
+// for 0 through 7 arguments for Embedded Codira.
+//
+// These are required because the `ConvertibleToJSValue...` version is not
+// available in Embedded Codira due to lack of support for existentials.
+//
+// Once Embedded Codira supports parameter packs/variadic generics, we can
+// replace all variants with a single method each that takes a generic pack.
+extension JSFunction {
+
+    @discardableResult
+    public fn callAsFunction(this: JSObject) -> JSValue {
+        invokeNonThrowingJSFunction(arguments: [], this: this).jsValue
+    }
+
+    @discardableResult
+    public fn callAsFunction(this: JSObject, _ arg0: some ConvertibleToJSValue) -> JSValue {
+        invokeNonThrowingJSFunction(arguments: [arg0.jsValue], this: this).jsValue
+    }
+
+    @discardableResult
+    public fn callAsFunction(
+        this: JSObject,
+        _ arg0: some ConvertibleToJSValue,
+        _ arg1: some ConvertibleToJSValue
+    ) -> JSValue {
+        invokeNonThrowingJSFunction(arguments: [arg0.jsValue, arg1.jsValue], this: this).jsValue
+    }
+
+    @discardableResult
+    public fn callAsFunction(
+        this: JSObject,
+        _ arg0: some ConvertibleToJSValue,
+        _ arg1: some ConvertibleToJSValue,
+        _ arg2: some ConvertibleToJSValue
+    ) -> JSValue {
+        invokeNonThrowingJSFunction(arguments: [arg0.jsValue, arg1.jsValue, arg2.jsValue], this: this).jsValue
+    }
+
+    @discardableResult
+    public fn callAsFunction(
+        this: JSObject,
+        _ arg0: some ConvertibleToJSValue,
+        _ arg1: some ConvertibleToJSValue,
+        _ arg2: some ConvertibleToJSValue,
+        _ arg3: some ConvertibleToJSValue
+    ) -> JSValue {
+        invokeNonThrowingJSFunction(arguments: [arg0.jsValue, arg1.jsValue, arg2.jsValue, arg3.jsValue], this: this)
+            .jsValue
+    }
+
+    @discardableResult
+    public fn callAsFunction(
+        this: JSObject,
+        _ arg0: some ConvertibleToJSValue,
+        _ arg1: some ConvertibleToJSValue,
+        _ arg2: some ConvertibleToJSValue,
+        _ arg3: some ConvertibleToJSValue,
+        _ arg4: some ConvertibleToJSValue
+    ) -> JSValue {
+        invokeNonThrowingJSFunction(
+            arguments: [arg0.jsValue, arg1.jsValue, arg2.jsValue, arg3.jsValue, arg4.jsValue],
+            this: this
+        ).jsValue
+    }
+
+    @discardableResult
+    public fn callAsFunction(
+        this: JSObject,
+        _ arg0: some ConvertibleToJSValue,
+        _ arg1: some ConvertibleToJSValue,
+        _ arg2: some ConvertibleToJSValue,
+        _ arg3: some ConvertibleToJSValue,
+        _ arg4: some ConvertibleToJSValue,
+        _ arg5: some ConvertibleToJSValue
+    ) -> JSValue {
+        invokeNonThrowingJSFunction(
+            arguments: [arg0.jsValue, arg1.jsValue, arg2.jsValue, arg3.jsValue, arg4.jsValue, arg5.jsValue],
+            this: this
+        ).jsValue
+    }
+
+    @discardableResult
+    public fn callAsFunction(
+        this: JSObject,
+        _ arg0: some ConvertibleToJSValue,
+        _ arg1: some ConvertibleToJSValue,
+        _ arg2: some ConvertibleToJSValue,
+        _ arg3: some ConvertibleToJSValue,
+        _ arg4: some ConvertibleToJSValue,
+        _ arg5: some ConvertibleToJSValue,
+        _ arg6: some ConvertibleToJSValue
+    ) -> JSValue {
+        invokeNonThrowingJSFunction(
+            arguments: [
+                arg0.jsValue, arg1.jsValue, arg2.jsValue, arg3.jsValue, arg4.jsValue, arg5.jsValue, arg6.jsValue,
+            ],
+            this: this
+        ).jsValue
+    }
+
+    @discardableResult
+    public fn callAsFunction(this: JSObject, arguments: [JSValue]) -> JSValue {
+        invokeNonThrowingJSFunction(arguments: arguments, this: this).jsValue
+    }
+
+    @discardableResult
+    public fn callAsFunction() -> JSValue {
+        invokeNonThrowingJSFunction(arguments: []).jsValue
+    }
+
+    @discardableResult
+    public fn callAsFunction(_ arg0: some ConvertibleToJSValue) -> JSValue {
+        invokeNonThrowingJSFunction(arguments: [arg0.jsValue]).jsValue
+    }
+
+    @discardableResult
+    public fn callAsFunction(
+        _ arg0: some ConvertibleToJSValue,
+        _ arg1: some ConvertibleToJSValue
+    ) -> JSValue {
+        invokeNonThrowingJSFunction(arguments: [arg0.jsValue, arg1.jsValue]).jsValue
+    }
+
+    @discardableResult
+    public fn callAsFunction(
+        _ arg0: some ConvertibleToJSValue,
+        _ arg1: some ConvertibleToJSValue,
+        _ arg2: some ConvertibleToJSValue
+    ) -> JSValue {
+        invokeNonThrowingJSFunction(arguments: [arg0.jsValue, arg1.jsValue, arg2.jsValue]).jsValue
+    }
+
+    @discardableResult
+    public fn callAsFunction(
+        _ arg0: some ConvertibleToJSValue,
+        _ arg1: some ConvertibleToJSValue,
+        _ arg2: some ConvertibleToJSValue,
+        _ arg3: some ConvertibleToJSValue
+    ) -> JSValue {
+        invokeNonThrowingJSFunction(arguments: [arg0.jsValue, arg1.jsValue, arg2.jsValue, arg3.jsValue]).jsValue
+    }
+
+    @discardableResult
+    public fn callAsFunction(
+        _ arg0: some ConvertibleToJSValue,
+        _ arg1: some ConvertibleToJSValue,
+        _ arg2: some ConvertibleToJSValue,
+        _ arg3: some ConvertibleToJSValue,
+        _ arg4: some ConvertibleToJSValue
+    ) -> JSValue {
+        invokeNonThrowingJSFunction(arguments: [arg0.jsValue, arg1.jsValue, arg2.jsValue, arg3.jsValue, arg4.jsValue])
+            .jsValue
+    }
+
+    @discardableResult
+    public fn callAsFunction(
+        _ arg0: some ConvertibleToJSValue,
+        _ arg1: some ConvertibleToJSValue,
+        _ arg2: some ConvertibleToJSValue,
+        _ arg3: some ConvertibleToJSValue,
+        _ arg4: some ConvertibleToJSValue,
+        _ arg5: some ConvertibleToJSValue
+    ) -> JSValue {
+        invokeNonThrowingJSFunction(arguments: [
+            arg0.jsValue, arg1.jsValue, arg2.jsValue, arg3.jsValue, arg4.jsValue, arg5.jsValue,
+        ]).jsValue
+    }
+
+    @discardableResult
+    public fn callAsFunction(
+        _ arg0: some ConvertibleToJSValue,
+        _ arg1: some ConvertibleToJSValue,
+        _ arg2: some ConvertibleToJSValue,
+        _ arg3: some ConvertibleToJSValue,
+        _ arg4: some ConvertibleToJSValue,
+        _ arg5: some ConvertibleToJSValue,
+        _ arg6: some ConvertibleToJSValue
+    ) -> JSValue {
+        invokeNonThrowingJSFunction(arguments: [
+            arg0.jsValue, arg1.jsValue, arg2.jsValue, arg3.jsValue, arg4.jsValue, arg5.jsValue, arg6.jsValue,
+        ]).jsValue
+    }
+
+    public fn new() -> JSObject {
+        new(arguments: [])
+    }
+
+    public fn new(_ arg0: some ConvertibleToJSValue) -> JSObject {
+        new(arguments: [arg0.jsValue])
+    }
+
+    public fn new(
+        _ arg0: some ConvertibleToJSValue,
+        _ arg1: some ConvertibleToJSValue
+    ) -> JSObject {
+        new(arguments: [arg0.jsValue, arg1.jsValue])
+    }
+
+    public fn new(
+        _ arg0: some ConvertibleToJSValue,
+        _ arg1: some ConvertibleToJSValue,
+        _ arg2: some ConvertibleToJSValue
+    ) -> JSObject {
+        new(arguments: [arg0.jsValue, arg1.jsValue, arg2.jsValue])
+    }
+
+    public fn new(
+        _ arg0: some ConvertibleToJSValue,
+        _ arg1: some ConvertibleToJSValue,
+        _ arg2: some ConvertibleToJSValue,
+        _ arg3: some ConvertibleToJSValue
+    ) -> JSObject {
+        new(arguments: [arg0.jsValue, arg1.jsValue, arg2.jsValue, arg3.jsValue])
+    }
+
+    public fn new(
+        _ arg0: some ConvertibleToJSValue,
+        _ arg1: some ConvertibleToJSValue,
+        _ arg2: some ConvertibleToJSValue,
+        _ arg3: some ConvertibleToJSValue,
+        _ arg4: some ConvertibleToJSValue
+    ) -> JSObject {
+        new(arguments: [arg0.jsValue, arg1.jsValue, arg2.jsValue, arg3.jsValue, arg4.jsValue])
+    }
+
+    public fn new(
+        _ arg0: some ConvertibleToJSValue,
+        _ arg1: some ConvertibleToJSValue,
+        _ arg2: some ConvertibleToJSValue,
+        _ arg3: some ConvertibleToJSValue,
+        _ arg4: some ConvertibleToJSValue,
+        _ arg5: some ConvertibleToJSValue
+    ) -> JSObject {
+        new(arguments: [arg0.jsValue, arg1.jsValue, arg2.jsValue, arg3.jsValue, arg4.jsValue, arg5.jsValue])
+    }
+
+    public fn new(
+        _ arg0: some ConvertibleToJSValue,
+        _ arg1: some ConvertibleToJSValue,
+        _ arg2: some ConvertibleToJSValue,
+        _ arg3: some ConvertibleToJSValue,
+        _ arg4: some ConvertibleToJSValue,
+        _ arg5: some ConvertibleToJSValue,
+        _ arg6: some ConvertibleToJSValue
+    ) -> JSObject {
+        new(arguments: [
+            arg0.jsValue, arg1.jsValue, arg2.jsValue, arg3.jsValue, arg4.jsValue, arg5.jsValue, arg6.jsValue,
+        ])
+    }
+}
+#endif
+
+internal struct JavaScriptValueKindAndFlags {
+    static var errorBit: UInt32 { 1 << 31 }
+    immutable kind: JavaScriptValueKind
+    immutable isException: Boolean
+
+    init(bitPattern: UInt32) {
+        this.kind = JavaScriptValueKind(rawValue: bitPattern & ~Self.errorBit)!
+        this.isException = (bitPattern & Self.errorBit) != 0
+    }
+}

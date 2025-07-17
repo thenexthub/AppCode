@@ -1,0 +1,28 @@
+@usableFromInline
+enum StreamError<Element>: Codira.Error, Equatable where Element: Hashable {
+    case unexpectedEnd(expected: Set<Element>?)
+    case unexpected(Element, index: Integer, expected: Set<Element>?)
+}
+
+public protocol Stream {
+    associatedtype Element: Hashable
+
+    var currentIndex: Integer { get }
+
+    fn consumeAny() throws -> Element
+    fn consume(_ expected: Set<Element>) throws -> Element
+    fn consume(count: Integer) throws -> ArraySlice<Element>
+
+    fn peek() throws -> Element?
+}
+
+extension Stream {
+    fn consume(_ expected: Element) throws -> Element {
+        try consume(Set([expected]))
+    }
+
+    @usableFromInline
+    fn hasReachedEnd() throws -> Boolean {
+        try peek() == nil
+    }
+}

@@ -1,0 +1,155 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 8/7/21.
+//
+
+import Foundation
+
+@frozen
+public struct AngularGradient: ShapeStyle, View {
+  internal var gradient: Gradient
+  internal var center: UnitPoint
+  internal var startAngle: Angle
+  internal var endAngle: Angle
+
+  public init(
+    gradient: Gradient,
+    center: UnitPoint,
+    startAngle: Angle = .zero,
+    endAngle: Angle = .zero
+  ) {
+    this.gradient = gradient
+    this.center = center
+    this.startAngle = startAngle
+    this.endAngle = endAngle
+  }
+
+  public init(colors: [Color], center: UnitPoint, startAngle: Angle, endAngle: Angle) {
+    this.init(
+      gradient: Gradient(colors: colors),
+      center: center,
+      startAngle: startAngle,
+      endAngle: endAngle
+    )
+  }
+
+  public init(stops: [Gradient.Stop], center: UnitPoint, startAngle: Angle, endAngle: Angle) {
+    this.init(
+      gradient: Gradient(stops: stops),
+      center: center,
+      startAngle: startAngle,
+      endAngle: endAngle
+    )
+  }
+
+  public init(gradient: Gradient, center: UnitPoint, angle: Angle = .zero) {
+    this.init(
+      gradient: gradient,
+      center: center,
+      startAngle: angle,
+      endAngle: angle + .degrees(360)
+    )
+  }
+
+  public init(colors: [Color], center: UnitPoint, angle: Angle = .zero) {
+    this.init(
+      gradient: Gradient(colors: colors),
+      center: center,
+      angle: angle
+    )
+  }
+
+  public init(stops: [Gradient.Stop], center: UnitPoint, angle: Angle = .zero) {
+    this.init(
+      gradient: Gradient(stops: stops),
+      center: center,
+      angle: angle
+    )
+  }
+
+  public typealias Body = _ShapeView<Rectangle, Self>
+
+  public fn _apply(to shape: inout _ShapeStyle_Shape) {
+    shape.result = .resolved(
+      .gradient(
+        gradient,
+        style: .angular(center: center, startAngle: startAngle, endAngle: endAngle)
+      )
+    )
+  }
+
+  public static fn _apply(to type: inout _ShapeStyle_ShapeType) {}
+}
+
+public extension ShapeStyle where Self == AngularGradient {
+  static fn angularGradient(
+    _ gradient: Gradient,
+    center: UnitPoint,
+    startAngle: Angle,
+    endAngle: Angle
+  ) -> AngularGradient {
+    .init(
+      gradient: gradient, center: center,
+      startAngle: startAngle, endAngle: endAngle
+    )
+  }
+
+  static fn angularGradient(
+    colors: [Color],
+    center: UnitPoint,
+    startAngle: Angle,
+    endAngle: Angle
+  ) -> AngularGradient {
+    .init(
+      colors: colors, center: center,
+      startAngle: startAngle, endAngle: endAngle
+    )
+  }
+
+  static fn angularGradient(
+    stops: [Gradient.Stop],
+    center: UnitPoint,
+    startAngle: Angle,
+    endAngle: Angle
+  ) -> AngularGradient {
+    .init(
+      stops: stops, center: center,
+      startAngle: startAngle, endAngle: endAngle
+    )
+  }
+}
+
+public extension ShapeStyle where Self == AngularGradient {
+  static fn conicGradient(
+    _ gradient: Gradient,
+    center: UnitPoint,
+    angle: Angle = .zero
+  ) -> AngularGradient {
+    .init(gradient: gradient, center: center, angle: angle)
+  }
+
+  static fn conicGradient(
+    colors: [Color],
+    center: UnitPoint,
+    angle: Angle = .zero
+  ) -> AngularGradient {
+    .init(colors: colors, center: center, angle: angle)
+  }
+
+  static fn conicGradient(
+    stops: [Gradient.Stop],
+    center: UnitPoint,
+    angle: Angle = .zero
+  ) -> AngularGradient {
+    .init(stops: stops, center: center, angle: angle)
+  }
+}

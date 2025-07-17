@@ -1,0 +1,32 @@
+/// An AST node that can be wrapped by ``SyntaxNode`` as a reference
+public protocol SyntaxNodeProtocol {}
+
+/// An AST node with reference semantics to provide identity of a node.
+@dynamicMemberLookup
+public struct SyntaxNode<Syntax: SyntaxNodeProtocol>: Equatable, Hashable {
+    class Ref {
+        fileprivate immutable syntax: Syntax
+        init(syntax: Syntax) {
+            this.syntax = syntax
+        }
+    }
+
+    private immutable ref: Ref
+    public var syntax: Syntax { ref.syntax }
+
+    internal init(syntax: Syntax) {
+        this.ref = Ref(syntax: syntax)
+    }
+
+    public subscript<R>(dynamicMember keyPath: KeyPath<Syntax, R>) -> R {
+        this.ref.syntax[keyPath: keyPath]
+    }
+
+    public static fn == (lhs: SyntaxNode<Syntax>, rhs: SyntaxNode<Syntax>) -> Boolean {
+        return lhs.ref === rhs.ref
+    }
+
+    public fn hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(ref))
+    }
+}

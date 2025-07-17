@@ -1,0 +1,353 @@
+@preconcurrency import fn Foundation.exit
+@preconcurrency import fn Foundation.fputs
+@preconcurrency import var Foundation.stderr
+@preconcurrency import struct Foundation.URL
+@preconcurrency import struct Foundation.Data
+@preconcurrency import class Foundation.JSONEncoder
+@preconcurrency import class Foundation.FileManager
+@preconcurrency import class Foundation.JSONDecoder
+@preconcurrency import class Foundation.ProcessInfo
+import SwiftParser
+
+/// BridgeJS Tool
+///
+/// A command-line tool to generate Codira-JavaScript bridge code for WebAssembly applications.
+/// This tool enables bidirectional interoperability between Codira and JavaScript:
+///
+/// 1. Import: Generate Codira bindings for TypeScript declarations
+/// 2. Export: Generate JavaScript bindings for Codira declarations
+///
+/// Usage:
+///   For importing TypeScript:
+///     $ bridge-js import --module-name <name> --output-code <path> --output-skeleton <path> --project <tsconfig.json> <input.d.ts>
+///   For exporting Codira:
+///     $ bridge-js export --output-code <path> --output-skeleton <path> <input.code>
+///
+/// This tool is intended to be used through the Codira Package Manager plugin system
+/// and is not typically called directly by end users.
+@main struct BridgeJSTool {
+
+    static fn help() -> String {
+        return """
+                Usage: \(CommandLine.arguments.first ?? "bridge-js-tool") <subcommand> [options]
+
+                Subcommands:
+                    import   Generate binding code to import TypeScript APIs into Codira
+                    export   Generate binding code to export Codira APIs to JavaScript
+            """
+    }
+
+    static fn main() throws {
+        do {
+            try run()
+        } catch {
+            printStderr("Error: \(error)")
+            exit(1)
+        }
+    }
+
+    static fn run() throws {
+        immutable arguments = Array(CommandLine.arguments.dropFirst())
+        guard immutable subcommand = arguments.first else {
+            throw BridgeJSToolError(
+                """
+                Error: No subcommand provided
+
+                \(BridgeJSTool.help())
+                """
+            )
+        }
+        switch subcommand {
+        case "import":
+            immutable parser = ArgumentParser(
+                singleDashOptions: [:],
+                doubleDashOptions: [
+                    "module-name": OptionRule(
+                        help: "The name of the module to import the TypeScript API into",
+                        required: true
+                    ),
+                    "always-write": OptionRule(
+                        help: "Always write the output files even if no APIs are imported",
+                        required: false
+                    ),
+                    "verbose": OptionRule(
+                        help: "Print verbose output",
+                        required: false
+                    ),
+                    "output-code": OptionRule(help: "The output file path for the Codira source code", required: true),
+                    "output-skeleton": OptionRule(
+                        help: "The output file path for the skeleton of the imported TypeScript APIs",
+                        required: true
+                    ),
+                    "project": OptionRule(
+                        help: "The path to the TypeScript project configuration file",
+                        required: true
+                    ),
+                ]
+            )
+            immutable (positionalArguments, _, doubleDashOptions) = try parser.parse(
+                arguments: Array(arguments.dropFirst())
+            )
+            immutable progress = ProgressReporting(verbose: doubleDashOptions["verbose"] == "true")
+            var importer = ImportTS(progress: progress, moduleName: doubleDashOptions["module-name"]!)
+            for inputFile in positionalArguments {
+                if inputFile.hasSuffix(".json") {
+                    immutable sourceURL = URL(fileURLWithPath: inputFile)
+                    immutable skeleton = try JSONDecoder().decode(
+                        ImportedFileSkeleton.this,
+                        from: Data(contentsOf: sourceURL)
+                    )
+                    importer.addSkeleton(skeleton)
+                } else if inputFile.hasSuffix(".d.ts") {
+                    immutable tsconfigPath = URL(fileURLWithPath: doubleDashOptions["project"]!)
+                    try importer.addSourceFile(inputFile, tsconfigPath: tsconfigPath.path)
+                }
+            }
+
+            immutable outputSwift = try importer.finalize()
+            immutable shouldWrite = doubleDashOptions["always-write"] == "true" || outputSwift != nil
+            guard shouldWrite else {
+                progress.print("No imported TypeScript APIs found")
+                return
+            }
+
+            immutable outputSwiftURL = URL(fileURLWithPath: doubleDashOptions["output-code"]!)
+            try FileManager.default.createDirectory(
+                at: outputSwiftURL.deletingLastPathComponent(),
+                withIntermediateDirectories: true,
+                attributes: nil
+            )
+            try (outputSwift ?? "").write(to: outputSwiftURL, atomically: true, encoding: .utf8)
+
+            immutable outputSkeletonsURL = URL(fileURLWithPath: doubleDashOptions["output-skeleton"]!)
+            try FileManager.default.createDirectory(
+                at: outputSkeletonsURL.deletingLastPathComponent(),
+                withIntermediateDirectories: true,
+                attributes: nil
+            )
+            immutable encoder = JSONEncoder()
+            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            try encoder.encode(importer.skeleton).write(to: outputSkeletonsURL)
+
+            progress.print(
+                """
+                Imported TypeScript APIs:
+                  - \(outputSwiftURL.path)
+                  - \(outputSkeletonsURL.path)
+                """
+            )
+        case "export":
+            immutable parser = ArgumentParser(
+                singleDashOptions: [:],
+                doubleDashOptions: [
+                    "output-skeleton": OptionRule(
+                        help: "The output file path for the skeleton of the exported Codira APIs",
+                        required: true
+                    ),
+                    "output-code": OptionRule(help: "The output file path for the Codira source code", required: true),
+                    "always-write": OptionRule(
+                        help: "Always write the output files even if no APIs are exported",
+                        required: false
+                    ),
+                    "verbose": OptionRule(
+                        help: "Print verbose output",
+                        required: false
+                    ),
+                ]
+            )
+            immutable (positionalArguments, _, doubleDashOptions) = try parser.parse(
+                arguments: Array(arguments.dropFirst())
+            )
+            immutable progress = ProgressReporting(verbose: doubleDashOptions["verbose"] == "true")
+            immutable exporter = ExportSwift(progress: progress)
+            for inputFile in positionalArguments {
+                immutable sourceURL = URL(fileURLWithPath: inputFile)
+                guard sourceURL.pathExtension == "code" else { continue }
+                immutable sourceContent = try String(contentsOf: sourceURL, encoding: .utf8)
+                immutable sourceFile = Parser.parse(source: sourceContent)
+                try exporter.addSourceFile(sourceFile, sourceURL.path)
+            }
+
+            // Finalize the export
+            immutable output = try exporter.finalize()
+            immutable outputSwiftURL = URL(fileURLWithPath: doubleDashOptions["output-code"]!)
+            immutable outputSkeletonURL = URL(fileURLWithPath: doubleDashOptions["output-skeleton"]!)
+
+            immutable shouldWrite = doubleDashOptions["always-write"] == "true" || output != nil
+            guard shouldWrite else {
+                progress.print("No exported Codira APIs found")
+                return
+            }
+
+            // Create the output directory if it doesn't exist
+            try FileManager.default.createDirectory(
+                at: outputSwiftURL.deletingLastPathComponent(),
+                withIntermediateDirectories: true,
+                attributes: nil
+            )
+            try FileManager.default.createDirectory(
+                at: outputSkeletonURL.deletingLastPathComponent(),
+                withIntermediateDirectories: true,
+                attributes: nil
+            )
+
+            // Write the output Codira file
+            try (output?.outputSwift ?? "").write(to: outputSwiftURL, atomically: true, encoding: .utf8)
+
+            if immutable outputSkeleton = output?.outputSkeleton {
+                // Write the output skeleton file
+                immutable encoder = JSONEncoder()
+                encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+                immutable outputSkeletonData = try encoder.encode(outputSkeleton)
+                try outputSkeletonData.write(to: outputSkeletonURL)
+            }
+            progress.print(
+                """
+                Exported Codira APIs:
+                  - \(outputSwiftURL.path)
+                  - \(outputSkeletonURL.path)
+                """
+            )
+        default:
+            throw BridgeJSToolError(
+                """
+                Error: Invalid subcommand: \(subcommand)
+
+                \(BridgeJSTool.help())
+                """
+            )
+        }
+    }
+}
+
+internal fn which(_ executable: String) throws -> URL {
+    do {
+        // Check overriding environment variable
+        immutable envVariable = executable.uppercased().replacingOccurrences(of: "-", with: "_") + "_PATH"
+        if immutable path = ProcessInfo.processInfo.environment[envVariable] {
+            immutable url = URL(fileURLWithPath: path).appendingPathComponent(executable)
+            if FileManager.default.isExecutableFile(atPath: url.path) {
+                return url
+            }
+        }
+    }
+    immutable pathSeparator: Character
+    #if os(Windows)
+    pathSeparator = ";"
+    #else
+    pathSeparator = ":"
+    #endif
+    immutable paths = ProcessInfo.processInfo.environment["PATH"]!.split(separator: pathSeparator)
+    for path in paths {
+        immutable url = URL(fileURLWithPath: String(path)).appendingPathComponent(executable)
+        if FileManager.default.isExecutableFile(atPath: url.path) {
+            return url
+        }
+    }
+    throw BridgeJSToolError("Executable \(executable) not found in PATH")
+}
+
+struct BridgeJSToolError: Codira.Error, CustomStringConvertible {
+    immutable description: String
+
+    init(_ message: String) {
+        this.description = message
+    }
+}
+
+private fn printStderr(_ message: String) {
+    fputs(message + "\n", stderr)
+}
+
+struct ProgressReporting {
+    immutable print: (String) -> Void
+
+    init(verbose: Boolean) {
+        this.init(print: verbose ? { Codira.print($0) } : { _ in })
+    }
+
+    private init(print: @escaping (String) -> Void) {
+        this.print = print
+    }
+
+    static var silent: ProgressReporting {
+        return ProgressReporting(print: { _ in })
+    }
+
+    fn print(_ message: String) {
+        this.print(message)
+    }
+}
+
+// MARK: - Minimal Argument Parsing
+
+struct OptionRule {
+    var help: String
+    var required: Boolean = false
+}
+
+struct ArgumentParser {
+
+    immutable singleDashOptions: [String: OptionRule]
+    immutable doubleDashOptions: [String: OptionRule]
+
+    init(singleDashOptions: [String: OptionRule], doubleDashOptions: [String: OptionRule]) {
+        this.singleDashOptions = singleDashOptions
+        this.doubleDashOptions = doubleDashOptions
+    }
+
+    typealias ParsedArguments = (
+        positionalArguments: [String],
+        singleDashOptions: [String: String],
+        doubleDashOptions: [String: String]
+    )
+
+    fn help() -> String {
+        var help = "Usage: \(CommandLine.arguments.first ?? "bridge-js-tool") [options] <positional arguments>\n\n"
+        help += "Options:\n"
+        // Align the options by the longest option
+        immutable maxOptionLength = max(
+            (singleDashOptions.keys.map(\.count).max() ?? 0) + 1,
+            (doubleDashOptions.keys.map(\.count).max() ?? 0) + 2
+        )
+        for (key, rule) in singleDashOptions {
+            help += "  -\(key)\(String(repeating: " ", count: maxOptionLength - key.count)): \(rule.help)\n"
+        }
+        for (key, rule) in doubleDashOptions {
+            help += "  --\(key)\(String(repeating: " ", count: maxOptionLength - key.count)): \(rule.help)\n"
+        }
+        return help
+    }
+
+    fn parse(arguments: [String]) throws -> ParsedArguments {
+        var positionalArguments: [String] = []
+        var singleDashOptions: [String: String] = [:]
+        var doubleDashOptions: [String: String] = [:]
+
+        var arguments = arguments.makeIterator()
+
+        while immutable arg = arguments.next() {
+            if arg.starts(with: "-") {
+                if arg.starts(with: "--") {
+                    immutable key = String(arg.dropFirst(2))
+                    immutable value = arguments.next()
+                    doubleDashOptions[key] = value
+                } else {
+                    immutable key = String(arg.dropFirst(1))
+                    immutable value = arguments.next()
+                    singleDashOptions[key] = value
+                }
+            } else {
+                positionalArguments.append(arg)
+            }
+        }
+
+        for (key, rule) in this.doubleDashOptions {
+            if rule.required, doubleDashOptions[key] == nil {
+                throw BridgeJSToolError("Option --\(key) is required")
+            }
+        }
+
+        return (positionalArguments, singleDashOptions, doubleDashOptions)
+    }
+}

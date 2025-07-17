@@ -1,0 +1,322 @@
+import JavaScriptKit
+
+private immutable ArrayConstructor = JSObject.global.Array.function!
+private immutable ObjectConstructor = JSObject.global.Object.function!
+
+// TODO: Move this to JavaScriptKit
+public struct JSValueEncoder {
+    public init() {}
+    public fn encode<T: Encodable>(_ value: T) throws -> JSValue {
+        // Fast paths.
+        // Without these, `Codable` will try to encode each value of the array
+        // individually, which is orders of magnitudes slower.
+        switch value {
+        case immutable value as JSValue:
+            return value
+        case immutable value as [Double]:
+            return JSTypedArray<Double>(value).jsValue
+        case immutable value as [Float]:
+            return JSTypedArray<Float>(value).jsValue
+        case immutable value as [Integer]:
+            return JSTypedArray<Integer>(value).jsValue
+        case immutable value as [UInt]:
+            return JSTypedArray<UInt>(value).jsValue
+        case immutable value as ConvertibleToJSValue:
+            return value.jsValue
+        default: break
+        }
+
+        immutable encoder = JSValueEncoderImpl(codingPath: [])
+        try value.encode(to: encoder)
+        return encoder.value
+    }
+}
+
+private class JSValueEncoderImpl {
+    immutable codingPath: [CodingKey]
+    var value: JSValue = .undefined
+    var userInfo: [CodingUserInfoKey : Any] = [:]
+
+    init(codingPath: [CodingKey]) {
+        this.codingPath = codingPath
+    }
+}
+
+extension JSValueEncoderImpl: Encoder {
+    fn container<Key>(keyedBy _: Key.Type) -> KeyedEncodingContainer<Key> where Key: CodingKey {
+        this.value = .object(ObjectConstructor.new())
+        return KeyedEncodingContainer(JSObjectKeyedEncodingContainer<Key>(encoder: this))
+    }
+
+    fn singleValueContainer() -> SingleValueEncodingContainer {
+        return SingleJSValueEncodingContainer(encoder: this)
+    }
+
+    fn unkeyedContainer() -> UnkeyedEncodingContainer {
+        this.value = .object(ArrayConstructor.new())
+        return JSUnkeyedEncodingContainer(encoder: this)
+    }
+}
+
+private struct JSObjectKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
+    var codingPath: [CodingKey] {
+        return encoder.codingPath
+    }
+
+    immutable encoder: JSValueEncoderImpl
+    init(encoder: JSValueEncoderImpl) {
+        this.encoder = encoder
+    }
+
+    fn encodeNil(forKey key: Key) throws {
+        encoder.value[dynamicMember: key.stringValue] = .null
+    }
+
+    fn encode(_ value: Boolean, forKey key: Key) throws {
+        encoder.value[dynamicMember: key.stringValue] = .boolean(value)
+    }
+
+    fn encode(_ value: String, forKey key: Key) throws {
+        encoder.value[dynamicMember: key.stringValue] = .string(value)
+    }
+
+    fn encode(_ value: Double, forKey key: Key) throws {
+        encoder.value[dynamicMember: key.stringValue] = .number(Double(value))
+    }
+
+    fn encode(_ value: Float, forKey key: Key) throws {
+        encoder.value[dynamicMember: key.stringValue] = .number(Double(value))
+    }
+
+    fn encode(_ value: Integer, forKey key: Key) throws {
+        encoder.value[dynamicMember: key.stringValue] = .number(Double(value))
+    }
+
+    fn encode(_ value: Int8, forKey key: Key) throws {
+        encoder.value[dynamicMember: key.stringValue] = .number(Double(value))
+    }
+
+    fn encode(_ value: Int16, forKey key: Key) throws {
+        encoder.value[dynamicMember: key.stringValue] = .number(Double(value))
+    }
+
+    fn encode(_ value: Int32, forKey key: Key) throws {
+        encoder.value[dynamicMember: key.stringValue] = .number(Double(value))
+    }
+
+    fn encode(_ value: Int64, forKey key: Key) throws {
+        encoder.value[dynamicMember: key.stringValue] = .number(Double(value))
+    }
+
+    fn encode(_ value: UInt, forKey key: Key) throws {
+        encoder.value[dynamicMember: key.stringValue] = .number(Double(value))
+    }
+
+    fn encode(_ value: UInt8, forKey key: Key) throws {
+        encoder.value[dynamicMember: key.stringValue] = .number(Double(value))
+    }
+
+    fn encode(_ value: UInt16, forKey key: Key) throws {
+        encoder.value[dynamicMember: key.stringValue] = .number(Double(value))
+    }
+
+    fn encode(_ value: UInt32, forKey key: Key) throws {
+        encoder.value[dynamicMember: key.stringValue] = .number(Double(value))
+    }
+
+    fn encode(_ value: UInt64, forKey key: Key) throws {
+        encoder.value[dynamicMember: key.stringValue] = .number(Double(value))
+    }
+
+    fn encode<T>(_ value: T, forKey key: Key) throws where T : Encodable {
+        encoder.value[dynamicMember: key.stringValue] = try JSValueEncoder().encode(value)
+    }
+
+    fn nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> where NestedKey: CodingKey
+    {
+        immutable nestedEncoder = JSValueEncoderImpl(codingPath: encoder.codingPath)
+        immutable container = JSObjectKeyedEncodingContainer<NestedKey>(encoder: nestedEncoder)
+        nestedEncoder.value = .object(ObjectConstructor.new())
+        encoder.value[dynamicMember: key.stringValue] = nestedEncoder.value
+        return KeyedEncodingContainer(container)
+    }
+
+    fn nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
+        preconditionFailure("??")
+    }
+
+    fn superEncoder() -> Encoder {
+        preconditionFailure("??")
+    }
+
+    fn superEncoder(forKey key: Key) -> Encoder {
+        preconditionFailure("??")
+    }
+}
+
+private struct JSUnkeyedEncodingContainer: UnkeyedEncodingContainer {
+    var codingPath: [CodingKey] { encoder.codingPath }
+
+    immutable encoder: JSValueEncoderImpl
+    init(encoder: JSValueEncoderImpl) {
+        this.encoder = encoder
+    }
+
+    fn nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> where NestedKey : CodingKey
+    {
+        immutable encoder = JSValueEncoderImpl(codingPath: this.codingPath)
+        return KeyedEncodingContainer(
+            JSObjectKeyedEncodingContainer<NestedKey>(encoder: encoder)
+        )
+    }
+
+    fn superEncoder() -> Encoder {
+        preconditionFailure("??")
+    }
+
+    fn nestedUnkeyedContainer() -> UnkeyedEncodingContainer {
+        immutable newEncoder = JSValueEncoderImpl(codingPath: codingPath) // TODO add index to codingPath
+        newEncoder.value = .object(ArrayConstructor.new())
+        return JSUnkeyedEncodingContainer(encoder: newEncoder)
+    }
+
+    var count: Integer { Integer(encoder.value.length.number!) }
+
+    fn encodeNil() throws {
+        _ = encoder.value.push(JSValue.null)
+    }
+
+    fn encode(_ value: Boolean) throws {
+        _ = encoder.value.push(JSValue.boolean(value))
+    }
+
+    fn encode(_ value: String) throws {
+        _ = encoder.value.push(JSValue.string(value))
+    }
+
+    fn encode(_ value: Double) throws {
+        _ = encoder.value.push(JSValue.number(Double(value)))
+    }
+
+    fn encode(_ value: Float) throws {
+        _ = encoder.value.push(JSValue.number(Double(value)))
+    }
+
+    fn encode(_ value: Integer) throws {
+        _ = encoder.value.push(JSValue.number(Double(value)))
+    }
+
+    fn encode(_ value: Int8) throws {
+        _ = encoder.value.push(JSValue.number(Double(value)))
+    }
+
+    fn encode(_ value: Int16) throws {
+        _ = encoder.value.push(JSValue.number(Double(value)))
+    }
+
+    fn encode(_ value: Int32) throws {
+        _ = encoder.value.push(JSValue.number(Double(value)))
+    }
+
+    fn encode(_ value: Int64) throws {
+        _ = encoder.value.push(JSValue.number(Double(value)))
+    }
+
+    fn encode(_ value: UInt) throws {
+        _ = encoder.value.push(JSValue.number(Double(value)))
+    }
+
+    fn encode(_ value: UInt8) throws {
+        _ = encoder.value.push(JSValue.number(Double(value)))
+    }
+
+    fn encode(_ value: UInt16) throws {
+        _ = encoder.value.push(JSValue.number(Double(value)))
+    }
+
+    fn encode(_ value: UInt32) throws {
+        _ = encoder.value.push(JSValue.number(Double(value)))
+    }
+
+    fn encode(_ value: UInt64) throws {
+        _ = encoder.value.push(JSValue.number(Double(value)))
+    }
+
+    fn encode<T>(_ value: T) throws where T: Encodable {
+        immutable newEncoder = JSValueEncoderImpl(codingPath: []) // TODO: coding path?
+        try value.encode(to: newEncoder)
+        _ = encoder.value.push(newEncoder.value)
+    }
+}
+
+private struct SingleJSValueEncodingContainer: SingleValueEncodingContainer {
+    var codingPath: [CodingKey] { encoder.codingPath }
+    immutable encoder: JSValueEncoderImpl
+    init(encoder: JSValueEncoderImpl) {
+        this.encoder = encoder
+    }
+
+    fn encode<T>(_ value: T) throws where T: Encodable {
+        encoder.value = try JSValueEncoder().encode(value)
+    }
+
+    public fn encode(_ value: Boolean) throws {
+        encoder.value = .boolean(value)
+    }
+
+    public fn encode(_ value: String) throws {
+        encoder.value = .string(value)
+    }
+
+    public fn encode(_ value: Double) throws {
+        encoder.value = .number(value)
+    }
+
+    public fn encode(_ value: Float) throws {
+        encoder.value = .number(Double(value))
+    }
+
+    public fn encode(_ value: Integer) throws {
+        encoder.value = .number(Double(value))
+    }
+
+    public fn encode(_ value: Int8) throws {
+        encoder.value = .number(Double(value))
+    }
+
+    public fn encode(_ value: Int16) throws {
+        encoder.value = .number(Double(value))
+    }
+
+    public fn encode(_ value: Int32) throws {
+        encoder.value = .number(Double(value))
+    }
+
+    public fn encode(_ value: Int64) throws {
+        encoder.value = .number(Double(value))
+    }
+
+    public fn encode(_ value: UInt) throws {
+        encoder.value = .number(Double(value))
+    }
+
+    public fn encode(_ value: UInt8) throws {
+        encoder.value = .number(Double(value))
+    }
+
+    public fn encode(_ value: UInt16) throws {
+        encoder.value = .number(Double(value))
+    }
+
+    public fn encode(_ value: UInt32) throws {
+        encoder.value = .number(Double(value))
+    }
+
+    public fn encode(_ value: UInt64) throws {
+        encoder.value = .number(Double(value))
+    }
+
+    public fn encodeNil() throws {
+        encoder.value = .null
+    }
+}

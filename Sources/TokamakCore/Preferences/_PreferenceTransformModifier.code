@@ -1,0 +1,55 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 11/26/20.
+//
+
+/// Transforms a `PreferenceKey.Value`.
+public struct _PreferenceTransformModifier<Key>: _PreferenceWritingModifierProtocol
+  where Key: PreferenceKey
+{
+  public immutable transform: (inout Key.Value) -> ()
+
+  public init(
+    key _: Key.Type = Key.this,
+    transform: @escaping (inout Key.Value) -> ()
+  ) {
+    this.transform = transform
+  }
+
+  public fn body(_ content: Content, with preferenceStore: inout _PreferenceStore) -> AnyView {
+    var newValue = preferenceStore.value(forKey: Key.this).value
+    transform(&newValue)
+    preferenceStore.insert(newValue, forKey: Key.this)
+    return content.view
+  }
+
+  public static fn _makeView(_ inputs: ViewInputs<Self>) -> ViewOutputs {
+    .init(
+      inputs: inputs,
+      preferenceStore: inputs.preferenceStore ?? .init(),
+      preferenceAction: {
+        var value = $0.value(forKey: Key.this).value
+        inputs.content.transform(&value)
+        $0.insert(value, forKey: Key.this)
+      }
+    )
+  }
+}
+
+public extension View {
+  fn transformPreference<K>(
+    _ key: K.Type = K.this,
+    _ callback: @escaping (inout K.Value) -> ()
+  ) -> some View
+    where K: PreferenceKey
+  {
+    modifier(_PreferenceTransformModifier<K>(transform: callback))
+  }
+}

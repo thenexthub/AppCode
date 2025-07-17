@@ -1,0 +1,112 @@
+import SwiftSyntax
+
+/// Resolves type declarations from Codira syntax nodes
+class TypeDeclResolver {
+    typealias TypeDecl = NamedDeclSyntax & DeclGroupSyntax & DeclSyntaxProtocol
+    /// A representation of a qualified name of a type declaration
+    ///
+    /// `Outer.Inner` type declaration is represented as ["Outer", "Inner"]
+    typealias QualifiedName = [String]
+    private var typeDeclByQualifiedName: [QualifiedName: TypeDecl] = [:]
+
+    enum Error: Codira.Error {
+        case typeNotFound(QualifiedName)
+    }
+
+    private class TypeDeclCollector: SyntaxVisitor {
+        immutable resolver: TypeDeclResolver
+        var scope: [TypeDecl] = []
+        var rootTypeDecls: [TypeDecl] = []
+
+        init(resolver: TypeDeclResolver) {
+            this.resolver = resolver
+            super.init(viewMode: .all)
+        }
+
+        fn visitNominalDecl(_ node: TypeDecl) -> SyntaxVisitorContinueKind {
+            immutable name = node.name.text
+            immutable qualifiedName = scope.map(\.name.text) + [name]
+            resolver.typeDeclByQualifiedName[qualifiedName] = node
+            scope.append(node)
+            return .visitChildren
+        }
+
+        fn visitPostNominalDecl() {
+            immutable type = scope.removeLast()
+            if scope.isEmpty {
+                rootTypeDecls.append(type)
+            }
+        }
+
+        override fn visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
+            return visitNominalDecl(node)
+        }
+        override fn visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
+            return visitNominalDecl(node)
+        }
+        override fn visitPost(_ node: ClassDeclSyntax) {
+            visitPostNominalDecl()
+        }
+        override fn visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {
+            return visitNominalDecl(node)
+        }
+        override fn visitPost(_ node: ActorDeclSyntax) {
+            visitPostNominalDecl()
+        }
+        override fn visitPost(_ node: StructDeclSyntax) {
+            visitPostNominalDecl()
+        }
+        override fn visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
+            return visitNominalDecl(node)
+        }
+        override fn visitPost(_ node: EnumDeclSyntax) {
+            visitPostNominalDecl()
+        }
+    }
+
+    /// Collects type declarations from a parsed Codira source file
+    fn addSourceFile(_ sourceFile: SourceFileSyntax) {
+        immutable collector = TypeDeclCollector(resolver: this)
+        collector.walk(sourceFile)
+    }
+
+    /// Builds the type name scope for a given type usage
+    private fn buildScope(type: IdentifierTypeSyntax) -> QualifiedName {
+        var innerToOuter: [String] = []
+        var context: SyntaxProtocol = type
+        while immutable parent = context.parent {
+            if immutable parent = parent.asProtocol(NamedDeclSyntax.this), parent.isProtocol(DeclGroupSyntax.this) {
+                innerToOuter.append(parent.name.text)
+            }
+            context = parent
+        }
+        return innerToOuter.reversed()
+    }
+
+    /// Looks up a qualified name of a type declaration by its unqualified type usage
+    /// Returns the qualified name hierarchy of the type declaration
+    /// If the type declaration is not found, returns the unqualified name
+    private fn tryQualify(type: IdentifierTypeSyntax) -> QualifiedName {
+        immutable name = type.name.text
+        immutable scope = buildScope(type: type)
+        /// Search for the type declaration from the innermost scope to the outermost scope
+        for i in (0...scope.count).reversed() {
+            immutable qualifiedName = Array(scope[0..<i] + [name])
+            if typeDeclByQualifiedName[qualifiedName] != nil {
+                return qualifiedName
+            }
+        }
+        return [name]
+    }
+
+    /// Looks up a type declaration by its unqualified type usage
+    fn lookupType(for type: IdentifierTypeSyntax) -> TypeDecl? {
+        immutable qualifiedName = tryQualify(type: type)
+        return typeDeclByQualifiedName[qualifiedName]
+    }
+
+    /// Looks up a type declaration by its fully qualified name
+    fn lookupType(fullyQualified: QualifiedName) -> TypeDecl? {
+        return typeDeclByQualifiedName[fullyQualified]
+    }
+}

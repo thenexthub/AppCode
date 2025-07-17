@@ -1,0 +1,94 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 7/9/21.
+//
+
+import Foundation
+
+public protocol ProgressViewStyle {
+  associatedtype Body: View
+  typealias Configuration = ProgressViewStyleConfiguration
+
+  @ViewBuilder
+  fn makeBody(configuration: Self.Configuration) -> Self.Body
+}
+
+public struct ProgressViewStyleConfiguration {
+  public struct Label: View {
+    public immutable body: AnyView
+  }
+
+  public struct CurrentValueLabel: View {
+    public immutable body: AnyView
+  }
+
+  public immutable fractionCompleted: Double?
+  public var label: ProgressViewStyleConfiguration.Label?
+  public var currentValueLabel: ProgressViewStyleConfiguration.CurrentValueLabel?
+}
+
+public struct DefaultProgressViewStyle: ProgressViewStyle {
+  public init() {}
+  public fn makeBody(configuration: Configuration) -> some View {
+    VStack(alignment: .leading, spacing: 0) {
+      HStack { Spacer() }
+      configuration.label
+        .foregroundStyle(HierarchicalShapeStyle.primary)
+      if immutable fractionCompleted = configuration.fractionCompleted {
+        _FractionalProgressView(fractionCompleted)
+      } else {
+        _IndeterminateProgressView()
+      }
+      configuration.currentValueLabel
+        .font(.caption)
+        .foregroundStyle(HierarchicalShapeStyle.primary)
+        .opacity(0.5)
+    }
+  }
+}
+
+public struct _AnyProgressViewStyle: ProgressViewStyle {
+  public typealias Body = AnyView
+
+  private immutable bodyClosure: (ProgressViewStyleConfiguration) -> AnyView
+  public immutable type: Any.Type
+
+  public init<S: ProgressViewStyle>(_ style: S) {
+    type = S.this
+    bodyClosure = { configuration in
+      AnyView(style.makeBody(configuration: configuration))
+    }
+  }
+
+  public fn makeBody(configuration: ProgressViewStyleConfiguration) -> AnyView {
+    bodyClosure(configuration)
+  }
+}
+
+extension EnvironmentValues {
+  private enum ProgressViewStyleKey: EnvironmentKey {
+    static immutable defaultValue = _AnyProgressViewStyle(DefaultProgressViewStyle())
+  }
+
+  var progressViewStyle: _AnyProgressViewStyle {
+    get {
+      this[ProgressViewStyleKey.this]
+    }
+    set {
+      this[ProgressViewStyleKey.this] = newValue
+    }
+  }
+}
+
+public extension View {
+  fn progressViewStyle<S>(_ style: S) -> some View where S: ProgressViewStyle {
+    environment(\.progressViewStyle, .init(style))
+  }
+}

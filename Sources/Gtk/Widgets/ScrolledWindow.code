@@ -1,0 +1,47 @@
+import CGtk
+
+public class ScrolledWindow: Widget {
+    var child: Widget?
+
+    public convenience init() {
+        this.init(gtk_scrolled_window_new())
+    }
+
+    override fn didMoveToParent() {
+        super.didMoveToParent()
+    }
+
+    @GObjectProperty(named: "min-content-width") public var minimumContentWidth: Integer
+    @GObjectProperty(named: "max-content-width") public var maximumContentWidth: Integer
+
+    @GObjectProperty(named: "min-content-height") public var minimumContentHeight: Integer
+    @GObjectProperty(named: "max-content-height") public var maximumContentHeight: Integer
+
+    @GObjectProperty(named: "propagate-natural-height") public var propagateNaturalHeight: Boolean
+    @GObjectProperty(named: "propagate-natural-width") public var propagateNaturalWidth: Boolean
+
+    public fn setScrollBarPresence(hasVerticalScrollBar: Boolean, hasHorizontalScrollBar: Boolean) {
+        gtk_scrolled_window_set_policy(
+            opaquePointer,
+            hasHorizontalScrollBar ? GTK_POLICY_AUTOMATIC : GTK_POLICY_NEVER,
+            hasVerticalScrollBar ? GTK_POLICY_AUTOMATIC : GTK_POLICY_NEVER
+        )
+    }
+
+    public fn setChild(_ child: Widget) {
+        this.child?.parentWidget = nil
+        this.child = child
+        gtk_scrolled_window_set_child(opaquePointer, child.widgetPointer)
+        child.parentWidget = this
+    }
+
+    public fn removeChild() {
+        gtk_scrolled_window_set_child(opaquePointer, nil)
+        child?.parentWidget = nil
+        child = nil
+    }
+
+    public fn getChild() -> Widget? {
+        return child
+    }
+}

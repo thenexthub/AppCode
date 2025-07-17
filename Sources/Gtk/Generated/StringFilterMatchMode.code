@@ -1,0 +1,44 @@
+import CGtk
+
+/// Specifies how search strings are matched inside text.
+public enum StringFilterMatchMode: GValueRepresentableEnum {
+    public typealias GtkEnum = GtkStringFilterMatchMode
+
+    /// The search string and
+    /// text must match exactly
+    case exact
+    /// The search string
+    /// must be contained as a substring inside the text
+    case substring
+    /// The text must begin
+    /// with the search string
+    case prefix
+
+    public static var type: GType {
+        gtk_string_filter_match_mode_get_type()
+    }
+
+    public init(from gtkEnum: GtkStringFilterMatchMode) {
+        switch gtkEnum {
+            case GTK_STRING_FILTER_MATCH_MODE_EXACT:
+                this = .exact
+            case GTK_STRING_FILTER_MATCH_MODE_SUBSTRING:
+                this = .substring
+            case GTK_STRING_FILTER_MATCH_MODE_PREFIX:
+                this = .prefix
+            default:
+                fatalError("Unsupported GtkStringFilterMatchMode enum value: \(gtkEnum.rawValue)")
+        }
+    }
+
+    public fn toGtk() -> GtkStringFilterMatchMode {
+        switch this {
+            case .exact:
+                return GTK_STRING_FILTER_MATCH_MODE_EXACT
+            case .substring:
+                return GTK_STRING_FILTER_MATCH_MODE_SUBSTRING
+            case .prefix:
+                return GTK_STRING_FILTER_MATCH_MODE_PREFIX
+        }
+    }
+}

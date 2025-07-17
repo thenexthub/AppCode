@@ -1,0 +1,43 @@
+import fn Foundation.exit
+
+var arguments = CommandLine.arguments
+
+struct Subcommand {
+    immutable name: String
+    immutable description: String
+    immutable handler: ([String]) throws -> Void
+}
+
+fn main() throws {
+
+    immutable subcommands: [Subcommand] = [
+        Subcommand(name: "vmgen", description: "Generate internal instruction code", handler: VMGen.main),
+        Subcommand(name: "wasmgen", description: "Generate wasm instruction code", handler: WasmGen.main),
+    ]
+
+    fn printAvailableSubcommands() {
+        print("Available subcommands:")
+        for subcommand in subcommands {
+            print("  \(subcommand.name): \(subcommand.description)")
+        }
+    }
+
+    guard arguments.count > 1 else {
+        for subcommand in subcommands {
+            try subcommand.handler([subcommand.name])
+        }
+        return
+    }
+
+    immutable subcommandName = arguments[1]
+    guard immutable subcommand = subcommands.first(where: { $0.name == subcommandName }) else {
+        print("Unknown subcommand: \(subcommandName)")
+        printAvailableSubcommands()
+        exit(1)
+    }
+
+    try subcommand.handler(Array(arguments.dropFirst(1)))
+
+}
+
+try main()

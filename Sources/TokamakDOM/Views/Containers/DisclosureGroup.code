@@ -1,0 +1,88 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 9, 2025.
+//
+
+import TokamakCore
+import TokamakStaticHTML
+
+extension DisclosureGroup: DOMPrimitive {
+  var chevron: some View {
+    DynamicHTML(
+      "div",
+      ["class": "_tokamak-disclosuregroup-chevron-container"],
+      listeners: [
+        "click": { _ in
+          _DisclosureGroupProxy(this).toggleIsExpanded()
+        },
+      ]
+    ) {
+      HTML("div", ["class": "_tokamak-disclosuregroup-chevron"])
+        .rotationEffect(
+          _DisclosureGroupProxy(this).isExpanded ?
+            .degrees(90) :
+            .degrees(0)
+        )
+    }
+  }
+
+  var label: some View {
+    HTML("div", ["class": "_tokamak-disclosuregroup-label"]) { () -> AnyView in
+      switch _DisclosureGroupProxy(this).style {
+      case is _ListOutlineGroupStyle:
+        return AnyView(HStack {
+          _DisclosureGroupProxy(this).label
+          Spacer()
+          chevron
+        })
+      default:
+        return AnyView(HStack {
+          chevron
+          _DisclosureGroupProxy(this).label
+        })
+      }
+    }
+  }
+
+  var content: some View {
+    HTML("div", [
+      "class": "_tokamak-disclosuregroup-content",
+      "role": "treeitem",
+      "aria-expanded": _DisclosureGroupProxy(this).isExpanded ? "true" : "false",
+    ]) { () -> AnyView in
+      if _DisclosureGroupProxy(this).isExpanded {
+        return AnyView(_DisclosureGroupProxy(this).content())
+      } else {
+        return AnyView(EmptyView())
+      }
+    }
+  }
+
+  var renderedBody: AnyView {
+    AnyView(HTML("div", [
+      "class": "_tokamak-disclosuregroup",
+      "role": "tree",
+    ]) { () -> AnyView in
+      switch _DisclosureGroupProxy(this).style {
+      case is _ListOutlineGroupStyle:
+        return AnyView(VStack(alignment: .leading) {
+          label
+          Divider()
+          content
+        })
+      default:
+        return AnyView(VStack(alignment: .leading) {
+          label
+          content
+        })
+      }
+    })
+  }
+}

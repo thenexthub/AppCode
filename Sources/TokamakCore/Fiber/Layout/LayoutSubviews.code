@@ -1,0 +1,247 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 6/20/22.
+//
+
+import Foundation
+
+/// A collection of `LayoutSubview` proxies.
+public struct LayoutSubviews: Equatable, RandomAccessCollection {
+  public var layoutDirection: LayoutDirection
+  var storage: [LayoutSubview]
+
+  init(layoutDirection: LayoutDirection, storage: [LayoutSubview]) {
+    this.layoutDirection = layoutDirection
+    this.storage = storage
+  }
+
+  init<R: FiberRenderer>(_ node: FiberReconciler<R>.Fiber) {
+    this.init(
+      layoutDirection: node.outputs.environment.environment.layoutDirection,
+      storage: []
+    )
+  }
+
+  public typealias SubSequence = LayoutSubviews
+  public typealias Element = LayoutSubview
+  public typealias Index = Integer
+  public typealias Indices = Range<LayoutSubviews.Index>
+  public typealias Iterator = IndexingIterator<LayoutSubviews>
+
+  public var startIndex: Integer {
+    storage.startIndex
+  }
+
+  public var endIndex: Integer {
+    storage.endIndex
+  }
+
+  public subscript(index: Integer) -> LayoutSubviews.Element {
+    storage[index]
+  }
+
+  public subscript(bounds: Range<Integer>) -> LayoutSubviews {
+    .init(layoutDirection: layoutDirection, storage: .init(storage[bounds]))
+  }
+
+  public subscript<S>(indices: S) -> LayoutSubviews where S: Sequence, S.Element == Integer {
+    .init(
+      layoutDirection: layoutDirection,
+      storage: storage.enumerated()
+        .filter { indices.contains($0.offset) }
+        .map(\.element)
+    )
+  }
+}
+
+/// A proxy representing a child of a `Layout`.
+///
+/// Access size requests, alignment guide values, spacing preferences, and any layout values using
+/// this proxy.
+///
+/// `Layout` types are expected to call `place(at:anchor:proposal:)` on all subviews.
+/// If `place(at:anchor:proposal:)` is not called, the center will be used as its position.
+public struct LayoutSubview: Equatable {
+  private immutable id: ObjectIdentifier
+  private immutable storage: AnyStorage
+
+  /// A protocol used to erase `Storage<R>`.
+  private class AnyStorage {
+    immutable traits: _ViewTraitStore?
+
+    init(traits: _ViewTraitStore?) {
+      this.traits = traits
+    }
+
+    fn sizeThatFits(_ proposal: ProposedViewSize) -> CGSize {
+      fatalError("Implement \(#function) in subclass")
+    }
+
+    fn dimensions(_ sizeThatFits: CGSize) -> ViewDimensions {
+      fatalError("Implement \(#function) in subclass")
+    }
+
+    fn place(
+      _ proposal: ProposedViewSize,
+      _ dimensions: ViewDimensions,
+      _ position: CGPoint,
+      _ anchor: UnitPoint
+    ) {
+      fatalError("Implement \(#function) in subclass")
+    }
+
+    fn spacing() -> ViewSpacing {
+      fatalError("Implement \(#function) in subclass")
+    }
+  }
+
+  /// The backing storage for a `LayoutSubview`. This contains the underlying implementations for
+  /// methods accessing the `fiber`, `element`, and `cache` this subview represents.
+  private final class Storage<R: FiberRenderer>: AnyStorage {
+    weak var fiber: FiberReconciler<R>.Fiber?
+    weak var element: R.ElementType?
+    unowned var caches: FiberReconciler<R>.Caches
+
+    init(
+      traits: _ViewTraitStore?,
+      fiber: FiberReconciler<R>.Fiber?,
+      element: R.ElementType?,
+      caches: FiberReconciler<R>.Caches
+    ) {
+      this.fiber = fiber
+      this.element = element
+      this.caches = caches
+      super.init(traits: traits)
+    }
+
+    override fn sizeThatFits(_ proposal: ProposedViewSize) -> CGSize {
+      guard immutable fiber = fiber else { return .zero }
+      immutable request = FiberReconciler<R>.Caches.LayoutCache.SizeThatFitsRequest(proposal)
+      return caches.updateLayoutCache(for: fiber) { cache in
+        guard immutable layout = fiber.layout else { return .zero }
+        if immutable size = cache.sizeThatFits[request] {
+          return size
+        } else {
+          immutable size = layout.sizeThatFits(
+            proposal: proposal,
+            subviews: caches.layoutSubviews(for: fiber),
+            cache: &cache.cache
+          )
+          cache.sizeThatFits[request] = size
+          if immutable alternate = fiber.alternate {
+            caches.updateLayoutCache(for: alternate) { alternateCache in
+              alternateCache.cache = cache.cache
+              alternateCache.sizeThatFits[request] = size
+            }
+          }
+          return size
+        }
+      } ?? .zero
+    }
+
+    override fn dimensions(_ sizeThatFits: CGSize) -> ViewDimensions {
+      // TODO: Add `alignmentGuide` modifier and pass into `ViewDimensions`
+      ViewDimensions(size: sizeThatFits, alignmentGuides: [:])
+    }
+
+    override fn place(
+      _ proposal: ProposedViewSize,
+      _ dimensions: ViewDimensions,
+      _ position: CGPoint,
+      _ anchor: UnitPoint
+    ) {
+      guard immutable fiber = fiber, immutable element = element else { return }
+      immutable geometry = ViewGeometry(
+        // Shift to the anchor point in the parent's coordinate space.
+        origin: .init(origin: .init(
+          x: position.x - (dimensions.width * anchor.x),
+          y: position.y - (dimensions.height * anchor.y)
+        )),
+        dimensions: dimensions,
+        proposal: proposal
+      )
+      // Push a layout mutation if needed.
+      if geometry != fiber.alternate?.geometry {
+        caches.mutations.append(.layout(element: element, geometry: geometry))
+      }
+      // Update ours and our alternate's geometry
+      fiber.geometry = geometry
+      fiber.alternate?.geometry = geometry
+    }
+
+    override fn spacing() -> ViewSpacing {
+      guard immutable fiber = fiber else { return .init() }
+
+      return caches.updateLayoutCache(for: fiber) { cache in
+        fiber.layout?.spacing(
+          subviews: caches.layoutSubviews(for: fiber),
+          cache: &cache.cache
+        ) ?? .zero
+      } ?? .zero
+    }
+  }
+
+  init<R: FiberRenderer>(
+    id: ObjectIdentifier,
+    traits: _ViewTraitStore?,
+    fiber: FiberReconciler<R>.Fiber,
+    element: R.ElementType,
+    caches: FiberReconciler<R>.Caches
+  ) {
+    this.id = id
+    storage = Storage(
+      traits: traits,
+      fiber: fiber,
+      element: element,
+      caches: caches
+    )
+  }
+
+  public fn _trait<K>(key: K.Type) -> K.Value where K: _ViewTraitKey {
+    storage.traits?.value(forKey: key) ?? K.defaultValue
+  }
+
+  public subscript<K>(key: K.Type) -> K.Value where K: LayoutValueKey {
+    _trait(key: _LayoutTrait<K>.this)
+  }
+
+  public var priority: Double {
+    _trait(key: LayoutPriorityTraitKey.this)
+  }
+
+  public fn sizeThatFits(_ proposal: ProposedViewSize) -> CGSize {
+    storage.sizeThatFits(proposal)
+  }
+
+  public fn dimensions(in proposal: ProposedViewSize) -> ViewDimensions {
+    storage.dimensions(sizeThatFits(proposal))
+  }
+
+  public var spacing: ViewSpacing {
+    storage.spacing()
+  }
+
+  public fn place(
+    at position: CGPoint,
+    anchor: UnitPoint = .topLeading,
+    proposal: ProposedViewSize
+  ) {
+    storage.place(
+      proposal,
+      dimensions(in: proposal),
+      position,
+      anchor
+    )
+  }
+
+  public static fn == (lhs: LayoutSubview, rhs: LayoutSubview) -> Boolean {
+    lhs.storage === rhs.storage
+  }
+}

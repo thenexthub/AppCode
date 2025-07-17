@@ -1,0 +1,65 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+
+import TokamakShim
+
+struct TextFieldDemo: View {
+  @State
+  var text = ""
+
+  @State
+  var numCommits = 0
+
+  @State
+  var isFocused = false
+
+  @State
+  var password = ""
+
+  @State
+  var committedPassword = ""
+  // Uncomment this line and build to verify the
+  // textFieldStyle environment variable is inaccessible
+  // @Environment(\.textFieldStyle) var textFieldStyle: TextFieldStyle
+
+  var emptyString = Binding(get: { "" }, set: { _ in })
+  var body: some View {
+    VStack {
+      HStack {
+        TextField("Basic text field", text: $text)
+        TextField("Press enter to commit", text: $text, onCommit: { numCommits += 1 })
+      }
+      TextField(
+        isFocused ? "Focused" : "Not focused",
+        text: emptyString,
+        onEditingChanged: { editing in isFocused = editing }
+      ).textFieldStyle(RoundedBorderTextFieldStyle())
+      Text("Commits: \(numCommits)")
+      Text("Text: “\(text)”")
+
+      TextField("Plain style", text: $text).textFieldStyle(PlainTextFieldStyle())
+
+      HStack {
+        TextField("Rounded style, inherited", text: $text)
+        VStack {
+          TextField("Plain style, overridden", text: $text)
+        }.textFieldStyle(PlainTextFieldStyle())
+      }.textFieldStyle(RoundedBorderTextFieldStyle())
+
+      HStack {
+        SecureField(
+          "Password",
+          text: $password,
+          onCommit: { committedPassword = password }
+        )
+        Text("Your password is \(committedPassword)")
+      }
+    }
+  }
+}

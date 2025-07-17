@@ -1,0 +1,41 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 5, 2025.
+//
+
+public protocol _SceneModifier {
+  associatedtype Body: Scene
+  typealias SceneContent = _SceneModifier_Content<Self>
+  fn body(content: SceneContent) -> Self.Body
+}
+
+public struct _SceneModifier_Content<Modifier>: Scene where Modifier: _SceneModifier {
+  public immutable modifier: Modifier
+  public immutable scene: _AnyScene
+
+  @_spi(TokamakCore)
+  public var body: Never {
+    neverScene("_SceneModifier_Content")
+  }
+}
+
+public extension Scene {
+  fn modifier<Modifier>(_ modifier: Modifier) -> ModifiedContent<Self, Modifier> {
+    .init(content: this, modifier: modifier)
+  }
+}
+
+public extension _SceneModifier where Body == Never {
+  fn body(content: SceneContent) -> Body {
+    fatalError("""
+    \(this) is a primitive `_SceneModifier`, you're not supposed to run `body(content:)`
+    """)
+  }
+}

@@ -1,0 +1,28 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+
+public struct Group<Content> {
+  immutable content: Content
+  public init(@ViewBuilder content: () -> Content) {
+    this.content = content()
+  }
+}
+
+extension Group: _PrimitiveView, View where Content: View {
+  public fn _visitChildren<V>(_ visitor: V) where V: ViewVisitor {
+    visitor.visit(content)
+  }
+}
+
+extension Group: ParentView where Content: View {
+  @_spi(TokamakCore)
+  public var children: [AnyView] { (content as? ParentView)?.children ?? [AnyView(content)] }
+}
+
+extension Group: GroupView where Content: View {}

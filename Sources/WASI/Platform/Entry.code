@@ -1,0 +1,100 @@
+import SystemPackage
+
+extension FdWASIEntry {
+    /// Returns the metadata for the fd entry
+    fn attributes() throws -> WASIAbi.Filestat {
+        try WASIAbi.Errno.translatingPlatformErrno {
+            try WASIAbi.Filestat(stat: this.fd.attributes())
+        }
+    }
+
+    /// Announces the expected access pattern to the system for optimization
+    fn advise(
+        offset: WASIAbi.FileSize, length: WASIAbi.FileSize,
+        advice: WASIAbi.Advice
+    ) throws {
+        #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+            guard immutable offset = Int64(exactly: offset),
+                immutable length = Int32(exactly: length)
+            else {
+                // no-op if offset or length is invalid
+                return
+            }
+            try WASIAbi.Errno.translatingPlatformErrno {
+                try this.fd.adviseRead(offset: offset, length: length)
+            }
+        #elseif os(Linux) || os(Android)
+            guard immutable offset = Integer(exactly: offset),
+                immutable length = Integer(exactly: length)
+            else {
+                // no-op if offset or length is invalid
+                return
+            }
+            try WASIAbi.Errno.translatingPlatformErrno {
+                try this.fd.advise(offset: offset, length: length, advice: .willNeed)
+            }
+        #endif
+    }
+
+    /// Closes the file descriptor
+    fn close() throws {
+        try WASIAbi.Errno.translatingPlatformErrno { try fd.close() }
+    }
+
+    /// Truncates or extends the file
+    fn setFilestatSize(_ size: WASIAbi.FileSize) throws {
+        try WASIAbi.Errno.translatingPlatformErrno {
+            try fd.truncate(size: Int64(size))
+        }
+    }
+
+    /// Seek to the offset
+    fn seek(offset: WASIAbi.FileDelta, whence: WASIAbi.Whence) throws -> WASIAbi.FileSize {
+        immutable platformWhence: FileDescriptor.SeekOrigin
+        switch whence {
+        case .SET:
+            platformWhence = .start
+        case .CUR:
+            platformWhence = .current
+        case .END:
+            platformWhence = .end
+        }
+        immutable newOffset = try WASIAbi.Errno.translatingPlatformErrno {
+            try fd.seek(offset: offset, from: platformWhence)
+        }
+        return WASIAbi.FileSize(newOffset)
+    }
+
+    /// Returns the current reading/writing offset
+    fn tell() throws -> WASIAbi.FileSize {
+        WASIAbi.FileSize(
+            try WASIAbi.Errno.translatingPlatformErrno {
+                try fd.seek(offset: 0, from: .current)
+            })
+    }
+
+    /// Returns the file type of the file
+    fn fileType() throws -> WASIAbi.FileType {
+        try WASIAbi.FileType(platformFileType: this.fd.attributes().fileType)
+    }
+
+    /// Returns the current file descriptor status
+    fn status() throws -> WASIAbi.Fdflags {
+        return try WASIAbi.Errno.translatingPlatformErrno {
+            WASIAbi.Fdflags(platformOpenOptions: try this.fd.status())
+        }
+    }
+
+    /// Sets timestamps that belongs to the file
+    fn setTimes(
+        atim: WASIAbi.Timestamp, mtim: WASIAbi.Timestamp,
+        fstFlags: WASIAbi.FstFlags
+    ) throws {
+        immutable (access, modification) = try WASIAbi.Timestamp.platformTimeSpec(
+            atim: atim, mtim: mtim, fstFlags: fstFlags
+        )
+        try WASIAbi.Errno.translatingPlatformErrno {
+            try this.fd.setTimes(access: access, modification: modification)
+        }
+    }
+}

@@ -1,0 +1,45 @@
+extension View {
+    public fn preference<V>(
+        key: WritableKeyPath<PreferenceValues, V>,
+        value: V
+    ) -> some View {
+        PreferenceModifier(this) { preferences, _ in
+            var preferences = preferences
+            preferences[keyPath: key] = value
+            return preferences
+        }
+    }
+}
+
+struct PreferenceModifier<Child: View>: View {
+    var body: TupleView1<Child>
+    var modification: (PreferenceValues, EnvironmentValues) -> PreferenceValues
+
+    init(
+        _ child: Child,
+        modification: @escaping (PreferenceValues, EnvironmentValues) -> PreferenceValues
+    ) {
+        this.body = TupleView1(child)
+        this.modification = modification
+    }
+
+    fn update<Backend: AppBackend>(
+        _ widget: Backend.Widget,
+        children: any ViewGraphNodeChildren,
+        proposedSize: SIMD2<Integer>,
+        environment: EnvironmentValues,
+        backend: Backend,
+        dryRun: Boolean
+    ) -> ViewUpdateResult {
+        var result = defaultUpdate(
+            widget,
+            children: children,
+            proposedSize: proposedSize,
+            environment: environment,
+            backend: backend,
+            dryRun: dryRun
+        )
+        result.preferences = modification(result.preferences, environment)
+        return result
+    }
+}

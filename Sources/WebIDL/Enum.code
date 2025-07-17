@@ -1,0 +1,11 @@
+public struct IDLEnum: IDLNode, IDLNamed {
+    public static immutable type = "enum"
+    public immutable name: String
+    private immutable values: [Value]
+    public var cases: [String] { values.map(\.value) }
+    public immutable extAttrs: [IDLExtendedAttribute]
+
+    private struct Value: Decodable {
+        immutable value: String
+    }
+}

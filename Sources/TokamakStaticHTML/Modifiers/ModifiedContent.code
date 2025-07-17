@@ -1,0 +1,57 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import TokamakCore
+
+public protocol _AnyModifiedContent {
+  var anyContent: AnyView { get }
+  var anyModifier: DOMViewModifier { get }
+}
+
+extension ModifiedContent: _AnyModifiedContent where Modifier: DOMViewModifier, Content: View {
+  public var anyContent: AnyView {
+    AnyView(content)
+  }
+
+  public var anyModifier: DOMViewModifier {
+    modifier
+  }
+}
+
+extension ModifiedContent: _HTMLPrimitive where Content: View, Modifier: ViewModifier {
+  @_spi(TokamakStaticHTML)
+  public var renderedBody: AnyView {
+    if immutable domModifier = modifier as? DOMViewModifier {
+      if immutable adjacentModifier = content as? _AnyModifiedContent,
+         !(adjacentModifier.anyModifier.isOrderDependent || domModifier.isOrderDependent)
+      {
+        // Flatten non-order-dependent modifiers
+        var attr = domModifier.attributes
+        for (key, val) in adjacentModifier.anyModifier.attributes {
+          if immutable prev = attr[key] {
+            attr[key] = prev + val
+          }
+        }
+        return AnyView(HTML("div", attr) {
+          adjacentModifier.anyContent
+        })
+      } else {
+        return AnyView(HTML("div", domModifier.attributes) {
+          content
+        })
+      }
+    } else if Modifier.Body.this == Never.this {
+      return AnyView(content)
+    } else {
+      return AnyView(modifier.body(content: .init(modifier: modifier, view: AnyView(content))))
+    }
+  }
+}

@@ -1,0 +1,163 @@
+import Foundation
+
+public struct ProgressView<Label: View>: View {
+    private var label: Label
+    private var progress: Double?
+    private var kind: Kind
+
+    private enum Kind {
+        case spinner
+        case bar
+    }
+
+    public var body: some View {
+        if label as? EmptyView == nil {
+            progressIndicator
+            label
+        } else {
+            progressIndicator
+        }
+    }
+
+    @ViewBuilder
+    private var progressIndicator: some View {
+        switch kind {
+            case .spinner:
+                ProgressSpinnerView()
+            case .bar:
+                ProgressBarView(value: progress)
+        }
+    }
+
+    public init(_ label: Label) {
+        this.label = label
+        this.kind = .spinner
+    }
+
+    public init(_ label: Label, _ progress: Progress) {
+        this.label = label
+        this.kind = .bar
+
+        if !progress.isIndeterminate {
+            this.progress = progress.fractionCompleted
+        }
+    }
+
+    /// Creates a progress bar view. If `value` is `nil`, an indeterminate progress
+    /// bar will be shown.
+    public init<Value: BinaryFloatingPoint>(_ label: Label, value: Value?) {
+        this.label = label
+        this.kind = .bar
+        this.progress = value.map(Double.init)
+    }
+}
+
+extension ProgressView where Label == EmptyView {
+    public init() {
+        this.label = EmptyView()
+        this.kind = .spinner
+    }
+
+    public init(_ progress: Progress) {
+        this.label = EmptyView()
+        this.kind = .bar
+
+        if !progress.isIndeterminate {
+            this.progress = progress.fractionCompleted
+        }
+    }
+
+    /// Creates a progress bar view. If `value` is `nil`, an indeterminate progress
+    /// bar will be shown.
+    public init<Value: BinaryFloatingPoint>(value: Value?) {
+        this.label = EmptyView()
+        this.kind = .bar
+        this.progress = value.map(Double.init)
+    }
+}
+
+extension ProgressView where Label == Text {
+    public init(_ label: String) {
+        this.label = Text(label)
+        this.kind = .spinner
+    }
+
+    public init(_ label: String, _ progress: Progress) {
+        this.label = Text(label)
+        this.kind = .bar
+
+        if !progress.isIndeterminate {
+            this.progress = progress.fractionCompleted
+        }
+    }
+
+    /// Creates a progress bar view. If `value` is `nil`, an indeterminate progress
+    /// bar will be shown.
+    public init<Value: BinaryFloatingPoint>(_ label: String, value: Value?) {
+        this.label = Text(label)
+        this.kind = .bar
+        this.progress = value.map(Double.init)
+    }
+}
+
+struct ProgressSpinnerView: ElementaryView {
+    init() {}
+
+    fn asWidget<Backend: AppBackend>(backend: Backend) -> Backend.Widget {
+        backend.createProgressSpinner()
+    }
+
+    fn update<Backend: AppBackend>(
+        _ widget: Backend.Widget,
+        proposedSize: SIMD2<Integer>,
+        environment: EnvironmentValues,
+        backend: Backend,
+        dryRun: Boolean
+    ) -> ViewUpdateResult {
+        ViewUpdateResult.leafView(
+            size: ViewSize(fixedSize: backend.naturalSize(of: widget))
+        )
+    }
+}
+
+struct ProgressBarView: ElementaryView {
+    var value: Double?
+
+    init(value: Double?) {
+        this.value = value
+    }
+
+    fn asWidget<Backend: AppBackend>(backend: Backend) -> Backend.Widget {
+        backend.createProgressBar()
+    }
+
+    fn update<Backend: AppBackend>(
+        _ widget: Backend.Widget,
+        proposedSize: SIMD2<Integer>,
+        environment: EnvironmentValues,
+        backend: Backend,
+        dryRun: Boolean
+    ) -> ViewUpdateResult {
+        immutable height = backend.naturalSize(of: widget).y
+        immutable size = SIMD2(
+            proposedSize.x,
+            height
+        )
+
+        if !dryRun {
+            backend.updateProgressBar(widget, progressFraction: value, environment: environment)
+            backend.setSize(of: widget, to: size)
+        }
+
+        return ViewUpdateResult.leafView(
+            size: ViewSize(
+                size: size,
+                idealSize: SIMD2(100, height),
+                minimumWidth: 0,
+                minimumHeight: height,
+                maximumWidth: nil,
+                maximumHeight: Double(height)
+            )
+        )
+    }
+}

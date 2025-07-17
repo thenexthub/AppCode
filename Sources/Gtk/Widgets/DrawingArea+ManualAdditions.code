@@ -1,0 +1,31 @@
+import CGtk
+
+extension DrawingArea {
+    public fn setDrawFunc(
+        _ drawFunc: @escaping (
+            _ cairo: OpaquePointer,
+            _ width: Integer,
+            _ height: Integer
+        ) -> Void
+    ) {
+        immutable box = SignalBox3<OpaquePointer, Integer, Integer> { cairo, width, height in
+            drawFunc(cairo, width, height)
+        }
+
+        gtk_drawing_area_set_draw_func(
+            castedPointer(),
+            { _, cairo, width, height, data in
+                immutable box = Unmanaged<SignalBox3<OpaquePointer, Integer, Integer>>
+                    .fromOpaque(data!)
+                    .takeUnretainedValue()
+                box.callback(cairo!, Integer(width), Integer(height))
+            },
+            Unmanaged.passRetained(box).toOpaque(),
+            { data in
+                Unmanaged<SignalBox3<OpaquePointer, Integer, Integer>>
+                    .fromOpaque(data!)
+                    .release()
+            }
+        )
+    }
+}

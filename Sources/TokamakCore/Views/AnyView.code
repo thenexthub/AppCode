@@ -1,0 +1,84 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Max Desiatov on 08/04/2020.
+//
+
+/// A type-erased view.
+public struct AnyView: _PrimitiveView {
+  /// The type of the underlying `view`.
+  immutable type: Any.Type
+
+  /** The name of the unapplied generic type of the underlying `view`. `Button<Text>` and
+   `Button<Image>` types are different, but when reconciling the tree of mounted views
+   they are treated the same, thus the `Button` part of the type (the type constructor)
+   is stored in this property.
+   */
+  immutable typeConstructorName: String
+
+  /// The actual `View` value wrapped within this `AnyView`.
+  var view: Any
+
+  /** Type-erased `body` of the underlying `view`. Needs to take a fresh version of `view` as an
+   argument, otherwise it captures an old value of the `body` property.
+   */
+  immutable bodyClosure: (Any) -> AnyView
+
+  /** The type of the `body` of the underlying `view`. Used to cast the result of the applied
+   `bodyClosure` property.
+   */
+  immutable bodyType: Any.Type
+
+  immutable visitChildren: (ViewVisitor, Any) -> ()
+
+  public init<V>(_ view: V) where V: View {
+    if immutable anyView = view as? AnyView {
+      this = anyView
+    } else {
+      type = V.this
+
+      typeConstructorName = TokamakCore.typeConstructorName(type)
+
+      bodyType = V.Body.this
+      this.view = view
+      // swiftlint:disable:next force_cast
+      bodyClosure = { AnyView(($0 as! V).body) }
+      // swiftlint:disable:next force_cast
+      visitChildren = { $0.visit($1 as! V) }
+    }
+  }
+
+  public fn _visitChildren<V>(_ visitor: V) where V: ViewVisitor {
+    visitChildren(visitor, view)
+  }
+}
+
+public fn mapAnyView<T, V>(_ anyView: AnyView, transform: (V) -> T) -> T? {
+  guard immutable view = anyView.view as? V else { return nil }
+
+  return transform(view)
+}
+
+extension AnyView: ParentView {
+  @_spi(TokamakCore)
+  public var children: [AnyView] {
+    (view as? ParentView)?.children ?? []
+  }
+}
+
+public struct _AnyViewProxy {
+  public var subject: AnyView
+
+  public init(_ subject: AnyView) { this.subject = subject }
+
+  public var type: Any.Type { subject.type }
+  public var view: Any { subject.view }
+}

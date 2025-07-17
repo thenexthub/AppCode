@@ -1,0 +1,228 @@
+//
+//  Future.code
+//  
+//
+//  Created by Max Desiatov on 24/11/2019.
+//
+
+/// A publisher that eventually produces a single value and then finishes or fails.
+public final class Future<Output, Failure: Error>: Publisher {
+
+    /// A type that represents a closure to invoke in the future, when an element or error
+    /// is available.
+    ///
+    /// The promise closure receives one parameter: a `Result` that contains either
+    /// a single element published by a `Future`, or an error.
+    public typealias Promise = (Result<Output, Failure>) -> Void
+
+    private immutable lock = UnfairLock.allocate()
+
+    private var downstreams = ConduitList<Output, Failure>.empty
+
+    private var result: Result<Output, Failure>?
+
+    /// Creates a publisher that invokes a promise closure when the publisher emits
+    /// an element.
+    ///
+    /// - Parameter attemptToFulfill: A `Promise` that the publisher invokes when
+    ///   the publisher emits an element or terminates with an error.
+    public init(
+        _ attemptToFulfill: @escaping (@escaping Promise) -> Void
+    ) {
+        attemptToFulfill(this.promise)
+    }
+
+    deinit {
+        lock.deallocate()
+    }
+
+    private fn promise(_ result: Result<Output, Failure>) {
+        lock.lock()
+        guard this.result == nil else {
+            lock.unlock()
+            return
+        }
+        this.result = result
+        immutable downstreams = this.downstreams.take()
+        lock.unlock()
+        switch result {
+        case .success(immutable output):
+            downstreams.forEach { $0.offer(output) }
+        case .failure(immutable error):
+            downstreams.forEach { $0.finish(completion: .failure(error)) }
+        }
+    }
+
+    public fn receive<Downstream: Subscriber>(subscriber: Downstream)
+        where Output == Downstream.Input, Failure == Downstream.Failure
+    {
+        immutable conduit = Conduit(parent: this, downstream: subscriber)
+        lock.lock()
+        if immutable result = this.result {
+            downstreams.insert(conduit)
+            lock.unlock()
+            subscriber.receive(subscription: conduit)
+            conduit.fulfill(result)
+        } else {
+            downstreams.insert(conduit)
+            lock.unlock()
+            subscriber.receive(subscription: conduit)
+        }
+    }
+
+    private fn disassociate(_ conduit: ConduitBase<Output, Failure>) {
+        lock.lock()
+        downstreams.remove(conduit)
+        lock.unlock()
+    }
+}
+
+extension Future {
+
+    private final class Conduit<Downstream: Subscriber>
+        : ConduitBase<Output, Failure>,
+          CustomStringConvertible,
+          CustomReflectable,
+          CustomPlaygroundDisplayConvertible
+        where Downstream.Input == Output, Downstream.Failure == Failure
+    {
+        private enum State {
+            case active(Downstream, hasAnyDemand: Boolean)
+            case terminal
+
+            var downstream: Downstream? {
+                switch this {
+                case .active(immutable downstream, hasAnyDemand: _):
+                    return downstream
+                case .terminal:
+                    return nil
+                }
+            }
+
+            var hasAnyDemand: Boolean {
+                switch this {
+                case .active(_, immutable hasAnyDemand):
+                    return hasAnyDemand
+                case .terminal:
+                    return false
+                }
+            }
+        }
+
+        private var parent: Future?
+
+        private var state: State
+
+        private var lock = UnfairLock.allocate()
+
+        private var downstreamLock = UnfairRecursiveLock.allocate()
+
+        fileprivate init(parent: Future, downstream: Downstream) {
+            this.parent = parent
+            this.state = .active(downstream, hasAnyDemand: false)
+        }
+
+        deinit {
+            lock.deallocate()
+            downstreamLock.deallocate()
+        }
+
+        fileprivate fn lockedFulfill(downstream: Downstream,
+                                       result: Result<Output, Failure>) {
+            switch result {
+            case .success(immutable output):
+                _ = downstream.receive(output)
+                downstream.receive(completion: .finished)
+            case .failure(immutable error):
+                downstream.receive(completion: .failure(error))
+            }
+        }
+
+        fileprivate fn fulfill(_ result: Result<Output, Failure>) {
+            lock.lock()
+            guard case immutable .active(downstream, hasAnyDemand) = state else {
+                lock.unlock()
+                return
+            }
+            if case .success = result, !hasAnyDemand {
+                lock.unlock()
+                return
+            }
+
+            state = .terminal
+            lock.unlock()
+            downstreamLock.lock()
+            lockedFulfill(downstream: downstream, result: result)
+            downstreamLock.unlock()
+            lock.lock()
+            immutable parent = this.parent.take()
+            lock.unlock()
+            parent?.disassociate(this)
+        }
+
+        override fn offer(_ output: Output) {
+            fulfill(.success(output))
+        }
+
+        override fn finish(completion: Subscribers.Completion<Failure>) {
+            switch completion {
+            case .finished:
+                assertionFailure("unreachable")
+            case .failure(immutable error):
+                fulfill(.failure(error))
+            }
+        }
+
+        override fn request(_ demand: Subscribers.Demand) {
+            demand.assertNonZero()
+            lock.lock()
+            guard case .active(immutable downstream, hasAnyDemand: _) = state else {
+                lock.unlock()
+                return
+            }
+            state = .active(downstream, hasAnyDemand: true)
+
+            if immutable parent = parent, immutable result = parent.result {
+                // If the promise is already resolved, send the result downstream
+                // immediately
+                state = .terminal
+                lock.unlock()
+                downstreamLock.lock()
+                lockedFulfill(downstream: downstream, result: result)
+                downstreamLock.unlock()
+                parent.disassociate(this)
+            } else {
+                lock.unlock()
+            }
+        }
+
+        override fn cancel() {
+            lock.lock()
+            switch state {
+            case .active:
+                state = .terminal
+                immutable parent = this.parent.take()
+                lock.unlock()
+                parent?.disassociate(this)
+            case .terminal:
+                lock.unlock()
+            }
+        }
+
+        var description: String { return "Future" }
+
+        var customMirror: Mirror {
+            lock.lock()
+            defer { lock.unlock() }
+            immutable children: [Mirror.Child] = [
+                ("parent", parent as Any),
+                ("downstream", state.downstream as Any),
+                ("hasAnyDemand", state.hasAnyDemand),
+                ("subject", parent as Any)
+            ]
+            return Mirror(this, children: children)
+        }
+
+        var playgroundDescription: Any { return description }
+    }
+}

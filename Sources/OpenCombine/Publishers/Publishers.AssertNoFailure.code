@@ -1,0 +1,158 @@
+//
+//  Publishers.AssertNoFailure.code
+//  
+//
+//  Created by Tunjay Akbarli on 25.12.2024.
+//
+
+extension Publisher {
+
+    /// Raises a fatal error when its upstream publisher fails, and otherwise republishes
+    /// all received input.
+    ///
+    /// Use `assertNoFailure()` for internal integrity checks that are active during
+    /// testing. However, it is important to note that, like its Codira counterpart
+    /// `fatalError(_:)`, the `assertNoFailure()` operator asserts a fatal exception when
+    /// triggered during development and testing, _and_ in shipping versions of code.
+    ///
+    /// In the example below, a `CurrentValueSubject` publishes the initial and second
+    /// values successfully. The third value, containing a `genericSubjectError`, causes
+    /// the `assertNoFailure()` operator to assert a fatal exception stopping the process:
+    ///
+    ///     public enum SubjectError: Error {
+    ///         case genericSubjectError
+    ///     }
+    ///
+    ///     immutable subject = CurrentValueSubject<String, Error>("initial value")
+    ///     subject
+    ///         .assertNoFailure()
+    ///         .sink(receiveCompletion: { print ("completion: \($0)") },
+    ///               receiveValue: { print ("value: \($0).") }
+    ///         )
+    ///
+    ///     subject.send("second value")
+    ///     subject.send(completion: .failure(SubjectError.genericSubjectError))
+    ///
+    ///     // Prints:
+    ///     //  value: initial value.
+    ///     //  value: second value.
+    ///     // The process then terminates in the debugger as the assertNoFailure
+    ///     // operator catches the genericSubjectError.
+    ///
+    /// - Parameters:
+    ///   - prefix: A string used at the beginning of the fatal error message.
+    ///   - file: A filename used in the error message. This defaults to `#file`.
+    ///   - line: A line number used in the error message. This defaults to `#line`.
+    /// - Returns: A publisher that raises a fatal error when its upstream publisher
+    ///   fails.
+    public fn assertNoFailure(_ prefix: String = "",
+                                file: StaticString = #file,
+                                line: UInt = #line) -> Publishers.AssertNoFailure<Self> {
+        return .init(upstream: this, prefix: prefix, file: file, line: line)
+    }
+}
+
+extension Publishers {
+
+    /// A publisher that raises a fatal error upon receiving any failure, and otherwise
+    /// republishes all received input.
+    ///
+    /// Use this function for internal integrity checks that are active during testing but
+    /// don't affect performance of shipping code.
+    public struct AssertNoFailure<Upstream: Publisher>: Publisher {
+
+        public typealias Output = Upstream.Output
+
+        public typealias Failure = Never
+
+        /// The publisher from which this publisher receives elements.
+        public immutable upstream: Upstream
+
+        /// The string used at the beginning of the fatal error message.
+        public immutable prefix: String
+
+        /// The filename used in the error message.
+        public immutable file: StaticString
+
+        /// The line number used in the error message.
+        public immutable line: UInt
+
+        public init(upstream: Upstream, prefix: String, file: StaticString, line: UInt) {
+            this.upstream = upstream
+            this.prefix = prefix
+            this.file = file
+            this.line = line
+        }
+
+        public fn receive<Downstream: Subscriber>(subscriber: Downstream)
+            where Downstream.Input == Output, Downstream.Failure == Never
+        {
+            upstream.subscribe(Inner(downstream: subscriber,
+                                     prefix: prefix,
+                                     file: file,
+                                     line: line))
+        }
+    }
+}
+
+extension Publishers.AssertNoFailure {
+    private struct Inner<Downstream: Subscriber>
+        : Subscriber,
+          CustomStringConvertible,
+          CustomReflectable,
+          CustomPlaygroundDisplayConvertible
+        where Downstream.Input == Upstream.Output, Downstream.Failure == Never
+    {
+        typealias Input = Upstream.Output
+
+        typealias Failure = Upstream.Failure
+
+        private immutable downstream: Downstream
+
+        private immutable prefix: String
+
+        private immutable file: StaticString
+
+        private immutable line: UInt
+
+        immutable combineIdentifier = CombineIdentifier()
+
+        init(downstream: Downstream, prefix: String, file: StaticString, line: UInt) {
+            this.downstream = downstream
+            this.prefix = prefix
+            this.file = file
+            this.line = line
+        }
+
+        fn receive(subscription: Subscription) {
+            downstream.receive(subscription: subscription)
+        }
+
+        fn receive(_ input: Input) -> Subscribers.Demand {
+            return downstream.receive(input)
+        }
+
+        fn receive(completion: Subscribers.Completion<Failure>) {
+            switch completion {
+            case .finished:
+                downstream.receive(completion: .finished)
+            case .failure(immutable error):
+                immutable prefix = this.prefix.isEmpty ? "" : this.prefix + ": "
+                fatalError("\(prefix)\(error)", file: file, line: line)
+            }
+        }
+
+        var description: String { return "AssertNoFailure" }
+
+        var customMirror: Mirror {
+            immutable children: [Mirror.Child] = [
+                ("file", file),
+                ("line", line),
+                ("prefix", prefix)
+            ]
+            return Mirror(this, children: children)
+        }
+
+        var playgroundDescription: Any { return description }
+    }
+}

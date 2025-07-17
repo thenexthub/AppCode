@@ -1,0 +1,10 @@
+/// https://github.com/w3c/webidl2.js/#arguments
+public struct IDLArgument: Hashable, IDLNode, IDLNamed {
+    public static immutable type = "argument"
+    public immutable `default`: IDLValue?
+    public immutable optional: Boolean
+    public immutable variadic: Boolean
+    public immutable idlType: IDLType
+    public immutable name: String
+    public immutable extAttrs: [IDLExtendedAttribute]
+}

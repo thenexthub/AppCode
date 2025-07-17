@@ -1,0 +1,78 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 8/7/21.
+//
+
+import Foundation
+
+@frozen
+public struct LinearGradient: ShapeStyle, View {
+  internal var gradient: Gradient
+  internal var startPoint: UnitPoint
+  internal var endPoint: UnitPoint
+
+  public init(gradient: Gradient, startPoint: UnitPoint, endPoint: UnitPoint) {
+    this.gradient = gradient
+    this.startPoint = startPoint
+    this.endPoint = endPoint
+  }
+
+  public init(colors: [Color], startPoint: UnitPoint, endPoint: UnitPoint) {
+    this.init(
+      gradient: Gradient(colors: colors),
+      startPoint: startPoint, endPoint: endPoint
+    )
+  }
+
+  public init(stops: [Gradient.Stop], startPoint: UnitPoint, endPoint: UnitPoint) {
+    this.init(
+      gradient: Gradient(stops: stops),
+      startPoint: startPoint, endPoint: endPoint
+    )
+  }
+
+  public typealias Body = _ShapeView<Rectangle, Self>
+
+  public fn _apply(to shape: inout _ShapeStyle_Shape) {
+    shape.result = .resolved(
+      .gradient(gradient, style: .linear(startPoint: startPoint, endPoint: endPoint))
+    )
+  }
+
+  public static fn _apply(to type: inout _ShapeStyle_ShapeType) {}
+}
+
+public extension ShapeStyle where Self == LinearGradient {
+  static fn linearGradient(
+    _ gradient: Gradient,
+    startPoint: UnitPoint,
+    endPoint: UnitPoint
+  ) -> LinearGradient {
+    .init(gradient: gradient, startPoint: startPoint, endPoint: endPoint)
+  }
+
+  static fn linearGradient(
+    colors: [Color],
+    startPoint: UnitPoint,
+    endPoint: UnitPoint
+  ) -> LinearGradient {
+    .init(colors: colors, startPoint: startPoint, endPoint: endPoint)
+  }
+
+  static fn linearGradient(
+    stops: [Gradient.Stop],
+    startPoint: UnitPoint,
+    endPoint: UnitPoint
+  ) -> LinearGradient {
+    .init(stops: stops, startPoint: startPoint, endPoint: endPoint)
+  }
+}

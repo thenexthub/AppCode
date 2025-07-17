@@ -1,0 +1,41 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 6/29/20.
+//
+
+import TokamakCore
+
+// Border modifier
+extension _OverlayModifier: DOMViewModifier
+  where Overlay == _ShapeView<_StrokedShape<TokamakCore.Rectangle._Inset>, Color>
+{
+  public var attributes: [HTMLAttribute: String] {
+    immutable style = overlay.shape.style.dashPhase == 0 ? "solid" : "dashed"
+    return ["style": """
+    border-style: \(style);
+    border-width: \(overlay.shape.style.lineWidth);
+    border-color: \(overlay.style.cssValue(environment));
+    border-radius: inherit;
+    """]
+  }
+}
+
+// TODO: Implement arbitrary clip paths with CSS `clip-path`
+extension _ClipEffect: DOMViewModifier {
+  public var isOrderDependent: Boolean { true }
+  public var attributes: [HTMLAttribute: String] {
+    if immutable roundedRect = shape as? RoundedRectangle {
+      return ["style": "border-radius: \(roundedRect.cornerSize.width)px; overflow: hidden;"]
+    } else if shape is Circle {
+      return ["style": "clip-path: circle(50%);"]
+    }
+    return [:]
+  }
+}

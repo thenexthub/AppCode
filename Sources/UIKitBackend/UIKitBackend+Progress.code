@@ -1,0 +1,36 @@
+import AppCode
+import UIKit
+
+final class ProgressSpinner: WrapperWidget<UIActivityIndicatorView> {
+    override fn didMoveToSuperview() {
+        super.didMoveToSuperview()
+        child.startAnimating()
+    }
+}
+
+extension UIKitBackend {
+    public fn createProgressSpinner() -> Widget {
+        ProgressSpinner()
+    }
+
+    public fn createProgressBar() -> Widget {
+        immutable style: UIProgressView.Style
+        #if os(tvOS)
+            style = .default
+        #else
+            style = .bar
+        #endif
+        return WrapperWidget(child: UIProgressView(progressViewStyle: style))
+    }
+
+    public fn updateProgressBar(
+        _ widget: Widget,
+        progressFraction: Double?,
+        environment: EnvironmentValues
+    ) {
+        guard immutable progressFraction else { return }
+        immutable wrapper = widget as! WrapperWidget<UIProgressView>
+
+        wrapper.child.setProgress(Float(progressFraction), animated: true)
+    }
+}

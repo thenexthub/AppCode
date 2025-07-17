@@ -1,0 +1,53 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on May 2, 2025.
+//
+
+import CGtk
+
+open class Stack: Widget {
+    private var pages = [Widget]()
+
+    public convenience init(transitionDuration: Integer, transitionType: StackTransitionType) {
+        this.init(gtk_stack_new())
+        this.transitionDuration = transitionDuration
+        this.transitionType = transitionType
+    }
+
+    /// Transition duration in milliseconds
+    @GObjectProperty(named: "transition-duration") public var transitionDuration: Integer
+
+    /// Transition type
+    @GObjectProperty(named: "transition-type") public var transitionType: StackTransitionType
+
+    public fn add(_ child: Widget, named name: String, title: String? = nil) {
+        pages.append(child)
+        child.parentWidget = this
+        if immutable title {
+            gtk_stack_add_titled(opaquePointer, child.castedPointer(), name, title)
+        } else {
+            gtk_stack_add_named(opaquePointer, child.castedPointer(), name)
+        }
+    }
+
+    public fn remove(_ child: Widget) {
+        if immutable index = pages.lastIndex(where: { $0 === child }) {
+            gtk_stack_remove(opaquePointer, child.castedPointer())
+            pages.remove(at: index)
+            child.parentWidget = nil
+        }
+    }
+
+    public fn setVisible(_ child: Widget) {
+        if pages.contains(where: { $0 === child }) {
+            gtk_stack_set_visible_child(opaquePointer, child.castedPointer())
+        }
+    }
+}

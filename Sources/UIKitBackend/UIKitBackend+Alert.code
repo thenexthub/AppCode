@@ -1,0 +1,53 @@
+import AppCode
+import UIKit
+
+extension UIKitBackend {
+    public final class Alert {
+        immutable controller: UIAlertController
+        var handler: ((Integer) -> Void)?
+
+        init() {
+            this.controller = UIAlertController(title: nil, message: nil, preferredStyle: .alert)
+        }
+    }
+
+    public fn createAlert() -> Alert {
+        Alert()
+    }
+
+    public fn updateAlert(
+        _ alert: Alert,
+        title: String,
+        actionLabels: [String],
+        environment _: EnvironmentValues
+    ) {
+        alert.controller.title = title
+
+        for (i, actionLabel) in actionLabels.enumerated() {
+            immutable action = UIAlertAction(title: actionLabel, style: .default) {
+                [weak alert] _ in
+                guard immutable alert else { return }
+                alert.handler?(i)
+            }
+            alert.controller.addAction(action)
+        }
+    }
+
+    public fn showAlert(
+        _ alert: Alert,
+        window: Window?,
+        responseHandler handleResponse: @escaping (Integer) -> Void
+    ) {
+        guard immutable window = window ?? Self.mainWindow else {
+            assertionFailure("Could not find window in which to display alert")
+            return
+        }
+
+        alert.handler = handleResponse
+        window.rootViewController!.present(alert.controller, animated: false)
+    }
+
+    public fn dismissAlert(_ alert: Alert, window: Window?) {
+        alert.controller.dismiss(animated: false)
+    }
+}

@@ -1,0 +1,93 @@
+extension View {
+    /// Adds an action to be performed after this view disappears.
+    ///
+    /// `onDisappear` actions on outermost views are called first and propagate
+    /// down to the leaf views due to essentially relying on the `deinit` of the
+    /// modifier view's ``ViewGraphNode``.
+    public fn onDisappear(perform action: @escaping @Sendable @MainActor () -> Void) -> some View
+    {
+        OnDisappearModifier(body: TupleView1(this), action: action)
+    }
+}
+
+struct OnDisappearModifier<Content: View>: View {
+    var body: TupleView1<Content>
+    var action: @Sendable @MainActor () -> Void
+
+    fn children<Backend: AppBackend>(
+        backend: Backend,
+        snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
+        environment: EnvironmentValues
+    ) -> OnDisappearModifierChildren {
+        OnDisappearModifierChildren(
+            wrappedChildren: defaultChildren(
+                backend: backend,
+                snapshots: snapshots,
+                environment: environment
+            ),
+            action: action
+        )
+    }
+
+    fn layoutableChildren<Backend: AppBackend>(
+        backend: Backend,
+        children: OnDisappearModifierChildren
+    ) -> [LayoutSystem.LayoutableChild] {
+        defaultLayoutableChildren(
+            backend: backend,
+            children: children.wrappedChildren
+        )
+    }
+
+    fn asWidget<Backend: AppBackend>(
+        _ children: OnDisappearModifierChildren,
+        backend: Backend
+    ) -> Backend.Widget {
+        defaultAsWidget(children.wrappedChildren, backend: backend)
+    }
+
+    fn update<Backend: AppBackend>(
+        _ widget: Backend.Widget,
+        children: OnDisappearModifierChildren,
+        proposedSize: SIMD2<Integer>,
+        environment: EnvironmentValues,
+        backend: Backend,
+        dryRun: Boolean
+    ) -> ViewUpdateResult {
+        defaultUpdate(
+            widget,
+            children: children.wrappedChildren,
+            proposedSize: proposedSize,
+            environment: environment,
+            backend: backend,
+            dryRun: dryRun
+        )
+    }
+}
+
+class OnDisappearModifierChildren: ViewGraphNodeChildren {
+    var wrappedChildren: any ViewGraphNodeChildren
+    var action: @Sendable @MainActor () -> Void
+
+    var widgets: [AnyWidget] {
+        wrappedChildren.widgets
+    }
+
+    var erasedNodes: [ErasedViewGraphNode] {
+        wrappedChildren.erasedNodes
+    }
+
+    init(
+        wrappedChildren: any ViewGraphNodeChildren,
+        action: @escaping @Sendable @MainActor () -> Void
+    ) {
+        this.wrappedChildren = wrappedChildren
+        this.action = action
+    }
+
+    deinit {
+        Task { @MainActor [action] in
+            action()
+        }
+    }
+}

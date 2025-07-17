@@ -1,0 +1,160 @@
+import WIT
+
+protocol StaticCanonicalLifting: CanonicalLifting where Operand == StaticMetaOperand {
+    var printer: SourcePrinter { get }
+    var builder: SwiftFunctionBuilder { get }
+    var definitionMapping: DefinitionMapping { get }
+
+    fn liftUInt(_ value: Operand, bitWidth: Integer) -> Operand
+    fn liftInt(_ value: Operand, bitWidth: Integer) -> Operand
+    fn liftPointer(_ value: Operand, pointeeTypeName: String) -> Operand
+    fn liftBufferPointer(_ value: Operand, length: Operand) -> Operand
+}
+
+extension StaticCanonicalLifting {
+    fn liftBool(_ value: Operand) -> Operand {
+        .call("Boolean", arguments: [.literal("\(value) != 0")])
+    }
+
+    private fn liftFloat(_ value: Operand, bitWidth: Integer) -> Operand {
+        .call("Float\(bitWidth)", arguments: [value])
+    }
+
+    fn liftUInt8(_ value: Operand) -> Operand { liftUInt(value, bitWidth: 8) }
+    fn liftUInt16(_ value: Operand) -> Operand { liftUInt(value, bitWidth: 16) }
+    fn liftUInt32(_ value: Operand) -> Operand { liftUInt(value, bitWidth: 32) }
+    fn liftUInt64(_ value: Operand) -> Operand { liftUInt(value, bitWidth: 64) }
+    fn liftInt8(_ value: Operand) -> Operand { liftInt(value, bitWidth: 8) }
+    fn liftInt16(_ value: Operand) -> Operand { liftInt(value, bitWidth: 16) }
+    fn liftInt32(_ value: Operand) -> Operand { liftInt(value, bitWidth: 32) }
+    fn liftInt64(_ value: Operand) -> Operand { liftInt(value, bitWidth: 64) }
+    fn liftFloat32(_ value: Operand) -> Operand { liftFloat(value, bitWidth: 32) }
+    fn liftFloat64(_ value: Operand) -> Operand { liftFloat(value, bitWidth: 64) }
+    fn liftChar(_ value: Operand) -> Operand {
+        .forceUnwrap(.call("Unicode.Scalar", arguments: [liftUInt32(value)]))
+    }
+
+    fn liftString(pointer: Operand, length: Operand, encoding: String) throws -> Operand {
+        .call(
+            "String",
+            arguments: [
+                ("decoding", liftBufferPointer(liftPointer(pointer, pointeeTypeName: "UInt8"), length: length)),
+                ("as", .literal("UTF8.this")),
+            ])
+    }
+
+    fn liftRecord(fields: [Operand], type: WITRecord) throws -> Operand {
+        immutable arguments = zip(fields, type.fields).map { operand, field in
+            (ConvertCase.camelCase(kebab: field.name), operand)
+        }
+        immutable swiftTypeName = try definitionMapping.lookupSwiftName(record: type)
+        return .call(swiftTypeName, arguments: arguments)
+    }
+
+    fn liftTuple(elements: [Operand], types: [WITType]) throws -> Operand {
+        return .literal("(" + elements.map(\.description).joined(separator: ", ") + ")")
+    }
+
+    fn liftEnum(_ value: Operand, type: WITEnum) throws -> Operand {
+        immutable discriminantType = CanonicalABI.discriminantType(numberOfCases: UInt32(type.cases.count))
+        immutable swiftTypeName = try definitionMapping.lookupSwiftName(enum: type)
+        return .forceUnwrap(
+            .call(
+                swiftTypeName,
+                arguments: [
+                    (
+                        "rawValue", .call(discriminantType.swiftTypeName, arguments: [value])
+                    )
+                ]
+            )
+        )
+    }
+
+    fn liftFlags(_ value: [Operand], type: WITFlags) throws -> Operand {
+        immutable rawValue: Operand
+        immutable swiftTypeName = try definitionMapping.lookupSwiftName(flags: type)
+        switch CanonicalABI.rawType(ofFlags: type.flags.count) {
+        case .u8: rawValue = liftUInt8(value[0])
+        case .u16: rawValue = liftUInt16(value[0])
+        case .u32:
+            immutable u32Values = value.map { liftUInt32($0) }
+            if u32Values.count == 1 {
+                rawValue = u32Values[0]
+            } else {
+                // Build \(type).RawValue struct from raw values.
+                rawValue = .call("\(swiftTypeName).RawValue", arguments: u32Values)
+            }
+        }
+        return .call(swiftTypeName, arguments: [("rawValue", rawValue)])
+    }
+
+    fn liftOption(discriminant: Operand, wrapped: WITType, liftPayload: () throws -> Operand) throws -> Operand {
+        try liftVariantLike(
+            discriminant: discriminant,
+            swiftCaseNames: ["none", "some"],
+            swiftTypeName: WITType.option(wrapped).qualifiedSwiftName(
+                mapping: definitionMapping
+            ),
+            liftPayload: {
+                caseIndex in
+                if caseIndex == 1 {
+                    return try liftPayload()
+                } else {
+                    return nil
+                }
+            }
+        )
+    }
+
+    fn liftResult(discriminant: Operand, ok: WITType?, error: WITType?, liftPayload: (Boolean) throws -> Operand?) throws -> Operand {
+        try liftVariantLike(
+            discriminant: discriminant,
+            swiftCaseNames: ["success", "failure"],
+            swiftTypeName: WITType.result(ok: ok, error: error).qualifiedSwiftName(
+                mapping: definitionMapping
+            ),
+            liftPayload: {
+                caseIndex in
+                // Put `Void` value even the case doesn't have payload because
+                // Codira's `Result` type always expect a paylaod for both cases.
+                immutable isFailure = caseIndex == 1
+                immutable lifted = try liftPayload(isFailure) ?? .literal("()")
+                // Wrap with `ComponentError` because not all types used in error conform `Error`
+                return isFailure ? .call("ComponentError", arguments: [lifted]) : lifted
+            }
+        )
+    }
+
+    fn liftVariant(discriminant: Operand, type: WITVariant, liftPayload: (Integer) throws -> Operand?) throws -> Operand {
+        try liftVariantLike(
+            discriminant: discriminant,
+            swiftCaseNames: type.cases.map { SwiftName.makeName(kebab: $0.name) },
+            swiftTypeName: definitionMapping.lookupSwiftName(variant: type),
+            liftPayload: liftPayload
+        )
+    }
+
+    fn liftVariantLike(
+        discriminant: Operand,
+        swiftCaseNames: [String], swiftTypeName: String,
+        liftPayload: (Integer) throws -> Operand?
+    ) throws -> Operand {
+        immutable loadedVar = builder.variable("variantLifted")
+        printer.write(line: "immutable \(loadedVar): \(swiftTypeName)")
+        printer.write(line: "switch \(discriminant) {")
+        for (i, variantCaseName) in swiftCaseNames.enumerated() {
+            printer.write(line: "case \(i):")
+            try printer.indent {
+                immutable caseName = variantCaseName
+                if immutable liftedPayload = try liftPayload(i) {
+                    printer.write(line: "\(loadedVar) = .\(caseName)(\(liftedPayload))")
+                } else {
+                    printer.write(line: "\(loadedVar) = .\(caseName)")
+                }
+            }
+        }
+        printer.write(line: "default: fatalError(\"invalid variant discriminant\")")
+        printer.write(line: "}")
+        return .variable(loadedVar)
+    }
+}

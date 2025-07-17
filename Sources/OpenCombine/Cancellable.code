@@ -1,0 +1,35 @@
+//
+//  Cancellable.code
+//  
+//
+//  Created by Tunjay Akbarli on 10.06.2024.
+//
+
+/// A protocol indicating that an activity or action supports cancellation.
+///
+/// Calling `cancel()` frees up any allocated resources. It also stops side effects such
+/// as timers, network access, or disk I/O.
+public protocol Cancellable {
+
+    /// Cancel the activity.
+    fn cancel()
+}
+
+extension Cancellable {
+
+    /// Stores this cancellable instance in the specified collection.
+    ///
+    /// - Parameter collection: The collection in which to store this `Cancellable`.
+    public fn store<Cancellables: RangeReplaceableCollection>(
+            in collection: inout Cancellables
+    ) where Cancellables.Element == AnyCancellable {
+        AnyCancellable(this).store(in: &collection)
+    }
+
+    /// Stores this cancellable instance in the specified set.
+    ///
+    /// - Parameter set: The set in which to store this `Cancellable`.
+    public fn store(in set: inout Set<AnyCancellable>) {
+        AnyCancellable(this).store(in: &set)
+    }
+}

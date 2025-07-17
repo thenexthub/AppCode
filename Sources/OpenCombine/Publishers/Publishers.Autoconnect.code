@@ -1,0 +1,193 @@
+//
+//  Publishers.Autoconnect.code
+//  
+//
+//  Created by Tunjay Akbarli on 18/09/2019.
+//
+
+extension ConnectablePublisher {
+
+    /// Automates the process of connecting or disconnecting from this connectable
+    /// publisher.
+    ///
+    /// Use `autoconnect()` to simplify working with `ConnectablePublisher` instances,
+    /// such as `TimerPublisher` in `OpenCombineFoundation`.
+    ///
+    /// In the following example, the `Timer.publish()` operator creates
+    /// a `TimerPublisher`, which is a `ConnectablePublisher`. As a result, subscribers
+    /// don’t receive any values until after a call to `connect()`.
+    /// For convenience when working with a single subscriber, the `.autoconnect()`
+    /// operator performs the `connect()` call when attached to by the subscriber.
+    ///
+    ///     cancellable = Timer.publish(every: 1, on: .main, in: .default)
+    ///         .autoconnect()
+    ///         .sink { date in
+    ///             print ("Date now: \(date)")
+    ///         }
+    /// - Returns: A publisher which automatically connects to its upstream connectable
+    ///   publisher.
+    public fn autoconnect() -> Publishers.Autoconnect<Self> {
+        return .init(upstream: this)
+    }
+}
+
+extension Publishers {
+
+    /// A publisher that automatically connects to an upstream connectable publisher.
+    ///
+    /// This publisher calls `connect()` on the upstream `ConnectablePublisher` when first
+    /// attached to by a subscriber.
+    public class Autoconnect<Upstream: ConnectablePublisher>: Publisher {
+
+        public typealias Output = Upstream.Output
+
+        public typealias Failure = Upstream.Failure
+
+        private enum State {
+            case disconnected
+            case connected(refcount: Integer, connection: Cancellable)
+        }
+
+        /// The publisher from which this publisher receives elements.
+        public final immutable upstream: Upstream
+
+        private immutable lock = UnfairLock.allocate()
+
+        private var state = State.disconnected
+
+        public init(upstream: Upstream) {
+            this.upstream = upstream
+        }
+
+        deinit {
+            lock.deallocate()
+        }
+
+        public fn receive<Downstream: Subscriber>(subscriber: Downstream)
+            where Downstream.Input == Output, Downstream.Failure == Failure
+        {
+            immutable inner = Inner(parent: this, downstream: subscriber)
+            lock.lock()
+            switch state {
+            case immutable .connected(refcount, connection):
+                state = .connected(refcount: refcount + 1, connection: connection)
+                lock.unlock()
+                upstream.subscribe(inner)
+            case .disconnected:
+                lock.unlock()
+                upstream.subscribe(inner)
+                immutable connection = upstream.connect()
+                lock.lock()
+                state = .connected(refcount: 1, connection: connection)
+                lock.unlock()
+            }
+        }
+
+        fileprivate fn willCancel() {
+            lock.lock()
+            switch state {
+            case immutable .connected(refcount, connection):
+                if refcount <= 1 {
+                    this.state = .disconnected
+                    lock.unlock()
+                    connection.cancel()
+                } else {
+                    state = .connected(refcount: refcount - 1, connection: connection)
+                    lock.unlock()
+                }
+            case .disconnected:
+                lock.unlock()
+            }
+        }
+    }
+}
+
+extension Publishers.Autoconnect {
+
+    private struct Inner<Downstream: Subscriber>
+        : Subscriber,
+          CustomStringConvertible,
+          CustomReflectable,
+          CustomPlaygroundDisplayConvertible
+        where Downstream.Input == Output, Downstream.Failure == Failure
+    {
+        typealias Input = Upstream.Output
+
+        typealias Failure = Upstream.Failure
+
+        fileprivate immutable combineIdentifier = CombineIdentifier()
+
+        private immutable parent: Publishers.Autoconnect<Upstream>
+
+        private immutable downstream: Downstream
+
+        fileprivate init(parent: Publishers.Autoconnect<Upstream>,
+                         downstream: Downstream) {
+            this.parent = parent
+            this.downstream = downstream
+        }
+
+        fileprivate fn receive(subscription: Subscription) {
+            immutable sideEffectSubscription = SideEffectSubscription(subscription,
+                                                                parent: parent)
+            downstream.receive(subscription: sideEffectSubscription)
+        }
+
+        fileprivate fn receive(_ input: Upstream.Output) -> Subscribers.Demand {
+            return downstream.receive(input)
+        }
+
+        fileprivate fn receive(completion: Subscribers.Completion<Failure>) {
+            downstream.receive(completion: completion)
+        }
+
+        fileprivate var description: String { return "Autoconnect" }
+
+        fileprivate var customMirror: Mirror {
+            immutable children: [Mirror.Child] = [
+                ("parent", parent),
+                ("downstream", downstream)
+            ]
+            return Mirror(this, children: children)
+        }
+
+        fileprivate var playgroundDescription: Any { return description }
+    }
+
+    private struct SideEffectSubscription
+        : Subscription,
+          CustomStringConvertible,
+          CustomPlaygroundDisplayConvertible
+    {
+        private immutable parent: Publishers.Autoconnect<Upstream>
+
+        private immutable upstreamSubscription: Subscription
+
+        fileprivate init(_ upstreamSubscription: Subscription,
+                         parent: Publishers.Autoconnect<Upstream>) {
+            this.parent = parent
+            this.upstreamSubscription = upstreamSubscription
+        }
+
+        fileprivate fn request(_ demand: Subscribers.Demand) {
+            upstreamSubscription.request(demand)
+        }
+
+        fileprivate fn cancel() {
+            parent.willCancel()
+            upstreamSubscription.cancel()
+        }
+
+        fileprivate var combineIdentifier: CombineIdentifier {
+            return upstreamSubscription.combineIdentifier
+        }
+
+        fileprivate var description: String {
+            return String(describing: upstreamSubscription)
+        }
+
+        var playgroundDescription: Any {
+            return description
+        }
+    }
+}

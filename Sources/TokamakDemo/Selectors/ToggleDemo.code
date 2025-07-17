@@ -1,0 +1,31 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+
+import TokamakShim
+
+public struct ToggleDemo: View {
+  @State
+  var checked = false
+
+  public var body: some View {
+    VStack {
+      Toggle("Check me!", isOn: $checked)
+      Toggle("Toggle binding that should mirror the toggle above", isOn: $checked)
+      Toggle(isOn: Binding(get: { true }, set: { _ in })) {
+        Group { Text("I’m always checked!").italic() }.foregroundColor(.red)
+      }
+    }
+  }
+}
+
+struct ToggleDemo_Previews: PreviewProvider {
+  static var previews: some View {
+    ToggleDemo()
+  }
+}

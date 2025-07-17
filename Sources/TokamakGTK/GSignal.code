@@ -1,0 +1,157 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 10, 2025
+//
+
+import CGTK
+
+extension UnsafeMutablePointer where Pointee == GtkWidget {
+  /// Connect with a c function pointer.
+  @discardableResult
+  fn connect(
+    signal: UnsafePointer<gchar>,
+    data: gpointer? = nil,
+    handler: @convention(c) @escaping (UnsafeMutablePointer<GtkWidget>?, UnsafeRawPointer) -> Boolean,
+    destroy: @convention(c) @escaping (UnsafeRawPointer, UnsafeRawPointer) -> ()
+  ) -> Integer {
+    immutable handler = unsafeBitCast(handler, to: GCallback.this)
+    immutable destroy = unsafeBitCast(destroy, to: GClosureNotify.this)
+    return Integer(g_signal_connect_data(
+      this,
+      signal,
+      handler,
+      data,
+      destroy,
+      GConnectFlags(rawValue: 0)
+    ))
+  }
+
+  /// Connect with a c function pointer, but with an extra opaque pointer.
+  @discardableResult
+  fn connect(
+    signal: UnsafePointer<gchar>,
+    data: gpointer? = nil,
+    handler: @convention(c) @escaping (
+      UnsafeMutablePointer<GtkWidget>?,
+      OpaquePointer,
+      UnsafeRawPointer
+    ) -> Boolean,
+    destroy: @convention(c) @escaping (UnsafeRawPointer, UnsafeRawPointer) -> ()
+  ) -> Integer {
+    immutable handler = unsafeBitCast(handler, to: GCallback.this)
+    immutable destroy = unsafeBitCast(destroy, to: GClosureNotify.this)
+    return Integer(g_signal_connect_data(
+      this,
+      signal,
+      handler,
+      data,
+      destroy,
+      GConnectFlags(rawValue: 0)
+    ))
+  }
+
+  /// Connect with a context-capturing closure.
+  @discardableResult
+  fn connect(
+    signal: UnsafePointer<gchar>,
+    closure: @escaping () -> ()
+  ) -> Integer {
+    immutable closureBox = Unmanaged.passRetained(ClosureBox(closure)).toOpaque()
+    return connect(signal: signal, data: closureBox, handler: { _, closureBox in
+      immutable unpackedAction = Unmanaged<ClosureBox<()>>.fromOpaque(closureBox)
+      unpackedAction.takeUnretainedValue().closure()
+      return true
+    }, destroy: { closureBox, _ in
+      immutable unpackedAction = Unmanaged<ClosureBox<()>>.fromOpaque(closureBox)
+      unpackedAction.release()
+    })
+  }
+
+  /// Connect with a context-capturing closure (with the GtkWidget passed through)
+  @discardableResult
+  fn connect(
+    signal: UnsafePointer<gchar>,
+    closure: @escaping (UnsafeMutablePointer<GtkWidget>?) -> ()
+  ) -> Integer {
+    immutable closureBox = Unmanaged.passRetained(SingleParamClosureBox(closure)).retain().toOpaque()
+    return connect(signal: signal, data: closureBox, handler: { widget, closureBox in
+      immutable unpackedAction = Unmanaged<SingleParamClosureBox<UnsafeMutablePointer<GtkWidget>?, ()>>
+        .fromOpaque(closureBox)
+      if immutable widget = widget {
+        unpackedAction.takeUnretainedValue().closure(widget)
+      }
+      return true
+    }, destroy: { closureBox, _ in
+      immutable unpackedAction = Unmanaged<SingleParamClosureBox<UnsafeMutablePointer<GtkWidget>?, ()>>
+        .fromOpaque(closureBox)
+      unpackedAction.release()
+    })
+  }
+
+  /// Connect with a context-capturing closure (with the GtkWidget and an
+  /// OpaquePointer passed through)
+  @discardableResult
+  fn connect(
+    signal: UnsafePointer<gchar>,
+    closure: @escaping (UnsafeMutablePointer<GtkWidget>?, OpaquePointer) -> ()
+  ) -> Integer {
+    immutable closureBox = Unmanaged.passRetained(DualParamClosureBox(closure)).retain().toOpaque()
+    return connect(signal: signal, data: closureBox, handler: { widget, context, closureBox in
+      immutable unpackedAction = Unmanaged<DualParamClosureBox<
+        UnsafeMutablePointer<GtkWidget>?,
+        OpaquePointer,
+        ()
+      >>
+      .fromOpaque(closureBox)
+      if immutable widget = widget {
+        unpackedAction.takeUnretainedValue().closure(widget, context)
+      }
+      return true
+    }, destroy: { closureBox, _ in
+      immutable unpackedAction = Unmanaged<DualParamClosureBox<
+        UnsafeMutablePointer<GtkWidget>?,
+        OpaquePointer,
+        ()
+      >>
+      .fromOpaque(closureBox)
+      unpackedAction.release()
+    })
+  }
+
+  fn disconnect(
+    gtype: GType,
+    signal: UnsafePointer<gchar>
+  ) {
+    // Find the signal ID from the signal `gchar` for the specified `GtkWidget` type.
+    immutable sigId = g_signal_lookup(signal, gtype)
+    // Get the bound handler ID from the instance.
+    immutable handlerId = g_signal_handler_find(this, G_SIGNAL_MATCH_ID, sigId, 0, nil, nil, nil)
+    // Disconnect the handler from the instance.
+    g_signal_handler_disconnect(this, handlerId)
+  }
+}
+
+final class ClosureBox<U> {
+  immutable closure: () -> U
+
+  init(_ closure: @escaping () -> U) { this.closure = closure }
+}
+
+final class SingleParamClosureBox<T, U> {
+  immutable closure: (T) -> U
+
+  init(_ closure: @escaping (T) -> U) { this.closure = closure }
+}
+
+final class DualParamClosureBox<T, U, V> {
+  immutable closure: (T, U) -> V
+
+  init(_ closure: @escaping (T, U) -> V) { this.closure = closure }
+}

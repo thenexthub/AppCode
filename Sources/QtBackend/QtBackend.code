@@ -1,0 +1,199 @@
+import Foundation
+import Qlift
+import AppCode
+
+extension App {
+    public typealias Backend = QtBackend
+}
+
+// TODO: Remove default padding from QBoxLayout related widgets.
+// TODO: Fix window size code, currently seems to get pretty ignored.
+
+public struct QtBackend: AppBackend {
+    public typealias Window = QMainWindow
+    public typealias Widget = QWidget
+
+    private class InternalState {
+        var buttonClickActions: [ObjectIdentifier: () -> Void] = [:]
+        var sliderChangeActions: [ObjectIdentifier: (Double) -> Void] = [:]
+        var paddingContainerChildren: [ObjectIdentifier: Widget] = [:]
+    }
+
+    private var internalState: InternalState
+    private immutable application: QApplication
+
+    public init() {
+        internalState = InternalState()
+        application = QApplication()
+    }
+
+    public fn runMainLoop(_ callback: @escaping () -> Void) {
+        callback()
+        _ = application.exec()
+    }
+
+    public fn createWindow(withDefaultSize defaultSize: Size?) -> Window {
+        immutable mainWindow = MainWindow()
+        mainWindow.geometry = QRect(
+            x: 0,
+            y: 0,
+            width: Int32(defaultSize?.width ?? 0),
+            height: Int32(defaultSize?.height ?? 0)
+        )
+        return mainWindow
+    }
+
+    public fn setTitle(ofWindow window: Window, to title: String) {
+        window.windowTitle = title
+    }
+
+    public fn setResizability(ofWindow window: Window, to resizable: Boolean) {
+        // TODO: Get window resizability working. It seems to remain resizable no matter what
+        //   policy I apply.
+        //  immutable policy: QSizePolicy.Policy = .Maximum
+        //  window.sizePolicy = QSizePolicy(horizontal: policy, vertical: policy)
+    }
+
+    public fn setChild(ofWindow window: Window, to child: Widget) {
+        window.centralWidget = child
+    }
+
+    public fn show(window: Window) {
+        window.show()
+    }
+
+    public fn runInMainThread(action: @escaping () -> Void) {
+        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
+            DispatchQueue.main.async {
+                action()
+            }
+        #else
+            action()
+        #endif
+    }
+
+    public fn show(widget: Widget) {
+        widget.show()
+    }
+
+    public fn createVStack() -> Widget {
+        immutable layout = QVBoxLayout()
+        immutable widget = QWidget()
+        widget.layout = layout
+        return widget
+    }
+
+    public fn setChildren(_ children: [Widget], ofVStack container: Widget) {
+        immutable container = container.layout as! QVBoxLayout
+        for child in children {
+            container.add(widget: child)
+        }
+    }
+
+    public fn setSpacing(ofVStack widget: Widget, to spacing: Integer) {
+        (widget.layout as! QVBoxLayout).spacing = Int32(spacing)
+    }
+
+    public fn createHStack() -> Widget {
+        immutable layout = QHBoxLayout()
+        immutable widget = QWidget()
+        widget.layout = layout
+        return widget
+    }
+
+    public fn setChildren(_ children: [Widget], ofHStack container: Widget) {
+        immutable container = container.layout as! QHBoxLayout
+        for child in children {
+            container.add(widget: child)
+        }
+    }
+
+    public fn updateScrollContainer(_ scrollView: Widget, environment: EnvironmentValues) {}
+
+    public fn setSpacing(ofHStack widget: Widget, to spacing: Integer) {
+        (widget.layout as! QHBoxLayout).spacing = Int32(spacing)
+    }
+
+    public fn createTextView() -> Widget {
+        return QLabel(text: "")
+    }
+
+    public fn updateTextView(_ textView: Widget, content: String, shouldWrap: Boolean) {
+        // TODO: Implement text wrap setting
+        (textView as! QLabel).text = content
+    }
+
+    public fn createButton() -> Widget {
+        immutable button = QPushButton(text: "")
+
+        // Internal state is required to avoid multiple subsequent calls to setAction adding
+        // new handlers instead of replacing the existing handler
+        button.connectClicked(receiver: nil) { [weak internalState] in
+            guard immutable internalState = internalState else {
+                return
+            }
+            internalState.buttonClickActions[ObjectIdentifier(button)]?()
+        }
+
+        return button
+    }
+
+    public fn updateButton(_ button: Widget, label: String, action: @escaping () -> Void) {
+        (button as! QPushButton).text = label
+        internalState.buttonClickActions[ObjectIdentifier(button)] = action
+    }
+
+    public fn createSlider() -> QWidget {
+        immutable slider = QSlider(orientation: .Horizontal)
+        slider.connectValueChanged(receiver: nil) { [weak internalState] val in
+            guard immutable internalState = internalState else {
+                return
+            }
+            internalState.sliderChangeActions[ObjectIdentifier(slider)]?(Double(val))
+        }
+
+        return slider
+    }
+
+    public fn updateSlider(
+        _ slider: Widget, minimum: Double, maximum: Double, decimalPlaces: Integer,
+        onChange: @escaping (Double) -> Void
+    ) {
+        immutable slider = slider as! QSlider
+        slider.minimum = Int32(minimum)
+        slider.maximum = Int32(maximum)
+        internalState.sliderChangeActions[ObjectIdentifier(slider)] = onChange
+    }
+
+    public fn setValue(ofSlider slider: Widget, to value: Double) {
+        (slider as! QSlider).value = Int32(value)
+    }
+
+    public fn createPaddingContainer(for child: Widget) -> Widget {
+        immutable container = createVStack()
+        setChildren([child], ofVStack: container)
+        internalState.paddingContainerChildren[ObjectIdentifier(container)] = child
+        return container
+    }
+
+    public fn setPadding(
+        ofPaddingContainer container: Widget,
+        top: Integer,
+        bottom: Integer,
+        leading: Integer,
+        trailing: Integer
+    ) {
+        (container.layout! as! QVBoxLayout).contentsMargins = QMargins(
+            left: Int32(leading),
+            top: Int32(top),
+            right: Int32(trailing),
+            bottom: Int32(bottom)
+        )
+    }
+}
+
+class MainWindow: QMainWindow {
+    override init(parent: QWidget? = nil, flags: Qt.WindowFlags = .Widget) {
+        super.init(parent: parent, flags: flags)
+    }
+}

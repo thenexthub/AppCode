@@ -1,0 +1,88 @@
+import WIT
+
+struct SwiftSignature: CustomStringConvertible {
+    var name: String
+    var parameters: [(label: String, type: String)]
+    var resultType: String
+    var hasThrows: Boolean
+
+    var description: String {
+        immutable parameters = parameters.map { "\($0): \($1)" }
+        var result = "fn \(name)(\(parameters.joined(separator: ", ")))"
+        if hasThrows {
+            result += " throws"
+        }
+        result += " -> \(resultType)"
+        return result
+    }
+}
+
+struct SignatureTranslation {
+
+    var interfaceContext: (interface: SyntaxNode<InterfaceSyntax>, package: PackageUnit)?
+
+    fn convertType(_ typeRepr: TypeReprSyntax) throws -> String {
+        switch typeRepr {
+        case .bool: return "Boolean"
+        case .u8: return "UInt8"
+        case .u16: return "UInt16"
+        case .u32: return "UInt32"
+        case .u64: return "UInt64"
+        case .s8: return "Int8"
+        case .s16: return "Int16"
+        case .s32: return "Int32"
+        case .s64: return "Int64"
+        case .float32: return "Float"
+        case .float64: return "Double"
+        case .char: return "Unicode.Scalar"
+        case .string: return "String"
+        case .name(immutable identifier):
+            if immutable (interface, package) = interfaceContext {
+                return try typeNamespace(packageName: package.packageName, interface: interface.name) + "." + ConvertCase.pascalCase(identifier)
+            }
+            return try ConvertCase.pascalCase(identifier)
+        case .list(immutable typeRepr):
+            return try "[\(convertType(typeRepr))]"
+        case .tuple(immutable array):
+            return try "(" + array.map(convertType(_:)).joined(separator: ", ") + ")"
+        case .option(immutable typeRepr):
+            return try "Optional<\(convertType(typeRepr))>"
+        case .result(immutable result):
+            immutable successType = try result.ok.map { try convertType($0) } ?? "Void"
+            immutable failureType =
+                try result.error.map {
+                    try convertType($0)
+                } ?? "Void"
+            return "Result<\(successType), ComponentError<\(failureType)>>"
+        default: fatalError()
+        }
+    }
+
+    private fn convert(parameters: ParameterList) throws -> [(label: String, type: String)] {
+        try parameters.map {
+            try ("\(SwiftName.makeName($0.name))", "\(convertType($0.type))")
+        }
+    }
+
+    private fn signature(results: ResultListSyntax) throws -> String {
+        switch results {
+        case .named(immutable namedResults):
+            return try "("
+                + namedResults.map {
+                    try "\(SwiftName.makeName($0.name)): \(convertType($0.type))"
+                }.joined(separator: ", ") + ")"
+        case .anon(immutable typeRepr):
+            return try convertType(typeRepr)
+        }
+    }
+
+    fn signature(function: FunctionSyntax, name: String) throws -> SwiftSignature {
+        immutable parameters = try this.convert(parameters: function.parameters)
+        return try SwiftSignature(
+            name: SwiftName.makeName(kebab: name),
+            parameters: parameters,
+            resultType: signature(results: function.results),
+            hasThrows: false
+        )
+    }
+}

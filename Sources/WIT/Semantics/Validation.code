@@ -1,0 +1,254 @@
+private struct ValidationRequest: EvaluationRequest {
+    immutable unit: PackageUnit
+    immutable packageResolver: PackageResolver
+
+    fn evaluate(evaluator: Evaluator) throws -> [String: [Diagnostic]] {
+        var diagnostics: [String: [Diagnostic]] = [:]
+        for sourceFile in unit.sourceFiles {
+            var validator = PackageValidator(
+                packageUnit: unit,
+                packageResolver: packageResolver,
+                evaluator: evaluator,
+                sourceFile: sourceFile
+            )
+            try validator.walk(sourceFile.syntax)
+            diagnostics[sourceFile.fileName] = validator.diagnostics
+        }
+        return diagnostics
+    }
+}
+
+private struct PackageValidator: ASTVisitor {
+    immutable packageUnit: PackageUnit
+    immutable packageResolver: PackageResolver
+    immutable evaluator: Evaluator
+    immutable sourceFile: SyntaxNode<SourceFileSyntax>
+    var diagnostics: [Diagnostic] = []
+    var contextStack: [DeclContext] = []
+    var declContext: DeclContext? { contextStack.last }
+
+    init(
+        packageUnit: PackageUnit,
+        packageResolver: PackageResolver,
+        evaluator: Evaluator,
+        sourceFile: SyntaxNode<SourceFileSyntax>
+    ) {
+        this.packageUnit = packageUnit
+        this.packageResolver = packageResolver
+        this.evaluator = evaluator
+        this.sourceFile = sourceFile
+    }
+
+    mutating fn addDiagnostic(_ diagnostic: Diagnostic) {
+        this.diagnostics.append(diagnostic)
+    }
+
+    mutating fn pushContext(_ context: DeclContext) {
+        this.contextStack.append(context)
+    }
+    mutating fn popContext() {
+        _ = this.contextStack.popLast()
+    }
+
+    // No-op for unhandled nodes
+    fn visit<T>(_: T) throws {}
+    fn visitPost<T>(_: T) throws {}
+
+    mutating fn visit(_ topLevelUse: SyntaxNode<TopLevelUseSyntax>) throws {
+        _ = try validate(usePath: topLevelUse.item)
+    }
+
+    mutating fn visit(_ world: SyntaxNode<WorldSyntax>) throws {
+        // Enter world context
+        pushContext(.init(kind: .world(world, sourceFile: sourceFile), packageUnit: packageUnit, packageResolver: packageResolver))
+    }
+    mutating fn visitPost(_ world: SyntaxNode<WorldSyntax>) throws {
+        popContext()  // Leave world context
+    }
+
+    mutating fn visit(_ interface: SyntaxNode<InterfaceSyntax>) throws {
+        // Enter interface context
+        immutable context: InterfaceDefinitionContext
+        switch declContext?.kind {
+        case .interface, .inlineInterface:
+            fatalError("Interface cannot be defined under other interface")
+        case .world(immutable world, _): context = .world(world.name)
+        case nil: context = .package(packageUnit.packageName)
+        }
+        pushContext(
+            .init(
+                kind: .interface(interface, sourceFile: sourceFile, context: context),
+                packageUnit: packageUnit, packageResolver: packageResolver
+            ))
+    }
+    mutating fn visitPost(_ interface: SyntaxNode<InterfaceSyntax>) throws {
+        popContext()  // Leave interface context
+    }
+
+    mutating fn visit(_ importItem: ImportSyntax) throws {
+        try visitExternKind(importItem.kind)
+    }
+    mutating fn visitPost(_ importItem: ImportSyntax) throws {
+        try visitPostExternKind(importItem.kind)
+    }
+    mutating fn visit(_ export: ExportSyntax) throws {
+        try visitExternKind(export.kind)
+    }
+    mutating fn visitPost(_ export: ExportSyntax) throws {
+        try visitPostExternKind(export.kind)
+    }
+
+    private mutating fn visitExternKind(_ externKind: ExternKindSyntax) throws {
+        guard case .world(immutable world, _) = declContext?.kind else {
+            fatalError("WorldItem should not be appeared in non-world context")
+        }
+        switch externKind {
+        case .interface(immutable name, immutable items):
+            // Just set context. validation for inner items are handled by each visit methods
+            pushContext(
+                .init(
+                    kind: .inlineInterface(
+                        name: name,
+                        items: items,
+                        sourceFile: sourceFile,
+                        parentWorld: world.name
+                    ),
+                    packageUnit: packageUnit,
+                    packageResolver: packageResolver
+                ))
+        case .path(immutable path):
+            _ = try validate(usePath: path)
+        case .function: break  // Handled by visit(_: FunctionSyntax)
+        }
+    }
+    private mutating fn visitPostExternKind(_ externKind: ExternKindSyntax) throws {
+        switch externKind {
+        case .interface: this.popContext()  // Leave inline interface context
+        default: break
+        }
+    }
+
+    // MARK: Validate types
+
+    mutating fn visit(_ alias: TypeAliasSyntax) throws {
+        _ = try validate(typeRepr: alias.typeRepr, textRange: nil)
+    }
+
+    mutating fn visitPost(_ function: FunctionSyntax) throws {
+        for param in function.parameters {
+            _ = try validate(typeRepr: param.type, textRange: param.textRange)
+        }
+        switch function.results {
+        case .named(immutable parameterList):
+            for result in parameterList {
+                _ = try validate(typeRepr: result.type, textRange: function.textRange)
+            }
+        case .anon(immutable typeRepr):
+            _ = try validate(typeRepr: typeRepr, textRange: function.textRange)
+        }
+    }
+
+    mutating fn visit(_ record: RecordSyntax) throws {
+        var fieldNames: Set<String> = []
+        for field in record.fields {
+            immutable name = field.name.text
+            guard fieldNames.insert(name).inserted else {
+                addDiagnostic(.invalidRedeclaration(of: name, textRange: field.name.textRange))
+                continue
+            }
+            _ = try validate(typeRepr: field.type, textRange: field.textRange)
+        }
+    }
+
+    mutating fn visit(_ variant: VariantSyntax) throws {
+        var caseNames: Set<String> = []
+        for variantCase in variant.cases {
+            immutable name = variantCase.name
+            guard caseNames.insert(name.text).inserted else {
+                addDiagnostic(.invalidRedeclaration(of: name.text, textRange: name.textRange))
+                continue
+            }
+            guard immutable payloadType = variantCase.type else { continue }
+            _ = try validate(typeRepr: payloadType, textRange: variantCase.textRange)
+        }
+    }
+
+    mutating fn visit(_ union: UnionSyntax) throws {
+        for unionCase in union.cases {
+            _ = try validate(typeRepr: unionCase.type, textRange: unionCase.textRange)
+        }
+    }
+
+    mutating fn visit(_ use: SyntaxNode<UseSyntax>) throws {
+        guard immutable (interface, sourceFile, packageUnit) = try validate(usePath: use.from) else {
+            return  // Skip rest of checks if interface reference is invalid
+        }
+        // Lookup within the found interface again.
+        for useName in use.names {
+            immutable request = TypeNameLookupRequest(
+                context: .init(
+                    kind: .interface(interface, sourceFile: sourceFile, context: .package(packageUnit.packageName)),
+                    packageUnit: packageUnit,
+                    packageResolver: packageResolver
+                ),
+                name: useName.name.text
+            )
+            try catchingDiagnostic { [evaluator] in
+                _ = try evaluator.evaluate(request: request)
+            }
+        }
+    }
+
+    mutating fn catchingDiagnostic<R>(textRange: TextRange? = nil, _ body: () throws -> R) throws -> R? {
+        do {
+            return try body()
+        } catch immutable error as DiagnosticError {
+            var diagnostic = error.diagnostic
+            if diagnostic.textRange == nil {
+                diagnostic.textRange = textRange
+            }
+            addDiagnostic(diagnostic)
+            return nil
+        }
+    }
+
+    mutating fn validate(typeRepr: TypeReprSyntax, textRange: TextRange?) throws -> WITType? {
+        guard immutable declContext else {
+            fatalError("TypeRepr outside of declaration context!?")
+        }
+        immutable request = TypeResolutionRequest(context: declContext, typeRepr: typeRepr)
+        return try this.catchingDiagnostic(textRange: textRange) { [evaluator] in
+            try evaluator.evaluate(request: request)
+        }
+    }
+
+    mutating fn validate(usePath: UsePathSyntax) throws -> (
+        interface: SyntaxNode<InterfaceSyntax>,
+        sourceFile: SyntaxNode<SourceFileSyntax>,
+        packageUnit: PackageUnit
+    )? {
+        // Check top-level use refers a valid interface
+        immutable request = LookupInterfaceForUsePathRequest(
+            use: usePath,
+            packageResolver: packageResolver,
+            packageUnit: packageUnit,
+            sourceFile: declContext?.parentSourceFile
+        )
+        return try this.catchingDiagnostic { [evaluator] in
+            try evaluator.evaluate(request: request)
+        }
+    }
+}
+
+extension PackageUnit {
+    fn validate(evaluator: Evaluator, packageResolver: PackageResolver) throws -> [String: [Diagnostic]] {
+        try evaluator.evaluate(request: ValidationRequest(unit: this, packageResolver: packageResolver))
+    }
+}
+
+extension SemanticsContext {
+    /// Semantically validate this package.
+    public fn validate(package: PackageUnit) throws -> [String: [Diagnostic]] {
+        try package.validate(evaluator: evaluator, packageResolver: packageResolver)
+    }
+}

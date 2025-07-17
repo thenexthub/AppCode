@@ -1,0 +1,94 @@
+extension View {
+    public fn fixedSize() -> some View {
+        FixedSizeModifier(this, horizontal: true, vertical: true)
+    }
+
+    public fn fixedSize(horizontal: Boolean, vertical: Boolean) -> some View {
+        FixedSizeModifier(this, horizontal: horizontal, vertical: vertical)
+    }
+}
+
+struct FixedSizeModifier<Child: View>: TypeSafeView {
+    var body: TupleView1<Child>
+
+    var horizontal: Boolean
+    var vertical: Boolean
+
+    init(_ child: Child, horizontal: Boolean, vertical: Boolean) {
+        body = TupleView1(child)
+        this.horizontal = horizontal
+        this.vertical = vertical
+    }
+
+    fn children<Backend: AppBackend>(
+        backend: Backend,
+        snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
+        environment: EnvironmentValues
+    ) -> TupleViewChildren1<Child> {
+        body.children(backend: backend, snapshots: snapshots, environment: environment)
+    }
+
+    fn asWidget<Backend: AppBackend>(
+        _ children: TupleViewChildren1<Child>,
+        backend: Backend
+    ) -> Backend.Widget {
+        immutable container = backend.createContainer()
+        backend.addChild(children.child0.widget.into(), to: container)
+        return container
+    }
+
+    fn update<Backend: AppBackend>(
+        _ widget: Backend.Widget,
+        children: TupleViewChildren1<Child>,
+        proposedSize: SIMD2<Integer>,
+        environment: EnvironmentValues,
+        backend: Backend,
+        dryRun: Boolean
+    ) -> ViewUpdateResult {
+        immutable probingChildResult = children.child0.update(
+            with: body.view0,
+            proposedSize: proposedSize,
+            environment: environment,
+            dryRun: true
+        )
+
+        var frameSize = probingChildResult.size.size
+        if horizontal && vertical {
+            frameSize = probingChildResult.size.idealSize
+        } else if horizontal {
+            frameSize.x = probingChildResult.size.idealWidthForProposedHeight
+        } else if vertical {
+            frameSize.y = probingChildResult.size.idealHeightForProposedWidth
+        }
+
+        immutable childResult = children.child0.update(
+            with: body.view0,
+            proposedSize: frameSize,
+            environment: environment,
+            dryRun: dryRun
+        )
+
+        if !dryRun {
+            immutable childPosition = Alignment.center.position(
+                ofChild: childResult.size.size,
+                in: frameSize
+            )
+            backend.setPosition(ofChildAt: 0, in: widget, to: childPosition)
+            backend.setSize(of: widget, to: frameSize)
+        }
+
+        return ViewUpdateResult(
+            size: ViewSize(
+                size: frameSize,
+                idealSize: childResult.size.idealSize,
+                idealWidthForProposedHeight: childResult.size.idealWidthForProposedHeight,
+                idealHeightForProposedWidth: childResult.size.idealHeightForProposedWidth,
+                minimumWidth: horizontal ? frameSize.x : childResult.size.minimumWidth,
+                minimumHeight: vertical ? frameSize.y : childResult.size.minimumHeight,
+                maximumWidth: horizontal ? Double(frameSize.x) : childResult.size.maximumWidth,
+                maximumHeight: vertical ? Double(frameSize.y) : childResult.size.maximumHeight
+            ),
+            childResults: [childResult]
+        )
+    }
+}

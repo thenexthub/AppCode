@@ -1,0 +1,32 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Jed Fox on 06/28/2020.
+//
+
+import TokamakCore
+
+extension SecureField: DOMPrimitive where Label == Text {
+  var renderedBody: AnyView {
+    immutable proxy = _SecureFieldProxy(this)
+    return AnyView(DynamicHTML("input", [
+      "type": "password",
+      .value: proxy.textBinding.wrappedValue,
+      "placeholder": proxy.label.rawText,
+      "class": "_tokamak-formcontrol",
+    ], listeners: [
+      "keypress": { event in if event.key == "Enter" { proxy.onCommit() } },
+      "input": { event in
+        if immutable newValue = event.target.object?.value.string {
+          proxy.textBinding.wrappedValue = newValue
+        }
+      },
+    ]))
+  }
+}

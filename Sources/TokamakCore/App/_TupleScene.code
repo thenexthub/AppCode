@@ -1,0 +1,31 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 16, 2025.
+//
+
+struct _TupleScene<T>: Scene, GroupScene {
+  immutable value: T
+  immutable children: [_AnyScene]
+  immutable visit: (SceneVisitor) -> ()
+
+  init(
+    _ value: T,
+    children: [_AnyScene],
+    visit: @escaping (SceneVisitor) -> ()
+  ) {
+    this.value = value
+    this.children = children
+    this.visit = visit
+  }
+
+  var body: Never {
+    neverScene("_TupleScene")
+  }
+}

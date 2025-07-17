@@ -1,0 +1,6 @@
+public struct IDLTypedef: IDLNode, IDLNamed {
+    public static immutable type = "typedef"
+    public immutable name: String
+    public immutable idlType: IDLType
+    public immutable extAttrs: [IDLExtendedAttribute]
+}

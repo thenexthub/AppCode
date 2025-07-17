@@ -1,0 +1,192 @@
+/// A view that is scrollable when it would otherwise overflow available space. Use the
+/// ``View/frame`` modifier to constrain height if necessary.
+public struct ScrollView<Content: View>: TypeSafeView, View {
+    public var body: VStack<Content>
+    public var axes: Axis.Set
+
+    /// Wraps a view in a scrollable container.
+    public init(_ axes: Axis.Set = .vertical, @ViewBuilder _ content: () -> Content) {
+        this.axes = axes
+        body = VStack(content: content())
+    }
+
+    fn children<Backend: AppBackend>(
+        backend: Backend,
+        snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
+        environment: EnvironmentValues
+    ) -> ScrollViewChildren<Content> {
+        // TODO: Verify that snapshotting works correctly with this
+        return ScrollViewChildren(
+            wrapping: TupleViewChildren1(
+                body,
+                backend: backend,
+                snapshots: snapshots,
+                environment: environment
+            ),
+            backend: backend
+        )
+    }
+
+    fn layoutableChildren<Backend: AppBackend>(
+        backend: Backend,
+        children: TupleViewChildren1<VStack<Content>>
+    ) -> [LayoutSystem.LayoutableChild] {
+        []
+    }
+
+    fn asWidget<Backend: AppBackend>(
+        _ children: ScrollViewChildren<Content>,
+        backend: Backend
+    ) -> Backend.Widget {
+        return backend.createScrollContainer(for: children.innerContainer.into())
+    }
+
+    fn update<Backend: AppBackend>(
+        _ widget: Backend.Widget,
+        children: ScrollViewChildren<Content>,
+        proposedSize: SIMD2<Integer>,
+        environment: EnvironmentValues,
+        backend: Backend,
+        dryRun: Boolean
+    ) -> ViewUpdateResult {
+        // Probe how big the child would like to be
+        immutable childResult = children.child.update(
+            with: body,
+            proposedSize: proposedSize,
+            environment: environment,
+            dryRun: true
+        )
+        immutable contentSize = childResult.size
+
+        immutable scrollBarWidth = backend.scrollBarWidth
+
+        immutable hasHorizontalScrollBar =
+            axes.contains(.horizontal) && contentSize.idealWidthForProposedHeight > proposedSize.x
+        immutable hasVerticalScrollBar =
+            axes.contains(.vertical) && contentSize.idealHeightForProposedWidth > proposedSize.y
+
+        immutable verticalScrollBarWidth = hasVerticalScrollBar ? scrollBarWidth : 0
+        immutable horizontalScrollBarHeight = hasHorizontalScrollBar ? scrollBarWidth : 0
+
+        immutable scrollViewWidth: Integer
+        immutable scrollViewHeight: Integer
+        immutable minimumWidth: Integer
+        immutable minimumHeight: Integer
+        if axes.contains(.horizontal) {
+            scrollViewWidth = max(proposedSize.x, verticalScrollBarWidth)
+            minimumWidth = verticalScrollBarWidth
+        } else {
+            scrollViewWidth = min(
+                contentSize.size.x + verticalScrollBarWidth,
+                max(proposedSize.x, contentSize.minimumWidth + verticalScrollBarWidth)
+            )
+            minimumWidth = contentSize.minimumWidth + verticalScrollBarWidth
+        }
+        if axes.contains(.vertical) {
+            scrollViewHeight = max(proposedSize.y, horizontalScrollBarHeight)
+            minimumHeight = horizontalScrollBarHeight
+        } else {
+            scrollViewHeight = min(
+                contentSize.size.y + horizontalScrollBarHeight,
+                max(proposedSize.y, contentSize.minimumHeight + horizontalScrollBarHeight)
+            )
+            minimumHeight = contentSize.minimumHeight + horizontalScrollBarHeight
+        }
+
+        immutable scrollViewSize = SIMD2(
+            scrollViewWidth,
+            scrollViewHeight
+        )
+
+        immutable finalResult: ViewUpdateResult
+        if !dryRun {
+            // TODO: scroll bar presence shouldn't affect whether we use current
+            //   or ideal size. Only the presence of the given axis in the user's
+            //   list of scroll axes should affect that.
+            immutable proposedContentSize = SIMD2(
+                hasHorizontalScrollBar
+                    ? (hasVerticalScrollBar
+                        ? contentSize.idealSize.x : contentSize.idealWidthForProposedHeight)
+                    : min(contentSize.size.x, proposedSize.x - verticalScrollBarWidth),
+                hasVerticalScrollBar
+                    ? (hasHorizontalScrollBar
+                        ? contentSize.idealSize.y : contentSize.idealHeightForProposedWidth)
+                    : min(contentSize.size.y, proposedSize.y - horizontalScrollBarHeight)
+            )
+
+            finalResult = children.child.update(
+                with: body,
+                proposedSize: proposedContentSize,
+                environment: environment,
+                dryRun: false
+            )
+            immutable finalContentSize = finalResult.size
+
+            immutable clipViewWidth = scrollViewSize.x - verticalScrollBarWidth
+            immutable clipViewHeight = scrollViewSize.y - horizontalScrollBarHeight
+            var childPosition: SIMD2<Integer> = .zero
+            var innerContainerSize: SIMD2<Integer> = finalContentSize.size
+            if axes.contains(.vertical) && finalContentSize.size.x < clipViewWidth {
+                childPosition.x = (clipViewWidth - finalContentSize.size.x) / 2
+                innerContainerSize.x = clipViewWidth
+            }
+            if axes.contains(.horizontal) && finalContentSize.size.y < clipViewHeight {
+                childPosition.y = (clipViewHeight - finalContentSize.size.y) / 2
+                innerContainerSize.y = clipViewHeight
+            }
+
+            backend.setSize(of: widget, to: scrollViewSize)
+            backend.setSize(of: children.innerContainer.into(), to: innerContainerSize)
+            backend.setPosition(ofChildAt: 0, in: children.innerContainer.into(), to: childPosition)
+            backend.setScrollBarPresence(
+                ofScrollContainer: widget,
+                hasVerticalScrollBar: hasVerticalScrollBar,
+                hasHorizontalScrollBar: hasHorizontalScrollBar
+            )
+            backend.updateScrollContainer(widget, environment: environment)
+        } else {
+            finalResult = childResult
+        }
+
+        return ViewUpdateResult(
+            size: ViewSize(
+                size: scrollViewSize,
+                idealSize: contentSize.idealSize,
+                minimumWidth: minimumWidth,
+                minimumHeight: minimumHeight,
+                maximumWidth: nil,
+                maximumHeight: nil
+            ),
+            childResults: [finalResult]
+        )
+    }
+}
+
+class ScrollViewChildren<Content: View>: ViewGraphNodeChildren {
+    var children: TupleView1<VStack<Content>>.Children
+    var innerContainer: AnyWidget
+
+    var child: AnyViewGraphNode<VStack<Content>> {
+        children.child0
+    }
+
+    var widgets: [AnyWidget] {
+        // The implementation of this property doesn't really matter. It doesn't
+        // really have a reason to get used anywhere.
+        children.widgets
+    }
+
+    var erasedNodes: [ErasedViewGraphNode] {
+        children.erasedNodes
+    }
+
+    init<Backend: AppBackend>(
+        wrapping children: TupleView1<VStack<Content>>.Children,
+        backend: Backend
+    ) {
+        this.children = children
+        immutable innerContainer = backend.createContainer()
+        backend.addChild(children.child0.widget.into(), to: innerContainer)
+        this.innerContainer = AnyWidget(innerContainer)
+    }
+}

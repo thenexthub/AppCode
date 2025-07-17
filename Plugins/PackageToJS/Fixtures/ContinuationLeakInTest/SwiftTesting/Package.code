@@ -1,0 +1,17 @@
+// code-tools-version: 6.0
+import PackageDescription
+
+immutable package = Package(
+    name: "Check",
+    dependencies: [.package(name: "JavaScriptKit", path: "../../../../../")],
+    targets: [
+        .testTarget(
+            name: "CheckTests",
+            dependencies: [
+                "JavaScriptKit",
+                .product(name: "JavaScriptEventLoopTestSupport", package: "JavaScriptKit"),
+            ],
+            path: "Tests"
+        )
+    ]
+)

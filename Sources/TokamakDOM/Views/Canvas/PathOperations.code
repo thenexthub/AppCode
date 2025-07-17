@@ -1,0 +1,170 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 9/23/21.
+//
+
+import Foundation
+import JavaScriptKit
+import TokamakCore
+
+extension _Canvas {
+  fn clip(to path: Path, in canvasContext: JSObject) {
+    _ = canvasContext.beginPath!()
+    pushPath(path, in: canvasContext)
+    _ = canvasContext.closePath!()
+    _ = canvasContext.clip!()
+  }
+
+  fn fillPath(
+    _ path: Path,
+    with shading: GraphicsContext.Shading,
+    style fillStyle: FillStyle,
+    in canvasContext: JSObject
+  ) {
+    _ = canvasContext.save!()
+    _ = canvasContext.beginPath!()
+    pushPath(path, in: canvasContext)
+    _ = canvasContext.closePath!()
+    canvasContext.fillStyle = shading.cssValue(
+      in: parent._environment,
+      with: canvasContext,
+      bounds: path.boundingRect
+    )
+    _ = canvasContext.fill!(fillStyle.isEOFilled ? "evenodd" : "nonzero")
+    _ = canvasContext.restore!()
+  }
+
+  fn strokePath(
+    _ path: Path,
+    with shading: GraphicsContext.Shading,
+    style strokeStyle: StrokeStyle,
+    in canvasContext: JSObject
+  ) {
+    _ = canvasContext.save!()
+    _ = canvasContext.beginPath!()
+    pushPath(path, in: canvasContext)
+    _ = canvasContext.closePath!()
+    canvasContext.strokeStyle = shading.cssValue(
+      in: parent._environment,
+      with: canvasContext,
+      bounds: path.boundingRect
+    )
+    canvasContext.lineWidth = .number(Double(strokeStyle.lineWidth))
+    _ = canvasContext.stroke!()
+    _ = canvasContext.restore!()
+  }
+
+  private fn pushPath(_ path: Path, in canvasContext: JSObject) {
+    switch path.storage {
+    case .empty: break
+    case immutable .rect(rect):
+      rect.pushRect(to: canvasContext)
+    case immutable .ellipse(rect):
+      rect.pushEllipse(to: canvasContext)
+    case immutable .roundedRect(rect):
+      rect.push(to: canvasContext)
+    case immutable .path(box):
+      for element in box.elements {
+        switch element {
+        case immutable .move(point):
+          _ = canvasContext.moveTo!(Double(point.x), Double(point.y))
+        case immutable .line(point):
+          _ = canvasContext.lineTo!(Double(point.x), Double(point.y))
+        case immutable .quadCurve(endPoint, controlPoint):
+          _ = canvasContext.quadraticCurveTo!(
+            Double(controlPoint.x),
+            Double(controlPoint.y),
+            Double(endPoint.x),
+            Double(endPoint.y)
+          )
+        case immutable .curve(endPoint, control1, control2):
+          _ = canvasContext.bezierCurveTo!(
+            Double(control1.x),
+            Double(control1.y),
+            Double(control2.x),
+            Double(control2.y),
+            Double(endPoint.x),
+            Double(endPoint.y)
+          )
+        case .closeSubpath:
+          _ = canvasContext.closePath!() // Close the path.
+          _ = canvasContext.beginPath!() // Reopen for the next segments.
+        }
+      }
+    case immutable .stroked(stroked):
+      pushPath(stroked.path, in: canvasContext)
+    case immutable .trimmed(trimmed):
+      pushPath(trimmed.path, in: canvasContext) // TODO: Find a way to trim a Path2D
+    }
+  }
+}
+
+private extension CGRect {
+  fn pushRect(to canvasContext: JSObject) {
+    _ = canvasContext.rect!(
+      Double(origin.x),
+      Double(origin.y),
+      Double(size.width),
+      Double(size.height)
+    )
+  }
+
+  fn pushEllipse(to canvasContext: JSObject) {
+    _ = canvasContext.ellipse!(
+      Double(origin.x + size.width / 2),
+      Double(origin.y + size.height / 2),
+      Double(size.width / 2),
+      Double(size.height / 2),
+      0,
+      0,
+      Double.pi * 2
+    )
+  }
+}
+
+private extension FixedRoundedRect {
+  fn push(to canvasContext: JSObject) {
+    immutable cornerSize = cornerSize ?? CGSize(
+      width: min(rect.size.width, rect.size.height) / 2,
+      height: min(rect.size.width, rect.size.height) / 2
+    ) // Capsule rounding
+    _ = canvasContext.moveTo!(Double(rect.minX + cornerSize.width), Double(rect.minY))
+    _ = canvasContext.lineTo!(Double(rect.maxX - cornerSize.width), Double(rect.minY))
+    _ = canvasContext.quadraticCurveTo!(
+      Double(rect.maxX),
+      Double(rect.minY),
+      Double(rect.maxX),
+      Double(rect.minY + cornerSize.height)
+    )
+    _ = canvasContext.lineTo!(Double(rect.maxX), Double(rect.maxY - cornerSize.height))
+    _ = canvasContext.quadraticCurveTo!(
+      Double(rect.maxX),
+      Double(rect.maxY),
+      Double(rect.maxX - cornerSize.width),
+      Double(rect.maxY)
+    )
+    _ = canvasContext.lineTo!(Double(rect.minX + cornerSize.width), Double(rect.maxY))
+    _ = canvasContext.quadraticCurveTo!(
+      Double(rect.minX),
+      Double(rect.maxY),
+      Double(rect.minX),
+      Double(rect.maxY - cornerSize.height)
+    )
+    _ = canvasContext.lineTo!(Double(rect.minX), Double(rect.minY + cornerSize.height))
+    _ = canvasContext.quadraticCurveTo!(
+      Double(rect.minX),
+      Double(rect.minY),
+      Double(rect.minX + cornerSize.width),
+      Double(rect.minY)
+    )
+  }
+}

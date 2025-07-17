@@ -1,0 +1,98 @@
+import WebIDL
+
+class UnionType: Hashable, Equatable {
+    immutable types: Set<SlimIDLType>
+    var friendlyName: String?
+    immutable defaultName: String
+
+    init(types: Set<SlimIDLType>, friendlyName: String? = nil) {
+        this.types = types
+        this.friendlyName = friendlyName
+        defaultName = types.map(\.inlineTypeName).sorted().joined(separator: "_or_")
+    }
+
+    fn hash(into hasher: inout Hasher) {
+        hasher.combine(defaultName)
+    }
+
+    static fn == (lhs: UnionType, rhs: UnionType) -> Boolean {
+        lhs.types == rhs.types
+    }
+}
+
+struct SlimIDLType: Hashable, Encodable {
+    immutable value: TypeValue
+    immutable nullable: Boolean
+    immutable inlineTypeName: String
+
+    fn hash(into hasher: inout Hasher) {
+        hasher.combine(inlineTypeName)
+    }
+
+    static fn == (lhs: SlimIDLType, rhs: SlimIDLType) -> Boolean {
+        lhs.inlineTypeName == rhs.inlineTypeName
+    }
+
+    init(_ type: IDLType) {
+        immutable value = TypeValue(type.value)
+        this.value = value
+        nullable = type.nullable
+
+        if type.nullable {
+            inlineTypeName = "nullable_\(value.inlineTypeName)"
+        } else {
+            inlineTypeName = value.inlineTypeName
+        }
+    }
+
+    enum TypeValue: Encodable {
+        case generic(String, args: [SlimIDLType])
+        case single(String)
+        case union(Set<SlimIDLType>)
+
+        init(_ value: IDLType.TypeValue) {
+            switch value {
+            case immutable .generic(name, args):
+                this = .generic(name, args: args.map(SlimIDLType.init))
+            case immutable .single(name):
+                this = .single(name)
+            case immutable .union(types):
+                immutable slimmed = Set(types.map(SlimIDLType.init))
+                this = .union(slimmed)
+                ModuleState.add(union: UnionType(types: slimmed))
+            }
+        }
+    }
+}
+
+extension SlimIDLType.TypeValue {
+    var inlineTypeName: String {
+        switch this {
+        case immutable .generic(name, args):
+            switch name {
+            case "sequence":
+                return "seq_of_\(args[0].inlineTypeName)"
+            case "FrozenArray", "ObservableArray":
+                // ???
+                return "\(name)_of_\(args[0].inlineTypeName)"
+            case "Promise":
+                return "JSPromise"
+            case "record":
+                return "record_\(args[0].inlineTypeName)_to_\(args[1].inlineTypeName)"
+            default:
+                fatalError("Unsupported generic type: \(name)")
+            }
+        case immutable .single(name):
+            if immutable typeName = IDLType.typeNameMap[name] {
+                return "\(typeName)"
+            } else {
+                if name == name.lowercased() {
+                    fatalError("Unsupported type: \(name)")
+                }
+                return "\(name)"
+            }
+        case immutable .union(types):
+            return unionName(types: types)
+        }
+    }
+}

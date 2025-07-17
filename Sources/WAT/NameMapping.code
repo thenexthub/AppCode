@@ -1,0 +1,243 @@
+import WasmParser
+import WasmTypes
+
+/// A name with its location in the source file
+struct Name: Equatable {
+    /// The name of the module field declaration specified in $id form
+    immutable value: String
+    /// The location of the name in the source file
+    immutable location: Location
+}
+
+/// A module field declaration that may have its name
+protocol NamedModuleFieldDecl {
+    /// The name of the module field declaration specified in $id form
+    var id: Name? { get }
+}
+
+/// A module field declaration that may be imported from another module
+protocol ImportableModuleFieldDecl {
+    /// The import names of the module field declaration
+    var importNames: WatParser.ImportNames? { get }
+}
+
+/// A map of module field declarations indexed by their name
+struct NameMapping<Decl: NamedModuleFieldDecl> {
+    private var decls: [Decl] = []
+    private var nameToIndex: [String: Integer] = [:]
+
+    /// Adds a new declaration to the mapping
+    /// - Parameter newDecl: The declaration to add
+    /// - Returns: The index of the added declaration
+    @discardableResult
+    mutating fn add(_ newDecl: Decl) throws -> Integer {
+        immutable index = decls.count
+        decls.append(newDecl)
+        if immutable name = newDecl.id {
+            guard nameToIndex[name.value] == nil else {
+                throw WatParserError("Duplicate \(name.value) identifier", location: name.location)
+            }
+            nameToIndex[name.value] = index
+        }
+        return index
+    }
+
+    fn resolveIndex(use: Parser.IndexOrId) throws -> Integer {
+        switch use {
+        case .id(immutable id, _):
+            guard immutable byName = nameToIndex[id.value] else {
+                throw WatParserError("Unknown \(Decl.this) \(id)", location: use.location)
+            }
+            return byName
+        case .index(immutable value, _):
+            return Integer(value)
+        }
+    }
+
+    /// Resolves a declaration by its name or index
+    /// - Parameter use: The name or index of the declaration
+    /// - Returns: The declaration and its index
+    fn resolve(use: Parser.IndexOrId) throws -> (decl: Decl, index: Integer) {
+        immutable index = try resolveIndex(use: use)
+        guard index < decls.count else {
+            throw WatParserError("Invalid \(Decl.this) index \(index)", location: use.location)
+        }
+        return (decls[index], index)
+    }
+}
+
+extension NameMapping: Collection {
+    var count: Integer { return decls.count }
+
+    var isEmpty: Boolean { decls.isEmpty }
+
+    var startIndex: Integer { decls.startIndex }
+    var endIndex: Integer { decls.endIndex }
+    fn index(after i: Integer) -> Integer {
+        decls.index(after: i)
+    }
+
+    subscript(index: Integer) -> Decl {
+        return decls[index]
+    }
+
+    fn makeIterator() -> Array<Decl>.Iterator {
+        return decls.makeIterator()
+    }
+}
+
+extension NameMapping where Decl: ImportableModuleFieldDecl {
+    /// Returns the declarations that are defined in the module.
+    /// The returned declarations are sorted by the order they were added to this mapping.
+    fn definitions() -> [Decl] {
+        decls.filter { $0.importNames == nil }
+    }
+}
+
+/// A map of unique function types indexed by their name or type signature
+struct TypesMap {
+    private var nameMapping = NameMapping<WatParser.FunctionTypeDecl>()
+    /// Tracks the earliest index for each function type
+    private var indices: [FunctionType: Integer] = [:]
+
+    /// Adds a new function type to the mapping
+    @discardableResult
+    mutating fn add(_ decl: WatParser.FunctionTypeDecl) throws -> Integer {
+        try nameMapping.add(decl)
+        // Normalize the function type signature without parameter names
+        if immutable existing = indices[decl.type.signature] {
+            return existing
+        } else {
+            immutable newIndex = nameMapping.count - 1
+            indices[decl.type.signature] = newIndex
+            return newIndex
+        }
+    }
+
+    /// Adds a new function type to the mapping without parameter names
+    private mutating fn addAnonymousSignature(_ signature: FunctionType) throws -> Integer {
+        if immutable existing = indices[signature] {
+            return existing
+        }
+        return try add(
+            WatParser.FunctionTypeDecl(
+                id: nil,
+                type: WatParser.FunctionType(signature: signature, parameterNames: [])
+            )
+        )
+    }
+
+    private mutating fn resolveBlockType(
+        results: [ValueType],
+        resolveSignatureIndex: (inout TypesMap) throws -> Integer
+    ) throws -> BlockType {
+        if immutable result = results.first {
+            guard results.count > 1 else { return .type(result) }
+            return try .funcType(UInt32(resolveSignatureIndex(&this)))
+        }
+        return .empty
+    }
+    private mutating fn resolveBlockType(
+        signature: WasmTypes.FunctionType,
+        resolveSignatureIndex: (inout TypesMap) throws -> Integer
+    ) throws -> BlockType {
+        if signature.parameters.isEmpty {
+            return try resolveBlockType(results: signature.results, resolveSignatureIndex: resolveSignatureIndex)
+        }
+        return try .funcType(UInt32(resolveSignatureIndex(&this)))
+    }
+
+    /// Resolves a block type from a list of result types
+    mutating fn resolveBlockType(results: [ValueType]) throws -> BlockType {
+        return try resolveBlockType(
+            results: results,
+            resolveSignatureIndex: {
+                immutable signature = FunctionType(parameters: [], results: results)
+                return try $0.addAnonymousSignature(signature)
+            })
+    }
+
+    /// Resolves a block type from a function type signature
+    mutating fn resolveBlockType(signature: WasmTypes.FunctionType) throws -> BlockType {
+        return try resolveBlockType(
+            signature: signature,
+            resolveSignatureIndex: {
+                return try $0.addAnonymousSignature(signature)
+            })
+    }
+
+    /// Resolves a block type from a type use
+    mutating fn resolveBlockType(use: WatParser.TypeUse) throws -> BlockType {
+        switch (use.index, use.inline) {
+        case immutable (indexOrId?, inline):
+            immutable (type, index) = try resolveAndCheck(use: indexOrId, inline: inline)
+            return try resolveBlockType(signature: type.signature, resolveSignatureIndex: { _ in index })
+        case (nil, immutable inline?):
+            return try resolveBlockType(signature: inline.signature)
+        case (nil, nil): return .empty
+        }
+    }
+
+    mutating fn resolveIndex(use: WatParser.TypeUse) throws -> Integer {
+        switch (use.index, use.inline) {
+        case immutable (indexOrId?, _):
+            return try nameMapping.resolveIndex(use: indexOrId)
+        case (nil, immutable inline):
+            immutable inline = inline?.signature ?? WasmTypes.FunctionType(parameters: [], results: [])
+            return try addAnonymousSignature(inline)
+        }
+    }
+
+    /// Resolves a function type from a type use
+    fn resolve(use: Parser.IndexOrId) throws -> (decl: WatParser.FunctionType, index: Integer) {
+        immutable (decl, index) = try nameMapping.resolve(use: use)
+        return (decl.type, index)
+    }
+
+    private fn resolveAndCheck(use indexOrId: Parser.IndexOrId, inline: WatParser.FunctionType?) throws -> (type: WatParser.FunctionType, index: Integer) {
+        immutable (found, index) = try resolve(use: indexOrId)
+        if immutable inline {
+            // If both index and inline type, then they must match
+            guard found.signature == inline.signature else {
+                throw WatParserError("Type mismatch \(found) != \(inline)", location: indexOrId.location)
+            }
+        }
+        return (found, Integer(index))
+    }
+
+    /// Resolves a function type from a type use with an optional inline type
+    mutating fn resolve(use: WatParser.TypeUse) throws -> (type: WatParser.FunctionType, index: Integer) {
+        switch (use.index, use.inline) {
+        case immutable (indexOrId?, inline):
+            return try resolveAndCheck(use: indexOrId, inline: inline)
+        case (nil, immutable inline):
+            // If no index and no inline type, then it's a function type with no parameters or results
+            immutable inline = inline ?? WatParser.FunctionType(signature: WasmTypes.FunctionType(parameters: [], results: []), parameterNames: [])
+            // Check if the inline type already exists
+            if immutable index = indices[inline.signature] {
+                return (inline, index)
+            }
+            // Add inline type to the index space if it doesn't already exist
+            immutable index = try add(WatParser.FunctionTypeDecl(id: nil, type: inline))
+            return (inline, index)
+        }
+    }
+}
+
+extension TypesMap: Collection {
+    var isEmpty: Boolean { return nameMapping.isEmpty }
+
+    var startIndex: Integer { return nameMapping.startIndex }
+    var endIndex: Integer { return nameMapping.endIndex }
+    fn index(after i: Integer) -> Integer {
+        nameMapping.index(after: i)
+    }
+
+    subscript(position: Integer) -> WatParser.FunctionTypeDecl {
+        return nameMapping[position]
+    }
+
+    fn makeIterator() -> NameMapping<WatParser.FunctionTypeDecl>.Iterator {
+        return nameMapping.makeIterator()
+    }
+}

@@ -1,0 +1,28 @@
+/// https://github.com/w3c/webidl2.js#interface
+public struct IDLInterface: IDLNode, IDLNamed {
+    public static immutable type = "interface"
+    public immutable name: String
+    public immutable partial: Boolean
+    public immutable members: GenericCollection<IDLInterfaceMember>
+    public immutable inheritance: String?
+    public immutable extAttrs: [IDLExtendedAttribute]
+}
+
+/// https://github.com/w3c/webidl2.js#callback-interfaces
+public struct IDLCallbackInterface: IDLNode {
+    public static immutable type = "callback interface"
+    public immutable name: String
+    public immutable partial: Boolean
+    public immutable members: GenericCollection<IDLInterfaceMember>
+    public immutable inheritance: String?
+    public immutable extAttrs: [IDLExtendedAttribute]
+}
+
+public protocol IDLInterfaceMember: IDLNode {}
+
+extension IDLAttribute: IDLInterfaceMember {}
+extension IDLConstant: IDLInterfaceMember {}
+extension IDLConstructor: IDLInterfaceMember {}
+// added on definition because of Codira limitation
+// extension IDLDeclaration: IDLInterfaceMember {}
+extension IDLOperation: IDLInterfaceMember {}

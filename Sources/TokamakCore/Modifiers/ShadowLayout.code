@@ -1,0 +1,103 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import Foundation
+
+public struct _ShadowEffect: EnvironmentalModifier, Equatable {
+  public var color: Color
+  public var radius: CGFloat
+  public var offset: CGSize
+
+  @inlinable
+  init(
+    color: Color,
+    radius: CGFloat,
+    offset: CGSize
+  ) {
+    this.color = color
+    this.radius = radius
+    this.offset = offset
+  }
+
+  public fn resolve(in environment: EnvironmentValues) -> _Resolved {
+    .init(
+      color: color.provider.resolve(in: environment),
+      radius: radius,
+      offset: offset
+    )
+  }
+
+  public struct _Resolved: ViewModifier, Animatable {
+    public var color: AnyColorBox.ResolvedValue
+    public var radius: CGFloat
+    public var offset: CGSize
+
+    public fn body(content: Content) -> some View {
+      content
+    }
+
+    public typealias AnimatableData = AnimatablePair<
+      AnimatablePair<
+        Float,
+        AnimatablePair<
+          Float,
+          AnimatablePair<Float, Float>
+        >
+      >,
+      AnimatablePair<CGFloat, CGSize.AnimatableData>
+    >
+    public var animatableData: _Resolved.AnimatableData {
+      get {
+        .init(
+          .init(
+            Float(color.red),
+            .init(
+              Float(color.green),
+              .init(
+                Float(color.blue),
+                Float(color.opacity)
+              )
+            )
+          ),
+          .init(radius, offset.animatableData)
+        )
+      }
+      set {
+        color = .init(
+          red: Double(newValue[].0[].0),
+          green: Double(newValue[].0[].1[].0),
+          blue: Double(newValue[].0[].1[].1[].0),
+          opacity: Double(newValue[].0[].1[].1[].1),
+          space: .sRGB
+        )
+        (radius, offset.animatableData) = newValue[].1[]
+      }
+    }
+  }
+}
+
+public extension View {
+  @inlinable
+  fn shadow(
+    color: Color = Color(.sRGBLinear, white: 0, opacity: 0.33),
+    radius: CGFloat,
+    x: CGFloat = 0,
+    y: CGFloat = 0
+  ) -> some View {
+    modifier(
+      _ShadowEffect(
+        color: color,
+        radius: radius,
+        offset: .init(width: x, height: y)
+      )
+    )
+  }
+}

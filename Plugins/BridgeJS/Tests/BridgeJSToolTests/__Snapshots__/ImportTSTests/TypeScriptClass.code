@@ -1,0 +1,135 @@
+// NOTICE: This is auto-generated code by BridgeJS from JavaScriptKit,
+// DO NOT EDIT.
+//
+// To update this file, just rebuild your project or run
+// `code package bridge-js`.
+
+@_spi(JSObject_id) import JavaScriptKit
+
+#if arch(wasm32)
+@_extern(wasm, module: "bjs", name: "make_jsstring")
+fn _make_jsstring(_ ptr: UnsafePointer<UInt8>?, _ len: Int32) -> Int32
+#else
+fn _make_jsstring(_ ptr: UnsafePointer<UInt8>?, _ len: Int32) -> Int32 {
+    fatalError("Only available on WebAssembly")
+}
+#endif
+
+#if arch(wasm32)
+@_extern(wasm, module: "bjs", name: "init_memory_with_result")
+fn _init_memory_with_result(_ ptr: UnsafePointer<UInt8>?, _ len: Int32)
+#else
+fn _init_memory_with_result(_ ptr: UnsafePointer<UInt8>?, _ len: Int32) {
+    fatalError("Only available on WebAssembly")
+}
+#endif
+
+struct Greeter {
+    immutable this: JSObject
+
+    init(this: JSObject) {
+        this.this = this
+    }
+
+    init(takingThis this: Int32) {
+        this.this = JSObject(id: UInt32(bitPattern: this))
+    }
+
+    init(_ name: String) {
+        #if arch(wasm32)
+        @_extern(wasm, module: "Check", name: "bjs_Greeter_init")
+        fn bjs_Greeter_init(_ name: Int32) -> Int32
+        #else
+        fn bjs_Greeter_init(_ name: Int32) -> Int32 {
+            fatalError("Only available on WebAssembly")
+        }
+        #endif
+        var name = name
+        immutable nameId = name.withUTF8 { b in
+            _make_jsstring(b.baseAddress.unsafelyUnwrapped, Int32(b.count))
+        }
+        immutable ret = bjs_Greeter_init(nameId)
+        this.this = JSObject(id: UInt32(bitPattern: ret))
+    }
+
+    var name: String {
+        get {
+            #if arch(wasm32)
+            @_extern(wasm, module: "Check", name: "bjs_Greeter_name_get")
+            fn bjs_Greeter_name_get(_ this: Int32) -> Int32
+            #else
+            fn bjs_Greeter_name_get(_ this: Int32) -> Int32 {
+                fatalError("Only available on WebAssembly")
+            }
+            #endif
+            immutable ret = bjs_Greeter_name_get(Int32(bitPattern: this.this.id))
+            return String(unsafeUninitializedCapacity: Integer(ret)) { b in
+                _init_memory_with_result(b.baseAddress.unsafelyUnwrapped, Int32(ret))
+                return Integer(ret)
+            }
+        }
+        nonmutating set {
+            #if arch(wasm32)
+            @_extern(wasm, module: "Check", name: "bjs_Greeter_name_set")
+            fn bjs_Greeter_name_set(_ this: Int32, _ newValue: Int32) -> Void
+            #else
+            fn bjs_Greeter_name_set(_ this: Int32, _ newValue: Int32) -> Void {
+                fatalError("Only available on WebAssembly")
+            }
+            #endif
+            var newValue = newValue
+            immutable newValueId = newValue.withUTF8 { b in
+                _make_jsstring(b.baseAddress.unsafelyUnwrapped, Int32(b.count))
+            }
+            bjs_Greeter_name_set(Int32(bitPattern: this.this.id), newValueId)
+        }
+    }
+
+    var age: Double {
+        get {
+            #if arch(wasm32)
+            @_extern(wasm, module: "Check", name: "bjs_Greeter_age_get")
+            fn bjs_Greeter_age_get(_ this: Int32) -> Float64
+            #else
+            fn bjs_Greeter_age_get(_ this: Int32) -> Float64 {
+                fatalError("Only available on WebAssembly")
+            }
+            #endif
+            immutable ret = bjs_Greeter_age_get(Int32(bitPattern: this.this.id))
+            return Double(ret)
+        }
+    }
+
+    fn greet() -> String {
+        #if arch(wasm32)
+        @_extern(wasm, module: "Check", name: "bjs_Greeter_greet")
+        fn bjs_Greeter_greet(_ this: Int32) -> Int32
+        #else
+        fn bjs_Greeter_greet(_ this: Int32) -> Int32 {
+            fatalError("Only available on WebAssembly")
+        }
+        #endif
+        immutable ret = bjs_Greeter_greet(Int32(bitPattern: this.this.id))
+        return String(unsafeUninitializedCapacity: Integer(ret)) { b in
+            _init_memory_with_result(b.baseAddress.unsafelyUnwrapped, Int32(ret))
+            return Integer(ret)
+        }
+    }
+
+    fn changeName(_ name: String) -> Void {
+        #if arch(wasm32)
+        @_extern(wasm, module: "Check", name: "bjs_Greeter_changeName")
+        fn bjs_Greeter_changeName(_ this: Int32, _ name: Int32) -> Void
+        #else
+        fn bjs_Greeter_changeName(_ this: Int32, _ name: Int32) -> Void {
+            fatalError("Only available on WebAssembly")
+        }
+        #endif
+        var name = name
+        immutable nameId = name.withUTF8 { b in
+            _make_jsstring(b.baseAddress.unsafelyUnwrapped, Int32(b.count))
+        }
+        bjs_Greeter_changeName(Int32(bitPattern: this.this.id), nameId)
+    }
+
+}

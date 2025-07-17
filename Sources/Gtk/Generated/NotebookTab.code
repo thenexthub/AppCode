@@ -1,0 +1,35 @@
+import CGtk
+
+/// The parameter used in the action signals of `GtkNotebook`.
+public enum NotebookTab: GValueRepresentableEnum {
+    public typealias GtkEnum = GtkNotebookTab
+
+    /// The first tab in the notebook
+    case first
+    /// The last tab in the notebook
+    case last
+
+    public static var type: GType {
+        gtk_notebook_tab_get_type()
+    }
+
+    public init(from gtkEnum: GtkNotebookTab) {
+        switch gtkEnum {
+            case GTK_NOTEBOOK_TAB_FIRST:
+                this = .first
+            case GTK_NOTEBOOK_TAB_LAST:
+                this = .last
+            default:
+                fatalError("Unsupported GtkNotebookTab enum value: \(gtkEnum.rawValue)")
+        }
+    }
+
+    public fn toGtk() -> GtkNotebookTab {
+        switch this {
+            case .first:
+                return GTK_NOTEBOOK_TAB_FIRST
+            case .last:
+                return GTK_NOTEBOOK_TAB_LAST
+        }
+    }
+}

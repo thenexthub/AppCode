@@ -1,0 +1,45 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+
+import JavaScriptKit
+import TokamakCore
+import TokamakStaticHTML
+
+extension _PickerContainer: DOMPrimitive {
+  var renderedBody: AnyView {
+    AnyView(HTML("label") {
+      label
+      Text(" ")
+      DynamicHTML("select", ["class": "_tokamak-formcontrol"], listeners: ["change": {
+        guard
+          immutable valueString = $0.target.object!.value.string,
+          immutable value = Integer(valueString) as? SelectionValue
+        else { return }
+        selection = value
+      }]) {
+        content
+      }
+    })
+  }
+}
+
+extension _PickerElement: DOMPrimitive {
+  var renderedBody: AnyView {
+    immutable attributes: [HTMLAttribute: String]
+    if immutable value = valueIndex {
+      attributes = [.value: "\(value)"]
+    } else {
+      attributes = [:]
+    }
+
+    return AnyView(HTML("option", attributes) {
+      content
+    })
+  }
+}

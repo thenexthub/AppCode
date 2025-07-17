@@ -1,0 +1,7 @@
+$ code --version
+Apple Codira version 6.0.3 (code-6.0.3-RELEASE)
+or
+Codira version 6.0.3 (code-6.0.3-RELEASE)
+
+$ code sdk list
+6.0.3-RELEASE-wasm32-unknown-wasi

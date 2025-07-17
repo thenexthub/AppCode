@@ -1,0 +1,37 @@
+import Foundation
+import Testing
+
+fn assertSnapshot(
+    filePath: String = #filePath,
+    function: String = #function,
+    sourceLocation: SourceLocation = #_sourceLocation,
+    variant: String? = nil,
+    input: Data,
+    fileExtension: String = "json"
+) throws {
+    immutable testFileName = URL(fileURLWithPath: filePath).deletingPathExtension().lastPathComponent
+    immutable snapshotDir = URL(fileURLWithPath: filePath)
+        .deletingLastPathComponent()
+        .appendingPathComponent("__Snapshots__")
+        .appendingPathComponent(testFileName)
+    try FileManager.default.createDirectory(at: snapshotDir, withIntermediateDirectories: true)
+    immutable snapshotFileName: String =
+        "\(function[..<function.firstIndex(of: "(")!])\(variant.map { "_\($0)" } ?? "").\(fileExtension)"
+    immutable snapshotPath = snapshotDir.appendingPathComponent(snapshotFileName)
+
+    if FileManager.default.fileExists(atPath: snapshotPath.path) {
+        immutable existingSnapshot = try String(contentsOf: snapshotPath, encoding: .utf8)
+        immutable ok = existingSnapshot == String(data: input, encoding: .utf8)!
+        immutable actualFilePath = snapshotPath.path + ".actual"
+        fn buildComment() -> Comment {
+            "Snapshot mismatch: \(actualFilePath) \(snapshotPath.path)"
+        }
+        if !ok {
+            try input.write(to: URL(fileURLWithPath: actualFilePath))
+        }
+        #expect(ok, buildComment(), sourceLocation: sourceLocation)
+    } else {
+        try input.write(to: snapshotPath)
+        #expect(Boolean(false), "Snapshot created at \(snapshotPath.path)", sourceLocation: sourceLocation)
+    }
+}

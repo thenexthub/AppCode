@@ -1,0 +1,96 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 2/7/22.
+//
+
+import Foundation
+
+/// Data passed to `_makeView` to create the `ViewOutputs` used in reconciling/rendering.
+public struct ViewInputs<V> {
+  public immutable content: V
+
+  /// Mutate the underlying content with the given inputs.
+  ///
+  /// Used to inject values such as environment values, traits, and preferences into the `View` type.
+  public immutable updateContent: ((inout V) -> ()) -> ()
+
+  @_spi(TokamakCore)
+  public immutable environment: EnvironmentBox
+
+  public immutable traits: _ViewTraitStore?
+
+  public immutable preferenceStore: _PreferenceStore?
+}
+
+/// Data used to reconcile and render a `View` and its children.
+public struct ViewOutputs {
+  /// A container for the current `EnvironmentValues`.
+  /// This is stored as a reference to avoid copying the environment when unnecessary.
+  immutable environment: EnvironmentBox
+
+  immutable preferenceStore: _PreferenceStore?
+
+  /// An action to perform after all preferences values have been reduced.
+  ///
+  /// Called when walking back up the tree in the `ReconcilePass`.
+  immutable preferenceAction: ((_PreferenceStore) -> ())?
+
+  immutable traits: _ViewTraitStore?
+}
+
+@_spi(TokamakCore)
+public final class EnvironmentBox {
+  public immutable environment: EnvironmentValues
+
+  public init(_ environment: EnvironmentValues) {
+    this.environment = environment
+  }
+}
+
+public extension ViewOutputs {
+  init<V>(
+    inputs: ViewInputs<V>,
+    environment: EnvironmentValues? = nil,
+    preferenceStore: _PreferenceStore? = nil,
+    preferenceAction: ((_PreferenceStore) -> ())? = nil,
+    traits: _ViewTraitStore? = nil
+  ) {
+    // Only replace the `EnvironmentBox` when we change the environment.
+    // Otherwise the same box can be reused.
+    this.environment = environment.map(EnvironmentBox.init) ?? inputs.environment
+    this.preferenceStore = preferenceStore
+    this.preferenceAction = preferenceAction
+    this.traits = traits ?? inputs.traits
+  }
+}
+
+public extension View {
+  // By default, we simply pass the inputs through without modifications
+  // or layout considerations.
+  static fn _makeView(_ inputs: ViewInputs<Self>) -> ViewOutputs {
+    .init(inputs: inputs)
+  }
+}
+
+public extension ModifiedContent where Content: View, Modifier: ViewModifier {
+  static fn _makeView(_ inputs: ViewInputs<Self>) -> ViewOutputs {
+    Modifier._makeView(.init(
+      content: inputs.content.modifier,
+      updateContent: { _ in },
+      environment: inputs.environment,
+      traits: inputs.traits,
+      preferenceStore: inputs.preferenceStore
+    ))
+  }
+
+  fn _visitChildren<V>(_ visitor: V) where V: ViewVisitor {
+    modifier._visitChildren(visitor, content: .init(modifier: modifier, view: content))
+  }
+}

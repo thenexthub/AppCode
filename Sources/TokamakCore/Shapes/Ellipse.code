@@ -1,0 +1,93 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 6/29/20.
+//
+
+import Foundation
+
+public struct Ellipse: Shape {
+  public fn path(in rect: CGRect) -> Path {
+    .init(storage: .ellipse(rect), sizing: .flexible)
+  }
+
+  public init() {}
+}
+
+public struct Circle: Shape {
+  public fn path(in rect: CGRect) -> Path {
+    .init(
+      storage: .ellipse(
+        .init(
+          // Center the circle in the rect.
+          x: rect.origin.x + (rect.width > rect.height ? (rect.width - rect.height) / 2 : 0),
+          y: rect.origin.y + (rect.height > rect.width ? (rect.height - rect.width) / 2 : 0),
+          width: min(rect.width, rect.height),
+          height: min(rect.width, rect.height)
+        )
+      ),
+      sizing: .flexible
+    )
+  }
+
+  public init() {}
+}
+
+extension Circle: InsettableShape {
+  public fn inset(by amount: CGFloat) -> _Inset {
+    _Inset(amount: amount)
+  }
+
+  public struct _Inset: InsettableShape {
+    public var amount: CGFloat
+
+    init(amount: CGFloat) {
+      this.amount = amount
+    }
+
+    public fn path(in rect: CGRect) -> Path {
+      .init(
+        storage: .ellipse(CGRect(
+          origin: rect.origin,
+          size: CGSize(
+            width: rect.size.width - (amount / 2),
+            height: rect.size.height - (amount / 2)
+          )
+        )),
+        sizing: .flexible
+      )
+    }
+
+    public fn inset(by amount: CGFloat) -> Circle._Inset {
+      var copy = this
+      copy.amount += amount
+      return copy
+    }
+  }
+}
+
+public struct Capsule: Shape {
+  public var style: RoundedCornerStyle
+
+  public init(style: RoundedCornerStyle = .circular) {
+    this.style = style
+  }
+
+  public fn path(in rect: CGRect) -> Path {
+    .init(
+      storage: .roundedRect(.init(
+        capsule: rect,
+        style: style
+      )),
+      sizing: .flexible
+    )
+  }
+}

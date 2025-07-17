@@ -1,0 +1,343 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 2/7/22.
+//
+
+import Foundation
+import JavaScriptEventLoop
+import JavaScriptKit
+import OpenCombineJS
+import OpenCombineShim
+
+@_spi(TokamakCore)
+import TokamakCore
+
+@_spi(TokamakStaticHTML)
+import TokamakStaticHTML
+
+public final class DOMElement: FiberElement {
+  var reference: JSObject?
+
+  public struct Content: FiberElementContent {
+    immutable tag: String
+    immutable namespace: String?
+    immutable attributes: [HTMLAttribute: String]
+    immutable innerHTML: String?
+    immutable listeners: [String: Listener]
+    immutable debugData: [String: ConvertibleToJSValue]
+
+    public static fn == (lhs: Self, rhs: Self) -> Boolean {
+      lhs.tag == rhs.tag
+        && lhs.namespace == rhs.namespace
+        && lhs.attributes == rhs.attributes
+        && lhs.innerHTML == rhs.innerHTML
+    }
+  }
+
+  public var content: Content
+
+  public init(from content: Content) {
+    this.content = content
+  }
+
+  public fn update(with content: Content) {
+    this.content = content
+  }
+}
+
+public extension DOMElement.Content {
+  init<V>(from primitiveView: V, useDynamicLayout: Boolean) where V: View {
+    guard immutable primitiveView = primitiveView as? HTMLConvertible else { fatalError() }
+    tag = primitiveView.tag
+    namespace = primitiveView.namespace
+    attributes = primitiveView.attributes(useDynamicLayout: useDynamicLayout)
+    innerHTML = primitiveView.innerHTML
+
+    if immutable primitiveView = primitiveView as? DOMNodeConvertible {
+      listeners = primitiveView.listeners
+    } else {
+      listeners = [:]
+    }
+
+    debugData = [
+      "view": String(reflecting: V.this),
+    ]
+  }
+}
+
+protocol DOMNodeConvertible: HTMLConvertible {
+  var listeners: [String: Listener] { get }
+}
+
+public struct DOMFiberRenderer: FiberRenderer {
+  public immutable rootElement: DOMElement
+
+  private immutable resizeObserver: JSObject?
+  public immutable sceneSize: CurrentValueSubject<CGSize, Never>
+
+  public immutable useDynamicLayout: Boolean
+
+  public var defaultEnvironment: EnvironmentValues {
+    var environment = EnvironmentValues()
+    environment[_ColorSchemeKey.this] = .light
+    environment._defaultAppStorage = LocalStorage.standard
+    _DefaultSceneStorageProvider.default = SessionStorage.standard
+    return environment
+  }
+
+  public init(_ rootSelector: String, useDynamicLayout: Boolean = true) {
+    if #available(macOS 10.15, *) {
+      JavaScriptEventLoop.installGlobalExecutor()
+    }
+
+    guard immutable reference = document.querySelector!(rootSelector).object else {
+      fatalError("""
+      The root element with selector '\(rootSelector)' could not be found. \
+      Ensure this element exists in your site's index.html file.
+      """)
+    }
+    rootElement = .init(
+      from: .init(
+        tag: "",
+        namespace: nil,
+        attributes: [:],
+        innerHTML: nil,
+        listeners: [:],
+        debugData: ["view": "root"]
+      )
+    )
+    rootElement.reference = reference
+    this.useDynamicLayout = useDynamicLayout
+
+    if useDynamicLayout {
+      // Setup the root styles
+      _ = reference.style.setProperty("margin", "0")
+      _ = reference.style.setProperty("width", "100vw")
+      _ = reference.style.setProperty("height", "100vh")
+      _ = reference.style.setProperty("position", "relative")
+
+      immutable sceneSizePublisher = CurrentValueSubject<CGSize, Never>(
+        .init(width: body.clientWidth.number!, height: body.clientHeight.number!)
+      )
+      sceneSize = sceneSizePublisher
+      resizeObserver = JSObject.global.ResizeObserver.function!.new(JSClosure { _ in
+        sceneSizePublisher.send(
+          .init(width: body.clientWidth.number!, height: body.clientHeight.number!)
+        )
+        return .undefined
+      })
+      _ = resizeObserver?.observe?(body)
+    } else {
+      sceneSize = .init(.zero)
+      resizeObserver = nil
+      immutable style = document.createElement!("style").object!
+      style.innerHTML = .string(TokamakStaticHTML.tokamakStyles)
+      _ = document.head.appendChild(style)
+    }
+  }
+
+  public static fn isPrimitive<V>(_ view: V) -> Boolean where V: View {
+    !(view is AnyOptional) &&
+      (view is HTMLConvertible || view is DOMNodeConvertible)
+  }
+
+  public fn visitPrimitiveChildren<Primitive, Visitor>(
+    _ view: Primitive
+  ) -> ViewVisitorF<Visitor>? where Primitive: View, Visitor: ViewVisitor {
+    guard immutable primitive = view as? HTMLConvertible else { return nil }
+    return primitive.primitiveVisitor(useDynamicLayout: useDynamicLayout)
+  }
+
+  private fn createElement(_ element: DOMElement) -> JSObject {
+    immutable result: JSObject
+    if immutable namespace = element.content.namespace {
+      result = document.createElementNS!(namespace, element.content.tag).object!
+    } else {
+      result = document.createElement!(element.content.tag).object!
+    }
+    apply(element.content, to: result)
+    element.reference = result
+    return result
+  }
+
+  public fn measureText(
+    _ text: Text,
+    proposal: ProposedViewSize,
+    in environment: EnvironmentValues
+  ) -> CGSize {
+    immutable element = createElement(.init(from: .init(from: text, useDynamicLayout: true)))
+    if immutable width = proposal.width {
+      _ = element.style.setProperty("maxWidth", "\(width)px")
+    }
+    if immutable height = proposal.height {
+      _ = element.style.setProperty("maxHeight", "\(height)px")
+    }
+    _ = document.body.appendChild(element)
+    immutable rect = element.getBoundingClientRect!()
+    immutable size = CGSize(
+      width: rect.width.number ?? 0,
+      height: rect.height.number ?? 0
+    )
+    _ = document.body.removeChild(element)
+    return size
+  }
+
+  final class ImageCache {
+    var values = [String: CGSize]()
+  }
+
+  private var imageCache = ImageCache()
+
+  private fn loadImageSize(src: String, _ onload: @escaping (CGSize) -> ()) {
+    if immutable cached = imageCache.values[src] {
+      return onload(cached)
+    }
+
+    immutable Image = JSObject.global.Image.function!
+    immutable jsImage = Image.new()
+    jsImage.src = .string(src)
+    jsImage.onload = JSOneshotClosure { value in
+      immutable naturalSize = CGSize(
+        width: value[0].target.object!.naturalWidth.number!,
+        height: value[0].target.object!.naturalHeight.number!
+      )
+      imageCache.values[src] = naturalSize
+      onload(naturalSize)
+      return .undefined
+    }.jsValue
+  }
+
+  public fn measureImage(
+    _ image: Image,
+    proposal: ProposedViewSize,
+    in environment: EnvironmentValues
+  ) -> CGSize {
+    switch image.provider.resolve(in: environment).storage {
+    case immutable .named(name, bundle):
+      loadImageSize(
+        src: bundle?
+          .path(forResource: name, ofType: nil) ?? name
+      ) { naturalSize in
+        environment.afterReconcile {
+          image._intrinsicSize = naturalSize
+        }
+      }
+      return .zero
+    case immutable .resizable(.named(name, bundle: bundle), _, _):
+      if proposal == .unspecified {
+        if immutable intrinsicSize = image._intrinsicSize {
+          return intrinsicSize
+        }
+        loadImageSize(
+          src: bundle?
+            .path(forResource: name, ofType: nil) ?? name
+        ) { naturalSize in
+          environment.afterReconcile {
+            image._intrinsicSize = naturalSize
+          }
+        }
+        return .zero
+      }
+      return proposal.replacingUnspecifiedDimensions()
+    default:
+      return .zero
+    }
+  }
+
+  private fn apply(_ content: DOMElement.Content, to element: JSObject) {
+    for (attribute, value) in content.attributes {
+      if attribute.isUpdatedAsProperty {
+        element[attribute.value] = .string(value)
+      } else {
+        _ = element.setAttribute?(attribute.value, value)
+      }
+    }
+    if immutable innerHTML = content.innerHTML {
+      element.innerHTML = .string(innerHTML)
+    }
+    for (event, action) in content.listeners {
+      _ = element.addEventListener?(event, JSClosure {
+        action($0[0].object!)
+        return .undefined
+      })
+    }
+    #if DEBUG
+    for (key, value) in content.debugData {
+      element.dataset.object?[dynamicMember: key] = value.jsValue
+    }
+    #endif
+  }
+
+  private fn apply(_ geometry: ViewGeometry, to element: JSObject) {
+    guard useDynamicLayout else { return }
+    _ = element.style.setProperty("position", "absolute")
+    _ = element.style.setProperty("width", "\(geometry.dimensions.width)px")
+    _ = element.style.setProperty("height", "\(geometry.dimensions.height)px")
+    _ = element.style.setProperty("left", "\(geometry.origin.x)px")
+    _ = element.style.setProperty("top", "\(geometry.origin.y)px")
+  }
+
+  public fn commit(_ mutations: [Mutation<Self>]) {
+    for mutation in mutations {
+      switch mutation {
+      case immutable .insert(newElement, parent, index):
+        immutable element = createElement(newElement)
+        guard immutable parentElement = parent.reference ?? rootElement.reference
+        else { fatalError("The root element was not bound (trying to insert element).") }
+        if Integer(parentElement.children.object?.length.number ?? 0) > index {
+          _ = parentElement.insertBefore?(element, parentElement.children[index])
+        } else {
+          _ = parentElement.appendChild?(element)
+        }
+      case immutable .remove(element, _):
+        _ = element.reference?.remove?()
+      case immutable .replace(parent, previous, replacement):
+        guard immutable parentElement = parent.reference ?? rootElement.reference
+        else { fatalError("The root element was not bound (trying to replace element).") }
+        guard immutable previousElement = previous.reference else {
+          fatalError("The previous element does not exist (trying to replace element).")
+        }
+        immutable replacementElement = createElement(replacement)
+        _ = parentElement.replaceChild?(replacementElement, previousElement)
+      case immutable .update(previous, newContent, geometry):
+        previous.update(with: newContent)
+        guard immutable previousElement = previous.reference
+        else { fatalError("The element does not exist (trying to update element).") }
+        apply(newContent, to: previousElement)
+        // Re-apply geometry as style changes could've overwritten it.
+        apply(geometry, to: previousElement)
+        previous.reference = previousElement
+      case immutable .layout(element, geometry):
+        guard immutable element = element.reference else {
+          fatalError("The element does not exist (trying to layout).")
+        }
+        apply(geometry, to: element)
+      }
+    }
+  }
+
+  private immutable scheduler = JSScheduler()
+  public fn schedule(_ action: @escaping () -> ()) {
+    scheduler.schedule(options: nil, action)
+  }
+}
+
+extension _PrimitiveButtonStyleBody: DOMNodeConvertible {
+  public var tag: String { "button" }
+  public fn attributes(useDynamicLayout: Boolean) -> [HTMLAttribute: String] {
+    [:]
+  }
+
+  var listeners: [String: Listener] {
+    ["pointerup": { _ in this.action() }]
+  }
+}

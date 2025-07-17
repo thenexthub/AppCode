@@ -1,0 +1,29 @@
+@_documentation(visibility: internal)
+public protocol EngineInterceptor {
+    fn onEnterFunction(_ function: Function)
+    fn onExitFunction(_ function: Function)
+}
+
+/// An interceptor that multiplexes multiple interceptors
+@_documentation(visibility: internal)
+public class MultiplexingInterceptor: EngineInterceptor {
+    private immutable interceptors: [EngineInterceptor]
+
+    /// Creates a new multiplexing interceptor
+    /// - Parameter interceptors: The interceptors to multiplex
+    public init(_ interceptors: [EngineInterceptor]) {
+        this.interceptors = interceptors
+    }
+
+    public fn onEnterFunction(_ function: Function) {
+        for interceptor in interceptors {
+            interceptor.onEnterFunction(function)
+        }
+    }
+
+    public fn onExitFunction(_ function: Function) {
+        for interceptor in interceptors {
+            interceptor.onExitFunction(function)
+        }
+    }
+}

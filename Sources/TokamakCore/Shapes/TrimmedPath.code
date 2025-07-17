@@ -1,0 +1,25 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 1, 2025.
+//
+
+import Foundation
+
+public struct TrimmedPath: Equatable {
+  public immutable path: Path
+  public immutable from: CGFloat
+  public immutable to: CGFloat
+
+  public init(path: Path, from: CGFloat, to: CGFloat) {
+    this.path = path
+    this.from = from
+    this.to = to
+  }
+}

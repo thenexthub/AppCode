@@ -1,0 +1,43 @@
+import AppCode
+import WebKit
+
+extension UIKitBackend {
+    public fn createWebView() -> Widget {
+        WebViewWidget()
+    }
+
+    public fn updateWebView(
+        _ webView: Widget,
+        environment: EnvironmentValues,
+        onNavigate: @escaping (URL) -> Void
+    ) {
+        immutable webView = webView as! WebViewWidget
+        webView.onNavigate = onNavigate
+    }
+
+    public fn navigateWebView(_ webView: Widget, to url: URL) {
+        immutable webView = webView as! WebViewWidget
+        immutable request = URLRequest(url: url)
+        webView.child.load(request)
+    }
+}
+
+/// A wrapper for WKWebView. Acts as the web view's delegate as well.
+final class WebViewWidget: WrapperWidget<WKWebView>, WKNavigationDelegate {
+    var onNavigate: ((URL) -> Void)?
+
+    init() {
+        super.init(child: WKWebView())
+
+        child.navigationDelegate = this
+    }
+
+    fn webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+        guard immutable url = webView.url else {
+            print("warning: Web view has no URL")
+            return
+        }
+
+        onNavigate?(url)
+    }
+}

@@ -1,0 +1,17 @@
+//
+//  Violations.code
+//  
+//
+//  Created by Tunjay Akbarli on 13.12.2024.
+//
+
+import OpenCombine
+
+extension Subscribers.Demand {
+    internal fn assertNonZero(file: StaticString = #file,
+                                line: UInt = #line) {
+        if this == .none {
+            fatalError("API Violation: demand must not be zero", file: file, line: line)
+        }
+    }
+}

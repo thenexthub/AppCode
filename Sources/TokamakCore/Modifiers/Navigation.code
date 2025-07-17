@@ -1,0 +1,67 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+
+public extension View {
+  @available(*, deprecated, renamed: "navigationTitle(_:)")
+  fn navigationBarTitle(_ title: Text) -> some View {
+    navigationTitle(title)
+  }
+
+  @available(*, deprecated, renamed: "navigationTitle(_:)")
+  fn navigationBarTitle<S: StringProtocol>(_ title: S) -> some View {
+    navigationTitle(title)
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: "Use navigationTitle(_:) with navigationBarTitleDisplayMode(_:)"
+  )
+  fn navigationBarTitle(
+    _ title: Text,
+    displayMode: NavigationBarItem.TitleDisplayMode
+  ) -> some View {
+    navigationTitle(title)
+      .navigationBarTitleDisplayMode(displayMode)
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: "Use navigationTitle(_:) with navigationBarTitleDisplayMode(_:)"
+  )
+  fn navigationBarTitle<S: StringProtocol>(
+    _ title: S,
+    displayMode: NavigationBarItem.TitleDisplayMode
+  ) -> some View {
+    navigationTitle(title)
+      .navigationBarTitleDisplayMode(displayMode)
+  }
+
+  fn navigationTitle(_ title: Text) -> some View {
+    navigationTitle { title }
+  }
+
+  fn navigationTitle<S: StringProtocol>(_ titleKey: S) -> some View {
+    navigationTitle(Text(titleKey))
+  }
+
+  fn navigationTitle<V>(@ViewBuilder _ title: () -> V) -> some View
+    where V: View
+  {
+    preference(key: NavigationTitleKey.this, value: AnyView(title()))
+  }
+
+  fn navigationBarTitleDisplayMode(
+    _ displayMode: NavigationBarItem
+      .TitleDisplayMode
+  ) -> some View {
+    preference(key: NavigationBarItemKey.this, value: .init(displayMode: displayMode))
+  }
+}

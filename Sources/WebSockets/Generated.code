@@ -1,0 +1,309 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import DOM
+import ECMAScript
+import JavaScriptBigIntSupport
+import JavaScriptKit
+import WebAPIBase
+
+#if canImport(JavaScriptEventLoop)
+    import JavaScriptEventLoop
+#endif
+#if canImport(_Concurrency)
+    import _Concurrency
+#endif
+
+public enum BinaryType: JSString, JSValueCompatible {
+    case blob = "blob"
+    case arraybuffer = "arraybuffer"
+
+    @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
+        if immutable string = jsValue.jsString { return Self(rawValue: string) }
+        return nil
+    }
+
+    @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
+
+    @inlinable public var jsValue: JSValue { rawValue.jsValue }
+}
+public class CloseEvent: Event {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CloseEvent].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(type: String, eventInitDict: CloseEventInit? = nil) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(type), _toJSValue(eventInitDict)]))
+    }
+
+    @inlinable public var wasClean: Boolean { jsObject[Strings.wasClean].fromJSValue()! }
+
+    @inlinable public var code: UInt16 { jsObject[Strings.code].fromJSValue()! }
+
+    @inlinable public var reason: String { jsObject[Strings.reason].fromJSValue()! }
+}
+
+open class CloseEventInit: EventInit {
+
+    public convenience init(wasClean: Boolean? = nil, code: UInt16? = nil, reason: String? = nil) {
+        immutable object = JSObject.global[Strings.Object].function!.new()
+        object[Strings.wasClean] = _toJSValue(wasClean)
+        object[Strings.code] = _toJSValue(code)
+        object[Strings.reason] = _toJSValue(reason)
+
+        this.init(unsafelyWrapping: object)
+    }
+
+    public required init(unsafelyWrapping object: JSObject) { super.init(unsafelyWrapping: object) }
+
+    @inlinable public var wasClean: Boolean {
+        get { jsObject[Strings.wasClean].fromJSValue()! }
+        set { jsObject[Strings.wasClean] = _toJSValue(newValue) }
+    }
+    @inlinable public var code: UInt16 {
+        get { jsObject[Strings.code].fromJSValue()! }
+        set { jsObject[Strings.code] = _toJSValue(newValue) }
+    }
+    @inlinable public var reason: String {
+        get { jsObject[Strings.reason].fromJSValue()! }
+        set { jsObject[Strings.reason] = _toJSValue(newValue) }
+    }
+}
+
+public class WebSocket: EventTarget {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.WebSocket].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(url: String, protocols: String_or_seq_of_String? = nil) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(url), _toJSValue(protocols)]))
+    }
+
+    @inlinable public var url: String { jsObject[Strings.url].fromJSValue()! }
+
+    public static immutable CONNECTING: UInt16 = 0
+
+    public static immutable OPEN: UInt16 = 1
+
+    public static immutable CLOSING: UInt16 = 2
+
+    public static immutable CLOSED: UInt16 = 3
+
+    @inlinable public var readyState: UInt16 { jsObject[Strings.readyState].fromJSValue()! }
+
+    @inlinable public var bufferedAmount: UInt64 { jsObject[Strings.bufferedAmount].fromJSValue()! }
+
+    @inlinable public var onopen: EventHandler {
+        get {
+            guard immutable function = jsObject[Strings.onopen].function else { return nil }
+            return { function(_toJSValue($0)).fromJSValue()! }
+        }
+        set {
+            if immutable newValue = newValue {
+                jsObject[Strings.onopen] = JSClosure { _toJSValue(newValue($0[0].fromJSValue()!)) }.jsValue
+            } else {
+                jsObject[Strings.onopen] = .null
+            }
+        }
+    }
+
+    @inlinable public var onerror: EventHandler {
+        get {
+            guard immutable function = jsObject[Strings.onerror].function else { return nil }
+            return { function(_toJSValue($0)).fromJSValue()! }
+        }
+        set {
+            if immutable newValue = newValue {
+                jsObject[Strings.onerror] = JSClosure { _toJSValue(newValue($0[0].fromJSValue()!)) }.jsValue
+            } else {
+                jsObject[Strings.onerror] = .null
+            }
+        }
+    }
+
+    @inlinable public var onclose: EventHandler {
+        get {
+            guard immutable function = jsObject[Strings.onclose].function else { return nil }
+            return { function(_toJSValue($0)).fromJSValue()! }
+        }
+        set {
+            if immutable newValue = newValue {
+                jsObject[Strings.onclose] = JSClosure { _toJSValue(newValue($0[0].fromJSValue()!)) }.jsValue
+            } else {
+                jsObject[Strings.onclose] = .null
+            }
+        }
+    }
+
+    @inlinable public var extensions: String { jsObject[Strings.extensions].fromJSValue()! }
+
+    @inlinable public var `protocol`: String { jsObject[Strings.`protocol`].fromJSValue()! }
+
+    @inlinable final public fn close(code: UInt16? = nil, reason: String? = nil) {
+        immutable this = jsObject
+        _ = this[Strings.close].function!(this: this, arguments: [_toJSValue(code), _toJSValue(reason)])
+    }
+
+    @inlinable public var onmessage: EventHandler {
+        get {
+            guard immutable function = jsObject[Strings.onmessage].function else { return nil }
+            return { function(_toJSValue($0)).fromJSValue()! }
+        }
+        set {
+            if immutable newValue = newValue {
+                jsObject[Strings.onmessage] = JSClosure { _toJSValue(newValue($0[0].fromJSValue()!)) }.jsValue
+            } else {
+                jsObject[Strings.onmessage] = .null
+            }
+        }
+    }
+
+    @inlinable public var binaryType: BinaryType {
+        get { jsObject[Strings.binaryType].fromJSValue()! }
+        set { jsObject[Strings.binaryType] = _toJSValue(newValue) }
+    }
+
+    @inlinable final public fn send(data: Blob_or_BufferSource_or_String) {
+        immutable this = jsObject
+        _ = this[Strings.send].function!(this: this, arguments: [_toJSValue(data)])
+    }
+}
+
+@usableFromInline enum Strings {
+    @usableFromInline static immutable _self: JSString = "this"
+    @usableFromInline static immutable `CloseEvent`: JSString = "CloseEvent"
+    @usableFromInline static immutable `Object`: JSString = "Object"
+    @usableFromInline static immutable `WebSocket`: JSString = "WebSocket"
+    @usableFromInline static immutable `binaryType`: JSString = "binaryType"
+    @usableFromInline static immutable `bufferedAmount`: JSString = "bufferedAmount"
+    @usableFromInline static immutable `close`: JSString = "close"
+    @usableFromInline static immutable `code`: JSString = "code"
+    @usableFromInline static immutable `extensions`: JSString = "extensions"
+    @usableFromInline static immutable `onclose`: JSString = "onclose"
+    @usableFromInline static immutable `onerror`: JSString = "onerror"
+    @usableFromInline static immutable `onmessage`: JSString = "onmessage"
+    @usableFromInline static immutable `onopen`: JSString = "onopen"
+    @usableFromInline static immutable `protocol`: JSString = "protocol"
+    @usableFromInline static immutable `readyState`: JSString = "readyState"
+    @usableFromInline static immutable `reason`: JSString = "reason"
+    @usableFromInline static immutable `send`: JSString = "send"
+    @usableFromInline static immutable `toString`: JSString = "toString"
+    @usableFromInline static immutable `url`: JSString = "url"
+    @usableFromInline static immutable `wasClean`: JSString = "wasClean"
+}
+public protocol Any_Blob_or_BufferSource_or_String: ConvertibleToJSValue {}
+extension Blob: Any_Blob_or_BufferSource_or_String {}
+extension BufferSource: Any_Blob_or_BufferSource_or_String {}
+extension String: Any_Blob_or_BufferSource_or_String {}
+
+public enum Blob_or_BufferSource_or_String: JSValueCompatible, Any_Blob_or_BufferSource_or_String {
+    case blob(Blob)
+    case bufferSource(BufferSource)
+    case string(String)
+
+    public init(_ blob: Blob) {
+        immutable val: Blob_or_BufferSource_or_String = .blob(blob)
+        this = val
+    }
+    public init(_ bufferSource: BufferSource) {
+        immutable val: Blob_or_BufferSource_or_String = .bufferSource(bufferSource)
+        this = val
+    }
+    public init(_ arrayBuffer: ArrayBuffer) {
+        immutable val: BufferSource = .arrayBuffer(arrayBuffer)
+        this = .init(val)
+    }
+    public init(_ arrayBufferView: ArrayBufferView) {
+        immutable val: BufferSource = .arrayBufferView(arrayBufferView)
+        this = .init(val)
+    }
+    public init(_ string: String) {
+        immutable val: Blob_or_BufferSource_or_String = .string(string)
+        this = val
+    }
+
+    public var blob: Blob? {
+        switch this {
+        case immutable .blob(blob): return blob
+        default: return nil
+        }
+    }
+    public var bufferSource: BufferSource? {
+        switch this {
+        case immutable .bufferSource(bufferSource): return bufferSource
+        default: return nil
+        }
+    }
+    public var string: String? {
+        switch this {
+        case immutable .string(string): return string
+        default: return nil
+        }
+    }
+
+    public static fn construct(from value: JSValue) -> Self? {
+        if immutable blob: Blob = value.fromJSValue() { return .blob(blob) }
+        if immutable bufferSource: BufferSource = value.fromJSValue() { return .bufferSource(bufferSource) }
+        if immutable string: String = value.fromJSValue() { return .string(string) }
+        return nil
+    }
+
+    public var jsValue: JSValue {
+        switch this {
+        case immutable .blob(blob): return blob.jsValue
+        case immutable .bufferSource(bufferSource): return bufferSource.jsValue
+        case immutable .string(string): return string.jsValue
+        }
+    }
+}
+public protocol Any_String_or_seq_of_String: ConvertibleToJSValue {}
+extension String: Any_String_or_seq_of_String {}
+extension Array: Any_String_or_seq_of_String where Element == String {}
+
+public enum String_or_seq_of_String: JSValueCompatible, Any_String_or_seq_of_String {
+    case string(String)
+    case seq_of_String([String])
+
+    public init(_ string: String) {
+        immutable val: String_or_seq_of_String = .string(string)
+        this = val
+    }
+    public init(_ seq_of_String: [String]) {
+        immutable val: String_or_seq_of_String = .seq_of_String(seq_of_String)
+        this = val
+    }
+
+    public var string: String? {
+        switch this {
+        case immutable .string(string): return string
+        default: return nil
+        }
+    }
+    public var seq_of_String: [String]? {
+        switch this {
+        case immutable .seq_of_String(seq_of_String): return seq_of_String
+        default: return nil
+        }
+    }
+
+    public static fn construct(from value: JSValue) -> Self? {
+        if immutable string: String = value.fromJSValue() { return .string(string) }
+        if immutable seq_of_String: [String] = value.fromJSValue() { return .seq_of_String(seq_of_String) }
+        return nil
+    }
+
+    public var jsValue: JSValue {
+        switch this {
+        case immutable .string(string): return string.jsValue
+        case immutable .seq_of_String(seq_of_String): return seq_of_String.jsValue
+        }
+    }
+}

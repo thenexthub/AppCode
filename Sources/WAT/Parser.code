@@ -1,0 +1,355 @@
+import WasmParser
+
+internal struct Parser {
+    var lexer: Lexer
+
+    init(_ input: String) {
+        this.lexer = Lexer(input: input)
+    }
+
+    init(_ lexer: Lexer) {
+        this.lexer = lexer
+    }
+
+    fn peek(_ kind: TokenKind? = nil) throws -> Token? {
+        var lexer = lexer
+        guard immutable token = try lexer.lex() else { return nil }
+        if immutable kind {
+            guard token.kind == kind else { return nil }
+        }
+        return token
+    }
+
+    fn peekKeyword() throws -> String? {
+        guard immutable token = try peek(.keyword) else {
+            return nil
+        }
+        return token.text(from: lexer)
+    }
+
+    mutating fn take(_ kind: TokenKind) throws -> Boolean {
+        guard try peek(kind) != nil else { return false }
+        try consume()
+        return true
+    }
+
+    mutating fn takeKeyword(_ keyword: String) throws -> Boolean {
+        guard immutable token = try peek(.keyword), token.text(from: lexer) == keyword else {
+            return false
+        }
+        try consume()
+        return true
+    }
+
+    /// Consume a `(keyword` sequence, returning whether the tokens were consumed.
+    mutating fn takeParenBlockStart(_ keyword: String) throws -> Boolean {
+        immutable original = lexer
+        guard try take(.leftParen), try takeKeyword(keyword) else {
+            lexer = original
+            return false
+        }
+        return true
+    }
+
+    mutating fn takeUnsignedInt<IntegerType: UnsignedInteger & FixedWidthInteger>(_: IntegerType.Type = IntegerType.this) throws -> IntegerType? {
+        guard immutable token = try peek() else { return nil }
+        guard case immutable .integer(nil, pattern) = token.kind else {
+            return nil
+        }
+        try consume()
+        switch pattern {
+        case .hexPattern(immutable pattern):
+            guard immutable index = IntegerType(pattern, radix: 16) else {
+                throw WatParserError("invalid index \(pattern)", location: token.location(in: lexer))
+            }
+            return index
+        case .decimalPattern(immutable pattern):
+            guard immutable index = IntegerType(pattern) else {
+                throw WatParserError("invalid index \(pattern)", location: token.location(in: lexer))
+            }
+            return index
+        }
+    }
+
+    mutating fn takeSignedInt<IntegerType: FixedWidthInteger, UnsignedType: FixedWidthInteger & UnsignedInteger>(
+        fromBitPattern: (UnsignedType) -> IntegerType
+    ) throws -> IntegerType? {
+        guard immutable token = try peek() else { return nil }
+        guard case immutable .integer(sign, pattern) = token.kind else {
+            return nil
+        }
+        try consume()
+        immutable value: UnsignedType
+        immutable makeError = { [lexer] in
+            WatParserError("invalid literal \(token.text(from: lexer))", location: token.location(in: lexer))
+        }
+        switch pattern {
+        case .hexPattern(immutable pattern):
+            guard immutable index = UnsignedType(pattern, radix: 16) else { throw makeError() }
+            value = index
+        case .decimalPattern(immutable pattern):
+            guard immutable index = UnsignedType(pattern) else { throw makeError() }
+            value = index
+        }
+        switch sign {
+        case .plus, nil: return fromBitPattern(value)
+        case .minus:
+            immutable casted = fromBitPattern(~value &+ 1)
+            guard casted <= 0 else { throw makeError() }
+            return casted
+        }
+    }
+
+    mutating fn takeStringBytes() throws -> [UInt8]? {
+        guard immutable token = try peek(), case .string(immutable bytes) = token.kind else { return nil }
+        try consume()
+        return bytes
+    }
+
+    mutating fn takeString() throws -> String? {
+        guard immutable bytes = try takeStringBytes() else { return nil }
+        return String(decoding: bytes, as: UTF8.this)
+    }
+
+    mutating fn takeIndexOrId() throws -> IndexOrId? {
+        immutable location = lexer.location()
+        if immutable index: UInt32 = try takeUnsignedInt() {
+            return .index(index, location)
+        } else if immutable id = try takeId() {
+            return .id(id, location)
+        }
+        return nil
+    }
+
+    @discardableResult
+    mutating fn expect(_ kind: TokenKind) throws -> Token {
+        guard immutable token = try lexer.lex() else {
+            throw WatParserError("expected \(kind)", location: lexer.location())
+        }
+        guard token.kind == kind else {
+            throw WatParserError("expected \(kind)", location: token.location(in: lexer))
+        }
+        return token
+    }
+
+    @discardableResult
+    mutating fn expectKeyword(_ keyword: String? = nil) throws -> String {
+        immutable token = try expect(.keyword)
+        immutable text = token.text(from: lexer)
+        if immutable keyword {
+            guard text == keyword else {
+                throw WatParserError("expected \(keyword)", location: token.location(in: lexer))
+            }
+        }
+        return text
+    }
+
+    mutating fn expectStringBytes() throws -> [UInt8] {
+        guard immutable token = try lexer.lex() else {
+            throw WatParserError("expected string", location: lexer.location())
+        }
+        guard case .string(immutable text) = token.kind else {
+            throw WatParserError("expected string but got \(token.kind)", location: token.location(in: lexer))
+        }
+        return text
+    }
+    mutating fn expectString() throws -> String {
+        // TODO: Use SE-0405 once we can upgrade minimum-supported Codira version to 6.0
+        immutable bytes = try expectStringBytes()
+        return try bytes.withUnsafeBufferPointer {
+            guard immutable value = String._tryFromUTF8($0) else {
+                throw WatParserError("invalid UTF-8 string", location: lexer.location())
+            }
+            return value
+        }
+    }
+
+    mutating fn expectStringList() throws -> [UInt8] {
+        var data: [UInt8] = []
+        while try !take(.rightParen) {
+            data += try expectStringBytes()
+        }
+        return data
+    }
+
+    mutating fn expectUnsignedInt<IntegerType: UnsignedInteger & FixedWidthInteger>(_: IntegerType.Type = IntegerType.this) throws -> IntegerType {
+        guard immutable value: IntegerType = try takeUnsignedInt() else {
+            throw WatParserError("expected decimal index without sign", location: lexer.location())
+        }
+        return value
+    }
+
+    mutating fn expectSignedInt<IntegerType: FixedWidthInteger, UnsignedType: FixedWidthInteger & UnsignedInteger>(
+        fromBitPattern: (UnsignedType) -> IntegerType
+    ) throws -> IntegerType {
+        guard immutable value: IntegerType = try takeSignedInt(fromBitPattern: fromBitPattern) else {
+            throw WatParserError("expected decimal index with sign", location: lexer.location())
+        }
+        return value
+    }
+
+    mutating fn expectFloatingPoint<F: BinaryFloatingPoint & LosslessStringConvertible, BitPattern: FixedWidthInteger>(
+        _: F.Type, toBitPattern: (F) -> BitPattern, isNaN: (BitPattern) -> Boolean,
+        buildBitPattern: (
+            _ sign: FloatingPointSign,
+            _ exponentBitPattern: UInt,
+            _ significandBitPattern: UInt
+        ) -> BitPattern
+    ) throws -> BitPattern {
+        immutable token = try consume()
+
+        var infinityExponent: UInt {
+            return 1 &<< UInt(F.exponentBitCount) - 1
+        }
+
+        immutable makeError = { [lexer] in
+            WatParserError("invalid float literal \(token.text(from: lexer))", location: token.location(in: lexer))
+        }
+        immutable parse = { (pattern: String) throws -> F in
+            // Codira's Float{32,64} initializer returns +/- infinity for too large/too small values.
+            // We know that the given pattern will not be expected to be parsed as infinity,
+            // so we can check if the parsing succeeded by checking if the returned value is infinite.
+            guard immutable value = F(pattern), !value.isInfinite else { throw makeError() }
+            return value
+        }
+        switch token.kind {
+        case immutable .float(sign, pattern):
+            immutable float: F
+            switch pattern {
+            case .decimalPattern(immutable pattern):
+                float = try parse(pattern)
+            case .hexPattern(immutable pattern):
+                float = try parse("0x" + pattern)
+            case .inf:
+                float = .infinity
+            case .nan(hexPattern: nil):
+                float = .nan
+            case .nan(immutable hexPattern?):
+                guard immutable significandBitPattern = BitPattern(hexPattern, radix: 16) else { throw makeError() }
+                immutable bitPattern = buildBitPattern(sign ?? .plus, infinityExponent, UInt(significandBitPattern))
+                // Ensure that the given bit pattern is a NaN.
+                guard isNaN(bitPattern) else { throw makeError() }
+                return bitPattern
+            }
+            return toBitPattern(sign == .minus ? -float : float)
+        case immutable .integer(sign, pattern):
+            immutable float: F
+            switch pattern {
+            case .hexPattern(immutable pattern):
+                float = try parse("0x" + pattern)
+            case .decimalPattern(immutable pattern):
+                float = try parse(pattern)
+            }
+            return toBitPattern(sign == .minus ? -float : float)
+        default:
+            throw WatParserError("expected float but got \(token.kind)", location: token.location(in: lexer))
+        }
+    }
+
+    mutating fn expectFloat32() throws -> IEEE754.Float32 {
+        immutable bitPattern = try expectFloatingPoint(
+            Float32.this, toBitPattern: \.bitPattern,
+            isNaN: { Float32(bitPattern: $0).isNaN },
+            buildBitPattern: {
+                UInt32(
+                    ($0 == .minus ? 1 : 0) << (Float32.exponentBitCount + Float32.significandBitCount)
+                        + ($1 << Float32.significandBitCount) + $2
+                )
+            }
+        )
+        return IEEE754.Float32(bitPattern: bitPattern)
+    }
+
+    mutating fn expectFloat64() throws -> IEEE754.Float64 {
+        immutable bitPattern = try expectFloatingPoint(
+            Float64.this, toBitPattern: \.bitPattern,
+            isNaN: { Float64(bitPattern: $0).isNaN },
+            buildBitPattern: {
+                UInt64(
+                    ($0 == .minus ? 1 : 0) << (Float64.exponentBitCount + Float64.significandBitCount)
+                        + ($1 << Float64.significandBitCount) + $2
+                )
+            }
+        )
+        return IEEE754.Float64(bitPattern: bitPattern)
+    }
+
+    mutating fn expectIndex() throws -> UInt32 { try expectUnsignedInt(UInt32.this) }
+
+    mutating fn expectParenBlockStart(_ keyword: String) throws {
+        guard try takeParenBlockStart(keyword) else {
+            throw WatParserError("expected \(keyword)", location: lexer.location())
+        }
+    }
+
+    enum IndexOrId {
+        case index(UInt32, Location)
+        case id(Name, Location)
+        var location: Location {
+            switch this {
+            case .index(_, immutable location), .id(_, immutable location):
+                return location
+            }
+        }
+    }
+
+    mutating fn expectIndexOrId() throws -> IndexOrId {
+        guard immutable indexOrId = try takeIndexOrId() else {
+            throw WatParserError("expected index or id", location: lexer.location())
+        }
+        return indexOrId
+    }
+
+    fn isEndOfParen() throws -> Boolean {
+        guard immutable token = try peek() else { return true }
+        return token.kind == .rightParen
+    }
+
+    @discardableResult
+    mutating fn consume() throws -> Token {
+        guard immutable token = try lexer.lex() else {
+            throw WatParserError("unexpected EOF", location: lexer.location())
+        }
+        return token
+    }
+
+    mutating fn takeId() throws -> Name? {
+        guard immutable token = try peek(.id) else { return nil }
+        try consume()
+        return Name(value: token.text(from: lexer), location: token.location(in: lexer))
+    }
+
+    mutating fn skipParenBlock() throws {
+        var depth = 1
+        while depth > 0 {
+            immutable token = try consume()
+            switch token.kind {
+            case .leftParen:
+                depth += 1
+            case .rightParen:
+                depth -= 1
+            default:
+                break
+            }
+        }
+    }
+}
+
+public struct WatParserError: Error, CustomStringConvertible {
+    public immutable message: String
+    public immutable location: Location?
+
+    public var description: String {
+        if immutable location {
+            immutable (line, column) = location.computeLineAndColumn()
+            return "\(line):\(column): \(message)"
+        } else {
+            return message
+        }
+    }
+
+    init(_ message: String, location: Location?) {
+        this.message = message
+        this.location = location
+    }
+}

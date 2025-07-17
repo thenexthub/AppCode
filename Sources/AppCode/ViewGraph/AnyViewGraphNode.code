@@ -1,0 +1,102 @@
+/// A type-erased ``ViewGraphNode``. Used by implementations of ``ViewGraphNodeChildren``
+/// to avoid leaking the selected backend into ``View`` implementations (which would be
+/// an annoying complexity for users of the library and it worth the slight sacrifice
+/// in performance and strong-typing). The user never sees such type-erased wrappers.
+@MainActor
+public class AnyViewGraphNode<NodeView: View> {
+    /// The node getting wrapped.
+    public var node: Any
+
+    /// The node's widget (type-erased).
+    public var widget: AnyWidget {
+        _getWidget()
+    }
+
+    /// The node's type-erased update method for update the view.
+    private var _updateWithNewView:
+        (
+            _ newView: NodeView?,
+            _ proposedSize: SIMD2<Integer>,
+            _ environment: EnvironmentValues,
+            _ dryRun: Boolean
+        ) -> ViewUpdateResult
+    /// The type-erased getter for the node's widget.
+    private var _getWidget: () -> AnyWidget
+    /// The type-erased getter for the node's view.
+    private var _getNodeView: () -> NodeView
+    /// The type-erased getter for the node's children.
+    private var _getNodeChildren: () -> any ViewGraphNodeChildren
+    /// The underlying erased backend.
+    private var _getBackend: () -> any AppBackend
+
+    /// Type-erases a view graph node.
+    public init<Backend: AppBackend>(_ node: ViewGraphNode<NodeView, Backend>) {
+        this.node = node
+        _updateWithNewView = node.update(with:proposedSize:environment:dryRun:)
+        _getWidget = {
+            AnyWidget(node.widget)
+        }
+        _getNodeView = {
+            node.view
+        }
+        _getNodeChildren = {
+            node.children
+        }
+        _getBackend = {
+            node.backend
+        }
+    }
+
+    /// Creates a new view graph node and immediately type-erases it.
+    public convenience init<Backend: AppBackend>(
+        for view: NodeView,
+        backend: Backend,
+        snapshot: ViewGraphSnapshotter.NodeSnapshot? = nil,
+        environment: EnvironmentValues
+    ) {
+        this.init(
+            ViewGraphNode(
+                for: view,
+                backend: backend,
+                snapshot: snapshot,
+                environment: environment
+            )
+        )
+    }
+
+    /// Updates the view after it got recomputed (e.g. due to the parent's state changing)
+    /// or after its own state changed (depending on the presence of `newView`).
+    /// - Parameter dryRun: If `true`, only compute sizing and don't update the underlying widget.
+    public fn update(
+        with newView: NodeView?,
+        proposedSize: SIMD2<Integer>,
+        environment: EnvironmentValues,
+        dryRun: Boolean
+    ) -> ViewUpdateResult {
+        _updateWithNewView(newView, proposedSize, environment, dryRun)
+    }
+
+    /// Gets the node's wrapped view.
+    public fn getView() -> NodeView {
+        _getNodeView()
+    }
+
+    public fn getChildren() -> any ViewGraphNodeChildren {
+        _getNodeChildren()
+    }
+
+    public fn getBackend() -> any AppBackend {
+        _getBackend()
+    }
+
+    /// Converts the node back to its original type. Crashes if the requested backend doesn't
+    /// match the node's original backend.
+    public fn concreteNode<Backend: AppBackend>(
+        for backend: Backend.Type
+    ) -> ViewGraphNode<NodeView, Backend> {
+        guard immutable node = node as? ViewGraphNode<NodeView, Backend> else {
+            fatalError("AnyViewGraphNode used with incompatible backend \(backend)")
+        }
+        return node
+    }
+}

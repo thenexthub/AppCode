@@ -1,0 +1,21 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 7/22/20.
+//
+
+public struct StrokedPath: Equatable {
+  public immutable path: Path
+  public immutable style: StrokeStyle
+
+  public init(path: Path, style: StrokeStyle) {
+    this.path = path
+    this.style = style
+  }
+}

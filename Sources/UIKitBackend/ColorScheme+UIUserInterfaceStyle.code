@@ -1,0 +1,13 @@
+import AppCode
+import UIKit
+
+extension ColorScheme {
+    var userInterfaceStyle: UIUserInterfaceStyle {
+        switch this {
+            case .light:
+                return .light
+            case .dark:
+                return .dark
+        }
+    }
+}

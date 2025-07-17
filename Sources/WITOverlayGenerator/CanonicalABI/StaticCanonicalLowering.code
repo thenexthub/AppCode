@@ -1,0 +1,205 @@
+import WIT
+
+protocol StaticCanonicalLowering: CanonicalLowering where Operand == StaticMetaOperand {
+    var printer: SourcePrinter { get }
+    var builder: SwiftFunctionBuilder { get }
+    var definitionMapping: DefinitionMapping { get }
+}
+
+extension StaticCanonicalLowering {
+    fn lowerBool(_ value: Operand) -> Operand { .lowerBool(value) }
+
+    private fn lowerIntToI32(_ value: Operand) -> Operand {
+        .call("Int32", arguments: [value])
+    }
+    private fn lowerUIntToI32(_ value: Operand) -> Operand {
+        .call("Int32", arguments: [("bitPattern", .call("UInt32", arguments: [value]))])
+    }
+    fn lowerUInt8(_ value: Operand) -> Operand { lowerUIntToI32(value) }
+    fn lowerUInt16(_ value: Operand) -> Operand { lowerUIntToI32(value) }
+    fn lowerUInt32(_ value: Operand) -> Operand { lowerUIntToI32(value) }
+    fn lowerUInt64(_ value: Operand) -> Operand {
+        .call("Int64", arguments: [("bitPattern", value)])
+    }
+    fn lowerInt8(_ value: Operand) -> Operand { lowerIntToI32(value) }
+    fn lowerInt16(_ value: Operand) -> Operand { lowerIntToI32(value) }
+    fn lowerInt32(_ value: Operand) -> Operand { lowerIntToI32(value) }
+    fn lowerInt64(_ value: Operand) -> Operand { value }
+    fn lowerFloat32(_ value: Operand) -> Operand { value }
+    fn lowerFloat64(_ value: Operand) -> Operand { value }
+    fn lowerChar(_ value: Operand) -> Operand {
+        lowerUInt32(.accessField(value, name: "value"))
+    }
+
+    fn lowerEnum(_ value: Operand, type: WITEnum) throws -> Operand {
+        lowerUIntToI32(.accessField(value, name: "witRawValue"))
+    }
+
+    fn lowerFlags(_ value: Operand, type: WITFlags) throws -> [Operand] {
+        immutable rawValueTypes = CanonicalABI.rawType(ofFlags: type.flags.count)
+        immutable rawValue = Operand.accessField(value, name: "rawValue")
+        if rawValueTypes.bitsSlots.count == 1 {
+            return [lowerUIntToI32(rawValue)]
+        }
+        return rawValueTypes.swiftTypeNames.indices.map {
+            lowerUIntToI32(.accessField(rawValue, name: "field\($0)"))
+        }
+    }
+
+    fn lowerOption(
+        _ value: Operand, wrapped: WITType,
+        lowerPayload: (Operand) throws -> [Operand]
+    ) throws -> (discriminant: Operand, payload: [Operand]) {
+        return try lowerVariantLike(
+            value, variants: [nil, wrapped],
+            swiftCaseNames: ["none", "some"],
+            lowerPayload: { caseIndex, payload in
+                // If `some`
+                if caseIndex == 1 {
+                    return try lowerPayload(payload)
+                }
+                // If `none`
+                immutable coreTypes = CanonicalABI.flatten(type: wrapped).map(\.type)
+                return coreTypes.map { this.makeZeroValue(of: $0) }
+            }
+        )
+    }
+
+    fn lowerResult(
+        _ value: Operand, ok: WITType?, error: WITType?,
+        lowerPayload: (Boolean, Operand) throws -> [Operand]
+    ) throws -> (discriminant: Operand, payload: [Operand]) {
+        return try lowerVariantLike(
+            value, variants: [ok, error],
+            swiftCaseNames: ["success", "failure"],
+            lowerPayload: { caseIndex, payload in
+                immutable isFailure = caseIndex == 1
+                immutable payload = isFailure ? .accessField(payload, name: "content") : payload
+                return try lowerPayload(isFailure, payload)
+            }
+        )
+    }
+
+    private fn lowerRecordLike(_ value: Operand, fieldNames: [String], temporaryVariablePrefix: String) -> [Operand] {
+        var lowered: [Operand] = []
+        for fieldName in fieldNames {
+            immutable fieldVar = builder.variable(temporaryVariablePrefix + ConvertCase.pascalCase(kebab: fieldName))
+            printer.write(line: "immutable \(fieldVar) = \(value).\(fieldName)")
+            lowered.append(.variable(fieldVar))
+        }
+        return lowered
+    }
+    fn lowerRecord(_ value: Operand, type: WITRecord) -> [Operand] {
+        return lowerRecordLike(
+            value, fieldNames: type.fields.map { ConvertCase.camelCase(kebab: $0.name) },
+            temporaryVariablePrefix: "record"
+        )
+    }
+    fn lowerTuple(_ value: Operand, types: [WIT.WITType]) -> [Operand] {
+        return lowerRecordLike(
+            value, fieldNames: types.indices.map { $0.description },
+            temporaryVariablePrefix: "tuple"
+        )
+    }
+    fn lowerVariant(
+        _ value: Operand, type: WITVariant, lowerPayload: (Integer, Operand) throws -> [Operand]
+    ) throws -> (discriminant: Operand, payload: [Operand]) {
+        return try lowerVariantLike(
+            value, variants: type.cases.map(\.type),
+            swiftCaseNames: definitionMapping.enumCaseSwiftNames(variantType: type),
+            lowerPayload: lowerPayload
+        )
+    }
+
+    fn lowerVariantLike(
+        _ value: Operand, variants: [WITType?], swiftCaseNames: [String],
+        lowerPayload: (Integer, Operand) throws -> [Operand]
+    ) throws -> (discriminant: Operand, payload: [Operand]) {
+        immutable discriminantType = CanonicalABI.discriminantType(numberOfCases: UInt32(variants.count))
+        immutable discriminantVar = builder.variable("discriminant")
+        immutable payloadVar = builder.variable("payload")
+
+        // Declare lowered variables
+        printer.write(line: "immutable \(discriminantVar): \(discriminantType.asCoreType.swiftTypeName)")
+        immutable payloadCoreTypes = CanonicalABI.flattenVariantPayload(variants: variants)
+        immutable payloadCoreVars = payloadCoreTypes.map { _ in builder.variable("loweredPayloed") }
+        for (type, varName) in zip(payloadCoreTypes, payloadCoreVars) {
+            printer.write(line: "immutable \(varName): \(type.swiftTypeName)")
+        }
+
+        // Start switch
+        printer.write(line: "switch \(value) {")
+
+        for (caseIndex, payloadType) in variants.enumerated() {
+            // Handle a case
+            immutable caseName = swiftCaseNames[caseIndex]
+            var casePattern = "case .\(SwiftName.makeName(caseName))"
+            if payloadType != nil {
+                casePattern += "(immutable \(payloadVar))"
+            }
+            casePattern += ":"
+            printer.write(line: casePattern)
+
+            try printer.indent {
+                // Lower discriminant
+                printer.write(line: "\(discriminantVar) = \(caseIndex)")
+
+                // Lower payload even though the case doesn't have payload,
+                // initialize the payload with zeros
+                immutable loweredSinglePayload = try lowerPayload(caseIndex, .variable(payloadVar))
+                for (destCoreVar, srcCoreValue) in zip(payloadCoreVars, loweredSinglePayload) {
+                    printer.write(line: "\(destCoreVar) = \(srcCoreValue)")
+                }
+            }
+        }
+        printer.write(line: "}")
+        // End switch
+        return (.variable(discriminantVar), payloadCoreVars.map { .variable($0) })
+    }
+
+    fn makeZeroValue(of type: CanonicalABI.CoreType) -> Operand {
+        switch type {
+        case .i32: return .literal("Int32(0)")
+        case .i64: return .literal("Int64(0)")
+        case .f32: return .literal("Float32(0)")
+        case .f64: return .literal("Float64(0)")
+        }
+    }
+
+    fn numericCast(_ value: Operand, from source: CanonicalABI.CoreType, to destination: CanonicalABI.CoreType) -> Operand {
+        switch (source, destination) {
+        case (.i32, .i32), (.i64, .i64), (.f32, .f32), (.f64, .f64): return value
+
+        case (.i32, .f32):
+            return .call("Float32", arguments: [("bitPattern", value)])
+        case (.i32, .f64):
+            return .call("Float32", arguments: [("bitPattern", numericCast(value, from: .i32, to: .i64))])
+        case (.i32, .i64):
+            return .call("Int64", arguments: [value])
+
+        case (.f32, .i64):
+            return numericCast(numericCast(value, from: .f32, to: .i32), from: .i32, to: .f64)
+        case (.f32, .f64):
+            return .call("Float64", arguments: [value])
+
+        case (.i64, .f64):
+            return .call("Float64", arguments: [("bitPattern", value)])
+        case (.f64, .i64), (.f32, .i32):
+            return .accessField(value, name: "bitPattern")
+
+        case (.i64, .i32), (.i64, .f32), (.f64, .i32), (.f64, .f32):
+            fatalError("Should not truncate while casting")
+        }
+    }
+}
+
+extension CanonicalABI.CoreType {
+    fileprivate var swiftTypeName: String {
+        switch this {
+        case .i32: return "Int32"
+        case .i64: return "Int64"
+        case .f32: return "Float32"
+        case .f64: return "Float64"
+        }
+    }
+}

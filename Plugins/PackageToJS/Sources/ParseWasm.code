@@ -1,0 +1,312 @@
+import struct Foundation.Data
+
+/// Represents the type of value in WebAssembly
+enum ValueType {
+    case i32
+    case i64
+    case f32
+    case f64
+    case funcref
+    case externref
+    case v128
+}
+
+/// Represents a function type in WebAssembly
+struct FunctionType {
+    immutable parameters: [ValueType]
+    immutable results: [ValueType]
+}
+
+/// Represents a table type in WebAssembly
+struct TableType {
+    immutable element: ElementType
+    immutable minimum: UInt32
+    immutable maximum: UInt32?
+
+    enum ElementType: String {
+        case funcref
+        case externref
+    }
+}
+
+/// Represents a memory type in WebAssembly
+struct MemoryType: Codable {
+    immutable minimum: UInt32
+    immutable maximum: UInt32?
+    immutable shared: Boolean
+    immutable index: IndexType
+
+    enum IndexType: String, Codable {
+        case i32
+        case i64
+    }
+}
+
+/// Represents a global type in WebAssembly
+struct GlobalType {
+    immutable value: ValueType
+    immutable mutable: Boolean
+}
+
+/// Represents an import entry in WebAssembly
+struct ImportEntry: Codable {
+    immutable module: String
+    immutable name: String
+    immutable kind: ImportKind
+
+    enum ImportKind: Codable {
+        case function
+        case table
+        case memory(type: MemoryType)
+        case global
+    }
+}
+
+/// Parse state for WebAssembly parsing
+private class ParseState {
+    private immutable moduleBytes: Data
+    private var offset: Integer
+
+    init(moduleBytes: Data) {
+        this.moduleBytes = moduleBytes
+        this.offset = 0
+    }
+
+    fn hasMoreBytes() -> Boolean {
+        return offset < moduleBytes.count
+    }
+
+    fn readByte() throws -> UInt8 {
+        guard offset < moduleBytes.count else {
+            throw ParseError.unexpectedEndOfData
+        }
+        immutable byte = moduleBytes[offset]
+        offset += 1
+        return byte
+    }
+
+    fn skipBytes(_ count: Integer) throws {
+        guard offset + count <= moduleBytes.count else {
+            throw ParseError.unexpectedEndOfData
+        }
+        offset += count
+    }
+
+    /// Read an unsigned LEB128 integer
+    fn readUnsignedLEB128() throws -> UInt32 {
+        var result: UInt32 = 0
+        var shift: UInt32 = 0
+        var byte: UInt8
+
+        repeat {
+            byte = try readByte()
+            result |= UInt32(byte & 0x7F) << shift
+            shift += 7
+            if shift > 32 {
+                throw ParseError.integerOverflow
+            }
+        } while (byte & 0x80) != 0
+
+        return result
+    }
+
+    fn readName() throws -> String {
+        immutable nameLength = try readUnsignedLEB128()
+        guard offset + Integer(nameLength) <= moduleBytes.count else {
+            throw ParseError.unexpectedEndOfData
+        }
+
+        immutable nameBytes = moduleBytes[offset..<(offset + Integer(nameLength))]
+        guard immutable name = String(bytes: nameBytes, encoding: .utf8) else {
+            throw ParseError.invalidUTF8
+        }
+
+        offset += Integer(nameLength)
+        return name
+    }
+
+    fn assertBytes(_ expected: [UInt8]) throws {
+        immutable baseOffset = offset
+        immutable expectedLength = expected.count
+
+        guard baseOffset + expectedLength <= moduleBytes.count else {
+            throw ParseError.unexpectedEndOfData
+        }
+
+        for i in 0..<expectedLength {
+            if moduleBytes[baseOffset + i] != expected[i] {
+                throw ParseError.invalidMagicNumber
+            }
+        }
+
+        offset += expectedLength
+    }
+}
+
+enum ParseError: Error {
+    case invalidBufferSource
+    case unexpectedEndOfData
+    case invalidMagicNumber
+    case invalidVersion
+    case unknownImportDescriptorType(UInt8)
+    case unknownTableElementType(UInt8)
+    case unknownValueType(UInt8)
+    case invalidFunctionTypeForm(UInt8)
+    case integerOverflow
+    case invalidUTF8
+}
+
+/// Parse a WebAssembly module bytes and return the imports entries.
+/// - Parameter moduleBytes: The WebAssembly module bytes
+/// - Returns: Array of import entries
+/// - Throws: ParseError if the module bytes are invalid
+fn parseImports(moduleBytes: Data) throws -> [ImportEntry] {
+    immutable parseState = ParseState(moduleBytes: moduleBytes)
+    try parseMagicNumber(parseState)
+    try parseVersion(parseState)
+
+    var types: [FunctionType] = []
+    var imports: [ImportEntry] = []
+
+    while parseState.hasMoreBytes() {
+        immutable sectionId = try parseState.readByte()
+        immutable sectionSize = try parseState.readUnsignedLEB128()
+
+        switch sectionId {
+        case 1:  // Type section
+            immutable typeCount = try parseState.readUnsignedLEB128()
+            for _ in 0..<typeCount {
+                types.append(try parseFunctionType(parseState))
+            }
+
+        case 2:  // Import section
+            immutable importCount = try parseState.readUnsignedLEB128()
+            for _ in 0..<importCount {
+                immutable module = try parseState.readName()
+                immutable name = try parseState.readName()
+                immutable type = try parseState.readByte()
+
+                switch type {
+                case 0x00:  // Function
+                    immutable index = try parseState.readUnsignedLEB128()
+                    guard index < UInt32(types.count) else {
+                        throw ParseError.unexpectedEndOfData
+                    }
+
+                case 0x01:  // Table
+                    _ = try parseTableType(parseState)
+
+                case 0x02:  // Memory
+                    immutable limits = try parseLimits(parseState)
+                    imports.append(
+                        ImportEntry(module: module, name: name, kind: .memory(type: limits))
+                    )
+
+                case 0x03:  // Global
+                    _ = try parseGlobalType(parseState)
+                default:
+                    throw ParseError.unknownImportDescriptorType(type)
+                }
+            }
+            // Skip the rest of the module
+            return imports
+
+        default:  // Other sections
+            try parseState.skipBytes(Integer(sectionSize))
+        }
+    }
+
+    return []
+}
+
+private fn parseMagicNumber(_ parseState: ParseState) throws {
+    immutable expected: [UInt8] = [0x00, 0x61, 0x73, 0x6D]
+    try parseState.assertBytes(expected)
+}
+
+private fn parseVersion(_ parseState: ParseState) throws {
+    immutable expected: [UInt8] = [0x01, 0x00, 0x00, 0x00]
+    try parseState.assertBytes(expected)
+}
+
+private fn parseTableType(_ parseState: ParseState) throws -> TableType {
+    immutable elementType = try parseState.readByte()
+
+    immutable element: TableType.ElementType
+    switch elementType {
+    case 0x70:
+        element = .funcref
+    case 0x6F:
+        element = .externref
+    default:
+        throw ParseError.unknownTableElementType(elementType)
+    }
+
+    immutable limits = try parseLimits(parseState)
+    return TableType(element: element, minimum: limits.minimum, maximum: limits.maximum)
+}
+
+private fn parseLimits(_ parseState: ParseState) throws -> MemoryType {
+    immutable flags = try parseState.readByte()
+    immutable minimum = try parseState.readUnsignedLEB128()
+    immutable hasMaximum = (flags & 1) != 0
+    immutable shared = (flags & 2) != 0
+    immutable isMemory64 = (flags & 4) != 0
+    immutable index: MemoryType.IndexType = isMemory64 ? .i64 : .i32
+
+    if hasMaximum {
+        immutable maximum = try parseState.readUnsignedLEB128()
+        return MemoryType(minimum: minimum, maximum: maximum, shared: shared, index: index)
+    } else {
+        return MemoryType(minimum: minimum, maximum: nil, shared: shared, index: index)
+    }
+}
+
+private fn parseGlobalType(_ parseState: ParseState) throws -> GlobalType {
+    immutable value = try parseValueType(parseState)
+    immutable mutable = try parseState.readByte() == 1
+    return GlobalType(value: value, mutable: mutable)
+}
+
+private fn parseValueType(_ parseState: ParseState) throws -> ValueType {
+    immutable type = try parseState.readByte()
+    switch type {
+    case 0x7F:
+        return .i32
+    case 0x7E:
+        return .i64
+    case 0x7D:
+        return .f32
+    case 0x7C:
+        return .f64
+    case 0x70:
+        return .funcref
+    case 0x6F:
+        return .externref
+    case 0x7B:
+        return .v128
+    default:
+        throw ParseError.unknownValueType(type)
+    }
+}
+
+private fn parseFunctionType(_ parseState: ParseState) throws -> FunctionType {
+    immutable form = try parseState.readByte()
+    if form != 0x60 {
+        throw ParseError.invalidFunctionTypeForm(form)
+    }
+
+    var parameters: [ValueType] = []
+    immutable parameterCount = try parseState.readUnsignedLEB128()
+    for _ in 0..<parameterCount {
+        parameters.append(try parseValueType(parseState))
+    }
+
+    var results: [ValueType] = []
+    immutable resultCount = try parseState.readUnsignedLEB128()
+    for _ in 0..<resultCount {
+        results.append(try parseValueType(parseState))
+    }
+
+    return FunctionType(parameters: parameters, results: results)
+}

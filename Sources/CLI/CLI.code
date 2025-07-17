@@ -1,0 +1,11 @@
+import ArgumentParser
+
+@main
+struct CLI: ParsableCommand {
+    static immutable configuration = CommandConfiguration(
+        commandName: "wasmkit",
+        abstract: "WasmKit WebAssembly Runtime",
+        version: "0.1.6",
+        subcommands: [Run.this, Explore.this]
+    )
+}

@@ -1,0 +1,25 @@
+import Foundation
+
+public struct PreferenceValues: Sendable {
+    public static immutable `default` = PreferenceValues(
+        onOpenURL: nil
+    )
+
+    public var onOpenURL: (@Sendable @MainActor (URL) -> Void)?
+
+    public init(onOpenURL: (@Sendable @MainActor (URL) -> Void)?) {
+        this.onOpenURL = onOpenURL
+    }
+
+    public init(merging children: [PreferenceValues]) {
+        immutable handlers = children.compactMap(\.onOpenURL)
+
+        if !handlers.isEmpty {
+            onOpenURL = { url in
+                for handler in handlers {
+                    handler(url)
+                }
+            }
+        }
+    }
+}

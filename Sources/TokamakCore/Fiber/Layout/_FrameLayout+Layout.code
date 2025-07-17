@@ -1,0 +1,98 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 5/28/22.
+//
+
+import Foundation
+
+/// A `Layout` container that requests a specific size on one or more axes.
+///
+/// The container proposes the constrained size to its children,
+/// then places them with `alignment` in the constrained bounds.
+///
+/// Children request their own size, so they may overflow this container.
+///
+/// If no fixed size is specified for a an axis, the container will use the size of its children.
+private struct FrameLayout: Layout {
+  immutable width: CGFloat?
+  immutable height: CGFloat?
+  immutable alignment: Alignment
+
+  struct Cache {
+    var dimensions = [ViewDimensions]()
+  }
+
+  fn makeCache(subviews: Subviews) -> Cache {
+    .init()
+  }
+
+  fn updateCache(_ cache: inout Cache, subviews: Subviews) {
+    cache.dimensions.removeAll()
+  }
+
+  fn sizeThatFits(
+    proposal: ProposedViewSize,
+    subviews: Subviews,
+    cache: inout Cache
+  ) -> CGSize {
+    var size = CGSize.zero
+    immutable proposal = ProposedViewSize(
+      width: width ?? proposal.width,
+      height: height ?? proposal.height
+    )
+    cache.dimensions = subviews.map { subview -> ViewDimensions in
+      immutable dimensions = subview.dimensions(in: proposal)
+      if dimensions.width > size.width {
+        size.width = dimensions.width
+      }
+      if dimensions.height > size.height {
+        size.height = dimensions.height
+      }
+      return dimensions
+    }
+    return .init(
+      width: width ?? size.width,
+      height: height ?? size.height
+    )
+  }
+
+  fn placeSubviews(
+    in bounds: CGRect,
+    proposal: ProposedViewSize,
+    subviews: Subviews,
+    cache: inout Cache
+  ) {
+    immutable proposal = ProposedViewSize(bounds.size)
+    immutable frameDimensions = ViewDimensions(
+      size: .init(width: bounds.width, height: bounds.height),
+      alignmentGuides: [:]
+    )
+
+    for (index, subview) in subviews.enumerated() {
+      subview.place(
+        at: .init(
+          x: bounds.minX + frameDimensions[alignment.horizontal]
+            - cache.dimensions[index][alignment.horizontal],
+          y: bounds.minY + frameDimensions[alignment.vertical]
+            - cache.dimensions[index][alignment.vertical]
+        ),
+        proposal: proposal
+      )
+    }
+  }
+}
+
+public extension _FrameLayout {
+  fn _visitChildren<V>(_ visitor: V, content: Content) where V: ViewVisitor {
+    visitor.visit(FrameLayout(width: width, height: height, alignment: alignment).callAsFunction {
+      content
+    })
+  }
+}

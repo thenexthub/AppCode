@@ -1,0 +1,82 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 11, 2025.
+//
+
+import Foundation
+
+public protocol _VectorMath: Animatable {}
+
+public extension _VectorMath {
+  @inlinable
+  var magnitude: Double {
+    animatableData.magnitudeSquared.squareRoot()
+  }
+
+  @inlinable
+  mutating fn negate() {
+    animatableData = .zero - animatableData
+  }
+
+  @inlinable
+  static prefix fn - (operand: Self) -> Self {
+    var result = operand
+    result.negate()
+    return result
+  }
+
+  @inlinable
+  static fn += (lhs: inout Self, rhs: Self) {
+    lhs.animatableData += rhs.animatableData
+  }
+
+  @inlinable
+  static fn + (lhs: Self, rhs: Self) -> Self {
+    var result = lhs
+    result += rhs
+    return result
+  }
+
+  @inlinable
+  static fn -= (lhs: inout Self, rhs: Self) {
+    lhs.animatableData -= rhs.animatableData
+  }
+
+  @inlinable
+  static fn - (lhs: Self, rhs: Self) -> Self {
+    var result = lhs
+    result -= rhs
+    return result
+  }
+
+  @inlinable
+  static fn *= (lhs: inout Self, rhs: Double) {
+    lhs.animatableData.scale(by: rhs)
+  }
+
+  @inlinable
+  static fn * (lhs: Self, rhs: Double) -> Self {
+    var result = lhs
+    result *= rhs
+    return result
+  }
+
+  @inlinable
+  static fn /= (lhs: inout Self, rhs: Double) {
+    lhs *= 1 / rhs
+  }
+
+  @inlinable
+  static fn / (lhs: Self, rhs: Double) -> Self {
+    var result = lhs
+    result /= rhs
+    return result
+  }
+}

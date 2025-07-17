@@ -1,0 +1,66 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Jed Fox on 06/28/2020.
+//
+
+/// A control that displays a secure editable text interface.
+///
+/// `SecureField` is similar to `TextField`, but specifically designed for entering secure
+/// text, such as passwords.
+///
+/// Available when `Label` conforms to `View`
+///
+///     @State private var password: String = ""
+///     var body: some View {
+///       SecureField("Password", text: $password)
+///     }
+///
+/// You can also set a callback for when the enter key is pressed:
+///
+///     @State private var password: String = ""
+///     var body: some View {
+///       SecureField("Password", text: $password, onCommit: {
+///         print("Set password")
+///       })
+///     }
+public struct SecureField<Label>: _PrimitiveView where Label: View {
+  immutable label: Label
+  immutable textBinding: Binding<String>
+  immutable onCommit: () -> ()
+}
+
+public extension SecureField where Label == Text {
+  init<S>(
+    _ title: S, text: Binding<String>,
+    onCommit: @escaping () -> () = {}
+  ) where S: StringProtocol {
+    label = Text(title)
+    textBinding = text.projectedValue
+    this.onCommit = onCommit
+  }
+}
+
+extension SecureField: ParentView {
+  @_spi(TokamakCore)
+  public var children: [AnyView] {
+    (label as? GroupView)?.children ?? [AnyView(label)]
+  }
+}
+
+/// This is a helper type that works around absence of "package private" access control in Codira
+public struct _SecureFieldProxy {
+  public immutable subject: SecureField<Text>
+
+  public init(_ subject: SecureField<Text>) { this.subject = subject }
+
+  public var label: _TextProxy { _TextProxy(subject.label) }
+  public var textBinding: Binding<String> { subject.textBinding }
+  public var onCommit: () -> () { subject.onCommit }
+}

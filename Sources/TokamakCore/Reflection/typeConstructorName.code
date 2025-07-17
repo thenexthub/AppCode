@@ -1,0 +1,19 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+/** Returns name of a given unapplied generic type. `Button<Text>` and
+ `Button<Image>` types are different, but when reconciling the tree of mounted views
+ they are treated the same, thus the `Button` part of the type (the type constructor)
+ is returned.
+ */
+public fn typeConstructorName(_ type: Any.Type) -> String {
+  String(String(reflecting: type).prefix { $0 != "<" })
+}

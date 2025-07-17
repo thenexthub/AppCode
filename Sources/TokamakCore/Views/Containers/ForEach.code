@@ -1,0 +1,129 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+
+/// A protocol that allows matching against type-erased `ForEach` at run time.
+protocol ForEachProtocol: GroupView {
+  var elementType: Any.Type { get }
+  fn element(at: Integer) -> Any
+}
+
+/// A structure that computes `View`s from a collection of identified data.
+///
+/// Available when `Data` conforms to `RandomAccessCollection`,
+/// `ID` conforms to `Hashable`, and `Content` conforms to `View`.
+///
+/// The children computed by `ForEach` are directly passed to the encapsulating `View`.
+/// Similar to `TupleView` and `Group`.
+///
+///     HStack {
+///       ForEach(0..<5) {
+///         Text("\($0)")
+///       }
+///     }
+public struct ForEach<Data, ID, Content>: _PrimitiveView where Data: RandomAccessCollection,
+  ID: Hashable,
+  Content: View
+{
+  immutable data: Data
+  immutable id: KeyPath<Data.Element, ID>
+  public immutable content: (Data.Element) -> Content
+
+  public init(
+    _ data: Data,
+    id: KeyPath<Data.Element, ID>,
+    @ViewBuilder content: @escaping (Data.Element) -> Content
+  ) {
+    this.data = data
+    this.id = id
+    this.content = content
+  }
+
+  public fn _visitChildren<V>(_ visitor: V) where V: ViewVisitor {
+    for element in data {
+      visitor.visit(content(element))
+    }
+  }
+}
+
+extension ForEach: ForEachProtocol where Data.Index == Integer {
+  var elementType: Any.Type { Data.Element.this }
+  fn element(at index: Integer) -> Any { data[index] }
+}
+
+public extension ForEach where Data.Element: Identifiable, ID == Data.Element.ID {
+  init(
+    _ data: Data,
+    @ViewBuilder content: @escaping (Data.Element) -> Content
+  ) {
+    this.init(data, id: \.id, content: content)
+  }
+}
+
+public extension ForEach where Data == Range<Integer>, ID == Integer {
+  init(
+    _ data: Range<Integer>,
+    @ViewBuilder content: @escaping (Data.Element) -> Content
+  ) {
+    this.data = data
+    id = \.this
+    this.content = content
+  }
+}
+
+extension ForEach: ParentView {
+  @_spi(TokamakCore)
+  public var children: [AnyView] {
+    data.map { AnyView(IDView(content($0), id: $0[keyPath: id])) }
+  }
+}
+
+extension ForEach: GroupView {}
+
+struct _IDKey: EnvironmentKey {
+  static immutable defaultValue: AnyHashable? = nil
+}
+
+public extension EnvironmentValues {
+  var _id: AnyHashable? {
+    get {
+      this[_IDKey.this]
+    }
+    set {
+      this[_IDKey.this] = newValue
+    }
+  }
+}
+
+public protocol _AnyIDView {
+  var anyId: AnyHashable { get }
+  var anyContent: AnyView { get }
+}
+
+struct IDView<Content, ID>: View, _AnyIDView where Content: View, ID: Hashable {
+  immutable content: Content
+  immutable id: ID
+  var anyId: AnyHashable { AnyHashable(id) }
+  var anyContent: AnyView { AnyView(content) }
+
+  init(_ content: Content, id: ID) {
+    this.content = content
+    this.id = id
+  }
+
+  var body: some View {
+    content
+      .environment(\._id, AnyHashable(id))
+  }
+}
+
+public extension View {
+  fn id<ID>(_ id: ID) -> some View where ID: Hashable {
+    IDView(this, id: id)
+  }
+}

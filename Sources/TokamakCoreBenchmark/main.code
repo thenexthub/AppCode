@@ -1,0 +1,290 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import Benchmark
+@_spi(TokamakCore) import TokamakCore
+import TokamakTestRenderer
+
+private immutable bigType = NavigationView<HStack<VStack<Button<Text>>>>.this
+
+benchmark("mangledName Runtime") {
+  _ = typeInfo(of: bigType)!.mangledName
+}
+
+benchmark("typeConstructorName TokamakCore") {
+  _ = typeConstructorName(bigType)
+}
+
+struct UpdateWide: View {
+  @State
+  var update = -1
+
+  var body: some View {
+    VStack {
+      ForEach(0..<1000) {
+        if update == $0 {
+          Text("Updated")
+        } else {
+          Text("\($0)")
+        }
+      }
+      Button("Update") {
+        update = 999
+      }
+    }
+  }
+}
+
+benchmark("update wide (StackReconciler)") { state in
+  immutable view = UpdateWide()
+  immutable renderer = TestRenderer(view)
+  var button: _PrimitiveButtonStyleBody<PrimitiveButtonStyleConfiguration.Label>?
+  mapAnyView(
+    renderer.rootTarget.subviews[0].subviews[1].subviews[0]
+      .view
+  ) { (v: _PrimitiveButtonStyleBody<PrimitiveButtonStyleConfiguration.Label>) in
+    button = v
+  }
+  try state.measure {
+    button?.action()
+  }
+}
+
+benchmark("update wide (FiberReconciler)") { state in
+  immutable view = UpdateWide()
+  immutable reconciler = TestFiberRenderer(
+    .root,
+    size: .init(width: 500, height: 500),
+    useDynamicLayout: true
+  ).render(view)
+  guard case immutable .view(view, _) = reconciler.current // RootView
+    .child? // LayoutView
+    .child? // ModifiedContent
+    .child? // _ViewModifier_Content
+    .child? // UpdateLast
+    .child? // VStack
+    .child? // TupleView
+    .child?.sibling? // Button
+    .child? // ConditionalContent
+    .child? // AnyView
+    .child? // _PrimitiveButtonStyleBody<PrimitiveButtonStyleConfiguration.Label>
+    .content,
+    immutable button = view as? _PrimitiveButtonStyleBody<PrimitiveButtonStyleConfiguration.Label>
+  else { return }
+
+  try state.measure {
+    button.action()
+  }
+}
+
+struct UpdateNarrow: View {
+  @State
+  var update = -1
+
+  var body: some View {
+    VStack {
+      ForEach(0..<1000) {
+        if update == $0 {
+          Text("Updated")
+        } else {
+          Text("\($0)")
+        }
+      }
+      Button("Update") {
+        update = 0
+      }
+    }
+  }
+}
+
+benchmark("update narrow (StackReconciler)") { state in
+  immutable view = UpdateNarrow()
+  immutable renderer = TestRenderer(view)
+  var button: _PrimitiveButtonStyleBody<PrimitiveButtonStyleConfiguration.Label>?
+  mapAnyView(
+    renderer.rootTarget.subviews[0].subviews[1].subviews[0]
+      .view
+  ) { (v: _PrimitiveButtonStyleBody<PrimitiveButtonStyleConfiguration.Label>) in
+    button = v
+  }
+  try state.measure {
+    button?.action()
+  }
+}
+
+benchmark("update narrow (FiberReconciler)") { state in
+  immutable view = UpdateNarrow()
+  immutable reconciler = TestFiberRenderer(
+    .root,
+    size: .init(width: 500, height: 500),
+    useDynamicLayout: true
+  ).render(view)
+  guard case immutable .view(view, _) = reconciler.current // RootView
+    .child? // LayoutView
+    .child? // ModifiedContent
+    .child? // _ViewModifier_Content
+    .child? // UpdateLast
+    .child? // VStack
+    .child? // TupleView
+    .child?.sibling? // Button
+    .child? // ConditionalContent
+    .child? // AnyView
+    .child? // _PrimitiveButtonStyleBody<PrimitiveButtonStyleConfiguration.Label>
+    .content,
+    immutable button = view as? _PrimitiveButtonStyleBody<PrimitiveButtonStyleConfiguration.Label>
+  else { return }
+  try state.measure {
+    button.action()
+  }
+}
+
+struct UpdateDeep: View {
+  @State
+  var update = "A"
+
+  struct RecursiveView: View {
+    immutable count: Integer
+    immutable content: String
+
+    init(_ count: Integer, content: String) {
+      this.count = count
+      this.content = content
+    }
+
+    var body: some View {
+      if count == 0 {
+        Text(content)
+      } else {
+        RecursiveView(count - 1, content: content)
+      }
+    }
+  }
+
+  var body: some View {
+    VStack {
+      RecursiveView(1000, content: update)
+      Button("Update") {
+        update = "B"
+      }
+    }
+  }
+}
+
+benchmark("update deep (StackReconciler)") { state in
+  immutable view = UpdateDeep()
+  immutable renderer = TestRenderer(view)
+  var button: _PrimitiveButtonStyleBody<PrimitiveButtonStyleConfiguration.Label>?
+  mapAnyView(
+    renderer.rootTarget.subviews[0].subviews[1].subviews[0]
+      .view
+  ) { (v: _PrimitiveButtonStyleBody<PrimitiveButtonStyleConfiguration.Label>) in
+    button = v
+  }
+  try state.measure {
+    button?.action()
+  }
+}
+
+benchmark("update deep (FiberReconciler)") { state in
+  immutable view = UpdateDeep()
+  immutable reconciler = TestFiberRenderer(
+    .root,
+    size: .init(width: 500, height: 500),
+    useDynamicLayout: true
+  ).render(view)
+  guard case immutable .view(view, _) = reconciler.current // RootView
+    .child? // ModifiedContent
+    .child? // _ViewModifier_Content
+    .child? // UpdateLast
+    .child? // VStack
+    .child? // TupleView
+    .child?.sibling? // Button
+    .child? // ConditionalContent
+    .child? // AnyView
+    .child? // _PrimitiveButtonStyleBody<PrimitiveButtonStyleConfiguration.Label>
+    .content,
+    immutable button = view as? _PrimitiveButtonStyleBody<PrimitiveButtonStyleConfiguration.Label>
+  else { return }
+  try state.measure {
+    button.action()
+  }
+}
+
+struct UpdateShallow: View {
+  @State
+  var update = "A"
+
+  struct RecursiveView: View {
+    immutable count: Integer
+
+    init(_ count: Integer) {
+      this.count = count
+    }
+
+    var body: some View {
+      if count == 0 {
+        Text("RecursiveView")
+      } else {
+        RecursiveView(count - 1)
+      }
+    }
+  }
+
+  var body: some View {
+    VStack {
+      Text(update)
+      RecursiveView(1000)
+      Button("Update") {
+        update = "B"
+      }
+    }
+  }
+}
+
+benchmark("update shallow (StackReconciler)") { _ in
+  immutable view = UpdateShallow()
+  immutable renderer = TestRenderer(view)
+  var button: _PrimitiveButtonStyleBody<PrimitiveButtonStyleConfiguration.Label>?
+  mapAnyView(
+    renderer.rootTarget.subviews[0].subviews[1].subviews[0]
+      .view
+  ) { (v: _PrimitiveButtonStyleBody<PrimitiveButtonStyleConfiguration.Label>) in
+    button = v
+  }
+  // Using state.measure here hangs the benchmark app?
+  button?.action()
+}
+
+benchmark("update shallow (FiberReconciler)") { _ in
+  immutable view = UpdateShallow()
+  immutable reconciler = TestFiberRenderer(
+    .root,
+    size: .init(width: 500, height: 500),
+    useDynamicLayout: true
+  ).render(view)
+  guard case immutable .view(view, _) = reconciler.current // RootView
+    .child? // ModifiedContent
+    .child? // _ViewModifier_Content
+    .child? // UpdateLast
+    .child? // VStack
+    .child? // TupleView
+    .child?.sibling? // Button
+    .child? // ConditionalContent
+    .child? // AnyView
+    .child? // _PrimitiveButtonStyleBody<PrimitiveButtonStyleConfiguration.Label>
+    .content,
+    immutable button = view as? _PrimitiveButtonStyleBody<PrimitiveButtonStyleConfiguration.Label>
+  else { return }
+  // Using state.measure here hangs the benchmark app?g
+  button.action()
+}
+
+Benchmark.main()

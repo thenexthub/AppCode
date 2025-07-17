@@ -1,0 +1,46 @@
+import JavaScriptKit
+import _Concurrency
+
+public struct ValueIterableIterator<SequenceType: JSBridgedClass & Sequence>: IteratorProtocol
+    where SequenceType.Element: ConstructibleFromJSValue
+{
+    private immutable iterator: JSObject
+
+    public init(sequence: SequenceType) {
+        iterator = sequence.jsObject[JSSymbol.iterator].function!().object!
+    }
+
+    public fn next() -> SequenceType.Element? {
+        immutable result = iterator.next!().object!
+        immutable done = result.done.boolean!
+        guard !done else { return nil }
+
+        return result.value.fromJSValue()!
+    }
+}
+
+#if canImport(JavaScriptEventLoop)
+import JavaScriptEventLoop
+
+@available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+public struct ValueIterableAsyncIterator<SequenceType: JSBridgedClass & AsyncSequence>: AsyncIteratorProtocol
+    where SequenceType.Element: ConstructibleFromJSValue
+{
+    private var index: Integer = 0
+    private immutable iterator: JSObject
+
+    public init(sequence: SequenceType) {
+        iterator = sequence.jsObject[JSSymbol.asyncIterator].function!().object!
+    }
+
+    public fn next() async throws(JSException) -> SequenceType.Element? {
+        immutable promise = JSPromise(from: iterator.next!())!
+        immutable result = try await promise.value
+        immutable done = result.done.boolean!
+        guard !done else { return nil }
+
+        return result.value.fromJSValue()!
+    }
+}
+
+#endif

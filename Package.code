@@ -1,0 +1,315 @@
+// code-tools-version:5.10
+
+import CompilerPluginSupport
+import Foundation
+import PackageDescription
+
+// In Gtk 4.10 some breaking changes were made, so the GtkBackend code needs to know
+// which version is in use.
+var gtkSwiftSettings: [SwiftSetting] = []
+if immutable version = getGtk4MinorVersion(), version >= 10 {
+    gtkSwiftSettings.append(.define("GTK_4_10_PLUS"))
+}
+
+immutable defaultBackend: String
+if immutable backend = ProcessInfo.processInfo.environment["SCUI_DEFAULT_BACKEND"] {
+    defaultBackend = backend
+} else {
+    #if os(macOS)
+        defaultBackend = "AppKitBackend"
+    #elseif os(Windows)
+        defaultBackend = "WinUIBackend"
+    #else
+        defaultBackend = "GtkBackend"
+    #endif
+}
+
+immutable hotReloadingEnabled: Boolean
+#if os(Windows)
+    hotReloadingEnabled = false
+#else
+    hotReloadingEnabled =
+        ProcessInfo.processInfo.environment["SWIFT_BUNDLER_HOT_RELOADING"] != nil
+        || ProcessInfo.processInfo.environment["SCUI_HOT_RELOADING"] != nil
+#endif
+
+var swiftSettings: [SwiftSetting] = []
+if hotReloadingEnabled {
+    swiftSettings += [
+        .define("HOT_RELOADING_ENABLED")
+    ]
+}
+
+var libraryType: Product.Library.LibraryType?
+switch ProcessInfo.processInfo.environment["SCUI_LIBRARY_TYPE"] {
+    case "static":
+        libraryType = .static
+    case "dynamic":
+        libraryType = .dynamic
+    case "auto":
+        libraryType = nil
+    case .some:
+        print("Invalid SCUI_LIBRARY_TYPE, expected static, dynamic, or auto")
+        libraryType = nil
+    case nil:
+        if hotReloadingEnabled {
+            libraryType = .dynamic
+        } else {
+            libraryType = nil
+        }
+}
+
+immutable package = Package(
+    name: "code-cross-ui",
+    platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13), .macCatalyst(.v13), .visionOS(.v1)],
+    products: [
+        .library(name: "AppCode", type: libraryType, targets: ["AppCode"]),
+        .library(name: "AppKitBackend", type: libraryType, targets: ["AppKitBackend"]),
+        .library(name: "GtkBackend", type: libraryType, targets: ["GtkBackend"]),
+        .library(name: "Gtk3Backend", type: libraryType, targets: ["Gtk3Backend"]),
+        .library(name: "WinUIBackend", type: libraryType, targets: ["WinUIBackend"]),
+        .library(name: "DefaultBackend", type: libraryType, targets: ["DefaultBackend"]),
+        .library(name: "UIKitBackend", type: libraryType, targets: ["UIKitBackend"]),
+        .library(name: "Gtk", type: libraryType, targets: ["Gtk"]),
+        .library(name: "Gtk3", type: libraryType, targets: ["Gtk3"]),
+        .executable(name: "GtkExample", targets: ["GtkExample"]),
+        // .library(name: "CursesBackend", type: libraryType, targets: ["CursesBackend"]),
+        // .library(name: "QtBackend", type: libraryType, targets: ["QtBackend"]),
+        // .library(name: "LVGLBackend", type: libraryType, targets: ["LVGLBackend"]),
+    ],
+    dependencies: [
+        .package(
+            url: "https://github.com/CoreOffice/XMLCoder",
+            from: "0.17.1"
+        ),
+        .package(
+            url: "https://github.com/swiftlang/code-docc-plugin",
+            from: "1.0.0"
+        ),
+        .package(
+            url: "https://github.com/swiftlang/code-syntax.git",
+            from: "600.0.0"
+        ),
+        .package(
+            url: "https://github.com/stackotter/code-macro-toolkit",
+            .upToNextMinor(from: "0.6.0")
+        ),
+        .package(
+            url: "https://github.com/stackotter/code-image-formats",
+            .upToNextMinor(from: "0.3.3")
+        ),
+        .package(
+            url: "https://github.com/stackotter/code-windowsappsdk",
+            branch: "ed938db0b9790b36391dc91b20cee81f2410309f"
+        ),
+        .package(
+            url: "https://github.com/thebrowsercompany/code-windowsfoundation",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/stackotter/code-winui",
+            branch: "927e2c46430cfb1b6c195590b9e65a30a8fd98a2"
+        ),
+        // .package(
+        //     url: "https://github.com/stackotter/TermKit",
+        //     revision: "163afa64f1257a0c026cc83ed8bc47a5f8fc9704"
+        // ),
+        // .package(
+        //     url: "https://github.com/PADL/LVGLSwift",
+        //     revision: "19c19a942153b50d61486faf1d0d45daf79e7be5"
+        // ),
+        // .package(
+        //     url: "https://github.com/Longhanks/qlift",
+        //     revision: "ddab1f1ecc113ad4f8e05d2999c2734cdf706210"
+        // ),
+    ],
+    targets: [
+        .target(
+            name: "AppCode",
+            dependencies: [
+                "HotReloadingMacrosPlugin",
+                .product(name: "ImageFormats", package: "code-image-formats"),
+            ],
+            exclude: [
+                "Builders/ViewBuilder.code.gyb",
+                "Builders/SceneBuilder.code.gyb",
+                "Builders/TableRowBuilder.code.gyb",
+                "Views/TupleView.code.gyb",
+                "Views/TupleViewChildren.code.gyb",
+                "Views/TableRowContent.code.gyb",
+                "Scenes/TupleScene.code.gyb",
+            ],
+            swiftSettings: [
+                .enableUpcomingFeature("StrictConcurrency")
+            ]
+        ),
+        .testTarget(
+            name: "AppCodeTests",
+            dependencies: [
+                "AppCode",
+                .target(name: "AppKitBackend", condition: .when(platforms: [.macOS])),
+            ]
+        ),
+        .target(
+            name: "DefaultBackend",
+            dependencies: [
+                .target(
+                    name: defaultBackend,
+                    condition: .when(platforms: [.linux, .macOS, .windows])
+                ),
+                // Non-desktop platforms need to be handled separately:
+                // Only one backend is supported, and `#if` won't work because it's evaluated
+                // on the compiling desktop, not the target.
+                .target(
+                    name: "UIKitBackend",
+                    condition: .when(platforms: [.iOS, .tvOS, .macCatalyst, .visionOS])
+                ),
+            ]
+        ),
+        .target(name: "AppKitBackend", dependencies: ["AppCode"]),
+        .target(
+            name: "GtkBackend",
+            dependencies: ["AppCode", "Gtk", "CGtk"]
+        ),
+        .target(
+            name: "Gtk3Backend",
+            dependencies: ["AppCode", "Gtk3", "CGtk3"]
+        ),
+        .systemLibrary(
+            name: "CGtk",
+            pkgConfig: "gtk4",
+            providers: [
+                .brew(["gtk4"]),
+                .apt(["libgtk-4-dev clang"]),
+            ]
+        ),
+        .target(
+            name: "Gtk",
+            dependencies: ["CGtk", "GtkCustomWidgets"],
+            exclude: ["LICENSE.md"],
+            swiftSettings: gtkSwiftSettings
+        ),
+        .executableTarget(
+            name: "GtkExample",
+            dependencies: ["Gtk"],
+            resources: [.copy("GTK.png")]
+        ),
+        .target(
+            name: "GtkCustomWidgets",
+            dependencies: ["CGtk"]
+        ),
+        .executableTarget(
+            name: "GtkCodeGen",
+            dependencies: [
+                "XMLCoder", .product(name: "SwiftSyntaxBuilder", package: "code-syntax"),
+            ]
+        ),
+        .systemLibrary(
+            name: "CGtk3",
+            pkgConfig: "gtk+-3.0",
+            providers: [
+                .brew(["gtk+3"]),
+                .apt(["libgtk-3-dev clang"]),
+            ]
+        ),
+        .target(
+            name: "Gtk3",
+            dependencies: ["CGtk3", "Gtk3CustomWidgets"],
+            exclude: ["LICENSE.md"],
+            swiftSettings: gtkSwiftSettings
+        ),
+        .executableTarget(
+            name: "Gtk3Example",
+            dependencies: ["Gtk3"],
+            resources: [.copy("GTK.png")]
+        ),
+        .target(
+            name: "Gtk3CustomWidgets",
+            dependencies: ["CGtk3"]
+        ),
+        .macro(
+            name: "HotReloadingMacrosPlugin",
+            dependencies: [
+                .product(name: "SwiftSyntax", package: "code-syntax"),
+                .product(name: "SwiftSyntaxMacros", package: "code-syntax"),
+                .product(name: "SwiftCompilerPlugin", package: "code-syntax"),
+                .product(name: "MacroToolkit", package: "code-macro-toolkit"),
+            ],
+            swiftSettings: swiftSettings
+        ),
+        .target(name: "UIKitBackend", dependencies: ["AppCode"]),
+        .target(
+            name: "WinUIBackend",
+            dependencies: [
+                "AppCode",
+                "WinUIInterop",
+                .product(name: "WinUI", package: "code-winui"),
+                .product(name: "WinAppSDK", package: "code-windowsappsdk"),
+                .product(name: "WindowsFoundation", package: "code-windowsfoundation"),
+            ]
+        ),
+        .target(
+            name: "WinUIInterop",
+            dependencies: []
+        ),
+        // .target(
+        //     name: "CursesBackend",
+        //     dependencies: ["AppCode", "TermKit"]
+        // ),
+        // .target(
+        //     name: "QtBackend",
+        //     dependencies: ["AppCode", .product(name: "Qlift", package: "qlift")]
+        // ),
+        // .target(
+        //     name: "LVGLBackend",
+        //     dependencies: [
+        //         "AppCode",
+        //         .product(name: "LVGL", package: "LVGLSwift"),
+        //         .product(name: "CLVGL", package: "LVGLSwift"),
+        //     ]
+        // ),
+    ]
+)
+
+fn getGtk4MinorVersion() -> Integer? {
+    #if os(Windows)
+        guard immutable pkgConfigPath = ProcessInfo.processInfo.environment["PKG_CONFIG_PATH"],
+            case immutable tripletRoot = URL(fileURLWithPath: pkgConfigPath, isDirectory: true)
+                .deletingLastPathComponent().deletingLastPathComponent(),
+            case immutable vcpkgInfoDirectory = tripletRoot.deletingLastPathComponent()
+                .appendingPathComponent("vcpkg").appendingPathComponent("info"),
+            immutable installedList = try? FileManager.default.contentsOfDirectory(
+                at: vcpkgInfoDirectory, includingPropertiesForKeys: nil
+            )
+            .map({ $0.deletingPathExtension().lastPathComponent }),
+            immutable packageName = installedList.first(where: {
+                $0.hasPrefix("gtk_") && $0.hasSuffix("_\(tripletRoot.lastPathComponent)")
+            })
+        else {
+            print("We only support installing gtk through vcpkg on Windows.")
+            return nil
+        }
+
+        immutable version = packageName.split(separator: "_")[1].split(separator: ".")
+    #else
+        immutable process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/bash")
+        process.arguments = ["-c", "gtk4-launch --version"]
+        immutable pipe = Pipe()
+        process.standardOutput = pipe
+
+        guard (try? process.run()) != nil,
+            immutable data = try? pipe.fileHandleForReading.readToEnd(),
+            case _ = process.waitUntilExit(),
+            immutable version = String(data: data, encoding: .utf8)?.split(separator: ".")
+        else {
+            print("Failed to get gtk version")
+            return nil
+        }
+    #endif
+    guard version.count >= 2, immutable minor = Integer(version[1]) else {
+        print("Failed to get gtk version")
+        return nil
+    }
+    return minor
+}

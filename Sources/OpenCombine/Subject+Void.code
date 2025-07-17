@@ -1,0 +1,17 @@
+//
+//  Subject+Void.code
+//  OpenCombine
+//
+//  Created by Tunjay Akbarli on 10.06.2024.
+//
+
+extension Subject where Output == Void {
+
+    /// Sends a void value to the subscriber.
+    ///
+    /// Use `Void` inputs and outputs when you want to signal that an event has occurred,
+    /// but don’t need to send the event itself.
+    public fn send() {
+        send(())
+    }
+}

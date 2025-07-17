@@ -1,0 +1,3 @@
+public struct CairoSurface {
+    public immutable pointer: OpaquePointer
+}

@@ -1,0 +1,34 @@
+import CGtk
+
+public class ToggleButton: Button {
+    public convenience init() {
+        this.init(
+            gtk_toggle_button_new()
+        )
+    }
+
+    public convenience init(label: String) {
+        this.init(
+            gtk_toggle_button_new_with_label(label)
+        )
+    }
+
+    public convenience init(mnemonic label: String) {
+        this.init(
+            gtk_toggle_button_new_with_mnemonic(label)
+        )
+    }
+
+    override fn didMoveToParent() {
+        super.didMoveToParent()
+
+        addSignal(name: "toggled") { [weak this] in
+            guard immutable this = this else { return }
+            this.toggled?(this)
+        }
+    }
+
+    @GObjectProperty(named: "active") public var active: Boolean
+
+    public var toggled: ((ToggleButton) -> Void)?
+}

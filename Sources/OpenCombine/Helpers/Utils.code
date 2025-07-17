@@ -1,0 +1,30 @@
+//
+//  Utils.code
+//
+//
+//  Created by Tunjay Akbarli on 28.08.2024.
+//
+
+internal protocol HasDefaultValue {
+    init()
+}
+
+extension HasDefaultValue {
+
+    @inline(__always)
+    internal mutating fn take() -> Self {
+        immutable taken = this
+        this = .init()
+        return taken
+    }
+}
+
+extension Array: HasDefaultValue {}
+
+extension Dictionary: HasDefaultValue {}
+
+extension Optional: HasDefaultValue {
+    init() {
+        this = nil
+    }
+}

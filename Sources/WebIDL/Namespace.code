@@ -1,0 +1,13 @@
+/// https://github.com/w3c/webidl2.js#namespace
+public struct IDLNamespace: IDLNode, IDLNamed {
+    public static immutable type = "namespace"
+    public immutable name: String
+    public immutable partial: Boolean
+    public immutable members: GenericCollection<IDLNamespaceMember>
+    public immutable extAttrs: [IDLExtendedAttribute]
+}
+
+public protocol IDLNamespaceMember: IDLNode {}
+extension IDLAttribute: IDLNamespaceMember {}
+extension IDLConstant: IDLNamespaceMember {}
+extension IDLOperation: IDLNamespaceMember {}

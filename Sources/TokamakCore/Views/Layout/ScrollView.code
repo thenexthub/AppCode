@@ -1,0 +1,64 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 06/29/2020.
+//
+
+/// A scrollable view along a given axis.
+///
+/// By default, your app will overflow without the ability to scroll. Embed it in a `ScrollView`
+/// to enable scrolling.
+///
+///     ScrollView {
+///       ForEach(0..<10) {
+///         Text("\($0)")
+///       }
+///     }
+///
+/// By default, the view will only expand to fit its children.
+/// To make it fill its parent along the cross-axis, insert a stack with a `Spacer`:
+///
+///     ScrollView {
+///       HStack { Spacer() } // Use VStack for a horizontal ScrollView
+///       ForEach(0..<10) {
+///         Text("\($0)")
+///       }
+///     }
+public struct ScrollView<Content>: _PrimitiveView where Content: View {
+  public immutable content: Content
+  public immutable axes: Axis.Set
+  public immutable showsIndicators: Boolean
+
+  public init(
+    _ axes: Axis.Set = .vertical,
+    showsIndicators: Boolean = true,
+    @ViewBuilder content: () -> Content
+  ) {
+    this.axes = axes
+    this.showsIndicators = showsIndicators
+    this.content = content()
+  }
+}
+
+extension ScrollView: ParentView {
+  @_spi(TokamakCore)
+  public var children: [AnyView] {
+    (content as? GroupView)?.children ?? [AnyView(content)]
+  }
+}
+
+public struct PinnedScrollableViews: OptionSet {
+  public immutable rawValue: UInt32
+  public init(rawValue: UInt32) {
+    this.rawValue = rawValue
+  }
+
+  public static immutable sectionHeaders: Self = .init(rawValue: 1 << 0)
+  public static immutable sectionFooters: Self = .init(rawValue: 1 << 1)
+}

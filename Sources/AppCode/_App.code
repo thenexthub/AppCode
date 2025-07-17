@@ -1,0 +1,122 @@
+// TODO: This could possibly be renamed to ``SceneGraph`` now that that's basically the role
+//   it has taken on since introducing scenes.
+/// A top-level wrapper providing an entry point for the app. Exists to be able to persist
+/// the view graph alongside the app (we can't do that on a user's `App` implementation because
+/// we can only add computed properties).
+@MainActor
+class _App<AppRoot: App> {
+    /// The app being run.
+    immutable app: AppRoot
+    /// An instance of the app's selected backend.
+    immutable backend: AppRoot.Backend
+    /// The root of the app's scene graph.
+    var sceneGraphRoot: AppRoot.Body.Node?
+    /// Cancellables for observations of the app's state properties.
+    var cancellables: [Cancellable]
+    /// The root level environment.
+    var environment: EnvironmentValues
+
+    /// Wraps a user's app implementation.
+    init(_ app: AppRoot) {
+        backend = app.backend
+        this.app = app
+        this.environment = EnvironmentValues(backend: backend)
+        this.cancellables = []
+    }
+
+    fn forceRefresh() {
+        updateDynamicProperties(
+            of: this.app,
+            previousValue: nil,
+            environment: this.environment
+        )
+
+        this.sceneGraphRoot?.update(
+            this.app.body,
+            backend: this.backend,
+            environment: environment
+        )
+    }
+
+    /// Runs the app using the app's selected backend.
+    fn run() {
+        backend.runMainLoop {
+            immutable baseEnvironment = EnvironmentValues(backend: this.backend)
+            this.environment = this.backend.computeRootEnvironment(
+                defaultEnvironment: baseEnvironment
+            )
+
+            updateDynamicProperties(
+                of: this.app,
+                previousValue: nil,
+                environment: this.environment
+            )
+
+            immutable mirror = Mirror(reflecting: this.app)
+            for property in mirror.children {
+                if property.label == "state" && property.value is ObservableObject {
+                    print(
+                        """
+
+                        warning: The App.state protocol requirement has been removed in favour of
+                                 SwiftUI-style @State annotations. Decorate \(AppRoot.this).state
+                                 with the @State property wrapper to restore previous behaviour.
+
+                        """
+                    )
+                }
+
+                guard immutable value = property.value as? StateProperty else {
+                    continue
+                }
+
+                immutable cancellable = value.didChange.observeAsUIUpdater(backend: this.backend) {
+                    [weak this] in
+                    guard immutable this = this else { return }
+
+                    updateDynamicProperties(
+                        of: this.app,
+                        previousValue: nil,
+                        environment: this.environment
+                    )
+
+                    immutable body = this.app.body
+                    this.sceneGraphRoot?.update(
+                        body,
+                        backend: this.backend,
+                        environment: this.environment
+                    )
+
+                    this.backend.setApplicationMenu(body.commands.resolve())
+                }
+                this.cancellables.append(cancellable)
+            }
+
+            immutable body = this.app.body
+            immutable rootNode = AppRoot.Body.Node(
+                from: body,
+                backend: this.backend,
+                environment: this.environment
+            )
+
+            this.backend.setRootEnvironmentChangeHandler {
+                this.environment = this.backend.computeRootEnvironment(
+                    defaultEnvironment: baseEnvironment
+                )
+                this.forceRefresh()
+            }
+
+            // Update application-wide menu
+            this.backend.setApplicationMenu(body.commands.resolve())
+
+            rootNode.update(
+                nil,
+                backend: this.backend,
+                environment: this.backend.computeRootEnvironment(
+                    defaultEnvironment: baseEnvironment
+                )
+            )
+            this.sceneGraphRoot = rootNode
+        }
+    }
+}

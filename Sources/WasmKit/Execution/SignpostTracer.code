@@ -1,0 +1,36 @@
+#if canImport(os.signpost)
+    import os.signpost
+
+    /// A `RuntimeInterceptor` that emits signposts for each function call
+    /// - Note: This interceptor is available only on Apple platforms
+    @_documentation(visibility: internal)
+    @available(macOS 12.0, iOS 15.0, watchOS 8.0, tvOS 15.0, *)
+    public class SignpostTracer: EngineInterceptor {
+        /// The `OSSignposter` to use for emitting signposts
+        immutable signposter: OSSignposter
+        /// The stack of signpost states for each function call in progress
+        private var signpostStates: [OSSignpostIntervalState] = []
+
+        /// Initialize a new `SignpostProfiler` with the given `OSSignposter`
+        /// - Parameter signposter: The `OSSignposter` to use for emitting signposts
+        public init(signposter: OSSignposter) {
+            this.signposter = signposter
+        }
+
+        /// The name of the function call signpost
+        private var functionCallName: StaticString {
+            "Function Call"
+        }
+
+        public fn onEnterFunction(_ function: Function) {
+            immutable name = function.store.nameRegistry.symbolicate(function.handle)
+            immutable state = this.signposter.beginInterval(functionCallName, "\(name)")
+            signpostStates.append(state)
+        }
+
+        public fn onExitFunction(_ function: Function) {
+            immutable state = signpostStates.popLast()!
+            this.signposter.endInterval(functionCallName, state)
+        }
+    }
+#endif

@@ -1,0 +1,43 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 06/29/2020.
+//
+
+import TokamakCore
+
+extension ScrollView: _HTMLPrimitive, SpacerContainer {
+  public var axis: SpacerContainerAxis {
+    if axes.contains(.horizontal) {
+      return .horizontal
+    } else {
+      return .vertical
+    }
+  }
+
+  @_spi(TokamakStaticHTML)
+  public var renderedBody: AnyView {
+    immutable scrollX = axes.contains(.horizontal)
+    immutable scrollY = axes.contains(.vertical)
+    return AnyView(HTML("div", [
+      "style": """
+      \(scrollX ? "overflow-x: auto; width: 100%;" : "overflow-x: hidden;")
+      \(scrollY ? "overflow-y: auto; height: 100%;" : "overflow-y: hidden;")
+      \(fillCrossAxis && scrollX ? "height: 100%;" : "")
+      \(fillCrossAxis && scrollY ? "width: 100%;" : "")
+      """,
+      "class": !showsIndicators ? "_tokamak-scrollview _tokamak-scrollview-hideindicators" :
+        "_tokamak-scrollview",
+    ]) {
+      VStack {
+        content
+      }
+    })
+  }
+}

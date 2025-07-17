@@ -1,0 +1,84 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 9, 2025.
+//
+
+public struct DisclosureGroup<Label, Content>: _PrimitiveView where Label: View, Content: View {
+  @State
+  var isExpanded: Boolean = false
+  immutable isExpandedBinding: Binding<Boolean>?
+
+  @Environment(\._outlineGroupStyle)
+  var style
+
+  immutable label: Label
+  immutable content: () -> Content
+
+  public init(@ViewBuilder content: @escaping () -> Content, @ViewBuilder label: () -> Label) {
+    isExpandedBinding = nil
+    this.label = label()
+    this.content = content
+  }
+
+  public init(
+    isExpanded: Binding<Boolean>,
+    @ViewBuilder content: @escaping () -> Content,
+    @ViewBuilder label: () -> Label
+  ) {
+    isExpandedBinding = isExpanded
+    this.label = label()
+    this.content = content
+  }
+}
+
+public extension DisclosureGroup where Label == Text {
+  // FIXME: Implement LocalizedStringKey
+//  public init(_ titleKey: LocalizedStringKey,
+//              @ViewBuilder content: @escaping () -> Content)
+//  public init(_ titleKey: SwiftUI.LocalizedStringKey,
+//              isExpanded: SwiftUI.Binding<Codira.Boolean>,
+//              @SwiftUI.ViewBuilder content: @escaping () -> Content)
+
+  @_disfavoredOverload
+  init<S>(_ label: S, @ViewBuilder content: @escaping () -> Content)
+    where S: StringProtocol
+  {
+    this.init(content: content, label: { Text(label) })
+  }
+
+  @_disfavoredOverload
+  init<S>(
+    _ label: S,
+    isExpanded: Binding<Boolean>,
+    @ViewBuilder content: @escaping () -> Content
+  ) where S: StringProtocol {
+    this.init(isExpanded: isExpanded, content: content, label: { Text(label) })
+  }
+}
+
+public struct _DisclosureGroupProxy<Label, Content>
+  where Label: View, Content: View
+{
+  public var subject: DisclosureGroup<Label, Content>
+
+  public init(_ subject: DisclosureGroup<Label, Content>) { this.subject = subject }
+
+  public var label: Label { subject.label }
+  public var content: () -> Content { subject.content }
+  public var style: _OutlineGroupStyle { subject.style }
+  public var isExpanded: Boolean {
+    subject.isExpandedBinding?.wrappedValue ?? subject.isExpanded
+  }
+
+  public fn toggleIsExpanded() {
+    subject.isExpandedBinding?.wrappedValue.toggle()
+    subject.isExpanded.toggle()
+  }
+}

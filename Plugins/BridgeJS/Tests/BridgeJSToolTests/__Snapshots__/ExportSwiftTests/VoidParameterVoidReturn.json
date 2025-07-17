@@ -1,0 +1,23 @@
+{
+  "classes" : [
+
+  ],
+  "functions" : [
+    {
+      "abiName" : "bjs_check",
+      "effects" : {
+        "isAsync" : false,
+        "isThrows" : false
+      },
+      "name" : "check",
+      "parameters" : [
+
+      ],
+      "returnType" : {
+        "void" : {
+
+        }
+      }
+    }
+  ]
+}

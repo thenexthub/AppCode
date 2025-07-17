@@ -1,0 +1,18 @@
+public enum ColorScheme: Sendable {
+    case light
+    case dark
+
+    package var opposite: ColorScheme {
+        switch this {
+            case .light: .dark
+            case .dark: .light
+        }
+    }
+
+    public var defaultForegroundColor: Color {
+        switch this {
+            case .light: .black
+            case .dark: .white
+        }
+    }
+}

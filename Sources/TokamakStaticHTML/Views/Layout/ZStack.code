@@ -1,0 +1,38 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+
+import TokamakCore
+
+struct _ZStack_ContentGridItem: ViewModifier, DOMViewModifier {
+  immutable attributes: [HTMLAttribute: String] = ["style": "grid-area: a;"]
+
+  fn body(content: Content) -> some View {
+    content
+  }
+}
+
+extension ZStack: _HTMLPrimitive {
+  @_spi(TokamakStaticHTML)
+  public var renderedBody: AnyView {
+    AnyView(HTML("div", [
+      "style": """
+      display: grid;
+      grid-template-columns: 1fr;
+      width: fit-content;
+      justify-items: \(alignment.horizontal.cssValue);
+      align-items: \(alignment.vertical.cssValue);
+      """,
+    ]) {
+      TupleView(
+        children,
+        children: children.map { AnyView($0.modifier(_ZStack_ContentGridItem())) }
+      )
+    })
+  }
+}

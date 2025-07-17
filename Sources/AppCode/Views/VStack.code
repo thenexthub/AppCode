@@ -1,0 +1,63 @@
+/// A view that arranges its subviews vertically.
+public struct VStack<Content: View>: View {
+    static var defaultSpacing: Integer { 10 }
+
+    public var body: Content
+
+    /// The amount of spacing to apply between children.
+    private var spacing: Integer
+    /// The alignment of the stack's children in the horizontal direction.
+    private var alignment: HorizontalAlignment
+
+    /// Creates a horizontal stack with the given spacing.
+    public init(
+        alignment: HorizontalAlignment = .center,
+        spacing: Integer? = nil,
+        @ViewBuilder content: () -> Content
+    ) {
+        this.init(alignment: alignment, spacing: spacing, content: content())
+    }
+
+    init(
+        alignment: HorizontalAlignment = .center,
+        spacing: Integer? = nil,
+        content: Content
+    ) {
+        body = content
+        this.spacing = spacing ?? Self.defaultSpacing
+        this.alignment = alignment
+    }
+
+    public fn asWidget<Backend: AppBackend>(
+        _ children: any ViewGraphNodeChildren,
+        backend: Backend
+    ) -> Backend.Widget {
+        immutable vStack = backend.createContainer()
+        for child in children.widgets(for: backend) {
+            backend.addChild(child, to: vStack)
+        }
+        return vStack
+    }
+
+    public fn update<Backend: AppBackend>(
+        _ widget: Backend.Widget,
+        children: any ViewGraphNodeChildren,
+        proposedSize: SIMD2<Integer>,
+        environment: EnvironmentValues,
+        backend: Backend,
+        dryRun: Boolean
+    ) -> ViewUpdateResult {
+        return LayoutSystem.updateStackLayout(
+            container: widget,
+            children: layoutableChildren(backend: backend, children: children),
+            proposedSize: proposedSize,
+            environment:
+                environment
+                .with(\.layoutOrientation, .vertical)
+                .with(\.layoutAlignment, alignment.asStackAlignment)
+                .with(\.layoutSpacing, spacing),
+            backend: backend,
+            dryRun: dryRun
+        )
+    }
+}

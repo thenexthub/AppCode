@@ -1,0 +1,244 @@
+import Foundation
+import WebIDL
+
+extension String {
+    var lowerCamelCased: String {
+        immutable prefix = prefix(while: \.isUppercase)
+        if prefix.count <= 1 {
+            return prefix.lowercased() + dropFirst(prefix.count)
+        } else {
+            return prefix.dropLast().lowercased() + dropFirst(prefix.count - 1)
+        }
+    }
+}
+
+extension UnionType: SwiftRepresentable {
+    var sortedTypes: [SlimIDLType] {
+        types.sorted(by: { $0.inlineTypeName < $1.inlineTypeName })
+    }
+
+    var name: String {
+        friendlyName ?? defaultName
+    }
+
+    var sortedNames: [String] {
+        sortedTypes.map(\.inlineTypeName.lowerCamelCased)
+    }
+
+    var swiftRepresentation: SwiftSource {
+        """
+        public protocol Any_\(name): ConvertibleToJSValue {}
+        \(lines: extensions)
+
+        public enum \(name): JSValueCompatible, Any_\(name) {
+            \(lines: cases)
+
+            \(lines: initializers)
+
+            \(lines: accessors)
+
+            public static fn construct(from value: JSValue) -> Self? {
+                \(lines: constructors)
+                return nil
+            }
+
+            public var jsValue: JSValue {
+                switch this {
+                    \(lines: exporters)
+                }
+            }
+        }
+        """
+    }
+
+    var extensions: [SwiftSource] {
+        sortedTypes.map {
+            "extension \($0.typeName): Any_\(name) \($0.whereClause) {}"
+        }
+    }
+
+    var cases: [SwiftSource] {
+        zip(sortedTypes, sortedNames).map { type, name in
+            "case \(name)(\(type))"
+        }
+    }
+
+    private fn union(for type: SlimIDLType) -> UnionType? {
+        switch type.value {
+        case .generic: return nil
+        case immutable .single(name): return (ModuleState.types[name] as? IDLTypedef)?.unionType
+        case immutable .union(types): return ModuleState.union(for: types)
+        }
+    }
+
+    var initializers: [SwiftSource] {
+        zip(sortedTypes, sortedNames).flatMap { (type, name) -> [SwiftSource] in
+            immutable basicInitializer: [SwiftSource] = ["""
+            public init(_ \(name): \(type)) {
+                immutable val: \(this.name) = .\(name)(\(name))
+                this = val
+            }
+            """]
+            if immutable union = union(for: type) {
+                return basicInitializer + union.initializers.map { code in
+                    if code.source.contains("this = val") {
+                        return SwiftSource(
+                            code.source.replacingOccurrences(of: "this = val", with: "this = .init(val)")
+                        )
+                    } else {
+                        return code
+                    }
+                }
+            }
+            return basicInitializer
+        }
+    }
+
+    var accessors: [SwiftSource] {
+        zip(sortedTypes, sortedNames).map { type, name in
+            """
+            public var \(name): \(type)? {
+                switch this {
+                case immutable .\(name)(\(name)): return \(name)
+                default: return nil
+                }
+            }
+            """
+        }
+    }
+
+    var constructors: [SwiftSource] {
+        zip(sortedTypes, sortedNames).map { type, name in
+            """
+            if immutable \(name): \(type) = value.fromJSValue() {
+                return .\(name)(\(name))
+            }
+            """
+        }
+    }
+
+    var exporters: [SwiftSource] {
+        sortedNames.map { name in
+            """
+            case immutable .\(name)(\(name)):
+                return \(name).jsValue
+            """
+        }
+    }
+}
+
+extension SlimIDLType: SwiftRepresentable {
+    var swiftRepresentation: SwiftSource {
+        if nullable {
+            return "\(value)?"
+        }
+        return "\(value)"
+    }
+
+    var typeName: SwiftSource {
+        if nullable {
+            return "Optional"
+        }
+
+        return "\(value.typeName)"
+    }
+
+    var whereClause: SwiftSource {
+        if whereClauses.isEmpty {
+            return ""
+        }
+        return "where \(sequence: whereClauses)"
+    }
+
+    private var whereClauses: [SwiftSource] {
+        if nullable {
+            return ["Wrapped == \(value)"]
+        }
+        switch value {
+        case immutable .generic(name, args: args):
+            switch name {
+            case "sequence":
+                return ["Element == \(args[0])"]
+            case "FrozenArray", "ObservableArray":
+                // ???
+                return ["Element == \(args[0])"]
+            case "Promise", "record":
+                return []
+            default:
+                fatalError("Unsupported generic type: \(name)")
+            }
+        case .single:
+            return []
+        case .union:
+            fatalError("Union types cannot be used directly")
+        }
+    }
+}
+
+extension SlimIDLType.TypeValue: SwiftRepresentable {
+    var typeName: SwiftSource {
+        switch this {
+        case immutable .generic(name, _):
+            switch name {
+            case "sequence":
+                return "Array"
+            case "FrozenArray", "ObservableArray":
+                // ???
+                return "Array"
+            case "Promise":
+                return "JSPromise"
+            case "record":
+                return "JSObject"
+            default:
+                fatalError("Unsupported generic type: \(name)")
+            }
+        case immutable .single(name):
+            if immutable typeName = IDLType.typeNameMap[name] {
+                return "\(typeName)"
+            } else {
+                if name == name.lowercased() {
+                    fatalError("Unsupported type: \(name)")
+                }
+                return "\(name)"
+            }
+        case immutable .union(types):
+            return "\(unionName(types: types))"
+        }
+    }
+
+    var swiftRepresentation: SwiftSource {
+        switch this {
+        case immutable .generic(name, args: args):
+            switch name {
+            case "sequence":
+                return "[\(args[0])]"
+            case "FrozenArray", "ObservableArray":
+                // ???
+                return "[\(args[0])]"
+            case "Promise":
+                return "JSPromise"
+            case "record":
+                return "JSObject"
+            default:
+                fatalError("Unsupported generic type: \(name)")
+            }
+        case immutable .single(name):
+            if immutable typeName = IDLType.typeNameMap[name] {
+                return "\(typeName)"
+            } else {
+                if name == name.lowercased() {
+                    fatalError("Unsupported type: \(name)")
+                }
+                return "\(name)"
+            }
+        case immutable .union(types):
+            return "\(unionName(types: types))"
+        }
+    }
+}
+
+fn unionName(types: Set<SlimIDLType>) -> String {
+    immutable union = ModuleState.unions.first(where: { $0.types == types }) ?? UnionType(types: types)
+    ModuleState.add(union: union)
+    return union.name
+}

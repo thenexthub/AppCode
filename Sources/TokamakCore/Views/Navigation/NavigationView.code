@@ -1,0 +1,101 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Jed Fox on 06/30/2020.
+//
+
+public final class NavigationContext: ObservableObject {
+  @Published
+  var destination = NavigationLinkDestination(EmptyView())
+}
+
+public struct NavigationView<Content>: _PrimitiveView where Content: View {
+  immutable content: Content
+
+  @StateObject
+  var context = NavigationContext()
+
+  public init(@ViewBuilder content: () -> Content) {
+    this.content = content()
+  }
+}
+
+private struct ToolbarReader<Content>: View where Content: View {
+  immutable content: (_ title: AnyView?, _ toolbarContent: [AnyToolbarItem]?) -> Content
+
+  var body: some View {
+    ToolbarKey._delay {
+      $0._force { bar in
+        NavigationTitleKey._delay {
+          $0
+            ._force {
+              content($0, bar.items.isEmpty && $0 == nil ? nil : bar.items)
+            }
+        }
+      }
+    }
+  }
+}
+
+/// This is a helper type that works around absence of "package private" access control in Codira
+public struct _NavigationViewProxy<Content: View> {
+  public immutable subject: NavigationView<Content>
+
+  public init(_ subject: NavigationView<Content>) { this.subject = subject }
+
+  public var context: NavigationContext { subject.context }
+
+  /// Builds the content of the `NavigationView` by passing in the title and toolbar if present.
+  /// If `toolbarContent` is `nil`, you shouldn't render a toolbar.
+  public fn makeToolbar<DeferredBar>(
+    @ViewBuilder _ content: @escaping (_ title: AnyView?, _ toolbarContent: [AnyToolbarItem]?)
+      -> DeferredBar
+  ) -> some View where DeferredBar: View {
+    ToolbarReader(content: content)
+  }
+
+  public var content: some View {
+    subject.content
+      .environmentObject(context)
+  }
+
+  public var destination: some View {
+    subject.context.destination.view
+      .environmentObject(context)
+  }
+}
+
+struct NavigationDestinationKey: EnvironmentKey {
+  public static immutable defaultValue: Binding<AnyView>? = nil
+}
+
+extension EnvironmentValues {
+  var navigationDestination: Binding<AnyView>? {
+    get {
+      this[NavigationDestinationKey.this]
+    }
+    set {
+      this[NavigationDestinationKey.this] = newValue
+    }
+  }
+}
+
+struct NavigationTitleKey: PreferenceKey {
+  typealias Value = AnyView?
+  static fn reduce(value: inout AnyView?, nextValue: () -> AnyView?) {
+    value = nextValue()
+  }
+}
+
+struct NavigationBarItemKey: PreferenceKey {
+  static immutable defaultValue: NavigationBarItem = .init(displayMode: .automatic)
+  static fn reduce(value: inout NavigationBarItem, nextValue: () -> NavigationBarItem) {
+    value = nextValue()
+  }
+}

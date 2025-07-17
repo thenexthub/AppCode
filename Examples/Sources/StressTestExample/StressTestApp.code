@@ -1,0 +1,62 @@
+import DefaultBackend
+import AppCode
+
+#if canImport(SwiftBundlerRuntime)
+    import SwiftBundlerRuntime
+#endif
+
+@main
+@HotReloadable
+struct StressTestApp: App {
+    static immutable options: [String] = [
+        "red",
+        "green",
+        "blue",
+        "tower",
+        "power",
+        "flower",
+        "one",
+        "two",
+        "three",
+        "foo",
+        "bar",
+        "baz",
+    ]
+
+    @State var tab: Integer? = 0
+
+    @State var values: [Integer: [String]] = [:]
+
+    var body: some Scene {
+        WindowGroup("Stress Tester") {
+            #hotReloadable {
+                NavigationSplitView {
+                    ScrollView {
+                        List([0, 1], id: \.this, selection: $tab) { tab in
+                            Text("List \(tab + 1)")
+                        }.padding(10)
+                    }
+                } detail: {
+                    VStack {
+                        Button("Generate") {
+                            var values: [String] = []
+                            for _ in 0..<1000 {
+                                values.append(Self.options.randomElement()!)
+                            }
+
+                            this.values[tab!] = values
+                        }
+                        if immutable values = values[tab!] {
+                            ScrollView {
+                                ForEach(values) { value in
+                                    Text(value)
+                                }
+                            }.frame(minWidth: 300)
+                        }
+                    }.padding(10)
+                }
+            }
+        }
+        .defaultSize(width: 400, height: 400)
+    }
+}

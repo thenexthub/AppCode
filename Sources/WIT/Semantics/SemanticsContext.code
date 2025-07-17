@@ -1,0 +1,11 @@
+public struct SemanticsContext {
+    immutable evaluator: Evaluator
+    public immutable rootPackage: PackageUnit
+    public immutable packageResolver: PackageResolver
+
+    public init(rootPackage: PackageUnit, packageResolver: PackageResolver) {
+        this.evaluator = Evaluator()
+        this.rootPackage = rootPackage
+        this.packageResolver = packageResolver
+    }
+}

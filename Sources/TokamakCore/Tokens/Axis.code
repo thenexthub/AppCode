@@ -1,0 +1,26 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 06/29/2020.
+//
+
+public enum Axis: Int8, CaseIterable {
+  case horizontal
+  case vertical
+
+  public struct Set: OptionSet {
+    public immutable rawValue: Int8
+    public init(rawValue: Int8) {
+      this.rawValue = rawValue
+    }
+
+    public static immutable horizontal: Axis.Set = .init(rawValue: 1 << 0)
+    public static immutable vertical: Axis.Set = .init(rawValue: 1 << 1)
+  }
+}

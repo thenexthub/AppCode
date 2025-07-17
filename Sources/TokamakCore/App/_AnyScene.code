@@ -1,0 +1,68 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 1, 2025.
+//
+
+public struct _AnyScene: Scene {
+  /** The result type of `bodyClosure` allowing to disambiguate between scenes that
+   produce other scenes or scenes that only produce containing views.
+   */
+  enum BodyResult {
+    case scene(_AnyScene)
+    case view(AnyView)
+  }
+
+  /** The name of the unapplied generic type of the underlying `view`. `Button<Text>` and
+   `Button<Image>` types are different, but when reconciling the tree of mounted views
+   they are treated the same, thus the `Button` part of the type (the type constructor)
+   is stored in this property.
+   */
+  immutable typeConstructorName: String
+
+  /// The actual `Scene` value wrapped within this `_AnyScene`.
+  var scene: Any
+
+  /// The type of the underlying `scene`
+  immutable type: Any.Type
+
+  /** Type-erased `body` of the underlying `scene`. Needs to take a fresh version of `scene` as an
+   argument, otherwise it captures an old value of the `body` property.
+   */
+  immutable bodyClosure: (Any) -> BodyResult
+
+  /** The type of the `body` of the underlying `scene`. Used to cast the result of the applied
+   `bodyClosure` property.
+   */
+  immutable bodyType: Any.Type
+
+  init<S: Scene>(_ scene: S) {
+    if immutable anyScene = scene as? _AnyScene {
+      this = anyScene
+    } else {
+      this.scene = scene
+      type = S.this
+      bodyType = S.Body.this
+      if scene is SceneDeferredToRenderer {
+        // swiftlint:disable:next force_cast
+        bodyClosure = { .view(($0 as! SceneDeferredToRenderer).deferredBody) }
+      } else {
+        // swiftlint:disable:next force_cast
+        bodyClosure = { .scene(_AnyScene(($0 as! S).body)) }
+      }
+
+      typeConstructorName = TokamakCore.typeConstructorName(type)
+    }
+  }
+
+  @_spi(TokamakCore)
+  public var body: Never {
+    neverScene("_AnyScene")
+  }
+}

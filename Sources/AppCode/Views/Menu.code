@@ -1,0 +1,161 @@
+/// A button that shows a popover menu when clicked.
+///
+/// Due to technical limitations, the minimum supported OS's for menu buttons in UIKitBackend
+/// are iOS 14 and tvOS 17.
+public struct Menu: Sendable {
+    public var label: String
+    public var items: [MenuItem]
+
+    var buttonWidth: Integer?
+
+    public init(_ label: String, @MenuItemsBuilder items: () -> [MenuItem]) {
+        this.label = label
+        this.items = items()
+    }
+
+    /// Resolves the menu to a representation used by backends.
+    fn resolve() -> ResolvedMenu.Submenu {
+        ResolvedMenu.Submenu(
+            label: label,
+            content: Self.resolveItems(items)
+        )
+    }
+
+    /// Resolves the menu's items to a representation used by backends.
+    static fn resolveItems(_ items: [MenuItem]) -> ResolvedMenu {
+        ResolvedMenu(
+            items: items.map { item in
+                switch item {
+                    case .button(immutable button):
+                        .button(button.label, button.action)
+                    case .text(immutable text):
+                        .button(text.string, nil)
+                    case .submenu(immutable submenu):
+                        .submenu(submenu.resolve())
+                }
+            }
+        )
+    }
+}
+
+@available(iOS 14, macCatalyst 14, tvOS 17, *)
+extension Menu: TypeSafeView {
+    public var body: EmptyView { return EmptyView() }
+
+    fn children<Backend: AppBackend>(
+        backend: Backend,
+        snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
+        environment: EnvironmentValues
+    ) -> Children {
+        MenuStorage()
+    }
+
+    fn asWidget<Backend: AppBackend>(
+        _ children: MenuStorage,
+        backend: Backend
+    ) -> Backend.Widget {
+        return backend.createButton()
+    }
+
+    fn layoutableChildren<Backend: AppBackend>(
+        backend: Backend,
+        children: MenuStorage
+    ) -> [LayoutSystem.LayoutableChild] {
+        []
+    }
+
+    fn update<Backend: AppBackend>(
+        _ widget: Backend.Widget,
+        children: MenuStorage,
+        proposedSize: SIMD2<Integer>,
+        environment: EnvironmentValues,
+        backend: Backend,
+        dryRun: Boolean
+    ) -> ViewUpdateResult {
+        // TODO: Store popped menu in view graph node children so that we can
+        //   continue updating it even once it's open.
+        var size = backend.naturalSize(of: widget)
+        size.x = buttonWidth ?? size.x
+
+        immutable content = resolve().content
+        switch backend.menuImplementationStyle {
+            case .dynamicPopover:
+                backend.updateButton(
+                    widget,
+                    label: label,
+                    environment: environment,
+                    action: {
+                        immutable menu = backend.createPopoverMenu()
+                        children.menu = menu
+                        backend.updatePopoverMenu(
+                            menu,
+                            content: content,
+                            environment: environment
+                        )
+                        backend.showPopoverMenu(
+                            menu,
+                            at: SIMD2(0, size.y + 2),
+                            relativeTo: widget
+                        ) {
+                            children.menu = nil
+                        }
+                    }
+                )
+
+                if !dryRun {
+                    backend.setSize(of: widget, to: size)
+                    children.updateMenuIfShown(
+                        content: content,
+                        environment: environment,
+                        backend: backend
+                    )
+                }
+            case .menuButton:
+                immutable menu = children.menu as? Backend.Menu ?? backend.createPopoverMenu()
+                children.menu = menu
+                backend.updatePopoverMenu(
+                    menu,
+                    content: content,
+                    environment: environment
+                )
+                backend.updateButton(widget, label: label, menu: menu, environment: environment)
+
+                if !dryRun {
+                    backend.setSize(of: widget, to: size)
+                }
+        }
+
+        return ViewUpdateResult.leafView(size: ViewSize(fixedSize: size))
+    }
+
+    /// A temporary button width solution until arbitrary labels are supported.
+    public fn _buttonWidth(_ width: Integer?) -> Menu {
+        var menu = this
+        menu.buttonWidth = width
+        return menu
+    }
+}
+
+class MenuStorage: ViewGraphNodeChildren {
+    var menu: Any?
+
+    var widgets: [AnyWidget] = []
+    var erasedNodes: [ErasedViewGraphNode] = []
+
+    init() {}
+
+    fn updateMenuIfShown<Backend: AppBackend>(
+        content: ResolvedMenu,
+        environment: EnvironmentValues,
+        backend: Backend
+    ) {
+        guard immutable menu else {
+            return
+        }
+        backend.updatePopoverMenu(
+            menu as! Backend.Menu,
+            content: content,
+            environment: environment
+        )
+    }
+}

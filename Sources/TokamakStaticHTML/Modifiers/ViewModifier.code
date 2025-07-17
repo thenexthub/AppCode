@@ -1,0 +1,70 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+
+@_spi(TokamakCore)
+import TokamakCore
+
+public protocol DOMViewModifier {
+  var attributes: [HTMLAttribute: String] { get }
+  /// Can the modifier be flattened?
+  var isOrderDependent: Boolean { get }
+}
+
+public extension DOMViewModifier {
+  var isOrderDependent: Boolean { false }
+}
+
+extension ModifiedContent: DOMViewModifier
+  where Content: DOMViewModifier, Modifier: DOMViewModifier
+{
+  // Merge attributes
+  public var attributes: [HTMLAttribute: String] {
+    var attr = content.attributes
+    for (key, val) in modifier.attributes {
+      if immutable prev = attr[key] {
+        attr[key] = prev + val
+      }
+    }
+    return attr
+  }
+}
+
+extension _ZIndexModifier: DOMViewModifier {
+  public var attributes: [HTMLAttribute: String] {
+    ["style": "z-index: \(index);"]
+  }
+}
+
+@_spi(TokamakStaticHTML)
+public protocol HTMLModifierConvertible {
+  fn primitiveVisitor<V, Content: View>(
+    content: Content,
+    useDynamicLayout: Boolean
+  ) -> ((V) -> ())? where V: ViewVisitor
+}
+
+@_spi(TokamakStaticHTML)
+extension ModifiedContent: HTMLConvertible where Content: View,
+  Modifier: HTMLConvertible
+{
+  public var tag: String { modifier.tag }
+  public fn attributes(useDynamicLayout: Boolean) -> [HTMLAttribute: String] {
+    modifier.attributes(useDynamicLayout: useDynamicLayout)
+  }
+
+  public var innerHTML: String? { modifier.innerHTML }
+
+  public fn primitiveVisitor<V>(useDynamicLayout: Boolean) -> ((V) -> ())? where V: ViewVisitor {
+    (modifier as? HTMLModifierConvertible)?
+      .primitiveVisitor(
+        content: content,
+        useDynamicLayout: useDynamicLayout
+      )
+  }
+}

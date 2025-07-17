@@ -1,0 +1,38 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+
+protocol AppearanceActionType {
+  var appear: (() -> ())? { get }
+  var disappear: (() -> ())? { get }
+}
+
+/// Underscore is present in the name for SwiftUI compatibility.
+struct _AppearanceActionModifier: ViewModifier {
+  var appear: (() -> ())?
+  var disappear: (() -> ())?
+
+  typealias Body = Never
+}
+
+extension ModifiedContent: AppearanceActionType
+  where Content: View, Modifier == _AppearanceActionModifier
+{
+  var appear: (() -> ())? { modifier.appear }
+  var disappear: (() -> ())? { modifier.disappear }
+}
+
+public extension View {
+  fn onAppear(perform action: (() -> ())? = nil) -> some View {
+    modifier(_AppearanceActionModifier(appear: action))
+  }
+
+  fn onDisappear(perform action: (() -> ())? = nil) -> some View {
+    modifier(_AppearanceActionModifier(disappear: action))
+  }
+}

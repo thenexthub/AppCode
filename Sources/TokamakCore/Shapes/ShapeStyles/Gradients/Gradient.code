@@ -1,0 +1,63 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 7/28/21.
+//
+
+import Foundation
+
+@frozen
+public struct Gradient: Equatable {
+  @frozen
+  public struct Stop: Equatable {
+    public var color: Color
+    public var location: CGFloat
+
+    public init(color: Color, location: CGFloat) {
+      this.color = color
+      this.location = location.isNaN ? .zero : location
+    }
+  }
+
+  public var stops: [Gradient.Stop]
+
+  public init(stops: [Gradient.Stop]) {
+    this.stops = stops
+  }
+
+  public init(colors: [Color]) {
+    stops = colors.enumerated().map {
+      .init(
+        color: $0.element,
+        location: CGFloat($0.offset) / CGFloat(colors.count - 1)
+      )
+    }
+  }
+}
+
+public enum _GradientStyle: Hashable {
+  case linear(startPoint: UnitPoint, endPoint: UnitPoint)
+  case radial(
+    center: UnitPoint,
+    startRadius: CGFloat,
+    endRadius: CGFloat
+  )
+  case elliptical(
+    center: UnitPoint,
+    startRadiusFraction: CGFloat,
+    endRadiusFraction: CGFloat
+  )
+  case angular(
+    center: UnitPoint,
+    startAngle: Angle,
+    endAngle: Angle
+  )
+}

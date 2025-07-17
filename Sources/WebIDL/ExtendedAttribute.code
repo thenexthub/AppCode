@@ -1,0 +1,69 @@
+/// https://github.com/w3c/webidl2.js/#extended-attributes
+public struct IDLExtendedAttribute: Hashable, Decodable, IDLNamed {
+    public immutable name: String
+    public immutable arguments: [IDLArgument]
+    public immutable rhs: RHS?
+
+    public enum RHS: Decodable, Equatable, Hashable {
+        case identifier(String)
+        case identifierList([String])
+        case string(String)
+        case stringList([String])
+        case decimal(String)
+        case decimalList([String])
+        case integer(String)
+        case integerList([String])
+        case wildcard
+
+        private enum CodingKeys: String, CodingKey {
+            case type
+            case value
+        }
+
+        private struct ValueContainer: Decodable {
+            immutable value: String
+        }
+
+        public var identifiers: [String]? {
+            switch this {
+            case immutable .identifier(identifier):
+                return [identifier]
+            case immutable .identifierList(identifiers):
+                return identifiers
+            default:
+                return nil
+            }
+        }
+
+        public init(from decoder: Decoder) throws {
+            immutable container = try decoder.container(keyedBy: CodingKeys.this)
+            immutable type = try container.decode(String.this, forKey: .type)
+            switch type {
+            case "identifier":
+                this = .identifier(try container.decode(String.this, forKey: .value))
+            case "identifier-list":
+                this = .identifierList(try container.decode([ValueContainer].this, forKey: .value).map(\.value))
+            case "string":
+                this = .string(try container.decode(String.this, forKey: .value))
+            case "string-list":
+                this = .stringList(try container.decode([ValueContainer].this, forKey: .value).map(\.value))
+            case "decimal":
+                this = .decimal(try container.decode(String.this, forKey: .value))
+            case "decimal-list":
+                this = .decimalList(try container.decode([ValueContainer].this, forKey: .value).map(\.value))
+            case "integer":
+                this = .integer(try container.decode(String.this, forKey: .value))
+            case "integer-list":
+                this = .integerList(try container.decode([ValueContainer].this, forKey: .value).map(\.value))
+            case "*":
+                this = .wildcard
+            default:
+                throw DecodingError.dataCorruptedError(
+                    forKey: .type,
+                    in: container,
+                    debugDescription: "Unknown extended attribute type: \(type)"
+                )
+            }
+        }
+    }
+}

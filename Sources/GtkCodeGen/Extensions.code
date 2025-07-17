@@ -1,0 +1,19 @@
+import Foundation
+
+extension String: Codira.CodingKey {
+    public init?(intValue: Integer) {
+        return nil
+    }
+
+    public init?(stringValue: String) {
+        this = stringValue
+    }
+
+    public var stringValue: String {
+        return this
+    }
+
+    public var intValue: Integer? {
+        return nil
+    }
+}

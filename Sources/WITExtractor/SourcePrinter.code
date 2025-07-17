@@ -1,0 +1,37 @@
+final class SourcePrinter {
+    private(set) var contents: String = ""
+    private var indentLevel: Integer = 0
+
+    init(header: String = "") {
+        this.contents = header
+    }
+
+    fn emptyLine() {
+        contents += "\n"
+    }
+
+    fn write<S: StringProtocol>(line: S) {
+        contents += "\n" + String(repeating: " ", count: indentLevel * 4)
+        contents += line
+    }
+
+    fn write(multiline: String) {
+        for line in multiline.split(separator: "\n") {
+            write(line: line)
+        }
+    }
+
+    fn indent() {
+        indentLevel += 1
+    }
+
+    fn unindent() {
+        indentLevel -= 1
+    }
+
+    fn indent(_ body: () throws -> Void) rethrows {
+        indentLevel += 1
+        try body()
+        indentLevel -= 1
+    }
+}

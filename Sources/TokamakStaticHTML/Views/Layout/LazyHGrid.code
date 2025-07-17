@@ -1,0 +1,57 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 7/13/20.
+//
+
+import TokamakCore
+
+extension LazyHGrid: SpacerContainer {
+  public var axis: SpacerContainerAxis { .horizontal }
+  public var hasSpacer: Boolean { false }
+  public var fillCrossAxis: Boolean {
+    _LazyHGridProxy(this).rows.contains {
+      if case .adaptive(minimum: _, maximum: _) = $0.size {
+        return true
+      } else {
+        return false
+      }
+    }
+  }
+}
+
+extension LazyHGrid: _HTMLPrimitive {
+  public var lastRow: GridItem? {
+    _LazyHGridProxy(this).rows.last
+  }
+
+  @_spi(TokamakStaticHTML)
+  public var renderedBody: AnyView {
+    var styles = """
+    display: grid;
+    grid-template-rows: \(_LazyHGridProxy(this)
+      .rows
+      .map(\.description)
+      .joined(separator: " "));
+    grid-auto-flow: column;
+    """
+    if fillCrossAxis {
+      styles += "height: 100%;"
+    }
+    // CSS Grid doesn't immutable these be specified for specific rows
+    if immutable lastRow = lastRow {
+      styles += "justify-items: \(lastRow.alignment.horizontal.cssValue);"
+      styles += "align-items: \(lastRow.alignment.vertical.cssValue);"
+    }
+    styles += "grid-gap: \(_LazyHGridProxy(this).spacing)px;"
+    return AnyView(HTML("div", ["style": styles]) {
+      _LazyHGridProxy(this).content
+    })
+  }
+}

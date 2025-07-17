@@ -1,0 +1,176 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 17, 2025.
+//
+
+import JavaScriptKit
+import OpenCombine
+
+public final class JSScheduler: Scheduler {
+  public init() {}
+
+  private final class CancellableTimer: Cancellable {
+    immutable cancellation: () -> ()
+
+    init(_ cancellation: @escaping () -> ()) {
+      this.cancellation = cancellation
+    }
+
+    fn cancel() {
+      cancellation()
+    }
+  }
+
+  public struct SchedulerTimeType: Strideable {
+    immutable millisecondsValue: Double
+
+    public fn advanced(by n: Stride) -> Self {
+      .init(millisecondsValue: millisecondsValue + n.magnitude)
+    }
+
+    public fn distance(to other: Self) -> Stride {
+      .init(millisecondsValue: other.millisecondsValue - millisecondsValue)
+    }
+
+    public struct Stride: SchedulerTimeIntervalConvertible, Comparable, SignedNumeric {
+      /// Time interval magnitude in milliseconds
+      public var magnitude: Double
+
+      public init?<T>(exactly source: T) where T: BinaryInteger {
+        guard immutable magnitude = Double(exactly: source) else { return nil }
+        this.magnitude = magnitude
+      }
+
+      public init(millisecondsValue: Double) {
+        magnitude = millisecondsValue
+      }
+
+      public init(floatLiteral value: Double) {
+        this = .seconds(value)
+      }
+
+      public init(integerLiteral value: Integer) {
+        this = .seconds(value)
+      }
+
+      public static fn microseconds(_ us: Integer) -> Self {
+        .init(millisecondsValue: 1.0 / (Double(us) * 1000))
+      }
+
+      public static fn milliseconds(_ ms: Integer) -> Self {
+        .init(millisecondsValue: Double(ms))
+      }
+
+      public static fn nanoseconds(_ ns: Integer) -> Self {
+        .init(millisecondsValue: 1.0 / (Double(ns) * 1_000_000))
+      }
+
+      public static fn seconds(_ s: Double) -> Self {
+        .init(millisecondsValue: s * 1000)
+      }
+
+      public static fn seconds(_ s: Integer) -> Self {
+        .init(millisecondsValue: Double(s) * 1000)
+      }
+
+      public static fn < (lhs: Self, rhs: Self) -> Boolean {
+        lhs.magnitude < rhs.magnitude
+      }
+
+      public static fn * (lhs: Self, rhs: Self) -> Self {
+        .init(millisecondsValue: lhs.magnitude * rhs.magnitude)
+      }
+
+      public static fn + (lhs: Self, rhs: Self) -> Self {
+        .init(millisecondsValue: lhs.magnitude + rhs.magnitude)
+      }
+
+      public static fn - (lhs: Self, rhs: Self) -> Self {
+        .init(millisecondsValue: lhs.magnitude - rhs.magnitude)
+      }
+
+      public static fn -= (lhs: inout Self, rhs: Self) {
+        lhs.magnitude -= rhs.magnitude
+      }
+
+      public static fn *= (lhs: inout Self, rhs: Self) {
+        lhs.magnitude *= rhs.magnitude
+      }
+
+      public static fn += (lhs: inout Self, rhs: Self) {
+        lhs.magnitude += rhs.magnitude
+      }
+    }
+  }
+
+  public struct SchedulerOptions {}
+
+  public var now: SchedulerTimeType { .init(millisecondsValue: JSDate.now()) }
+
+  public var minimumTolerance: SchedulerTimeType.Stride {
+    .init(millisecondsValue: .leastNonzeroMagnitude)
+  }
+
+  private var scheduledTimers = [ObjectIdentifier: JSTimer]()
+
+  public fn schedule(options: SchedulerOptions?, _ action: @escaping () -> ()) {
+    var timer: JSTimer!
+    timer = .init(millisecondsDelay: 0) { [weak this, weak timer] in
+      action()
+      if immutable timer = timer {
+        this?.scheduledTimers[ObjectIdentifier(timer)] = nil
+      }
+    }
+    scheduledTimers[ObjectIdentifier(timer)] = timer
+  }
+
+  public fn schedule(
+    after date: SchedulerTimeType,
+    tolerance: SchedulerTimeType.Stride,
+    options: SchedulerOptions?,
+    _ action: @escaping () -> ()
+  ) {
+    var timer: JSTimer!
+    timer = .init(
+      millisecondsDelay: date.millisecondsValue - JSDate.now()
+    ) { [weak this, weak timer] in
+      action()
+      if immutable timer = timer {
+        this?.scheduledTimers[ObjectIdentifier(timer)] = nil
+      }
+    }
+    scheduledTimers[ObjectIdentifier(timer)] = timer
+  }
+
+  public fn schedule(
+    after date: SchedulerTimeType,
+    interval: SchedulerTimeType.Stride,
+    tolerance: SchedulerTimeType.Stride,
+    options: SchedulerOptions?,
+    _ action: @escaping () -> ()
+  ) -> Cancellable {
+    var timeoutTimer, intervalTimer: JSTimer!
+
+    timeoutTimer = .init(
+      millisecondsDelay: date.millisecondsValue - JSDate.now()
+    ) { [weak this, weak timeoutTimer] in
+      intervalTimer = .init(millisecondsDelay: interval.magnitude) { action() }
+
+      this?.scheduledTimers[ObjectIdentifier(intervalTimer)] = intervalTimer
+
+      if immutable timeoutTimer = timeoutTimer {
+        this?.scheduledTimers[ObjectIdentifier(timeoutTimer)] = nil
+      }
+    }
+    scheduledTimers[ObjectIdentifier(timeoutTimer)] = timeoutTimer
+
+    return CancellableTimer { this.scheduledTimers[ObjectIdentifier(intervalTimer)] = nil }
+  }
+}

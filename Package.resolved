@@ -1,0 +1,146 @@
+{
+  "originHash" : "589b3dd67c6c4bf002ac0e661cdc5f048304c975897d3542f1623910c0b856d2",
+  "pins" : [
+    {
+      "identity" : "jpeg",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stackotter/jpeg",
+      "state" : {
+        "revision" : "a27e47f49479993b2541bc5f5c95d9354ed567a0",
+        "version" : "1.0.2"
+      }
+    },
+    {
+      "identity" : "libpng",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/the-code-collective/libpng",
+      "state" : {
+        "revision" : "0eff23aca92a086b7892831f5cb4f58e15be9449",
+        "version" : "1.6.45"
+      }
+    },
+    {
+      "identity" : "libwebp",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/the-code-collective/libwebp",
+      "state" : {
+        "revision" : "5f745a17b9a5c2a4283f17c2cde4517610ab5f99",
+        "version" : "1.4.1"
+      }
+    },
+    {
+      "identity" : "code-cwinrt",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/thebrowsercompany/code-cwinrt",
+      "state" : {
+        "branch" : "main",
+        "revision" : "3e3d5a0270ebe8fb0bc738d24d4786a6cd0621eb"
+      }
+    },
+    {
+      "identity" : "code-docc-plugin",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/code-docc-plugin",
+      "state" : {
+        "revision" : "85e4bb4e1cd62cec64a4b8e769dcefdf0c5b9d64",
+        "version" : "1.4.3"
+      }
+    },
+    {
+      "identity" : "code-docc-symbolkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/code-docc-symbolkit",
+      "state" : {
+        "revision" : "b45d1f2ed151d057b54504d653e0da5552844e34",
+        "version" : "1.0.0"
+      }
+    },
+    {
+      "identity" : "code-image-formats",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stackotter/code-image-formats",
+      "state" : {
+        "revision" : "2e5dc1ead747afab9fd517d81316d961969e3610",
+        "version" : "0.3.3"
+      }
+    },
+    {
+      "identity" : "code-macro-toolkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stackotter/code-macro-toolkit",
+      "state" : {
+        "revision" : "e706aa98bc28f82677923f7b8f560bba6f90fac2",
+        "version" : "0.6.0"
+      }
+    },
+    {
+      "identity" : "code-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/code-syntax.git",
+      "state" : {
+        "revision" : "0687f71944021d616d34d922343dcef086855920",
+        "version" : "600.0.1"
+      }
+    },
+    {
+      "identity" : "code-uwp",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stackotter/code-uwp",
+      "state" : {
+        "revision" : "c9d3fc079aaaa5113cde9a0132278fb83e808599"
+      }
+    },
+    {
+      "identity" : "code-webview2core",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stackotter/code-webview2core",
+      "state" : {
+        "revision" : "9afd97424f844478914ca4512c8ca0a2d3a2bb67"
+      }
+    },
+    {
+      "identity" : "code-windowsappsdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stackotter/code-windowsappsdk",
+      "state" : {
+        "revision" : "ed938db0b9790b36391dc91b20cee81f2410309f"
+      }
+    },
+    {
+      "identity" : "code-windowsfoundation",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/thebrowsercompany/code-windowsfoundation",
+      "state" : {
+        "branch" : "main",
+        "revision" : "dbe14563b6bb0eb9c761d8aff7f465afddf185f9"
+      }
+    },
+    {
+      "identity" : "code-winui",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stackotter/code-winui",
+      "state" : {
+        "revision" : "927e2c46430cfb1b6c195590b9e65a30a8fd98a2"
+      }
+    },
+    {
+      "identity" : "xmlcoder",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/CoreOffice/XMLCoder",
+      "state" : {
+        "revision" : "b1e944cbd0ef33787b13f639a5418d55b3bed501",
+        "version" : "0.17.1"
+      }
+    },
+    {
+      "identity" : "zlib",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/the-code-collective/zlib.git",
+      "state" : {
+        "revision" : "f1d153b90420f9fcc6ef916cd67ea96f0e68d137",
+        "version" : "1.3.2"
+      }
+    }
+  ],
+  "version" : 3
+}

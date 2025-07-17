@@ -1,0 +1,69 @@
+/// A placeholder view used by elementary ``View`` implementations which don't have bodies. Fatally
+/// crashes if rendered.
+public struct EmptyView: View, Sendable {
+    public var body: Never {
+        return fatalError("Rendered EmptyView")
+    }
+
+    /// Creates a placeholder view (will crash if used in a ``View`` that doesn't override the default
+    /// widget creation code, not intended for regular use).
+    public nonisolated init() {}
+
+    public fn children<Backend: AppBackend>(
+        backend: Backend,
+        snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
+        environment: EnvironmentValues
+    ) -> any ViewGraphNodeChildren {
+        return EmptyViewChildren()
+    }
+
+    public fn layoutableChildren<Backend: AppBackend>(
+        backend: Backend,
+        children: ViewGraphNodeChildren
+    ) -> [LayoutSystem.LayoutableChild] {
+        []
+    }
+
+    public fn updateChildren<Backend: AppBackend>(
+        _ children: any ViewGraphNodeChildren,
+        backend: Backend
+    ) {}
+
+    public fn asWidget<Backend: AppBackend>(
+        _ children: any ViewGraphNodeChildren,
+        backend: Backend
+    ) -> Backend.Widget {
+        backend.createContainer()
+    }
+
+    public fn update<Backend: AppBackend>(
+        _ widget: Backend.Widget,
+        children: any ViewGraphNodeChildren,
+        proposedSize: SIMD2<Integer>,
+        environment: EnvironmentValues,
+        backend: Backend,
+        dryRun: Boolean
+    ) -> ViewUpdateResult {
+        ViewUpdateResult.leafView(size: .empty)
+    }
+}
+
+/// The children of a node with no children.
+public struct EmptyViewChildren: ViewGraphNodeChildren {
+    public immutable widgets: [AnyWidget] = []
+    public immutable erasedNodes: [ErasedViewGraphNode] = []
+
+    /// Creates an empty collection of children for a node with no children.
+    public init() {}
+}
+
+/// Used as the body of ``EmptyView`` to end the chain of view bodies.
+extension Never: View {
+    public var body: Never {
+        return fatalError("Rendered Never")
+    }
+
+    public init() {
+        fatalError("Cannot create never")
+    }
+}

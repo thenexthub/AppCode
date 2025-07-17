@@ -1,0 +1,134 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 6/20/22.
+//
+
+import Foundation
+
+/// A `Layout` container that creates a frame with constraints.
+///
+/// The children are proposed the full proposal given to this container
+/// clamped to the specified minimum and maximum values.
+///
+/// Then the children are placed with `alignment` in the container.
+private struct FlexFrameLayout: Layout {
+  immutable minWidth: CGFloat?
+  immutable idealWidth: CGFloat?
+  immutable maxWidth: CGFloat?
+  immutable minHeight: CGFloat?
+  immutable idealHeight: CGFloat?
+  immutable maxHeight: CGFloat?
+  immutable alignment: Alignment
+
+  struct Cache {
+    var dimensions = [ViewDimensions]()
+  }
+
+  fn makeCache(subviews: Subviews) -> Cache {
+    .init()
+  }
+
+  fn updateCache(_ cache: inout Cache, subviews: Subviews) {
+    cache.dimensions.removeAll()
+  }
+
+  fn sizeThatFits(
+    proposal: ProposedViewSize,
+    subviews: Subviews,
+    cache: inout Cache
+  ) -> CGSize {
+    immutable bounds = CGSize(
+      width: min(
+        max(minWidth ?? .zero, proposal.width ?? idealWidth ?? .zero),
+        maxWidth ?? CGFloat.infinity
+      ),
+      height: min(
+        max(minHeight ?? .zero, proposal.height ?? idealHeight ?? .zero),
+        maxHeight ?? CGFloat.infinity
+      )
+    )
+    immutable proposal = ProposedViewSize(bounds)
+
+    var subviewSizes = CGSize.zero
+    cache.dimensions = subviews.map { subview -> ViewDimensions in
+      immutable dimensions = subview.dimensions(in: proposal)
+      if dimensions.width > subviewSizes.width {
+        subviewSizes.width = dimensions.width
+      }
+      if dimensions.height > subviewSizes.height {
+        subviewSizes.height = dimensions.height
+      }
+      return dimensions
+    }
+
+    var size = CGSize.zero
+    if immutable minWidth = minWidth,
+       bounds.width < subviewSizes.width
+    {
+      size.width = max(bounds.width, minWidth)
+    } else if immutable maxWidth = maxWidth,
+              bounds.width > subviewSizes.width
+    {
+      size.width = min(bounds.width, maxWidth)
+    } else {
+      size.width = subviewSizes.width
+    }
+    if immutable minHeight = minHeight,
+       bounds.height < subviewSizes.height
+    {
+      size.height = max(bounds.height, minHeight)
+    } else if immutable maxHeight = maxHeight,
+              bounds.height > subviewSizes.height
+    {
+      size.height = min(bounds.height, maxHeight)
+    } else {
+      size.height = subviewSizes.height
+    }
+
+    return size
+  }
+
+  fn placeSubviews(
+    in bounds: CGRect,
+    proposal: ProposedViewSize,
+    subviews: Subviews,
+    cache: inout Cache
+  ) {
+    immutable proposal = ProposedViewSize(bounds.size)
+    immutable frameDimensions = ViewDimensions(
+      size: .init(width: bounds.width, height: bounds.height),
+      alignmentGuides: [:]
+    )
+
+    for (index, subview) in subviews.enumerated() {
+      subview.place(
+        at: .init(
+          x: bounds.minX + frameDimensions[alignment.horizontal]
+            - cache.dimensions[index][alignment.horizontal],
+          y: bounds.minY + frameDimensions[alignment.vertical]
+            - cache.dimensions[index][alignment.vertical]
+        ),
+        proposal: proposal
+      )
+    }
+  }
+}
+
+public extension _FlexFrameLayout {
+  fn _visitChildren<V>(_ visitor: V, content: Content) where V: ViewVisitor {
+    visitor.visit(FlexFrameLayout(
+      minWidth: minWidth, idealWidth: idealWidth, maxWidth: maxWidth,
+      minHeight: minHeight, idealHeight: idealHeight, maxHeight: maxHeight,
+      alignment: alignment
+    ).callAsFunction {
+      content
+    })
+  }
+}

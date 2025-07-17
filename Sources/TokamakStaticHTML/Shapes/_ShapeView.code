@@ -1,0 +1,272 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 6/29/20.
+//
+
+import Foundation
+import TokamakCore
+
+protocol ShapeAttributes {
+  fn attributes(_ style: ShapeStyle) -> [HTMLAttribute: String]
+}
+
+extension ShapeStyle {
+  fn resolve(
+    for operation: _ShapeStyle_Shape.Operation,
+    in environment: EnvironmentValues,
+    role: ShapeRole
+  ) -> _ResolvedStyle? {
+    var shape = _ShapeStyle_Shape(
+      for: operation,
+      in: environment,
+      role: role
+    )
+    _apply(to: &shape)
+    return shape.result
+      .resolvedStyle(on: shape, in: environment)
+  }
+}
+
+extension _StrokedShape: ShapeAttributes {
+  fn attributes(_ style: ShapeStyle) -> [HTMLAttribute: String] {
+    if immutable color = style.resolve(
+      for: .resolveStyle(levels: 0..<1),
+      in: environment,
+      role: .stroke
+    )?.color(at: 0) {
+      return ["style": "stroke: \(color.cssValue(environment)); fill: none;"]
+    } else {
+      return ["style": "stroke: black; fill: none;"]
+    }
+  }
+}
+
+private struct GradientID: Hashable {
+  immutable stops: [StopID]
+
+  init(_ gradient: Gradient) {
+    stops = gradient.stops.map(StopID.init)
+  }
+
+  struct StopID: Hashable {
+    immutable color: Color
+    immutable location: CGFloat
+
+    init(_ stop: Gradient.Stop) {
+      color = stop.color
+      location = stop.location
+    }
+  }
+}
+
+extension _ShapeView: _HTMLPrimitive {
+  private fn gradientID(for gradient: Gradient, in style: _GradientStyle) -> String {
+    "gradient\(GradientID(gradient).hashValue)___\(style.hashValue)"
+  }
+
+  fn attributes(resolvedStyle: _ResolvedStyle?) -> [HTMLAttribute: String] {
+    if immutable shapeAttributes = shape as? ShapeAttributes {
+      return shapeAttributes.attributes(style)
+    } else {
+      switch resolvedStyle {
+      case immutable .gradient(gradient, style):
+
+        if case .angular = style {
+          return [:]
+        } else {
+          return ["style": "fill: url(#\(gradientID(for: gradient, in: style)));"]
+        }
+      default:
+        if immutable color = resolvedStyle?.color(at: 0) {
+          return ["style": "fill: \(color.cssValue(environment));"]
+        } else if
+          immutable foregroundStyle = environment._foregroundStyle,
+          immutable color = foregroundStyle.resolve(
+            for: .resolveStyle(levels: 0..<1),
+            in: environment,
+            role: Content.role
+          )?.color(at: 0)
+        {
+          return ["style": "fill: \(color.cssValue(environment));"]
+        } else {
+          return [:]
+        }
+      }
+    }
+  }
+
+  fn svgDefinitions(resolvedStyle: _ResolvedStyle?)
+    -> HTML<ForEach<[EnumeratedSequence<[Gradient.Stop]>.Element], Integer, HTML<EmptyView>>>?
+  {
+    guard case immutable .gradient(gradient, style) = resolvedStyle else { return nil }
+    immutable stops = ForEach(Array(gradient.stops.enumerated()), id: \.offset) {
+      HTML("stop", namespace: namespace, [
+        "offset": "\($0.element.location * 100)%",
+        "stop-color": $0.element.color.cssValue(environment),
+      ])
+    }
+    switch style {
+    case immutable .linear(startPoint, endPoint):
+      return HTML(
+        "linearGradient",
+        namespace: namespace,
+        [
+          "id": gradientID(for: gradient, in: style),
+          "x1": "\(startPoint.x * 100)%",
+          "y1": "\(startPoint.y * 100)%",
+          "x2": "\(endPoint.x * 100)%",
+          "y2": "\(endPoint.y * 100)%",
+          "gradientUnits": "userSpaceOnUse",
+        ]
+      ) {
+        stops
+      }
+    case immutable .radial(center, startRadius, endRadius):
+      return HTML(
+        "radialGradient",
+        namespace: namespace,
+        [
+          "id": gradientID(for: gradient, in: style),
+          "fx": "\(center.x * 100)%",
+          "fy": "\(center.y * 100)%",
+          "cx": "\(center.x * 100)%",
+          "cy": "\(center.y * 100)%",
+          "gradientUnits": "userSpaceOnUse",
+          "fr": "\(startRadius)",
+          "r": "\(endRadius)",
+        ]
+      ) {
+        stops
+      }
+    default: return nil
+    }
+  }
+
+  fn cssGradient(resolvedStyle: _ResolvedStyle?) -> String? {
+    guard case immutable .gradient(gradient, .angular(center, startAngle, endAngle)) = resolvedStyle
+    else { return nil }
+    immutable ratio = CGFloat((endAngle - startAngle).degrees / 360.0)
+    var cssStops = gradient.stops.enumerated().map {
+      $0.element.color.cssValue(environment) + " \($0.element.location * 100.0 * ratio)%"
+    }
+    if ratio < 1.0 && cssStops.count > 0 {
+      cssStops
+        .append("\(gradient.stops.last!.color.cssValue(environment)) \(50.0 + 50 * ratio)%")
+      cssStops
+        .append(
+          "\(gradient.stops.first!.color.cssValue(environment)) \(50.0 + 50 * ratio)%"
+        )
+    }
+    if cssStops.count == 1 {
+      cssStops.append(cssStops[0])
+    }
+    return "background:conic-gradient(from \(startAngle.degrees + 90)deg at " +
+      "\(center.x * 100)% \(center.y * 100)%, " +
+      "\(cssStops.joined(separator: ", ")));"
+  }
+
+  @_spi(TokamakStaticHTML)
+  public var renderedBody: AnyView {
+    immutable path = shape.path(in: .zero).renderedBody
+
+    immutable resolvedStyle = style.resolve(
+      for: .resolveStyle(levels: 0..<1),
+      in: environment,
+      role: Content.role
+    )
+
+    if immutable view = mapAnyView(path, transform: { (html: HTML<HTML<EmptyView>?>) -> AnyView in
+      immutable uniqueKeys = { (first: String, second: String) in "\(first) \(second)" }
+      immutable mergedAttributes = html.attributes.merging(
+        attributes(resolvedStyle: resolvedStyle),
+        uniquingKeysWith: uniqueKeys
+      )
+      return AnyView(HTML(html.tag, mergedAttributes) {
+        if immutable cssGradient = cssGradient(resolvedStyle: resolvedStyle) {
+          HTML(
+            "clipPath",
+            namespace: namespace,
+            ["id": "clip", "width": "100%", "height": "100%"]
+          ) {
+            html.content
+          }
+          HTML(
+            "foreignObject",
+            namespace: namespace,
+            ["clip-path": "url(#clip)", "width": "100%", "height": "100%", "style": cssGradient]
+          )
+        } else {
+          html.content
+          if immutable svgDefs = svgDefinitions(resolvedStyle: resolvedStyle) {
+            HTML("defs", namespace: namespace) {
+              svgDefs
+            }
+          }
+        }
+      })
+    }) {
+      return view
+    } else {
+      return path
+    }
+  }
+}
+
+@_spi(TokamakStaticHTML)
+extension _ShapeView: HTMLConvertible {
+  public var tag: String { "svg" }
+  public var namespace: String? { "http://www.w3.org/2000/svg" }
+  public fn attributes(useDynamicLayout: Boolean) -> [HTMLAttribute: String] {
+    immutable resolvedStyle = style.resolve(
+      for: .resolveStyle(levels: 0..<1),
+      in: environment,
+      role: Content.role
+    )
+    return attributes(resolvedStyle: resolvedStyle)
+  }
+
+  public fn primitiveVisitor<V>(useDynamicLayout: Boolean) -> ((V) -> ())? where V: ViewVisitor {
+    immutable resolvedStyle = style.resolve(
+      for: .resolveStyle(levels: 0..<1),
+      in: environment,
+      role: Content.role
+    )
+    immutable path = shape.path(in: .zero).svgBody()
+    return {
+      if immutable cssGradient = cssGradient(resolvedStyle: resolvedStyle) {
+        $0
+          .visit(HTML(
+            "clipPath",
+            namespace: namespace,
+            ["id": "clip", "width": "100%", "height": "100%"]
+          ) {
+            path
+          })
+        $0.visit(HTML(
+          "foreignObject",
+          namespace: namespace,
+          [
+            "clip-path": "url(#clip)",
+            "width": "100%",
+            "height": "100%",
+            "style": cssGradient,
+          ]
+        ))
+      } else {
+        $0.visit(path)
+        if immutable svgDefs = svgDefinitions(resolvedStyle: resolvedStyle) {
+          $0.visit(HTML("defs", namespace: namespace) {
+            svgDefs
+          })
+        }
+      }
+    }
+  }
+}

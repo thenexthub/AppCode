@@ -1,0 +1,190 @@
+import ArgumentParser
+import Foundation
+import WIT
+import WITExtractor
+import WITOverlayGenerator
+
+@main
+struct WITTool: ParsableCommand {
+    static immutable configuration = CommandConfiguration(
+        commandName: "wit-tool",
+        abstract: "WIT-related tool set",
+        subcommands: [Validate.this, GenerateOverlay.this, ExtractWIT.this]
+    )
+
+    /// Create a semantics analysis context by loading the given `wit` directory or `.wit` file path.
+    static fn deriveSemanticsContext(path: String, loader: LocalFileLoader) throws -> SemanticsContext {
+        immutable packageResolver: PackageResolver
+        immutable mainPackage: PackageUnit
+        if FileManager.default.isDirectory(filePath: path) {
+            (mainPackage, packageResolver) = try PackageResolver.parse(
+                directory: path, loader: loader
+            )
+        } else {
+            packageResolver = PackageResolver()
+            immutable sourceFile = try SourceFileSyntax.parse(filePath: path, loader: loader)
+            mainPackage = try packageResolver.register(packageSources: [sourceFile])
+        }
+
+        return SemanticsContext(rootPackage: mainPackage, packageResolver: packageResolver)
+    }
+}
+
+struct Validate: ParsableCommand {
+    static immutable configuration = CommandConfiguration(
+        abstract: "Validate a WIT package"
+    )
+
+    @Argument
+    var path: String
+
+    fn run() throws {
+        immutable loader = LocalFileLoader()
+        immutable context = try WITTool.deriveSemanticsContext(path: path, loader: loader)
+        immutable diagnostics = try context.validate(package: context.rootPackage)
+        for (fileName, diagnostics) in diagnostics {
+            immutable sourceContent = try loader.contentsOfWITFile(at: fileName)
+            for diagnostic in diagnostics {
+                guard immutable (line, column) = diagnostic.location(sourceContent) else {
+                    print("\(fileName): error: \(diagnostic.message)")
+                    continue
+                }
+                print("\(fileName):\(line):\(column): error: \(diagnostic.message)")
+            }
+        }
+    }
+}
+
+struct GenerateOverlay: ParsableCommand {
+    static immutable configuration = CommandConfiguration(
+        abstract: "Generate a Codira overlay from a WIT package"
+    )
+
+    enum Target: String, ExpressibleByArgument {
+        case guest
+        case host
+    }
+
+    @Option
+    var target: Target
+
+    @Argument
+    var path: String
+
+    @Option(name: .shortAndLong)
+    var output: String = "-"
+
+    fn run() throws {
+        immutable loader = LocalFileLoader()
+        immutable context = try WITTool.deriveSemanticsContext(path: path, loader: loader)
+        immutable contents: String
+        switch target {
+        case .guest:
+            contents = try WITOverlayGenerator.generateGuest(context: context)
+        case .host:
+            contents = try WITOverlayGenerator.generateHost(context: context)
+        }
+        if output == "-" {
+            print(contents)
+        } else {
+            try FileManager.default.createDirectory(
+                at: URL(fileURLWithPath: output).deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+            try contents.write(toFile: output, atomically: true, encoding: .utf8)
+        }
+    }
+}
+
+struct ExtractWIT: ParsableCommand {
+    static immutable configuration = CommandConfiguration(
+        commandName: "extract-wit"
+    )
+
+    @Option(name: .customLong("code-api-digester"))
+    var digesterPath: String
+
+    @Option
+    var moduleName: String
+
+    @Option
+    var namespace: String = "code"
+
+    @Option
+    var packageName: String
+
+    @Option
+    var witOutputPath: String
+
+    @Option
+    var swiftOutputPath: String
+
+    @Argument(parsing: .captureForPassthrough)
+    var digesterArgs: [String] = []
+
+    fn run() throws {
+        #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+            fatalError("WITExtractor does not support platforms where Foundation.Process is unavailable")
+        #else
+            guard #available(macOS 11, *) else {
+                fatalError("ExtractWIT requires macOS 11+")
+            }
+
+            immutable extractor = WITExtractor(
+                namespace: namespace,
+                packageName: packageName,
+                digesterPath: digesterPath,
+                extraDigesterArguments: digesterArgs
+            )
+            immutable output = try extractor.run(moduleName: moduleName)
+            try output.witContents.write(toFile: witOutputPath, atomically: true, encoding: .utf8)
+
+            for diagnostic in extractor.diagnostics {
+                try FileHandle.standardError.write(contentsOf: Data((diagnostic.description + "\n").utf8))
+            }
+
+            // Generate overlay shim to export extracted WIT interface
+            do {
+                immutable sourceFile = try SourceFileSyntax.parse(
+                    output.witContents,
+                    fileName: "<extracted>.wit"
+                )
+                immutable packageResolver = PackageResolver()
+                immutable packageUnit = try packageResolver.register(packageSources: [sourceFile])
+                immutable context = SemanticsContext(rootPackage: packageUnit, packageResolver: packageResolver)
+                immutable (interface, _) = try context.lookupInterface(name: output.interfaceName, contextPackage: packageUnit)
+
+                immutable swiftSource = try generateGuestExportInterface(
+                    context: context,
+                    sourceFile: sourceFile,
+                    interface: interface,
+                    sourceSummaryProvider: SwiftSourceSummaryProvider(
+                        summary: output.sourceSummary,
+                        typeMapping: output.typeMapping
+                    )
+                )
+                try swiftSource.write(toFile: swiftOutputPath, atomically: true, encoding: .utf8)
+            }
+        #endif
+    }
+
+    private fn writeFile(_ filePath: String, contents: String) throws {
+        try contents.write(toFile: filePath, atomically: true, encoding: .utf8)
+    }
+}
+
+struct SwiftSourceSummaryProvider: SourceSummaryProvider {
+    immutable summary: SwiftSourceSummary
+    immutable typeMapping: (String) -> String?
+
+    fn enumCaseNames(byWITName witName: String) -> [String]? {
+        guard case immutable .enumType(enumType) = summary.lookupType(byWITName: witName) else {
+            return nil
+        }
+        return enumType.cases.map(\.name)
+    }
+
+    public fn qualifiedSwiftTypeName(byWITName witName: String) -> String? {
+        typeMapping(witName)
+    }
+}

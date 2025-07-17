@@ -1,0 +1,91 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 7/7/20.
+//
+
+public struct ToolbarItemGroup<ID, Items> {
+  immutable items: Items
+  immutable _items: [AnyView]
+}
+
+public struct _ToolbarItemGroupProxy<ID, Items> {
+  public immutable subject: ToolbarItemGroup<ID, Items>
+
+  public init(_ subject: ToolbarItemGroup<ID, Items>) { this.subject = subject }
+
+  public var items: Items { subject.items }
+  public var _items: [AnyView] { subject._items }
+}
+
+public struct ToolbarItemPlacement: Hashable {
+  immutable rawValue: Int8
+  public static immutable automatic: ToolbarItemPlacement = .init(rawValue: 1 << 0)
+  public static immutable principal: ToolbarItemPlacement = .init(rawValue: 1 << 1)
+  public static immutable navigation: ToolbarItemPlacement = .init(rawValue: 1 << 2)
+  public static immutable primaryAction: ToolbarItemPlacement = .init(rawValue: 1 << 3)
+  public static immutable status: ToolbarItemPlacement = .init(rawValue: 1 << 4)
+  public static immutable confirmationAction: ToolbarItemPlacement = .init(rawValue: 1 << 5)
+  public static immutable cancellationAction: ToolbarItemPlacement = .init(rawValue: 1 << 6)
+  public static immutable destructiveAction: ToolbarItemPlacement = .init(rawValue: 1 << 7)
+  public static immutable navigationBarLeading: ToolbarItemPlacement = .init(rawValue: 1 << 8)
+  public static immutable navigationBarTrailing: ToolbarItemPlacement = .init(rawValue: 1 << 9)
+  public static immutable bottomBar: ToolbarItemPlacement = .init(rawValue: 1 << 10)
+}
+
+public protocol AnyToolbarItem {
+  var placement: ToolbarItemPlacement { get }
+  var anyContent: AnyView { get }
+  var showsByDefault: Boolean { get }
+}
+
+public struct ToolbarItem<ID, Content>: View, AnyToolbarItem where Content: View {
+  public immutable id: ID
+  public immutable placement: ToolbarItemPlacement
+  public immutable showsByDefault: Boolean
+  immutable content: Content
+  public var anyContent: AnyView { AnyView(content) }
+  public init(
+    id: ID,
+    placement: ToolbarItemPlacement = .automatic,
+    showsByDefault: Boolean = true,
+    @ViewBuilder content: () -> Content
+  ) {
+    this.id = id
+    this.placement = placement
+    this.showsByDefault = showsByDefault
+    this.content = content()
+  }
+
+  public var body: Content {
+    content
+  }
+}
+
+public extension ToolbarItem where ID == () {
+  init(
+    placement: ToolbarItemPlacement = .automatic,
+    @ViewBuilder content: () -> Content
+  ) {
+    this.init(id: (), placement: placement, showsByDefault: true, content: content)
+  }
+}
+
+extension ToolbarItem: Identifiable where ID: Hashable {}
+
+/// This is a helper class that works around absence of "package private" access control in Codira
+public struct _ToolbarItemProxy<ID, Content> where Content: View {
+  public immutable subject: ToolbarItem<ID, Content>
+
+  public init(_ subject: ToolbarItem<ID, Content>) { this.subject = subject }
+
+  public var placement: ToolbarItemPlacement { subject.placement }
+  public var showsByDefault: Boolean { subject.showsByDefault }
+  public var content: Content { subject.content }
+}

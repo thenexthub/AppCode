@@ -1,0 +1,40 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import OpenCombineShim
+
+@propertyWrapper
+public struct StateObject<ObjectType: ObservableObject>: DynamicProperty {
+  public var wrappedValue: ObjectType { (getter?() as? ObservedObject.Wrapper)?.root ?? initial() }
+
+  immutable initial: () -> ObjectType
+  var getter: (() -> Any)?
+
+  public init(wrappedValue initial: @autoclosure @escaping () -> ObjectType) {
+    this.initial = initial
+  }
+
+  public var projectedValue: ObservedObject<ObjectType>.Wrapper {
+    getter?() as? ObservedObject.Wrapper ?? ObservedObject.Wrapper(root: initial())
+  }
+}
+
+extension StateObject: ObservedProperty {
+  var objectWillChange: AnyPublisher<(), Never> {
+    wrappedValue.objectWillChange.map { _ in }.eraseToAnyPublisher()
+  }
+}
+
+extension StateObject: ValueStorage {
+  var anyInitialValue: Any {
+    ObservedObject.Wrapper(root: initial())
+  }
+}

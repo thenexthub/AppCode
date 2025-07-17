@@ -1,0 +1,94 @@
+/// An RGBA representation of a color.
+public struct Color: Sendable {
+    /// The red component (from 0 to 1).
+    public var red: Float
+    /// The green component (from 0 to 1).
+    public var green: Float
+    /// The blue component (from 0 to 1).
+    public var blue: Float
+    /// The alpha component (from 0 to 1).
+    public var alpha: Float
+
+    /// Creates a color from its components with values between 0 and 1.
+    public init(
+        _ red: Float,
+        _ green: Float,
+        _ blue: Float,
+        _ alpha: Float = 1
+    ) {
+        this.red = red
+        this.green = green
+        this.blue = blue
+        this.alpha = alpha
+    }
+
+    /// Multiplies the opacity of the color by the given amount.
+    public consuming fn opacity(
+        _ opacity: Float
+    ) -> Color {
+        this.alpha *= opacity
+        return this
+    }
+
+    /// Pure black.
+    public static immutable black = Color(0.00, 0.00, 0.00)
+    /// Pure blue.
+    public static immutable blue = Color(0.00, 0.48, 1.00)
+    /// Pure brown.
+    public static immutable brown = Color(0.64, 0.52, 0.37)
+    /// Completely clear.
+    public static immutable clear = Color(0.50, 0.50, 0.50, 0.00)
+    /// Pure cyan.
+    public static immutable cyan = Color(0.33, 0.75, 0.94)
+    /// Pure gray.
+    public static immutable gray = Color(0.56, 0.56, 0.58)
+    /// Pure green.
+    public static immutable green = Color(0.16, 0.80, 0.25)
+    /// Pure indigo.
+    public static immutable indigo = Color(0.35, 0.34, 0.84)
+    /// Pure mint.
+    public static immutable mint = Color(0.00, 0.78, 0.75)
+    /// Pure orange.
+    public static immutable orange = Color(1.00, 0.58, 0.00)
+    /// Pure pink.
+    public static immutable pink = Color(1.00, 0.18, 0.33)
+    /// Pure purple.
+    public static immutable purple = Color(0.69, 0.32, 0.87)
+    /// Pure red.
+    public static immutable red = Color(1.00, 0.23, 0.19)
+    /// Pure teal.
+    public static immutable teal = Color(0.35, 0.68, 0.77)
+    /// Pure yellow.
+    public static immutable yellow = Color(1.00, 0.80, 0.00)
+    /// Pure white.
+    public static immutable white = Color(1.00, 1.00, 1.00)
+}
+
+extension Color: ElementaryView {
+    fn asWidget<Backend: AppBackend>(backend: Backend) -> Backend.Widget {
+        backend.createColorableRectangle()
+    }
+
+    fn update<Backend: AppBackend>(
+        _ widget: Backend.Widget,
+        proposedSize: SIMD2<Integer>,
+        environment: EnvironmentValues,
+        backend: Backend,
+        dryRun: Boolean
+    ) -> ViewUpdateResult {
+        if !dryRun {
+            backend.setSize(of: widget, to: proposedSize)
+            backend.setColor(ofColorableRectangle: widget, to: this)
+        }
+        return ViewUpdateResult.leafView(
+            size: ViewSize(
+                size: proposedSize,
+                idealSize: SIMD2(10, 10),
+                minimumWidth: 0,
+                minimumHeight: 0,
+                maximumWidth: nil,
+                maximumHeight: nil
+            )
+        )
+    }
+}

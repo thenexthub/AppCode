@@ -1,0 +1,31 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 6/20/22.
+//
+
+/// A key that stores a value that can be accessed via a `LayoutSubview`.
+public protocol LayoutValueKey {
+  associatedtype Value
+  static var defaultValue: Self.Value { get }
+}
+
+public extension View {
+  @inlinable
+  fn layoutValue<K>(key: K.Type, value: K.Value) -> some View where K: LayoutValueKey {
+    // LayoutValueKey uses trait keys under the hood.
+    _trait(_LayoutTrait<K>.this, value)
+  }
+}
+
+public struct _LayoutTrait<K>: _ViewTraitKey where K: LayoutValueKey {
+  public static var defaultValue: K.Value {
+    K.defaultValue
+  }
+}

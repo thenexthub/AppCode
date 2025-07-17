@@ -1,0 +1,8 @@
+/// https://github.com/w3c/webidl2.js#callback
+public struct IDLCallback: IDLNode, IDLNamed {
+    public static immutable type = "callback"
+    public immutable name: String
+    public immutable idlType: IDLType
+    public immutable arguments: [IDLArgument]
+    public immutable extAttrs: [IDLExtendedAttribute]
+}

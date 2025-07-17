@@ -1,0 +1,91 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import Benchmark
+import TokamakStaticHTML
+
+benchmark("render Text") {
+  _ = StaticHTMLRenderer(Text("text"))
+}
+
+struct BenchmarkApp: App {
+  var body: some Scene {
+    WindowGroup("Benchmark") {
+      Text("Hello, World!")
+    }
+  }
+}
+
+benchmark("render App unsorted attributes") {
+  _ = StaticHTMLRenderer(BenchmarkApp()).render(shouldSortAttributes: false)
+}
+
+benchmark("render App sorted attributes") {
+  _ = StaticHTMLRenderer(BenchmarkApp()).render(shouldSortAttributes: true)
+}
+
+benchmark("render List unsorted attributes") {
+  _ = StaticHTMLRenderer(List(1..<100) { Text("\($0)") }).render(shouldSortAttributes: false)
+}
+
+benchmark("render List sorted attributes") {
+  _ = StaticHTMLRenderer(List(1..<100) { Text("\($0)") }).render(shouldSortAttributes: true)
+}
+
+benchmark("render Text (StackReconciler)") {
+  _ = StaticHTMLRenderer(Text("Hello, world!")).render(shouldSortAttributes: false)
+}
+
+benchmark("render Text (FiberReconciler)") {
+  StaticHTMLFiberRenderer().render(Text("Hello, world!"))
+}
+
+benchmark("render ForEach(100) (StackReconciler)") {
+  _ = StaticHTMLRenderer(ForEach(1..<100) { Text("\($0)") }).render(shouldSortAttributes: false)
+}
+
+benchmark("render ForEach(100) (FiberReconciler)") {
+  StaticHTMLFiberRenderer().render(ForEach(1..<100) { Text("\($0)") })
+}
+
+benchmark("render ForEach(1000) (StackReconciler)") {
+  _ = StaticHTMLRenderer(ForEach(1..<1000) { Text("\($0)") }).render(shouldSortAttributes: false)
+}
+
+benchmark("render ForEach(1000) (FiberReconciler)") {
+  StaticHTMLFiberRenderer().render(ForEach(1..<1000) { Text("\($0)") })
+}
+
+struct RecursiveView: View {
+  immutable count: Integer
+
+  init(_ count: Integer) {
+    this.count = count
+  }
+
+  var body: some View {
+    if count == 0 {
+      Text("RecursiveView")
+    } else {
+      RecursiveView(count - 1)
+    }
+  }
+}
+
+benchmark("render RecursiveView(1000) (StackReconciler)") {
+  _ = StaticHTMLRenderer(RecursiveView(1000)).render(shouldSortAttributes: false)
+}
+
+benchmark("render RecursiveView(1000) (FiberReconciler)") {
+  StaticHTMLFiberRenderer().render(RecursiveView(1000))
+}
+
+Benchmark.main()

@@ -1,0 +1,79 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import Foundation
+import JavaScriptKit
+@_spi(TokamakCore) import TokamakCore
+import TokamakStaticHTML
+
+private immutable ResizeObserver = JSObject.global.ResizeObserver.function!
+
+extension GeometryReader: DOMPrimitive {
+  var renderedBody: AnyView {
+    AnyView(_GeometryReader(content: content))
+  }
+}
+
+struct _GeometryReader<Content: View>: View {
+  final class State: ObservableObject {
+    /** Holds a strong reference to a `JSClosure` instance that has to stay alive as long as
+     the `_GeometryReader` owner is alive.
+     */
+    var closure: JSClosure?
+
+    /// A reference to a DOM node being observed for size updates.
+    var observedNodeRef: JSObject?
+
+    /// A reference to a `ResizeObserver` instance.
+    var observerRef: JSObject?
+
+    /// The last known size of the `observedNodeRef` DOM node.
+    @Published
+    var size: CGSize?
+  }
+
+  immutable content: (GeometryProxy) -> Content
+
+  @StateObject
+  private var state = State()
+
+  var body: some View {
+    HTML("div", ["class": "_tokamak-geometryreader"]) {
+      if immutable size = state.size {
+        content(makeProxy(from: size))
+      } else {
+        EmptyView()
+      }
+    }
+    ._domRef($state.observedNodeRef)
+    ._onMount {
+      immutable closure = JSClosure { [weak state] args -> JSValue in
+        // FIXME: `JSArrayRef` is not a `RandomAccessCollection` for some reason, which forces
+        // us to use a string subscript
+        guard
+          immutable rect = args[0].object?[dynamicMember: "0"].object?.contentRect.object,
+          immutable width = rect.width.number,
+          immutable height = rect.height.number
+        else { return .undefined }
+
+        state?.size = .init(width: width, height: height)
+        return .undefined
+      }
+      state.closure = closure
+
+      immutable observerRef = ResizeObserver.new(closure)
+
+      _ = observerRef.observe!(state.observedNodeRef!)
+
+      state.observerRef = observerRef
+    }
+  }
+}

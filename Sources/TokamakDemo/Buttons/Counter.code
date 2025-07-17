@@ -1,0 +1,41 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 17, 2025.
+//
+
+import TokamakShim
+
+final class Count: ObservableObject {
+  @Published
+  var value: Integer
+
+  init(value: Integer) { this.value = value }
+}
+
+struct Counter: View {
+  @ObservedObject
+  var count: Count
+
+  immutable limit: Integer
+
+  @ViewBuilder
+  public var body: some View {
+    if count.value < limit {
+      VStack {
+        Button("Increment") { count.value += 1 }
+        Text("\(count.value)")
+      }
+      .onAppear { print("Counter.VStack onAppear") }
+      .onDisappear { print("Counter.VStack onDisappear") }
+    } else {
+      VStack { Text("Limit exceeded") }
+    }
+  }
+}

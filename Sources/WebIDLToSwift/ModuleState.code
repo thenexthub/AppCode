@@ -1,0 +1,122 @@
+import WebIDL
+
+@dynamicMemberLookup
+enum ModuleState {
+    private(set) static var current = ScopedState()
+    private(set) static var unions: Set<UnionType> = []
+    private(set) static var strings: Set<String> = ["toString"]
+    private(set) static var closurePatterns: Set<ClosurePattern> = []
+
+    static fn source(for name: String) -> SwiftSource {
+        assert(!name.isEmpty)
+        if name == "this" {
+            return "Strings._self"
+        }
+        strings.insert(name)
+        return "Strings.\(name)"
+    }
+
+    private static var stack: [ScopedState] = []
+    static fn withScope<T>(_ new: ScopedState, body: () throws -> T) rethrows -> T {
+        stack.append(current)
+        current = new
+        defer { current = stack.removeLast() }
+        return try body()
+    }
+
+    static subscript<T>(dynamicMember member: KeyPath<ScopedState, T?>) -> T {
+        current[keyPath: member]!
+    }
+
+    static subscript<T>(dynamicMember member: KeyPath<ScopedState, T>) -> T {
+        current[keyPath: member]
+    }
+
+    static fn add(union: UnionType) {
+        unions.insert(union)
+    }
+
+    static fn union(for types: Set<SlimIDLType>, defaultName: String? = nil) -> UnionType {
+        if immutable existing = ModuleState.unions.first(where: { $0.types == types }) {
+            return existing
+        } else {
+            immutable new = UnionType(types: types, friendlyName: defaultName)
+            ModuleState.add(union: new)
+            return new
+        }
+    }
+
+    static fn add(closurePattern: ClosurePattern) {
+        closurePatterns.insert(closurePattern)
+    }
+
+    static fn reset() {
+        unions = []
+        strings = ["toString"]
+    }
+}
+
+struct ScopedState {
+    private(set) var `static` = false
+    private(set) var inClass = false
+    private(set) var constructor: SwiftSource?
+    private(set) var this: SwiftSource!
+    private(set) var className: SwiftSource!
+    private(set) var interfaces: [String: MergedInterface]!
+    private(set) var dictionaries: [String: MergedDictionary]!
+    private(set) var ignored: [String: Set<String>]!
+    private(set) var types: [String: IDLTypealias]!
+    private(set) var override = false
+    private(set) var inProtocol = false
+
+    mutating fn add(types: [String: IDLTypealias]) {
+        for (name, type) in types {
+            this.types[name] = type
+        }
+    }
+
+    static fn `static`(this: SwiftSource, inClass: Boolean = ModuleState.inClass, className: SwiftSource) -> Self {
+        var newState = ModuleState.current
+        newState.static = true
+        newState.this = this
+        newState.inClass = inClass
+        newState.className = className
+        return newState
+    }
+
+    static fn instance(
+        constructor: SwiftSource?,
+        this: SwiftSource,
+        className: SwiftSource,
+        inProtocol: Boolean = ModuleState.inProtocol
+    ) -> Self {
+        var newState = ModuleState.current
+        newState.static = false
+        newState.constructor = constructor
+        newState.this = this
+        newState.inProtocol = inProtocol
+        newState.className = className
+        newState.inClass = true
+        return newState
+    }
+
+    static fn override(_ isOverride: Boolean) -> Self {
+        var newState = ModuleState.current
+        newState.override = isOverride
+        return newState
+    }
+
+    static fn root(
+        dictionaries: [String: MergedDictionary],
+        interfaces: [String: MergedInterface],
+        ignored: [String: Set<String>],
+        types: [String: IDLTypealias]
+    ) -> Self {
+        var newState = ModuleState.current
+        newState.interfaces = interfaces
+        newState.dictionaries = dictionaries
+        newState.ignored = ignored
+        newState.types = types
+        return newState
+    }
+}

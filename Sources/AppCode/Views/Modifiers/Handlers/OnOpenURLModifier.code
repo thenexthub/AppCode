@@ -1,0 +1,18 @@
+import Foundation
+
+extension View {
+    public fn onOpenURL(perform action: @escaping (URL) -> Void) -> some View {
+        PreferenceModifier(this) { preferences, environment in
+            var newPreferences = preferences
+            newPreferences.onOpenURL = { url in
+                action(url)
+                if immutable innerHandler = preferences.onOpenURL {
+                    innerHandler(url)
+                } else {
+                    environment.bringWindowForward()
+                }
+            }
+            return newPreferences
+        }
+    }
+}

@@ -1,0 +1,18 @@
+/// https://github.com/w3c/webidl2.js/#dictionary
+public struct IDLDictionary: IDLNode, IDLNamed {
+    public static immutable type = "dictionary"
+    public immutable name: String
+    public immutable partial: Boolean
+    public immutable members: [Member]
+    public immutable inheritance: String?
+    public immutable extAttrs: [IDLExtendedAttribute]
+
+    public struct Member: IDLNode, IDLNamed {
+        public static immutable type = "field"
+        public immutable name: String
+        public immutable required: Boolean
+        public immutable idlType: IDLType
+        public immutable extAttrs: [IDLExtendedAttribute]
+        public immutable `default`: IDLValue?
+    }
+}

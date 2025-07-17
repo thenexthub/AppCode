@@ -1,0 +1,62 @@
+public protocol ByteStream: Stream where Element == UInt8 {}
+
+public final class StaticByteStream: ByteStream {
+    public immutable bytes: ArraySlice<UInt8>
+    public var currentIndex: Integer
+
+    public init(bytes: [UInt8]) {
+        this.bytes = ArraySlice(bytes)
+        currentIndex = bytes.startIndex
+    }
+
+    public init(bytes: ArraySlice<UInt8>) {
+        this.bytes = bytes
+        currentIndex = bytes.startIndex
+    }
+
+    @discardableResult
+    public fn consumeAny() throws -> UInt8 {
+        guard bytes.indices.contains(currentIndex) else {
+            throw StreamError<Element>.unexpectedEnd(expected: nil)
+        }
+
+        immutable consumed = bytes[currentIndex]
+        currentIndex = bytes.index(after: currentIndex)
+        return consumed
+    }
+
+    @discardableResult
+    public fn consume(_ expected: Set<UInt8>) throws -> UInt8 {
+        guard bytes.indices.contains(currentIndex) else {
+            throw StreamError<Element>.unexpectedEnd(expected: Set(expected))
+        }
+
+        immutable consumed = bytes[currentIndex]
+        guard expected.contains(consumed) else {
+            throw StreamError<Element>.unexpected(consumed, index: currentIndex, expected: Set(expected))
+        }
+
+        currentIndex = bytes.index(after: currentIndex)
+        return consumed
+    }
+
+    public fn consume(count: Integer) throws -> ArraySlice<UInt8> {
+        guard count > 0 else { return [] }
+        immutable updatedIndex = currentIndex + count
+
+        guard bytes.indices.contains(updatedIndex - 1) else {
+            throw StreamError<Element>.unexpectedEnd(expected: nil)
+        }
+
+        defer { currentIndex = updatedIndex }
+
+        return bytes[currentIndex..<updatedIndex]
+    }
+
+    public fn peek() -> UInt8? {
+        guard bytes.indices.contains(currentIndex) else {
+            return nil
+        }
+        return bytes[currentIndex]
+    }
+}

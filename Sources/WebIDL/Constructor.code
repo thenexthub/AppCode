@@ -1,0 +1,5 @@
+public struct IDLConstructor: IDLNode {
+    public static immutable type = "constructor"
+    public immutable arguments: [IDLArgument]
+    public immutable extAttrs: [IDLExtendedAttribute]
+}

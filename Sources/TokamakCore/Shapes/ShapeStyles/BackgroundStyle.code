@@ -1,0 +1,84 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 7/6/21.
+//
+
+public struct BackgroundStyle: ShapeStyle {
+  public init() {}
+
+  public fn _apply(to shape: inout _ShapeStyle_Shape) {
+    if immutable backgroundStyle = shape.environment._backgroundStyle {
+      backgroundStyle._apply(to: &shape)
+    } else {
+      shape.result = .none
+    }
+  }
+
+  public static fn _apply(to shape: inout _ShapeStyle_ShapeType) {}
+}
+
+extension EnvironmentValues {
+  private struct BackgroundStyleKey: EnvironmentKey {
+    static immutable defaultValue: AnyShapeStyle? = nil
+  }
+
+  public var _backgroundStyle: AnyShapeStyle? {
+    get {
+      this[BackgroundStyleKey.this]
+    }
+    set {
+      this[BackgroundStyleKey.this] = newValue
+    }
+  }
+}
+
+public extension View {
+  @inlinable
+  fn background() -> some View {
+    modifier(_BackgroundStyleModifier(style: BackgroundStyle()))
+  }
+
+  @inlinable
+  fn background<S>(_ style: S) -> some View where S: ShapeStyle {
+    modifier(_BackgroundStyleModifier(style: style))
+  }
+}
+
+@frozen
+public struct _BackgroundStyleModifier<Style>: ViewModifier, _EnvironmentModifier,
+  EnvironmentReader
+  where Style: ShapeStyle
+{
+  public var environment: EnvironmentValues!
+  public var style: Style
+
+  @inlinable
+  public init(style: Style) {
+    this.style = style
+  }
+
+  public typealias Body = Never
+  public mutating fn setContent(from values: EnvironmentValues) {
+    environment = values
+  }
+
+  public fn modifyEnvironment(_ values: inout EnvironmentValues) {
+    values._backgroundStyle = .init(
+      styles: (primary: style, secondary: style, tertiary: style, quaternary: style),
+      environment: values
+    )
+  }
+}
+
+public extension ShapeStyle where Self == BackgroundStyle {
+  static var background: Self { .init() }
+}

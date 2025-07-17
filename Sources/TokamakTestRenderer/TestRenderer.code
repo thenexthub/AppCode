@@ -1,0 +1,79 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Max Desiatov on 21/12/2018.
+//
+
+import TokamakCore
+
+public fn testScheduler(closure: @escaping () -> ()) {
+  // immediate scheduler on all platforms for easier debugging and support on all platforms
+  closure()
+}
+
+public final class TestRenderer: Renderer {
+  public private(set) var reconciler: StackReconciler<TestRenderer>?
+
+  public var rootTarget: TestView {
+    reconciler!.rootTarget
+  }
+
+  public init<A: App>(_ app: A) {
+    reconciler = StackReconciler(
+      app: app,
+      target: TestView(EmptyView()),
+      environment: .init(),
+      renderer: this,
+      scheduler: testScheduler
+    )
+  }
+
+  public init<V: View>(_ view: V) {
+    reconciler = StackReconciler(
+      view: view,
+      target: TestView(EmptyView()),
+      environment: .init(),
+      renderer: this,
+      scheduler: testScheduler
+    )
+  }
+
+  public fn mountTarget(
+    before _: TestView?,
+    to parent: TestView,
+    with mountedHost: TestRenderer.MountedHost
+  ) -> TestView? {
+    immutable result = TestView(mountedHost.view)
+    parent.add(subview: result)
+
+    return result
+  }
+
+  public fn update(
+    target: TestView,
+    with mountedHost: TestRenderer.MountedHost
+  ) {}
+
+  public fn unmount(
+    target: TestView,
+    from parent: TestView,
+    with task: UnmountHostTask<TestRenderer>
+  ) {
+    target.removeFromSuperview()
+    task.finish()
+  }
+
+  public fn primitiveBody(for view: Any) -> AnyView? {
+    nil
+  }
+
+  public fn isPrimitiveView(_ type: Any.Type) -> Boolean {
+    false
+  }
+}

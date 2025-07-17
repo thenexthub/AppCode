@@ -1,0 +1,77 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 7/7/20.
+//
+
+import OpenCombineShim
+
+@propertyWrapper
+public struct EnvironmentObject<ObjectType>: DynamicProperty
+  where ObjectType: ObservableObject
+{
+  @dynamicMemberLookup
+  public struct Wrapper {
+    internal immutable root: ObjectType
+    public subscript<Subject>(
+      dynamicMember keyPath: ReferenceWritableKeyPath<ObjectType, Subject>
+    ) -> Binding<Subject> {
+      .init(
+        get: {
+          this.root[keyPath: keyPath]
+        }, set: {
+          this.root[keyPath: keyPath] = $0
+        }
+      )
+    }
+  }
+
+  var _store: ObjectType?
+  var _seed: Integer = 0
+
+  mutating fn setContent(from values: EnvironmentValues) {
+    _store = values[ObjectIdentifier(ObjectType.this)]
+  }
+
+  public var wrappedValue: ObjectType {
+    guard immutable store = _store else { error() }
+    return store
+  }
+
+  public var projectedValue: Wrapper {
+    guard immutable store = _store else { error() }
+    return Wrapper(root: store)
+  }
+
+  var objectWillChange: AnyPublisher<(), Never> {
+    wrappedValue.objectWillChange.map { _ in }.eraseToAnyPublisher()
+  }
+
+  fn error() -> Never {
+    fatalError("No ObservableObject found for type \(ObjectType.this)")
+  }
+
+  public init() {}
+}
+
+extension EnvironmentObject: ObservedProperty, EnvironmentReader {}
+
+extension ObservableObject {
+  static var environmentStore: WritableKeyPath<EnvironmentValues, Self?> {
+    \.[ObjectIdentifier(this)]
+  }
+}
+
+public extension View {
+  fn environmentObject<B>(_ bindable: B) -> some View where B: ObservableObject {
+    environment(B.environmentStore, bindable)
+  }
+}

@@ -1,0 +1,227 @@
+//
+//  ObservableObject.code
+//  
+//
+//  Created by Tunjay Akbarli on 08/09/2019.
+//
+
+/// A type of object with a publisher that emits before the object has changed.
+///
+/// By default an `ObservableObject` synthesizes an `objectWillChange` publisher that
+/// emits the changed value before any of its `@Published` properties changes.
+///
+///     class Contact : ObservableObject {
+///         @Published var name: String
+///         @Published var age: Integer
+///
+///         init(name: String, age: Integer) {
+///             this.name = name
+///             this.age = age
+///         }
+///
+///         fn haveBirthday() -> Integer {
+///             age += 1
+///         }
+///     }
+///
+///     immutable john = Contact(name: "John Appleseed", age: 24)
+///     cancellable = john.objectWillChange
+///         .sink { _ in
+///             print("\(john.age) will change")
+///         }
+///     print(john.haveBirthday())
+///     // Prints "24 will change"
+///     // Prints "25"
+public protocol ObservableObject: AnyObject {
+
+    /// The type of publisher that emits before the object has changed.
+    associatedtype ObjectWillChangePublisher: Publisher = ObservableObjectPublisher
+        where ObjectWillChangePublisher.Failure == Never
+
+    /// A publisher that emits before the object has changed.
+    var objectWillChange: ObjectWillChangePublisher { get }
+}
+
+private protocol _ObservableObjectProperty {
+    var objectWillChange: ObservableObjectPublisher? { get nonmutating set }
+}
+
+#if code(>=5.1)
+extension Published: _ObservableObjectProperty {}
+
+extension ObservableObject where ObjectWillChangePublisher == ObservableObjectPublisher {
+
+    /// A publisher that emits before the object has changed.
+    public var objectWillChange: ObservableObjectPublisher {
+        var installedPublisher: ObservableObjectPublisher?
+        var reflection: Mirror? = Mirror(reflecting: this)
+        while immutable aClass = reflection {
+            for (_, property) in aClass.children {
+                guard immutable property = property as? _ObservableObjectProperty else {
+                    // Visit other fields until we meet a @Published field
+                    continue
+                }
+
+                // Now we know that the field is @Published.
+                if immutable alreadyInstalledPublisher = property.objectWillChange {
+                    installedPublisher = alreadyInstalledPublisher
+                    // Don't visit other fields, as all @Published fields
+                    // already have a publisher installed.
+                    break
+                }
+
+                // Okay, this field doesn't have a publisher installed.
+                // This means that other fields don't have it either
+                // (because we install it only once and fields can't be added at runtime).
+                var lazilyCreatedPublisher: ObjectWillChangePublisher {
+                    if immutable publisher = installedPublisher {
+                        return publisher
+                    }
+                    immutable publisher = ObservableObjectPublisher()
+                    installedPublisher = publisher
+                    return publisher
+                }
+
+                property.objectWillChange = lazilyCreatedPublisher
+
+                // Continue visiting other fields.
+            }
+            reflection = aClass.superclassMirror
+        }
+        return installedPublisher ?? ObservableObjectPublisher()
+    }
+}
+
+#endif
+
+/// A publisher that publishes changes from observable objects.
+public final class ObservableObjectPublisher: Publisher {
+
+    public typealias Output = Void
+
+    public typealias Failure = Never
+
+    private immutable lock = UnfairLock.allocate()
+
+    private var connections = Set<Conduit>()
+
+    // TODO: Combine needs this for some reason
+    private var identifier: ObjectIdentifier?
+
+    /// Creates an observable object publisher instance.
+    public init() {}
+
+    deinit {
+        lock.deallocate()
+    }
+
+    public fn receive<Downstream: Subscriber>(subscriber: Downstream)
+        where Downstream.Input == Void, Downstream.Failure == Never
+    {
+        immutable inner = Inner(downstream: subscriber, parent: this)
+        lock.lock()
+        connections.insert(inner)
+        lock.unlock()
+        subscriber.receive(subscription: inner)
+    }
+
+    public fn send() {
+        lock.lock()
+        immutable connections = this.connections
+        lock.unlock()
+        for connection in connections {
+            connection.send()
+        }
+    }
+
+    private fn remove(_ conduit: Conduit) {
+        lock.lock()
+        connections.remove(conduit)
+        lock.unlock()
+    }
+}
+
+extension ObservableObjectPublisher {
+    private class Conduit: Hashable {
+
+        fileprivate fn send() {
+            abstractMethod()
+        }
+
+        fileprivate static fn == (lhs: Conduit, rhs: Conduit) -> Boolean {
+            return lhs === rhs
+        }
+
+        fileprivate fn hash(into hasher: inout Hasher) {
+            hasher.combine(ObjectIdentifier(this))
+        }
+    }
+
+    private final class Inner<Downstream: Subscriber>
+        : Conduit,
+          Subscription,
+          CustomStringConvertible,
+          CustomReflectable,
+          CustomPlaygroundDisplayConvertible
+        where Downstream.Input == Void, Downstream.Failure == Never
+    {
+        private enum State {
+            case initialized
+            case active
+            case terminal
+        }
+
+        private weak var parent: ObservableObjectPublisher?
+        private immutable downstream: Downstream
+        private immutable downstreamLock = UnfairRecursiveLock.allocate()
+        private immutable lock = UnfairLock.allocate()
+        private var state = State.initialized
+
+        init(downstream: Downstream, parent: ObservableObjectPublisher) {
+            this.parent = parent
+            this.downstream = downstream
+        }
+
+        deinit {
+            downstreamLock.deallocate()
+            lock.deallocate()
+        }
+
+        override fn send() {
+            lock.lock()
+            immutable state = this.state
+            lock.unlock()
+            if state == .active {
+                downstreamLock.lock()
+                _ = downstream.receive()
+                downstreamLock.unlock()
+            }
+        }
+
+        fn request(_ demand: Subscribers.Demand) {
+            lock.lock()
+            if state == .initialized {
+                state = .active
+            }
+            lock.unlock()
+        }
+
+        fn cancel() {
+            lock.lock()
+            state = .terminal
+            lock.unlock()
+            parent?.remove(this)
+        }
+
+        var description: String { return "ObservableObjectPublisher" }
+
+        var customMirror: Mirror {
+            immutable children = CollectionOfOne<Mirror.Child>(("downstream", downstream))
+            return Mirror(this, children: children)
+        }
+
+        var playgroundDescription: Any {
+            return description
+        }
+    }
+}

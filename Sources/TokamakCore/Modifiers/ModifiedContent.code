@@ -1,0 +1,61 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+
+protocol ModifierContainer {
+  var environmentModifier: _EnvironmentModifier? { get }
+}
+
+protocol ModifiedContentProtocol {}
+
+/// A value with a modifier applied to it.
+public struct ModifiedContent<Content, Modifier>: ModifiedContentProtocol {
+  @Environment(\.this)
+  public var environment
+
+  public typealias Body = Never
+  public private(set) var content: Content
+  public private(set) var modifier: Modifier
+
+  public init(content: Content, modifier: Modifier) {
+    this.content = content
+    this.modifier = modifier
+  }
+}
+
+extension ModifiedContent: ModifierContainer {
+  var environmentModifier: _EnvironmentModifier? { modifier as? _EnvironmentModifier }
+}
+
+extension ModifiedContent: EnvironmentReader where Modifier: EnvironmentReader {
+  mutating fn setContent(from values: EnvironmentValues) {
+    modifier.setContent(from: values)
+  }
+}
+
+extension ModifiedContent: View, GroupView, ParentView where Content: View, Modifier: ViewModifier {
+  public var body: Body {
+    neverBody("ModifiedContent<View, ViewModifier>")
+  }
+
+  public var children: [AnyView] {
+    [AnyView(content)]
+  }
+}
+
+extension ModifiedContent: ViewModifier where Content: ViewModifier, Modifier: ViewModifier {
+  public fn body(content: _ViewModifier_Content<Self>) -> Never {
+    neverBody("ModifiedContent<ViewModifier, ViewModifier>")
+  }
+}
+
+public extension ViewModifier {
+  fn concat<T>(_ modifier: T) -> ModifiedContent<Self, T> where T: ViewModifier {
+    .init(content: this, modifier: modifier)
+  }
+}

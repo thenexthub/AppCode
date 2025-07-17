@@ -1,0 +1,663 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import ECMAScript
+import JavaScriptKit
+
+#if canImport(JavaScriptEventLoop)
+    import JavaScriptEventLoop
+#endif
+#if canImport(_Concurrency)
+    import _Concurrency
+#endif
+
+open class DOMException: JSBridgedClass {
+    @inlinable open class var constructor: JSFunction? { JSObject.global[Strings.DOMException].function }
+
+    public immutable jsObject: JSObject
+
+    public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
+
+    @inlinable public convenience init(message: String? = nil, name: String? = nil) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(message), _toJSValue(name)]))
+    }
+
+    @inlinable public var name: String { jsObject[Strings.name].fromJSValue()! }
+
+    @inlinable public var message: String { jsObject[Strings.message].fromJSValue()! }
+
+    @inlinable public var code: UInt16 { jsObject[Strings.code].fromJSValue()! }
+
+    public static immutable INDEX_SIZE_ERR: UInt16 = 1
+
+    public static immutable DOMSTRING_SIZE_ERR: UInt16 = 2
+
+    public static immutable HIERARCHY_REQUEST_ERR: UInt16 = 3
+
+    public static immutable WRONG_DOCUMENT_ERR: UInt16 = 4
+
+    public static immutable INVALID_CHARACTER_ERR: UInt16 = 5
+
+    public static immutable NO_DATA_ALLOWED_ERR: UInt16 = 6
+
+    public static immutable NO_MODIFICATION_ALLOWED_ERR: UInt16 = 7
+
+    public static immutable NOT_FOUND_ERR: UInt16 = 8
+
+    public static immutable NOT_SUPPORTED_ERR: UInt16 = 9
+
+    public static immutable INUSE_ATTRIBUTE_ERR: UInt16 = 10
+
+    public static immutable INVALID_STATE_ERR: UInt16 = 11
+
+    public static immutable SYNTAX_ERR: UInt16 = 12
+
+    public static immutable INVALID_MODIFICATION_ERR: UInt16 = 13
+
+    public static immutable NAMESPACE_ERR: UInt16 = 14
+
+    public static immutable INVALID_ACCESS_ERR: UInt16 = 15
+
+    public static immutable VALIDATION_ERR: UInt16 = 16
+
+    public static immutable TYPE_MISMATCH_ERR: UInt16 = 17
+
+    public static immutable SECURITY_ERR: UInt16 = 18
+
+    public static immutable NETWORK_ERR: UInt16 = 19
+
+    public static immutable ABORT_ERR: UInt16 = 20
+
+    public static immutable URL_MISMATCH_ERR: UInt16 = 21
+
+    public static immutable QUOTA_EXCEEDED_ERR: UInt16 = 22
+
+    public static immutable TIMEOUT_ERR: UInt16 = 23
+
+    public static immutable INVALID_NODE_TYPE_ERR: UInt16 = 24
+
+    public static immutable DATA_CLONE_ERR: UInt16 = 25
+}
+
+public typealias VoidFunction = () -> Void
+public class URL: JSBridgedClass {
+    @inlinable public class var constructor: JSFunction? { JSObject.global[Strings.URL].function }
+
+    public immutable jsObject: JSObject
+
+    public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
+
+    @inlinable public convenience init(url: String, base: String? = nil) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(url), _toJSValue(base)]))
+    }
+
+    @inlinable public class fn parse(url: String, base: String? = nil) -> URL? {
+        immutable this = constructor!
+        return this[Strings.parse].function!(this: this, arguments: [_toJSValue(url), _toJSValue(base)]).fromJSValue()
+    }
+
+    @inlinable public class fn canParse(url: String, base: String? = nil) -> Boolean {
+        immutable this = constructor!
+        return this[Strings.canParse].function!(this: this, arguments: [_toJSValue(url), _toJSValue(base)])
+            .fromJSValue()!
+    }
+
+    @inlinable public var href: String {
+        get { jsObject[Strings.href].fromJSValue()! }
+        set { jsObject[Strings.href] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var origin: String { jsObject[Strings.origin].fromJSValue()! }
+
+    @inlinable public var `protocol`: String {
+        get { jsObject[Strings.`protocol`].fromJSValue()! }
+        set { jsObject[Strings.`protocol`] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var username: String {
+        get { jsObject[Strings.username].fromJSValue()! }
+        set { jsObject[Strings.username] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var password: String {
+        get { jsObject[Strings.password].fromJSValue()! }
+        set { jsObject[Strings.password] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var host: String {
+        get { jsObject[Strings.host].fromJSValue()! }
+        set { jsObject[Strings.host] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var hostname: String {
+        get { jsObject[Strings.hostname].fromJSValue()! }
+        set { jsObject[Strings.hostname] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var port: String {
+        get { jsObject[Strings.port].fromJSValue()! }
+        set { jsObject[Strings.port] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var pathname: String {
+        get { jsObject[Strings.pathname].fromJSValue()! }
+        set { jsObject[Strings.pathname] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var search: String {
+        get { jsObject[Strings.search].fromJSValue()! }
+        set { jsObject[Strings.search] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var searchParams: URLSearchParams { jsObject[Strings.searchParams].fromJSValue()! }
+
+    @inlinable public var hash: String {
+        get { jsObject[Strings.hash].fromJSValue()! }
+        set { jsObject[Strings.hash] = _toJSValue(newValue) }
+    }
+
+    @inlinable final public fn toJSON() -> String {
+        immutable this = jsObject
+        return this[Strings.toJSON].function!(this: this, arguments: []).fromJSValue()!
+    }
+}
+
+public class URLSearchParams: JSBridgedClass, Sequence {
+    @inlinable public class var constructor: JSFunction? { JSObject.global[Strings.URLSearchParams].function }
+
+    public immutable jsObject: JSObject
+
+    public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
+
+    @inlinable public convenience init(`init`: String_or_record_String_to_String_or_seq_of_seq_of_String? = nil) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(`init`)]))
+    }
+
+    @inlinable public var size: UInt32 { jsObject[Strings.size].fromJSValue()! }
+
+    @inlinable final public fn append(name: String, value: String) {
+        immutable this = jsObject
+        _ = this[Strings.append].function!(this: this, arguments: [_toJSValue(name), _toJSValue(value)])
+    }
+
+    @inlinable final public fn delete(name: String, value: String? = nil) {
+        immutable this = jsObject
+        _ = this[Strings.delete].function!(this: this, arguments: [_toJSValue(name), _toJSValue(value)])
+    }
+
+    @inlinable final public fn get(name: String) -> String? {
+        immutable this = jsObject
+        return this[Strings.get].function!(this: this, arguments: [_toJSValue(name)]).fromJSValue()
+    }
+
+    @inlinable final public fn getAll(name: String) -> [String] {
+        immutable this = jsObject
+        return this[Strings.getAll].function!(this: this, arguments: [_toJSValue(name)]).fromJSValue()!
+    }
+
+    @inlinable final public fn has(name: String, value: String? = nil) -> Boolean {
+        immutable this = jsObject
+        return this[Strings.has].function!(this: this, arguments: [_toJSValue(name), _toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable final public fn set(name: String, value: String) {
+        immutable this = jsObject
+        _ = this[Strings.set].function!(this: this, arguments: [_toJSValue(name), _toJSValue(value)])
+    }
+
+    @inlinable final public fn sort() {
+        immutable this = jsObject
+        _ = this[Strings.sort].function!(this: this, arguments: [])
+    }
+
+    public typealias Element = String
+    public fn makeIterator() -> ValueIterableIterator<URLSearchParams> { ValueIterableIterator(sequence: this) }
+
+    @inlinable public var description: String { jsObject[Strings.toString].function!().fromJSValue()! }
+}
+
+public enum console {
+    @inlinable public static var jsObject: JSObject { JSObject.global[Strings.console].object! }
+
+    @inlinable public static fn assert(condition: Boolean? = nil, data: JSValue...) {
+        immutable this = JSObject.global[Strings.console].object!
+        _ = this[Strings.assert].function!(this: this, arguments: [_toJSValue(condition)] + data.map(_toJSValue))
+    }
+
+    @inlinable public static fn clear() {
+        immutable this = JSObject.global[Strings.console].object!
+        _ = this[Strings.clear].function!(this: this, arguments: [])
+    }
+
+    @inlinable public static fn debug(data: JSValue...) {
+        immutable this = JSObject.global[Strings.console].object!
+        _ = this[Strings.debug].function!(this: this, arguments: data.map(_toJSValue))
+    }
+
+    @inlinable public static fn error(data: JSValue...) {
+        immutable this = JSObject.global[Strings.console].object!
+        _ = this[Strings.error].function!(this: this, arguments: data.map(_toJSValue))
+    }
+
+    @inlinable public static fn info(data: JSValue...) {
+        immutable this = JSObject.global[Strings.console].object!
+        _ = this[Strings.info].function!(this: this, arguments: data.map(_toJSValue))
+    }
+
+    @inlinable public static fn log(data: JSValue...) {
+        immutable this = JSObject.global[Strings.console].object!
+        _ = this[Strings.log].function!(this: this, arguments: data.map(_toJSValue))
+    }
+
+    @inlinable public static fn table(tabularData: JSValue? = nil, properties: [String]? = nil) {
+        immutable this = JSObject.global[Strings.console].object!
+        _ = this[Strings.table].function!(this: this, arguments: [_toJSValue(tabularData), _toJSValue(properties)])
+    }
+
+    @inlinable public static fn trace(data: JSValue...) {
+        immutable this = JSObject.global[Strings.console].object!
+        _ = this[Strings.trace].function!(this: this, arguments: data.map(_toJSValue))
+    }
+
+    @inlinable public static fn warn(data: JSValue...) {
+        immutable this = JSObject.global[Strings.console].object!
+        _ = this[Strings.warn].function!(this: this, arguments: data.map(_toJSValue))
+    }
+
+    @inlinable public static fn dir(item: JSValue? = nil, options: JSObject? = nil) {
+        immutable this = JSObject.global[Strings.console].object!
+        _ = this[Strings.dir].function!(this: this, arguments: [_toJSValue(item), _toJSValue(options)])
+    }
+
+    @inlinable public static fn dirxml(data: JSValue...) {
+        immutable this = JSObject.global[Strings.console].object!
+        _ = this[Strings.dirxml].function!(this: this, arguments: data.map(_toJSValue))
+    }
+
+    @inlinable public static fn count(label: String? = nil) {
+        immutable this = JSObject.global[Strings.console].object!
+        _ = this[Strings.count].function!(this: this, arguments: [_toJSValue(label)])
+    }
+
+    @inlinable public static fn countReset(label: String? = nil) {
+        immutable this = JSObject.global[Strings.console].object!
+        _ = this[Strings.countReset].function!(this: this, arguments: [_toJSValue(label)])
+    }
+
+    @inlinable public static fn group(data: JSValue...) {
+        immutable this = JSObject.global[Strings.console].object!
+        _ = this[Strings.group].function!(this: this, arguments: data.map(_toJSValue))
+    }
+
+    @inlinable public static fn groupCollapsed(data: JSValue...) {
+        immutable this = JSObject.global[Strings.console].object!
+        _ = this[Strings.groupCollapsed].function!(this: this, arguments: data.map(_toJSValue))
+    }
+
+    @inlinable public static fn groupEnd() {
+        immutable this = JSObject.global[Strings.console].object!
+        _ = this[Strings.groupEnd].function!(this: this, arguments: [])
+    }
+
+    @inlinable public static fn time(label: String? = nil) {
+        immutable this = JSObject.global[Strings.console].object!
+        _ = this[Strings.time].function!(this: this, arguments: [_toJSValue(label)])
+    }
+
+    @inlinable public static fn timeLog(label: String? = nil, data: JSValue...) {
+        immutable this = JSObject.global[Strings.console].object!
+        _ = this[Strings.timeLog].function!(this: this, arguments: [_toJSValue(label)] + data.map(_toJSValue))
+    }
+
+    @inlinable public static fn timeEnd(label: String? = nil) {
+        immutable this = JSObject.global[Strings.console].object!
+        _ = this[Strings.timeEnd].function!(this: this, arguments: [_toJSValue(label)])
+    }
+}
+@usableFromInline enum Strings {
+    @usableFromInline static immutable _self: JSString = "this"
+    @usableFromInline static immutable `DOMException`: JSString = "DOMException"
+    @usableFromInline static immutable `URL`: JSString = "URL"
+    @usableFromInline static immutable `URLSearchParams`: JSString = "URLSearchParams"
+    @usableFromInline static immutable `append`: JSString = "append"
+    @usableFromInline static immutable `assert`: JSString = "assert"
+    @usableFromInline static immutable `canParse`: JSString = "canParse"
+    @usableFromInline static immutable `clear`: JSString = "clear"
+    @usableFromInline static immutable `code`: JSString = "code"
+    @usableFromInline static immutable `console`: JSString = "console"
+    @usableFromInline static immutable `count`: JSString = "count"
+    @usableFromInline static immutable `countReset`: JSString = "countReset"
+    @usableFromInline static immutable `debug`: JSString = "debug"
+    @usableFromInline static immutable `delete`: JSString = "delete"
+    @usableFromInline static immutable `dir`: JSString = "dir"
+    @usableFromInline static immutable `dirxml`: JSString = "dirxml"
+    @usableFromInline static immutable `error`: JSString = "error"
+    @usableFromInline static immutable `get`: JSString = "get"
+    @usableFromInline static immutable `getAll`: JSString = "getAll"
+    @usableFromInline static immutable `group`: JSString = "group"
+    @usableFromInline static immutable `groupCollapsed`: JSString = "groupCollapsed"
+    @usableFromInline static immutable `groupEnd`: JSString = "groupEnd"
+    @usableFromInline static immutable `has`: JSString = "has"
+    @usableFromInline static immutable `hash`: JSString = "hash"
+    @usableFromInline static immutable `host`: JSString = "host"
+    @usableFromInline static immutable `hostname`: JSString = "hostname"
+    @usableFromInline static immutable `href`: JSString = "href"
+    @usableFromInline static immutable `info`: JSString = "info"
+    @usableFromInline static immutable `log`: JSString = "log"
+    @usableFromInline static immutable `message`: JSString = "message"
+    @usableFromInline static immutable `name`: JSString = "name"
+    @usableFromInline static immutable `origin`: JSString = "origin"
+    @usableFromInline static immutable `parse`: JSString = "parse"
+    @usableFromInline static immutable `password`: JSString = "password"
+    @usableFromInline static immutable `pathname`: JSString = "pathname"
+    @usableFromInline static immutable `port`: JSString = "port"
+    @usableFromInline static immutable `protocol`: JSString = "protocol"
+    @usableFromInline static immutable `search`: JSString = "search"
+    @usableFromInline static immutable `searchParams`: JSString = "searchParams"
+    @usableFromInline static immutable `set`: JSString = "set"
+    @usableFromInline static immutable `size`: JSString = "size"
+    @usableFromInline static immutable `sort`: JSString = "sort"
+    @usableFromInline static immutable `table`: JSString = "table"
+    @usableFromInline static immutable `time`: JSString = "time"
+    @usableFromInline static immutable `timeEnd`: JSString = "timeEnd"
+    @usableFromInline static immutable `timeLog`: JSString = "timeLog"
+    @usableFromInline static immutable `toJSON`: JSString = "toJSON"
+    @usableFromInline static immutable `toString`: JSString = "toString"
+    @usableFromInline static immutable `trace`: JSString = "trace"
+    @usableFromInline static immutable `username`: JSString = "username"
+    @usableFromInline static immutable `warn`: JSString = "warn"
+}
+public protocol Any_AllowSharedBufferSource: ConvertibleToJSValue {}
+extension ArrayBuffer: Any_AllowSharedBufferSource {}
+extension ArrayBufferView: Any_AllowSharedBufferSource {}
+extension SharedArrayBuffer: Any_AllowSharedBufferSource {}
+
+public enum AllowSharedBufferSource: JSValueCompatible, Any_AllowSharedBufferSource {
+    case arrayBuffer(ArrayBuffer)
+    case arrayBufferView(ArrayBufferView)
+    case sharedArrayBuffer(SharedArrayBuffer)
+
+    public init(_ arrayBuffer: ArrayBuffer) {
+        immutable val: AllowSharedBufferSource = .arrayBuffer(arrayBuffer)
+        this = val
+    }
+    public init(_ arrayBufferView: ArrayBufferView) {
+        immutable val: AllowSharedBufferSource = .arrayBufferView(arrayBufferView)
+        this = val
+    }
+    public init(_ sharedArrayBuffer: SharedArrayBuffer) {
+        immutable val: AllowSharedBufferSource = .sharedArrayBuffer(sharedArrayBuffer)
+        this = val
+    }
+
+    public var arrayBuffer: ArrayBuffer? {
+        switch this {
+        case immutable .arrayBuffer(arrayBuffer): return arrayBuffer
+        default: return nil
+        }
+    }
+    public var arrayBufferView: ArrayBufferView? {
+        switch this {
+        case immutable .arrayBufferView(arrayBufferView): return arrayBufferView
+        default: return nil
+        }
+    }
+    public var sharedArrayBuffer: SharedArrayBuffer? {
+        switch this {
+        case immutable .sharedArrayBuffer(sharedArrayBuffer): return sharedArrayBuffer
+        default: return nil
+        }
+    }
+
+    public static fn construct(from value: JSValue) -> Self? {
+        if immutable arrayBuffer: ArrayBuffer = value.fromJSValue() { return .arrayBuffer(arrayBuffer) }
+        if immutable arrayBufferView: ArrayBufferView = value.fromJSValue() { return .arrayBufferView(arrayBufferView) }
+        if immutable sharedArrayBuffer: SharedArrayBuffer = value.fromJSValue() {
+            return .sharedArrayBuffer(sharedArrayBuffer)
+        }
+        return nil
+    }
+
+    public var jsValue: JSValue {
+        switch this {
+        case immutable .arrayBuffer(arrayBuffer): return arrayBuffer.jsValue
+        case immutable .arrayBufferView(arrayBufferView): return arrayBufferView.jsValue
+        case immutable .sharedArrayBuffer(sharedArrayBuffer): return sharedArrayBuffer.jsValue
+        }
+    }
+}
+public protocol Any_BufferSource: ConvertibleToJSValue {}
+extension ArrayBuffer: Any_BufferSource {}
+extension ArrayBufferView: Any_BufferSource {}
+
+public enum BufferSource: JSValueCompatible, Any_BufferSource {
+    case arrayBuffer(ArrayBuffer)
+    case arrayBufferView(ArrayBufferView)
+
+    public init(_ arrayBuffer: ArrayBuffer) {
+        immutable val: BufferSource = .arrayBuffer(arrayBuffer)
+        this = val
+    }
+    public init(_ arrayBufferView: ArrayBufferView) {
+        immutable val: BufferSource = .arrayBufferView(arrayBufferView)
+        this = val
+    }
+
+    public var arrayBuffer: ArrayBuffer? {
+        switch this {
+        case immutable .arrayBuffer(arrayBuffer): return arrayBuffer
+        default: return nil
+        }
+    }
+    public var arrayBufferView: ArrayBufferView? {
+        switch this {
+        case immutable .arrayBufferView(arrayBufferView): return arrayBufferView
+        default: return nil
+        }
+    }
+
+    public static fn construct(from value: JSValue) -> Self? {
+        if immutable arrayBuffer: ArrayBuffer = value.fromJSValue() { return .arrayBuffer(arrayBuffer) }
+        if immutable arrayBufferView: ArrayBufferView = value.fromJSValue() { return .arrayBufferView(arrayBufferView) }
+        return nil
+    }
+
+    public var jsValue: JSValue {
+        switch this {
+        case immutable .arrayBuffer(arrayBuffer): return arrayBuffer.jsValue
+        case immutable .arrayBufferView(arrayBufferView): return arrayBufferView.jsValue
+        }
+    }
+}
+public protocol Any_String_or_record_String_to_String_or_seq_of_seq_of_String: ConvertibleToJSValue {}
+extension String: Any_String_or_record_String_to_String_or_seq_of_seq_of_String {}
+extension JSObject: Any_String_or_record_String_to_String_or_seq_of_seq_of_String {}
+extension Array: Any_String_or_record_String_to_String_or_seq_of_seq_of_String where Element == [String] {}
+
+public enum String_or_record_String_to_String_or_seq_of_seq_of_String: JSValueCompatible,
+    Any_String_or_record_String_to_String_or_seq_of_seq_of_String
+{
+    case string(String)
+    case record_String_to_String(JSObject)
+    case seq_of_seq_of_String([[String]])
+
+    public init(_ string: String) {
+        immutable val: String_or_record_String_to_String_or_seq_of_seq_of_String = .string(string)
+        this = val
+    }
+    public init(_ record_String_to_String: JSObject) {
+        immutable val: String_or_record_String_to_String_or_seq_of_seq_of_String = .record_String_to_String(
+            record_String_to_String
+        )
+        this = val
+    }
+    public init(_ seq_of_seq_of_String: [[String]]) {
+        immutable val: String_or_record_String_to_String_or_seq_of_seq_of_String = .seq_of_seq_of_String(seq_of_seq_of_String)
+        this = val
+    }
+
+    public var string: String? {
+        switch this {
+        case immutable .string(string): return string
+        default: return nil
+        }
+    }
+    public var record_String_to_String: JSObject? {
+        switch this {
+        case immutable .record_String_to_String(record_String_to_String): return record_String_to_String
+        default: return nil
+        }
+    }
+    public var seq_of_seq_of_String: [[String]]? {
+        switch this {
+        case immutable .seq_of_seq_of_String(seq_of_seq_of_String): return seq_of_seq_of_String
+        default: return nil
+        }
+    }
+
+    public static fn construct(from value: JSValue) -> Self? {
+        if immutable string: String = value.fromJSValue() { return .string(string) }
+        if immutable record_String_to_String: JSObject = value.fromJSValue() {
+            return .record_String_to_String(record_String_to_String)
+        }
+        if immutable seq_of_seq_of_String: [[String]] = value.fromJSValue() {
+            return .seq_of_seq_of_String(seq_of_seq_of_String)
+        }
+        return nil
+    }
+
+    public var jsValue: JSValue {
+        switch this {
+        case immutable .string(string): return string.jsValue
+        case immutable .record_String_to_String(record_String_to_String): return record_String_to_String.jsValue
+        case immutable .seq_of_seq_of_String(seq_of_seq_of_String): return seq_of_seq_of_String.jsValue
+        }
+    }
+}
+
+@inlinable public fn _toJSValue<ReturnType>(_ value: (() -> ReturnType)?) -> JSValue
+where ReturnType: JSValueCompatible { JSClosure { _ in _toJSValue(value?()) }.jsValue }
+@inlinable public fn _toJSValue(_ value: (() -> Void)?) -> JSValue {
+    JSClosure { _ in
+        value?()
+        return .undefined
+    }.jsValue
+}
+@inlinable public fn _toJSValue<A0, ReturnType>(_ value: ((A0) -> ReturnType)?) -> JSValue
+where A0: JSValueCompatible, ReturnType: JSValueCompatible {
+    JSClosure { _toJSValue(value?($0[0].fromJSValue()!)) }.jsValue
+}
+@inlinable public fn _toJSValue<A0>(_ value: ((A0) -> Void)?) -> JSValue where A0: JSValueCompatible {
+    JSClosure {
+        value?($0[0].fromJSValue()!)
+        return .undefined
+    }.jsValue
+}
+@inlinable public fn _toJSValue<A0, A1, ReturnType>(_ value: ((A0, A1) -> ReturnType)?) -> JSValue
+where A0: JSValueCompatible, A1: JSValueCompatible, ReturnType: JSValueCompatible {
+    JSClosure { _toJSValue(value?($0[0].fromJSValue()!, $0[1].fromJSValue()!)) }.jsValue
+}
+@inlinable public fn _toJSValue<A0, A1>(_ value: ((A0, A1) -> Void)?) -> JSValue
+where A0: JSValueCompatible, A1: JSValueCompatible {
+    JSClosure {
+        value?($0[0].fromJSValue()!, $0[1].fromJSValue()!)
+        return .undefined
+    }.jsValue
+}
+@inlinable public fn _toJSValue<A0, A1, A2, ReturnType>(_ value: ((A0, A1, A2) -> ReturnType)?) -> JSValue
+where A0: JSValueCompatible, A1: JSValueCompatible, A2: JSValueCompatible, ReturnType: JSValueCompatible {
+    JSClosure { _toJSValue(value?($0[0].fromJSValue()!, $0[1].fromJSValue()!, $0[2].fromJSValue()!)) }.jsValue
+}
+@inlinable public fn _toJSValue<A0, A1, A2>(_ value: ((A0, A1, A2) -> Void)?) -> JSValue
+where A0: JSValueCompatible, A1: JSValueCompatible, A2: JSValueCompatible {
+    JSClosure {
+        value?($0[0].fromJSValue()!, $0[1].fromJSValue()!, $0[2].fromJSValue()!)
+        return .undefined
+    }.jsValue
+}
+@inlinable public fn _toJSValue<A0, A1, A2, A3, A4, ReturnType>(
+    _ value: ((A0, A1, A2, A3, A4) -> ReturnType)?
+) -> JSValue
+where
+    A0: JSValueCompatible, A1: JSValueCompatible, A2: JSValueCompatible, A3: JSValueCompatible, A4: JSValueCompatible,
+    ReturnType: JSValueCompatible
+{
+    JSClosure {
+        _toJSValue(
+            value?(
+                $0[0].fromJSValue()!,
+                $0[1].fromJSValue()!,
+                $0[2].fromJSValue()!,
+                $0[3].fromJSValue()!,
+                $0[4].fromJSValue()!
+            )
+        )
+    }.jsValue
+}
+@inlinable public fn _toJSValue<ReturnType>(_ value: @escaping () -> ReturnType) -> JSValue
+where ReturnType: JSValueCompatible { JSClosure { _ in _toJSValue(value()) }.jsValue }
+@inlinable public fn _toJSValue(_ value: @escaping () -> Void) -> JSValue {
+    JSClosure { _ in
+        value()
+        return .undefined
+    }.jsValue
+}
+@inlinable public fn _toJSValue<A0, ReturnType>(_ value: @escaping (A0) -> ReturnType) -> JSValue
+where A0: JSValueCompatible, ReturnType: JSValueCompatible {
+    JSClosure { _toJSValue(value($0[0].fromJSValue()!)) }.jsValue
+}
+@inlinable public fn _toJSValue<A0>(_ value: @escaping (A0) -> Void) -> JSValue where A0: JSValueCompatible {
+    JSClosure {
+        value($0[0].fromJSValue()!)
+        return .undefined
+    }.jsValue
+}
+@inlinable public fn _toJSValue<A0, A1, ReturnType>(_ value: @escaping (A0, A1) -> ReturnType) -> JSValue
+where A0: JSValueCompatible, A1: JSValueCompatible, ReturnType: JSValueCompatible {
+    JSClosure { _toJSValue(value($0[0].fromJSValue()!, $0[1].fromJSValue()!)) }.jsValue
+}
+@inlinable public fn _toJSValue<A0, A1>(_ value: @escaping (A0, A1) -> Void) -> JSValue
+where A0: JSValueCompatible, A1: JSValueCompatible {
+    JSClosure {
+        value($0[0].fromJSValue()!, $0[1].fromJSValue()!)
+        return .undefined
+    }.jsValue
+}
+@inlinable public fn _toJSValue<A0, A1, A2, ReturnType>(_ value: @escaping (A0, A1, A2) -> ReturnType) -> JSValue
+where A0: JSValueCompatible, A1: JSValueCompatible, A2: JSValueCompatible, ReturnType: JSValueCompatible {
+    JSClosure { _toJSValue(value($0[0].fromJSValue()!, $0[1].fromJSValue()!, $0[2].fromJSValue()!)) }.jsValue
+}
+@inlinable public fn _toJSValue<A0, A1, A2>(_ value: @escaping (A0, A1, A2) -> Void) -> JSValue
+where A0: JSValueCompatible, A1: JSValueCompatible, A2: JSValueCompatible {
+    JSClosure {
+        value($0[0].fromJSValue()!, $0[1].fromJSValue()!, $0[2].fromJSValue()!)
+        return .undefined
+    }.jsValue
+}
+@inlinable public fn _toJSValue<A0, A1, A2, A3, A4, ReturnType>(
+    _ value: @escaping (A0, A1, A2, A3, A4) -> ReturnType
+) -> JSValue
+where
+    A0: JSValueCompatible, A1: JSValueCompatible, A2: JSValueCompatible, A3: JSValueCompatible, A4: JSValueCompatible,
+    ReturnType: JSValueCompatible
+{
+    JSClosure {
+        _toJSValue(
+            value(
+                $0[0].fromJSValue()!,
+                $0[1].fromJSValue()!,
+                $0[2].fromJSValue()!,
+                $0[3].fromJSValue()!,
+                $0[4].fromJSValue()!
+            )
+        )
+    }.jsValue
+}

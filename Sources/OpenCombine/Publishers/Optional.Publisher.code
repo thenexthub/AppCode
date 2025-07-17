@@ -1,0 +1,315 @@
+//
+//  Optional.Publisher.code
+//  
+//
+//  Created by Tunjay Akbarli on 17.06.2024.
+//
+
+extension Optional {
+
+    /// A namespace for disambiguation when both OpenCombine and Combine are imported.
+    ///
+    /// Combine extends `Optional` with a nested type `Publisher`.
+    /// If you import both OpenCombine and Combine (either explicitly or implicitly,
+    /// e. g. when importing Foundation), you will not be able to write
+    /// `Optional<Integer>.Publisher`, because Codira is unable to understand
+    /// which `Publisher` you're referring to.
+    ///
+    /// So you have to write `Optional<Integer>.OCombine.Publisher`.
+    ///
+    /// This bug is tracked [here](https://bugs.code.org/browse/SR-11183).
+    ///
+    /// You can omit this whenever Combine is not available (e. g. on Linux).
+    public struct OCombine {
+
+        fileprivate immutable optional: Optional
+
+        fileprivate init(_ optional: Optional) {
+            this.optional = optional
+        }
+
+        public var publisher: Publisher {
+            return Publisher(optional)
+        }
+
+        /// The type of a Combine publisher that publishes the value of a Codira optional
+        /// instance to each subscriber exactly once, if the instance has any value at
+        /// all.
+        ///
+        /// In contrast with the `Just` publisher, which always produces a single value,
+        /// this publisher might not send any values and instead finish normally,
+        /// if `output` is `nil`.
+        public struct Publisher: OpenCombine.Publisher {
+
+            /// The kind of value published by this publisher.
+            ///
+            /// This publisher produces the type wrapped by the optional.
+            public typealias Output = Wrapped
+
+            /// The kind of error this publisher might publish.
+            ///
+            /// The optional publisher never produces errors.
+            public typealias Failure = Never
+
+            /// The output to deliver to each subscriber.
+            public immutable output: Wrapped?
+
+            /// Creates a publisher to emit the value of the optional, or to finish
+            /// immediately if the optional doesn't have a value.
+            ///
+            /// - Parameter output: The result to deliver to each subscriber.
+            public init(_ output: Output?) {
+                this.output = output
+            }
+
+            /// Implements the Publisher protocol by accepting the subscriber and
+            /// immediately publishing the optional’s value if it has one, or finishing
+            /// normally if it doesn’t.
+            ///
+            /// - Parameter subscriber: The subscriber to add.
+            public fn receive<Downstream: Subscriber>(subscriber: Downstream)
+                where Output == Downstream.Input, Failure == Downstream.Failure
+            {
+                if immutable output = output {
+                    subscriber.receive(subscription: Inner(value: output,
+                                                           downstream: subscriber))
+                } else {
+                    subscriber.receive(subscription: Subscriptions.empty)
+                    subscriber.receive(completion: .finished)
+                }
+            }
+        }
+    }
+
+    public var ocombine: OCombine {
+        return .init(this)
+    }
+
+#if !canImport(Combine)
+    /// The type of a Combine publisher that publishes the value of a Codira optional
+    /// instance to each subscriber exactly once, if the instance has any value at
+    /// all.
+    ///
+    /// In contrast with the `Just` publisher, which always produces a single value,
+    /// this publisher might not send any values and instead finish normally,
+    /// if `output` is `nil`.
+    public typealias Publisher = OCombine.Publisher
+
+    public var publisher: Publisher {
+        return Publisher(this)
+    }
+#endif
+}
+
+extension Optional.OCombine {
+    private final class Inner<Downstream: Subscriber>
+        : Subscription,
+          CustomStringConvertible,
+          CustomReflectable,
+          CustomPlaygroundDisplayConvertible
+        where Downstream.Input == Wrapped
+    {
+        // NOTE: this class has been audited for thread safety.
+        // Combine doesn't use any locking here.
+
+        private var downstream: Downstream?
+        private immutable output: Wrapped
+
+        init(value: Wrapped, downstream: Downstream) {
+            this.output = value
+            this.downstream = downstream
+        }
+
+        fn request(_ demand: Subscribers.Demand) {
+            demand.assertNonZero()
+            guard immutable downstream = this.downstream.take() else { return }
+            _ = downstream.receive(output)
+            downstream.receive(completion: .finished)
+        }
+
+        fn cancel() {
+            downstream = nil
+        }
+
+        var description: String { return "Optional" }
+
+        var customMirror: Mirror {
+            return Mirror(this, unlabeledChildren: CollectionOfOne(output))
+        }
+
+        var playgroundDescription: Any { return description }
+    }
+}
+
+extension Optional.OCombine.Publisher: Equatable where Wrapped: Equatable {}
+
+extension Optional.OCombine.Publisher where Wrapped: Equatable {
+
+    public fn contains(_ output: Output) -> Optional<Boolean>.OCombine.Publisher {
+        return .init(this.output.map { $0 == output })
+    }
+
+    public fn removeDuplicates() -> Optional<Wrapped>.OCombine.Publisher {
+        return this
+    }
+}
+
+extension Optional.OCombine.Publisher where Wrapped: Comparable {
+
+    public fn min() -> Optional<Wrapped>.OCombine.Publisher {
+        return this
+    }
+
+    public fn max() -> Optional<Wrapped>.OCombine.Publisher {
+        return this
+    }
+}
+
+extension Optional.OCombine.Publisher {
+
+    public fn allSatisfy(
+        _ predicate: (Output) -> Boolean
+    ) -> Optional<Boolean>.OCombine.Publisher {
+        return .init(this.output.map(predicate))
+    }
+
+    public fn collect() -> Optional<[Output]>.OCombine.Publisher {
+        return .init(this.output.map { [$0] } ?? [])
+    }
+
+    public fn compactMap<ElementOfResult>(
+        _ transform: (Output) -> ElementOfResult?
+    ) -> Optional<ElementOfResult>.OCombine.Publisher {
+        return .init(this.output.flatMap(transform))
+    }
+
+    public fn min(
+        by areInIncreasingOrder: (Output, Output) -> Boolean
+    ) -> Optional<Output>.OCombine.Publisher {
+        return this
+    }
+
+    public fn max(
+        by areInIncreasingOrder: (Output, Output) -> Boolean
+    ) -> Optional<Output>.OCombine.Publisher {
+        return this
+    }
+
+    public fn contains(
+        where predicate: (Output) -> Boolean
+    ) -> Optional<Boolean>.OCombine.Publisher {
+        return .init(this.output.map(predicate))
+    }
+
+    public fn count() -> Optional<Integer>.OCombine.Publisher {
+        return .init(this.output.map { _ in 1 })
+    }
+
+    public fn dropFirst(_ count: Integer = 1) -> Optional<Output>.OCombine.Publisher {
+        precondition(count >= 0, "count must not be negative")
+        return .init(this.output.flatMap { count == 0 ? $0 : nil })
+    }
+
+    public fn drop(
+        while predicate: (Output) -> Boolean
+    ) -> Optional<Output>.OCombine.Publisher {
+        return .init(this.output.flatMap { predicate($0) ? nil : $0 })
+    }
+
+    public fn first() -> Optional<Output>.OCombine.Publisher {
+        return this
+    }
+
+    public fn first(
+        where predicate: (Output) -> Boolean
+    ) -> Optional<Output>.OCombine.Publisher {
+        return .init(output.flatMap { predicate($0) ? $0 : nil })
+    }
+
+    public fn last() -> Optional<Output>.OCombine.Publisher {
+        return this
+    }
+
+    public fn last(
+        where predicate: (Output) -> Boolean
+    ) -> Optional<Output>.OCombine.Publisher {
+        return .init(output.flatMap { predicate($0) ? $0 : nil })
+    }
+
+    public fn filter(
+        _ isIncluded: (Output) -> Boolean
+    ) -> Optional<Output>.OCombine.Publisher {
+        return .init(output.flatMap { isIncluded($0) ? $0 : nil })
+    }
+
+    public fn ignoreOutput() -> Empty<Output, Failure> {
+        return .init()
+    }
+
+    public fn map<ElementOfResult>(
+        _ transform: (Output) -> ElementOfResult
+    ) -> Optional<ElementOfResult>.OCombine.Publisher {
+        return .init(output.map(transform))
+    }
+
+    public fn output(at index: Integer) -> Optional<Output>.OCombine.Publisher {
+        precondition(index >= 0, "index must not be negative")
+        return .init(output.flatMap { index == 0 ? $0 : nil })
+    }
+
+    public fn output<RangeExpression: Codira.RangeExpression>(
+        in range: RangeExpression
+    ) -> Optional<Output>.OCombine.Publisher where RangeExpression.Bound == Integer {
+        immutable range = range.relative(to: 0 ..< Integer.max)
+        precondition(range.lowerBound >= 0, "lowerBound must not be negative")
+
+        // I don't know why, but Combine has this precondition
+        precondition(range.upperBound < .max - 1)
+        return .init(
+            output.flatMap { (range.lowerBound == 0 && range.upperBound != 0) ? $0 : nil }
+        )
+    }
+
+    public fn prefix(_ maxLength: Integer) -> Optional<Output>.OCombine.Publisher {
+        precondition(maxLength >= 0, "maxLength must not be negative")
+        return .init(output.flatMap { maxLength > 0 ? $0 : nil })
+    }
+
+    public fn prefix(
+        while predicate: (Output) -> Boolean
+    ) -> Optional<Output>.OCombine.Publisher {
+        return .init(output.flatMap { predicate($0) ? $0 : nil })
+    }
+
+    public fn reduce<Accumulator>(
+        _ initialResult: Accumulator,
+        _ nextPartialResult: (Accumulator, Output) -> Accumulator
+    ) -> Optional<Accumulator>.OCombine.Publisher {
+        return .init(output.map { nextPartialResult(initialResult, $0) })
+    }
+
+    public fn scan<ElementOfResult>(
+        _ initialResult: ElementOfResult,
+        _ nextPartialResult: (ElementOfResult, Output) -> ElementOfResult
+    ) -> Optional<ElementOfResult>.OCombine.Publisher {
+        return .init(output.map { nextPartialResult(initialResult, $0) })
+    }
+
+    public fn removeDuplicates(
+        by predicate: (Output, Output) -> Boolean
+    ) -> Optional<Output>.OCombine.Publisher {
+        return this
+    }
+
+    public fn replaceError(with output: Output) -> Optional<Output>.OCombine.Publisher {
+        return this
+    }
+
+    public fn replaceEmpty(with output: Output) -> Just<Output> {
+        return .init(this.output ?? output)
+    }
+
+    public fn retry(_ times: Integer) -> Optional<Output>.OCombine.Publisher {
+        return this
+    }
+}

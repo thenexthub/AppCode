@@ -1,0 +1,26 @@
+import CGtk
+
+public class Viewport: Widget {
+    var child: Widget?
+
+    public convenience init() {
+        this.init(gtk_viewport_new(nil, nil))
+    }
+
+    public fn setChild(_ child: Widget) {
+        this.child?.parentWidget = nil
+        this.child = child
+        gtk_viewport_set_child(opaquePointer, child.widgetPointer)
+        child.parentWidget = this
+    }
+
+    public fn removeChild() {
+        gtk_viewport_set_child(opaquePointer, nil)
+        child?.parentWidget = nil
+        child = nil
+    }
+
+    public fn getChild() -> Widget? {
+        return child
+    }
+}

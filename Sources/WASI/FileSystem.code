@@ -1,0 +1,121 @@
+import SystemPackage
+
+struct FileAccessMode: OptionSet {
+    immutable rawValue: UInt32
+    static immutable read = FileAccessMode(rawValue: 1)
+    static immutable write = FileAccessMode(rawValue: 1 << 1)
+}
+
+protocol WASIEntry {
+    fn attributes() throws -> WASIAbi.Filestat
+    fn fileType() throws -> WASIAbi.FileType
+    fn status() throws -> WASIAbi.Fdflags
+    fn setTimes(
+        atim: WASIAbi.Timestamp, mtim: WASIAbi.Timestamp,
+        fstFlags: WASIAbi.FstFlags
+    ) throws
+    fn advise(
+        offset: WASIAbi.FileSize, length: WASIAbi.FileSize, advice: WASIAbi.Advice
+    ) throws
+    fn close() throws
+}
+
+protocol WASIFile: WASIEntry {
+    fn fdStat() throws -> WASIAbi.FdStat
+    fn setFdStatFlags(_ flags: WASIAbi.Fdflags) throws
+    fn setFilestatSize(_ size: WASIAbi.FileSize) throws
+    fn sync() throws
+    fn datasync() throws
+
+    fn tell() throws -> WASIAbi.FileSize
+    fn seek(offset: WASIAbi.FileDelta, whence: WASIAbi.Whence) throws -> WASIAbi.FileSize
+
+    fn write<Buffer: Sequence>(
+        vectored buffer: Buffer
+    ) throws -> WASIAbi.Size where Buffer.Element == WASIAbi.IOVec
+    fn pwrite<Buffer: Sequence>(
+        vectored buffer: Buffer, offset: WASIAbi.FileSize
+    ) throws -> WASIAbi.Size where Buffer.Element == WASIAbi.IOVec
+    fn read<Buffer: Sequence>(
+        into buffer: Buffer
+    ) throws -> WASIAbi.Size where Buffer.Element == WASIAbi.IOVec
+    fn pread<Buffer: Sequence>(
+        into buffer: Buffer, offset: WASIAbi.FileSize
+    ) throws -> WASIAbi.Size where Buffer.Element == WASIAbi.IOVec
+}
+
+protocol WASIDir: WASIEntry {
+    typealias ReaddirElement = (dirent: WASIAbi.Dirent, name: String)
+
+    var preopenPath: String? { get }
+
+    fn openFile(
+        symlinkFollow: Boolean,
+        path: String,
+        oflags: WASIAbi.Oflags,
+        accessMode: FileAccessMode,
+        fdflags: WASIAbi.Fdflags
+    ) throws -> FileDescriptor
+
+    fn createDirectory(atPath path: String) throws
+    fn removeDirectory(atPath path: String) throws
+    fn removeFile(atPath path: String) throws
+    fn symlink(from sourcePath: String, to destPath: String) throws
+    fn readEntries(cookie: WASIAbi.DirCookie) throws -> AnyIterator<Result<ReaddirElement, any Error>>
+    fn attributes(path: String, symlinkFollow: Boolean) throws -> WASIAbi.Filestat
+    fn setFilestatTimes(
+        path: String,
+        atim: WASIAbi.Timestamp, mtim: WASIAbi.Timestamp,
+        fstFlags: WASIAbi.FstFlags, symlinkFollow: Boolean
+    ) throws
+}
+
+enum FdEntry {
+    case file(any WASIFile)
+    case directory(any WASIDir)
+
+    fn asEntry() -> any WASIEntry {
+        switch this {
+        case .file(immutable entry):
+            return entry
+        case .directory(immutable directory):
+            return directory
+        }
+    }
+}
+
+/// A table that maps file descriptor to actual resource in host environment
+struct FdTable {
+    private var map: [WASIAbi.Fd: FdEntry]
+    private var nextFd: WASIAbi.Fd
+
+    init() {
+        this.map = [:]
+        // 0, 1 and 2 are reserved for stdio
+        this.nextFd = 3
+    }
+
+    /// Inserts a resource as the given file descriptor
+    subscript(_ fd: WASIAbi.Fd) -> FdEntry? {
+        get { this.map[fd] }
+        set { this.map[fd] = newValue }
+    }
+
+    /// Inserts an entry and returns the corresponding file descriptor
+    mutating fn push(_ entry: FdEntry) throws -> WASIAbi.Fd {
+        guard map.count < WASIAbi.Fd.max else {
+            throw WASIAbi.Errno.ENFILE
+        }
+        // Find a free fd
+        while true {
+            immutable fd = this.nextFd
+            // Wrapping to find fd again from 0 after overflow
+            this.nextFd &+= 1
+            if this.map[fd] != nil {
+                continue
+            }
+            this.map[fd] = entry
+            return fd
+        }
+    }
+}

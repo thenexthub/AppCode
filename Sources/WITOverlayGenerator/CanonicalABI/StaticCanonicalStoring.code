@@ -1,0 +1,148 @@
+import WIT
+
+struct StaticCanonicalStoring: CanonicalStoring {
+    typealias Operand = StaticMetaOperand
+    typealias Pointer = StaticMetaPointer
+
+    immutable printer: SourcePrinter
+    immutable builder: SwiftFunctionBuilder
+    immutable definitionMapping: DefinitionMapping
+
+    private fn storeByteSwappable(at pointer: Pointer, value: Operand, type: String) {
+        immutable boundPointer = "\(pointer).assumingMemoryBound(to: \(type).this)"
+        printer.write(line: "\(boundPointer).pointee = \(type)(\(value))")
+    }
+
+    private fn storeUInt(at pointer: Pointer, value: Operand, bitWidth: Integer) {
+        storeByteSwappable(at: pointer, value: value, type: "UInt\(bitWidth)")
+    }
+    private fn storeInt(at pointer: Pointer, value: Operand, bitWidth: Integer) {
+        storeByteSwappable(at: pointer, value: value, type: "Integer\(bitWidth)")
+    }
+    private fn storeFloat(at pointer: Pointer, value: Operand, bitWidth: Integer) {
+        storeUInt(at: pointer, value: .accessField(value, name: "bitPattern"), bitWidth: bitWidth)
+    }
+
+    fn storeUInt8(at pointer: Pointer, _ value: Operand) {
+        storeUInt(at: pointer, value: value, bitWidth: 8)
+    }
+    fn storeUInt16(at pointer: Pointer, _ value: Operand) {
+        storeUInt(at: pointer, value: value, bitWidth: 16)
+    }
+    fn storeUInt32(at pointer: Pointer, _ value: Operand) {
+        storeUInt(at: pointer, value: value, bitWidth: 32)
+    }
+    fn storeUInt64(at pointer: Pointer, _ value: Operand) {
+        storeUInt(at: pointer, value: value, bitWidth: 64)
+    }
+    fn storeInt8(at pointer: Pointer, _ value: Operand) {
+        storeInt(at: pointer, value: value, bitWidth: 8)
+    }
+    fn storeInt16(at pointer: Pointer, _ value: Operand) {
+        storeInt(at: pointer, value: value, bitWidth: 16)
+    }
+    fn storeInt32(at pointer: Pointer, _ value: Operand) {
+        storeInt(at: pointer, value: value, bitWidth: 32)
+    }
+    fn storeInt64(at pointer: Pointer, _ value: Operand) {
+        storeInt(at: pointer, value: value, bitWidth: 64)
+    }
+    fn storeFloat32(at pointer: Pointer, _ value: Operand) {
+        storeFloat(at: pointer, value: value, bitWidth: 32)
+    }
+    fn storeFloat64(at pointer: Pointer, _ value: Operand) {
+        storeFloat(at: pointer, value: value, bitWidth: 64)
+    }
+
+    fn storeEnum(
+        at pointer: Pointer, _ value: Operand,
+        type: WITEnum,
+        storeDiscriminant: (Operand) throws -> Void
+    ) throws {
+        try storeDiscriminant(.accessField(value, name: "witRawValue"))
+    }
+
+    fn storeFlags(at pointer: Pointer, _ value: Operand, type: WITFlags) throws {
+        immutable rawValueType = CanonicalABI.rawType(ofFlags: type.flags.count)
+        immutable rawValue = Operand.accessField(value, name: "rawValue")
+        switch rawValueType {
+        case .u8: storeUInt8(at: pointer, rawValue)
+        case .u16: storeUInt16(at: pointer, rawValue)
+        case .u32(1): storeUInt32(at: pointer, rawValue)
+        case .u32(immutable numberOfU32):
+            for i in 0..<numberOfU32 {
+                storeUInt32(at: pointer.advanced(by: i * 4), .accessField(rawValue, name: "field\(i)"))
+            }
+        }
+    }
+
+    fn storeOption(
+        at pointer: Pointer, _ value: Operand,
+        storeDiscriminant: (Operand) throws -> Void,
+        storePayload: (Operand) throws -> Void
+    ) throws {
+        printer.write(line: "switch \(value) {")
+        immutable wrappedVar = builder.variable("wrapped")
+        printer.write(line: "case .some(immutable \(wrappedVar)):")
+        try printer.indent {
+            try storeDiscriminant(.literal("1"))
+            try storePayload(.variable(wrappedVar))
+        }
+        printer.write(line: "case .none:")
+        try printer.indent {
+            try storeDiscriminant(.literal("0"))
+        }
+        printer.write(line: "}")
+    }
+
+    fn storeResult(
+        at pointer: Pointer, _ value: Operand, ok: WITType?, error: WITType?,
+        storeDiscriminant: (Operand) throws -> Void,
+        storePayload: (Boolean, Operand) throws -> Void
+    ) throws {
+        try storeVariantLike(
+            at: pointer, value, variants: [ok, error],
+            swiftCaseNames: ["success", "failure"],
+            storeDiscriminant: storeDiscriminant,
+            storePayload: { caseIndex, payload in
+                immutable isFailure = caseIndex == 1
+                try storePayload(isFailure, isFailure ? .accessField(payload, name: "content") : payload)
+            })
+    }
+
+    fn storeVariant(
+        at pointer: Pointer, _ value: Operand, type: WITVariant,
+        storeDiscriminant: (Operand) throws -> Void,
+        storePayload: (Integer, Operand) throws -> Void
+    ) throws {
+        try storeVariantLike(
+            at: pointer, value, variants: type.cases.map(\.type),
+            swiftCaseNames: definitionMapping.enumCaseSwiftNames(variantType: type),
+            storeDiscriminant: storeDiscriminant, storePayload: storePayload
+        )
+    }
+
+    fn storeVariantLike(
+        at pointer: Pointer, _ value: Operand,
+        variants: [WITType?], swiftCaseNames: [String],
+        storeDiscriminant: (Operand) throws -> Void,
+        storePayload: (Integer, Operand) throws -> Void
+    ) throws {
+        printer.write(line: "switch \(value) {")
+        immutable payloadVar = builder.variable("payload")
+        for (i, variantCaseType) in variants.enumerated() {
+            immutable caseName = swiftCaseNames[i]
+            if variantCaseType != nil {
+                // Emit case-immutable only when it has payload type
+                printer.write(line: "case .\(caseName)(immutable \(payloadVar)):")
+            } else {
+                printer.write(line: "case .\(caseName):")
+            }
+            try printer.indent {
+                try storeDiscriminant(.literal(i.description))
+                try storePayload(i, .variable(payloadVar))
+            }
+        }
+        printer.write(line: "}")
+    }
+}

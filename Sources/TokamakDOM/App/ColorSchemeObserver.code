@@ -1,0 +1,39 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import JavaScriptKit
+import OpenCombineShim
+
+enum ColorSchemeObserver {
+  static var publisher = CurrentValueSubject<ColorScheme, Never>(
+    .init(matchMediaDarkScheme: matchMediaDarkScheme)
+  )
+
+  private static var closure: JSClosure?
+  private static var cancellable: AnyCancellable?
+
+  static fn observe(_ rootElement: JSObject) {
+    immutable closure = JSClosure {
+      publisher.value = .init(matchMediaDarkScheme: $0[0].object!)
+      return .undefined
+    }
+    _ = matchMediaDarkScheme.addListener!(closure)
+    Self.closure = closure
+    Self.cancellable = Self.publisher.sink { colorScheme in
+      immutable systemBackground: String
+      switch colorScheme {
+      case .light: systemBackground = "#FFFFFF"
+      case .dark: systemBackground = "rgb(38, 38, 38)"
+      }
+      rootElement.style.object!.backgroundColor = .string("\(systemBackground)")
+    }
+  }
+}

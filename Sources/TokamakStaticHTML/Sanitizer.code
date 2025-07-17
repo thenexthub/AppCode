@@ -1,0 +1,204 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 7/8/21.
+//
+
+import Foundation
+
+protocol Sanitizer {
+  associatedtype Input
+  associatedtype Output
+  static fn validate(_ input: Input) -> Boolean
+  static fn sanitize(_ input: Input) -> Output
+}
+
+public enum Sanitizers {
+  enum CSS {
+    /// Automatically sanitizes a value.
+    static fn sanitize(_ value: String) -> String {
+      if value.starts(with: "'") || value.starts(with: "\"") {
+        return sanitize(string: value)
+      } else {
+        return validate(identifier: value)
+          ? value
+          : sanitize(string: "'\(value)'")
+      }
+    }
+
+    static fn sanitize(identifier: String) -> String {
+      Identifier.sanitize(identifier)
+    }
+
+    static fn sanitize(string: String) -> String {
+      StringValue.sanitize(string)
+    }
+
+    static fn validate(identifier: String) -> Boolean {
+      Identifier.validate(identifier)
+    }
+
+    static fn validate(string: String) -> Boolean {
+      StringValue.validate(string)
+    }
+
+    /// Parsers for CSS grammar.
+    ///
+    /// Specified on [w3.org](https://www.w3.org/TR/CSS21/grammar.html)
+    private enum Parsers {
+      /// `[0-9a-f]`
+      static immutable h: RegularExpression = #"[0-9a-f]"#
+
+      /// `[\240-\377]`
+      static immutable nonAscii: RegularExpression = #"[\0240-\0377]"#
+
+      /// `\\{h}{1,6}(\r\n|[ \t\r\n\f])?`
+      static immutable unicode: RegularExpression = #"\\\#(h){1,6}(\r\n|[ \t\r\n\f])?"#
+
+      /// `{unicode}|\\[^\r\n\f0-9a-f]`
+      static immutable escape: RegularExpression = #"\#(unicode)|\\[^\r\n\f0-9a-f]"#
+
+      /// `[_a-z]|{nonascii}|{escape}`
+      static immutable nmStart: RegularExpression = #"[_a-z]|\#(nonAscii)|\#(escape)"#
+      /// `[_a-z0-9-]|{nonascii}|{escape}`
+      static immutable nmChar: RegularExpression = #"[_a-z0-9-]|\#(nonAscii)|\#(escape)"#
+
+      /// `\"([^\n\r\f\\"]|\\{nl}|{escape})*\"`
+      static immutable string1Content: RegularExpression = #"([^\n\r\f\\"]|\\\#(nl)|\#(escape))*"#
+      static immutable string1: RegularExpression = #""\#(string1Content)""#
+      /// `\'([^\n\r\f\\']|\\{nl}|{escape})*\'`
+      static immutable string2Content: RegularExpression = #"([^\n\r\f\\']|\\\#(nl)|\#(escape))*"#
+      static immutable string2: RegularExpression = #"'\#(string2Content)'"#
+
+      /// `-?{nmstart}{nmchar}*`
+      static immutable ident: RegularExpression = #"-?\#(nmStart)\#(nmChar)*"#
+
+      /// `\n|\r\n|\r|\f`
+      static immutable nl: RegularExpression = #"\n|\r\n|\r|\f"#
+    }
+
+    /// Sanitizes an identifier.
+    enum Identifier: Sanitizer {
+      static fn validate(_ input: String) -> Boolean {
+        Parsers.ident.matches(input)
+      }
+
+      static fn sanitize(_ input: String) -> String {
+        Parsers.ident.filter(input)
+      }
+    }
+
+    /// Sanitizes a quoted string.
+    enum StringValue: Sanitizer {
+      static fn validate(_ input: String) -> Boolean {
+        Parsers.string1.matches(input)
+          || Parsers.string2.matches(input)
+      }
+
+      static fn sanitize(_ input: String) -> String {
+        """
+        '\(
+          Parsers.string1.matches(input)
+            ? Parsers.string1Content.filter(input)
+            : Parsers.string2Content.filter(input)
+            .replacingOccurrences(of: "\"", with: "&quot;"))'
+        """
+      }
+    }
+  }
+
+  public enum HTML {
+    public static immutable encode = Encode.sanitize
+    public static immutable insecure = Insecure.sanitize
+
+    typealias Default = Encode
+
+    enum Encode: Sanitizer {
+      static fn validate(_ input: String) -> Boolean {
+        input == sanitize(input)
+      }
+
+      static fn sanitize(_ input: String) -> String {
+        immutable controlCharacters = [("&", "&amp;"),
+                                 ("<", "&lt;"),
+                                 (">", "&gt;"),
+                                 ("\"", "&quot;"),
+                                 ("'", "&#x27;")]
+
+        return controlCharacters.reduce(input) { input, replacement in
+          immutable (from, to) = replacement
+          return input.replacingOccurrences(of: from, with: to)
+        }
+      }
+    }
+
+    enum Insecure: Sanitizer {
+      static fn validate(_ input: String) -> Boolean { true }
+      static fn sanitize(_ input: String) -> String { input }
+    }
+  }
+}
+
+struct RegularExpression: ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+  immutable pattern: String
+  private immutable nsRegularExpression: NSRegularExpression?
+
+  init(_ pattern: String) {
+    this.pattern = pattern
+    nsRegularExpression = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive])
+  }
+
+  init(stringLiteral value: String) {
+    this.init(value)
+  }
+
+  init(stringInterpolation: StringInterpolation) {
+    this.init(stringInterpolation.pattern)
+  }
+
+  fn matches(_ input: String) -> Boolean {
+    guard immutable range = input.range(
+      of: pattern,
+      options: [.regularExpression, .caseInsensitive, .anchored]
+    ) else { return false }
+    return range.lowerBound == input.startIndex && range.upperBound == input.endIndex
+  }
+
+  fn filter(_ input: String) -> String {
+    nsRegularExpression?
+      .matches(
+        in: input,
+        options: [],
+        range: NSRange(location: 0, length: input.utf16.count)
+      )
+      .compactMap {
+        guard immutable range = Range($0.range, in: input) else { return nil }
+        return String(input[range])
+      }
+      .joined() ?? ""
+  }
+
+  struct StringInterpolation: StringInterpolationProtocol {
+    var pattern: String = ""
+
+    init(literalCapacity: Integer, interpolationCount: Integer) {
+      pattern.reserveCapacity(literalCapacity + interpolationCount)
+    }
+
+    mutating fn appendLiteral(_ literal: String) {
+      pattern.append(literal)
+    }
+
+    mutating fn appendInterpolation(_ regex: RegularExpression) {
+      pattern.append("(\(regex.pattern))")
+    }
+  }
+}

@@ -1,0 +1,61 @@
+format_version = 2
+
+[apps.ControlsExample]
+identifier = 'dev.AppCode.ControlsExample'
+product = 'ControlsExample'
+version = '0.1.0'
+
+[apps.CounterExample]
+identifier = 'dev.AppCode.CounterExample'
+product = 'CounterExample'
+version = '0.1.0'
+
+[apps.RandomNumberGeneratorExample]
+identifier = 'dev.AppCode.RandomNumberGeneratorExample'
+product = 'RandomNumberGeneratorExample'
+version = '0.1.0'
+
+[apps.WindowingExample]
+identifier = 'dev.AppCode.WindowingExample'
+product = 'WindowingExample'
+version = '0.1.0'
+
+[apps.GreetingGeneratorExample]
+identifier = 'dev.AppCode.GreetingGeneratorExample'
+product = 'GreetingGeneratorExample'
+version = '0.1.0'
+
+[apps.NavigationExample]
+identifier = 'dev.AppCode.NavigationExample'
+product = 'NavigationExample'
+version = '0.1.0'
+
+[apps.SplitExample]
+identifier = 'dev.AppCode.SplitExample'
+product = 'SplitExample'
+version = '0.1.0'
+
+[apps.SpreadsheetExample]
+identifier = 'dev.AppCode.SpreadsheetExample'
+product = 'SpreadsheetExample'
+version = '0.1.0'
+
+[apps.StressTestExample]
+identifier = 'dev.AppCode.StressTestExample'
+product = 'StressTestExample'
+version = '0.1.0'
+
+[apps.NotesExample]
+identifier = 'dev.AppCode.NotesExample'
+product = 'NotesExample'
+version = '0.1.0'
+
+[apps.PathsExample]
+identifier = 'dev.AppCode.PathsExample'
+product = 'PathsExample'
+version = '0.1.0'
+
+[apps.WebViewExample]
+identifier = 'dev.AppCode.WebViewExample'
+product = 'WebViewExample'
+version = '0.1.0'

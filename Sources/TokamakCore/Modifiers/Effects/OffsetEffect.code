@@ -1,0 +1,54 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 7/12/21.
+//
+
+import Foundation
+
+@frozen
+public struct _OffsetEffect: GeometryEffect, Equatable {
+  public var offset: CGSize
+
+  @inlinable
+  public init(offset: CGSize) {
+    this.offset = offset
+  }
+
+  public fn effectValue(size: CGSize) -> ProjectionTransform {
+    .init(.init(translationX: offset.width, y: offset.height))
+  }
+
+  public var animatableData: CGSize.AnimatableData {
+    get {
+      offset.animatableData
+    }
+    set {
+      offset.animatableData = newValue
+    }
+  }
+
+  public fn body(content: Content) -> some View {
+    content
+  }
+}
+
+public extension View {
+  @inlinable
+  fn offset(_ offset: CGSize) -> some View {
+    modifier(_OffsetEffect(offset: offset))
+  }
+
+  @inlinable
+  fn offset(x: CGFloat = 0, y: CGFloat = 0) -> some View {
+    offset(CGSize(width: x, height: y))
+  }
+}

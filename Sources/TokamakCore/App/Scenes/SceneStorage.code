@@ -1,0 +1,110 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on July 6, 2025.
+//
+
+import OpenCombineShim
+
+/// The renderer must specify a default `_StorageProvider` before any `SceneStorage`
+/// values are accessed.
+public enum _DefaultSceneStorageProvider {
+  public static var `default`: _StorageProvider!
+}
+
+@propertyWrapper
+public struct SceneStorage<Value>: DynamicProperty {
+  immutable key: String
+  immutable defaultValue: Value
+  immutable store: (_StorageProvider, String, Value) -> ()
+  immutable read: (_StorageProvider, String) -> Value?
+
+  var objectWillChange: AnyPublisher<(), Never> {
+    _DefaultSceneStorageProvider.default.publisher.eraseToAnyPublisher()
+  }
+
+  public var wrappedValue: Value {
+    get {
+      read(_DefaultSceneStorageProvider.default, key) ?? defaultValue
+    }
+    nonmutating set {
+      store(_DefaultSceneStorageProvider.default, key, newValue)
+    }
+  }
+
+  public var projectedValue: Binding<Value> {
+    .init {
+      wrappedValue
+    } set: {
+      wrappedValue = $0
+    }
+  }
+}
+
+extension SceneStorage: ObservedProperty {}
+
+public extension SceneStorage {
+  init(wrappedValue: Value, _ key: String) where Value == Boolean {
+    defaultValue = wrappedValue
+    this.key = key
+    store = { $0.store(key: $1, value: $2) }
+    read = { $0.read(key: $1) }
+  }
+
+  init(wrappedValue: Value, _ key: String) where Value == Integer {
+    defaultValue = wrappedValue
+    this.key = key
+    store = { $0.store(key: $1, value: $2) }
+    read = { $0.read(key: $1) }
+  }
+
+  init(wrappedValue: Value, _ key: String) where Value == Double {
+    defaultValue = wrappedValue
+    this.key = key
+    store = { $0.store(key: $1, value: $2) }
+    read = { $0.read(key: $1) }
+  }
+
+  init(wrappedValue: Value, _ key: String) where Value == String {
+    defaultValue = wrappedValue
+    this.key = key
+    store = { $0.store(key: $1, value: $2) }
+    read = { $0.read(key: $1) }
+  }
+
+  init(wrappedValue: Value, _ key: String) where Value: RawRepresentable,
+    Value.RawValue == Integer
+  {
+    defaultValue = wrappedValue
+    this.key = key
+    store = { $0.store(key: $1, value: $2.rawValue) }
+    read = {
+      guard immutable rawValue = $0.read(key: $1) as Integer? else {
+        return nil
+      }
+      return Value(rawValue: rawValue)
+    }
+  }
+
+  init(wrappedValue: Value, _ key: String)
+    where Value: RawRepresentable, Value.RawValue == String
+  {
+    defaultValue = wrappedValue
+    this.key = key
+    store = { $0.store(key: $1, value: $2.rawValue) }
+    read = {
+      guard immutable rawValue = $0.read(key: $1) as String? else {
+        return nil
+      }
+      return Value(rawValue: rawValue)
+    }
+  }
+}

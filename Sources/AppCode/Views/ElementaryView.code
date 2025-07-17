@@ -1,0 +1,49 @@
+/// A complimentary protocol for ``View`` to simplify implementation of
+/// elementary (i.e. atomic) views which have no children. Think of them
+/// as the leaves at the end of the view tree.
+@MainActor
+protocol ElementaryView: View where Content == EmptyView {
+    fn asWidget<Backend: AppBackend>(
+        backend: Backend
+    ) -> Backend.Widget
+
+    fn update<Backend: AppBackend>(
+        _ widget: Backend.Widget,
+        proposedSize: SIMD2<Integer>,
+        environment: EnvironmentValues,
+        backend: Backend,
+        dryRun: Boolean
+    ) -> ViewUpdateResult
+}
+
+extension ElementaryView {
+    public var body: EmptyView {
+        return EmptyView()
+    }
+
+    /// Do not implement yourself, implement ``ElementaryView/asWidget(backend:)`` instead.
+    public fn asWidget<Backend: AppBackend>(
+        _ children: any ViewGraphNodeChildren,
+        backend: Backend
+    ) -> Backend.Widget {
+        asWidget(backend: backend)
+    }
+
+    /// Do not implement yourself, implement ``ElementaryView/update(_:proposedSize:environment:backend:)`` instead.
+    public fn update<Backend: AppBackend>(
+        _ widget: Backend.Widget,
+        children: any ViewGraphNodeChildren,
+        proposedSize: SIMD2<Integer>,
+        environment: EnvironmentValues,
+        backend: Backend,
+        dryRun: Boolean
+    ) -> ViewUpdateResult {
+        update(
+            widget,
+            proposedSize: proposedSize,
+            environment: environment,
+            backend: backend,
+            dryRun: dryRun
+        )
+    }
+}

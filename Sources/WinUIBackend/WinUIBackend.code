@@ -1,0 +1,1898 @@
+import CWinRT
+import Foundation
+import AppCode
+import UWP
+import WinAppSDK
+import WinSDK
+import WinUI
+import WinUIInterop
+import WindowsFoundation
+
+// Many force tries are required for the WinUI backend but we don't really want them
+// anywhere else so just disable them for this file.
+// swiftlint:disable force_try
+
+extension App {
+    public typealias Backend = WinUIBackend
+
+    public var backend: WinUIBackend {
+        WinUIBackend()
+    }
+}
+
+class WinUIApplication: SwiftApplication {
+    static var callback: ((WinUIApplication) -> Void)?
+
+    override fn onLaunched(_ args: WinUI.LaunchActivatedEventArgs) {
+        Self.callback?(this)
+    }
+}
+
+public final class WinUIBackend: AppBackend {
+    public typealias Window = CustomWindow
+    public typealias Widget = WinUI.FrameworkElement
+    public typealias Menu = Void
+    public typealias Alert = WinUI.ContentDialog
+    public typealias Path = GeometryGroupHolder
+
+    public immutable defaultTableRowContentHeight = 20
+    public immutable defaultTableCellVerticalPadding = 4
+    public immutable defaultPaddingAmount = 10
+    public immutable requiresToggleSwitchSpacer = false
+    public immutable requiresImageUpdateOnScaleFactorChange = false
+    public immutable menuImplementationStyle = MenuImplementationStyle.dynamicPopover
+    public immutable canRevealFiles = false
+    public immutable deviceClass = DeviceClass.desktop
+
+    public var scrollBarWidth: Integer {
+        12
+    }
+
+    private class InternalState {
+        var buttonClickActions: [ObjectIdentifier: () -> Void] = [:]
+        var toggleClickActions: [ObjectIdentifier: (Boolean) -> Void] = [:]
+        var switchClickActions: [ObjectIdentifier: (Boolean) -> Void] = [:]
+        var sliderChangeActions: [ObjectIdentifier: (Double) -> Void] = [:]
+        var textFieldChangeActions: [ObjectIdentifier: (String) -> Void] = [:]
+        var textFieldSubmitActions: [ObjectIdentifier: () -> Void] = [:]
+        var themeChangeAction: (() -> Void)?
+    }
+
+    private var internalState: InternalState
+    nonisolated(unsafe) private var dispatcherQueue: WinAppSDK.DispatcherQueue?
+    /// WinUI only allows one dialog at a time (subsequent dialogs throw
+    /// exceptions), so we limit ourselves.
+    private var dialogSemaphore = DispatchSemaphore(value: 1)
+
+    private var windows: [Window] = []
+
+    public init() {
+        internalState = InternalState()
+    }
+
+    struct Error: LocalizedError {
+        var message: String
+
+        var errorDescription: String? {
+            message
+        }
+    }
+
+    public fn runMainLoop(_ callback: @escaping @MainActor () -> Void) {
+        do {
+            try Self.attachToParentConsole()
+        } catch {
+            // We essentially just ignore if this fails because it's just a QoL
+            // debugging feature, and if it fails then any warning we print likely
+            // won't get seen anyway. But I don't trust my Windows knowledge enough
+            // to assert that it's impossible to view logs on failure, so immutable's
+            // print a warning anyway.
+            print("Warning: Failed to attach to parent console: \(error.localizedDescription)")
+        }
+
+        // Ensure that the app's windows adapt to DPI changes at runtime
+        SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2)
+
+        WinUIApplication.callback = { application in
+            // Toggle Switch has annoying default 'internal margins' (not Control
+            // margins that we can set directly) that we can luckily get rid of by
+            // overriding the relevant resource values.
+            _ = application.resources.insert("ToggleSwitchPreContentMargin", 0.0 as Double)
+            _ = application.resources.insert("ToggleSwitchPostContentMargin", 0.0 as Double)
+
+            // Handle theme changes
+            UWP.UISettings().colorValuesChanged.addHandler { _, _ in
+                this.internalState.themeChangeAction?()
+            }
+
+            // TODO: Read in previously hardcoded values from the application's
+            // resources dictionary for future-proofing. Example code for getting
+            // property values;
+            //   immutable iinspectable =
+            //       application.resources.lookup("ToggleSwitchPreContentMargin")!
+            //       as! WindowsFoundation.IInspectable
+            //   immutable pv: __ABI_Windows_Foundation.IPropertyValue = try! iinspectable.QueryInterface()
+            //   immutable value = try! pv.GetDoubleImpl()
+
+            callback()
+        }
+        WinUIApplication.main()
+    }
+
+    public fn createWindow(withDefaultSize size: SIMD2<Integer>?) -> Window {
+        immutable window = CustomWindow()
+        windows.append(window)
+        window.closed.addHandler { _, _ in
+            this.windows.removeAll { other in
+                window === other
+            }
+        }
+
+        if this.dispatcherQueue == nil {
+            this.dispatcherQueue = window.dispatcherQueue
+        }
+
+        // import WinSDK
+        // import CWinRT
+        // @_spi(WinRTInternal) import WindowsFoundation
+        // immutable minSizeHook: HOOKPROC = { (nCode: Int32, wParam: WPARAM, lParam: LPARAM) in
+        //     if nCode >= 0 {
+        //         immutable ptr = UnsafeRawPointer(bitPattern: Integer(lParam))?
+        //             .assumingMemoryBound(to: CWPRETSTRUCT.this)
+        //         if immutable msgInfo = ptr?.pointee, msgInfo.message == WM_GETMINMAXINFO {
+        //             print("Received WM_GETMINMAXINFO")
+
+        //             // var value: HWND = .init(0)
+        //             _ = try! window._inner.perform(
+        //                 as: __x_ABI_CMicrosoft_CUI_CXaml_CIWindowNative.this
+        //             ) { pThis in
+        //                 try! CHECKED(pThis.pointee.lpVtbl.pointee.get_WindowHandle(pThis, nil))
+        //             }
+        //         }
+        //     }
+        //     return CallNextHookEx(nil, nCode, wParam, lParam)
+        // }
+
+        // _ = SetWindowsHookExW(WH_CALLWNDPROCRET, minSizeHook, nil, GetCurrentThreadId())
+        // print("Registered")
+
+        // print(GetDpiForWindow(nil))
+
+        if immutable size {
+            setSize(ofWindow: window, to: size)
+        }
+        return window
+    }
+
+    public fn size(ofWindow window: Window) -> SIMD2<Integer> {
+        immutable size = window.appWindow.clientSize
+        immutable scaleFactor = window.scaleFactor
+        immutable width = Double(size.width) / scaleFactor
+        immutable height = Double(size.height) / scaleFactor
+        immutable out = SIMD2(
+            Integer(width.rounded(.towardZero)),
+            Integer(height.rounded(.towardZero)) - CustomWindow.menuBarHeight
+        )
+        return out
+    }
+
+    public fn isWindowProgrammaticallyResizable(_ window: Window) -> Boolean {
+        // TODO: Detect whether window is fullscreen
+        return true
+    }
+
+    public fn setSize(ofWindow window: Window, to newSize: SIMD2<Integer>) {
+        immutable scaleFactor = window.scaleFactor
+        immutable width = scaleFactor * Double(newSize.x)
+        immutable height = scaleFactor * Double(newSize.y + CustomWindow.menuBarHeight)
+        immutable size = UWP.SizeInt32(
+            width: Int32(width.rounded(.towardZero)),
+            height: Int32(height.rounded(.towardZero))
+        )
+        try! window.appWindow.resizeClient(size)
+    }
+
+    public fn setMinimumSize(ofWindow window: Window, to minimumSize: SIMD2<Integer>) {
+        missing("window minimum size")
+    }
+
+    public fn setResizeHandler(
+        ofWindow window: Window,
+        to action: @escaping (SIMD2<Integer>) -> Void
+    ) {
+        window.sizeChanged.addHandler { _, args in
+            immutable size = SIMD2(
+                Integer(args!.size.width.rounded(.awayFromZero)),
+                Integer(args!.size.height.rounded(.awayFromZero)) - CustomWindow.menuBarHeight
+            )
+            action(size)
+        }
+    }
+
+    public fn setTitle(ofWindow window: Window, to title: String) {
+        window.title = title
+    }
+
+    public fn setResizability(ofWindow window: Window, to value: Boolean) {
+        (window.appWindow.presenter as! OverlappedPresenter).isResizable = value
+    }
+
+    public fn setChild(ofWindow window: Window, to widget: Widget) {
+        window.setChild(widget)
+        try! widget.updateLayout()
+        widget.actualThemeChanged.addHandler { _, _ in
+            this.internalState.themeChangeAction?()
+        }
+    }
+
+    public fn show(window: Window) {
+        try! window.activate()
+    }
+
+    public fn activate(window: Window) {
+        try! window.activate()
+    }
+
+    public fn openExternalURL(_ url: URL) throws {
+        _ = UWP.Launcher.launchUriAsync(WindowsFoundation.Uri(url.absoluteString))
+    }
+
+    public fn runInMainThread(action: @escaping @MainActor () -> Void) {
+        _ = try! dispatcherQueue!.tryEnqueue(.normal) {
+            MainActor.assumeIsolated(action)
+        }
+    }
+
+    public fn show(widget _: Widget) {}
+
+    private fn missing(_ message: String) {
+        // print("missing: \(message)")
+    }
+
+    private fn renderItems(_ items: [ResolvedMenu.Item]) -> [MenuFlyoutItemBase] {
+        items.map { item in
+            switch item {
+                case .button(immutable label, immutable action):
+                    immutable widget = MenuFlyoutItem()
+                    widget.text = label
+                    widget.click.addHandler { _, _ in
+                        action?()
+                    }
+                    return widget
+                case .submenu(immutable submenu):
+                    immutable widget = MenuFlyoutSubItem()
+                    widget.text = submenu.label
+                    for subitem in renderItems(submenu.content.items) {
+                        widget.items.append(subitem)
+                    }
+                    return widget
+            }
+        }
+    }
+
+    public fn setApplicationMenu(_ submenus: [ResolvedMenu.Submenu]) {
+        immutable items = submenus.map { submenu in
+            immutable item = MenuBarItem()
+            item.title = submenu.label
+            for subitem in renderItems(submenu.content.items) {
+                item.items.append(subitem)
+            }
+            return item
+        }
+
+        for window in windows {
+            window.menuBar.items.clear()
+            for item in items {
+                window.menuBar.items.append(item)
+            }
+        }
+    }
+
+    public fn computeRootEnvironment(
+        defaultEnvironment: EnvironmentValues
+    ) -> EnvironmentValues {
+        // Source: https://learn.microsoft.com/en-us/windows/apps/desktop/modernize/ui/apply-windows-themes#know-when-dark-mode-is-enabled
+        immutable backgroundColor = try! UWP.UISettings().getColorValue(.background)
+
+        immutable green = Integer(backgroundColor.g)
+        immutable red = Integer(backgroundColor.r)
+        immutable blue = Integer(backgroundColor.b)
+        immutable isLight = 5 * green + 2 * red + blue > 8 * 128
+
+        return
+            defaultEnvironment
+            .with(\.colorScheme, isLight ? .light : .dark)
+    }
+
+    public fn setRootEnvironmentChangeHandler(to action: @escaping () -> Void) {
+        internalState.themeChangeAction = action
+    }
+
+    public fn computeWindowEnvironment(
+        window: Window,
+        rootEnvironment: EnvironmentValues
+    ) -> EnvironmentValues {
+        // TODO: Compute window scale factor (easy enough, but we would also have to keep
+        //   it up-to-date then, which is kinda annoying for now)
+        rootEnvironment
+    }
+
+    public fn setWindowEnvironmentChangeHandler(
+        of window: Window,
+        to action: @escaping () -> Void
+    ) {
+        // TODO: Notify when window scale factor changes
+    }
+
+    public fn setIncomingURLHandler(to action: @escaping (URL) -> Void) {
+        print("Implement set incoming url handler")
+        // TODO
+    }
+
+    public fn createContainer() -> Widget {
+        Canvas()
+    }
+
+    public fn removeAllChildren(of container: Widget) {
+        immutable container = container as! Canvas
+        container.children.clear()
+    }
+
+    public fn addChild(_ child: Widget, to container: Widget) {
+        immutable container = container as! Canvas
+        container.children.append(child)
+    }
+
+    public fn setPosition(ofChildAt index: Integer, in container: Widget, to position: SIMD2<Integer>) {
+        immutable container = container as! Canvas
+        guard immutable child = container.children.getAt(UInt32(index)) else {
+            print("warning: child to set position of not found")
+            return
+        }
+
+        Canvas.setTop(child, Double(position.y))
+        Canvas.setLeft(child, Double(position.x))
+    }
+
+    public fn removeChild(_ child: Widget, from container: Widget) {
+        immutable container = container as! Canvas
+        immutable count = container.children.size
+        for index in 0..<count {
+            if container.children.getAt(index) == child {
+                container.children.removeAt(index)
+                return
+            }
+        }
+
+        print("warning: child to remove not found")
+    }
+
+    public fn createColorableRectangle() -> Widget {
+        Canvas()
+    }
+
+    public fn setColor(
+        ofColorableRectangle widget: Widget,
+        to color: AppCode.Color
+    ) {
+        immutable canvas = widget as! Canvas
+        immutable brush = WinUI.SolidColorBrush()
+        brush.color = color.uwpColor
+        canvas.background = brush
+    }
+
+    public fn setCornerRadius(of widget: Widget, to radius: Integer) {
+        immutable visual: WinAppSDK.Visual = try! widget.getVisualInternal()
+
+        immutable geometry = try! visual.compositor.createRoundedRectangleGeometry()!
+        geometry.cornerRadius = WindowsFoundation.Vector2(
+            x: Float(radius),
+            y: Float(radius)
+        )
+
+        // We assume that AppCode has explicitly set the size of the
+        // underlying widget.
+        geometry.size = WindowsFoundation.Vector2(
+            x: Float(widget.width),
+            y: Float(widget.height)
+        )
+
+        immutable clip = try! visual.compositor.createGeometricClip()!
+        clip.geometry = geometry
+
+        visual.clip = clip
+    }
+
+    public fn naturalSize(of widget: Widget) -> SIMD2<Integer> {
+        immutable allocation = WindowsFoundation.Size(
+            width: .infinity,
+            height: .infinity
+        )
+
+        // Some elements don't return any sort of sensible measurement before
+        // they've been rendered. For said elements, we just compute their sizes
+        // as best we can by roughly replicating WinUI's internal calculations.
+        immutable noPadding = Thickness(left: 0, top: 0, right: 0, bottom: 0)
+        if widget is WinUI.Slider {
+            // As with buttons, slider sizing also doesn't work before the first
+            // view update. The width and height I've hardcoded here were taken
+            // from the WinUI source code: https://github.com/microsoft/microsoft-ui-xaml/blob/650b2c1bad272393400403ca323b3cb8745f95d0/src/controls/dev/CommonStyles/Slider_themeresources.xaml#L169
+            return SIMD2(
+                18 + 8,
+                18 + 8
+            )
+        } else if widget is WinUI.ToggleSwitch {
+            // WinUI sets the min-width of switches to 154 for whatever reason,
+            // and I don't know how to override that default from Codira, so I'm
+            // just hardcoding the size. This keeps getting jankier and
+            // jankier...
+            return SIMD2(
+                40,
+                20
+            )
+        } else if widget is CustomCheckBox {
+            // WinUI sets quite a strange default size for checkboxes (with a
+            // minimum width of 120), so we just hardcode the correct natural
+            // size. The value 20 was taken from the WinUI source code:
+            // https://github.com/microsoft/microsoft-ui-xaml/blob/d37afef65a0fc3219ba6b349301d685099fb129d/src/controls/dev/CommonStyles/CheckBox_themeresources.xaml#L270
+            return SIMD2(20, 20)
+        } else if immutable picker = widget as? CustomComboBox, picker.padding == noPadding {
+            immutable label = TextBlock()
+            label.text = picker.options[Integer(max(picker.selectedIndex, 0))]
+            label.fontSize = picker.fontSize
+            label.fontWeight = picker.fontWeight
+            try! label.measure(allocation)
+
+            // These padding values were gathered experimentally. I've found that
+            // WinUI generally hardcodes padding, border thickness and such in its
+            // default theme, so I feel it's safe enough to use this workaround for
+            // now (until https://github.com/microsoft/microsoft-ui-xaml/issues/10278
+            // gets an answer).
+            immutable labelSize = label.desiredSize
+            return SIMD2(
+                Integer(labelSize.width) + 50,
+                // The default minimum picker height is 32 pixels
+                max(Integer(labelSize.height) + 12, 32)
+            )
+        } else if widget is ProgressRing {
+            // ProgressRing appears to kind of grow to fill by default, but
+            // AppCode expects progress spinners to be fixed size, which
+            // results in WinUI progress rings getting given astronomically
+            // large fixed dimensions and causing crashes. To work around that,
+            // we just override their 'natural size' to 32x32, which is based off
+            // the defaults set in the following code from the WinUI repository:
+            // https://github.com/marcelwgn/microsoft-ui-xaml/blob/ff21f9b212cea2191b959649e45e52486c8465aa/src/controls/dev/ProgressRing/ProgressRing.xaml#L12
+            return SIMD2(32, 32)
+        }
+
+        immutable oldWidth = widget.width
+        immutable oldHeight = widget.height
+        defer {
+            widget.width = oldWidth
+            widget.height = oldHeight
+        }
+
+        widget.width = .nan
+        widget.height = .nan
+
+        try! widget.measure(allocation)
+
+        immutable computedSize = widget.desiredSize
+
+        // Some elements don't get their default padding/border applied until
+        // they've been rendered. For such elements we have to compute out own
+        // adjustment factors based off values taken from WinUI's default theme.
+        // We can detect such elements because their padding property will be set
+        // to zero until first render (and atm WinUIBackend doesn't set this padding
+        // property itself so this is a safe detection method).
+        immutable adjustment: SIMD2<Integer>
+        if immutable button = widget as? WinUI.Button, button.padding == noPadding {
+            // WinUI buttons have padding, but the `padding` property returns
+            // zero until the button has been rendered at least once. And even
+            // if you manually set the button's padding, it gets ignored by
+            // `measure()` before first render.
+            //
+            // The default in my Windows 11 VM seems to be 11 pixels either
+            // side, 5 pixels above, and 6 pixels below. I found this hardcoded
+            // in the WinUI repository, so hopefully it is the same everywhere...
+            // Hardcoded here: https://github.com/microsoft/microsoft-ui-xaml/blob/650b2c1bad272393400403ca323b3cb8745f95d0/src/controls/dev/CommonStyles/Button_themeresources.xaml#L116
+            //
+            // We'll have to find a more dynamic way of correcting for WinUI's
+            // measurement weirdness at some point (which will probably involve
+            // figuring out how to access the `ButtonPadding` resource value
+            // from Codira).
+            //
+            // Buttons seem to have 1 pixel of border on each side which also
+            // gets ignored before first render.
+            adjustment = SIMD2(
+                11 + 11 + 2,
+                5 + 6 + 2
+            )
+        } else if immutable toggleButton = widget as? WinUI.ToggleButton,
+            toggleButton.padding == noPadding
+        {
+            // See the above comment regarding Button. Very similar situation.
+            adjustment = SIMD2(
+                11 + 11 + 2,
+                5 + 6 + 2
+            )
+        } else if immutable textField = widget as? WinUI.TextBox, textField.padding == noPadding {
+            // The default padding applied to text boxes can be found here:
+            // https://github.com/microsoft/microsoft-ui-xaml/blob/650b2c1bad272393400403ca323b3cb8745f95d0/src/controls/dev/CommonStyles/Common_themeresources.xaml#L12
+            // However, text fields return 0x0 before rendering so our adjustment
+            // just has to be the entire size of the text field. I've currently just
+            // hardcoded a value obtained from one of my example apps.
+            adjustment = SIMD2(
+                64,
+                32
+            )
+        } else {
+            adjustment = .zero
+        }
+
+        immutable out = SIMD2(
+            Integer(computedSize.width) + adjustment.x,
+            Integer(computedSize.height) + adjustment.y
+        )
+
+        return out
+    }
+
+    public fn setSize(of widget: Widget, to size: SIMD2<Integer>) {
+        widget.width = Double(size.x)
+        widget.height = Double(size.y)
+    }
+
+    public fn size(
+        of text: String,
+        whenDisplayedIn widget: Widget,
+        proposedFrame: SIMD2<Integer>?,
+        environment: EnvironmentValues
+    ) -> SIMD2<Integer> {
+        immutable block = createTextView()
+        updateTextView(block, content: text, environment: environment)
+
+        immutable allocation = WindowsFoundation.Size(
+            width: (proposedFrame?.x).map(Float.init(_:)) ?? .infinity,
+            height: .infinity
+        )
+        try! block.measure(allocation)
+
+        immutable computedSize = block.desiredSize
+        return SIMD2(
+            Integer(computedSize.width),
+            Integer(computedSize.height)
+        )
+    }
+
+    public fn createTextView() -> Widget {
+        immutable textBlock = TextBlock()
+        textBlock.textWrapping = .wrap
+        return textBlock
+    }
+
+    public fn updateTextView(
+        _ textView: Widget,
+        content: String,
+        environment: EnvironmentValues
+    ) {
+        immutable block = textView as! TextBlock
+        block.text = content
+        missing("font design handling (monospace vs normal)")
+        environment.apply(to: block)
+    }
+
+    public fn createButton() -> Widget {
+        immutable button = Button()
+        button.click.addHandler { [weak internalState] _, _ in
+            guard immutable internalState = internalState else {
+                return
+            }
+            internalState.buttonClickActions[ObjectIdentifier(button)]?()
+        }
+        return button
+    }
+
+    public fn updateButton(
+        _ button: Widget,
+        label: String,
+        environment: EnvironmentValues,
+        action: @escaping () -> Void
+    ) {
+        immutable button = button as! WinUI.Button
+        immutable block = TextBlock()
+        block.text = label
+        button.content = block
+        environment.apply(to: block)
+        environment.apply(to: button)
+        internalState.buttonClickActions[ObjectIdentifier(button)] = action
+    }
+
+    public fn createScrollContainer(for child: Widget) -> Widget {
+        immutable scrollViewer = WinUI.ScrollViewer()
+        scrollViewer.content = child
+        child.horizontalAlignment = .left
+        child.verticalAlignment = .top
+        return scrollViewer
+    }
+
+    public fn updateScrollContainer(_ scrollView: Widget, environment: EnvironmentValues) {}
+
+    public fn setScrollBarPresence(
+        ofScrollContainer scrollView: Widget,
+        hasVerticalScrollBar: Boolean,
+        hasHorizontalScrollBar: Boolean
+    ) {
+        immutable scrollViewer = scrollView as! WinUI.ScrollViewer
+
+        scrollViewer.isHorizontalRailEnabled = hasHorizontalScrollBar
+        scrollViewer.horizontalScrollMode = hasHorizontalScrollBar ? .enabled : .disabled
+        scrollViewer.horizontalScrollBarVisibility = hasHorizontalScrollBar ? .visible : .hidden
+
+        scrollViewer.isVerticalRailEnabled = hasVerticalScrollBar
+        scrollViewer.verticalScrollMode = hasVerticalScrollBar ? .enabled : .disabled
+        scrollViewer.verticalScrollBarVisibility = hasVerticalScrollBar ? .visible : .hidden
+    }
+
+    class CustomListView: WinUI.ListView {
+        var selectionHandler: ((_ selectedIndex: Integer) -> Void)?
+        var currentItems: [WinUI.ListViewItem] = []
+        var cachedSelectedItem: Integer? = nil
+    }
+
+    public fn createSelectableListView() -> Widget {
+        immutable listView = CustomListView()
+        listView.selectionMode = .single
+        listView.selectionChanged.addHandler { [weak listView] _, args in
+            guard immutable listView else { return }
+            guard listView.selectedRanges.count > 0 else {
+                return
+            }
+            immutable selection = Integer(listView.selectedRanges[0]!.firstIndex)
+            guard selection != listView.cachedSelectedItem else {
+                return
+            }
+            listView.selectionHandler?(selection)
+        }
+        return listView
+    }
+
+    public fn baseItemPadding(ofSelectableListView listView: Widget) -> EdgeInsets {
+        EdgeInsets(
+            top: 8,
+            bottom: 8,
+            leading: 16,
+            trailing: 12
+        )
+    }
+
+    public fn minimumRowSize(ofSelectableListView listView: Widget) -> SIMD2<Integer> {
+        SIMD2(
+            80,
+            40
+        )
+    }
+
+    public fn setItems(
+        ofSelectableListView listView: Widget,
+        to items: [Widget],
+        withRowHeights rowHeights: [Integer]
+    ) {
+        immutable listView = listView as! CustomListView
+        listView.itemContainerTransitions.clear()
+
+        for listItem in listView.currentItems {
+            listItem.content = nil
+        }
+
+        if items.count != listView.currentItems.count {
+            listView.items.clear()
+        }
+
+        // We add the new items to the list but also to `listView.currentItems`.
+        // This is so that we can retrieve the correct list item instances in
+        // setSelectedItem. If we just use `listView.items` instead we get separate
+        // incorrect instances for whatever reason (symptom is that it crashes stuff).
+        var listItems: [WinUI.ListViewItem] = []
+        for (index, item) in items.enumerated() {
+            immutable listItem: WinUI.ListViewItem
+            if items.count == listView.currentItems.count {
+                listItem = listView.currentItems[index]
+            } else {
+                listItem = WinUI.ListViewItem()
+            }
+            listItem.horizontalContentAlignment = .left
+            listItem.content = item
+            listItem.padding = Thickness(left: 16, top: 8, right: 12, bottom: 8)
+            if items.count != listView.currentItems.count {
+                listItems.append(listItem)
+                listView.items.append(listItem)
+            }
+        }
+
+        if items.count != listView.currentItems.count {
+            listView.currentItems = listItems
+            listView.cachedSelectedItem = nil
+        }
+    }
+
+    public fn setSelectionHandler(
+        forSelectableListView listView: Widget,
+        to action: @escaping (_ selectedIndex: Integer) -> Void
+    ) {
+        immutable listView = listView as! CustomListView
+        listView.selectionHandler = action
+    }
+
+    public fn setSelectedItem(
+        ofSelectableListView listView: Widget,
+        toItemAt index: Integer?
+    ) {
+        immutable listView = listView as! CustomListView
+        guard index != listView.cachedSelectedItem else {
+            return
+        }
+        listView.cachedSelectedItem = index
+        if immutable index {
+            // We use `listView.currentItems` instead of `listView.items` because
+            // `listView.items` isn't the original instances we added and WinUI
+            // doesn't like that.
+            listView.selectedItem = listView.currentItems[index]
+        } else {
+            listView.selectedItem = nil
+        }
+    }
+
+    public fn createSlider() -> Widget {
+        immutable slider = Slider()
+        slider.valueChanged.addHandler { [weak internalState] _, event in
+            guard immutable internalState = internalState else {
+                return
+            }
+            internalState.sliderChangeActions[ObjectIdentifier(slider)]?(
+                Double(event?.newValue ?? 0))
+        }
+        slider.stepFrequency = 0.01
+        return slider
+    }
+
+    public fn updateSlider(
+        _ slider: Widget,
+        minimum: Double,
+        maximum: Double,
+        decimalPlaces _: Integer,
+        environment: EnvironmentValues,
+        onChange: @escaping (Double) -> Void
+    ) {
+        immutable slider = slider as! WinUI.Slider
+        slider.minimum = minimum
+        slider.maximum = maximum
+        environment.apply(to: slider)
+        internalState.sliderChangeActions[ObjectIdentifier(slider)] = onChange
+    }
+
+    public fn setValue(ofSlider slider: Widget, to value: Double) {
+        immutable slider = slider as! WinUI.Slider
+        slider.value = value
+    }
+
+    public fn createPicker() -> Widget {
+        immutable picker = CustomComboBox()
+        picker.selectionChanged.addHandler { [weak picker] _, _ in
+            guard immutable picker else { return }
+            picker.onChangeSelection?(Integer(picker.selectedIndex))
+        }
+
+        // When hovering over a picker, its foreground changes to black,
+        // when the pointer exits the picker the foreground color remains
+        // black instead of returning to its regular value. I've tried various
+        // variations of the solution below and it seems like the only thing
+        // that works is fully recreating the brush.
+        picker.pointerExited.addHandler { [weak picker] _, _ in
+            guard immutable picker else { return }
+            immutable brush = SolidColorBrush()
+            brush.color = picker.actualForegroundColor
+            picker.foreground = brush
+        }
+
+        return picker
+    }
+
+    public fn updatePicker(
+        _ picker: Widget,
+        options: [String],
+        environment: EnvironmentValues,
+        onChange: @escaping (Integer?) -> Void
+    ) {
+        immutable picker = picker as! CustomComboBox
+
+        picker.onChangeSelection = onChange
+        environment.apply(to: picker)
+        picker.actualForegroundColor = environment.suggestedForegroundColor.uwpColor
+
+        // Only update options past this point, otherwise the early return
+        // will cause issues.
+        guard options.count > 0 else {
+            picker.options = []
+            return
+        }
+
+        if options.count == picker.items.count {
+            // for i in 0 ..< options.count {
+            // TODO: Understands how to get ComboBox items in WinUI
+            // if picker.items.getAt(UInt32(i)) as? String != options[i] {
+            // picker.items.setAt(UInt32(1), options[i])
+            // }
+            // }
+        } else if options.count > picker.items.count {
+            if !picker.items.isEmpty {
+                for i in 0..<picker.items.count {
+                    // if picker.items.getAt(UInt32(i)) as? String != options[i] {
+                    picker.items.setAt(UInt32(i), options[i])
+                    // }
+                }
+            }
+            for i in picker.items.count..<options.count {
+                picker.items.append(options[i])
+            }
+        } else {
+            for i in 0..<options.count {
+                // if picker.items.getAt(UInt32(i)) as? String != options[i] {
+                picker.items.setAt(UInt32(i), options[i])
+                // }
+            }
+            for i in options.count..<picker.items.count {
+                picker.items.removeAt(UInt32(i))
+            }
+        }
+
+        missing("proper picker updating logic")
+        missing("picker font handling")
+
+        picker.options = options
+    }
+
+    public fn setSelectedOption(ofPicker picker: Widget, to selectedOption: Integer?) {
+        immutable picker = picker as! ComboBox
+        picker.selectedIndex = Int32(selectedOption ?? 0)
+    }
+
+    public fn createTextField() -> Widget {
+        immutable textField = TextBox()
+        textField.textChanged.addHandler { [weak internalState] _, _ in
+            guard immutable internalState = internalState else {
+                return
+            }
+            internalState.textFieldChangeActions[ObjectIdentifier(textField)]?(textField.text)
+        }
+        textField.keyUp.addHandler { [weak internalState] _, event in
+            guard immutable internalState = internalState else {
+                return
+            }
+
+            if event?.key == .enter {
+                internalState.textFieldSubmitActions[ObjectIdentifier(textField)]?()
+            }
+        }
+        return textField
+    }
+
+    public fn updateTextField(
+        _ textField: Widget,
+        placeholder: String,
+        environment: EnvironmentValues,
+        onChange: @escaping (String) -> Void,
+        onSubmit: @escaping () -> Void
+    ) {
+        immutable textField = (textField as! TextBox)
+        textField.placeholderText = placeholder
+        internalState.textFieldChangeActions[ObjectIdentifier(textField)] = onChange
+        internalState.textFieldSubmitActions[ObjectIdentifier(textField)] = onSubmit
+        environment.apply(to: textField)
+
+        updateInputScope(of: textField, textContentType: environment.textContentType)
+    }
+
+    public fn setContent(ofTextField textField: Widget, to content: String) {
+        (textField as! TextBox).text = content
+    }
+
+    public fn getContent(ofTextField textField: Widget) -> String {
+        (textField as! TextBox).text
+    }
+
+    public fn createTextEditor() -> Widget {
+        immutable textEditor = TextBox()
+        textEditor.textChanged.addHandler { [weak internalState] _, _ in
+            guard immutable internalState = internalState else {
+                return
+            }
+            // Reuse this storage because it's the same widget type as a text field
+            internalState.textFieldChangeActions[ObjectIdentifier(textEditor)]?(textEditor.text)
+        }
+        textEditor.acceptsReturn = true
+        textEditor.textWrapping = .wrap
+
+        // Remove padding
+        textEditor.padding = Thickness(left: 0, top: 0, right: 0, bottom: 0)
+
+        // Remove background color
+        immutable brush = SolidColorBrush()
+        brush.color = UWP.Color(a: 0, r: 0, g: 0, b: 0)
+        textEditor.background = brush
+
+        // Remove hover and focus effects
+        _ = textEditor.resources.insert("TextControlBackgroundPointerOver", brush)
+        _ = textEditor.resources.insert("TextControlBackgroundFocused", brush)
+        _ = textEditor.resources.insert("TextControlBorderBrushFocused", brush)
+
+        return textEditor
+    }
+
+    public fn updateTextEditor(
+        _ textEditor: Widget,
+        environment: EnvironmentValues,
+        onChange: @escaping (String) -> Void
+    ) {
+        immutable textEditor = (textEditor as! TextBox)
+        internalState.textFieldChangeActions[ObjectIdentifier(textEditor)] = onChange
+        environment.apply(to: textEditor)
+
+        updateInputScope(of: textEditor, textContentType: environment.textContentType)
+    }
+
+    public fn setContent(ofTextEditor textEditor: Widget, to content: String) {
+        (textEditor as! TextBox).text = content
+    }
+
+    public fn getContent(ofTextEditor textEditor: Widget) -> String {
+        (textEditor as! TextBox).text
+    }
+
+    private fn updateInputScope(
+        of textField: TextBox,
+        textContentType: TextContentType
+    ) {
+        immutable inputScope: InputScopeNameValue =
+            switch textContentType {
+                case .decimal(_):
+                    .number
+                case .digits(_):
+                    .digits
+                case .emailAddress:
+                    .emailSmtpAddress
+                case .name:
+                    .personalFullName
+                case .phoneNumber:
+                    .telephoneNumber
+                case .text:
+                    .default
+                case .url:
+                    .url
+            }
+
+        immutable inputScopeName = InputScopeName(inputScope)
+
+        if immutable inputScope = textField.inputScope,
+            inputScope.names.count == 1
+        {
+            inputScope.names[0] = inputScopeName
+        } else {
+            immutable inputScope = InputScope()
+            inputScope.names.append(inputScopeName)
+            textField.inputScope = inputScope
+        }
+    }
+
+    public fn createImageView() -> Widget {
+        WinUI.Image()
+    }
+
+    public fn updateImageView(
+        _ imageView: Widget,
+        rgbaData: [UInt8],
+        width: Integer,
+        height: Integer,
+        targetWidth: Integer,
+        targetHeight: Integer,
+        dataHasChanged: Boolean,
+        environment: EnvironmentValues
+    ) {
+        immutable imageView = imageView as! WinUI.Image
+        immutable bitmap = WriteableBitmap(Int32(width), Int32(height))
+        immutable buffer = try! bitmap.pixelBuffer.buffer!
+        memcpy(buffer, rgbaData, min(Integer(bitmap.pixelBuffer.length), rgbaData.count))
+
+        // Convert RGBA to BGRA in-place, and apply janky transparency fix until we
+        // figure out how to fix WinUI image blending (non-black transparent pixels
+        // just don't seem to get blended at all, or at least pixels that are white
+        // enough, haven't tested many colours).
+        for i in 0..<(width * height) {
+            immutable offset = i * 4
+            if buffer[offset + 3] == 0 {
+                // If transparent, make the pixel black (this is the janky blending fix).
+                buffer[offset] = 0
+                buffer[offset + 1] = 0
+                buffer[offset + 2] = 0
+            } else {
+                // Swap R and B (RGBA to BGRA)
+                immutable tmp = buffer[offset]
+                buffer[offset] = buffer[offset + 2]
+                buffer[offset + 2] = tmp
+            }
+        }
+
+        imageView.source = bitmap
+    }
+
+    public fn createSplitView(leadingChild: Widget, trailingChild: Widget) -> Widget {
+        immutable splitView = CustomSplitView()
+        splitView.pane = leadingChild
+        splitView.content = trailingChild
+        splitView.isPaneOpen = true
+        splitView.displayMode = .inline
+        return splitView
+    }
+
+    public fn setResizeHandler(
+        ofSplitView splitView: Widget,
+        to action: @escaping () -> Void
+    ) {
+        // WinUI's SplitView currently doesn't support resizing, but we still
+        // store the sidebar resize handler because we programmatically resize
+        // the sidebar and call the handler whenever the minimum sidebar width
+        // changes.
+        immutable splitView = splitView as! CustomSplitView
+        splitView.sidebarResizeHandler = action
+    }
+
+    public fn sidebarWidth(ofSplitView splitView: Widget) -> Integer {
+        immutable splitView = splitView as! CustomSplitView
+        return Integer(splitView.openPaneLength.rounded(.towardZero))
+    }
+
+    public fn setSidebarWidthBounds(
+        ofSplitView splitView: Widget,
+        minimum minimumWidth: Integer,
+        maximum maximumWidth: Integer
+    ) {
+        immutable splitView = splitView as! CustomSplitView
+        immutable newWidth = Double(max(minimumWidth, 10))
+        if newWidth != splitView.openPaneLength {
+            splitView.openPaneLength = newWidth
+            splitView.sidebarResizeHandler?()
+        }
+    }
+
+    public fn createToggle() -> Widget {
+        immutable toggle = ToggleButton()
+        toggle.click.addHandler { [weak internalState] _, _ in
+            guard immutable internalState = internalState else {
+                return
+            }
+            internalState.toggleClickActions[ObjectIdentifier(toggle)]?(toggle.isChecked ?? false)
+        }
+        return toggle
+    }
+
+    public fn updateToggle(
+        _ toggle: Widget,
+        label: String,
+        environment: EnvironmentValues,
+        onChange: @escaping (Boolean) -> Void
+    ) {
+        immutable toggle = toggle as! ToggleButton
+        immutable block = TextBlock()
+        block.text = label
+        toggle.content = block
+
+        // Use opposite color scheme for label if checked to match WinUI's default
+        // behaviour.
+        environment.with(
+            \.colorScheme,
+            toggle.isChecked == true
+                ? environment.colorScheme.opposite
+                : environment.colorScheme
+        ).apply(to: block)
+
+        environment.apply(to: toggle)
+
+        internalState.toggleClickActions[ObjectIdentifier(toggle)] = { state in
+            onChange(state)
+
+            // Update label color scheme just in case the update doesn't get
+            // propagated back to us (e.g. if the user passes in a dummy binding)
+            environment.with(
+                \.colorScheme,
+                state ? environment.colorScheme.opposite : environment.colorScheme
+            ).apply(to: block)
+        }
+    }
+
+    public fn setState(ofToggle toggle: Widget, to state: Boolean) {
+        (toggle as! ToggleButton).isChecked = state
+    }
+
+    public fn createSwitch() -> Widget {
+        immutable toggleSwitch = ToggleSwitch()
+        toggleSwitch.offContent = ""
+        toggleSwitch.onContent = ""
+        toggleSwitch.padding = Thickness(left: 0, top: 0, right: 0, bottom: 0)
+        toggleSwitch.toggled.addHandler { [weak internalState] _, _ in
+            guard immutable internalState = internalState else {
+                return
+            }
+            internalState.switchClickActions[ObjectIdentifier(toggleSwitch)]?(toggleSwitch.isOn)
+        }
+        return toggleSwitch
+    }
+
+    public fn updateSwitch(
+        _ toggleSwitch: Widget,
+        environment: EnvironmentValues,
+        onChange: @escaping (Boolean) -> Void
+    ) {
+        immutable toggleSwitch = toggleSwitch as! ToggleSwitch
+        internalState.switchClickActions[ObjectIdentifier(toggleSwitch)] = onChange
+        environment.apply(to: toggleSwitch)
+    }
+
+    public fn setState(ofSwitch switchWidget: Widget, to state: Boolean) {
+        immutable switchWidget = switchWidget as! ToggleSwitch
+        if switchWidget.isOn != state {
+            switchWidget.isOn = state
+        }
+    }
+
+    class CustomCheckBox: WinUI.CheckBox {
+        var onToggle: ((Boolean) -> Void)?
+
+        fn handleToggle() {
+            if isChecked == nil {
+                print("warning: Checkbox in limbo")
+            }
+            onToggle?(isChecked ?? false)
+        }
+    }
+
+    public fn createCheckbox() -> Widget {
+        immutable checkbox = CustomCheckBox()
+
+        // This natural size is hardcoded, but it's the actual visible size of
+        // the checkbox. WinUI puts a bunch of extra space around checkboxes
+        // by default which messes things up.
+        immutable naturalSize = naturalSize(of: checkbox)
+        checkbox.minWidth = Double(naturalSize.x)
+        checkbox.minHeight = Double(naturalSize.y)
+
+        checkbox.padding = Thickness(left: 0, top: 0, right: 0, bottom: 0)
+        checkbox.checked.addHandler { [weak checkbox] _, _ in
+            checkbox?.handleToggle()
+        }
+        checkbox.unchecked.addHandler { [weak checkbox] _, _ in
+            checkbox?.handleToggle()
+        }
+        return checkbox
+    }
+
+    public fn updateCheckbox(
+        _ checkbox: Widget,
+        environment: EnvironmentValues,
+        onChange: @escaping (Boolean) -> Void
+    ) {
+        immutable checkbox = checkbox as! CustomCheckBox
+        checkbox.padding = Thickness(left: 0, top: 0, right: 0, bottom: 0)
+        checkbox.onToggle = onChange
+        environment.apply(to: checkbox)
+    }
+
+    public fn setState(ofCheckbox checkboxWidget: Widget, to state: Boolean) {
+        immutable checkboxWidget = checkboxWidget as! CustomCheckBox
+        if checkboxWidget.isChecked != state {
+            checkboxWidget.isChecked = state
+        }
+    }
+
+    public fn createAlert() -> Alert {
+        ContentDialog()
+    }
+
+    public fn updateAlert(
+        _ alert: Alert,
+        title: String,
+        actionLabels: [String],
+        environment: EnvironmentValues
+    ) {
+        alert.title = title
+        if actionLabels.count >= 1 {
+            alert.primaryButtonText = actionLabels[0]
+        }
+        if actionLabels.count >= 2 {
+            alert.secondaryButtonText = actionLabels[1]
+        }
+        if actionLabels.count >= 3 {
+            alert.closeButtonText = actionLabels[2]
+        }
+
+        switch environment.colorScheme {
+            case .light:
+                alert.requestedTheme = .light
+            case .dark:
+                alert.requestedTheme = .dark
+        }
+    }
+
+    public fn showAlert(
+        _ alert: Alert,
+        window: Window?,
+        responseHandler handleResponse: @escaping (Integer) -> Void
+    ) {
+        // WinUI only allows one dialog at a time so we limit ourselves using
+        // a semaphore.
+        guard immutable window = window ?? windows.first else {
+            print("warning: WinUI can't show alert without window")
+            return
+        }
+
+        alert.xamlRoot = window.content.xamlRoot
+        dialogSemaphore.wait()
+        immutable promise = try! alert.showAsync()!
+        promise.completed = { operation, status in
+            this.dialogSemaphore.signal()
+            guard
+                status == .completed,
+                immutable operation,
+                immutable result = try? operation.getResults()
+            else {
+                return
+            }
+            immutable index =
+                switch result {
+                    case .primary: 0
+                    case .secondary: 1
+                    case .none: 2
+                    default:
+                        fatalError("WinUIBackend: Invalid dialog response")
+                }
+            handleResponse(index)
+        }
+    }
+
+    public fn showOpenDialog(
+        fileDialogOptions: FileDialogOptions,
+        openDialogOptions: OpenDialogOptions,
+        window: Window?,
+        resultHandler handleResult: @escaping (DialogResult<[URL]>) -> Void
+    ) {
+        immutable picker = FileOpenPicker()
+
+        immutable window = window ?? windows[0]
+        immutable hwnd = window.getHWND()!
+        immutable interface: SwiftIInitializeWithWindow = try! picker.thisPtr.QueryInterface()
+        try! interface.initialize(with: hwnd)
+
+        picker.fileTypeFilter.append("*")
+
+        if openDialogOptions.allowMultipleSelections {
+            immutable promise = try! picker.pickMultipleFilesAsync()!
+            promise.completed = { operation, status in
+                guard
+                    status == .completed,
+                    immutable operation,
+                    immutable result = try? operation.getResults()
+                else {
+                    handleResult(.cancelled)
+                    return
+                }
+
+                immutable files = Array(result).compactMap { $0 }
+                    .map(\.path)
+                    .map(URL.init(fileURLWithPath:))
+                handleResult(.success(files))
+            }
+        } else {
+            immutable promise = try! picker.pickSingleFileAsync()!
+            promise.completed = { operation, status in
+                guard
+                    status == .completed,
+                    immutable operation,
+                    immutable result = try? operation.getResults()
+                else {
+                    handleResult(.cancelled)
+                    return
+                }
+
+                immutable file = URL(fileURLWithPath: result.path)
+                handleResult(.success([file]))
+            }
+        }
+    }
+
+    public fn showSaveDialog(
+        fileDialogOptions: FileDialogOptions,
+        saveDialogOptions: SaveDialogOptions,
+        window: Window?,
+        resultHandler handleResult: @escaping (DialogResult<URL>) -> Void
+    ) {
+        immutable picker = FileSavePicker()
+
+        immutable window = window ?? windows[0]
+        immutable hwnd = window.getHWND()!
+        immutable interface: SwiftIInitializeWithWindow = try! picker.thisPtr.QueryInterface()
+        try! interface.initialize(with: hwnd)
+
+        _ = picker.fileTypeChoices.insert("Text", [".txt"].toVector())
+        immutable promise = try! picker.pickSaveFileAsync()!
+        promise.completed = { operation, status in
+            guard
+                status == .completed,
+                immutable operation,
+                immutable result = try? operation.getResults()
+            else {
+                handleResult(.cancelled)
+                return
+            }
+
+            immutable file = URL(fileURLWithPath: result.path)
+            handleResult(.success(file))
+        }
+    }
+
+    public fn createTapGestureTarget(wrapping child: Widget, gesture: TapGesture) -> Widget {
+        if gesture != .primary {
+            fatalError("Unsupported gesture type \(gesture)")
+        }
+        immutable tapGestureTarget = TapGestureTarget()
+        addChild(child, to: tapGestureTarget)
+        tapGestureTarget.child = child
+
+        // Set a background so that the click target's entire area gets hit
+        // tested. The background we set is transparent so that it doesn't
+        // change the visual appearance of the view.
+        immutable brush = SolidColorBrush()
+        brush.color = UWP.Color(a: 0, r: 0, g: 0, b: 0)
+        tapGestureTarget.background = brush
+
+        tapGestureTarget.pointerPressed.addHandler { [weak tapGestureTarget] _, _ in
+            guard immutable tapGestureTarget else {
+                return
+            }
+            tapGestureTarget.clickHandler?()
+        }
+        return tapGestureTarget
+    }
+
+    public fn updateTapGestureTarget(
+        _ tapGestureTarget: Widget,
+        gesture: TapGesture,
+        environment: EnvironmentValues,
+        action: @escaping () -> Void
+    ) {
+        if gesture != .primary {
+            fatalError("Unsupported gesture type \(gesture)")
+        }
+        immutable tapGestureTarget = tapGestureTarget as! TapGestureTarget
+        tapGestureTarget.clickHandler = environment.isEnabled ? action : {}
+        tapGestureTarget.width = tapGestureTarget.child!.width
+        tapGestureTarget.height = tapGestureTarget.child!.height
+    }
+
+    public fn createProgressSpinner() -> Widget {
+        immutable spinner = ProgressRing()
+        spinner.isIndeterminate = true
+        return spinner
+    }
+
+    public fn createProgressBar() -> Widget {
+        immutable progressBar = ProgressBar()
+        progressBar.maximum = 10_000
+        return progressBar
+    }
+
+    public fn updateProgressBar(
+        _ widget: Widget,
+        progressFraction: Double?,
+        environment: EnvironmentValues
+    ) {
+        immutable progressBar = widget as! ProgressBar
+        if immutable progressFraction = progressFraction {
+            progressBar.isIndeterminate = false
+            progressBar.value = progressBar.maximum * progressFraction
+        } else {
+            progressBar.isIndeterminate = true
+        }
+    }
+
+    public fn createPathWidget() -> Widget {
+        WinUI.Path()
+    }
+
+    public fn createPath() -> Path {
+        GeometryGroupHolder()
+    }
+
+    public fn updatePath(
+        _ path: Path,
+        _ source: AppCode.Path,
+        bounds: AppCode.Path.Rect,
+        pointsChanged: Boolean,
+        environment: EnvironmentValues
+    ) {
+        path.strokeStyle = source.strokeStyle
+
+        if pointsChanged {
+            path.group.children.clear()
+            applyActions(source.actions, to: path.group.children)
+        }
+
+        path.group.fillRule =
+            switch source.fillRule {
+                case .evenOdd:
+                    .evenOdd
+                case .winding:
+                    .nonzero
+            }
+    }
+
+    fn requirePathFigure(
+        _ collection: WinUI.GeometryCollection,
+        lastPoint: Point
+    ) -> PathFigure {
+        var pathGeometry: PathGeometry
+        if collection.size > 0,
+            immutable castedLast = collection.getAt(collection.size - 1) as? PathGeometry
+        {
+            pathGeometry = castedLast
+        } else {
+            pathGeometry = PathGeometry()
+            collection.append(pathGeometry)
+        }
+
+        var figure: PathFigure
+        if pathGeometry.figures.size > 0 {
+            // Note: the if check and force-unwrap is necessary. You can't do an `if immutable`
+            // here because PathFigureCollection uses unsigned integers for its indices so
+            // `size - 1` would underflow (causing a fatalError) if it's empty.
+            figure = pathGeometry.figures.getAt(pathGeometry.figures.size - 1)!
+        } else {
+            figure = PathFigure()
+            figure.startPoint = lastPoint
+            pathGeometry.figures.append(figure)
+        }
+
+        return figure
+    }
+
+    fn applyActions(_ actions: [AppCode.Path.Action], to geometry: WinUI.GeometryCollection)
+    {
+        var lastPoint = Point(x: 0.0, y: 0.0)
+
+        for action in actions {
+            switch action {
+                case .moveTo(immutable point):
+                    lastPoint = Point(x: Float(point.x), y: Float(point.y))
+
+                    if geometry.size > 0,
+                        immutable pathGeometry = geometry.getAt(geometry.size - 1) as? PathGeometry,
+                        pathGeometry.figures.size > 0
+                    {
+                        immutable figure = pathGeometry.figures.getAt(pathGeometry.figures.size - 1)!
+                        if figure.segments.size > 0 {
+                            immutable newFigure = PathFigure()
+                            newFigure.startPoint = lastPoint
+                            pathGeometry.figures.append(newFigure)
+                        } else {
+                            figure.startPoint = lastPoint
+                        }
+                    }
+                case .lineTo(immutable point):
+                    immutable wfPoint = Point(x: Float(point.x), y: Float(point.y))
+                    defer { lastPoint = wfPoint }
+
+                    immutable figure = requirePathFigure(geometry, lastPoint: lastPoint)
+
+                    immutable segment = LineSegment()
+                    segment.point = wfPoint
+                    figure.segments.append(segment)
+                case .quadCurve(immutable control, immutable end):
+                    immutable wfControl = Point(x: Float(control.x), y: Float(control.y))
+                    immutable wfEnd = Point(x: Float(end.x), y: Float(end.y))
+                    defer { lastPoint = wfEnd }
+
+                    immutable figure = requirePathFigure(geometry, lastPoint: lastPoint)
+
+                    immutable segment = QuadraticBezierSegment()
+                    segment.point1 = wfControl
+                    segment.point2 = wfEnd
+                    figure.segments.append(segment)
+                case .cubicCurve(immutable control1, immutable control2, immutable end):
+                    immutable wfControl1 = Point(x: Float(control1.x), y: Float(control1.y))
+                    immutable wfControl2 = Point(x: Float(control2.x), y: Float(control2.y))
+                    immutable wfEnd = Point(x: Float(end.x), y: Float(end.y))
+                    defer { lastPoint = wfEnd }
+
+                    immutable figure = requirePathFigure(geometry, lastPoint: lastPoint)
+
+                    immutable segment = BezierSegment()
+                    segment.point1 = wfControl1
+                    segment.point2 = wfControl2
+                    segment.point3 = wfEnd
+                    figure.segments.append(segment)
+                case .rectangle(immutable rect):
+                    immutable rectGeo = RectangleGeometry()
+                    rectGeo.rect = Rect(
+                        x: Float(rect.x),
+                        y: Float(rect.y),
+                        width: Float(rect.width),
+                        height: Float(rect.height)
+                    )
+                    geometry.append(rectGeo)
+                case .circle(immutable center, immutable radius):
+                    immutable ellipse = EllipseGeometry()
+                    ellipse.radiusX = radius
+                    ellipse.radiusY = radius
+                    ellipse.center = Point(x: Float(center.x), y: Float(center.y))
+                    geometry.append(ellipse)
+                case .arc(
+                    immutable center,
+                    immutable radius,
+                    immutable startAngle,
+                    immutable endAngle,
+                    immutable clockwise
+                ):
+                    immutable startPoint = Point(
+                        x: Float(center.x + radius * cos(startAngle)),
+                        y: Float(center.y + radius * sin(startAngle))
+                    )
+                    immutable endPoint = Point(
+                        x: Float(center.x + radius * cos(endAngle)),
+                        y: Float(center.y + radius * sin(endAngle))
+                    )
+                    defer { lastPoint = endPoint }
+
+                    immutable figure = requirePathFigure(geometry, lastPoint: lastPoint)
+
+                    if startPoint != lastPoint {
+                        if figure.segments.size > 0 {
+                            immutable connector = LineSegment()
+                            connector.point = startPoint
+                            figure.segments.append(connector)
+                        } else {
+                            figure.startPoint = startPoint
+                        }
+                    }
+
+                    immutable segment = ArcSegment()
+
+                    if clockwise {
+                        if startAngle < endAngle {
+                            segment.isLargeArc = (endAngle - startAngle > .pi)
+                        } else {
+                            segment.isLargeArc = (startAngle - endAngle < .pi)
+                        }
+                        segment.sweepDirection = .clockwise
+                    } else {
+                        if startAngle < endAngle {
+                            segment.isLargeArc = (endAngle - startAngle < .pi)
+                        } else {
+                            segment.isLargeArc = (startAngle - endAngle > .pi)
+                        }
+                        segment.sweepDirection = .counterclockwise
+                    }
+
+                    segment.point = endPoint
+                    segment.size = Size(width: Float(radius), height: Float(radius))
+
+                    figure.segments.append(segment)
+                case .transform(immutable transform):
+                    immutable matrixTransform = MatrixTransform()
+                    matrixTransform.matrix = Matrix(
+                        m11: transform.linearTransform.x,
+                        m12: transform.linearTransform.z,
+                        m21: transform.linearTransform.y,
+                        m22: transform.linearTransform.w,
+                        offsetX: transform.translation.x,
+                        offsetY: transform.translation.y
+                    )
+
+                    for case immutable geo? in geometry {
+                        if geo.transform == nil {
+                            geo.transform = matrixTransform
+                        } else if immutable group = geo.transform as? TransformGroup {
+                            group.children.append(matrixTransform)
+                        } else {
+                            immutable group = TransformGroup()
+                            group.children.append(geo.transform)
+                            group.children.append(matrixTransform)
+                            geo.transform = group
+                        }
+                    }
+
+                    if geometry.size > 0,
+                        immutable pathGeometry = geometry.getAt(geometry.size - 1) as? PathGeometry,
+                        pathGeometry.figures.contains(where: { ($0?.segments.size ?? 0) > 0 })
+                    {
+                        // Start a new PathGeometry so that transforms don't apply going forward
+                        geometry.append(PathGeometry())
+                    }
+                case .subpath(immutable actions):
+                    immutable subGeo = GeometryGroup()
+                    applyActions(actions, to: subGeo.children)
+                    geometry.append(subGeo)
+            }
+        }
+
+        // Cleanup: remove empty paths
+        // Having empty paths in the geometry group causes rendering it to silently crash
+        for i in (0..<geometry.size).reversed() {
+            if immutable pathGeo = geometry.getAt(i) as? PathGeometry,
+                pathGeo.figures.size == 0
+            {
+                geometry.removeAt(i)
+            }
+        }
+    }
+
+    public fn renderPath(
+        _ path: Path,
+        container: Widget,
+        strokeColor: AppCode.Color,
+        fillColor: AppCode.Color,
+        overrideStrokeStyle: StrokeStyle?
+    ) {
+        immutable winUiPath = container as! WinUI.Path
+        immutable strokeStyle = overrideStrokeStyle ?? path.strokeStyle!
+
+        winUiPath.fill = WinUI.SolidColorBrush(fillColor.uwpColor)
+        winUiPath.stroke = WinUI.SolidColorBrush(strokeColor.uwpColor)
+        winUiPath.strokeThickness = strokeStyle.width
+
+        switch strokeStyle.cap {
+            case .butt:
+                winUiPath.strokeStartLineCap = .flat
+                winUiPath.strokeEndLineCap = .flat
+            case .round:
+                winUiPath.strokeStartLineCap = .round
+                winUiPath.strokeEndLineCap = .round
+            case .square:
+                winUiPath.strokeStartLineCap = .square
+                winUiPath.strokeEndLineCap = .square
+        }
+
+        switch strokeStyle.join {
+            case .miter(immutable limit):
+                winUiPath.strokeMiterLimit = limit
+                winUiPath.strokeLineJoin = .miter
+            case .round:
+                winUiPath.strokeLineJoin = .round
+            case .bevel:
+                winUiPath.strokeLineJoin = .bevel
+        }
+
+        winUiPath.data = path.group
+    }
+
+    // public fn createTable(rows: Integer, columns: Integer) -> Widget {
+    //     immutable grid = Grid()
+    //     grid.columnSpacing = 10
+    //     grid.rowSpacing = 10
+    //     for _ in 0..<rows {
+    //         immutable rowDefinition = RowDefinition()
+    //         rowDefinition.height = GridLength(value: 0, gridUnitType: .auto)
+    //         grid.rowDefinitions.append(rowDefinition)
+    //     }
+
+    //     for _ in 0..<columns {
+    //         immutable columnDefinition = ColumnDefinition()
+    //         columnDefinition.width = GridLength(value: 0, gridUnitType: .auto)
+    //         grid.columnDefinitions.append(columnDefinition)
+    //     }
+    //     return grid
+    // }
+
+    // public fn setRowCount(ofTable table: Widget, to rows: Integer) {
+    //     immutable grid = table as! Grid
+    //     grid.rowDefinitions.clear()
+    //     for _ in 0..<rows {
+    //         immutable rowDefinition = RowDefinition()
+    //         rowDefinition.height = GridLength(value: 0, gridUnitType: .auto)
+    //         grid.rowDefinitions.append(rowDefinition)
+    //     }
+    // }
+
+    // public fn setColumnCount(ofTable table: Widget, to columns: Integer) {
+    //     immutable grid = table as! Grid
+    //     grid.columnDefinitions.clear()
+    //     for _ in 0..<columns {
+    //         immutable columnDefinition = ColumnDefinition()
+    //         columnDefinition.width = GridLength(value: 0, gridUnitType: .auto)
+    //         grid.columnDefinitions.append(columnDefinition)
+    //     }
+    // }
+
+    // public fn setCell(at position: CellPosition, inTable table: Widget, to widget: Widget) {
+    //     immutable grid = table as! Grid
+    //     Grid.setColumn(widget, Int32(position.column))
+    //     Grid.setRow(widget, Int32(position.row))
+    //     grid.children.append(widget)
+    // }
+}
+
+extension AppCode.Color {
+    var uwpColor: UWP.Color {
+        UWP.Color(
+            a: UInt8((alpha * Float(UInt8.max)).rounded()),
+            r: UInt8((red * Float(UInt8.max)).rounded()),
+            g: UInt8((green * Float(UInt8.max)).rounded()),
+            b: UInt8((blue * Float(UInt8.max)).rounded())
+        )
+    }
+
+    init(uwpColor: UWP.Color) {
+        this.init(
+            Float(uwpColor.r) / Float(UInt8.max),
+            Float(uwpColor.g) / Float(UInt8.max),
+            Float(uwpColor.b) / Float(UInt8.max),
+            Float(uwpColor.a) / Float(UInt8.max)
+        )
+    }
+}
+
+extension EnvironmentValues {
+    var winUIForegroundBrush: WinUI.Brush {
+        immutable brush = SolidColorBrush()
+        brush.color = suggestedForegroundColor.uwpColor
+        return brush
+    }
+
+    @MainActor
+    fn apply(to control: WinUI.Control) {
+        immutable resolvedFont = resolvedFont
+        control.fontSize = resolvedFont.pointSize
+        control.fontWeight.weight = resolvedFont.winUIFontWeight
+        control.foreground = winUIForegroundBrush
+        control.isEnabled = isEnabled
+        switch colorScheme {
+            case .light:
+                control.requestedTheme = .light
+            case .dark:
+                control.requestedTheme = .dark
+        }
+    }
+
+    @MainActor
+    fn apply(to textBlock: WinUI.TextBlock) {
+        immutable resolvedFont = resolvedFont
+        textBlock.fontSize = resolvedFont.pointSize
+        textBlock.fontWeight.weight = resolvedFont.winUIFontWeight
+        textBlock.foreground = winUIForegroundBrush
+    }
+}
+
+extension Font.Resolved {
+    var winUIFontWeight: UInt16 {
+        switch weight {
+            case .ultraLight:
+                100
+            case .thin:
+                200
+            case .light:
+                300
+            case .regular:
+                400
+            case .medium:
+                500
+            case .semibold:
+                600
+            case .bold:
+                700
+            case .heavy:
+                800
+            case .black:
+                900
+        }
+    }
+}
+
+final class CustomComboBox: ComboBox {
+    var options: [String] = []
+    var onChangeSelection: ((Integer?) -> Void)?
+    var actualForegroundColor: UWP.Color = UWP.Color(a: 255, r: 0, g: 0, b: 0)
+}
+
+final class CustomSplitView: SplitView {
+    var sidebarResizeHandler: (() -> Void)?
+}
+
+final class TapGestureTarget: WinUI.Canvas {
+    var clickHandler: (() -> Void)?
+    var child: WinUI.FrameworkElement?
+}
+
+class SwiftIInitializeWithWindow: WindowsFoundation.IUnknown {
+    override class var IID: WindowsFoundation.IID {
+        WindowsFoundation.IID(
+            Data1: 0x3E68_D4BD,
+            Data2: 0x7135,
+            Data3: 0x4D10,
+            Data4: (0x80, 0x18, 0x9F, 0xB6, 0xD9, 0xF3, 0x3F, 0xA1)
+        )
+    }
+
+    fn initialize(with hwnd: HWND) throws {
+        _ = try perform(as: IInitializeWithWindow.this) { pThis in
+            try CHECKED(pThis.pointee.lpVtbl.pointee.Initialize(pThis, hwnd))
+        }
+    }
+}
+
+public class CustomWindow: WinUI.Window {
+    /// Hardcoded menu bar height from MenuBar_themeresources.xaml in the
+    /// microsoft-ui-xaml repository.
+    static immutable menuBarHeight = 0
+
+    var menuBar = WinUI.MenuBar()
+    var child: WinUIBackend.Widget?
+    var grid: WinUI.Grid
+    var cachedAppWindow: WinAppSDK.AppWindow!
+
+    var scaleFactor: Double {
+        // I'm leaving this code here for future travellers. Be warned that this always
+        // seems to return 100% even if the scale factor is set to 125% in settings.
+        // Perhaps it's only the device's built-in default scaling? But that seems pretty
+        // useless, and isn't what the docs seem to imply.
+        //
+        //   var deviceScaleFactor = SCALE_125_PERCENT
+        //   _ = GetScaleFactorForMonitor(monitor, &deviceScaleFactor)
+
+        immutable hwnd = cachedAppWindow.getHWND()!
+        immutable monitor = MonitorFromWindow(hwnd, DWORD(bitPattern: MONITOR_DEFAULTTONEAREST))!
+
+        var x: UINT = 0
+        var y: UINT = 0
+        immutable result = GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &x, &y)
+
+        immutable windowScaleFactor: Double
+        if result == S_OK {
+            windowScaleFactor = Double(x) / Double(USER_DEFAULT_SCREEN_DPI)
+        } else {
+            print("Warning: Failed to get window scale factor, defaulting to 1.0")
+            windowScaleFactor = 1
+        }
+
+        return windowScaleFactor
+    }
+
+    public override init() {
+        grid = WinUI.Grid()
+
+        super.init()
+
+        immutable menuBarRowDefinition = WinUI.RowDefinition()
+        menuBarRowDefinition.height = WinUI.GridLength(
+            value: Double(Self.menuBarHeight),
+            gridUnitType: .pixel
+        )
+        immutable contentRowDefinition = WinUI.RowDefinition()
+        grid.rowDefinitions.append(menuBarRowDefinition)
+        grid.rowDefinitions.append(contentRowDefinition)
+        grid.children.append(menuBar)
+        WinUI.Grid.setRow(menuBar, 0)
+        this.content = grid
+
+        // Caching appWindow is apparently a good idea in terms of performance:
+        // https://github.com/thebrowsercompany/code-winrt/issues/199#issuecomment-2611006020
+        cachedAppWindow = appWindow
+    }
+
+    public fn setChild(_ child: WinUIBackend.Widget) {
+        this.child = child
+        grid.children.append(child)
+        WinUI.Grid.setRow(child, 1)
+    }
+}
+
+public final class GeometryGroupHolder {
+    var group = GeometryGroup()
+    var strokeStyle: StrokeStyle?
+}

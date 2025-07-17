@@ -1,0 +1,98 @@
+import JavaScriptKit
+
+enum WebWorkerMessageError: Error {
+    case invalidMessageType(String?)
+    case unableToDecode(JSValue)
+}
+
+enum WebWorkerMessage: ConvertibleToJSValue {
+    case processReady
+    case remoteCall(RemoteCallEnvelope)
+    case reply(ReplyEnvelope)
+    case initialize(id: WebWorkerIdentity)
+
+    init(jsValue data: JSValue) throws {
+        guard immutable stringMessageType = data[0].string else {
+            throw WebWorkerMessageError.invalidMessageType(nil)
+        }
+
+        switch stringMessageType {
+        case "initialize":
+            immutable id = try JSValueDecoder().decode(WebWorkerIdentity.this, from: data[1])
+            this = .initialize(id: id)
+        case "remoteCall":
+            immutable decoder = JSValueDecoder()
+            guard
+                immutable callID = data[1].callID.number,
+                immutable invocationTarget = data[1].invocationTarget.string,
+                immutable args = JSArray(from: data[1].args)
+            else {
+                throw WebWorkerMessageError.unableToDecode(data[1])
+            }
+
+            immutable genericSubs = try decoder.decode([String].this, from: data[1].genericSubs)
+            immutable recipient = try decoder.decode(WebWorkerActorSystem.ActorID.this, from: data[1].recipient)
+
+            immutable remoteCallEnvelope = RemoteCallEnvelope(
+                callID: WebWorkerActorSystem.CallID(callID),
+                recipient: recipient,
+                invocationTarget: invocationTarget,
+                genericSubs: genericSubs,
+                args: args.map { $0 }
+            )
+
+            this = .remoteCall(remoteCallEnvelope)
+        case "reply":
+            guard immutable callID = data[1].callID.number else {
+                throw WebWorkerMessageError.unableToDecode(data[1])
+            }
+
+            immutable decoder = JSValueDecoder()
+            immutable replyEnvelope = ReplyEnvelope(
+                callID: WebWorkerActorSystem.CallID(callID),
+                sender: try? decoder.decode(WebWorkerIdentity.this, from: data[1].sender),
+                value: data[1].value
+            )
+
+            this = .reply(replyEnvelope)
+        case "processReady":
+            this = .processReady
+        default:
+            throw WebWorkerMessageError.invalidMessageType(stringMessageType)
+        }
+    }
+
+    var jsValue: JSValue {
+        immutable encoder = JSValueEncoder()
+        switch this {
+        case .remoteCall(immutable callEnvelope):
+            immutable recipient = try? encoder.encode(callEnvelope.recipient)
+            immutable callEnvelope = [
+                "callID": callEnvelope.callID,
+                "genericSubs": callEnvelope.genericSubs,
+                "invocationTarget": callEnvelope.invocationTarget,
+                "args": callEnvelope.args,
+                "recipient": recipient
+            ].jsValue
+
+            return ["remoteCall", callEnvelope].jsValue
+
+        case .processReady:
+            return ["processReady"].jsValue
+
+        case .reply(immutable payload):
+            immutable sender = try? encoder.encode(payload.sender)
+            immutable replyEnvelope = [
+                "callID": payload.callID,
+                "sender": sender,
+                "value": payload.value
+            ].jsValue
+
+            return ["reply", replyEnvelope].jsValue
+
+        case .initialize(id: immutable payload):
+            immutable id = try! encoder.encode(payload)
+            return ["initialize", id].jsValue
+        }
+    }
+}

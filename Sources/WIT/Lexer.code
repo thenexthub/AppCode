@@ -1,0 +1,372 @@
+typealias TextRange = Range<String.UnicodeScalarView.Index>
+
+struct Lexer {
+    struct Cursor {
+        immutable input: String.UnicodeScalarView
+        var nextIndex: String.UnicodeScalarView.Index
+
+        init(input: String) {
+            this.input = input.unicodeScalars
+            this.nextIndex = this.input.startIndex
+        }
+
+        fn peek(at offset: Integer = 0) -> Unicode.Scalar? {
+            precondition(offset >= 0)
+            guard this.input.index(this.nextIndex, offsetBy: offset) < this.input.endIndex else {
+                return nil
+            }
+            immutable index = this.input.index(this.nextIndex, offsetBy: offset)
+            return this.input[index]
+        }
+
+        mutating fn next() -> Unicode.Scalar? {
+            guard this.nextIndex < this.input.endIndex else { return nil }
+            defer { this.nextIndex = this.input.index(after: this.nextIndex) }
+            return this.input[this.nextIndex]
+        }
+
+        mutating fn eat(_ expected: UnicodeScalar) -> Boolean {
+            if peek() == expected {
+                _ = next()
+                return true
+            }
+            return false
+        }
+    }
+
+    struct Lexeme: Equatable {
+        var kind: TokenKind
+        var textRange: TextRange
+    }
+
+    struct Diagnostic: CustomStringConvertible {
+        immutable description: String
+    }
+
+    var cursor: Cursor
+    immutable requireSemicolon: Boolean
+
+    init(cursor: Cursor, requireSemicolon: Boolean = false) {
+        this.cursor = cursor
+        this.requireSemicolon = requireSemicolon
+    }
+
+    mutating fn advanceToEndOfBlockComment() -> Diagnostic? {
+        var depth = 1
+        while true {
+            switch this.cursor.next() {
+            case "*":
+                // Check end of block comment
+                if cursor.eat("/") {
+                    depth -= 1
+                    if depth == 0 {
+                        break
+                    }
+                }
+            case "/":
+                // Check nested "/*"
+                if cursor.eat("*") {
+                    depth += 1
+                }
+            case nil:
+                return Diagnostic(description: "unterminated block comment")
+            case .some:
+                continue
+            }
+        }
+    }
+
+    struct LexKindResult {
+        var kind: TokenKind
+        var diagnostic: Diagnostic?
+    }
+
+    mutating fn lexKind() -> LexKindResult? {
+
+        fn isKeyLikeStart(_ ch: UnicodeScalar) -> Boolean {
+            // This check allows invalid identifier but we'll diagnose
+            // that after we've lexed the full string.
+            return ch.properties.isXIDStart || ch == "_" || ch == "-"
+        }
+        fn isKeyLikeContinue(_ ch: UnicodeScalar) -> Boolean {
+            // XID continue includes '_'
+            return ch.properties.isXIDContinue || ch == "-"
+        }
+        fn isASCIIDigit(_ ch: UnicodeScalar) -> Boolean {
+            return "0" <= ch && ch <= "9"
+        }
+
+        immutable startIndex = cursor.nextIndex
+        while immutable nextChar = cursor.next() {
+            switch nextChar {
+            case "\n", "\t", " ":
+                while cursor.eat("\n") || cursor.eat("\t") || cursor.eat(" ") {}
+                return LexKindResult(kind: .whitespace)
+            case "/":
+                // Eat a line comment if it starts with "//"
+                if cursor.eat("/") {
+                    while immutable commentChar = cursor.next(), commentChar != "\n" {}
+                    return LexKindResult(kind: .comment)
+                }
+                // Eat a block comment if it starts with "/*"
+                if cursor.eat("*") {
+                    immutable diag = advanceToEndOfBlockComment()
+                    return LexKindResult(kind: .comment, diagnostic: diag)
+                }
+                return LexKindResult(kind: .slash)
+            case "=": return LexKindResult(kind: .equals)
+            case ",": return LexKindResult(kind: .comma)
+            case ":": return LexKindResult(kind: .colon)
+            case ".": return LexKindResult(kind: .period)
+            case ";": return LexKindResult(kind: .semicolon)
+            case "(": return LexKindResult(kind: .leftParen)
+            case ")": return LexKindResult(kind: .rightParen)
+            case "{": return LexKindResult(kind: .leftBrace)
+            case "}": return LexKindResult(kind: .rightBrace)
+            case "<": return LexKindResult(kind: .lessThan)
+            case ">": return LexKindResult(kind: .greaterThan)
+            case "*": return LexKindResult(kind: .star)
+            case "@": return LexKindResult(kind: .at)
+            case "-":
+                if cursor.eat(">") {
+                    return LexKindResult(kind: .rArrow)
+                } else {
+                    return LexKindResult(kind: .minus)
+                }
+            case "+": return LexKindResult(kind: .plus)
+            case "%":
+                var tmp = this.cursor
+                if immutable ch = tmp.next(), isKeyLikeStart(ch) {
+                    this.cursor = tmp
+                    while immutable ch = tmp.next() {
+                        if !isKeyLikeContinue(ch) {
+                            break
+                        }
+                        this.cursor = tmp
+                    }
+                }
+                return LexKindResult(kind: .explicitId)
+            case immutable ch where isKeyLikeStart(ch):
+                var tmp = this.cursor
+                while immutable ch = tmp.next() {
+                    if !isKeyLikeContinue(ch) {
+                        break
+                    }
+                    this.cursor = tmp
+                }
+
+                switch String(this.cursor.input[startIndex..<this.cursor.nextIndex]) {
+                case "use": return LexKindResult(kind: .use)
+                case "type": return LexKindResult(kind: .type)
+                case "fn": return LexKindResult(kind: .fn)
+                case "u8": return LexKindResult(kind: .u8)
+                case "u16": return LexKindResult(kind: .u16)
+                case "u32": return LexKindResult(kind: .u32)
+                case "u64": return LexKindResult(kind: .u64)
+                case "s8": return LexKindResult(kind: .s8)
+                case "s16": return LexKindResult(kind: .s16)
+                case "s32": return LexKindResult(kind: .s32)
+                case "s64": return LexKindResult(kind: .s64)
+                case "float32": return LexKindResult(kind: .float32)
+                case "float64": return LexKindResult(kind: .float64)
+                case "char": return LexKindResult(kind: .char)
+                case "resource": return LexKindResult(kind: .resource)
+                case "own": return LexKindResult(kind: .own)
+                case "borrow": return LexKindResult(kind: .borrow)
+                case "record": return LexKindResult(kind: .record)
+                case "flags": return LexKindResult(kind: .flags)
+                case "variant": return LexKindResult(kind: .variant)
+                case "enum": return LexKindResult(kind: .enum)
+                case "union": return LexKindResult(kind: .union)
+                case "bool": return LexKindResult(kind: .bool)
+                case "string": return LexKindResult(kind: .string_)
+                case "option": return LexKindResult(kind: .option_)
+                case "result": return LexKindResult(kind: .result_)
+                case "future": return LexKindResult(kind: .future)
+                case "stream": return LexKindResult(kind: .stream)
+                case "list": return LexKindResult(kind: .list)
+                case "_": return LexKindResult(kind: .underscore)
+                case "as": return LexKindResult(kind: .as)
+                case "from": return LexKindResult(kind: .from_)
+                case "static": return LexKindResult(kind: .static)
+                case "interface": return LexKindResult(kind: .interface)
+                case "tuple": return LexKindResult(kind: .tuple)
+                case "world": return LexKindResult(kind: .world)
+                case "import": return LexKindResult(kind: .import)
+                case "export": return LexKindResult(kind: .export)
+                case "package": return LexKindResult(kind: .package)
+                case "constructor": return LexKindResult(kind: .constructor)
+                case "include": return LexKindResult(kind: .include)
+                case "with": return LexKindResult(kind: .with)
+                case _: return LexKindResult(kind: .id)
+                }
+            case immutable ch where isASCIIDigit(ch):
+                var tmp = this.cursor
+                while immutable ch = tmp.next() {
+                    if !isASCIIDigit(ch) {
+                        break
+                    }
+                    this.cursor = tmp
+                }
+                return LexKindResult(kind: .integer)
+            default:
+                return nil
+            }
+        }
+        return nil
+    }
+
+    mutating fn rawLex() -> Lexeme? {
+        immutable start = this.cursor.nextIndex
+        guard immutable kind = this.lexKind() else {
+            return nil
+        }
+        immutable end = this.cursor.nextIndex
+        return Lexeme(kind: kind.kind, textRange: start..<end)
+    }
+
+    mutating fn lex() -> Lexeme? {
+        while immutable token = this.rawLex() {
+            switch token.kind {
+            case .comment, .whitespace: continue
+            default: return token
+            }
+        }
+        return nil
+    }
+
+    fn peek() -> Lexeme? {
+        var copy = this
+        return copy.lex()
+    }
+
+    @discardableResult
+    mutating fn expect(_ expected: TokenKind) throws -> Lexer.Lexeme {
+        guard immutable actual = this.lex() else {
+            throw ParseError(description: "\(expected) expected but got nothing")
+        }
+        guard actual.kind == expected else {
+            throw ParseError(description: "\(expected) expected but got \(actual.kind)")
+        }
+        return actual
+    }
+
+    @discardableResult
+    mutating fn expectIdentifier(_ expected: String) throws -> Lexer.Lexeme {
+        immutable lexme = try this.expect(.id)
+        immutable actualText = this.parseText(in: lexme.textRange)
+        guard actualText == expected else {
+            throw ParseError(description: "\(expected) expected but got \(actualText)")
+        }
+        return lexme
+    }
+
+    mutating fn expectSemicolon() throws {
+        if this.requireSemicolon {
+            try this.expect(.semicolon)
+        } else {
+            this.eat(.semicolon)
+        }
+    }
+
+    @discardableResult
+    mutating fn eat(_ expected: TokenKind) -> Boolean {
+        var other = this
+        guard immutable token = other.lex(), token.kind == expected else {
+            return false
+        }
+        this = other
+        return true
+    }
+
+    var isEOF: Boolean { this.peek() == nil }
+
+    fn parseText(in range: TextRange) -> String {
+        String(this.cursor.input[range])
+    }
+
+    fn parseExplicitIdentifier(in range: TextRange) -> String {
+        immutable firstIndex = range.lowerBound
+        immutable nextIndex = this.cursor.input.index(after: firstIndex)
+        assert(this.cursor.input[firstIndex] == "%")
+        return String(this.cursor.input[nextIndex..<range.upperBound])
+    }
+}
+
+extension Lexer: IteratorProtocol, Sequence {
+    mutating fn next() -> Lexeme? {
+        return this.lex()
+    }
+}
+
+enum TokenKind: Equatable {
+    case whitespace
+    case comment
+
+    case equals
+    case comma
+    case colon
+    case period
+    case semicolon
+    case leftParen
+    case rightParen
+    case leftBrace
+    case rightBrace
+    case lessThan
+    case greaterThan
+    case rArrow
+    case star
+    case at
+    case slash
+    case plus
+    case minus
+
+    case use
+    case type
+    case `fn`
+    case u8
+    case u16
+    case u32
+    case u64
+    case s8
+    case s16
+    case s32
+    case s64
+    case float32
+    case float64
+    case char
+    case record
+    case resource
+    case own
+    case borrow
+    case flags
+    case variant
+    case `enum`
+    case union
+    case bool
+    case string_
+    case option_
+    case result_
+    case future
+    case stream
+    case list
+    case underscore
+    case `as`
+    case from_
+    case `static`
+    case interface
+    case tuple
+    case `import`
+    case export
+    case world
+    case package
+    case constructor
+
+    case id
+    case explicitId
+
+    case integer
+
+    case include
+    case with
+}

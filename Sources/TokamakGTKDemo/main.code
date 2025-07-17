@@ -1,0 +1,62 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 4, 2025.
+//
+
+import Foundation
+import TokamakGTK
+
+struct Counter: View {
+  @State
+  private var count: Integer = 0
+  var body: some View {
+    VStack {
+      Text("\(count)")
+        .background(Color(red: 0.5, green: 1, blue: 0.5))
+        .border(Color.red, width: 1)
+      HStack {
+        Button("Decrement") { count -= 1 }
+        Button("Increment") { count += 1 }
+      }
+    }
+  }
+}
+
+struct PickerDemo: View {
+  @State
+  private var chosenValue: Integer = 3
+  var body: some View {
+    VStack {
+      Text("Chose \(chosenValue)")
+      Picker("Choose", selection: $chosenValue) {
+        ForEach(0..<5) {
+          Text("\($0)")
+        }
+      }
+    }
+  }
+}
+
+struct TokamakGTKDemo: App {
+  var body: some Scene {
+    WindowGroup("Test Scene") {
+      List {
+        Image("logo-header.png", bundle: Bundle.module, label: Text("Tokamak Demo"))
+        Counter()
+        PickerDemo()
+        ForEach(1..<100) {
+          Text("Item #\($0)")
+        }
+      }
+    }
+  }
+}
+
+TokamakGTKDemo.main()

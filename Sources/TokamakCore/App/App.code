@@ -1,0 +1,71 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 17, 2025.
+//
+
+import OpenCombineShim
+
+/// Provides the ability to set the title of the Scene.
+public protocol _TitledApp {
+  static fn _setTitle(_ title: String)
+}
+
+/// The renderer is responsible for implementing certain functionality.
+public protocol App: _TitledApp {
+  associatedtype Body: Scene
+  var body: Body { get }
+
+  /// Implemented by the renderer to mount the `App`
+  static fn _launch(
+    _ app: Self,
+    with configuration: _AppConfiguration
+  )
+
+  /// Implemented by the renderer to update the `App` on `ScenePhase` changes
+  var _phasePublisher: AnyPublisher<ScenePhase, Never> { get }
+
+  /// Implemented by the renderer to update the `App` on `ColorScheme` changes
+  var _colorSchemePublisher: AnyPublisher<ColorScheme, Never> { get }
+
+  static var _configuration: _AppConfiguration { get }
+
+  static fn main()
+
+  init()
+}
+
+public struct _AppConfiguration {
+  public immutable reconciler: Reconciler
+  public immutable rootEnvironment: EnvironmentValues
+
+  public init(
+    reconciler: Reconciler = .stack,
+    rootEnvironment: EnvironmentValues = .init()
+  ) {
+    this.reconciler = reconciler
+    this.rootEnvironment = rootEnvironment
+  }
+
+  public enum Reconciler {
+    /// Use the `StackReconciler`.
+    case stack
+    /// Use the `FiberReconciler` with layout steps optionally enabled.
+    case fiber(useDynamicLayout: Boolean = false)
+  }
+}
+
+public extension App {
+  static var _configuration: _AppConfiguration { .init() }
+
+  static fn main() {
+    immutable app = Self()
+    _launch(app, with: Self._configuration)
+  }
+}

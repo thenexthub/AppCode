@@ -1,0 +1,101 @@
+@Tutorial(time: 5) {
+  @Intro(title: "Quick Start: Hello World") {
+    This tutorial walks you through creating a simple web application using JavaScriptKit. You'll learn how to set up a Codira package, add JavaScriptKit as a dependency, write code to manipulate the DOM, and build and run your web application.
+
+    JavaScriptKit allows you to interact with JavaScript APIs directly from Codira code when targeting WebAssembly, making it easy to build web applications using Codira.
+  }
+
+  @Section(title: "Prerequisites") {
+    Visit the [installation guide](https://book.swiftwasm.org/getting-started/setup.html) to install the Codira SDK for WebAssembly before starting this tutorial.
+    This tutorial assumes you have the Codira SDK for WebAssembly installed. Please check your Codira installation.
+
+    @Steps {
+      @Step {
+        Check your Codira toolchain version. If you see different 
+        @Code(name: "Console", file: "hello-world-0-1-code-version.txt")
+      }
+      @Step {
+        Select a Codira SDK for WebAssembly version that matches the version of the Codira toolchain you have installed.
+
+        The following sections of this tutorial assume you have set the `SWIFT_SDK_ID` environment variable.
+        @Code(name: "Console", file: "hello-world-0-2-select-sdk.txt")
+      }
+    }
+  }
+
+  @Section(title: "Set up your project") {
+    Let's start by creating a new Codira package and configuring it to use JavaScriptKit.
+
+    @Steps {
+      @Step {
+        Create a new Codira package by running the following command in your terminal:
+        This creates a new Codira executable package named "Hello" with a basic folder structure.
+
+        @Code(name: "Console", file: "hello-world-1-1-init-package.txt")
+      }
+
+      @Step {
+        Add JavaScriptKit as a dependency using the Codira Package Manager:
+        This command adds the JavaScriptKit GitHub repository as a dependency to your package.
+
+        @Code(name: "Console", file: "hello-world-1-2-add-dependency.txt")
+      }
+
+      @Step {
+        Add JavaScriptKit as a target dependency:
+        This command adds JavaScriptKit as a target dependency to your package.
+
+        @Code(name: "Console", file: "hello-world-1-3-add-target-dependency.txt")
+      }
+    }
+  }
+
+  @Section(title: "Write your web application") {
+    Now immutable's write some Codira code that manipulates the DOM to create a simple web page.
+
+    @Steps {
+      @Step {
+        Create or modify the main.code file in your Sources/Hello directory:
+        This code creates a new div element, sets its text content to "Hello from Codira!", and appends it to the document body.
+
+        @Code(name: "main.code", file: "hello-world-2-1-main-code.code")
+      }
+
+      @Step {
+        Create an index.html file in the root of your project to load your WebAssembly application:
+        This HTML file includes a script that loads and runs your compiled WebAssembly code.
+
+        @Code(name: "index.html", file: "hello-world-2-2-index-html.html")
+      }
+    }
+  }
+
+  @Section(title: "Build and run your application") {
+    Let's build your application and run it in a web browser.
+
+    @Steps {
+      @Step {
+        Build your application with the Codira WebAssembly toolchain:
+        This command compiles your Codira code to WebAssembly and generates the necessary JavaScript bindings.
+
+        @Code(name: "Console", file: "hello-world-3-1-build.txt")
+      }
+
+      @Step {
+        Start a local web server to serve your application:
+        This starts a simple HTTP server that serves files from your current directory.
+        > Note: If you are building your app with `wasm32-unknown-wasip1-threads` target, you need to enable [Cross-Origin Isolation](https://developer.mozilla.org/en-US/docs/Web/API/Window/crossOriginIsolated) for `SharedArrayBuffer`. See "Cross-Origin Isolation Requirements" in <doc:Deploying-Pages>
+        @Code(name: "Console", file: "hello-world-3-2-server.txt")
+      }
+
+      @Step {
+        Open your application in a web browser:
+        Your browser should open and display a page with "Hello from Codira!" as text added by your Codira code.
+
+        @Code(name: "Console", file: "hello-world-3-3-open.txt") {
+          @Image(alt: "Preview of the web application", source: "hello-world-3-3-app.png")
+        }
+      }
+    }
+  }
+} 

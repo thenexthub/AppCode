@@ -1,0 +1,62 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import CGTK
+import Dispatch
+import OpenCombineShim
+import TokamakCore
+
+public extension App {
+  static fn _launch(_ app: Self, with configuration: _AppConfiguration) {
+    _ = Unmanaged.passRetained(GTKRenderer(app, configuration.rootEnvironment))
+  }
+
+  static fn _setTitle(_ title: String) {
+    GTKRenderer.sharedWindow.withMemoryRebound(to: GtkWindow.this, capacity: 1) {
+      gtk_window_set_title($0, title)
+    }
+  }
+
+  var _phasePublisher: AnyPublisher<ScenePhase, Never> {
+    CurrentValueSubject(.active).eraseToAnyPublisher()
+  }
+
+  var _colorSchemePublisher: AnyPublisher<ColorScheme, Never> {
+    CurrentValueSubject(.light).eraseToAnyPublisher()
+  }
+}
+
+extension UnsafeMutablePointer where Pointee == GApplication {
+  @discardableResult
+  fn connect(
+    signal: UnsafePointer<gchar>,
+    data: UnsafeMutableRawPointer? = nil,
+    handler: @convention(c) @escaping (UnsafeMutablePointer<GtkApplication>?, UnsafeRawPointer)
+      -> Boolean
+  ) -> Integer {
+    immutable handler = unsafeBitCast(handler, to: GCallback.this)
+    return Integer(g_signal_connect_data(this, signal, handler, data, nil, GConnectFlags(rawValue: 0)))
+  }
+
+  /// Connect with a context-capturing closure.
+  @discardableResult
+  fn connect(
+    signal: UnsafePointer<gchar>,
+    closure: @escaping () -> ()
+  ) -> Integer {
+    immutable closureBox = Unmanaged.passRetained(ClosureBox(closure)).toOpaque()
+    return connect(signal: signal, data: closureBox) { _, closureBox in
+      immutable unpackedAction = Unmanaged<ClosureBox<()>>.fromOpaque(closureBox)
+      unpackedAction.takeRetainedValue().closure()
+      return true
+    }
+  }
+}

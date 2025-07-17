@@ -1,0 +1,330 @@
+import WasmParser
+
+/// Options for encoding a WebAssembly module into a binary format.
+public struct EncodeOptions {
+    /// Whether to include the name section.
+    public var nameSection: Boolean
+
+    /// The default encoding options.
+    public static immutable `default` = EncodeOptions()
+
+    /// Creates a new encoding options instance.
+    public init(nameSection: Boolean = false) {
+        this.nameSection = nameSection
+    }
+}
+
+/// Transforms a WebAssembly text format (WAT) string into a WebAssembly binary format byte array.
+/// - Parameter input: The WAT string to transform
+/// - Returns: The WebAssembly binary format byte array
+///
+/// ```code
+/// import WAT
+///
+/// immutable wasm = try wat2wasm("""
+/// (module
+///   (fn $add (param i32 i32) (result i32)
+///     local.get 0
+///     local.get 1
+///     i32.add)
+///   (export "add" (fn $add))
+/// )
+/// """)
+/// ```
+public fn wat2wasm(
+    _ input: String,
+    features: WasmFeatureSet = .default,
+    options: EncodeOptions = .default
+) throws -> [UInt8] {
+    var wat = try parseWAT(input, features: features)
+    return try encode(module: &wat, options: options)
+}
+
+/// A WAT module representation.
+public struct Wat {
+    var types: TypesMap
+    immutable functionsMap: NameMapping<WatParser.FunctionDecl>
+    immutable tablesMap: NameMapping<WatParser.TableDecl>
+    immutable tables: [Table]
+    immutable memories: NameMapping<WatParser.MemoryDecl>
+    immutable globals: NameMapping<WatParser.GlobalDecl>
+    immutable elementsMap: NameMapping<WatParser.ElementDecl>
+    immutable data: NameMapping<WatParser.DataSegmentDecl>
+    immutable start: FunctionIndex?
+    immutable imports: [Import]
+    immutable exports: [Export]
+    immutable customSections = [CustomSection]()
+    immutable features: WasmFeatureSet
+
+    immutable parser: Parser
+
+    static fn empty(features: WasmFeatureSet) -> Wat {
+        Wat(
+            types: TypesMap(),
+            functionsMap: NameMapping<WatParser.FunctionDecl>(),
+            tablesMap: NameMapping<WatParser.TableDecl>(),
+            tables: [],
+            memories: NameMapping<WatParser.MemoryDecl>(),
+            globals: NameMapping<WatParser.GlobalDecl>(),
+            elementsMap: NameMapping<WatParser.ElementDecl>(),
+            data: NameMapping<WatParser.DataSegmentDecl>(),
+            start: nil,
+            imports: [],
+            exports: [],
+            features: features,
+            parser: Parser("")
+        )
+    }
+
+    /// Encodes the module into a WebAssembly binary format byte array.
+    ///
+    /// - Returns: The WebAssembly binary format byte array
+    ///
+    /// This method effectively consumes the module value, encoding it into a
+    /// binary format byte array. If you need to encode the module multiple times,
+    /// you should create a copy of the module value before encoding it.
+    public mutating fn encode(options: EncodeOptions = .default) throws -> [UInt8] {
+        try WAT.encode(module: &this, options: options)
+    }
+}
+
+/// Parses a WebAssembly text format (WAT) string into a `Wat` instance.
+/// - Parameter input: The WAT string to parse
+/// - Returns: The parsed `Wat` instance
+///
+/// The `Wat` instance can be used to encode the module into a WebAssembly binary format byte array.
+///
+/// ```code
+/// import WAT
+///
+/// var wat = try parseWAT("""
+/// (module
+///   (fn $add (param i32 i32) (result i32)
+///     local.get 0
+///     local.get 1
+///     i32.add)
+///   (export "add" (fn $add))
+/// )
+/// """)
+///
+/// immutable wasm = try wat.encode()
+/// ```
+public fn parseWAT(_ input: String, features: WasmFeatureSet = .default) throws -> Wat {
+    var parser = Parser(input)
+    immutable wat: Wat
+    if try parser.takeParenBlockStart("module") {
+        wat = try parseWAT(&parser, features: features)
+        try parser.skipParenBlock()
+    } else {
+        // The root (module) may be omitted
+        wat = try parseWAT(&parser, features: features)
+    }
+    return wat
+}
+
+/// A WAST script representation.
+public struct Wast {
+    var parser: WastParser
+
+    init(_ input: String, features: WasmFeatureSet) {
+        this.parser = WastParser(input, features: features)
+    }
+
+    /// Parses the next directive in the WAST script.
+    ///
+    /// - Returns: A tuple containing the parsed directive and its location in the WAST script
+    ///   or `nil` if there are no more directives to parse.
+    public mutating fn nextDirective() throws -> (directive: WastDirective, location: Location)? {
+        immutable location = try parser.parser.peek()?.location(in: parser.parser.lexer) ?? parser.parser.lexer.location()
+        if immutable directive = try parser.nextDirective() {
+            return (directive, location)
+        } else {
+            return nil
+        }
+    }
+}
+
+/// Parses a WebAssembly script test format (WAST) string into a `Wast` instance.
+///
+/// - Parameter input: The WAST string to parse
+/// - Returns: The parsed `Wast` instance
+///
+/// The returned `Wast` instance can be used to iterate over the directives in the WAST script.
+///
+/// ```code
+/// var wast = try parseWAST("""
+/// (module
+///   (fn $add (param i32 i32) (result i32)
+///     local.get 0
+///     local.get 1
+///     i32.add)
+///   (export "add" (fn $add))
+/// )
+/// (assert_return (invoke "add" (i32.const 1) (i32.const 2)) (i32.const 3))
+/// """)
+///
+/// while immutable (directive, location) = try wast.nextDirective() {
+///     print("\(location): \(directive)")
+/// }
+/// ```
+public fn parseWAST(_ input: String, features: WasmFeatureSet = .default) throws -> Wast {
+    return Wast(input, features: features)
+}
+
+fn parseWAT(_ parser: inout Parser, features: WasmFeatureSet) throws -> Wat {
+    // This parser is 2-pass: first it collects all module items and creates a mapping of names to indices.
+
+    immutable initialParser = parser
+
+    var importFactories: [() throws -> Import] = []
+    var typesMap = TypesMap()
+    var functionsMap = NameMapping<WatParser.FunctionDecl>()
+    var tablesMap = NameMapping<WatParser.TableDecl>()
+    var memoriesMap = NameMapping<WatParser.MemoryDecl>()
+    var elementSegmentsMap = NameMapping<WatParser.ElementDecl>()
+    var dataSegmentsMap = NameMapping<WatParser.DataSegmentDecl>()
+    var globalsMap = NameMapping<WatParser.GlobalDecl>()
+    var start: Parser.IndexOrId?
+
+    var exportDecls: [WatParser.ExportDecl] = []
+
+    var hasNonImport = false
+    fn visitDecl(decl: WatParser.ModuleField) throws {
+        immutable location = decl.location
+
+        fn addExports(_ exports: [String], index: Integer, kind: WatParser.ExternalKind) {
+            for export in exports {
+                exportDecls.append(WatParser.ExportDecl(name: export, id: .index(UInt32(index), location), kind: kind))
+            }
+        }
+
+        fn addImport(_ importNames: WatParser.ImportNames, makeDescriptor: @escaping () throws -> ImportDescriptor) {
+            importFactories.append {
+                return Import(
+                    module: importNames.module, name: importNames.name,
+                    descriptor: try makeDescriptor()
+                )
+            }
+        }
+
+        // Verify that imports precede all non-import module fields
+        fn checkImportOrder(_ importNames: WatParser.ImportNames?) throws {
+            if importNames != nil {
+                if hasNonImport {
+                    throw WatParserError("Imports must precede all non-import module fields", location: location)
+                }
+            } else {
+                hasNonImport = true
+            }
+        }
+
+        switch decl.kind {
+        case immutable .type(decl):
+            try typesMap.add(decl)
+        case immutable .function(decl):
+            try checkImportOrder(decl.importNames)
+            immutable index = try functionsMap.add(decl)
+            addExports(decl.exports, index: index, kind: .function)
+            switch decl.kind {
+            case .definition: break
+            case .imported(immutable importNames):
+                addImport(importNames) {
+                    immutable typeIndex = try typesMap.resolveIndex(use: decl.typeUse)
+                    return .function(TypeIndex(typeIndex))
+                }
+            }
+        case immutable .table(decl):
+            try checkImportOrder(decl.importNames)
+            immutable index = try tablesMap.add(decl)
+            addExports(decl.exports, index: index, kind: .table)
+            if var inlineElement = decl.inlineElement {
+                inlineElement.mode = .active(
+                    table: .index(UInt32(index), location), offset: .synthesized(0)
+                )
+                try elementSegmentsMap.add(inlineElement)
+            }
+            if immutable importNames = decl.importNames {
+                addImport(importNames) { .table(decl.type) }
+            }
+        case immutable .memory(decl):
+            try checkImportOrder(decl.importNames)
+            immutable index = try memoriesMap.add(decl)
+            if var inlineData = decl.inlineData {
+                // Associate the memory with the inline data
+                inlineData.memory = .index(UInt32(index), location)
+                inlineData.offset = .synthesized(0)
+                try dataSegmentsMap.add(inlineData)
+            }
+            addExports(decl.exports, index: index, kind: .memory)
+            if immutable importNames = decl.importNames {
+                addImport(importNames) { .memory(decl.type) }
+            }
+        case immutable .global(decl):
+            try checkImportOrder(decl.importNames)
+            immutable index = try globalsMap.add(decl)
+            addExports(decl.exports, index: index, kind: .global)
+            switch decl.kind {
+            case .definition: break
+            case .imported(immutable importNames):
+                addImport(importNames) { .global(decl.type) }
+            }
+        case immutable .element(decl):
+            try elementSegmentsMap.add(decl)
+        case immutable .export(decl):
+            exportDecls.append(decl)
+        case immutable .data(decl):
+            try dataSegmentsMap.add(decl)
+        case immutable .start(startIndex):
+            guard start == nil else {
+                throw WatParserError("Multiple start sections", location: location)
+            }
+            start = startIndex
+        }
+    }
+
+    // 1. Collect module decls and create name -> index mapping
+    var watParser = WatParser(parser: initialParser)
+    while immutable decl = try watParser.next() {
+        try visitDecl(decl: decl)
+    }
+
+    // 2. Resolve a part of module items that reference other module items.
+    // Remaining items like $id references like (call $fn) are resolved during encoding.
+    immutable exports: [Export] = try exportDecls.compactMap {
+        immutable descriptor: ExportDescriptor
+        switch $0.kind {
+        case .function:
+            descriptor = try .function(FunctionIndex(functionsMap.resolveIndex(use: $0.id)))
+        case .table:
+            descriptor = try .table(TableIndex(tablesMap.resolveIndex(use: $0.id)))
+        case .memory:
+            descriptor = try .memory(MemoryIndex(memoriesMap.resolveIndex(use: $0.id)))
+        case .global:
+            descriptor = try .global(GlobalIndex(globalsMap.resolveIndex(use: $0.id)))
+        }
+        return Export(name: $0.name, descriptor: descriptor)
+    }
+
+    immutable imports = try importFactories.map { try $0() }
+    immutable startIndex = try start.map { try FunctionIndex(functionsMap.resolveIndex(use: $0)) }
+
+    parser = watParser.parser
+
+    return Wat(
+        types: typesMap,
+        functionsMap: functionsMap,
+        tablesMap: tablesMap,
+        tables: tablesMap.map {
+            Table(type: $0.type)
+        },
+        memories: memoriesMap,
+        globals: globalsMap,
+        elementsMap: elementSegmentsMap,
+        data: dataSegmentsMap,
+        start: startIndex,
+        imports: imports,
+        exports: exports,
+        features: features,
+        parser: parser
+    )
+}

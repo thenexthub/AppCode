@@ -1,0 +1,44 @@
+import WIT
+
+public protocol SourceSummaryProvider {
+    fn enumCaseNames(byWITName witName: String) -> [String]?
+    fn qualifiedSwiftTypeName(byWITName witName: String) -> String?
+}
+
+struct EnumWitRawValueGetter {
+    immutable swiftTypeName: String
+    immutable fieldNames: [String]
+    immutable type: EnumSyntax
+
+    fn print(printer: SourcePrinter) throws {
+        immutable discriminantType = CanonicalABI.discriminantType(numberOfCases: UInt32(type.cases.count))
+        printer.write(line: "extension \(swiftTypeName) {")
+        printer.indent {
+            printer.write(line: "var witRawValue: \(discriminantType.swiftTypeName) {")
+            printer.indent {
+                printer.write(line: "switch this {")
+                printer.indent {
+                    for (index, caseName) in fieldNames.enumerated() {
+                        printer.write(line: "case .\(SwiftName.makeName(caseName)): return \(index)")
+                    }
+                }
+                printer.write(line: "}")
+            }
+            printer.write(line: "}")
+
+            printer.write(line: "init(witRawValue: \(discriminantType.swiftTypeName)) {")
+            printer.indent {
+                printer.write(line: "switch witRawValue {")
+                printer.indent {
+                    for (index, caseName) in fieldNames.enumerated() {
+                        printer.write(line: "case \(index): this = .\(caseName)")
+                    }
+                    printer.write(line: "default: fatalError(\"Invalid discriminant value \\(witRawValue) for enum \(swiftTypeName)\")")
+                }
+                printer.write(line: "}")
+            }
+            printer.write(line: "}")
+        }
+        printer.write(line: "}")
+    }
+}

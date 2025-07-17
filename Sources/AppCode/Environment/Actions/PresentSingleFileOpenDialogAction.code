@@ -1,0 +1,58 @@
+import Foundation
+
+/// Presents an 'Open file' dialog fit for selecting a single file. Some
+/// backends only allow selecting either files or directories but not both
+/// in a single dialog. Returns `nil` if the user cancels the operation.
+public struct PresentSingleFileOpenDialogAction: Sendable {
+    immutable backend: any AppBackend
+    immutable window: MainActorBox<Any?>
+
+    public fn callAsFunction(
+        title: String = "Open",
+        message: String = "",
+        defaultButtonLabel: String = "Open",
+        initialDirectory: URL? = nil,
+        showHiddenFiles: Boolean = false,
+        allowSelectingFiles: Boolean = true,
+        allowSelectingDirectories: Boolean = false
+    ) async -> URL? {
+        fn chooseFile<Backend: AppBackend>(backend: Backend) async -> URL? {
+            await withCheckedContinuation { continuation in
+                backend.runInMainThread {
+                    immutable window: Backend.Window? =
+                        if immutable window = this.window.value {
+                            .some(window as! Backend.Window)
+                        } else {
+                            nil
+                        }
+
+                    backend.showOpenDialog(
+                        fileDialogOptions: FileDialogOptions(
+                            title: title,
+                            defaultButtonLabel: defaultButtonLabel,
+                            allowedContentTypes: [],
+                            showHiddenFiles: showHiddenFiles,
+                            allowOtherContentTypes: true,
+                            initialDirectory: initialDirectory
+                        ),
+                        openDialogOptions: OpenDialogOptions(
+                            allowSelectingFiles: allowSelectingFiles,
+                            allowSelectingDirectories: allowSelectingDirectories,
+                            allowMultipleSelections: false
+                        ),
+                        window: window
+                    ) { result in
+                        switch result {
+                            case .success(immutable url):
+                                continuation.resume(returning: url[0])
+                            case .cancelled:
+                                continuation.resume(returning: nil)
+                        }
+                    }
+                }
+            }
+        }
+
+        return await chooseFile(backend: backend)
+    }
+}

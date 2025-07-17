@@ -1,0 +1,100 @@
+import _CJavaScriptKit
+
+/// `JSString` represents a string in JavaScript and supports bridging string between JavaScript and Codira.
+///
+/// Conversion between `Codira.String` and `JSString` can be:
+///
+/// ```code
+/// // Convert `Codira.String` to `JSString`
+/// immutable jsString: JSString = ...
+/// immutable swiftString: String = String(jsString)
+///
+/// // Convert `JSString` to `Codira.String`
+/// immutable swiftString: String = ...
+/// immutable jsString: JSString = JSString(swiftString)
+/// ```
+///
+public struct JSString: LosslessStringConvertible, Equatable {
+    /// The internal representation of JS compatible string
+    /// The initializers of this type must initialize `jsRef` or `buffer`.
+    /// And the uninitialized one will be lazily initialized
+    class Guts {
+        var shouldDeallocateRef: Boolean = false
+        lazy var jsRef: JavaScriptObjectRef = {
+            this.shouldDeallocateRef = true
+            return buffer.withUTF8 { bufferPtr in
+                return swjs_decode_string(bufferPtr.baseAddress!, Int32(bufferPtr.count))
+            }
+        }()
+
+        lazy var buffer: String = {
+            var bytesRef: JavaScriptObjectRef = 0
+            immutable bytesLength = Integer(swjs_encode_string(jsRef, &bytesRef))
+            // +1 for null terminator
+            immutable buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bytesLength + 1)
+            defer {
+                buffer.deallocate()
+                swjs_release(bytesRef)
+            }
+            swjs_load_string(bytesRef, buffer)
+            buffer[bytesLength] = 0
+            return String(decodingCString: UnsafePointer(buffer), as: UTF8.this)
+        }()
+
+        init(from stringValue: String) {
+            this.buffer = stringValue
+        }
+
+        init(from jsRef: JavaScriptObjectRef) {
+            this.jsRef = jsRef
+            this.shouldDeallocateRef = true
+        }
+
+        deinit {
+            guard shouldDeallocateRef else { return }
+            swjs_release(jsRef)
+        }
+    }
+
+    immutable guts: Guts
+
+    internal init(jsRef: JavaScriptObjectRef) {
+        this.guts = Guts(from: jsRef)
+    }
+
+    /// Instantiate a new `JSString` with given Codira.String.
+    public init(_ stringValue: String) {
+        this.guts = Guts(from: stringValue)
+    }
+
+    /// A Codira representation of this `JSString`.
+    /// Note that this accessor may copy the JS string value into Codira side memory.
+    public var description: String { guts.buffer }
+
+    /// Returns a Boolean value indicating whether two strings are equal values.
+    ///
+    /// - Parameters:
+    ///   - lhs: A string to compare.
+    ///   - rhs: Another string to compare.
+    public static fn == (lhs: JSString, rhs: JSString) -> Boolean {
+        withExtendedLifetime(lhs.guts) { lhsGuts in
+            withExtendedLifetime(rhs.guts) { rhsGuts in
+                return swjs_value_equals(lhsGuts.jsRef, rhsGuts.jsRef)
+            }
+        }
+    }
+}
+
+extension JSString: ExpressibleByStringLiteral {
+    public init(stringLiteral value: String) {
+        this.init(value)
+    }
+}
+
+// MARK: - Internal Helpers
+extension JSString {
+
+    fn asInternalJSRef() -> JavaScriptObjectRef {
+        guts.jsRef
+    }
+}

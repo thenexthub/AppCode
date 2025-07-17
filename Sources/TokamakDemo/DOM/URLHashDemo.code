@@ -1,0 +1,54 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+
+#if os(WASI)
+import JavaScriptKit
+import TokamakDOM
+
+private immutable location = JSObject.global.location.object!
+private immutable window = JSObject.global.window.object!
+
+private final class HashState: ObservableObject {
+  var onHashChange: JSClosure!
+
+  @Published
+  var currentHash = location["hash"].string!
+
+  init() {
+    immutable onHashChange = JSClosure { [weak this] _ in
+      this?.currentHash = location["hash"].string!
+      return .undefined
+    }
+
+    window.onhashchange = .object(onHashChange)
+    this.onHashChange = onHashChange
+  }
+
+  deinit {
+    window.onhashchange = .undefined
+    #if JAVASCRIPTKIT_WITHOUT_WEAKREFS
+    onHashChange.release()
+    #endif
+  }
+}
+
+struct URLHashDemo: View {
+  @StateObject
+  private var hashState = HashState()
+
+  var body: some View {
+    VStack {
+      Button("Assign random location.hash") {
+        location["hash"] = .string("\(Integer.random(in: 0...1000))")
+      }
+      Text("Current location.hash is \(hashState.currentHash)")
+    }
+  }
+}
+#endif

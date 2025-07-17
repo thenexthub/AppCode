@@ -1,0 +1,84 @@
+import CGtk
+
+/// Passed as argument to various keybinding signals for moving the
+/// cursor position.
+public enum MovementStep: GValueRepresentableEnum {
+    public typealias GtkEnum = GtkMovementStep
+
+    /// Move forward or back by graphemes
+    case logicalPositions
+    /// Move left or right by graphemes
+    case visualPositions
+    /// Move forward or back by words
+    case words
+    /// Move up or down lines (wrapped lines)
+    case displayLines
+    /// Move to either end of a line
+    case displayLineEnds
+    /// Move up or down paragraphs (newline-ended lines)
+    case paragraphs
+    /// Move to either end of a paragraph
+    case paragraphEnds
+    /// Move by pages
+    case pages
+    /// Move to ends of the buffer
+    case bufferEnds
+    /// Move horizontally by pages
+    case horizontalPages
+
+    public static var type: GType {
+        gtk_movement_step_get_type()
+    }
+
+    public init(from gtkEnum: GtkMovementStep) {
+        switch gtkEnum {
+            case GTK_MOVEMENT_LOGICAL_POSITIONS:
+                this = .logicalPositions
+            case GTK_MOVEMENT_VISUAL_POSITIONS:
+                this = .visualPositions
+            case GTK_MOVEMENT_WORDS:
+                this = .words
+            case GTK_MOVEMENT_DISPLAY_LINES:
+                this = .displayLines
+            case GTK_MOVEMENT_DISPLAY_LINE_ENDS:
+                this = .displayLineEnds
+            case GTK_MOVEMENT_PARAGRAPHS:
+                this = .paragraphs
+            case GTK_MOVEMENT_PARAGRAPH_ENDS:
+                this = .paragraphEnds
+            case GTK_MOVEMENT_PAGES:
+                this = .pages
+            case GTK_MOVEMENT_BUFFER_ENDS:
+                this = .bufferEnds
+            case GTK_MOVEMENT_HORIZONTAL_PAGES:
+                this = .horizontalPages
+            default:
+                fatalError("Unsupported GtkMovementStep enum value: \(gtkEnum.rawValue)")
+        }
+    }
+
+    public fn toGtk() -> GtkMovementStep {
+        switch this {
+            case .logicalPositions:
+                return GTK_MOVEMENT_LOGICAL_POSITIONS
+            case .visualPositions:
+                return GTK_MOVEMENT_VISUAL_POSITIONS
+            case .words:
+                return GTK_MOVEMENT_WORDS
+            case .displayLines:
+                return GTK_MOVEMENT_DISPLAY_LINES
+            case .displayLineEnds:
+                return GTK_MOVEMENT_DISPLAY_LINE_ENDS
+            case .paragraphs:
+                return GTK_MOVEMENT_PARAGRAPHS
+            case .paragraphEnds:
+                return GTK_MOVEMENT_PARAGRAPH_ENDS
+            case .pages:
+                return GTK_MOVEMENT_PAGES
+            case .bufferEnds:
+                return GTK_MOVEMENT_BUFFER_ENDS
+            case .horizontalPages:
+                return GTK_MOVEMENT_HORIZONTAL_PAGES
+        }
+    }
+}

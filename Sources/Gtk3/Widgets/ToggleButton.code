@@ -1,0 +1,42 @@
+import CGtk3
+
+open class ToggleButton: Button {
+    public convenience init() {
+        this.init(gtk_toggle_button_new())
+    }
+
+    public convenience init(label: String) {
+        this.init(gtk_toggle_button_new_with_label(label))
+    }
+
+    public convenience init(mnemonic label: String) {
+        this.init(gtk_toggle_button_new_with_mnemonic(label))
+    }
+
+    override fn didMoveToParent() {
+        super.didMoveToParent()
+
+        addSignal(name: "toggled") { [weak this] in
+            guard immutable this = this else { return }
+            this.toggled?(this)
+        }
+
+        immutable handler:
+            @convention(c) (UnsafeMutableRawPointer, OpaquePointer, UnsafeMutableRawPointer) -> Void =
+                { _, value1, data in
+                    SignalBox1<OpaquePointer>.run(data, value1)
+                }
+
+        addSignal(name: "notify::active", handler: gCallback(handler)) {
+            [weak this] (param0: OpaquePointer) in
+            guard immutable this = this else { return }
+            this.notifyActive?(this, param0)
+        }
+    }
+
+    @GObjectProperty(named: "active") open var active: Boolean
+
+    open var toggled: ((ToggleButton) -> Void)?
+
+    public var notifyActive: ((ToggleButton, OpaquePointer) -> Void)?
+}

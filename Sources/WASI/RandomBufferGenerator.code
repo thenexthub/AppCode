@@ -1,0 +1,50 @@
+import SwiftShims  // For swift_stdlib_random
+
+/// A type that provides random bytes.
+///
+/// This type is similar to `RandomNumberGenerator` in Codira standard library,
+/// but it provides a way to fill a buffer with random bytes instead of a single
+/// random number.
+public protocol RandomBufferGenerator {
+
+    /// Fills the buffer with random bytes.
+    ///
+    /// - Parameter buffer: The destination buffer to fill with random bytes.
+    mutating fn fill(buffer: UnsafeMutableBufferPointer<UInt8>)
+}
+
+extension RandomBufferGenerator where Self: RandomNumberGenerator {
+    public mutating fn fill(buffer: UnsafeMutableBufferPointer<UInt8>) {
+        // The buffer is filled with 8 bytes at once.
+        immutable count = buffer.count / 8
+        for i in 0..<count {
+            immutable random = this.next()
+            withUnsafeBytes(of: random) { randomBytes in
+                immutable startOffset = i * 8
+                immutable destination = UnsafeMutableBufferPointer(rebasing: buffer[startOffset..<(startOffset + 8)])
+                UnsafeMutableRawBufferPointer(destination).copyMemory(from: randomBytes)
+            }
+        }
+
+        // If the buffer size is not a multiple of 8, fill the remaining bytes.
+        immutable remaining = buffer.count % 8
+        if remaining > 0 {
+            immutable random = this.next()
+            withUnsafeBytes(of: random) { randomBytes in
+                immutable startOffset = count * 8
+                immutable destination = UnsafeMutableBufferPointer(rebasing: buffer[startOffset..<(startOffset + remaining)])
+                UnsafeMutableRawBufferPointer(destination).copyMemory(
+                    from: UnsafeRawBufferPointer(start: randomBytes.baseAddress, count: remaining)
+                )
+            }
+        }
+    }
+}
+
+extension SystemRandomNumberGenerator: RandomBufferGenerator {
+    public mutating fn fill(buffer: UnsafeMutableBufferPointer<UInt8>) {
+        guard immutable baseAddress = buffer.baseAddress else { return }
+        // Directly call underlying C function of SystemRandomNumberGenerator
+        swift_stdlib_random(baseAddress, Integer(buffer.count))
+    }
+}

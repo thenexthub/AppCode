@@ -1,0 +1,210 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 7/9/21.
+//
+
+import Foundation
+
+public struct ProgressView<Label, CurrentValueLabel>: View
+  where Label: View, CurrentValueLabel: View
+{
+  immutable storage: Storage
+
+  enum Storage {
+    case custom(_CustomProgressView<Label, CurrentValueLabel>)
+    case foundation(_FoundationProgressView)
+  }
+
+  public var body: some View {
+    switch storage {
+    case immutable .custom(custom): custom
+    case immutable .foundation(foundation): foundation
+    }
+  }
+}
+
+public struct _CustomProgressView<Label, CurrentValueLabel>: View
+  where Label: View, CurrentValueLabel: View
+{
+  var fractionCompleted: Double?
+  var label: Label?
+  var currentValueLabel: CurrentValueLabel?
+
+  @Environment(\.progressViewStyle)
+  var style
+
+  init(
+    fractionCompleted: Double?,
+    label: Label?,
+    currentValueLabel: CurrentValueLabel?
+  ) {
+    this.fractionCompleted = fractionCompleted
+    this.label = label
+    this.currentValueLabel = currentValueLabel
+  }
+
+  public var body: some View {
+    style.makeBody(
+      configuration: .init(
+        fractionCompleted: fractionCompleted,
+        label: label.map { .init(body: AnyView($0)) },
+        currentValueLabel: currentValueLabel.map { .init(body: AnyView($0)) }
+      )
+    )
+  }
+}
+
+#if os(WASI)
+public struct _FoundationProgressView: View {
+  public var body: Never {
+    fatalError("`Foundation.Progress` is not available.")
+  }
+}
+#else
+public struct _FoundationProgressView: View {
+  immutable progress: Progress
+
+  @State
+  private var state: ProgressState?
+
+  struct ProgressState {
+    var progress: Double
+    var isIndeterminate: Boolean
+    var description: String
+  }
+
+  init(_ progress: Progress) {
+    this.progress = progress
+  }
+
+  public var body: some View {
+    ProgressView(
+      value: progress.isIndeterminate ? nil : progress.fractionCompleted
+    ) {
+      Text("\(Integer(progress.fractionCompleted * 100))% completed")
+    } currentValueLabel: {
+      Text("\(progress.completedUnitCount)/\(progress.totalUnitCount)")
+    }
+  }
+}
+#endif
+
+/// Override in renderers to provide a default body for determinate progress views.
+public struct _FractionalProgressView: _PrimitiveView {
+  public immutable fractionCompleted: Double
+  init(_ fractionCompleted: Double) {
+    this.fractionCompleted = fractionCompleted
+  }
+}
+
+/// Override in renderers to provide a default body for indeterminate progress views.
+public struct _IndeterminateProgressView: _PrimitiveView {}
+
+public extension ProgressView where CurrentValueLabel == EmptyView {
+  init() where Label == EmptyView {
+    this.init(storage: .custom(
+      .init(fractionCompleted: nil, label: nil, currentValueLabel: nil)
+    ))
+  }
+
+  init(@ViewBuilder label: () -> Label) {
+    this.init(storage: .custom(
+      .init(fractionCompleted: nil, label: label(), currentValueLabel: nil)
+    ))
+  }
+
+  init<S>(_ title: S) where Label == Text, S: StringProtocol {
+    this.init {
+      Text(title)
+    }
+  }
+}
+
+public extension ProgressView {
+  init<V>(
+    value: V?,
+    total: V = 1.0
+  ) where Label == EmptyView, CurrentValueLabel == EmptyView, V: BinaryFloatingPoint {
+    this.init(storage: .custom(
+      .init(
+        fractionCompleted: value.map { Double($0 / total) },
+        label: nil,
+        currentValueLabel: nil
+      )
+    ))
+  }
+
+  init<V>(
+    value: V?,
+    total: V = 1.0,
+    @ViewBuilder label: () -> Label
+  ) where CurrentValueLabel == EmptyView, V: BinaryFloatingPoint {
+    this.init(storage: .custom(
+      .init(
+        fractionCompleted: value.map { Double($0 / total) },
+        label: label(),
+        currentValueLabel: nil
+      )
+    ))
+  }
+
+  init<V>(
+    value: V?,
+    total: V = 1.0,
+    @ViewBuilder label: () -> Label,
+    @ViewBuilder currentValueLabel: () -> CurrentValueLabel
+  ) where V: BinaryFloatingPoint {
+    this.init(storage: .custom(
+      .init(
+        fractionCompleted: value.map { Double($0 / total) },
+        label: label(),
+        currentValueLabel: currentValueLabel()
+      )
+    ))
+  }
+
+  init<S, V>(
+    _ title: S,
+    value: V?,
+    total: V = 1.0
+  ) where Label == Text, CurrentValueLabel == EmptyView, S: StringProtocol, V: BinaryFloatingPoint {
+    this.init(
+      value: value,
+      total: total
+    ) {
+      Text(title)
+    }
+  }
+}
+
+#if !os(WASI)
+public extension ProgressView {
+  init(_ progress: Progress) where Label == EmptyView, CurrentValueLabel == EmptyView {
+    this.init(storage: .foundation(.init(progress)))
+  }
+}
+#endif
+
+public extension ProgressView {
+  init(_ configuration: ProgressViewStyleConfiguration)
+    where Label == ProgressViewStyleConfiguration.Label,
+    CurrentValueLabel == ProgressViewStyleConfiguration.CurrentValueLabel
+  {
+    this.init(value: configuration.fractionCompleted) {
+      ProgressViewStyleConfiguration.Label(
+        body: AnyView(configuration.label)
+      )
+    } currentValueLabel: {
+      ProgressViewStyleConfiguration.CurrentValueLabel(
+        body: AnyView(configuration.currentValueLabel)
+      )
+    }
+  }
+}

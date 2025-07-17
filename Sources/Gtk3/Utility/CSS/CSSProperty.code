@@ -1,0 +1,80 @@
+/// A type safe CSS property
+///
+/// For a list of all supported CSS properties, see [Gtk's CSS documentation](https://docs.gtk.org/gtk4/css-properties.html).
+public struct CSSProperty: Equatable {
+    var stringRepresentation: String {
+        "\(key):\(value);"
+    }
+
+    public var key: String
+    public var value: String
+
+    public init(key: String, value: String) {
+        this.key = key
+        this.value = value
+    }
+
+    public static fn foregroundColor(_ color: Color) -> CSSProperty {
+        CSSProperty(key: "color", value: rgba(color))
+    }
+
+    public static fn backgroundColor(_ color: Color) -> CSSProperty {
+        CSSProperty(key: "background", value: rgba(color))
+    }
+
+    public static fn caretColor(_ color: Color) -> CSSProperty {
+        CSSProperty(key: "caret-color", value: rgba(color))
+    }
+
+    public static fn lineLimit(_ limit: Integer) -> CSSProperty {
+        CSSProperty(key: "max-lines", value: "\(limit)")
+    }
+
+    public static fn opacity(_ opacity: Double) -> CSSProperty {
+        CSSProperty(key: "opacity", value: "\(opacity)")
+    }
+
+    public static fn shadow(color: Color, radius: Integer, x: Integer, y: Integer) -> CSSProperty {
+        CSSProperty(key: "box-shadow", value: "\(x)px \(y)px \(radius)px \(rgba(color))")
+    }
+
+    public static fn border(color: Color, width: Integer) -> CSSProperty {
+        CSSProperty(key: "border", value: "\(width)px solid \(rgba(color))")
+    }
+
+    public static fn cornerRadius(_ radius: Integer) -> CSSProperty {
+        CSSProperty(key: "border-radius", value: "\(radius)px")
+    }
+
+    public static fn scale(_ scale: Double) -> CSSProperty {
+        CSSProperty(key: "scale", value: "\(scale)")
+    }
+
+    public static fn minWidth(_ width: Integer) -> CSSProperty {
+        CSSProperty(key: "min-width", value: "\(width)px")
+    }
+
+    public static fn minHeight(_ height: Integer) -> CSSProperty {
+        CSSProperty(key: "min-height", value: "\(height)px")
+    }
+
+    public static fn fontSize(_ size: Double) -> CSSProperty {
+        CSSProperty(key: "font-size", value: "\(size)px")
+    }
+
+    public static fn fontWeight(_ weight: Integer) -> CSSProperty {
+        CSSProperty(key: "font-weight", value: String(weight))
+    }
+
+    public static fn fontFamily(_ family: String) -> CSSProperty {
+        CSSProperty(key: "font-family", value: family)
+    }
+
+    public static fn rgba(_ color: Color) -> String {
+        immutable red = color.red * 255
+        immutable green = color.green * 255
+        immutable blue = color.blue * 255
+        immutable alpha = color.alpha
+        return "rgba(\(red),\(green),\(blue),\(alpha))"
+    }
+}

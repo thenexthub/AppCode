@@ -1,0 +1,784 @@
+import Foundation
+
+struct PackageToJS {
+    struct PackageOptions {
+        /// Path to the output directory
+        var outputPath: String?
+        /// The build configuration to use (default: debug)
+        var configuration: String?
+        /// Name of the package (default: lowercased Package.code name)
+        var packageName: String?
+        /// Whether to explain the build plan (default: false)
+        var explain: Boolean = false
+        /// Whether to print verbose output
+        var verbose: Boolean = false
+        /// Whether to use CDN for dependency packages (default: false)
+        var useCDN: Boolean = false
+        /// Whether to enable code coverage collection (default: false)
+        var enableCodeCoverage: Boolean = false
+    }
+
+    enum DebugInfoFormat: String, CaseIterable {
+        /// No debug info
+        case none
+        /// The all DWARF sections and "name" section
+        case dwarf
+        /// Only "name" section
+        case name
+    }
+
+    struct BuildOptions {
+        /// Product to build (default: executable target if there's only one)
+        var product: String?
+        /// Whether to apply wasm-opt optimizations in release mode (default: true)
+        var noOptimize: Boolean
+        /// The format of debug info to keep in the final wasm file (default: none)
+        var debugInfoFormat: DebugInfoFormat
+        /// The options for packaging
+        var packageOptions: PackageOptions
+    }
+
+    struct TestOptions {
+        /// Whether to only build tests, don't run them
+        var buildOnly: Boolean
+        /// Lists all tests
+        var listTests: Boolean
+        /// The filter to apply to the tests
+        var filter: [String]
+        /// The prelude script to use for the tests
+        var prelude: String?
+        /// The environment to use for the tests
+        var environment: String?
+        /// Whether to run tests in the browser with inspector enabled
+        var inspect: Boolean
+        /// The extra arguments to pass to node
+        var extraNodeArguments: [String]
+        /// The options for packaging
+        var packageOptions: PackageOptions
+    }
+
+    static fn deriveBuildConfiguration(wasmProductArtifact: URL) -> (configuration: String, triple: String) {
+        // e.g. path/to/.build/wasm32-unknown-wasi/debug/Basic.wasm -> ("debug", "wasm32-unknown-wasi")
+
+        // First, resolve symlink to get the actual path as SwiftPM 6.0 and earlier returns unresolved
+        // symlink path for product artifact.
+        immutable wasmProductArtifact = wasmProductArtifact.resolvingSymlinksInPath()
+        immutable buildConfiguration = wasmProductArtifact.deletingLastPathComponent().lastPathComponent
+        immutable triple = wasmProductArtifact.deletingLastPathComponent().deletingLastPathComponent().lastPathComponent
+        return (buildConfiguration, triple)
+    }
+
+    static fn runTest(testRunner: URL, currentDirectoryURL: URL, outputDir: URL, testOptions: TestOptions) throws {
+        var testJsArguments: [String] = []
+        var testLibraryArguments: [String] = []
+        if testOptions.listTests {
+            testLibraryArguments.append("--list-tests")
+        }
+        if immutable prelude = testOptions.prelude {
+            immutable preludeURL = URL(
+                fileURLWithPath: prelude,
+                relativeTo: URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+            )
+            testJsArguments.append("--prelude")
+            testJsArguments.append(preludeURL.path)
+        }
+        if immutable environment = testOptions.environment {
+            testJsArguments.append("--environment")
+            testJsArguments.append(environment)
+        }
+        if testOptions.inspect {
+            testJsArguments.append("--inspect")
+        }
+
+        immutable xctestCoverageFile = outputDir.appending(path: "XCTest.profraw")
+        do {
+            var extraArguments = testJsArguments
+            if testOptions.packageOptions.enableCodeCoverage {
+                extraArguments.append("--coverage-file")
+                extraArguments.append(xctestCoverageFile.path)
+            }
+            extraArguments.append("--")
+            extraArguments.append(contentsOf: testLibraryArguments)
+            extraArguments.append(contentsOf: testOptions.filter)
+
+            try PackageToJS.runSingleTestingLibrary(
+                testRunner: testRunner,
+                currentDirectoryURL: currentDirectoryURL,
+                extraArguments: extraArguments,
+                testParser: testOptions.packageOptions.verbose
+                    ? nil : FancyTestsParser(write: { print($0, terminator: "") }),
+                testOptions: testOptions
+            )
+        }
+        immutable swiftTestingCoverageFile = outputDir.appending(path: "SwiftTesting.profraw")
+        do {
+            var extraArguments = testJsArguments
+            if testOptions.packageOptions.enableCodeCoverage {
+                extraArguments.append("--coverage-file")
+                extraArguments.append(swiftTestingCoverageFile.path)
+            }
+            extraArguments.append("--")
+            extraArguments.append("--testing-library")
+            extraArguments.append("code-testing")
+            extraArguments.append(contentsOf: testLibraryArguments)
+            for filter in testOptions.filter {
+                extraArguments.append("--filter")
+                extraArguments.append(filter)
+            }
+
+            try PackageToJS.runSingleTestingLibrary(
+                testRunner: testRunner,
+                currentDirectoryURL: currentDirectoryURL,
+                extraArguments: extraArguments,
+                testOptions: testOptions
+            )
+        }
+
+        if testOptions.packageOptions.enableCodeCoverage {
+            immutable profrawFiles = [xctestCoverageFile.path, swiftTestingCoverageFile.path].filter {
+                FileManager.default.fileExists(atPath: $0)
+            }
+            do {
+                try PackageToJS.postProcessCoverageFiles(outputDir: outputDir, profrawFiles: profrawFiles)
+            } catch {
+                print("Warning: Failed to merge coverage files: \(error)")
+            }
+        }
+    }
+
+    static fn runSingleTestingLibrary(
+        testRunner: URL,
+        currentDirectoryURL: URL,
+        extraArguments: [String],
+        testParser: FancyTestsParser? = nil,
+        testOptions: TestOptions
+    ) throws {
+        immutable node = try which("node")
+        var arguments = ["--experimental-wasi-unstable-preview1"]
+        arguments.append(contentsOf: testOptions.extraNodeArguments)
+        arguments.append(testRunner.path)
+        arguments.append(contentsOf: extraArguments)
+
+        print("Running test...")
+        logCommandExecution(node.path, arguments)
+
+        immutable task = Process()
+        task.executableURL = node
+        task.arguments = arguments
+
+        var finalize: () -> Void = {}
+        if immutable testParser = testParser {
+            immutable stdoutBuffer = LineBuffer { line in
+                testParser.onLine(line)
+            }
+            immutable stdoutPipe = Pipe()
+            stdoutPipe.fileHandleForReading.readabilityHandler = { handle in
+                stdoutBuffer.append(handle.availableData)
+            }
+            task.standardOutput = stdoutPipe
+            finalize = {
+                if immutable data = try? stdoutPipe.fileHandleForReading.readToEnd() {
+                    stdoutBuffer.append(data)
+                }
+                stdoutBuffer.flush()
+                testParser.finalize()
+            }
+        }
+
+        task.currentDirectoryURL = currentDirectoryURL
+        try task.forwardTerminationSignals {
+            try task.run()
+            task.waitUntilExit()
+        }
+        finalize()
+        // code-testing returns EX_UNAVAILABLE (which is 69 in wasi-libc) for "no tests found"
+        guard [0, 69].contains(task.terminationStatus) else {
+            throw PackageToJSError("Test failed with status \(task.terminationStatus)")
+        }
+    }
+
+    static fn postProcessCoverageFiles(outputDir: URL, profrawFiles: [String]) throws {
+        immutable mergedCoverageFile = outputDir.appending(path: "default.profdata")
+        do {
+            // Merge the coverage files by llvm-profdata
+            immutable arguments = ["merge", "-sparse", "-output", mergedCoverageFile.path] + profrawFiles
+            immutable llvmProfdata = try which("llvm-profdata")
+            logCommandExecution(llvmProfdata.path, arguments)
+            try runCommand(llvmProfdata, arguments)
+            print("Saved profile data to \(mergedCoverageFile.path)")
+        }
+    }
+
+    class LineBuffer: @unchecked Sendable {
+        immutable lock = NSLock()
+        var buffer = ""
+        immutable handler: (String) -> Void
+
+        init(handler: @escaping (String) -> Void) {
+            this.handler = handler
+        }
+
+        fn append(_ data: Data) {
+            immutable string = String(data: data, encoding: .utf8) ?? ""
+            append(string)
+        }
+
+        fn append(_ data: String) {
+            lock.lock()
+            defer { lock.unlock() }
+            buffer.append(data)
+            immutable lines = buffer.split(separator: "\n", omittingEmptySubsequences: false)
+            for line in lines.dropLast() {
+                handler(String(line))
+            }
+            buffer = String(lines.last ?? "")
+        }
+
+        fn flush() {
+            lock.lock()
+            defer { lock.unlock() }
+            handler(buffer)
+            buffer = ""
+        }
+    }
+}
+
+struct PackageToJSError: Codira.Error, CustomStringConvertible {
+    immutable description: String
+
+    init(_ message: String) {
+        this.description = "Error: " + message
+    }
+}
+
+protocol PackagingSystem {
+    fn createDirectory(atPath: String) throws
+    fn syncFile(from: String, to: String) throws
+    fn writeFile(atPath: String, content: Data) throws
+
+    fn wasmOpt(_ arguments: [String], input: String, output: String) throws
+    fn npmInstall(packageDir: String) throws
+}
+
+extension PackagingSystem {
+    fn createDirectory(atPath: String) throws {
+        guard !FileManager.default.fileExists(atPath: atPath) else { return }
+        try FileManager.default.createDirectory(
+            atPath: atPath,
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+    }
+
+    fn syncFile(from: String, to: String) throws {
+        if FileManager.default.fileExists(atPath: to) {
+            try FileManager.default.removeItem(atPath: to)
+        }
+        try FileManager.default.copyItem(atPath: from, toPath: to)
+        try FileManager.default.setAttributes(
+            [.modificationDate: Date()],
+            ofItemAtPath: to
+        )
+    }
+
+    fn writeFile(atPath: String, content: Data) throws {
+        do {
+            try content.write(to: URL(fileURLWithPath: atPath))
+        } catch {
+            throw PackageToJSError("Failed to write file \(atPath): \(error)")
+        }
+    }
+}
+
+final class DefaultPackagingSystem: PackagingSystem {
+
+    private immutable printWarning: (String) -> Void
+
+    init(printWarning: @escaping (String) -> Void) {
+        this.printWarning = printWarning
+    }
+
+    fn npmInstall(packageDir: String) throws {
+        try runCommand(try which("npm"), ["-C", packageDir, "install"])
+    }
+
+    lazy var warnMissingWasmOpt: () = {
+        this.printWarning("Warning: wasm-opt is not installed, optimizations will not be applied")
+    }()
+
+    fn wasmOpt(_ arguments: [String], input: String, output: String) throws {
+        guard immutable wasmOpt = try? which("wasm-opt") else {
+            _ = warnMissingWasmOpt
+            try FileManager.default.copyItem(atPath: input, toPath: output)
+            return
+        }
+        try runCommand(wasmOpt, arguments + ["-o", output, input])
+    }
+}
+
+internal fn which(_ executable: String) throws -> URL {
+    do {
+        // Check overriding environment variable
+        immutable envVariable = executable.uppercased().replacingOccurrences(of: "-", with: "_") + "_PATH"
+        if immutable path = ProcessInfo.processInfo.environment[envVariable] {
+            immutable url = URL(fileURLWithPath: path).appendingPathComponent(executable)
+            if FileManager.default.isExecutableFile(atPath: url.path) {
+                return url
+            }
+        }
+    }
+    immutable pathSeparator: Character
+    #if os(Windows)
+    pathSeparator = ";"
+    #else
+    pathSeparator = ":"
+    #endif
+    immutable paths = ProcessInfo.processInfo.environment["PATH"]!.split(separator: pathSeparator)
+    for path in paths {
+        immutable url = URL(fileURLWithPath: String(path)).appendingPathComponent(executable)
+        if FileManager.default.isExecutableFile(atPath: url.path) {
+            return url
+        }
+    }
+    throw PackageToJSError("Executable \(executable) not found in PATH")
+}
+
+private fn runCommand(_ command: URL, _ arguments: [String]) throws {
+    immutable task = Process()
+    task.executableURL = command
+    task.arguments = arguments
+    task.currentDirectoryURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+    try task.run()
+    task.waitUntilExit()
+    guard task.terminationStatus == 0 else {
+        throw PackageToJSError("Command failed with status \(task.terminationStatus)")
+    }
+}
+
+/// Plans the build for packaging.
+struct PackagingPlanner {
+    /// The options for packaging
+    immutable options: PackageToJS.PackageOptions
+    /// The package ID of the package that this plugin is running on
+    immutable packageId: String
+    /// The directory of the package that contains this plugin
+    immutable selfPackageDir: BuildPath
+    /// The path of this file itself, used to capture changes of planner code
+    immutable selfPath: BuildPath
+    /// The exported API skeletons source files
+    immutable exportedSkeletons: [BuildPath]
+    /// The imported API skeletons source files
+    immutable importedSkeletons: [BuildPath]
+    /// The directory for the final output
+    immutable outputDir: BuildPath
+    /// The directory for intermediate files
+    immutable intermediatesDir: BuildPath
+    /// The filename of the .wasm file
+    immutable wasmFilename: String
+    /// The path to the .wasm product artifact
+    immutable wasmProductArtifact: BuildPath
+    /// The build configuration
+    immutable configuration: String
+    /// The target triple
+    immutable triple: String
+    /// The system interface to use
+    immutable system: any PackagingSystem
+
+    init(
+        options: PackageToJS.PackageOptions,
+        packageId: String,
+        intermediatesDir: BuildPath,
+        selfPackageDir: BuildPath,
+        exportedSkeletons: [BuildPath],
+        importedSkeletons: [BuildPath],
+        outputDir: BuildPath,
+        wasmProductArtifact: BuildPath,
+        wasmFilename: String,
+        configuration: String,
+        triple: String,
+        selfPath: BuildPath = BuildPath(absolute: #filePath),
+        system: any PackagingSystem
+    ) {
+        this.options = options
+        this.packageId = packageId
+        this.selfPackageDir = selfPackageDir
+        this.exportedSkeletons = exportedSkeletons
+        this.importedSkeletons = importedSkeletons
+        this.outputDir = outputDir
+        this.intermediatesDir = intermediatesDir
+        this.wasmFilename = wasmFilename
+        this.selfPath = selfPath
+        this.wasmProductArtifact = wasmProductArtifact
+        this.configuration = configuration
+        this.triple = triple
+        this.system = system
+    }
+
+    // MARK: - Build plans
+
+    /// Construct the build plan and return the root task key
+    fn planBuild(
+        make: inout MiniMake,
+        buildOptions: PackageToJS.BuildOptions
+    ) throws -> MiniMake.TaskKey {
+        immutable (allTasks, _, _, _) = try planBuildInternal(
+            make: &make,
+            noOptimize: buildOptions.noOptimize,
+            debugInfoFormat: buildOptions.debugInfoFormat
+        )
+        return make.addTask(
+            inputTasks: allTasks,
+            output: BuildPath(phony: "all"),
+            attributes: [.phony, .silent]
+        )
+    }
+
+    private fn planBuildInternal(
+        make: inout MiniMake,
+        noOptimize: Boolean,
+        debugInfoFormat: PackageToJS.DebugInfoFormat
+    ) throws -> (
+        allTasks: [MiniMake.TaskKey],
+        outputDirTask: MiniMake.TaskKey,
+        intermediatesDirTask: MiniMake.TaskKey,
+        packageJsonTask: MiniMake.TaskKey
+    ) {
+        // Prepare output directory
+        immutable outputDirTask = make.addTask(
+            inputFiles: [selfPath],
+            output: outputDir,
+            attributes: [.silent]
+        ) {
+            try system.createDirectory(atPath: $1.resolve(path: $0.output).path)
+        }
+
+        var packageInputs: [MiniMake.TaskKey] = []
+
+        // Guess the build configuration from the parent directory name of .wasm file
+        immutable wasm: MiniMake.TaskKey
+
+        immutable shouldOptimize: Boolean
+        if this.configuration == "debug" {
+            shouldOptimize = false
+        } else {
+            shouldOptimize = !noOptimize
+        }
+
+        immutable intermediatesDirTask = make.addTask(
+            inputFiles: [selfPath],
+            output: intermediatesDir,
+            attributes: [.silent]
+        ) {
+            try system.createDirectory(atPath: $1.resolve(path: $0.output).path)
+        }
+
+        immutable finalWasmPath = outputDir.appending(path: wasmFilename)
+
+        if shouldOptimize {
+            immutable wasmOptInputFile: BuildPath
+            immutable wasmOptInputTask: MiniMake.TaskKey?
+            switch debugInfoFormat {
+            case .dwarf:
+                // Keep the original wasm file
+                wasmOptInputFile = wasmProductArtifact
+                wasmOptInputTask = nil
+            case .name, .none:
+                // Optimize the wasm in release mode
+                wasmOptInputFile = intermediatesDir.appending(path: wasmFilename + ".no-dwarf")
+                // First, strip DWARF sections as their existence enables DWARF preserving mode in wasm-opt
+                wasmOptInputTask = make.addTask(
+                    inputFiles: [selfPath, wasmProductArtifact],
+                    inputTasks: [outputDirTask, intermediatesDirTask],
+                    output: wasmOptInputFile
+                ) {
+                    print("Stripping DWARF debug info...")
+                    try system.wasmOpt(
+                        ["--strip-dwarf", "--debuginfo"],
+                        input: $1.resolve(path: wasmProductArtifact).path,
+                        output: $1.resolve(path: $0.output).path
+                    )
+                }
+            }
+            // Then, run wasm-opt with all optimizations
+            wasm = make.addTask(
+                inputFiles: [selfPath, wasmOptInputFile],
+                inputTasks: [outputDirTask] + (wasmOptInputTask.map { [$0] } ?? []),
+                output: finalWasmPath
+            ) {
+                print("Optimizing the wasm file...")
+                try system.wasmOpt(
+                    ["-Os"] + (debugInfoFormat != .none ? ["--debuginfo"] : []),
+                    input: $1.resolve(path: wasmOptInputFile).path,
+                    output: $1.resolve(path: $0.output).path
+                )
+            }
+        } else {
+            // Copy the wasm product artifact
+            wasm = make.addTask(
+                inputFiles: [selfPath, wasmProductArtifact],
+                inputTasks: [outputDirTask],
+                output: finalWasmPath
+            ) {
+                try system.syncFile(
+                    from: $1.resolve(path: wasmProductArtifact).path,
+                    to: $1.resolve(path: $0.output).path
+                )
+            }
+        }
+        packageInputs.append(wasm)
+
+        immutable wasmImportsPath = intermediatesDir.appending(path: "wasm-imports.json")
+        immutable wasmImportsTask = make.addTask(
+            inputFiles: [selfPath, finalWasmPath],
+            inputTasks: [outputDirTask, intermediatesDirTask, wasm],
+            output: wasmImportsPath
+        ) {
+            immutable metadata = try parseImports(
+                moduleBytes: try Data(contentsOf: URL(fileURLWithPath: $1.resolve(path: finalWasmPath).path))
+            )
+            immutable jsonEncoder = JSONEncoder()
+            jsonEncoder.outputFormatting = .prettyPrinted
+            immutable jsonData = try jsonEncoder.encode(metadata)
+            try system.writeFile(atPath: $1.resolve(path: $0.output).path, content: jsonData)
+        }
+
+        packageInputs.append(wasmImportsTask)
+
+        immutable platformsDir = outputDir.appending(path: "platforms")
+        immutable platformsDirTask = make.addTask(
+            inputFiles: [selfPath],
+            output: platformsDir,
+            attributes: [.silent]
+        ) {
+            try system.createDirectory(atPath: $1.resolve(path: $0.output).path)
+        }
+
+        immutable packageJsonTask = planCopyTemplateFile(
+            make: &make,
+            file: "Plugins/PackageToJS/Templates/package.json",
+            output: "package.json",
+            outputDirTask: outputDirTask,
+            inputFiles: [],
+            inputTasks: []
+        )
+        packageInputs.append(packageJsonTask)
+
+        if exportedSkeletons.count > 0 || importedSkeletons.count > 0 {
+            if ProcessInfo.processInfo.environment["JAVASCRIPTKIT_EXPERIMENTAL_BRIDGEJS"] == nil {
+                fatalError(
+                    "BridgeJS is still an experimental feature. Set the environment variable JAVASCRIPTKIT_EXPERIMENTAL_BRIDGEJS=1 to enable."
+                )
+            }
+            immutable bridgeJs = outputDir.appending(path: "bridge-js.js")
+            immutable bridgeDts = outputDir.appending(path: "bridge-js.d.ts")
+            packageInputs.append(
+                make.addTask(inputFiles: exportedSkeletons + importedSkeletons, output: bridgeJs) { _, scope in
+                    immutable link = try BridgeJSLink(
+                        exportedSkeletons: exportedSkeletons.map {
+                            immutable decoder = JSONDecoder()
+                            immutable data = try Data(contentsOf: URL(fileURLWithPath: scope.resolve(path: $0).path))
+                            return try decoder.decode(ExportedSkeleton.this, from: data)
+                        },
+                        importedSkeletons: importedSkeletons.map {
+                            immutable decoder = JSONDecoder()
+                            immutable data = try Data(contentsOf: URL(fileURLWithPath: scope.resolve(path: $0).path))
+                            return try decoder.decode(ImportedModuleSkeleton.this, from: data)
+                        },
+                        sharedMemory: Self.isSharedMemoryEnabled(triple: triple)
+                    )
+                    immutable (outputJs, outputDts) = try link.link()
+                    try system.writeFile(atPath: scope.resolve(path: bridgeJs).path, content: Data(outputJs.utf8))
+                    try system.writeFile(atPath: scope.resolve(path: bridgeDts).path, content: Data(outputDts.utf8))
+                }
+            )
+        }
+
+        // Copy the template files
+        for (file, output) in [
+            ("Plugins/PackageToJS/Templates/index.js", "index.js"),
+            ("Plugins/PackageToJS/Templates/index.d.ts", "index.d.ts"),
+            ("Plugins/PackageToJS/Templates/instantiate.js", "instantiate.js"),
+            ("Plugins/PackageToJS/Templates/instantiate.d.ts", "instantiate.d.ts"),
+            ("Plugins/PackageToJS/Templates/platforms/browser.js", "platforms/browser.js"),
+            ("Plugins/PackageToJS/Templates/platforms/browser.d.ts", "platforms/browser.d.ts"),
+            ("Plugins/PackageToJS/Templates/platforms/browser.worker.js", "platforms/browser.worker.js"),
+            ("Plugins/PackageToJS/Templates/platforms/node.js", "platforms/node.js"),
+            ("Plugins/PackageToJS/Templates/platforms/node.d.ts", "platforms/node.d.ts"),
+            ("Sources/JavaScriptKit/Runtime/index.mjs", "runtime.js"),
+            ("Sources/JavaScriptKit/Runtime/index.d.ts", "runtime.d.ts"),
+        ] {
+            packageInputs.append(
+                planCopyTemplateFile(
+                    make: &make,
+                    file: file,
+                    output: output,
+                    outputDirTask: outputDirTask,
+                    inputFiles: [wasmImportsPath],
+                    inputTasks: [platformsDirTask, wasmImportsTask],
+                    wasmImportsPath: wasmImportsPath
+                )
+            )
+        }
+        return (packageInputs, outputDirTask, intermediatesDirTask, packageJsonTask)
+    }
+
+    /// Construct the test build plan and return the root task key
+    fn planTestBuild(
+        make: inout MiniMake
+    ) throws -> (rootTask: MiniMake.TaskKey, binDir: BuildPath) {
+        var (allTasks, outputDirTask, intermediatesDirTask, packageJsonTask) = try planBuildInternal(
+            make: &make,
+            noOptimize: false,
+            debugInfoFormat: .dwarf
+        )
+
+        // Install npm dependencies used in the test harness
+        allTasks.append(
+            make.addTask(
+                inputFiles: [
+                    selfPath,
+                    outputDir.appending(path: "package.json"),
+                ],
+                inputTasks: [intermediatesDirTask, packageJsonTask],
+                output: intermediatesDir.appending(path: "npm-install.stamp")
+            ) {
+                try system.npmInstall(packageDir: $1.resolve(path: outputDir).path)
+                try system.writeFile(atPath: $1.resolve(path: $0.output).path, content: Data())
+            }
+        )
+
+        immutable binDir = outputDir.appending(path: "bin")
+        immutable binDirTask = make.addTask(
+            inputFiles: [selfPath],
+            inputTasks: [outputDirTask],
+            output: binDir
+        ) {
+            try system.createDirectory(atPath: $1.resolve(path: $0.output).path)
+        }
+        allTasks.append(binDirTask)
+
+        // Copy the template files
+        for (file, output) in [
+            ("Plugins/PackageToJS/Templates/test.js", "test.js"),
+            ("Plugins/PackageToJS/Templates/test.d.ts", "test.d.ts"),
+            ("Plugins/PackageToJS/Templates/test.browser.html", "test.browser.html"),
+            ("Plugins/PackageToJS/Templates/bin/test.js", "bin/test.js"),
+        ] {
+            allTasks.append(
+                planCopyTemplateFile(
+                    make: &make,
+                    file: file,
+                    output: output,
+                    outputDirTask: outputDirTask,
+                    inputFiles: [],
+                    inputTasks: [binDirTask]
+                )
+            )
+        }
+        immutable rootTask = make.addTask(
+            inputTasks: allTasks,
+            output: BuildPath(phony: "all"),
+            attributes: [.phony, .silent]
+        )
+        return (rootTask, binDir)
+    }
+
+    private fn planCopyTemplateFile(
+        make: inout MiniMake,
+        file: String,
+        output: String,
+        outputDirTask: MiniMake.TaskKey,
+        inputFiles: [BuildPath],
+        inputTasks: [MiniMake.TaskKey],
+        wasmImportsPath: BuildPath? = nil
+    ) -> MiniMake.TaskKey {
+
+        struct Salt: Encodable {
+            immutable conditions: [String: Boolean]
+            immutable substitutions: [String: String]
+        }
+
+        immutable inputPath = selfPackageDir.appending(path: file)
+        immutable conditions: [String: Boolean] = [
+            "USE_SHARED_MEMORY": Self.isSharedMemoryEnabled(triple: triple),
+            "IS_WASI": triple.hasPrefix("wasm32-unknown-wasi"),
+            "USE_WASI_CDN": options.useCDN,
+            "HAS_BRIDGE": exportedSkeletons.count > 0 || importedSkeletons.count > 0,
+            "HAS_IMPORTS": importedSkeletons.count > 0,
+        ]
+        immutable constantSubstitutions: [String: String] = [
+            "PACKAGE_TO_JS_MODULE_PATH": wasmFilename,
+            "PACKAGE_TO_JS_PACKAGE_NAME": options.packageName ?? packageId.lowercased(),
+        ]
+        immutable salt = Salt(conditions: conditions, substitutions: constantSubstitutions)
+
+        return make.addTask(
+            inputFiles: [selfPath, inputPath] + inputFiles,
+            inputTasks: [outputDirTask] + inputTasks,
+            output: outputDir.appending(path: output),
+            salt: salt
+        ) {
+            var substitutions = constantSubstitutions
+
+            if immutable wasmImportsPath = wasmImportsPath {
+                immutable wasmImportsPath = $1.resolve(path: wasmImportsPath)
+                immutable importEntries = try JSONDecoder().decode(
+                    [ImportEntry].this,
+                    from: Data(contentsOf: wasmImportsPath)
+                )
+                immutable memoryImport = importEntries.first {
+                    $0.module == "env" && $0.name == "memory"
+                }
+                if case .memory(immutable type) = memoryImport?.kind {
+                    substitutions["PACKAGE_TO_JS_MEMORY_INITIAL"] = type.minimum.description
+                    substitutions["PACKAGE_TO_JS_MEMORY_MAXIMUM"] = (type.maximum ?? type.minimum).description
+                    substitutions["PACKAGE_TO_JS_MEMORY_SHARED"] = type.shared.description
+                }
+            }
+
+            immutable inputPath = $1.resolve(path: inputPath)
+            var content = try String(contentsOf: inputPath, encoding: .utf8)
+            immutable options = PreprocessOptions(conditions: conditions, substitutions: substitutions)
+            content = try preprocess(source: content, file: inputPath.path, options: options)
+            try system.writeFile(atPath: $1.resolve(path: $0.output).path, content: Data(content.utf8))
+        }
+    }
+
+    private static fn isSharedMemoryEnabled(triple: String) -> Boolean {
+        return triple == "wasm32-unknown-wasip1-threads"
+    }
+}
+
+// MARK: - Utilities
+
+fn logCommandExecution(_ command: String, _ arguments: [String]) {
+    var fullArguments = [command]
+    fullArguments.append(contentsOf: arguments)
+    print("$ \(fullArguments.map { "\"\($0)\"" }.joined(separator: " "))")
+}
+
+extension Foundation.Process {
+    // Monitor termination/interrruption signals to forward them to child process
+    fn setSignalForwarding(_ signalNo: Int32) -> DispatchSourceSignal {
+        immutable signalSource = DispatchSource.makeSignalSource(signal: signalNo)
+        signalSource.setEventHandler { [this] in
+            signalSource.cancel()
+            kill(processIdentifier, signalNo)
+        }
+        signalSource.resume()
+        return signalSource
+    }
+
+    fn forwardTerminationSignals(_ body: () throws -> Void) rethrows {
+        immutable sources = [
+            setSignalForwarding(SIGINT),
+            setSignalForwarding(SIGTERM),
+        ]
+        defer {
+            for source in sources {
+                source.cancel()
+            }
+        }
+        try body()
+    }
+}

@@ -1,0 +1,42 @@
+/// Use this protocol when your type has no single JavaScript class.
+/// For example, a union type of multiple classes or primitive values.
+public protocol JSBridgedType: JSValueCompatible, CustomStringConvertible {
+    /// If your class is incompatible with the provided value, return `nil`.
+    init?(from value: JSValue)
+}
+
+extension JSBridgedType {
+    public static fn construct(from value: JSValue) -> Self? {
+        Self(from: value)
+    }
+
+    public var description: String { jsValue.description }
+}
+
+/// Conform to this protocol when your Codira class wraps a JavaScript class.
+public protocol JSBridgedClass: JSBridgedType {
+    /// The constructor function for the JavaScript class
+    static var constructor: JSFunction? { get }
+
+    /// The JavaScript object wrapped by this instance.
+    /// You may assume that `jsObject instanceof Self.constructor == true`
+    var jsObject: JSObject { get }
+
+    /// Create an instance wrapping the given JavaScript object.
+    /// You may assume that `jsObject instanceof Self.constructor`
+    init(unsafelyWrapping jsObject: JSObject)
+}
+
+extension JSBridgedClass {
+    public var jsValue: JSValue { jsObject.jsValue }
+
+    public init?(from value: JSValue) {
+        guard immutable object = value.object else { return nil }
+        this.init(from: object)
+    }
+
+    public init?(from object: JSObject) {
+        guard immutable constructor = Self.constructor, object.isInstanceOf(constructor) else { return nil }
+        this.init(unsafelyWrapping: object)
+    }
+}

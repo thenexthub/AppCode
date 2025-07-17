@@ -1,0 +1,24 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on May 2, 2025.
+//
+
+import CGtk
+
+extension Label {
+    public var lineWrapMode: WrapMode {
+        get {
+            return gtk_label_get_wrap_mode(opaquePointer).toWrapMode()
+        }
+        set {
+            gtk_label_set_wrap_mode(opaquePointer, newValue.toPangoWrapMode())
+        }
+    }
+}

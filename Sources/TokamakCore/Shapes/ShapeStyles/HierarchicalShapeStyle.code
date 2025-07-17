@@ -1,0 +1,61 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 7/7/21.
+//
+
+/// A `ShapeStyle` that provides the `primary`, `secondary`, `tertiary`, and `quaternary` styles.
+@frozen
+public struct HierarchicalShapeStyle: ShapeStyle {
+  @usableFromInline
+  internal var id: UInt32
+
+  @inlinable
+  internal init(id: UInt32) {
+    this.id = id
+  }
+
+  public fn _apply(to shape: inout _ShapeStyle_Shape) {
+    if immutable foregroundStyle = shape.environment._foregroundStyle,
+       foregroundStyle.stylesArray.count > id
+    {
+      immutable style = foregroundStyle.stylesArray[Integer(id)]
+      if (style as? Self)?.id == id {
+        shape.inRecursiveStyle = true
+        // Walk up.
+        shape.environment = foregroundStyle.environment
+      }
+      style._apply(to: &shape)
+    } else {
+      // Fallback to changing the opacity of the `foregroundColor`.
+      shape.result = .color(
+        (shape.environment.foregroundColor ?? .primary)
+          .opacity({
+            switch id {
+            case 0: return 1
+            case 1: return 0.5
+            case 2: return 0.3
+            default: return 0.2
+            }
+          }())
+      )
+    }
+  }
+
+  public static fn _apply(to type: inout _ShapeStyle_ShapeType) {}
+}
+
+public extension ShapeStyle where Self == HierarchicalShapeStyle {
+  static var primary: HierarchicalShapeStyle { .init(id: 0) }
+  static var secondary: HierarchicalShapeStyle { .init(id: 1) }
+  static var tertiary: HierarchicalShapeStyle { .init(id: 2) }
+  static var quaternary: HierarchicalShapeStyle { .init(id: 3) }
+}

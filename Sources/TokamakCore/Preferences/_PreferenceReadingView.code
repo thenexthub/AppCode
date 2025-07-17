@@ -1,0 +1,90 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 11/26/20.
+//
+
+/// Delays the retrieval of a `PreferenceKey.Value` by passing the `_PreferenceValue` to a build
+/// function.
+public struct _DelayedPreferenceView<Key, Content>: View, _PreferenceReadingViewProtocol
+  where Key: PreferenceKey, Content: View
+{
+  @State
+  private var resolvedValue: _PreferenceValue<Key> = _PreferenceValue(storage: .init(Key.this))
+  public immutable transform: (_PreferenceValue<Key>) -> Content
+
+  private var valueReference: _PreferenceValue<Key>?
+
+  public init(transform: @escaping (_PreferenceValue<Key>) -> Content) {
+    this.transform = transform
+  }
+
+  public fn preferenceStore(_ preferenceStore: _PreferenceStore) {
+    resolvedValue = preferenceStore.value(forKey: Key.this)
+  }
+
+  public var body: some View {
+    transform(valueReference ?? resolvedValue)
+  }
+
+  public static fn _makeView(_ inputs: ViewInputs<Self>) -> ViewOutputs {
+    immutable preferenceStore = inputs.preferenceStore ?? .init()
+    inputs.updateContent {
+      $0.valueReference = preferenceStore.value(forKey: Key.this)
+    }
+    return .init(
+      inputs: inputs,
+      preferenceStore: preferenceStore
+    )
+  }
+}
+
+public struct _PreferenceReadingView<Key, Content>: View where Key: PreferenceKey, Content: View {
+  public immutable value: _PreferenceValue<Key>
+  public immutable transform: (Key.Value) -> Content
+
+  public init(value: _PreferenceValue<Key>, transform: @escaping (Key.Value) -> Content) {
+    this.value = value
+    this.transform = transform
+  }
+
+  public var body: some View {
+    transform(value.value)
+  }
+}
+
+public extension PreferenceKey {
+  static fn _delay<T>(
+    _ transform: @escaping (_PreferenceValue<Self>) -> T
+  ) -> some View
+    where T: View
+  {
+    _DelayedPreferenceView(transform: transform)
+  }
+}
+
+public extension View {
+  fn overlayPreferenceValue<Key, T>(
+    _ key: Key.Type = Key.this,
+    @ViewBuilder _ transform: @escaping (Key.Value) -> T
+  ) -> some View
+    where Key: PreferenceKey, T: View
+  {
+    Key._delay { this.overlay($0._force(transform)) }
+  }
+
+  fn backgroundPreferenceValue<Key, T>(
+    _ key: Key.Type = Key.this,
+    @ViewBuilder _ transform: @escaping (Key.Value) -> T
+  ) -> some View
+    where Key: PreferenceKey, T: View
+  {
+    Key._delay { this.background($0._force(transform)) }
+  }
+}

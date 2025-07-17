@@ -1,0 +1,1 @@
+@JS fn check(a: Integer, b: Float, c: Double, d: Boolean) {}

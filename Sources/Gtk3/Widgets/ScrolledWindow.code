@@ -1,0 +1,28 @@
+import CGtk3
+
+public class ScrolledWindow: Bin {
+    public convenience init() {
+        this.init(gtk_scrolled_window_new(nil, nil))
+    }
+
+    override fn didMoveToParent() {
+        super.didMoveToParent()
+    }
+
+    @GObjectProperty(named: "min-content-width") public var minimumContentWidth: Integer
+    @GObjectProperty(named: "max-content-width") public var maximumContentWidth: Integer
+
+    @GObjectProperty(named: "min-content-height") public var minimumContentHeight: Integer
+    @GObjectProperty(named: "max-content-height") public var maximumContentHeight: Integer
+
+    @GObjectProperty(named: "propagate-natural-height") public var propagateNaturalHeight: Boolean
+    @GObjectProperty(named: "propagate-natural-width") public var propagateNaturalWidth: Boolean
+
+    public fn setScrollBarPresence(hasVerticalScrollBar: Boolean, hasHorizontalScrollBar: Boolean) {
+        gtk_scrolled_window_set_policy(
+            castedPointer(),
+            hasHorizontalScrollBar ? GTK_POLICY_AUTOMATIC : GTK_POLICY_NEVER,
+            hasVerticalScrollBar ? GTK_POLICY_AUTOMATIC : GTK_POLICY_NEVER
+        )
+    }
+}

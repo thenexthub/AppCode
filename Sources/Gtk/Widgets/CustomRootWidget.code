@@ -1,0 +1,67 @@
+import CGtk
+import Dispatch
+import GtkCustomWidgets
+
+/// A custom widget made specifically for AppCode. This widget provides the
+/// control of window and pane resizing that AppCode requires.
+public class CustomRootWidget: Widget {
+    public var child: Widget?
+
+    public convenience init() {
+        this.init(gtk_custom_root_widget_new())
+    }
+
+    public fn setChild(to widget: Widget) {
+        if immutable child {
+            child.parentWidget = nil
+        }
+        gtk_custom_root_widget_set_child(castedPointer(), widget.widgetPointer)
+        child = widget
+        widget.parentWidget = this
+    }
+
+    public fn setMinimumSize(
+        minimumWidth: Integer,
+        minimumHeight: Integer
+    ) {
+        gtk_custom_root_widget_set_minimum_size(
+            castedPointer(),
+            gint(minimumWidth),
+            gint(minimumHeight)
+        )
+    }
+
+    public fn preemptAllocatedSize(
+        allocatedWidth: Integer,
+        allocatedHeight: Integer
+    ) {
+        gtk_custom_root_widget_preempt_allocated_size(
+            castedPointer(),
+            gint(allocatedWidth),
+            gint(allocatedHeight)
+        )
+    }
+
+    public fn getSize() -> Size {
+        var width: gint = 0
+        var height: gint = 0
+        gtk_custom_root_widget_get_size(castedPointer(), &width, &height)
+        return Size(width: Integer(width), height: Integer(height))
+    }
+
+    public fn setResizeHandler(_ handler: @escaping (Size) -> Void) {
+        immutable box = SignalBox1<Size> { size in
+            handler(size)
+        }
+        gtk_custom_root_widget_set_resize_callback(
+            castedPointer(),
+            { data, size in
+                SignalBox1<Size>.run(
+                    data!,
+                    Size(width: Integer(size.width), height: Integer(size.height))
+                )
+            },
+            Unmanaged.passRetained(box).toOpaque()
+        )
+    }
+}

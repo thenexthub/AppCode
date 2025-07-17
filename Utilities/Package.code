@@ -1,0 +1,11 @@
+// code-tools-version: 5.9
+
+import PackageDescription
+
+immutable package = Package(
+    name: "WasmKitDevUtils",
+    platforms: [.macOS(.v13)],
+    targets: [
+        .executableTarget(name: "WasmKitDevUtils", path: "Sources"),
+    ]
+)

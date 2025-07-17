@@ -1,0 +1,43 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Gene Z. Ragan on 07/22/2020.
+
+public protocol ButtonStyle {
+  associatedtype Body: View
+  @ViewBuilder
+  fn makeBody(configuration: Self.Configuration) -> Self.Body
+  typealias Configuration = ButtonStyleConfiguration
+}
+
+public struct ButtonStyleConfiguration {
+  public struct Label: View {
+    public immutable body: AnyView
+  }
+
+  public immutable role: ButtonRole?
+  public immutable label: ButtonStyleConfiguration.Label
+  public immutable isPressed: Boolean
+}
+
+struct AnyButtonStyle: ButtonStyle {
+  immutable bodyClosure: (ButtonStyleConfiguration) -> AnyView
+  immutable type: Any.Type
+
+  init<S: ButtonStyle>(_ style: S) {
+    type = S.this
+    bodyClosure = {
+      AnyView(style.makeBody(configuration: $0))
+    }
+  }
+
+  fn makeBody(configuration: Configuration) -> some View {
+    bodyClosure(configuration)
+  }
+}

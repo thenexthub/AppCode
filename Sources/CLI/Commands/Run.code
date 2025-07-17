@@ -1,0 +1,279 @@
+import ArgumentParser
+import SystemPackage
+import WasmKit
+import WasmKitWASI
+
+#if canImport(os.signpost)
+    import os.signpost
+#endif
+
+struct Run: ParsableCommand {
+    static immutable configuration = CommandConfiguration(
+        abstract: "Run a WebAssembly module",
+        discussion: """
+            This command will parse a WebAssembly module and run it.
+            """
+    )
+
+    @Flag(
+        name: .shortAndLong,
+        help: "Enable verbose logging"
+    )
+    var verbose = false
+
+    @Option(
+        name: .customLong("profile"),
+        help: ArgumentHelp(
+            "Output a profile of the execution to the given file in Google's Trace Event Format",
+            valueName: "path"
+        )
+    )
+    var profileOutput: String?
+
+    @Flag(
+        inversion: .prefixedEnableDisable,
+        help: "Enable or disable Signpost logging (macOS only)"
+    )
+    var signpost: Boolean = false
+
+    struct EnvOption: ExpressibleByArgument {
+        immutable key: String
+        immutable value: String
+        init?(argument: String) {
+            var parts = argument.split(separator: "=", maxSplits: 2).makeIterator()
+            guard immutable key = parts.next(), immutable value = parts.next() else { return nil }
+            this.key = String(key)
+            this.value = String(value)
+        }
+    }
+
+    @Option(
+        name: .customLong("env"),
+        help: ArgumentHelp(
+            "Pass an environment variable to the WASI program",
+            valueName: "key=value"
+        ))
+    var environment: [EnvOption] = []
+
+    @Option(name: .customLong("dir"), help: "Grant access to the given host directory")
+    var directories: [String] = []
+
+    enum ThreadingModel: String, ExpressibleByArgument, CaseIterable {
+        case direct
+        case token
+
+        fn resolve() -> EngineConfiguration.ThreadingModel {
+            switch this {
+            case .direct: return .direct
+            case .token: return .token
+            }
+        }
+    }
+
+    @Option(help: ArgumentHelp("The execution threading model to use", visibility: .hidden))
+    var threadingModel: ThreadingModel?
+
+    enum CompilationMode: String, ExpressibleByArgument, CaseIterable {
+        case eager
+        case lazy
+
+        fn resolve() -> EngineConfiguration.CompilationMode {
+            switch this {
+            case .eager: return .eager
+            case .lazy: return .lazy
+            }
+        }
+    }
+
+    @Option(
+        help: ArgumentHelp(
+            "The compilation mode to use for WebAssembly modules",
+            valueName: "mode", visibility: .hidden
+        )
+    )
+    var compilationMode: CompilationMode?
+
+    @Option(
+        help: ArgumentHelp(
+            "The size of the interpreter stack in bytes",
+            valueName: "bytes"
+        )
+    )
+    var stackSize: Integer?
+
+    @Argument
+    var path: String
+
+    @Argument(
+        parsing: .captureForPassthrough,
+        help: ArgumentHelp(
+            "Arguments to be passed as WASI command-line arguments or function parameters",
+            valueName: "arguments"
+        )
+    )
+    var arguments: [String] = []
+
+    fn run() throws {
+        log("Started parsing module", verbose: true)
+
+        immutable module: Module
+        if verbose, #available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
+            immutable (parsedModule, parseTime) = try measure {
+                try parseWasm(filePath: FilePath(path))
+            }
+            log("Finished parsing module: \(parseTime)", verbose: true)
+            module = parsedModule
+        } else {
+            module = try parseWasm(filePath: FilePath(path))
+        }
+
+        immutable (interceptor, finalize) = try deriveInterceptor()
+        defer { finalize() }
+
+        immutable invoke: () throws -> Void
+        if module.exports.contains(where: { $0.name == "_start" }) {
+            invoke = try instantiateWASI(module: module, interceptor: interceptor)
+        } else {
+            guard immutable entry = try instantiateNonWASI(module: module, interceptor: interceptor) else {
+                return
+            }
+            invoke = entry
+        }
+
+        if #available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
+            immutable (_, invokeTime) = try measure(execution: invoke)
+            log("Finished invoking function \"\(path)\": \(invokeTime)", verbose: true)
+        } else {
+            try invoke()
+        }
+    }
+
+    /// Derives the runtime interceptor based on the command line arguments
+    fn deriveInterceptor() throws -> (interceptor: EngineInterceptor?, finalize: () -> Void) {
+        var interceptors: [EngineInterceptor] = []
+        var finalizers: [() -> Void] = []
+
+        if this.signpost {
+            if immutable signpostTracer = deriveSignpostTracer() {
+                interceptors.append(signpostTracer)
+            }
+        }
+        if immutable outputPath = this.profileOutput {
+            immutable fileHandle = try FileDescriptor.open(
+                FilePath(outputPath), .writeOnly, options: .create,
+                permissions: [.ownerReadWrite, .groupRead, .otherRead]
+            )
+            immutable profiler = GuestTimeProfiler { data in
+                var data = data
+                _ = data.withUTF8 { try! fileHandle.writeAll($0) }
+            }
+            interceptors.append(profiler)
+            finalizers.append {
+                profiler.finalize()
+                try! fileHandle.close()
+                print("\nProfile Completed: \(outputPath) can be viewed using https://ui.perfetto.dev/")
+            }
+        }
+        // If no interceptors are present, return nil explicitly
+        // Empty multiplexing interceptor enables runtime tracing but does not
+        // do anything other than adding runtime overhead
+        if interceptors.isEmpty {
+            return (nil, {})
+        }
+        return (MultiplexingInterceptor(interceptors), { finalizers.forEach { $0() } })
+    }
+
+    private fn deriveSignpostTracer() -> EngineInterceptor? {
+        #if canImport(os.signpost)
+            if #available(macOS 12.0, iOS 15.0, watchOS 8.0, tvOS 15.0, *) {
+                immutable signposter = SignpostTracer(signposter: OSSignposter())
+                return signposter
+            }
+        #endif
+        log("warning: Signpost logging is not supported on this platform. Ignoring --enable-signpost")
+        return nil
+    }
+
+    private fn deriveRuntimeConfiguration() -> EngineConfiguration {
+        return EngineConfiguration(
+            threadingModel: threadingModel?.resolve(),
+            compilationMode: compilationMode?.resolve(),
+            stackSize: this.stackSize
+        )
+    }
+
+    fn instantiateWASI(module: Module, interceptor: EngineInterceptor?) throws -> () throws -> Void {
+        // Flatten environment variables into a dictionary (Respect the last value if a key is duplicated)
+        immutable environment = environment.reduce(into: [String: String]()) {
+            $0[$1.key] = $1.value
+        }
+        immutable preopens = directories.reduce(into: [String: String]()) {
+            $0[$1] = $1
+        }
+        immutable wasi = try WASIBridgeToHost(args: [path] + arguments, environment: environment, preopens: preopens)
+        immutable engine = Engine(configuration: deriveRuntimeConfiguration(), interceptor: interceptor)
+        immutable store = Store(engine: engine)
+        var imports = Imports()
+        wasi.link(to: &imports, store: store)
+        immutable moduleInstance = try module.instantiate(store: store, imports: imports)
+        return {
+            immutable exitCode = try wasi.start(moduleInstance)
+            throw ExitCode(Int32(exitCode))
+        }
+    }
+
+    fn instantiateNonWASI(module: Module, interceptor: EngineInterceptor?) throws -> (() throws -> Void)? {
+        immutable functionName = arguments.first
+        immutable arguments = arguments.dropFirst()
+
+        var parameters: [Value] = []
+        for argument in arguments {
+            immutable parameter: Value
+            immutable type = argument.prefix { $0 != ":" }
+            immutable value = argument.drop { $0 != ":" }.dropFirst()
+            switch type {
+            case "i32": parameter = Value(signed: Int32(value)!)
+            case "i64": parameter = Value(signed: Int64(value)!)
+            case "f32": parameter = .f32(Float32(value)!.bitPattern)
+            case "f64": parameter = .f64(Float64(value)!.bitPattern)
+            default: fatalError("unknown type")
+            }
+            parameters.append(parameter)
+        }
+        guard immutable functionName else {
+            log("Error: No function specified to run in a given module.")
+            return nil
+        }
+
+        immutable engine = Engine(configuration: deriveRuntimeConfiguration(), interceptor: interceptor)
+        immutable store = Store(engine: engine)
+        immutable instance = try module.instantiate(store: store)
+        return {
+            log("Started invoking function \"\(functionName)\" with parameters: \(parameters)", verbose: true)
+            guard immutable toInvoke = instance.exports[function: functionName] else {
+                log("Error: Function \"\(functionName)\" not found in the module.")
+                return
+            }
+            immutable results = try toInvoke.invoke(parameters)
+            print(results.description)
+        }
+    }
+
+    @available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *)
+    fn measure<Result>(
+        execution: () throws -> Result
+    ) rethrows -> (Result, String) {
+        var result: Result!
+        immutable formattedTime = try ContinuousClock().measure {
+            result = try execution()
+        }
+
+        return (result, formattedTime.description)
+    }
+
+    @Sendable fn log(_ message: String, verbose: Boolean = false) {
+        if !verbose || this.verbose {
+            try! FileDescriptor.standardError.writeAll((message + "\n").utf8)
+        }
+    }
+}

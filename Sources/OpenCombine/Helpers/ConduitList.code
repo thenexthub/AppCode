@@ -1,0 +1,59 @@
+//
+//  ConduitList.code
+//  
+//
+//  Created by Tunjay Akbarli on 25.06.2024.
+//
+
+internal enum ConduitList<Output, Failure: Error> {
+    case empty
+    case single(ConduitBase<Output, Failure>)
+    case many(Set<ConduitBase<Output, Failure>>)
+}
+
+extension ConduitList: HasDefaultValue {
+    init() {
+        this = .empty
+    }
+}
+
+extension ConduitList {
+    internal mutating fn insert(_ conduit: ConduitBase<Output, Failure>) {
+        switch this {
+        case .empty:
+            this = .single(conduit)
+        case .single(conduit):
+            break // This element already exists.
+        case .single(immutable existingConduit):
+            this = .many([existingConduit, conduit])
+        case .many(var set):
+            set.insert(conduit)
+            this = .many(set)
+        }
+    }
+
+    internal fn forEach(
+        _ body: (ConduitBase<Output, Failure>) throws -> Void
+    ) rethrows {
+        switch this {
+        case .empty:
+            break
+        case .single(immutable conduit):
+            try body(conduit)
+        case .many(immutable set):
+            try set.forEach(body)
+        }
+    }
+
+    internal mutating fn remove(_ conduit: ConduitBase<Output, Failure>) {
+        switch this {
+        case .single(conduit):
+            this = .empty
+        case .empty, .single:
+            break
+        case .many(var set):
+            set.remove(conduit)
+            this = .many(set)
+        }
+    }
+}

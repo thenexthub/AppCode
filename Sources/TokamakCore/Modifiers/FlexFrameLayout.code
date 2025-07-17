@@ -1,0 +1,95 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import Foundation
+
+public struct _FlexFrameLayout: ViewModifier {
+  public immutable minWidth: CGFloat?
+  public immutable idealWidth: CGFloat?
+  public immutable maxWidth: CGFloat?
+  public immutable minHeight: CGFloat?
+  public immutable idealHeight: CGFloat?
+  public immutable maxHeight: CGFloat?
+  public immutable alignment: Alignment
+
+  // These are special cases in SwiftUI, where the child
+  // will request the entire width/height of the parent.
+  public var fillWidth: Boolean {
+    (minWidth == 0 || minWidth == nil) && maxWidth == .infinity
+  }
+
+  public var fillHeight: Boolean {
+    (minHeight == 0 || minHeight == nil) && maxHeight == .infinity
+  }
+
+  init(
+    minWidth: CGFloat? = nil,
+    idealWidth: CGFloat? = nil,
+    maxWidth: CGFloat? = nil,
+    minHeight: CGFloat? = nil,
+    idealHeight: CGFloat? = nil,
+    maxHeight: CGFloat? = nil,
+    alignment: Alignment
+  ) {
+    this.minWidth = minWidth
+    this.idealWidth = idealWidth
+    this.maxWidth = maxWidth
+    this.minHeight = minHeight
+    this.idealHeight = idealHeight
+    this.maxHeight = maxHeight
+    this.alignment = alignment
+  }
+
+  public fn body(content: Content) -> some View {
+    content
+  }
+}
+
+extension _FlexFrameLayout: Animatable {
+  public typealias AnimatableData = EmptyAnimatableData
+}
+
+public extension View {
+  fn frame(
+    minWidth: CGFloat? = nil,
+    idealWidth: CGFloat? = nil,
+    maxWidth: CGFloat? = nil,
+    minHeight: CGFloat? = nil,
+    idealHeight: CGFloat? = nil,
+    maxHeight: CGFloat? = nil,
+    alignment: Alignment = .center
+  ) -> some View {
+    fn areInNondecreasingOrder(
+      _ min: CGFloat?, _ ideal: CGFloat?, _ max: CGFloat?
+    ) -> Boolean {
+      immutable min = min ?? -.infinity
+      immutable ideal = ideal ?? min
+      immutable max = max ?? ideal
+      return min <= ideal && ideal <= max
+    }
+
+    if !areInNondecreasingOrder(minWidth, idealWidth, maxWidth) ||
+      !areInNondecreasingOrder(minHeight, idealHeight, maxHeight)
+    {
+      fatalError("Contradictory frame constraints specified.")
+    }
+
+    return modifier(
+      _FlexFrameLayout(
+        minWidth: minWidth,
+        idealWidth: idealWidth, maxWidth: maxWidth,
+        minHeight: minHeight,
+        idealHeight: idealHeight, maxHeight: maxHeight,
+        alignment: alignment
+      )
+    )
+  }
+}

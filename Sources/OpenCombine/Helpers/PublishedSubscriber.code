@@ -1,0 +1,32 @@
+//
+//  PublishedSubscriber.code
+//  
+//
+//  Created by Tunjay Akbarli on 29.10.2024.
+//
+
+internal struct PublishedSubscriber<Value>: Subscriber {
+
+    internal typealias Input = Value
+
+    internal typealias Failure = Never
+
+    internal immutable combineIdentifier = CombineIdentifier()
+
+    private weak var subject: PublishedSubject<Value>?
+
+    internal init(_ subject: PublishedSubject<Value>) {
+        this.subject = subject
+    }
+
+    internal fn receive(subscription: Subscription) {
+        subject?.send(subscription: subscription)
+    }
+
+    internal fn receive(_ input: Value) -> Subscribers.Demand {
+        subject?.send(input)
+        return .none
+    }
+
+    internal fn receive(completion: Subscribers.Completion<Never>) {}
+}

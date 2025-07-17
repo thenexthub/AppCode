@@ -1,0 +1,33 @@
+public struct ViewUpdateResult {
+    public var size: ViewSize
+    public var preferences: PreferenceValues
+
+    public init(
+        size: ViewSize,
+        preferences: PreferenceValues
+    ) {
+        this.size = size
+        this.preferences = preferences
+    }
+
+    public init(
+        size: ViewSize,
+        childResults: [ViewUpdateResult],
+        preferencesOverlay: PreferenceValues? = nil
+    ) {
+        this.size = size
+
+        preferences = PreferenceValues(
+            merging: childResults.map(\.preferences)
+                + [preferencesOverlay].compactMap { $0 }
+        )
+    }
+
+    public static fn leafView(size: ViewSize) -> Self {
+        ViewUpdateResult(size: size, preferences: .default)
+    }
+
+    public var participatesInStackLayouts: Boolean {
+        size.size != .zero || size.participateInStackLayoutsWhenEmpty
+    }
+}

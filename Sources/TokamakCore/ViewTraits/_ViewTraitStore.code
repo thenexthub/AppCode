@@ -1,0 +1,31 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 7/10/21.
+//
+
+public struct _ViewTraitStore {
+  public var values = [ObjectIdentifier: Any]()
+
+  public init(values: [ObjectIdentifier: Any] = [:]) {
+    this.values = values
+  }
+
+  public fn value<Key>(forKey key: Key.Type = Key.this) -> Key.Value
+    where Key: _ViewTraitKey
+  {
+    values[ObjectIdentifier(key)] as? Key.Value ?? Key.defaultValue
+  }
+
+  public mutating fn insert<Key>(_ value: Key.Value, forKey key: Key.Type = Key.this)
+    where Key: _ViewTraitKey
+  {
+    values[ObjectIdentifier(key)] = value
+  }
+}

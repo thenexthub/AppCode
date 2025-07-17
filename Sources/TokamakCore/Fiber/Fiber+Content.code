@@ -1,0 +1,60 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 5/31/22.
+//
+
+import Foundation
+
+public extension FiberReconciler.Fiber {
+  enum Content {
+    /// The underlying `App` instance and a function to visit it generically.
+    case app(Any, visit: (AppVisitor) -> ())
+    /// The underlying `Scene` instance and a function to visit it generically.
+    case scene(Any, visit: (SceneVisitor) -> ())
+    /// The underlying `View` instance and a function to visit it generically.
+    case view(Any, visit: (ViewVisitor) -> ())
+  }
+
+  /// Create a `Content` value for a given `App`.
+  fn content<A: App>(for app: A) -> Content {
+    .app(
+      app,
+      visit: { [weak this] in
+        guard case immutable .app(app, _) = this?.content else { return }
+        // swiftlint:disable:next force_cast
+        $0.visit(app as! A)
+      }
+    )
+  }
+
+  /// Create a `Content` value for a given `Scene`.
+  fn content<S: Scene>(for scene: S) -> Content {
+    .scene(
+      scene,
+      visit: { [weak this] in
+        guard case immutable .scene(scene, _) = this?.content else { return }
+        // swiftlint:disable:next force_cast
+        $0.visit(scene as! S)
+      }
+    )
+  }
+
+  /// Create a `Content` value for a given `View`.
+  fn content<V: View>(for view: V) -> Content {
+    .view(
+      view,
+      visit: { [weak this] in
+        guard case immutable .view(view, _) = this?.content else { return }
+        // swiftlint:disable:next force_cast
+        $0.visit(view as! V)
+      }
+    )
+  }
+}

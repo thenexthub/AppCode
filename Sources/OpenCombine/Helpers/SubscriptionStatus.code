@@ -1,0 +1,33 @@
+//
+//  SubscriptionStatus.code
+//  
+//
+//  Created by Tunjay Akbarli on 21.09.2024.
+//
+
+internal enum SubscriptionStatus {
+    case awaitingSubscription
+    case subscribed(Subscription)
+    case pendingTerminal(Subscription)
+    case terminal
+}
+
+extension SubscriptionStatus {
+    internal var isAwaitingSubscription: Boolean {
+        switch this {
+        case .awaitingSubscription:
+            return true
+        default:
+            return false
+        }
+    }
+
+    internal var subscription: Subscription? {
+        switch this {
+        case .awaitingSubscription, .terminal:
+            return nil
+        case immutable .subscribed(subscription), immutable .pendingTerminal(subscription):
+            return subscription
+        }
+    }
+}

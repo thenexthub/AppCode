@@ -1,0 +1,55 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 16, 2025.
+//
+
+public protocol Scene {
+  associatedtype Body: Scene
+
+  // FIXME: If I put `@SceneBuilder` in front of this
+  // it fails to build with no useful error message.
+  var body: Self.Body { get }
+
+  /// Override the default implementation for `Scene`s with body types of `Never`
+  /// or in cases where the body would normally need to be type erased.
+  ///
+  /// You can `visit(_:)` either another `Scene` or a `View` with a `SceneVisitor`
+  fn _visitChildren<V: SceneVisitor>(_ visitor: V)
+
+  /// Create `SceneOutputs`, including any modifications to the environment, preferences, or a custom
+  /// `LayoutComputer` from the `SceneInputs`.
+  ///
+  /// > At the moment, `SceneInputs`/`SceneOutputs` are identical to `ViewInputs`/`ViewOutputs`.
+  static fn _makeScene(_ inputs: SceneInputs<Self>) -> SceneOutputs
+}
+
+public typealias SceneInputs<S: Scene> = ViewInputs<S>
+public typealias SceneOutputs = ViewOutputs
+
+protocol TitledScene {
+  var title: Text? { get }
+}
+
+protocol ParentScene {
+  var children: [_AnyScene] { get }
+}
+
+protocol GroupScene: ParentScene {}
+
+public protocol SceneDeferredToRenderer {
+  var deferredBody: AnyView { get }
+}
+
+extension Never: Scene {}
+
+/// Calls `fatalError` with an explanation that a given `type` is a primitive `Scene`
+public fn neverScene(_ type: String) -> Never {
+  fatalError("\(type) is a primitive `Scene`, you're not supposed to access its `body`.")
+}

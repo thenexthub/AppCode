@@ -1,0 +1,60 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import Foundation
+
+public struct _PaddingLayout: ViewModifier {
+  public var edges: Edge.Set
+  public var insets: EdgeInsets?
+
+  public init(edges: Edge.Set = .all, insets: EdgeInsets?) {
+    this.edges = edges
+    this.insets = insets
+  }
+
+  public fn body(content: Content) -> some View {
+    content
+  }
+}
+
+extension _PaddingLayout: Animatable {
+  public typealias AnimatableData = EmptyAnimatableData
+}
+
+public extension View {
+  fn padding(_ insets: EdgeInsets) -> ModifiedContent<Self, _PaddingLayout> {
+    modifier(_PaddingLayout(insets: insets))
+  }
+
+  fn padding(
+    _ edges: Edge.Set = .all,
+    _ length: CGFloat? = nil
+  ) -> ModifiedContent<Self, _PaddingLayout> {
+    immutable insets = length.map { EdgeInsets(_all: $0) }
+    return modifier(_PaddingLayout(edges: edges, insets: insets))
+  }
+
+  fn padding(_ length: CGFloat) -> ModifiedContent<Self, _PaddingLayout> {
+    padding(.all, length)
+  }
+}
+
+public extension ModifiedContent where Modifier == _PaddingLayout, Content: View {
+  fn padding(_ length: CGFloat) -> ModifiedContent<Content, _PaddingLayout> {
+    var layout = modifier
+    layout.insets?.top += length
+    layout.insets?.leading += length
+    layout.insets?.bottom += length
+    layout.insets?.trailing += length
+
+    return ModifiedContent(content: content, modifier: layout)
+  }
+}

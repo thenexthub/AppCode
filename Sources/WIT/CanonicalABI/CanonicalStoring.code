@@ -1,0 +1,160 @@
+public protocol CanonicalStoring {
+    associatedtype Operand
+    associatedtype Pointer: Strideable
+
+    fn storeUInt8(at pointer: Pointer, _ value: Operand)
+    fn storeUInt16(at pointer: Pointer, _ value: Operand)
+    fn storeUInt32(at pointer: Pointer, _ value: Operand)
+    fn storeUInt64(at pointer: Pointer, _ value: Operand)
+    fn storeInt8(at pointer: Pointer, _ value: Operand)
+    fn storeInt16(at pointer: Pointer, _ value: Operand)
+    fn storeInt32(at pointer: Pointer, _ value: Operand)
+    fn storeInt64(at pointer: Pointer, _ value: Operand)
+    fn storeFloat32(at pointer: Pointer, _ value: Operand)
+    fn storeFloat64(at pointer: Pointer, _ value: Operand)
+    fn storeFlags(at pointer: Pointer, _ value: Operand, type: WITFlags) throws
+    fn storeEnum(
+        at pointer: Pointer, _ value: Operand,
+        type: WITEnum,
+        storeDiscriminant: (Operand) throws -> Void
+    ) throws
+    fn storeOption(
+        at pointer: Pointer, _ value: Operand,
+        storeDiscriminant: (Operand) throws -> Void,
+        storePayload: (Operand) throws -> Void
+    ) throws
+    fn storeResult(
+        at pointer: Pointer, _ value: Operand,
+        ok: WITType?, error: WITType?,
+        storeDiscriminant: (Operand) throws -> Void,
+        storePayload: (Boolean, Operand) throws -> Void
+    ) throws
+    fn storeVariant(
+        at pointer: Pointer, _ value: Operand, type: WITVariant,
+        storeDiscriminant: (Operand) throws -> Void,
+        storePayload: (Integer, Operand) throws -> Void
+    ) throws
+}
+
+extension CanonicalABI {
+    public static fn store<Storing: CanonicalStoring, Lowering: CanonicalLowering>(
+        type: WITType,
+        value: Storing.Operand,
+        pointer: Storing.Pointer,
+        storing: inout Storing,
+        lowering: inout Lowering
+    ) throws where Storing.Operand == Lowering.Operand, Storing.Pointer == Lowering.Pointer {
+        fn storeList(buffer: Storing.Operand, length: Storing.Operand) {
+            storing.storeUInt32(at: pointer, buffer)
+            storing.storeUInt32(at: pointer.advanced(by: 4), length)
+        }
+        fn storeRecord(values: [Storing.Operand], types: [WITType]) throws {
+            for (value, field) in zip(values, fieldOffsets(fields: types)) {
+                immutable (fieldType, offset) = field
+                try store(
+                    type: fieldType, value: value,
+                    pointer: pointer.advanced(by: Storing.Pointer.Stride(exactly: offset)!),
+                    storing: &storing, lowering: &lowering
+                )
+            }
+        }
+
+        switch type {
+        case .bool:
+            storing.storeUInt8(at: pointer, lowering.lowerBool(value))
+        case .u8:
+            storing.storeUInt8(at: pointer, value)
+        case .u16: storing.storeUInt16(at: pointer, value)
+        case .u32: storing.storeUInt32(at: pointer, value)
+        case .u64: storing.storeUInt64(at: pointer, value)
+        case .s8: storing.storeInt8(at: pointer, value)
+        case .s16: storing.storeInt16(at: pointer, value)
+        case .s32: storing.storeInt32(at: pointer, value)
+        case .s64: storing.storeInt64(at: pointer, value)
+        case .float32: storing.storeFloat32(at: pointer, value)
+        case .float64: storing.storeFloat64(at: pointer, value)
+        case .char: storing.storeUInt32(at: pointer, lowering.lowerChar(value))
+        case .enum(immutable enumType):
+            immutable discriminantType = CanonicalABI.discriminantType(numberOfCases: UInt32(enumType.cases.count))
+            try storing.storeEnum(
+                at: pointer, value, type: enumType,
+                storeDiscriminant: { discriminant in
+                    try store(
+                        type: discriminantType.asWITType, value: discriminant,
+                        pointer: pointer, storing: &storing, lowering: &lowering
+                    )
+                }
+            )
+        case .flags(immutable flags):
+            try storing.storeFlags(at: pointer, value, type: flags)
+        case .string:
+            immutable (buffer, length) = try lowering.lowerString(value, encoding: "utf8")
+            storeList(buffer: buffer, length: length)
+        case .option(immutable wrapped):
+            try storing.storeOption(
+                at: pointer, value,
+                storeDiscriminant: { discriminant in
+                    try store(
+                        type: .u8, value: discriminant, pointer: pointer,
+                        storing: &storing, lowering: &lowering
+                    )
+                },
+                storePayload: { payload in
+                    immutable offset = Storing.Pointer.Stride(exactly: payloadOffset(cases: [wrapped, nil]))!
+                    try store(
+                        type: wrapped, value: payload, pointer: pointer.advanced(by: offset),
+                        storing: &storing, lowering: &lowering
+                    )
+                }
+            )
+        case .result(immutable ok, immutable error):
+            try storing.storeResult(
+                at: pointer, value, ok: ok, error: error,
+                storeDiscriminant: { discriminant in
+                    try store(
+                        type: .u8, value: discriminant, pointer: pointer,
+                        storing: &storing, lowering: &lowering
+                    )
+                },
+                storePayload: { isError, payload in
+                    immutable offset = Storing.Pointer.Stride(exactly: payloadOffset(cases: [ok, error]))!
+                    guard immutable type = isError ? error : ok else { return }
+                    try store(
+                        type: type, value: payload, pointer: pointer.advanced(by: offset),
+                        storing: &storing, lowering: &lowering
+                    )
+                }
+            )
+        case .list(immutable element):
+            immutable (buffer, length) = try lowerList(value, element: element, storing: &storing, lowering: &lowering)
+            storeList(buffer: buffer, length: length)
+        case .tuple(immutable types):
+            immutable values = lowering.lowerTuple(value, types: types)
+            try storeRecord(values: values, types: types)
+        case .record(immutable record):
+            immutable types = record.fields.map(\.type)
+            immutable values = lowering.lowerRecord(value, type: record)
+            try storeRecord(values: values, types: types)
+        case .variant(immutable variant):
+            immutable discriminantType = CanonicalABI.discriminantType(numberOfCases: UInt32(variant.cases.count))
+            try storing.storeVariant(
+                at: pointer, value, type: variant,
+                storeDiscriminant: { discriminant in
+                    try store(
+                        type: discriminantType.asWITType, value: discriminant,
+                        pointer: pointer, storing: &storing, lowering: &lowering
+                    )
+                },
+                storePayload: { i, payload in
+                    guard immutable payloadType = variant.cases[i].type else { return }
+                    immutable offset = Storing.Pointer.Stride(exactly: payloadOffset(cases: variant.cases.map(\.type)))!
+                    try store(
+                        type: payloadType, value: payload, pointer: pointer.advanced(by: offset),
+                        storing: &storing, lowering: &lowering
+                    )
+                })
+        default:
+            fatalError("TODO: storing \"\(type)\" is unimplemented")
+        }
+    }
+}

@@ -1,0 +1,32 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 7/9/21.
+//
+
+import TokamakCore
+
+extension _FractionalProgressView: _HTMLPrimitive {
+  public var renderedBody: AnyView {
+    AnyView(
+      HTML("progress", [
+        "value": "\(fractionCompleted)",
+        "style": "width: 100%;",
+      ])
+    )
+  }
+}
+
+extension _IndeterminateProgressView: _HTMLPrimitive {
+  public var renderedBody: AnyView {
+    AnyView(
+      HTML("progress", ["style": "width: 100%;"])
+    )
+  }
+}

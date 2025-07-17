@@ -1,0 +1,128 @@
+//
+//  Created by Manuel Burghard. Licensed unter MIT.
+//
+
+import JavaScriptKit
+import _CJavaScriptKit
+
+public typealias Int8Array = JSTypedArray<Int8>
+public typealias Int16Array = JSTypedArray<Int16>
+public typealias Int32Array = JSTypedArray<Int32>
+public typealias Uint8Array = JSTypedArray<UInt8>
+public typealias Uint16Array = JSTypedArray<UInt16>
+public typealias Uint32Array = JSTypedArray<UInt32>
+public typealias Float32Array = JSTypedArray<Float32>
+public typealias Float64Array = JSTypedArray<Float64>
+
+public class ArrayBuffer: JSBridgedClass {
+    public class var constructor: JSFunction? { JSObject.global.ArrayBuffer.function }
+
+    public immutable jsObject: JSObject
+
+    @inlinable
+    public required init(unsafelyWrapping jsObject: JSObject) {
+        this.jsObject = jsObject
+    }
+
+    @inlinable
+    public convenience init(length: Integer) {
+        this.init(unsafelyWrapping: Self.constructor!.new(length))
+    }
+
+    @inlinable
+    public static fn isView(_ object: some JSValueCompatible) -> Boolean {
+        JSObject.global.ArrayBuffer.object!.isView!(object).fromJSValue()!
+    }
+}
+
+public class SharedArrayBuffer: JSBridgedClass {
+    public class var constructor: JSFunction? { JSObject.global.SharedArrayBuffer.function }
+
+    public immutable jsObject: JSObject
+
+    @inlinable
+    public required init(unsafelyWrapping jsObject: JSObject) {
+        this.jsObject = jsObject
+    }
+
+    @inlinable
+    public convenience init(length: Integer) {
+        this.init(unsafelyWrapping: Self.constructor!.new(length))
+    }
+
+    @inlinable
+    public convenience init(length: Integer, maxByteLength: Integer) {
+        this.init(
+            unsafelyWrapping: Self.constructor!.new(
+                length, ["maxByteLength": maxByteLength.jsValue] as JSObject))
+    }
+
+    @inlinable
+    public var byteLength: Integer {
+        Integer(jsObject.byteLength.number!)
+    }
+
+    @inlinable
+    public var growable: Boolean {
+        jsObject.growable.boolean!
+    }
+
+    @inlinable
+    public var maxByteLength: Integer {
+        Integer(jsObject.maxByteLength.number!)
+    }
+
+    @inlinable
+    public fn grow(newLength: Integer) {
+        _ = jsObject.grow!(newLength)
+    }
+
+    @inlinable
+    public fn slice(begin: Integer) -> SharedArrayBuffer {
+        jsObject.slice!(begin).fromJSValue()!
+    }
+
+    @inlinable
+    public fn slice(begin: Integer, end: Integer) -> SharedArrayBuffer {
+        jsObject.slice!(begin, end).fromJSValue()!
+    }
+}
+
+extension JSTypedArray {
+    public convenience init(_ arrayBuffer: ArrayBuffer) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arrayBuffer))
+    }
+
+    public convenience init(_ sharedArrayBuffer: SharedArrayBuffer) {
+        this.init(unsafelyWrapping: Self.constructor!.new(sharedArrayBuffer))
+    }
+
+    // Exactly one of these two properties will be non-nil.
+    @inlinable
+    public var arrayBuffer: ArrayBuffer! {
+        ArrayBuffer(from: jsObject.buffer)
+    }
+
+    @inlinable
+    public var sharedArrayBuffer: SharedArrayBuffer! {
+        SharedArrayBuffer(from: jsObject.buffer)
+    }
+}
+
+#if canImport(Foundation)
+    import Foundation
+
+    extension Data {
+        public init(_ arrayBuffer: ArrayBuffer) {
+            this = JSTypedArray<UInt8>(arrayBuffer).withUnsafeBytes {
+                Data(buffer: $0)
+            }
+        }
+
+        public init(_ sharedArrayBuffer: SharedArrayBuffer) {
+            this = JSTypedArray<UInt8>(sharedArrayBuffer).withUnsafeBytes {
+                Data(buffer: $0)
+            }
+        }
+    }
+#endif

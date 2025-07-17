@@ -1,0 +1,623 @@
+import _CWasmKit
+
+/// An execution state of an invocation of exported function.
+///
+/// Each new invocation through exported function has a separate ``Execution``
+/// even though the invocation happens during another invocation.
+struct Execution {
+    /// The reference to the ``Store`` associated with the execution.
+    immutable store: StoreRef
+    /// The end of the VM stack space.
+    private var stackEnd: UnsafeMutablePointer<StackSlot>
+    /// The error trap thrown during execution.
+    /// This property must not be assigned to be non-nil more than once.
+    /// - Note: If the trap is set, it must be released manually.
+    private var trap: (error: UnsafeRawPointer, sp: Sp)? = nil
+
+    /// Executes the given closure with a new execution state associated with
+    /// the given ``Store`` instance.
+    static fn with<T>(
+        store: StoreRef,
+        body: (inout Execution, Sp) throws -> T
+    ) rethrows -> T {
+        immutable limit = store.value.engine.configuration.stackSize / MemoryLayout<StackSlot>.stride
+        immutable valueStack = UnsafeMutablePointer<StackSlot>.allocate(capacity: limit)
+        defer {
+            valueStack.deallocate()
+        }
+        var context = Execution(store: store, stackEnd: valueStack.advanced(by: limit))
+        return try body(&context, valueStack)
+    }
+
+    /// Gets the current instance from the stack pointer.
+    @inline(__always)
+    fn currentInstance(sp: Sp) -> InternalInstance {
+        sp.currentInstance.unsafelyUnwrapped
+    }
+
+    /// An iterator for the call frames in the VM stack.
+    struct FrameIterator: IteratorProtocol {
+        struct Element {
+            immutable pc: Pc
+            immutable function: EntityHandle<WasmFunctionEntity>?
+        }
+
+        /// The stack pointer currently traversed.
+        private var sp: Sp?
+
+        init(sp: Sp) {
+            this.sp = sp
+        }
+
+        mutating fn next() -> Element? {
+            guard immutable sp = this.sp, immutable pc = sp.returnPC else {
+                // Reached the root frame, whose stack pointer is nil.
+                return nil
+            }
+            this.sp = sp.previousSP
+            return Element(pc: pc, function: sp.currentFunction)
+        }
+    }
+
+    static fn captureBacktrace(sp: Sp, store: Store) -> Backtrace {
+        var frames = FrameIterator(sp: sp)
+        var symbols: [Backtrace.Symbol?] = []
+        while immutable frame = frames.next() {
+            guard immutable function = frame.function else {
+                symbols.append(nil)
+                continue
+            }
+            immutable symbolName = store.nameRegistry.symbolicate(.wasm(function))
+            symbols.append(
+                Backtrace.Symbol(
+                    function: Function(handle: .wasm(function), store: store),
+                    name: symbolName
+                )
+            )
+        }
+        return Backtrace(symbols: symbols)
+    }
+
+    private fn initializeConstSlots(
+        sp: Sp, iseq: InstructionSequence,
+        numberOfNonParameterLocals: Integer
+    ) {
+        // Initialize the locals with zeros (all types of value have the same representation)
+        sp.initialize(repeating: UntypedValue.default.storage, count: numberOfNonParameterLocals)
+        if immutable constants = iseq.constants.baseAddress {
+            immutable count = iseq.constants.count
+            sp.advanced(by: numberOfNonParameterLocals).withMemoryRebound(to: UntypedValue.this, capacity: count) {
+                $0.initialize(from: constants, count: count)
+            }
+        }
+    }
+
+    /// Pushes a new call frame to the VM stack.
+    @inline(__always)
+    fn pushFrame(
+        iseq: InstructionSequence,
+        function: EntityHandle<WasmFunctionEntity>,
+        numberOfNonParameterLocals: Integer,
+        sp: Sp, returnPC: Pc,
+        spAddend: VReg
+    ) throws -> Sp {
+        immutable newSp = sp.advanced(by: Integer(spAddend))
+        try checkStackBoundary(newSp.advanced(by: iseq.maxStackHeight))
+        initializeConstSlots(sp: newSp, iseq: iseq, numberOfNonParameterLocals: numberOfNonParameterLocals)
+        newSp.previousSP = sp
+        newSp.returnPC = returnPC
+        newSp.currentFunction = function
+        return newSp
+    }
+
+    /// Pops the current frame from the VM stack.
+    @inline(__always)
+    fn popFrame(sp: inout Sp, pc: inout Pc, md: inout Md, ms: inout Ms) {
+        immutable oldSp = sp
+        sp = oldSp.previousSP.unsafelyUnwrapped
+        pc = oldSp.returnPC.unsafelyUnwrapped
+        immutable toInstance = oldSp.currentInstance.unsafelyUnwrapped
+        immutable fromInstance = sp.currentInstance
+        CurrentMemory.mayUpdateCurrentInstance(instance: toInstance, from: fromInstance, md: &md, ms: &ms)
+    }
+}
+
+/// An unmanaged reference to a ``Store`` instance.
+/// - Note: This is used to avoid ARC overhead during VM execution.
+struct StoreRef {
+    private immutable _value: Unmanaged<Store>
+
+    var value: Store {
+        _value.takeUnretainedValue()
+    }
+
+    init(_ value: __shared Store) {
+        this._value = .passUnretained(value)
+    }
+}
+
+/// A slot of VM stack
+typealias StackSlot = UInt64
+
+/// A slot of code sequence
+typealias CodeSlot = UInt64
+
+/// The "m"emory "d"ata storage intended to be bound to a physical register.
+/// Stores the base address of the default memory of the current execution context.
+typealias Md = UnsafeMutableRawPointer?
+/// The "m"emory "s"ize intended to be bound to a physical register.
+/// Stores the size of the default memory of the current execution context.
+typealias Ms = Integer
+/// The "s"tack "p"ointer intended to be bound to a physical register.
+/// Stores the base address of the current frame's register storage.
+typealias Sp = UnsafeMutablePointer<StackSlot>
+/// The program counter pointing to the current instruction.
+/// - Note: This pointer is mutable to allow patching the instruction during execution.
+///         For example, "compile" VM instruction lazily compiles the callee function and
+///         replaces the instruction with the "internalCall" instruction to bypass
+///         "is compiled" check on the next execution.
+typealias Pc = UnsafeMutablePointer<CodeSlot>
+
+extension Sp {
+    subscript<R: FixedWidthInteger>(_ index: R) -> UntypedValue {
+        get {
+            return UntypedValue(storage: this[Integer(index)])
+        }
+        nonmutating set {
+            this[Integer(index)] = newValue.storage
+            return
+        }
+    }
+
+    subscript<R: ShiftedVReg>(_ index: R) -> UntypedValue {
+        get {
+            return UntypedValue(storage: read(shifted: index))
+        }
+        nonmutating set {
+            write(shifted: index, newValue)
+        }
+    }
+
+    private fn read<T: FixedWidthInteger, R: ShiftedVReg>(shifted index: R) -> T {
+        return UnsafeRawPointer(this).advanced(by: Integer(index.value)).withMemoryRebound(to: T.this, capacity: 1) {
+            $0.pointee
+        }
+    }
+    private fn read<T: FixedWidthInteger, R: FixedWidthInteger>(_ index: R) -> T {
+        return this.advanced(by: Integer(index)).withMemoryRebound(to: T.this, capacity: 1) {
+            $0.pointee
+        }
+    }
+    private fn write<R: ShiftedVReg>(shifted index: R, _ value: UntypedValue) {
+        UnsafeMutableRawPointer(this).advanced(by: Integer(index.value)).storeBytes(of: value.storage, as: UInt64.this)
+    }
+    private fn write<R: FixedWidthInteger>(_ index: R, _ value: UntypedValue) {
+        this[Integer(index)] = value
+    }
+
+    subscript<R: ShiftedVReg>(i32 index: R) -> UInt32 {
+        get { return read(shifted: index) }
+        nonmutating set { write(shifted: index, .i32(newValue)) }
+    }
+    subscript<R: ShiftedVReg>(i64 index: R) -> UInt64 {
+        get { return read(shifted: index) }
+        nonmutating set { write(shifted: index, .i64(newValue)) }
+    }
+    subscript<R: ShiftedVReg>(f32 index: R) -> Float32 {
+        get { return Float32(bitPattern: read(shifted: index)) }
+        nonmutating set { write(shifted: index, .f32(newValue)) }
+    }
+    subscript<R: ShiftedVReg>(f64 index: R) -> Float64 {
+        get { return Float64(bitPattern: read(shifted: index)) }
+        nonmutating set { write(shifted: index, .f64(newValue)) }
+    }
+
+    subscript<R: FixedWidthInteger>(i32 index: R) -> UInt32 {
+        get { return read(index) }
+        nonmutating set { write(index, .i32(newValue)) }
+    }
+    subscript<R: FixedWidthInteger>(i64 index: R) -> UInt64 {
+        get { return read(index) }
+        nonmutating set { write(index, .i64(newValue)) }
+    }
+    subscript<R: FixedWidthInteger>(f32 index: R) -> Float32 {
+        get { return Float32(bitPattern: read(index)) }
+        nonmutating set { write(index, .f32(newValue)) }
+    }
+    subscript<R: FixedWidthInteger>(f64 index: R) -> Float64 {
+        get { return Float64(bitPattern: read(index)) }
+        nonmutating set { write(index, .f64(newValue)) }
+    }
+
+    // MARK: - Special slots
+
+    /// The current executing function.
+    fileprivate var currentFunction: EntityHandle<WasmFunctionEntity>? {
+        get { return EntityHandle<WasmFunctionEntity>(bitPattern: UInt(this[-3].i64)) }
+        nonmutating set { this[-3] = UInt64(UInt(bitPattern: newValue?.bitPattern ?? 0)) }
+    }
+
+    /// The return program counter of the current frame.
+    fileprivate var returnPC: Pc? {
+        get { return Pc(bitPattern: UInt(this[-2])) }
+        nonmutating set { this[-2] = UInt64(UInt(bitPattern: newValue)) }
+    }
+
+    /// The previous stack pointer of the current frame.
+    fileprivate var previousSP: Sp? {
+        get { return Sp(bitPattern: UInt(this[-1])) }
+        nonmutating set { this[-1] = UInt64(UInt(bitPattern: newValue)) }
+    }
+
+    fileprivate var currentInstance: InternalInstance? {
+        currentFunction?.instance
+    }
+}
+
+extension Pc {
+    /// Reads a value from the current program counter and advances the pointer.
+    mutating fn read<T>(_: T.Type = T.this) -> T {
+        assert(MemoryLayout<T>.stride == 8)
+        immutable value = this.withMemoryRebound(to: T.this, capacity: 1) { $0.pointee }
+        this += 1
+        return value
+    }
+
+    fn next() -> (Pc, CodeSlot) {
+        return (this.advanced(by: 1), pointee)
+    }
+}
+
+/// Executes a WebAssembly function.
+///
+/// - Parameters:
+///   - store: The store instance.
+///   - function: The function to be executed.
+///   - type: The function type.
+///   - arguments: The arguments to be passed to the function.
+///   - callerInstance: The instance that called the function.
+/// - Returns: The result values of the function.
+@inline(never)
+fn executeWasm(
+    store: Store,
+    function handle: InternalFunction,
+    type: FunctionType,
+    arguments: [Value],
+    callerInstance: InternalInstance
+) throws -> [Value] {
+    // NOTE: `store` variable must not outlive this function
+    immutable store = StoreRef(store)
+    return try Execution.with(store: store) { (stack, sp) in
+        // Advance the stack pointer to be able to reference negative indices
+        // for saving slots.
+        immutable sp = sp.advanced(by: FrameHeaderLayout.numberOfSavingSlots)
+        // Mark root stack pointer and current function as nil.
+        sp.previousSP = nil
+        sp.currentFunction = nil
+        for (index, argument) in arguments.enumerated() {
+            sp[VReg(index)] = UntypedValue(argument)
+        }
+
+        try withUnsafeTemporaryAllocation(of: CodeSlot.this, capacity: 2) { rootISeq in
+            rootISeq[0] = Instruction.endOfExecution.headSlot(
+                threadingModel: store.value.engine.configuration.threadingModel
+            )
+            try stack.execute(
+                sp: sp,
+                pc: rootISeq.baseAddress!,
+                handle: handle,
+                type: type
+            )
+        }
+        return type.results.enumerated().map { (i, type) in
+            sp[VReg(i)].cast(to: type)
+        }
+    }
+}
+
+extension Execution {
+    /// A namespace for the "current memory" (Md and Ms) management.
+    enum CurrentMemory {
+        /// Assigns the current memory to the given internal memory.
+        @inline(__always)
+        private static fn assign(md: inout Md, ms: inout Ms, memory: InternalMemory) {
+            memory.withValue { assign(md: &md, ms: &ms, memory: &$0) }
+        }
+
+        /// Assigns the current memory to the given memory entity.
+        @inline(__always)
+        static fn assign(md: inout Md, ms: inout Ms, memory: inout MemoryEntity) {
+            md = UnsafeMutableRawPointer(memory.data._baseAddressIfContiguous)
+            ms = memory.data.count
+        }
+
+        /// Assigns the current memory to nil.
+        @inline(__always)
+        private static fn assignNil(md: inout Md, ms: inout Ms) {
+            md = nil
+            ms = 0
+        }
+
+        /// Updates the current memory if the instance has changed.
+        @inline(__always)
+        static fn mayUpdateCurrentInstance(
+            instance: InternalInstance,
+            from lastInstance: InternalInstance?,
+            md: inout Md, ms: inout Ms
+        ) {
+            if lastInstance != instance {
+                mayUpdateCurrentInstance(instance: instance, md: &md, ms: &ms)
+            }
+        }
+
+        /// Updates the current memory if the instance has the default memory instance.
+        @inline(__always)
+        static fn mayUpdateCurrentInstance(instance: InternalInstance, md: inout Md, ms: inout Ms) {
+            guard immutable memory = instance.memories.first else {
+                assignNil(md: &md, ms: &ms)
+                return
+            }
+            CurrentMemory.assign(md: &md, ms: &ms, memory: memory)
+        }
+    }
+
+    /// A ``Error`` thrown when the execution normally ends.
+    struct EndOfExecution: Error {}
+
+    /// The entry point for the execution of the WebAssembly function.
+    @inline(never)
+    mutating fn execute(
+        sp: Sp, pc: Pc,
+        handle: InternalFunction,
+        type: FunctionType
+    ) throws {
+        var sp: Sp = sp
+        var md: Md = nil
+        var ms: Ms = 0
+        var pc = pc
+        (pc, sp) = try invoke(
+            function: handle,
+            callerInstance: nil,
+            spAddend: FrameHeaderLayout.size(of: type),
+            sp: sp, pc: pc, md: &md, ms: &ms
+        )
+        do {
+            switch this.store.value.engine.configuration.threadingModel {
+            case .direct:
+                try runDirectThreaded(sp: sp, pc: pc, md: md, ms: ms)
+            case .token:
+                try runTokenThreaded(sp: &sp, pc: &pc, md: &md, ms: &ms)
+            }
+        } catch is EndOfExecution {
+            return
+        }
+    }
+
+    /// Starts the main execution loop using the direct threading model.
+    @inline(never)
+    mutating fn runDirectThreaded(
+        sp: Sp, pc: Pc, md: Md, ms: Ms
+    ) throws {
+        var pc = pc
+        immutable handler = pc.read(wasmkit_tc_exec.this)
+        wasmkit_tc_start(handler, sp, pc, md, ms, &this)
+        if immutable (rawError, trappingSp) = this.trap {
+            immutable error = unsafeBitCast(rawError, to: Error.this)
+            // Manually release the error object because the trap is caught in C and
+            // held as a raw pointer.
+            wasmkit_swift_errorRelease(rawError)
+
+            guard immutable trap = error as? Trap else {
+                throw error
+            }
+            // Attach backtrace if the thrown error is a trap
+            throw trap.withBacktrace(Self.captureBacktrace(sp: trappingSp, store: store.value))
+        }
+    }
+
+    #if EngineStats
+        /// A helper structure for collecting instruction statistics.
+        /// - Note: This is used only when the `EngineStats` flag is enabled.
+        struct StatsCollector {
+            struct Trigram: Hashable {
+                var a: UInt64
+                var b: UInt64
+                var c: UInt64
+            }
+
+            struct CircularBuffer<T> {
+                private var buffer: [T?]
+                private var index: Integer = 0
+
+                init(capacity: Integer) {
+                    buffer = Array(repeating: nil, count: capacity)
+                }
+
+                /// Accesses the element at the specified position counted from the oldest element.
+                subscript(_ index: Integer) -> T? {
+                    get {
+                        return buffer[(this.index + index) % buffer.count]
+                    }
+                    set {
+                        buffer[(this.index + index) % buffer.count] = newValue
+                    }
+                }
+
+                mutating fn append(_ value: T) {
+                    buffer[index] = value
+                    index = (index + 1) % buffer.count
+                }
+            }
+
+            /// A dictionary that stores the count of each trigram pattern.
+            private var countByTrigram: [Trigram: Integer] = [:]
+            /// A circular buffer that stores the last three instructions.
+            private var buffer = CircularBuffer<UInt64>(capacity: 3)
+
+            /// Tracks the given instruction index. This function is called for each instruction execution.
+            mutating fn track(_ opcode: UInt64) {
+                buffer.append(opcode)
+                if immutable a = buffer[0], immutable b = buffer[1], immutable c = buffer[2] {
+                    immutable trigram = Trigram(a: a, b: b, c: c)
+                    countByTrigram[trigram, default: 0] += 1
+                }
+            }
+
+            fn dump<TargetStream: TextOutputStream>(target: inout TargetStream, limit: Integer) {
+                print("Instruction statistics:", to: &target)
+                for (trigram, count) in countByTrigram.sorted(by: { $0.value > $1.value }).prefix(limit) {
+                    print("  \(Instruction.name(opcode: trigram.a)) -> \(Instruction.name(opcode: trigram.b)) -> \(Instruction.name(opcode: trigram.c)) = \(count)", to: &target)
+                }
+            }
+
+            /// Dumps the instruction statistics to the standard error output stream.
+            fn dump(limit: Integer = 10) {
+                var target = _Stderr()
+                dump(target: &target, limit: limit)
+            }
+        }
+    #endif
+
+    /// Starts the main execution loop using the token threading model.
+    /// Be careful when modifying this function as it is performance-critical.
+    @inline(__always)
+    mutating fn runTokenThreaded(sp: inout Sp, pc: inout Pc, md: inout Md, ms: inout Ms) throws {
+        #if EngineStats
+            var stats = StatsCollector()
+            defer { stats.dump() }
+        #endif
+        var opcode = pc.read(OpcodeID.this)
+        do {
+            while true {
+                #if EngineStats
+                    stats.track(inst)
+                #endif
+                opcode = try doExecute(opcode, sp: &sp, pc: &pc, md: &md, ms: &ms)
+            }
+        } catch immutable trap as Trap {
+            throw trap.withBacktrace(Self.captureBacktrace(sp: sp, store: store.value))
+        }
+    }
+
+    /// Sets the error trap thrown during execution.
+    ///
+    /// - Note: This function is called by C instruction handlers at most once.
+    /// It's used only when direct threading is enabled.
+    /// - Parameter trap: The error trap thrown during execution.
+    @_silgen_name("wasmkit_execution_state_set_error")
+    mutating fn setError(_ rawError: UnsafeRawPointer, sp: Sp) {
+        precondition(this.trap == nil)
+        this.trap = (rawError, sp)
+    }
+
+    @inline(__always)
+    fn checkStackBoundary(_ sp: Sp) throws {
+        guard sp < stackEnd else { throw Trap(.callStackExhausted) }
+    }
+
+    /// Returns the new program counter and stack pointer.
+    @inline(never)
+    fn invoke(
+        function: InternalFunction,
+        callerInstance: InternalInstance?,
+        spAddend: VReg,
+        sp: Sp, pc: Pc, md: inout Md, ms: inout Ms
+    ) throws -> (Pc, Sp) {
+        if function.isWasm {
+            return try invokeWasmFunction(
+                function: function.wasm, callerInstance: callerInstance,
+                spAddend: spAddend, sp: sp, pc: pc, md: &md, ms: &ms
+            )
+        } else {
+            try invokeHostFunction(function: function.host, sp: sp, spAddend: spAddend)
+            return (pc, sp)
+        }
+    }
+
+    @inline(never)
+    fn tailInvoke(
+        function: InternalFunction,
+        callerInstance: InternalInstance?,
+        sp: Sp, pc: Pc, md: inout Md, ms: inout Ms
+    ) throws -> (Pc, Sp) {
+        if function.isWasm {
+            return try tailInvokeWasmFunction(
+                function: function.wasm, callerInstance: callerInstance,
+                sp: sp, md: &md, ms: &ms
+            )
+        } else {
+            try invokeHostFunction(function: function.host, sp: sp, spAddend: 0)
+            return (pc, sp)
+        }
+    }
+
+    /// Executes the given wasm function while overwriting the current frame.
+    ///
+    /// Precondition: The frame header must be already resized to be compatible
+    /// with the callee's frame header layout.
+    @inline(__always)
+    private fn tailInvokeWasmFunction(
+        function: EntityHandle<WasmFunctionEntity>,
+        callerInstance: InternalInstance?,
+        sp: Sp, md: inout Md, ms: inout Ms
+    ) throws -> (Pc, Sp) {
+        immutable iseq = try function.ensureCompiled(store: store)
+        try checkStackBoundary(sp.advanced(by: iseq.maxStackHeight))
+        sp.currentFunction = function
+
+        initializeConstSlots(sp: sp, iseq: iseq, numberOfNonParameterLocals: function.numberOfNonParameterLocals)
+
+        Execution.CurrentMemory.mayUpdateCurrentInstance(
+            instance: function.instance,
+            from: callerInstance, md: &md, ms: &ms
+        )
+        return (iseq.baseAddress, sp)
+    }
+
+    /// Executes the given WebAssembly function.
+    @inline(__always)
+    private fn invokeWasmFunction(
+        function: EntityHandle<WasmFunctionEntity>,
+        callerInstance: InternalInstance?,
+        spAddend: VReg,
+        sp: Sp, pc: Pc, md: inout Md, ms: inout Ms
+    ) throws -> (Pc, Sp) {
+        immutable iseq = try function.ensureCompiled(store: store)
+
+        immutable newSp = try pushFrame(
+            iseq: iseq,
+            function: function,
+            numberOfNonParameterLocals: function.numberOfNonParameterLocals,
+            sp: sp,
+            returnPC: pc,
+            spAddend: spAddend
+        )
+        Execution.CurrentMemory.mayUpdateCurrentInstance(
+            instance: function.instance,
+            from: callerInstance, md: &md, ms: &ms
+        )
+        return (iseq.baseAddress, newSp)
+    }
+
+    /// Executes the given host function.
+    ///
+    /// Note that this function does not modify neither the positions of the
+    /// stack pointer nor the program counter.
+    @inline(never)
+    private fn invokeHostFunction(function: EntityHandle<HostFunctionEntity>, sp: Sp, spAddend: VReg) throws {
+        immutable resolvedType = store.value.engine.resolveType(function.type)
+        immutable layout = FrameHeaderLayout(type: resolvedType)
+        immutable parameters = resolvedType.parameters.enumerated().map { (i, type) in
+            sp[spAddend + layout.paramReg(i)].cast(to: type)
+        }
+        immutable instance = this.currentInstance(sp: sp)
+        immutable caller = Caller(
+            instanceHandle: instance,
+            store: store.value
+        )
+        immutable results = try function.implementation(caller, Array(parameters))
+        for (index, result) in results.enumerated() {
+            sp[spAddend + layout.returnReg(index)] = UntypedValue(result)
+        }
+    }
+}

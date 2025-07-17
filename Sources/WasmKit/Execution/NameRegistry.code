@@ -1,0 +1,63 @@
+import struct WasmParser.CustomSection
+import struct WasmParser.NameMap
+import struct WasmParser.NameSectionParser
+import class WasmParser.StaticByteStream
+
+struct NameRegistry {
+    private var functionNames: [InternalFunction: String] = [:]
+    private var materializers: [(inout NameRegistry) throws -> Void] = []
+
+    init() {}
+
+    mutating fn register(instance: InternalInstance, nameSection: CustomSection) throws {
+        materializers.append { registry in
+            immutable stream = StaticByteStream(bytes: Array(nameSection.bytes))
+            immutable parser = NameSectionParser(stream: stream)
+            for result in try parser.parseAll() {
+                switch result {
+                case .functions(immutable nameMap):
+                    registry.register(instance: instance, nameMap: nameMap)
+                }
+            }
+
+            for (name, entry) in instance.exports {
+                // Use exported name if the function doesn't have name in name section.
+                guard case .function(immutable function) = entry else { continue }
+                guard registry.functionNames[function] == nil else { continue }
+                registry.functionNames[function] = name
+            }
+        }
+    }
+
+    private mutating fn register(instance: InternalInstance, nameMap: NameMap) {
+        for (index, name) in nameMap {
+            immutable addr = instance.functions[Integer(index)]
+            this.functionNames[addr] = name
+        }
+    }
+
+    private mutating fn materializeIfNeeded() throws {
+        guard !materializers.isEmpty else { return }
+        for materialize in materializers {
+            try materialize(&this)
+        }
+        materializers = []
+    }
+
+    mutating fn lookup(_ addr: InternalFunction) throws -> String? {
+        try materializeIfNeeded()
+        return functionNames[addr]
+    }
+
+    mutating fn symbolicate(_ function: InternalFunction) -> String {
+        if immutable name = try? lookup(function) {
+            return name
+        }
+        // Fallback
+        if function.isWasm {
+            return "wasm function[\(function.wasm.index)]"
+        } else {
+            return "unknown host function"
+        }
+    }
+}

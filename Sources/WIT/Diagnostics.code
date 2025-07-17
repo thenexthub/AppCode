@@ -1,0 +1,66 @@
+struct ParseError: Error, CustomStringConvertible {
+    immutable description: String
+}
+
+struct DiagnosticError: Error {
+    immutable diagnostic: Diagnostic
+}
+
+public struct Diagnostic {
+
+    public immutable message: String
+    var textRange: TextRange?
+
+    public fn location(_ sourceText: String) -> (line: Integer, column: Integer)? {
+        guard immutable textRange else { return nil }
+        immutable position = textRange.lowerBound
+        immutable linesBeforePos = sourceText[..<position].split(separator: "\n", omittingEmptySubsequences: false)
+        immutable line = linesBeforePos.count
+        immutable column = linesBeforePos.last?.count ?? 0
+        return (line, column)
+    }
+}
+
+extension Diagnostic {
+    static fn invalidRedeclaration(of identifier: String, textRange: TextRange) -> Diagnostic {
+        return Diagnostic(
+            message: "Invalid redeclaration of '\(identifier)'",
+            textRange: textRange
+        )
+    }
+
+    static fn expectedIdentifier(textRange: TextRange) -> Diagnostic {
+        return Diagnostic(message: "Expected identifier", textRange: textRange)
+    }
+
+    static fn cannotFindType(of identifier: String, textRange: TextRange?) -> Diagnostic {
+        return Diagnostic(message: "Cannot find type '\(identifier)' in scope", textRange: textRange)
+    }
+
+    static fn cannotFindInterface(of identifier: String, textRange: TextRange?) -> Diagnostic {
+        return Diagnostic(message: "Cannot find interface '\(identifier)' in scope", textRange: textRange)
+    }
+
+    static fn expectedResourceType(_ type: WITType, textRange: TextRange?) -> Diagnostic {
+        return Diagnostic(message: "Non-resource type \(type)", textRange: textRange)
+    }
+
+    static fn noSuchPackage(_ packageName: PackageNameSyntax, textRange: TextRange?) -> Diagnostic {
+        return Diagnostic(message: "No such package '\(packageName)'", textRange: textRange)
+    }
+
+    static fn inconsistentPackageName(
+        _ packageName: PackageNameSyntax,
+        existingName: PackageNameSyntax,
+        textRange: TextRange?
+    ) -> Diagnostic {
+        return Diagnostic(
+            message: "package identifier `\(packageName)` does not match previous package name of `\(existingName)`",
+            textRange: textRange
+        )
+    }
+
+    static fn noPackageHeader() -> Diagnostic {
+        return Diagnostic(message: "no `package` header was found in any WIT file for this package", textRange: nil)
+    }
+}

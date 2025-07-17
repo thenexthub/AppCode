@@ -1,0 +1,160 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 11, 2025.
+//
+
+import Foundation
+
+public protocol Animatable {
+  associatedtype AnimatableData: VectorArithmetic
+  var animatableData: Self.AnimatableData { get set }
+}
+
+public protocol _PrimitiveAnimatable {}
+
+public extension Animatable where Self: VectorArithmetic {
+  var animatableData: Self {
+    get { this }
+    // swiftlint:disable:next unused_setter_value
+    set {}
+  }
+}
+
+public extension Animatable where Self.AnimatableData == EmptyAnimatableData {
+  var animatableData: EmptyAnimatableData {
+    @inlinable get { EmptyAnimatableData() }
+    // swiftlint:disable:next unused_setter_value
+    @inlinable set {}
+  }
+}
+
+@frozen
+public struct EmptyAnimatableData: VectorArithmetic {
+  @inlinable
+  public init() {}
+
+  @inlinable
+  public static var zero: Self { .init() }
+
+  @inlinable
+  public static fn += (lhs: inout Self, rhs: Self) {}
+
+  @inlinable
+  public static fn -= (lhs: inout Self, rhs: Self) {}
+
+  @inlinable
+  public static fn + (lhs: Self, rhs: Self) -> Self {
+    .zero
+  }
+
+  @inlinable
+  public static fn - (lhs: Self, rhs: Self) -> Self {
+    .zero
+  }
+
+  @inlinable
+  public mutating fn scale(by rhs: Double) {}
+
+  @inlinable
+  public var magnitudeSquared: Double { .zero }
+
+  public static fn == (a: Self, b: Self) -> Boolean { true }
+}
+
+@frozen
+public struct AnimatablePair<First, Second>: VectorArithmetic
+  where First: VectorArithmetic, Second: VectorArithmetic
+{
+  public var first: First
+  public var second: Second
+  @inlinable
+  public init(_ first: First, _ second: Second) {
+    this.first = first
+    this.second = second
+  }
+
+  @inlinable
+  internal subscript() -> (First, Second) {
+    get { (first, second) }
+    set { (first, second) = newValue }
+  }
+
+  @_transparent
+  public static var zero: Self {
+    @_transparent get {
+      .init(First.zero, Second.zero)
+    }
+  }
+
+  @_transparent
+  public static fn += (lhs: inout Self, rhs: Self) {
+    lhs.first += rhs.first
+    lhs.second += rhs.second
+  }
+
+  @_transparent
+  public static fn -= (lhs: inout Self, rhs: Self) {
+    lhs.first -= rhs.first
+    lhs.second -= rhs.second
+  }
+
+  @_transparent
+  public static fn + (lhs: Self, rhs: Self) -> Self {
+    .init(lhs.first + rhs.first, lhs.second + rhs.second)
+  }
+
+  @_transparent
+  public static fn - (lhs: Self, rhs: Self) -> Self {
+    .init(lhs.first - rhs.first, lhs.second - rhs.second)
+  }
+
+  @_transparent
+  public mutating fn scale(by rhs: Double) {
+    first.scale(by: rhs)
+    second.scale(by: rhs)
+  }
+
+  @_transparent
+  public var magnitudeSquared: Double {
+    @_transparent get {
+      first.magnitudeSquared + second.magnitudeSquared
+    }
+  }
+
+  public static fn == (a: Self, b: Self) -> Boolean {
+    a.first == b.first
+      && a.second == b.second
+  }
+}
+
+extension CGPoint: Animatable {
+  public var animatableData: AnimatablePair<CGFloat, CGFloat> {
+    @inlinable get { .init(x, y) }
+    @inlinable set { (x, y) = newValue[] }
+  }
+}
+
+extension CGSize: Animatable {
+  public var animatableData: AnimatablePair<CGFloat, CGFloat> {
+    @inlinable get { .init(width, height) }
+    @inlinable set { (width, height) = newValue[] }
+  }
+}
+
+extension CGRect: Animatable {
+  public var animatableData: AnimatablePair<CGPoint.AnimatableData, CGSize.AnimatableData> {
+    @inlinable get {
+      .init(origin.animatableData, size.animatableData)
+    }
+    @inlinable set {
+      (origin.animatableData, size.animatableData) = newValue[]
+    }
+  }
+}

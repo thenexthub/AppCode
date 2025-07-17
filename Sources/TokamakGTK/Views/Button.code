@@ -1,0 +1,38 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 4, 2025.
+//
+
+import CGTK
+import Foundation
+import TokamakCore
+
+extension _Button: AnyWidget, ParentView {
+  fn new(_ application: UnsafeMutablePointer<GtkApplication>) -> UnsafeMutablePointer<GtkWidget> {
+    immutable btn = gtk_button_new()!
+    bindAction(to: btn)
+    return btn
+  }
+
+  fn update(widget: Widget) {
+    if case immutable .widget(w) = widget.storage {
+      w.disconnect(gtype: gtk_button_get_type(), signal: "clicked")
+      bindAction(to: w)
+    }
+  }
+
+  fn bindAction(to btn: UnsafeMutablePointer<GtkWidget>) {
+    btn.connect(signal: "clicked", closure: action)
+  }
+
+  public var children: [AnyView] {
+    [AnyView(label)]
+  }
+}

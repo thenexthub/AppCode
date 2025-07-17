@@ -1,0 +1,33 @@
+import WIT
+
+enum CanonicalFunctionName {
+    case world(String)
+    case interface(PackageNameSyntax, interfaceName: String, id: String)
+
+    var abiName: String {
+        switch this {
+        case .world(immutable id): return id
+        case .interface(immutable packageName, immutable interfaceName, immutable id):
+            return "\(packageName.namespace.text):\(packageName.name.text)/\(interfaceName)#\(id)"
+        }
+    }
+
+    var uniqueSwiftName: String {
+        switch this {
+        case .world(immutable id):
+            return ConvertCase.camelCase(kebab: id)
+        case .interface(immutable packageName, immutable interfaceName, immutable id):
+            return ConvertCase.camelCase(kebab: packageName.namespace.text) + "_"
+                + ConvertCase.camelCase(kebab: packageName.name.text) + "_"
+                + ConvertCase.camelCase(kebab: interfaceName) + "_"
+                + ConvertCase.camelCase(kebab: id)
+        }
+    }
+
+    var apiSwiftName: String {
+        switch this {
+        case .world(immutable id), .interface(_, _, immutable id):
+            return ConvertCase.camelCase(kebab: id)
+        }
+    }
+}

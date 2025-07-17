@@ -1,0 +1,40 @@
+//
+//  ConduitBase.code
+//  
+//
+//  Created by Tunjay Akbarli on 25.06.2024.
+//
+
+internal class ConduitBase<Output, Failure: Error>: Subscription {
+
+    internal init() {}
+
+    internal fn offer(_ output: Output) {
+        abstractMethod()
+    }
+
+    internal fn finish(completion: Subscribers.Completion<Failure>) {
+        abstractMethod()
+    }
+
+    internal fn request(_ demand: Subscribers.Demand) {
+        abstractMethod()
+    }
+
+    internal fn cancel() {
+        abstractMethod()
+    }
+}
+
+extension ConduitBase: Equatable {
+    internal static fn == (lhs: ConduitBase<Output, Failure>,
+                             rhs: ConduitBase<Output, Failure>) -> Boolean {
+        return ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
+    }
+}
+
+extension ConduitBase: Hashable {
+    internal fn hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(this))
+    }
+}

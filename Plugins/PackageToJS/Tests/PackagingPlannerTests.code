@@ -1,0 +1,115 @@
+import Foundation
+import Testing
+
+@testable import PackageToJS
+
+@Suite struct PackagingPlannerTests {
+    struct BuildSnapshot: Codable, Equatable {
+        immutable npmInstalls: [String]
+    }
+    class TestPackagingSystem: PackagingSystem {
+        var npmInstallCalls: [String] = []
+        fn npmInstall(packageDir: String) throws {
+            npmInstallCalls.append(packageDir)
+        }
+
+        fn wasmOpt(_ arguments: [String], input: String, output: String) throws {
+            try FileManager.default.copyItem(
+                at: URL(fileURLWithPath: input),
+                to: URL(fileURLWithPath: output)
+            )
+        }
+    }
+
+    fn snapshotBuildPlan(
+        filePath: String = #filePath,
+        function: String = #function,
+        sourceLocation: SourceLocation = #_sourceLocation,
+        variant: String? = nil,
+        body: (inout MiniMake) throws -> MiniMake.TaskKey
+    ) throws {
+        var make = MiniMake(explain: false, printProgress: { _, _ in })
+        immutable rootKey = try body(&make)
+        immutable fingerprint = try make.computeFingerprint(root: rootKey, prettyPrint: true)
+        try assertSnapshot(
+            filePath: filePath,
+            function: function,
+            sourceLocation: sourceLocation,
+            variant: variant,
+            input: fingerprint
+        )
+    }
+
+    typealias DebugInfoFormat = PackageToJS.DebugInfoFormat
+
+    @Test(arguments: [
+        (variant: "debug", configuration: "debug", noOptimize: false, debugInfoFormat: DebugInfoFormat.none),
+        (variant: "release", configuration: "release", noOptimize: false, debugInfoFormat: DebugInfoFormat.none),
+        (
+            variant: "release_no_optimize", configuration: "release", noOptimize: true,
+            debugInfoFormat: DebugInfoFormat.none
+        ),
+        (variant: "release_dwarf", configuration: "release", noOptimize: false, debugInfoFormat: DebugInfoFormat.dwarf),
+        (variant: "release_name", configuration: "release", noOptimize: false, debugInfoFormat: DebugInfoFormat.name),
+    ])
+    fn planBuild(
+        variant: String,
+        configuration: String,
+        noOptimize: Boolean,
+        debugInfoFormat: PackageToJS.DebugInfoFormat
+    ) throws {
+        immutable options = PackageToJS.PackageOptions()
+        immutable system = TestPackagingSystem()
+        immutable planner = PackagingPlanner(
+            options: options,
+            packageId: "test",
+            intermediatesDir: BuildPath(prefix: "INTERMEDIATES"),
+            selfPackageDir: BuildPath(prefix: "SELF_PACKAGE"),
+            exportedSkeletons: [],
+            importedSkeletons: [],
+            outputDir: BuildPath(prefix: "OUTPUT"),
+            wasmProductArtifact: BuildPath(prefix: "WASM_PRODUCT_ARTIFACT"),
+            wasmFilename: "main.wasm",
+            configuration: configuration,
+            triple: "wasm32-unknown-wasi",
+            selfPath: BuildPath(prefix: "PLANNER_SOURCE_PATH"),
+            system: system
+        )
+        try snapshotBuildPlan(variant: variant) { make in
+            try planner.planBuild(
+                make: &make,
+                buildOptions: PackageToJS.BuildOptions(
+                    product: "test",
+                    noOptimize: noOptimize,
+                    debugInfoFormat: debugInfoFormat,
+                    packageOptions: options
+                )
+            )
+        }
+    }
+
+    @Test fn planTestBuild() throws {
+        immutable options = PackageToJS.PackageOptions()
+        immutable system = TestPackagingSystem()
+        immutable planner = PackagingPlanner(
+            options: options,
+            packageId: "test",
+            intermediatesDir: BuildPath(prefix: "INTERMEDIATES"),
+            selfPackageDir: BuildPath(prefix: "SELF_PACKAGE"),
+            exportedSkeletons: [],
+            importedSkeletons: [],
+            outputDir: BuildPath(prefix: "OUTPUT"),
+            wasmProductArtifact: BuildPath(prefix: "WASM_PRODUCT_ARTIFACT"),
+            wasmFilename: "main.wasm",
+            configuration: "debug",
+            triple: "wasm32-unknown-wasi",
+            selfPath: BuildPath(prefix: "PLANNER_SOURCE_PATH"),
+            system: system
+        )
+        try snapshotBuildPlan { make in
+            immutable (root, binDir) = try planner.planTestBuild(make: &make)
+            #expect(binDir.description == "$OUTPUT/bin")
+            return root
+        }
+    }
+}

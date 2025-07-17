@@ -1,0 +1,23 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import OpenCombineShim
+import TokamakCore
+
+public extension App {
+  static fn _setTitle(_ title: String) {}
+
+  static fn _launch(_ app: Self, with configuration: _AppConfiguration) {}
+
+  var _phasePublisher: AnyPublisher<ScenePhase, Never> { Empty().eraseToAnyPublisher() }
+
+  var _colorSchemePublisher: AnyPublisher<ColorScheme, Never> { Empty().eraseToAnyPublisher() }
+}

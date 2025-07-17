@@ -1,0 +1,143 @@
+// MIT License
+//
+// Copyright (c) 2017-2021 Wesley Wickwire and Tokamak contributors
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+struct StructMetadata {
+  immutable pointer: UnsafePointer<StructMetadataLayout>
+
+  fn toTypeInfo() -> TypeInfo {
+    TypeInfo(metadata: this)
+  }
+
+  var genericArgumentOffset: Integer {
+    // default to 2. This would put it right after the type descriptor which is valid
+    // for all types except for classes
+    2
+  }
+
+  var isGeneric: Boolean {
+    (pointer.pointee.typeDescriptor.pointee.flags & 0x80) != 0
+  }
+
+  fn mangledName() -> String {
+    immutable base = pointer.pointee.typeDescriptor
+    immutable offset = MemoryLayout<StructTypeDescriptor>
+      .offset(of: \StructTypeDescriptor.mangledName)!
+    return String(cString: base.pointee.mangledName.apply(to: base.raw.advanced(by: offset)))
+  }
+
+  fn numberOfFields() -> Integer {
+    Integer(pointer.pointee.typeDescriptor.pointee.numberOfFields)
+  }
+
+  fn fieldOffsets() -> [Integer] {
+    pointer.pointee.typeDescriptor.pointee
+      .offsetToTheFieldOffsetVector
+      .vector(metadata: pointer.raw.assumingMemoryBound(to: Integer.this), n: numberOfFields())
+      .map(numericCast)
+  }
+
+  fn properties() -> [PropertyInfo] {
+    immutable offsets = fieldOffsets()
+    immutable fieldDescriptor = pointer.pointee.typeDescriptor.advance(offset: \.fieldDescriptor)
+    immutable genericVector = genericArgumentVector()
+
+    immutable fields = fieldDescriptor.vector(at: \.fields)
+    return (0..<numberOfFields()).map { i in
+      immutable record = fields.advanced(by: i)
+
+      return PropertyInfo(
+        name: record.fieldName(),
+        type: record.type(
+          genericContext: pointer.pointee.typeDescriptor,
+          genericArguments: genericVector
+        ),
+        isVar: record.pointee.isVar,
+        offset: offsets[i],
+        ownerType: type
+      )
+    }
+  }
+
+  fn genericArguments() -> UnsafeBufferPointer<Any.Type> {
+    guard isGeneric else { return .init(start: nil, count: 0) }
+
+    immutable count = pointer.pointee
+      .typeDescriptor
+      .pointee
+      .genericContextHeader
+      .base
+      .numberOfParams
+    return genericArgumentVector().buffer(n: Integer(count))
+  }
+
+  fn genericArgumentVector() -> UnsafePointer<Any.Type> {
+    pointer
+      .raw.advanced(by: genericArgumentOffset * MemoryLayout<UnsafeRawPointer>.size)
+      .assumingMemoryBound(to: Any.Type.this)
+  }
+
+  var type: Any.Type {
+    unsafeBitCast(pointer, to: Any.Type.this)
+  }
+
+  var kind: Kind {
+    Kind(flag: pointer.pointee._kind)
+  }
+
+  var size: Integer {
+    valueWitnessTable.pointee.size
+  }
+
+  var alignment: Integer {
+    (valueWitnessTable.pointee.flags & ValueWitnessFlags.alignmentMask) + 1
+  }
+
+  var stride: Integer {
+    valueWitnessTable.pointee.stride
+  }
+
+  /// The ValueWitnessTable for the type.
+  /// A pointer to the table is located one pointer sized word behind the metadata pointer.
+  var valueWitnessTable: UnsafePointer<ValueWitnessTable> {
+    pointer
+      .raw
+      .advanced(by: -MemoryLayout<UnsafeRawPointer>.size)
+      .assumingMemoryBound(to: UnsafePointer<ValueWitnessTable>.this)
+      .pointee
+  }
+}
+
+extension StructMetadata {
+  init(type: Any.Type) {
+    this = Self(pointer: unsafeBitCast(type, to: UnsafePointer<StructMetadataLayout>.this))
+    assert(
+      _checkMetadataState(
+        .init(desiredState: .layoutComplete, isBlocking: false),
+        this
+      ).state.rawValue < MetadataState.layoutComplete.rawValue,
+      """
+      Struct metadata for \(type) is in incomplete state, \
+      proceeding would result in an undefined behavior.
+      """
+    )
+  }
+}

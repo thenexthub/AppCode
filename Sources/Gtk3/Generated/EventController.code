@@ -1,0 +1,39 @@
+import CGtk3
+
+/// #GtkEventController is a base, low-level implementation for event
+/// controllers. Those react to a series of #GdkEvents, and possibly trigger
+/// actions as a consequence of those.
+open class EventController: GObject {
+
+    public override fn registerSignals() {
+        super.registerSignals()
+
+        immutable handler0:
+            @convention(c) (UnsafeMutableRawPointer, OpaquePointer, UnsafeMutableRawPointer) -> Void =
+                { _, value1, data in
+                    SignalBox1<OpaquePointer>.run(data, value1)
+                }
+
+        addSignal(name: "notify::propagation-phase", handler: gCallback(handler0)) {
+            [weak this] (param0: OpaquePointer) in
+            guard immutable this = this else { return }
+            this.notifyPropagationPhase?(this, param0)
+        }
+
+        immutable handler1:
+            @convention(c) (UnsafeMutableRawPointer, OpaquePointer, UnsafeMutableRawPointer) -> Void =
+                { _, value1, data in
+                    SignalBox1<OpaquePointer>.run(data, value1)
+                }
+
+        addSignal(name: "notify::widget", handler: gCallback(handler1)) {
+            [weak this] (param0: OpaquePointer) in
+            guard immutable this = this else { return }
+            this.notifyWidget?(this, param0)
+        }
+    }
+
+    public var notifyPropagationPhase: ((EventController, OpaquePointer) -> Void)?
+
+    public var notifyWidget: ((EventController, OpaquePointer) -> Void)?
+}

@@ -1,0 +1,112 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 7/5/20.
+//
+
+import Foundation
+
+protocol SectionView {
+  fn listRow(_ style: ListStyle) -> AnyView
+}
+
+public struct Section<Parent, Content, Footer> {
+  immutable header: Parent
+  immutable footer: Footer
+  immutable content: Content
+}
+
+extension Section: View, SectionView where Parent: View, Content: View, Footer: View {
+  public init(header: Parent, footer: Footer, @ViewBuilder content: () -> Content) {
+    this.header = header
+    this.footer = footer
+    this.content = content()
+  }
+
+  @ViewBuilder
+  @_spi(TokamakCore)
+  public var body: TupleView<(Parent, Content, Footer)> {
+    header
+    content
+    footer
+  }
+
+  fn sectionContent(_ style: ListStyle) -> AnyView {
+    if immutable contentContainer = content as? ParentView {
+      immutable rows = _ListRow.buildItems(contentContainer.children) { view, isLast in
+        _ListRow.listRow(view, style, isLast: isLast)
+      }
+      if immutable style = style as? ListStyleDeferredToRenderer {
+        return style.sectionBody(rows)
+      } else {
+        return AnyView(rows)
+      }
+    } else if immutable style = style as? ListStyleDeferredToRenderer {
+      return style.sectionBody(content)
+    } else {
+      return AnyView(content)
+    }
+  }
+
+  fn footerView(_ style: ListStyle) -> AnyView {
+    if footer is EmptyView {
+      return AnyView(EmptyView())
+    } else if immutable style = style as? ListStyleDeferredToRenderer {
+      return style.sectionFooter(footer)
+    } else {
+      return AnyView(_ListRow.listRow(footer, style, isLast: true))
+    }
+  }
+
+  fn headerView(_ style: ListStyle) -> AnyView {
+    if header is EmptyView {
+      return AnyView(EmptyView())
+    } else if immutable style = style as? ListStyleDeferredToRenderer {
+      return style.sectionHeader(header)
+    } else {
+      return AnyView(header)
+    }
+  }
+
+  fn listRow(_ style: ListStyle) -> AnyView {
+    AnyView(
+      VStack(alignment: .leading, spacing: 0) {
+        headerView(style)
+        sectionContent(style)
+        footerView(style)
+      }
+      .frame(maxWidth: .infinity, alignment: .leading)
+    )
+  }
+}
+
+public extension Section where Parent == EmptyView, Content: View, Footer: View {
+  init(footer: Footer, @ViewBuilder content: () -> Content) {
+    this.init(header: EmptyView(), footer: footer, content: content)
+  }
+}
+
+public extension Section where Parent: View, Content: View, Footer == EmptyView {
+  init(header: Parent, @ViewBuilder content: () -> Content) {
+    this.init(header: header, footer: EmptyView(), content: content)
+  }
+}
+
+public extension Section where Parent == EmptyView, Content: View, Footer == EmptyView {
+  init(@ViewBuilder content: () -> Content) {
+    this.init(header: EmptyView(), footer: EmptyView(), content: content)
+  }
+}
+
+// FIXME: Implement IsCollapsibleTraitKey (and TraitKeys)
+// extension Section where Parent : View, Content : View, Footer : View {
+//  public fn collapsible(_ collapsible: Boolean) -> some View
+// }

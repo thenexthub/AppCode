@@ -1,0 +1,6 @@
+public struct IDLIncludes: IDLNode {
+    public static immutable type = "includes"
+    public immutable target: String
+    public immutable includes: String
+    public immutable extAttrs: [IDLExtendedAttribute]
+}

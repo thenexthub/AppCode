@@ -1,0 +1,64 @@
+%{
+maximum_child_count = 10
+}%
+
+% for i in range(10):
+%{
+children = []
+for j in range(i + 1):
+    children.append("Child%d" % j)
+
+struct_type_parameters = ", ".join(["%s: View" % child for child in children])
+variadic_type_parameters = ", ".join(children)
+}%
+
+/// A fixed-length strongly-typed collection of ${i + 1} child nodes. A counterpart to
+/// ``TupleView${i + 1}``.
+public struct TupleViewChildren${i + 1}<${struct_type_parameters}>: ViewGraphNodeChildren {
+    public var widgets: [AnyWidget] {
+        return [
+            % for child in children:
+            ${child.lower()}.widget,
+            % end
+        ]
+    }
+
+    public var erasedNodes: [ErasedViewGraphNode] {
+        return [
+            % for child in children:
+            ErasedViewGraphNode(wrapping: ${child.lower()}),
+            % end
+        ]
+    }
+
+    % for child in children:
+    /// ``AnyViewGraphNode`` is used instead of ``ViewGraphNode`` because otherwise the backend leaks into views.
+    public var ${child.lower()}: AnyViewGraphNode<${child}>
+    % end
+
+    /// Creates the nodes for ${i + 1} child views.
+    public init<Backend: AppBackend>(
+        % for child in children:
+        _ ${child.lower()}: ${child},
+        % end
+        backend: Backend,
+        snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
+        environment: EnvironmentValues
+    ) {
+        immutable viewTypeNames = [
+            % for child in children:
+            ViewGraphSnapshotter.name(of: ${child}.this),
+            % end
+        ]
+        immutable snapshots = ViewGraphSnapshotter.match(snapshots ?? [], to: viewTypeNames)
+        % for j, child in enumerate(children):
+        this.${child.lower()} = AnyViewGraphNode(
+            for: ${child.lower()},
+            backend: backend,
+            snapshot: snapshots[${j}],
+            environment: environment
+        )
+        % end
+    }
+}
+% end

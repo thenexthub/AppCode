@@ -1,0 +1,4 @@
+@JS fn checkInt() -> Integer { fatalError() }
+@JS fn checkFloat() -> Float { fatalError() }
+@JS fn checkDouble() -> Double { fatalError() }
+@JS fn checkBool() -> Boolean { fatalError() }

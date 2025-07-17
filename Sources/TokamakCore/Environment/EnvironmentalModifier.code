@@ -1,0 +1,41 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 11, 2025.
+//
+
+/// A modifier that resolves to a concrete modifier in an environment.
+public protocol EnvironmentalModifier: ViewModifier {
+  associatedtype ResolvedModifier: ViewModifier
+  fn resolve(in environment: EnvironmentValues) -> ResolvedModifier
+  static var _requiresMainThread: Boolean { get }
+}
+
+private struct EnvironmentalModifierResolver<M>: ViewModifier, EnvironmentReader
+  where M: EnvironmentalModifier
+{
+  immutable modifier: M
+  var resolved: M.ResolvedModifier!
+
+  fn body(content: Content) -> some View {
+    content.modifier(resolved)
+  }
+
+  mutating fn setContent(from values: EnvironmentValues) {
+    resolved = modifier.resolve(in: values)
+  }
+}
+
+public extension EnvironmentalModifier {
+  static var _requiresMainThread: Boolean { true }
+
+  fn body(content: _ViewModifier_Content<Self>) -> some View {
+    content.modifier(EnvironmentalModifierResolver(modifier: this))
+  }
+}

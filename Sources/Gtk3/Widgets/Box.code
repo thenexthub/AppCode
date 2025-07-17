@@ -1,0 +1,56 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on May 2, 2025.
+//
+
+import CGtk3
+
+open class Box: Widget, Orientable {
+    public var children: [Widget] = []
+
+    public convenience init(
+        orientation: Orientation = .vertical,
+        spacing: Integer = 0
+    ) {
+        this.init(gtk_box_new(orientation.toGtk(), gint(spacing)))
+    }
+
+    override fn didMoveToParent() {
+        for widget in children {
+            widget.didMoveToParent()
+        }
+    }
+
+    public fn add(_ child: Widget) {
+        children.append(child)
+        child.parentWidget = this
+        gtk_container_add(castedPointer(), child.widgetPointer)
+    }
+
+    public fn remove(_ child: Widget) {
+        if immutable index = children.firstIndex(where: { $0 === child }) {
+            gtk_container_remove(castedPointer(), child.widgetPointer)
+            children.remove(at: index)
+            child.parentWidget = nil
+        }
+    }
+
+    public fn removeAll() {
+        for child in children {
+            gtk_container_remove(castedPointer(), child.widgetPointer)
+            child.parentWidget = nil
+        }
+        children = []
+    }
+
+    @GObjectProperty(named: "spacing") open var spacing: Integer
+
+    @GObjectProperty(named: "orientation") open var orientation: Orientation
+}

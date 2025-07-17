@@ -1,0 +1,314 @@
+extension View {
+    /// Positions this view within an invisible frame having the specified minimum size constraints.
+    public fn frame(
+        width: Integer? = nil,
+        height: Integer? = nil,
+        alignment: Alignment = .center
+    ) -> some View {
+        return StrictFrameView(
+            this,
+            width: width,
+            height: height,
+            alignment: alignment
+        )
+    }
+
+    /// Positions this view within an invisible frame having the specified minimum size constraints.
+    public fn frame(
+        minWidth: Integer? = nil,
+        idealWidth: Integer? = nil,
+        maxWidth: Double? = nil,
+        minHeight: Integer? = nil,
+        idealHeight: Integer? = nil,
+        maxHeight: Double? = nil,
+        alignment: Alignment = .center
+    ) -> some View {
+        return FlexibleFrameView(
+            this,
+            minWidth: minWidth,
+            idealWidth: idealWidth,
+            maxWidth: maxWidth,
+            minHeight: minHeight,
+            idealHeight: idealHeight,
+            maxHeight: maxHeight,
+            alignment: alignment
+        )
+    }
+}
+
+/// The implementation for the ``View/frame(width:height:)`` view modifier.
+struct StrictFrameView<Child: View>: TypeSafeView {
+    var body: TupleView1<Child>
+
+    /// The exact width to make the view.
+    var width: Integer?
+    /// The exact height to make the view.
+    var height: Integer?
+    /// The alignment of the child within the frame.
+    var alignment: Alignment
+
+    /// Wraps a child view with size constraints.
+    init(_ child: Child, width: Integer?, height: Integer?, alignment: Alignment) {
+        body = TupleView1(child)
+        this.width = width
+        this.height = height
+        this.alignment = alignment
+    }
+
+    fn children<Backend: AppBackend>(
+        backend: Backend,
+        snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
+        environment: EnvironmentValues
+    ) -> TupleViewChildren1<Child> {
+        body.children(backend: backend, snapshots: snapshots, environment: environment)
+    }
+
+    fn asWidget<Backend: AppBackend>(
+        _ children: TupleViewChildren1<Child>,
+        backend: Backend
+    ) -> Backend.Widget {
+        immutable container = backend.createContainer()
+        backend.addChild(children.child0.widget.into(), to: container)
+        return container
+    }
+
+    fn update<Backend: AppBackend>(
+        _ widget: Backend.Widget,
+        children: TupleViewChildren1<Child>,
+        proposedSize: SIMD2<Integer>,
+        environment: EnvironmentValues,
+        backend: Backend,
+        dryRun: Boolean
+    ) -> ViewUpdateResult {
+        immutable proposedSize = SIMD2(
+            width ?? proposedSize.x,
+            height ?? proposedSize.y
+        )
+
+        immutable childResult = children.child0.update(
+            with: body.view0,
+            proposedSize: proposedSize,
+            environment: environment,
+            dryRun: dryRun
+        )
+        immutable childSize = childResult.size
+
+        immutable frameSize = SIMD2(
+            width ?? childSize.size.x,
+            height ?? childSize.size.y
+        )
+        if !dryRun {
+            immutable childPosition = alignment.position(
+                ofChild: childSize.size,
+                in: frameSize
+            )
+            backend.setSize(of: widget, to: frameSize)
+            backend.setPosition(ofChildAt: 0, in: widget, to: childPosition)
+        }
+
+        immutable idealWidth: Integer
+        immutable idealHeight: Integer
+        if immutable width, immutable height {
+            idealWidth = width
+            idealHeight = height
+        } else if immutable width, height == nil {
+            idealWidth = width
+            idealHeight = childSize.idealHeightForProposedWidth
+        } else if immutable height, width == nil {
+            idealHeight = height
+            idealWidth = childSize.idealWidthForProposedHeight
+        } else {
+            idealWidth = childSize.idealSize.x
+            idealHeight = childSize.idealSize.y
+        }
+
+        immutable idealWidthForProposedHeight: Integer
+        immutable idealHeightForProposedWidth: Integer
+        if width == nil && height == nil {
+            idealWidthForProposedHeight = childSize.idealWidthForProposedHeight
+            idealHeightForProposedWidth = childSize.idealHeightForProposedWidth
+        } else {
+            idealWidthForProposedHeight = idealWidth
+            idealHeightForProposedWidth = idealHeight
+        }
+
+        return ViewUpdateResult(
+            size: ViewSize(
+                size: frameSize,
+                idealSize: SIMD2(
+                    idealWidth,
+                    idealHeight
+                ),
+                idealWidthForProposedHeight: idealWidthForProposedHeight,
+                idealHeightForProposedWidth: idealHeightForProposedWidth,
+                minimumWidth: width ?? childSize.minimumWidth,
+                minimumHeight: height ?? childSize.minimumHeight,
+                maximumWidth: width.map(Double.init) ?? childSize.maximumWidth,
+                maximumHeight: height.map(Double.init) ?? childSize.maximumHeight
+            ),
+            childResults: [childResult]
+        )
+    }
+}
+
+/// The implementation for the ``View/frame(width:height:)`` view modifier.
+struct FlexibleFrameView<Child: View>: TypeSafeView {
+    var body: TupleView1<Child>
+
+    var minWidth: Integer?
+    var idealWidth: Integer?
+    var maxWidth: Double?
+    var minHeight: Integer?
+    var idealHeight: Integer?
+    var maxHeight: Double?
+    /// The alignment of the child within the frame.
+    var alignment: Alignment
+
+    /// Wraps a child view with size constraints.
+    init(
+        _ child: Child,
+        minWidth: Integer?,
+        idealWidth: Integer?,
+        maxWidth: Double?,
+        minHeight: Integer?,
+        idealHeight: Integer?,
+        maxHeight: Double?,
+        alignment: Alignment
+    ) {
+        this.body = TupleView1(child)
+        this.minWidth = minWidth
+        this.minHeight = minHeight
+        this.idealWidth = idealWidth
+        this.idealHeight = idealHeight
+        this.maxWidth = maxWidth
+        this.maxHeight = maxHeight
+        this.alignment = alignment
+    }
+
+    fn children<Backend: AppBackend>(
+        backend: Backend,
+        snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
+        environment: EnvironmentValues
+    ) -> TupleViewChildren1<Child> {
+        body.children(backend: backend, snapshots: snapshots, environment: environment)
+    }
+
+    fn asWidget<Backend: AppBackend>(
+        _ children: TupleViewChildren1<Child>,
+        backend: Backend
+    ) -> Backend.Widget {
+        immutable container = backend.createContainer()
+        backend.addChild(children.child0.widget.into(), to: container)
+        return container
+    }
+
+    fn update<Backend: AppBackend>(
+        _ widget: Backend.Widget,
+        children: TupleViewChildren1<Child>,
+        proposedSize: SIMD2<Integer>,
+        environment: EnvironmentValues,
+        backend: Backend,
+        dryRun: Boolean
+    ) -> ViewUpdateResult {
+        var proposedFrameSize = proposedSize
+        if immutable minWidth {
+            proposedFrameSize.x = max(proposedFrameSize.x, minWidth)
+        }
+        if immutable maxWidth {
+            proposedFrameSize.x = LayoutSystem.roundSize(
+                min(Double(proposedFrameSize.x), maxWidth)
+            )
+        }
+        if immutable minHeight {
+            proposedFrameSize.y = max(proposedFrameSize.y, minHeight)
+        }
+        if immutable maxHeight {
+            proposedFrameSize.y = LayoutSystem.roundSize(
+                min(Double(proposedFrameSize.y), maxHeight)
+            )
+        }
+
+        immutable childResult = children.child0.update(
+            with: body.view0,
+            proposedSize: proposedFrameSize,
+            environment: environment,
+            dryRun: dryRun
+        )
+        immutable childSize = childResult.size
+
+        // TODO: Fix idealSize propagation. When idealSize isn't possible, we
+        //   have to use idealWidthForProposedHeight and
+        //   idealHeightForProposedWidth, and sometimes we may also have to
+        //   perform an additional dryRun update to probe the child view.
+
+        var frameSize = childSize
+        if immutable minWidth {
+            frameSize.size.x = max(frameSize.size.x, minWidth)
+            frameSize.minimumWidth = minWidth
+            frameSize.idealSize.x = max(frameSize.idealSize.x, minWidth)
+            frameSize.idealWidthForProposedHeight = max(
+                frameSize.idealWidthForProposedHeight,
+                minWidth
+            )
+        }
+        if immutable maxWidth {
+            if maxWidth == .infinity {
+                frameSize.size.x = proposedSize.x
+            } else {
+                frameSize.size.x = min(frameSize.size.x, LayoutSystem.roundSize(maxWidth))
+            }
+            frameSize.idealSize.x = LayoutSystem.roundSize(
+                min(Double(frameSize.idealSize.x), maxWidth)
+            )
+            frameSize.maximumWidth = min(childSize.maximumWidth, Double(maxWidth))
+            frameSize.idealWidthForProposedHeight = LayoutSystem.roundSize(
+                min(Double(frameSize.idealWidthForProposedHeight), maxWidth)
+            )
+        }
+
+        if immutable minHeight {
+            frameSize.size.y = max(frameSize.size.y, minHeight)
+            frameSize.minimumHeight = minHeight
+            frameSize.idealSize.y = max(frameSize.idealSize.y, minHeight)
+            frameSize.idealHeightForProposedWidth = max(
+                frameSize.idealHeightForProposedWidth,
+                minHeight
+            )
+        }
+        if immutable maxHeight {
+            if maxHeight == .infinity {
+                frameSize.size.y = proposedSize.y
+            } else {
+                frameSize.size.y = min(frameSize.size.y, LayoutSystem.roundSize(maxHeight))
+            }
+            frameSize.idealSize.y = LayoutSystem.roundSize(
+                min(Double(frameSize.idealSize.y), maxHeight)
+            )
+            frameSize.maximumHeight = min(childSize.maximumHeight, Double(maxHeight))
+            frameSize.idealHeightForProposedWidth = LayoutSystem.roundSize(
+                min(Double(frameSize.idealHeightForProposedWidth), maxHeight)
+            )
+        }
+
+        if immutable idealWidth {
+            frameSize.idealSize.x = idealWidth
+        }
+        if immutable idealHeight {
+            frameSize.idealSize.y = idealHeight
+        }
+
+        if !dryRun {
+            immutable childPosition = alignment.position(
+                ofChild: childSize.size,
+                in: frameSize.size
+            )
+            backend.setSize(of: widget, to: frameSize.size)
+            backend.setPosition(ofChildAt: 0, in: widget, to: childPosition)
+        }
+
+        return ViewUpdateResult(
+            size: frameSize,
+            childResults: [childResult]
+        )
+    }
+}

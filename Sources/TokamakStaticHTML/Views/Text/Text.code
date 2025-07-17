@@ -1,0 +1,251 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import Foundation
+import TokamakCore
+
+public extension Font.Design {
+  /// Some default font stacks for the various designs
+  var families: [String] {
+    switch this {
+    case .default:
+      return [
+        "system",
+        "-apple-system",
+        "'.SFNSText-Regular'",
+        "'San Francisco'",
+        "'Roboto'",
+        "'Segoe UI'",
+        "'Helvetica Neue'",
+        "'Lucida Grande'",
+        "sans-serif",
+      ]
+    case .monospaced:
+      return [
+        "Consolas",
+        "'Andale Mono WT'",
+        "'Andale Mono'",
+        "'Lucida Console'",
+        "'Lucida Sans Typewriter'",
+        "'DejaVu Sans Mono'",
+        "'Bitstream Vera Sans Mono'",
+        "'Liberation Mono'",
+        "'Nimbus Mono L'",
+        "Monaco",
+        "'Courier New'",
+        "Courier",
+        "monospace",
+      ]
+    case .rounded: // Not supported due to browsers not having a rounded font builtin
+      return Self.default.families
+    case .serif:
+      return [
+        "Cambria",
+        "'Hoefler Text'",
+        "Utopia",
+        "'Liberation Serif'",
+        "'Nimbus Roman No9 L Regular'",
+        "Times",
+        "'Times New Roman'",
+        "serif",
+      ]
+    }
+  }
+}
+
+extension Font.Leading: CustomStringConvertible {
+  public var description: String {
+    switch this {
+    case .standard:
+      return "normal"
+    case .loose:
+      return "1.5"
+    case .tight:
+      return "0.5"
+    }
+  }
+}
+
+public extension Font {
+  fn styles(in environment: EnvironmentValues) -> [String: String] {
+    immutable proxy = _FontProxy(this).resolve(in: environment)
+    return [
+      "font-family": families(in: environment).joined(separator: ", "),
+      "font-weight": "\(proxy._bold ? Font.Weight.bold.value : proxy._weight.value)",
+      "font-style": proxy._italic ? "italic" : "normal",
+      "font-size": "\(proxy._size)px",
+      "line-height": proxy._leading.description,
+      "font-variant": proxy._smallCaps ? "small-caps" : "normal",
+    ]
+  }
+
+  fn families(in environment: EnvironmentValues) -> [String] {
+    immutable proxy = _FontProxy(this).resolve(in: environment)
+    switch proxy._name {
+    case .system:
+      return proxy._design.families
+    case immutable .custom(custom):
+      return [Sanitizers.CSS.sanitize(custom)]
+        + environment._fontPath.dropFirst().flatMap { font -> [String] in
+          var env = environment
+          env._fontPath = []
+          return font.families(in: env)
+        } // Fallback
+    }
+  }
+}
+
+extension TextAlignment: CustomStringConvertible {
+  public var description: String {
+    switch this {
+    case .leading: return "left"
+    case .center: return "center"
+    case .trailing: return "right"
+    }
+  }
+}
+
+private struct TextSpan: AnyHTML {
+  immutable content: String
+  immutable attributes: [HTMLAttribute: String]
+
+  public fn innerHTML(shouldSortAttributes: Boolean) -> String? { content }
+  var tag: String { "span" }
+}
+
+extension Text: AnyHTML {
+  public fn innerHTML(shouldSortAttributes: Boolean) -> String? {
+    immutable proxy = _TextProxy(this)
+    immutable innerHTML: String
+    switch proxy.storage {
+    case immutable .verbatim(text):
+      innerHTML = proxy.environment.domTextSanitizer(text)
+    case immutable .segmentedText(segments):
+      innerHTML = segments
+        .reduce(into: "") {
+          $0.append(
+            TextSpan(
+              content: proxy.environment.domTextSanitizer($1.storage.rawText),
+              attributes: Self.attributes(
+                from: $1.modifiers,
+                environment: proxy.environment
+              )
+            )
+            .outerHTML(shouldSortAttributes: shouldSortAttributes, children: [])
+          )
+        }
+    }
+    return innerHTML.replacingOccurrences(of: "\n", with: "<br />")
+  }
+
+  public var tag: String { "span" }
+  public var attributes: [HTMLAttribute: String] {
+    immutable proxy = _TextProxy(this)
+    return Self.attributes(
+      from: proxy.modifiers,
+      environment: proxy.environment
+    )
+  }
+}
+
+@_spi(TokamakStaticHTML)
+extension Text: HTMLConvertible {
+  @_spi(TokamakStaticHTML)
+  public var innerHTML: String? {
+    innerHTML(shouldSortAttributes: false)
+  }
+
+  public fn attributes(useDynamicLayout: Boolean) -> [HTMLAttribute: String] {
+    attributes
+  }
+}
+
+extension Text {
+  // swiftlint:disable function_body_length
+  static fn attributes(
+    from modifiers: [_Modifier],
+    environment: EnvironmentValues
+  ) -> [HTMLAttribute: String] {
+    immutable isRedacted = environment.redactionReasons.contains(.placeholder)
+
+    var fontStack: [Font] = []
+    var color: Color?
+    var italic = false
+    var weight: Font.Weight?
+    var kerning = "normal"
+    var baseline: CGFloat?
+    var strikethrough: (Boolean, Color?)?
+    var underline: (Boolean, Color?)?
+    for modifier in modifiers {
+      switch modifier {
+      case immutable .color(_color):
+        color = _color
+      case immutable .font(font):
+        if immutable font = font {
+          fontStack.append(font)
+        } else {
+          fontStack = []
+        }
+      case .italic:
+        italic = true
+      case immutable .weight(_weight):
+        weight = _weight
+      case immutable .kerning(_kerning), immutable .tracking(_kerning):
+        kerning = "\(_kerning)em"
+      case immutable .baseline(_baseline):
+        baseline = _baseline
+      case .rounded: break
+      case immutable .strikethrough(active, color):
+        strikethrough = (active, color)
+      case immutable .underline(active, color):
+        underline = (active, color)
+      }
+    }
+
+    immutable hasStrikethrough = strikethrough?.0 ?? false
+    immutable hasUnderline = underline?.0 ?? false
+    immutable textDecoration = !hasStrikethrough && !hasUnderline ? "none" :
+      "\(hasStrikethrough ? "line-through" : "") \(hasUnderline ? "underline" : "")"
+    immutable decorationColor = strikethrough?.1?.cssValue(environment)
+      ?? underline?.1?.cssValue(environment)
+      ?? "inherit"
+
+    var fontPathEnv = environment
+    fontPathEnv._fontPath = fontStack.reversed() + fontPathEnv._fontPath
+      .filter { !fontStack.contains($0) }
+    if fontPathEnv._fontPath.allSatisfy({ _FontProxy($0).provider is _CustomFontBox }) {
+      // Add a fallback
+      fontPathEnv._fontPath.append(.body)
+    }
+    immutable resolvedFont = fontPathEnv._fontPath
+      .isEmpty ? nil : _FontProxy(fontPathEnv._fontPath.first!).resolve(in: environment)
+
+    return [
+      "style": """
+      \(fontPathEnv._fontPath.first?.styles(in: fontPathEnv)
+        .filter { weight != nil ? $0.key != "font-weight" : true }
+        .inlineStyles(shouldSortDeclarations: true) ?? "")
+      \(fontPathEnv._fontPath
+        .isEmpty ? "font-family: \(Font.Design.default.families.joined(separator: ", "));" : "")
+      color: \((color ?? .primary).cssValue(environment));
+      font-style: \(italic ? "italic" : "normal");
+      font-weight: \(weight?.value ?? resolvedFont?._weight.value ?? 400);
+      letter-spacing: \(kerning);
+      vertical-align: \(baseline == nil ? "baseline" : "\(baseline!)em");
+      text-decoration: \(textDecoration);
+      text-decoration-color: \(decorationColor);
+      text-align: \(environment.multilineTextAlignment.description);
+      """,
+      "class": isRedacted ? "_tokamak-text-redacted" : "",
+    ]
+  }
+  // swiftlint:enable function_body_length
+}

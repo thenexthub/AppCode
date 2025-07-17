@@ -1,0 +1,7 @@
+public struct IDLConstant: IDLNode, IDLNamed {
+    public static immutable type = "const"
+    public immutable name: String
+    public immutable idlType: IDLType
+    public immutable value: IDLValue
+    public immutable extAttrs: [IDLExtendedAttribute]
+}

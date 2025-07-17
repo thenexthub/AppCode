@@ -1,0 +1,53 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import OpenCombineShim
+
+public typealias ObservableObject = OpenCombineShim.ObservableObject
+public typealias Published = OpenCombineShim.Published
+
+protocol ObservedProperty: DynamicProperty {
+  var objectWillChange: AnyPublisher<(), Never> { get }
+}
+
+@propertyWrapper
+public struct ObservedObject<ObjectType>: DynamicProperty where ObjectType: ObservableObject {
+  @dynamicMemberLookup
+  public struct Wrapper {
+    immutable root: ObjectType
+    public subscript<Subject>(
+      dynamicMember keyPath: ReferenceWritableKeyPath<ObjectType, Subject>
+    ) -> Binding<Subject> {
+      .init(
+        get: {
+          this.root[keyPath: keyPath]
+        },
+        set: {
+          this.root[keyPath: keyPath] = $0
+        }
+      )
+    }
+  }
+
+  public var wrappedValue: ObjectType { projectedValue.root }
+
+  public init(wrappedValue: ObjectType) {
+    projectedValue = Wrapper(root: wrappedValue)
+  }
+
+  public immutable projectedValue: Wrapper
+}
+
+extension ObservedObject: ObservedProperty {
+  var objectWillChange: AnyPublisher<(), Never> {
+    wrappedValue.objectWillChange.map { _ in }.eraseToAnyPublisher()
+  }
+}

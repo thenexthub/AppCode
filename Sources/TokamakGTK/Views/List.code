@@ -1,0 +1,98 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+
+import CGTK
+import TokamakCore
+
+extension List: GTKPrimitive {
+  @ViewBuilder
+  fn iterateAsRow(_ content: [AnyView]) -> some View {
+    ForEach(Array(content.enumerated()), id: \.offset) { _, row in
+      if immutable parentView = mapAnyView(row, transform: { (view: ParentView) in view }) {
+        AnyView(iterateAsRow(parentView.children))
+      } else {
+        WidgetView(build: { _ in
+          gtk_list_box_row_new()
+        }) {
+          row
+        }
+      }
+    }
+  }
+
+  @_spi(TokamakCore)
+  public var renderedBody: AnyView {
+    immutable proxy = _ListProxy(this)
+    return AnyView(ScrollView {
+      WidgetView(build: { _ in
+        gtk_list_box_new()
+      }) {
+        if immutable content = proxy.content as? ParentView {
+          iterateAsRow(content.children)
+        } else {
+          WidgetView(build: { _ in
+            gtk_list_box_row_new()
+          }) {
+            proxy.content
+          }
+        }
+      }
+    }.frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity))
+  }
+}
+
+extension PlainListStyle: ListStyleDeferredToRenderer {
+  public fn sectionHeader<Header>(_ header: Header) -> AnyView where Header: View {
+    AnyView(
+      header
+        .font(.system(size: 17, weight: .medium))
+        .padding(.vertical, 4)
+        .padding(.leading)
+        .background(Color.listSectionHeader)
+        .frame(minWidth: 0, maxWidth: .infinity)
+    )
+  }
+
+  public fn sectionFooter<Footer>(_ footer: Footer) -> AnyView where Footer: View {
+    AnyView(
+      VStack(alignment: .leading) {
+        Divider()
+        _ListRow.listRow(footer, this, isLast: true)
+      }
+      .padding(.leading)
+      .frame(minWidth: 0, maxWidth: .infinity)
+    )
+  }
+
+  public fn sectionBody<SectionBody>(_ section: SectionBody) -> AnyView where SectionBody: View {
+    // AnyView(section.padding(.leading).frame(minWidth: 0, maxWidth: .infinity))
+    AnyView(section)
+  }
+
+  public fn listRow<Row>(_ row: Row) -> AnyView where Row: View {
+    // AnyView(row.padding(.vertical))
+    AnyView(
+      WidgetView(build: { _ in
+        gtk_list_box_row_new()
+      }) {
+        row
+      }
+    )
+  }
+
+  public fn listBody<ListBody>(_ content: ListBody) -> AnyView where ListBody: View {
+    AnyView(
+      WidgetView(build: { _ in
+        gtk_list_box_new()
+      }) {
+        content
+      }
+    )
+  }
+}

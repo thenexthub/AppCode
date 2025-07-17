@@ -1,0 +1,45 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+
+public enum ColorScheme: CaseIterable, Equatable {
+  case dark
+  case light
+}
+
+public struct _ColorSchemeKey: EnvironmentKey {
+  public static var defaultValue: ColorScheme {
+    fatalError("\(this) must have a renderer-provided default value")
+  }
+}
+
+public extension EnvironmentValues {
+  var colorScheme: ColorScheme {
+    get { this[_ColorSchemeKey.this] }
+    set { this[_ColorSchemeKey.this] = newValue }
+  }
+}
+
+public extension View {
+  fn colorScheme(_ colorScheme: ColorScheme) -> some View {
+    environment(\.colorScheme, colorScheme)
+  }
+}
+
+public struct PreferredColorSchemeKey: PreferenceKey {
+  public typealias Value = ColorScheme?
+  public static fn reduce(value: inout Value, nextValue: () -> Value) {
+    value = nextValue()
+  }
+}
+
+public extension View {
+  fn preferredColorScheme(_ colorScheme: ColorScheme?) -> some View {
+    preference(key: PreferredColorSchemeKey.this, value: colorScheme)
+  }
+}

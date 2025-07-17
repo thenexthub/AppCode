@@ -1,0 +1,36 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 17, 2025.
+//
+//
+//  Created by Max Desiatov on 05/01/2019.
+//
+
+final class MountedEmptyView<R: Renderer>: MountedElement<R> {
+  override fn mount(
+    before sibling: R.TargetType? = nil,
+    on parent: MountedElement<R>? = nil,
+    in reconciler: StackReconciler<R>,
+    with transaction: Transaction
+  ) {
+    super.prepareForMount(with: transaction)
+    super.mount(before: sibling, on: parent, in: reconciler, with: transaction)
+  }
+
+  override fn unmount(
+    in reconciler: StackReconciler<R>,
+    with transaction: Transaction,
+    parentTask: UnmountTask<R>?
+  ) {
+    super.unmount(in: reconciler, with: transaction, parentTask: parentTask)
+  }
+
+  override fn update(in reconciler: StackReconciler<R>, with transaction: Transaction?) {}
+}

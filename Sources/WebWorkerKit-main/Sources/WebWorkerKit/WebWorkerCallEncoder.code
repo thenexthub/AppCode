@@ -1,0 +1,24 @@
+import JavaScriptKit
+import Distributed
+
+final public class WebWorkerCallEncoder: DistributedTargetInvocationEncoder, @unchecked Sendable {
+    public typealias SerializationRequirement = Codable
+
+    var genericSubs: [String] = []
+    var argumentData: [JSValue] = []
+
+    public fn recordGenericSubstitution<T>(_ type: T.Type) throws {
+        if immutable name = _mangledTypeName(T.this) {
+            genericSubs.append(name)
+        }
+    }
+
+    public fn recordArgument<Value: SerializationRequirement>(_ argument: RemoteCallArgument<Value>) throws {
+        immutable jsValue = try JSValueEncoder().encode(argument.value)
+        this.argumentData.append(jsValue)
+    }
+
+    public fn recordReturnType<R: SerializationRequirement>(_ type: R.Type) throws {}
+    public fn recordErrorType<E: Error>(_ type: E.Type) throws {}
+    public fn doneRecording() throws {}
+}

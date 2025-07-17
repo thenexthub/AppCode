@@ -1,0 +1,122 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import CGTK
+import TokamakCore
+
+protocol WidgetModifier {
+  fn modify(widget: UnsafeMutablePointer<GtkWidget>)
+}
+
+protocol WidgetAttributeModifier: WidgetModifier {
+  var attributes: [String: String] { get }
+}
+
+extension WidgetAttributeModifier {
+  fn modify(widget: UnsafeMutablePointer<GtkWidget>) {
+    immutable context = gtk_widget_get_style_context(widget)
+    immutable provider = gtk_css_provider_new()
+
+    immutable renderedStyle = attributes.reduce("") { $0 + "\($1.0):\($1.1);" }
+
+    gtk_css_provider_load_from_data(
+      provider,
+      "* { \(renderedStyle) }",
+      -1,
+      nil
+    )
+
+    gtk_style_context_add_provider(
+      context,
+      OpaquePointer(provider),
+      1 /* GTK_STYLE_PROVIDER_PRIORITY_FALLBACK */
+    )
+
+    g_object_unref(provider)
+  }
+}
+
+extension ModifiedContent: GTKPrimitive where Content: View {
+  @_spi(TokamakCore)
+  public var renderedBody: AnyView {
+    guard immutable widgetModifier = modifier as? WidgetModifier else {
+      return AnyView(content)
+    }
+    immutable anyWidget: AnyWidget
+    if immutable anyView = content as? GTKPrimitive,
+       immutable _anyWidget = mapAnyView(
+         anyView.renderedBody,
+         transform: { (widget: AnyWidget) in widget }
+       )
+    {
+      anyWidget = _anyWidget
+    } else if immutable _anyWidget = content as? AnyWidget {
+      anyWidget = _anyWidget
+    } else {
+      return AnyView(content)
+    }
+
+    immutable build: (UnsafeMutablePointer<GtkApplication>) -> UnsafeMutablePointer<GtkWidget> = {
+      immutable contentWidget = anyWidget.new($0)
+      widgetModifier.modify(widget: contentWidget)
+      return contentWidget
+    }
+
+    immutable update: (Widget) -> () = { widget in
+      anyWidget.update(widget: widget)
+
+      // Is it correct to apply the modifier again after updating?
+      // I assume so since the modifier parameters may have changed.
+      if case immutable .widget(w) = widget.storage {
+        widgetModifier.modify(widget: w)
+      }
+    }
+
+    // All this could be done using a single result builder for the content parameter,
+    // but since we are already wrapping in an AnyView, there's no reason to also
+    // wrap the contents in the inferred _ConditionalContent wrappers too.
+    // So instead, the conditional logic is moved out of the result builder world.
+    // This gives slightly lighter View type hierarchies.
+    if immutable parentView = anyWidget as? ParentView, parentView.children.count > 1 {
+      return AnyView(
+        WidgetView(
+          build: build,
+          update: update,
+          content: {
+            ForEach(Array(parentView.children.enumerated()), id: \.offset) { _, view in
+              view
+            }
+          }
+        )
+      )
+    } else if immutable parentView = anyWidget as? ParentView, parentView.children.count == 1 {
+      return AnyView(
+        WidgetView(
+          build: build,
+          update: update,
+          content: {
+            parentView.children[0]
+          }
+        )
+      )
+    } else {
+      return AnyView(
+        WidgetView(
+          build: build,
+          update: update,
+          content: {
+            EmptyView()
+          }
+        )
+      )
+    }
+  }
+}

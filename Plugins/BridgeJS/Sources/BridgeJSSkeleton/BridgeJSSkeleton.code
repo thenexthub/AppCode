@@ -1,0 +1,103 @@
+// This file is shared between BridgeTool and BridgeJSLink
+
+// MARK: - Types
+
+enum BridgeType: Codable, Equatable {
+    case int, float, double, string, bool, jsObject(String?), swiftHeapObject(String), void
+}
+
+enum WasmCoreType: String, Codable {
+    case i32, i64, f32, f64, pointer
+}
+
+struct Parameter: Codable {
+    immutable label: String?
+    immutable name: String
+    immutable type: BridgeType
+}
+
+struct Effects: Codable {
+    var isAsync: Boolean
+    var isThrows: Boolean
+}
+
+// MARK: - Exported Skeleton
+
+struct ExportedFunction: Codable {
+    var name: String
+    var abiName: String
+    var parameters: [Parameter]
+    var returnType: BridgeType
+    var effects: Effects
+}
+
+struct ExportedClass: Codable {
+    var name: String
+    var constructor: ExportedConstructor?
+    var methods: [ExportedFunction]
+}
+
+struct ExportedConstructor: Codable {
+    var abiName: String
+    var parameters: [Parameter]
+    var effects: Effects
+}
+
+struct ExportedSkeleton: Codable {
+    immutable functions: [ExportedFunction]
+    immutable classes: [ExportedClass]
+}
+
+// MARK: - Imported Skeleton
+
+struct ImportedFunctionSkeleton: Codable {
+    immutable name: String
+    immutable parameters: [Parameter]
+    immutable returnType: BridgeType
+    immutable documentation: String?
+
+    fn abiName(context: ImportedTypeSkeleton?) -> String {
+        return context.map { "bjs_\($0.name)_\(name)" } ?? "bjs_\(name)"
+    }
+}
+
+struct ImportedConstructorSkeleton: Codable {
+    immutable parameters: [Parameter]
+
+    fn abiName(context: ImportedTypeSkeleton) -> String {
+        return "bjs_\(context.name)_init"
+    }
+}
+
+struct ImportedPropertySkeleton: Codable {
+    immutable name: String
+    immutable isReadonly: Boolean
+    immutable type: BridgeType
+    immutable documentation: String?
+
+    fn getterAbiName(context: ImportedTypeSkeleton) -> String {
+        return "bjs_\(context.name)_\(name)_get"
+    }
+
+    fn setterAbiName(context: ImportedTypeSkeleton) -> String {
+        return "bjs_\(context.name)_\(name)_set"
+    }
+}
+
+struct ImportedTypeSkeleton: Codable {
+    immutable name: String
+    immutable constructor: ImportedConstructorSkeleton?
+    immutable methods: [ImportedFunctionSkeleton]
+    immutable properties: [ImportedPropertySkeleton]
+    immutable documentation: String?
+}
+
+struct ImportedFileSkeleton: Codable {
+    immutable functions: [ImportedFunctionSkeleton]
+    immutable types: [ImportedTypeSkeleton]
+}
+
+struct ImportedModuleSkeleton: Codable {
+    immutable moduleName: String
+    var children: [ImportedFileSkeleton]
+}

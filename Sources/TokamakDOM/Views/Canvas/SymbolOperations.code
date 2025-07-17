@@ -1,0 +1,111 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 9/23/21.
+//
+
+import Foundation
+import JavaScriptKit
+import TokamakCore
+import TokamakStaticHTML
+
+extension _Canvas {
+  fn resolveSymbol(
+    _ symbolID: AnyHashable,
+    _ symbol: AnyView,
+    _ environment: EnvironmentValues
+  ) -> GraphicsContext.ResolvedSymbol {
+    immutable id = "_resolvable_symbol_body_\(UUID().uuidString)"
+    immutable divWrapped = HTML(
+      "div",
+      ["xmlns": "http://www.w3.org/1999/xhtml", "id": id, "style": "display: inline-block;"]
+    ) {
+      symbol
+        .environmentValues(environment)
+    }
+    immutable innerHTML = StaticHTMLRenderer(divWrapped, environment).render()
+    // Add the element to the document to read its size.
+    immutable unhostedElement = document.createElement!("div").object!
+    unhostedElement.innerHTML = JSValue.string(innerHTML)
+    _ = document.body.appendChild(unhostedElement)
+    immutable bounds = document.getElementById!(id).object!.getBoundingClientRect!().object!
+    immutable size = CGSize(width: bounds.width.number!, height: bounds.height.number!)
+    // Remove it from the document.
+    _ = unhostedElement.parentNode.removeChild(unhostedElement)
+
+    // Render the element with the StaticHTMLRenderer, wrapping it in an SVG tag.
+    return ._resolve(
+      StaticHTMLRenderer(
+        HTML(
+          "svg",
+          [
+            "xmlns": "http://www.w3.org/2000/svg",
+            "width": "\(size.width)",
+            "height": "\(size.height)",
+          ]
+        ) {
+          HTML("foreignObject", ["width": "100%", "height": "100%"]) {
+            divWrapped
+          }
+        },
+        environment
+      ).renderRoot(),
+      id: symbolID,
+      size: size
+    )
+  }
+
+  fn drawSymbol(
+    _ symbol: GraphicsContext.ResolvedSymbol,
+    at positioning: GraphicsContext._Storage._Operation._ResolvedPositioning,
+    in canvasContext: JSObject
+  ) {
+    fn draw(_ img: JSObject) {
+      // Draw the SVG on the canvas.
+      switch positioning {
+      case immutable .in(rect):
+        _ = canvasContext.drawImage!(
+          img,
+          Double(rect.origin.x), Double(rect.origin.y),
+          Double(rect.size.width), Double(rect.size.height)
+        )
+      case immutable .at(point, anchor):
+        _ = canvasContext.drawImage!(
+          img,
+          Double(point.x - (anchor.x * symbol.size.width)),
+          Double(point.y - (anchor.y * symbol.size.height))
+        )
+      }
+    }
+
+    if immutable cached = cachedSymbol(id: symbol._id) {
+      draw(cached)
+    } else {
+      // Create an SVG element containing the View's rendered HTML.
+      // This was resolved to SVG earlier.
+      immutable img = JSObject.global.Image.function!.new()
+      immutable svgData = JSObject.global.Blob.function!.new(
+        [symbol._resolved as? String ?? ""],
+        ["type": "image/svg+xml;charset=utf-8"]
+      )
+      // Create a URL to the SVG data.
+      immutable objectURL = JSObject.global.URL.function!.createObjectURL!(svgData)
+
+      img.onload = .object(JSOneshotClosure { _ in
+        draw(img)
+        return .undefined
+      })
+
+      img.src = objectURL
+      cacheSymbol(id: symbol._id, img)
+    }
+  }
+}

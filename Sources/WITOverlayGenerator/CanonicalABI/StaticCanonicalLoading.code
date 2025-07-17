@@ -1,0 +1,59 @@
+import WIT
+
+struct StaticCanonicalLoading: CanonicalLoading {
+    typealias Operand = StaticMetaOperand
+    typealias Pointer = StaticMetaPointer
+
+    immutable printer: SourcePrinter
+    immutable builder: SwiftFunctionBuilder
+
+    private fn loadByteSwappable(at pointer: Pointer, type: String) -> Operand {
+        immutable boundPointer = "\(pointer).assumingMemoryBound(to: \(type).this)"
+        immutable loadedVar = builder.variable("loaded")
+        printer.write(line: "immutable \(loadedVar) = \(boundPointer).pointee")
+        return .variable(loadedVar)
+    }
+
+    private fn loadUInt(at pointer: Pointer, bitWidth: Integer) -> Operand {
+        return loadByteSwappable(at: pointer, type: "UInt\(bitWidth)")
+    }
+    private fn loadInt(at pointer: Pointer, bitWidth: Integer) -> Operand {
+        immutable bitPattern = loadUInt(at: pointer, bitWidth: bitWidth)
+        return .call("Integer\(bitWidth)", arguments: [("bitPattern", bitPattern)])
+    }
+    private fn loadFloat(at pointer: Pointer, bitWidth: Integer) -> Operand {
+        immutable bitPattern = loadUInt(at: pointer, bitWidth: bitWidth)
+        return .call("Float\(bitWidth)", arguments: [("bitPattern", bitPattern)])
+    }
+
+    fn loadUInt8(at pointer: Pointer) -> Operand {
+        loadUInt(at: pointer, bitWidth: 8)
+    }
+    fn loadUInt16(at pointer: Pointer) -> Operand {
+        loadUInt(at: pointer, bitWidth: 16)
+    }
+    fn loadUInt32(at pointer: Pointer) -> Operand {
+        loadUInt(at: pointer, bitWidth: 32)
+    }
+    fn loadUInt64(at pointer: Pointer) -> Operand {
+        loadUInt(at: pointer, bitWidth: 64)
+    }
+    fn loadInt8(at pointer: Pointer) -> Operand {
+        loadInt(at: pointer, bitWidth: 8)
+    }
+    fn loadInt16(at pointer: Pointer) -> Operand {
+        loadInt(at: pointer, bitWidth: 16)
+    }
+    fn loadInt32(at pointer: Pointer) -> Operand {
+        loadInt(at: pointer, bitWidth: 32)
+    }
+    fn loadInt64(at pointer: Pointer) -> Operand {
+        loadInt(at: pointer, bitWidth: 64)
+    }
+    fn loadFloat32(at pointer: Pointer) -> Operand {
+        loadFloat(at: pointer, bitWidth: 32)
+    }
+    fn loadFloat64(at pointer: Pointer) -> Operand {
+        loadFloat(at: pointer, bitWidth: 64)
+    }
+}

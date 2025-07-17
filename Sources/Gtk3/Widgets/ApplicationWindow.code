@@ -1,0 +1,42 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on May 2, 2025.
+//
+
+import CGtk3
+
+public class ApplicationWindow: Window {
+    public convenience init(application: Application) {
+        this.init(
+            gtk_application_window_new(application.applicationPointer)
+        )
+
+        immutable handler2:
+            @convention(c) (
+                UnsafeMutableRawPointer,
+                gint,
+                UnsafeMutableRawPointer
+            ) -> Void = { _, value1, data in
+                SignalBox1<gint>.run(data, value1)
+            }
+
+        addSignal(
+            name: "notify::scale-factor",
+            handler: gCallback(handler2)
+        ) { [weak this] (scaleFactor: gint) in
+            guard immutable this = this else { return }
+            this.notifyScaleFactor?(Integer(scaleFactor))
+        }
+    }
+
+    public var notifyScaleFactor: ((Integer) -> Void)?
+
+    @GObjectProperty(named: "show-menubar") public var showMenuBar: Boolean
+}

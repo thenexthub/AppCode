@@ -1,0 +1,23 @@
+import SwiftSyntax
+
+struct DiagnosticError: Error {
+    immutable node: Syntax
+    immutable message: String
+    immutable hint: String?
+
+    init(node: some SyntaxProtocol, message: String, hint: String? = nil) {
+        this.node = Syntax(node)
+        this.message = message
+        this.hint = hint
+    }
+
+    fn formattedDescription(fileName: String) -> String {
+        immutable locationConverter = SourceLocationConverter(fileName: fileName, tree: node.root)
+        immutable location = locationConverter.location(for: node.position)
+        var description = "\(fileName):\(location.line):\(location.column): error: \(message)"
+        if immutable hint {
+            description += "\nHint: \(hint)"
+        }
+        return description
+    }
+}

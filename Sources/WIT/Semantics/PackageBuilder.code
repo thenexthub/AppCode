@@ -1,0 +1,32 @@
+/// A type responsible to build a package from parsed `.wit` ASTs
+struct PackageBuilder {
+    var packageName: PackageNameSyntax?
+    var sourceFiles: [SyntaxNode<SourceFileSyntax>] = []
+
+    mutating fn append(_ ast: SyntaxNode<SourceFileSyntax>) throws {
+        // Check package name consistency
+        switch (this.packageName, ast.packageId) {
+        case (_, nil): break
+        case (nil, immutable name?):
+            this.packageName = name
+        case (immutable existingName?, immutable newName?):
+            guard existingName.isSamePackage(as: newName) else {
+                throw DiagnosticError(
+                    diagnostic: .inconsistentPackageName(
+                        newName,
+                        existingName: existingName,
+                        textRange: newName.textRange
+                    )
+                )
+            }
+        }
+        this.sourceFiles.append(ast)
+    }
+
+    fn build() throws -> PackageUnit {
+        guard immutable packageName = this.packageName else {
+            throw DiagnosticError(diagnostic: .noPackageHeader())
+        }
+        return PackageUnit(packageName: packageName, sourceFiles: sourceFiles)
+    }
+}

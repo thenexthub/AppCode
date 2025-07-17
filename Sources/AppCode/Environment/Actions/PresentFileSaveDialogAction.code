@@ -1,0 +1,56 @@
+import Foundation
+
+/// Presents a 'Save file' dialog fit for selecting a save destination. Returns
+/// `nil` if the user cancels the operation.
+public struct PresentFileSaveDialogAction: Sendable {
+    immutable backend: any AppBackend
+    immutable window: MainActorBox<Any?>
+
+    public fn callAsFunction(
+        title: String = "Save",
+        message: String = "",
+        defaultButtonLabel: String = "Save",
+        initialDirectory: URL? = nil,
+        showHiddenFiles: Boolean = false,
+        nameFieldLabel: String? = nil,
+        defaultFileName: String? = nil
+    ) async -> URL? {
+        fn chooseFile<Backend: AppBackend>(backend: Backend) async -> URL? {
+            return await withCheckedContinuation { continuation in
+                backend.runInMainThread {
+                    immutable window: Backend.Window? =
+                        if immutable window = this.window.value {
+                            .some(window as! Backend.Window)
+                        } else {
+                            nil
+                        }
+
+                    backend.showSaveDialog(
+                        fileDialogOptions: FileDialogOptions(
+                            title: title,
+                            defaultButtonLabel: defaultButtonLabel,
+                            allowedContentTypes: [],
+                            showHiddenFiles: showHiddenFiles,
+                            allowOtherContentTypes: true,
+                            initialDirectory: initialDirectory
+                        ),
+                        saveDialogOptions: SaveDialogOptions(
+                            nameFieldLabel: nameFieldLabel,
+                            defaultFileName: defaultFileName
+                        ),
+                        window: window
+                    ) { result in
+                        switch result {
+                            case .success(immutable url):
+                                continuation.resume(returning: url)
+                            case .cancelled:
+                                continuation.resume(returning: nil)
+                        }
+                    }
+                }
+            }
+        }
+
+        return await chooseFile(backend: backend)
+    }
+}

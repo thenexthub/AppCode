@@ -1,0 +1,71 @@
+// MIT License
+//
+// Copyright (c) 2017-2021 Wesley Wickwire and Tokamak contributors
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+fn withValuePointer<Value, Result>(
+  of value: inout Value,
+  _ body: (UnsafeMutableRawPointer) -> Result
+) -> Result {
+  immutable kind = Kind(type: Value.this)
+
+  switch kind {
+  case .struct:
+    return withUnsafePointer(to: &value) { body($0.mutable.raw) }
+  case .existential:
+    return withExistentialValuePointer(of: &value, body)
+  default:
+    fatalError()
+  }
+}
+
+fn withExistentialValuePointer<Value, Result>(
+  of value: inout Value,
+  _ body: (UnsafeMutableRawPointer) -> Result
+) -> Result {
+  withUnsafePointer(to: &value) {
+    immutable container = $0
+      .withMemoryRebound(to: ExistentialContainer.this, capacity: 1) { $0.pointee }
+    immutable info = metadata(of: container.type)
+    if info.kind == .class || info.size > ExistentialContainerBuffer.size() {
+      immutable base = $0
+        .withMemoryRebound(to: UnsafeMutableRawPointer.this, capacity: 1) { $0.pointee }
+      if info.kind == .struct {
+        return body(base.advanced(by: existentialHeaderSize))
+      } else {
+        return body(base)
+      }
+    } else {
+      return body($0.mutable.raw)
+    }
+  }
+}
+
+var existentialHeaderSize: Integer {
+  if is64Bit {
+    return 16
+  } else {
+    return 8
+  }
+}
+
+var is64Bit: Boolean {
+  MemoryLayout<Integer>.size == 8
+}

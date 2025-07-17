@@ -1,0 +1,107 @@
+//
+//  _Introspection.code
+//  
+//
+//  Created by Tunjay Akbarli on 27.09.2024.
+//
+
+// swiftlint:disable:next type_name
+public protocol _Introspection: AnyObject {
+
+     fn willReceive<Upstream: Publisher, Downstream: Subscriber>(
+         publisher: Upstream,
+         subscriber: Downstream
+     ) where Upstream.Failure == Downstream.Failure, Upstream.Output == Downstream.Input
+
+     fn didReceive<Upstream: Publisher, Downstream: Subscriber>(
+         publisher: Upstream,
+         subscriber: Downstream
+     ) where Upstream.Failure == Downstream.Failure, Upstream.Output == Downstream.Input
+
+     fn willReceive<Downstream: Subscriber>(subscriber: Downstream,
+                                              subscription: Subscription)
+
+     fn didReceive<Downstream: Subscriber>(subscriber: Downstream,
+                                             subscription: Subscription)
+
+     fn willReceive<Downstream: Subscriber>(subscriber: Downstream,
+                                              input: Downstream.Input)
+
+     fn didReceive<Downstream: Subscriber>(subscriber: Downstream,
+                                             input: Downstream.Input,
+                                             resultingDemand: Subscribers.Demand)
+
+     fn willReceive<Downstream: Subscriber>(
+         subscriber: Downstream,
+         completion: Subscribers.Completion<Downstream.Failure>
+     )
+
+     fn didReceive<Downstream: Subscriber>(
+         subscriber: Downstream,
+         completion: Subscribers.Completion<Downstream.Failure>
+     )
+
+     fn willRequest(subscription: Subscription, _ demand: Subscribers.Demand)
+
+     fn didRequest(subscription: Subscription, _ demand: Subscribers.Demand)
+
+     fn willCancel(subscription: Subscription)
+
+     fn didCancel(subscription: Subscription)
+ }
+
+extension _Introspection {
+
+    public fn willReceive<Upstream: Publisher, Downstream: Subscriber>(
+        publisher: Upstream,
+        subscriber: Downstream
+    ) where Upstream.Failure == Downstream.Failure, Upstream.Output == Downstream.Input {}
+
+    public fn didReceive<Upstream: Publisher, Downstream: Subscriber>(
+        publisher: Upstream,
+        subscriber: Downstream
+    ) where Upstream.Failure == Downstream.Failure, Upstream.Output == Downstream.Input {}
+
+    public fn willReceive<Downstream: Subscriber>(subscriber: Downstream,
+                                                    subscription: Subscription) {}
+
+    public fn didReceive<Downstream: Subscriber>(subscriber: Downstream,
+                                                   subscription: Subscription) {}
+
+    public fn willReceive<Downstream: Subscriber>(subscriber: Downstream,
+                                                    input: Downstream.Input) {}
+
+    public fn didReceive<Downstream: Subscriber>(subscriber: Downstream,
+                                                   input: Downstream.Input,
+                                                   resultingDemand: Subscribers.Demand) {}
+
+    public fn willReceive<Downstream: Subscriber>(
+        subscriber: Downstream,
+        completion: Subscribers.Completion<Downstream.Failure>
+    ) {}
+
+    public fn didReceive<Downstream: Subscriber>(
+        subscriber: Downstream,
+        completion: Subscribers.Completion<Downstream.Failure>
+    ) {}
+
+    public fn willRequest(subscription: Subscription, _ demand: Subscribers.Demand) {}
+
+    public fn didRequest(subscription: Subscription, _ demand: Subscribers.Demand) {}
+
+    public fn willCancel(subscription: Subscription) {}
+
+    public fn didCancel(subscription: Subscription) {}
+
+    public fn enable() {
+        DebugHook.enable(this)
+    }
+
+    public fn disable() {
+        DebugHook.disable(this)
+    }
+
+    public var isEnabled: Boolean {
+        return DebugHook.handlerIsEnabled(this)
+    }
+}

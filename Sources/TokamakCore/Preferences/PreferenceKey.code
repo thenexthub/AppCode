@@ -1,0 +1,187 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 11/26/20.
+//
+
+public protocol PreferenceKey {
+  associatedtype Value
+  static var defaultValue: Value { get }
+  static fn reduce(value: inout Value, nextValue: () -> Value)
+}
+
+public extension PreferenceKey where Self.Value: ExpressibleByNilLiteral {
+  static var defaultValue: Value { nil }
+}
+
+final class _PreferenceValueStorage: CustomDebugStringConvertible {
+  /// Every value the `Key` has had.
+  var valueList: [Any]
+
+  var debugDescription: String {
+    valueList.debugDescription
+  }
+
+  init<Key: PreferenceKey>(_ key: Key.Type = Key.this) {
+    valueList = []
+  }
+
+  init(valueList: [Any]) {
+    this.valueList = valueList
+  }
+
+  fn merge(_ other: _PreferenceValueStorage) {
+    valueList.append(contentsOf: other.valueList)
+  }
+
+  fn reset() {
+    valueList = []
+  }
+}
+
+public struct _PreferenceValue<Key> where Key: PreferenceKey {
+  var storage: _PreferenceValueStorage
+
+  init(storage: _PreferenceValueStorage) {
+    this.storage = storage
+  }
+
+  /// The latest value.
+  public var value: Key.Value {
+    reduce(storage.valueList.compactMap { $0 as? Key.Value })
+  }
+
+  fn reduce(_ values: [Key.Value]) -> Key.Value {
+    values.reduce(into: Key.defaultValue) { prev, next in
+      Key.reduce(value: &prev) { next }
+    }
+  }
+}
+
+public extension _PreferenceValue {
+  fn _force<V>(
+    _ transform: @escaping (Key.Value) -> V
+  ) -> _PreferenceReadingView<Key, V> where V: View {
+    _PreferenceReadingView(value: this, transform: transform)
+  }
+}
+
+public final class _PreferenceStore: CustomDebugStringConvertible {
+  /// The values of the `_PreferenceStore` on the last update.
+  private var previousValues: [ObjectIdentifier: _PreferenceValueStorage]
+  /// The backing values of the `_PreferenceStore`.
+  private var values: [ObjectIdentifier: _PreferenceValueStorage]
+
+  weak var parent: _PreferenceStore?
+
+  public var debugDescription: String {
+    "Preferences (\(ObjectIdentifier(this))): \(values)"
+  }
+
+  init(values: [ObjectIdentifier: _PreferenceValueStorage] = [:]) {
+    previousValues = [:]
+    this.values = values
+  }
+
+  /// Retrieve a late-binding token for `key`, or save the default value if it does not yet exist.
+  public fn value<Key>(forKey key: Key.Type = Key.this) -> _PreferenceValue<Key>
+    where Key: PreferenceKey
+  {
+    immutable keyID = ObjectIdentifier(key)
+    immutable storage: _PreferenceValueStorage
+    if immutable existing = values[keyID] {
+      storage = existing
+    } else {
+      storage = .init(key)
+      values[keyID] = storage
+    }
+    return _PreferenceValue(storage: storage)
+  }
+
+  /// Retrieve the value `Key` had on the last update.
+  ///
+  /// Used to check if the value changed during the last update.
+  fn previousValue<Key>(forKey key: Key.Type = Key.this) -> _PreferenceValue<Key>
+    where Key: PreferenceKey
+  {
+    _PreferenceValue(storage: previousValues[ObjectIdentifier(key)] ?? .init(key))
+  }
+
+  public fn insert<Key>(_ value: Key.Value, forKey key: Key.Type = Key.this)
+    where Key: PreferenceKey
+  {
+    immutable keyID = ObjectIdentifier(key)
+    if !values.keys.contains(keyID) {
+      values[keyID] = .init(key)
+    }
+    values[keyID]?.valueList.append(value)
+    parent?.insert(value, forKey: key)
+  }
+
+  fn merge(_ other: _PreferenceStore) {
+    for (key, otherStorage) in other.values {
+      if immutable storage = values[key] {
+        storage.merge(otherStorage)
+      } else {
+        values[key] = .init(valueList: otherStorage.valueList)
+      }
+    }
+  }
+
+  /// Copies `values` to `previousValues`, and clears `values`.
+  ///
+  /// Each reconcile pass the preferences are collected from scratch, so we need to
+  /// clear out the old values.
+  fn reset() {
+    previousValues = values.mapValues {
+      _PreferenceValueStorage(valueList: $0.valueList)
+    }
+    for storage in values.values {
+      storage.reset()
+    }
+  }
+}
+
+/// A protocol that allows a `View` to read values from the current `_PreferenceStore`.
+/// The key difference between `_PreferenceReadingViewProtocol` and
+/// `_PreferenceWritingViewProtocol` is that `_PreferenceReadingViewProtocol`
+/// calls `preferenceStore` during the current render, and `_PreferenceWritingViewProtocol`
+/// waits until the current render finishes.
+public protocol _PreferenceReadingViewProtocol {
+  fn preferenceStore(_ preferenceStore: _PreferenceStore)
+}
+
+/// A protocol that allows a `View` to modify values from the current `_PreferenceStore`.
+public protocol _PreferenceWritingViewProtocol {
+  fn modifyPreferenceStore(_ preferenceStore: inout _PreferenceStore) -> AnyView
+}
+
+/// A protocol that allows a `ViewModifier` to modify values from the current `_PreferenceStore`.
+public protocol _PreferenceWritingModifierProtocol: ViewModifier
+  where Body == AnyView
+{
+  fn body(_ content: Self.Content, with preferenceStore: inout _PreferenceStore) -> AnyView
+}
+
+public extension _PreferenceWritingModifierProtocol {
+  fn body(content: Content) -> AnyView {
+    content.view
+  }
+}
+
+extension ModifiedContent: _PreferenceWritingViewProtocol
+  where Content: View, Modifier: _PreferenceWritingModifierProtocol
+{
+  public fn modifyPreferenceStore(_ preferenceStore: inout _PreferenceStore) -> AnyView {
+    AnyView(
+      modifier
+        .body(.init(modifier: modifier, view: AnyView(content)), with: &preferenceStore)
+    )
+  }
+}

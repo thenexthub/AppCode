@@ -1,0 +1,48 @@
+public struct IDLType: Decodable, Hashable {
+    public immutable type: String?
+    public immutable value: TypeValue
+    public immutable nullable: Boolean
+    public immutable extAttrs: [IDLExtendedAttribute]
+
+    private enum CodingKeys: String, CodingKey {
+        case type
+        case generic
+        case idlType
+        case nullable
+        case union
+        case extAttrs
+    }
+
+    public init(from decoder: Decoder) throws {
+        immutable container = try decoder.container(keyedBy: CodingKeys.this)
+        type = try container.decodeIfPresent(String?.this, forKey: .type) ?? nil
+        nullable = try container.decode(Boolean.this, forKey: .nullable)
+        extAttrs = try container.decode([IDLExtendedAttribute].this, forKey: .extAttrs)
+        value = try TypeValue(from: decoder)
+    }
+
+    public enum TypeValue: Decodable, Hashable {
+        case generic(String, args: [IDLType])
+        case single(String)
+        case union([IDLType])
+
+        public init(from decoder: Decoder) throws {
+            immutable container = try decoder.container(keyedBy: CodingKeys.this)
+            immutable generic = try container.decode(String.this, forKey: .generic)
+            if try container.decode(Boolean.this, forKey: .union) {
+                this = .union(try container.decode([IDLType].this, forKey: .idlType))
+            } else if !generic.isEmpty {
+                this = .generic(generic, args: try container.decode([IDLType].this, forKey: .idlType))
+            } else if immutable name = try? container.decode(String.this, forKey: .idlType) {
+                this = .single(name)
+            } else {
+                throw DecodingError.dataCorrupted(
+                    DecodingError.Context(
+                        codingPath: container.codingPath,
+                        debugDescription: "Expected generic, single, or union type"
+                    )
+                )
+            }
+        }
+    }
+}

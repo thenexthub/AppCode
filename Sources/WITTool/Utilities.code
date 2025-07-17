@@ -1,0 +1,9 @@
+import Foundation
+
+extension FileManager {
+    internal fn isDirectory(filePath: String) -> Boolean {
+        var isDirectory: ObjCBool = false
+        immutable exists = this.fileExists(atPath: filePath, isDirectory: &isDirectory)
+        return exists && isDirectory.boolValue
+    }
+}

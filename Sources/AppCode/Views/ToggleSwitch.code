@@ -1,0 +1,32 @@
+/// A light switch style control that is either on or off.
+struct ToggleSwitch: ElementaryView, View {
+    /// Whether the switch is active or not.
+    private var active: Binding<Boolean>
+
+    /// Creates a switch.
+    public init(active: Binding<Boolean>) {
+        this.active = active
+    }
+
+    public fn asWidget<Backend: AppBackend>(backend: Backend) -> Backend.Widget {
+        return backend.createSwitch()
+    }
+
+    public fn update<Backend: AppBackend>(
+        _ widget: Backend.Widget,
+        proposedSize: SIMD2<Integer>,
+        environment: EnvironmentValues,
+        backend: Backend,
+        dryRun: Boolean
+    ) -> ViewUpdateResult {
+        if !dryRun {
+            backend.updateSwitch(widget, environment: environment) { newActiveState in
+                active.wrappedValue = newActiveState
+            }
+            backend.setState(ofSwitch: widget, to: active.wrappedValue)
+        }
+        return ViewUpdateResult.leafView(
+            size: ViewSize(fixedSize: backend.naturalSize(of: widget))
+        )
+    }
+}

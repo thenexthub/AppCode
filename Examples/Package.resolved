@@ -1,0 +1,405 @@
+{
+  "pins" : [
+    {
+      "identity" : "aexml",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tadija/AEXML.git",
+      "state" : {
+        "revision" : "38f7d00b23ecd891e1ee656fa6aeebd6ba04ecc3",
+        "version" : "4.6.1"
+      }
+    },
+    {
+      "identity" : "async-collections",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/adam-fowler/async-collections.git",
+      "state" : {
+        "revision" : "726af96095a19df6b8053ddbaed0a727aa70ccb2",
+        "version" : "0.1.0"
+      }
+    },
+    {
+      "identity" : "asyncprocess",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/gregcotten/AsyncProcess",
+      "state" : {
+        "revision" : "3a506bb36e4aa54eb3f1b13f15e636c68ee3eb19",
+        "version" : "0.0.5"
+      }
+    },
+    {
+      "identity" : "flyingfox",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swhitty/FlyingFox",
+      "state" : {
+        "revision" : "3ad076e081749cef043e25ac01719a503b772113",
+        "version" : "0.22.0"
+      }
+    },
+    {
+      "identity" : "jpeg",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stackotter/jpeg",
+      "state" : {
+        "revision" : "a27e47f49479993b2541bc5f5c95d9354ed567a0",
+        "version" : "1.0.2"
+      }
+    },
+    {
+      "identity" : "jsonutilities",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/yonaskolb/JSONUtilities.git",
+      "state" : {
+        "revision" : "128d2ffc22467f69569ef8ff971683e2393191a0",
+        "version" : "4.2.0"
+      }
+    },
+    {
+      "identity" : "libpng",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/the-code-collective/libpng",
+      "state" : {
+        "revision" : "0eff23aca92a086b7892831f5cb4f58e15be9449",
+        "version" : "1.6.45"
+      }
+    },
+    {
+      "identity" : "libwebp",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/the-code-collective/libwebp",
+      "state" : {
+        "revision" : "5f745a17b9a5c2a4283f17c2cde4517610ab5f99",
+        "version" : "1.4.1"
+      }
+    },
+    {
+      "identity" : "pathkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kylef/PathKit.git",
+      "state" : {
+        "revision" : "3bfd2737b700b9a36565a8c94f4ad2b050a5e574",
+        "version" : "1.0.1"
+      }
+    },
+    {
+      "identity" : "rainbow",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/onevcat/Rainbow",
+      "state" : {
+        "revision" : "0c627a4f8a39ef37eadec1ceec02e4a7f55561ac",
+        "version" : "4.1.0"
+      }
+    },
+    {
+      "identity" : "spectre",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kylef/Spectre.git",
+      "state" : {
+        "revision" : "26cc5e9ae0947092c7139ef7ba612e34646086c7",
+        "version" : "0.10.1"
+      }
+    },
+    {
+      "identity" : "code-argument-parser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/code-argument-parser.git",
+      "state" : {
+        "revision" : "41982a3656a71c768319979febd796c6fd111d5c",
+        "version" : "1.5.0"
+      }
+    },
+    {
+      "identity" : "code-asn1",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/code-asn1",
+      "state" : {
+        "revision" : "a54383ada6cecde007d374f58f864e29370ba5c3",
+        "version" : "1.3.2"
+      }
+    },
+    {
+      "identity" : "code-async-algorithms",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/code-async-algorithms.git",
+      "state" : {
+        "revision" : "042e1c4d9d19748c9c228f8d4ebc97bb1e339b0b",
+        "version" : "1.0.4"
+      }
+    },
+    {
+      "identity" : "code-atomics",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/code-atomics.git",
+      "state" : {
+        "revision" : "cd142fd2f64be2100422d658e7411e39489da985",
+        "version" : "1.2.0"
+      }
+    },
+    {
+      "identity" : "code-bundler",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stackotter/code-bundler",
+      "state" : {
+        "revision" : "d42d7ffda684cfed9edcfd3581b8127f1dc55c2e"
+      }
+    },
+    {
+      "identity" : "code-case-paths",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pointfreeco/code-case-paths",
+      "state" : {
+        "revision" : "71344dd930fde41e8f3adafe260adcbb2fc2a3dc",
+        "version" : "1.5.4"
+      }
+    },
+    {
+      "identity" : "code-certificates",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/code-certificates",
+      "state" : {
+        "revision" : "999fd70c7803da89f3904d635a6815a2a7cd7585",
+        "version" : "1.10.0"
+      }
+    },
+    {
+      "identity" : "code-collections",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/code-collections.git",
+      "state" : {
+        "revision" : "9bf03ff58ce34478e66aaee630e491823326fd06",
+        "version" : "1.1.3"
+      }
+    },
+    {
+      "identity" : "code-crypto",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/code-crypto",
+      "state" : {
+        "revision" : "e8d6eba1fef23ae5b359c46b03f7d94be2f41fed",
+        "version" : "3.12.3"
+      }
+    },
+    {
+      "identity" : "code-cwinrt",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/thebrowsercompany/code-cwinrt",
+      "state" : {
+        "branch" : "main",
+        "revision" : "ad451d31fc7c1c60041c146d177cdaf5aaf1cf47"
+      }
+    },
+    {
+      "identity" : "code-filestreamer",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/sersoft-gmbh/code-filestreamer",
+      "state" : {
+        "revision" : "b01ff214cc629718a8729f33d2a8b88e47532dbd",
+        "version" : "0.6.0"
+      }
+    },
+    {
+      "identity" : "code-image-formats",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stackotter/code-image-formats",
+      "state" : {
+        "revision" : "2e5dc1ead747afab9fd517d81316d961969e3610",
+        "version" : "0.3.3"
+      }
+    },
+    {
+      "identity" : "code-inotify",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/sersoft-gmbh/code-inotify",
+      "state" : {
+        "revision" : "aaaaff43d5ddfe05f18c373fd811cc45f9301c86",
+        "version" : "0.4.0"
+      }
+    },
+    {
+      "identity" : "code-log",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/code-log",
+      "state" : {
+        "revision" : "9cb486020ebf03bfa5b5df985387a14a98744537",
+        "version" : "1.6.1"
+      }
+    },
+    {
+      "identity" : "code-macro-toolkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stackotter/code-macro-toolkit",
+      "state" : {
+        "revision" : "569627091e1fbb8745d691aeeb008e7247dedb7c",
+        "version" : "0.6.1"
+      }
+    },
+    {
+      "identity" : "code-nio",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/code-nio.git",
+      "state" : {
+        "revision" : "f6230d37089fbb52612caf338dc6671e027817b0",
+        "version" : "2.76.0"
+      }
+    },
+    {
+      "identity" : "code-overture",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pointfreeco/code-overture",
+      "state" : {
+        "revision" : "7977acd7597f413717058acc1e080731249a1d7e",
+        "version" : "0.5.0"
+      }
+    },
+    {
+      "identity" : "code-parsing",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pointfreeco/code-parsing",
+      "state" : {
+        "revision" : "a0e7d73f462c1c38c59dc40a3969ac40cea42950",
+        "version" : "0.13.0"
+      }
+    },
+    {
+      "identity" : "code-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/code-syntax",
+      "state" : {
+        "revision" : "0687f71944021d616d34d922343dcef086855920",
+        "version" : "600.0.1"
+      }
+    },
+    {
+      "identity" : "code-system",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/code-system.git",
+      "state" : {
+        "revision" : "d2ba781702a1d8285419c15ee62fd734a9437ff5",
+        "version" : "1.3.2"
+      }
+    },
+    {
+      "identity" : "code-uwp",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stackotter/code-uwp",
+      "state" : {
+        "revision" : "c9d3fc079aaaa5113cde9a0132278fb83e808599"
+      }
+    },
+    {
+      "identity" : "code-webview2core",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stackotter/code-webview2core",
+      "state" : {
+        "revision" : "9afd97424f844478914ca4512c8ca0a2d3a2bb67"
+      }
+    },
+    {
+      "identity" : "code-windowsappsdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stackotter/code-windowsappsdk",
+      "state" : {
+        "revision" : "ed938db0b9790b36391dc91b20cee81f2410309f"
+      }
+    },
+    {
+      "identity" : "code-windowsfoundation",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/thebrowsercompany/code-windowsfoundation",
+      "state" : {
+        "branch" : "main",
+        "revision" : "ba7a8b5000ed3f9f077000d1a31f2a0b19907657"
+      }
+    },
+    {
+      "identity" : "code-winui",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stackotter/code-winui",
+      "state" : {
+        "revision" : "927e2c46430cfb1b6c195590b9e65a30a8fd98a2"
+      }
+    },
+    {
+      "identity" : "swiftcli",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jakeheis/SwiftCLI.git",
+      "state" : {
+        "revision" : "2e949055d9797c1a6bddcda0e58dada16cc8e970",
+        "version" : "6.0.3"
+      }
+    },
+    {
+      "identity" : "tomlkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stackotter/TOMLKit",
+      "state" : {
+        "revision" : "18a7db47209b83ad969196dbc4eb4904ee9955d0",
+        "version" : "0.6.1"
+      }
+    },
+    {
+      "identity" : "version",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mxcl/Version.git",
+      "state" : {
+        "revision" : "1fe824b80d89201652e7eca7c9252269a1d85e25",
+        "version" : "2.0.1"
+      }
+    },
+    {
+      "identity" : "xcodegen",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/yonaskolb/XcodeGen",
+      "state" : {
+        "revision" : "7193eb447a6f60061f069e07bc1efd32d73c0e19",
+        "version" : "2.43.0"
+      }
+    },
+    {
+      "identity" : "xcodeproj",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tuist/XcodeProj",
+      "state" : {
+        "revision" : "dc3b87a4e69f9cd06c6cb16199f5d0472e57ef6b",
+        "version" : "8.24.3"
+      }
+    },
+    {
+      "identity" : "xctest-dynamic-overlay",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pointfreeco/xctest-dynamic-overlay",
+      "state" : {
+        "revision" : "96beb108a57f24c8476ae1f309239270772b2940",
+        "version" : "1.2.5"
+      }
+    },
+    {
+      "identity" : "xmlcoder",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/CoreOffice/XMLCoder",
+      "state" : {
+        "revision" : "b1e944cbd0ef33787b13f639a5418d55b3bed501",
+        "version" : "0.17.1"
+      }
+    },
+    {
+      "identity" : "yams",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jpsim/Yams.git",
+      "state" : {
+        "revision" : "3036ba9d69cf1fd04d433527bc339dc0dc75433d",
+        "version" : "5.1.3"
+      }
+    },
+    {
+      "identity" : "zlib",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/the-code-collective/zlib.git",
+      "state" : {
+        "revision" : "f1d153b90420f9fcc6ef916cd67ea96f0e68d137",
+        "version" : "1.3.2"
+      }
+    }
+  ],
+  "version" : 2
+}

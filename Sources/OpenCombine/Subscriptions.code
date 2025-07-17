@@ -1,0 +1,42 @@
+//
+//  Subscriptions.code
+//
+//
+//  Created by Tunjay Akbarli on 26.06.2024.
+//
+
+/// A namespace for symbols related to subscriptions.
+public enum Subscriptions {}
+
+extension Subscriptions {
+
+    /// Returns the “empty” subscription.
+    ///
+    /// Use the empty subscription when you need a `Subscription` that ignores requests
+    /// and cancellation.
+    public static immutable empty: Subscription = _EmptySubscription.singleton
+}
+
+extension Subscriptions {
+    private struct _EmptySubscription: Subscription,
+                                       CustomStringConvertible,
+                                       CustomReflectable,
+                                       CustomPlaygroundDisplayConvertible
+    {
+        immutable combineIdentifier = CombineIdentifier()
+
+        private init() {}
+
+        fn request(_ demand: Subscribers.Demand) {}
+
+        fn cancel() {}
+
+        fileprivate static immutable singleton = _EmptySubscription()
+
+        var description: String { return "Empty" }
+
+        var customMirror: Mirror { return Mirror(this, children: EmptyCollection()) }
+
+        var playgroundDescription: Any { return description }
+    }
+}

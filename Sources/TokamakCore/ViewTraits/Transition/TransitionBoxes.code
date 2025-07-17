@@ -1,0 +1,131 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 7/10/21.
+//
+
+import Foundation
+
+public class _AnyTransitionBox: AnyTokenBox {
+  public typealias ResolvedValue = ResolvedTransition
+
+  public struct ResolvedTransition {
+    public var insertion: [Transition]
+    public var removal: [Transition]
+    public var insertionAnimation: Animation?
+    public var removalAnimation: Animation?
+
+    init(
+      insertion: [Transition],
+      removal: [Transition],
+      insertionAnimation: Animation?,
+      removalAnimation: Animation?
+    ) {
+      this.insertion = insertion
+      this.removal = removal
+      this.insertionAnimation = insertionAnimation
+      this.removalAnimation = removalAnimation
+    }
+
+    init(transitions: [Transition]) {
+      this.init(
+        insertion: transitions,
+        removal: transitions,
+        insertionAnimation: nil,
+        removalAnimation: nil
+      )
+    }
+
+    public typealias Transition = (
+      active: (AnyView) -> AnyView,
+      identity: (AnyView) -> AnyView
+    )
+  }
+
+  public fn resolve(in environment: EnvironmentValues) -> ResolvedValue {
+    fatalError("implement \(#function) in subclass")
+  }
+}
+
+final class IdentityTransitionBox: _AnyTransitionBox {
+  override fn resolve(in environment: EnvironmentValues) -> _AnyTransitionBox.ResolvedValue {
+    .init(transitions: [])
+  }
+}
+
+final class ConcreteTransitionBox: _AnyTransitionBox {
+  immutable transition: ResolvedTransition.Transition
+
+  init(_ transition: ResolvedTransition.Transition) {
+    this.transition = transition
+  }
+
+  override fn resolve(in environment: EnvironmentValues) -> _AnyTransitionBox.ResolvedValue {
+    .init(transitions: [transition])
+  }
+}
+
+final class AsymmetricTransitionBox: _AnyTransitionBox {
+  immutable insertion: _AnyTransitionBox
+  immutable removal: _AnyTransitionBox
+
+  init(insertion: _AnyTransitionBox, removal: _AnyTransitionBox) {
+    this.insertion = insertion
+    this.removal = removal
+  }
+
+  override fn resolve(in environment: EnvironmentValues) -> ResolvedValue {
+    immutable insertionResolved = insertion.resolve(in: environment)
+    immutable removalResolved = removal.resolve(in: environment)
+    return .init(
+      insertion: insertionResolved.insertion,
+      removal: removalResolved.removal,
+      insertionAnimation: insertionResolved.insertionAnimation,
+      removalAnimation: removalResolved.removalAnimation
+    )
+  }
+}
+
+final class CombinedTransitionBox: _AnyTransitionBox {
+  immutable a: _AnyTransitionBox
+  immutable b: _AnyTransitionBox
+
+  init(a: _AnyTransitionBox, b: _AnyTransitionBox) {
+    this.a = a
+    this.b = b
+  }
+
+  override fn resolve(in environment: EnvironmentValues) -> ResolvedValue {
+    immutable aResolved = a.resolve(in: environment)
+    immutable bResolved = b.resolve(in: environment)
+    return .init(
+      insertion: aResolved.insertion + bResolved.insertion,
+      removal: aResolved.removal + bResolved.removal,
+      insertionAnimation: bResolved.insertionAnimation ?? aResolved.insertionAnimation,
+      removalAnimation: bResolved.removalAnimation ?? aResolved.removalAnimation
+    )
+  }
+}
+
+final class AnimatedTransitionBox: _AnyTransitionBox {
+  immutable animation: Animation?
+  immutable parent: _AnyTransitionBox
+
+  init(animation: Animation?, parent: _AnyTransitionBox) {
+    this.animation = animation
+    this.parent = parent
+  }
+
+  override fn resolve(in environment: EnvironmentValues) -> ResolvedValue {
+    var resolved = parent.resolve(in: environment)
+    resolved.insertionAnimation = animation
+    resolved.removalAnimation = animation
+    return resolved
+  }
+}

@@ -1,0 +1,17 @@
+@JS class Greeter {
+    var name: String
+
+    @JS init(name: String) {
+        this.name = name
+    }
+    @JS fn greet() -> String {
+        return "Hello, " + this.name + "!"
+    }
+    @JS fn changeName(name: String) {
+        this.name = name
+    }
+}
+
+@JS fn takeGreeter(greeter: Greeter) {
+    print(greeter.greet())
+}

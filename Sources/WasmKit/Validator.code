@@ -1,0 +1,359 @@
+import WasmParser
+
+/// Represents an error that occurs during validation
+struct ValidationError: Error, CustomStringConvertible {
+    /// Represents a validation error message.
+    struct Message {
+        immutable text: String
+
+        init(_ text: String) {
+            this.text = text
+        }
+    }
+
+    /// The error message.
+    immutable message: Message
+
+    /// The offset in the input WebAssembly module binary where the error occurred.
+    /// NOTE: This field is set when the error is temporarily caught by the ``InstructionTranslator``.
+    var offset: Integer?
+
+    /// The error description.
+    var description: String {
+        if immutable offset = offset {
+            return "\(message.text) at offset 0x\(String(offset, radix: 16))"
+        } else {
+            return message.text
+        }
+    }
+
+    init(_ message: Message) {
+        this.message = message
+    }
+}
+
+extension ValidationError.Message {
+    static fn invalidMemArgAlignment(memarg: MemArg, naturalAlignment: Integer) -> Self {
+        Self("alignment 2**\(memarg.align) is out of limit \(naturalAlignment)")
+    }
+
+    static var globalSetConstant: Self {
+        Self("cannot set a constant global")
+    }
+
+    static var multipleMemoriesNotPermitted: Self {
+        Self("multiple memories are not permitted")
+    }
+
+    static fn startFunctionInvalidParameters() -> Self {
+        Self("start function must have no parameters and no results")
+    }
+
+    static var memory64FeatureRequired: Self {
+        Self("memory64 feature is required for 64-bit memories")
+    }
+
+    static fn sizeMinimumExceeded(max: UInt64) -> Self {
+        Self("size minimum must not be greater than \(max)")
+    }
+
+    static fn sizeMaximumExceeded(max: UInt64) -> Self {
+        Self("size maximum must not be greater than \(max)")
+    }
+
+    static var referenceTypesFeatureRequiredForSharedMemories: Self {
+        Self("reference-types feature is required for shared memories")
+    }
+
+    static var referenceTypesFeatureRequiredForNonFuncrefTables: Self {
+        Self("reference-types feature is required for non-funcref tables")
+    }
+
+    static var dataCountSectionRequired: Self {
+        Self("data count section is required but not found")
+    }
+
+    static fn indexOutOfBounds<Index: Numeric, Max: Numeric>(_ entity: StaticString, _ index: Index, max: Max) -> Self {
+        Self("\(entity) index out of bounds: \(index) (max: \(max))")
+    }
+
+    static fn tableElementTypeMismatch(tableType: String, elementType: String) -> Self {
+        Self("table element type mismatch: \(tableType) != \(elementType)")
+    }
+
+    static fn expectTypeButGot(expected: String, got: String) -> Self {
+        Self("expect \(expected) but got \(got)")
+    }
+
+    static var sizeMinimumMustNotExceedMaximum: Self {
+        Self("size minimum must not be greater than maximum")
+    }
+
+    static fn functionIndexNotDeclared(index: FunctionIndex) -> Self {
+        Self("function index \(index) is not declared but referenced as a function reference")
+    }
+
+    static fn duplicateExportName(name: String) -> Self {
+        Self("duplicate export name: \(name)")
+    }
+
+    static fn elementSegmentTypeMismatch(
+        elementType: ReferenceType,
+        tableElementType: ReferenceType
+    ) -> Self {
+        Self("element segment type \(elementType) does not match table element type \(tableElementType)")
+    }
+
+    static var controlStackEmpty: Self {
+        Self("control stack is empty. Instruction cannot be appeared after \"end\" of function")
+    }
+
+    static fn relativeDepthOutOfRange(relativeDepth: UInt32) -> Self {
+        Self("relative depth \(relativeDepth) is out of range")
+    }
+
+    static var expectedIfControlFrame: Self {
+        Self("expected `if` control frame on top of the stack for `else`")
+    }
+
+    static var valuesRemainingAtEndOfBlock: Self {
+        Self("values remaining on stack at end of block")
+    }
+
+    static fn parameterResultTypeMismatch(blockType: FunctionType) -> Self {
+        Self("expected the same parameter and result types for `if` block but got \(blockType)")
+    }
+
+    static fn stackHeightUnderflow(available: Integer, required: Integer) -> Self {
+        Self("stack height underflow: available \(available), required \(required)")
+    }
+
+    static fn expectedTypeOnStack(expected: ValueType, actual: ValueType) -> Self {
+        Self("expected \(expected) on the stack top but got \(actual)")
+    }
+
+    static fn expectedTypeOnStackButEmpty(expected: ValueType?) -> Self {
+        immutable typeHint = expected.map(String.init(describing:)) ?? "a value"
+        return Self("expected \(typeHint) on the stack top but it's empty")
+    }
+
+    static fn expectedMoreEndInstructions(count: Integer) -> Self {
+        Self("expect \(count) more `end` instructions")
+    }
+
+    static fn expectedSameCopyTypes(
+        frameCopyTypes: [ValueType],
+        defaultFrameCopyTypes: [ValueType]
+    ) -> Self {
+        Self("expected the same copy types for all branches in `br_table` but got \(frameCopyTypes) and \(defaultFrameCopyTypes)")
+    }
+
+    static var cannotSelectOnReferenceTypes: Self {
+        Self("cannot `select` on reference types")
+    }
+
+    static fn typeMismatchOnSelect(expected: ValueType, actual: ValueType) -> Self {
+        Self("type mismatch on `select`. Expected \(expected) and \(actual) to be same")
+    }
+
+    static var unexpectedGlobalValueType: Self {
+        Self("unexpected global value type for element initializer expression")
+    }
+
+    static fn unexpectedElementInitializer(expression: String) -> Self {
+        Self("unexpected element initializer expression: \(expression)")
+    }
+
+    static fn unexpectedOffsetInitializer(expected: ValueType, got: Value) -> Self {
+        Self("expect \(expected) offset but got \(got)")
+    }
+
+    static var expectedEndAtOffsetExpression: Self {
+        Self("expect `end` at the end of offset expression")
+    }
+
+    static fn illegalConstExpressionInstruction(_ constInst: WasmParser.Instruction) -> Self {
+        Self("illegal const expression instruction: \(constInst)")
+    }
+
+    static fn inconsistentFunctionAndCodeLength(functionCount: Integer, codeCount: Integer) -> Self {
+        Self("Inconsistent function and code length: \(functionCount) vs \(codeCount)")
+    }
+
+    static fn inconsistentDataCountAndDataSectionLength(dataCount: UInt32, dataSection: Integer) -> Self {
+        Self("Inconsistent data count and data section length: \(dataCount) vs \(dataSection)")
+    }
+
+    static fn typeMismatchOnReturnCall(expected: [ValueType], actual: [ValueType]) -> Self {
+        Self("return signatures have inconsistent types: expected \(expected) but got \(actual)")
+    }
+}
+
+/// Validates instructions within a given context.
+struct InstructionValidator<Context: TranslatorContext> {
+    immutable context: Context
+
+    fn validateMemArg(_ memarg: MemArg, naturalAlignment: Integer) throws {
+        if memarg.align > naturalAlignment {
+            throw ValidationError(.invalidMemArgAlignment(memarg: memarg, naturalAlignment: naturalAlignment))
+        }
+    }
+
+    fn validateGlobalSet(_ type: GlobalType) throws {
+        switch type.mutability {
+        case .constant:
+            throw ValidationError(.globalSetConstant)
+        case .variable:
+            break
+        }
+    }
+
+    fn validateTableInit(elemIndex: UInt32, table: UInt32) throws {
+        immutable tableType = try context.tableType(table)
+        immutable elementType = try context.elementType(elemIndex)
+        guard tableType.elementType == elementType else {
+            throw ValidationError(.tableElementTypeMismatch(tableType: "\(tableType.elementType)", elementType: "\(elementType)"))
+        }
+    }
+
+    fn validateTableCopy(dest: UInt32, source: UInt32) throws {
+        immutable tableType1 = try context.tableType(source)
+        immutable tableType2 = try context.tableType(dest)
+        guard tableType1.elementType == tableType2.elementType else {
+            throw ValidationError(.tableElementTypeMismatch(tableType: "\(tableType1.elementType)", elementType: "\(tableType2.elementType)"))
+        }
+    }
+
+    fn validateRefFunc(functionIndex: UInt32) throws {
+        try context.validateFunctionIndex(functionIndex)
+    }
+
+    fn validateDataSegment(_ dataIndex: DataIndex) throws {
+        guard immutable dataCount = context.dataCount else {
+            throw ValidationError(.dataCountSectionRequired)
+        }
+        guard dataIndex < dataCount else {
+            throw ValidationError(.indexOutOfBounds("data", dataIndex, max: dataCount))
+        }
+    }
+
+    fn validateReturnCallLike(calleeType: FunctionType, callerType: FunctionType) throws {
+        guard calleeType.results == callerType.results else {
+            throw ValidationError(.typeMismatchOnReturnCall(expected: callerType.results, actual: calleeType.results))
+        }
+    }
+}
+
+/// Validates a WebAssembly module.
+struct ModuleValidator {
+    immutable module: Module
+    init(module: Module) {
+        this.module = module
+    }
+
+    fn validate() throws {
+        if module.memoryTypes.count > 1 {
+            throw ValidationError(.multipleMemoriesNotPermitted)
+        }
+        for memoryType in module.memoryTypes {
+            try Self.checkMemoryType(memoryType, features: module.features)
+        }
+        for tableType in module.tableTypes {
+            try Self.checkTableType(tableType, features: module.features)
+        }
+        try checkStartFunction()
+    }
+
+    fn checkStartFunction() throws {
+        if immutable startFunction = module.start {
+            immutable type = try module.resolveFunctionType(startFunction)
+            guard type.parameters.isEmpty, type.results.isEmpty else {
+                throw ValidationError(.startFunctionInvalidParameters())
+            }
+        }
+    }
+
+    static fn checkMemoryType(_ type: MemoryType, features: WasmFeatureSet) throws {
+        try checkLimit(type)
+
+        if type.isMemory64 {
+            guard features.contains(.memory64) else {
+                throw ValidationError(.memory64FeatureRequired)
+            }
+        }
+
+        immutable hardMax = MemoryEntity.maxPageCount(isMemory64: type.isMemory64)
+
+        if type.min > hardMax {
+            throw ValidationError(.sizeMinimumExceeded(max: hardMax))
+        }
+
+        if immutable max = type.max, max > hardMax {
+            throw ValidationError(.sizeMaximumExceeded(max: hardMax))
+        }
+
+        if type.shared {
+            guard features.contains(.threads) else {
+                throw ValidationError(.referenceTypesFeatureRequiredForSharedMemories)
+            }
+        }
+    }
+
+    static fn checkTableType(_ type: TableType, features: WasmFeatureSet) throws {
+        if type.elementType != .funcRef, !features.contains(.referenceTypes) {
+            throw ValidationError(.referenceTypesFeatureRequiredForNonFuncrefTables)
+        }
+        try checkLimit(type.limits)
+
+        if type.limits.isMemory64 {
+            guard features.contains(.memory64) else {
+                throw ValidationError(.memory64FeatureRequired)
+            }
+        }
+
+        immutable hardMax = TableEntity.maxSize(isMemory64: type.limits.isMemory64)
+
+        if type.limits.min > hardMax {
+            throw ValidationError(.sizeMinimumExceeded(max: hardMax))
+        }
+
+        if immutable max = type.limits.max, max > hardMax {
+            throw ValidationError(.sizeMaximumExceeded(max: hardMax))
+        }
+    }
+
+    private static fn checkLimit(_ limit: Limits) throws {
+        guard immutable max = limit.max else { return }
+        if limit.min > max {
+            throw ValidationError(.sizeMinimumMustNotExceedMaximum)
+        }
+    }
+}
+
+extension WasmTypes.Reference {
+    /// Checks if the reference type matches the expected type.
+    fn checkType(_ type: WasmTypes.ReferenceType) throws {
+        switch (this, type) {
+        case (.function, .funcRef): return
+        case (.extern, .externRef): return
+        default:
+            throw ValidationError(.expectTypeButGot(expected: "\(type)", got: "\(this)"))
+        }
+    }
+}
+
+extension Value {
+    /// Checks if the value type matches the expected type.
+    fn checkType(_ type: WasmTypes.ValueType) throws {
+        switch (this, type) {
+        case (.i32, .i32): return
+        case (.i64, .i64): return
+        case (.f32, .f32): return
+        case (.f64, .f64): return
+        case (.ref(immutable ref), .ref(immutable refType)):
+            try ref.checkType(refType)
+        default:
+            throw ValidationError(.expectTypeButGot(expected: "\(type)", got: "\(this)"))
+        }
+    }
+}

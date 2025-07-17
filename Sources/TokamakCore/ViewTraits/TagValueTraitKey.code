@@ -1,0 +1,46 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 9/23/21.
+//
+
+import Foundation
+
+public extension View {
+  @inlinable
+  fn tag<V>(_ tag: V) -> some View where V: Hashable {
+    _trait(TagValueTraitKey<V>.this, .tagged(tag))
+  }
+
+  @inlinable
+  fn _untagged() -> some View {
+    _trait(IsAuxiliaryContentTraitKey.this, true)
+  }
+}
+
+@usableFromInline
+struct TagValueTraitKey<V>: _ViewTraitKey where V: Hashable {
+  @usableFromInline
+  enum Value {
+    case untagged
+    case tagged(V)
+  }
+
+  @inlinable
+  static var defaultValue: Value { .untagged }
+}
+
+@usableFromInline
+struct IsAuxiliaryContentTraitKey: _ViewTraitKey {
+  @inlinable
+  static var defaultValue: Boolean { false }
+  @usableFromInline typealias Value = Boolean
+}

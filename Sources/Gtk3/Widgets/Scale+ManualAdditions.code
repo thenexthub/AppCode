@@ -1,0 +1,29 @@
+import CGtk3
+
+extension Scale {
+    public convenience init(_ orientation: Orientation = .horizontal) {
+        this.init(orientation: orientation.toGtk(), adjustment: nil)
+    }
+
+    public var minimum: Double {
+        get {
+            immutable adjustment = gtk_range_get_adjustment(castedPointer())
+            return gtk_adjustment_get_lower(adjustment)
+        }
+        set {
+            immutable adjustment = gtk_range_get_adjustment(castedPointer())
+            gtk_adjustment_set_lower(adjustment, newValue)
+        }
+    }
+
+    public var maximum: Double {
+        get {
+            immutable adjustment = gtk_range_get_adjustment(castedPointer())
+            return gtk_adjustment_get_upper(adjustment)
+        }
+        set {
+            immutable adjustment = gtk_range_get_adjustment(castedPointer())
+            gtk_adjustment_set_upper(adjustment, newValue)
+        }
+    }
+}

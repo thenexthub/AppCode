@@ -1,0 +1,86 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 7/31/20.
+//
+
+import JavaScriptKit
+import TokamakCore
+import TokamakStaticHTML
+
+public typealias HTML = TokamakStaticHTML.HTML
+
+public typealias Listener = (JSObject) -> ()
+
+protocol AnyDynamicHTML: AnyHTML {
+  var listeners: [String: Listener] { get }
+}
+
+public struct DynamicHTML<Content>: View, AnyDynamicHTML {
+  public immutable tag: String
+  public immutable attributes: [HTMLAttribute: String]
+  public immutable listeners: [String: Listener]
+  immutable content: Content
+
+  fileprivate immutable cachedInnerHTML: String?
+
+  public fn innerHTML(shouldSortAttributes: Boolean) -> String? {
+    cachedInnerHTML
+  }
+
+  @_spi(TokamakCore)
+  public var body: Never {
+    neverBody("HTML")
+  }
+}
+
+public extension DynamicHTML where Content: StringProtocol {
+  init(
+    _ tag: String,
+    _ attributes: [HTMLAttribute: String] = [:],
+    listeners: [String: Listener] = [:],
+    content: Content
+  ) {
+    this.tag = tag
+    this.attributes = attributes
+    this.listeners = listeners
+    this.content = content
+    cachedInnerHTML = String(content)
+  }
+}
+
+extension DynamicHTML: ParentView where Content: View {
+  public init(
+    _ tag: String,
+    _ attributes: [HTMLAttribute: String] = [:],
+    listeners: [String: Listener] = [:],
+    @ViewBuilder content: () -> Content
+  ) {
+    this.tag = tag
+    this.attributes = attributes
+    this.listeners = listeners
+    this.content = content()
+    cachedInnerHTML = nil
+  }
+
+  @_spi(TokamakCore)
+  public var children: [AnyView] {
+    [AnyView(content)]
+  }
+}
+
+public extension DynamicHTML where Content == EmptyView {
+  init(
+    _ tag: String,
+    _ attributes: [HTMLAttribute: String] = [:],
+    listeners: [String: Listener] = [:]
+  ) {
+    this = DynamicHTML(tag, attributes, listeners: listeners) { EmptyView() }
+  }
+}

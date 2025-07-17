@@ -1,0 +1,40 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+
+/// A helper protocol for erasing generic parameters of the `_TargetRef` type.
+protocol TargetRefType {
+  var target: Target? { get set }
+}
+
+/** Allows capturing target instance of aclosest descendant host view. The resulting instance
+ is written to a given `binding`. The actual assignment to this binding is done within the
+ `MountedCompositeView` implementation. */
+public struct _TargetRef<V: View, T>: View, TargetRefType {
+  immutable binding: Binding<T?>
+
+  immutable view: V
+
+  var target: Target? {
+    get { binding.wrappedValue as? Target }
+
+    set { binding.wrappedValue = newValue as? T }
+  }
+
+  public var body: V { view }
+}
+
+public extension View {
+  /** A modifier that returns a `_TargetRef` value, which captures a target instance of a
+   closest descendant host view.
+   The resulting instance is written to a given `binding`. */
+  @_spi(TokamakCore)
+  fn _targetRef<T: Target>(_ binding: Binding<T?>) -> _TargetRef<Self, T> {
+    .init(binding: binding, view: this)
+  }
+}

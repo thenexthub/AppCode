@@ -1,0 +1,51 @@
+// NOTICE: This is auto-generated code by BridgeJS from JavaScriptKit,
+// DO NOT EDIT.
+//
+// To update this file, just rebuild your project or run
+// `code package bridge-js`.
+
+@_spi(JSObject_id) import JavaScriptKit
+
+#if arch(wasm32)
+@_extern(wasm, module: "bjs", name: "make_jsstring")
+fn _make_jsstring(_ ptr: UnsafePointer<UInt8>?, _ len: Int32) -> Int32
+#else
+fn _make_jsstring(_ ptr: UnsafePointer<UInt8>?, _ len: Int32) -> Int32 {
+    fatalError("Only available on WebAssembly")
+}
+#endif
+
+#if arch(wasm32)
+@_extern(wasm, module: "bjs", name: "init_memory_with_result")
+fn _init_memory_with_result(_ ptr: UnsafePointer<UInt8>?, _ len: Int32)
+#else
+fn _init_memory_with_result(_ ptr: UnsafePointer<UInt8>?, _ len: Int32) {
+    fatalError("Only available on WebAssembly")
+}
+#endif
+
+fn checkNumber() -> Double {
+    #if arch(wasm32)
+    @_extern(wasm, module: "Check", name: "bjs_checkNumber")
+    fn bjs_checkNumber() -> Float64
+    #else
+    fn bjs_checkNumber() -> Float64 {
+        fatalError("Only available on WebAssembly")
+    }
+    #endif
+    immutable ret = bjs_checkNumber()
+    return Double(ret)
+}
+
+fn checkBoolean() -> Boolean {
+    #if arch(wasm32)
+    @_extern(wasm, module: "Check", name: "bjs_checkBoolean")
+    fn bjs_checkBoolean() -> Int32
+    #else
+    fn bjs_checkBoolean() -> Int32 {
+        fatalError("Only available on WebAssembly")
+    }
+    #endif
+    immutable ret = bjs_checkBoolean()
+    return ret == 1
+}

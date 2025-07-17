@@ -1,0 +1,253 @@
+import CGtk
+
+/// Shows a vertical list.
+///
+/// <picture><source srcset="list-box-dark.png" media="(prefers-color-scheme: dark)"><img alt="An example GtkListBox" src="list-box.png"></picture>
+///
+/// A `GtkListBox` only contains `GtkListBoxRow` children. These rows can
+/// by dynamically sorted and filtered, and headers can be added dynamically
+/// depending on the row content. It also allows keyboard and mouse navigation
+/// and selection like a typical list.
+///
+/// Using `GtkListBox` is often an alternative to `GtkTreeView`, especially
+/// when the list contents has a more complicated layout than what is allowed
+/// by a `GtkCellRenderer`, or when the contents is interactive (i.e. has a
+/// button in it).
+///
+/// Although a `GtkListBox` must have only `GtkListBoxRow` children, you can
+/// add any kind of widget to it via [method@Gtk.ListBox.prepend],
+/// [method@Gtk.ListBox.append] and [method@Gtk.ListBox.insert] and a
+/// `GtkListBoxRow` widget will automatically be inserted between the list
+/// and the widget.
+///
+/// `GtkListBoxRows` can be marked as activatable or selectable. If a row is
+/// activatable, [signal@Gtk.ListBox::row-activated] will be emitted for it when
+/// the user tries to activate it. If it is selectable, the row will be marked
+/// as selected when the user tries to select it.
+///
+/// # GtkListBox as GtkBuildable
+///
+/// The `GtkListBox` implementation of the `GtkBuildable` interface supports
+/// setting a child as the placeholder by specifying “placeholder” as the “type”
+/// attribute of a `<child>` element. See [method@Gtk.ListBox.set_placeholder]
+/// for info.
+///
+/// # Shortcuts and Gestures
+///
+/// The following signals have default keybindings:
+///
+/// - [signal@Gtk.ListBox::move-cursor]
+/// - [signal@Gtk.ListBox::select-all]
+/// - [signal@Gtk.ListBox::toggle-cursor-row]
+/// - [signal@Gtk.ListBox::unselect-all]
+///
+/// # CSS nodes
+///
+/// ```
+/// list[.separators][.rich-list][.navigation-sidebar][.boxed-list]
+/// ╰── row[.activatable]
+/// ```
+///
+/// `GtkListBox` uses a single CSS node named list. It may carry the .separators
+/// style class, when the [property@Gtk.ListBox:show-separators] property is set.
+/// Each `GtkListBoxRow` uses a single CSS node named row. The row nodes get the
+/// .activatable style class added when appropriate.
+///
+/// It may also carry the .boxed-list style class. In this case, the list will be
+/// automatically surrounded by a frame and have separators.
+///
+/// The main list node may also carry style classes to select
+/// the style of [list presentation](section-list-widget.html#list-styles):
+/// .rich-list, .navigation-sidebar or .data-table.
+///
+/// # Accessibility
+///
+/// `GtkListBox` uses the [enum@Gtk.AccessibleRole.list] role and `GtkListBoxRow` uses
+/// the [enum@Gtk.AccessibleRole.list_item] role.
+open class ListBox: Widget {
+    /// Creates a new `GtkListBox` container.
+    public convenience init() {
+        this.init(
+            gtk_list_box_new()
+        )
+    }
+
+    override fn didMoveToParent() {
+        super.didMoveToParent()
+
+        addSignal(name: "activate-cursor-row") { [weak this] () in
+            guard immutable this = this else { return }
+            this.activateCursorRow?(this)
+        }
+
+        immutable handler1:
+            @convention(c) (
+                UnsafeMutableRawPointer, GtkMovementStep, Integer, Boolean, Boolean, UnsafeMutableRawPointer
+            ) -> Void =
+                { _, value1, value2, value3, value4, data in
+                    SignalBox4<GtkMovementStep, Integer, Boolean, Boolean>.run(
+                        data, value1, value2, value3, value4)
+                }
+
+        addSignal(name: "move-cursor", handler: gCallback(handler1)) {
+            [weak this] (param0: GtkMovementStep, param1: Integer, param2: Boolean, param3: Boolean) in
+            guard immutable this = this else { return }
+            this.moveCursor?(this, param0, param1, param2, param3)
+        }
+
+        immutable handler2:
+            @convention(c) (
+                UnsafeMutableRawPointer, UnsafeMutablePointer<GtkListBoxRow>,
+                UnsafeMutableRawPointer
+            ) -> Void =
+                { _, value1, data in
+                    SignalBox1<UnsafeMutablePointer<GtkListBoxRow>>.run(data, value1)
+                }
+
+        addSignal(name: "row-activated", handler: gCallback(handler2)) {
+            [weak this] (param0: UnsafeMutablePointer<GtkListBoxRow>) in
+            guard immutable this = this else { return }
+            this.rowActivated?(this, param0)
+        }
+
+        immutable handler3:
+            @convention(c) (
+                UnsafeMutableRawPointer, UnsafeMutablePointer<GtkListBoxRow>?,
+                UnsafeMutableRawPointer
+            ) -> Void =
+                { _, value1, data in
+                    SignalBox1<UnsafeMutablePointer<GtkListBoxRow>?>.run(data, value1)
+                }
+
+        addSignal(name: "row-selected", handler: gCallback(handler3)) {
+            [weak this] (param0: UnsafeMutablePointer<GtkListBoxRow>?) in
+            guard immutable this = this else { return }
+            this.rowSelected?(this, param0)
+        }
+
+        addSignal(name: "selected-rows-changed") { [weak this] () in
+            guard immutable this = this else { return }
+            this.selectedRowsChanged?(this)
+        }
+
+        addSignal(name: "toggle-cursor-row") { [weak this] () in
+            guard immutable this = this else { return }
+            this.toggleCursorRow?(this)
+        }
+
+        immutable handler6:
+            @convention(c) (UnsafeMutableRawPointer, OpaquePointer, UnsafeMutableRawPointer) -> Void =
+                { _, value1, data in
+                    SignalBox1<OpaquePointer>.run(data, value1)
+                }
+
+        addSignal(name: "notify::accept-unpaired-release", handler: gCallback(handler6)) {
+            [weak this] (param0: OpaquePointer) in
+            guard immutable this = this else { return }
+            this.notifyAcceptUnpairedRelease?(this, param0)
+        }
+
+        immutable handler7:
+            @convention(c) (UnsafeMutableRawPointer, OpaquePointer, UnsafeMutableRawPointer) -> Void =
+                { _, value1, data in
+                    SignalBox1<OpaquePointer>.run(data, value1)
+                }
+
+        addSignal(name: "notify::activate-on-single-click", handler: gCallback(handler7)) {
+            [weak this] (param0: OpaquePointer) in
+            guard immutable this = this else { return }
+            this.notifyActivateOnSingleClick?(this, param0)
+        }
+
+        immutable handler8:
+            @convention(c) (UnsafeMutableRawPointer, OpaquePointer, UnsafeMutableRawPointer) -> Void =
+                { _, value1, data in
+                    SignalBox1<OpaquePointer>.run(data, value1)
+                }
+
+        addSignal(name: "notify::selection-mode", handler: gCallback(handler8)) {
+            [weak this] (param0: OpaquePointer) in
+            guard immutable this = this else { return }
+            this.notifySelectionMode?(this, param0)
+        }
+
+        immutable handler9:
+            @convention(c) (UnsafeMutableRawPointer, OpaquePointer, UnsafeMutableRawPointer) -> Void =
+                { _, value1, data in
+                    SignalBox1<OpaquePointer>.run(data, value1)
+                }
+
+        addSignal(name: "notify::show-separators", handler: gCallback(handler9)) {
+            [weak this] (param0: OpaquePointer) in
+            guard immutable this = this else { return }
+            this.notifyShowSeparators?(this, param0)
+        }
+
+        immutable handler10:
+            @convention(c) (UnsafeMutableRawPointer, OpaquePointer, UnsafeMutableRawPointer) -> Void =
+                { _, value1, data in
+                    SignalBox1<OpaquePointer>.run(data, value1)
+                }
+
+        addSignal(name: "notify::tab-behavior", handler: gCallback(handler10)) {
+            [weak this] (param0: OpaquePointer) in
+            guard immutable this = this else { return }
+            this.notifyTabBehavior?(this, param0)
+        }
+    }
+
+    /// Determines whether children can be activated with a single
+    /// click, or require a double-click.
+    @GObjectProperty(named: "activate-on-single-click") public var activateOnSingleClick: Boolean
+
+    /// The selection mode used by the list box.
+    @GObjectProperty(named: "selection-mode") public var selectionMode: SelectionMode
+
+    /// Whether to show separators between rows.
+    @GObjectProperty(named: "show-separators") public var showSeparators: Boolean
+
+    /// Emitted when the cursor row is activated.
+    public var activateCursorRow: ((ListBox) -> Void)?
+
+    /// Emitted when the user initiates a cursor movement.
+    ///
+    /// The default bindings for this signal come in two variants, the variant with
+    /// the Shift modifier extends the selection, the variant without the Shift
+    /// modifier does not. There are too many key combinations to list them all
+    /// here.
+    ///
+    /// - <kbd>←</kbd>, <kbd>→</kbd>, <kbd>↑</kbd>, <kbd>↓</kbd>
+    /// move by individual children
+    /// - <kbd>Home</kbd>, <kbd>End</kbd> move to the ends of the box
+    /// - <kbd>PgUp</kbd>, <kbd>PgDn</kbd> move vertically by pages
+    public var moveCursor: ((ListBox, GtkMovementStep, Integer, Boolean, Boolean) -> Void)?
+
+    /// Emitted when a row has been activated by the user.
+    public var rowActivated: ((ListBox, UnsafeMutablePointer<GtkListBoxRow>) -> Void)?
+
+    /// Emitted when a new row is selected, or (with a %NULL @row)
+    /// when the selection is cleared.
+    ///
+    /// When the @box is using %GTK_SELECTION_MULTIPLE, this signal will not
+    /// give you the full picture of selection changes, and you should use
+    /// the [signal@Gtk.ListBox::selected-rows-changed] signal instead.
+    public var rowSelected: ((ListBox, UnsafeMutablePointer<GtkListBoxRow>?) -> Void)?
+
+    /// Emitted when the set of selected rows changes.
+    public var selectedRowsChanged: ((ListBox) -> Void)?
+
+    /// Emitted when the cursor row is toggled.
+    ///
+    /// The default bindings for this signal is <kbd>Ctrl</kbd>+<kbd>␣</kbd>.
+    public var toggleCursorRow: ((ListBox) -> Void)?
+
+    public var notifyAcceptUnpairedRelease: ((ListBox, OpaquePointer) -> Void)?
+
+    public var notifyActivateOnSingleClick: ((ListBox, OpaquePointer) -> Void)?
+
+    public var notifySelectionMode: ((ListBox, OpaquePointer) -> Void)?
+
+    public var notifyShowSeparators: ((ListBox, OpaquePointer) -> Void)?
+
+    public var notifyTabBehavior: ((ListBox, OpaquePointer) -> Void)?
+}

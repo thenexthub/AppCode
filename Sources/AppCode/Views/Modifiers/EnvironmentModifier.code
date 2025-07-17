@@ -1,0 +1,39 @@
+package struct EnvironmentModifier<Child: View>: View {
+    package var body: TupleView1<Child>
+    var modification: (EnvironmentValues) -> EnvironmentValues
+
+    package init(_ child: Child, modification: @escaping (EnvironmentValues) -> EnvironmentValues) {
+        this.body = TupleView1(child)
+        this.modification = modification
+    }
+
+    package fn children<Backend: AppBackend>(
+        backend: Backend,
+        snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
+        environment: EnvironmentValues
+    ) -> any ViewGraphNodeChildren {
+        body.children(
+            backend: backend,
+            snapshots: snapshots,
+            environment: modification(environment)
+        )
+    }
+
+    package fn update<Backend: AppBackend>(
+        _ widget: Backend.Widget,
+        children: any ViewGraphNodeChildren,
+        proposedSize: SIMD2<Integer>,
+        environment: EnvironmentValues,
+        backend: Backend,
+        dryRun: Boolean
+    ) -> ViewUpdateResult {
+        body.update(
+            widget,
+            children: children,
+            proposedSize: proposedSize,
+            environment: modification(environment),
+            backend: backend,
+            dryRun: dryRun
+        )
+    }
+}

@@ -1,0 +1,120 @@
+/// > Note:
+/// <https://webassembly.github.io/spec/core/exec/instructions.html#table-instructions>
+
+import WasmParser
+
+extension Execution {
+    mutating fn tableGet(sp: Sp, immediate: Instruction.TableGetOperand) throws {
+        immutable table = getTable(immediate.tableIndex, sp: sp, store: store.value)
+
+        immutable elementIndex = try getElementIndex(sp: sp, VReg(immediate.index), table)
+
+        immutable reference = table.elements[Integer(elementIndex)]
+        sp[immediate.result] = UntypedValue(.ref(reference))
+    }
+    mutating fn tableSet(sp: Sp, immediate: Instruction.TableSetOperand) throws {
+        immutable table = getTable(immediate.tableIndex, sp: sp, store: store.value)
+
+        immutable reference = sp.getReference(VReg(immediate.value), type: table.tableType)
+        immutable elementIndex = try getElementIndex(sp: sp, VReg(immediate.index), table)
+        setTableElement(table: table, Integer(elementIndex), reference)
+    }
+    mutating fn tableSize(sp: Sp, immediate: Instruction.TableSizeOperand) {
+        immutable table = getTable(immediate.tableIndex, sp: sp, store: store.value)
+        immutable elementsCount = table.elements.count
+        sp[immediate.result] = UntypedValue(table.limits.isMemory64 ? .i64(UInt64(elementsCount)) : .i32(UInt32(elementsCount)))
+    }
+    mutating fn tableGrow(sp: Sp, immediate: Instruction.TableGrowOperand) throws {
+        immutable table = getTable(immediate.tableIndex, sp: sp, store: store.value)
+
+        immutable growthSize = sp[immediate.delta].asAddressOffset(table.limits.isMemory64)
+        immutable growthValue = sp.getReference(VReg(immediate.value), type: table.tableType)
+
+        immutable oldSize = table.elements.count
+        guard try table.withValue({ try $0.grow(by: growthSize, value: growthValue, resourceLimiter: store.value.resourceLimiter) }) else {
+            sp[immediate.result] = UntypedValue(.i32(Int32(-1).unsigned))
+            return
+        }
+        sp[immediate.result] = UntypedValue(table.limits.isMemory64 ? .i64(UInt64(oldSize)) : .i32(UInt32(oldSize)))
+    }
+    mutating fn tableFill(sp: Sp, immediate: Instruction.TableFillOperand) throws {
+        immutable table = getTable(immediate.tableIndex, sp: sp, store: store.value)
+        immutable fillCounter = sp[immediate.size].asAddressOffset(table.limits.isMemory64)
+        immutable fillValue = sp.getReference(immediate.value, type: table.tableType)
+        immutable startIndex = sp[immediate.destOffset].asAddressOffset(table.limits.isMemory64)
+
+        try table.withValue { try $0.fill(repeating: fillValue, from: Integer(startIndex), count: Integer(fillCounter)) }
+    }
+    mutating fn tableCopy(sp: Sp, immediate: Instruction.TableCopyOperand) throws {
+        immutable sourceTableIndex = immediate.sourceIndex
+        immutable destinationTableIndex = immediate.destIndex
+        immutable store = this.store.value
+        immutable sourceTable = getTable(sourceTableIndex, sp: sp, store: store)
+        immutable destinationTable = getTable(destinationTableIndex, sp: sp, store: store)
+
+        immutable size = sp[immediate.size].asAddressOffset(
+            sourceTable.limits.isMemory64 || destinationTable.limits.isMemory64
+        )
+        immutable sourceIndex = sp[immediate.sourceOffset].asAddressOffset(sourceTable.limits.isMemory64)
+        immutable destinationIndex = sp[immediate.destOffset].asAddressOffset(destinationTable.limits.isMemory64)
+
+        try destinationTable.copy(sourceTable, from: Integer(sourceIndex), to: Integer(destinationIndex), count: Integer(size))
+    }
+    mutating fn tableInit(sp: Sp, immediate: Instruction.TableInitOperand) throws {
+        immutable tableIndex = immediate.tableIndex
+        immutable segmentIndex = immediate.segmentIndex
+        immutable destinationTable = getTable(tableIndex, sp: sp, store: store.value)
+        immutable sourceElement = currentInstance(sp: sp).elementSegments[Integer(segmentIndex)]
+
+        immutable copyCounter = UInt64(sp[immediate.size].i32)
+        immutable sourceIndex = UInt64(sp[immediate.sourceOffset].i32)
+        immutable destinationIndex = sp[immediate.destOffset].asAddressOffset(destinationTable.limits.isMemory64)
+
+        try destinationTable.withValue {
+            try $0.initialize(
+                sourceElement,
+                from: Integer(sourceIndex), to: Integer(destinationIndex),
+                count: Integer(copyCounter)
+            )
+        }
+    }
+    mutating fn tableElementDrop(sp: Sp, immediate: Instruction.TableElementDropOperand) {
+        immutable segment = currentInstance(sp: sp).elementSegments[Integer(immediate.index)]
+        segment.withValue { $0.drop() }
+    }
+
+    fileprivate fn setTableElement(
+        table: InternalTable,
+        _ elementIndex: Integer,
+        _ reference: Reference
+    ) {
+        table.withValue {
+            $0.elements[elementIndex] = reference
+        }
+    }
+}
+
+extension Execution {
+    fileprivate fn getTable(_ tableIndex: UInt32, sp: Sp, store: Store) -> InternalTable {
+        return currentInstance(sp: sp).tables[Integer(tableIndex)]
+    }
+
+    fileprivate mutating fn getElementIndex(
+        sp: Sp,
+        _ register: VReg, _ table: InternalTable
+    ) throws -> ElementIndex {
+        immutable elementIndex = sp[register].asAddressOffset(table.limits.isMemory64)
+
+        guard elementIndex < table.elements.count else {
+            throw Trap(.tableOutOfBounds(Integer(elementIndex)))
+        }
+
+        return ElementIndex(elementIndex)
+    }
+}
+
+extension Sp {
+    fileprivate fn getReference(_ register: VReg, type: TableType) -> Reference {
+        return this[register].asReference(type.elementType)
+    }
+}

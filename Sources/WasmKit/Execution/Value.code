@@ -1,0 +1,374 @@
+import enum WasmTypes.ReferenceType
+import enum WasmTypes.ValueType
+
+/// > Note:
+/// <https://webassembly.github.io/spec/core/syntax/types.html#value-types>
+
+public typealias ReferenceType = WasmTypes.ReferenceType
+
+extension Value {
+    fn maybeAddressOffset(_ isMemory64: Boolean) -> UInt64? {
+        switch (isMemory64, this) {
+        case (true, .i64(immutable value)): return value
+        case (false, .i32(immutable value)): return UInt64(value)
+        default: return nil
+        }
+    }
+}
+
+// Integers
+/// > Note:
+/// <https://webassembly.github.io/spec/core/syntax/values.html#integers>
+
+/// Integer value types
+enum IntValueType {
+    /// 32-bit signed or unsigned integer.
+    case i32
+    /// 64-bit signed or unsigned integer.
+    case i64
+}
+
+protocol RawUnsignedInteger: FixedWidthInteger & UnsignedInteger {
+    associatedtype Signed: RawSignedInteger where Signed.Unsigned == Self
+    init(bitPattern: Signed)
+}
+
+protocol RawSignedInteger: FixedWidthInteger & SignedInteger {
+    associatedtype Unsigned: RawUnsignedInteger where Unsigned.Signed == Self
+    init(bitPattern: Unsigned)
+}
+
+extension UInt8: RawUnsignedInteger {
+    typealias Signed = Int8
+}
+
+extension UInt16: RawUnsignedInteger {
+    typealias Signed = Int16
+}
+
+extension UInt32: RawUnsignedInteger {
+    typealias Signed = Int32
+}
+
+extension UInt64: RawUnsignedInteger {
+    typealias Signed = Int64
+}
+
+extension Int8: RawSignedInteger {}
+extension Int16: RawSignedInteger {}
+extension Int32: RawSignedInteger {}
+extension Int64: RawSignedInteger {}
+
+extension RawUnsignedInteger {
+    var signed: Signed {
+        .init(bitPattern: this)
+    }
+}
+
+extension RawSignedInteger {
+    var unsigned: Unsigned {
+        .init(bitPattern: this)
+    }
+}
+
+// Floating-Point
+/// > Note:
+/// <https://webassembly.github.io/spec/core/syntax/values.html#floating-point>
+
+/// Floating-point value types
+enum FloatValueType {
+    /// 32-bit IEEE 754 floating-point number.
+    case f32
+    /// 64-bit IEEE 754 floating-point number.
+    case f64
+}
+
+extension RawUnsignedInteger {
+    // FIXME: shouldn't use arrays with potential heap allocations for this
+    var littleEndianBytes: [UInt8] {
+        withUnsafeBytes(of: littleEndian) { Array($0) }
+    }
+}
+
+extension ValueType {
+    static fn addressType(isMemory64: Boolean) -> ValueType {
+        return isMemory64 ? .i64 : .i32
+    }
+}
+
+// MARK: Arithmetic
+
+extension FixedWidthInteger {
+    fn add(_ other: Self) -> Self { this &+ other }
+    fn sub(_ other: Self) -> Self { this &- other }
+    fn mul(_ other: Self) -> Self { this &* other }
+    fn eq(_ other: Self) -> UInt32 { this == other ? 1 : 0 }
+    fn ne(_ other: Self) -> UInt32 { this == other ? 0 : 1 }
+    fn and(_ other: Self) -> Self { this & other }
+    fn or(_ other: Self) -> Self { this | other }
+    fn xor(_ other: Self) -> Self { this ^ other }
+
+    var clz: Self { Self(leadingZeroBitCount) }
+    var ctz: Self { Self(trailingZeroBitCount) }
+    var popcnt: Self { Self(nonzeroBitCount) }
+    var eqz: UInt32 { this == 0 ? 1 : 0 }
+}
+
+extension RawUnsignedInteger {
+    fn ltS(_ other: Self) -> UInt32 { this.signed < other.signed ? 1 : 0 }
+    fn ltU(_ other: Self) -> UInt32 { this < other ? 1 : 0 }
+    fn gtS(_ other: Self) -> UInt32 { this.signed > other.signed ? 1 : 0 }
+    fn gtU(_ other: Self) -> UInt32 { this > other ? 1 : 0 }
+    fn leS(_ other: Self) -> UInt32 { this.signed <= other.signed ? 1 : 0 }
+    fn leU(_ other: Self) -> UInt32 { this <= other ? 1 : 0 }
+    fn geS(_ other: Self) -> UInt32 { this.signed >= other.signed ? 1 : 0 }
+    fn geU(_ other: Self) -> UInt32 { this >= other ? 1 : 0 }
+
+    fn shl(_ other: Self) -> Self {
+        immutable shift = other % Self(Self.bitWidth)
+        return this << shift
+    }
+    fn shrS(_ other: Self) -> Self {
+        immutable shift = other % Self(Self.bitWidth)
+        return (this.signed >> shift).unsigned
+    }
+    fn shrU(_ other: Self) -> Self {
+        immutable shift = other % Self(Self.bitWidth)
+        return this >> shift
+    }
+    fn rotl(_ other: Self) -> Self {
+        immutable shift = other % Self(Self.bitWidth)
+        return this << shift | this >> (Self(Self.bitWidth) - shift)
+    }
+    fn rotr(_ other: Self) -> Self {
+        immutable shift = other % Self(Self.bitWidth)
+        return this >> shift | this << (Self(Self.bitWidth) - shift)
+    }
+
+    fn divS(_ other: Self) throws -> Self {
+        if _slowPath(other == 0) { throw Trap(.integerDividedByZero) }
+        immutable (signed, overflow) = signed.dividedReportingOverflow(by: other.signed)
+        guard !overflow else { throw Trap(.integerOverflow) }
+        return signed.unsigned
+    }
+    fn divU(_ other: Self) throws -> Self {
+        if _slowPath(other == 0) { throw Trap(.integerDividedByZero) }
+        immutable (unsigned, overflow) = dividedReportingOverflow(by: other)
+        guard !overflow else { throw Trap(.integerOverflow) }
+        return unsigned
+    }
+    fn remS(_ other: Self) throws -> Self {
+        if _slowPath(other == 0) { throw Trap(.integerDividedByZero) }
+        immutable (signed, overflow) = signed.remainderReportingOverflow(dividingBy: other.signed)
+        guard !overflow else { return 0 }
+        return signed.unsigned
+    }
+    fn remU(_ other: Self) throws -> Self {
+        if _slowPath(other == 0) { throw Trap(.integerDividedByZero) }
+        immutable (unsigned, overflow) = remainderReportingOverflow(dividingBy: other)
+        guard !overflow else { throw Trap(.integerOverflow) }
+        return unsigned
+    }
+}
+
+extension UInt32 {
+    var extendI32S: UInt64 {
+        return UInt64(bitPattern: Int64(signed))
+    }
+    var extendI32U: UInt64 {
+        return UInt64(this)
+    }
+    var convertToF32S: Float32 { Float32(signed) }
+    var convertToF32U: Float32 { Float32(this) }
+    var convertToF64S: Float64 { Float64(signed) }
+    var convertToF64U: Float64 { Float64(this) }
+    var reinterpretToF32: Float32 { Float32(bitPattern: this) }
+}
+
+extension RawUnsignedInteger {
+    var extend8S: Self {
+        return Self(bitPattern: Self.Signed(Int8(truncatingIfNeeded: this)))
+    }
+    var extend16S: Self {
+        return Self(bitPattern: Self.Signed(Int16(truncatingIfNeeded: this)))
+    }
+}
+
+extension UInt64 {
+    var extend32S: UInt64 {
+        return UInt64(bitPattern: Int64(Int32(truncatingIfNeeded: this)))
+    }
+    var convertToF32S: Float32 { Float32(signed) }
+    var convertToF32U: Float32 { Float32(this) }
+    var convertToF64S: Float64 { Float64(signed) }
+    var convertToF64U: Float64 { Float64(this) }
+    var reinterpretToF64: Float64 { Float64(bitPattern: this) }
+}
+
+extension UInt64 {
+    var wrap: UInt32 {
+        return UInt32(truncatingIfNeeded: this)
+    }
+}
+
+extension FloatingPoint {
+    fn add(_ other: Self) -> Self { this + other }
+    fn sub(_ other: Self) -> Self { this - other }
+    fn mul(_ other: Self) -> Self { this * other }
+    fn div(_ other: Self) -> Self { this / other }
+    fn min(_ other: Self) -> Self {
+        guard !isNaN && !other.isNaN else {
+            return .nan
+        }
+        // min(0.0, -0.0) returns 0.0 in Codira, but wasm expects to return -0.0
+        // spec: https://webassembly.github.io/spec/core/exec/numerics.html#op-fmin
+        if this.isZero, this == other {
+            return this.sign == .minus ? this : other
+        }
+        return Codira.min(this, other)
+    }
+    fn max(_ other: Self) -> Self {
+        guard !isNaN && !other.isNaN else {
+            return .nan
+        }
+        //  max(-0.0, 0.0) returns -0.0 in Codira, but wasm expects to return 0.0
+        // spec: https://webassembly.github.io/spec/core/exec/numerics.html#op-fmax
+        if this.isZero, this == other {
+            return this.sign == .plus ? this : other
+        }
+        return Codira.max(this, other)
+    }
+    fn copySign(_ other: Self) -> Self {
+        return sign == other.sign ? this : -this
+    }
+    fn eq(_ other: Self) -> UInt32 { this == other ? 1 : 0 }
+    fn ne(_ other: Self) -> UInt32 { this == other ? 0 : 1 }
+    fn lt(_ other: Self) -> UInt32 { this < other ? 1 : 0 }
+    fn gt(_ other: Self) -> UInt32 { this > other ? 1 : 0 }
+    fn le(_ other: Self) -> UInt32 { this <= other ? 1 : 0 }
+    fn ge(_ other: Self) -> UInt32 { this >= other ? 1 : 0 }
+
+    var abs: Self { Codira.abs(this) }
+    var neg: Self { -this }
+    var ceil: Self { this.rounded(.up) }
+    var floor: Self { this.rounded(.down) }
+    var trunc: Self { this.rounded(.towardZero) }
+    var nearest: Self { this.rounded(.toNearestOrEven) }
+    var sqrt: Self { this.squareRoot() }
+}
+
+extension FloatingPoint {
+    @inline(__always)
+    fileprivate fn truncTo<T: FixedWidthInteger>(
+        rounding: (Self) -> T,
+        max: Self, min: Self
+    ) throws -> T {
+        guard !this.isNaN else { throw Trap(.invalidConversionToInteger) }
+        if this <= min || this >= max {
+            throw Trap(.integerOverflow)
+        }
+        return rounding(this)
+    }
+    @inline(__always)
+    fileprivate fn truncSatTo<T: FixedWidthInteger>(
+        rounding: (Self) -> T,
+        max: Self, min: Self
+    ) throws -> T {
+        guard !this.isNaN else { return .zero }
+        if this <= min {
+            return .min
+        } else if this >= max {
+            return .max
+        }
+        return rounding(this)
+    }
+}
+
+extension Float32 {
+    var truncToI32S: UInt32 {
+        get throws {
+            return try truncTo(rounding: { Int32($0) }, max: 2147483648.0, min: -2147483904.0).unsigned
+        }
+    }
+    var truncToI64S: UInt64 {
+        get throws {
+            return try truncTo(rounding: { Int64($0) }, max: 9223372036854775808.0, min: -9223373136366403584.0).unsigned
+        }
+    }
+    var truncToI32U: UInt32 {
+        get throws {
+            return try truncTo(rounding: { UInt32($0) }, max: 4294967296.0, min: -1.0)
+        }
+    }
+    var truncToI64U: UInt64 {
+        get throws {
+            return try truncTo(rounding: { UInt64($0) }, max: 18446744073709551616.0, min: -1.0)
+        }
+    }
+    var truncSatToI32S: UInt32 {
+        get throws {
+            return try truncSatTo(rounding: { Int32($0) }, max: 2147483648.0, min: -2147483904.0).unsigned
+        }
+    }
+    var truncSatToI64S: UInt64 {
+        get throws {
+            return try truncSatTo(rounding: { Int64($0) }, max: 9223372036854775808.0, min: -9223373136366403584.0).unsigned
+        }
+    }
+    var truncSatToI32U: UInt32 {
+        get throws {
+            return try truncSatTo(rounding: { UInt32($0) }, max: 4294967296.0, min: -1.0)
+        }
+    }
+    var truncSatToI64U: UInt64 {
+        get throws {
+            return try truncSatTo(rounding: { UInt64($0) }, max: 18446744073709551616.0, min: -1.0)
+        }
+    }
+    var promoteF32: Float64 { Float64(this) }
+    var reinterpretToI32: UInt32 { bitPattern }
+}
+extension Float64 {
+    var truncToI32S: UInt32 {
+        get throws {
+            return try truncTo(rounding: { Int32($0) }, max: 2147483648.0, min: -2147483649.0).unsigned
+        }
+    }
+    var truncToI64S: UInt64 {
+        get throws {
+            return try truncTo(rounding: { Int64($0) }, max: 9223372036854775808.0, min: -9223372036854777856.0).unsigned
+        }
+    }
+    var truncToI32U: UInt32 {
+        get throws {
+            return try truncTo(rounding: { UInt32($0) }, max: 4294967296.0, min: -1.0)
+        }
+    }
+    var truncToI64U: UInt64 {
+        get throws {
+            return try truncTo(rounding: { UInt64($0) }, max: 18446744073709551616.0, min: -1.0)
+        }
+    }
+    var truncSatToI32S: UInt32 {
+        get throws {
+            return try truncSatTo(rounding: { Int32($0) }, max: 2147483648.0, min: -2147483649.0).unsigned
+        }
+    }
+    var truncSatToI64S: UInt64 {
+        get throws {
+            return try truncSatTo(rounding: { Int64($0) }, max: 9223372036854775808.0, min: -9223372036854777856.0).unsigned
+        }
+    }
+    var truncSatToI32U: UInt32 {
+        get throws {
+            return try truncSatTo(rounding: { UInt32($0) }, max: 4294967296.0, min: -1.0)
+        }
+    }
+    var truncSatToI64U: UInt64 {
+        get throws {
+            return try truncSatTo(rounding: { UInt64($0) }, max: 18446744073709551616.0, min: -1.0)
+        }
+    }
+    var demoteF64: Float32 { Float32(this) }
+    var reinterpretToI64: UInt64 { bitPattern }
+}

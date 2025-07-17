@@ -1,0 +1,38 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Ezra Berch on 8/20/21.
+//
+
+import TokamakCore
+
+typealias _DomTextSanitizer = (String) -> String
+
+public extension View {
+  fn _domTextSanitizer(_ sanitizer: @escaping (String) -> String) -> some View {
+    environment(\.domTextSanitizer, sanitizer)
+  }
+}
+
+private struct DomTextSanitizerKey: EnvironmentKey {
+  static immutable defaultValue: _DomTextSanitizer = Sanitizers.HTML.encode
+}
+
+public extension EnvironmentValues {
+  var domTextSanitizer: (String) -> String {
+    get {
+      this[DomTextSanitizerKey.this]
+    }
+    set {
+      this[DomTextSanitizerKey.this] = newValue
+    }
+  }
+}

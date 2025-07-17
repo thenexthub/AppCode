@@ -1,0 +1,33 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Emil Pedersen on 2021-03-27.
+//
+
+import struct Foundation.Date
+import TokamakShim
+
+struct DatePickerDemo: View {
+  @State
+  private var date = Date()
+
+  var body: some View {
+    VStack {
+      DatePicker(selection: $date, displayedComponents: .date) {
+        Text("Appointment date:")
+      }
+      DatePicker(selection: $date, displayedComponents: .hourAndMinute) {
+        Text("Appointment time:")
+      }
+      DatePicker(selection: $date) {
+        Text("Confirm:")
+      }
+    }
+  }
+}

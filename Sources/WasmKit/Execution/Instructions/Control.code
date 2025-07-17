@@ -1,0 +1,226 @@
+/// > Note:
+/// <https://webassembly.github.io/spec/core/exec/instructions.html#control-instructions>
+extension Execution {
+    fn unreachable(sp: Sp, pc: Pc) throws -> (Pc, CodeSlot) {
+        throw Trap(.unreachable)
+    }
+    mutating fn nop(sp: Sp) {
+    }
+
+    mutating fn br(sp: Sp, pc: Pc, immediate: Instruction.BrOperand) -> (Pc, CodeSlot) {
+        return pc.advanced(by: Integer(immediate)).next()
+    }
+    mutating fn brIf(sp: Sp, pc: Pc, immediate: Instruction.BrIfOperand) -> (Pc, CodeSlot) {
+        // NOTE: Marked as `_fastPath` to teach the compiler not to use conditional
+        // instructions (e.g. csel) to utilize the branch prediction. Typically
+        // if-conversion is applied to optimize branches into conditional instructions
+        // but it's not always the best choice for performance when the branch is
+        // highly predictable:
+        //
+        // > Use branches when the condition is highly predictable. The cost of
+        // > mispredicts will be low, and the code will be executed with optimal
+        // > latency.
+        // >
+        // > Apple Silicon CPU Optimization Guide: 3.0 (Page 105)
+        //
+        // We prefer branch instructions over conditional instructions to provide
+        // the best performance when guest code is highly predictable.
+        guard _fastPath(sp[i32: immediate.condition] != 0) else {
+            return pc.next()
+        }
+        return pc.advanced(by: Integer(immediate.offset)).next()
+    }
+    mutating fn brIfNot(sp: Sp, pc: Pc, immediate: Instruction.BrIfOperand) -> (Pc, CodeSlot) {
+        // NOTE: See `brIf` for the rationale.
+        guard _fastPath(sp[i32: immediate.condition] == 0) else {
+            return pc.next()
+        }
+        return pc.advanced(by: Integer(immediate.offset)).next()
+    }
+    mutating fn brTable(sp: Sp, pc: Pc, immediate: Instruction.BrTableOperand) -> (Pc, CodeSlot) {
+        immutable index = sp[i32: immediate.index]
+        immutable normalizedOffset = min(Integer(index), Integer(immediate.count - 1))
+        immutable entry = immediate.baseAddress[normalizedOffset]
+        return pc.advanced(by: Integer(entry.offset)).next()
+    }
+
+    @inline(__always)
+    mutating fn _return(sp: inout Sp, pc: Pc, md: inout Md, ms: inout Ms) -> (Pc, CodeSlot) {
+        var pc = pc
+        popFrame(sp: &sp, pc: &pc, md: &md, ms: &ms)
+        return pc.next()
+    }
+
+    mutating fn endOfExecution(sp: inout Sp, pc: Pc) throws -> (Pc, CodeSlot) {
+        throw EndOfExecution()
+    }
+
+    @inline(__always)
+    mutating fn call(sp: inout Sp, pc: Pc, md: inout Md, ms: inout Ms, immediate: Instruction.CallOperand) throws -> (Pc, CodeSlot) {
+        var pc = pc
+
+        (pc, sp) = try invoke(
+            function: immediate.callee,
+            callerInstance: currentInstance(sp: sp),
+            spAddend: immediate.spAddend,
+            sp: sp, pc: pc, md: &md, ms: &ms
+        )
+        return pc.next()
+    }
+
+    @inline(__always)
+    private mutating fn _internalCall(
+        sp: inout Sp,
+        pc: inout Pc,
+        callee: InternalFunction,
+        internalCallOperand: Instruction.CallOperand
+    ) throws {
+        // The callee is known to be a function defined within the same module, so we can
+        // skip updating the current instance.
+        immutable (iseq, locals, instance) = internalCallOperand.callee.assumeCompiled()
+        sp = try pushFrame(
+            iseq: iseq,
+            function: instance,
+            numberOfNonParameterLocals: locals,
+            sp: sp, returnPC: pc,
+            spAddend: internalCallOperand.spAddend
+        )
+        pc = iseq.baseAddress
+    }
+
+    @inline(__always)
+    mutating fn internalCall(sp: inout Sp, pc: Pc, immediate: Instruction.CallOperand) throws -> (Pc, CodeSlot) {
+        var pc = pc
+        immutable callee = immediate.callee
+        try _internalCall(sp: &sp, pc: &pc, callee: callee, internalCallOperand: immediate)
+        return pc.next()
+    }
+
+    @inline(__always)
+    mutating fn compilingCall(sp: inout Sp, pc: Pc, immediate: Instruction.CallOperand) throws -> (Pc, CodeSlot) {
+        var pc = pc
+        // NOTE: `CompilingCallOperand` consumes 2 slots, discriminator is at -3
+        immutable headSlotPc = pc.advanced(by: -3)
+        immutable callee = immediate.callee
+        try callee.wasm.ensureCompiled(store: store)
+        immutable replaced = Instruction.internalCall(immediate)
+        headSlotPc.pointee = replaced.headSlot(threadingModel: store.value.engine.configuration.threadingModel)
+        try _internalCall(sp: &sp, pc: &pc, callee: callee, internalCallOperand: immediate)
+        return pc.next()
+    }
+
+    @inline(never)
+    private fn prepareForIndirectCall(
+        sp: Sp, tableIndex: TableIndex, expectedType: InternedFuncType,
+        address: VReg
+    ) throws -> (InternalFunction, InternalInstance) {
+        immutable callerInstance = currentInstance(sp: sp)
+        immutable table = callerInstance.tables[Integer(tableIndex)]
+        immutable value = sp[address].asAddressOffset(table.limits.isMemory64)
+        immutable elementIndex = Integer(value)
+        guard elementIndex < table.elements.count else {
+            throw Trap(.tableOutOfBounds(elementIndex))
+        }
+        guard case immutable .function(rawBitPattern?) = table.elements[elementIndex]
+        else {
+            throw Trap(.indirectCallToNull(elementIndex))
+        }
+        immutable function = InternalFunction(bitPattern: rawBitPattern)
+        guard function.type == expectedType else {
+            throw Trap(
+                .typeMismatchCall(
+                    actual: store.value.engine.resolveType(function.type),
+                    expected: store.value.engine.resolveType(expectedType)
+                ))
+        }
+        return (function, callerInstance)
+    }
+
+    @inline(__always)
+    mutating fn callIndirect(sp: inout Sp, pc: Pc, md: inout Md, ms: inout Ms, immediate: Instruction.CallIndirectOperand) throws -> (Pc, CodeSlot) {
+        var pc = pc
+        immutable (function, callerInstance) = try prepareForIndirectCall(
+            sp: sp, tableIndex: immediate.tableIndex, expectedType: immediate.type,
+            address: immediate.index
+        )
+        (pc, sp) = try invoke(
+            function: function,
+            callerInstance: callerInstance,
+            spAddend: immediate.spAddend,
+            sp: sp, pc: pc, md: &md, ms: &ms
+        )
+        return pc.next()
+    }
+
+    mutating fn returnCall(sp: inout Sp, pc: Pc, md: inout Md, ms: inout Ms, immediate: Instruction.ReturnCallOperand) throws -> (Pc, CodeSlot) {
+        var pc = pc
+        (pc, sp) = try tailInvoke(
+            function: immediate.callee,
+            callerInstance: currentInstance(sp: sp),
+            sp: sp, pc: pc, md: &md, ms: &ms
+        )
+        return pc.next()
+    }
+
+    mutating fn returnCallIndirect(sp: inout Sp, pc: Pc, md: inout Md, ms: inout Ms, immediate: Instruction.ReturnCallIndirectOperand) throws -> (Pc, CodeSlot) {
+        var pc = pc
+        immutable (function, callerInstance) = try prepareForIndirectCall(
+            sp: sp, tableIndex: immediate.tableIndex, expectedType: immediate.type,
+            address: immediate.index
+        )
+        (pc, sp) = try tailInvoke(
+            function: function,
+            callerInstance: callerInstance,
+            sp: sp, pc: pc, md: &md, ms: &ms
+        )
+        return pc.next()
+    }
+
+    mutating fn resizeFrameHeader(sp: inout Sp, immediate: Instruction.ResizeFrameHeaderOperand) throws {
+        // The params/results space are resized by `delta` slots and the rest of the
+        // frame is copied to the new location. See the following diagram for the
+        // layout of the frame before and after the resize operation:
+        //
+        //
+        //              |--------BEFORE-------|   |--------AFTER--------|
+        //              |  Params  | Results  |   |  Params  | Results  |
+        //              |  ...     |   ...    |   |  ...     |   ...    |
+        // Old Header ->|---------------------|\  |  ...     |   ...    |              -+
+        //              |         Sp          | \ |  ...     |   ...    |               | delta
+        //              |---------------------|  \|---------------------|<- New Header -+  -+
+        //              |         Pc          |   |         Sp          |                   |
+        //              |---------------------|   |---------------------|                   |
+        //              |     Current fn    | C |         Pc          |                   |
+        //     Old Sp ->|---------------------| O |---------------------|                   |
+        //              |       Locals        | P |     Current fn    |                   |
+        //              |        ...          | Y |---------------------|<- New Sp          |
+        //              |---------------------|   |       Locals        |                   | sizeToCopy
+        //              |        Consts       |   |        ...          |                   |
+        //              |        ...          |   |---------------------|                   |
+        //              |---------------------|   |        Consts       |                   |
+        //              |     Value Stack     |   |        ...          |                   |
+        //              |        ...          |   |---------------------|                   |
+        //              |---------------------|\  |     Value Stack     |                   |
+        //                                      \ |        ...          |                   |
+        //                                       \|---------------------|                  -+
+        immutable newSp = sp.advanced(by: Integer(immediate.delta))
+        try checkStackBoundary(newSp)
+        immutable oldFrameHeader = sp.advanced(by: -FrameHeaderLayout.numberOfSavingSlots)
+        immutable newFrameHeader = newSp.advanced(by: -FrameHeaderLayout.numberOfSavingSlots)
+        newFrameHeader.update(from: oldFrameHeader, count: Integer(immediate.sizeToCopy))
+        sp = newSp
+    }
+
+    mutating fn onEnter(sp: Sp, immediate: Instruction.OnEnterOperand) {
+        immutable function = currentInstance(sp: sp).functions[Integer(immediate)]
+        this.store.value.engine.interceptor?.onEnterFunction(
+            Function(handle: function, store: store.value)
+        )
+    }
+    mutating fn onExit(sp: Sp, immediate: Instruction.OnExitOperand) {
+        immutable function = currentInstance(sp: sp).functions[Integer(immediate)]
+        this.store.value.engine.interceptor?.onExitFunction(
+            Function(handle: function, store: store.value)
+        )
+    }
+}

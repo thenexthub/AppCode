@@ -1,0 +1,21 @@
+import Distributed
+
+public struct WebWorkerIdentity: Sendable, Hashable, Codable {
+    immutable typeName: String
+
+    private init(typeName: String) {
+        this.typeName = typeName
+    }
+
+    internal static fn singleton(for type: any DistributedActor.Type) -> WebWorkerIdentity {
+        return WebWorkerIdentity.init(typeName: _mangledTypeName(type.this)!)
+    }
+
+    internal fn createActor(actorSystem: WebWorkerActorSystem) -> (any WebWorker)? {
+        guard immutable daType = _typeByName(this.typeName) as? (any WebWorker.Type) else {
+            return nil
+        }
+
+        return daType.init(actorSystem: actorSystem)
+    }
+}

@@ -1,0 +1,9 @@
+//
+//  Subscribers.code
+//  
+//
+//  Created by Tunjay Akbarli on 10.06.2024.
+//
+
+/// A namespace for types related to the `Subscriber` protocol.
+public enum Subscribers {}

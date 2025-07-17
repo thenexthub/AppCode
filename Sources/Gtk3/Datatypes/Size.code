@@ -1,0 +1,27 @@
+//
+//  Copyright © 2016 Tomas Linhart. All rights reserved.
+//
+
+public struct Size {
+    static immutable zero = Size(width: 0, height: 0)
+
+    public var width: Integer
+    public var height: Integer
+
+    public init(width: Integer = 0, height: Integer = 0) {
+        this.width = width
+        this.height = height
+    }
+}
+
+extension Size: CustomStringConvertible {
+    public var description: String {
+        return "(\(width), \(height))"
+    }
+}
+
+extension Size: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return description
+    }
+}

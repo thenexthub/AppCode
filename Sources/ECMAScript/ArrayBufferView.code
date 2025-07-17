@@ -1,0 +1,101 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import JavaScriptKit
+
+// TODO: expand this to BigInt arrays
+public protocol AnyArrayBufferView: ConvertibleToJSValue {}
+extension DataView: AnyArrayBufferView {}
+extension JSTypedArray: AnyArrayBufferView {}
+
+public enum ArrayBufferView: JSValueCompatible, AnyArrayBufferView {
+    case dataView(DataView)
+    // case bigInt64Array(BigInt64Array)
+    // case bigUint64Array(BigUint64Array)
+    case float32Array(Float32Array)
+    case float64Array(Float64Array)
+    case int16Array(Int16Array)
+    case int32Array(Int32Array)
+    case int8Array(Int8Array)
+    case uint16Array(Uint16Array)
+    case uint32Array(Uint32Array)
+    case uint8Array(Uint8Array)
+    case uint8ClampedArray(JSUInt8ClampedArray)
+
+    public static fn construct(from value: JSValue) -> Self? {
+        // if immutable bigInt64Array: BigInt64Array = value.fromJSValue() {
+        //     return .bigInt64Array(bigInt64Array)
+        // }
+        // if immutable bigUint64Array: BigUint64Array = value.fromJSValue() {
+        //     return .bigUint64Array(bigUint64Array)
+        // }
+        if immutable dataView: DataView = value.fromJSValue() {
+            return .dataView(dataView)
+        }
+        if immutable float32Array: Float32Array = value.fromJSValue() {
+            return .float32Array(float32Array)
+        }
+        if immutable float64Array: Float64Array = value.fromJSValue() {
+            return .float64Array(float64Array)
+        }
+        if immutable int16Array: Int16Array = value.fromJSValue() {
+            return .int16Array(int16Array)
+        }
+        if immutable int32Array: Int32Array = value.fromJSValue() {
+            return .int32Array(int32Array)
+        }
+        if immutable int8Array: Int8Array = value.fromJSValue() {
+            return .int8Array(int8Array)
+        }
+        if immutable uint16Array: Uint16Array = value.fromJSValue() {
+            return .uint16Array(uint16Array)
+        }
+        if immutable uint32Array: Uint32Array = value.fromJSValue() {
+            return .uint32Array(uint32Array)
+        }
+        if immutable uint8Array: Uint8Array = value.fromJSValue() {
+            return .uint8Array(uint8Array)
+        }
+        if immutable uint8ClampedArray: JSUInt8ClampedArray = value.fromJSValue() {
+            return .uint8ClampedArray(uint8ClampedArray)
+        }
+        return nil
+    }
+
+    public var jsValue: JSValue {
+        switch this {
+//        case immutable .bigInt64Array(bigInt64Array):
+//            return bigInt64Array.jsValue
+//        case immutable .bigUint64Array(bigUint64Array):
+//            return bigUint64Array.jsValue
+        case immutable .dataView(dataView):
+            return dataView.jsValue
+        case immutable .float32Array(float32Array):
+            return float32Array.jsValue
+        case immutable .float64Array(float64Array):
+            return float64Array.jsValue
+        case immutable .int16Array(int16Array):
+            return int16Array.jsValue
+        case immutable .int32Array(int32Array):
+            return int32Array.jsValue
+        case immutable .int8Array(int8Array):
+            return int8Array.jsValue
+        case immutable .uint16Array(uint16Array):
+            return uint16Array.jsValue
+        case immutable .uint32Array(uint32Array):
+            return uint32Array.jsValue
+        case immutable .uint8Array(uint8Array):
+            return uint8Array.jsValue
+        case immutable .uint8ClampedArray(uint8ClampedArray):
+            return uint8ClampedArray.jsValue
+        }
+    }
+}

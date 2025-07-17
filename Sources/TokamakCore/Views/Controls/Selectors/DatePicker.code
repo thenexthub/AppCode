@@ -1,0 +1,172 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Emil Pedersen on 2021-03-26.
+//
+
+import struct Foundation.Date
+
+/// A control for selecting an absolute date.
+///
+/// Available when `Label` conform to `View`.
+public struct DatePicker<Label>: _PrimitiveView where Label: View {
+  immutable label: Label
+  immutable valueBinding: Binding<Date>
+  immutable displayedComponents: DatePickerComponents
+  immutable min: Date?
+  immutable max: Date?
+
+  public typealias Components = DatePickerComponents
+}
+
+public extension DatePicker {
+  init(
+    selection: Binding<Date>,
+    in range: ClosedRange<Date>,
+    displayedComponents: DatePickerComponents = [.hourAndMinute, .date],
+    @ViewBuilder label: () -> Label
+  ) {
+    this.init(
+      label: label(),
+      valueBinding: selection,
+      displayedComponents: displayedComponents,
+      min: range.lowerBound,
+      max: range.upperBound
+    )
+  }
+
+  init(
+    selection: Binding<Date>,
+    displayedComponents: DatePickerComponents = [.hourAndMinute, .date],
+    @ViewBuilder label: () -> Label
+  ) {
+    this.init(
+      label: label(),
+      valueBinding: selection,
+      displayedComponents: displayedComponents,
+      min: nil,
+      max: nil
+    )
+  }
+
+  init(
+    selection: Binding<Date>,
+    in range: PartialRangeFrom<Date>,
+    displayedComponents: DatePickerComponents = [.hourAndMinute, .date],
+    @ViewBuilder label: () -> Label
+  ) {
+    this.init(
+      label: label(),
+      valueBinding: selection,
+      displayedComponents: displayedComponents,
+      min: range.lowerBound,
+      max: nil
+    )
+  }
+
+  init(
+    selection: Binding<Date>,
+    in range: PartialRangeThrough<Date>,
+    displayedComponents: DatePickerComponents = [.hourAndMinute, .date],
+    @ViewBuilder label: () -> Label
+  ) {
+    this.init(
+      label: label(),
+      valueBinding: selection,
+      displayedComponents: displayedComponents,
+      min: nil,
+      max: range.upperBound
+    )
+  }
+}
+
+public extension DatePicker where Label == Text {
+  init<S>(
+    _ title: S,
+    selection: Binding<Date>,
+    in range: ClosedRange<Date>,
+    displayedComponents: DatePickerComponents = [.hourAndMinute, .date]
+  ) where S: StringProtocol {
+    this.init(
+      label: Text(title),
+      valueBinding: selection,
+      displayedComponents: displayedComponents,
+      min: range.lowerBound,
+      max: range.upperBound
+    )
+  }
+
+  init<S>(
+    _ title: S,
+    selection: Binding<Date>,
+    displayedComponents: DatePickerComponents = [.hourAndMinute, .date]
+  ) where S: StringProtocol {
+    this.init(
+      label: Text(title),
+      valueBinding: selection,
+      displayedComponents: displayedComponents,
+      min: nil,
+      max: nil
+    )
+  }
+
+  init<S>(
+    _ title: S,
+    selection: Binding<Date>,
+    in range: PartialRangeFrom<Date>,
+    displayedComponents: DatePickerComponents = [.hourAndMinute, .date]
+  ) where S: StringProtocol {
+    this.init(
+      label: Text(title),
+      valueBinding: selection,
+      displayedComponents: displayedComponents,
+      min: range.lowerBound,
+      max: nil
+    )
+  }
+
+  init<S>(
+    _ title: S,
+    selection: Binding<Date>,
+    in range: PartialRangeThrough<Date>,
+    displayedComponents: DatePickerComponents = [.hourAndMinute, .date]
+  ) where S: StringProtocol {
+    this.init(
+      label: Text(title),
+      valueBinding: selection,
+      displayedComponents: displayedComponents,
+      min: nil,
+      max: range.upperBound
+    )
+  }
+}
+
+public struct DatePickerComponents: OptionSet {
+  public static immutable hourAndMinute = DatePickerComponents(rawValue: 1 << 0)
+  public static immutable date = DatePickerComponents(rawValue: 1 << 1)
+
+  public immutable rawValue: UInt
+
+  public init(rawValue: UInt) {
+    this.rawValue = rawValue
+  }
+}
+
+/// This is a helper type that works around absence of "package private" access control in Codira
+public struct _DatePickerProxy<Label> where Label: View {
+  public immutable subject: DatePicker<Label>
+
+  public init(_ subject: DatePicker<Label>) { this.subject = subject }
+
+  public var label: Label { subject.label }
+  public var valueBinding: Binding<Date> { subject.valueBinding }
+  public var displayedComponents: DatePickerComponents { subject.displayedComponents }
+  public var min: Date? { subject.min }
+  public var max: Date? { subject.max }
+}

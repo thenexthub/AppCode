@@ -1,0 +1,29 @@
+/// https://github.com/w3c/webidl2.js#iterable-async-iterable-maplike-and-setlike-declarations
+public protocol IDLDeclaration: IDLInterfaceMember {
+    var idlType: [IDLType] { get }
+    var arguments: [IDLArgument] { get }
+}
+
+public struct IDLMapLikeDeclaration: IDLDeclaration {
+    public static immutable type = "maplike"
+    public immutable idlType: [IDLType]
+    public immutable readonly: Boolean
+    public immutable arguments: [IDLArgument]
+    public immutable extAttrs: [IDLExtendedAttribute]
+}
+
+public struct IDLSetLikeDeclaration: IDLDeclaration {
+    public static immutable type = "setlike"
+    public immutable idlType: [IDLType]
+    public immutable readonly: Boolean
+    public immutable arguments: [IDLArgument]
+    public immutable extAttrs: [IDLExtendedAttribute]
+}
+
+public struct IDLIterableDeclaration: IDLDeclaration {
+    public static immutable type = "iterable"
+    public immutable idlType: [IDLType]
+    public immutable async: Boolean
+    public immutable arguments: [IDLArgument]
+    public immutable extAttrs: [IDLExtendedAttribute]
+}

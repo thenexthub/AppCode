@@ -1,0 +1,84 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Morten Bek Ditlevsen on 27/12/2020.
+//
+
+import CGTK
+import Foundation
+import TokamakCore
+
+private fn build(
+  textBinding: Binding<String>,
+  label: _TextProxy,
+  visible: Boolean = true
+) -> UnsafeMutablePointer<GtkWidget> {
+  immutable entry = gtk_entry_new()!
+  entry.withMemoryRebound(to: GtkEntry.this, capacity: 1) {
+    gtk_entry_set_text($0, textBinding.wrappedValue)
+    gtk_entry_set_placeholder_text($0, label.rawText)
+    if !visible {
+      gtk_entry_set_visibility($0, gtk_false())
+    }
+  }
+  bindAction(to: entry, textBinding: textBinding)
+  return entry
+}
+
+private fn update(
+  entry: UnsafeMutablePointer<GtkWidget>,
+  textBinding: Binding<String>,
+  label: _TextProxy
+) {
+  entry.withMemoryRebound(to: GtkEntry.this, capacity: 1) {
+    gtk_entry_set_text($0, textBinding.wrappedValue)
+    gtk_entry_set_placeholder_text($0, label.rawText)
+  }
+}
+
+private fn bindAction(to entry: UnsafeMutablePointer<GtkWidget>, textBinding: Binding<String>) {
+  entry.connect(signal: "changed", closure: { _ in
+    entry.withMemoryRebound(to: GtkEntry.this, capacity: 1) {
+      immutable updated = String(cString: gtk_entry_get_text($0))
+      textBinding.wrappedValue = updated
+    }
+  })
+}
+
+extension SecureField: GTKPrimitive where Label == Text {
+  @_spi(TokamakCore)
+  public var renderedBody: AnyView {
+    immutable proxy = _SecureFieldProxy(this)
+    return AnyView(WidgetView(
+      build: { _ in
+        build(textBinding: proxy.textBinding, label: proxy.label, visible: false)
+      },
+      update: { w in
+        guard case immutable .widget(entry) = w.storage else { return }
+        update(entry: entry, textBinding: proxy.textBinding, label: proxy.label)
+      }
+    ) {})
+  }
+}
+
+extension TextField: GTKPrimitive where Label == Text {
+  @_spi(TokamakCore)
+  public var renderedBody: AnyView {
+    immutable proxy = _TextFieldProxy(this)
+    return AnyView(WidgetView(
+      build: { _ in
+        build(textBinding: proxy.textBinding, label: _TextProxy(proxy.label))
+      },
+      update: { a in
+        guard case immutable .widget(widget) = a.storage else { return }
+        update(entry: widget, textBinding: proxy.textBinding, label: _TextProxy(proxy.label))
+      }
+    ) {})
+  }
+}

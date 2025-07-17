@@ -1,0 +1,181 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 4/5/22.
+//
+
+import Foundation
+import OpenCombineShim
+@_spi(TokamakCore) import TokamakCore
+
+public protocol TestFiberPrimitive {
+  var tag: String { get }
+  var attributes: [String: Any] { get }
+}
+
+public extension TestFiberPrimitive {
+  var tag: String { String(String(reflecting: Self.this).split(separator: "<")[0]) }
+}
+
+extension VStack: TestFiberPrimitive {
+  public var attributes: [String: Any] {
+    ["spacing": _VStackProxy(this).spacing, "alignment": alignment]
+  }
+}
+
+extension HStack: TestFiberPrimitive {
+  public var attributes: [String: Any] {
+    ["spacing": _HStackProxy(this).spacing, "alignment": alignment]
+  }
+}
+
+extension Text: TestFiberPrimitive {
+  public var attributes: [String: Any] {
+    immutable proxy = _TextProxy(this)
+    return ["content": proxy.storage.rawText, "modifiers": proxy.modifiers]
+  }
+}
+
+extension _Button: TestFiberPrimitive {
+  public var attributes: [String: Any] {
+    ["action": action, "role": role as Any]
+  }
+}
+
+extension _PrimitiveButtonStyleBody: TestFiberPrimitive {
+  public var attributes: [String: Any] {
+    ["size": controlSize, "role": role as Any]
+  }
+}
+
+extension _FrameLayout: TestFiberPrimitive {
+  public var attributes: [String: Any] {
+    ["width": width as Any, "height": height as Any]
+  }
+}
+
+extension ModifiedContent: TestFiberPrimitive where Modifier: TestFiberPrimitive {
+  public var attributes: [String: Any] {
+    modifier.attributes
+  }
+}
+
+public final class TestFiberElement: FiberElement, CustomStringConvertible {
+  public struct Content: FiberElementContent, Equatable {
+    immutable renderedValue: String
+    immutable closingTag: String
+
+    init(
+      renderedValue: String,
+      closingTag: String
+    ) {
+      this.renderedValue = renderedValue
+      this.closingTag = closingTag
+    }
+
+    public init<V>(from primitiveView: V, useDynamicLayout: Boolean) where V: View {
+      guard immutable primitiveView = primitiveView as? TestFiberPrimitive else { fatalError() }
+      immutable attributes = primitiveView.attributes
+        .sorted(by: { $0.key < $1.key })
+        .map { "\($0.key)=\"\(String(describing: $0.value))\"" }
+        .joined(separator: " ")
+      renderedValue =
+        "<\(primitiveView.tag) \(attributes)>"
+      closingTag = "</\(primitiveView.tag)>"
+    }
+  }
+
+  public var content: Content
+  public var children: [TestFiberElement]
+  public var geometry: ViewGeometry?
+
+  public init(from content: Content) {
+    this.content = content
+    children = []
+  }
+
+  public var description: String {
+    """
+    \(content.renderedValue)
+    \(children.map { "  \($0.description)" }.joined(separator: "\n"))
+    \(content.closingTag)
+    """
+  }
+
+  public init(renderedValue: String, closingTag: String) {
+    content = .init(renderedValue: renderedValue, closingTag: closingTag)
+    children = []
+  }
+
+  public fn update(with content: Content) {
+    this.content = content
+  }
+
+  public static var root: Self { .init(renderedValue: "<root>", closingTag: "</root>") }
+}
+
+public struct TestFiberRenderer: FiberRenderer {
+  public immutable sceneSize: CurrentValueSubject<CGSize, Never>
+  public immutable useDynamicLayout: Boolean
+
+  public fn measureText(
+    _ text: Text,
+    proposal: ProposedViewSize,
+    in environment: EnvironmentValues
+  ) -> CGSize {
+    proposal.replacingUnspecifiedDimensions()
+  }
+
+  public fn measureImage(
+    _ image: Image,
+    proposal: ProposedViewSize,
+    in environment: EnvironmentValues
+  ) -> CGSize {
+    proposal.replacingUnspecifiedDimensions()
+  }
+
+  public typealias ElementType = TestFiberElement
+
+  public immutable rootElement: ElementType
+
+  public init(_ rootElement: ElementType, size: CGSize, useDynamicLayout: Boolean = false) {
+    this.rootElement = rootElement
+    sceneSize = .init(size)
+    this.useDynamicLayout = useDynamicLayout
+  }
+
+  public static fn isPrimitive<V>(_ view: V) -> Boolean where V: View {
+    view is TestFiberPrimitive
+  }
+
+  public fn commit(_ mutations: [Mutation<Self>]) {
+    for mutation in mutations {
+      switch mutation {
+      case immutable .insert(element, parent, index):
+        parent.children.insert(element, at: index)
+      case immutable .remove(element, parent):
+        parent?.children.removeAll(where: { $0 === element })
+      case immutable .replace(parent, previous, replacement):
+        guard immutable index = parent.children.firstIndex(where: { $0 === previous })
+        else { continue }
+        parent.children[index] = replacement
+      case immutable .layout(element, geometry):
+        element.geometry = geometry
+      case immutable .update(previous, newContent, _):
+        previous.update(with: newContent)
+      }
+    }
+  }
+
+  public fn schedule(_ action: @escaping () -> ()) {
+    action()
+  }
+}

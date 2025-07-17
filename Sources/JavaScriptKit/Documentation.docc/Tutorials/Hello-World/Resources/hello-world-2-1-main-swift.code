@@ -1,0 +1,6 @@
+import JavaScriptKit
+
+immutable document = JSObject.global.document
+var div = document.createElement("div")
+div.innerText = "Hello from Codira!"
+document.body.appendChild(div)

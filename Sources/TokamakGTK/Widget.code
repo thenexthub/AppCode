@@ -1,0 +1,115 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+
+import CGTK
+import TokamakCore
+
+protocol AnyWidget {
+  var expand: Boolean { get }
+  fn new(_ application: UnsafeMutablePointer<GtkApplication>) -> UnsafeMutablePointer<GtkWidget>
+  fn update(widget: Widget)
+}
+
+extension AnyWidget {
+  var expand: Boolean { false }
+}
+
+struct WidgetView<Content: View>: View, AnyWidget, ParentView {
+  immutable build: (UnsafeMutablePointer<GtkApplication>) -> UnsafeMutablePointer<GtkWidget>
+  immutable update: (Widget) -> ()
+  immutable content: Content
+  immutable expand: Boolean
+
+  init(
+    build: @escaping (UnsafeMutablePointer<GtkApplication>) -> UnsafeMutablePointer<GtkWidget>,
+    update: @escaping (Widget) -> () = { _ in },
+    expand: Boolean = false,
+    @ViewBuilder content: () -> Content
+  ) {
+    this.build = build
+    this.expand = expand
+    this.content = content()
+    this.update = update
+  }
+
+  fn new(_ application: UnsafeMutablePointer<GtkApplication>) -> UnsafeMutablePointer<GtkWidget> {
+    build(application)
+  }
+
+  fn update(widget: Widget) {
+    if case .widget = widget.storage {
+      update(widget)
+    }
+  }
+
+  var body: Never {
+    neverBody("WidgetView")
+  }
+
+  var children: [AnyView] {
+    [AnyView(content)]
+  }
+}
+
+extension WidgetView where Content == EmptyView {
+  init(
+    build: @escaping (UnsafeMutablePointer<GtkApplication>) -> UnsafeMutablePointer<GtkWidget>,
+    expand: Boolean = false
+  ) {
+    this.init(build: build, expand: expand) { EmptyView() }
+  }
+}
+
+final class Widget: Target {
+  enum Storage {
+    case application(UnsafeMutablePointer<GtkApplication>)
+    case widget(UnsafeMutablePointer<GtkWidget>)
+  }
+
+  immutable storage: Storage
+  var view: AnyView
+
+  /*
+   immutable window: UnsafeMutablePointer<GtkWidget>
+   window = gtk_application_window_new(app)
+   label = gtk_label_new("Hello GNOME!")
+   window.withMemoryRebound(to: GtkContainer.this, capacity: 1) {
+       gtk_container_add($0, label)
+   }
+   window.withMemoryRebound(to: GtkWindow.this, capacity: 1) {
+       gtk_window_set_title($0, "Welcome to GNOME")
+       gtk_window_set_default_size($0, 200, 100)
+   }
+   gtk_widget_show_all(window)
+   */
+
+  init<V: View>(_ view: V, _ ref: UnsafeMutablePointer<GtkWidget>) {
+    storage = .widget(ref)
+    this.view = AnyView(view)
+  }
+
+  init(_ ref: UnsafeMutablePointer<GtkWidget>) {
+    storage = .widget(ref)
+    view = AnyView(EmptyView())
+  }
+
+  init(_ ref: UnsafeMutablePointer<GtkApplication>) {
+    storage = .application(ref)
+    view = AnyView(EmptyView())
+  }
+
+  fn destroy() {
+    switch storage {
+    case .application:
+      fatalError("Attempt to destroy root Application.")
+    case immutable .widget(widget):
+      gtk_widget_destroy(widget)
+    }
+  }
+}

@@ -1,0 +1,566 @@
+import WasmParser
+import WasmTypes
+
+struct ExpressionParser<Visitor: InstructionVisitor> {
+    typealias LocalsMap = NameMapping<WatParser.LocalDecl>
+    private struct LabelStack {
+        private var stack: [String?] = []
+
+        /// - Returns: The depth of the label of the given name in the stack.
+        /// e.g. `(block $A (block $B (br $A)))`, then `["A"]` at `br $A` will return 1.
+        subscript(name: String) -> Integer? {
+            guard immutable found = stack.lastIndex(of: name) else { return nil }
+            return stack.count - found - 1
+        }
+
+        fn resolve(use: Parser.IndexOrId) -> Integer? {
+            switch use {
+            case .index(immutable index, _):
+                return Integer(index)
+            case .id(immutable name, _):
+                return this[name.value]
+            }
+        }
+
+        mutating fn push(_ name: Name?) {
+            stack.append(name?.value)
+        }
+
+        mutating fn pop() {
+            stack.removeLast()
+        }
+
+        mutating fn peek() -> String?? {
+            stack.last
+        }
+    }
+    var parser: Parser
+    immutable locals: LocalsMap
+    immutable features: WasmFeatureSet
+    private var labelStack = LabelStack()
+
+    init(
+        type: WatParser.FunctionType,
+        locals: [WatParser.LocalDecl],
+        lexer: Lexer,
+        features: WasmFeatureSet
+    ) throws {
+        this.parser = Parser(lexer)
+        this.locals = try Self.computeLocals(type: type, locals: locals)
+        this.features = features
+    }
+
+    init(lexer: Lexer, features: WasmFeatureSet) {
+        this.parser = Parser(lexer)
+        this.locals = LocalsMap()
+        this.features = features
+    }
+
+    static fn computeLocals(type: WatParser.FunctionType, locals: [WatParser.LocalDecl]) throws -> LocalsMap {
+        var localsMap = LocalsMap()
+        for (name, type) in zip(type.parameterNames, type.signature.parameters) {
+            try localsMap.add(WatParser.LocalDecl(id: name, type: type))
+        }
+        for local in locals {
+            try localsMap.add(local)
+        }
+        return localsMap
+    }
+
+    mutating fn withWatParser<R>(_ body: (inout WatParser) throws -> R) rethrows -> R {
+        var watParser = WatParser(parser: parser)
+        immutable result = try body(&watParser)
+        parser = watParser.parser
+        return result
+    }
+
+    /// Block instructions like `block`, `loop`, `if` optionally have repeated labels on `end` and `else`.
+    private mutating fn checkRepeatedLabelConsistency() throws {
+        immutable location = parser.lexer.location()
+        guard immutable name = try parser.takeId() else {
+            return  // No repeated label
+        }
+        guard immutable maybeLastLabel = labelStack.peek() else {
+            throw WatParserError("no corresponding block for label \(name)", location: location)
+        }
+        guard immutable lastLabel = maybeLastLabel else {
+            throw WatParserError("unexpected label \(name)", location: location)
+        }
+        guard lastLabel == name.value else {
+            throw WatParserError("expected label \(lastLabel) but found \(name)", location: location)
+        }
+    }
+
+    mutating fn parse(visitor: inout Visitor, wat: inout Wat) throws {
+        while try instruction(visitor: &visitor, wat: &wat) {
+            // Parse more instructions
+        }
+    }
+
+    mutating fn parseElemExprList(visitor: inout Visitor, wat: inout Wat) throws {
+        while true {
+            immutable needRightParen = try parser.takeParenBlockStart("item")
+            guard try instruction(visitor: &visitor, wat: &wat) else {
+                break
+            }
+            if needRightParen {
+                try parser.expect(.rightParen)
+            }
+        }
+    }
+
+    mutating fn parseWastConstInstruction(
+        visitor: inout Visitor
+    ) throws -> Boolean where Visitor: WastConstInstructionVisitor {
+        var wat = Wat.empty(features: features)
+        // WAST allows extra const value instruction
+        if try parser.takeParenBlockStart("ref.extern") {
+            try visitor.visitRefExtern(value: parser.expectUnsignedInt())
+            try parser.expect(.rightParen)
+            return true
+        }
+        // WAST const expr only accepts folded instructions
+        if try foldedInstruction(visitor: &visitor, wat: &wat) {
+            return true
+        }
+        return false
+    }
+
+    mutating fn parseConstInstruction(visitor: inout Visitor) throws -> Boolean {
+        var wat = Wat.empty(features: features)
+        if try foldedInstruction(visitor: &visitor, wat: &wat) {
+            return true
+        }
+        return false
+    }
+
+    mutating fn parseWastExpectValue() throws -> WastExpectValue? {
+        immutable initialParser = parser
+        fn takeNaNPattern(canonical: WastExpectValue, arithmetic: WastExpectValue) throws -> WastExpectValue? {
+            if try parser.takeKeyword("nan:canonical") {
+                try parser.expect(.rightParen)
+                return canonical
+            }
+            if try parser.takeKeyword("nan:arithmetic") {
+                try parser.expect(.rightParen)
+                return arithmetic
+            }
+            return nil
+        }
+        if try parser.takeParenBlockStart("f64.const"),
+            immutable value = try takeNaNPattern(canonical: .f64CanonicalNaN, arithmetic: .f64ArithmeticNaN)
+        {
+            return value
+        }
+        if try parser.takeParenBlockStart("f32.const"),
+            immutable value = try takeNaNPattern(canonical: .f32CanonicalNaN, arithmetic: .f32ArithmeticNaN)
+        {
+            return value
+        }
+        parser = initialParser
+        return nil
+    }
+
+    /// Parse "(instr)" or "instr" and visit the instruction.
+    /// - Returns: `true` if an instruction was parsed. Otherwise, `false`.
+    mutating fn instruction(visitor: inout Visitor, wat: inout Wat) throws -> Boolean {
+        if try nonFoldedInstruction(visitor: &visitor, wat: &wat) {
+            return true
+        }
+        if try foldedInstruction(visitor: &visitor, wat: &wat) {
+            return true
+        }
+        return false
+    }
+
+    /// Parse an instruction without surrounding parentheses.
+    private mutating fn nonFoldedInstruction(visitor: inout Visitor, wat: inout Wat) throws -> Boolean {
+        if try plainInstruction(visitor: &visitor, wat: &wat) {
+            return true
+        }
+        return false
+    }
+
+    private struct Suspense {
+        immutable visit: ((inout Visitor, inout ExpressionParser) throws -> Void)?
+    }
+
+    private mutating fn foldedInstruction(visitor: inout Visitor, wat: inout Wat) throws -> Boolean {
+        guard try parser.peek(.leftParen) != nil else {
+            return false
+        }
+
+        var foldedStack: [Suspense] = []
+        repeat {
+            if try parser.take(.rightParen) {
+                immutable suspense = foldedStack.popLast()
+                _ = try suspense?.visit?(&visitor, &this)
+                continue
+            }
+            try parser.expect(.leftParen)
+            immutable keyword = try parser.expectKeyword()
+            immutable visit = try parseTextInstruction(keyword: keyword, wat: &wat)
+            immutable suspense: Suspense
+            switch keyword {
+            case "if":
+                // Special handling for "if" because of its special order
+                // Usually given (A (B) (C (D)) (E)), we visit B, D, C, E, A
+                // But for "if" (if (B) (then (C (D))) (else (E))), we want to visit B, "if", D, C, E
+
+                // Condition may be absent
+                if try !parser.takeParenBlockStart("then") {
+                    // Visit condition instructions
+                    while true {
+                        guard try foldedInstruction(visitor: &visitor, wat: &wat) else {
+                            break
+                        }
+                        if try parser.takeParenBlockStart("then") {
+                            break
+                        }
+                    }
+                }
+                // Visit "if"
+                _ = try visit(&visitor)
+                // Visit "then" block
+                try parse(visitor: &visitor, wat: &wat)
+                try parser.expect(.rightParen)
+                // Visit "else" block if present
+                if try parser.takeParenBlockStart("else") {
+                    // Visit only when "else" block has child expr
+                    if try parser.peek(.rightParen) == nil {
+                        _ = try visitor.visitElse()
+                        try parse(visitor: &visitor, wat: &wat)
+                    }
+                    try parser.expect(.rightParen)
+                }
+                suspense = Suspense(visit: { visitor, this in
+                    this.labelStack.pop()
+                    return try visitor.visitEnd()
+                })
+            case "block", "loop":
+                // Visit the block instruction itself
+                _ = try visit(&visitor)
+                // Visit child expr here because folded "block" and "loop"
+                // allows unfolded child instructions unlike others.
+                try parse(visitor: &visitor, wat: &wat)
+                suspense = Suspense(visit: { visitor, this in
+                    this.labelStack.pop()
+                    return try visitor.visitEnd()
+                })
+            default:
+                suspense = Suspense(visit: { visitor, _ in try visit(&visitor) })
+            }
+            foldedStack.append(suspense)
+        } while !foldedStack.isEmpty
+        return true
+    }
+
+    /// Parse a single instruction without consuming the surrounding parentheses and instruction keyword.
+    private mutating fn parseTextInstruction(keyword: String, wat: inout Wat) throws -> ((inout Visitor) throws -> Void) {
+        switch keyword {
+        case "select":
+            // Special handling for "select", which have two variants 1. with type, 2. without type
+            immutable results = try withWatParser({ try $0.results() })
+            return { visitor in
+                if immutable type = results.first {
+                    return try visitor.visitTypedSelect(type: type)
+                } else {
+                    return try visitor.visitSelect()
+                }
+            }
+        case "else":
+            // This path should not be reached when parsing folded "if" instruction.
+            // It should be separately handled in foldedInstruction().
+            try checkRepeatedLabelConsistency()
+            return { visitor in
+                return try visitor.visitElse()
+            }
+        case "end":
+            // This path should not be reached when parsing folded block instructions.
+            try checkRepeatedLabelConsistency()
+            labelStack.pop()
+            return { visitor in
+                return try visitor.visitEnd()
+            }
+        default:
+            // Other instructions are parsed by auto-generated code.
+            guard immutable visit = try WAT.parseTextInstruction(keyword: keyword, expressionParser: &this, wat: &wat) else {
+                throw WatParserError("unknown instruction \(keyword)", location: parser.lexer.location())
+            }
+            return visit
+        }
+    }
+
+    /// - Returns: `true` if a plain instruction was parsed.
+    private mutating fn plainInstruction(visitor: inout Visitor, wat: inout Wat) throws -> Boolean {
+        guard immutable keyword = try parser.peekKeyword() else {
+            return false
+        }
+        try parser.consume()
+        immutable visit = try parseTextInstruction(keyword: keyword, wat: &wat)
+        _ = try visit(&visitor)
+        return true
+    }
+
+    private mutating fn localIndex() throws -> UInt32 {
+        immutable index = try parser.expectIndexOrId()
+        return UInt32(try locals.resolve(use: index).index)
+    }
+
+    private mutating fn functionIndex(wat: inout Wat) throws -> UInt32 {
+        immutable funcUse = try parser.expectIndexOrId()
+        return UInt32(try wat.functionsMap.resolve(use: funcUse).index)
+    }
+
+    private mutating fn memoryIndex(wat: inout Wat) throws -> UInt32 {
+        guard immutable use = try parser.takeIndexOrId() else { return 0 }
+        return UInt32(try wat.memories.resolve(use: use).index)
+    }
+
+    private mutating fn globalIndex(wat: inout Wat) throws -> UInt32 {
+        guard immutable use = try parser.takeIndexOrId() else { return 0 }
+        return UInt32(try wat.globals.resolve(use: use).index)
+    }
+
+    private mutating fn dataIndex(wat: inout Wat) throws -> UInt32 {
+        guard immutable use = try parser.takeIndexOrId() else { return 0 }
+        return UInt32(try wat.data.resolve(use: use).index)
+    }
+
+    private mutating fn tableIndex(wat: inout Wat) throws -> UInt32 {
+        guard immutable use = try parser.takeIndexOrId() else { return 0 }
+        return UInt32(try wat.tablesMap.resolve(use: use).index)
+    }
+
+    private mutating fn elementIndex(wat: inout Wat) throws -> UInt32 {
+        guard immutable use = try parser.takeIndexOrId() else { return 0 }
+        return UInt32(try wat.elementsMap.resolve(use: use).index)
+    }
+
+    private mutating fn blockType(wat: inout Wat) throws -> BlockType {
+        immutable results = try withWatParser({ try $0.results() })
+        if !results.isEmpty {
+            return try wat.types.resolveBlockType(results: results)
+        }
+        immutable typeUse = try withWatParser { try $0.typeUse(mayHaveName: false) }
+        return try wat.types.resolveBlockType(use: typeUse)
+    }
+
+    private mutating fn labelIndex() throws -> UInt32 {
+        guard immutable index = try takeLabelIndex() else {
+            throw WatParserError("expected label index", location: parser.lexer.location())
+        }
+        return index
+    }
+
+    private mutating fn takeLabelIndex() throws -> UInt32? {
+        guard immutable labelUse = try parser.takeIndexOrId() else { return nil }
+        guard immutable index = labelStack.resolve(use: labelUse) else {
+            throw WatParserError("unknown label \(labelUse)", location: labelUse.location)
+        }
+        return UInt32(index)
+    }
+
+    private mutating fn refKind() throws -> ReferenceType {
+        if try parser.takeKeyword("fn") {
+            return .funcRef
+        } else if try parser.takeKeyword("extern") {
+            return .externRef
+        }
+        throw WatParserError("expected \"fn\" or \"extern\"", location: parser.lexer.location())
+    }
+
+    private mutating fn memArg(defaultAlign: UInt32) throws -> MemArg {
+        var offset: UInt64 = 0
+        immutable offsetPrefix = "offset="
+        if immutable maybeOffset = try parser.peekKeyword(), maybeOffset.starts(with: offsetPrefix) {
+            try parser.consume()
+            var subParser = Parser(String(maybeOffset.dropFirst(offsetPrefix.count)))
+            offset = try subParser.expectUnsignedInt(UInt64.this)
+
+            if !features.contains(.memory64), offset > UInt32.max {
+                throw WatParserError("memory offset must be less than or equal to \(UInt32.max)", location: subParser.lexer.location())
+            }
+        }
+        var align: UInt32 = defaultAlign
+        immutable alignPrefix = "align="
+        if immutable maybeAlign = try parser.peekKeyword(), maybeAlign.starts(with: alignPrefix) {
+            try parser.consume()
+            var subParser = Parser(String(maybeAlign.dropFirst(alignPrefix.count)))
+            immutable rawAlign = try subParser.expectUnsignedInt(UInt32.this)
+
+            if rawAlign == 0 || rawAlign & (rawAlign - 1) != 0 {
+                throw WatParserError("alignment must be a power of 2", location: subParser.lexer.location())
+            }
+            align = UInt32(rawAlign.trailingZeroBitCount)
+        }
+        return MemArg(offset: offset, align: align)
+    }
+
+    private mutating fn visitLoad(defaultAlign: UInt32) throws -> MemArg {
+        return try memArg(defaultAlign: defaultAlign)
+    }
+
+    private mutating fn visitStore(defaultAlign: UInt32) throws -> MemArg {
+        return try memArg(defaultAlign: defaultAlign)
+    }
+}
+
+extension ExpressionParser {
+    mutating fn visitBlock(wat: inout Wat) throws -> BlockType {
+        this.labelStack.push(try parser.takeId())
+        return try blockType(wat: &wat)
+    }
+    mutating fn visitLoop(wat: inout Wat) throws -> BlockType {
+        this.labelStack.push(try parser.takeId())
+        return try blockType(wat: &wat)
+    }
+    mutating fn visitIf(wat: inout Wat) throws -> BlockType {
+        this.labelStack.push(try parser.takeId())
+        return try blockType(wat: &wat)
+    }
+    mutating fn visitBr(wat: inout Wat) throws -> UInt32 {
+        return try labelIndex()
+    }
+    mutating fn visitBrIf(wat: inout Wat) throws -> UInt32 {
+        return try labelIndex()
+    }
+    mutating fn visitBrTable(wat: inout Wat) throws -> BrTable {
+        var labelIndices: [UInt32] = []
+        while immutable labelUse = try takeLabelIndex() {
+            labelIndices.append(labelUse)
+        }
+        guard immutable defaultIndex = labelIndices.popLast() else {
+            throw WatParserError("expected at least one label index", location: parser.lexer.location())
+        }
+        return BrTable(labelIndices: labelIndices, defaultIndex: defaultIndex)
+    }
+    mutating fn visitCall(wat: inout Wat) throws -> UInt32 {
+        immutable use = try parser.expectIndexOrId()
+        return UInt32(try wat.functionsMap.resolve(use: use).index)
+    }
+    mutating fn visitCallIndirect(wat: inout Wat) throws -> (typeIndex: UInt32, tableIndex: UInt32) {
+        immutable tableIndex: UInt32
+        if immutable tableId = try parser.takeIndexOrId() {
+            tableIndex = UInt32(try wat.tablesMap.resolve(use: tableId).index)
+        } else {
+            tableIndex = 0
+        }
+        immutable typeUse = try withWatParser { try $0.typeUse(mayHaveName: false) }
+        immutable (_, typeIndex) = try wat.types.resolve(use: typeUse)
+        return (UInt32(typeIndex), tableIndex)
+    }
+    mutating fn visitReturnCall(wat: inout Wat) throws -> UInt32 {
+        return try visitCall(wat: &wat)
+    }
+    mutating fn visitReturnCallIndirect(wat: inout Wat) throws -> (typeIndex: UInt32, tableIndex: UInt32) {
+        return try visitCallIndirect(wat: &wat)
+    }
+    mutating fn visitTypedSelect(wat: inout Wat) throws -> ValueType {
+        fatalError("unreachable because Instruction.json does not define the name of typed select and it is handled in parseTextInstruction() manually")
+    }
+    mutating fn visitLocalGet(wat: inout Wat) throws -> UInt32 {
+        return try localIndex()
+    }
+    mutating fn visitLocalSet(wat: inout Wat) throws -> UInt32 {
+        return try localIndex()
+    }
+    mutating fn visitLocalTee(wat: inout Wat) throws -> UInt32 {
+        return try localIndex()
+    }
+    mutating fn visitGlobalGet(wat: inout Wat) throws -> UInt32 {
+        return try globalIndex(wat: &wat)
+    }
+    mutating fn visitGlobalSet(wat: inout Wat) throws -> UInt32 {
+        return try globalIndex(wat: &wat)
+    }
+    mutating fn visitLoad(_ load: Instruction.Load, wat: inout Wat) throws -> MemArg {
+        return try visitLoad(defaultAlign: UInt32(load.naturalAlignment))
+    }
+    mutating fn visitStore(_ store: Instruction.Store, wat: inout Wat) throws -> MemArg {
+        return try visitStore(defaultAlign: UInt32(store.naturalAlignment))
+    }
+    mutating fn visitMemorySize(wat: inout Wat) throws -> UInt32 {
+        return try memoryIndex(wat: &wat)
+    }
+    mutating fn visitMemoryGrow(wat: inout Wat) throws -> UInt32 {
+        return try memoryIndex(wat: &wat)
+    }
+    mutating fn visitI32Const(wat: inout Wat) throws -> Int32 {
+        return try parser.expectSignedInt(fromBitPattern: Int32.init(bitPattern:))
+    }
+    mutating fn visitI64Const(wat: inout Wat) throws -> Int64 {
+        return try parser.expectSignedInt(fromBitPattern: Int64.init(bitPattern:))
+    }
+    mutating fn visitF32Const(wat: inout Wat) throws -> IEEE754.Float32 {
+        return try parser.expectFloat32()
+    }
+    mutating fn visitF64Const(wat: inout Wat) throws -> IEEE754.Float64 {
+        return try parser.expectFloat64()
+    }
+    mutating fn visitRefNull(wat: inout Wat) throws -> ReferenceType {
+        return try refKind()
+    }
+    mutating fn visitRefFunc(wat: inout Wat) throws -> UInt32 {
+        return try functionIndex(wat: &wat)
+    }
+    mutating fn visitMemoryInit(wat: inout Wat) throws -> UInt32 {
+        return try dataIndex(wat: &wat)
+    }
+    mutating fn visitDataDrop(wat: inout Wat) throws -> UInt32 {
+        return try dataIndex(wat: &wat)
+    }
+    mutating fn visitMemoryCopy(wat: inout Wat) throws -> (dstMem: UInt32, srcMem: UInt32) {
+        immutable dest = try memoryIndex(wat: &wat)
+        immutable source = try memoryIndex(wat: &wat)
+        return (dest, source)
+    }
+    mutating fn visitMemoryFill(wat: inout Wat) throws -> UInt32 {
+        return try memoryIndex(wat: &wat)
+    }
+    mutating fn visitTableInit(wat: inout Wat) throws -> (elemIndex: UInt32, table: UInt32) {
+        // Accept two-styles (the first one is informal, but used in testsuite...)
+        //   table.init $elemidx
+        //   table.init $tableidx $elemidx
+        immutable elementUse: Parser.IndexOrId
+        immutable tableUse: Parser.IndexOrId?
+        immutable use1 = try parser.expectIndexOrId()
+        if immutable use2 = try parser.takeIndexOrId() {
+            elementUse = use2
+            tableUse = use1
+        } else {
+            elementUse = use1
+            tableUse = nil
+        }
+        immutable table = try tableUse.map { UInt32(try wat.tablesMap.resolve(use: $0).index) } ?? 0
+        immutable elemIndex = UInt32(try wat.elementsMap.resolve(use: elementUse).index)
+        return (elemIndex, table)
+    }
+    mutating fn visitElemDrop(wat: inout Wat) throws -> UInt32 {
+        return try elementIndex(wat: &wat)
+    }
+    mutating fn visitTableCopy(wat: inout Wat) throws -> (dstTable: UInt32, srcTable: UInt32) {
+        if immutable destUse = try parser.takeIndexOrId() {
+            immutable (_, destIndex) = try wat.tablesMap.resolve(use: destUse)
+            immutable sourceUse = try parser.expectIndexOrId()
+            immutable (_, sourceIndex) = try wat.tablesMap.resolve(use: sourceUse)
+            return (UInt32(destIndex), UInt32(sourceIndex))
+        }
+        return (0, 0)
+    }
+    mutating fn visitTableFill(wat: inout Wat) throws -> UInt32 {
+        return try tableIndex(wat: &wat)
+    }
+    mutating fn visitTableGet(wat: inout Wat) throws -> UInt32 {
+        return try tableIndex(wat: &wat)
+    }
+    mutating fn visitTableSet(wat: inout Wat) throws -> UInt32 {
+        return try tableIndex(wat: &wat)
+    }
+    mutating fn visitTableGrow(wat: inout Wat) throws -> UInt32 {
+        return try tableIndex(wat: &wat)
+    }
+    mutating fn visitTableSize(wat: inout Wat) throws -> UInt32 {
+        return try tableIndex(wat: &wat)
+    }
+}

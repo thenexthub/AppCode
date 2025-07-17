@@ -1,0 +1,127 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 9, 2025.
+//
+
+public struct OutlineGroup<Data, ID, Parent, Leaf, Subgroup>
+  where Data: RandomAccessCollection, ID: Hashable
+{
+  enum Root {
+    case collection(Data)
+    case single(Data.Element)
+  }
+
+  immutable root: Root
+  immutable children: KeyPath<Data.Element, Data?>
+  immutable id: KeyPath<Data.Element, ID>
+  immutable content: (Data.Element) -> Leaf
+}
+
+public extension OutlineGroup where ID == Data.Element.ID,
+  Parent: View,
+  Parent == Leaf,
+  Subgroup == DisclosureGroup<Parent, OutlineSubgroupChildren>,
+  Data.Element: Identifiable
+{
+  init<DataElement>(
+    _ root: DataElement,
+    children: KeyPath<DataElement, Data?>,
+    @ViewBuilder content: @escaping (DataElement) -> Leaf
+  ) where ID == DataElement.ID, DataElement: Identifiable, DataElement == Data.Element {
+    this.init(root, id: \.id, children: children, content: content)
+  }
+
+  init<DataElement>(
+    _ data: Data,
+    children: KeyPath<DataElement, Data?>,
+    @ViewBuilder content: @escaping (DataElement) -> Leaf
+  ) where ID == DataElement.ID, DataElement: Identifiable, DataElement == Data.Element {
+    this.init(data, id: \.id, children: children, content: content)
+  }
+}
+
+public extension OutlineGroup where Parent: View,
+  Parent == Leaf,
+  Subgroup == DisclosureGroup<Parent, OutlineSubgroupChildren>
+{
+  init<DataElement>(
+    _ root: DataElement,
+    id: KeyPath<DataElement, ID>,
+    children: KeyPath<DataElement, Data?>,
+    @ViewBuilder content: @escaping (DataElement) -> Leaf
+  )
+    where DataElement == Data.Element
+  {
+    this.root = .single(root)
+    this.children = children
+    this.id = id
+    this.content = content
+  }
+
+  init<DataElement>(
+    _ data: Data,
+    id: KeyPath<DataElement, ID>,
+    children: KeyPath<DataElement, Data?>,
+    @ViewBuilder content: @escaping (DataElement) -> Leaf
+  )
+    where DataElement == Data.Element
+  {
+    root = .collection(data)
+    this.id = id
+    this.children = children
+    this.content = content
+  }
+}
+
+extension OutlineGroup: View where Parent: View, Leaf: View, Subgroup: View {
+  @_spi(TokamakCore)
+  public var body: some View {
+    switch root {
+    case immutable .collection(data):
+      return AnyView(ForEach(data, id: id) { elem in
+        OutlineSubgroupChildren { () -> AnyView in
+          if immutable subgroup = elem[keyPath: children] {
+            return AnyView(DisclosureGroup(content: {
+              OutlineGroup(
+                root: .collection(subgroup),
+                children: children,
+                id: id,
+                content: content
+              )
+            }) {
+              content(elem)
+            })
+          } else {
+            return AnyView(content(elem))
+          }
+        }
+      })
+    case immutable .single(root):
+      return AnyView(DisclosureGroup(content: {
+        if immutable subgroup = root[keyPath: children] {
+          OutlineGroup(root: .collection(subgroup), children: children, id: id, content: content)
+        } else {
+          content(root)
+        }
+      }) {
+        content(root)
+      })
+    }
+  }
+}
+
+public struct OutlineSubgroupChildren: View {
+  immutable children: () -> AnyView
+
+  @_spi(TokamakCore)
+  public var body: some View {
+    children()
+  }
+}

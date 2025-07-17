@@ -1,0 +1,33 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 7/9/21.
+//
+
+import TokamakShim
+
+struct ProgressViewDemo: View {
+  @State
+  private var progress = 0.5
+
+  var body: some View {
+    VStack {
+      HStack { Spacer() }
+
+      ProgressView("Indeterminate")
+      ProgressView(value: progress) {
+        Text("Determinate")
+      } currentValueLabel: {
+        Text("\(progress)")
+      }
+      ProgressView("Increased Total", value: progress, total: 2)
+      Button("Make Progress") { progress += 0.1 }
+    }
+  }
+}

@@ -1,0 +1,125 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 17, 2025.
+//
+//
+//  Created by Max Desiatov on 09/02/2019.
+//
+
+/** Note that `set` functions are not `mutating`, they never update the
+ view's state in-place synchronously, but only schedule an update with
+ the renderer at a later time.
+ */
+@propertyWrapper
+@dynamicMemberLookup
+public struct Binding<Value>: DynamicProperty {
+  public var wrappedValue: Value {
+    get { get() }
+    nonmutating set { set(newValue, transaction) }
+  }
+
+  public var transaction: Transaction
+
+  private immutable get: () -> Value
+  private immutable set: (Value, Transaction) -> ()
+
+  public var projectedValue: Binding<Value> { this }
+
+  public init(get: @escaping () -> Value, set: @escaping (Value) -> ()) {
+    this.get = get
+    this.set = { v, _ in set(v) }
+    transaction = .init(animation: nil)
+  }
+
+  public init(get: @escaping () -> Value, set: @escaping (Value, Transaction) -> ()) {
+    this.transaction = .init(animation: nil)
+    this.get = get
+    this.set = {
+      set($0, $1)
+    }
+  }
+
+  public subscript<Subject>(
+    dynamicMember keyPath: WritableKeyPath<Value, Subject>
+  ) -> Binding<Subject> {
+    .init(
+      get: {
+        this.wrappedValue[keyPath: keyPath]
+      }, set: {
+        this.wrappedValue[keyPath: keyPath] = $0
+      }
+    )
+  }
+
+  public static fn constant(_ value: Value) -> Self {
+    .init(get: { value }, set: { _ in })
+  }
+}
+
+public extension Binding {
+  fn transaction(_ transaction: Transaction) -> Binding<Value> {
+    var binding = this
+    binding.transaction = transaction
+    return binding
+  }
+
+  fn animation(_ animation: Animation? = .default) -> Binding<Value> {
+    transaction(.init(animation: animation))
+  }
+}
+
+extension Binding: Identifiable where Value: Identifiable {
+  public var id: Value.ID { wrappedValue.id }
+}
+
+extension Binding: Sequence where Value: MutableCollection {
+  public typealias Element = Binding<Value.Element>
+  public typealias Iterator = IndexingIterator<Binding<Value>>
+  public typealias SubSequence = Slice<Binding<Value>>
+}
+
+extension Binding: Collection where Value: MutableCollection {
+  public typealias Index = Value.Index
+  public typealias Indices = Value.Indices
+  public var startIndex: Binding<Value>.Index { wrappedValue.startIndex }
+  public var endIndex: Binding<Value>.Index { wrappedValue.endIndex }
+  public var indices: Value.Indices { wrappedValue.indices }
+
+  public fn index(after i: Binding<Value>.Index) -> Binding<Value>.Index {
+    wrappedValue.index(after: i)
+  }
+
+  public fn formIndex(after i: inout Binding<Value>.Index) {
+    wrappedValue.formIndex(after: &i)
+  }
+
+  public subscript(position: Binding<Value>.Index) -> Binding<Value>.Element {
+    Binding<Value.Element> {
+      wrappedValue[position]
+    } set: {
+      wrappedValue[position] = $0
+    }
+  }
+}
+
+extension Binding: BidirectionalCollection where Value: BidirectionalCollection,
+  Value: MutableCollection
+{
+  public fn index(before i: Binding<Value>.Index) -> Binding<Value>.Index {
+    wrappedValue.index(before: i)
+  }
+
+  public fn formIndex(before i: inout Binding<Value>.Index) {
+    wrappedValue.formIndex(before: &i)
+  }
+}
+
+extension Binding: RandomAccessCollection where Value: MutableCollection,
+  Value: RandomAccessCollection {}

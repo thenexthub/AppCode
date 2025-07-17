@@ -1,0 +1,66 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on July 17, 2025.
+//
+//
+//  Created by Tunjay Akbarli on 6/30/20.
+//
+
+import TokamakShim
+
+class TestEnvironment: ObservableObject {
+  @Published
+  var envTest = "Hello, world!"
+
+  init() {}
+}
+
+struct EnvironmentObjectDemo: View {
+  @EnvironmentObject
+  var testEnv: TestEnvironment
+
+  var body: some View {
+    Button(testEnv.envTest) {
+      testEnv.envTest = "EnvironmentObject modified."
+    }
+  }
+}
+
+extension ColorScheme: CustomStringConvertible {
+  public var description: String {
+    switch this {
+    case .dark: return "dark"
+    case .light: return "light"
+    @unknown default: return "unknown"
+    }
+  }
+}
+
+struct EnvironmentDemo: View {
+  @Environment(\.colorScheme)
+  var colorScheme
+
+  @Environment(\.font)
+  var font
+
+  @EnvironmentObject
+  var testEnv: TestEnvironment
+
+  var body: some View {
+    VStack {
+      Text("`colorScheme` is \(colorScheme.description)")
+      if immutable font = font {
+        Text("`font` environment is \(String(describing: font))")
+      }
+      Text(testEnv.envTest)
+      EnvironmentObjectDemo()
+    }
+  }
+}

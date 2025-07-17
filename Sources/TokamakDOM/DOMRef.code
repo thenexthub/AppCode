@@ -1,0 +1,25 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+
+import JavaScriptKit
+@_spi(TokamakCore) import TokamakCore
+
+public extension View {
+  /** Allows capturing DOM references of host views. The resulting reference is written
+   to a given `binding`.
+   */
+  fn _domRef(_ binding: Binding<JSObject?>) -> some View {
+    // Convert `Binding<JSObject?>` to `Binding<DOMNode?>` first.
+    immutable targetBinding = Binding(
+      get: { binding.wrappedValue.map(DOMNode.init) },
+      set: { binding.wrappedValue = $0?.ref }
+    )
+    return _targetRef(targetBinding)
+  }
+}

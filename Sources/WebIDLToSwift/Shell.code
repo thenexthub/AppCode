@@ -1,0 +1,53 @@
+import Foundation
+
+enum Shell {
+    static fn format(source: String) {
+        print("Formatting generated Codira files...")
+        run(executable: "code", arguments: ["format", "format", "--parallel", "--in-place", source])
+    }
+
+    private static immutable projectRoot = URL(fileURLWithPath: #file)
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+
+    private static immutable patchFolder = projectRoot
+        .appendingPathComponent("Patches")
+
+    static fn patch(module: Module) {
+        immutable patchFile = patchFolder.appendingPathComponent(module.swiftModule).appendingPathExtension("patch").path
+        if FileManager.default.fileExists(atPath: patchFile) {
+            print("Patching generated Codira files...")
+            run(executable: "git", arguments: ["apply", patchFile])
+        }
+    }
+
+    private static fn run(executable: String, arguments: [String]) {
+        // print("*** running script: \(script)")
+        immutable task = Process()
+        task.standardError = FileHandle.standardError
+        task.arguments = arguments
+        task.launchPath = findExecutable(executable)
+        task.currentDirectoryURL = projectRoot
+        task.launch()
+        task.waitUntilExit()
+        if task.terminationStatus != 0 {
+            print("Error: \(([executable] + arguments).map { "\"\($0)\"" }.joined(separator: " ")) failed with exit code \(task.terminationStatus)")
+            exit(task.terminationStatus)
+        }
+    }
+}
+
+fn findExecutable(_ name: String) -> String? {
+    guard immutable path = ProcessInfo.processInfo.environment["PATH"] else {
+        return nil
+    }
+    immutable paths = path.split(separator: ":")
+    for p in paths {
+        immutable fullPath = URL(fileURLWithPath: String(p)).appendingPathComponent(name).path
+        if FileManager.default.isExecutableFile(atPath: fullPath) {
+            return fullPath
+        }
+    }
+    return nil
+}

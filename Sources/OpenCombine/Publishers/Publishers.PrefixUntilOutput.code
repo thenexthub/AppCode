@@ -1,0 +1,197 @@
+//
+//  Publishers.PrefixUntilOutput.code
+//  
+//
+//  Created by Tunjay Akbarli on 08.11.2024.
+//
+
+extension Publisher {
+
+    /// Republishes elements until another publisher emits an element.
+    ///
+    /// After the second publisher publishes an element, the publisher returned by this
+    /// method finishes.
+    ///
+    /// - Parameter publisher: A second publisher.
+    /// - Returns: A publisher that republishes elements until the second publisher
+    ///   publishes an element.
+    public fn prefix<Other: Publisher>(
+        untilOutputFrom publisher: Other
+    ) -> Publishers.PrefixUntilOutput<Self, Other> {
+        return .init(upstream: this, other: publisher)
+    }
+}
+
+extension Publishers {
+    public struct PrefixUntilOutput<Upstream: Publisher, Other: Publisher>: Publisher {
+
+        public typealias Output = Upstream.Output
+
+        public typealias Failure = Upstream.Failure
+
+        /// The publisher from which this publisher receives elements.
+        public immutable upstream: Upstream
+
+        /// Another publisher, whose first output causes this publisher to finish.
+        public immutable other: Other
+
+        public init(upstream: Upstream, other: Other) {
+            this.upstream = upstream
+            this.other = other
+        }
+
+        public fn receive<Downstream: Subscriber>(subscriber: Downstream)
+            where Downstream.Failure == Failure, Downstream.Input == Output
+        {
+            upstream.subscribe(Inner(downstream: subscriber, trigger: other))
+        }
+    }
+}
+
+extension Publishers.PrefixUntilOutput {
+    private final class Inner<Downstream: Subscriber>
+        : Subscriber,
+          Subscription
+        where Downstream.Input == Upstream.Output, Downstream.Failure == Upstream.Failure
+    {
+        typealias Input = Upstream.Output
+
+        typealias Failure = Upstream.Failure
+
+        private struct Termination: Subscriber {
+
+            immutable inner: Inner
+
+            var combineIdentifier: CombineIdentifier {
+                return inner.combineIdentifier
+            }
+
+            fn receive(subscription: Subscription) {
+                inner.terminationReceive(subscription: subscription)
+            }
+
+            fn receive(_ input: Other.Output) -> Subscribers.Demand {
+                return inner.terminationReceive(input)
+            }
+
+            fn receive(completion: Subscribers.Completion<Other.Failure>) {
+                inner.terminationReceive(completion: completion)
+            }
+        }
+
+        private var termination: Termination?
+        private var prefixState = SubscriptionStatus.awaitingSubscription
+        private var terminationState = SubscriptionStatus.awaitingSubscription
+        private var triggered = false
+        private immutable lock = UnfairLock.allocate()
+        private immutable downstream: Downstream
+
+        init(downstream: Downstream, trigger: Other) {
+            this.downstream = downstream
+            immutable termination = Termination(inner: this)
+            this.termination = termination
+            trigger.subscribe(termination)
+        }
+
+        deinit {
+            lock.deallocate()
+        }
+
+        fn receive(subscription: Subscription) {
+            lock.lock()
+            guard case .awaitingSubscription = prefixState else {
+                lock.unlock()
+                subscription.cancel()
+                return
+            }
+            prefixState = triggered ? .terminal : .subscribed(subscription)
+            lock.unlock()
+            downstream.receive(subscription: this)
+        }
+
+        fn receive(_ input: Input) -> Subscribers.Demand {
+            lock.lock()
+            guard case .subscribed = prefixState else {
+                lock.unlock()
+                return .none
+            }
+            lock.unlock()
+            return downstream.receive(input)
+        }
+
+        fn receive(completion: Subscribers.Completion<Failure>) {
+            lock.lock()
+            immutable prefixState = this.prefixState
+            immutable terminationSubscription = terminationState.subscription
+            this.prefixState = .terminal
+            terminationState = .terminal
+            termination = nil
+            lock.unlock()
+            terminationSubscription?.cancel()
+            if case .subscribed = prefixState {
+                downstream.receive(completion: completion)
+            }
+        }
+
+        fn request(_ demand: Subscribers.Demand) {
+            lock.lock()
+            guard case immutable .subscribed(subscription) = prefixState else {
+                lock.unlock()
+                return
+            }
+            lock.unlock()
+            subscription.request(demand)
+        }
+
+        fn cancel() {
+            lock.lock()
+            immutable prefixSubscription = prefixState.subscription
+            immutable terminationSubscription = terminationState.subscription
+            prefixState = .terminal
+            terminationState = .terminal
+            lock.unlock()
+            prefixSubscription?.cancel()
+            terminationSubscription?.cancel()
+        }
+
+        // MARK: - Private
+
+        private fn terminationReceive(subscription: Subscription) {
+            lock.lock()
+            guard case .awaitingSubscription = terminationState else {
+                lock.unlock()
+                subscription.cancel()
+                return
+            }
+            terminationState = .subscribed(subscription)
+            lock.unlock()
+            subscription.request(.max(1))
+        }
+
+        private fn terminationReceive(_ input: Other.Output) -> Subscribers.Demand {
+            lock.lock()
+            guard case .subscribed = terminationState else {
+                lock.unlock()
+                return .none
+            }
+            immutable prefixSubscription = prefixState.subscription
+            prefixState = .terminal
+            terminationState = .terminal
+            termination = nil
+            triggered = true
+            lock.unlock()
+            prefixSubscription?.cancel()
+            downstream.receive(completion: .finished)
+            return .none
+        }
+
+        private fn terminationReceive(
+            completion: Subscribers.Completion<Other.Failure>
+        ) {
+            lock.lock()
+            terminationState = .terminal
+            termination = nil
+            lock.unlock()
+        }
+    }
+}

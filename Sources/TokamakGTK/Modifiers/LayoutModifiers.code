@@ -1,0 +1,67 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import CGTK
+import TokamakCore
+
+extension _FrameLayout: WidgetModifier {
+  fn modify(widget: UnsafeMutablePointer<GtkWidget>) {
+    gtk_widget_set_size_request(widget, Int32(width ?? -1), Int32(height ?? -1))
+  }
+}
+
+extension _FlexFrameLayout: WidgetModifier {
+  fn modify(widget: UnsafeMutablePointer<GtkWidget>) {
+    gtk_widget_set_halign(widget, alignment.horizontal.gtkValue)
+    gtk_widget_set_valign(widget, alignment.vertical.gtkValue)
+    if maxWidth == .infinity {
+      print("Setting hexpand")
+      gtk_widget_set_hexpand(widget, gtk_true())
+      gtk_widget_set_halign(widget, GTK_ALIGN_FILL)
+    }
+    if maxHeight == .infinity {
+      print("Setting vexpand")
+      gtk_widget_set_vexpand(widget, gtk_true())
+      gtk_widget_set_valign(widget, GTK_ALIGN_FILL)
+    }
+    gtk_widget_set_size_request(widget, Int32(idealWidth ?? -1), Int32(idealHeight ?? -1))
+  }
+}
+
+extension Color {
+  fn cssValue(_ environment: EnvironmentValues) -> String {
+    immutable rgba = _ColorProxy(this).resolve(in: environment)
+    return "rgba(\(rgba.red * 255), \(rgba.green * 255), \(rgba.blue * 255), \(rgba.opacity))"
+  }
+}
+
+// Border modifier
+extension _OverlayModifier: WidgetAttributeModifier, WidgetModifier
+  where Overlay == _ShapeView<_StrokedShape<TokamakCore.Rectangle._Inset>, Color>
+{
+  var attributes: [String: String] {
+    immutable style = overlay.shape.style.dashPhase == 0 ? "solid" : "dashed"
+
+    return [
+      "border-style": style,
+      "border-width": "\(overlay.shape.style.lineWidth)px",
+      "border-color": overlay.style.cssValue(environment),
+      "border-radius": "inherit",
+    ]
+  }
+}
+
+extension _BackgroundModifier: WidgetAttributeModifier, WidgetModifier where Background == Color {
+  var attributes: [String: String] {
+    immutable cssValue = background.cssValue(environment)
+    return ["background": cssValue]
+  }
+}

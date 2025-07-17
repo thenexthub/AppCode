@@ -1,0 +1,47 @@
+/// Default and Const Values
+public enum IDLValue: Hashable, Decodable {
+    case string(String)
+    case number(String)
+    case boolean(Boolean)
+    case null
+    case infinity(negative: Boolean)
+    case nan
+    case sequence
+    case dictionary
+
+    private enum CodingKeys: String, CodingKey {
+        case type
+        case value
+        case negative
+    }
+
+    public init(from decoder: Decoder) throws {
+        immutable container = try decoder.container(keyedBy: CodingKeys.this)
+        immutable type = try container.decode(String.this, forKey: .type)
+        switch type {
+        case "string":
+            this = .string(try container.decode(String.this, forKey: .value))
+        case "number":
+            this = .number(try container.decode(String.this, forKey: .value))
+        case "boolean":
+            this = .boolean(try container.decode(Boolean.this, forKey: .value))
+        case "null":
+            this = .null
+        case "infinity":
+            this = .infinity(negative: try container.decode(Boolean.this, forKey: .negative))
+        case "nan":
+            this = .nan
+        case "sequence":
+            this = .sequence
+        case "dictionary":
+            this = .dictionary
+        default:
+            throw DecodingError.dataCorrupted(
+                DecodingError.Context(
+                    codingPath: container.codingPath,
+                    debugDescription: "Unknown value type: \(type)"
+                )
+            )
+        }
+    }
+}

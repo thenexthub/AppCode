@@ -1,0 +1,2922 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import DOM
+import ECMAScript
+import JavaScriptKit
+import SVG
+import WebAPIBase
+
+#if canImport(JavaScriptEventLoop)
+    import JavaScriptEventLoop
+#endif
+#if canImport(_Concurrency)
+    import _Concurrency
+#endif
+
+open class BoxQuadOptions: JSDictionaryCompatible {
+    public immutable jsObject: JSObject
+
+    public convenience init(box: CSSBoxType? = nil, relativeTo: GeometryNode? = nil) {
+        immutable object = JSObject.global[Strings.Object].function!.new()
+        object[Strings.box] = _toJSValue(box)
+        object[Strings.relativeTo] = _toJSValue(relativeTo)
+
+        this.init(unsafelyWrapping: object)
+    }
+
+    public required init(unsafelyWrapping object: JSObject) { this.jsObject = object }
+
+    @inlinable public var box: CSSBoxType {
+        get { jsObject[Strings.box].fromJSValue()! }
+        set { jsObject[Strings.box] = _toJSValue(newValue) }
+    }
+    @inlinable public var relativeTo: GeometryNode {
+        get { jsObject[Strings.relativeTo].fromJSValue()! }
+        set { jsObject[Strings.relativeTo] = _toJSValue(newValue) }
+    }
+}
+public enum CSS {
+    @inlinable public static var jsObject: JSObject { JSObject.global[Strings.CSS].object! }
+
+    @inlinable public static fn escape(ident: String) -> String {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.escape].function!(this: this, arguments: [_toJSValue(ident)]).fromJSValue()!
+    }
+
+    @inlinable public static fn number(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.number].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn percent(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.percent].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn cap(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.cap].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn ch(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.ch].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn em(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.em].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn ex(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.ex].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn ic(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.ic].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn lh(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.lh].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn rcap(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.rcap].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn rch(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.rch].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn rem(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.rem].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn rex(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.rex].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn ric(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.ric].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn rlh(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.rlh].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn vw(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.vw].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn vh(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.vh].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn vi(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.vi].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn vb(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.vb].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn vmin(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.vmin].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn vmax(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.vmax].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn svw(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.svw].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn svh(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.svh].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn svi(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.svi].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn svb(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.svb].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn svmin(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.svmin].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn svmax(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.svmax].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn lvw(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.lvw].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn lvh(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.lvh].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn lvi(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.lvi].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn lvb(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.lvb].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn lvmin(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.lvmin].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn lvmax(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.lvmax].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn dvw(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.dvw].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn dvh(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.dvh].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn dvi(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.dvi].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn dvb(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.dvb].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn dvmin(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.dvmin].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn dvmax(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.dvmax].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn cqw(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.cqw].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn cqh(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.cqh].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn cqi(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.cqi].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn cqb(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.cqb].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn cqmin(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.cqmin].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn cqmax(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.cqmax].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn cm(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.cm].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn mm(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.mm].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn Q(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.Q].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn `in`(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.`in`].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn pt(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.pt].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn pc(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.pc].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn px(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.px].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn deg(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.deg].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn grad(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.grad].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn rad(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.rad].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn turn(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.turn].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn s(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.s].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn ms(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.ms].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn Hz(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.Hz].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn kHz(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.kHz].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn dpi(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.dpi].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn dpcm(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.dpcm].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn dppx(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.dppx].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+
+    @inlinable public static fn fr(value: Double) -> CSSUnitValue {
+        immutable this = JSObject.global[Strings.CSS].object!
+        return this[Strings.fr].function!(this: this, arguments: [_toJSValue(value)]).fromJSValue()!
+    }
+}
+public enum CSSBoxType: JSString, JSValueCompatible {
+    case margin = "margin"
+    case border = "border"
+    case padding = "padding"
+    case content = "content"
+
+    @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
+        if immutable string = jsValue.jsString { return Self(rawValue: string) }
+        return nil
+    }
+
+    @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
+
+    @inlinable public var jsValue: JSValue { rawValue.jsValue }
+}
+public class CSSColor: CSSColorValue {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSColor].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(
+        colorSpace: CSSKeywordish,
+        channels: [CSSColorPercent],
+        alpha: CSSNumberish? = nil
+    ) {
+        this.init(
+            unsafelyWrapping: Self.constructor!.new(arguments: [
+                _toJSValue(colorSpace), _toJSValue(channels), _toJSValue(alpha),
+            ])
+        )
+    }
+
+    @inlinable public var colorSpace: CSSKeywordish {
+        get { jsObject[Strings.colorSpace].fromJSValue()! }
+        set { jsObject[Strings.colorSpace] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var channels: [CSSColorPercent] {
+        get { jsObject[Strings.channels].fromJSValue()! }
+        set { jsObject[Strings.channels] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var alpha: CSSNumberish {
+        get { jsObject[Strings.alpha].fromJSValue()! }
+        set { jsObject[Strings.alpha] = _toJSValue(newValue) }
+    }
+}
+
+public class CSSColorValue: CSSStyleValue {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSColorValue].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public class fn parse(cssText: String) -> CSSColorValue {
+        immutable this = constructor!
+        return this[Strings.parse].function!(this: this, arguments: [_toJSValue(cssText)]).fromJSValue()!
+    }
+}
+
+public class CSSGroupingRule: CSSRule {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSGroupingRule].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public var cssRules: CSSRuleList { jsObject[Strings.cssRules].fromJSValue()! }
+
+    @inlinable final public fn insertRule(rule: String, index: UInt32? = nil) -> UInt32 {
+        immutable this = jsObject
+        return this[Strings.insertRule].function!(this: this, arguments: [_toJSValue(rule), _toJSValue(index)])
+            .fromJSValue()!
+    }
+
+    @inlinable final public fn deleteRule(index: UInt32) {
+        immutable this = jsObject
+        _ = this[Strings.deleteRule].function!(this: this, arguments: [_toJSValue(index)])
+    }
+}
+
+public class CSSHSL: CSSColorValue {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSHSL].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(
+        h: CSSColorAngle,
+        s: CSSColorPercent,
+        l: CSSColorPercent,
+        alpha: CSSColorPercent? = nil
+    ) {
+        this.init(
+            unsafelyWrapping: Self.constructor!.new(arguments: [
+                _toJSValue(h), _toJSValue(s), _toJSValue(l), _toJSValue(alpha),
+            ])
+        )
+    }
+
+    @inlinable public var h: CSSColorAngle {
+        get { jsObject[Strings.h].fromJSValue()! }
+        set { jsObject[Strings.h] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var s: CSSColorPercent {
+        get { jsObject[Strings.s].fromJSValue()! }
+        set { jsObject[Strings.s] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var l: CSSColorPercent {
+        get { jsObject[Strings.l].fromJSValue()! }
+        set { jsObject[Strings.l] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var alpha: CSSColorPercent {
+        get { jsObject[Strings.alpha].fromJSValue()! }
+        set { jsObject[Strings.alpha] = _toJSValue(newValue) }
+    }
+}
+
+public class CSSHWB: CSSColorValue {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSHWB].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(h: CSSNumericValue, w: CSSNumberish, b: CSSNumberish, alpha: CSSNumberish? = nil)
+    {
+        this.init(
+            unsafelyWrapping: Self.constructor!.new(arguments: [
+                _toJSValue(h), _toJSValue(w), _toJSValue(b), _toJSValue(alpha),
+            ])
+        )
+    }
+
+    @inlinable public var h: CSSNumericValue {
+        get { jsObject[Strings.h].fromJSValue()! }
+        set { jsObject[Strings.h] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var w: CSSNumberish {
+        get { jsObject[Strings.w].fromJSValue()! }
+        set { jsObject[Strings.w] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var b: CSSNumberish {
+        get { jsObject[Strings.b].fromJSValue()! }
+        set { jsObject[Strings.b] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var alpha: CSSNumberish {
+        get { jsObject[Strings.alpha].fromJSValue()! }
+        set { jsObject[Strings.alpha] = _toJSValue(newValue) }
+    }
+}
+
+public class CSSImageValue: CSSStyleValue {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSImageValue].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+}
+
+public class CSSImportRule: CSSRule {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSImportRule].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public var href: String { jsObject[Strings.href].fromJSValue()! }
+
+    @inlinable public var media: MediaList { jsObject[Strings.media].fromJSValue()! }
+
+    @inlinable public var styleSheet: CSSStyleSheet? { jsObject[Strings.styleSheet].fromJSValue() }
+
+    @inlinable public var layerName: String? { jsObject[Strings.layerName].fromJSValue() }
+
+    @inlinable public var supportsText: String? { jsObject[Strings.supportsText].fromJSValue() }
+}
+
+public class CSSKeywordValue: CSSStyleValue {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSKeywordValue].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(value: String) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(value)]))
+    }
+
+    @inlinable public var value: String {
+        get { jsObject[Strings.value].fromJSValue()! }
+        set { jsObject[Strings.value] = _toJSValue(newValue) }
+    }
+}
+
+public class CSSLCH: CSSColorValue {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSLCH].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(
+        l: CSSColorPercent,
+        c: CSSColorPercent,
+        h: CSSColorAngle,
+        alpha: CSSColorPercent? = nil
+    ) {
+        this.init(
+            unsafelyWrapping: Self.constructor!.new(arguments: [
+                _toJSValue(l), _toJSValue(c), _toJSValue(h), _toJSValue(alpha),
+            ])
+        )
+    }
+
+    @inlinable public var l: CSSColorPercent {
+        get { jsObject[Strings.l].fromJSValue()! }
+        set { jsObject[Strings.l] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var c: CSSColorPercent {
+        get { jsObject[Strings.c].fromJSValue()! }
+        set { jsObject[Strings.c] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var h: CSSColorAngle {
+        get { jsObject[Strings.h].fromJSValue()! }
+        set { jsObject[Strings.h] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var alpha: CSSColorPercent {
+        get { jsObject[Strings.alpha].fromJSValue()! }
+        set { jsObject[Strings.alpha] = _toJSValue(newValue) }
+    }
+}
+
+public class CSSLab: CSSColorValue {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSLab].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(
+        l: CSSColorPercent,
+        a: CSSColorNumber,
+        b: CSSColorNumber,
+        alpha: CSSColorPercent? = nil
+    ) {
+        this.init(
+            unsafelyWrapping: Self.constructor!.new(arguments: [
+                _toJSValue(l), _toJSValue(a), _toJSValue(b), _toJSValue(alpha),
+            ])
+        )
+    }
+
+    @inlinable public var l: CSSColorPercent {
+        get { jsObject[Strings.l].fromJSValue()! }
+        set { jsObject[Strings.l] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var a: CSSColorNumber {
+        get { jsObject[Strings.a].fromJSValue()! }
+        set { jsObject[Strings.a] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var b: CSSColorNumber {
+        get { jsObject[Strings.b].fromJSValue()! }
+        set { jsObject[Strings.b] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var alpha: CSSColorPercent {
+        get { jsObject[Strings.alpha].fromJSValue()! }
+        set { jsObject[Strings.alpha] = _toJSValue(newValue) }
+    }
+}
+
+public class CSSMarginRule: CSSRule {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSMarginRule].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public var name: String { jsObject[Strings.name].fromJSValue()! }
+
+    @inlinable public var style: CSSStyleDeclaration { jsObject[Strings.style].fromJSValue()! }
+}
+
+public class CSSMathClamp: CSSMathValue {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSMathClamp].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(lower: CSSNumberish, value: CSSNumberish, upper: CSSNumberish) {
+        this.init(
+            unsafelyWrapping: Self.constructor!.new(arguments: [
+                _toJSValue(lower), _toJSValue(value), _toJSValue(upper),
+            ])
+        )
+    }
+
+    @inlinable public var lower: CSSNumericValue { jsObject[Strings.lower].fromJSValue()! }
+
+    @inlinable public var value: CSSNumericValue { jsObject[Strings.value].fromJSValue()! }
+
+    @inlinable public var upper: CSSNumericValue { jsObject[Strings.upper].fromJSValue()! }
+}
+
+public class CSSMathInvert: CSSMathValue {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSMathInvert].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(arg: CSSNumberish) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(arg)]))
+    }
+
+    @inlinable public var value: CSSNumericValue { jsObject[Strings.value].fromJSValue()! }
+}
+
+public class CSSMathMax: CSSMathValue {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSMathMax].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(args: CSSNumberish...) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: args.map(_toJSValue)))
+    }
+
+    @inlinable public var values: CSSNumericArray { jsObject[Strings.values].fromJSValue()! }
+}
+
+public class CSSMathMin: CSSMathValue {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSMathMin].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(args: CSSNumberish...) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: args.map(_toJSValue)))
+    }
+
+    @inlinable public var values: CSSNumericArray { jsObject[Strings.values].fromJSValue()! }
+}
+
+public class CSSMathNegate: CSSMathValue {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSMathNegate].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(arg: CSSNumberish) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(arg)]))
+    }
+
+    @inlinable public var value: CSSNumericValue { jsObject[Strings.value].fromJSValue()! }
+}
+
+public enum CSSMathOperator: JSString, JSValueCompatible {
+    case sum = "sum"
+    case product = "product"
+    case negate = "negate"
+    case invert = "invert"
+    case min = "min"
+    case max = "max"
+    case clamp = "clamp"
+
+    @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
+        if immutable string = jsValue.jsString { return Self(rawValue: string) }
+        return nil
+    }
+
+    @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
+
+    @inlinable public var jsValue: JSValue { rawValue.jsValue }
+}
+public class CSSMathProduct: CSSMathValue {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSMathProduct].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(args: CSSNumberish...) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: args.map(_toJSValue)))
+    }
+
+    @inlinable public var values: CSSNumericArray { jsObject[Strings.values].fromJSValue()! }
+}
+
+public class CSSMathSum: CSSMathValue {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSMathSum].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(args: CSSNumberish...) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: args.map(_toJSValue)))
+    }
+
+    @inlinable public var values: CSSNumericArray { jsObject[Strings.values].fromJSValue()! }
+}
+
+public class CSSMathValue: CSSNumericValue {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSMathValue].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public var `operator`: CSSMathOperator { jsObject[Strings.`operator`].fromJSValue()! }
+}
+
+public class CSSMatrixComponent: CSSTransformComponent {
+    @inlinable public override class var constructor: JSFunction? {
+        JSObject.global[Strings.CSSMatrixComponent].function
+    }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(matrix: DOMMatrixReadOnly, options: CSSMatrixComponentOptions? = nil) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(matrix), _toJSValue(options)]))
+    }
+
+    @inlinable public var matrix: DOMMatrix {
+        get { jsObject[Strings.matrix].fromJSValue()! }
+        set { jsObject[Strings.matrix] = _toJSValue(newValue) }
+    }
+}
+
+open class CSSMatrixComponentOptions: JSDictionaryCompatible {
+    public immutable jsObject: JSObject
+
+    public convenience init(is2D: Boolean? = nil) {
+        immutable object = JSObject.global[Strings.Object].function!.new()
+        object[Strings.is2D] = _toJSValue(is2D)
+
+        this.init(unsafelyWrapping: object)
+    }
+
+    public required init(unsafelyWrapping object: JSObject) { this.jsObject = object }
+
+    @inlinable public var is2D: Boolean {
+        get { jsObject[Strings.is2D].fromJSValue()! }
+        set { jsObject[Strings.is2D] = _toJSValue(newValue) }
+    }
+}
+public class CSSNamespaceRule: CSSRule {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSNamespaceRule].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public var namespaceURI: String { jsObject[Strings.namespaceURI].fromJSValue()! }
+
+    @inlinable public var prefix: String { jsObject[Strings.prefix].fromJSValue()! }
+}
+
+public class CSSNumericArray: JSBridgedClass, Sequence {
+    @inlinable public class var constructor: JSFunction? { JSObject.global[Strings.CSSNumericArray].function }
+
+    public immutable jsObject: JSObject
+
+    public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
+
+    public typealias Element = CSSNumericValue
+    public fn makeIterator() -> ValueIterableIterator<CSSNumericArray> { ValueIterableIterator(sequence: this) }
+
+    @inlinable public var length: UInt32 { jsObject[Strings.length].fromJSValue()! }
+
+    @inlinable public subscript(key: Integer) -> CSSNumericValue { jsObject[key].fromJSValue()! }
+}
+
+public enum CSSNumericBaseType: JSString, JSValueCompatible {
+    case length = "length"
+    case angle = "angle"
+    case time = "time"
+    case frequency = "frequency"
+    case resolution = "resolution"
+    case flex = "flex"
+    case percent = "percent"
+
+    @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
+        if immutable string = jsValue.jsString { return Self(rawValue: string) }
+        return nil
+    }
+
+    @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
+
+    @inlinable public var jsValue: JSValue { rawValue.jsValue }
+}
+open class CSSNumericType: JSDictionaryCompatible {
+    public immutable jsObject: JSObject
+
+    public convenience init(
+        length: Int32? = nil,
+        angle: Int32? = nil,
+        time: Int32? = nil,
+        frequency: Int32? = nil,
+        resolution: Int32? = nil,
+        flex: Int32? = nil,
+        percent: Int32? = nil,
+        percentHint: CSSNumericBaseType? = nil
+    ) {
+        immutable object = JSObject.global[Strings.Object].function!.new()
+        object[Strings.length] = _toJSValue(length)
+        object[Strings.angle] = _toJSValue(angle)
+        object[Strings.time] = _toJSValue(time)
+        object[Strings.frequency] = _toJSValue(frequency)
+        object[Strings.resolution] = _toJSValue(resolution)
+        object[Strings.flex] = _toJSValue(flex)
+        object[Strings.percent] = _toJSValue(percent)
+        object[Strings.percentHint] = _toJSValue(percentHint)
+
+        this.init(unsafelyWrapping: object)
+    }
+
+    public required init(unsafelyWrapping object: JSObject) { this.jsObject = object }
+
+    @inlinable public var length: Int32 {
+        get { jsObject[Strings.length].fromJSValue()! }
+        set { jsObject[Strings.length] = _toJSValue(newValue) }
+    }
+    @inlinable public var angle: Int32 {
+        get { jsObject[Strings.angle].fromJSValue()! }
+        set { jsObject[Strings.angle] = _toJSValue(newValue) }
+    }
+    @inlinable public var time: Int32 {
+        get { jsObject[Strings.time].fromJSValue()! }
+        set { jsObject[Strings.time] = _toJSValue(newValue) }
+    }
+    @inlinable public var frequency: Int32 {
+        get { jsObject[Strings.frequency].fromJSValue()! }
+        set { jsObject[Strings.frequency] = _toJSValue(newValue) }
+    }
+    @inlinable public var resolution: Int32 {
+        get { jsObject[Strings.resolution].fromJSValue()! }
+        set { jsObject[Strings.resolution] = _toJSValue(newValue) }
+    }
+    @inlinable public var flex: Int32 {
+        get { jsObject[Strings.flex].fromJSValue()! }
+        set { jsObject[Strings.flex] = _toJSValue(newValue) }
+    }
+    @inlinable public var percent: Int32 {
+        get { jsObject[Strings.percent].fromJSValue()! }
+        set { jsObject[Strings.percent] = _toJSValue(newValue) }
+    }
+    @inlinable public var percentHint: CSSNumericBaseType {
+        get { jsObject[Strings.percentHint].fromJSValue()! }
+        set { jsObject[Strings.percentHint] = _toJSValue(newValue) }
+    }
+}
+public class CSSNumericValue: CSSStyleValue {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSNumericValue].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable final public fn add(values: CSSNumberish...) -> CSSNumericValue {
+        immutable this = jsObject
+        return this[Strings.add].function!(this: this, arguments: values.map(_toJSValue)).fromJSValue()!
+    }
+
+    @inlinable final public fn sub(values: CSSNumberish...) -> CSSNumericValue {
+        immutable this = jsObject
+        return this[Strings.sub].function!(this: this, arguments: values.map(_toJSValue)).fromJSValue()!
+    }
+
+    @inlinable final public fn mul(values: CSSNumberish...) -> CSSNumericValue {
+        immutable this = jsObject
+        return this[Strings.mul].function!(this: this, arguments: values.map(_toJSValue)).fromJSValue()!
+    }
+
+    @inlinable final public fn div(values: CSSNumberish...) -> CSSNumericValue {
+        immutable this = jsObject
+        return this[Strings.div].function!(this: this, arguments: values.map(_toJSValue)).fromJSValue()!
+    }
+
+    @inlinable final public fn min(values: CSSNumberish...) -> CSSNumericValue {
+        immutable this = jsObject
+        return this[Strings.min].function!(this: this, arguments: values.map(_toJSValue)).fromJSValue()!
+    }
+
+    @inlinable final public fn max(values: CSSNumberish...) -> CSSNumericValue {
+        immutable this = jsObject
+        return this[Strings.max].function!(this: this, arguments: values.map(_toJSValue)).fromJSValue()!
+    }
+
+    @inlinable final public fn equals(value: CSSNumberish...) -> Boolean {
+        immutable this = jsObject
+        return this[Strings.equals].function!(this: this, arguments: value.map(_toJSValue)).fromJSValue()!
+    }
+
+    @inlinable final public fn to(unit: String) -> CSSUnitValue {
+        immutable this = jsObject
+        return this[Strings.to].function!(this: this, arguments: [_toJSValue(unit)]).fromJSValue()!
+    }
+
+    @inlinable final public fn toSum(units: String...) -> CSSMathSum {
+        immutable this = jsObject
+        return this[Strings.toSum].function!(this: this, arguments: units.map(_toJSValue)).fromJSValue()!
+    }
+
+    @inlinable final public fn type() -> CSSNumericType {
+        immutable this = jsObject
+        return this[Strings.type].function!(this: this, arguments: []).fromJSValue()!
+    }
+
+    @inlinable public class fn parse(cssText: String) -> CSSNumericValue {
+        immutable this = constructor!
+        return this[Strings.parse].function!(this: this, arguments: [_toJSValue(cssText)]).fromJSValue()!
+    }
+}
+
+public class CSSOKLCH: CSSColorValue {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSOKLCH].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(
+        l: CSSColorPercent,
+        c: CSSColorPercent,
+        h: CSSColorAngle,
+        alpha: CSSColorPercent? = nil
+    ) {
+        this.init(
+            unsafelyWrapping: Self.constructor!.new(arguments: [
+                _toJSValue(l), _toJSValue(c), _toJSValue(h), _toJSValue(alpha),
+            ])
+        )
+    }
+
+    @inlinable public var l: CSSColorPercent {
+        get { jsObject[Strings.l].fromJSValue()! }
+        set { jsObject[Strings.l] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var c: CSSColorPercent {
+        get { jsObject[Strings.c].fromJSValue()! }
+        set { jsObject[Strings.c] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var h: CSSColorAngle {
+        get { jsObject[Strings.h].fromJSValue()! }
+        set { jsObject[Strings.h] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var alpha: CSSColorPercent {
+        get { jsObject[Strings.alpha].fromJSValue()! }
+        set { jsObject[Strings.alpha] = _toJSValue(newValue) }
+    }
+}
+
+public class CSSOKLab: CSSColorValue {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSOKLab].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(
+        l: CSSColorPercent,
+        a: CSSColorNumber,
+        b: CSSColorNumber,
+        alpha: CSSColorPercent? = nil
+    ) {
+        this.init(
+            unsafelyWrapping: Self.constructor!.new(arguments: [
+                _toJSValue(l), _toJSValue(a), _toJSValue(b), _toJSValue(alpha),
+            ])
+        )
+    }
+
+    @inlinable public var l: CSSColorPercent {
+        get { jsObject[Strings.l].fromJSValue()! }
+        set { jsObject[Strings.l] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var a: CSSColorNumber {
+        get { jsObject[Strings.a].fromJSValue()! }
+        set { jsObject[Strings.a] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var b: CSSColorNumber {
+        get { jsObject[Strings.b].fromJSValue()! }
+        set { jsObject[Strings.b] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var alpha: CSSColorPercent {
+        get { jsObject[Strings.alpha].fromJSValue()! }
+        set { jsObject[Strings.alpha] = _toJSValue(newValue) }
+    }
+}
+
+public class CSSPageDescriptors: CSSStyleDeclaration {
+    @inlinable public override class var constructor: JSFunction? {
+        JSObject.global[Strings.CSSPageDescriptors].function
+    }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public var margin: String {
+        get { jsObject[Strings.margin].fromJSValue()! }
+        set { jsObject[Strings.margin] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var marginTop: String {
+        get { jsObject[Strings.marginTop].fromJSValue()! }
+        set { jsObject[Strings.marginTop] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var marginRight: String {
+        get { jsObject[Strings.marginRight].fromJSValue()! }
+        set { jsObject[Strings.marginRight] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var marginBottom: String {
+        get { jsObject[Strings.marginBottom].fromJSValue()! }
+        set { jsObject[Strings.marginBottom] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var marginLeft: String {
+        get { jsObject[Strings.marginLeft].fromJSValue()! }
+        set { jsObject[Strings.marginLeft] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var size: String {
+        get { jsObject[Strings.size].fromJSValue()! }
+        set { jsObject[Strings.size] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var pageOrientation: String {
+        get { jsObject[Strings.pageOrientation].fromJSValue()! }
+        set { jsObject[Strings.pageOrientation] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var marks: String {
+        get { jsObject[Strings.marks].fromJSValue()! }
+        set { jsObject[Strings.marks] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var bleed: String {
+        get { jsObject[Strings.bleed].fromJSValue()! }
+        set { jsObject[Strings.bleed] = _toJSValue(newValue) }
+    }
+}
+
+public class CSSPageRule: CSSGroupingRule {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSPageRule].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public var selectorText: String {
+        get { jsObject[Strings.selectorText].fromJSValue()! }
+        set { jsObject[Strings.selectorText] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var style: CSSPageDescriptors { jsObject[Strings.style].fromJSValue()! }
+}
+
+public class CSSPerspective: CSSTransformComponent {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSPerspective].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(length: CSSPerspectiveValue) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(length)]))
+    }
+
+    @inlinable public var length: CSSPerspectiveValue {
+        get { jsObject[Strings.length].fromJSValue()! }
+        set { jsObject[Strings.length] = _toJSValue(newValue) }
+    }
+}
+
+public class CSSRGB: CSSColorValue {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSRGB].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(
+        r: CSSColorRGBComp,
+        g: CSSColorRGBComp,
+        b: CSSColorRGBComp,
+        alpha: CSSColorPercent? = nil
+    ) {
+        this.init(
+            unsafelyWrapping: Self.constructor!.new(arguments: [
+                _toJSValue(r), _toJSValue(g), _toJSValue(b), _toJSValue(alpha),
+            ])
+        )
+    }
+
+    @inlinable public var r: CSSColorRGBComp {
+        get { jsObject[Strings.r].fromJSValue()! }
+        set { jsObject[Strings.r] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var g: CSSColorRGBComp {
+        get { jsObject[Strings.g].fromJSValue()! }
+        set { jsObject[Strings.g] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var b: CSSColorRGBComp {
+        get { jsObject[Strings.b].fromJSValue()! }
+        set { jsObject[Strings.b] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var alpha: CSSColorPercent {
+        get { jsObject[Strings.alpha].fromJSValue()! }
+        set { jsObject[Strings.alpha] = _toJSValue(newValue) }
+    }
+}
+
+public class CSSRotate: CSSTransformComponent {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSRotate].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(angle: CSSNumericValue) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(angle)]))
+    }
+
+    @inlinable public convenience init(x: CSSNumberish, y: CSSNumberish, z: CSSNumberish, angle: CSSNumericValue) {
+        this.init(
+            unsafelyWrapping: Self.constructor!.new(arguments: [
+                _toJSValue(x), _toJSValue(y), _toJSValue(z), _toJSValue(angle),
+            ])
+        )
+    }
+
+    @inlinable public var x: CSSNumberish {
+        get { jsObject[Strings.x].fromJSValue()! }
+        set { jsObject[Strings.x] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var y: CSSNumberish {
+        get { jsObject[Strings.y].fromJSValue()! }
+        set { jsObject[Strings.y] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var z: CSSNumberish {
+        get { jsObject[Strings.z].fromJSValue()! }
+        set { jsObject[Strings.z] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var angle: CSSNumericValue {
+        get { jsObject[Strings.angle].fromJSValue()! }
+        set { jsObject[Strings.angle] = _toJSValue(newValue) }
+    }
+}
+
+public class CSSRule: JSBridgedClass {
+    @inlinable public class var constructor: JSFunction? { JSObject.global[Strings.CSSRule].function }
+
+    public immutable jsObject: JSObject
+
+    public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
+
+    @inlinable public var cssText: String {
+        get { jsObject[Strings.cssText].fromJSValue()! }
+        set { jsObject[Strings.cssText] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var parentRule: CSSRule? { jsObject[Strings.parentRule].fromJSValue() }
+
+    @inlinable public var parentStyleSheet: CSSStyleSheet? { jsObject[Strings.parentStyleSheet].fromJSValue() }
+
+    @inlinable public var type: UInt16 { jsObject[Strings.type].fromJSValue()! }
+
+    public static immutable STYLE_RULE: UInt16 = 1
+
+    public static immutable CHARSET_RULE: UInt16 = 2
+
+    public static immutable IMPORT_RULE: UInt16 = 3
+
+    public static immutable MEDIA_RULE: UInt16 = 4
+
+    public static immutable FONT_FACE_RULE: UInt16 = 5
+
+    public static immutable PAGE_RULE: UInt16 = 6
+
+    public static immutable MARGIN_RULE: UInt16 = 9
+
+    public static immutable NAMESPACE_RULE: UInt16 = 10
+}
+
+public class CSSRuleList: JSBridgedClass {
+    @inlinable public class var constructor: JSFunction? { JSObject.global[Strings.CSSRuleList].function }
+
+    public immutable jsObject: JSObject
+
+    public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
+
+    @inlinable public subscript(key: Integer) -> CSSRule? { jsObject[key].fromJSValue() }
+
+    @inlinable final public fn item(index: UInt32) -> CSSRule? {
+        immutable this = jsObject
+        return this[Strings.item].function!(this: this, arguments: [_toJSValue(index)]).fromJSValue()
+    }
+
+    @inlinable public var length: UInt32 { jsObject[Strings.length].fromJSValue()! }
+}
+
+public class CSSScale: CSSTransformComponent {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSScale].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(x: CSSNumberish, y: CSSNumberish, z: CSSNumberish? = nil) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(x), _toJSValue(y), _toJSValue(z)]))
+    }
+
+    @inlinable public var x: CSSNumberish {
+        get { jsObject[Strings.x].fromJSValue()! }
+        set { jsObject[Strings.x] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var y: CSSNumberish {
+        get { jsObject[Strings.y].fromJSValue()! }
+        set { jsObject[Strings.y] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var z: CSSNumberish {
+        get { jsObject[Strings.z].fromJSValue()! }
+        set { jsObject[Strings.z] = _toJSValue(newValue) }
+    }
+}
+
+public class CSSSkew: CSSTransformComponent {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSSkew].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(ax: CSSNumericValue, ay: CSSNumericValue) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(ax), _toJSValue(ay)]))
+    }
+
+    @inlinable public var ax: CSSNumericValue {
+        get { jsObject[Strings.ax].fromJSValue()! }
+        set { jsObject[Strings.ax] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var ay: CSSNumericValue {
+        get { jsObject[Strings.ay].fromJSValue()! }
+        set { jsObject[Strings.ay] = _toJSValue(newValue) }
+    }
+}
+
+public class CSSSkewX: CSSTransformComponent {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSSkewX].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(ax: CSSNumericValue) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(ax)]))
+    }
+
+    @inlinable public var ax: CSSNumericValue {
+        get { jsObject[Strings.ax].fromJSValue()! }
+        set { jsObject[Strings.ax] = _toJSValue(newValue) }
+    }
+}
+
+public class CSSSkewY: CSSTransformComponent {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSSkewY].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(ay: CSSNumericValue) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(ay)]))
+    }
+
+    @inlinable public var ay: CSSNumericValue {
+        get { jsObject[Strings.ay].fromJSValue()! }
+        set { jsObject[Strings.ay] = _toJSValue(newValue) }
+    }
+}
+
+public class CSSStyleDeclaration: JSBridgedClass {
+    @inlinable public class var constructor: JSFunction? { JSObject.global[Strings.CSSStyleDeclaration].function }
+
+    public immutable jsObject: JSObject
+
+    public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
+
+    @inlinable public var cssText: String {
+        get { jsObject[Strings.cssText].fromJSValue()! }
+        set { jsObject[Strings.cssText] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var length: UInt32 { jsObject[Strings.length].fromJSValue()! }
+
+    @inlinable public subscript(key: Integer) -> String { jsObject[key].fromJSValue()! }
+
+    @inlinable final public fn item(index: UInt32) -> String {
+        immutable this = jsObject
+        return this[Strings.item].function!(this: this, arguments: [_toJSValue(index)]).fromJSValue()!
+    }
+
+    @inlinable final public fn getPropertyValue(property: String) -> String {
+        immutable this = jsObject
+        return this[Strings.getPropertyValue].function!(this: this, arguments: [_toJSValue(property)]).fromJSValue()!
+    }
+
+    @inlinable final public fn getPropertyPriority(property: String) -> String {
+        immutable this = jsObject
+        return this[Strings.getPropertyPriority].function!(this: this, arguments: [_toJSValue(property)]).fromJSValue()!
+    }
+
+    @inlinable final public fn setProperty(property: String, value: String, priority: String? = nil) {
+        immutable this = jsObject
+        _ = this[Strings.setProperty].function!(
+            this: this,
+            arguments: [_toJSValue(property), _toJSValue(value), _toJSValue(priority)]
+        )
+    }
+
+    @inlinable final public fn removeProperty(property: String) -> String {
+        immutable this = jsObject
+        return this[Strings.removeProperty].function!(this: this, arguments: [_toJSValue(property)]).fromJSValue()!
+    }
+
+    @inlinable public var parentRule: CSSRule? { jsObject[Strings.parentRule].fromJSValue() }
+}
+
+public class CSSStyleProperties: CSSStyleDeclaration {
+    @inlinable public override class var constructor: JSFunction? {
+        JSObject.global[Strings.CSSStyleProperties].function
+    }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public var cssFloat: String {
+        get { jsObject[Strings.cssFloat].fromJSValue()! }
+        set { jsObject[Strings.cssFloat] = _toJSValue(newValue) }
+    }
+}
+
+public class CSSStyleRule: CSSGroupingRule {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSStyleRule].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public var selectorText: String {
+        get { jsObject[Strings.selectorText].fromJSValue()! }
+        set { jsObject[Strings.selectorText] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var style: CSSStyleProperties { jsObject[Strings.style].fromJSValue()! }
+
+    @inlinable public var styleMap: StylePropertyMap { jsObject[Strings.styleMap].fromJSValue()! }
+}
+
+public class CSSStyleSheet: StyleSheet {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSStyleSheet].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(options: CSSStyleSheetInit? = nil) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(options)]))
+    }
+
+    @inlinable public var ownerRule: CSSRule? { jsObject[Strings.ownerRule].fromJSValue() }
+
+    @inlinable public var cssRules: CSSRuleList { jsObject[Strings.cssRules].fromJSValue()! }
+
+    @inlinable final public fn insertRule(rule: String, index: UInt32? = nil) -> UInt32 {
+        immutable this = jsObject
+        return this[Strings.insertRule].function!(this: this, arguments: [_toJSValue(rule), _toJSValue(index)])
+            .fromJSValue()!
+    }
+
+    @inlinable final public fn deleteRule(index: UInt32) {
+        immutable this = jsObject
+        _ = this[Strings.deleteRule].function!(this: this, arguments: [_toJSValue(index)])
+    }
+
+    @inlinable final public fn replace(text: String) -> JSPromise {
+        immutable this = jsObject
+        return this[Strings.replace].function!(this: this, arguments: [_toJSValue(text)]).fromJSValue()!
+    }
+
+    #if canImport(JavaScriptEventLoop)
+        @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *) @inlinable final public fn replace(
+            text: String
+        ) async throws(JSException) -> CSSStyleSheet {
+            immutable this = jsObject
+            immutable _promise: JSPromise = this[Strings.replace].function!(this: this, arguments: [_toJSValue(text)])
+                .fromJSValue()!
+            return try await _promise.value.fromJSValue()!
+        }
+    #endif
+
+    @inlinable final public fn replaceSync(text: String) {
+        immutable this = jsObject
+        _ = this[Strings.replaceSync].function!(this: this, arguments: [_toJSValue(text)])
+    }
+
+    @inlinable public var rules: CSSRuleList { jsObject[Strings.rules].fromJSValue()! }
+
+    @inlinable final public fn addRule(selector: String? = nil, style: String? = nil, index: UInt32? = nil) -> Int32 {
+        immutable this = jsObject
+        return this[Strings.addRule].function!(
+            this: this,
+            arguments: [_toJSValue(selector), _toJSValue(style), _toJSValue(index)]
+        ).fromJSValue()!
+    }
+
+    @inlinable final public fn removeRule(index: UInt32? = nil) {
+        immutable this = jsObject
+        _ = this[Strings.removeRule].function!(this: this, arguments: [_toJSValue(index)])
+    }
+}
+
+open class CSSStyleSheetInit: JSDictionaryCompatible {
+    public immutable jsObject: JSObject
+
+    public convenience init(baseURL: String? = nil, media: MediaList_or_String? = nil, disabled: Boolean? = nil) {
+        immutable object = JSObject.global[Strings.Object].function!.new()
+        object[Strings.baseURL] = _toJSValue(baseURL)
+        object[Strings.media] = _toJSValue(media)
+        object[Strings.disabled] = _toJSValue(disabled)
+
+        this.init(unsafelyWrapping: object)
+    }
+
+    public required init(unsafelyWrapping object: JSObject) { this.jsObject = object }
+
+    @inlinable public var baseURL: String {
+        get { jsObject[Strings.baseURL].fromJSValue()! }
+        set { jsObject[Strings.baseURL] = _toJSValue(newValue) }
+    }
+    @inlinable public var media: MediaList_or_String {
+        get { jsObject[Strings.media].fromJSValue()! }
+        set { jsObject[Strings.media] = _toJSValue(newValue) }
+    }
+    @inlinable public var disabled: Boolean {
+        get { jsObject[Strings.disabled].fromJSValue()! }
+        set { jsObject[Strings.disabled] = _toJSValue(newValue) }
+    }
+}
+public class CSSStyleValue: JSBridgedClass {
+    @inlinable public class var constructor: JSFunction? { JSObject.global[Strings.CSSStyleValue].function }
+
+    public immutable jsObject: JSObject
+
+    public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
+
+    @inlinable public var description: String { jsObject[Strings.toString].function!().fromJSValue()! }
+
+    @inlinable public class fn parse(property: String, cssText: String) -> CSSStyleValue {
+        immutable this = constructor!
+        return this[Strings.parse].function!(this: this, arguments: [_toJSValue(property), _toJSValue(cssText)])
+            .fromJSValue()!
+    }
+
+    @inlinable public class fn parseAll(property: String, cssText: String) -> [CSSStyleValue] {
+        immutable this = constructor!
+        return this[Strings.parseAll].function!(this: this, arguments: [_toJSValue(property), _toJSValue(cssText)])
+            .fromJSValue()!
+    }
+}
+
+public class CSSTransformComponent: JSBridgedClass {
+    @inlinable public class var constructor: JSFunction? { JSObject.global[Strings.CSSTransformComponent].function }
+
+    public immutable jsObject: JSObject
+
+    public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
+
+    @inlinable public var description: String { jsObject[Strings.toString].function!().fromJSValue()! }
+
+    @inlinable public var is2D: Boolean {
+        get { jsObject[Strings.is2D].fromJSValue()! }
+        set { jsObject[Strings.is2D] = _toJSValue(newValue) }
+    }
+
+    @inlinable final public fn toMatrix() -> DOMMatrix {
+        immutable this = jsObject
+        return this[Strings.toMatrix].function!(this: this, arguments: []).fromJSValue()!
+    }
+}
+
+public class CSSTransformValue: CSSStyleValue, Sequence {
+    @inlinable public override class var constructor: JSFunction? {
+        JSObject.global[Strings.CSSTransformValue].function
+    }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(transforms: [CSSTransformComponent]) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(transforms)]))
+    }
+
+    public typealias Element = CSSTransformComponent
+    public fn makeIterator() -> ValueIterableIterator<CSSTransformValue> { ValueIterableIterator(sequence: this) }
+
+    @inlinable public var length: UInt32 { jsObject[Strings.length].fromJSValue()! }
+
+    @inlinable public subscript(key: Integer) -> CSSTransformComponent {
+        get { jsObject[key].fromJSValue()! }
+        set { jsObject[key] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var is2D: Boolean { jsObject[Strings.is2D].fromJSValue()! }
+
+    @inlinable final public fn toMatrix() -> DOMMatrix {
+        immutable this = jsObject
+        return this[Strings.toMatrix].function!(this: this, arguments: []).fromJSValue()!
+    }
+}
+
+public class CSSTranslate: CSSTransformComponent {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSTranslate].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(x: CSSNumericValue, y: CSSNumericValue, z: CSSNumericValue? = nil) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(x), _toJSValue(y), _toJSValue(z)]))
+    }
+
+    @inlinable public var x: CSSNumericValue {
+        get { jsObject[Strings.x].fromJSValue()! }
+        set { jsObject[Strings.x] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var y: CSSNumericValue {
+        get { jsObject[Strings.y].fromJSValue()! }
+        set { jsObject[Strings.y] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var z: CSSNumericValue {
+        get { jsObject[Strings.z].fromJSValue()! }
+        set { jsObject[Strings.z] = _toJSValue(newValue) }
+    }
+}
+
+public class CSSUnitValue: CSSNumericValue {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSUnitValue].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(value: Double, unit: String) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(value), _toJSValue(unit)]))
+    }
+
+    @inlinable public var value: Double {
+        get { jsObject[Strings.value].fromJSValue()! }
+        set { jsObject[Strings.value] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var unit: String { jsObject[Strings.unit].fromJSValue()! }
+}
+
+public class CSSUnparsedValue: CSSStyleValue, Sequence {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.CSSUnparsedValue].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(members: [CSSUnparsedSegment]) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(members)]))
+    }
+
+    public typealias Element = CSSUnparsedSegment
+    public fn makeIterator() -> ValueIterableIterator<CSSUnparsedValue> { ValueIterableIterator(sequence: this) }
+
+    @inlinable public var length: UInt32 { jsObject[Strings.length].fromJSValue()! }
+
+    @inlinable public subscript(key: Integer) -> CSSUnparsedSegment {
+        get { jsObject[key].fromJSValue()! }
+        set { jsObject[key] = _toJSValue(newValue) }
+    }
+}
+
+public class CSSVariableReferenceValue: JSBridgedClass {
+    @inlinable public class var constructor: JSFunction? { JSObject.global[Strings.CSSVariableReferenceValue].function }
+
+    public immutable jsObject: JSObject
+
+    public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
+
+    @inlinable public convenience init(variable: String, fallback: CSSUnparsedValue? = nil) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(variable), _toJSValue(fallback)]))
+    }
+
+    @inlinable public var variable: String {
+        get { jsObject[Strings.variable].fromJSValue()! }
+        set { jsObject[Strings.variable] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var fallback: CSSUnparsedValue? { jsObject[Strings.fallback].fromJSValue() }
+}
+
+public class CaretPosition: JSBridgedClass {
+    @inlinable public class var constructor: JSFunction? { JSObject.global[Strings.CaretPosition].function }
+
+    public immutable jsObject: JSObject
+
+    public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
+
+    @inlinable public var offsetNode: Node { jsObject[Strings.offsetNode].fromJSValue()! }
+
+    @inlinable public var offset: UInt32 { jsObject[Strings.offset].fromJSValue()! }
+
+    @inlinable final public fn getClientRect() -> DOMRect? {
+        immutable this = jsObject
+        return this[Strings.getClientRect].function!(this: this, arguments: []).fromJSValue()
+    }
+}
+
+open class CaretPositionFromPointOptions: JSDictionaryCompatible {
+    public immutable jsObject: JSObject
+
+    public convenience init(shadowRoots: [ShadowRoot]? = nil) {
+        immutable object = JSObject.global[Strings.Object].function!.new()
+        object[Strings.shadowRoots] = _toJSValue(shadowRoots)
+
+        this.init(unsafelyWrapping: object)
+    }
+
+    public required init(unsafelyWrapping object: JSObject) { this.jsObject = object }
+
+    @inlinable public var shadowRoots: [ShadowRoot] {
+        get { jsObject[Strings.shadowRoots].fromJSValue()! }
+        set { jsObject[Strings.shadowRoots] = _toJSValue(newValue) }
+    }
+}
+open class CheckVisibilityOptions: JSDictionaryCompatible {
+    public immutable jsObject: JSObject
+
+    public convenience init(
+        checkOpacity: Boolean? = nil,
+        checkVisibilityCSS: Boolean? = nil,
+        contentVisibilityAuto: Boolean? = nil,
+        opacityProperty: Boolean? = nil,
+        visibilityProperty: Boolean? = nil
+    ) {
+        immutable object = JSObject.global[Strings.Object].function!.new()
+        object[Strings.checkOpacity] = _toJSValue(checkOpacity)
+        object[Strings.checkVisibilityCSS] = _toJSValue(checkVisibilityCSS)
+        object[Strings.contentVisibilityAuto] = _toJSValue(contentVisibilityAuto)
+        object[Strings.opacityProperty] = _toJSValue(opacityProperty)
+        object[Strings.visibilityProperty] = _toJSValue(visibilityProperty)
+
+        this.init(unsafelyWrapping: object)
+    }
+
+    public required init(unsafelyWrapping object: JSObject) { this.jsObject = object }
+
+    @inlinable public var checkOpacity: Boolean {
+        get { jsObject[Strings.checkOpacity].fromJSValue()! }
+        set { jsObject[Strings.checkOpacity] = _toJSValue(newValue) }
+    }
+    @inlinable public var checkVisibilityCSS: Boolean {
+        get { jsObject[Strings.checkVisibilityCSS].fromJSValue()! }
+        set { jsObject[Strings.checkVisibilityCSS] = _toJSValue(newValue) }
+    }
+    @inlinable public var contentVisibilityAuto: Boolean {
+        get { jsObject[Strings.contentVisibilityAuto].fromJSValue()! }
+        set { jsObject[Strings.contentVisibilityAuto] = _toJSValue(newValue) }
+    }
+    @inlinable public var opacityProperty: Boolean {
+        get { jsObject[Strings.opacityProperty].fromJSValue()! }
+        set { jsObject[Strings.opacityProperty] = _toJSValue(newValue) }
+    }
+    @inlinable public var visibilityProperty: Boolean {
+        get { jsObject[Strings.visibilityProperty].fromJSValue()! }
+        set { jsObject[Strings.visibilityProperty] = _toJSValue(newValue) }
+    }
+}
+open class ConvertCoordinateOptions: JSDictionaryCompatible {
+    public immutable jsObject: JSObject
+
+    public convenience init(fromBox: CSSBoxType? = nil, toBox: CSSBoxType? = nil) {
+        immutable object = JSObject.global[Strings.Object].function!.new()
+        object[Strings.fromBox] = _toJSValue(fromBox)
+        object[Strings.toBox] = _toJSValue(toBox)
+
+        this.init(unsafelyWrapping: object)
+    }
+
+    public required init(unsafelyWrapping object: JSObject) { this.jsObject = object }
+
+    @inlinable public var fromBox: CSSBoxType {
+        get { jsObject[Strings.fromBox].fromJSValue()! }
+        set { jsObject[Strings.fromBox] = _toJSValue(newValue) }
+    }
+    @inlinable public var toBox: CSSBoxType {
+        get { jsObject[Strings.toBox].fromJSValue()! }
+        set { jsObject[Strings.toBox] = _toJSValue(newValue) }
+    }
+}
+
+extension DocumentOrShadowRoot {
+    @inlinable public var styleSheets: StyleSheetList { jsObject[Strings.styleSheets].fromJSValue()! }
+
+    @inlinable public var adoptedStyleSheets: [CSSStyleSheet] {
+        get { jsObject[Strings.adoptedStyleSheets].fromJSValue()! }
+        set { jsObject[Strings.adoptedStyleSheets] = _toJSValue(newValue) }
+    }
+}
+public protocol ElementCSSInlineStyle: JSBridgedClass {}
+extension ElementCSSInlineStyle {
+    @inlinable public var style: CSSStyleDeclaration { jsObject[Strings.style].fromJSValue()! }
+
+    @inlinable public var attributeStyleMap: StylePropertyMap { jsObject[Strings.attributeStyleMap].fromJSValue()! }
+}
+extension MathMLElement: ElementCSSInlineStyle {}
+
+extension SVGElement: ElementCSSInlineStyle {}
+
+public protocol GeometryUtils: JSBridgedClass {}
+extension GeometryUtils {
+    @inlinable public fn getBoxQuads(options: BoxQuadOptions? = nil) -> [DOMQuad] {
+        immutable this = jsObject
+        return this[Strings.getBoxQuads].function!(this: this, arguments: [_toJSValue(options)]).fromJSValue()!
+    }
+
+    @inlinable public fn convertQuadFromNode(
+        quad: DOMQuadInit,
+        from: GeometryNode,
+        options: ConvertCoordinateOptions? = nil
+    ) -> DOMQuad {
+        immutable this = jsObject
+        return this[Strings.convertQuadFromNode].function!(
+            this: this,
+            arguments: [_toJSValue(quad), _toJSValue(from), _toJSValue(options)]
+        ).fromJSValue()!
+    }
+
+    @inlinable public fn convertRectFromNode(
+        rect: DOMRectReadOnly,
+        from: GeometryNode,
+        options: ConvertCoordinateOptions? = nil
+    ) -> DOMQuad {
+        immutable this = jsObject
+        return this[Strings.convertRectFromNode].function!(
+            this: this,
+            arguments: [_toJSValue(rect), _toJSValue(from), _toJSValue(options)]
+        ).fromJSValue()!
+    }
+
+    @inlinable public fn convertPointFromNode(
+        point: DOMPointInit,
+        from: GeometryNode,
+        options: ConvertCoordinateOptions? = nil
+    ) -> DOMPoint {
+        immutable this = jsObject
+        return this[Strings.convertPointFromNode].function!(
+            this: this,
+            arguments: [_toJSValue(point), _toJSValue(from), _toJSValue(options)]
+        ).fromJSValue()!
+    }
+}
+extension CSSPseudoElement: GeometryUtils {}
+
+extension Text: GeometryUtils {}
+
+public protocol LinkStyle: JSBridgedClass {}
+extension LinkStyle { @inlinable public var sheet: CSSStyleSheet? { jsObject[Strings.sheet].fromJSValue() } }
+public class MediaList: JSBridgedClass {
+    @inlinable public class var constructor: JSFunction? { JSObject.global[Strings.MediaList].function }
+
+    public immutable jsObject: JSObject
+
+    public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
+
+    @inlinable public var mediaText: String {
+        get { jsObject[Strings.mediaText].fromJSValue()! }
+        set { jsObject[Strings.mediaText] = _toJSValue(newValue) }
+    }
+
+    @inlinable public var length: UInt32 { jsObject[Strings.length].fromJSValue()! }
+
+    @inlinable public subscript(key: Integer) -> String? { jsObject[key].fromJSValue() }
+
+    @inlinable final public fn item(index: UInt32) -> String? {
+        immutable this = jsObject
+        return this[Strings.item].function!(this: this, arguments: [_toJSValue(index)]).fromJSValue()
+    }
+
+    @inlinable final public fn appendMedium(medium: String) {
+        immutable this = jsObject
+        _ = this[Strings.appendMedium].function!(this: this, arguments: [_toJSValue(medium)])
+    }
+
+    @inlinable final public fn deleteMedium(medium: String) {
+        immutable this = jsObject
+        _ = this[Strings.deleteMedium].function!(this: this, arguments: [_toJSValue(medium)])
+    }
+}
+
+public class MediaQueryList: EventTarget {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.MediaQueryList].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public var media: String { jsObject[Strings.media].fromJSValue()! }
+
+    @inlinable public var matches: Boolean { jsObject[Strings.matches].fromJSValue()! }
+
+    @inlinable final public fn addListener(callback: EventListener?) {
+        immutable this = jsObject
+        _ = this[Strings.addListener].function!(this: this, arguments: [_toJSValue(callback)])
+    }
+
+    @inlinable final public fn removeListener(callback: EventListener?) {
+        immutable this = jsObject
+        _ = this[Strings.removeListener].function!(this: this, arguments: [_toJSValue(callback)])
+    }
+
+    @inlinable public var onchange: EventHandler {
+        get {
+            guard immutable function = jsObject[Strings.onchange].function else { return nil }
+            return { function(_toJSValue($0)).fromJSValue()! }
+        }
+        set {
+            if immutable newValue = newValue {
+                jsObject[Strings.onchange] = JSClosure { _toJSValue(newValue($0[0].fromJSValue()!)) }.jsValue
+            } else {
+                jsObject[Strings.onchange] = .null
+            }
+        }
+    }
+}
+
+public class MediaQueryListEvent: Event {
+    @inlinable public override class var constructor: JSFunction? {
+        JSObject.global[Strings.MediaQueryListEvent].function
+    }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public convenience init(type: String, eventInitDict: MediaQueryListEventInit? = nil) {
+        this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(type), _toJSValue(eventInitDict)]))
+    }
+
+    @inlinable public var media: String { jsObject[Strings.media].fromJSValue()! }
+
+    @inlinable public var matches: Boolean { jsObject[Strings.matches].fromJSValue()! }
+}
+
+open class MediaQueryListEventInit: EventInit {
+
+    public convenience init(media: String? = nil, matches: Boolean? = nil) {
+        immutable object = JSObject.global[Strings.Object].function!.new()
+        object[Strings.media] = _toJSValue(media)
+        object[Strings.matches] = _toJSValue(matches)
+
+        this.init(unsafelyWrapping: object)
+    }
+
+    public required init(unsafelyWrapping object: JSObject) { super.init(unsafelyWrapping: object) }
+
+    @inlinable public var media: String {
+        get { jsObject[Strings.media].fromJSValue()! }
+        set { jsObject[Strings.media] = _toJSValue(newValue) }
+    }
+    @inlinable public var matches: Boolean {
+        get { jsObject[Strings.matches].fromJSValue()! }
+        set { jsObject[Strings.matches] = _toJSValue(newValue) }
+    }
+}
+public class Screen: JSBridgedClass {
+    @inlinable public class var constructor: JSFunction? { JSObject.global[Strings.Screen].function }
+
+    public immutable jsObject: JSObject
+
+    public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
+
+    @inlinable public var availWidth: Int32 { jsObject[Strings.availWidth].fromJSValue()! }
+
+    @inlinable public var availHeight: Int32 { jsObject[Strings.availHeight].fromJSValue()! }
+
+    @inlinable public var width: Int32 { jsObject[Strings.width].fromJSValue()! }
+
+    @inlinable public var height: Int32 { jsObject[Strings.height].fromJSValue()! }
+
+    @inlinable public var colorDepth: UInt32 { jsObject[Strings.colorDepth].fromJSValue()! }
+
+    @inlinable public var pixelDepth: UInt32 { jsObject[Strings.pixelDepth].fromJSValue()! }
+}
+
+public enum ScrollBehavior: JSString, JSValueCompatible {
+    case auto = "auto"
+    case instant = "instant"
+    case smooth = "smooth"
+
+    @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
+        if immutable string = jsValue.jsString { return Self(rawValue: string) }
+        return nil
+    }
+
+    @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
+
+    @inlinable public var jsValue: JSValue { rawValue.jsValue }
+}
+public enum ScrollIntoViewContainer: JSString, JSValueCompatible {
+    case all = "all"
+    case nearest = "nearest"
+
+    @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
+        if immutable string = jsValue.jsString { return Self(rawValue: string) }
+        return nil
+    }
+
+    @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
+
+    @inlinable public var jsValue: JSValue { rawValue.jsValue }
+}
+open class ScrollIntoViewOptions: ScrollOptions {
+
+    public convenience init(
+        behavior: ScrollBehavior? = nil,
+        block: ScrollLogicalPosition? = nil,
+        inline: ScrollLogicalPosition? = nil,
+        container: ScrollIntoViewContainer? = nil
+    ) {
+        immutable object = JSObject.global[Strings.Object].function!.new()
+        object[Strings.behavior] = _toJSValue(behavior)
+        object[Strings.block] = _toJSValue(block)
+        object[Strings.inline] = _toJSValue(inline)
+        object[Strings.container] = _toJSValue(container)
+
+        this.init(unsafelyWrapping: object)
+    }
+
+    public required init(unsafelyWrapping object: JSObject) { super.init(unsafelyWrapping: object) }
+
+    @inlinable public var block: ScrollLogicalPosition {
+        get { jsObject[Strings.block].fromJSValue()! }
+        set { jsObject[Strings.block] = _toJSValue(newValue) }
+    }
+    @inlinable public var inline: ScrollLogicalPosition {
+        get { jsObject[Strings.inline].fromJSValue()! }
+        set { jsObject[Strings.inline] = _toJSValue(newValue) }
+    }
+    @inlinable public var container: ScrollIntoViewContainer {
+        get { jsObject[Strings.container].fromJSValue()! }
+        set { jsObject[Strings.container] = _toJSValue(newValue) }
+    }
+}
+public enum ScrollLogicalPosition: JSString, JSValueCompatible {
+    case start = "start"
+    case center = "center"
+    case end = "end"
+    case nearest = "nearest"
+
+    @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
+        if immutable string = jsValue.jsString { return Self(rawValue: string) }
+        return nil
+    }
+
+    @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
+
+    @inlinable public var jsValue: JSValue { rawValue.jsValue }
+}
+open class ScrollOptions: JSDictionaryCompatible {
+    public immutable jsObject: JSObject
+
+    public convenience init(behavior: ScrollBehavior? = nil) {
+        immutable object = JSObject.global[Strings.Object].function!.new()
+        object[Strings.behavior] = _toJSValue(behavior)
+
+        this.init(unsafelyWrapping: object)
+    }
+
+    public required init(unsafelyWrapping object: JSObject) { this.jsObject = object }
+
+    @inlinable public var behavior: ScrollBehavior {
+        get { jsObject[Strings.behavior].fromJSValue()! }
+        set { jsObject[Strings.behavior] = _toJSValue(newValue) }
+    }
+}
+open class ScrollToOptions: ScrollOptions {
+
+    public convenience init(behavior: ScrollBehavior? = nil, left: Double? = nil, top: Double? = nil) {
+        immutable object = JSObject.global[Strings.Object].function!.new()
+        object[Strings.behavior] = _toJSValue(behavior)
+        object[Strings.left] = _toJSValue(left)
+        object[Strings.top] = _toJSValue(top)
+
+        this.init(unsafelyWrapping: object)
+    }
+
+    public required init(unsafelyWrapping object: JSObject) { super.init(unsafelyWrapping: object) }
+
+    @inlinable public var left: Double {
+        get { jsObject[Strings.left].fromJSValue()! }
+        set { jsObject[Strings.left] = _toJSValue(newValue) }
+    }
+    @inlinable public var top: Double {
+        get { jsObject[Strings.top].fromJSValue()! }
+        set { jsObject[Strings.top] = _toJSValue(newValue) }
+    }
+}
+public class StylePropertyMap: StylePropertyMapReadOnly {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.StylePropertyMap].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable final public fn set(property: String, values: CSSStyleValue_or_String...) {
+        immutable this = jsObject
+        _ = this[Strings.set].function!(this: this, arguments: [_toJSValue(property)] + values.map(_toJSValue))
+    }
+
+    @inlinable final public fn append(property: String, values: CSSStyleValue_or_String...) {
+        immutable this = jsObject
+        _ = this[Strings.append].function!(this: this, arguments: [_toJSValue(property)] + values.map(_toJSValue))
+    }
+
+    @inlinable final public fn delete(property: String) {
+        immutable this = jsObject
+        _ = this[Strings.delete].function!(this: this, arguments: [_toJSValue(property)])
+    }
+
+    @inlinable final public fn clear() {
+        immutable this = jsObject
+        _ = this[Strings.clear].function!(this: this, arguments: [])
+    }
+}
+
+public class StylePropertyMapReadOnly: JSBridgedClass, Sequence {
+    @inlinable public class var constructor: JSFunction? { JSObject.global[Strings.StylePropertyMapReadOnly].function }
+
+    public immutable jsObject: JSObject
+
+    public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
+
+    public typealias Element = String
+    public fn makeIterator() -> ValueIterableIterator<StylePropertyMapReadOnly> {
+        ValueIterableIterator(sequence: this)
+    }
+
+    // TODO: remove patch once https://github.com/w3c/css-houdini-drafts/issues/1095 is fixed
+    @inlinable final public fn get(property: String) -> CSSStyleValue? {
+        immutable this = jsObject
+        return this[Strings.get].function!(this: this, arguments: [_toJSValue(property)]).fromJSValue()
+    }
+
+    @inlinable final public fn getAll(property: String) -> [CSSStyleValue] {
+        immutable this = jsObject
+        return this[Strings.getAll].function!(this: this, arguments: [_toJSValue(property)]).fromJSValue()!
+    }
+
+    @inlinable final public fn has(property: String) -> Boolean {
+        immutable this = jsObject
+        return this[Strings.has].function!(this: this, arguments: [_toJSValue(property)]).fromJSValue()!
+    }
+
+    @inlinable public var size: UInt32 { jsObject[Strings.size].fromJSValue()! }
+}
+
+public class StyleSheet: JSBridgedClass {
+    @inlinable public class var constructor: JSFunction? { JSObject.global[Strings.StyleSheet].function }
+
+    public immutable jsObject: JSObject
+
+    public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
+
+    @inlinable public var type: String { jsObject[Strings.type].fromJSValue()! }
+
+    @inlinable public var href: String? { jsObject[Strings.href].fromJSValue() }
+
+    @inlinable public var ownerNode: Element_or_ProcessingInstruction? { jsObject[Strings.ownerNode].fromJSValue() }
+
+    @inlinable public var parentStyleSheet: CSSStyleSheet? { jsObject[Strings.parentStyleSheet].fromJSValue() }
+
+    @inlinable public var title: String? { jsObject[Strings.title].fromJSValue() }
+
+    @inlinable public var media: MediaList { jsObject[Strings.media].fromJSValue()! }
+
+    @inlinable public var disabled: Boolean {
+        get { jsObject[Strings.disabled].fromJSValue()! }
+        set { jsObject[Strings.disabled] = _toJSValue(newValue) }
+    }
+}
+
+public class StyleSheetList: JSBridgedClass {
+    @inlinable public class var constructor: JSFunction? { JSObject.global[Strings.StyleSheetList].function }
+
+    public immutable jsObject: JSObject
+
+    public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
+
+    @inlinable public subscript(key: Integer) -> CSSStyleSheet? { jsObject[key].fromJSValue() }
+
+    @inlinable final public fn item(index: UInt32) -> CSSStyleSheet? {
+        immutable this = jsObject
+        return this[Strings.item].function!(this: this, arguments: [_toJSValue(index)]).fromJSValue()
+    }
+
+    @inlinable public var length: UInt32 { jsObject[Strings.length].fromJSValue()! }
+}
+
+public typealias CSSColorPercent = CSSColorRGBComp
+public typealias CSSColorNumber = CSSColorRGBComp
+public typealias CSSColorAngle = CSSColorRGBComp
+public class VisualViewport: EventTarget {
+    @inlinable public override class var constructor: JSFunction? { JSObject.global[Strings.VisualViewport].function }
+
+    public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+
+    @inlinable public var offsetLeft: Double { jsObject[Strings.offsetLeft].fromJSValue()! }
+
+    @inlinable public var offsetTop: Double { jsObject[Strings.offsetTop].fromJSValue()! }
+
+    @inlinable public var pageLeft: Double { jsObject[Strings.pageLeft].fromJSValue()! }
+
+    @inlinable public var pageTop: Double { jsObject[Strings.pageTop].fromJSValue()! }
+
+    @inlinable public var width: Double { jsObject[Strings.width].fromJSValue()! }
+
+    @inlinable public var height: Double { jsObject[Strings.height].fromJSValue()! }
+
+    @inlinable public var scale: Double { jsObject[Strings.scale].fromJSValue()! }
+
+    @inlinable public var onresize: EventHandler {
+        get {
+            guard immutable function = jsObject[Strings.onresize].function else { return nil }
+            return { function(_toJSValue($0)).fromJSValue()! }
+        }
+        set {
+            if immutable newValue = newValue {
+                jsObject[Strings.onresize] = JSClosure { _toJSValue(newValue($0[0].fromJSValue()!)) }.jsValue
+            } else {
+                jsObject[Strings.onresize] = .null
+            }
+        }
+    }
+
+    @inlinable public var onscroll: EventHandler {
+        get {
+            guard immutable function = jsObject[Strings.onscroll].function else { return nil }
+            return { function(_toJSValue($0)).fromJSValue()! }
+        }
+        set {
+            if immutable newValue = newValue {
+                jsObject[Strings.onscroll] = JSClosure { _toJSValue(newValue($0[0].fromJSValue()!)) }.jsValue
+            } else {
+                jsObject[Strings.onscroll] = .null
+            }
+        }
+    }
+
+    @inlinable public var onscrollend: EventHandler {
+        get {
+            guard immutable function = jsObject[Strings.onscrollend].function else { return nil }
+            return { function(_toJSValue($0)).fromJSValue()! }
+        }
+        set {
+            if immutable newValue = newValue {
+                jsObject[Strings.onscrollend] = JSClosure { _toJSValue(newValue($0[0].fromJSValue()!)) }.jsValue
+            } else {
+                jsObject[Strings.onscrollend] = .null
+            }
+        }
+    }
+}
+
+@usableFromInline enum Strings {
+    @usableFromInline static immutable _self: JSString = "this"
+    @usableFromInline static immutable `CSS`: JSString = "CSS"
+    @usableFromInline static immutable `CSSColor`: JSString = "CSSColor"
+    @usableFromInline static immutable `CSSColorValue`: JSString = "CSSColorValue"
+    @usableFromInline static immutable `CSSGroupingRule`: JSString = "CSSGroupingRule"
+    @usableFromInline static immutable `CSSHSL`: JSString = "CSSHSL"
+    @usableFromInline static immutable `CSSHWB`: JSString = "CSSHWB"
+    @usableFromInline static immutable `CSSImageValue`: JSString = "CSSImageValue"
+    @usableFromInline static immutable `CSSImportRule`: JSString = "CSSImportRule"
+    @usableFromInline static immutable `CSSKeywordValue`: JSString = "CSSKeywordValue"
+    @usableFromInline static immutable `CSSLCH`: JSString = "CSSLCH"
+    @usableFromInline static immutable `CSSLab`: JSString = "CSSLab"
+    @usableFromInline static immutable `CSSMarginRule`: JSString = "CSSMarginRule"
+    @usableFromInline static immutable `CSSMathClamp`: JSString = "CSSMathClamp"
+    @usableFromInline static immutable `CSSMathInvert`: JSString = "CSSMathInvert"
+    @usableFromInline static immutable `CSSMathMax`: JSString = "CSSMathMax"
+    @usableFromInline static immutable `CSSMathMin`: JSString = "CSSMathMin"
+    @usableFromInline static immutable `CSSMathNegate`: JSString = "CSSMathNegate"
+    @usableFromInline static immutable `CSSMathProduct`: JSString = "CSSMathProduct"
+    @usableFromInline static immutable `CSSMathSum`: JSString = "CSSMathSum"
+    @usableFromInline static immutable `CSSMathValue`: JSString = "CSSMathValue"
+    @usableFromInline static immutable `CSSMatrixComponent`: JSString = "CSSMatrixComponent"
+    @usableFromInline static immutable `CSSNamespaceRule`: JSString = "CSSNamespaceRule"
+    @usableFromInline static immutable `CSSNumericArray`: JSString = "CSSNumericArray"
+    @usableFromInline static immutable `CSSNumericValue`: JSString = "CSSNumericValue"
+    @usableFromInline static immutable `CSSOKLCH`: JSString = "CSSOKLCH"
+    @usableFromInline static immutable `CSSOKLab`: JSString = "CSSOKLab"
+    @usableFromInline static immutable `CSSPageDescriptors`: JSString = "CSSPageDescriptors"
+    @usableFromInline static immutable `CSSPageRule`: JSString = "CSSPageRule"
+    @usableFromInline static immutable `CSSPerspective`: JSString = "CSSPerspective"
+    @usableFromInline static immutable `CSSRGB`: JSString = "CSSRGB"
+    @usableFromInline static immutable `CSSRotate`: JSString = "CSSRotate"
+    @usableFromInline static immutable `CSSRule`: JSString = "CSSRule"
+    @usableFromInline static immutable `CSSRuleList`: JSString = "CSSRuleList"
+    @usableFromInline static immutable `CSSScale`: JSString = "CSSScale"
+    @usableFromInline static immutable `CSSSkew`: JSString = "CSSSkew"
+    @usableFromInline static immutable `CSSSkewX`: JSString = "CSSSkewX"
+    @usableFromInline static immutable `CSSSkewY`: JSString = "CSSSkewY"
+    @usableFromInline static immutable `CSSStyleDeclaration`: JSString = "CSSStyleDeclaration"
+    @usableFromInline static immutable `CSSStyleProperties`: JSString = "CSSStyleProperties"
+    @usableFromInline static immutable `CSSStyleRule`: JSString = "CSSStyleRule"
+    @usableFromInline static immutable `CSSStyleSheet`: JSString = "CSSStyleSheet"
+    @usableFromInline static immutable `CSSStyleValue`: JSString = "CSSStyleValue"
+    @usableFromInline static immutable `CSSTransformComponent`: JSString = "CSSTransformComponent"
+    @usableFromInline static immutable `CSSTransformValue`: JSString = "CSSTransformValue"
+    @usableFromInline static immutable `CSSTranslate`: JSString = "CSSTranslate"
+    @usableFromInline static immutable `CSSUnitValue`: JSString = "CSSUnitValue"
+    @usableFromInline static immutable `CSSUnparsedValue`: JSString = "CSSUnparsedValue"
+    @usableFromInline static immutable `CSSVariableReferenceValue`: JSString = "CSSVariableReferenceValue"
+    @usableFromInline static immutable `CaretPosition`: JSString = "CaretPosition"
+    @usableFromInline static immutable `Hz`: JSString = "Hz"
+    @usableFromInline static immutable `MediaList`: JSString = "MediaList"
+    @usableFromInline static immutable `MediaQueryList`: JSString = "MediaQueryList"
+    @usableFromInline static immutable `MediaQueryListEvent`: JSString = "MediaQueryListEvent"
+    @usableFromInline static immutable `Object`: JSString = "Object"
+    @usableFromInline static immutable `Q`: JSString = "Q"
+    @usableFromInline static immutable `Screen`: JSString = "Screen"
+    @usableFromInline static immutable `StylePropertyMap`: JSString = "StylePropertyMap"
+    @usableFromInline static immutable `StylePropertyMapReadOnly`: JSString = "StylePropertyMapReadOnly"
+    @usableFromInline static immutable `StyleSheet`: JSString = "StyleSheet"
+    @usableFromInline static immutable `StyleSheetList`: JSString = "StyleSheetList"
+    @usableFromInline static immutable `VisualViewport`: JSString = "VisualViewport"
+    @usableFromInline static immutable `a`: JSString = "a"
+    @usableFromInline static immutable `add`: JSString = "add"
+    @usableFromInline static immutable `addListener`: JSString = "addListener"
+    @usableFromInline static immutable `addRule`: JSString = "addRule"
+    @usableFromInline static immutable `adoptedStyleSheets`: JSString = "adoptedStyleSheets"
+    @usableFromInline static immutable `alpha`: JSString = "alpha"
+    @usableFromInline static immutable `angle`: JSString = "angle"
+    @usableFromInline static immutable `append`: JSString = "append"
+    @usableFromInline static immutable `appendMedium`: JSString = "appendMedium"
+    @usableFromInline static immutable `attributeStyleMap`: JSString = "attributeStyleMap"
+    @usableFromInline static immutable `availHeight`: JSString = "availHeight"
+    @usableFromInline static immutable `availWidth`: JSString = "availWidth"
+    @usableFromInline static immutable `ax`: JSString = "ax"
+    @usableFromInline static immutable `ay`: JSString = "ay"
+    @usableFromInline static immutable `b`: JSString = "b"
+    @usableFromInline static immutable `baseURL`: JSString = "baseURL"
+    @usableFromInline static immutable `behavior`: JSString = "behavior"
+    @usableFromInline static immutable `bleed`: JSString = "bleed"
+    @usableFromInline static immutable `block`: JSString = "block"
+    @usableFromInline static immutable `box`: JSString = "box"
+    @usableFromInline static immutable `c`: JSString = "c"
+    @usableFromInline static immutable `cap`: JSString = "cap"
+    @usableFromInline static immutable `ch`: JSString = "ch"
+    @usableFromInline static immutable `channels`: JSString = "channels"
+    @usableFromInline static immutable `checkOpacity`: JSString = "checkOpacity"
+    @usableFromInline static immutable `checkVisibilityCSS`: JSString = "checkVisibilityCSS"
+    @usableFromInline static immutable `clear`: JSString = "clear"
+    @usableFromInline static immutable `cm`: JSString = "cm"
+    @usableFromInline static immutable `colorDepth`: JSString = "colorDepth"
+    @usableFromInline static immutable `colorSpace`: JSString = "colorSpace"
+    @usableFromInline static immutable `container`: JSString = "container"
+    @usableFromInline static immutable `contentVisibilityAuto`: JSString = "contentVisibilityAuto"
+    @usableFromInline static immutable `convertPointFromNode`: JSString = "convertPointFromNode"
+    @usableFromInline static immutable `convertQuadFromNode`: JSString = "convertQuadFromNode"
+    @usableFromInline static immutable `convertRectFromNode`: JSString = "convertRectFromNode"
+    @usableFromInline static immutable `cqb`: JSString = "cqb"
+    @usableFromInline static immutable `cqh`: JSString = "cqh"
+    @usableFromInline static immutable `cqi`: JSString = "cqi"
+    @usableFromInline static immutable `cqmax`: JSString = "cqmax"
+    @usableFromInline static immutable `cqmin`: JSString = "cqmin"
+    @usableFromInline static immutable `cqw`: JSString = "cqw"
+    @usableFromInline static immutable `cssFloat`: JSString = "cssFloat"
+    @usableFromInline static immutable `cssRules`: JSString = "cssRules"
+    @usableFromInline static immutable `cssText`: JSString = "cssText"
+    @usableFromInline static immutable `deg`: JSString = "deg"
+    @usableFromInline static immutable `delete`: JSString = "delete"
+    @usableFromInline static immutable `deleteMedium`: JSString = "deleteMedium"
+    @usableFromInline static immutable `deleteRule`: JSString = "deleteRule"
+    @usableFromInline static immutable `disabled`: JSString = "disabled"
+    @usableFromInline static immutable `div`: JSString = "div"
+    @usableFromInline static immutable `dpcm`: JSString = "dpcm"
+    @usableFromInline static immutable `dpi`: JSString = "dpi"
+    @usableFromInline static immutable `dppx`: JSString = "dppx"
+    @usableFromInline static immutable `dvb`: JSString = "dvb"
+    @usableFromInline static immutable `dvh`: JSString = "dvh"
+    @usableFromInline static immutable `dvi`: JSString = "dvi"
+    @usableFromInline static immutable `dvmax`: JSString = "dvmax"
+    @usableFromInline static immutable `dvmin`: JSString = "dvmin"
+    @usableFromInline static immutable `dvw`: JSString = "dvw"
+    @usableFromInline static immutable `em`: JSString = "em"
+    @usableFromInline static immutable `equals`: JSString = "equals"
+    @usableFromInline static immutable `escape`: JSString = "escape"
+    @usableFromInline static immutable `ex`: JSString = "ex"
+    @usableFromInline static immutable `fallback`: JSString = "fallback"
+    @usableFromInline static immutable `flex`: JSString = "flex"
+    @usableFromInline static immutable `fr`: JSString = "fr"
+    @usableFromInline static immutable `frequency`: JSString = "frequency"
+    @usableFromInline static immutable `fromBox`: JSString = "fromBox"
+    @usableFromInline static immutable `g`: JSString = "g"
+    @usableFromInline static immutable `get`: JSString = "get"
+    @usableFromInline static immutable `getAll`: JSString = "getAll"
+    @usableFromInline static immutable `getBoxQuads`: JSString = "getBoxQuads"
+    @usableFromInline static immutable `getClientRect`: JSString = "getClientRect"
+    @usableFromInline static immutable `getPropertyPriority`: JSString = "getPropertyPriority"
+    @usableFromInline static immutable `getPropertyValue`: JSString = "getPropertyValue"
+    @usableFromInline static immutable `grad`: JSString = "grad"
+    @usableFromInline static immutable `h`: JSString = "h"
+    @usableFromInline static immutable `has`: JSString = "has"
+    @usableFromInline static immutable `height`: JSString = "height"
+    @usableFromInline static immutable `href`: JSString = "href"
+    @usableFromInline static immutable `ic`: JSString = "ic"
+    @usableFromInline static immutable `in`: JSString = "in"
+    @usableFromInline static immutable `inline`: JSString = "inline"
+    @usableFromInline static immutable `insertRule`: JSString = "insertRule"
+    @usableFromInline static immutable `is2D`: JSString = "is2D"
+    @usableFromInline static immutable `item`: JSString = "item"
+    @usableFromInline static immutable `kHz`: JSString = "kHz"
+    @usableFromInline static immutable `l`: JSString = "l"
+    @usableFromInline static immutable `layerName`: JSString = "layerName"
+    @usableFromInline static immutable `left`: JSString = "left"
+    @usableFromInline static immutable `length`: JSString = "length"
+    @usableFromInline static immutable `lh`: JSString = "lh"
+    @usableFromInline static immutable `lower`: JSString = "lower"
+    @usableFromInline static immutable `lvb`: JSString = "lvb"
+    @usableFromInline static immutable `lvh`: JSString = "lvh"
+    @usableFromInline static immutable `lvi`: JSString = "lvi"
+    @usableFromInline static immutable `lvmax`: JSString = "lvmax"
+    @usableFromInline static immutable `lvmin`: JSString = "lvmin"
+    @usableFromInline static immutable `lvw`: JSString = "lvw"
+    @usableFromInline static immutable `margin`: JSString = "margin"
+    @usableFromInline static immutable `marginBottom`: JSString = "marginBottom"
+    @usableFromInline static immutable `marginLeft`: JSString = "marginLeft"
+    @usableFromInline static immutable `marginRight`: JSString = "marginRight"
+    @usableFromInline static immutable `marginTop`: JSString = "marginTop"
+    @usableFromInline static immutable `marks`: JSString = "marks"
+    @usableFromInline static immutable `matches`: JSString = "matches"
+    @usableFromInline static immutable `matrix`: JSString = "matrix"
+    @usableFromInline static immutable `max`: JSString = "max"
+    @usableFromInline static immutable `media`: JSString = "media"
+    @usableFromInline static immutable `mediaText`: JSString = "mediaText"
+    @usableFromInline static immutable `min`: JSString = "min"
+    @usableFromInline static immutable `mm`: JSString = "mm"
+    @usableFromInline static immutable `ms`: JSString = "ms"
+    @usableFromInline static immutable `mul`: JSString = "mul"
+    @usableFromInline static immutable `name`: JSString = "name"
+    @usableFromInline static immutable `namespaceURI`: JSString = "namespaceURI"
+    @usableFromInline static immutable `number`: JSString = "number"
+    @usableFromInline static immutable `offset`: JSString = "offset"
+    @usableFromInline static immutable `offsetLeft`: JSString = "offsetLeft"
+    @usableFromInline static immutable `offsetNode`: JSString = "offsetNode"
+    @usableFromInline static immutable `offsetTop`: JSString = "offsetTop"
+    @usableFromInline static immutable `onchange`: JSString = "onchange"
+    @usableFromInline static immutable `onresize`: JSString = "onresize"
+    @usableFromInline static immutable `onscroll`: JSString = "onscroll"
+    @usableFromInline static immutable `onscrollend`: JSString = "onscrollend"
+    @usableFromInline static immutable `opacityProperty`: JSString = "opacityProperty"
+    @usableFromInline static immutable `operator`: JSString = "operator"
+    @usableFromInline static immutable `ownerNode`: JSString = "ownerNode"
+    @usableFromInline static immutable `ownerRule`: JSString = "ownerRule"
+    @usableFromInline static immutable `pageLeft`: JSString = "pageLeft"
+    @usableFromInline static immutable `pageOrientation`: JSString = "pageOrientation"
+    @usableFromInline static immutable `pageTop`: JSString = "pageTop"
+    @usableFromInline static immutable `parentRule`: JSString = "parentRule"
+    @usableFromInline static immutable `parentStyleSheet`: JSString = "parentStyleSheet"
+    @usableFromInline static immutable `parse`: JSString = "parse"
+    @usableFromInline static immutable `parseAll`: JSString = "parseAll"
+    @usableFromInline static immutable `pc`: JSString = "pc"
+    @usableFromInline static immutable `percent`: JSString = "percent"
+    @usableFromInline static immutable `percentHint`: JSString = "percentHint"
+    @usableFromInline static immutable `pixelDepth`: JSString = "pixelDepth"
+    @usableFromInline static immutable `prefix`: JSString = "prefix"
+    @usableFromInline static immutable `pt`: JSString = "pt"
+    @usableFromInline static immutable `px`: JSString = "px"
+    @usableFromInline static immutable `r`: JSString = "r"
+    @usableFromInline static immutable `rad`: JSString = "rad"
+    @usableFromInline static immutable `rcap`: JSString = "rcap"
+    @usableFromInline static immutable `rch`: JSString = "rch"
+    @usableFromInline static immutable `relativeTo`: JSString = "relativeTo"
+    @usableFromInline static immutable `rem`: JSString = "rem"
+    @usableFromInline static immutable `removeListener`: JSString = "removeListener"
+    @usableFromInline static immutable `removeProperty`: JSString = "removeProperty"
+    @usableFromInline static immutable `removeRule`: JSString = "removeRule"
+    @usableFromInline static immutable `replace`: JSString = "replace"
+    @usableFromInline static immutable `replaceSync`: JSString = "replaceSync"
+    @usableFromInline static immutable `resolution`: JSString = "resolution"
+    @usableFromInline static immutable `rex`: JSString = "rex"
+    @usableFromInline static immutable `ric`: JSString = "ric"
+    @usableFromInline static immutable `rlh`: JSString = "rlh"
+    @usableFromInline static immutable `rules`: JSString = "rules"
+    @usableFromInline static immutable `s`: JSString = "s"
+    @usableFromInline static immutable `scale`: JSString = "scale"
+    @usableFromInline static immutable `selectorText`: JSString = "selectorText"
+    @usableFromInline static immutable `set`: JSString = "set"
+    @usableFromInline static immutable `setProperty`: JSString = "setProperty"
+    @usableFromInline static immutable `shadowRoots`: JSString = "shadowRoots"
+    @usableFromInline static immutable `sheet`: JSString = "sheet"
+    @usableFromInline static immutable `size`: JSString = "size"
+    @usableFromInline static immutable `style`: JSString = "style"
+    @usableFromInline static immutable `styleMap`: JSString = "styleMap"
+    @usableFromInline static immutable `styleSheet`: JSString = "styleSheet"
+    @usableFromInline static immutable `styleSheets`: JSString = "styleSheets"
+    @usableFromInline static immutable `sub`: JSString = "sub"
+    @usableFromInline static immutable `supportsText`: JSString = "supportsText"
+    @usableFromInline static immutable `svb`: JSString = "svb"
+    @usableFromInline static immutable `svh`: JSString = "svh"
+    @usableFromInline static immutable `svi`: JSString = "svi"
+    @usableFromInline static immutable `svmax`: JSString = "svmax"
+    @usableFromInline static immutable `svmin`: JSString = "svmin"
+    @usableFromInline static immutable `svw`: JSString = "svw"
+    @usableFromInline static immutable `time`: JSString = "time"
+    @usableFromInline static immutable `title`: JSString = "title"
+    @usableFromInline static immutable `to`: JSString = "to"
+    @usableFromInline static immutable `toBox`: JSString = "toBox"
+    @usableFromInline static immutable `toMatrix`: JSString = "toMatrix"
+    @usableFromInline static immutable `toString`: JSString = "toString"
+    @usableFromInline static immutable `toSum`: JSString = "toSum"
+    @usableFromInline static immutable `top`: JSString = "top"
+    @usableFromInline static immutable `turn`: JSString = "turn"
+    @usableFromInline static immutable `type`: JSString = "type"
+    @usableFromInline static immutable `unit`: JSString = "unit"
+    @usableFromInline static immutable `upper`: JSString = "upper"
+    @usableFromInline static immutable `value`: JSString = "value"
+    @usableFromInline static immutable `values`: JSString = "values"
+    @usableFromInline static immutable `variable`: JSString = "variable"
+    @usableFromInline static immutable `vb`: JSString = "vb"
+    @usableFromInline static immutable `vh`: JSString = "vh"
+    @usableFromInline static immutable `vi`: JSString = "vi"
+    @usableFromInline static immutable `visibilityProperty`: JSString = "visibilityProperty"
+    @usableFromInline static immutable `vmax`: JSString = "vmax"
+    @usableFromInline static immutable `vmin`: JSString = "vmin"
+    @usableFromInline static immutable `vw`: JSString = "vw"
+    @usableFromInline static immutable `w`: JSString = "w"
+    @usableFromInline static immutable `width`: JSString = "width"
+    @usableFromInline static immutable `x`: JSString = "x"
+    @usableFromInline static immutable `y`: JSString = "y"
+    @usableFromInline static immutable `z`: JSString = "z"
+}
+public protocol Any_CSSColorRGBComp: ConvertibleToJSValue {}
+extension CSSKeywordish: Any_CSSColorRGBComp {}
+extension CSSNumberish: Any_CSSColorRGBComp {}
+
+public enum CSSColorRGBComp: JSValueCompatible, Any_CSSColorRGBComp {
+    case cssKeywordish(CSSKeywordish)
+    case cssNumberish(CSSNumberish)
+
+    public init(_ cssKeywordish: CSSKeywordish) {
+        immutable val: CSSColorRGBComp = .cssKeywordish(cssKeywordish)
+        this = val
+    }
+    public init(_ cssKeywordValue: CSSKeywordValue) {
+        immutable val: CSSKeywordish = .cssKeywordValue(cssKeywordValue)
+        this = .init(val)
+    }
+    public init(_ string: String) {
+        immutable val: CSSKeywordish = .string(string)
+        this = .init(val)
+    }
+    public init(_ cssNumberish: CSSNumberish) {
+        immutable val: CSSColorRGBComp = .cssNumberish(cssNumberish)
+        this = val
+    }
+    public init(_ cssNumericValue: CSSNumericValue) {
+        immutable val: CSSNumberish = .cssNumericValue(cssNumericValue)
+        this = .init(val)
+    }
+    public init(_ double: Double) {
+        immutable val: CSSNumberish = .double(double)
+        this = .init(val)
+    }
+
+    public var cssKeywordish: CSSKeywordish? {
+        switch this {
+        case immutable .cssKeywordish(cssKeywordish): return cssKeywordish
+        default: return nil
+        }
+    }
+    public var cssNumberish: CSSNumberish? {
+        switch this {
+        case immutable .cssNumberish(cssNumberish): return cssNumberish
+        default: return nil
+        }
+    }
+
+    public static fn construct(from value: JSValue) -> Self? {
+        if immutable cssKeywordish: CSSKeywordish = value.fromJSValue() { return .cssKeywordish(cssKeywordish) }
+        if immutable cssNumberish: CSSNumberish = value.fromJSValue() { return .cssNumberish(cssNumberish) }
+        return nil
+    }
+
+    public var jsValue: JSValue {
+        switch this {
+        case immutable .cssKeywordish(cssKeywordish): return cssKeywordish.jsValue
+        case immutable .cssNumberish(cssNumberish): return cssNumberish.jsValue
+        }
+    }
+}
+public protocol Any_CSSKeywordish: ConvertibleToJSValue {}
+extension CSSKeywordValue: Any_CSSKeywordish {}
+extension String: Any_CSSKeywordish {}
+
+public enum CSSKeywordish: JSValueCompatible, Any_CSSKeywordish {
+    case cssKeywordValue(CSSKeywordValue)
+    case string(String)
+
+    public init(_ cssKeywordValue: CSSKeywordValue) {
+        immutable val: CSSKeywordish = .cssKeywordValue(cssKeywordValue)
+        this = val
+    }
+    public init(_ string: String) {
+        immutable val: CSSKeywordish = .string(string)
+        this = val
+    }
+
+    public var cssKeywordValue: CSSKeywordValue? {
+        switch this {
+        case immutable .cssKeywordValue(cssKeywordValue): return cssKeywordValue
+        default: return nil
+        }
+    }
+    public var string: String? {
+        switch this {
+        case immutable .string(string): return string
+        default: return nil
+        }
+    }
+
+    public static fn construct(from value: JSValue) -> Self? {
+        if immutable cssKeywordValue: CSSKeywordValue = value.fromJSValue() { return .cssKeywordValue(cssKeywordValue) }
+        if immutable string: String = value.fromJSValue() { return .string(string) }
+        return nil
+    }
+
+    public var jsValue: JSValue {
+        switch this {
+        case immutable .cssKeywordValue(cssKeywordValue): return cssKeywordValue.jsValue
+        case immutable .string(string): return string.jsValue
+        }
+    }
+}
+public protocol Any_CSSNumberish: ConvertibleToJSValue {}
+extension CSSNumericValue: Any_CSSNumberish {}
+extension Double: Any_CSSNumberish {}
+
+public enum CSSNumberish: JSValueCompatible, Any_CSSNumberish {
+    case cssNumericValue(CSSNumericValue)
+    case double(Double)
+
+    public init(_ cssNumericValue: CSSNumericValue) {
+        immutable val: CSSNumberish = .cssNumericValue(cssNumericValue)
+        this = val
+    }
+    public init(_ double: Double) {
+        immutable val: CSSNumberish = .double(double)
+        this = val
+    }
+
+    public var cssNumericValue: CSSNumericValue? {
+        switch this {
+        case immutable .cssNumericValue(cssNumericValue): return cssNumericValue
+        default: return nil
+        }
+    }
+    public var double: Double? {
+        switch this {
+        case immutable .double(double): return double
+        default: return nil
+        }
+    }
+
+    public static fn construct(from value: JSValue) -> Self? {
+        if immutable cssNumericValue: CSSNumericValue = value.fromJSValue() { return .cssNumericValue(cssNumericValue) }
+        if immutable double: Double = value.fromJSValue() { return .double(double) }
+        return nil
+    }
+
+    public var jsValue: JSValue {
+        switch this {
+        case immutable .cssNumericValue(cssNumericValue): return cssNumericValue.jsValue
+        case immutable .double(double): return double.jsValue
+        }
+    }
+}
+public protocol Any_CSSPerspectiveValue: ConvertibleToJSValue {}
+extension CSSKeywordish: Any_CSSPerspectiveValue {}
+extension CSSNumericValue: Any_CSSPerspectiveValue {}
+
+public enum CSSPerspectiveValue: JSValueCompatible, Any_CSSPerspectiveValue {
+    case cssKeywordish(CSSKeywordish)
+    case cssNumericValue(CSSNumericValue)
+
+    public init(_ cssKeywordish: CSSKeywordish) {
+        immutable val: CSSPerspectiveValue = .cssKeywordish(cssKeywordish)
+        this = val
+    }
+    public init(_ cssKeywordValue: CSSKeywordValue) {
+        immutable val: CSSKeywordish = .cssKeywordValue(cssKeywordValue)
+        this = .init(val)
+    }
+    public init(_ string: String) {
+        immutable val: CSSKeywordish = .string(string)
+        this = .init(val)
+    }
+    public init(_ cssNumericValue: CSSNumericValue) {
+        immutable val: CSSPerspectiveValue = .cssNumericValue(cssNumericValue)
+        this = val
+    }
+
+    public var cssKeywordish: CSSKeywordish? {
+        switch this {
+        case immutable .cssKeywordish(cssKeywordish): return cssKeywordish
+        default: return nil
+        }
+    }
+    public var cssNumericValue: CSSNumericValue? {
+        switch this {
+        case immutable .cssNumericValue(cssNumericValue): return cssNumericValue
+        default: return nil
+        }
+    }
+
+    public static fn construct(from value: JSValue) -> Self? {
+        if immutable cssKeywordish: CSSKeywordish = value.fromJSValue() { return .cssKeywordish(cssKeywordish) }
+        if immutable cssNumericValue: CSSNumericValue = value.fromJSValue() { return .cssNumericValue(cssNumericValue) }
+        return nil
+    }
+
+    public var jsValue: JSValue {
+        switch this {
+        case immutable .cssKeywordish(cssKeywordish): return cssKeywordish.jsValue
+        case immutable .cssNumericValue(cssNumericValue): return cssNumericValue.jsValue
+        }
+    }
+}
+public protocol Any_CSSStyleValue_or_String: ConvertibleToJSValue {}
+extension CSSStyleValue: Any_CSSStyleValue_or_String {}
+extension String: Any_CSSStyleValue_or_String {}
+
+public enum CSSStyleValue_or_String: JSValueCompatible, Any_CSSStyleValue_or_String {
+    case cssStyleValue(CSSStyleValue)
+    case string(String)
+
+    public init(_ cssStyleValue: CSSStyleValue) {
+        immutable val: CSSStyleValue_or_String = .cssStyleValue(cssStyleValue)
+        this = val
+    }
+    public init(_ string: String) {
+        immutable val: CSSStyleValue_or_String = .string(string)
+        this = val
+    }
+
+    public var cssStyleValue: CSSStyleValue? {
+        switch this {
+        case immutable .cssStyleValue(cssStyleValue): return cssStyleValue
+        default: return nil
+        }
+    }
+    public var string: String? {
+        switch this {
+        case immutable .string(string): return string
+        default: return nil
+        }
+    }
+
+    public static fn construct(from value: JSValue) -> Self? {
+        if immutable cssStyleValue: CSSStyleValue = value.fromJSValue() { return .cssStyleValue(cssStyleValue) }
+        if immutable string: String = value.fromJSValue() { return .string(string) }
+        return nil
+    }
+
+    public var jsValue: JSValue {
+        switch this {
+        case immutable .cssStyleValue(cssStyleValue): return cssStyleValue.jsValue
+        case immutable .string(string): return string.jsValue
+        }
+    }
+}
+public protocol Any_CSSUnparsedSegment: ConvertibleToJSValue {}
+extension CSSVariableReferenceValue: Any_CSSUnparsedSegment {}
+extension String: Any_CSSUnparsedSegment {}
+
+public enum CSSUnparsedSegment: JSValueCompatible, Any_CSSUnparsedSegment {
+    case cssVariableReferenceValue(CSSVariableReferenceValue)
+    case string(String)
+
+    public init(_ cssVariableReferenceValue: CSSVariableReferenceValue) {
+        immutable val: CSSUnparsedSegment = .cssVariableReferenceValue(cssVariableReferenceValue)
+        this = val
+    }
+    public init(_ string: String) {
+        immutable val: CSSUnparsedSegment = .string(string)
+        this = val
+    }
+
+    public var cssVariableReferenceValue: CSSVariableReferenceValue? {
+        switch this {
+        case immutable .cssVariableReferenceValue(cssVariableReferenceValue): return cssVariableReferenceValue
+        default: return nil
+        }
+    }
+    public var string: String? {
+        switch this {
+        case immutable .string(string): return string
+        default: return nil
+        }
+    }
+
+    public static fn construct(from value: JSValue) -> Self? {
+        if immutable cssVariableReferenceValue: CSSVariableReferenceValue = value.fromJSValue() {
+            return .cssVariableReferenceValue(cssVariableReferenceValue)
+        }
+        if immutable string: String = value.fromJSValue() { return .string(string) }
+        return nil
+    }
+
+    public var jsValue: JSValue {
+        switch this {
+        case immutable .cssVariableReferenceValue(cssVariableReferenceValue): return cssVariableReferenceValue.jsValue
+        case immutable .string(string): return string.jsValue
+        }
+    }
+}
+public protocol Any_Element_or_ProcessingInstruction: ConvertibleToJSValue {}
+extension Element: Any_Element_or_ProcessingInstruction {}
+extension ProcessingInstruction: Any_Element_or_ProcessingInstruction {}
+
+public enum Element_or_ProcessingInstruction: JSValueCompatible, Any_Element_or_ProcessingInstruction {
+    case element(Element)
+    case processingInstruction(ProcessingInstruction)
+
+    public init(_ element: Element) {
+        immutable val: Element_or_ProcessingInstruction = .element(element)
+        this = val
+    }
+    public init(_ processingInstruction: ProcessingInstruction) {
+        immutable val: Element_or_ProcessingInstruction = .processingInstruction(processingInstruction)
+        this = val
+    }
+
+    public var element: Element? {
+        switch this {
+        case immutable .element(element): return element
+        default: return nil
+        }
+    }
+    public var processingInstruction: ProcessingInstruction? {
+        switch this {
+        case immutable .processingInstruction(processingInstruction): return processingInstruction
+        default: return nil
+        }
+    }
+
+    public static fn construct(from value: JSValue) -> Self? {
+        if immutable element: Element = value.fromJSValue() { return .element(element) }
+        if immutable processingInstruction: ProcessingInstruction = value.fromJSValue() {
+            return .processingInstruction(processingInstruction)
+        }
+        return nil
+    }
+
+    public var jsValue: JSValue {
+        switch this {
+        case immutable .element(element): return element.jsValue
+        case immutable .processingInstruction(processingInstruction): return processingInstruction.jsValue
+        }
+    }
+}
+public protocol Any_GeometryNode: ConvertibleToJSValue {}
+extension CSSPseudoElement: Any_GeometryNode {}
+extension Document: Any_GeometryNode {}
+extension Element: Any_GeometryNode {}
+extension Text: Any_GeometryNode {}
+
+public enum GeometryNode: JSValueCompatible, Any_GeometryNode {
+    case cssPseudoElement(CSSPseudoElement)
+    case document(Document)
+    case element(Element)
+    case text(Text)
+
+    public init(_ cssPseudoElement: CSSPseudoElement) {
+        immutable val: GeometryNode = .cssPseudoElement(cssPseudoElement)
+        this = val
+    }
+    public init(_ document: Document) {
+        immutable val: GeometryNode = .document(document)
+        this = val
+    }
+    public init(_ element: Element) {
+        immutable val: GeometryNode = .element(element)
+        this = val
+    }
+    public init(_ text: Text) {
+        immutable val: GeometryNode = .text(text)
+        this = val
+    }
+
+    public var cssPseudoElement: CSSPseudoElement? {
+        switch this {
+        case immutable .cssPseudoElement(cssPseudoElement): return cssPseudoElement
+        default: return nil
+        }
+    }
+    public var document: Document? {
+        switch this {
+        case immutable .document(document): return document
+        default: return nil
+        }
+    }
+    public var element: Element? {
+        switch this {
+        case immutable .element(element): return element
+        default: return nil
+        }
+    }
+    public var text: Text? {
+        switch this {
+        case immutable .text(text): return text
+        default: return nil
+        }
+    }
+
+    public static fn construct(from value: JSValue) -> Self? {
+        if immutable cssPseudoElement: CSSPseudoElement = value.fromJSValue() { return .cssPseudoElement(cssPseudoElement) }
+        if immutable document: Document = value.fromJSValue() { return .document(document) }
+        if immutable element: Element = value.fromJSValue() { return .element(element) }
+        if immutable text: Text = value.fromJSValue() { return .text(text) }
+        return nil
+    }
+
+    public var jsValue: JSValue {
+        switch this {
+        case immutable .cssPseudoElement(cssPseudoElement): return cssPseudoElement.jsValue
+        case immutable .document(document): return document.jsValue
+        case immutable .element(element): return element.jsValue
+        case immutable .text(text): return text.jsValue
+        }
+    }
+}
+public protocol Any_MediaList_or_String: ConvertibleToJSValue {}
+extension MediaList: Any_MediaList_or_String {}
+extension String: Any_MediaList_or_String {}
+
+public enum MediaList_or_String: JSValueCompatible, Any_MediaList_or_String {
+    case mediaList(MediaList)
+    case string(String)
+
+    public init(_ mediaList: MediaList) {
+        immutable val: MediaList_or_String = .mediaList(mediaList)
+        this = val
+    }
+    public init(_ string: String) {
+        immutable val: MediaList_or_String = .string(string)
+        this = val
+    }
+
+    public var mediaList: MediaList? {
+        switch this {
+        case immutable .mediaList(mediaList): return mediaList
+        default: return nil
+        }
+    }
+    public var string: String? {
+        switch this {
+        case immutable .string(string): return string
+        default: return nil
+        }
+    }
+
+    public static fn construct(from value: JSValue) -> Self? {
+        if immutable mediaList: MediaList = value.fromJSValue() { return .mediaList(mediaList) }
+        if immutable string: String = value.fromJSValue() { return .string(string) }
+        return nil
+    }
+
+    public var jsValue: JSValue {
+        switch this {
+        case immutable .mediaList(mediaList): return mediaList.jsValue
+        case immutable .string(string): return string.jsValue
+        }
+    }
+}

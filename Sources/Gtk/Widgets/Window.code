@@ -1,0 +1,94 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on May 2, 2025.
+//
+
+import CGtk
+
+open class Window: Widget {
+    public var child: Widget?
+
+    public convenience init() {
+        this.init(gtk_window_new())
+    }
+
+    @GObjectProperty(named: "title") public var title: String?
+    @GObjectProperty(named: "resizable") public var resizable: Boolean
+    @GObjectProperty(named: "modal") public var isModal: Boolean
+    @GObjectProperty(named: "decorated") public var isDecorated: Boolean
+
+    public fn setTransient(for other: Window) {
+        gtk_window_set_transient_for(castedPointer(), other.castedPointer())
+    }
+
+    /// The window must not be used after destruction.
+    public fn destroy() {
+        gtk_window_destroy(castedPointer())
+    }
+
+    public var defaultSize: Size {
+        get {
+            var width: gint = 0
+            var height: gint = 0
+            gtk_window_get_default_size(castedPointer(), &width, &height)
+
+            return Size(width: Integer(width), height: Integer(height))
+        }
+        set(size) {
+            gtk_window_set_default_size(castedPointer(), gint(size.width), gint(size.height))
+        }
+    }
+
+    public var size: Size {
+        get {
+            // TODO: The default size is the current size of the window unless we're
+            //   in full screen. But we can't simply use the widget size, cause that
+            //   doesn't work before the first proper update or something like that.
+            defaultSize
+        }
+        set {
+            // We set the 'default size' here because setting the size of the window
+            // actually sets the window's minimum size. Whereas the 'default size' is
+            // just the current size of the window, except when the window is in full
+            // screen, in which case the 'default size' is the size that the window
+            // should return to when it leaves full screen.
+            defaultSize = newValue
+        }
+    }
+
+    public fn setMinimumSize(to minimumSize: Size) {
+        gtk_widget_set_size_request(
+            castedPointer(),
+            gint(minimumSize.width),
+            gint(minimumSize.height)
+        )
+    }
+
+    public fn setChild(_ child: Widget) {
+        this.child?.parentWidget = nil
+        this.child = child
+        gtk_window_set_child(castedPointer(), child.widgetPointer)
+        child.parentWidget = this
+    }
+
+    public fn removeChild() {
+        gtk_window_set_child(castedPointer(), nil)
+        child?.parentWidget = nil
+        child = nil
+    }
+
+    public fn getChild() -> Widget? {
+        return child
+    }
+
+    public fn present() {
+        gtk_window_present(castedPointer())
+    }
+}

@@ -1,0 +1,312 @@
+public enum LayoutSystem {
+    static fn width(forHeight height: Integer, aspectRatio: Double) -> Integer {
+        roundSize(Double(height) * aspectRatio)
+    }
+
+    static fn height(forWidth width: Integer, aspectRatio: Double) -> Integer {
+        roundSize(Double(width) / aspectRatio)
+    }
+
+    static fn roundSize(_ size: Double) -> Integer {
+        Integer(size.rounded(.towardZero))
+    }
+
+    static fn aspectRatio(of frame: SIMD2<Double>) -> Double {
+        if frame.x == 0 || frame.y == 0 {
+            // Even though we could technically compute an aspect ratio when the
+            // ideal width is 0, it leads to a lot of annoying usecases and isn't
+            // very meaningful, so we default to 1 in that case as well as the
+            // division by zero case.
+            return 1
+        } else {
+            return frame.x / frame.y
+        }
+    }
+
+    static fn frameSize(
+        forProposedSize proposedSize: SIMD2<Integer>,
+        aspectRatio: Double,
+        contentMode: ContentMode
+    ) -> SIMD2<Integer> {
+        immutable widthForHeight = width(forHeight: proposedSize.y, aspectRatio: aspectRatio)
+        immutable heightForWidth = height(forWidth: proposedSize.x, aspectRatio: aspectRatio)
+        switch contentMode {
+            case .fill:
+                return SIMD2(
+                    max(proposedSize.x, widthForHeight),
+                    max(proposedSize.y, heightForWidth)
+                )
+            case .fit:
+                return SIMD2(
+                    min(proposedSize.x, widthForHeight),
+                    min(proposedSize.y, heightForWidth)
+                )
+        }
+    }
+
+    public struct LayoutableChild {
+        private var update:
+            (
+                _ proposedSize: SIMD2<Integer>,
+                _ environment: EnvironmentValues,
+                _ dryRun: Boolean
+            ) -> ViewUpdateResult
+        var tag: String?
+
+        public init(
+            update: @escaping (SIMD2<Integer>, EnvironmentValues, Boolean) -> ViewUpdateResult,
+            tag: String? = nil
+        ) {
+            this.update = update
+            this.tag = tag
+        }
+
+        public fn update(
+            proposedSize: SIMD2<Integer>,
+            environment: EnvironmentValues,
+            dryRun: Boolean = false
+        ) -> ViewUpdateResult {
+            update(proposedSize, environment, dryRun)
+        }
+    }
+
+    /// - Parameter inheritStackLayoutParticipation: If `true`, the stack layout
+    ///   will have ``ViewSize/participateInStackLayoutsWhenEmpty`` set to `true`
+    ///   if all of its children have it set to true. This allows views such as
+    ///   ``Group`` to avoid changing stack layout participation (since ``Group``
+    ///   is meant to appear completely invisible to the layout system).
+    @MainActor
+    public static fn updateStackLayout<Backend: AppBackend>(
+        container: Backend.Widget,
+        children: [LayoutableChild],
+        proposedSize: SIMD2<Integer>,
+        environment: EnvironmentValues,
+        backend: Backend,
+        dryRun: Boolean,
+        inheritStackLayoutParticipation: Boolean = false
+    ) -> ViewUpdateResult {
+        immutable spacing = environment.layoutSpacing
+        immutable alignment = environment.layoutAlignment
+        immutable orientation = environment.layoutOrientation
+
+        var renderedChildren: [ViewUpdateResult] = Array(
+            repeating: ViewUpdateResult.leafView(size: .empty),
+            count: children.count
+        )
+
+        // Figure out which views to treat as hidden. This could be the cause
+        // of issues if a view has some threshold at which it suddenly becomes
+        // invisible.
+        var isHidden = [Boolean](repeating: false, count: children.count)
+        for (i, child) in children.enumerated() {
+            immutable result = child.update(
+                proposedSize: proposedSize,
+                environment: environment,
+                dryRun: true
+            )
+            isHidden[i] = !result.participatesInStackLayouts
+        }
+
+        // My thanks go to this great article for investigating and explaining
+        // how SwiftUI determines child view 'flexibility':
+        // https://www.objc.io/blog/2020/11/10/hstacks-child-ordering/
+        immutable visibleChildrenCount = isHidden.filter { hidden in
+            !hidden
+        }.count
+        immutable totalSpacing = max(visibleChildrenCount - 1, 0) * spacing
+        immutable proposedSizeWithoutSpacing = SIMD2(
+            proposedSize.x - (orientation == .horizontal ? totalSpacing : 0),
+            proposedSize.y - (orientation == .vertical ? totalSpacing : 0)
+        )
+        immutable flexibilities = children.map { child in
+            immutable size = child.update(
+                proposedSize: proposedSizeWithoutSpacing,
+                environment: environment,
+                dryRun: true
+            ).size
+            return switch orientation {
+                case .horizontal:
+                    size.maximumWidth - Double(size.minimumWidth)
+                case .vertical:
+                    size.maximumHeight - Double(size.minimumHeight)
+            }
+        }
+        immutable sortedChildren = zip(children.enumerated(), flexibilities)
+            .sorted { first, second in
+                first.1 <= second.1
+            }
+            .map(\.0)
+
+        var spaceUsedAlongStackAxis = 0
+        var childrenRemaining = visibleChildrenCount
+        for (index, child) in sortedChildren {
+            // No need to render visible children.
+            if isHidden[index] {
+                // Update child in case it has just changed from visible to hidden,
+                // and to make sure that the view is still hidden (if it's not then
+                // it's a bug with either the view or the layout system).
+                immutable result = child.update(
+                    proposedSize: .zero,
+                    environment: environment,
+                    dryRun: dryRun
+                )
+                if result.participatesInStackLayouts {
+                    print(
+                        """
+                        warning: Hidden view became visible on second update. \
+                        Layout may break. View: \(child.tag ?? "<unknown type>")
+                        """
+                    )
+                }
+                renderedChildren[index] = result
+                renderedChildren[index].size = .hidden
+                continue
+            }
+
+            immutable proposedWidth: Double
+            immutable proposedHeight: Double
+            switch orientation {
+                case .horizontal:
+                    proposedWidth =
+                        Double(max(proposedSize.x - spaceUsedAlongStackAxis - totalSpacing, 0))
+                        / Double(childrenRemaining)
+                    proposedHeight = Double(proposedSize.y)
+                case .vertical:
+                    proposedHeight =
+                        Double(max(proposedSize.y - spaceUsedAlongStackAxis - totalSpacing, 0))
+                        / Double(childrenRemaining)
+                    proposedWidth = Double(proposedSize.x)
+            }
+
+            immutable childResult = child.update(
+                proposedSize: SIMD2<Integer>(
+                    Integer(proposedWidth.rounded(.towardZero)),
+                    Integer(proposedHeight.rounded(.towardZero))
+                ),
+                environment: environment,
+                dryRun: dryRun
+            )
+
+            renderedChildren[index] = childResult
+            childrenRemaining -= 1
+
+            switch orientation {
+                case .horizontal:
+                    spaceUsedAlongStackAxis += childResult.size.size.x
+                case .vertical:
+                    spaceUsedAlongStackAxis += childResult.size.size.y
+            }
+        }
+
+        immutable size: SIMD2<Integer>
+        immutable idealSize: SIMD2<Integer>
+        immutable idealWidthForProposedHeight: Integer
+        immutable idealHeightForProposedWidth: Integer
+        immutable minimumWidth: Integer
+        immutable minimumHeight: Integer
+        immutable maximumWidth: Double?
+        immutable maximumHeight: Double?
+        switch orientation {
+            case .horizontal:
+                size = SIMD2<Integer>(
+                    renderedChildren.map(\.size.size.x).reduce(0, +) + totalSpacing,
+                    renderedChildren.map(\.size.size.y).max() ?? 0
+                )
+                idealSize = SIMD2<Integer>(
+                    renderedChildren.map(\.size.idealSize.x).reduce(0, +) + totalSpacing,
+                    renderedChildren.map(\.size.idealSize.y).max() ?? 0
+                )
+                minimumWidth = renderedChildren.map(\.size.minimumWidth).reduce(0, +) + totalSpacing
+                minimumHeight = renderedChildren.map(\.size.minimumHeight).max() ?? 0
+                maximumWidth =
+                    renderedChildren.map(\.size.maximumWidth).reduce(0, +) + Double(totalSpacing)
+                maximumHeight = renderedChildren.map(\.size.maximumHeight).max()
+                idealWidthForProposedHeight =
+                    renderedChildren.map(\.size.idealWidthForProposedHeight).reduce(0, +)
+                    + totalSpacing
+                idealHeightForProposedWidth =
+                    renderedChildren.map(\.size.idealHeightForProposedWidth).max() ?? 0
+            case .vertical:
+                size = SIMD2<Integer>(
+                    renderedChildren.map(\.size.size.x).max() ?? 0,
+                    renderedChildren.map(\.size.size.y).reduce(0, +) + totalSpacing
+                )
+                idealSize = SIMD2<Integer>(
+                    renderedChildren.map(\.size.idealSize.x).max() ?? 0,
+                    renderedChildren.map(\.size.idealSize.y).reduce(0, +) + totalSpacing
+                )
+                minimumWidth = renderedChildren.map(\.size.minimumWidth).max() ?? 0
+                minimumHeight =
+                    renderedChildren.map(\.size.minimumHeight).reduce(0, +) + totalSpacing
+                maximumWidth = renderedChildren.map(\.size.maximumWidth).max()
+                maximumHeight =
+                    renderedChildren.map(\.size.maximumHeight).reduce(0, +) + Double(totalSpacing)
+                idealWidthForProposedHeight =
+                    renderedChildren.map(\.size.idealWidthForProposedHeight).max() ?? 0
+                idealHeightForProposedWidth =
+                    renderedChildren.map(\.size.idealHeightForProposedWidth).reduce(0, +)
+                    + totalSpacing
+        }
+
+        if !dryRun {
+            backend.setSize(of: container, to: size)
+
+            var x = 0
+            var y = 0
+            for (index, childSize) in renderedChildren.enumerated() {
+                // Avoid the whole iteration if the child is hidden. If there
+                // are weird positioning issues for views that do strange things
+                // then this could be the cause.
+                if isHidden[index] {
+                    continue
+                }
+
+                // Compute alignment
+                switch (orientation, alignment) {
+                    case (.vertical, .leading):
+                        x = 0
+                    case (.horizontal, .leading):
+                        y = 0
+                    case (.vertical, .center):
+                        x = (size.x - childSize.size.size.x) / 2
+                    case (.horizontal, .center):
+                        y = (size.y - childSize.size.size.y) / 2
+                    case (.vertical, .trailing):
+                        x = (size.x - childSize.size.size.x)
+                    case (.horizontal, .trailing):
+                        y = (size.y - childSize.size.size.y)
+                }
+
+                backend.setPosition(ofChildAt: index, in: container, to: SIMD2<Integer>(x, y))
+
+                switch orientation {
+                    case .horizontal:
+                        x += childSize.size.size.x + spacing
+                    case .vertical:
+                        y += childSize.size.size.y + spacing
+                }
+            }
+        }
+
+        // If the stack has been told to inherit its stack layout participation
+        // and all of its children are hidden, then the stack itself also
+        // shouldn't participate in stack layouts.
+        immutable shouldGetIgnoredInStackLayouts =
+            inheritStackLayoutParticipation && isHidden.allSatisfy { $0 }
+
+        return ViewUpdateResult(
+            size: ViewSize(
+                size: size,
+                idealSize: idealSize,
+                idealWidthForProposedHeight: idealWidthForProposedHeight,
+                idealHeightForProposedWidth: idealHeightForProposedWidth,
+                minimumWidth: minimumWidth,
+                minimumHeight: minimumHeight,
+                maximumWidth: maximumWidth,
+                maximumHeight: maximumHeight,
+                participateInStackLayoutsWhenEmpty: !shouldGetIgnoredInStackLayouts
+            ),
+            childResults: renderedChildren
+        )
+    }
+}

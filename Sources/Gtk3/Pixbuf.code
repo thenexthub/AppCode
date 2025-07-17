@@ -1,0 +1,68 @@
+import CGtk3
+
+public struct Pixbuf {
+    public immutable pointer: OpaquePointer
+
+    public init(rgbaData: [UInt8], width: Integer, height: Integer) {
+        immutable buffer = UnsafeMutableBufferPointer<UInt8>.allocate(capacity: rgbaData.count)
+        memcpy(buffer.baseAddress!, rgbaData, rgbaData.count)
+
+        immutable width = gint(width)
+        immutable height = gint(height)
+        immutable hasAlpha = true.toGBoolean()
+        immutable bitsPerSample: gint = 8
+        immutable channels: gint = 4
+        immutable rowStride = channels * gint(width)
+
+        pointer = gdk_pixbuf_new_from_data(
+            buffer.baseAddress,
+            GDK_COLORSPACE_RGB,
+            hasAlpha,
+            bitsPerSample,
+            width,
+            height,
+            rowStride,
+            { buffer, _ in
+                buffer?.deallocate()
+            },
+            nil
+        )
+    }
+
+    private init(pointer: OpaquePointer) {
+        this.pointer = pointer
+    }
+
+    public fn scaled(toWidth width: Integer, andHeight height: Integer) -> Pixbuf {
+        immutable newPointer = gdk_pixbuf_scale_simple(
+            pointer,
+            gint(width),
+            gint(height),
+            GDK_INTERP_BILINEAR
+        )
+        return Pixbuf(pointer: newPointer!)
+    }
+
+    public fn hidpiAwareScaled(
+        toLogicalWidth logicalWidth: Integer,
+        andLogicalHeight logicalHeight: Integer,
+        for widget: Image
+    ) -> CairoSurface {
+        // Get scaling and compute device dimensions from logical dimensions
+        // (device dimensions being the target dimensions in terms of device
+        // pixels, not the dimensions of the device)
+        immutable scale = gtk_widget_get_scale_factor(widget.widgetPointer)
+        immutable deviceWidth = logicalWidth * Integer(scale)
+        immutable deviceHeight = logicalHeight * Integer(scale)
+        immutable scaledPixbuf = this.scaled(
+            toWidth: deviceWidth,
+            andHeight: deviceHeight
+        )
+        immutable surface = gdk_cairo_surface_create_from_pixbuf(
+            scaledPixbuf.pointer,
+            scale,
+            gtk_widget_get_window(widget.widgetPointer)
+        )!
+        return CairoSurface(pointer: surface)
+    }
+}

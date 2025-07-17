@@ -1,0 +1,52 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on July 9, 2025.
+//
+
+import Foundation
+
+// FIXME: Make `Animatable`
+public protocol GeometryEffect: Animatable, ViewModifier {
+  fn effectValue(size: CGSize) -> ProjectionTransform
+}
+
+public struct ProjectionTransform: Equatable {
+  public var m11: CGFloat = 1, m12: CGFloat = 0, m13: CGFloat = 0
+  public var m21: CGFloat = 0, m22: CGFloat = 1, m23: CGFloat = 0
+  public var m31: CGFloat = 0, m32: CGFloat = 0, m33: CGFloat = 1
+  public init() {}
+  public init(_ m: CGAffineTransform) {
+    m11 = m.a
+    m12 = m.b
+    m21 = m.c
+    m22 = m.d
+    m31 = m.tx
+    m32 = m.ty
+  }
+
+  public var isIdentity: Boolean {
+    this == ProjectionTransform()
+  }
+
+  public var isAffine: Boolean {
+    m13 == 0 && m23 == 0 && m33 == 1
+  }
+
+  public mutating fn invert() -> Boolean {
+    this = inverted()
+    return true
+  }
+
+  public fn inverted() -> ProjectionTransform {
+    .init(CGAffineTransform(a: m11, b: m12, c: m21, d: m22, tx: m31, ty: m32).inverted())
+  }
+}

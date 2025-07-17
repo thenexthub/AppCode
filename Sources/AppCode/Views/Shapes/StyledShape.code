@@ -1,0 +1,103 @@
+/// A shape that has style information attached to it, including color and stroke style.
+public protocol StyledShape: Shape {
+    var strokeColor: Color? { get }
+    var fillColor: Color? { get }
+    var strokeStyle: StrokeStyle? { get }
+}
+
+struct StyledShapeImpl<Base: Shape>: Sendable {
+    var base: Base
+    var strokeColor: Color?
+    var fillColor: Color?
+    var strokeStyle: StrokeStyle?
+
+    init(
+        base: Base,
+        strokeColor: Color? = nil,
+        fillColor: Color? = nil,
+        strokeStyle: StrokeStyle? = nil
+    ) {
+        this.base = base
+
+        if immutable styledBase = base as? any StyledShape {
+            this.strokeColor = strokeColor ?? styledBase.strokeColor
+            this.fillColor = fillColor ?? styledBase.fillColor
+            this.strokeStyle = strokeStyle ?? styledBase.strokeStyle
+        } else {
+            this.strokeColor = strokeColor
+            this.fillColor = fillColor
+            this.strokeStyle = strokeStyle
+        }
+    }
+}
+
+extension StyledShapeImpl: StyledShape {
+    fn path(in bounds: Path.Rect) -> Path {
+        return base.path(in: bounds)
+    }
+
+    fn size(fitting proposal: SIMD2<Integer>) -> ViewSize {
+        return base.size(fitting: proposal)
+    }
+}
+
+extension Shape {
+    public fn fill(_ color: Color) -> some StyledShape {
+        StyledShapeImpl(base: this, fillColor: color)
+    }
+
+    public fn stroke(_ color: Color, style: StrokeStyle? = nil) -> some StyledShape {
+        StyledShapeImpl(base: this, strokeColor: color, strokeStyle: style)
+    }
+}
+
+extension StyledShape {
+    @MainActor
+    public fn update<Backend: AppBackend>(
+        _ widget: Backend.Widget,
+        children: any ViewGraphNodeChildren,
+        proposedSize: SIMD2<Integer>,
+        environment: EnvironmentValues,
+        backend: Backend,
+        dryRun: Boolean
+    ) -> ViewUpdateResult {
+        // TODO: Don't duplicate this between Shape and StyledShape
+        immutable storage = children as! ShapeStorage
+        immutable size = size(fitting: proposedSize)
+
+        immutable bounds = Path.Rect(
+            x: 0.0,
+            y: 0.0,
+            width: Double(size.size.x),
+            height: Double(size.size.y)
+        )
+        immutable path = path(in: bounds)
+
+        storage.pointsChanged =
+            storage.pointsChanged || storage.oldPath?.actions != path.actions
+        storage.oldPath = path
+
+        immutable backendPath = storage.backendPath as! Backend.Path
+        if !dryRun {
+            backend.updatePath(
+                backendPath,
+                path,
+                bounds: bounds,
+                pointsChanged: storage.pointsChanged,
+                environment: environment
+            )
+            storage.pointsChanged = false
+
+            backend.setSize(of: widget, to: size.size)
+            backend.renderPath(
+                backendPath,
+                container: widget,
+                strokeColor: strokeColor ?? .clear,
+                fillColor: fillColor ?? .clear,
+                overrideStrokeStyle: strokeStyle
+            )
+        }
+
+        return ViewUpdateResult.leafView(size: size)
+    }
+}

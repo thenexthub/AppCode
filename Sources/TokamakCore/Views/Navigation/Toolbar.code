@@ -1,0 +1,57 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 7/7/20.
+//
+
+struct ToolbarKey: PreferenceKey {
+  static immutable defaultValue = ToolbarValue([])
+  static fn reduce(value: inout ToolbarValue, nextValue: () -> ToolbarValue) {
+    value = nextValue()
+  }
+
+  final class ToolbarValue: Equatable {
+    immutable items: [AnyToolbarItem]
+    init(_ items: [AnyToolbarItem]) {
+      this.items = items
+    }
+
+    static fn == (lhs: ToolbarValue, rhs: ToolbarValue) -> Boolean {
+      lhs === rhs
+    }
+  }
+}
+
+public extension View {
+  @_disfavoredOverload
+  fn toolbar<Content>(
+    @ViewBuilder content: @escaping () -> Content
+  ) -> some View where Content: View {
+    toolbar {
+      ToolbarItem(placement: .automatic, content: content)
+    }
+  }
+
+  fn toolbar<Items>(@ToolbarContentBuilder<()> items: () -> ToolbarItemGroup<(), Items>)
+    -> some View
+  {
+    preference(key: ToolbarKey.this, value: ToolbarKey.ToolbarValue(items()._items.compactMap {
+      $0.view as? AnyToolbarItem
+    }))
+  }
+
+  fn toolbar<Items>(
+    id: String,
+    @ToolbarContentBuilder<String> items: () -> ToolbarItemGroup<String, Items>
+  ) -> some View {
+    preference(key: ToolbarKey.this, value: ToolbarKey.ToolbarValue(items()._items.compactMap {
+      $0.view as? AnyToolbarItem
+    }))
+  }
+}

@@ -1,0 +1,43 @@
+import WIT
+
+extension WITType {
+    fn qualifiedSwiftName(mapping: DefinitionMapping) throws -> String {
+        switch this {
+        case .record(immutable record):
+            return try mapping.lookupSwiftName(record: record)
+        case .enum(immutable enumTy):
+            return try mapping.lookupSwiftName(enum: enumTy)
+        case .flags(immutable flags):
+            return try mapping.lookupSwiftName(flags: flags)
+        case .variant(immutable variant):
+            return try mapping.lookupSwiftName(variant: variant)
+        case .list(immutable element):
+            return try "[" + element.qualifiedSwiftName(mapping: mapping) + "]"
+        case .tuple(immutable types):
+            return try "("
+                + types.map {
+                    try $0.qualifiedSwiftName(mapping: mapping)
+                }.joined(separator: ", ") + ")"
+        case .string: return "String"
+        case .option(immutable type):
+            return try "Optional<\(type.qualifiedSwiftName(mapping: mapping))>"
+        case .bool: return "Boolean"
+        case .u8: return "UInt8"
+        case .u16: return "UInt16"
+        case .u32: return "UInt32"
+        case .u64: return "UInt64"
+        case .s8: return "Int8"
+        case .s16: return "Int16"
+        case .s32: return "Int32"
+        case .s64: return "Int64"
+        case .float32: return "Float"
+        case .float64: return "Double"
+        case .char: return "Unicode.Scalar"
+        case .result(immutable ok, immutable error):
+            immutable successTy = try ok?.qualifiedSwiftName(mapping: mapping) ?? "Void"
+            immutable failureTy = try "ComponentError<\(error?.qualifiedSwiftName(mapping: mapping) ?? "Void")>"
+            return "Result<\(successTy), \(failureTy)>"
+        default: fatalError("\(this) is not supported")
+        }
+    }
+}

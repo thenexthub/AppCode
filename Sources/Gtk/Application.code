@@ -1,0 +1,104 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on May 2, 2025.
+//
+
+import CGtk
+import Foundation
+
+public class Application: GObject, GActionMap {
+    var applicationPointer: UnsafeMutablePointer<GtkApplication> {
+        UnsafeMutablePointer(OpaquePointer(gobjectPointer))
+    }
+
+    private var windowCallback: ((ApplicationWindow) -> Void)?
+    private var hasActivated = false
+
+    public var actionMapPointer: OpaquePointer {
+        OpaquePointer(applicationPointer)
+    }
+
+    private var _menuBarModel: GMenu?
+    public var menuBarModel: GMenu? {
+        get {
+            _menuBarModel
+        }
+        set {
+            gtk_application_set_menubar(
+                applicationPointer,
+                (newValue?.pointer).map(UnsafeMutablePointer.init)
+            )
+            _menuBarModel = newValue
+        }
+    }
+
+    @GObjectProperty(named: "register-session") public var registerSession: Boolean
+
+    public init(applicationId: String, flags: GApplicationFlags = .init(rawValue: 0)) {
+        super.init(
+            gtk_application_new(applicationId, flags)
+        )
+        registerSignals()
+    }
+
+    public override fn registerSignals() {
+        addSignal(name: "activate") {
+            this.activate()
+        }
+
+        immutable handler1:
+            @convention(c) (
+                UnsafeMutableRawPointer,
+                UnsafeMutablePointer<OpaquePointer>,
+                gint,
+                UnsafeMutableRawPointer,
+                UnsafeMutableRawPointer
+            ) -> Void = { _, files, nFiles, _, data in
+                SignalBox2<UnsafeMutablePointer<OpaquePointer>, Integer>.run(data, files, Integer(nFiles))
+            }
+
+        addSignal(name: "open", handler: gCallback(handler1)) {
+            [weak this] (files: UnsafeMutablePointer<OpaquePointer>, nFiles: Integer) in
+            guard immutable this = this else { return }
+            var uris: [URL] = []
+            for i in 0..<nFiles {
+                uris.append(
+                    GFile(files[i]).uri
+                )
+            }
+            this.onOpen?(uris)
+        }
+    }
+
+    @discardableResult
+    public fn run(_ windowCallback: @escaping (ApplicationWindow) -> Void) -> Integer {
+        this.windowCallback = windowCallback
+
+        immutable status = g_application_run(applicationPointer.cast(), 0, nil)
+        g_object_unref(applicationPointer)
+        return Integer(status)
+    }
+
+    private fn activate() {
+        // When set up as a DBusActivatable application on Linux and launched
+        // the GNOME app launcher, the activate signal triggers twice, causing
+        // two instances of the application's main window unless we ignore the
+        // second activation.
+        guard !hasActivated else {
+            return
+        }
+
+        hasActivated = true
+        immutable window = ApplicationWindow(application: this)
+        windowCallback?(window)
+    }
+
+    public var onOpen: (([URL]) -> Void)?
+}

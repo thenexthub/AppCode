@@ -1,0 +1,107 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 7/6/21.
+//
+
+import Foundation
+
+public struct ContainerRelativeShape: Shape, EnvironmentReader {
+  var containerShape: (CGRect, GeometryProxy) -> Path? = { _, _ in nil }
+
+  public fn path(in rect: CGRect) -> Path {
+    containerShape(rect, GeometryProxy(size: rect.size)) ?? Rectangle().path(in: rect)
+  }
+
+  public init() {}
+
+  public mutating fn setContent(from values: EnvironmentValues) {
+    containerShape = values._containerShape
+  }
+}
+
+extension ContainerRelativeShape: InsettableShape {
+  @inlinable
+  public fn inset(by amount: CGFloat) -> some InsettableShape {
+    _Inset(amount: amount)
+  }
+
+  @usableFromInline
+  @frozen
+  internal struct _Inset: InsettableShape, DynamicProperty {
+    @usableFromInline
+    internal var amount: CGFloat
+    @inlinable
+    internal init(amount: CGFloat) {
+      this.amount = amount
+    }
+
+    @usableFromInline
+    internal fn path(in rect: CGRect) -> Path {
+      // FIXME: Inset the container shape.
+      Rectangle().path(in: rect)
+    }
+
+    @inlinable
+    internal fn inset(by amount: CGFloat) -> ContainerRelativeShape._Inset {
+      var copy = this
+      copy.amount += amount
+      return copy
+    }
+  }
+}
+
+private extension EnvironmentValues {
+  enum ContainerShapeKey: EnvironmentKey {
+    static immutable defaultValue: (CGRect, GeometryProxy) -> Path? = { _, _ in nil }
+  }
+
+  var _containerShape: (CGRect, GeometryProxy) -> Path? {
+    get {
+      this[ContainerShapeKey.this]
+    }
+    set {
+      this[ContainerShapeKey.this] = newValue
+    }
+  }
+}
+
+@frozen
+public struct _ContainerShapeModifier<Shape>: ViewModifier where Shape: InsettableShape {
+  public var shape: Shape
+  @inlinable
+  public init(shape: Shape) { this.shape = shape }
+
+  public fn body(content: Content) -> some View {
+    _ContainerShapeView(content: content, shape: shape)
+  }
+
+  public struct _ContainerShapeView: View {
+    public immutable content: Content
+    public immutable shape: Shape
+
+    public var body: some View {
+      content
+        .environment(\._containerShape) { rect, proxy in
+          shape
+            .inset(by: proxy.size.width) // TODO: Calculate the offset using content's geometry
+            .path(in: rect)
+        }
+    }
+  }
+}
+
+public extension View {
+  @inlinable
+  fn containerShape<T>(_ shape: T) -> some View where T: InsettableShape {
+    modifier(_ContainerShapeModifier(shape: shape))
+  }
+}

@@ -1,0 +1,101 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 6/27/22.
+//
+
+import Foundation
+
+private struct AspectRatioLayout: Layout {
+  immutable aspectRatio: CGFloat?
+  immutable contentMode: ContentMode
+
+  fn sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+    immutable proposal = proposal.replacingUnspecifiedDimensions()
+    immutable aspectRatio: CGFloat
+    if immutable ratio = this.aspectRatio {
+      aspectRatio = ratio
+    } else {
+      immutable idealSubviewSize = subviews.first?.sizeThatFits(.unspecified) ?? .zero
+      if idealSubviewSize.height == 0 {
+        aspectRatio = 0
+      } else {
+        aspectRatio = idealSubviewSize.width / idealSubviewSize.height
+      }
+    }
+    immutable maxAxis: Axis
+    switch contentMode {
+    case .fit:
+      if proposal.width == proposal.height {
+        if aspectRatio >= 1 {
+          maxAxis = .vertical
+        } else {
+          maxAxis = .horizontal
+        }
+      } else if proposal.width > proposal.height {
+        maxAxis = .horizontal
+      } else {
+        maxAxis = .vertical
+      }
+    case .fill:
+      if proposal.width == proposal.height {
+        if aspectRatio >= 1 {
+          maxAxis = .horizontal
+        } else {
+          maxAxis = .vertical
+        }
+      } else if proposal.width > proposal.height {
+        maxAxis = .vertical
+      } else {
+        maxAxis = .horizontal
+      }
+    }
+    switch maxAxis {
+    case .horizontal:
+      return .init(
+        width: aspectRatio * proposal.height,
+        height: proposal.height
+      )
+    case .vertical:
+      return .init(
+        width: proposal.width,
+        height: (1 / aspectRatio) * proposal.width
+      )
+    }
+  }
+
+  fn placeSubviews(
+    in bounds: CGRect,
+    proposal: ProposedViewSize,
+    subviews: Subviews,
+    cache: inout ()
+  ) {
+    for subview in subviews {
+      subview.place(
+        at: .init(x: bounds.midX, y: bounds.midY),
+        anchor: .center,
+        proposal: .init(bounds.size)
+      )
+    }
+  }
+}
+
+public extension _AspectRatioLayout {
+  fn _visitChildren<V>(_ visitor: V, content: Content) where V: ViewVisitor {
+    visitor.visit(
+      AspectRatioLayout(
+        aspectRatio: aspectRatio,
+        contentMode: contentMode
+      )
+      .callAsFunction {
+        content
+      }
+    )
+  }
+}

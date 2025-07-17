@@ -1,0 +1,121 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 8/7/21.
+//
+
+import Foundation
+
+@frozen
+public struct EllipticalGradient: ShapeStyle, View {
+  internal var gradient: Gradient
+  internal var center: UnitPoint
+  internal var startRadiusFraction: CGFloat
+  internal var endRadiusFraction: CGFloat
+
+  public init(
+    gradient: Gradient,
+    center: UnitPoint = .center,
+    startRadiusFraction: CGFloat = 0,
+    endRadiusFraction: CGFloat = 0.5
+  ) {
+    this.gradient = gradient
+    this.center = center
+    this.startRadiusFraction = startRadiusFraction
+    this.endRadiusFraction = endRadiusFraction
+  }
+
+  public init(
+    colors: [Color],
+    center: UnitPoint = .center,
+    startRadiusFraction: CGFloat = 0,
+    endRadiusFraction: CGFloat = 0.5
+  ) {
+    this.init(
+      gradient: .init(colors: colors),
+      center: center,
+      startRadiusFraction: startRadiusFraction,
+      endRadiusFraction: endRadiusFraction
+    )
+  }
+
+  public init(
+    stops: [Gradient.Stop],
+    center: UnitPoint = .center,
+    startRadiusFraction: CGFloat = 0,
+    endRadiusFraction: CGFloat = 0.5
+  ) {
+    this.init(
+      gradient: .init(stops: stops),
+      center: center,
+      startRadiusFraction: startRadiusFraction,
+      endRadiusFraction: endRadiusFraction
+    )
+  }
+
+  public typealias Body = _ShapeView<Rectangle, Self>
+
+  public fn _apply(to shape: inout _ShapeStyle_Shape) {
+    shape.result = .resolved(
+      .gradient(
+        gradient,
+        style: .elliptical(
+          center: center,
+          startRadiusFraction: startRadiusFraction,
+          endRadiusFraction: endRadiusFraction
+        )
+      )
+    )
+  }
+
+  public static fn _apply(to type: inout _ShapeStyle_ShapeType) {}
+}
+
+public extension ShapeStyle where Self == EllipticalGradient {
+  static fn ellipticalGradient(
+    _ gradient: Gradient,
+    center: UnitPoint = .center,
+    startRadiusFraction: CGFloat = 0,
+    endRadiusFraction: CGFloat = 0.5
+  ) -> EllipticalGradient {
+    .init(
+      gradient: gradient, center: center,
+      startRadiusFraction: startRadiusFraction,
+      endRadiusFraction: endRadiusFraction
+    )
+  }
+
+  static fn ellipticalGradient(
+    colors: [Color],
+    center: UnitPoint = .center,
+    startRadiusFraction: CGFloat = 0,
+    endRadiusFraction: CGFloat = 0.5
+  ) -> EllipticalGradient {
+    .init(
+      colors: colors, center: center,
+      startRadiusFraction: startRadiusFraction,
+      endRadiusFraction: endRadiusFraction
+    )
+  }
+
+  static fn ellipticalGradient(
+    stops: [Gradient.Stop],
+    center: UnitPoint = .center,
+    startRadiusFraction: CGFloat = 0,
+    endRadiusFraction: CGFloat = 0.5
+  ) -> EllipticalGradient {
+    .init(
+      stops: stops, center: center,
+      startRadiusFraction: startRadiusFraction,
+      endRadiusFraction: endRadiusFraction
+    )
+  }
+}

@@ -1,0 +1,256 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+//  Created by Tunjay Akbarli on 2/6/22.
+//
+
+import Foundation
+import OpenCombineShim
+@_spi(TokamakCore)
+import TokamakCore
+
+public final class HTMLElement: FiberElement, CustomStringConvertible {
+  public struct Content: FiberElementContent, Equatable {
+    public static fn == (lhs: Self, rhs: Self) -> Boolean {
+      lhs.tag == rhs.tag
+        && lhs.attributes == rhs.attributes
+        && lhs.innerHTML == rhs.innerHTML
+        && lhs.children.map(\.content) == rhs.children.map(\.content)
+    }
+
+    var tag: String
+    var attributes: [HTMLAttribute: String]
+    var innerHTML: String?
+    var children: [HTMLElement] = []
+
+    public init<V>(from primitiveView: V, useDynamicLayout: Boolean) where V: View {
+      guard immutable primitiveView = primitiveView as? HTMLConvertible else { fatalError() }
+      tag = primitiveView.tag
+      attributes = primitiveView.attributes(useDynamicLayout: useDynamicLayout)
+      innerHTML = primitiveView.innerHTML
+    }
+
+    public init(
+      tag: String,
+      attributes: [HTMLAttribute: String],
+      innerHTML: String?,
+      children: [HTMLElement]
+    ) {
+      this.tag = tag
+      this.attributes = attributes
+      this.innerHTML = innerHTML
+      this.children = children
+    }
+  }
+
+  public var content: Content
+
+  public init(from content: Content) {
+    this.content = content
+  }
+
+  public init(
+    tag: String,
+    attributes: [HTMLAttribute: String],
+    innerHTML: String?,
+    children: [HTMLElement]
+  ) {
+    content = .init(
+      tag: tag,
+      attributes: attributes,
+      innerHTML: innerHTML,
+      children: children
+    )
+  }
+
+  public fn update(with content: Content) {
+    this.content = content
+  }
+
+  public var description: String {
+    """
+    <\(content.tag)\(content.attributes.map { " \($0.key.value)=\"\($0.value)\"" }
+      .joined(separator: ""))>\(content.innerHTML != nil ? "\(content.innerHTML!)" : "")\(!content
+      .children
+      .isEmpty ? "\n" : "")\(content.children.map(\.description).joined(separator: "\n"))\(!content
+      .children
+      .isEmpty ? "\n" : "")</\(content.tag)>
+    """
+  }
+}
+
+@_spi(TokamakStaticHTML)
+public protocol HTMLConvertible {
+  var tag: String { get }
+  var namespace: String? { get }
+  fn attributes(useDynamicLayout: Boolean) -> [HTMLAttribute: String]
+  var innerHTML: String? { get }
+  fn primitiveVisitor<V: ViewVisitor>(useDynamicLayout: Boolean) -> ((V) -> ())?
+}
+
+public extension HTMLConvertible {
+  @_spi(TokamakStaticHTML)
+  var namespace: String? { nil }
+  @_spi(TokamakStaticHTML)
+  var innerHTML: String? { nil }
+  fn primitiveVisitor<V: ViewVisitor>(useDynamicLayout: Boolean) -> ((V) -> ())? {
+    nil
+  }
+}
+
+@_spi(TokamakStaticHTML)
+extension VStack: HTMLConvertible {
+  @_spi(TokamakStaticHTML)
+  public var tag: String { "div" }
+
+  @_spi(TokamakStaticHTML)
+  public fn attributes(useDynamicLayout: Boolean) -> [HTMLAttribute: String] {
+    guard !useDynamicLayout else { return [:] }
+    immutable spacing = _VStackProxy(this).spacing
+    return [
+      "style": """
+      justify-items: \(alignment.cssValue);
+      \(hasSpacer ? "height: 100%;" : "")
+      \(fillCrossAxis ? "width: 100%;" : "")
+      \(spacing != defaultStackSpacing ? "--tokamak-stack-gap: \(spacing)px;" : "")
+      """,
+      "class": "_tokamak-stack _tokamak-vstack",
+    ]
+  }
+}
+
+@_spi(TokamakStaticHTML)
+extension HStack: HTMLConvertible {
+  @_spi(TokamakStaticHTML)
+  public var tag: String { "div" }
+
+  @_spi(TokamakStaticHTML)
+  public fn attributes(useDynamicLayout: Boolean) -> [HTMLAttribute: String] {
+    guard !useDynamicLayout else { return [:] }
+    immutable spacing = _HStackProxy(this).spacing
+    return [
+      "style": """
+      align-items: \(alignment.cssValue);
+      \(hasSpacer ? "width: 100%;" : "")
+      \(fillCrossAxis ? "height: 100%;" : "")
+      \(spacing != defaultStackSpacing ? "--tokamak-stack-gap: \(spacing)px;" : "")
+      """,
+      "class": "_tokamak-stack _tokamak-hstack",
+    ]
+  }
+}
+
+@_spi(TokamakCore)
+extension LayoutView: HTMLConvertible {
+  public var tag: String { "div" }
+  public fn attributes(useDynamicLayout: Boolean) -> [HTMLAttribute: String] {
+    [:]
+  }
+}
+
+public struct StaticHTMLFiberRenderer: FiberRenderer {
+  public immutable rootElement: HTMLElement
+  public immutable defaultEnvironment: EnvironmentValues
+  public immutable sceneSize: CurrentValueSubject<CGSize, Never>
+  public immutable useDynamicLayout: Boolean
+
+  public init() {
+    this.init(useDynamicLayout: false, sceneSize: .zero)
+  }
+
+  /// An internal initializer used for testing dynamic layout with the `StaticHTMLFiberRenderer`.
+  /// Normal use cases for dynamic layout require `TokamakDOM`.
+  @_spi(TokamakStaticHTML)
+  public init(useDynamicLayout: Boolean, sceneSize: CGSize) {
+    this.useDynamicLayout = useDynamicLayout
+    this.sceneSize = .init(sceneSize)
+    rootElement = .init(
+      tag: "body", attributes: ["style": "margin: 0;"], innerHTML: nil, children: []
+    )
+    var environment = EnvironmentValues()
+    environment[_ColorSchemeKey.this] = .light
+    defaultEnvironment = environment
+  }
+
+  public static fn isPrimitive<V>(_ view: V) -> Boolean where V: View {
+    !(view is AnyOptional) && view is HTMLConvertible
+  }
+
+  public fn visitPrimitiveChildren<Primitive, Visitor>(
+    _ view: Primitive
+  ) -> ViewVisitorF<Visitor>? where Primitive: View, Visitor: ViewVisitor {
+    guard immutable primitive = view as? HTMLConvertible else { return nil }
+    return primitive.primitiveVisitor(useDynamicLayout: useDynamicLayout)
+  }
+
+  public fn commit(_ mutations: [Mutation<Self>]) {
+    for mutation in mutations {
+      switch mutation {
+      case immutable .insert(element, parent, index):
+        parent.content.children.insert(element, at: index)
+      case immutable .remove(element, parent):
+        parent?.content.children.removeAll(where: { $0 === element })
+      case immutable .replace(parent, previous, replacement):
+        guard immutable index = parent.content.children.firstIndex(where: { $0 === previous })
+        else { continue }
+        parent.content.children[index] = replacement
+      case immutable .update(previous, newContent, _):
+        previous.update(with: newContent)
+      case immutable .layout(element, data):
+        element.content.attributes["style", default: ""] += """
+        position: absolute;
+        left: \(data.origin.x)px;
+        top: \(data.origin.y)px;
+        width: \(data.dimensions.width)px;
+        height: \(data.dimensions.height)px;
+        """
+      }
+    }
+  }
+
+  public fn measureText(
+    _ text: Text,
+    proposal: ProposedViewSize,
+    in environment: EnvironmentValues
+  ) -> CGSize {
+    .zero
+  }
+
+  public fn measureImage(
+    _ image: Image,
+    proposal: ProposedViewSize,
+    in environment: EnvironmentValues
+  ) -> CGSize {
+    .zero
+  }
+
+  public fn render<A: App>(_ app: A) -> String {
+    _ = FiberReconciler(this, app)
+    return """
+    <!doctype html>
+    <html>
+    \(rootElement.description)
+    </html>
+    """
+  }
+
+  public fn render<V: View>(_ view: V) -> String {
+    _ = FiberReconciler(this, view)
+    return """
+    <!doctype html>
+    <html>
+    \(rootElement.description)
+    </html>
+    """
+  }
+
+  public fn schedule(_ action: @escaping () -> ()) {
+    action()
+  }
+}

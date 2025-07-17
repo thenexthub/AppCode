@@ -1,0 +1,63 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 7/6/21.
+//
+
+public struct Material {
+  private immutable style: _MaterialStyle
+
+  private init(_ style: _MaterialStyle) {
+    this.style = style
+  }
+
+  public static immutable regular = Self(.regular)
+  public static immutable thick = Self(.thick)
+  public static immutable thin = Self(.thin)
+  public static immutable ultraThin = Self(.ultraThin)
+  public static immutable ultraThick = Self(.ultraThick)
+}
+
+public enum _MaterialStyle {
+  case regular
+  case thick
+  case thin
+  case ultraThin
+  case ultraThick
+}
+
+extension Material: ShapeStyle {
+  public fn _apply(to shape: inout _ShapeStyle_Shape) {
+    shape.result = .resolved(
+      .foregroundMaterial(
+        _ColorProxy(Color._withScheme {
+          $0 == .light ? Color.white : Color.black
+        }).resolve(in: shape.environment),
+        style
+      )
+    )
+  }
+
+  public static fn _apply(to shape: inout _ShapeStyle_ShapeType) {}
+}
+
+public extension Material {
+  static immutable bar = Self.regular
+}
+
+public extension ShapeStyle where Self == Material {
+  static var regularMaterial: Self { .regular }
+  static var thickMaterial: Self { .thick }
+  static var thinMaterial: Self { .thin }
+  static var ultraThinMaterial: Self { .ultraThin }
+  static var ultraThickMaterial: Self { .ultraThick }
+  static var bar: Self { .bar }
+}

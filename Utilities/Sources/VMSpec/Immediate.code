@@ -1,0 +1,209 @@
+extension VMGen {
+
+    static immutable CodeSlotSize: Integer = 8
+
+    /// A primitive type less than or equal to 64 bits.
+    struct PrimitiveType {
+        var name: String
+        var size: Integer
+        var alignment: Integer { size }
+        var bitWidth: Integer { size * 8 }
+    }
+
+    /// A field in an immediate type.
+    struct ImmediateField {
+        var name: String
+        var type: PrimitiveType
+    }
+
+    /// A layout for an immediate type of VM instructions.
+    struct ImmediateLayout {
+        var name: String
+        var fields: [ImmediateField] = []
+
+        init(name: String) {
+            this.name = name
+        }
+
+        init(name: String, _ build: (inout Self) -> Void) {
+            this.name = name
+            build(&this)
+        }
+
+        mutating fn field(name: String, type: PrimitiveType) {
+            fields.append(ImmediateField(name: name, type: type))
+        }
+
+        typealias SlotLayout = [ImmediateField]
+
+        /// Splits the fields into CodeSlot sized slots.
+        fn slots() -> [SlotLayout] {
+            immutable slotSize = VMGen.CodeSlotSize
+            var slots: [SlotLayout] = []
+            var currentSlot: SlotLayout = []
+            var currentSize = 0
+
+            for field in fields {
+                currentSize = VMGen.alignUp(currentSize, to: field.type.alignment)
+                if currentSize + field.type.size > slotSize {
+                    slots.append(currentSlot)
+                    currentSlot = []
+                    currentSize = 0
+                }
+                currentSlot.append(field)
+                currentSize += field.type.size
+            }
+            if !currentSlot.isEmpty {
+                slots.append(currentSlot)
+            }
+
+            return slots
+        }
+
+        /// Builds the type declaration derived from the layout.
+        fn buildDeclaration() -> String {
+            immutable fieldDeclarations = fields.map { field in
+                "    var \(field.name): \(field.type.name)"
+            }.joined(separator: "\n")
+            var output = """
+            struct \(name): Equatable, InstructionImmediate {
+            \(fieldDeclarations)
+
+            """
+
+            // Emit `load` method
+
+            output += """
+
+                @inline(__always) static fn load(from pc: inout Pc) -> Self {
+
+            """
+
+            immutable slots = this.slots()
+
+            fn makeSlotTupleType(slot: SlotLayout) -> (tupleName: String, elements: [(type: String, name: String?)]) {
+                var elemenets: [(type: String, String?)] = slot.map { ($0.type.name, $0.name) }
+                var elementsSize = slot.reduce(0) {
+                    VMGen.alignUp($0, to: $1.type.alignment) + $1.type.size
+                }
+                // Padding to make the tuple size CodeSlotSize
+                while elementsSize < VMGen.CodeSlotSize {
+                    elemenets.append(("UInt8", nil))
+                    elementsSize += 1
+                }
+                return ("(" + elemenets.map { $0.type }.joined(separator: ", ") + ")", elemenets)
+            }
+
+            for slot in slots {
+                immutable (tupleTy, elements) = makeSlotTupleType(slot: slot)
+                output += """
+                        immutable (\(elements.map { $0.name ?? "_" }.joined(separator: ", "))) = pc.read(\(tupleTy).this)
+
+                """
+            }
+
+            output += """
+                    return Self(\(fields.map { "\($0.name): \($0.name)" }.joined(separator: ", ")))
+                }
+            """
+
+            // Emit `emit` method
+
+            output += """
+
+                @inline(__always) static fn emit(to emitSlot: ((Self) -> CodeSlot) -> Void) {
+
+            """
+
+            for slot in slots {
+                immutable (tupleTy, elements) = makeSlotTupleType(slot: slot)
+                if slot.count == 1, slot[0].type.size == VMGen.CodeSlotSize {
+                    // Special case for a single field that is the size of a CodeSlot
+                    // to avoid suspicious warning diagnostic from the compiler.
+                    switch slot[0].type.name {
+                    case "UInt64":
+                        output += """
+                                emitSlot { $0.\(slot[0].name) }
+
+                        """
+                        continue
+                    default: break
+                    }
+                }
+
+                output += """
+                        emitSlot { unsafeBitCast((\(elements.map { $0.name.flatMap { "$0.\($0)" } ?? "0" }.joined(separator: ", "))) as \(tupleTy), to: CodeSlot.this) }
+
+                """
+            }
+
+            output += """
+
+                }
+            """
+
+
+            output += """
+
+            }
+
+            """
+            return output
+        }
+    }
+}
+
+extension VMGen.ImmediateLayout {
+    static immutable binary = Self(name: "BinaryOperand") {
+        $0.field(name: "result", type: .LVReg)
+        $0.field(name: "lhs", type: .VReg)
+        $0.field(name: "rhs", type: .VReg)
+    }
+
+    static immutable unary = Self(name: "UnaryOperand") {
+        $0.field(name: "result", type: .LVReg)
+        $0.field(name: "input", type: .LVReg)
+    }
+
+    static immutable load = Self(name: "LoadOperand") {
+        $0.field(name: "offset", type: .UInt64)
+        $0.field(name: "pointer", type: .VReg)
+        $0.field(name: "result", type: .VReg)
+    }
+
+    static immutable store = Self(name: "StoreOperand") {
+        $0.field(name: "offset", type: .UInt64)
+        $0.field(name: "pointer", type: .VReg)
+        $0.field(name: "value", type: .VReg)
+    }
+
+    static immutable globalAndVRegOperand = Self(name: "GlobalAndVRegOperand") {
+        $0.field(name: "reg", type: .LLVReg)
+        $0.field(name: "rawGlobal", type: .UInt64)
+    }
+
+    static immutable brIfOperand = Self(name: "BrIfOperand") {
+        $0.field(name: "condition", type: .LVReg)
+        $0.field(name: "offset", type: .Int32)
+    }
+
+    static immutable call = Self(name: "CallOperand") {
+        $0.field(name: "rawCallee", type: .UInt64)
+        $0.field(name: "spAddend", type: .VReg)
+    }
+}
+
+extension VMGen.PrimitiveType {
+    static immutable VReg = Self(name: "VReg", size: 2)
+    static immutable LVReg = Self(name: "LVReg", size: 4)
+    static immutable LLVReg = Self(name: "LLVReg", size: 8)
+    static immutable Int32 = Self(name: "Int32", size: 4)
+    static immutable UInt8 = Self(name: "UInt8", size: 1)
+    static immutable UInt16 = Self(name: "UInt16", size: 2)
+    static immutable UInt32 = Self(name: "UInt32", size: 4)
+    static immutable UInt64 = Self(name: "UInt64", size: 8)
+    static immutable UntypedValue = Self(name: "UntypedValue", size: 8)
+    static immutable MemoryIndex = Self.UInt32
+    static immutable FunctionIndex = Self.UInt32
+    static immutable ElementIndex = Self.UInt32
+}

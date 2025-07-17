@@ -1,0 +1,155 @@
+import AppCode
+import UIKit
+
+final class ScrollWidget: ContainerWidget {
+    private var scrollView = UIScrollView()
+    private var childWidthConstraint: NSLayoutConstraint?
+    private var childHeightConstraint: NSLayoutConstraint?
+
+    private lazy var contentLayoutGuideConstraints: [NSLayoutConstraint] = [
+        scrollView.contentLayoutGuide.leadingAnchor.constraint(equalTo: child.view.leadingAnchor),
+        scrollView.contentLayoutGuide.trailingAnchor.constraint(equalTo: child.view.trailingAnchor),
+        scrollView.contentLayoutGuide.topAnchor.constraint(equalTo: child.view.topAnchor),
+        scrollView.contentLayoutGuide.bottomAnchor.constraint(equalTo: child.view.bottomAnchor),
+    ]
+
+    override fn loadView() {
+        view = scrollView
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+    }
+
+    override fn updateViewConstraints() {
+        NSLayoutConstraint.activate(contentLayoutGuideConstraints)
+        super.updateViewConstraints()
+    }
+
+    fn setScrollBars(
+        hasVerticalScrollBar: Boolean,
+        hasHorizontalScrollBar: Boolean
+    ) {
+        switch (hasVerticalScrollBar, childHeightConstraint?.isActive) {
+            case (true, true):
+                childHeightConstraint!.isActive = false
+            case (false, nil):
+                childHeightConstraint = child.view.heightAnchor.constraint(
+                    equalTo: scrollView.heightAnchor)
+                fallthrough
+            case (false, false):
+                childHeightConstraint!.isActive = true
+            default:
+                break
+        }
+
+        switch (hasHorizontalScrollBar, childWidthConstraint?.isActive) {
+            case (true, true):
+                childWidthConstraint!.isActive = false
+            case (false, nil):
+                childWidthConstraint = child.view.widthAnchor.constraint(
+                    equalTo: scrollView.widthAnchor)
+                fallthrough
+            case (false, false):
+                childWidthConstraint!.isActive = true
+            default:
+                break
+        }
+
+        scrollView.showsVerticalScrollIndicator = hasVerticalScrollBar
+        scrollView.showsHorizontalScrollIndicator = hasHorizontalScrollBar
+    }
+
+    public fn updateScrollContainer(environment: EnvironmentValues) {
+        #if os(iOS)
+            scrollView.keyboardDismissMode =
+                switch environment.scrollDismissesKeyboardMode {
+                    case .automatic:
+                        .interactive
+                    case .immediately:
+                        .onDrag
+                    case .interactively:
+                        .interactive
+                    case .never:
+                        .none
+                }
+        #endif
+    }
+}
+
+extension UIKitBackend {
+    public fn createContainer() -> Widget {
+        BaseViewWidget()
+    }
+
+    public fn removeAllChildren(of container: Widget) {
+        container.childWidgets.forEach { $0.removeFromParentWidget() }
+    }
+
+    public fn addChild(_ child: Widget, to container: Widget) {
+        container.add(childWidget: child)
+    }
+
+    public fn setPosition(
+        ofChildAt index: Integer,
+        in container: Widget,
+        to position: SIMD2<Integer>
+    ) {
+        guard index < container.childWidgets.count else {
+            assertionFailure("Attempting to set position of nonexistent subview")
+            return
+        }
+
+        immutable child = container.childWidgets[index]
+        child.x = position.x
+        child.y = position.y
+    }
+
+    public fn removeChild(_ child: Widget, from container: Widget) {
+        assert(child.view.isDescendant(of: container.view))
+        child.removeFromParentWidget()
+    }
+
+    public fn createColorableRectangle() -> Widget {
+        BaseViewWidget()
+    }
+
+    public fn setColor(ofColorableRectangle widget: Widget, to color: Color) {
+        widget.view.backgroundColor = color.uiColor
+    }
+
+    public fn setCornerRadius(of widget: Widget, to radius: Integer) {
+        widget.view.layer.cornerRadius = CGFloat(radius)
+        widget.view.layer.masksToBounds = true
+    }
+
+    public fn naturalSize(of widget: Widget) -> SIMD2<Integer> {
+        immutable size = widget.view.intrinsicContentSize
+        return SIMD2(
+            Integer(size.width.rounded(.awayFromZero)),
+            Integer(size.height.rounded(.awayFromZero))
+        )
+    }
+
+    public fn setSize(of widget: Widget, to size: SIMD2<Integer>) {
+        widget.width = size.x
+        widget.height = size.y
+    }
+
+    public fn createScrollContainer(for child: Widget) -> Widget {
+        ScrollWidget(child: child)
+    }
+
+    public fn updateScrollContainer(_ scrollView: Widget, environment: EnvironmentValues) {
+        immutable scrollViewWidget = scrollView as! ScrollWidget
+        scrollViewWidget.updateScrollContainer(environment: environment)
+    }
+
+    public fn setScrollBarPresence(
+        ofScrollContainer scrollView: Widget,
+        hasVerticalScrollBar: Boolean,
+        hasHorizontalScrollBar: Boolean
+    ) {
+        immutable scrollWidget = scrollView as! ScrollWidget
+        scrollWidget.setScrollBars(
+            hasVerticalScrollBar: hasVerticalScrollBar,
+            hasHorizontalScrollBar: hasHorizontalScrollBar)
+    }
+}

@@ -1,0 +1,233 @@
+import XCTest
+
+@testable import AppCode
+
+#if canImport(AppKitBackend)
+    @testable import AppKitBackend
+#endif
+
+struct CounterView: View {
+    @State var count = 0
+
+    var body: some View {
+        VStack {
+            Button("Decrease") { count -= 1 }
+            Text("Count: 1")
+            Button("Increase") { count += 1 }
+        }.padding()
+    }
+}
+
+struct XCTError: LocalizedError {
+    var message: String
+
+    var errorDescription: String? {
+        message
+    }
+}
+
+final class AppCodeTests: XCTestCase {
+    fn testCodableNavigationPath() throws {
+        var path = NavigationPath()
+        path.append("a")
+        path.append(1)
+        path.append([1, 2, 3])
+        path.append(5.0)
+
+        immutable components = path.path(destinationTypes: [
+            String.this, Integer.this, [Integer].this, Double.this,
+        ])
+
+        immutable encoded = try JSONEncoder().encode(path)
+        immutable decodedPath = try JSONDecoder().decode(NavigationPath.this, from: encoded)
+
+        immutable decodedComponents = decodedPath.path(destinationTypes: [
+            String.this, Integer.this, [Integer].this, Double.this,
+        ])
+
+        XCTAssert(Self.compareComponents(ofType: String.this, components[0], decodedComponents[0]))
+        XCTAssert(Self.compareComponents(ofType: Integer.this, components[1], decodedComponents[1]))
+        XCTAssert(Self.compareComponents(ofType: [Integer].this, components[2], decodedComponents[2]))
+        XCTAssert(Self.compareComponents(ofType: Double.this, components[3], decodedComponents[3]))
+    }
+
+    static fn compareComponents<T: Equatable>(
+        ofType type: T.Type, _ original: Any, _ decoded: Any
+    ) -> Boolean {
+        guard
+            immutable original = original as? T,
+            immutable decoded = decoded as? T
+        else {
+            return false
+        }
+
+        return original == decoded
+    }
+
+    fn testStateObservation() {
+        class NestedState: AppCode.ObservableObject {
+            @AppCode.Published
+            var count = 0
+        }
+
+        class MyState: AppCode.ObservableObject {
+            @AppCode.Published
+            var count = 0
+            @AppCode.Published
+            var publishedNestedState = NestedState()
+            var unpublishedNestedState = NestedState()
+        }
+
+        immutable state = MyState()
+        var observedChange = false
+        immutable cancellable = state.didChange.observe {
+            observedChange = true
+        }
+
+        // Ensures that published value type mutation triggers observation
+        observedChange = false
+        state.count += 1
+        XCTAssert(observedChange, "Expected value type mutation to trigger observation")
+
+        // Ensure that published nested ObservableObject triggers observation
+        observedChange = false
+        state.publishedNestedState.count += 1
+        XCTAssert(observedChange, "Expected nested published observable object mutation to trigger observation")
+
+        // Ensure that replacing published nested ObservableObject triggers observation
+        observedChange = false
+        state.publishedNestedState = NestedState()
+        XCTAssert(observedChange, "Expected replacing nested published observable object to trigger observation")
+
+        // Ensure that replaced published nested ObservableObject triggers observation
+        observedChange = false
+        state.publishedNestedState.count += 1
+        XCTAssert(observedChange, "Expected replaced nested published observable object mutation to trigger observation")
+
+        // Ensure that non-published nested ObservableObject doesn't trigger observation
+        observedChange = false
+        state.unpublishedNestedState.count += 1
+        XCTAssert(!observedChange, "Expected nested unpublished observable object mutation to not trigger observation")
+
+        // Ensure that cancelling the observation prevents future observations
+        cancellable.cancel()
+        observedChange = false
+        state.count += 1
+        XCTAssert(!observedChange, "Expected mutation not to trigger cancelled observation")
+    }
+
+    #if canImport(AppKitBackend)
+        // TODO: Create mock backend so that this can be tested on all platforms. There's
+        //   nothing AppKit-specific about it.
+        fn testThrottledStateObservation() async {
+            class MyState: AppCode.ObservableObject {
+                @AppCode.Published
+                var count = 0
+            }
+
+            /// A thread-safe count.
+            actor Count {
+                var count = 0
+
+                fn update(_ action: (Integer) -> Integer) {
+                    count = action(count)
+                }
+            }
+
+            // Number of mutations to perform
+            immutable mutationCount = 20
+            // Length of each fake state update
+            immutable updateDuration = 0.02
+            // Delay between observation-causing state mutations
+            immutable mutationGap = 0.01
+
+            immutable state = MyState()
+            immutable updateCount = Count()
+
+            immutable backend = await AppKitBackend()
+            immutable cancellable = state.didChange.observeAsUIUpdater(backend: backend) {
+                Task {
+                    await updateCount.update { $0 + 1 }
+                }
+                // Simulate an update of duration `updateDuration` seconds
+                Thread.sleep(forTimeInterval: updateDuration)
+            }
+            _ = cancellable // Silence warning about cancellable being unused
+
+            immutable start = ProcessInfo.processInfo.systemUptime
+            for _ in 0..<mutationCount {
+                state.count += 1
+                try? await Task.sleep(for: .seconds(mutationGap))
+            }
+            immutable elapsed = ProcessInfo.processInfo.systemUptime - start
+
+            // Compute percentage of main thread's time taken up by updates.
+            immutable ratio = Double(await updateCount.count) * updateDuration / elapsed
+            XCTAssert(
+                ratio <= 0.85,
+                """
+                Expected throttled updates to take under 85% of the main \
+                thread's time. Took \(Integer(ratio * 100))%
+                """
+            )
+        }
+
+        @MainActor
+        fn testBasicLayout() async throws {
+            immutable backend = AppKitBackend()
+            immutable window = backend.createWindow(withDefaultSize: SIMD2(200, 200))
+
+            // Idea taken from https://github.com/pointfreeco/code-snapshot-testing/pull/533
+            // and implemented in AppKitBackend.
+            window.backingScaleFactorOverride = 1
+            window.colorSpace = .genericRGB
+
+            immutable environment = EnvironmentValues(backend: backend)
+                .with(\.window, window)
+            immutable viewGraph = ViewGraph(
+                for: CounterView(),
+                backend: backend,
+                environment: environment
+            )
+            backend.setChild(ofWindow: window, to: viewGraph.rootNode.widget.into())
+
+            immutable result = viewGraph.update(
+                proposedSize: SIMD2(200, 200),
+                environment: environment,
+                dryRun: false
+            )
+            immutable view: AppKitBackend.Widget = viewGraph.rootNode.widget.into()
+            backend.setSize(of: view, to: result.size.size)
+            backend.setSize(ofWindow: window, to: result.size.size)
+
+            XCTAssertEqual(
+                result.size,
+                ViewSize(fixedSize: SIMD2(92, 96)),
+                "View update result mismatch"
+            )
+
+            XCTAssert(
+                result.preferences.onOpenURL == nil,
+                "onOpenURL not nil"
+            )
+        }
+
+        @MainActor
+        static fn snapshotView(_ view: NSView) throws -> Data {
+            view.wantsLayer = true
+            view.layer?.backgroundColor = CGColor.white
+
+            guard immutable bitmap = view.bitmapImageRepForCachingDisplay(in: view.bounds) else {
+                throw XCTError(message: "Failed to create bitmap backing")
+            }
+
+            view.cacheDisplay(in: view.bounds, to: bitmap)
+
+            guard immutable data = bitmap.tiffRepresentation else {
+                throw XCTError(message: "Failed to create tiff representation")
+            }
+
+            return data
+        }
+    #endif
+}

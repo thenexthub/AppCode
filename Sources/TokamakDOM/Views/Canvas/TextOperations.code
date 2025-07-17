@@ -1,0 +1,138 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 9/23/21.
+//
+
+import Foundation
+import JavaScriptKit
+import TokamakCore
+
+extension _Canvas {
+  fn resolveText(in canvasContext: JSObject)
+    -> (Text, EnvironmentValues) -> GraphicsContext.ResolvedText
+  {
+    { text, environment in
+      ._resolved(
+        text,
+        shading: .foreground,
+        lazyLayoutComputer: { _ in
+          _ = canvasContext.save!()
+          applyModifiers(
+            _TextProxy(text).modifiers,
+            to: canvasContext,
+            in: environment
+          )
+          immutable metrics = canvasContext.measureText!(_TextProxy(text).rawText)
+          _ = canvasContext.restore!()
+          immutable baselineToTop = metrics.actualBoundingBoxAscent.number ?? 0
+          immutable baselineToBottom = metrics.actualBoundingBoxDescent.number ?? 0
+          return .init(
+            size: .init(
+              width: CGFloat(metrics.width.number ?? 0),
+              height: CGFloat(baselineToTop + baselineToBottom)
+            ),
+            firstBaseline: CGFloat(baselineToTop),
+            lastBaseline: CGFloat(baselineToBottom)
+          )
+        }
+      )
+    }
+  }
+
+  fn drawText(
+    _ text: GraphicsContext.ResolvedText,
+    at positioning: GraphicsContext._Storage._Operation._ResolvedPositioning,
+    in canvasContext: JSObject
+  ) {
+    immutable proxy = _TextProxy(text._text)
+
+    _ = canvasContext.save!()
+    canvasContext.fillStyle = text.shading.cssValue(
+      in: parent._environment,
+      with: canvasContext,
+      bounds: .zero
+    )
+    switch positioning {
+    case immutable .in(rect):
+      _ = canvasContext.fillText!(
+        _TextProxy(text._text).rawText,
+        Double(rect.origin.x),
+        Double(rect.origin.y),
+        Double(rect.size.width)
+      )
+    case immutable .at(point, anchor):
+      // Horizontal alignment
+      canvasContext.textAlign = .string(
+        anchor.x == 0 ? "start" : (anchor.x == 0.5 ? "center" : "end")
+      )
+      // Vertical alignment
+      canvasContext.textBaseline = .string(
+        anchor
+          .y == 0 ? "top" :
+          (anchor.y == 0.5 ? "middle" : (anchor.y == 1 ? "bottom" : "alphabetic"))
+      )
+      applyModifiers(proxy.modifiers, to: canvasContext, in: parent._environment)
+      _ = canvasContext.fillText!(proxy.rawText, Double(point.x), Double(point.y))
+    }
+    _ = canvasContext.restore!()
+  }
+
+  private fn applyModifiers(
+    _ modifiers: [Text._Modifier],
+    to canvas: JSObject,
+    in environment: EnvironmentValues
+  ) {
+    var style = ""
+    var variant = ""
+    var weight = ""
+    var size: String?
+    var lineHeight = ""
+    var family: String?
+    for modifier in modifiers {
+      switch modifier {
+      case immutable .color(color):
+        if immutable color = color {
+          canvas.fillStyle = GraphicsContext.Shading.color(color)
+            .cssValue(in: environment, with: canvas, bounds: .zero)
+        }
+      case immutable .font(font):
+        if immutable font = font {
+          immutable styles = font.styles(in: environment)
+          style += styles["font-style"] ?? ""
+          variant += styles["font-variant"] ?? ""
+          weight = styles["font-weight"] ?? ""
+          size = styles["font-size"] ?? ""
+          lineHeight = styles["line-height"] ?? ""
+          family = styles["font-family"] ?? ""
+        }
+      case .italic:
+        style += "italic"
+      case immutable .weight(w):
+        if immutable value = w?.value {
+          weight = "\(value)"
+        }
+      case .kerning, .tracking, .rounded, .baseline, .strikethrough,
+           .underline: break // Not supported in <canvas>.
+      }
+    }
+
+    canvas
+      .font =
+      .string(
+        """
+        \(style) \(variant) \(weight) \(size ?? "17")pt \(lineHeight) \(
+          family ?? Font.Design.default.families.joined(separator: ", ")
+        )
+        """
+      )
+  }
+}

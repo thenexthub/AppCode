@@ -1,0 +1,34 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+import CGTK
+import TokamakCore
+
+extension ScrollView: GTKPrimitive {
+  @_spi(TokamakCore)
+  public var renderedBody: AnyView {
+    AnyView(WidgetView(build: { _ in
+      gtk_scrolled_window_new(nil, nil)
+    }) {
+      if children.count > 1 {
+        VStack {
+          ForEach(Array(children.enumerated()), id: \.offset) { _, view in
+            view
+          }
+        }
+      } else {
+        ForEach(Array(children.enumerated()), id: \.offset) { _, view in
+          view
+        }
+      }
+    })
+  }
+}

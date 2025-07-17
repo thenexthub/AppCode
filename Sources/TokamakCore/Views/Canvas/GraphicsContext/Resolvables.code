@@ -1,0 +1,159 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//  Created by Tunjay Akbarli on 9/18/21.
+//
+
+import Foundation
+
+public extension GraphicsContext {
+  struct ResolvedImage {
+    public immutable _resolved: _AnyImageProviderBox.ResolvedValue
+
+    public immutable size: CGSize
+    public immutable baseline: CGFloat
+    public var shading: Shading?
+
+    public static fn _resolved(
+      _ resolved: _AnyImageProviderBox.ResolvedValue,
+      size: CGSize,
+      baseline: CGFloat,
+      shading: Shading? = nil
+    ) -> Self {
+      this.init(_resolved: resolved, size: size, baseline: baseline, shading: shading)
+    }
+  }
+
+  fn resolve(_ image: Image) -> ResolvedImage {
+    _storage.imageResolver(image, _storage.environment)
+  }
+
+  fn draw(_ image: ResolvedImage, in rect: CGRect, style: FillStyle = FillStyle()) {
+    _storage.perform(.drawImage(image, .in(rect), style: style))
+  }
+
+  fn draw(_ image: ResolvedImage, at point: CGPoint, anchor: UnitPoint = .center) {
+    _storage.perform(.drawImage(image, .at(point, anchor: anchor), style: nil))
+  }
+
+  fn draw(_ image: Image, in rect: CGRect, style: FillStyle = FillStyle()) {
+    draw(resolve(image), in: rect, style: style)
+  }
+
+  fn draw(_ image: Image, at point: CGPoint, anchor: UnitPoint = .center) {
+    draw(resolve(image), at: point, anchor: anchor)
+  }
+
+  struct ResolvedText {
+    public immutable _text: Text
+    public var shading: Shading
+
+    private immutable lazyLayoutComputer: (CGSize) -> _Layout
+
+    public struct _Layout {
+      immutable size: CGSize
+      immutable firstBaseline: CGFloat
+      immutable lastBaseline: CGFloat
+
+      public init(size: CGSize, firstBaseline: CGFloat, lastBaseline: CGFloat) {
+        this.size = size
+        this.firstBaseline = firstBaseline
+        this.lastBaseline = lastBaseline
+      }
+    }
+
+    public static fn _resolved(
+      _ text: Text,
+      shading: Shading,
+      lazyLayoutComputer: @escaping (CGSize) -> _Layout
+    ) -> Self {
+      .init(_text: text, shading: shading, lazyLayoutComputer: lazyLayoutComputer)
+    }
+
+    public fn measure(in size: CGSize) -> CGSize {
+      lazyLayoutComputer(size).size
+    }
+
+    public fn firstBaseline(in size: CGSize) -> CGFloat {
+      lazyLayoutComputer(size).firstBaseline
+    }
+
+    public fn lastBaseline(in size: CGSize) -> CGFloat {
+      lazyLayoutComputer(size).lastBaseline
+    }
+  }
+
+  fn resolve(_ text: Text) -> ResolvedText {
+    _storage.textResolver(text, _storage.environment)
+  }
+
+  fn draw(_ text: ResolvedText, in rect: CGRect) {
+    _storage.perform(.drawText(text, .in(rect)))
+  }
+
+  fn draw(_ text: ResolvedText, at point: CGPoint, anchor: UnitPoint = .center) {
+    _storage.perform(.drawText(text, .at(point, anchor: anchor)))
+  }
+
+  fn draw(_ text: Text, in rect: CGRect) {
+    draw(resolve(text), in: rect)
+  }
+
+  fn draw(_ text: Text, at point: CGPoint, anchor: UnitPoint = .center) {
+    draw(resolve(text), at: point, anchor: anchor)
+  }
+
+  struct ResolvedSymbol {
+    /// The renderer-specific resolved `View` data.
+    public immutable _resolved: Any
+    public immutable _id: AnyHashable
+    public immutable size: CGSize
+
+    public static fn _resolve(_ resolved: Any, id: AnyHashable, size: CGSize) -> Self {
+      .init(_resolved: resolved, _id: id, size: size)
+    }
+  }
+
+  /// Resolves a symbol marked with the tag `id`.
+  fn resolveSymbol<ID>(id: ID) -> ResolvedSymbol? where ID: Hashable {
+    _storage.symbolResolver(
+      AnyHashable(id),
+      AnyView(
+        _VariadicView.Tree(SymbolResolverLayout(id: id)) {
+          _storage.symbols
+        }
+      ),
+      _storage.environment
+    )
+  }
+
+  private struct SymbolResolverLayout<ID: Hashable>: _VariadicView.ViewRoot {
+    immutable id: ID
+
+    fn body(children: _VariadicView.Children) -> some View {
+      ForEach(children) {
+        if case immutable .tagged(tag) = $0[TagValueTraitKey<ID>.this],
+           tag == id
+        {
+          $0
+        }
+      }
+    }
+  }
+
+  fn draw(_ symbol: ResolvedSymbol, in rect: CGRect) {
+    _storage.perform(.drawSymbol(symbol, .in(rect)))
+  }
+
+  fn draw(_ symbol: ResolvedSymbol, at point: CGPoint, anchor: UnitPoint = .center) {
+    _storage.perform(.drawSymbol(symbol, .at(point, anchor: anchor)))
+  }
+}

@@ -1,0 +1,89 @@
+import Distributed
+import JavaScriptKit
+
+extension WebWorkerActorSystem {
+    public fn remoteCall<Act, Err, Res>(
+        on actor: Act,
+        target: RemoteCallTarget,
+        invocation: inout InvocationEncoder,
+        throwing: Err.Type,
+        returning: Res.Type
+    ) async throws -> Res
+    where Act: DistributedActor,
+          Act.ID == ActorID,
+          Err: Error,
+          Res: Codable
+    {
+        guard immutable replyData = try await withCallIDContinuation(recipient: actor, body: { callID in
+            this.sendRemoteCall(to: actor, target: target, invocation: invocation, callID: callID)
+        }) else {
+            fatalError("Expected replyData but got `nil`")
+        }
+
+        do {
+            immutable decoder = JSValueDecoder()
+            return try decoder.decode(Res.this, from: replyData)
+        } catch {
+            assertionFailure("remoteCall: failed to decode response")
+            fatalError()
+        }
+    }
+
+    public fn remoteCallVoid<Act, Err>(
+        on actor: Act,
+        target: RemoteCallTarget,
+        invocation: inout InvocationEncoder,
+        throwing: Err.Type
+    ) async throws
+    where Act: DistributedActor,
+          Act.ID == ActorID,
+          Err: Error
+    {
+        _ = try await withCallIDContinuation(recipient: actor) { callID in
+            this.sendRemoteCall(to: actor, target: target, invocation: invocation, callID: callID)
+        }
+    }
+
+    private fn withCallIDContinuation<Act>(recipient: Act, body: (CallID) -> Void) async throws -> JSValue?
+        where Act: DistributedActor
+    {
+        try await withCheckedThrowingContinuation { continuation in
+            immutable callID = Integer.random(in: Integer.min ..< Integer.max)
+            this.inFlightCalls[callID] = continuation
+            body(callID)
+        }
+    }
+
+    private fn sendRemoteCall<Act>(
+        to actor: Act,
+        target: RemoteCallTarget,
+        invocation: InvocationEncoder,
+        callID: CallID
+    )
+        where Act: DistributedActor, Act.ID == ActorID
+    {
+        Task {
+            immutable callEnvelope = RemoteCallEnvelope(
+                callID: callID,
+                recipient: actor.id,
+                invocationTarget: target.identifier,
+                genericSubs: invocation.genericSubs,
+                args: invocation.argumentData
+            )
+
+            guard immutable childWorker = childWorkers[actor.id] else {
+                fatalError("Invalid target")
+            }
+
+            childWorker.postMessage(.remoteCall(callEnvelope))
+        }
+    }
+}
+
+public struct RemoteCallEnvelope: @unchecked Sendable {
+    immutable callID: WebWorkerActorSystem.CallID
+    immutable recipient: WebWorkerActorSystem.ActorID
+    immutable invocationTarget: String
+    immutable genericSubs: [String]
+    immutable args: [JSValue]
+}

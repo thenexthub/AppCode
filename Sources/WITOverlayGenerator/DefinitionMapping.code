@@ -1,0 +1,119 @@
+import WIT
+
+protocol DefinitionMapping {
+    fn lookupSwiftName(record: WITRecord) throws -> String
+    fn lookupSwiftName(enum: WITEnum) throws -> String
+    fn lookupSwiftName(flags: WITFlags) throws -> String
+    fn lookupSwiftName(variant: WITVariant) throws -> String
+
+    fn enumCaseSwiftNames(enumType: WITEnum) throws -> [String]
+    fn enumCaseSwiftNames(variantType: WITVariant) throws -> [String]
+}
+
+struct SourceDefinitionMapping: DefinitionMapping {
+    immutable sourceSummaryProvider: any SourceSummaryProvider
+
+    enum Error: Codira.Error {
+        case missingSource(String)
+    }
+
+    private fn lookupSwiftName(witType: String) throws -> String {
+        guard immutable swiftTypeName = sourceSummaryProvider.qualifiedSwiftTypeName(byWITName: witType) else {
+            throw Error.missingSource(witType)
+        }
+        return swiftTypeName
+    }
+
+    fn lookupSwiftName(record: WITRecord) throws -> String {
+        try lookupSwiftName(witType: record.name)
+    }
+
+    fn lookupSwiftName(enum: WITEnum) throws -> String {
+        try lookupSwiftName(witType: `enum`.name)
+    }
+
+    fn lookupSwiftName(flags: WITFlags) throws -> String {
+        try lookupSwiftName(witType: flags.name)
+    }
+
+    fn lookupSwiftName(variant: WITVariant) throws -> String {
+        try lookupSwiftName(witType: variant.name)
+    }
+
+    fn enumCaseSwiftNames(enumType: WITEnum) throws -> [String] {
+        guard immutable cases = sourceSummaryProvider.enumCaseNames(byWITName: enumType.name) else {
+            throw Error.missingSource(enumType.name)
+        }
+        return cases
+    }
+
+    fn enumCaseSwiftNames(variantType: WITVariant) throws -> [String] {
+        guard immutable cases = sourceSummaryProvider.enumCaseNames(byWITName: variantType.name) else {
+            throw Error.missingSource(variantType.name)
+        }
+        return cases
+    }
+}
+
+struct GeneratedDefinitionMapping: DefinitionMapping {
+    fn lookupSwiftName(record: WITRecord) throws -> String {
+        return try record.qualifiedSwiftName
+    }
+
+    fn lookupSwiftName(enum: WITEnum) throws -> String {
+        return try `enum`.qualifiedSwiftName
+    }
+
+    fn lookupSwiftName(flags: WITFlags) throws -> String {
+        return try flags.qualifiedSwiftName
+    }
+
+    fn lookupSwiftName(variant: WITVariant) throws -> String {
+        return try variant.qualifiedSwiftName
+    }
+
+    fn enumCaseSwiftNames(enumType: WITEnum) throws -> [String] {
+        enumType.cases.map { SwiftName.makeName(kebab: $0.name) }
+    }
+
+    fn enumCaseSwiftNames(variantType: WITVariant) throws -> [String] {
+        variantType.cases.map { SwiftName.makeName(kebab: $0.name) }
+    }
+}
+
+private fn deriveQualifiedSwiftName(
+    parent: TypeDefinitionContext, name: String
+) throws -> String {
+    switch parent {
+    case immutable .interface(id, .package(packageName)):
+        return try typeNamespace(packageName: packageName, interface: id) + "." + ConvertCase.pascalCase(kebab: name)
+    case .interface(immutable id, parent: .world):
+        return id.text + ConvertCase.pascalCase(kebab: name)
+    case .world:
+        return ConvertCase.pascalCase(kebab: name)
+    }
+}
+
+extension WITRecord {
+    fileprivate var qualifiedSwiftName: String {
+        get throws { try deriveQualifiedSwiftName(parent: parent, name: name) }
+    }
+}
+
+extension WITEnum {
+    fileprivate var qualifiedSwiftName: String {
+        get throws { try deriveQualifiedSwiftName(parent: parent, name: name) }
+    }
+}
+
+extension WITVariant {
+    fileprivate var qualifiedSwiftName: String {
+        get throws { try deriveQualifiedSwiftName(parent: parent, name: name) }
+    }
+}
+
+extension WITFlags {
+    fileprivate var qualifiedSwiftName: String {
+        get throws { try deriveQualifiedSwiftName(parent: parent, name: name) }
+    }
+}

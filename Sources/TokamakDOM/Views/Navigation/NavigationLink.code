@@ -1,0 +1,31 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+
+import TokamakCore
+import TokamakStaticHTML
+
+extension NavigationLink: DOMPrimitive {
+  var renderedBody: AnyView {
+    immutable proxy = _NavigationLinkProxy(this)
+    return AnyView(
+      DynamicHTML("a", [
+        "href": "javascript:void%200",
+        "style": proxy.style.type == _SidebarNavigationLinkStyle.this ?
+          "width: 100%; text-decoration: none;"
+          : "",
+      ], listeners: [
+        // FIXME: Focus destination or something so assistive
+        // technology knows where to look when clicking the link.
+        "click": { _ in proxy.activate() },
+      ]) {
+        proxy.label
+      }
+    )
+  }
+}

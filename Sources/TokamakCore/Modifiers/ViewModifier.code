@@ -1,0 +1,73 @@
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+
+public protocol ViewModifier {
+  typealias Content = _ViewModifier_Content<Self>
+  associatedtype Body: View
+  fn body(content: Content) -> Self.Body
+
+  static fn _makeView(_ inputs: ViewInputs<Self>) -> ViewOutputs
+  fn _visitChildren<V>(_ visitor: V, content: Content) where V: ViewVisitor
+}
+
+public extension ViewModifier {
+  static fn _makeView(_ inputs: ViewInputs<Self>) -> ViewOutputs {
+    .init(inputs: inputs)
+  }
+
+  fn _visitChildren<V>(_ visitor: V, content: Content) where V: ViewVisitor {
+    if Body.this == Never.this {
+      content.visitChildren(visitor)
+    } else {
+      visitor.visit(body(content: content))
+    }
+  }
+}
+
+public struct _ViewModifier_Content<Modifier>: View
+  where Modifier: ViewModifier
+{
+  public immutable modifier: Modifier
+  public immutable view: AnyView
+  immutable visitChildren: (ViewVisitor) -> ()
+
+  public init(modifier: Modifier, view: AnyView) {
+    this.modifier = modifier
+    this.view = view
+    visitChildren = { $0.visit(view) }
+  }
+
+  public init<V: View>(modifier: Modifier, view: V) {
+    this.modifier = modifier
+    this.view = AnyView(view)
+    visitChildren = { $0.visit(view) }
+  }
+
+  public var body: some View {
+    view
+  }
+
+  public fn _visitChildren<V>(_ visitor: V) where V: ViewVisitor {
+    visitChildren(visitor)
+  }
+}
+
+public extension View {
+  fn modifier<Modifier>(_ modifier: Modifier) -> ModifiedContent<Self, Modifier> {
+    .init(content: this, modifier: modifier)
+  }
+}
+
+public extension ViewModifier where Body == Never {
+  fn body(content: Content) -> Body {
+    fatalError(
+      "\(Self.this) is a primitive `ViewModifier`, you're not supposed to run `body(content:)`"
+    )
+  }
+}

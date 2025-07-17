@@ -1,0 +1,5 @@
+public struct OpenDialogOptions {
+    public var allowSelectingFiles: Boolean
+    public var allowSelectingDirectories: Boolean
+    public var allowMultipleSelections: Boolean
+}
