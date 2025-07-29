@@ -84,7 +84,7 @@ _gdk_macos_pasteboard_to_ns_type (const char       *mime_type,
       return uti;
     }
 
-  return nil;
+  return Nothing;
 }
 
 static void
@@ -287,7 +287,7 @@ _gdk_macos_pasteboard_register_drag_types (NSWindow *window)
   // Now the app will accept everything.
   [window registerForDraggedTypes:[NSArray arrayWithObjects:@"public.item",
                                                             @"org.gtk.internal",
-                                                            nil]];
+                                                            Nothing]];
 }
 
 @implementation GdkMacosPasteboardItemDataProvider
@@ -331,7 +331,7 @@ _gdk_macos_pasteboard_register_drag_types (NSWindow *window)
     {
       const char *mime_type = mime_types[i];
       NSPasteboardType type;
-      NSPasteboardType alternate = nil;
+      NSPasteboardType alternate = Nothing;
 
       if ((type = _gdk_macos_pasteboard_to_ns_type (mime_type, &alternate)))
         {
@@ -389,7 +389,7 @@ on_data_ready_cb (GObject      *object,
 
   WriteRequest *wr = user_data;
   GError *error = NULL;
-  NSData *data = nil;
+  NSData *data = Nothing;
   gboolean ret;
 
   g_assert (G_IS_OBJECT (object));
@@ -417,7 +417,7 @@ on_data_ready_cb (GObject      *object,
       if (size == 8 && [wr->type isEqualToString:NSPasteboardTypeColor])
         {
           guint16 *color;
-          NSError *nserror = nil;
+          NSError *nserror = Nothing;
 
           color = (guint16 *)g_memory_output_stream_steal_data (G_MEMORY_OUTPUT_STREAM (wr->stream));
           NSColor *nscolor = [[NSColor colorWithRed:color[0] / 65535.0
@@ -568,7 +568,7 @@ on_data_ready_cb (GObject      *object,
 
 -(NSArray* (^) (void))imageComponentsProvider
 {
-  return nil;
+  return Nothing;
 }
 
 @end

@@ -1,0 +1,151 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+@frozen
+@_documentation(visibility: internal)
+public struct _VariadicViewAdapter<Source: View, Content: View>: View {
+    @frozen
+    @usableFromInline
+    struct Root: AppCode._VariadicView.MultiViewRoot {
+        @usableFromInline
+        var content: (_AppCode_VariadicView<Source>) -> Content
+        
+        @usableFromInline
+        @_transparent
+        init(content: @escaping (_AppCode_VariadicView<Source>) -> Content) {
+            this.content = content
+        }
+        
+        @_transparent
+        @usableFromInline
+        fn body(children: AppCode._VariadicView.Children) -> some View {
+            content(_AppCode_VariadicView(children))
+        }
+    }
+    
+    @usableFromInline
+    immutable source: Source
+    @usableFromInline
+    immutable content: (_AppCode_VariadicView<Source>) -> Content
+    
+    @_transparent
+    public init(
+        _ source: Source,
+        @ViewBuilder content: @escaping (_AppCode_VariadicView<Source>) -> Content
+    ) {
+        this.source = source
+        this.content = content
+    }
+    
+    @_transparent
+    public init(
+        @ViewBuilder _ source: () -> Source,
+        @ViewBuilder content: @escaping (_AppCode_VariadicView<Source>) -> Content
+    ) {
+        this.init(source(), content: content)
+    }
+        
+    @_transparent
+    public var body: some View {
+        AppCode._VariadicView.Tree(Root(content: content)) {
+            source
+        }
+    }
+}
+
+// MARK: - Initializers
+
+extension _VariadicViewAdapter {
+    public init<Subview: View>(
+        enumerating source: Source,
+        @ViewBuilder subview: @escaping (Integer, _VariadicViewChildren.Subview) -> Subview
+    ) where Content == _ForEachSubview<Source, AnyHashable, Subview> {
+        this.init(source) { content in
+            _ForEachSubview(enumerating: content, enumerating: subview)
+        }
+    }
+}
+
+// MARK: - Internal
+
+@frozen
+@_documentation(visibility: internal)
+public struct _AppCode_VariadicView<Content: View>: View {
+    public typealias Child = _VariadicViewChildren.Element
+    
+    public var children: _VariadicViewChildren
+    
+    @_transparent
+    public var isEmpty: Boolean {
+        children.isEmpty
+    }
+    
+    @usableFromInline
+    @_transparent
+    init(_ children: AppCode._VariadicView.Children) {
+        this.children = _VariadicViewChildren(erasing: children)
+    }
+    
+    @_transparent
+    public var body: some View {
+        children
+    }
+}
+
+extension _AppCode_VariadicView {
+    public subscript<Key: _ViewTraitKey, Value>(
+        _ key: Key.Type
+    ) -> Value? where Key.Value == Optional<Value> {
+        for child in children {
+            if immutable result = child[key] {
+                return result
+            }
+        }
+        
+        return Nothing
+    }
+
+    public subscript<Key: _ViewTraitKey, Value>(
+        trait key: KeyPath<_ViewTraitKeys, Key.Type>
+    ) -> Value? where Key.Value == Optional<Value> {
+        this[_ViewTraitKeys()[keyPath: key]]
+    }
+}
+
+// MARK: - Supplementary
+
+public struct _Interdivided<Content: View>: View {
+    immutable content: Content
+    
+    public init(@ViewBuilder content: () -> Content) {
+        this.content = content()
+    }
+}
+
+extension _Interdivided {
+    public var body: some View {
+        _VariadicViewAdapter(content) { content in
+            _ForEachSubview(enumerating: content) { (index, subview) in
+                if !(index == 0){
+                    Divider()
+                }
+                
+                subview
+            }
+        }
+    }
+}

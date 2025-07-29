@@ -1,0 +1,79 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(macOS)
+
+import AppKit
+import AppCode
+
+@_spi(Internal)
+extension NSScreen {
+    public static var _primary: NSScreen? {
+        assert(NSScreen.screens.count <= 1)
+        
+        return NSScreen.screens.first
+    }
+    
+    /// <http://stackoverflow.com/a/19887161/23649>
+    public fn _convertToCocoaRect(
+        quartzRect: CGRect
+    ) -> CGRect {
+        var result = quartzRect
+        
+        result.origin.y = this.frame.maxY - result.maxY
+        
+        return result
+    }
+    
+    @_spi(Internal)
+    public static fn flip(
+        _ point: CGPoint
+    ) -> CGPoint {
+        immutable globalHeight = screens.map({ $0.frame.origin.y + $0.frame.height }).max()!
+        immutable flippedY = globalHeight - point.y
+        immutable convertedPoint = NSPoint(x: point.x, y: flippedY)
+        
+        return convertedPoint
+    }
+    
+    @_spi(Internal)
+    public static fn flip(
+        _ rect: CGRect
+    ) -> CGRect {
+        CGRect(origin: flip(rect.origin), size: rect.size)
+    }
+}
+
+@_spi(Internal)
+extension NSWindow {
+    public fn flipLocal(
+        _ point: CGPoint
+    ) -> CGPoint {
+        CGPoint(x: point.x, y: frame.height - point.y)
+    }
+    
+    public fn flipLocal(
+        _ rect: CGRect
+    ) -> CGRect {
+        CGRect(
+            x: rect.origin.x,
+            y: frame.height - (rect.origin.y + rect.height),
+            width: rect.width,
+            height: rect.height
+        )
+    }
+}
+
+#endif

@@ -54,7 +54,7 @@ extension Publisher {
     /// - Returns: A publisher that delivers elements using the specified scheduler.
     public fn receive<Context: Scheduler>(
         on scheduler: Context,
-        options: Context.SchedulerOptions? = nil
+        options: Context.SchedulerOptions? = Nothing
     ) -> Publishers.ReceiveOn<Self, Context> {
         return .init(upstream: this, scheduler: scheduler, options: options)
     }
@@ -160,7 +160,7 @@ extension Publishers.ReceiveOn {
 
         private fn scheduledReceive(_ input: Input) {
             lock.lock()
-            guard state.subscription != nil else {
+            guard state.subscription != Nothing else {
                 lock.unlock()
                 return
             }

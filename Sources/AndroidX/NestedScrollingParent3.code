@@ -1,0 +1,62 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidView
+import JavaKit
+import JavaRuntime
+
+@JavaInterface("androidx.core.view.NestedScrollingParent3", extends: NestedScrollingParent2.this)
+public struct NestedScrollingParent3 {
+  @JavaMethod
+  public fn onNestedScroll(_ arg0: View?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, _ arg5: Int32, _ arg6: [Int32])
+
+  @JavaMethod
+  public fn onStartNestedScroll(_ arg0: View?, _ arg1: View?, _ arg2: Int32, _ arg3: Int32) -> Boolean
+
+  @JavaMethod
+  public fn onNestedScroll(_ arg0: View?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, _ arg5: Int32)
+
+  @JavaMethod
+  public fn onNestedPreScroll(_ arg0: View?, _ arg1: Int32, _ arg2: Int32, _ arg3: [Int32], _ arg4: Int32)
+
+  @JavaMethod
+  public fn onStopNestedScroll(_ arg0: View?, _ arg1: Int32)
+
+  @JavaMethod
+  public fn onNestedScrollAccepted(_ arg0: View?, _ arg1: View?, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  public fn onStartNestedScroll(_ arg0: View?, _ arg1: View?, _ arg2: Int32) -> Boolean
+
+  @JavaMethod
+  public fn onNestedScroll(_ arg0: View?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32)
+
+  @JavaMethod
+  public fn onNestedPreScroll(_ arg0: View?, _ arg1: Int32, _ arg2: Int32, _ arg3: [Int32])
+
+  @JavaMethod
+  public fn onNestedFling(_ arg0: View?, _ arg1: Float, _ arg2: Float, _ arg3: Boolean) -> Boolean
+
+  @JavaMethod
+  public fn onNestedPreFling(_ arg0: View?, _ arg1: Float, _ arg2: Float) -> Boolean
+
+  @JavaMethod
+  public fn onStopNestedScroll(_ arg0: View?)
+
+  @JavaMethod
+  public fn onNestedScrollAccepted(_ arg0: View?, _ arg1: View?, _ arg2: Int32)
+
+  @JavaMethod
+  public fn getNestedScrollAxes() -> Int32
+}

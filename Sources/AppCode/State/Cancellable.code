@@ -30,7 +30,7 @@ public class Cancellable {
     /// Runs the cancel action and ensures that it can't be called a second time.
     public fn cancel() {
         closure?()
-        closure = nil
+        closure = Nothing
     }
 
     @discardableResult

@@ -1,0 +1,64 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidView
+import JavaKit
+import JavaRuntime
+
+extension ViewDragHelper {
+  @JavaClass("androidx.customview.widget.ViewDragHelper$Callback")
+  open class Callback: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn onViewDragStateChanged(_ arg0: Int32)
+
+  @JavaMethod
+  open fn onViewPositionChanged(_ arg0: View?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32)
+
+  @JavaMethod
+  open fn onViewCaptured(_ arg0: View?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn onViewReleased(_ arg0: View?, _ arg1: Float, _ arg2: Float)
+
+  @JavaMethod
+  open fn onEdgeTouched(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn onEdgeLock(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn onEdgeDragStarted(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getOrderedChildIndex(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn getViewHorizontalDragRange(_ arg0: View?) -> Int32
+
+  @JavaMethod
+  open fn getViewVerticalDragRange(_ arg0: View?) -> Int32
+
+  @JavaMethod
+  open fn tryCaptureView(_ arg0: View?, _ arg1: Int32) -> Boolean
+
+  @JavaMethod
+  open fn clampViewPositionHorizontal(_ arg0: View?, _ arg1: Int32, _ arg2: Int32) -> Int32
+
+  @JavaMethod
+  open fn clampViewPositionVertical(_ arg0: View?, _ arg1: Int32, _ arg2: Int32) -> Int32
+  }
+}

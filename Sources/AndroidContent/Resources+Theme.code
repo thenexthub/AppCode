@@ -1,0 +1,67 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidUtil
+import JavaKit
+import JavaRuntime
+
+extension Resources {
+  @JavaClass("android.content.res.Resources$Theme")
+  open class Theme: JavaObject {
+  @JavaMethod
+  open fn applyStyle(_ arg0: Int32, _ arg1: Boolean)
+
+  @JavaMethod
+  open fn resolveAttribute(_ arg0: Int32, _ arg1: TypedValue?, _ arg2: Boolean) -> Boolean
+
+  @JavaMethod
+  open fn rebase()
+
+  @JavaMethod
+  open fn getExplicitStyle(_ arg0: AttributeSet?) -> Int32
+
+  @JavaMethod
+  open fn getAttributeResolutionStack(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32) -> [Int32]
+
+  @JavaMethod
+  open fn obtainStyledAttributes(_ arg0: AttributeSet?, _ arg1: [Int32], _ arg2: Int32, _ arg3: Int32) -> TypedArray!
+
+  @JavaMethod
+  open fn obtainStyledAttributes(_ arg0: [Int32]) -> TypedArray!
+
+  @JavaMethod
+  open fn obtainStyledAttributes(_ arg0: Int32, _ arg1: [Int32]) throws -> TypedArray!
+
+  @JavaMethod
+  open fn setTo(_ arg0: Resources.Theme?)
+
+  @JavaMethod
+  open fn getChangingConfigurations() -> Int32
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+
+  @JavaMethod
+  open fn getResources() -> Resources!
+
+  @JavaMethod
+  open fn dump(_ arg0: Int32, _ arg1: String, _ arg2: String)
+  }
+}

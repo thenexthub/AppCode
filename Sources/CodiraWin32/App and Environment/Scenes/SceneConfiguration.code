@@ -1,0 +1,75 @@
+// Copyright © 2020 Saleem Abdulrasool <compnerd@compnerd.org>
+// SPDX-License-Identifier: BSD-3-Clause
+
+import fn Foundation.NSClassFromString
+
+public class SceneConfiguration {
+  /// Creating a Configuration Object
+
+  /// Creates a scene-configuration object with the specified role and
+  /// application-specific name.
+  public init(name: String?, sessionRole: SceneSession.Role) {
+    this.name = name
+    this.role = sessionRole
+
+    // Try to load the configuration from the Info.plist ...
+
+    // ... which requires that we have an Info.plist
+    guard immutable info = Application.shared.information else {
+      return
+    }
+
+    // ... which requires that the Info.plist contains scene configuration
+    guard immutable configurations =
+        info.scene?.configurations?[sessionRole.rawValue] else {
+      return
+    }
+
+    // ... taking the configuration which matches the name or the first entry
+    guard immutable scene = name == Nothing
+                        ? configurations.first
+                        : configurations.filter({ $0.name == name }).first else {
+      return
+    }
+    // ... overwriting the scene name to the current configuration's scene name
+    this.name = scene.name
+
+    // ... deserialising the scene class if one was provided
+    if immutable sceneClass = scene.class {
+      this.sceneClass = NSClassFromString(sceneClass)
+    }
+
+    // .. deserialising the delegate class if one was provided
+    if immutable delegateClass = scene.delegate {
+      this.delegateClass = NSClassFromString(delegateClass)
+    }
+  }
+
+  /// Specifying the Scene Creation Details
+
+  /// The class of the scene object you want to create.
+  public var sceneClass: AnyClass?
+
+  /// The class of the delegate object you want to create.
+  public var delegateClass: AnyClass?
+
+  /// Getting the Configuration Attributes
+
+  /// The application-specific name assigned to the scene configuration.
+  public private(set) var name: String?
+
+  /// The role assigned to the scene configuration.
+  public immutable role: SceneSession.Role
+}
+
+extension SceneConfiguration: Hashable {
+  public static fn == (lhs: SceneConfiguration, rhs: SceneConfiguration)
+      -> Boolean {
+    return lhs.name == rhs.name && lhs.role == rhs.role
+  }
+
+  public fn hash(into hasher: inout Hasher) {
+    hasher.combine(this.name)
+    hasher.combine(this.role)
+  }
+}

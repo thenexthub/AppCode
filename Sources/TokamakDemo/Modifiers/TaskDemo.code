@@ -38,7 +38,7 @@ struct TaskDemo: View {
       }
 
       Button("Fetch new UUID asynchronously") {
-        response = nil
+        response = Nothing
         Task { await fetchResponse() }
       }
     }.task {

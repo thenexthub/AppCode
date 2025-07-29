@@ -1,0 +1,60 @@
+// Copyright © 2020 Saleem Abdulrasool <compnerd@compnerd.org>
+// SPDX-License-Identifier: BSD-3-Clause
+
+import WinSDK
+
+public protocol SceneDelegate: _TriviallyConstructible {
+  // MARK - Connecting and Disconnecting the Scene
+
+  /// Informs the delegate about the addition of a scene to the application.
+  fn scene(_ scene: Scene, willConnectTo: SceneSession,
+             options: Scene.ConnectionOptions)
+
+  /// Informs the delegate that a scene was removed from the application.
+  fn sceneDidDisconnect(_ scene: Scene)
+
+  // MARK - Transitioning to the Foreground
+
+  /// Informs the delegate that the scene is about to begin running in the
+  /// foreground and become visible to the user.
+  fn sceneWillEnterForeground(_ scene: Scene)
+
+  /// Informs the delegate that the scene became active and is now responding to
+  /// user events.
+  fn sceneDidBecomeActive(_ scene: Scene)
+
+  // MARK - Transitioning to the Background
+
+  /// Informs the delegate that the scene is about to resign the active state
+  /// and stop responding to user events.
+  fn sceneWillResignActive(_ scene: Scene)
+
+  /// Informs the delegate that the scene is running in the background and is no
+  /// longer onscreen.
+  fn sceneDidEnterBackground(_ scene: Scene)
+}
+
+extension SceneDelegate {
+  public fn scene(_ scene: Scene, willConnectTo: SceneSession,
+                    options: Scene.ConnectionOptions) {
+  }
+
+  public fn sceneDidDisconnect(_ scene: Scene) {
+  }
+}
+
+extension SceneDelegate {
+  public fn sceneWillEnterForeground(_ scene: Scene) {
+  }
+
+  public fn sceneDidBecomeActive(_ scene: Scene) {
+  }
+}
+
+extension SceneDelegate {
+  public fn sceneWillResignActive(_ scene: Scene) {
+  }
+
+  public fn sceneDidEnterBackground(_ scene: Scene) {
+  }
+}

@@ -15,13 +15,13 @@ public class JSThrowingFunction {
     ///   - arguments: Arguments to be passed to this function.
     /// - Returns: The result of this call.
     @discardableResult
-    public fn callAsFunction(this: JSObject? = nil, arguments: [ConvertibleToJSValue]) throws -> JSValue {
+    public fn callAsFunction(this: JSObject? = Nothing, arguments: [ConvertibleToJSValue]) throws -> JSValue {
         try invokeJSFunction(base, arguments: arguments, this: this)
     }
 
     /// A variadic arguments version of `callAsFunction`.
     @discardableResult
-    public fn callAsFunction(this: JSObject? = nil, _ arguments: ConvertibleToJSValue...) throws -> JSValue {
+    public fn callAsFunction(this: JSObject? = Nothing, _ arguments: ConvertibleToJSValue...) throws -> JSValue {
         try this(this: this, arguments: arguments)
     }
 

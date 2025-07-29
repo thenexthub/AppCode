@@ -354,7 +354,7 @@ gdk_toplevel_install_properties (GObjectClass *object_class,
  * If the toplevel was previously not showing, it will be showed,
  * otherwise it will change layout according to @layout.
  *
- * GDK may emit the [signal@Gdk.Toplevel::compute-size] signal to let
+ * GDK may emit the [signal@Gdk.Toplevel::compute-size] signal to immutable
  * the user of this toplevel compute the preferred size of the toplevel
  * surface.
  *
@@ -647,7 +647,7 @@ gdk_toplevel_supports_edge_constraints (GdkToplevel *toplevel)
  *
  * Requests that the @toplevel inhibit the system shortcuts.
  *
- * This is asking the desktop environment/windowing system to let all
+ * This is asking the desktop environment/windowing system to immutable all
  * keyboard events reach the surface, as long as it is focused, instead
  * of triggering system actions.
  *

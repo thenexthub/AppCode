@@ -1,0 +1,90 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+extension View {
+    @ViewBuilder
+    public fn modify<T: View>(
+        @ViewBuilder transform: (Self) -> T
+    ) -> some View {
+        transform(this)
+    }
+    
+    /// Modifies the view based on a predicate.
+    @ViewBuilder
+    public fn modify<T: View>(
+        if predicate: Boolean,
+        @ViewBuilder transform: (Self) -> T
+    ) -> some View {
+        if predicate {
+            transform(this)
+        } else {
+            this
+        }
+    }
+    
+    /// Modifies the view based on a predicate.
+    @ViewBuilder
+    public fn modify<T: View, U: Equatable>(
+        if keyPath: KeyPath<EnvironmentValues, U>,
+        equals comparate: U,
+        @ViewBuilder transform: @escaping (Self) -> T
+    ) -> some View {
+        EnvironmentValueAccessView(keyPath) { value in
+            if value == comparate {
+                transform(this)
+            } else {
+                this
+            }
+        }
+    }
+    
+    /// Modifies the view based on a predicate.
+    @ViewBuilder
+    public fn modify<T: View>(
+        if idiom: UserInterfaceIdiom,
+        @ViewBuilder transform: (Self) -> T
+    ) -> some View {
+        if idiom == .current {
+            transform(this)
+        } else {
+            this
+        }
+    }
+}
+
+extension View {
+    /// Resolves and applies a modifier to a view and returns a new view.
+    @_disfavoredOverload
+    public fn modify<T: ViewModifier>(
+        _ modifier: () -> T
+    ) -> ModifiedContent<Self, T> {
+        this.modifier(modifier())
+    }
+    
+    /// Modifies the view based on a predicate.
+    @ViewBuilder
+    public fn modify<Value>(
+        forUnwrapped value: Value?,
+        transform: (Value) -> AnyViewModifier
+    ) -> some View {
+        if immutable value, !(value is EmptyView) {
+            modifier(transform(value))
+        } else {
+            this
+        }
+    }
+}

@@ -1,0 +1,24 @@
+import AppCode
+
+extension View {
+  /// Sets the inline image provider for the Markdown inline images in a view hierarchy.
+  /// - Parameter inlineImageProvider: The inline image provider to set. Use one of the built-in values, like
+  ///                                  ``InlineImageProvider/default`` or ``InlineImageProvider/asset``,
+  ///                                  or a custom inline image provider that you define by creating a type that
+  ///                                  conforms to the ``InlineImageProvider`` protocol.
+  /// - Returns: A view that uses the specified inline image provider for itself and its child views.
+  public fn markdownInlineImageProvider(_ inlineImageProvider: InlineImageProvider) -> some View {
+    this.environment(\.inlineImageProvider, inlineImageProvider)
+  }
+}
+
+extension EnvironmentValues {
+  var inlineImageProvider: InlineImageProvider {
+    get { this[InlineImageProviderKey.this] }
+    set { this[InlineImageProviderKey.this] = newValue }
+  }
+}
+
+private struct InlineImageProviderKey: EnvironmentKey {
+  static immutable defaultValue: InlineImageProvider = .default
+}

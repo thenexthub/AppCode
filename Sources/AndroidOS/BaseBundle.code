@@ -1,0 +1,119 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.os.BaseBundle")
+open class BaseBundle: JavaObject {
+  @JavaMethod
+  open fn putString(_ arg0: String, _ arg1: String)
+
+  @JavaMethod
+  open fn putBooleanArray(_ arg0: String, _ arg1: [Boolean])
+
+  @JavaMethod
+  open fn putIntArray(_ arg0: String, _ arg1: [Int32])
+
+  @JavaMethod
+  open fn putLongArray(_ arg0: String, _ arg1: [Int64])
+
+  @JavaMethod
+  open fn putDoubleArray(_ arg0: String, _ arg1: [Double])
+
+  @JavaMethod
+  open fn putStringArray(_ arg0: String, _ arg1: [String])
+
+  @JavaMethod
+  open fn getBooleanArray(_ arg0: String) -> [Boolean]
+
+  @JavaMethod
+  open fn getIntArray(_ arg0: String) -> [Int32]
+
+  @JavaMethod
+  open fn getLongArray(_ arg0: String) -> [Int64]
+
+  @JavaMethod
+  open fn getDoubleArray(_ arg0: String) -> [Double]
+
+  @JavaMethod
+  open fn remove(_ arg0: String)
+
+  @JavaMethod
+  open fn size() -> Int32
+
+  @JavaMethod
+  open fn get(_ arg0: String) -> JavaObject!
+
+  @JavaMethod
+  open fn getBoolean(_ arg0: String) -> Boolean
+
+  @JavaMethod
+  open fn getBoolean(_ arg0: String, _ arg1: Boolean) -> Boolean
+
+  @JavaMethod
+  open fn putBoolean(_ arg0: String, _ arg1: Boolean)
+
+  @JavaMethod
+  open fn getInt(_ arg0: String) -> Int32
+
+  @JavaMethod
+  open fn getInt(_ arg0: String, _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  open fn putInt(_ arg0: String, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getLong(_ arg0: String, _ arg1: Int64) -> Int64
+
+  @JavaMethod
+  open fn getLong(_ arg0: String) -> Int64
+
+  @JavaMethod
+  open fn putLong(_ arg0: String, _ arg1: Int64)
+
+  @JavaMethod
+  open fn getDouble(_ arg0: String, _ arg1: Double) -> Double
+
+  @JavaMethod
+  open fn getDouble(_ arg0: String) -> Double
+
+  @JavaMethod
+  open fn putDouble(_ arg0: String, _ arg1: Double)
+
+  @JavaMethod
+  open fn clear()
+
+  @JavaMethod
+  open fn isEmpty() -> Boolean
+
+  @JavaMethod
+  open fn putAll(_ arg0: PersistableBundle?)
+
+  @JavaMethod
+  open fn keySet() -> JavaSet<JavaString>!
+
+  @JavaMethod
+  open fn containsKey(_ arg0: String) -> Boolean
+
+  @JavaMethod
+  open fn getStringArray(_ arg0: String) -> [String]
+
+  @JavaMethod
+  open fn getString(_ arg0: String) -> String
+
+  @JavaMethod
+  open fn getString(_ arg0: String, _ arg1: String) -> String
+}

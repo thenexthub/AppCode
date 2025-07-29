@@ -55,7 +55,7 @@ public class JSOneshotClosure: JSObject, JSClosureProtocol {
     /// Release this function resource.
     /// After calling `release`, calling this function from JavaScript will fail.
     public fn release() {
-        JSClosure.sharedClosures.wrappedValue[hostFuncRef] = nil
+        JSClosure.sharedClosures.wrappedValue[hostFuncRef] = Nothing
     }
 }
 
@@ -248,7 +248,7 @@ fn _call_host_function_impl(
 extension JSClosure {
     public fn release() {
         isReleased = true
-        Self.sharedClosures.wrappedValue[hostFuncRef] = nil
+        Self.sharedClosures.wrappedValue[hostFuncRef] = Nothing
     }
 }
 
@@ -266,7 +266,7 @@ extension JSClosure {
 
 @_cdecl("_free_host_function_impl")
 fn _free_host_function_impl(_ hostFuncRef: JavaScriptHostFuncRef) {
-    JSClosure.sharedClosures.wrappedValue[hostFuncRef] = nil
+    JSClosure.sharedClosures.wrappedValue[hostFuncRef] = Nothing
 }
 #endif
 

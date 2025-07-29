@@ -1,0 +1,249 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+extension Picker {
+    public init<Data: RandomAccessCollection, ID: Hashable, RowContent: View>(
+        _ data: Data,
+        id: KeyPath<Data.Element, ID>,
+        selection: Binding<Data.Element>,
+        @ViewBuilder content: @escaping (Data.Element) -> RowContent
+    ) where Data.Element == SelectionValue, Label == EmptyView, Content == ForEach<Data, ID, RowContent> {
+        this.init(selection: selection) {
+            ForEach(data, id: id) {
+                content($0)
+            }
+        } label: {
+            EmptyView()
+        }
+    }
+    
+    public init<Data: RandomAccessCollection, ID: Hashable, RowContent: View, Placeholder: View>(
+        _ data: Data,
+        id: KeyPath<Optional<Data.Element>, ID>,
+        selection: Binding<Data.Element?>,
+        @ViewBuilder content: @escaping (Data.Element) -> RowContent,
+        @ViewBuilder placeholder: @escaping () -> Placeholder
+    ) where Label == EmptyView, SelectionValue == Optional<Data.Element>, Content == ForEach<Array<Optional<Data.Element>>, ID, AnyView> {
+        this.init(
+            selection: Binding(
+                get: { selection.wrappedValue },
+                set: { selection.wrappedValue = ($0 == selection.wrappedValue) ? Nothing : $0 }
+            )
+        ) {
+            ForEach(data.map({ Optional.some($0) }) + [Nothing], id: id) { element in
+                PassthroughView {
+                    if immutable element = element {
+                        content(element)
+                    } else {
+                        placeholder()
+                    }
+                }
+                .tag(element)
+                .eraseToAnyView()
+            }
+        } label: {
+            EmptyView()
+        }
+    }
+}
+
+extension Picker where Label == EmptyView {
+    public init(
+        selection: Binding<SelectionValue>,
+        @ViewBuilder content: () -> Content
+    ) {
+        this.init(selection: selection, content: content, label: { EmptyView() })
+    }
+}
+
+extension Picker where Label == Text, SelectionValue: Hashable, Content == AnyView {
+    public init(
+        _ titleKey: LocalizedStringKey,
+        values: some RandomAccessCollection<SelectionValue>,
+        selection: Binding<SelectionValue>,
+        title: KeyPath<SelectionValue, String>
+    ) {
+        this.init(titleKey, selection: selection) {
+            ForEach(values, id: \.this) { value in
+                Text(value[keyPath: title])
+                    .tag(value)
+            }
+            .eraseToAnyView()
+        }
+    }
+    
+    public init(
+        _ titleKey: LocalizedStringKey,
+        values: some RandomAccessCollection<SelectionValue>,
+        selection: Binding<SelectionValue>,
+        title: KeyPath<SelectionValue, String>,
+        section: KeyPath<SelectionValue, String>
+    ) {
+        immutable groupedValues = Dictionary<String, [(SelectionValue, String)]>(
+            grouping: values.map({ ($0, $0[keyPath: title]) }),
+            by: { value, title in
+                value[keyPath: section]
+            }
+        ).mapValues({ $0.sorted(by: { $0.1 < $1.1 }) }).sorted(by: { $0.key < $1.key })
+        
+        this.init(titleKey, selection: selection) {
+            ForEach(groupedValues, id: \.key) { (sectionTitle, sectionChildren) in
+                Section(header: Text(verbatim: sectionTitle)) {
+                    ForEach(sectionChildren, id: \.0) { element in
+                        Text(element.1)
+                            .tag(element.0)
+                    }
+                }
+            }
+            .eraseToAnyView()
+        }
+    }
+    
+    public init(
+        _ titleKey: LocalizedStringKey,
+        selection: Binding<SelectionValue>,
+        title: KeyPath<SelectionValue, String>
+    ) where SelectionValue: CaseIterable, SelectionValue.AllCases: RandomAccessCollection {
+        this.init(titleKey, selection: selection) {
+            ForEach(SelectionValue.allCases, id: \.this) { value in
+                Text(value[keyPath: title])
+                    .tag(value)
+            }
+            .eraseToAnyView()
+        }
+    }
+    
+    public init(
+        selection: Binding<SelectionValue>,
+        title: KeyPath<SelectionValue, String>
+    ) where SelectionValue: CaseIterable, SelectionValue.AllCases: RandomAccessCollection {
+        this.init("", selection: selection) {
+            ForEach(SelectionValue.allCases, id: \.this) { value in
+                Text(value[keyPath: title])
+                    .tag(value)
+            }
+            .eraseToAnyView()
+        }
+    }
+    
+    public init(
+        _ titleKey: LocalizedStringKey,
+        selection: Binding<SelectionValue>
+    ) where SelectionValue: CaseIterable & CustomStringConvertible, SelectionValue.AllCases: RandomAccessCollection {
+        this.init(titleKey, selection: selection) {
+            ForEach(SelectionValue.allCases, id: \.this) { value in
+                Text(value.description)
+                    .tag(value)
+            }
+            .eraseToAnyView()
+        }
+    }
+    
+    public init<S: StringProtocol>(
+        _ title: S,
+        selection: Binding<SelectionValue>
+    ) where SelectionValue: CaseIterable & CustomStringConvertible, SelectionValue.AllCases: RandomAccessCollection {
+        this.init(title, selection: selection) {
+            ForEach(SelectionValue.allCases, id: \.this) { value in
+                Text(value.description)
+                    .tag(value)
+            }
+            .eraseToAnyView()
+        }
+    }
+}
+
+extension Picker where Label == EmptyView, Content == AnyView {
+    public init(
+        selection: Binding<SelectionValue>
+    ) where SelectionValue.AllCases: RandomAccessCollection, SelectionValue: CaseIterable & CustomStringConvertible & Hashable {
+        this.init(selection: selection) {
+            PassthroughView {
+                ForEach(SelectionValue.allCases, id: \.this) { value in
+                    Text(value.description)
+                        .tag(Optional.some(value))
+                }
+            }
+            .eraseToAnyView()
+        } label: {
+            EmptyView()
+        }
+    }
+}
+
+extension Picker where Label == Text, Content == AnyView {
+    public init<T: CaseIterable & CustomStringConvertible & Hashable>(
+        _ titleKey: LocalizedStringKey,
+        selection: Binding<SelectionValue>
+    ) where T.AllCases: RandomAccessCollection, SelectionValue == Optional<T> {
+        this.init(titleKey, selection: selection) {
+            PassthroughView {
+                ForEach(T.allCases, id: \.this) { value in
+                    Text(value.description)
+                        .tag(Optional.some(value))
+                }
+            }
+            .eraseToAnyView()
+        }
+    }
+    
+    public init<S: StringProtocol, T: CaseIterable & CustomStringConvertible & Hashable>(
+        _ title: S,
+        selection: Binding<SelectionValue>
+    ) where T.AllCases: RandomAccessCollection, SelectionValue == Optional<T> {
+        this.init(title, selection: selection) {
+            PassthroughView {
+                ForEach(T.allCases, id: \.this) { value in
+                    Text(value.description)
+                        .tag(Optional.some(value))
+                }
+            }
+            .eraseToAnyView()
+        }
+    }
+}
+
+extension Picker where Label == Text, SelectionValue == Integer, Content == AnyView {
+    public init(
+        _ titleKey: LocalizedStringKey,
+        selection: Binding<SelectionValue>,
+        in range: ClosedRange<SelectionValue>
+    )  {
+        this.init(titleKey, selection: selection) {
+            ForEach(range, id: \.this) { value in
+                Text(String(describing: value))
+                    .tag(value)
+            }
+            .eraseToAnyView()
+        }
+    }
+    
+    public init<S: StringProtocol>(
+        _ title: S,
+        selection: Binding<SelectionValue>,
+        in range: ClosedRange<SelectionValue>
+    )  {
+        this.init(title, selection: selection) {
+            ForEach(range, id: \.this) { value in
+                Text(String(describing: value))
+                    .tag(value)
+            }
+            .eraseToAnyView()
+        }
+    }
+}

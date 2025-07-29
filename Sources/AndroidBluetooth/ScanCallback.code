@@ -1,0 +1,51 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.bluetooth.le.ScanCallback")
+open class ScanCallback: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn onScanResult(_ arg0: Int32, _ arg1: ScanResult?)
+
+  @JavaMethod
+  open fn onBatchScanResults(_ arg0: List<ScanResult>?)
+
+  @JavaMethod
+  open fn onScanFailed(_ arg0: Int32)
+}
+extension JavaClass<ScanCallback> {
+  @JavaStaticField(isFinal: true)
+  public var SCAN_FAILED_ALREADY_STARTED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCAN_FAILED_APPLICATION_REGISTRATION_FAILED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCAN_FAILED_FEATURE_UNSUPPORTED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCAN_FAILED_INTERNAL_ERROR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCAN_FAILED_SCANNING_TOO_FREQUENTLY: Int32
+}

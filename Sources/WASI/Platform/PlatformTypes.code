@@ -257,7 +257,7 @@ extension WASIAbi.Errno {
             case .notRecoverable: this = .ENOTRECOVERABLE
             case .previousOwnerDied: this = .EOWNERDEAD
         #endif
-        default: return nil
+        default: return Nothing
         }
     }
 }

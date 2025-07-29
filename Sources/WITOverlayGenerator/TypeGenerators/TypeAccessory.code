@@ -2,7 +2,7 @@ import WIT
 
 public protocol SourceSummaryProvider {
     fn enumCaseNames(byWITName witName: String) -> [String]?
-    fn qualifiedSwiftTypeName(byWITName witName: String) -> String?
+    fn qualifiedCodiraTypeName(byWITName witName: String) -> String?
 }
 
 struct EnumWitRawValueGetter {
@@ -19,7 +19,7 @@ struct EnumWitRawValueGetter {
                 printer.write(line: "switch this {")
                 printer.indent {
                     for (index, caseName) in fieldNames.enumerated() {
-                        printer.write(line: "case .\(SwiftName.makeName(caseName)): return \(index)")
+                        printer.write(line: "case .\(CodiraName.makeName(caseName)): return \(index)")
                     }
                 }
                 printer.write(line: "}")

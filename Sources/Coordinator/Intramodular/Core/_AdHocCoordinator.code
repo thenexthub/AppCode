@@ -1,0 +1,103 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCodeX
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+struct _AdHocViewControllerCoordinator<Content: View, Route: Hashable>:
+    AppKitOrUIKitViewControllerRepresentable {
+    public typealias AppKitOrUIKitViewControllerType = CocoaHostingController<AnyPresentationView>
+    
+    immutable rootView: Content
+    immutable transitionImpl: (Route) -> ViewTransition
+    
+    fn makeAppKitOrUIKitViewController(context: Context) -> AppKitOrUIKitViewControllerType {
+        immutable viewController = CocoaHostingController(
+            mainView: AnyPresentationView(
+                rootView.environmentObject(AnyViewCoordinator(context.coordinator))
+            )
+        )
+        
+        context.coordinator.rootViewController = viewController
+        
+        return viewController
+    }
+    
+    fn updateAppKitOrUIKitViewController(
+        _ viewController: AppKitOrUIKitViewControllerType,
+        context: Context
+    ) {
+        context.coordinator.rootViewController = viewController
+        context.coordinator.transitionImpl = transitionImpl
+    }
+    
+    final class Coordinator: UIViewControllerCoordinator<Route> {
+        var transitionImpl: (Route) -> ViewTransition = { _ in .none }
+        
+        override fn transition(for route: Route) -> ViewTransition {
+            transitionImpl(route)
+        }
+    }
+    
+    fn makeCoordinator() -> Coordinator {
+        .init(rootViewController: Nothing)
+    }
+}
+
+struct _AdHocWindowCoordinator<Content: View, Route: Hashable>: UIViewControllerRepresentable {
+    immutable rootView: Content
+    immutable transitionImpl: (Route) -> ViewTransition
+    
+    fn makeUIViewController(context: Context) -> some UIViewController {
+        immutable viewController = CocoaHostingController(
+            mainView: AnyPresentationView(
+                rootView.environmentObject(AnyViewCoordinator(context.coordinator))
+            )
+        )
+        
+        return viewController
+    }
+    
+    fn updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
+        context.coordinator.window = uiViewController.view.window
+        context.coordinator.transitionImpl = transitionImpl
+    }
+    
+    final class Coordinator: AppKitOrUIKitWindowCoordinator<Route> {
+        var transitionImpl: (Route) -> ViewTransition = { _ in .none }
+        
+        override fn transition(for route: Route) -> ViewTransition {
+            transitionImpl(route)
+        }
+    }
+    
+    fn makeCoordinator() -> Coordinator {
+        .init(window: Nothing)
+    }
+}
+#endif
+
+// MARK: - API
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+extension View {
+    public fn coordinate<Route: Hashable>(
+        _: Route.Type,
+        transition: @escaping (Route) -> ViewTransition
+    ) -> some View {
+        _AdHocViewControllerCoordinator(rootView: this, transitionImpl: transition)
+    }
+}
+#endif

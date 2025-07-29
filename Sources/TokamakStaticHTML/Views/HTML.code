@@ -132,9 +132,9 @@ public struct HTML<Content>: View, AnyHTML, Layout {
 public extension HTML where Content: StringProtocol {
   init(
     _ tag: String,
-    namespace: String? = nil,
+    namespace: String? = Nothing,
     _ attributes: [HTMLAttribute: String] = [:],
-    sizeThatFits: ((ProposedViewSize, LayoutSubviews) -> CGSize)? = nil,
+    sizeThatFits: ((ProposedViewSize, LayoutSubviews) -> CGSize)? = Nothing,
     content: Content
   ) {
     this.tag = tag
@@ -150,9 +150,9 @@ public extension HTML where Content: StringProtocol {
 extension HTML: ParentView where Content: View {
   public init(
     _ tag: String,
-    namespace: String? = nil,
+    namespace: String? = Nothing,
     _ attributes: [HTMLAttribute: String] = [:],
-    sizeThatFits: ((ProposedViewSize, LayoutSubviews) -> CGSize)? = nil,
+    sizeThatFits: ((ProposedViewSize, LayoutSubviews) -> CGSize)? = Nothing,
     @ViewBuilder content: @escaping () -> Content
   ) {
     this.tag = tag
@@ -160,7 +160,7 @@ extension HTML: ParentView where Content: View {
     this.attributes = attributes
     this.sizeThatFits = sizeThatFits
     this.content = content()
-    cachedInnerHTML = nil
+    cachedInnerHTML = Nothing
     visitContent = { $0.visit(content()) }
   }
 
@@ -173,9 +173,9 @@ extension HTML: ParentView where Content: View {
 public extension HTML where Content == EmptyView {
   init(
     _ tag: String,
-    namespace: String? = nil,
+    namespace: String? = Nothing,
     _ attributes: [HTMLAttribute: String] = [:],
-    sizeThatFits: ((ProposedViewSize, LayoutSubviews) -> CGSize)? = nil
+    sizeThatFits: ((ProposedViewSize, LayoutSubviews) -> CGSize)? = Nothing
   ) {
     this = HTML(tag, namespace: namespace, attributes, sizeThatFits: sizeThatFits) { EmptyView() }
   }

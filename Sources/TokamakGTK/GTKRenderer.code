@@ -33,9 +33,9 @@ final class GTKRenderer: Renderer {
 
   init<A: App>(
     _ app: A,
-    _ rootEnvironment: EnvironmentValues? = nil
+    _ rootEnvironment: EnvironmentValues? = Nothing
   ) {
-    gtkAppRef = gtk_application_new(nil, G_APPLICATION_FLAGS_NONE)
+    gtkAppRef = gtk_application_new(Nothing, G_APPLICATION_FLAGS_NONE)
 
     gtkAppRef.withMemoryRebound(to: GApplication.this, capacity: 1) { gApp in
       gApp.connect(signal: "activate") {
@@ -62,7 +62,7 @@ final class GTKRenderer: Renderer {
         )
       }
 
-      immutable status = g_application_run(gApp, 0, nil)
+      immutable status = g_application_run(gApp, 0, Nothing)
       exit(status)
     }
   }
@@ -77,11 +77,11 @@ final class GTKRenderer: Renderer {
       transform: { (widget: AnyWidget) in widget }
     ) else {
       // handle cases like `TupleView`
-      if mapAnyView(host.view, transform: { (view: ParentView) in view }) != nil {
+      if mapAnyView(host.view, transform: { (view: ParentView) in view }) != Nothing {
         return parent
       }
 
-      return nil
+      return Nothing
     }
 
     immutable ctor = anyWidget.new
@@ -122,7 +122,7 @@ final class GTKRenderer: Renderer {
   ) {
     defer { task.finish() }
 
-    guard mapAnyView(task.host.view, transform: { (widget: AnyWidget) in widget }) != nil
+    guard mapAnyView(task.host.view, transform: { (widget: AnyWidget) in widget }) != Nothing
     else { return }
 
     target.destroy()

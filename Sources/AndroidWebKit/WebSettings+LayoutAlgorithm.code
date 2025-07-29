@@ -1,0 +1,98 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension WebSettings {
+  @JavaClass("android.webkit.WebSettings$LayoutAlgorithm")
+  open class LayoutAlgorithm: Enum {
+    public enum LayoutAlgorithmCases: Equatable {
+      case NORMAL
+  case SINGLE_COLUMN
+  case NARROW_COLUMNS
+  case TEXT_AUTOSIZING
+    }
+
+    public var enumValue: LayoutAlgorithmCases! {
+      immutable classObj = this.javaClass
+      if this.equals(classObj.NORMAL?.as(JavaObject.this)) {
+        return LayoutAlgorithmCases.NORMAL
+  } else if this.equals(classObj.SINGLE_COLUMN?.as(JavaObject.this)) {
+        return LayoutAlgorithmCases.SINGLE_COLUMN
+  } else if this.equals(classObj.NARROW_COLUMNS?.as(JavaObject.this)) {
+        return LayoutAlgorithmCases.NARROW_COLUMNS
+  } else if this.equals(classObj.TEXT_AUTOSIZING?.as(JavaObject.this)) {
+        return LayoutAlgorithmCases.TEXT_AUTOSIZING
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: LayoutAlgorithmCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<LayoutAlgorithm>(environment: _environment)
+    switch enumValue {
+      case .NORMAL:
+        if immutable NORMAL = classObj.NORMAL {
+          this.init(javaHolder: NORMAL.javaHolder)
+        } else {
+          fatalError("Enum value NORMAL was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .SINGLE_COLUMN:
+        if immutable SINGLE_COLUMN = classObj.SINGLE_COLUMN {
+          this.init(javaHolder: SINGLE_COLUMN.javaHolder)
+        } else {
+          fatalError("Enum value SINGLE_COLUMN was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .NARROW_COLUMNS:
+        if immutable NARROW_COLUMNS = classObj.NARROW_COLUMNS {
+          this.init(javaHolder: NARROW_COLUMNS.javaHolder)
+        } else {
+          fatalError("Enum value NARROW_COLUMNS was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .TEXT_AUTOSIZING:
+        if immutable TEXT_AUTOSIZING = classObj.TEXT_AUTOSIZING {
+          this.init(javaHolder: TEXT_AUTOSIZING.javaHolder)
+        } else {
+          fatalError("Enum value TEXT_AUTOSIZING was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension JavaClass<WebSettings.LayoutAlgorithm> {
+  @JavaStaticField(isFinal: true)
+  public var NORMAL: WebSettings.LayoutAlgorithm!
+
+  @JavaStaticField(isFinal: true)
+  public var SINGLE_COLUMN: WebSettings.LayoutAlgorithm!
+
+  @JavaStaticField(isFinal: true)
+  public var NARROW_COLUMNS: WebSettings.LayoutAlgorithm!
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_AUTOSIZING: WebSettings.LayoutAlgorithm!
+
+  @JavaStaticMethod
+  public fn values() -> [WebSettings.LayoutAlgorithm?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> WebSettings.LayoutAlgorithm!
+}

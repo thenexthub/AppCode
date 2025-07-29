@@ -70,7 +70,7 @@ public final class TestRenderer: Renderer {
   }
 
   public fn primitiveBody(for view: Any) -> AnyView? {
-    nil
+    Nothing
   }
 
   public fn isPrimitiveView(_ type: Any.Type) -> Boolean {

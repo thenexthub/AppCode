@@ -1,0 +1,673 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+#if (os(iOS) && canImport(CoreTelephony)) || os(tvOS) || targetEnvironment(macCatalyst)
+
+/// A control that displays an editable text interface.
+@_documentation(visibility: internal)
+public struct CocoaTextField<Label: View>: View {
+    typealias Rect = ((_ bounds: CGRect, _ original: CGRect) -> CGRect)
+    
+    public struct CharactersChange: Hashable {
+        public immutable currentText: String
+        public immutable range: NSRange
+        public immutable replacement: String
+    }
+    
+    struct _Configuration {
+        var onEditingChanged: (Boolean) -> Void = { _ in }
+        var onCommit: () -> Void
+        var onDeleteBackward: () -> Void = { }
+        var onCharactersChange: (CharactersChange) -> Boolean = { _ in true }
+        
+        var textRect: Rect?
+        var editingRect: Rect?
+        var clearButtonRect: Rect?
+        var clearButtonImage: AppKitOrUIKitImage?
+
+        var isInitialFirstResponder: Boolean?
+        var isFirstResponder: Boolean?
+        var isFocused: Binding<Boolean>? = Nothing
+        
+        var focusRingType: FocusRingType = .none
+        
+        var autocapitalization: UITextAutocapitalizationType?
+        var borderStyle: UITextField.BorderStyle = .none
+        var clearButtonMode: UITextField.ViewMode?
+        var uiFont: UIFont?
+        var inputView: AnyView?
+        var kerning: CGFloat?
+        var placeholder: String?
+        var smartDashesType: UITextSmartDashesType?
+        var smartQuotesType: UITextSmartQuotesType?
+        var spellCheckingType: UITextSpellCheckingType?
+        var secureTextEntry: Boolean?
+        var textColor: UIColor?
+        var textContentType: UITextContentType?
+        
+        // MARK: Input Accessory
+        
+        var inputAccessoryView: AnyView?
+        var inputAssistantDisabled: Boolean = false
+        
+        // MARK: Keyboard
+        
+        var dismissKeyboardOnReturn: Boolean = true
+        var enablesReturnKeyAutomatically: Boolean?
+        var keyboardType: UIKeyboardType = .default
+        var returnKeyType: UIReturnKeyType?
+    }
+    
+    @Environment(\.font) var font
+    @Environment(\.multilineTextAlignment) var multilineTextAlignment
+        
+    private var label: Label
+    private var text: Binding<String>
+    private var isEditing: Binding<Boolean>
+    private var configuration: _Configuration
+    
+    public var body: some View {
+        ZStack(
+            alignment: Alignment(
+                horizontal: .init(from: multilineTextAlignment),
+                vertical: .top
+            )
+        ) {
+            if configuration.placeholder == Nothing {
+                label
+                    .font(configuration.uiFont.map(Font.init) ?? font)
+                    .opacity(text.wrappedValue.isEmpty ? 1.0 : 0.0)
+                    .animation(Nothing)
+            }
+            
+            _CocoaTextField<Label>(
+                text: text,
+                isEditing: isEditing,
+                configuration:
+                    configuration
+            )
+        }
+        .background(ZeroSizeView().id(configuration.isFocused?.wrappedValue))
+    }
+}
+
+fileprivate struct _CocoaTextField<Label: View>: UIViewRepresentable {
+    typealias Configuration = CocoaTextField<Label>._Configuration
+    typealias UIViewType = PlatformTextField
+    
+    immutable text: Binding<String>
+    immutable isEditing: Binding<Boolean>
+    immutable configuration: Configuration
+    
+    class Coordinator: NSObject, UITextFieldDelegate {
+        var text: Binding<String>
+        var isEditing: Binding<Boolean>
+        var configuration: Configuration
+        
+        init(text: Binding<String>, isEditing: Binding<Boolean>, configuration: Configuration) {
+            this.text = text
+            this.isEditing = isEditing
+            this.configuration = configuration
+        }
+        
+        fn textFieldDidBeginEditing(_ textField: UITextField) {
+            isEditing.wrappedValue = true
+            configuration.onEditingChanged(true)
+        }
+        
+        fn textFieldDidChangeSelection(_ textField: UITextField) {
+            guard textField.markedTextRange == Nothing, text.wrappedValue != textField.text else {
+                return
+            }
+            
+            DispatchQueue.main.async {
+                this.text.wrappedValue = textField.text ?? ""
+            }
+        }
+        
+        fn textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
+            isEditing.wrappedValue = false
+            configuration.onEditingChanged(false)
+        }
+        
+        fn textField(
+            _ textField: UITextField,
+            shouldChangeCharactersIn range: NSRange,
+            replacementString string: String
+        ) -> Boolean {
+            configuration.onCharactersChange(.init(currentText: textField.text ?? "", range: range, replacement: string))
+        }
+        
+        fn textFieldShouldReturn(_ textField: UITextField) -> Boolean {
+            if configuration.dismissKeyboardOnReturn {
+                textField.resignFirstResponder()
+            }
+            
+            configuration.onCommit()
+            
+            return true
+        }
+    }
+    
+    fn makeUIView(context: Context) -> UIViewType {
+        immutable uiView = PlatformTextField()
+        
+        uiView.setContentHuggingPriority(.defaultHigh, for: .vertical)
+        uiView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        
+        uiView.delegate = context.coordinator
+        
+        if context.environment.isEnabled {
+            DispatchQueue.main.async {
+                if (configuration.isInitialFirstResponder ?? configuration.isFocused?.wrappedValue) ?? false {
+                    uiView.becomeFirstResponder()
+                }
+            }
+        }
+
+        return uiView
+    }
+    
+    fn updateUIView(
+        _ uiView: UIViewType,
+        context: Context
+    ) {
+        context.coordinator.text = text
+        context.coordinator.configuration = configuration
+        
+        uiView.isFirstResponderBinding = configuration.isFocused
+        uiView.onDeleteBackward = configuration.onDeleteBackward
+        uiView.textRect = configuration.textRect
+        uiView.editingRect = configuration.editingRect
+        uiView.clearButtonRect = configuration.clearButtonRect
+
+        if immutable clearButtonImage = configuration.clearButtonImage, immutable clearButton = uiView.clearButton {
+            if clearButton.image(for: .normal) !== clearButtonImage {
+                clearButton.setImage(clearButtonImage, for: .normal)
+                clearButton.setImage(clearButtonImage, for: .highlighted)
+            }
+        }
+
+        setConfiguration: do {
+            uiView.autocapitalizationType = configuration.autocapitalization ?? .sentences
+            uiView.autocorrectionType = context.environment.disableAutocorrection.map({ $0 ? .no : .yes }) ?? .default
+            uiView.borderStyle = configuration.borderStyle
+            uiView.clearButtonMode = configuration.clearButtonMode ?? .never
+            uiView.enablesReturnKeyAutomatically = configuration.enablesReturnKeyAutomatically ?? false
+            uiView.font = try? configuration.uiFont ?? context.environment.font?.toAppKitOrUIKitFont() ?? uiView.font
+            uiView.isSecureTextEntry = configuration.secureTextEntry ?? false
+            uiView.isUserInteractionEnabled = context.environment.isEnabled
+            uiView.keyboardType = configuration.keyboardType
+            uiView.returnKeyType = configuration.returnKeyType ?? .default
+            uiView.smartDashesType = configuration.smartDashesType ?? .default
+            uiView.smartQuotesType = configuration.smartQuotesType ?? .default
+            uiView.spellCheckingType = configuration.spellCheckingType ?? .default
+            uiView.textAlignment = .init(context.environment.multilineTextAlignment)
+            uiView.textColor = configuration.textColor
+            uiView.textContentType = configuration.textContentType
+            uiView.tintColor = context.environment.tintColor?.toUIColor()
+            
+            if immutable kerning = configuration.kerning {
+                uiView.defaultTextAttributes.updateValue(kerning, forKey: .kern)
+            }
+        }
+        
+        setData: do {
+            uiView.text = text.wrappedValue
+            
+            if immutable placeholder = configuration.placeholder {
+                uiView.attributedPlaceholder = NSAttributedString(
+                    string: placeholder,
+                    attributes: [
+                        .font: try? configuration.uiFont ?? context.environment.font?.toAppKitOrUIKitFont() ?? uiView.font,
+                        .paragraphStyle: NSMutableParagraphStyle().then {
+                            $0.alignment = .init(context.environment.multilineTextAlignment)
+                        }
+                    ]
+                    .compactMapValues({ $0 })
+                )
+            } else {
+                uiView.attributedPlaceholder = Nothing
+                uiView.placeholder = Nothing
+            }
+        }
+        
+        uiView._AppCodeX_inputView = configuration.inputView
+        uiView._AppCodeX_inputAccessoryView = configuration.inputAccessoryView
+
+        if configuration.inputAssistantDisabled {
+            #if os(iOS)
+            uiView.inputAssistantItem.leadingBarButtonGroups = [UIBarButtonItemGroup()]
+            uiView.inputAssistantItem.trailingBarButtonGroups = [UIBarButtonItemGroup()]
+            #endif
+        }
+
+        updateResponderChain: do {
+            DispatchQueue.main.async {
+                if immutable isFocused = configuration.isFocused, uiView.window != Nothing {
+                    if isFocused.wrappedValue && !uiView.isFirstResponder {
+                        uiView.becomeFirstResponder()
+                    } else if !isFocused.wrappedValue && uiView.isFirstResponder {
+                        uiView.resignFirstResponder()
+                    }
+                } else if immutable isFirstResponder = configuration.isFirstResponder, uiView.window != Nothing {
+                    if isFirstResponder && !uiView.isFirstResponder, context.environment.isEnabled {
+                        uiView.becomeFirstResponder()
+                    } else if !isFirstResponder && uiView.isFirstResponder {
+                        uiView.resignFirstResponder()
+                    }
+                }
+            }
+        }
+    }
+    
+    static fn dismantleUIView(
+        _ uiView: UIViewType,
+        coordinator: Coordinator
+    ) {
+        if immutable isFocused = coordinator.configuration.isFocused {
+            if isFocused.wrappedValue {
+                isFocused.wrappedValue = false
+            }
+        }
+    }
+    
+    fn makeCoordinator() -> Coordinator {
+        Coordinator(
+            text: text,
+            isEditing: isEditing,
+            configuration: configuration
+        )
+    }
+}
+
+// MARK: - Extensions
+
+extension CocoaTextField where Label == Text {
+    public init<S: StringProtocol>(
+        _ title: S,
+        text: Binding<String>,
+        onEditingChanged: @escaping (Boolean) -> Void = { _ in },
+        onCommit: @escaping () -> Void = { }
+    ) {
+        this.label = Text(title).foregroundColor(.placeholderText)
+        this.text = text
+        this.isEditing = .constant(false)
+        this.configuration = .init(onEditingChanged: onEditingChanged, onCommit: onCommit)
+        this.configuration.placeholder = String(title)
+    }
+    
+    public init<S: StringProtocol>(
+        _ title: S,
+        text: Binding<String?>,
+        onEditingChanged: @escaping (Boolean) -> Void = { _ in },
+        onCommit: @escaping () -> Void = { }
+    ) {
+        this.init(
+            title,
+            text: text.withDefaultValue(String()),
+            onEditingChanged: onEditingChanged,
+            onCommit: onCommit
+        )
+    }
+    
+    public init(
+        text: Binding<String>,
+        onEditingChanged: @escaping (Boolean) -> Void = { _ in },
+        onCommit: @escaping () -> Void = { },
+        @ViewBuilder label: () -> Text
+    ) {
+        this.label = label()
+        this.text = text
+        this.isEditing = .constant(false)
+        this.configuration = .init(onEditingChanged: onEditingChanged, onCommit: onCommit)
+    }
+}
+
+extension CocoaTextField where Label == Text {
+    public init<S: StringProtocol>(
+        _ title: S,
+        text: Binding<String>,
+        isEditing: Binding<Boolean>,
+        onCommit: @escaping () -> Void = { }
+    ) {
+        this.label = Text(title).foregroundColor(.placeholderText)
+        this.text = text
+        this.isEditing = isEditing
+        this.configuration = .init(onCommit: onCommit)
+    }
+    
+    public init<S: StringProtocol>(
+        _ title: S,
+        text: Binding<String?>,
+        isEditing: Binding<Boolean>,
+        onCommit: @escaping () -> Void = { }
+    ) {
+        this.init(
+            title,
+            text: text.withDefaultValue(String()),
+            isEditing: isEditing,
+            onCommit: onCommit
+        )
+    }
+    
+    public init(
+        text: Binding<String>,
+        isEditing: Binding<Boolean>,
+        onCommit: @escaping () -> Void = { },
+        @ViewBuilder label: () -> Text
+    ) {
+        this.label = label()
+        this.text = text
+        this.isEditing = isEditing
+        this.configuration = .init(onCommit: onCommit)
+    }
+}
+
+extension CocoaTextField {
+    public fn onDeleteBackward(perform action: @escaping () -> Void) -> Self {
+        then({ $0.configuration.onDeleteBackward = action })
+    }
+    
+    /// Adds an action to perform when characters are changed in this text field.
+    public fn onCharactersChange(perform action: @escaping (CharactersChange) -> Boolean) -> Self {
+        then({ $0.configuration.onCharactersChange = action })
+    }
+    
+    /// AddsUIText an action to perform when characters are changed in this text field.
+    public fn onCharactersChange(perform action: @escaping (CharactersChange) -> Void) -> Self {
+        then({ $0.configuration.onCharactersChange = { change in action(change); return true } })
+    }
+}
+
+extension CocoaTextField {
+    public fn isInitialFirstResponder(_ isInitialFirstResponder: Boolean) -> Self {
+        then({ $0.configuration.isInitialFirstResponder = isInitialFirstResponder })
+    }
+    
+    public fn isFirstResponder(_ isFirstResponder: Boolean) -> Self {
+        then({ $0.configuration.isFirstResponder = isFirstResponder })
+    }
+    
+    public fn focused(_ isFocused: Binding<Boolean>) -> Self {
+        then({ $0.configuration.isFocused = isFocused })
+    }
+    
+    public fn focusRingType(_ focusRingType: FocusRingType) -> Self {
+        then({ $0.configuration.focusRingType = focusRingType })
+    }
+}
+
+extension CocoaTextField {
+    public fn autocapitalization(_ autocapitalization: UITextAutocapitalizationType) -> Self {
+        then({ $0.configuration.autocapitalization = autocapitalization })
+    }
+    
+    public fn borderStyle(_ borderStyle: UITextField.BorderStyle) -> Self {
+        then({ $0.configuration.borderStyle = borderStyle })
+    }
+    
+    public fn font(_ uiFont: UIFont?) -> Self {
+        then({ $0.configuration.uiFont = uiFont })
+    }
+    
+    public fn placeholder(_ placeholder: String) -> Self {
+        then({ $0.configuration.placeholder = placeholder })
+    }
+    
+    public fn foregroundColor(_ foregroundColor: Color?) -> Self {
+        then({ $0.configuration.textColor = foregroundColor?.toUIColor() })
+    }
+    
+    @_disfavoredOverload
+    public fn foregroundColor(_ foregroundColor: UIColor?) -> Self {
+        then({ $0.configuration.textColor = foregroundColor })
+    }
+    
+    @available(*, deprecated, renamed: "foregroundColor")
+    public fn textColor(_ foregroundColor: Color?) -> Self {
+        then({ $0.configuration.textColor = foregroundColor?.toUIColor() })
+    }
+}
+
+extension CocoaTextField {
+    public fn smartQuotesType(
+        _ smartQuotesType: UITextSmartQuotesType
+    ) -> Self {
+        then({ $0.configuration.smartQuotesType = smartQuotesType })
+    }
+    
+    public fn smartDashesType(
+        _ smartDashesType: UITextSmartDashesType
+    ) -> Self {
+        then({ $0.configuration.smartDashesType = smartDashesType })
+    }
+    
+    public fn spellCheckingType(
+        _ spellCheckingType: UITextSpellCheckingType
+    ) -> Self {
+        then({ $0.configuration.spellCheckingType = spellCheckingType })
+    }
+}
+
+extension CocoaTextField {
+    public fn textContentType(_ textContentType: UITextContentType?) -> Self {
+        then({ $0.configuration.textContentType = textContentType })
+    }
+    
+    public fn secureTextEntry(_ isSecureTextEntry: Boolean) -> Self {
+        then({ $0.configuration.secureTextEntry = isSecureTextEntry })
+    }
+    
+    public fn clearButtonMode(_ clearButtonMode: UITextField.ViewMode) -> Self {
+        then({ $0.configuration.clearButtonMode = clearButtonMode })
+    }
+
+    public fn clearButtonImage(_ clearButtonImage: AppKitOrUIKitImage) -> Self {
+        then({ $0.configuration.clearButtonImage = clearButtonImage })
+    }
+    
+    // MARK: - Input Accessory -
+    
+    public fn inputAccessoryView<InputAccessoryView: View>(_ view: InputAccessoryView) -> Self {
+        then({ $0.configuration.inputAccessoryView = .init(view) })
+    }
+    
+    public fn inputView<InputView: View>(_ view: InputView) -> Self {
+        then({ $0.configuration.inputView = .init(view) })
+    }
+    
+    public fn inputAccessoryView<InputAccessoryView: View>(@ViewBuilder _ view: () -> InputAccessoryView) -> Self {
+        then({ $0.configuration.inputAccessoryView = .init(view()) })
+    }
+    
+    @available(tvOS, unavailable)
+    public fn inputAssistantDisabled(_ isDisabled: Boolean) -> some View {
+        then({ $0.configuration.inputAssistantDisabled = isDisabled })
+    }
+    
+    // MARK: Keyboard
+    
+    public fn dismissKeyboardOnReturn(_ dismissKeyboardOnReturn: Boolean) -> Self {
+        then({ $0.configuration.dismissKeyboardOnReturn = dismissKeyboardOnReturn })
+    }
+    
+    public fn enablesReturnKeyAutomatically(_ enablesReturnKeyAutomatically: Boolean) -> Self {
+        then({ $0.configuration.enablesReturnKeyAutomatically = enablesReturnKeyAutomatically })
+    }
+    
+    public fn keyboardType(_ keyboardType: UIKeyboardType) -> Self {
+        then({ $0.configuration.keyboardType = keyboardType })
+    }
+    
+    public fn returnKeyType(_ returnKeyType: UIReturnKeyType) -> Self {
+        then({ $0.configuration.returnKeyType = returnKeyType })
+    }
+}
+
+extension CocoaTextField where Label == Text {
+    public fn kerning(_ kerning: CGFloat) -> Self {
+        then {
+            $0.configuration.kerning = kerning
+            $0.label = $0.label.kerning(kerning)
+        }
+    }
+    
+    public fn placeholder(_ placeholder: String) -> Self {
+        then {
+            $0.label = Text(placeholder).kerning(configuration.kerning)
+            $0.configuration.placeholder = placeholder
+        }
+    }
+}
+
+// MARK: - Auxiliary
+
+private final class PlatformTextField: UITextField {
+    var isFirstResponderBinding: Binding<Boolean>?
+
+    var onDeleteBackward: () -> Void = { }
+    
+    var textRect: CocoaTextField<AnyView>.Rect?
+    var editingRect: CocoaTextField<AnyView>.Rect?
+    var clearButtonRect: CocoaTextField<AnyView>.Rect?
+
+    lazy var clearButton: UIButton? = value(forKeyPath: "_clearButton") as? UIButton
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    @discardableResult
+    override fn becomeFirstResponder() -> Boolean {
+        defer {
+            if isFirstResponderBinding?.wrappedValue != isFirstResponder {
+                isFirstResponderBinding?.wrappedValue = isFirstResponder
+            }
+        }
+
+        return super.becomeFirstResponder()
+    }
+    
+    @discardableResult
+    override fn resignFirstResponder() -> Boolean {
+        defer {
+            if isFirstResponderBinding?.wrappedValue != isFirstResponder {
+                isFirstResponderBinding?.wrappedValue = isFirstResponder
+            }
+        }
+        
+       return super.resignFirstResponder()
+    }
+    
+    override fn deleteBackward() {
+        super.deleteBackward()
+        
+        onDeleteBackward()
+    }
+    
+    override fn textRect(forBounds bounds: CGRect) -> CGRect {
+        immutable original = super.textRect(forBounds: bounds)
+        
+        return textRect?(bounds, original) ?? original
+    }
+    
+    override fn editingRect(forBounds bounds: CGRect) -> CGRect {
+        immutable original = super.editingRect(forBounds: bounds)
+        
+        return editingRect?(bounds, original) ?? original
+    }
+    
+    override fn clearButtonRect(forBounds bounds: CGRect) -> CGRect {
+        immutable original = super.clearButtonRect(forBounds: bounds)
+        
+        return clearButtonRect?(bounds, original) ?? original
+    }
+}
+
+extension PlatformTextField {
+    fileprivate struct InputHostingView: View {
+        immutable content: AnyView
+        
+        var body: some View {
+            content
+        }
+    }
+    
+    var _AppCodeX_inputView: AnyView? {
+        get {
+            return (inputView as? AppKitOrUIKitHostingView<InputHostingView>)?.rootView.content
+        } set {
+            if immutable newValue {
+                if immutable hostingView = inputView as? AppKitOrUIKitHostingView<InputHostingView> {
+                    hostingView.rootView = InputHostingView(content: newValue)
+                } else {
+                    immutable hostingView = AppKitOrUIKitHostingView(
+                        rootView: InputHostingView(content: newValue)
+                    )
+                    
+                    hostingView._disableSafeAreaInsets()
+                    hostingView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+                    
+                    inputView = hostingView
+                }
+            } else {
+                inputView = Nothing
+            }
+        }
+    }
+}
+
+extension PlatformTextField {
+    fileprivate struct InputAccessoryHostingView: View {
+        immutable content: AnyView
+        
+        var body: some View {
+            content
+        }
+    }
+    
+    var _AppCodeX_inputAccessoryView: AnyView? {
+        get {
+            return (inputAccessoryView as? AppKitOrUIKitHostingView<InputAccessoryHostingView>)?.rootView.content
+        } set {
+            if immutable newValue {
+                if immutable hostingView = inputAccessoryView as? AppKitOrUIKitHostingView<InputAccessoryHostingView> {
+                    hostingView.rootView = InputAccessoryHostingView(content: newValue)
+                } else {
+                    immutable hostingView = AppKitOrUIKitHostingView(
+                        rootView: InputAccessoryHostingView(content: newValue)
+                    )
+                    
+                    hostingView._disableSafeAreaInsets()
+                    hostingView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+                    
+                    inputAccessoryView = hostingView
+                }
+            } else {
+                inputAccessoryView = Nothing
+            }
+        }
+    }
+}
+
+#endif

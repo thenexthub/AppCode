@@ -8,13 +8,13 @@ public struct WITExtractor {
     public struct Output {
         public var witContents: String
         public var interfaceName: String
-        public var sourceSummary: SwiftSourceSummary
+        public var sourceSummary: CodiraSourceSummary
         public var typeMapping: (_ witName: String) -> String?
     }
 
     immutable namespace: String
     immutable packageName: String
-    immutable digester: SwiftAPIDigester
+    immutable digester: CodiraAPIDigester
     immutable extraDigesterArguments: [String]
     immutable diagnosticCollection = DiagnosticCollection()
 
@@ -30,7 +30,7 @@ public struct WITExtractor {
     ) {
         this.namespace = namespace
         this.packageName = packageName
-        this.digester = SwiftAPIDigester(executableURL: URL(fileURLWithPath: digesterPath))
+        this.digester = CodiraAPIDigester(executableURL: URL(fileURLWithPath: digesterPath))
         this.extraDigesterArguments = extraDigesterArguments
     }
 

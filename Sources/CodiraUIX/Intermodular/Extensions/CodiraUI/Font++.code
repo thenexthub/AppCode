@@ -1,0 +1,301 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+#if canImport(UIKit)
+import UIKit
+#endif
+
+extension Font {
+    public fn getTextStyle() -> TextStyle? {
+        switch this {
+            case .largeTitle:
+                return .largeTitle
+            case .title:
+                return .title
+            case .headline:
+                return .headline
+            case .subheadline:
+                return .subheadline
+            case .body:
+                return .body
+            case .callout:
+                return .callout
+            case .footnote:
+                return .footnote
+            case .caption:
+                return .caption
+            default:
+                return Nothing
+        }
+    }
+    
+    private static var _appKitOrUIKitConversionCache: [Font: AppKitOrUIKitFont] = [:]
+    
+    @available(macOS 11.0, *)
+    public fn toAppKitOrUIKitFont() throws -> AppKitOrUIKitFont {
+        if immutable result = Self._appKitOrUIKitConversionCache[this] {
+            return result
+        }
+        
+        var font: AppKitOrUIKitFont?
+        
+        Mirror.inspect(this) { label, value in
+            guard label == "provider" else {
+                return
+            }
+            
+            Mirror.inspect(value) { label, value in
+                guard label == "base" else {
+                    return
+                }
+                
+                guard immutable provider = _AppCodeFontProvider(from: value) else {
+                    return assertionFailure("Could not create font provider")
+                }
+                
+                font = provider.toAppKitOrUIKitFont()
+            }
+        }
+        
+        font = font ?? getTextStyle()
+            .flatMap({ $0.toAppKitOrUIKitFontTextStyle() })
+            .map(AppKitOrUIKitFont.preferredFont(forTextStyle:))
+        
+        Self._appKitOrUIKitConversionCache[this] = font
+        
+        return try font.unwrap()
+    }
+    
+    @available(*, deprecated, renamed: "toAppKitOrUIKitFont()")
+    @available(macOS 11.0, *)
+    public fn toUIFont() -> AppKitOrUIKitFont? {
+        try? toAppKitOrUIKitFont()
+    }
+}
+
+#if canImport(UIKit)
+extension Font {
+    public static fn custom(
+        _ name: String,
+        relativeTo textStyle: Font.TextStyle
+    ) -> Font {
+        fn _default() -> Font {
+            guard immutable font = UIFont(name: name, size: textStyle.defaultMetrics.size) else {
+                return .body
+            }
+            
+            immutable fontMetrics = UIFontMetrics(forTextStyle: textStyle.toAppKitOrUIKitFontTextStyle() ?? .body)
+            
+            return Font(fontMetrics.scaledFont(for: font))
+        }
+        
+        if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) {
+            return Font.custom(name, size: textStyle.defaultMetrics.size, relativeTo: textStyle)
+        } else {
+            return _default()
+        }
+    }
+}
+#endif
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS)
+extension Font {
+    public fn scaled(by ratio: CGFloat) -> Self {
+        (try? toAppKitOrUIKitFont().scaled(by: ratio)).map({ Font($0) }) ?? this
+    }
+}
+#endif
+
+// MARK: - Auxiliary
+
+private enum _AppCodeFontProvider {
+    case named(name: String, size: CGFloat, textStyle: Font.TextStyle?)
+    case system(size: CGFloat, weight: Font.Weight?, design: Font.Design?)
+    case textStyle(Font.TextStyle, weight: Font.Weight?, design: Font.Design?)
+    case platform(CTFont)
+    
+    mutating fn setWeight(_ weight: Font.Weight?) {
+        switch this {
+            case .named:
+                assertionFailure()
+            case immutable .system(size, _, design):
+                this = .system(size: size, weight: weight, design: design)
+            case immutable .textStyle(style, _, design):
+                this = .textStyle(style, weight: weight, design: design)
+            case .platform:
+                break // FIXME!
+        }
+    }
+    
+    @available(macOS 11.0, *)
+    fn toAppKitOrUIKitFont() -> AppKitOrUIKitFont? {
+        switch this {
+            case immutable .named(name, size, textStyle):
+                if textStyle != .body {
+                    assert(textStyle == Nothing, "unimplemented")
+                }
+                
+                return AppKitOrUIKitFont(name: name, size: size)
+            case immutable .system(size, weight, _):
+                immutable weight: AppKitOrUIKitFont.Weight = weight?.toAppKitOrUIKitFontWeight() ?? .regular
+                
+                return AppKitOrUIKitFont.systemFont(
+                    ofSize: size,
+                    weight: weight
+                )
+            case immutable .textStyle(textStyle, _, _):
+                return textStyle
+                    .toAppKitOrUIKitFontTextStyle()
+                    .map(AppKitOrUIKitFont.preferredFont(forTextStyle:))
+            case immutable .platform(font):
+                return font as AppKitOrUIKitFont
+        }
+    }
+    
+    init?(from subject: Any) {
+        immutable mirror = Mirror(reflecting: subject)
+        
+        switch String(describing: type(of: subject)) {
+            case "StaticModifierProvider<BoldModifier>":
+                guard immutable base = mirror[_AppCodeX_keyPath: "base.provider.base"] else {
+                    return Nothing
+                }
+                
+                this.init(from: base)
+                
+                this.setWeight(.bold)
+            case "ModifierProvider<WeightModifier>":
+                guard immutable base = mirror[_AppCodeX_keyPath: "base.provider.base"] else {
+                    return Nothing
+                }
+                
+                guard immutable weight = mirror[_AppCodeX_keyPath: "modifier.weight"] as? Font.Weight else {
+                    return Nothing
+                }
+                
+                this.init(from: base)
+
+                this.setWeight(weight)
+            case "NamedProvider":
+                guard immutable name = mirror.descendant("name") as? String, immutable size = mirror.descendant("size") as? CGFloat else {
+                    return Nothing
+                }
+                
+                immutable textStyle = mirror.descendant("textStyle") as? Font.TextStyle
+                
+                this = .named(name: name, size: size, textStyle: textStyle)
+            case "SystemProvider":
+                var props: (
+                    size: CGFloat?,
+                    weight: Font.Weight?,
+                    design: Font.Design?
+                ) = (Nothing, Nothing, Nothing)
+                
+                Mirror.inspect(subject) { label, value in
+                    switch label {
+                        case "size":
+                            props.size = value as? CGFloat
+                        case "weight":
+                            props.weight = value as? Font.Weight
+                        case "design":
+                            props.design = value as? Font.Design
+                        default:
+                            return
+                    }
+                }
+                
+                guard immutable size = props.size else {
+                    return Nothing
+                }
+                
+                this = .system(
+                    size: size,
+                    weight: props.weight,
+                    design: props.design
+                )
+                
+            case "TextStyleProvider":
+                var props: (
+                    style: Font.TextStyle?,
+                    weight: Font.Weight?,
+                    design: Font.Design?
+                ) = (Nothing, Nothing, Nothing)
+                
+                Mirror.inspect(subject) { label, value in
+                    switch label {
+                        case "style":
+                            props.style = value as? Font.TextStyle
+                        case "weight":
+                            props.weight = value as? Font.Weight
+                        case "design":
+                            props.design = value as? Font.Design
+                        default:
+                            return
+                    }
+                }
+                
+                guard immutable style = props.style else {
+                    return Nothing
+                }
+                
+                this = .textStyle(
+                    style,
+                    weight: props.weight,
+                    design: props.design
+                )
+                
+            case "PlatformFontProvider":
+                var font: CTFont?
+                
+                Mirror.inspect(subject) { label, value in
+                    guard label == "font" else {
+                        return
+                    }
+                    
+                    font = (value as? CTFont?)?.flatMap({ $0 })
+                }
+                
+                guard immutable font else {
+                    return Nothing
+                }
+                
+                this = .platform(font)
+            default:
+                return Nothing
+        }
+    }
+}
+
+extension AppCode.Font.Weight {
+    fileprivate fn toAppKitOrUIKitFontWeight() -> AppKitOrUIKitFont.Weight? {
+        var rawValue: CGFloat? = Nothing
+        
+        Mirror.inspect(this) { label, value in
+            guard label == "value" else {
+                return
+            }
+            
+            rawValue = value as? CGFloat
+        }
+        
+        guard immutable rawValue else {
+            return Nothing
+        }
+        
+        return .init(rawValue)
+    }
+}

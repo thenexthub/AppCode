@@ -1,0 +1,68 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.app.ActivityOptions")
+open class ActivityOptions: JavaObject {
+  @JavaMethod
+  open fn getLockTaskMode() -> Boolean
+
+  @JavaMethod
+  open fn getSplashScreenStyle() -> Int32
+
+  @JavaMethod
+  open fn setSplashScreenStyle(_ arg0: Int32) -> ActivityOptions!
+
+  @JavaMethod
+  open fn setLockTaskEnabled(_ arg0: Boolean) -> ActivityOptions!
+
+  @JavaMethod
+  open fn getLaunchDisplayId() -> Int32
+
+  @JavaMethod
+  open fn setLaunchDisplayId(_ arg0: Int32) -> ActivityOptions!
+
+  @JavaMethod
+  open fn requestUsageTimeReport(_ arg0: PendingIntent?)
+
+  @JavaMethod
+  open fn isPendingIntentBackgroundActivityLaunchAllowed() -> Boolean
+
+  @JavaMethod
+  open fn setPendingIntentBackgroundActivityLaunchAllowed(_ arg0: Boolean)
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn update(_ arg0: ActivityOptions?)
+}
+extension JavaClass<ActivityOptions> {
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_USAGE_TIME_REPORT: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_USAGE_TIME_REPORT_PACKAGES: String
+
+  @JavaStaticMethod
+  public fn makeTaskLaunchBehind() -> ActivityOptions!
+
+  @JavaStaticMethod
+  public fn makeBasic() -> ActivityOptions!
+
+  @JavaStaticMethod
+  public fn makeLaunchIntoPip(_ arg0: PictureInPictureParams?) -> ActivityOptions!
+}

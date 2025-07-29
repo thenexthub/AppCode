@@ -1,0 +1,45 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension ActivityManager.TaskDescription {
+  @JavaClass("android.app.ActivityManager$TaskDescription$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setIcon(_ arg0: Int32) -> ActivityManager.TaskDescription.Builder!
+
+  @JavaMethod
+  open fn setLabel(_ arg0: String) -> ActivityManager.TaskDescription.Builder!
+
+  @JavaMethod
+  open fn setPrimaryColor(_ arg0: Int32) -> ActivityManager.TaskDescription.Builder!
+
+  @JavaMethod
+  open fn setBackgroundColor(_ arg0: Int32) -> ActivityManager.TaskDescription.Builder!
+
+  @JavaMethod
+  open fn setStatusBarColor(_ arg0: Int32) -> ActivityManager.TaskDescription.Builder!
+
+  @JavaMethod
+  open fn setNavigationBarColor(_ arg0: Int32) -> ActivityManager.TaskDescription.Builder!
+
+  @JavaMethod
+  open fn build() -> ActivityManager.TaskDescription!
+  }
+}

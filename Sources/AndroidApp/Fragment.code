@@ -1,0 +1,222 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.app.Fragment", implements: FragmentBreadCrumbs.OnCreateContextMenuListener.this)
+open class Fragment: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn onTrimMemory(_ arg0: Int32)
+
+  @JavaMethod
+  open fn onStop()
+
+  @JavaMethod
+  open fn onAttachFragment(_ arg0: Fragment?)
+
+  @JavaMethod
+  open fn requestPermissions(_ arg0: [String], _ arg1: Int32)
+
+  @JavaMethod
+  open fn getUserVisibleHint() -> Boolean
+
+  @JavaMethod
+  open fn setUserVisibleHint(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setMenuVisibility(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setHasOptionsMenu(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getRetainInstance() -> Boolean
+
+  @JavaMethod
+  open fn setRetainInstance(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn onHiddenChanged(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isResumed() -> Boolean
+
+  @JavaMethod
+  open fn isInLayout() -> Boolean
+
+  @JavaMethod
+  open fn isRemoving() -> Boolean
+
+  @JavaMethod
+  open fn isDetached() -> Boolean
+
+  @JavaMethod
+  open fn isAdded() -> Boolean
+
+  @JavaMethod
+  open fn getParentFragment() -> Fragment!
+
+  @JavaMethod
+  open fn getActivity() -> Activity!
+
+  @JavaMethod
+  open fn getTargetFragment() -> Fragment!
+
+  @JavaMethod
+  open fn setTargetFragment(_ arg0: Fragment?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn isStateSaved() -> Boolean
+
+  @JavaMethod
+  open fn getTag() -> String
+
+  @JavaMethod
+  open fn onDetach()
+
+  @JavaMethod
+  open fn onLowMemory()
+
+  @JavaMethod
+  open fn onPause()
+
+  @JavaMethod
+  open fn onResume()
+
+  @JavaMethod
+  open fn onAttach(_ arg0: Activity?)
+
+  @JavaMethod
+  open fn setInitialSavedState(_ arg0: Fragment.SavedState?)
+
+  @JavaMethod
+  open fn getTargetRequestCode() -> Int32
+
+  @JavaMethod
+  open fn getChildFragmentManager() -> FragmentManager!
+
+  @JavaMethod
+  open fn onRequestPermissionsResult(_ arg0: Int32, _ arg1: [String], _ arg2: [Int32])
+
+  @JavaMethod
+  open fn shouldShowRequestPermissionRationale(_ arg0: String) -> Boolean
+
+  @JavaMethod
+  open fn onMultiWindowModeChanged(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn onPictureInPictureModeChanged(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn onDestroyOptionsMenu()
+
+  @JavaMethod
+  open fn setEnterSharedElementCallback(_ arg0: SharedElementCallback?)
+
+  @JavaMethod
+  open fn setExitSharedElementCallback(_ arg0: SharedElementCallback?)
+
+  @JavaMethod
+  open fn setAllowEnterTransitionOverlap(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getAllowEnterTransitionOverlap() -> Boolean
+
+  @JavaMethod
+  open fn setAllowReturnTransitionOverlap(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getAllowReturnTransitionOverlap() -> Boolean
+
+  @JavaMethod
+  open fn postponeEnterTransition()
+
+  @JavaMethod
+  open fn startPostponedEnterTransition()
+
+  @JavaMethod
+  open fn onDestroy()
+
+  @JavaMethod
+  open fn onDestroyView()
+
+  @JavaMethod
+  open fn getFragmentManager() -> FragmentManager!
+
+  @JavaMethod
+  open fn getLoaderManager() -> LoaderManager!
+
+  @JavaMethod
+  open fn isVisible() -> Boolean
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+
+  @JavaMethod
+  open fn isHidden() -> Boolean
+
+  @JavaMethod
+  open fn onStart()
+
+  @JavaMethod
+  open fn getId() -> Int32
+
+  @JavaMethod
+  open fn dump(_ arg0: String, _ arg1: FileDescriptor?, _ arg2: PrintWriter?, _ arg3: [String])
+
+  @JavaMethod
+  open fn getHost() -> JavaObject!
+
+  @JavaMethod
+  open fn getString(_ arg0: Int32, _ arg1: [JavaObject?]) -> String
+
+  @JavaMethod
+  open fn getString(_ arg0: Int32) -> String
+
+  @JavaMethod
+  open fn getText(_ arg0: Int32) -> CharSequence!
+}
+extension JavaClass<Fragment> {
+  @JavaStaticField(isFinal: true)
+  public var TRIM_MEMORY_BACKGROUND: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TRIM_MEMORY_COMPLETE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TRIM_MEMORY_MODERATE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TRIM_MEMORY_RUNNING_CRITICAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TRIM_MEMORY_RUNNING_LOW: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TRIM_MEMORY_RUNNING_MODERATE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TRIM_MEMORY_UI_HIDDEN: Int32
+}

@@ -1,0 +1,95 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.app.AlarmManager")
+open class AlarmManager: JavaObject {
+  @JavaMethod
+  open fn setRepeating(_ arg0: Int32, _ arg1: Int64, _ arg2: Int64, _ arg3: PendingIntent?)
+
+  @JavaMethod
+  open fn setWindow(_ arg0: Int32, _ arg1: Int64, _ arg2: Int64, _ arg3: PendingIntent?)
+
+  @JavaMethod
+  open fn setExact(_ arg0: Int32, _ arg1: Int64, _ arg2: PendingIntent?)
+
+  @JavaMethod
+  open fn setAlarmClock(_ arg0: AlarmManager.AlarmClockInfo?, _ arg1: PendingIntent?)
+
+  @JavaMethod
+  open fn setInexactRepeating(_ arg0: Int32, _ arg1: Int64, _ arg2: Int64, _ arg3: PendingIntent?)
+
+  @JavaMethod
+  open fn setAndAllowWhileIdle(_ arg0: Int32, _ arg1: Int64, _ arg2: PendingIntent?)
+
+  @JavaMethod
+  open fn setExactAndAllowWhileIdle(_ arg0: Int32, _ arg1: Int64, _ arg2: PendingIntent?)
+
+  @JavaMethod
+  open fn canScheduleExactAlarms() -> Boolean
+
+  @JavaMethod
+  open fn getNextAlarmClock() -> AlarmManager.AlarmClockInfo!
+
+  @JavaMethod
+  open fn set(_ arg0: Int32, _ arg1: Int64, _ arg2: PendingIntent?)
+
+  @JavaMethod
+  open fn cancel(_ arg0: AlarmManager.OnAlarmListener?)
+
+  @JavaMethod
+  open fn cancel(_ arg0: PendingIntent?)
+
+  @JavaMethod
+  open fn setTimeZone(_ arg0: String)
+
+  @JavaMethod
+  open fn setTime(_ arg0: Int64)
+}
+extension JavaClass<AlarmManager> {
+  @JavaStaticField(isFinal: true)
+  public var ACTION_NEXT_ALARM_CLOCK_CHANGED: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED: String
+
+  @JavaStaticField(isFinal: true)
+  public var ELAPSED_REALTIME: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ELAPSED_REALTIME_WAKEUP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var INTERVAL_DAY: Int64
+
+  @JavaStaticField(isFinal: true)
+  public var INTERVAL_FIFTEEN_MINUTES: Int64
+
+  @JavaStaticField(isFinal: true)
+  public var INTERVAL_HALF_DAY: Int64
+
+  @JavaStaticField(isFinal: true)
+  public var INTERVAL_HALF_HOUR: Int64
+
+  @JavaStaticField(isFinal: true)
+  public var INTERVAL_HOUR: Int64
+
+  @JavaStaticField(isFinal: true)
+  public var RTC: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RTC_WAKEUP: Int32
+}

@@ -1,0 +1,33 @@
+//
+//  HCILEPeriodicAdvertisingSyncLost.swift
+//  Bluetooth
+//
+//  Created by Alsey Coleman Miller on 6/15/18.
+//  Copyright © 2018 PureCodira. All rights reserved.
+//
+
+import Foundation
+
+/// LE Periodic Advertising Sync Lost Event
+///
+/// The event indicates that the Controller has not received a Periodic Advertising packet identified
+/// by Sync_Handle within the timeout period.
+@frozen
+public struct HCILEPeriodicAdvertisingSyncLost: HCIEventParameter {
+
+    public static immutable event = LowEnergyEvent.periodicAdvertisingSyncLost  // 0x10
+
+    public static immutable length = 2
+
+    public immutable syncHandle: UInt16  // Sync_Handle
+
+    public init?<Data: DataContainer>(data: Data) {
+
+        guard data.count == Self.length
+        else { return Nothing }
+
+        immutable syncHandle = UInt16(littleEndian: UInt16(bytes: (data[0], data[1])))
+
+        self.syncHandle = syncHandle
+    }
+}

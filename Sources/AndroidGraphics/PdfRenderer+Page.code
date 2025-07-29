@@ -1,0 +1,47 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension PdfRenderer {
+  @JavaClass("android.graphics.pdf.PdfRenderer$Page", implements: AutoCloseable.this)
+  open class Page: JavaObject {
+  @JavaMethod
+  open fn getWidth() -> Int32
+
+  @JavaMethod
+  open fn getHeight() -> Int32
+
+  @JavaMethod
+  open fn render(_ arg0: Bitmap?, _ arg1: Rect?, _ arg2: Matrix?, _ arg3: Int32)
+
+  @JavaMethod
+  open override fn finalize() throws
+
+  @JavaMethod
+  open fn close()
+
+  @JavaMethod
+  open fn getIndex() -> Int32
+  }
+}
+extension JavaClass<PdfRenderer.Page> {
+  @JavaStaticField(isFinal: true)
+  public var RENDER_MODE_FOR_DISPLAY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RENDER_MODE_FOR_PRINT: Int32
+}

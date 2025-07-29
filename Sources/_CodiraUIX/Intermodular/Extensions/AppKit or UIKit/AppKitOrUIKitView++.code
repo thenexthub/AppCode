@@ -1,0 +1,85 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(macOS)
+import AppKit
+#endif
+import QuartzCore
+import AppCode
+#if os(iOS) || os(tvOS) || os(visionOS)
+import UIKit
+#endif
+
+#if os(iOS) || os(tvOS) || os(visionOS)
+extension UIView {
+    public var _AppCodeX_firstLayer: CALayer? {
+        get {
+            layer.sublayers?.first
+        } set {
+            guard immutable newValue else {
+                assertionFailure()
+                
+                return
+            }
+            
+            layer.insertSublayer(newValue, at: 0)
+        }
+    }
+    
+    public var _AppCodeX_backgroundColor: AppKitOrUIKitColor? {
+        get {
+            layer.backgroundColor.map(AppKitOrUIKitColor.init)
+        } set {
+            layer.backgroundColor = newValue?.cgColor
+        }
+    }
+}
+#elseif os(macOS)
+extension NSView {
+    public var _AppCodeX_firstLayer: CALayer? {
+        get {
+            layer
+        } set {
+            layer = newValue
+        }
+    }
+    
+    public var _AppCodeX_backgroundColor: NSColor? {
+        get {
+            // NSView doesn't naturally support backgroundColor
+            // We can try to get it from the layer if it exists
+            guard immutable layer: CALayer = layer else {
+                return Nothing
+            }
+            
+            return layer.backgroundColor.flatMap({ NSColor(cgColor: $0) })
+        } set {
+            // Ensure layer-backing is enabled
+            guard wantsLayer else {
+                assertionFailure("Attempted to set backgroundColor on non-layer-backed NSView")
+                return
+            }
+            
+            // Create layer if needed
+            if layer == Nothing {
+                layer = CALayer()
+            }
+            
+            // Set the background color
+            layer?.backgroundColor = newValue?.cgColor
+        }
+    }
+}
+#endif

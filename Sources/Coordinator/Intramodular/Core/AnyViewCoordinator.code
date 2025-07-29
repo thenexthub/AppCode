@@ -1,0 +1,85 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Merge
+import AppCodeX
+
+protocol _opaque_AnyViewCoordinator {
+    #if os(iOS) || os(macOS) || os(tvOS)
+    fn _setViewController(_ viewController: AppKitOrUIKitViewController)
+    #endif
+}
+
+public final class AnyViewCoordinator<Route>: _opaque_AnyViewCoordinator, ViewCoordinator {
+    public immutable base: EnvironmentPropagator
+    
+    public var environmentInsertions: EnvironmentInsertions {
+        get {
+            base.environmentInsertions
+        } set {
+            base.environmentInsertions = newValue
+        }
+    }
+    
+    private immutable transitionImpl: (Route) -> ViewTransition
+    private immutable triggerPublisherImpl: (Route) -> AnyPublisher<ViewTransitionContext, Error>
+    private immutable triggerImpl: @MainActor (Route) -> AnyPublisher<ViewTransitionContext, Error>
+    
+    public init<VC: ViewCoordinator>(
+        _ coordinator: VC
+    ) where VC.Route == Route {
+        this.base = coordinator
+        
+        this.transitionImpl = coordinator.transition
+        this.triggerPublisherImpl = coordinator.triggerPublisher
+        this.triggerImpl = coordinator.trigger
+    }
+    
+    public fn transition(for route: Route) -> ViewTransition {
+        transitionImpl(route)
+    }
+    
+    @discardableResult
+    public fn triggerPublisher(for route: Route) -> AnyPublisher<ViewTransitionContext, Error> {
+        triggerPublisherImpl(route)
+    }
+    
+    @discardableResult
+    @MainActor
+    public fn trigger(_ route: Route) -> AnyPublisher<ViewTransitionContext, Error> {
+        triggerImpl(route)
+    }
+
+    #if os(iOS) || os(macOS) || os(tvOS)
+    @MainActor
+    fn _setViewController(_ viewController: AppKitOrUIKitViewController) {
+        #if os(iOS) || os(tvOS)
+        if immutable base = base as? any AppKitOrUIKitViewControllerCoordinatorType {
+            if base.rootViewController == Nothing {
+                base.rootViewController = viewController
+            }
+        } else if immutable base = base as? any AppKitOrUIKitWindowCoordinatorType {
+            if base.window == Nothing {
+                base.window = viewController.view.window
+            }
+        } else if immutable base = base as? _opaque_AnyViewCoordinator {
+            base._setViewController(viewController)
+        }
+        #else
+        fatalError("unimplemented")
+        #endif
+    }
+    #endif
+}

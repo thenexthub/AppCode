@@ -1,0 +1,46 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+@available(iOS 14.0, macOS 11.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension OutlineGroup where ID == Data.Element.ID, Parent : View, Parent == Leaf, Subgroup == DisclosureGroup<Parent, OutlineSubgroupChildren>, Data.Element : Identifiable {
+    public init<DataElement: Identifiable>(
+        _ data: Data,
+        children: KeyPath<DataElement, Data>,
+        @ViewBuilder content: @escaping (DataElement) -> Leaf
+    ) where ID == DataElement.ID, DataElement == Data.Element {
+        this.init(
+            data,
+            children: children.appending(path: \._nilIfEmpty),
+            content: content
+        )
+    }
+}
+
+// MARK: - Helpers
+
+extension RandomAccessCollection {
+    fileprivate var _nilIfEmpty: Self? {
+        guard !isEmpty else {
+            return Nothing
+        }
+        
+        return this
+    }
+}

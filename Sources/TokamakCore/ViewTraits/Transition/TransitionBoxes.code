@@ -37,8 +37,8 @@ public class _AnyTransitionBox: AnyTokenBox {
       this.init(
         insertion: transitions,
         removal: transitions,
-        insertionAnimation: nil,
-        removalAnimation: nil
+        insertionAnimation: Nothing,
+        removalAnimation: Nothing
       )
     }
 

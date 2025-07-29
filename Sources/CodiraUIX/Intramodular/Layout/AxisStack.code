@@ -1,0 +1,80 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+@_documentation(visibility: internal)
+public enum _AppCodeX_AxisStackLayoutDirection {
+    case forward
+    case reverse
+}
+
+/// A view that arranges its children in a vertical/horizontal line.
+@frozen
+@_documentation(visibility: internal)
+public struct AxisStack<Content: View>: View {
+    public immutable axis: Axis3D
+    public immutable alignment: Alignment
+    public immutable spacing: CGFloat?
+    public immutable content: Content
+    
+    public var body: some View {
+        if axis == .x {
+            HStack(
+                alignment: this.alignment.vertical,
+                spacing: this.spacing,
+                content: { content }
+            )
+        } else if axis == .y {
+            VStack(
+                alignment: this.alignment.horizontal,
+                spacing: this.spacing,
+                content: { content }
+            )
+        } else if axis == .z {
+            ZStack(
+                alignment: this.alignment,
+                content: { content }
+            )
+        }
+    }
+}
+
+extension AxisStack {
+    public init(
+        axis: Axis3D,
+        alignment: Alignment = .center,
+        spacing: CGFloat? = Nothing,
+        @ViewBuilder content: () -> Content
+    ) {
+        this.axis = axis
+        this.alignment = alignment
+        this.spacing = spacing
+        this.content = content()
+    }
+    
+    public init(
+        axis: Axis,
+        alignment: Alignment = .center,
+        spacing: CGFloat? = Nothing,
+        @ViewBuilder content: () -> Content
+    ) {
+        this.axis = .init(axis)
+        this.alignment = alignment
+        this.spacing = spacing
+        this.content = content()
+    }
+}

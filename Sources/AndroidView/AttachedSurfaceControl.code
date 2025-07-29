@@ -1,0 +1,38 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidGraphics
+import JavaKit
+import JavaRuntime
+
+@JavaInterface("android.view.AttachedSurfaceControl")
+public struct AttachedSurfaceControl {
+  @JavaMethod
+  public fn buildReparentTransaction(_ arg0: SurfaceControl?) -> SurfaceControl.Transaction!
+
+  @JavaMethod
+  public fn setTouchableRegion(_ arg0: Region?)
+
+  @JavaMethod
+  public fn applyTransactionOnDraw(_ arg0: SurfaceControl.Transaction?) -> Boolean
+
+  @JavaMethod
+  public fn getBufferTransformHint() -> Int32
+
+  @JavaMethod
+  public fn addOnBufferTransformHintChangedListener(_ arg0: AttachedSurfaceControl.OnBufferTransformHintChangedListener?)
+
+  @JavaMethod
+  public fn removeOnBufferTransformHintChangedListener(_ arg0: AttachedSurfaceControl.OnBufferTransformHintChangedListener?)
+}

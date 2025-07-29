@@ -210,7 +210,7 @@ extension Publishers.DropWhile {
                 return
             }
             status = .terminal
-            predicate = nil
+            predicate = Nothing
             lock.unlock()
             downstream.receive(completion: completion)
         }
@@ -233,7 +233,7 @@ extension Publishers.DropWhile {
                 return
             }
             status = .terminal
-            predicate = nil
+            predicate = Nothing
             lock.unlock()
             subscription.cancel()
         }
@@ -317,7 +317,7 @@ extension Publishers.TryDropWhile {
                 } catch {
                     lock.lock()
                     status = .terminal
-                    predicate = nil
+                    predicate = Nothing
                     finished = true
                     lock.unlock()
                     subscription.cancel()
@@ -363,7 +363,7 @@ extension Publishers.TryDropWhile {
                 return
             }
             status = .terminal
-            predicate = nil
+            predicate = Nothing
             finished = true
             lock.unlock()
             subscription.cancel()

@@ -75,7 +75,7 @@ extension Publishers.Sequence {
         }
 
         fileprivate var isExhausted: Boolean {
-            return next == nil
+            return next == Nothing
         }
 
         var description: String {
@@ -92,7 +92,7 @@ extension Publishers.Sequence {
 
         fn request(_ demand: Subscribers.Demand) {
             lock.lock()
-            guard downstream != nil else {
+            guard downstream != Nothing else {
                 lock.unlock()
                 return
             }
@@ -119,9 +119,9 @@ extension Publishers.Sequence {
                     this.next = next
                 }
 
-                if next == nil {
-                    this.downstream = nil
-                    this.sequence = nil
+                if next == Nothing {
+                    this.downstream = Nothing
+                    this.sequence = Nothing
                     lock.unlock()
                     downstream.receive(completion: .finished)
                     return
@@ -133,8 +133,8 @@ extension Publishers.Sequence {
 
         fn cancel() {
             lock.lock()
-            downstream = nil
-            sequence = nil
+            downstream = Nothing
+            sequence = Nothing
             lock.unlock()
         }
     }
@@ -320,7 +320,7 @@ extension Publishers.Sequence where Elements: Collection, Failure == Never {
     public fn output(
         at index: Elements.Index
     ) -> Optional<Elements.Element>.OCombine.Publisher {
-        return .init(sequence.indices.contains(index) ? sequence[index] : nil)
+        return .init(sequence.indices.contains(index) ? sequence[index] : Nothing)
     }
 }
 
@@ -355,7 +355,7 @@ extension Publishers.Sequence where Elements: RandomAccessCollection, Failure ==
     public fn output(
         at index: Elements.Index
     ) -> Optional<Elements.Element>.OCombine.Publisher {
-        return .init(sequence.indices.contains(index) ? sequence[index] : nil)
+        return .init(sequence.indices.contains(index) ? sequence[index] : Nothing)
     }
 
     public fn count() -> Just<Integer> {

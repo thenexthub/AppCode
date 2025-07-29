@@ -1,0 +1,89 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaUtil
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.os.health.HealthStats")
+open class HealthStats: JavaObject {
+  @JavaMethod
+  open fn getDataType() -> String
+
+  @JavaMethod
+  open fn hasTimer(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn getTimer(_ arg0: Int32) -> TimerStat!
+
+  @JavaMethod
+  open fn getTimerCount(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn getTimerTime(_ arg0: Int32) -> Int64
+
+  @JavaMethod
+  open fn getTimerKeyCount() -> Int32
+
+  @JavaMethod
+  open fn getTimerKeyAt(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn hasMeasurement(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn getMeasurement(_ arg0: Int32) -> Int64
+
+  @JavaMethod
+  open fn getMeasurementKeyCount() -> Int32
+
+  @JavaMethod
+  open fn hasStats(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn getMeasurementKeyAt(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn getStats(_ arg0: Int32) -> Map<JavaString, HealthStats>!
+
+  @JavaMethod
+  open fn getStatsKeyCount() -> Int32
+
+  @JavaMethod
+  open fn getStatsKeyAt(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn hasTimers(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn getTimers(_ arg0: Int32) -> Map<JavaString, TimerStat>!
+
+  @JavaMethod
+  open fn getTimersKeyCount() -> Int32
+
+  @JavaMethod
+  open fn getTimersKeyAt(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn hasMeasurements(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn getMeasurements(_ arg0: Int32) -> Map<JavaString, JavaLong>!
+
+  @JavaMethod
+  open fn getMeasurementsKeyCount() -> Int32
+
+  @JavaMethod
+  open fn getMeasurementsKeyAt(_ arg0: Int32) -> Int32
+}

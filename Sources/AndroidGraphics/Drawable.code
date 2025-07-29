@@ -1,0 +1,228 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import JavaIO
+import JavaLang
+import AndroidUtil
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.drawable.Drawable")
+open class Drawable: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn canApplyTheme() -> Boolean
+
+  @JavaMethod
+  open fn getChangingConfigurations() -> Int32
+
+  @JavaMethod
+  open fn getOpacity() -> Int32
+
+  @JavaMethod
+  open fn isStateful() -> Boolean
+
+  @JavaMethod
+  open fn draw(_ arg0: Canvas?)
+
+  @JavaMethod
+  open fn getAlpha() -> Int32
+
+  @JavaMethod
+  open fn hasFocusStateSpecified() -> Boolean
+
+  @JavaMethod
+  open fn getCurrent() -> Drawable!
+
+  @JavaMethod
+  open fn applyTheme(_ arg0: Resources.Theme?)
+
+  @JavaMethod
+  open fn setAlpha(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setTintList(_ arg0: ColorStateList?)
+
+  @JavaMethod
+  open fn setTintBlendMode(_ arg0: BlendMode?)
+
+  @JavaMethod
+  open fn getColorFilter() -> ColorFilter!
+
+  @JavaMethod
+  open fn setColorFilter(_ arg0: ColorFilter?)
+
+  @JavaMethod
+  open fn setColorFilter(_ arg0: Int32, _ arg1: PorterDuff.Mode?)
+
+  @JavaMethod
+  open fn onBoundsChange(_ arg0: Rect?)
+
+  @JavaMethod
+  open fn onStateChange(_ arg0: [Int32]) -> Boolean
+
+  @JavaMethod
+  open fn getConstantState() -> Drawable.ConstantState!
+
+  @JavaMethod
+  open fn mutate() -> Drawable!
+
+  @JavaMethod
+  open fn setBounds(_ arg0: Rect?)
+
+  @JavaMethod
+  open fn setBounds(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn copyBounds() -> Rect!
+
+  @JavaMethod
+  open fn copyBounds(_ arg0: Rect?)
+
+  @JavaMethod
+  open fn getDirtyBounds() -> Rect!
+
+  @JavaMethod
+  open fn setChangingConfigurations(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setDither(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setFilterBitmap(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isFilterBitmap() -> Boolean
+
+  @JavaMethod
+  open fn setCallback(_ arg0: Drawable.Callback?)
+
+  @JavaMethod
+  open fn getCallback() -> Drawable.Callback!
+
+  @JavaMethod
+  open fn invalidateSelf()
+
+  @JavaMethod
+  open fn scheduleSelf(_ arg0: Runnable?, _ arg1: Int64)
+
+  @JavaMethod
+  open fn unscheduleSelf(_ arg0: Runnable?)
+
+  @JavaMethod
+  open fn getLayoutDirection() -> Int32
+
+  @JavaMethod
+  open fn setLayoutDirection(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn onLayoutDirectionChanged(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn setTint(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setTintMode(_ arg0: PorterDuff.Mode?)
+
+  @JavaMethod
+  open fn clearColorFilter()
+
+  @JavaMethod
+  open fn setHotspot(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn setHotspotBounds(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn getHotspotBounds(_ arg0: Rect?)
+
+  @JavaMethod
+  open fn isProjected() -> Boolean
+
+  @JavaMethod
+  open fn jumpToCurrentState()
+
+  @JavaMethod
+  open fn setVisible(_ arg0: Boolean, _ arg1: Boolean) -> Boolean
+
+  @JavaMethod
+  open fn isVisible() -> Boolean
+
+  @JavaMethod
+  open fn setAutoMirrored(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isAutoMirrored() -> Boolean
+
+  @JavaMethod
+  open fn getTransparentRegion() -> Region!
+
+  @JavaMethod
+  open fn onLevelChange(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn getIntrinsicWidth() -> Int32
+
+  @JavaMethod
+  open fn getIntrinsicHeight() -> Int32
+
+  @JavaMethod
+  open fn getMinimumWidth() -> Int32
+
+  @JavaMethod
+  open fn getMinimumHeight() -> Int32
+
+  @JavaMethod
+  open fn getPadding(_ arg0: Rect?) -> Boolean
+
+  @JavaMethod
+  open fn getOpticalInsets() -> Insets!
+
+  @JavaMethod
+  open fn getOutline(_ arg0: Outline?)
+
+  @JavaMethod
+  open fn getBounds() -> Rect!
+
+  @JavaMethod
+  open fn getState() -> [Int32]
+
+  @JavaMethod
+  open fn setState(_ arg0: [Int32]) -> Boolean
+
+  @JavaMethod
+  open fn setLevel(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn getLevel() -> Int32
+}
+extension JavaClass<Drawable> {
+  @JavaStaticMethod
+  public fn resolveOpacity(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn createFromStream(_ arg0: InputStream?, _ arg1: String) -> Drawable!
+
+  @JavaStaticMethod
+  public fn createFromResourceStream(_ arg0: Resources?, _ arg1: TypedValue?, _ arg2: InputStream?, _ arg3: String) -> Drawable!
+
+  @JavaStaticMethod
+  public fn createFromResourceStream(_ arg0: Resources?, _ arg1: TypedValue?, _ arg2: InputStream?, _ arg3: String, _ arg4: BitmapFactory.Options?) -> Drawable!
+
+  @JavaStaticMethod
+  public fn createFromPath(_ arg0: String) -> Drawable!
+}

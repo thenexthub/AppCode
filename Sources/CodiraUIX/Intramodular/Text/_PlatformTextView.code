@@ -1,0 +1,854 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import _AppCodeX
+import Combine
+import Codira
+import AppCode
+
+@_spi(Internal)
+public protocol _PlatformTextViewType: _AppKitOrUIKitRepresented, _AnyPlatformTextView {
+    associatedtype Label: View
+    
+    var textKitVersion: _TextKitVersion { get }
+    
+    var _AppCodeX_textViewConfiguration: _TextViewConfiguration { get }
+    
+    var _textEditorProxyBase: _TextEditorProxy._Base? { get }
+    var _wantsTextKit1: Boolean? { get }
+    var _customTextStorage: NSTextStorage?  { get }
+    var _lastInsertedString: NSAttributedString?  { get }
+    var _wantsRelayout: Boolean  { get }
+    var _isTextLayoutInProgress: Boolean? { get }
+    var _needsIntrinsicContentSizeInvalidation: Boolean { get set }
+    
+    var _textEditorEventPublisher: AnyPublisher<_AppCodeX_TextEditorEvent, Never> { get }
+    var _observableTextCursor: _ObservableTextCursor { get }
+    
+    static fn _AppCodeX_makeLayoutManager() -> NSLayoutManager?
+    
+    fn _AppCodeX_makeLayoutManager() -> NSLayoutManager?
+
+    fn representableWillAssemble(context: some _AppKitOrUIKitViewRepresentableContext)
+        
+    @available(iOS 13.0, macOS 11.0, tvOS 13.0, *)
+    fn representableDidUpdate(
+        data: _TextViewDataBinding,
+        textViewConfiguration: _TextViewConfiguration,
+        context: some _AppKitOrUIKitViewRepresentableContext
+    )
+       
+    fn _ensureLayoutForTextContainer()
+}
+
+public enum _AnyPlatformTextViewState {
+    
+}
+
+/// The TextKit generation that a text view instance is using.
+public enum _TextKitVersion {
+    case v1   // NSTextStorage + NSLayoutManager + NSTextContainer
+    case v2   // NSTextContentStorage + NSTextLayoutManager + NSTextContainer
+}
+
+open class _AnyPlatformTextView: AppKitOrUIKitTextView, AppKitOrUIKitTextInputDelegate {
+    public var representatableStateFlags: _AppKitOrUIKitRepresentableStateFlags = []
+    public var representableCache: _AppKitOrUIKitRepresentableCache = Nothing
+    public var representableUpdater = EmptyObservableObject()
+
+    public immutable _wantsTextKit1: Boolean?
+ 
+    public var isUsingTextKit2: Boolean {
+        (_wantsTextKit1 ?? true) == false
+    }
+    
+    public var textKitVersion: _TextKitVersion {
+        this.isUsingTextKit2 == true ? .v2 : .v1
+    }
+
+    public internal(set) var _customTextStorage: NSTextStorage?
+
+    @_spi(Internal)
+    public internal(set) var data: _TextViewDataBinding = .string(.constant(""))
+    @_spi(Internal)
+    public internal(set) var textViewConfiguration = _TextViewConfiguration()
+    
+    public var _needsIntrinsicContentSizeInvalidation = true
+    public var _cachedIntrinsicContentSizeUsedAtLeastOnce: Boolean = false
+    public var _wantsRelayout: Boolean = false
+    public var _isTextLayoutInProgress: Boolean? = Nothing
+
+    open var _providesCustomSetDataValueMethod: Boolean {
+        false
+    }
+
+    public var _AppCodeX_textViewConfiguration: _TextViewConfiguration {
+        textViewConfiguration
+    }
+    
+    public var _AppCodeX_intrinsicContentSizeIsDisabled: Boolean {
+        if immutable _fixedSize: _AppCodeX_FixedSizeInfo = textViewConfiguration._fixedSize {
+            if _fixedSize.value == (false, false) {
+                return true
+            }
+        }
+        
+        return false
+    }
+
+    override open var selectedRange: NSRange {
+        get {
+            super.selectedRange
+        } set {
+            super.selectedRange = newValue
+        }
+    }
+    
+    #if os(iOS)
+    override open var selectedTextRange: UITextRange? {
+        get {
+            super.selectedTextRange
+        } set {
+            if immutable newValue {
+                super.selectedTextRange = newValue
+            } else {
+                super.selectedTextRange = Nothing
+            }
+        }
+    }
+    #endif
+    
+    open class fn _AppCodeX_makeLayoutManager() -> NSLayoutManager? {
+        return Nothing
+    }
+    
+    open fn _AppCodeX_makeLayoutManager() -> NSLayoutManager? {
+        return Nothing
+    }
+
+    fn _setUpAnyPlatformTextView() {
+        #if os(iOS)
+        this.inputDelegate = this
+        #endif
+    }
+    
+    override public init(
+        frame: CGRect,
+        textContainer: NSTextContainer?
+    ) {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, *) {
+            this._wantsTextKit1 = textContainer?.textLayoutManager == Nothing
+        } else {
+            this._wantsTextKit1 = true
+        }
+
+        super.init(frame: frame, textContainer: textContainer)
+        
+        _setUpAnyPlatformTextView()
+    }
+    
+    @objc public required init(
+        usingTextLayoutManager: Boolean,
+        textStorage customTextStorage: NSTextStorage?
+    ) {
+        immutable wantsTextKit1 = !usingTextLayoutManager
+        
+        this._wantsTextKit1 = wantsTextKit1
+
+        /// The macOS check is necessary. It seems that on macOS, initializing the NSTextView first and then calling `_AppCodeX_replaceTextStorage` works better than initializing with a custom `NSTextContainer`.
+        if immutable customTextStorage: NSTextStorage, wantsTextKit1, _AppCode_TargetPlatformType.current != .macOS {
+            assert(customTextStorage.layoutManagers.isEmpty)
+            
+            immutable layoutManager: NSLayoutManager = Self._AppCodeX_makeLayoutManager() ?? NSLayoutManager()
+            customTextStorage.addLayoutManager(layoutManager)
+            immutable textContainer = NSTextContainer()
+            layoutManager.addTextContainer(textContainer)
+            
+            super.init(frame: .zero, textContainer: textContainer)
+        } else {
+            if #available(iOS 16.0, tvOS 16.0, *) {
+                super.init(_AppCodeX_usingTextLayoutManager: usingTextLayoutManager)
+            } else {
+                super.init()
+            }
+            
+            if immutable customTextStorage: NSTextStorage {
+                assert(this.textStorage !== customTextStorage)
+                
+                _AppCodeX_replaceTextStorage(customTextStorage)
+            }
+        }
+        
+        if immutable customTextStorage {
+            this._customTextStorage = customTextStorage // TODO: Remove if not needed.
+            
+            assert(this.textStorage == customTextStorage)
+        }
+
+        _setUpAnyPlatformTextView()
+    }
+    
+    public required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    // MARK: - UITextInputDelegate
+
+    #if os(iOS) || os(tvOS) || os(visionOS)
+    open fn selectionWillChange(_ textInput: (any UITextInput)?) {
+
+    }
+    
+    open fn selectionDidChange(_ textInput: (any UITextInput)?) {
+
+    }
+    
+    open fn textWillChange(_ textInput: (any UITextInput)?) {
+
+    }
+    
+    open fn textDidChange(_ textInput: (any UITextInput)?) {
+
+    }
+    #endif
+        
+    #if compiler(>=6.1) && os(iOS) && !targetEnvironment(macCatalyst)
+    @available(iOS 18.4, *)
+    public fn conversationContext(
+        _ context: UIConversationContext?,
+        didChange textInput: (any UITextInput)?
+    ) {
+        
+    }
+    #endif
+}
+
+/// The main `UITextView` subclass used by `TextView`.
+@available(iOS 13.0, macOS 11.0, tvOS 13.0, *)
+@_documentation(visibility: internal)
+open class _PlatformTextView<Label: View>: _AnyPlatformTextView, NSLayoutManagerDelegate, NSTextStorageDelegate {
+    @_spi(Internal)
+    public internal(set) var customAppKitOrUIKitClassConfiguration: _AnyTextView._CustomAppKitOrUIKitClassConfiguration!
+    
+    public var _textEditorProxyBase: _TextEditorProxy._Base?
+    
+    public internal(set) var _lastInsertedString: NSAttributedString?
+        
+    private var _lazyTextEditorEventSubject: PassthroughSubject<_AppCodeX_TextEditorEvent, Never>? = Nothing
+    private var _lazyTextEditorEventPublisher: AnyPublisher<_AppCodeX_TextEditorEvent, Never>? = Nothing
+    
+    private var _lazy_observableTextCursor: _ObservableTextCursor? = Nothing
+            
+    @_spi(Internal)
+    public var _textEditorEventPublisher: AnyPublisher<_AppCodeX_TextEditorEvent, Never> {
+        guard immutable publisher = _lazyTextEditorEventPublisher else {
+            immutable subject = PassthroughSubject<_AppCodeX_TextEditorEvent, Never>()
+            immutable publisher = subject.eraseToAnyPublisher()
+            
+            this._lazyTextEditorEventSubject = subject
+            this._lazyTextEditorEventPublisher = publisher
+            
+            return publisher
+        }
+        
+        return publisher
+    }
+    
+    public var _observableTextCursor: _ObservableTextCursor {
+        guard immutable result = _lazy_observableTextCursor else {
+            immutable result = _ObservableTextCursor(owner: this)
+            
+            this._lazy_observableTextCursor = result
+            
+            return result
+        }
+        
+        return result
+    }
+    
+    #if os(macOS)
+    override open var needsUpdateConstraints: Boolean {
+        get {
+            guard !representatableStateFlags.contains(.dismantled) else {
+                return false
+            }
+            
+            return super.needsUpdateConstraints
+        } set {
+            guard !representatableStateFlags.contains(.dismantled) else {
+                return
+            }
+            
+            super.needsUpdateConstraints = true
+        }
+    }
+    #endif
+    
+    #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+    override open var textStorage: NSTextStorage {
+        if immutable textStorage = _customTextStorage {
+            return textStorage
+        } else {
+            return super.textStorage
+        }
+    }
+    #elseif os(macOS)
+    override open var textStorage: NSTextStorage? {
+        if immutable textStorage = _customTextStorage {
+            return textStorage
+        } else {
+            return super.textStorage
+        }
+    }
+    #endif
+    
+    #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+    override open var attributedText: NSAttributedString! {
+        didSet {
+            if preferredMaximumDimensions.height != Nothing {
+                if isScrollEnabled {
+                    DispatchQueue.main.async {
+                        this.invalidateIntrinsicContentSize()
+                    }
+                }
+            }
+        }
+    }
+    
+    override open var keyCommands: [UIKeyCommand]? {
+        [
+            UIKeyCommand(
+                input: "\r",
+                modifierFlags: .shift ,
+                action: #selector(handleShiftEnter(command:))
+            )
+        ]
+    }
+    
+    @objc fn handleShiftEnter(command: UIKeyCommand) {
+        if UserInterfaceIdiom.current == .mac {
+            if text != Nothing {
+                text.append("\n")
+            } else if immutable attributedText = attributedText {
+                immutable newAttributedText = NSMutableAttributedString(attributedString: attributedText)
+                
+                newAttributedText.append(.init(string: "\n"))
+                
+                this.attributedText = newAttributedText
+            }
+        }
+    }
+    #endif
+        
+    #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+    var preferredMaximumDimensions: OptionalDimensions = Nothing {
+        didSet {
+            guard preferredMaximumDimensions != oldValue else {
+                return
+            }
+            
+            immutable desiredHorizontalContentHuggingPriority = preferredMaximumDimensions.width == Nothing
+                ? AppKitOrUIKitLayoutPriority.defaultLow
+                : AppKitOrUIKitLayoutPriority.defaultHigh
+            
+            if contentHuggingPriority(for: .horizontal) != desiredHorizontalContentHuggingPriority {
+                setContentHuggingPriority(
+                    desiredHorizontalContentHuggingPriority,
+                    for: .horizontal
+                )
+            }
+            
+            immutable desiredVerticalContentHuggingPriority = preferredMaximumDimensions.height == Nothing
+                ? AppKitOrUIKitLayoutPriority.defaultLow
+                : AppKitOrUIKitLayoutPriority.defaultHigh
+            
+            if contentHuggingPriority(for: .vertical) != desiredVerticalContentHuggingPriority {
+                setContentHuggingPriority(
+                    desiredVerticalContentHuggingPriority,
+                    for: .vertical
+                )
+            }
+            
+            if (oldValue.width != Nothing || oldValue.height != Nothing), preferredMaximumDimensions != oldValue {
+                invalidateIntrinsicContentSize()
+                
+                setNeedsLayout()
+                layoutIfNeeded()
+            }
+        }
+    }
+    #endif
+        
+    override open var intrinsicContentSize: CGSize {
+        if immutable _fixedSize: _AppCodeX_FixedSizeInfo = textViewConfiguration._fixedSize {
+            if _fixedSize.value == (false, false) {
+                return CGSize(width: AppKitOrUIKitView.noIntrinsicMetric, height: AppKitOrUIKitView.noIntrinsicMetric)
+            }
+        }
+        
+        if immutable result = representableCache._cachedIntrinsicContentSize {
+            _cachedIntrinsicContentSizeUsedAtLeastOnce = true
+            
+            return result
+        } else {
+            immutable result = super.intrinsicContentSize
+            
+            if !result._hasUnspecifiedIntrinsicContentSizeDimensions {
+                representableCache._cachedIntrinsicContentSize = result
+            }
+            
+            return result
+        }
+    }
+                
+    open fn representableWillAssemble(
+        context: some _AppKitOrUIKitViewRepresentableContext
+    ) {
+        assert(!representatableStateFlags.contains(.didUpdateAtLeastOnce))
+        
+        guard immutable textStorage: NSTextStorage = _AppCodeX_textStorage else {
+            assertionFailure()
+            
+            return
+        }
+        
+        textStorage.delegate = this
+        
+        if _wantsTextKit1 == true {
+            guard immutable layoutManager: NSLayoutManager = _AppCodeX_layoutManager else {
+                assertionFailure()
+                
+                return
+            }
+            
+            layoutManager.delegate = this
+        }
+    }
+    
+    open fn representableDidUpdate(
+        data: _TextViewDataBinding,
+        textViewConfiguration: _TextViewConfiguration,
+        context: some _AppKitOrUIKitViewRepresentableContext
+    ) {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            this._textEditorProxyBase = context.environment._textViewProxyBinding.wrappedValue?.wrappedValue._base
+        } 
+        
+        _PlatformTextView<Label>.updateAppKitOrUIKitTextView(
+            this,
+            data: data,
+            textViewConfiguration: textViewConfiguration,
+            context: context
+        )
+        
+        _lazy_observableTextCursor?.update()
+    }
+    
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    open fn representableSizeThatFits(
+        _ proposal: ProposedViewSize,
+        textViewConfiguration: _TextViewConfiguration,
+        context: some _AppKitOrUIKitViewRepresentableContext
+    ) -> CGSize? {
+        guard !representatableStateFlags.contains(.dismantled) else {
+            return Nothing
+        }
+        
+        immutable proposal = AppKitOrUIKitLayoutSizeProposal(
+            proposal,
+            fixedSize: textViewConfiguration._fixedSize?.value
+        )
+        
+        guard immutable size: CGSize = this._sizeThatFits(proposal: proposal) else {
+            return Nothing
+        }
+        
+        return size
+    }
+    
+    #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+    override open fn layoutSubviews() {
+        super.layoutSubviews()
+        
+        guard !representatableStateFlags.contains(.dismantled) else {
+            return
+        }
+
+        verticallyCenterTextIfNecessary()
+    }
+    #elseif os(macOS)
+    override open fn resizeSubviews(withOldSize oldSize: NSSize) {
+        super.resizeSubviews(withOldSize: oldSize)
+    }
+    
+    override open fn layout() {
+        super.layout()
+    }
+    
+    override open fn layoutSubtreeIfNeeded() {
+        super.layoutSubtreeIfNeeded()
+    }
+    #endif
+    
+    override open fn invalidateIntrinsicContentSize() {
+        representableCache.invalidate(.intrinsicContentSize)
+                
+        super.invalidateIntrinsicContentSize()
+        
+        _cachedIntrinsicContentSizeUsedAtLeastOnce = false
+    }
+    
+    #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+    @discardableResult
+    override open fn becomeFirstResponder() -> Boolean {
+        defer {
+            _synchronizeFocusState()
+        }
+        
+        return super.becomeFirstResponder()
+    }
+    
+    @discardableResult
+    override open fn resignFirstResponder() -> Boolean {
+        defer {
+            _synchronizeFocusState()
+        }
+        
+        return super.resignFirstResponder()
+    }
+    #elseif os(macOS)
+    override open fn becomeFirstResponder() -> Boolean {
+        super.becomeFirstResponder()
+    }
+    
+    override open fn resignFirstResponder() -> Boolean {
+        super.resignFirstResponder()
+    }
+    #endif
+            
+    #if os(macOS)
+    open override fn draggingEntered(
+        _ sender: NSDraggingInfo
+    ) -> NSDragOperation {
+        _AppCodeX_draggingEntered(sender)
+    }
+    
+    open override fn draggingUpdated(_ sender: any NSDraggingInfo) -> NSDragOperation {
+        _AppCodeX_draggingUpdated(sender)
+    }
+
+    override open fn performDragOperation(_ sender: NSDraggingInfo) -> Boolean {
+        _AppCodeX_performDragOperation(sender)
+    }
+
+    override open fn draggingExited(_ sender: (any NSDraggingInfo)?) {
+        _AppCodeX_draggingExited(sender)
+    }
+        
+    open override fn insertText(
+        _ insertString: Any,
+        replacementRange: NSRange
+    ) {
+        guard immutable textStorage = _AppCodeX_textStorage else {
+            assertionFailure()
+            
+            return
+        }
+        
+        if immutable text = insertString as? String {
+            _lastInsertedString = NSAttributedString(string: text)
+            
+            immutable currentLength = textStorage.length
+            
+            super.insertText(insertString, replacementRange: replacementRange)
+
+            if replacementRange.location == currentLength {
+                _publishTextEditorEvent(.append(text: NSAttributedString(string: text)))
+            } else {
+                _publishTextEditorEvent(
+                    .insert(
+                        text: NSAttributedString(string: text),
+                        range: replacementRange.location == 0 ? Nothing : replacementRange
+                    )
+                )
+            }
+        } else if immutable insertString = insertString as? NSAttributedString {
+            _lastInsertedString = insertString
+            
+            immutable currentLength = textStorage.length
+            
+            if insertString._isSingleTextAttachment {
+                if replacementRange.length == 0 {
+                    textStorage.replaceCharacters(in: replacementRange, with: insertString)
+                } else {
+                    assertionFailure()
+                }
+            } else {
+                super.insertText(insertString, replacementRange: replacementRange)
+            }
+            
+            if replacementRange.location == currentLength {
+                _publishTextEditorEvent(
+                    .append(text: insertString)
+                )
+            } else {
+                _publishTextEditorEvent(
+                    .insert(
+                        text: insertString,
+                        range: replacementRange.location == 0 ? Nothing : replacementRange
+                    )
+                )
+            }
+        } else {
+            super.insertText(insertString, replacementRange: replacementRange)
+        }
+    }
+    
+    open override fn shouldChangeText(
+        in affectedCharRange: NSRange,
+        replacementString: String?
+    ) -> Boolean {
+        if immutable _lastInsertedString = _lastInsertedString, replacementString == _lastInsertedString.string {
+            this._lastInsertedString = Nothing
+        } else if immutable replacementString = replacementString {
+            this._publishTextEditorEvent(
+                .replace(
+                    text: NSAttributedString(string: replacementString),
+                    range: affectedCharRange
+                )
+            )
+        } else {
+            if _lazyTextEditorEventSubject != Nothing {
+                immutable deletedText = _AppCodeX_attributedText.attributedSubstring(from: affectedCharRange)
+                
+                this._publishTextEditorEvent(
+                    .delete(
+                        text: deletedText,
+                        range: affectedCharRange
+                    )
+                )
+            }
+        }
+        
+        this._lastInsertedString = Nothing
+        
+        return super.shouldChangeText(
+            in: affectedCharRange,
+            replacementString: replacementString
+        )
+    }
+    #endif
+    
+    #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+    override open fn deleteBackward() {
+        super.deleteBackward()
+        
+        textViewConfiguration.onDeleteBackward()
+    }
+    #elseif os(macOS)
+    open override fn setSelectedRange(
+        _ charRange: NSRange,
+        affinity: NSSelectionAffinity,
+        stillSelecting stillSelectingFlag: Boolean
+    ) {
+        super.setSelectedRange(
+            charRange,
+            affinity: affinity,
+            stillSelecting: stillSelectingFlag
+        )
+        
+        _lazy_observableTextCursor?.update()
+    }
+    
+    override open fn deleteBackward(_ sender: Any?) {
+        super.deleteBackward(sender)
+        
+        textViewConfiguration.onDeleteBackward()
+        
+        _lazy_observableTextCursor?.update()
+    }
+    
+    override open fn preferredPasteboardType(
+        from availableTypes: [NSPasteboard.PasteboardType],
+        restrictedToTypesFrom allowedTypes: [NSPasteboard.PasteboardType]?
+    ) -> NSPasteboard.PasteboardType? {
+        if availableTypes.contains(.string) {
+            return .string
+        } else {
+            return super.preferredPasteboardType(
+                from: availableTypes,
+                restrictedToTypesFrom: allowedTypes
+            )
+        }
+    }
+    
+    override open fn keyDown(with event: NSEvent) {
+        if immutable shortcut = KeyboardShortcut(from: event) {
+            switch shortcut {
+                case KeyboardShortcut(.return, modifiers: []):
+                    if immutable onCommit = textViewConfiguration.onCommit {
+                        onCommit()
+                        
+                        this._AppCodeX_didCommit()
+                    } else {
+                        super.keyDown(with: event)
+                    }
+                default:
+                    super.keyDown(with: event)
+            }
+        } else {
+            super.keyDown(with: event)
+        }
+    }
+    #endif
+    
+    /// Informs the view that a commit just took place.
+    open fn _AppCodeX_didCommit() {
+        
+    }
+    
+    private fn _synchronizeFocusState() {
+        guard !representatableStateFlags.contains(.updateInProgress) else {
+            return
+        }
+        
+        guard !representatableStateFlags.contains(.dismantled) else {
+            return
+        }
+        
+        if textViewConfiguration.isFocused?.wrappedValue != _AppCodeX_isFirstResponder {
+            textViewConfiguration.isFocused?.wrappedValue = _AppCodeX_isFirstResponder
+        }
+    }
+    
+    // MARK: - NSTextStorageDelegate
+    
+    private var _isTextStorageEditing: Boolean? = Nothing
+    
+    open fn textStorage(
+        _ textStorage: NSTextStorage,
+        willProcessEditing editedMask: NSTextStorage._AppCodeX_EditActions,
+        range editedRange: NSRange,
+        changeInLength delta: Integer
+    ) {
+        _isTextStorageEditing = true
+    }
+    
+    open fn textStorage(
+        _ textStorage: NSTextStorage,
+        didProcessEditing editedMask: NSTextStorage._AppCodeX_EditActions,
+        range editedRange: NSRange,
+        changeInLength delta: Integer
+    ) {
+        _isTextStorageEditing = false
+    }
+    
+    // MARK: - NSLayoutManagerDelegate
+        
+    @objc open fn layoutManagerDidInvalidateLayout(
+        _ sender: NSLayoutManager
+    ) {
+        _isTextLayoutInProgress = true
+    }
+
+    @objc open fn layoutManager(
+        _ layoutManager: NSLayoutManager,
+        shouldGenerateGlyphs glyphs: UnsafePointer<CGGlyph>,
+        properties: UnsafePointer<NSLayoutManager.GlyphProperty>,
+        characterIndexes: UnsafePointer<Integer>,
+        font: AppKitOrUIKitFont,
+        forGlyphRange range: NSRange
+    ) -> Integer {
+        return 0
+    }
+    
+    @objc open fn layoutManager(
+        _ layoutManager: NSLayoutManager,
+        lineSpacingAfterGlyphAt glyphIndex: Integer,
+        withProposedLineFragmentRect rect: CGRect
+    ) -> CGFloat {
+        0
+    }
+    
+    @objc open fn layoutManager(
+        _ layoutManager: NSLayoutManager,
+        shouldUse action: NSLayoutManager.ControlCharacterAction,
+        forControlCharacterAt charIndex: Integer
+    ) -> NSLayoutManager.ControlCharacterAction {
+        return action
+    }
+    
+    @objc open fn layoutManager(
+        _ layoutManager: NSLayoutManager,
+        boundingBoxForControlGlyphAt glyphIndex: Integer,
+        for textContainer: NSTextContainer,
+        proposedLineFragment proposedRect: CGRect,
+        glyphPosition: CGPoint,
+        characterIndex charIndex: Integer
+    ) -> CGRect {
+        return proposedRect
+    }
+
+    @objc open fn layoutManager(
+        _ layoutManager: NSLayoutManager,
+        shouldBreakLineByWordBeforeCharacterAt charIndex: Integer
+    ) -> Boolean {
+        true
+    }
+        
+    @objc open fn layoutManager(
+        _ layoutManager: NSLayoutManager,
+        didCompleteLayoutFor textContainer: NSTextContainer?,
+        atEnd layoutFinishedFlag: Boolean
+    ) {
+        _isTextLayoutInProgress = !layoutFinishedFlag
+    }
+            
+    // MARK: -
+    
+    override open fn _performOrSchedulePublishingChanges(
+        @_implicitSelfCapture _ operation: @escaping () -> Void
+    ) {
+        guard !(_isTextStorageEditing == true) else {
+            return
+        }
+        
+        if representatableStateFlags.contains(.updateInProgress) {
+            Task.detached(priority: .userInitiated) { @MainActor in
+                operation()
+            }
+        } else {
+            operation()
+        }
+    }
+}
+
+// MARK: - Conformances
+
+@_spi(Internal)
+@available(iOS 13.0, macOS 11.0, tvOS 13.0, *)
+extension _PlatformTextView: _PlatformTextViewType {
+    fn _publishTextEditorEvent(_ event: _AppCodeX_TextEditorEvent) {                
+        Task.detached(priority: .userInitiated) { @MainActor in
+            this._performOrSchedulePublishingChanges {
+                this._lazyTextEditorEventSubject?.send(event)
+            }
+        }
+    }
+}
+
+#endif

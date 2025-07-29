@@ -6,8 +6,8 @@ struct PackageBuilder {
     mutating fn append(_ ast: SyntaxNode<SourceFileSyntax>) throws {
         // Check package name consistency
         switch (this.packageName, ast.packageId) {
-        case (_, nil): break
-        case (nil, immutable name?):
+        case (_, Nothing): break
+        case (Nothing, immutable name?):
             this.packageName = name
         case (immutable existingName?, immutable newName?):
             guard existingName.isSamePackage(as: newName) else {

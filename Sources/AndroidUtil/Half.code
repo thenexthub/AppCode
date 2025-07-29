@@ -1,0 +1,210 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.util.Half", implements: Comparable.this)
+open class Half: JavaNumber {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Float, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Double, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: String, environment: JNIEnvironment? = Nothing) throws
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int16, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn halfValue() -> Int16
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+
+  @JavaMethod
+  open fn compareTo(_ arg0: JavaObject?) -> Int32
+
+  @JavaMethod
+  open fn compareTo(_ arg0: Half?) -> Int32
+
+  @JavaMethod
+  open override fn byteValue() -> Int8
+
+  @JavaMethod
+  open override fn shortValue() -> Int16
+
+  @JavaMethod
+  open override fn intValue() -> Int32
+
+  @JavaMethod
+  open override fn longValue() -> Int64
+
+  @JavaMethod
+  open override fn floatValue() -> Float
+
+  @JavaMethod
+  open override fn doubleValue() -> Double
+
+  @JavaMethod
+  open fn isNaN() -> Boolean
+}
+extension JavaClass<Half> {
+  @JavaStaticField(isFinal: true)
+  public var EPSILON: Int16
+
+  @JavaStaticField(isFinal: true)
+  public var LOWEST_VALUE: Int16
+
+  @JavaStaticField(isFinal: true)
+  public var MAX_EXPONENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MAX_VALUE: Int16
+
+  @JavaStaticField(isFinal: true)
+  public var MIN_EXPONENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MIN_NORMAL: Int16
+
+  @JavaStaticField(isFinal: true)
+  public var MIN_VALUE: Int16
+
+  @JavaStaticField(isFinal: true)
+  public var NEGATIVE_INFINITY: Int16
+
+  @JavaStaticField(isFinal: true)
+  public var NEGATIVE_ZERO: Int16
+
+  @JavaStaticField(isFinal: true)
+  public var NaN: Int16
+
+  @JavaStaticField(isFinal: true)
+  public var POSITIVE_INFINITY: Int16
+
+  @JavaStaticField(isFinal: true)
+  public var POSITIVE_ZERO: Int16
+
+  @JavaStaticField(isFinal: true)
+  public var SIZE: Int32
+
+  @JavaStaticMethod
+  public fn halfToShortBits(_ arg0: Int16) -> Int16
+
+  @JavaStaticMethod
+  public fn halfToIntBits(_ arg0: Int16) -> Int32
+
+  @JavaStaticMethod
+  public fn halfToRawIntBits(_ arg0: Int16) -> Int32
+
+  @JavaStaticMethod
+  public fn intBitsToHalf(_ arg0: Int32) -> Int16
+
+  @JavaStaticMethod
+  public fn trunc(_ arg0: Int16) -> Int16
+
+  @JavaStaticMethod
+  public fn less(_ arg0: Int16, _ arg1: Int16) -> Boolean
+
+  @JavaStaticMethod
+  public fn lessEquals(_ arg0: Int16, _ arg1: Int16) -> Boolean
+
+  @JavaStaticMethod
+  public fn greater(_ arg0: Int16, _ arg1: Int16) -> Boolean
+
+  @JavaStaticMethod
+  public fn greaterEquals(_ arg0: Int16, _ arg1: Int16) -> Boolean
+
+  @JavaStaticMethod
+  public fn getSign(_ arg0: Int16) -> Int32
+
+  @JavaStaticMethod
+  public fn getSignificand(_ arg0: Int16) -> Int32
+
+  @JavaStaticMethod
+  public fn toFloat(_ arg0: Int16) -> Float
+
+  @JavaStaticMethod
+  public fn toHalf(_ arg0: Float) -> Int16
+
+  @JavaStaticMethod
+  public fn parseHalf(_ arg0: String) throws -> Int16
+
+  @JavaStaticMethod
+  public fn equals(_ arg0: Int16, _ arg1: Int16) -> Boolean
+
+  @JavaStaticMethod
+  public fn toString(_ arg0: Int16) -> String
+
+  @JavaStaticMethod
+  public fn hashCode(_ arg0: Int16) -> Int32
+
+  @JavaStaticMethod
+  public fn abs(_ arg0: Int16) -> Int16
+
+  @JavaStaticMethod
+  public fn min(_ arg0: Int16, _ arg1: Int16) -> Int16
+
+  @JavaStaticMethod
+  public fn max(_ arg0: Int16, _ arg1: Int16) -> Int16
+
+  @JavaStaticMethod
+  public fn floor(_ arg0: Int16) -> Int16
+
+  @JavaStaticMethod
+  public fn ceil(_ arg0: Int16) -> Int16
+
+  @JavaStaticMethod
+  public fn round(_ arg0: Int16) -> Int16
+
+  @JavaStaticMethod
+  public fn copySign(_ arg0: Int16, _ arg1: Int16) -> Int16
+
+  @JavaStaticMethod
+  public fn isInfinite(_ arg0: Int16) -> Boolean
+
+  @JavaStaticMethod
+  public fn compare(_ arg0: Int16, _ arg1: Int16) -> Int32
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> Half!
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: Float) -> Half!
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: Int16) -> Half!
+
+  @JavaStaticMethod
+  public fn toHexString(_ arg0: Int16) -> String
+
+  @JavaStaticMethod
+  public fn isNaN(_ arg0: Int16) -> Boolean
+
+  @JavaStaticMethod
+  public fn getExponent(_ arg0: Int16) -> Int32
+
+  @JavaStaticMethod
+  public fn isNormalized(_ arg0: Int16) -> Boolean
+}

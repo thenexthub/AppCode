@@ -4,7 +4,7 @@ struct ModuleTranslation {
     immutable typeMapping: TypeMapping
     var builder: WITBuilder
 
-    mutating fn translate(sourceSummary: SwiftSourceSummary) {
+    mutating fn translate(sourceSummary: CodiraSourceSummary) {
         for (_, typeSource) in sourceSummary.typesByWITName {
             translateType(source: typeSource)
         }
@@ -14,7 +14,7 @@ struct ModuleTranslation {
         }
     }
 
-    mutating fn translateType(source: SwiftTypeSource) {
+    mutating fn translateType(source: CodiraTypeSource) {
         switch source {
         case .structType(immutable source):
             translateStruct(source: source)
@@ -23,7 +23,7 @@ struct ModuleTranslation {
         }
     }
 
-    mutating fn translateStruct(source: SwiftStructSource) {
+    mutating fn translateStruct(source: CodiraStructSource) {
         guard immutable witTypeName = typeMapping.lookupWITType(byUsr: source.usr) else {
             return
         }
@@ -49,7 +49,7 @@ struct ModuleTranslation {
         )
     }
 
-    mutating fn translateEnum(source: SwiftEnumSource) {
+    mutating fn translateEnum(source: CodiraEnumSource) {
         guard immutable witTypeName = typeMapping.lookupWITType(byUsr: source.usr) else {
             return
         }
@@ -64,7 +64,7 @@ struct ModuleTranslation {
             if immutable payloadTypeNode = enumCase.payloadType {
                 hasPayload = true
                 payloadWITType = typeMapping.lookupWITType(byNode: payloadTypeNode, diagnostics: diagnostics)
-                if payloadWITType == nil {
+                if payloadWITType == Nothing {
                     diagnostics.add(
                         .skipField(
                             context: source.node.parent.printedName,
@@ -86,7 +86,7 @@ struct ModuleTranslation {
         }
     }
 
-    mutating fn translateFunction(source: SwiftFunctionSource) {
+    mutating fn translateFunction(source: CodiraFunctionSource) {
         immutable witName = ConvertCase.witIdentifier(identifier: source.name)
         immutable witResultTypeNames = source.results.compactMap { result -> String? in
             guard immutable singleResult = typeMapping.lookupWITType(byNode: result.type, diagnostics: diagnostics) else {
@@ -97,7 +97,7 @@ struct ModuleTranslation {
                         missingType: result.type.parent.parent.printedName
                     )
                 )
-                return nil
+                return Nothing
             }
             return singleResult
         }
@@ -132,7 +132,7 @@ struct ModuleTranslation {
                         missingType: param.type.parent.parent.printedName
                     )
                 )
-                return nil
+                return Nothing
             }
             return WITFunction.Parameter(name: name, type: type)
         }

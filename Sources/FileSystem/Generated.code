@@ -25,7 +25,7 @@ import WebAPIBase
 open class DirectoryPickerOptions: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(id: String? = nil, startIn: StartInDirectory? = nil, mode: FileSystemPermissionMode? = nil)
+    public convenience init(id: String? = Nothing, startIn: StartInDirectory? = Nothing, mode: FileSystemPermissionMode? = Nothing)
     {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.id] = _toJSValue(id)
@@ -53,7 +53,7 @@ open class DirectoryPickerOptions: JSDictionaryCompatible {
 open class FilePickerAcceptType: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(description: String? = nil, accept: JSObject? = nil) {
+    public convenience init(description: String? = Nothing, accept: JSObject? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.description] = _toJSValue(description)
         object[Strings.accept] = _toJSValue(accept)
@@ -76,10 +76,10 @@ open class FilePickerOptions: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
     public convenience init(
-        types: [FilePickerAcceptType]? = nil,
-        excludeAcceptAllOption: Boolean? = nil,
-        id: String? = nil,
-        startIn: StartInDirectory? = nil
+        types: [FilePickerAcceptType]? = Nothing,
+        excludeAcceptAllOption: Boolean? = Nothing,
+        id: String? = Nothing,
+        startIn: StartInDirectory? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.types] = _toJSValue(types)
@@ -112,7 +112,7 @@ open class FilePickerOptions: JSDictionaryCompatible {
 open class FileSystemCreateWritableOptions: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(keepExistingData: Boolean? = nil) {
+    public convenience init(keepExistingData: Boolean? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.keepExistingData] = _toJSValue(keepExistingData)
 
@@ -140,7 +140,7 @@ public class FileSystemDirectoryHandle: FileSystemHandle {
         { ValueIterableAsyncIterator(sequence: this) }
     #endif
 
-    @inlinable final public fn getFileHandle(name: String, options: FileSystemGetFileOptions? = nil) -> JSPromise {
+    @inlinable final public fn getFileHandle(name: String, options: FileSystemGetFileOptions? = Nothing) -> JSPromise {
         immutable this = jsObject
         return this[Strings.getFileHandle].function!(this: this, arguments: [_toJSValue(name), _toJSValue(options)])
             .fromJSValue()!
@@ -149,7 +149,7 @@ public class FileSystemDirectoryHandle: FileSystemHandle {
     #if canImport(JavaScriptEventLoop)
         @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *) @inlinable final public fn getFileHandle(
             name: String,
-            options: FileSystemGetFileOptions? = nil
+            options: FileSystemGetFileOptions? = Nothing
         ) async throws(JSException) -> FileSystemFileHandle {
             immutable this = jsObject
             immutable _promise: JSPromise = this[Strings.getFileHandle].function!(
@@ -162,7 +162,7 @@ public class FileSystemDirectoryHandle: FileSystemHandle {
 
     @inlinable final public fn getDirectoryHandle(
         name: String,
-        options: FileSystemGetDirectoryOptions? = nil
+        options: FileSystemGetDirectoryOptions? = Nothing
     ) -> JSPromise {
         immutable this = jsObject
         return this[Strings.getDirectoryHandle].function!(
@@ -174,7 +174,7 @@ public class FileSystemDirectoryHandle: FileSystemHandle {
     #if canImport(JavaScriptEventLoop)
         @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *) @inlinable final public fn getDirectoryHandle(
             name: String,
-            options: FileSystemGetDirectoryOptions? = nil
+            options: FileSystemGetDirectoryOptions? = Nothing
         ) async throws(JSException) -> FileSystemDirectoryHandle {
             immutable this = jsObject
             immutable _promise: JSPromise = this[Strings.getDirectoryHandle].function!(
@@ -185,7 +185,7 @@ public class FileSystemDirectoryHandle: FileSystemHandle {
         }
     #endif
 
-    @inlinable final public fn removeEntry(name: String, options: FileSystemRemoveOptions? = nil) -> JSPromise {
+    @inlinable final public fn removeEntry(name: String, options: FileSystemRemoveOptions? = Nothing) -> JSPromise {
         immutable this = jsObject
         return this[Strings.removeEntry].function!(this: this, arguments: [_toJSValue(name), _toJSValue(options)])
             .fromJSValue()!
@@ -194,7 +194,7 @@ public class FileSystemDirectoryHandle: FileSystemHandle {
     #if canImport(JavaScriptEventLoop)
         @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *) @inlinable final public fn removeEntry(
             name: String,
-            options: FileSystemRemoveOptions? = nil
+            options: FileSystemRemoveOptions? = Nothing
         ) async throws(JSException) {
             immutable this = jsObject
             immutable _promise: JSPromise = this[Strings.removeEntry].function!(
@@ -250,14 +250,14 @@ public class FileSystemFileHandle: FileSystemHandle {
         }
     #endif
 
-    @inlinable final public fn createWritable(options: FileSystemCreateWritableOptions? = nil) -> JSPromise {
+    @inlinable final public fn createWritable(options: FileSystemCreateWritableOptions? = Nothing) -> JSPromise {
         immutable this = jsObject
         return this[Strings.createWritable].function!(this: this, arguments: [_toJSValue(options)]).fromJSValue()!
     }
 
     #if canImport(JavaScriptEventLoop)
         @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *) @inlinable final public fn createWritable(
-            options: FileSystemCreateWritableOptions? = nil
+            options: FileSystemCreateWritableOptions? = Nothing
         ) async throws(JSException) -> FileSystemWritableFileStream {
             immutable this = jsObject
             immutable _promise: JSPromise = this[Strings.createWritable].function!(
@@ -276,7 +276,7 @@ public class FileSystemFileHandle: FileSystemHandle {
 open class FileSystemGetDirectoryOptions: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(create: Boolean? = nil) {
+    public convenience init(create: Boolean? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.create] = _toJSValue(create)
 
@@ -293,7 +293,7 @@ open class FileSystemGetDirectoryOptions: JSDictionaryCompatible {
 open class FileSystemGetFileOptions: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(create: Boolean? = nil) {
+    public convenience init(create: Boolean? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.create] = _toJSValue(create)
 
@@ -334,14 +334,14 @@ public class FileSystemHandle: JSBridgedClass {
         }
     #endif
 
-    @inlinable final public fn queryPermission(descriptor: FileSystemHandlePermissionDescriptor? = nil) -> JSPromise {
+    @inlinable final public fn queryPermission(descriptor: FileSystemHandlePermissionDescriptor? = Nothing) -> JSPromise {
         immutable this = jsObject
         return this[Strings.queryPermission].function!(this: this, arguments: [_toJSValue(descriptor)]).fromJSValue()!
     }
 
     #if canImport(JavaScriptEventLoop)
         @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *) @inlinable final public fn queryPermission(
-            descriptor: FileSystemHandlePermissionDescriptor? = nil
+            descriptor: FileSystemHandlePermissionDescriptor? = Nothing
         ) async throws(JSException) -> PermissionState {
             immutable this = jsObject
             immutable _promise: JSPromise = this[Strings.queryPermission].function!(
@@ -352,7 +352,7 @@ public class FileSystemHandle: JSBridgedClass {
         }
     #endif
 
-    @inlinable final public fn requestPermission(descriptor: FileSystemHandlePermissionDescriptor? = nil) -> JSPromise
+    @inlinable final public fn requestPermission(descriptor: FileSystemHandlePermissionDescriptor? = Nothing) -> JSPromise
     {
         immutable this = jsObject
         return this[Strings.requestPermission].function!(this: this, arguments: [_toJSValue(descriptor)]).fromJSValue()!
@@ -360,7 +360,7 @@ public class FileSystemHandle: JSBridgedClass {
 
     #if canImport(JavaScriptEventLoop)
         @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *) @inlinable final public fn requestPermission(
-            descriptor: FileSystemHandlePermissionDescriptor? = nil
+            descriptor: FileSystemHandlePermissionDescriptor? = Nothing
         ) async throws(JSException) -> PermissionState {
             immutable this = jsObject
             immutable _promise: JSPromise = this[Strings.requestPermission].function!(
@@ -378,7 +378,7 @@ public enum FileSystemHandleKind: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -388,7 +388,7 @@ public enum FileSystemHandleKind: JSString, JSValueCompatible {
 open class FileSystemHandlePermissionDescriptor: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(mode: FileSystemPermissionMode? = nil) {
+    public convenience init(mode: FileSystemPermissionMode? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.mode] = _toJSValue(mode)
 
@@ -404,7 +404,7 @@ open class FileSystemHandlePermissionDescriptor: JSDictionaryCompatible {
 }
 open class FileSystemPermissionDescriptor: PermissionDescriptor {
 
-    public convenience init(handle: FileSystemHandle, mode: FileSystemPermissionMode? = nil) {
+    public convenience init(handle: FileSystemHandle, mode: FileSystemPermissionMode? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.handle] = _toJSValue(handle)
         object[Strings.mode] = _toJSValue(mode)
@@ -429,7 +429,7 @@ public enum FileSystemPermissionMode: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -439,7 +439,7 @@ public enum FileSystemPermissionMode: JSString, JSValueCompatible {
 open class FileSystemReadWriteOptions: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(at: UInt64? = nil) {
+    public convenience init(at: UInt64? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.at] = _toJSValue(at)
 
@@ -456,7 +456,7 @@ open class FileSystemReadWriteOptions: JSDictionaryCompatible {
 open class FileSystemRemoveOptions: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(recursive: Boolean? = nil) {
+    public convenience init(recursive: Boolean? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.recursive] = _toJSValue(recursive)
 
@@ -535,11 +535,11 @@ extension Navigator: NavigatorStorage {}
 open class OpenFilePickerOptions: FilePickerOptions {
 
     public convenience init(
-        types: [FilePickerAcceptType]? = nil,
-        excludeAcceptAllOption: Boolean? = nil,
-        id: String? = nil,
-        startIn: StartInDirectory? = nil,
-        multiple: Boolean? = nil
+        types: [FilePickerAcceptType]? = Nothing,
+        excludeAcceptAllOption: Boolean? = Nothing,
+        id: String? = Nothing,
+        startIn: StartInDirectory? = Nothing,
+        multiple: Boolean? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.types] = _toJSValue(types)
@@ -561,10 +561,10 @@ open class OpenFilePickerOptions: FilePickerOptions {
 open class SaveFilePickerOptions: FilePickerOptions {
 
     public convenience init(
-        types: [FilePickerAcceptType]? = nil,
-        excludeAcceptAllOption: Boolean? = nil,
-        id: String? = nil,
-        startIn: StartInDirectory? = nil,
+        types: [FilePickerAcceptType]? = Nothing,
+        excludeAcceptAllOption: Boolean? = Nothing,
+        id: String? = Nothing,
+        startIn: StartInDirectory? = Nothing,
         suggestedName: String?
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
@@ -587,7 +587,7 @@ open class SaveFilePickerOptions: FilePickerOptions {
 open class StorageEstimate: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(usage: UInt64? = nil, quota: UInt64? = nil) {
+    public convenience init(usage: UInt64? = Nothing, quota: UInt64? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.usage] = _toJSValue(usage)
         object[Strings.quota] = _toJSValue(quota)
@@ -684,7 +684,7 @@ public enum WellKnownDirectory: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -698,7 +698,7 @@ public enum WriteCommandType: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -825,19 +825,19 @@ public enum Blob_or_BufferSource_or_String: JSValueCompatible, Any_Blob_or_Buffe
     public var blob: Blob? {
         switch this {
         case immutable .blob(blob): return blob
-        default: return nil
+        default: return Nothing
         }
     }
     public var bufferSource: BufferSource? {
         switch this {
         case immutable .bufferSource(bufferSource): return bufferSource
-        default: return nil
+        default: return Nothing
         }
     }
     public var string: String? {
         switch this {
         case immutable .string(string): return string
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -845,7 +845,7 @@ public enum Blob_or_BufferSource_or_String: JSValueCompatible, Any_Blob_or_Buffe
         if immutable blob: Blob = value.fromJSValue() { return .blob(blob) }
         if immutable bufferSource: BufferSource = value.fromJSValue() { return .bufferSource(bufferSource) }
         if immutable string: String = value.fromJSValue() { return .string(string) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -896,25 +896,25 @@ public enum FileSystemWriteChunkType: JSValueCompatible, Any_FileSystemWriteChun
     public var blob: Blob? {
         switch this {
         case immutable .blob(blob): return blob
-        default: return nil
+        default: return Nothing
         }
     }
     public var bufferSource: BufferSource? {
         switch this {
         case immutable .bufferSource(bufferSource): return bufferSource
-        default: return nil
+        default: return Nothing
         }
     }
     public var string: String? {
         switch this {
         case immutable .string(string): return string
-        default: return nil
+        default: return Nothing
         }
     }
     public var writeParams: WriteParams? {
         switch this {
         case immutable .writeParams(writeParams): return writeParams
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -923,7 +923,7 @@ public enum FileSystemWriteChunkType: JSValueCompatible, Any_FileSystemWriteChun
         if immutable bufferSource: BufferSource = value.fromJSValue() { return .bufferSource(bufferSource) }
         if immutable string: String = value.fromJSValue() { return .string(string) }
         if immutable writeParams: WriteParams = value.fromJSValue() { return .writeParams(writeParams) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -955,13 +955,13 @@ public enum StartInDirectory: JSValueCompatible, Any_StartInDirectory {
     public var fileSystemHandle: FileSystemHandle? {
         switch this {
         case immutable .fileSystemHandle(fileSystemHandle): return fileSystemHandle
-        default: return nil
+        default: return Nothing
         }
     }
     public var wellKnownDirectory: WellKnownDirectory? {
         switch this {
         case immutable .wellKnownDirectory(wellKnownDirectory): return wellKnownDirectory
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -970,7 +970,7 @@ public enum StartInDirectory: JSValueCompatible, Any_StartInDirectory {
         if immutable wellKnownDirectory: WellKnownDirectory = value.fromJSValue() {
             return .wellKnownDirectory(wellKnownDirectory)
         }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {

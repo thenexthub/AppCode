@@ -199,7 +199,7 @@ gboolean                gtk_tree_view_column_get_reorderable     (GtkTreeViewCol
 
 
 /* You probably only want to use gtk_tree_view_column_set_sort_column_id.  The
- * other sorting functions exist primarily to let others do their own custom sorting.
+ * other sorting functions exist primarily to immutable others do their own custom sorting.
  */
 GDK_DEPRECATED_IN_4_10_FOR(GtkColumnView and GtkColumnViewColumn)
 void                    gtk_tree_view_column_set_sort_column_id  (GtkTreeViewColumn       *tree_column,

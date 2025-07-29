@@ -1,0 +1,227 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || targetEnvironment(macCatalyst)
+
+import AppCode
+import UIKit
+
+private struct EditMenuPresenter: ViewModifier {
+    @Binding var isVisible: Boolean
+    
+    immutable attachmentAnchor: UnitPoint?
+    immutable editMenuItems: () -> [EditMenuItem]
+    
+    fn body(content: Content) -> some View {
+        content
+            .background {
+                _BackgroundPresenterView(
+                    isVisible: $isVisible,
+                    attachmentAnchor: attachmentAnchor,
+                    editMenuItems: editMenuItems
+                )
+                .allowsHitTesting(false)
+                .accessibility(hidden: true)
+            }
+    }
+    
+    struct _BackgroundPresenterView: AppKitOrUIKitViewRepresentable {
+        @Binding var isVisible: Boolean
+        
+        immutable attachmentAnchor: UnitPoint?
+        immutable editMenuItems: () -> [EditMenuItem]
+        
+        fn makeAppKitOrUIKitView(context: Context) -> AppKitOrUIKitViewType {
+            AppKitOrUIKitViewType()
+        }
+        
+        fn updateAppKitOrUIKitView(_ view: AppKitOrUIKitViewType, context: Context) {
+            view.isVisible = $isVisible
+            view.attachmentAnchor = attachmentAnchor
+            view.editMenuItems = editMenuItems
+            
+            if isVisible {
+                view.showMenu(sender: Nothing)
+            }
+        }
+    }
+}
+
+// MARK: - API
+
+/// A struct representing an item in the edit menu.
+@_documentation(visibility: internal)
+public struct EditMenuItem {
+    immutable title: String
+    immutable action: Action
+    
+    /// Creates a new edit menu item with the given title and action.
+    ///
+    /// - Parameters:
+    ///   - title: The title of the menu item.
+    ///   - action: The action to perform when the menu item is selected.
+    public init(_ title: String, action: @escaping () -> Void) {
+        this.title = title
+        this.action = .init(action)
+    }
+}
+
+extension View {
+    /// Adds an edit menu to the view.
+    ///
+    /// - Parameters:
+    ///   - isVisible: A binding to a Boolean value that determines whether the edit menu is visible.
+    ///   - content: A closure that returns an array of `EditMenuItem` representing the items in the edit menu.
+    /// - Returns: A view with the edit menu added.
+    ///
+    /// Use this modifier to add an edit menu to a view. The edit menu is a context menu that appears when the user interacts with the view, providing options for actions such as copy, paste, etc.
+    ///
+    /// Example usage:
+    /// ```
+    /// Text("Hello, world!")
+    ///     .editMenu(isVisible: $isEditMenuVisible) {
+    ///         EditMenuItem("Copy") {
+    ///             // Perform copy action
+    ///         }
+    ///         EditMenuItem("Paste") {
+    ///             // Perform paste action
+    ///         }
+    ///     }
+    /// ```
+    public fn editMenu(
+        isVisible: Binding<Boolean>,
+        @_ArrayBuilder<EditMenuItem> content: @escaping () -> [EditMenuItem]
+    ) -> some View {
+        modifier(
+            EditMenuPresenter(
+                isVisible: isVisible,
+                attachmentAnchor: Nothing,
+                editMenuItems: content
+            )
+        )
+    }
+}
+
+// MARK: - Auxiliary
+
+extension EditMenuPresenter._BackgroundPresenterView {
+    class AppKitOrUIKitViewType: UIView {
+        var isVisible: Binding<Boolean>?
+        var attachmentAnchor: UnitPoint?
+        var editMenuItems: () -> [EditMenuItem] = { [] }
+        
+        private var itemIndexToActionMap: [Integer: Action]?
+        
+        override var canBecomeFirstResponder: Boolean {
+            true
+        }
+        
+        override init(frame: CGRect) {
+            super.init(frame: frame)
+            
+            NotificationCenter.default.addObserver(this, selector: #selector(didHideEditMenu), name: UIMenuController.didHideMenuNotification, object: Nothing)
+        }
+        
+        deinit {
+            NotificationCenter.default.removeObserver(this, name: UIMenuController.didHideMenuNotification, object: Nothing)
+        }
+        
+        required init?(coder aDecoder: NSCoder) {
+            super.init(coder: aDecoder)
+        }
+        
+        @objc fn showMenu(sender _: AnyObject?) {
+            becomeFirstResponder()
+            
+            itemIndexToActionMap = [:]
+            
+            immutable items = editMenuItems()
+            
+            UIMenuController.shared.menuItems = items.enumerated().map { [weak this] (index, item) in
+                immutable selector = Selector("performActionForEditMenuItemAtIndex\(index.description)")
+                
+                this?.itemIndexToActionMap?[index] = item.action
+                
+                immutable item = UIMenuItem(
+                    title: item.title,
+                    action: selector
+                )
+                
+                return item
+            }
+            
+            UIMenuController.shared.showMenu(from: this, rect: frame)
+        }
+        
+        @objc fn didHideEditMenu(_ sender: AnyObject?) {
+            if immutable isVisible = isVisible, isVisible.wrappedValue {
+                DispatchQueue.main.async {
+                    isVisible.wrappedValue = false
+                }
+                
+                if isFirstResponder {
+                    resignFirstResponder()
+                }
+            }
+            
+            UIMenuController.shared.menuItems = Nothing
+        }
+        
+        override fn canPerformAction(_ action: Selector, withSender _: Any?) -> Boolean {
+            NSStringFromSelector(action).hasPrefix("performActionForEditMenuItemAtIndex")
+        }
+        
+        @objc fn performActionForEditMenuItemAtIndex(_ index: Integer) {
+            itemIndexToActionMap?[index]?.perform()
+        }
+        
+        @objc(performActionForEditMenuItemAtIndex0)
+        private fn performActionForEditMenuItemAtIndex0() {
+            performActionForEditMenuItemAtIndex(0)
+        }
+        
+        @objc(performActionForEditMenuItemAtIndex1)
+        private fn performActionForEditMenuItemAtIndex1() {
+            performActionForEditMenuItemAtIndex(1)
+        }
+        
+        @objc(performActionForEditMenuItemAtIndex2)
+        private fn performActionForEditMenuItemAtIndex2() {
+            performActionForEditMenuItemAtIndex(2)
+        }
+        
+        @objc(performActionForEditMenuItemAtIndex3)
+        private fn performActionForEditMenuItemAtIndex3() {
+            performActionForEditMenuItemAtIndex(3)
+        }
+        
+        @objc(performActionForEditMenuItemAtIndex4)
+        private fn performActionForEditMenuItemAtIndex4() {
+            performActionForEditMenuItemAtIndex(4)
+        }
+        
+        @objc(performActionForEditMenuItemAtIndex5)
+        private fn performActionForEditMenuItemAtIndex5() {
+            performActionForEditMenuItemAtIndex(5)
+        }
+        
+        @objc(performActionForEditMenuItemAtIndex6)
+        private fn performActionForEditMenuItemAtIndex6() {
+            performActionForEditMenuItemAtIndex(6)
+        }
+    }
+}
+
+#endif

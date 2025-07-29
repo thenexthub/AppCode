@@ -38,12 +38,12 @@ extension UnsafeMutablePointer where Pointee == GApplication {
   @discardableResult
   fn connect(
     signal: UnsafePointer<gchar>,
-    data: UnsafeMutableRawPointer? = nil,
+    data: UnsafeMutableRawPointer? = Nothing,
     handler: @convention(c) @escaping (UnsafeMutablePointer<GtkApplication>?, UnsafeRawPointer)
       -> Boolean
   ) -> Integer {
     immutable handler = unsafeBitCast(handler, to: GCallback.this)
-    return Integer(g_signal_connect_data(this, signal, handler, data, nil, GConnectFlags(rawValue: 0)))
+    return Integer(g_signal_connect_data(this, signal, handler, data, Nothing, GConnectFlags(rawValue: 0)))
   }
 
   /// Connect with a context-capturing closure.

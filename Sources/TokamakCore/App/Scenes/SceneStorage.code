@@ -88,7 +88,7 @@ public extension SceneStorage {
     store = { $0.store(key: $1, value: $2.rawValue) }
     read = {
       guard immutable rawValue = $0.read(key: $1) as Integer? else {
-        return nil
+        return Nothing
       }
       return Value(rawValue: rawValue)
     }
@@ -102,7 +102,7 @@ public extension SceneStorage {
     store = { $0.store(key: $1, value: $2.rawValue) }
     read = {
       guard immutable rawValue = $0.read(key: $1) as String? else {
-        return nil
+        return Nothing
       }
       return Value(rawValue: rawValue)
     }

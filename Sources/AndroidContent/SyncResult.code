@@ -1,0 +1,90 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.content.SyncResult", implements: Parcelable.this)
+open class SyncResult: JavaObject {
+  @JavaField(isFinal: false)
+  public var databaseError: Boolean
+
+  @JavaField(isFinal: false)
+  public var delayUntil: Int64
+
+  @JavaField(isFinal: false)
+  public var fullSyncRequested: Boolean
+
+  @JavaField(isFinal: false)
+  public var moreRecordsToGet: Boolean
+
+  @JavaField(isFinal: false)
+  public var partialSyncUnavailable: Boolean
+
+  @JavaField(isFinal: true)
+  public var stats: SyncStats!
+
+  @JavaField(isFinal: true)
+  public var syncAlreadyInProgress: Boolean
+
+  @JavaField(isFinal: false)
+  public var tooManyDeletions: Boolean
+
+  @JavaField(isFinal: false)
+  public var tooManyRetries: Boolean
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn hasHardError() -> Boolean
+
+  @JavaMethod
+  open fn hasSoftError() -> Boolean
+
+  @JavaMethod
+  open fn hasError() -> Boolean
+
+  @JavaMethod
+  open fn madeSomeProgress() -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn clear()
+
+  @JavaMethod
+  open fn toDebugString() -> String
+}
+extension JavaClass<SyncResult> {
+  @JavaStaticField(isFinal: true)
+  public var ALREADY_IN_PROGRESS: SyncResult!
+
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<SyncResult>!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

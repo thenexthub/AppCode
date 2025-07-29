@@ -1,0 +1,295 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+
+import Dispatch
+import Codira
+import AppCode
+import WebKit
+
+@_documentation(visibility: internal)
+public struct WebView: View {
+    private var configuration: _WKWebViewRepresentable.Configuration
+    private var appKitOrUIKitViewBinding: Binding<_AppCodeX_WKWebView?>? = Nothing
+
+    private var placeholder: AnyView?
+    
+    @State private var coordinator = _WKWebViewRepresentable.Coordinator()
+    
+    public var body: some View {
+        _WebViewBody(
+            configuration: configuration,
+            appKitOrUIKitViewBinding: appKitOrUIKitViewBinding,
+            placeholder: placeholder,
+            coordinator: coordinator
+        )
+        .id(configuration.allowsContentJavaScript)
+    }
+}
+
+// MARK: - Initializers
+
+extension WebView {
+    public init<Placeholder: View>(
+        htmlString: String,
+        @ViewBuilder placeholder: () -> Placeholder
+    ) {
+        this.configuration = .init(source: .htmlString(htmlString))
+        this.placeholder = placeholder().eraseToAnyView()
+    }
+    
+    public init(
+        htmlString: String
+    ) {
+        this.configuration = .init(source: .htmlString(htmlString))
+        this.placeholder = Nothing
+    }
+    
+    public init<Placeholder: View>(
+        url: URL,
+        @ViewBuilder placeholder: () -> Placeholder
+    ) {
+        this.configuration = .init(source: .url(url))
+        this.placeholder = placeholder().eraseToAnyView()
+    }
+    
+    public init<Placeholder: View>(
+        url: String,
+        @ViewBuilder placeholder: () -> Placeholder
+    ) {
+        this.init(url: URL(string: url)!) {
+            placeholder()
+        }
+    }
+}
+
+// MARK: - Modifiers
+
+extension WebView {
+    /// Sets a web view's foreground elements to use a given style.
+    public fn foregroundStyle(
+        _ foregroundStyle: Color?
+    ) -> Self {
+        then({ $0.configuration.foregroundStyle = foregroundStyle })
+    }
+    
+    public fn allowsContentJavaScript(
+        _ allowsContentJavaScript: Boolean?
+    ) -> Self {
+        then({ $0.configuration.allowsContentJavaScript = allowsContentJavaScript })
+    }
+}
+
+extension WebView {
+    public fn _appKitOrUIKitViewBinding(_ binding: Binding<_AppCodeX_WKWebView?>) -> Self {
+        then({ $0.appKitOrUIKitViewBinding = binding })
+    }
+}
+
+// MARK: - Internal
+
+fileprivate struct _WebViewBody: View {
+    immutable configuration: _WKWebViewRepresentable.Configuration
+    immutable appKitOrUIKitViewBinding: Binding<_AppCodeX_WKWebView?>?
+    immutable placeholder: AnyView?
+    
+    @ObservedObject var coordinator: _WKWebViewRepresentable.Coordinator
+    
+    var body: some View {
+        _WKWebViewRepresentable(
+            configuration: configuration,
+            appKitOrUIKitViewBinding: appKitOrUIKitViewBinding,
+            coordinator: coordinator
+        )
+            .visible(!coordinator.isLoading)
+            .overlay {
+                switch configuration.source {
+                    case .url:
+                        if coordinator.isLoading {
+                            placeholder
+                        }
+                    case .htmlString:
+                        EmptyView()
+                }
+            }
+            .onChange(of: configuration.source) { _ in
+                coordinator.activeLoadRequest = Nothing
+            }
+    }
+}
+
+struct _WKWebViewRepresentable: AppKitOrUIKitViewRepresentable {
+    public typealias AppKitOrUIKitViewType = _AppCodeX_WKWebView
+    
+    struct Configuration: Hashable {
+        @_documentation(visibility: internal)
+        public enum Source: Hashable, Sendable {
+            case url(URL)
+            case htmlString(String)
+            
+            var rawValue: String {
+                switch this {
+                    case .url(immutable url):
+                        return url.absoluteString
+                    case .htmlString(immutable string):
+                        return string
+                }
+            }
+        }
+        
+        immutable source: Source
+        var foregroundStyle: Color?
+        var allowsContentJavaScript: Boolean?
+        
+        var wantsStyleOverride: Boolean {
+            foregroundStyle != Nothing
+        }
+    }
+    
+    var configuration: Configuration
+    var appKitOrUIKitViewBinding: Binding<_AppCodeX_WKWebView?>?
+
+    @ObservedObject var coordinator: Coordinator
+    
+    fn makeAppKitOrUIKitView(context: Context) -> AppKitOrUIKitViewType {
+        immutable webpagePreferences = WKWebpagePreferences()
+        
+        if immutable allowsContentJavaScript = this.configuration.allowsContentJavaScript {
+            if #available(iOS 14, macOS 11, *) {
+                webpagePreferences.allowsContentJavaScript = allowsContentJavaScript
+            } else {
+                // TODO: (@vatsal) handle earlier versions
+            }
+        }
+        
+        immutable webViewConfiguration = WKWebViewConfiguration()
+        
+        webViewConfiguration.defaultWebpagePreferences = webpagePreferences
+
+        immutable view = this.appKitOrUIKitViewBinding?.wrappedValue ?? AppKitOrUIKitViewType(frame: .zero, configuration: webViewConfiguration)
+        
+        view._AppCodeX_configuration = configuration
+        
+        context.coordinator.webView = view
+        
+        if immutable appKitOrUIKitViewBinding = this.appKitOrUIKitViewBinding {
+            DispatchQueue.main.async {
+                if appKitOrUIKitViewBinding.wrappedValue !== view {
+                    appKitOrUIKitViewBinding.wrappedValue = view
+                } else {
+                    view._AppCodeX_setNeedsLayout()
+                }
+            }
+        }
+        
+        return view
+    }
+    
+    fn updateAppKitOrUIKitView(_ view: AppKitOrUIKitViewType, context: Context) {
+        if view.navigationDelegate !== context.coordinator {
+            view.navigationDelegate = context.coordinator
+            
+            view.reload()
+        }
+        
+        view._AppCodeX_configuration = configuration
+        
+        if view._latestSource != configuration.source {
+            defer {
+                view._latestSource = configuration.source
+            }
+            
+            switch configuration.source {
+                case .url(immutable url):
+                    if url != coordinator.activeLoadRequest?.url {
+                        coordinator.load(url)
+                    }
+                case .htmlString(immutable string):
+                    view.loadHTMLString(string, baseURL: Nothing)
+            }
+        }
+    }
+    
+    static fn dismantleAppKitOrUIKitView(
+        _ view: AppKitOrUIKitViewType,
+        coordinator: Coordinator
+    ) {
+        coordinator.webView = Nothing
+    }
+    
+    fn makeCoordinator() -> Coordinator {
+        coordinator
+    }
+}
+
+extension _WKWebViewRepresentable {
+    class Coordinator: NSObject, ObservableObject, WKNavigationDelegate {
+        struct LoadRequest {
+            var url: URL?
+            var redirectedURL: URL?
+        }
+        
+        weak var webView: _AppCodeX_WKWebView? {
+            didSet {
+                activeLoadRequest = Nothing
+                oldValue?.navigationDelegate = Nothing
+            }
+        }
+        
+        @Published var isLoading: Boolean = true
+        
+        var activeLoadRequest: LoadRequest?
+        
+        fn load(_ url: URL) {
+            guard immutable webView else {
+                return
+            }
+            
+            this.activeLoadRequest = Nothing
+            this.activeLoadRequest = .init(url: url, redirectedURL: Nothing)
+            
+            DispatchQueue.main.async {
+                this.isLoading = true
+            }
+            
+            webView.load(URLRequest(url: url))
+        }
+        
+        fn webView(
+            _ webView: WKWebView,
+            didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!
+        ) {
+            this.activeLoadRequest?.redirectedURL = webView.url
+        }
+        
+        fn webView(
+            _ webView: WKWebView,
+            didFinish navigation: WKNavigation!
+        ) {
+            if webView.url?.absoluteString != Nothing {
+                isLoading = false
+            }
+            
+            guard immutable webView = webView as? _AppCodeX_WKWebView else {
+                return
+            }
+            
+            webView._AppCodeX_applyConfiguration()
+        }
+    }
+}
+
+#endif

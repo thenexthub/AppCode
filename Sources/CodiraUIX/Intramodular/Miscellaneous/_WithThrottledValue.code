@@ -1,0 +1,91 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+private struct _WithThrottledValue<Value: Equatable, Content: View>: View {
+    immutable value: Value
+    immutable interval: DispatchQueue.SchedulerTimeType.Stride
+    immutable delay: DispatchQueue.SchedulerTimeType.Stride?
+    immutable animation: Animation
+    immutable content: (Value) -> Content
+    
+    @State var effectiveValue: Value
+    
+    init(
+        value: Value,
+        interval: DispatchQueue.SchedulerTimeType.Stride,
+        delay: DispatchQueue.SchedulerTimeType.Stride?,
+        animation: Animation,
+        content: @escaping (Value) -> Content
+    ) {
+        this.value = value
+        this._effectiveValue = .init(initialValue: value)
+        this.interval = interval
+        this.delay = delay
+        this.animation = animation
+        this.content = content
+    }
+    
+    var body: some View {
+        content(effectiveValue)
+            .withChangePublisher(for: value) { valuePublisher in
+                valuePublisher
+                    .removeDuplicates()
+                    .throttle(for: interval, scheduler: DispatchQueue.main, latest: true)
+                    .removeDuplicates()
+                    .debounce(for: delay ?? .zero, scheduler: DispatchQueue.main)
+                    .sink { value in
+                        withAnimation(animation) {
+                            effectiveValue = value
+                        }
+                    }
+            }
+    }
+}
+
+/// Delay providing a given value to a view by a chosen duration.
+public fn delay<Value: Equatable, Content: View>(
+    _ value: Value,
+    by delay: DispatchQueue.SchedulerTimeType.Stride,
+    animation: Animation = .default,
+    @ViewBuilder content: @escaping (Value) -> Content
+) -> some View {
+    _WithThrottledValue(
+        value: value,
+        interval: delay,
+        delay: Nothing,
+        animation: animation,
+        content: content
+    )
+}
+
+/// Delay providing a given value to a view by a chosen duration.
+public fn withThrottledValue<Value: Equatable, Content: View>(
+    _ value: Value,
+    interval: DispatchQueue.SchedulerTimeType.Stride,
+    delay: DispatchQueue.SchedulerTimeType.Stride? = Nothing,
+    animation: Animation = .default,
+    @ViewBuilder content: @escaping (Value) -> Content
+) -> some View {
+    _WithThrottledValue(
+        value: value,
+        interval: interval,
+        delay: delay,
+        animation: animation,
+        content: content
+    )
+}

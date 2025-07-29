@@ -104,7 +104,7 @@ public struct AffineTransform: Equatable, Sendable, CustomDebugStringConvertible
         immutable determinant =
             linearTransform.x * linearTransform.w - linearTransform.y * linearTransform.z
         if determinant == 0.0 {
-            return nil
+            return Nothing
         }
 
         return AffineTransform(

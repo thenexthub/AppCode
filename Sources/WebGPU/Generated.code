@@ -32,14 +32,14 @@ public class GPU: JSBridgedClass {
 
     public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
 
-    @inlinable final public fn requestAdapter(options: GPURequestAdapterOptions? = nil) -> JSPromise {
+    @inlinable final public fn requestAdapter(options: GPURequestAdapterOptions? = Nothing) -> JSPromise {
         immutable this = jsObject
         return this[Strings.requestAdapter].function!(this: this, arguments: [_toJSValue(options)]).fromJSValue()!
     }
 
     #if canImport(JavaScriptEventLoop)
         @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *) @inlinable final public fn requestAdapter(
-            options: GPURequestAdapterOptions? = nil
+            options: GPURequestAdapterOptions? = Nothing
         ) async throws(JSException) -> GPUAdapter? {
             immutable this = jsObject
             immutable _promise: JSPromise = this[Strings.requestAdapter].function!(
@@ -75,14 +75,14 @@ public class GPUAdapter: JSBridgedClass {
 
     @inlinable public var isFallbackAdapter: Boolean { jsObject[Strings.isFallbackAdapter].fromJSValue()! }
 
-    @inlinable final public fn requestDevice(descriptor: GPUDeviceDescriptor? = nil) -> JSPromise {
+    @inlinable final public fn requestDevice(descriptor: GPUDeviceDescriptor? = Nothing) -> JSPromise {
         immutable this = jsObject
         return this[Strings.requestDevice].function!(this: this, arguments: [_toJSValue(descriptor)]).fromJSValue()!
     }
 
     #if canImport(JavaScriptEventLoop)
         @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *) @inlinable final public fn requestDevice(
-            descriptor: GPUDeviceDescriptor? = nil
+            descriptor: GPUDeviceDescriptor? = Nothing
         ) async throws(JSException) -> GPUDevice {
             immutable this = jsObject
             immutable _promise: JSPromise = this[Strings.requestDevice].function!(
@@ -121,7 +121,7 @@ public enum GPUAddressMode: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -133,7 +133,7 @@ public enum GPUAutoLayoutMode: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -151,7 +151,7 @@ public class GPUBindGroup: JSBridgedClass, GPUObjectBase {
 
 open class GPUBindGroupDescriptor: GPUObjectDescriptorBase {
 
-    public convenience init(label: String? = nil, layout: GPUBindGroupLayout, entries: [GPUBindGroupEntry]) {
+    public convenience init(label: String? = Nothing, layout: GPUBindGroupLayout, entries: [GPUBindGroupEntry]) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.label] = _toJSValue(label)
         object[Strings.layout] = _toJSValue(layout)
@@ -204,7 +204,7 @@ public class GPUBindGroupLayout: JSBridgedClass, GPUObjectBase {
 
 open class GPUBindGroupLayoutDescriptor: GPUObjectDescriptorBase {
 
-    public convenience init(label: String? = nil, entries: [GPUBindGroupLayoutEntry]) {
+    public convenience init(label: String? = Nothing, entries: [GPUBindGroupLayoutEntry]) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.label] = _toJSValue(label)
         object[Strings.entries] = _toJSValue(entries)
@@ -225,11 +225,11 @@ open class GPUBindGroupLayoutEntry: JSDictionaryCompatible {
     public convenience init(
         binding: GPUIndex32,
         visibility: GPUShaderStageFlags,
-        buffer: GPUBufferBindingLayout? = nil,
-        sampler: GPUSamplerBindingLayout? = nil,
-        texture: GPUTextureBindingLayout? = nil,
-        storageTexture: GPUStorageTextureBindingLayout? = nil,
-        externalTexture: GPUExternalTextureBindingLayout? = nil
+        buffer: GPUBufferBindingLayout? = Nothing,
+        sampler: GPUSamplerBindingLayout? = Nothing,
+        texture: GPUTextureBindingLayout? = Nothing,
+        storageTexture: GPUStorageTextureBindingLayout? = Nothing,
+        externalTexture: GPUExternalTextureBindingLayout? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.binding] = _toJSValue(binding)
@@ -279,7 +279,7 @@ extension GPUBindingCommandsMixin {
     @inlinable public fn setBindGroup(
         index: GPUIndex32,
         bindGroup: GPUBindGroup?,
-        dynamicOffsets: [GPUBufferDynamicOffset]? = nil
+        dynamicOffsets: [GPUBufferDynamicOffset]? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.setBindGroup].function!(
@@ -309,9 +309,9 @@ open class GPUBlendComponent: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
     public convenience init(
-        operation: GPUBlendOperation? = nil,
-        srcFactor: GPUBlendFactor? = nil,
-        dstFactor: GPUBlendFactor? = nil
+        operation: GPUBlendOperation? = Nothing,
+        srcFactor: GPUBlendFactor? = Nothing,
+        dstFactor: GPUBlendFactor? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.operation] = _toJSValue(operation)
@@ -357,7 +357,7 @@ public enum GPUBlendFactor: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -373,7 +373,7 @@ public enum GPUBlendOperation: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -417,8 +417,8 @@ public class GPUBuffer: JSBridgedClass, GPUObjectBase {
 
     @inlinable final public fn mapAsync(
         mode: GPUMapModeFlags,
-        offset: GPUSize64? = nil,
-        size: GPUSize64? = nil
+        offset: GPUSize64? = Nothing,
+        size: GPUSize64? = Nothing
     ) -> JSPromise {
         immutable this = jsObject
         return this[Strings.mapAsync].function!(
@@ -430,8 +430,8 @@ public class GPUBuffer: JSBridgedClass, GPUObjectBase {
     #if canImport(JavaScriptEventLoop)
         @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *) @inlinable final public fn mapAsync(
             mode: GPUMapModeFlags,
-            offset: GPUSize64? = nil,
-            size: GPUSize64? = nil
+            offset: GPUSize64? = Nothing,
+            size: GPUSize64? = Nothing
         ) async throws(JSException) {
             immutable this = jsObject
             immutable _promise: JSPromise = this[Strings.mapAsync].function!(
@@ -442,7 +442,7 @@ public class GPUBuffer: JSBridgedClass, GPUObjectBase {
         }
     #endif
 
-    @inlinable final public fn getMappedRange(offset: GPUSize64? = nil, size: GPUSize64? = nil) -> ArrayBuffer {
+    @inlinable final public fn getMappedRange(offset: GPUSize64? = Nothing, size: GPUSize64? = Nothing) -> ArrayBuffer {
         immutable this = jsObject
         return this[Strings.getMappedRange].function!(this: this, arguments: [_toJSValue(offset), _toJSValue(size)])
             .fromJSValue()!
@@ -462,7 +462,7 @@ public class GPUBuffer: JSBridgedClass, GPUObjectBase {
 open class GPUBufferBinding: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(buffer: GPUBuffer, offset: GPUSize64? = nil, size: GPUSize64? = nil) {
+    public convenience init(buffer: GPUBuffer, offset: GPUSize64? = Nothing, size: GPUSize64? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.buffer] = _toJSValue(buffer)
         object[Strings.offset] = _toJSValue(offset)
@@ -490,9 +490,9 @@ open class GPUBufferBindingLayout: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
     public convenience init(
-        type: GPUBufferBindingType? = nil,
-        hasDynamicOffset: Boolean? = nil,
-        minBindingSize: GPUSize64? = nil
+        type: GPUBufferBindingType? = Nothing,
+        hasDynamicOffset: Boolean? = Nothing,
+        minBindingSize: GPUSize64? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.type] = _toJSValue(type)
@@ -524,7 +524,7 @@ public enum GPUBufferBindingType: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -534,10 +534,10 @@ public enum GPUBufferBindingType: JSString, JSValueCompatible {
 open class GPUBufferDescriptor: GPUObjectDescriptorBase {
 
     public convenience init(
-        label: String? = nil,
+        label: String? = Nothing,
         size: GPUSize64,
         usage: GPUBufferUsageFlags,
-        mappedAtCreation: Boolean? = nil
+        mappedAtCreation: Boolean? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.label] = _toJSValue(label)
@@ -570,7 +570,7 @@ public enum GPUBufferMapState: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -606,7 +606,7 @@ public enum GPUCanvasAlphaMode: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -619,11 +619,11 @@ open class GPUCanvasConfiguration: JSDictionaryCompatible {
     public convenience init(
         device: GPUDevice,
         format: GPUTextureFormat,
-        usage: GPUTextureUsageFlags? = nil,
-        viewFormats: [GPUTextureFormat]? = nil,
-        colorSpace: PredefinedColorSpace? = nil,
-        toneMapping: GPUCanvasToneMapping? = nil,
-        alphaMode: GPUCanvasAlphaMode? = nil
+        usage: GPUTextureUsageFlags? = Nothing,
+        viewFormats: [GPUTextureFormat]? = Nothing,
+        colorSpace: PredefinedColorSpace? = Nothing,
+        toneMapping: GPUCanvasToneMapping? = Nothing,
+        alphaMode: GPUCanvasAlphaMode? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.device] = _toJSValue(device)
@@ -701,7 +701,7 @@ public class GPUCanvasContext: JSBridgedClass {
 open class GPUCanvasToneMapping: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(mode: GPUCanvasToneMappingMode? = nil) {
+    public convenience init(mode: GPUCanvasToneMappingMode? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.mode] = _toJSValue(mode)
 
@@ -721,7 +721,7 @@ public enum GPUCanvasToneMappingMode: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -763,7 +763,7 @@ open class GPUColorDict: JSDictionaryCompatible {
 open class GPUColorTargetState: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(format: GPUTextureFormat, blend: GPUBlendState? = nil, writeMask: GPUColorWriteFlags? = nil)
+    public convenience init(format: GPUTextureFormat, blend: GPUBlendState? = Nothing, writeMask: GPUColorWriteFlags? = Nothing)
     {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.format] = _toJSValue(format)
@@ -812,7 +812,7 @@ public class GPUCommandBuffer: JSBridgedClass, GPUObjectBase {
 
 open class GPUCommandBufferDescriptor: GPUObjectDescriptorBase {
 
-    public convenience init(label: String? = nil) {
+    public convenience init(label: String? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.label] = _toJSValue(label)
 
@@ -834,7 +834,7 @@ public class GPUCommandEncoder: JSBridgedClass, GPUObjectBase, GPUCommandsMixin,
         return this[Strings.beginRenderPass].function!(this: this, arguments: [_toJSValue(descriptor)]).fromJSValue()!
     }
 
-    @inlinable final public fn beginComputePass(descriptor: GPUComputePassDescriptor? = nil) -> GPUComputePassEncoder
+    @inlinable final public fn beginComputePass(descriptor: GPUComputePassDescriptor? = Nothing) -> GPUComputePassEncoder
     {
         immutable this = jsObject
         return this[Strings.beginComputePass].function!(this: this, arguments: [_toJSValue(descriptor)]).fromJSValue()!
@@ -893,7 +893,7 @@ public class GPUCommandEncoder: JSBridgedClass, GPUObjectBase, GPUCommandsMixin,
         )
     }
 
-    @inlinable final public fn clearBuffer(buffer: GPUBuffer, offset: GPUSize64? = nil, size: GPUSize64? = nil) {
+    @inlinable final public fn clearBuffer(buffer: GPUBuffer, offset: GPUSize64? = Nothing, size: GPUSize64? = Nothing) {
         immutable this = jsObject
         _ = this[Strings.clearBuffer].function!(
             this: this,
@@ -918,7 +918,7 @@ public class GPUCommandEncoder: JSBridgedClass, GPUObjectBase, GPUCommandsMixin,
         )
     }
 
-    @inlinable final public fn finish(descriptor: GPUCommandBufferDescriptor? = nil) -> GPUCommandBuffer {
+    @inlinable final public fn finish(descriptor: GPUCommandBufferDescriptor? = Nothing) -> GPUCommandBuffer {
         immutable this = jsObject
         return this[Strings.finish].function!(this: this, arguments: [_toJSValue(descriptor)]).fromJSValue()!
     }
@@ -926,7 +926,7 @@ public class GPUCommandEncoder: JSBridgedClass, GPUObjectBase, GPUCommandsMixin,
 
 open class GPUCommandEncoderDescriptor: GPUObjectDescriptorBase {
 
-    public convenience init(label: String? = nil) {
+    public convenience init(label: String? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.label] = _toJSValue(label)
 
@@ -950,7 +950,7 @@ public enum GPUCompareFunction: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -994,7 +994,7 @@ public enum GPUCompilationMessageType: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -1003,7 +1003,7 @@ public enum GPUCompilationMessageType: JSString, JSValueCompatible {
 }
 open class GPUComputePassDescriptor: GPUObjectDescriptorBase {
 
-    public convenience init(label: String? = nil, timestampWrites: GPUComputePassTimestampWrites? = nil) {
+    public convenience init(label: String? = Nothing, timestampWrites: GPUComputePassTimestampWrites? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.label] = _toJSValue(label)
         object[Strings.timestampWrites] = _toJSValue(timestampWrites)
@@ -1034,8 +1034,8 @@ public class GPUComputePassEncoder: JSBridgedClass, GPUObjectBase, GPUCommandsMi
 
     @inlinable final public fn dispatchWorkgroups(
         workgroupCountX: GPUSize32,
-        workgroupCountY: GPUSize32? = nil,
-        workgroupCountZ: GPUSize32? = nil
+        workgroupCountY: GPUSize32? = Nothing,
+        workgroupCountZ: GPUSize32? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.dispatchWorkgroups].function!(
@@ -1063,8 +1063,8 @@ open class GPUComputePassTimestampWrites: JSDictionaryCompatible {
 
     public convenience init(
         querySet: GPUQuerySet,
-        beginningOfPassWriteIndex: GPUSize32? = nil,
-        endOfPassWriteIndex: GPUSize32? = nil
+        beginningOfPassWriteIndex: GPUSize32? = Nothing,
+        endOfPassWriteIndex: GPUSize32? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.querySet] = _toJSValue(querySet)
@@ -1119,11 +1119,11 @@ open class GPUCopyExternalImageDestInfo: GPUTexelCopyTextureInfo {
 
     public convenience init(
         texture: GPUTexture,
-        mipLevel: GPUIntegerCoordinate? = nil,
-        origin: GPUOrigin3D? = nil,
-        aspect: GPUTextureAspect? = nil,
-        colorSpace: PredefinedColorSpace? = nil,
-        premultipliedAlpha: Boolean? = nil
+        mipLevel: GPUIntegerCoordinate? = Nothing,
+        origin: GPUOrigin3D? = Nothing,
+        aspect: GPUTextureAspect? = Nothing,
+        colorSpace: PredefinedColorSpace? = Nothing,
+        premultipliedAlpha: Boolean? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.texture] = _toJSValue(texture)
@@ -1150,7 +1150,7 @@ open class GPUCopyExternalImageDestInfo: GPUTexelCopyTextureInfo {
 open class GPUCopyExternalImageSourceInfo: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(source: GPUCopyExternalImageSource, origin: GPUOrigin2D? = nil, flipY: Boolean? = nil) {
+    public convenience init(source: GPUCopyExternalImageSource, origin: GPUOrigin2D? = Nothing, flipY: Boolean? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.source] = _toJSValue(source)
         object[Strings.origin] = _toJSValue(origin)
@@ -1181,7 +1181,7 @@ public enum GPUCullMode: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -1210,15 +1210,15 @@ open class GPUDepthStencilState: JSDictionaryCompatible {
 
     public convenience init(
         format: GPUTextureFormat,
-        depthWriteEnabled: Boolean? = nil,
-        depthCompare: GPUCompareFunction? = nil,
-        stencilFront: GPUStencilFaceState? = nil,
-        stencilBack: GPUStencilFaceState? = nil,
-        stencilReadMask: GPUStencilValue? = nil,
-        stencilWriteMask: GPUStencilValue? = nil,
-        depthBias: GPUDepthBias? = nil,
-        depthBiasSlopeScale: Float? = nil,
-        depthBiasClamp: Float? = nil
+        depthWriteEnabled: Boolean? = Nothing,
+        depthCompare: GPUCompareFunction? = Nothing,
+        stencilFront: GPUStencilFaceState? = Nothing,
+        stencilBack: GPUStencilFaceState? = Nothing,
+        stencilReadMask: GPUStencilValue? = Nothing,
+        stencilWriteMask: GPUStencilValue? = Nothing,
+        depthBias: GPUDepthBias? = Nothing,
+        depthBiasSlopeScale: Float? = Nothing,
+        depthBiasClamp: Float? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.format] = _toJSValue(format)
@@ -1306,7 +1306,7 @@ public class GPUDevice: EventTarget, GPUObjectBase {
         return this[Strings.createTexture].function!(this: this, arguments: [_toJSValue(descriptor)]).fromJSValue()!
     }
 
-    @inlinable final public fn createSampler(descriptor: GPUSamplerDescriptor? = nil) -> GPUSampler {
+    @inlinable final public fn createSampler(descriptor: GPUSamplerDescriptor? = Nothing) -> GPUSampler {
         immutable this = jsObject
         return this[Strings.createSampler].function!(this: this, arguments: [_toJSValue(descriptor)]).fromJSValue()!
     }
@@ -1393,7 +1393,7 @@ public class GPUDevice: EventTarget, GPUObjectBase {
     #endif
 
     @inlinable final public fn createCommandEncoder(
-        descriptor: GPUCommandEncoderDescriptor? = nil
+        descriptor: GPUCommandEncoderDescriptor? = Nothing
     ) -> GPUCommandEncoder {
         immutable this = jsObject
         return this[Strings.createCommandEncoder].function!(this: this, arguments: [_toJSValue(descriptor)])
@@ -1437,7 +1437,7 @@ public class GPUDevice: EventTarget, GPUObjectBase {
 
     @inlinable public var onuncapturederror: EventHandler {
         get {
-            guard immutable function = jsObject[Strings.onuncapturederror].function else { return nil }
+            guard immutable function = jsObject[Strings.onuncapturederror].function else { return Nothing }
             return { function(_toJSValue($0)).fromJSValue()! }
         }
         set {
@@ -1453,10 +1453,10 @@ public class GPUDevice: EventTarget, GPUObjectBase {
 open class GPUDeviceDescriptor: GPUObjectDescriptorBase {
 
     public convenience init(
-        label: String? = nil,
-        requiredFeatures: [GPUFeatureName]? = nil,
-        requiredLimits: JSObject? = nil,
-        defaultQueue: GPUQueueDescriptor? = nil
+        label: String? = Nothing,
+        requiredFeatures: [GPUFeatureName]? = Nothing,
+        requiredLimits: JSObject? = Nothing,
+        defaultQueue: GPUQueueDescriptor? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.label] = _toJSValue(label)
@@ -1500,7 +1500,7 @@ public enum GPUDeviceLostReason: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -1524,7 +1524,7 @@ public enum GPUErrorFilter: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -1536,8 +1536,8 @@ open class GPUExtent3DDict: JSDictionaryCompatible {
 
     public convenience init(
         width: GPUIntegerCoordinate,
-        height: GPUIntegerCoordinate? = nil,
-        depthOrArrayLayers: GPUIntegerCoordinate? = nil
+        height: GPUIntegerCoordinate? = Nothing,
+        depthOrArrayLayers: GPUIntegerCoordinate? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.width] = _toJSValue(width)
@@ -1586,9 +1586,9 @@ open class GPUExternalTextureBindingLayout: JSDictionaryCompatible {
 open class GPUExternalTextureDescriptor: GPUObjectDescriptorBase {
 
     public convenience init(
-        label: String? = nil,
+        label: String? = Nothing,
         source: HTMLVideoElement_or_VideoFrame,
-        colorSpace: PredefinedColorSpace? = nil
+        colorSpace: PredefinedColorSpace? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.label] = _toJSValue(label)
@@ -1630,7 +1630,7 @@ public enum GPUFeatureName: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -1643,7 +1643,7 @@ public enum GPUFilterMode: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -1654,8 +1654,8 @@ open class GPUFragmentState: GPUProgrammableStage {
 
     public convenience init(
         module: GPUShaderModule,
-        entryPoint: String? = nil,
-        constants: JSObject? = nil,
+        entryPoint: String? = Nothing,
+        constants: JSObject? = Nothing,
         targets: [GPUColorTargetState?]
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
@@ -1680,7 +1680,7 @@ public enum GPUFrontFace: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -1693,7 +1693,7 @@ public enum GPUIndexFormat: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -1716,7 +1716,7 @@ public enum GPULoadOp: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -1736,7 +1736,7 @@ public enum GPUMipmapFilterMode: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -1746,7 +1746,7 @@ public enum GPUMipmapFilterMode: JSString, JSValueCompatible {
 open class GPUMultisampleState: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(count: GPUSize32? = nil, mask: GPUSampleMask? = nil, alphaToCoverageEnabled: Boolean? = nil) {
+    public convenience init(count: GPUSize32? = Nothing, mask: GPUSampleMask? = Nothing, alphaToCoverageEnabled: Boolean? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.count] = _toJSValue(count)
         object[Strings.mask] = _toJSValue(mask)
@@ -1780,7 +1780,7 @@ extension GPUObjectBase {
 open class GPUObjectDescriptorBase: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(label: String? = nil) {
+    public convenience init(label: String? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.label] = _toJSValue(label)
 
@@ -1797,7 +1797,7 @@ open class GPUObjectDescriptorBase: JSDictionaryCompatible {
 open class GPUOrigin2DDict: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(x: GPUIntegerCoordinate? = nil, y: GPUIntegerCoordinate? = nil) {
+    public convenience init(x: GPUIntegerCoordinate? = Nothing, y: GPUIntegerCoordinate? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.x] = _toJSValue(x)
         object[Strings.y] = _toJSValue(y)
@@ -1820,9 +1820,9 @@ open class GPUOrigin3DDict: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
     public convenience init(
-        x: GPUIntegerCoordinate? = nil,
-        y: GPUIntegerCoordinate? = nil,
-        z: GPUIntegerCoordinate? = nil
+        x: GPUIntegerCoordinate? = Nothing,
+        y: GPUIntegerCoordinate? = Nothing,
+        z: GPUIntegerCoordinate? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.x] = _toJSValue(x)
@@ -1868,7 +1868,7 @@ extension GPUPipelineBase {
 }
 open class GPUPipelineDescriptorBase: GPUObjectDescriptorBase {
 
-    public convenience init(label: String? = nil, layout: GPUAutoLayoutMode_or_GPUPipelineLayout) {
+    public convenience init(label: String? = Nothing, layout: GPUAutoLayoutMode_or_GPUPipelineLayout) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.label] = _toJSValue(label)
         object[Strings.layout] = _toJSValue(layout)
@@ -1888,7 +1888,7 @@ public class GPUPipelineError: DOMException {
 
     public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
 
-    @inlinable public convenience init(message: String? = nil, options: GPUPipelineErrorInit) {
+    @inlinable public convenience init(message: String? = Nothing, options: GPUPipelineErrorInit) {
         this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(message), _toJSValue(options)]))
     }
 
@@ -1918,7 +1918,7 @@ public enum GPUPipelineErrorReason: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -1936,7 +1936,7 @@ public class GPUPipelineLayout: JSBridgedClass, GPUObjectBase {
 
 open class GPUPipelineLayoutDescriptor: GPUObjectDescriptorBase {
 
-    public convenience init(label: String? = nil, bindGroupLayouts: [GPUBindGroupLayout?]) {
+    public convenience init(label: String? = Nothing, bindGroupLayouts: [GPUBindGroupLayout?]) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.label] = _toJSValue(label)
         object[Strings.bindGroupLayouts] = _toJSValue(bindGroupLayouts)
@@ -1957,7 +1957,7 @@ public enum GPUPowerPreference: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -1968,11 +1968,11 @@ open class GPUPrimitiveState: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
     public convenience init(
-        topology: GPUPrimitiveTopology? = nil,
-        stripIndexFormat: GPUIndexFormat? = nil,
-        frontFace: GPUFrontFace? = nil,
-        cullMode: GPUCullMode? = nil,
-        unclippedDepth: Boolean? = nil
+        topology: GPUPrimitiveTopology? = Nothing,
+        stripIndexFormat: GPUIndexFormat? = Nothing,
+        frontFace: GPUFrontFace? = Nothing,
+        cullMode: GPUCullMode? = Nothing,
+        unclippedDepth: Boolean? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.topology] = _toJSValue(topology)
@@ -2016,7 +2016,7 @@ public enum GPUPrimitiveTopology: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -2026,7 +2026,7 @@ public enum GPUPrimitiveTopology: JSString, JSValueCompatible {
 open class GPUProgrammableStage: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(module: GPUShaderModule, entryPoint: String? = nil, constants: JSObject? = nil) {
+    public convenience init(module: GPUShaderModule, entryPoint: String? = Nothing, constants: JSObject? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.module] = _toJSValue(module)
         object[Strings.entryPoint] = _toJSValue(entryPoint)
@@ -2069,7 +2069,7 @@ public class GPUQuerySet: JSBridgedClass, GPUObjectBase {
 
 open class GPUQuerySetDescriptor: GPUObjectDescriptorBase {
 
-    public convenience init(label: String? = nil, type: GPUQueryType, count: GPUSize32) {
+    public convenience init(label: String? = Nothing, type: GPUQueryType, count: GPUSize32) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.label] = _toJSValue(label)
         object[Strings.type] = _toJSValue(type)
@@ -2095,7 +2095,7 @@ public enum GPUQueryType: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -2134,8 +2134,8 @@ public class GPUQueue: JSBridgedClass, GPUObjectBase {
         buffer: GPUBuffer,
         bufferOffset: GPUSize64,
         data: AllowSharedBufferSource,
-        dataOffset: GPUSize64? = nil,
-        size: GPUSize64? = nil
+        dataOffset: GPUSize64? = Nothing,
+        size: GPUSize64? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.writeBuffer].function!(
@@ -2175,7 +2175,7 @@ public class GPUQueue: JSBridgedClass, GPUObjectBase {
 
 open class GPUQueueDescriptor: GPUObjectDescriptorBase {
 
-    public convenience init(label: String? = nil) {
+    public convenience init(label: String? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.label] = _toJSValue(label)
 
@@ -2196,7 +2196,7 @@ public class GPURenderBundle: JSBridgedClass, GPUObjectBase {
 
 open class GPURenderBundleDescriptor: GPUObjectDescriptorBase {
 
-    public convenience init(label: String? = nil) {
+    public convenience init(label: String? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.label] = _toJSValue(label)
 
@@ -2215,7 +2215,7 @@ public class GPURenderBundleEncoder: JSBridgedClass, GPUObjectBase, GPUCommandsM
 
     public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
 
-    @inlinable final public fn finish(descriptor: GPURenderBundleDescriptor? = nil) -> GPURenderBundle {
+    @inlinable final public fn finish(descriptor: GPURenderBundleDescriptor? = Nothing) -> GPURenderBundle {
         immutable this = jsObject
         return this[Strings.finish].function!(this: this, arguments: [_toJSValue(descriptor)]).fromJSValue()!
     }
@@ -2225,10 +2225,10 @@ open class GPURenderBundleEncoderDescriptor: GPURenderPassLayout {
 
     public convenience init(
         colorFormats: [GPUTextureFormat?],
-        depthStencilFormat: GPUTextureFormat? = nil,
-        sampleCount: GPUSize32? = nil,
-        depthReadOnly: Boolean? = nil,
-        stencilReadOnly: Boolean? = nil
+        depthStencilFormat: GPUTextureFormat? = Nothing,
+        sampleCount: GPUSize32? = Nothing,
+        depthReadOnly: Boolean? = Nothing,
+        stencilReadOnly: Boolean? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.colorFormats] = _toJSValue(colorFormats)
@@ -2261,8 +2261,8 @@ extension GPURenderCommandsMixin {
     @inlinable public fn setIndexBuffer(
         buffer: GPUBuffer,
         indexFormat: GPUIndexFormat,
-        offset: GPUSize64? = nil,
-        size: GPUSize64? = nil
+        offset: GPUSize64? = Nothing,
+        size: GPUSize64? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.setIndexBuffer].function!(
@@ -2274,8 +2274,8 @@ extension GPURenderCommandsMixin {
     @inlinable public fn setVertexBuffer(
         slot: GPUIndex32,
         buffer: GPUBuffer?,
-        offset: GPUSize64? = nil,
-        size: GPUSize64? = nil
+        offset: GPUSize64? = Nothing,
+        size: GPUSize64? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.setVertexBuffer].function!(
@@ -2286,9 +2286,9 @@ extension GPURenderCommandsMixin {
 
     @inlinable public fn draw(
         vertexCount: GPUSize32,
-        instanceCount: GPUSize32? = nil,
-        firstVertex: GPUSize32? = nil,
-        firstInstance: GPUSize32? = nil
+        instanceCount: GPUSize32? = Nothing,
+        firstVertex: GPUSize32? = Nothing,
+        firstInstance: GPUSize32? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.draw].function!(
@@ -2301,10 +2301,10 @@ extension GPURenderCommandsMixin {
 
     @inlinable public fn drawIndexed(
         indexCount: GPUSize32,
-        instanceCount: GPUSize32? = nil,
-        firstIndex: GPUSize32? = nil,
-        baseVertex: GPUSignedOffset32? = nil,
-        firstInstance: GPUSize32? = nil
+        instanceCount: GPUSize32? = Nothing,
+        firstIndex: GPUSize32? = Nothing,
+        baseVertex: GPUSignedOffset32? = Nothing,
+        firstInstance: GPUSize32? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.drawIndexed].function!(
@@ -2337,9 +2337,9 @@ open class GPURenderPassColorAttachment: JSDictionaryCompatible {
 
     public convenience init(
         view: GPUTextureView,
-        depthSlice: GPUIntegerCoordinate? = nil,
-        resolveTarget: GPUTextureView? = nil,
-        clearValue: GPUColor? = nil,
+        depthSlice: GPUIntegerCoordinate? = Nothing,
+        resolveTarget: GPUTextureView? = Nothing,
+        clearValue: GPUColor? = Nothing,
         loadOp: GPULoadOp,
         storeOp: GPUStoreOp
     ) {
@@ -2386,14 +2386,14 @@ open class GPURenderPassDepthStencilAttachment: JSDictionaryCompatible {
 
     public convenience init(
         view: GPUTextureView,
-        depthClearValue: Float? = nil,
-        depthLoadOp: GPULoadOp? = nil,
-        depthStoreOp: GPUStoreOp? = nil,
-        depthReadOnly: Boolean? = nil,
-        stencilClearValue: GPUStencilValue? = nil,
-        stencilLoadOp: GPULoadOp? = nil,
-        stencilStoreOp: GPUStoreOp? = nil,
-        stencilReadOnly: Boolean? = nil
+        depthClearValue: Float? = Nothing,
+        depthLoadOp: GPULoadOp? = Nothing,
+        depthStoreOp: GPUStoreOp? = Nothing,
+        depthReadOnly: Boolean? = Nothing,
+        stencilClearValue: GPUStencilValue? = Nothing,
+        stencilLoadOp: GPULoadOp? = Nothing,
+        stencilStoreOp: GPUStoreOp? = Nothing,
+        stencilReadOnly: Boolean? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.view] = _toJSValue(view)
@@ -2451,12 +2451,12 @@ open class GPURenderPassDepthStencilAttachment: JSDictionaryCompatible {
 open class GPURenderPassDescriptor: GPUObjectDescriptorBase {
 
     public convenience init(
-        label: String? = nil,
+        label: String? = Nothing,
         colorAttachments: [GPURenderPassColorAttachment?],
-        depthStencilAttachment: GPURenderPassDepthStencilAttachment? = nil,
-        occlusionQuerySet: GPUQuerySet? = nil,
-        timestampWrites: GPURenderPassTimestampWrites? = nil,
-        maxDrawCount: GPUSize64? = nil
+        depthStencilAttachment: GPURenderPassDepthStencilAttachment? = Nothing,
+        occlusionQuerySet: GPUQuerySet? = Nothing,
+        timestampWrites: GPURenderPassTimestampWrites? = Nothing,
+        maxDrawCount: GPUSize64? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.label] = _toJSValue(label)
@@ -2566,10 +2566,10 @@ public class GPURenderPassEncoder: JSBridgedClass, GPUObjectBase, GPUCommandsMix
 open class GPURenderPassLayout: GPUObjectDescriptorBase {
 
     public convenience init(
-        label: String? = nil,
+        label: String? = Nothing,
         colorFormats: [GPUTextureFormat?],
-        depthStencilFormat: GPUTextureFormat? = nil,
-        sampleCount: GPUSize32? = nil
+        depthStencilFormat: GPUTextureFormat? = Nothing,
+        sampleCount: GPUSize32? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.label] = _toJSValue(label)
@@ -2600,8 +2600,8 @@ open class GPURenderPassTimestampWrites: JSDictionaryCompatible {
 
     public convenience init(
         querySet: GPUQuerySet,
-        beginningOfPassWriteIndex: GPUSize32? = nil,
-        endOfPassWriteIndex: GPUSize32? = nil
+        beginningOfPassWriteIndex: GPUSize32? = Nothing,
+        endOfPassWriteIndex: GPUSize32? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.querySet] = _toJSValue(querySet)
@@ -2640,10 +2640,10 @@ open class GPURenderPipelineDescriptor: GPUPipelineDescriptorBase {
     public convenience init(
         layout: GPUAutoLayoutMode_or_GPUPipelineLayout,
         vertex: GPUVertexState,
-        primitive: GPUPrimitiveState? = nil,
-        depthStencil: GPUDepthStencilState? = nil,
-        multisample: GPUMultisampleState? = nil,
-        fragment: GPUFragmentState? = nil
+        primitive: GPUPrimitiveState? = Nothing,
+        depthStencil: GPUDepthStencilState? = Nothing,
+        multisample: GPUMultisampleState? = Nothing,
+        fragment: GPUFragmentState? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.layout] = _toJSValue(layout)
@@ -2683,10 +2683,10 @@ open class GPURequestAdapterOptions: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
     public convenience init(
-        featureLevel: String? = nil,
-        powerPreference: GPUPowerPreference? = nil,
-        forceFallbackAdapter: Boolean? = nil,
-        xrCompatible: Boolean? = nil
+        featureLevel: String? = Nothing,
+        powerPreference: GPUPowerPreference? = Nothing,
+        forceFallbackAdapter: Boolean? = Nothing,
+        xrCompatible: Boolean? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.featureLevel] = _toJSValue(featureLevel)
@@ -2728,7 +2728,7 @@ public class GPUSampler: JSBridgedClass, GPUObjectBase {
 open class GPUSamplerBindingLayout: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(type: GPUSamplerBindingType? = nil) {
+    public convenience init(type: GPUSamplerBindingType? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.type] = _toJSValue(type)
 
@@ -2749,7 +2749,7 @@ public enum GPUSamplerBindingType: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -2759,17 +2759,17 @@ public enum GPUSamplerBindingType: JSString, JSValueCompatible {
 open class GPUSamplerDescriptor: GPUObjectDescriptorBase {
 
     public convenience init(
-        label: String? = nil,
-        addressModeU: GPUAddressMode? = nil,
-        addressModeV: GPUAddressMode? = nil,
-        addressModeW: GPUAddressMode? = nil,
-        magFilter: GPUFilterMode? = nil,
-        minFilter: GPUFilterMode? = nil,
-        mipmapFilter: GPUMipmapFilterMode? = nil,
-        lodMinClamp: Float? = nil,
-        lodMaxClamp: Float? = nil,
-        compare: GPUCompareFunction? = nil,
-        maxAnisotropy: UInt16? = nil
+        label: String? = Nothing,
+        addressModeU: GPUAddressMode? = Nothing,
+        addressModeV: GPUAddressMode? = Nothing,
+        addressModeW: GPUAddressMode? = Nothing,
+        magFilter: GPUFilterMode? = Nothing,
+        minFilter: GPUFilterMode? = Nothing,
+        mipmapFilter: GPUMipmapFilterMode? = Nothing,
+        lodMinClamp: Float? = Nothing,
+        lodMaxClamp: Float? = Nothing,
+        compare: GPUCompareFunction? = Nothing,
+        maxAnisotropy: UInt16? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.label] = _toJSValue(label)
@@ -2857,7 +2857,7 @@ public class GPUShaderModule: JSBridgedClass, GPUObjectBase {
 open class GPUShaderModuleCompilationHint: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(entryPoint: String, layout: GPUAutoLayoutMode_or_GPUPipelineLayout? = nil) {
+    public convenience init(entryPoint: String, layout: GPUAutoLayoutMode_or_GPUPipelineLayout? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.entryPoint] = _toJSValue(entryPoint)
         object[Strings.layout] = _toJSValue(layout)
@@ -2879,9 +2879,9 @@ open class GPUShaderModuleCompilationHint: JSDictionaryCompatible {
 open class GPUShaderModuleDescriptor: GPUObjectDescriptorBase {
 
     public convenience init(
-        label: String? = nil,
+        label: String? = Nothing,
         code: String,
-        compilationHints: [GPUShaderModuleCompilationHint]? = nil
+        compilationHints: [GPUShaderModuleCompilationHint]? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.label] = _toJSValue(label)
@@ -2915,10 +2915,10 @@ open class GPUStencilFaceState: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
     public convenience init(
-        compare: GPUCompareFunction? = nil,
-        failOp: GPUStencilOperation? = nil,
-        depthFailOp: GPUStencilOperation? = nil,
-        passOp: GPUStencilOperation? = nil
+        compare: GPUCompareFunction? = Nothing,
+        failOp: GPUStencilOperation? = Nothing,
+        depthFailOp: GPUStencilOperation? = Nothing,
+        passOp: GPUStencilOperation? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.compare] = _toJSValue(compare)
@@ -2960,7 +2960,7 @@ public enum GPUStencilOperation: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -2974,7 +2974,7 @@ public enum GPUStorageTextureAccess: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -2985,9 +2985,9 @@ open class GPUStorageTextureBindingLayout: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
     public convenience init(
-        access: GPUStorageTextureAccess? = nil,
+        access: GPUStorageTextureAccess? = Nothing,
         format: GPUTextureFormat,
-        viewDimension: GPUTextureViewDimension? = nil
+        viewDimension: GPUTextureViewDimension? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.access] = _toJSValue(access)
@@ -3018,7 +3018,7 @@ public enum GPUStoreOp: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -3144,9 +3144,9 @@ public class GPUSupportedLimits: JSBridgedClass {
 open class GPUTexelCopyBufferInfo: GPUTexelCopyBufferLayout {
 
     public convenience init(
-        offset: GPUSize64? = nil,
-        bytesPerRow: GPUSize32? = nil,
-        rowsPerImage: GPUSize32? = nil,
+        offset: GPUSize64? = Nothing,
+        bytesPerRow: GPUSize32? = Nothing,
+        rowsPerImage: GPUSize32? = Nothing,
         buffer: GPUBuffer
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
@@ -3168,7 +3168,7 @@ open class GPUTexelCopyBufferInfo: GPUTexelCopyBufferLayout {
 open class GPUTexelCopyBufferLayout: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(offset: GPUSize64? = nil, bytesPerRow: GPUSize32? = nil, rowsPerImage: GPUSize32? = nil) {
+    public convenience init(offset: GPUSize64? = Nothing, bytesPerRow: GPUSize32? = Nothing, rowsPerImage: GPUSize32? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.offset] = _toJSValue(offset)
         object[Strings.bytesPerRow] = _toJSValue(bytesPerRow)
@@ -3197,9 +3197,9 @@ open class GPUTexelCopyTextureInfo: JSDictionaryCompatible {
 
     public convenience init(
         texture: GPUTexture,
-        mipLevel: GPUIntegerCoordinate? = nil,
-        origin: GPUOrigin3D? = nil,
-        aspect: GPUTextureAspect? = nil
+        mipLevel: GPUIntegerCoordinate? = Nothing,
+        origin: GPUOrigin3D? = Nothing,
+        aspect: GPUTextureAspect? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.texture] = _toJSValue(texture)
@@ -3236,7 +3236,7 @@ public class GPUTexture: JSBridgedClass, GPUObjectBase {
 
     public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
 
-    @inlinable final public fn createView(descriptor: GPUTextureViewDescriptor? = nil) -> GPUTextureView {
+    @inlinable final public fn createView(descriptor: GPUTextureViewDescriptor? = Nothing) -> GPUTextureView {
         immutable this = jsObject
         return this[Strings.createView].function!(this: this, arguments: [_toJSValue(descriptor)]).fromJSValue()!
     }
@@ -3272,7 +3272,7 @@ public enum GPUTextureAspect: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -3283,9 +3283,9 @@ open class GPUTextureBindingLayout: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
     public convenience init(
-        sampleType: GPUTextureSampleType? = nil,
-        viewDimension: GPUTextureViewDimension? = nil,
-        multisampled: Boolean? = nil
+        sampleType: GPUTextureSampleType? = Nothing,
+        viewDimension: GPUTextureViewDimension? = Nothing,
+        multisampled: Boolean? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.sampleType] = _toJSValue(sampleType)
@@ -3313,14 +3313,14 @@ open class GPUTextureBindingLayout: JSDictionaryCompatible {
 open class GPUTextureDescriptor: GPUObjectDescriptorBase {
 
     public convenience init(
-        label: String? = nil,
+        label: String? = Nothing,
         size: GPUExtent3D,
-        mipLevelCount: GPUIntegerCoordinate? = nil,
-        sampleCount: GPUSize32? = nil,
-        dimension: GPUTextureDimension? = nil,
+        mipLevelCount: GPUIntegerCoordinate? = Nothing,
+        sampleCount: GPUSize32? = Nothing,
+        dimension: GPUTextureDimension? = Nothing,
         format: GPUTextureFormat,
         usage: GPUTextureUsageFlags,
-        viewFormats: [GPUTextureFormat]? = nil
+        viewFormats: [GPUTextureFormat]? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.label] = _toJSValue(label)
@@ -3373,7 +3373,7 @@ public enum GPUTextureDimension: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -3479,7 +3479,7 @@ public enum GPUTextureFormat: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -3495,7 +3495,7 @@ public enum GPUTextureSampleType: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -3527,15 +3527,15 @@ public class GPUTextureView: JSBridgedClass, GPUObjectBase {
 open class GPUTextureViewDescriptor: GPUObjectDescriptorBase {
 
     public convenience init(
-        label: String? = nil,
-        format: GPUTextureFormat? = nil,
-        dimension: GPUTextureViewDimension? = nil,
-        usage: GPUTextureUsageFlags? = nil,
-        aspect: GPUTextureAspect? = nil,
-        baseMipLevel: GPUIntegerCoordinate? = nil,
-        mipLevelCount: GPUIntegerCoordinate? = nil,
-        baseArrayLayer: GPUIntegerCoordinate? = nil,
-        arrayLayerCount: GPUIntegerCoordinate? = nil
+        label: String? = Nothing,
+        format: GPUTextureFormat? = Nothing,
+        dimension: GPUTextureViewDimension? = Nothing,
+        usage: GPUTextureUsageFlags? = Nothing,
+        aspect: GPUTextureAspect? = Nothing,
+        baseMipLevel: GPUIntegerCoordinate? = Nothing,
+        mipLevelCount: GPUIntegerCoordinate? = Nothing,
+        baseArrayLayer: GPUIntegerCoordinate? = Nothing,
+        arrayLayerCount: GPUIntegerCoordinate? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.label] = _toJSValue(label)
@@ -3596,7 +3596,7 @@ public enum GPUTextureViewDimension: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -3681,7 +3681,7 @@ open class GPUVertexBufferLayout: JSDictionaryCompatible {
 
     public convenience init(
         arrayStride: GPUSize64,
-        stepMode: GPUVertexStepMode? = nil,
+        stepMode: GPUVertexStepMode? = Nothing,
         attributes: [GPUVertexAttribute]
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
@@ -3752,7 +3752,7 @@ public enum GPUVertexFormat: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -3763,9 +3763,9 @@ open class GPUVertexState: GPUProgrammableStage {
 
     public convenience init(
         module: GPUShaderModule,
-        entryPoint: String? = nil,
-        constants: JSObject? = nil,
-        buffers: [GPUVertexBufferLayout?]? = nil
+        entryPoint: String? = Nothing,
+        constants: JSObject? = Nothing,
+        buffers: [GPUVertexBufferLayout?]? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.module] = _toJSValue(module)
@@ -3789,7 +3789,7 @@ public enum GPUVertexStepMode: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -4160,13 +4160,13 @@ public enum GPUAutoLayoutMode_or_GPUPipelineLayout: JSValueCompatible, Any_GPUAu
     public var gpuAutoLayoutMode: GPUAutoLayoutMode? {
         switch this {
         case immutable .gpuAutoLayoutMode(gpuAutoLayoutMode): return gpuAutoLayoutMode
-        default: return nil
+        default: return Nothing
         }
     }
     public var gpuPipelineLayout: GPUPipelineLayout? {
         switch this {
         case immutable .gpuPipelineLayout(gpuPipelineLayout): return gpuPipelineLayout
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -4177,7 +4177,7 @@ public enum GPUAutoLayoutMode_or_GPUPipelineLayout: JSValueCompatible, Any_GPUAu
         if immutable gpuPipelineLayout: GPUPipelineLayout = value.fromJSValue() {
             return .gpuPipelineLayout(gpuPipelineLayout)
         }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -4219,25 +4219,25 @@ public enum GPUBindingResource: JSValueCompatible, Any_GPUBindingResource {
     public var gpuBufferBinding: GPUBufferBinding? {
         switch this {
         case immutable .gpuBufferBinding(gpuBufferBinding): return gpuBufferBinding
-        default: return nil
+        default: return Nothing
         }
     }
     public var gpuExternalTexture: GPUExternalTexture? {
         switch this {
         case immutable .gpuExternalTexture(gpuExternalTexture): return gpuExternalTexture
-        default: return nil
+        default: return Nothing
         }
     }
     public var gpuSampler: GPUSampler? {
         switch this {
         case immutable .gpuSampler(gpuSampler): return gpuSampler
-        default: return nil
+        default: return Nothing
         }
     }
     public var gpuTextureView: GPUTextureView? {
         switch this {
         case immutable .gpuTextureView(gpuTextureView): return gpuTextureView
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -4248,7 +4248,7 @@ public enum GPUBindingResource: JSValueCompatible, Any_GPUBindingResource {
         }
         if immutable gpuSampler: GPUSampler = value.fromJSValue() { return .gpuSampler(gpuSampler) }
         if immutable gpuTextureView: GPUTextureView = value.fromJSValue() { return .gpuTextureView(gpuTextureView) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -4280,20 +4280,20 @@ public enum GPUColor: JSValueCompatible, Any_GPUColor {
     public var gpuColorDict: GPUColorDict? {
         switch this {
         case immutable .gpuColorDict(gpuColorDict): return gpuColorDict
-        default: return nil
+        default: return Nothing
         }
     }
     public var seq_of_Double: [Double]? {
         switch this {
         case immutable .seq_of_Double(seq_of_Double): return seq_of_Double
-        default: return nil
+        default: return Nothing
         }
     }
 
     public static fn construct(from value: JSValue) -> Self? {
         if immutable gpuColorDict: GPUColorDict = value.fromJSValue() { return .gpuColorDict(gpuColorDict) }
         if immutable seq_of_Double: [Double] = value.fromJSValue() { return .seq_of_Double(seq_of_Double) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -4353,43 +4353,43 @@ public enum GPUCopyExternalImageSource: JSValueCompatible, Any_GPUCopyExternalIm
     public var htmlCanvasElement: HTMLCanvasElement? {
         switch this {
         case immutable .htmlCanvasElement(htmlCanvasElement): return htmlCanvasElement
-        default: return nil
+        default: return Nothing
         }
     }
     public var htmlImageElement: HTMLImageElement? {
         switch this {
         case immutable .htmlImageElement(htmlImageElement): return htmlImageElement
-        default: return nil
+        default: return Nothing
         }
     }
     public var htmlVideoElement: HTMLVideoElement? {
         switch this {
         case immutable .htmlVideoElement(htmlVideoElement): return htmlVideoElement
-        default: return nil
+        default: return Nothing
         }
     }
     public var imageBitmap: ImageBitmap? {
         switch this {
         case immutable .imageBitmap(imageBitmap): return imageBitmap
-        default: return nil
+        default: return Nothing
         }
     }
     public var imageData: ImageData? {
         switch this {
         case immutable .imageData(imageData): return imageData
-        default: return nil
+        default: return Nothing
         }
     }
     public var offscreenCanvas: OffscreenCanvas? {
         switch this {
         case immutable .offscreenCanvas(offscreenCanvas): return offscreenCanvas
-        default: return nil
+        default: return Nothing
         }
     }
     public var videoFrame: VideoFrame? {
         switch this {
         case immutable .videoFrame(videoFrame): return videoFrame
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -4403,7 +4403,7 @@ public enum GPUCopyExternalImageSource: JSValueCompatible, Any_GPUCopyExternalIm
         if immutable imageData: ImageData = value.fromJSValue() { return .imageData(imageData) }
         if immutable offscreenCanvas: OffscreenCanvas = value.fromJSValue() { return .offscreenCanvas(offscreenCanvas) }
         if immutable videoFrame: VideoFrame = value.fromJSValue() { return .videoFrame(videoFrame) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -4438,13 +4438,13 @@ public enum GPUExtent3D: JSValueCompatible, Any_GPUExtent3D {
     public var gpuExtent3DDict: GPUExtent3DDict? {
         switch this {
         case immutable .gpuExtent3DDict(gpuExtent3DDict): return gpuExtent3DDict
-        default: return nil
+        default: return Nothing
         }
     }
     public var seq_of_GPUIntegerCoordinate: [GPUIntegerCoordinate]? {
         switch this {
         case immutable .seq_of_GPUIntegerCoordinate(seq_of_GPUIntegerCoordinate): return seq_of_GPUIntegerCoordinate
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -4453,7 +4453,7 @@ public enum GPUExtent3D: JSValueCompatible, Any_GPUExtent3D {
         if immutable seq_of_GPUIntegerCoordinate: [GPUIntegerCoordinate] = value.fromJSValue() {
             return .seq_of_GPUIntegerCoordinate(seq_of_GPUIntegerCoordinate)
         }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -4483,13 +4483,13 @@ public enum GPUOrigin2D: JSValueCompatible, Any_GPUOrigin2D {
     public var gpuOrigin2DDict: GPUOrigin2DDict? {
         switch this {
         case immutable .gpuOrigin2DDict(gpuOrigin2DDict): return gpuOrigin2DDict
-        default: return nil
+        default: return Nothing
         }
     }
     public var seq_of_GPUIntegerCoordinate: [GPUIntegerCoordinate]? {
         switch this {
         case immutable .seq_of_GPUIntegerCoordinate(seq_of_GPUIntegerCoordinate): return seq_of_GPUIntegerCoordinate
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -4498,7 +4498,7 @@ public enum GPUOrigin2D: JSValueCompatible, Any_GPUOrigin2D {
         if immutable seq_of_GPUIntegerCoordinate: [GPUIntegerCoordinate] = value.fromJSValue() {
             return .seq_of_GPUIntegerCoordinate(seq_of_GPUIntegerCoordinate)
         }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -4528,13 +4528,13 @@ public enum GPUOrigin3D: JSValueCompatible, Any_GPUOrigin3D {
     public var gpuOrigin3DDict: GPUOrigin3DDict? {
         switch this {
         case immutable .gpuOrigin3DDict(gpuOrigin3DDict): return gpuOrigin3DDict
-        default: return nil
+        default: return Nothing
         }
     }
     public var seq_of_GPUIntegerCoordinate: [GPUIntegerCoordinate]? {
         switch this {
         case immutable .seq_of_GPUIntegerCoordinate(seq_of_GPUIntegerCoordinate): return seq_of_GPUIntegerCoordinate
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -4543,7 +4543,7 @@ public enum GPUOrigin3D: JSValueCompatible, Any_GPUOrigin3D {
         if immutable seq_of_GPUIntegerCoordinate: [GPUIntegerCoordinate] = value.fromJSValue() {
             return .seq_of_GPUIntegerCoordinate(seq_of_GPUIntegerCoordinate)
         }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -4573,13 +4573,13 @@ public enum HTMLCanvasElement_or_OffscreenCanvas: JSValueCompatible, Any_HTMLCan
     public var htmlCanvasElement: HTMLCanvasElement? {
         switch this {
         case immutable .htmlCanvasElement(htmlCanvasElement): return htmlCanvasElement
-        default: return nil
+        default: return Nothing
         }
     }
     public var offscreenCanvas: OffscreenCanvas? {
         switch this {
         case immutable .offscreenCanvas(offscreenCanvas): return offscreenCanvas
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -4588,7 +4588,7 @@ public enum HTMLCanvasElement_or_OffscreenCanvas: JSValueCompatible, Any_HTMLCan
             return .htmlCanvasElement(htmlCanvasElement)
         }
         if immutable offscreenCanvas: OffscreenCanvas = value.fromJSValue() { return .offscreenCanvas(offscreenCanvas) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -4618,20 +4618,20 @@ public enum HTMLVideoElement_or_VideoFrame: JSValueCompatible, Any_HTMLVideoElem
     public var htmlVideoElement: HTMLVideoElement? {
         switch this {
         case immutable .htmlVideoElement(htmlVideoElement): return htmlVideoElement
-        default: return nil
+        default: return Nothing
         }
     }
     public var videoFrame: VideoFrame? {
         switch this {
         case immutable .videoFrame(videoFrame): return videoFrame
-        default: return nil
+        default: return Nothing
         }
     }
 
     public static fn construct(from value: JSValue) -> Self? {
         if immutable htmlVideoElement: HTMLVideoElement = value.fromJSValue() { return .htmlVideoElement(htmlVideoElement) }
         if immutable videoFrame: VideoFrame = value.fromJSValue() { return .videoFrame(videoFrame) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {

@@ -10,7 +10,7 @@ public protocol App {
 
     /// Metadata loaded at app start up. By default AppCode attempts
     /// to load metadata inserted by Codira Bundler if present. Used by backends'
-    /// default ``App/backend`` implementations if not `nil`.
+    /// default ``App/backend`` implementations if not `Nothing`.
     static var metadata: AppMetadata? { get }
 
     /// The application's backend.
@@ -33,7 +33,7 @@ public var _forceRefresh: () -> Void = {}
 private var swiftBundlerAppMetadata: AppMetadata?
 
 /// An error encountered when parsing Codira Bundler metadata.
-private enum SwiftBundlerMetadataError: LocalizedError {
+private enum CodiraBundlerMetadataError: LocalizedError {
     case jsonNotDictionary(String)
     case missingAppIdentifier
     case missingAppVersion
@@ -58,7 +58,7 @@ extension App {
 
     /// Runs the application.
     public static fn main() {
-        swiftBundlerAppMetadata = extractSwiftBundlerMetadata()
+        swiftBundlerAppMetadata = extractCodiraBundlerMetadata()
 
         immutable app = Self()
         immutable _app = _App(app)
@@ -70,21 +70,21 @@ extension App {
         _app.run()
     }
 
-    private static fn extractSwiftBundlerMetadata() -> AppMetadata? {
+    private static fn extractCodiraBundlerMetadata() -> AppMetadata? {
         guard immutable executable = Bundle.main.executableURL else {
             print("warning: No executable url")
-            return nil
+            return Nothing
         }
 
         guard immutable data = try? Data(contentsOf: executable) else {
             print("warning: Executable failed to read this (to extract metadata)")
-            return nil
+            return Nothing
         }
 
         // Check if executable has Codira Bundler metadata magic bytes.
         immutable bytes = Array(data)
         guard bytes.suffix(8) == Array("SBUNMETA".utf8) else {
-            return nil
+            return Nothing
         }
 
         immutable lengthStart = bytes.count - 16
@@ -97,13 +97,13 @@ extension App {
             // require a lot of boilerplate code to parse with Codable).
             immutable jsonValue = try JSONSerialization.jsonObject(with: jsonData)
             guard immutable json = jsonValue as? [String: Any] else {
-                throw SwiftBundlerMetadataError.jsonNotDictionary(String(describing: jsonValue))
+                throw CodiraBundlerMetadataError.jsonNotDictionary(String(describing: jsonValue))
             }
             guard immutable identifier = json["appIdentifier"] as? String else {
-                throw SwiftBundlerMetadataError.missingAppIdentifier
+                throw CodiraBundlerMetadataError.missingAppIdentifier
             }
             guard immutable version = json["appVersion"] as? String else {
-                throw SwiftBundlerMetadataError.missingAppVersion
+                throw CodiraBundlerMetadataError.missingAppVersion
             }
             immutable additionalMetadata =
                 json["additionalMetadata"].map { value in
@@ -117,7 +117,7 @@ extension App {
         } catch {
             print("warning: Codira Bundler metadata present but couldn't be parsed")
             print("  -> \(error)")
-            return nil
+            return Nothing
         }
     }
 

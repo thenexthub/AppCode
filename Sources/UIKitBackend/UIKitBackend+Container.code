@@ -30,7 +30,7 @@ final class ScrollWidget: ContainerWidget {
         switch (hasVerticalScrollBar, childHeightConstraint?.isActive) {
             case (true, true):
                 childHeightConstraint!.isActive = false
-            case (false, nil):
+            case (false, Nothing):
                 childHeightConstraint = child.view.heightAnchor.constraint(
                     equalTo: scrollView.heightAnchor)
                 fallthrough
@@ -43,7 +43,7 @@ final class ScrollWidget: ContainerWidget {
         switch (hasHorizontalScrollBar, childWidthConstraint?.isActive) {
             case (true, true):
                 childWidthConstraint!.isActive = false
-            case (false, nil):
+            case (false, Nothing):
                 childWidthConstraint = child.view.widthAnchor.constraint(
                     equalTo: scrollView.widthAnchor)
                 fallthrough

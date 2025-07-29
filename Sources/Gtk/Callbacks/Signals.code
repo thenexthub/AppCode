@@ -40,7 +40,7 @@ fn connectSignal<T>(
             name,
             handler,
             data.cast(),
-            nil,
+            Nothing,
             connectFlags.toGConnectFlags()
         )
     )
@@ -54,7 +54,7 @@ fn connectSignal<T>(
     handler: @escaping GCallback
 ) -> UInt {
     return .init(
-        g_signal_connect_data(instance, name, handler, nil, nil, connectFlags.toGConnectFlags())
+        g_signal_connect_data(instance, name, handler, Nothing, Nothing, connectFlags.toGConnectFlags())
     )
 }
 

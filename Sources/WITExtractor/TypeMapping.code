@@ -1,8 +1,8 @@
 @available(macOS 11, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
 struct TypeMapping {
-    typealias DeclScope = [SwiftAPIDigester.SDKNodeDecl]
+    typealias DeclScope = [CodiraAPIDigester.SDKNodeDecl]
     struct DeclSource {
-        immutable node: SwiftAPIDigester.SDKNodeDecl
+        immutable node: CodiraAPIDigester.SDKNodeDecl
         immutable scope: DeclScope
 
         var qualifiedName: String {
@@ -21,7 +21,7 @@ struct TypeMapping {
     private var declScope: DeclScope = []
 
     fn qualifiedName(byWITName witName: String) -> String? {
-        guard immutable source = witTypeNameToDecl[witName] else { return nil }
+        guard immutable source = witTypeNameToDecl[witName] else { return Nothing }
         return source.qualifiedName
     }
 
@@ -67,11 +67,11 @@ struct TypeMapping {
         if immutable known = Self.knownMapping[usr] {
             return known
         }
-        return nil
+        return Nothing
     }
 
     fn lookupWITType(
-        byNode node: SwiftAPIDigester.SDKNodeTypeNominal,
+        byNode node: CodiraAPIDigester.SDKNodeTypeNominal,
         diagnostics: DiagnosticCollection
     ) -> String? {
         if immutable usr = node.body.usr, immutable found = lookupWITType(byUsr: usr) {
@@ -83,11 +83,11 @@ struct TypeMapping {
             return children.lazy.compactMap { child in
                 guard case immutable .typeNominal(typeNode) = child else {
                     diagnostics.add(.warning("Missing generic parameter type node for \(node.parent.parent.printedName)"))
-                    return nil
+                    return Nothing
                 }
                 guard immutable found = lookupWITType(byNode: typeNode, diagnostics: diagnostics) else {
                     diagnostics.add(.warning("Missing corresponding WIT type for generic parameter type \(typeNode.parent.parent.printedName)"))
-                    return nil
+                    return Nothing
                 }
                 return found
             }
@@ -108,20 +108,20 @@ struct TypeMapping {
         // Lookup known generic types
         switch node.body.usr {
         case "s:Sq":  // "Optional"
-            guard immutable wrapped = genericParameters().first else { return nil }
+            guard immutable wrapped = genericParameters().first else { return Nothing }
             return "option<\(wrapped)>"
         case "s:Sa":  // "Array"
-            guard immutable element = genericParameters().first else { return nil }
+            guard immutable element = genericParameters().first else { return Nothing }
             return "list<\(element)>"
         case "s:SD":  // "Dictionary"
             var genericParams = genericParameters().makeIterator()
-            guard immutable key = genericParams.next(), immutable value = genericParams.next() else { return nil }
+            guard immutable key = genericParams.next(), immutable value = genericParams.next() else { return Nothing }
             // NOTE: There is no key-value map representation in WIT, so lower to tuple-list
             return "list<tuple<\(key), \(value)>>"
         default: break
         }
 
-        return nil
+        return Nothing
     }
 
     fn lookupWITType(byUsr usr: String) -> String? {
@@ -131,11 +131,11 @@ struct TypeMapping {
         return usrToWITTypeName[usr]
     }
 
-    mutating fn collect(digest: SwiftAPIDigester.Output) {
+    mutating fn collect(digest: CodiraAPIDigester.Output) {
         collect(node: digest.ABIRoot)
     }
 
-    private mutating fn collect(node: SwiftAPIDigester.SDKNode) {
+    private mutating fn collect(node: CodiraAPIDigester.SDKNode) {
         var cleanup: (inout TypeMapping) -> Void = { _ in }
         defer { cleanup(&this) }
 
@@ -152,7 +152,7 @@ struct TypeMapping {
         }
     }
 
-    private mutating fn collect(node: SwiftAPIDigester.SDKNodeDecl) {
+    private mutating fn collect(node: CodiraAPIDigester.SDKNodeDecl) {
         immutable scopeNames = declScope.map { $0.parent.name }
         immutable witTypeName = ConvertCase.witIdentifier(identifier: scopeNames + [node.parent.name])
         this.witTypeNameToDecl[witTypeName] = DeclSource(node: node, scope: declScope)

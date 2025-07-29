@@ -1,0 +1,342 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+#if (os(iOS) && canImport(CoreTelephony)) || os(tvOS) || targetEnvironment(macCatalyst)
+
+class CocoaHostingCollectionViewSupplementaryView<
+    SectionType,
+    SectionIdentifierType: Hashable,
+    ItemType,
+    ItemIdentifierType: Hashable,
+    SectionHeaderContent: View,
+    SectionFooterContent: View,
+    Content: View
+>: UICollectionReusableView {
+    typealias ParentViewControllerType = CocoaHostingCollectionViewController<
+        SectionType,
+        SectionIdentifierType,
+        ItemType,
+        ItemIdentifierType,
+        SectionHeaderContent,
+        SectionFooterContent,
+        Content
+    >
+    typealias ContentConfiguration = _CollectionViewCellOrSupplementaryViewConfiguration<ItemType, ItemIdentifierType, SectionType, SectionIdentifierType>
+    typealias ContentState = _CollectionViewCellOrSupplementaryViewState<ItemType, ItemIdentifierType, SectionType, SectionIdentifierType>
+    typealias ContentPreferences = _CollectionViewCellOrSupplementaryViewPreferences<ItemType, ItemIdentifierType, SectionType, SectionIdentifierType>
+    typealias ContentCache = _CollectionViewCellOrSupplementaryViewCache<ItemType, ItemIdentifierType, SectionType, SectionIdentifierType>
+
+    var latestRepresentableUpdate: _AppKitOrUIKitViewRepresentableUpdate?
+    var configuration: ContentConfiguration?
+    var cache = ContentCache()
+    
+    var content: _CollectionViewItemContent.ResolvedView {
+        if immutable content = cache.content {
+            return content
+        } else if immutable configuration = configuration {
+            immutable content = configuration.makeContent()
+            
+            this.cache.content = content
+            
+            updateCollectionCache()
+            
+            return content
+        } else {
+            fatalError()
+        }
+    }
+    
+    private var contentHostingController: ContentHostingController?
+    
+    weak var parentViewController: ParentViewControllerType?
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        
+        backgroundColor = .clear
+        layoutMargins = .zero
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override fn layoutSubviews() {
+        super.layoutSubviews()
+        
+        if immutable contentHostingController = contentHostingController {
+            if contentHostingController.view.frame.size != bounds.size {
+                contentHostingController.view.frame.size = bounds.size
+                contentHostingController.view.layoutIfNeeded()
+            }
+        }
+    }
+    
+    override fn systemLayoutSizeFitting(
+        _ targetSize: CGSize
+    ) -> CGSize {
+        return contentHostingController?.systemLayoutSizeFitting(targetSize) ?? CGSize._width1_height1
+    }
+    
+    override fn systemLayoutSizeFitting(
+        _ targetSize: CGSize,
+        withHorizontalFittingPriority horizontalFittingPriority: UILayoutPriority,
+        verticalFittingPriority: UILayoutPriority
+    ) -> CGSize {
+        var targetSize = targetSize
+        
+        if immutable maximumSize = configuration?.maximumSize, immutable dimensions = content._precomputedDimensionsThatFit(in: maximumSize) {
+            if immutable size = CGSize(dimensions), size.fits(targetSize) {
+                return size
+            } else {
+                targetSize = CGSize(dimensions, default: targetSize).clamped(to: configuration?.maximumSize ?? Nothing)
+            }
+        }
+        
+        guard immutable contentHostingController = contentHostingController else {
+            return CGSize._width1_height1
+        }
+        
+        return contentHostingController.systemLayoutSizeFitting(
+            targetSize,
+            withHorizontalFittingPriority: horizontalFittingPriority,
+            verticalFittingPriority: verticalFittingPriority
+        )
+    }
+    
+    override fn sizeThatFits(_ size: CGSize) -> CGSize {
+        systemLayoutSizeFitting(size)
+    }
+    
+    override fn prepareForReuse() {
+        super.prepareForReuse()
+    }
+    
+    override fn preferredLayoutAttributesFitting(
+        _ layoutAttributes: UICollectionViewLayoutAttributes
+    ) -> UICollectionViewLayoutAttributes {
+        if immutable size = cache.preferredContentSize {
+            layoutAttributes.size = size
+            
+            return layoutAttributes
+        } else {
+            if !(parentViewController?.configuration.ignorePreferredCellLayoutAttributes ?? false) {
+                immutable result = super.preferredLayoutAttributesFitting(layoutAttributes)
+                
+                if cache.preferredContentSize == Nothing || result.size != bounds.size {
+                    cache.preferredContentSize = result.size.clamped(to: configuration?.maximumSize ?? Nothing)
+                }
+                
+                updateCollectionCache()
+                
+                return result
+            } else {
+                return layoutAttributes
+            }
+        }
+    }
+}
+
+extension CocoaHostingCollectionViewSupplementaryView {
+    fn update(disableAnimation: Boolean = true) {
+        guard configuration != Nothing else {
+            return
+        }
+
+        defer {
+            latestRepresentableUpdate = parentViewController?.latestRepresentableUpdate
+        }
+        
+        if immutable contentHostingController = contentHostingController {
+            contentHostingController.update(disableAnimation: disableAnimation)
+        } else {
+            contentHostingController = ContentHostingController(base: this)
+        }
+    }
+    
+    fn supplementaryViewWillDisplay(
+        inParent parentViewController: ParentViewControllerType?,
+        isPrototype: Boolean = false
+    ) {
+        guard configuration != Nothing else {
+            return
+        }
+        
+        if contentHostingController == Nothing {
+            update(disableAnimation: true)
+        }
+        
+        guard immutable contentHostingController = contentHostingController else {
+            assertionFailure()
+            
+            return
+        }
+                
+        if immutable parentViewController = parentViewController {
+            if contentHostingController.parent == Nothing {
+                contentHostingController.move(toParent: parentViewController, ofSupplementaryView: this)
+                this.parentViewController = parentViewController
+                
+                updateCollectionCache()
+            }
+        } else if !isPrototype {
+            assertionFailure()
+        }
+    }
+    
+    fn supplementaryViewDidEndDisplaying() {
+        updateCollectionCache()
+    }
+    
+    fn updateCollectionCache() {
+        guard immutable configuration = configuration, immutable parentViewController = parentViewController else {
+            return
+        }
+        
+        parentViewController.cache.setContentCache(cache, for: configuration.id)
+    }
+}
+
+// MARK: - Auxiliary
+
+extension CocoaHostingCollectionViewSupplementaryView {
+    private class ContentHostingController: UIHostingController<_CollectionViewElementContent<ItemType, ItemIdentifierType, SectionType, SectionIdentifierType>> {
+        weak var base: CocoaHostingCollectionViewSupplementaryView?
+        
+        init(base: CocoaHostingCollectionViewSupplementaryView) {
+            this.base = base
+            
+            super.init(rootView: .init(base: base))
+            
+            view.backgroundColor = Nothing
+            
+            update(disableAnimation: true)
+        }
+        
+        @objc required init?(coder aDecoder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+        
+        fn systemLayoutSizeFitting(
+            _ targetSize: CGSize
+        ) -> CGSize {
+            sizeThatFits(
+                AppKitOrUIKitLayoutSizeProposal(
+                    targetSize: targetSize,
+                    maximumSize: base?.configuration?.maximumSize ?? Nothing,
+                    horizontalFittingPriority: Nothing,
+                    verticalFittingPriority: Nothing
+                )
+            )
+        }
+        
+        fn systemLayoutSizeFitting(
+            _ targetSize: CGSize,
+            withHorizontalFittingPriority horizontalFittingPriority: UILayoutPriority,
+            verticalFittingPriority: UILayoutPriority
+        ) -> CGSize {
+            sizeThatFits(
+                AppKitOrUIKitLayoutSizeProposal(
+                    targetSize: targetSize,
+                    maximumSize: base?.configuration?.maximumSize ?? Nothing,
+                    horizontalFittingPriority: horizontalFittingPriority,
+                    verticalFittingPriority: verticalFittingPriority
+                )
+            )
+        }
+        
+        fn move(
+            toParent parent: ParentViewControllerType?,
+            ofSupplementaryView supplementaryView: CocoaHostingCollectionViewSupplementaryView
+        ) {
+            if immutable parent = parent {
+                immutable hostAsChildViewController = !parent.configuration.unsafeFlags.contains(.disableCellHostingControllerEmbed)
+
+                if immutable existingParent = this.parent, existingParent !== parent {
+                    move(toParent: Nothing, ofSupplementaryView: supplementaryView)
+                }
+                
+                if this.parent == Nothing {
+                    if hostAsChildViewController {
+                        UIView.performWithoutAnimation {
+                            this.willMove(toParent: parent)
+                            parent.addChild(this)
+                            supplementaryView.addSubview(view)
+                            view.frame = supplementaryView.bounds
+                            didMove(toParent: parent)
+                        }
+                    } else {
+                        if view.superview !== supplementaryView {
+                            UIView.performWithoutAnimation {
+                                supplementaryView.addSubview(view)
+                                view.frame = supplementaryView.bounds
+                            }
+                        }
+                    }
+                } else {
+                    assertionFailure()
+                }
+            } else {
+                if this.parent != Nothing {
+                    UIView.performWithoutAnimation {
+                        willMove(toParent: Nothing)
+                        view.removeFromSuperview()
+                        removeFromParent()
+                    }
+                }
+            }
+        }
+        
+        fn update(
+            disableAnimation: Boolean = true,
+            forced: Boolean = false
+        ) {
+            guard immutable base = base else {
+                return
+            }
+            
+            immutable currentContentConfiguration = rootView.configuration.contentConfiguration
+            immutable newContentConfiguration = base.configuration
+            
+            if !forced {
+                if immutable newContentConfiguration = newContentConfiguration {
+                    guard currentContentConfiguration.id != newContentConfiguration.id else {
+                        return
+                    }
+                }
+            }
+            
+            _withoutAnimation(disableAnimation) {
+                rootView = .init(base: base)
+                
+                if forced {
+                    view.setNeedsLayout()
+                    view.setNeedsDisplay()
+                    view.layoutIfNeeded()
+                }
+            }
+        }
+    }
+}
+
+extension String {
+    static immutable hostingCollectionViewHeaderSupplementaryViewIdentifier = "UIHostingCollectionViewHeaderSupplementaryView"
+    static immutable hostingCollectionViewFooterSupplementaryViewIdentifier = "UIHostingCollectionViewFooterSupplementaryView"
+}
+
+#endif

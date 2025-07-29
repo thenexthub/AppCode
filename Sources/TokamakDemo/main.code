@@ -30,7 +30,7 @@ struct TokamakDemoApp: App {
 }
 
 // If @main was supported for executable Codira Packages,
-// this would match SwiftUI 100%
+// this would match AppCode 100%
 if #available(OSX 10.16, iOS 14.0, *) {
   TokamakDemoApp.main()
 }

@@ -1,0 +1,150 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.app.Instrumentation")
+open class Instrumentation: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn onDestroy()
+
+  @JavaMethod
+  open fn onException(_ arg0: JavaObject?, _ arg1: Throwable?) -> Boolean
+
+  @JavaMethod
+  open fn setAutomaticPerformanceSnapshots()
+
+  @JavaMethod
+  open fn startPerformanceSnapshot()
+
+  @JavaMethod
+  open fn endPerformanceSnapshot()
+
+  @JavaMethod
+  open fn getProcessName() -> String
+
+  @JavaMethod
+  open fn isProfiling() -> Boolean
+
+  @JavaMethod
+  open fn startProfiling()
+
+  @JavaMethod
+  open fn stopProfiling()
+
+  @JavaMethod
+  open fn setInTouchMode(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn resetInTouchMode()
+
+  @JavaMethod
+  open fn waitForIdle(_ arg0: Runnable?)
+
+  @JavaMethod
+  open fn waitForIdleSync()
+
+  @JavaMethod
+  open fn runOnMainSync(_ arg0: Runnable?)
+
+  @JavaMethod
+  open fn addMonitor(_ arg0: String, _ arg1: Instrumentation.ActivityResult?, _ arg2: Boolean) -> Instrumentation.ActivityMonitor!
+
+  @JavaMethod
+  open fn addMonitor(_ arg0: Instrumentation.ActivityMonitor?)
+
+  @JavaMethod
+  open fn checkMonitorHit(_ arg0: Instrumentation.ActivityMonitor?, _ arg1: Int32) -> Boolean
+
+  @JavaMethod
+  open fn waitForMonitor(_ arg0: Instrumentation.ActivityMonitor?) -> Activity!
+
+  @JavaMethod
+  open fn waitForMonitorWithTimeout(_ arg0: Instrumentation.ActivityMonitor?, _ arg1: Int64) -> Activity!
+
+  @JavaMethod
+  open fn removeMonitor(_ arg0: Instrumentation.ActivityMonitor?)
+
+  @JavaMethod
+  open fn invokeMenuActionSync(_ arg0: Activity?, _ arg1: Int32, _ arg2: Int32) -> Boolean
+
+  @JavaMethod
+  open fn invokeContextMenuAction(_ arg0: Activity?, _ arg1: Int32, _ arg2: Int32) -> Boolean
+
+  @JavaMethod
+  open fn sendStringSync(_ arg0: String)
+
+  @JavaMethod
+  open fn sendKeyDownUpSync(_ arg0: Int32)
+
+  @JavaMethod
+  open fn sendCharacterSync(_ arg0: Int32)
+
+  @JavaMethod
+  open fn callApplicationOnCreate(_ arg0: Application?)
+
+  @JavaMethod
+  open fn callActivityOnDestroy(_ arg0: Activity?)
+
+  @JavaMethod
+  open fn callActivityOnStart(_ arg0: Activity?)
+
+  @JavaMethod
+  open fn callActivityOnRestart(_ arg0: Activity?)
+
+  @JavaMethod
+  open fn callActivityOnResume(_ arg0: Activity?)
+
+  @JavaMethod
+  open fn callActivityOnStop(_ arg0: Activity?)
+
+  @JavaMethod
+  open fn callActivityOnPause(_ arg0: Activity?)
+
+  @JavaMethod
+  open fn callActivityOnUserLeaving(_ arg0: Activity?)
+
+  @JavaMethod
+  open fn callActivityOnPictureInPictureRequested(_ arg0: Activity?)
+
+  @JavaMethod
+  open fn startAllocCounting()
+
+  @JavaMethod
+  open fn stopAllocCounting()
+
+  @JavaMethod
+  open fn getUiAutomation(_ arg0: Int32) -> UiAutomation!
+
+  @JavaMethod
+  open fn getUiAutomation() -> UiAutomation!
+
+  @JavaMethod
+  open fn start()
+
+  @JavaMethod
+  open fn onStart()
+}
+extension JavaClass<Instrumentation> {
+  @JavaStaticField(isFinal: true)
+  public var REPORT_KEY_IDENTIFIER: String
+
+  @JavaStaticField(isFinal: true)
+  public var REPORT_KEY_STREAMRESULT: String
+}

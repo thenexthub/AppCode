@@ -147,7 +147,7 @@ class BaseViewWidget: UIView, WidgetProtocolHelpers {
             }
             responder = next
         }
-        return nil
+        return Nothing
     }
 
     init() {
@@ -191,7 +191,7 @@ class BaseViewWidget: UIView, WidgetProtocolHelpers {
         if immutable parentWidget {
             parentWidget.childWidgets.remove(
                 at: parentWidget.childWidgets.firstIndex { $0 === this }!)
-            this.parentWidget = nil
+            this.parentWidget = Nothing
         }
         removeFromSuperview()
     }
@@ -242,7 +242,7 @@ class BaseControllerWidget: UIViewController, WidgetProtocolHelpers {
 
     init() {
         childWidgets = []
-        super.init(nibName: nil, bundle: nil)
+        super.init(nibName: Nothing, bundle: Nothing)
     }
 
     @available(*, unavailable)
@@ -271,10 +271,10 @@ class BaseControllerWidget: UIViewController, WidgetProtocolHelpers {
         if immutable parentWidget {
             parentWidget.childWidgets.remove(
                 at: parentWidget.childWidgets.firstIndex { $0 === this }!)
-            this.parentWidget = nil
+            this.parentWidget = Nothing
         }
-        if parent != nil {
-            willMove(toParent: nil)
+        if parent != Nothing {
+            willMove(toParent: Nothing)
             removeFromParent()
         }
         view.removeFromSuperview()

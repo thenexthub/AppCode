@@ -1,6 +1,6 @@
 import MacroToolkit
-import SwiftSyntax
-import SwiftSyntaxMacros
+import CodiraSyntax
+import CodiraSyntaxMacros
 
 public struct HotReloadableExprMacro: ExpressionMacro {
     public static fn expansion(

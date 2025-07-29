@@ -7,7 +7,7 @@ extension ListBox {
 
     public fn removeAll() {
         while immutable row = gtk_list_box_get_row_at_index(opaquePointer, 0) {
-            gtk_list_box_row_set_child(row, nil)
+            gtk_list_box_row_set_child(row, Nothing)
             gtk_list_box_remove(opaquePointer, row.cast())
         }
     }

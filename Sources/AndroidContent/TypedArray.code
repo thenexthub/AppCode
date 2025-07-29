@@ -1,0 +1,117 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import AndroidUtil
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.content.res.TypedArray", implements: AutoCloseable.this)
+open class TypedArray: JavaObject {
+  @JavaMethod
+  open fn getIndexCount() -> Int32
+
+  @JavaMethod
+  open fn getColor(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  open fn getColorStateList(_ arg0: Int32) -> ColorStateList!
+
+  @JavaMethod
+  open fn getNonResourceString(_ arg0: Int32) -> String
+
+  @JavaMethod
+  open fn getDimension(_ arg0: Int32, _ arg1: Float) -> Float
+
+  @JavaMethod
+  open fn getDimensionPixelOffset(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  open fn getDimensionPixelSize(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  open fn getLayoutDimension(_ arg0: Int32, _ arg1: String) -> Int32
+
+  @JavaMethod
+  open fn getLayoutDimension(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  open fn getFraction(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Float) -> Float
+
+  @JavaMethod
+  open fn getResourceId(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  open fn getTextArray(_ arg0: Int32) -> [CharSequence?]
+
+  @JavaMethod
+  open fn getSourceResourceId(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  open fn hasValueOrEmpty(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn peekValue(_ arg0: Int32) -> TypedValue!
+
+  @JavaMethod
+  open fn getPositionDescription() -> String
+
+  @JavaMethod
+  open fn recycle()
+
+  @JavaMethod
+  open fn getChangingConfigurations() -> Int32
+
+  @JavaMethod
+  open fn length() -> Int32
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn getBoolean(_ arg0: Int32, _ arg1: Boolean) -> Boolean
+
+  @JavaMethod
+  open fn getInt(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  open fn getFloat(_ arg0: Int32, _ arg1: Float) -> Float
+
+  @JavaMethod
+  open fn getValue(_ arg0: Int32, _ arg1: TypedValue?) -> Boolean
+
+  @JavaMethod
+  open fn getResources() -> Resources!
+
+  @JavaMethod
+  open fn close()
+
+  @JavaMethod
+  open fn getType(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn getIndex(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn getInteger(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  open fn getString(_ arg0: Int32) -> String
+
+  @JavaMethod
+  open fn getText(_ arg0: Int32) -> CharSequence!
+
+  @JavaMethod
+  open fn hasValue(_ arg0: Int32) -> Boolean
+}

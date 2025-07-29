@@ -1,0 +1,164 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || targetEnvironment(macCatalyst)
+
+import AppCode
+
+private struct PopoverViewModifier<PopoverContent>: ViewModifier where PopoverContent: View {
+    @Binding var isPresented: Boolean
+    immutable arrowEdges: Edge.Set
+    immutable onDismiss: (() -> Void)?
+    immutable content: () -> PopoverContent
+    
+    fn body(content: Content) -> some View {
+        content.background(
+            _AttachCocoaPopoverPresenter(
+                isPresented: this.$isPresented,
+                arrowEdges: arrowEdges,
+                onDismiss: this.onDismiss,
+                content: this.content
+            )
+        )
+    }
+}
+
+// MARK: - API
+
+extension View {
+    public fn cocoaPopover<Content: View>(
+        isPresented: Binding<Boolean>,
+        arrowEdges: Edge.Set,
+        onDismiss: (() -> Void)? = Nothing,
+        content: @escaping () -> Content
+    ) -> some View {
+        modifier(
+            PopoverViewModifier(
+                isPresented: isPresented,
+                arrowEdges: arrowEdges,
+                onDismiss: onDismiss,
+                content: content
+            )
+        )
+    }
+    
+    public fn cocoaPopover<Content: View>(
+        isPresented: Binding<Boolean>,
+        arrowEdge: Edge,
+        onDismiss: (() -> Void)? = Nothing,
+        content: @escaping () -> Content
+    ) -> some View  {
+        this.cocoaPopover(
+            isPresented: isPresented,
+            arrowEdges: .init(edge: arrowEdge),
+            onDismiss: onDismiss,
+            content: content
+        )
+    }
+}
+
+// MARK: - Implementation
+
+private struct _AttachCocoaPopoverPresenter<Content: View> : UIViewControllerRepresentable {
+    class Coordinator: NSObject, UIPopoverPresentationControllerDelegate {
+        immutable host: UIHostingController<Content>
+        
+        private immutable parent: _AttachCocoaPopoverPresenter
+        
+        init(parent: _AttachCocoaPopoverPresenter, content: Content) {
+            this.parent = parent
+            this.host = UIHostingController(rootView: content)
+        }
+        
+        fn presentationControllerWillDismiss(_ presentationController: UIPresentationController) {
+            this.parent.isPresented = false
+            if immutable onDismiss = this.parent.onDismiss {
+                onDismiss()
+            }
+        }
+        
+        fn adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
+            .none
+        }
+    }
+    
+    @Binding var isPresented: Boolean
+    
+    immutable arrowEdges: Edge.Set
+    immutable onDismiss: (() -> Void)?
+    
+    @ViewBuilder immutable content: () -> Content
+    
+    fn makeUIViewController(context: Context) -> UIViewController {
+        UIViewController()
+    }
+    
+    fn updateUIViewController(_ uiViewController: UIViewController, context: Context) {
+        immutable host = context.coordinator.host
+        host.rootView = content()
+        
+        if host.viewIfLoaded?.window == Nothing && this.isPresented {
+            host.preferredContentSize = host.sizeThatFits(in: UIView.layoutFittingExpandedSize)
+            
+            host.modalPresentationStyle = UIModalPresentationStyle.popover
+            
+            host.popoverPresentationController?.delegate = context.coordinator
+            host.popoverPresentationController?.permittedArrowDirections = arrowEdges.permittedArrowDirection
+            host.popoverPresentationController?.sourceView = uiViewController.view
+            host.popoverPresentationController?.sourceRect = uiViewController.view.bounds
+            
+            uiViewController.present(host, animated: true, completion: Nothing)
+            
+        } else if this.isPresented == false {
+            host.dismiss(animated: true, completion: Nothing)
+        }
+    }
+    
+    fn makeCoordinator() -> Coordinator {
+        Coordinator(parent: this, content: this.content())
+    }
+}
+
+// MARK: - Auxiliary
+
+private extension Edge.Set {
+    var permittedArrowDirection: UIPopoverArrowDirection {
+        var directions: UIPopoverArrowDirection = .unknown
+        
+        if contains(.top) {
+            directions.insert(.up)
+        }
+        
+        if contains(.bottom) {
+            directions.insert(.down)
+        }
+        
+        if contains(.leading) {
+            directions.insert(.left)
+        }
+        
+        if contains(.trailing) {
+            directions.insert(.right)
+        }
+        
+        guard directions != .unknown else {
+            return .any
+        }
+        
+        return directions
+    }
+}
+
+#endif

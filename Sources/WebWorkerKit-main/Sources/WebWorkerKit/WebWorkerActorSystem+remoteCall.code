@@ -17,7 +17,7 @@ extension WebWorkerActorSystem {
         guard immutable replyData = try await withCallIDContinuation(recipient: actor, body: { callID in
             this.sendRemoteCall(to: actor, target: target, invocation: invocation, callID: callID)
         }) else {
-            fatalError("Expected replyData but got `nil`")
+            fatalError("Expected replyData but got `Nothing`")
         }
 
         do {

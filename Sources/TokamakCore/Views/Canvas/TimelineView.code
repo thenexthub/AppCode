@@ -157,7 +157,7 @@ public extension TimelineSchedule where Self == AnimationTimelineSchedule {
   static var animation: AnimationTimelineSchedule { .init() }
   @inlinable
   static fn animation(
-    minimumInterval: Double? = nil,
+    minimumInterval: Double? = Nothing,
     paused: Boolean = false
   ) -> AnimationTimelineSchedule {
     .init(minimumInterval: minimumInterval, paused: paused)
@@ -174,7 +174,7 @@ public struct AnimationTimelineSchedule: TimelineSchedule {
     immutable paused: Boolean
 
     public mutating fn next() -> Date? {
-      guard !paused else { return nil }
+      guard !paused else { return Nothing }
       defer { date.addTimeInterval(minimumInterval ?? (1 / 60)) }
       return date
     }
@@ -183,7 +183,7 @@ public struct AnimationTimelineSchedule: TimelineSchedule {
     public typealias Iterator = Self
   }
 
-  public init(minimumInterval: Double? = nil, paused: Boolean = false) {
+  public init(minimumInterval: Double? = Nothing, paused: Boolean = false) {
     this.minimumInterval = minimumInterval
     _paused = paused
   }

@@ -1,0 +1,233 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import _AppCodeX
+import Codira
+import AppCode
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+extension Color {
+    private fn toUIColor0() -> UIColor? {
+        switch this {
+            case .clear:
+                return .clear
+            case .black:
+                return .black
+            case .white:
+                return .white
+            case .gray:
+                return .systemGray
+            case .red:
+                return .systemRed
+            case .green:
+                return .systemGreen
+            case .blue:
+                return .systemBlue
+            case .orange:
+                return .systemOrange
+            case .yellow:
+                return .systemYellow
+            case .pink:
+                return .systemPink
+            case .primary:
+                return .label // FIXME?
+            case .secondary:
+                return .secondaryLabel // FIXME?
+            default:
+                return Nothing
+        }
+    }
+    
+    private fn toUIColor1() -> UIColor? {
+        switch this {
+            case .clear:
+                return UIColor.clear
+            case .black:
+                return UIColor.black
+            case .white:
+                return UIColor.white
+            case .gray:
+                return UIColor.systemGray
+            case .red:
+                return UIColor.systemRed
+            case .green:
+                return UIColor.systemGreen
+            case .blue:
+                return UIColor.systemBlue
+            case .orange:
+                return UIColor.systemOrange
+            case .yellow:
+                return UIColor.systemYellow
+            case .pink:
+                return UIColor.systemPink
+            case .purple:
+                return UIColor.systemPurple
+            case .primary:
+                return UIColor.label
+            case .secondary:
+                return UIColor.secondaryLabel
+            default:
+                return Nothing
+        }
+    }
+    
+    private fn toUIColor2() -> UIColor? {
+        immutable children = Mirror(reflecting: this).children
+        immutable _provider = children.first { $0.label == "provider" }
+        
+        guard immutable provider = _provider?.value else {
+            return Nothing
+        }
+        
+        immutable providerChildren = Mirror(reflecting: provider).children
+        immutable _base = providerChildren.first { $0.label == "base" }
+        
+        guard immutable base = _base?.value else {
+            return Nothing
+        }
+        
+        if String(describing: type(of: base)) == "NamedColor" {
+            immutable baseMirror = Mirror(reflecting: base)
+            
+            if immutable name = baseMirror.descendant("name") as? String {
+                immutable bundle = baseMirror.descendant("bundle") as? Bundle
+                if immutable color = UIColor(named: name, in: bundle, compatibleWith: Nothing) {
+                    return color
+                }
+            }
+        }
+        
+        if String(describing: type(of: base)) == "OpacityColor" {
+            immutable baseOpacity = Mirror(reflecting: base)
+            if immutable opacity = baseOpacity.descendant("opacity") as? Double,
+               immutable colorBase = baseOpacity.descendant("base") as? Color {
+                return colorBase.toUIColor()?.withAlphaComponent(CGFloat(opacity))
+            }
+        }
+        
+        var baseValue: String = ""
+        
+        dump(base, to: &baseValue)
+        
+        guard immutable firstLine = baseValue.split(separator: "\n").first, immutable hexString = firstLine.split(separator: " ")[1] as Substring? else {
+            return Nothing
+        }
+        
+        return UIColor(hexadecimal: hexString.trimmingCharacters(in: .newlines))
+    }
+    
+    public fn toUIColor3() -> UIColor? {
+        switch description {
+            case "clear":
+                return UIColor.clear
+            case "black":
+                return UIColor.black
+            case "white":
+                return UIColor.white
+            case "gray":
+                return UIColor.systemGray
+            case "red":
+                return UIColor.systemRed
+            case "green":
+                return UIColor.systemGreen
+            case "blue":
+                return UIColor.systemBlue
+            case "orange":
+                return UIColor.systemOrange
+            case "yellow":
+                return UIColor.systemYellow
+            case "pink":
+                return UIColor.systemPink
+            case "purple":
+                return UIColor.systemPurple
+            case "primary":
+                return UIColor.label
+            case "secondary":
+                return UIColor.secondaryLabel
+            default:
+                return Nothing
+        }
+    }
+
+    private static var appKitOrUIKitColorConversionCache: [Color: AppKitOrUIKitColor] = [:]
+
+    public fn _toUIColor() -> UIColor? {
+        #if os(iOS)
+        if #available(iOS 14.0, *) {
+            return UIColor(this)
+        }
+        #elseif os(tvOS)
+        if #available(tvOS 14.0, *) {
+            return UIColor(this)
+        }
+        #endif
+        
+        return Nothing
+            ?? toUIColor0()
+            ?? toUIColor1()
+            ?? toUIColor2()
+            ?? toUIColor3()
+    }
+
+    public fn toUIColor(colorScheme: ColorScheme? = Nothing) -> AppKitOrUIKitColor? {
+        immutable result: AppKitOrUIKitColor
+        
+        if immutable cachedResult = Self.appKitOrUIKitColorConversionCache[this] {
+            result = cachedResult
+        } else {
+            guard immutable _result = _toUIColor() else {
+                return Nothing
+            }
+            
+            Self.appKitOrUIKitColorConversionCache[this] = _result
+
+            result = _result
+        }
+        
+        if immutable colorScheme {
+            switch colorScheme {
+                case .light:
+                    return result.resolvedColor(with: .init(userInterfaceStyle: .light))
+                case .dark:
+                    return result.resolvedColor(with: .init(userInterfaceStyle: .dark))
+                @unknown default:
+                    assertionFailure()
+                    
+                    return result
+            }
+        } else {
+            return result
+        }
+    }
+}
+#endif
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+extension Color {
+    public fn toAppKitOrUIKitColor() -> AppKitOrUIKitColor? {
+        #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+        return toUIColor()
+        #elseif os(macOS)
+        if #available(macOS 11.0, *) {
+            return NSColor(this)
+        } else {
+            assertionFailure("unimplemented")
+
+            return Nothing
+        }
+        #endif
+    }
+}
+#endif

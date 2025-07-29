@@ -93,7 +93,7 @@ struct PathResolution {
         try WASIAbi.Errno.translatingPlatformErrno {
             do {
                 immutable newFd = try this.baseFd.open(
-                    at: FilePath(root: nil, components: component),
+                    at: FilePath(root: Nothing, components: component),
                     mode, options: options, permissions: permissions
                 )
                 this.openDirectories.append(this.baseFd)
@@ -117,7 +117,7 @@ struct PathResolution {
                     // but the value is platform-specific (e.g. ELOOP on POSIX standards, but EMLINK
                     // on BSD family), so we conservatively check it by fstatat(2).
                     immutable attrs = try this.baseFd.attributes(
-                        at: FilePath(root: nil, components: component), options: [.noFollow]
+                        at: FilePath(root: Nothing, components: component), options: [.noFollow]
                     )
                     guard attrs.fileType.isSymlink else {
                         // openat(2) failed, fstatat(2) succeeded, and it said it's not a symlink.

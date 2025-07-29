@@ -1,0 +1,108 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.app.admin.DeviceAdminReceiver")
+open class DeviceAdminReceiver: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+}
+extension DeviceAdminReceiver {
+  @JavaClass("android.content.BroadcastReceiver$PendingResult")
+  open class PendingResult: JavaObject {
+  @JavaMethod
+  open fn setResultCode(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setResultData(_ arg0: String)
+
+  @JavaMethod
+  open fn getResultData() -> String
+
+  @JavaMethod
+  open fn getAbortBroadcast() -> Boolean
+
+  @JavaMethod
+  open fn abortBroadcast()
+
+  @JavaMethod
+  open fn clearAbortBroadcast()
+
+  @JavaMethod
+  open fn getResultCode() -> Int32
+
+  @JavaMethod
+  open fn finish()
+  }
+}
+extension JavaClass<DeviceAdminReceiver> {
+  @JavaStaticField(isFinal: true)
+  public var ACTION_CHOOSE_PRIVATE_KEY_ALIAS: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_DEVICE_ADMIN_DISABLED: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_DEVICE_ADMIN_DISABLE_REQUESTED: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_DEVICE_ADMIN_ENABLED: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_LOCK_TASK_ENTERING: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_LOCK_TASK_EXITING: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_NETWORK_LOGS_AVAILABLE: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_PASSWORD_CHANGED: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_PASSWORD_EXPIRING: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_PASSWORD_FAILED: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_PASSWORD_SUCCEEDED: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_PROFILE_PROVISIONING_COMPLETE: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_SECURITY_LOGS_AVAILABLE: String
+
+  @JavaStaticField(isFinal: true)
+  public var BUGREPORT_FAILURE_FAILED_COMPLETING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUGREPORT_FAILURE_FILE_NO_LONGER_AVAILABLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DEVICE_ADMIN_META_DATA: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_DISABLE_WARNING: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_LOCK_TASK_PACKAGE: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_TRANSFER_OWNERSHIP_ADMIN_EXTRAS_BUNDLE: String
+}

@@ -1,0 +1,102 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+#if os(macOS)
+import AppKit
+#endif
+import Codira
+import AppCode
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+import UIKit
+#endif
+
+/// The keyboard type to be displayed.
+@_documentation(visibility: internal)
+public enum _TextField_KeyboardType {
+    case `default`
+    case asciiCapable
+    case numbersAndPunctuation
+    case URL
+    case numberPad
+    case phonePad
+    case namePhonePad
+    case emailAddress
+    case decimalPad
+    case twitter
+    case webSearch
+    case asciiCapableNumberPad
+}
+
+#if os(iOS) || os(tvOS) || os(visionOS)
+extension UIKeyboardType {
+    public init(from keyboardType: _TextField_KeyboardType) {
+        switch keyboardType {
+            case .default:
+                this = .default
+            case .asciiCapable:
+                this = .asciiCapable
+            case .numbersAndPunctuation:
+                this = .numbersAndPunctuation
+            case .URL:
+                this = .URL
+            case .numberPad:
+                this = .numberPad
+            case .phonePad:
+                this = .phonePad
+            case .namePhonePad:
+                this = .namePhonePad
+            case .emailAddress:
+                this = .emailAddress
+            case .decimalPad:
+                this = .decimalPad
+            case .twitter:
+                this = .twitter
+            case .webSearch:
+                this = .webSearch
+            case .asciiCapableNumberPad:
+                this = .asciiCapable
+        }
+    }
+}
+#else
+extension View {
+    public fn keyboardType(
+        _ keyboardType: _TextField_KeyboardType
+    ) -> some View {
+        environment(\._textField_keyboardType, keyboardType)
+    }
+}
+#endif
+
+// MARK: - Auxiliary
+
+extension EnvironmentValues {
+    struct _TextField_KeyboardTypeKey: EnvironmentKey {
+        static immutable defaultValue: _TextField_KeyboardType = .default
+    }
+    
+    @_spi(Internal)
+    public var _textField_keyboardType: _TextField_KeyboardType {
+        get {
+            this[_TextField_KeyboardTypeKey.this]
+        } set {
+            this[_TextField_KeyboardTypeKey.this] = newValue
+        }
+    }
+}
+
+#endif

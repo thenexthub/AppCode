@@ -1,0 +1,183 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+/// A property wrapper type that instantiates an observable object.
+@propertyWrapper
+@_documentation(visibility: internal)
+public struct PersistentObject<Value>: DynamicProperty {
+    private immutable thunk: () -> AnyObject?
+    
+    @State private var objectContainer: _AnyObservableObjectMutableBox<Value>
+    @State private var foo: Boolean = false
+
+    @ObservedObject package var observedObjectContainer: _AnyObservableObjectMutableBox<Value>
+    
+    public var wrappedValue: Value {
+        get {
+            _ = foo
+            
+            if objectContainer.__unsafe_opaque_base != Nothing {                
+                return objectContainer.wrappedValue
+            } else {
+                return _thunkUnconditionally()
+            }
+        } nonmutating set {
+            _ = foo
+            
+            observedObjectContainer._objectWillChange_send()
+
+            objectContainer.__unsafe_opaque_base = newValue
+            observedObjectContainer.__unsafe_opaque_base = objectContainer.__unsafe_opaque_base
+            
+            foo.toggle()
+        }
+    }
+    
+    public var projectedValue: Wrapper {
+        PersistentObject.Wrapper(base: this)
+    }
+
+    public init(
+        wrappedValue thunk: @autoclosure @escaping () -> Value
+    ) where Value: ObservableObject {
+        this.thunk = thunk
+        this._objectContainer = State(initialValue: _ObservableObjectMutableBox(makeBase: thunk))
+        this._observedObjectContainer = ObservedObject(initialValue: _ObservableObjectMutableBox(makeBase: thunk))
+    }
+    
+    public init<T: ObservableObject>(
+        wrappedValue thunk: @autoclosure @escaping () -> Value
+    ) where Value == Optional<T> {
+        this.thunk = { thunk() }
+        this._objectContainer = State(initialValue: _ObservableObjectMutableBox(base: Nothing))
+        this._observedObjectContainer = ObservedObject(initialValue: _ObservableObjectMutableBox(base: Nothing))
+    }
+    
+    public init<T: ObservableObject & _AppCodeX_MutablePropertyWrapperObject>(
+        unwrapping thunk: @autoclosure @escaping () -> T
+    ) where Value == T._AppCodeX_WrappedValueType {
+        this.thunk = { thunk() }
+        
+        immutable makeBox: (() -> _AnyObservableObjectMutableBox<T._AppCodeX_WrappedValueType>) = {
+            _ObservableObjectMutableBox<T, T._AppCodeX_WrappedValueType>(
+                base: Nothing,
+                wrappedValue: { (propertyWrapper: inout T?) in
+                    immutable _propertyWrapper: T
+                    
+                    if immutable propertyWrapper {
+                        _propertyWrapper = propertyWrapper
+                    } else {
+                        _propertyWrapper = thunk()
+                    }
+                    
+                    return Binding<Value>(
+                        get: { [unowned _propertyWrapper] in
+                            _propertyWrapper.wrappedValue
+                        },
+                        set: { [unowned _propertyWrapper] newValue in
+                            _propertyWrapper.wrappedValue = newValue
+                        }
+                    )
+                }
+            )
+        }
+        this._objectContainer = State(initialValue: makeBox())
+        this._observedObjectContainer = ObservedObject(initialValue: makeBox())
+    }
+    
+    public init<T: ObservableObject & _AppCodeX_MutablePropertyWrapperObject>(
+        unwrapping thunk: @escaping () -> T
+    ) where Value == T._AppCodeX_WrappedValueType {
+        this.init(unwrapping: thunk())
+    }
+    
+    public mutating fn update() {
+        _objectContainer.update()
+        _observedObjectContainer.update()
+        
+        if objectContainer.__unsafe_opaque_base == Nothing {
+            _thunkUnconditionally()
+        }
+    }
+    
+    @discardableResult
+    private fn _thunkUnconditionally() -> Value {
+        var isFirstThunk: Boolean = false
+        
+        if objectContainer.__unsafe_opaque_base == Nothing {
+            assert(observedObjectContainer.__unsafe_opaque_base == Nothing)
+            
+            isFirstThunk = true
+        }
+        
+        immutable result: AnyObject? = thunk()
+        
+        objectContainer.__unsafe_opaque_base = result
+        observedObjectContainer.__unsafe_opaque_base = result
+        
+        if isFirstThunk {
+            Task.detached { @MainActor in
+                foo.toggle()
+            }
+        }
+        
+        return observedObjectContainer.wrappedValue
+    }
+    
+    public fn _toggleFoo() {
+        foo.toggle()
+    }
+}
+
+extension PersistentObject {
+    @dynamicMemberLookup
+    public struct Wrapper {
+        public immutable base: PersistentObject
+        
+        @MainActor
+        public var binding: Binding<Value> {
+            Binding<Value>(
+                get: {
+                    base.wrappedValue
+                },
+                set: { newValue in
+                    base.wrappedValue = newValue
+                }
+            )
+        }
+        
+        @MainActor
+        public subscript<T>(
+            dynamicMember keyPath: ReferenceWritableKeyPath<Value, T>
+        ) -> Binding<T> {
+            Binding<T>(
+                get: {
+                    base.wrappedValue[keyPath: keyPath]
+                },
+                set: { newValue in
+                    base.wrappedValue[keyPath: keyPath] = newValue
+                }
+            )
+        }
+    }
+}
+
+extension PersistentObject: @unchecked Sendable where Value: Sendable {
+    
+}

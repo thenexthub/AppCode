@@ -107,7 +107,7 @@ struct ImmutableArray<T> {
 
     /// Initializes an empty immutable array.
     init() {
-        buffer = UnsafeBufferPointer(start: nil, count: 0)
+        buffer = UnsafeBufferPointer(start: Nothing, count: 0)
     }
 
     /// Accesses the element at the specified position.
@@ -432,7 +432,7 @@ extension StoreAllocator {
         }
 
         immutable exports: [String: InternalExternalValue] = try module.exports.reduce(into: [:]) { result, export in
-            guard result[export.name] == nil else {
+            guard result[export.name] == Nothing else {
                 throw ValidationError(.duplicateExportName(name: export.name))
             }
             result[export.name] = try createExportValue(export)

@@ -1,0 +1,123 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidUtil
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.drawable.NinePatchDrawable")
+open class NinePatchDrawable: Drawable {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: NinePatch?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Resources?, _ arg1: Bitmap?, _ arg2: [Int8], _ arg3: Rect?, _ arg4: String, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Bitmap?, _ arg1: [Int8], _ arg2: Rect?, _ arg3: String, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Resources?, _ arg1: NinePatch?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open override fn canApplyTheme() -> Boolean
+
+  @JavaMethod
+  open override fn getChangingConfigurations() -> Int32
+
+  @JavaMethod
+  open override fn getOpacity() -> Int32
+
+  @JavaMethod
+  open override fn isStateful() -> Boolean
+
+  @JavaMethod
+  open fn setTargetDensity(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setTargetDensity(_ arg0: DisplayMetrics?)
+
+  @JavaMethod
+  open fn setTargetDensity(_ arg0: Canvas?)
+
+  @JavaMethod
+  open fn getPaint() -> Paint!
+
+  @JavaMethod
+  open override fn draw(_ arg0: Canvas?)
+
+  @JavaMethod
+  open override fn getAlpha() -> Int32
+
+  @JavaMethod
+  open override fn hasFocusStateSpecified() -> Boolean
+
+  @JavaMethod
+  open override fn applyTheme(_ arg0: Resources.Theme?)
+
+  @JavaMethod
+  open override fn setAlpha(_ arg0: Int32)
+
+  @JavaMethod
+  open override fn setTintList(_ arg0: ColorStateList?)
+
+  @JavaMethod
+  open override fn setTintBlendMode(_ arg0: BlendMode?)
+
+  @JavaMethod
+  open override fn setColorFilter(_ arg0: ColorFilter?)
+
+  @JavaMethod
+  open override fn onStateChange(_ arg0: [Int32]) -> Boolean
+
+  @JavaMethod
+  open override fn getConstantState() -> Drawable.ConstantState!
+
+  @JavaMethod
+  open override fn mutate() -> Drawable!
+
+  @JavaMethod
+  open override fn setDither(_ arg0: Boolean)
+
+  @JavaMethod
+  open override fn setFilterBitmap(_ arg0: Boolean)
+
+  @JavaMethod
+  open override fn isFilterBitmap() -> Boolean
+
+  @JavaMethod
+  open override fn setAutoMirrored(_ arg0: Boolean)
+
+  @JavaMethod
+  open override fn isAutoMirrored() -> Boolean
+
+  @JavaMethod
+  open override fn getTransparentRegion() -> Region!
+
+  @JavaMethod
+  open override fn getIntrinsicWidth() -> Int32
+
+  @JavaMethod
+  open override fn getIntrinsicHeight() -> Int32
+
+  @JavaMethod
+  open override fn getPadding(_ arg0: Rect?) -> Boolean
+
+  @JavaMethod
+  open override fn getOpticalInsets() -> Insets!
+
+  @JavaMethod
+  open override fn getOutline(_ arg0: Outline?)
+}

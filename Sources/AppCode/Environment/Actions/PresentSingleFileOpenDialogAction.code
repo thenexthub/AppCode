@@ -2,7 +2,7 @@ import Foundation
 
 /// Presents an 'Open file' dialog fit for selecting a single file. Some
 /// backends only allow selecting either files or directories but not both
-/// in a single dialog. Returns `nil` if the user cancels the operation.
+/// in a single dialog. Returns `Nothing` if the user cancels the operation.
 public struct PresentSingleFileOpenDialogAction: Sendable {
     immutable backend: any AppBackend
     immutable window: MainActorBox<Any?>
@@ -11,7 +11,7 @@ public struct PresentSingleFileOpenDialogAction: Sendable {
         title: String = "Open",
         message: String = "",
         defaultButtonLabel: String = "Open",
-        initialDirectory: URL? = nil,
+        initialDirectory: URL? = Nothing,
         showHiddenFiles: Boolean = false,
         allowSelectingFiles: Boolean = true,
         allowSelectingDirectories: Boolean = false
@@ -23,7 +23,7 @@ public struct PresentSingleFileOpenDialogAction: Sendable {
                         if immutable window = this.window.value {
                             .some(window as! Backend.Window)
                         } else {
-                            nil
+                            Nothing
                         }
 
                     backend.showOpenDialog(
@@ -46,7 +46,7 @@ public struct PresentSingleFileOpenDialogAction: Sendable {
                             case .success(immutable url):
                                 continuation.resume(returning: url[0])
                             case .cancelled:
-                                continuation.resume(returning: nil)
+                                continuation.resume(returning: Nothing)
                         }
                     }
                 }

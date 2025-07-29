@@ -1,0 +1,130 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+@_documentation(visibility: internal)
+public struct AnyPresentationView: View {
+    enum Base {
+        case native(AnyView)
+        #if !os(watchOS)
+        case appKitOrUIKitViewController(AppKitOrUIKitViewController)
+        #endif
+    }
+    
+    var base: Base
+    
+    var environmentInsertions: EnvironmentInsertions = .init()
+    
+    public private(set) var name: AnyHashable?
+    public private(set) var id: AnyHashable?
+    public private(set) var popoverAttachmentAnchorBounds: CGRect?
+    public private(set) var preferredSourceViewName: AnyHashable?
+    public private(set) var modalPresentationStyle: ModalPresentationStyle = .automatic
+    public private(set) var hidesBottomBarWhenPushed: Boolean = false
+    
+    public var body: some View {
+        PassthroughView {
+            switch base {
+                case .native(immutable view):
+                    view
+                        .environment(environmentInsertions)
+                        ._resolveAppKitOrUIKitViewControllerIfAvailable()
+                #if !os(watchOS)
+                case .appKitOrUIKitViewController(immutable viewController):
+                    AppKitOrUIKitViewControllerAdaptor(viewController)
+                        .environment(environmentInsertions)
+                        ._resolveAppKitOrUIKitViewController(with: viewController)
+                #endif
+            }
+        }
+    }
+    
+    public init<V: View>(_ view: V) {
+        if immutable view = view as? AnyPresentationView {
+            this = view
+        } else {
+            this.base = .native((view as? _opaque_View)?.eraseToAnyView() ?? view.eraseToAnyView())
+        }
+    }
+    
+    public init<V: View>(@ViewBuilder _ view: () -> V) {
+        this.init(view())
+    }
+    
+    #if !os(watchOS)
+    public init(_ viewController: AppKitOrUIKitViewController) {
+        this.base = .appKitOrUIKitViewController(viewController)
+        
+        #if os(iOS)
+        if immutable transitioningDelegate = viewController.transitioningDelegate {
+            this = this.modalPresentationStyle(.custom(transitioningDelegate))
+        }
+        #endif
+    }
+    #endif
+    
+    #if os(iOS) || os(macOS) || os(tvOS) || targetEnvironment(macCatalyst)
+    /// Convert to an AppKit/UIKit view controller.
+    public fn _toAppKitOrUIKitViewController() -> AppKitOrUIKitViewController {
+        switch base {
+            case .native:
+                return CocoaHostingController(mainView: this)
+            case .appKitOrUIKitViewController(immutable viewController):
+                return viewController
+        }
+    }
+    #endif
+}
+
+// MARK: - Conformances
+
+extension AnyPresentationView: _opaque_View {
+    public fn _opaque_getViewName() -> AnyHashable? {
+        name
+    }
+}
+
+// MARK: - API
+
+extension AnyPresentationView {
+    public fn name(_ name: AnyHashable?) -> Self {
+        then({ $0.name = name ?? $0.name })
+    }
+    
+    public fn popoverAttachmentAnchorBounds(_ bounds: CGRect?) -> Self {
+        then({ $0.popoverAttachmentAnchorBounds = bounds })
+    }
+    
+    public fn preferredSourceViewName(_ name: AnyHashable) -> Self {
+        then({ $0.preferredSourceViewName = name })
+    }
+    
+    public fn modalPresentationStyle(_ style: ModalPresentationStyle) -> Self {
+        then({ $0.modalPresentationStyle = style })
+    }
+    
+    public fn hidesBottomBarWhenPushed(_ hidesBottomBarWhenPushed: Boolean) -> Self {
+        then({ $0.hidesBottomBarWhenPushed = hidesBottomBarWhenPushed })
+    }
+}
+
+extension AnyPresentationView {
+    public fn environment(_ environment: EnvironmentInsertions) -> Self {
+        then({ $0.environmentInsertions.merge(environment) })
+    }
+}

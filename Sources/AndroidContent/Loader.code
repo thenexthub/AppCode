@@ -1,0 +1,110 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.content.Loader")
+open class Loader: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn deliverResult(_ arg0: JavaObject?)
+
+  @JavaMethod
+  open fn deliverCancellation()
+
+  @JavaMethod
+  open fn registerListener(_ arg0: Int32, _ arg1: Loader.OnLoadCompleteListener?)
+
+  @JavaMethod
+  open fn unregisterListener(_ arg0: Loader.OnLoadCompleteListener?)
+
+  @JavaMethod
+  open fn registerOnLoadCanceledListener(_ arg0: Loader.OnLoadCanceledListener?)
+
+  @JavaMethod
+  open fn unregisterOnLoadCanceledListener(_ arg0: Loader.OnLoadCanceledListener?)
+
+  @JavaMethod
+  open fn isAbandoned() -> Boolean
+
+  @JavaMethod
+  open fn isReset() -> Boolean
+
+  @JavaMethod
+  open fn startLoading()
+
+  @JavaMethod
+  open fn onStartLoading()
+
+  @JavaMethod
+  open fn cancelLoad() -> Boolean
+
+  @JavaMethod
+  open fn onCancelLoad() -> Boolean
+
+  @JavaMethod
+  open fn forceLoad()
+
+  @JavaMethod
+  open fn onForceLoad()
+
+  @JavaMethod
+  open fn stopLoading()
+
+  @JavaMethod
+  open fn onStopLoading()
+
+  @JavaMethod
+  open fn abandon()
+
+  @JavaMethod
+  open fn onAbandon()
+
+  @JavaMethod
+  open fn onReset()
+
+  @JavaMethod
+  open fn takeContentChanged() -> Boolean
+
+  @JavaMethod
+  open fn commitContentChanged()
+
+  @JavaMethod
+  open fn rollbackContentChanged()
+
+  @JavaMethod
+  open fn onContentChanged()
+
+  @JavaMethod
+  open fn dataToString(_ arg0: JavaObject?) -> String
+
+  @JavaMethod
+  open fn reset()
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn getId() -> Int32
+
+  @JavaMethod
+  open fn isStarted() -> Boolean
+
+  @JavaMethod
+  open fn getContext() -> Context!
+}

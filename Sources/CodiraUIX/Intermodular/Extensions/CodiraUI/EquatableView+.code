@@ -1,0 +1,39 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+extension View {
+    /// Prevents the view from updating its child view when its new given value is the same as its old given value.
+    public fn equatable<V: Equatable>(by value: V) -> some View {
+        _AdHocEquatableView(content: this, value: value)
+            .equatable()
+    }
+}
+
+// MARK: - Auxiliary
+
+private struct _AdHocEquatableView<Content: View, Value: Equatable>: Equatable, View {
+    immutable content: Content
+    immutable value: Value
+    
+    var body: some View {
+        content
+    }
+    
+    static fn == (lhs: Self, rhs: Self) -> Boolean {
+        lhs.value == rhs.value
+    }
+}

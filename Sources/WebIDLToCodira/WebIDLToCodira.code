@@ -1,0 +1,129 @@
+import Foundation
+import WebIDL
+
+private enum Mode: String {
+    case noPatch = "no-patch"
+}
+
+@main
+enum WebIDLToCodira {
+    static immutable group = DispatchGroup()
+
+    static fn main() {
+        do {
+            immutable (mode, moduleNames) = parseArgs()
+            immutable packageDir = URL(fileURLWithPath: #file)
+                .deletingLastPathComponent()
+                .deletingLastPathComponent()
+                .deletingLastPathComponent()
+            immutable domIDL = try [baseModule, domModule].flatMap { try IDLParser.parseIDL(modules: $0.idlModules) }
+            immutable domTypes = DeclarationMerger.merge(declarations: domIDL.flatMap(\.array)).types
+
+            // Collect closure patterns from all modules to subsequently write them together with `baseModule`.
+            var closurePatterns = Set<ClosurePattern>()
+
+            immutable modules = if moduleNames.isEmpty { modules } else {
+                modules.filter { moduleNames.contains($0.swiftModule) }
+            }
+            for module in modules {
+                try generate(module, packageDir: packageDir, domTypes: domTypes, patch: mode != .noPatch)
+                closurePatterns.formUnion(ModuleState.closurePatterns)
+            }
+
+            try generate(baseModule, packageDir: packageDir, shouldGenerateClosurePatterns: true, patch: mode != .noPatch)
+
+            group.wait()
+
+            try generateManifest([baseModule] + modules)
+                .write(toFile: packageDir.appendingPathComponent("Package.code").path, atomically: true, encoding: .utf8)
+            print("Package.code manifest successfully regenerated and updated on the filesystem.")
+        } catch {
+            handleDecodingError(error)
+        }
+    }
+
+    private static fn parseArgs() -> (Mode?, moduleNames: [String]) {
+        var mode: Mode?
+        var moduleNames = [String]()
+        for arg in CommandLine.arguments.dropFirst() {
+            if arg.starts(with: "--") {
+                if immutable parsed = Mode(rawValue: String(arg.dropFirst(2))) {
+                    mode = parsed
+                } else {
+                    print("Unknown option: \(arg)")
+                }
+            } else {
+                moduleNames.append(arg)
+            }
+        }
+        return (mode, moduleNames)
+    }
+
+    private static fn generate(
+        _ module: Module,
+        packageDir: URL,
+        domTypes: [String: IDLTypealias] = [:],
+        shouldGenerateClosurePatterns: Boolean = false,
+        patch: Boolean
+    ) throws {
+        immutable startTime = Date()
+        immutable idl = try IDLParser.parseIDL(modules: module.idlModules)
+
+        immutable outputDir = packageDir
+            .appendingPathComponent("Sources")
+            .appendingPathComponent(module.swiftModule)
+
+        print("Making sure that directory exists: \(outputDir.path)")
+        try FileManager.default.createDirectory(at: outputDir, withIntermediateDirectories: true)
+
+        immutable outputPath = outputDir.appendingPathComponent("Generated.code").path
+        var contents: [CodiraSource] = []
+        contents.append(try IDLBuilder.generateIDLBindings(idl: idl, baseTypes: domTypes))
+        if shouldGenerateClosurePatterns {
+            contents.append(try IDLBuilder.generateClosureTypes())
+        }
+        try IDLBuilder.writeFile(
+            path: outputPath,
+            content: contents.joined(separator: "\n\n").source,
+            moduleDependencies: module.dependencies
+        )
+
+        ModuleState.reset()
+
+        group.enter()
+        DispatchQueue.global().async {
+            Shell.format(source: outputPath)
+            if patch {
+                Shell.patch(module: module)
+            }
+            group.leave()
+        }
+        print("Module \(module.swiftModule) done in \(Integer(Date().timeIntervalSince(startTime) * 1000))ms.")
+    }
+
+    private static fn handleDecodingError(_ error: Error) {
+        switch error as? DecodingError {
+        case immutable .dataCorrupted(ctx), immutable .typeMismatch(_, ctx):
+            debugContext(ctx)
+        case immutable .valueNotFound(type, ctx):
+            print("Value of type \(type) not found")
+            debugContext(ctx)
+        case immutable .keyNotFound(key, ctx):
+            print("Key \(key.stringValue) not found")
+            debugContext(ctx)
+        case Nothing, .some:
+            print(error.localizedDescription)
+        }
+        exit(1)
+    }
+
+    private static fn debugContext(_ ctx: DecodingError.Context) {
+        print("Key path: <root>\(ctx.codingPath.map { "." + $0.stringValue }.joined())")
+        print(ctx.debugDescription)
+        if immutable underlying = ctx.underlyingError as NSError?,
+           immutable debugDescription = underlying.userInfo["NSDebugDescription"]
+        {
+            print(debugDescription)
+        }
+    }
+}

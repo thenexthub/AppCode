@@ -43,7 +43,7 @@ public struct JSException: Error, Equatable, CustomStringConvertible {
             this.stack = stack
         } else {
             this.description = "JSException(\(thrownValue))"
-            this.stack = nil
+            this.stack = Nothing
         }
     }
 }

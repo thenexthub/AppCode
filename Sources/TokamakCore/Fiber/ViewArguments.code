@@ -57,10 +57,10 @@ public final class EnvironmentBox {
 public extension ViewOutputs {
   init<V>(
     inputs: ViewInputs<V>,
-    environment: EnvironmentValues? = nil,
-    preferenceStore: _PreferenceStore? = nil,
-    preferenceAction: ((_PreferenceStore) -> ())? = nil,
-    traits: _ViewTraitStore? = nil
+    environment: EnvironmentValues? = Nothing,
+    preferenceStore: _PreferenceStore? = Nothing,
+    preferenceAction: ((_PreferenceStore) -> ())? = Nothing,
+    traits: _ViewTraitStore? = Nothing
   ) {
     // Only replace the `EnvironmentBox` when we change the environment.
     // Otherwise the same box can be reused.

@@ -1,0 +1,2335 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidGraphics
+import JavaLang
+import JavaUtil
+import AndroidOS
+import AndroidUtil
+import JavaKit
+import JavaKitCollection
+import JavaKitFunction
+import JavaRuntime
+
+@JavaClass("android.view.View", implements: Drawable.Callback.this, KeyEvent.Callback.this)
+open class View: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: AndroidContent.Context?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: AndroidContent.Context?, _ arg1: AttributeSet?, _ arg2: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: AndroidContent.Context?, _ arg1: AttributeSet?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: AndroidContent.Context?, _ arg1: AttributeSet?, _ arg2: Int32, _ arg3: Int32, environment: JNIEnvironment? = Nothing)
+  
+  @JavaMethod
+  open fn onMeasure(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn draw(_ arg0: Canvas?)
+
+  @JavaMethod
+  open fn dispatchDraw(_ arg0: Canvas?)
+
+  @JavaMethod
+  open fn setVisibility(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getAttributeResolutionStack(_ arg0: Int32) -> [Int32]
+
+  @JavaMethod
+  open fn getAttributeSourceResourceMap() -> Map<JavaInteger, JavaInteger>!
+
+  @JavaMethod
+  open fn getExplicitStyle() -> Int32
+
+  @JavaMethod
+  open fn isShowingLayoutBounds() -> Boolean
+
+  @JavaMethod
+  open fn saveAttributeDataForStyleable(_ arg0: Context?, _ arg1: [Int32], _ arg2: AttributeSet?, _ arg3: TypedArray?, _ arg4: Int32, _ arg5: Int32)
+
+  @JavaMethod
+  open fn getVerticalFadingEdgeLength() -> Int32
+
+  @JavaMethod
+  open fn setFadingEdgeLength(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getHorizontalFadingEdgeLength() -> Int32
+
+  @JavaMethod
+  open fn getVerticalScrollbarWidth() -> Int32
+
+  @JavaMethod
+  open fn getHorizontalScrollbarHeight() -> Int32
+
+  @JavaMethod
+  open fn setVerticalScrollbarThumbDrawable(_ arg0: Drawable?)
+
+  @JavaMethod
+  open fn setVerticalScrollbarTrackDrawable(_ arg0: Drawable?)
+
+  @JavaMethod
+  open fn setHorizontalScrollbarThumbDrawable(_ arg0: Drawable?)
+
+  @JavaMethod
+  open fn setHorizontalScrollbarTrackDrawable(_ arg0: Drawable?)
+
+  @JavaMethod
+  open fn getVerticalScrollbarThumbDrawable() -> Drawable!
+
+  @JavaMethod
+  open fn getVerticalScrollbarTrackDrawable() -> Drawable!
+
+  @JavaMethod
+  open fn getHorizontalScrollbarThumbDrawable() -> Drawable!
+
+  @JavaMethod
+  open fn getHorizontalScrollbarTrackDrawable() -> Drawable!
+
+  @JavaMethod
+  open fn setVerticalScrollbarPosition(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getVerticalScrollbarPosition() -> Int32
+
+  @JavaMethod
+  open fn setScrollIndicators(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setScrollIndicators(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getScrollIndicators() -> Int32
+
+  @JavaMethod
+  open fn setOnScrollChangeListener(_ arg0: View.OnScrollChangeListener?)
+
+  @JavaMethod
+  open fn setOnFocusChangeListener(_ arg0: View.OnFocusChangeListener?)
+
+  @JavaMethod
+  open fn addOnLayoutChangeListener(_ arg0: View.OnLayoutChangeListener?)
+
+  @JavaMethod
+  open fn removeOnLayoutChangeListener(_ arg0: View.OnLayoutChangeListener?)
+
+  @JavaMethod
+  open fn addOnAttachStateChangeListener(_ arg0: View.OnAttachStateChangeListener?)
+
+  @JavaMethod
+  open fn removeOnAttachStateChangeListener(_ arg0: View.OnAttachStateChangeListener?)
+
+  @JavaMethod
+  open fn getOnFocusChangeListener() -> View.OnFocusChangeListener!
+
+  @JavaMethod
+  open fn setOnClickListener(_ arg0: View.OnClickListener?)
+
+  @JavaMethod
+  open fn hasOnClickListeners() -> Boolean
+
+  @JavaMethod
+  open fn setOnLongClickListener(_ arg0: View.OnLongClickListener?)
+
+  @JavaMethod
+  open fn hasOnLongClickListeners() -> Boolean
+
+  @JavaMethod
+  open fn setOnContextClickListener(_ arg0: View.OnContextClickListener?)
+
+  @JavaMethod
+  open fn setOnCreateContextMenuListener(_ arg0: View.OnCreateContextMenuListener?)
+
+  @JavaMethod
+  open fn performClick() -> Boolean
+
+  @JavaMethod
+  open fn callOnClick() -> Boolean
+
+  @JavaMethod
+  open fn performLongClick(_ arg0: Float, _ arg1: Float) -> Boolean
+
+  @JavaMethod
+  open fn performLongClick() -> Boolean
+
+  @JavaMethod
+  open fn performContextClick(_ arg0: Float, _ arg1: Float) -> Boolean
+
+  @JavaMethod
+  open fn performContextClick() -> Boolean
+
+  @JavaMethod
+  open fn showContextMenu() -> Boolean
+
+  @JavaMethod
+  open fn showContextMenu(_ arg0: Float, _ arg1: Float) -> Boolean
+
+  @JavaMethod
+  open fn startActionMode(_ arg0: ActionMode.Callback?, _ arg1: Int32) -> ActionMode!
+
+  @JavaMethod
+  open fn startActionMode(_ arg0: ActionMode.Callback?) -> ActionMode!
+
+  @JavaMethod
+  open fn setOnKeyListener(_ arg0: View.OnKeyListener?)
+
+  @JavaMethod
+  open fn setOnTouchListener(_ arg0: View.OnTouchListener?)
+
+  @JavaMethod
+  open fn setOnGenericMotionListener(_ arg0: View.OnGenericMotionListener?)
+
+  @JavaMethod
+  open fn setOnHoverListener(_ arg0: View.OnHoverListener?)
+
+  @JavaMethod
+  open fn setOnDragListener(_ arg0: View.OnDragListener?)
+
+  @JavaMethod
+  open fn setRevealOnFocusHint(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getRevealOnFocusHint() -> Boolean
+
+  @JavaMethod
+  open fn requestRectangleOnScreen(_ arg0: Rect?, _ arg1: Boolean) -> Boolean
+
+  @JavaMethod
+  open fn requestRectangleOnScreen(_ arg0: Rect?) -> Boolean
+
+  @JavaMethod
+  open fn clearFocus()
+
+  @JavaMethod
+  open fn hasFocus() -> Boolean
+
+  @JavaMethod
+  open fn hasFocusable() -> Boolean
+
+  @JavaMethod
+  open fn hasExplicitFocusable() -> Boolean
+
+  @JavaMethod
+  open fn onFocusChanged(_ arg0: Boolean, _ arg1: Int32, _ arg2: Rect?)
+
+  @JavaMethod
+  open fn setAccessibilityPaneTitle(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn getAccessibilityPaneTitle() -> CharSequence!
+
+  @JavaMethod
+  open fn sendAccessibilityEvent(_ arg0: Int32)
+
+  @JavaMethod
+  open fn announceForAccessibility(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn getAccessibilityClassName() -> CharSequence!
+
+  @JavaMethod
+  open fn onProvideStructure(_ arg0: ViewStructure?)
+
+  @JavaMethod
+  open fn onProvideAutofillStructure(_ arg0: ViewStructure?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn onProvideContentCaptureStructure(_ arg0: ViewStructure?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn onProvideVirtualStructure(_ arg0: ViewStructure?)
+
+  @JavaMethod
+  open fn onProvideAutofillVirtualStructure(_ arg0: ViewStructure?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setOnReceiveContentListener(_ arg0: [String], _ arg1: OnReceiveContentListener?)
+
+  @JavaMethod
+  open fn performReceiveContent(_ arg0: ContentInfo?) -> ContentInfo!
+
+  @JavaMethod
+  open fn onReceiveContent(_ arg0: ContentInfo?) -> ContentInfo!
+
+  @JavaMethod
+  open fn getReceiveContentMimeTypes() -> [String]
+
+  @JavaMethod
+  open fn autofill(_ arg0: AutofillValue?)
+
+  @JavaMethod
+  open fn autofill(_ arg0: SparseArray<AutofillValue>?)
+
+  @JavaMethod
+  open fn getAutofillId() -> AutofillId!
+
+  @JavaMethod
+  open fn setAutofillId(_ arg0: AutofillId?)
+
+  @JavaMethod
+  open fn getAutofillType() -> Int32
+
+  @JavaMethod
+  open fn getAutofillHints() -> [String]
+
+  @JavaMethod
+  open fn getAutofillValue() -> AutofillValue!
+
+  @JavaMethod
+  open fn getImportantForAutofill() -> Int32
+
+  @JavaMethod
+  open fn setImportantForAutofill(_ arg0: Int32)
+
+  @JavaMethod
+  open fn isImportantForAutofill() -> Boolean
+
+  @JavaMethod
+  open fn getImportantForContentCapture() -> Int32
+
+  @JavaMethod
+  open fn setImportantForContentCapture(_ arg0: Int32)
+
+  @JavaMethod
+  open fn isImportantForContentCapture() -> Boolean
+
+  @JavaMethod
+  open fn dispatchProvideStructure(_ arg0: ViewStructure?)
+
+  @JavaMethod
+  open fn dispatchProvideAutofillStructure(_ arg0: ViewStructure?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn isVisibleToUserForAutofill(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn getAccessibilityDelegate() -> View.AccessibilityDelegate!
+
+  @JavaMethod
+  open fn setAccessibilityDelegate(_ arg0: View.AccessibilityDelegate?)
+
+  @JavaMethod
+  open fn getStateDescription() -> CharSequence!
+
+  @JavaMethod
+  open fn getContentDescription() -> CharSequence!
+
+  @JavaMethod
+  open fn setStateDescription(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn setContentDescription(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn setAccessibilityTraversalBefore(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getAccessibilityTraversalBefore() -> Int32
+
+  @JavaMethod
+  open fn setAccessibilityTraversalAfter(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getAccessibilityTraversalAfter() -> Int32
+
+  @JavaMethod
+  open fn getLabelFor() -> Int32
+
+  @JavaMethod
+  open fn setLabelFor(_ arg0: Int32)
+
+  @JavaMethod
+  open fn isFocused() -> Boolean
+
+  @JavaMethod
+  open fn findFocus() -> View!
+
+  @JavaMethod
+  open fn isScrollContainer() -> Boolean
+
+  @JavaMethod
+  open fn setScrollContainer(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getDrawingCacheQuality() -> Int32
+
+  @JavaMethod
+  open fn setDrawingCacheQuality(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getKeepScreenOn() -> Boolean
+
+  @JavaMethod
+  open fn setKeepScreenOn(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getNextFocusLeftId() -> Int32
+
+  @JavaMethod
+  open fn setNextFocusLeftId(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getNextFocusRightId() -> Int32
+
+  @JavaMethod
+  open fn setNextFocusRightId(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getNextFocusUpId() -> Int32
+
+  @JavaMethod
+  open fn setNextFocusUpId(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getNextFocusDownId() -> Int32
+
+  @JavaMethod
+  open fn setNextFocusDownId(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getNextFocusForwardId() -> Int32
+
+  @JavaMethod
+  open fn setNextFocusForwardId(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getNextClusterForwardId() -> Int32
+
+  @JavaMethod
+  open fn setNextClusterForwardId(_ arg0: Int32)
+
+  @JavaMethod
+  open fn isShown() -> Boolean
+
+  @JavaMethod
+  open fn fitSystemWindows(_ arg0: Rect?) -> Boolean
+
+  @JavaMethod
+  open fn onApplyWindowInsets(_ arg0: WindowInsets?) -> WindowInsets!
+
+  @JavaMethod
+  open fn setOnApplyWindowInsetsListener(_ arg0: View.OnApplyWindowInsetsListener?)
+
+  @JavaMethod
+  open fn dispatchApplyWindowInsets(_ arg0: WindowInsets?) -> WindowInsets!
+
+  @JavaMethod
+  open fn setWindowInsetsAnimationCallback(_ arg0: WindowInsetsAnimation.Callback?)
+
+  @JavaMethod
+  open fn dispatchWindowInsetsAnimationPrepare(_ arg0: WindowInsetsAnimation?)
+
+  @JavaMethod
+  open fn dispatchWindowInsetsAnimationStart(_ arg0: WindowInsetsAnimation?, _ arg1: WindowInsetsAnimation.Bounds?) -> WindowInsetsAnimation.Bounds!
+
+  @JavaMethod
+  open fn dispatchWindowInsetsAnimationProgress(_ arg0: WindowInsets?, _ arg1: List<WindowInsetsAnimation>?) -> WindowInsets!
+
+  @JavaMethod
+  open fn dispatchWindowInsetsAnimationEnd(_ arg0: WindowInsetsAnimation?)
+
+  @JavaMethod
+  open fn setSystemGestureExclusionRects(_ arg0: List<Rect>?)
+
+  @JavaMethod
+  open fn getSystemGestureExclusionRects() -> List<Rect>!
+
+  @JavaMethod
+  open fn setPreferKeepClear(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isPreferKeepClear() -> Boolean
+
+  @JavaMethod
+  open fn setPreferKeepClearRects(_ arg0: List<Rect>?)
+
+  @JavaMethod
+  open fn getPreferKeepClearRects() -> List<Rect>!
+
+  @JavaMethod
+  open fn getLocationInSurface(_ arg0: [Int32])
+
+  @JavaMethod
+  open fn getRootWindowInsets() -> WindowInsets!
+
+  @JavaMethod
+  open fn getWindowInsetsController() -> WindowInsetsController!
+
+  @JavaMethod
+  open fn computeSystemWindowInsets(_ arg0: WindowInsets?, _ arg1: Rect?) -> WindowInsets!
+
+  @JavaMethod
+  open fn setFitsSystemWindows(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getFitsSystemWindows() -> Boolean
+
+  @JavaMethod
+  open fn requestFitSystemWindows()
+
+  @JavaMethod
+  open fn requestApplyInsets()
+
+  @JavaMethod
+  open fn getVisibility() -> Int32
+
+  @JavaMethod
+  open fn setEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setFocusable(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setFocusable(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setFocusableInTouchMode(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setAutofillHints(_ arg0: [String])
+
+  @JavaMethod
+  open fn setSoundEffectsEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isSoundEffectsEnabled() -> Boolean
+
+  @JavaMethod
+  open fn setHapticFeedbackEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isHapticFeedbackEnabled() -> Boolean
+
+  @JavaMethod
+  open fn setLayoutDirection(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getLayoutDirection() -> Int32
+
+  @JavaMethod
+  open fn layout(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn hasTransientState() -> Boolean
+
+  @JavaMethod
+  open fn setHasTransientState(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isAttachedToWindow() -> Boolean
+
+  @JavaMethod
+  open fn isLaidOut() -> Boolean
+
+  @JavaMethod
+  open fn setWillNotDraw(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn willNotDraw() -> Boolean
+
+  @JavaMethod
+  open fn setWillNotCacheDrawing(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn willNotCacheDrawing() -> Boolean
+
+  @JavaMethod
+  open fn isClickable() -> Boolean
+
+  @JavaMethod
+  open fn setClickable(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setAllowClickWhenDisabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isLongClickable() -> Boolean
+
+  @JavaMethod
+  open fn setLongClickable(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isContextClickable() -> Boolean
+
+  @JavaMethod
+  open fn setContextClickable(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setPressed(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn dispatchSetPressed(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isPressed() -> Boolean
+
+  @JavaMethod
+  open fn isSaveEnabled() -> Boolean
+
+  @JavaMethod
+  open fn setSaveEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getFilterTouchesWhenObscured() -> Boolean
+
+  @JavaMethod
+  open fn setFilterTouchesWhenObscured(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isSaveFromParentEnabled() -> Boolean
+
+  @JavaMethod
+  open fn setSaveFromParentEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isFocusable() -> Boolean
+
+  @JavaMethod
+  open fn getFocusable() -> Int32
+
+  @JavaMethod
+  open fn isFocusableInTouchMode() -> Boolean
+
+  @JavaMethod
+  open fn isScreenReaderFocusable() -> Boolean
+
+  @JavaMethod
+  open fn setScreenReaderFocusable(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isAccessibilityHeading() -> Boolean
+
+  @JavaMethod
+  open fn setAccessibilityHeading(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn focusSearch(_ arg0: Int32) -> View!
+
+  @JavaMethod
+  open fn isKeyboardNavigationCluster() -> Boolean
+
+  @JavaMethod
+  open fn setKeyboardNavigationCluster(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isFocusedByDefault() -> Boolean
+
+  @JavaMethod
+  open fn setFocusedByDefault(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn keyboardNavigationClusterSearch(_ arg0: View?, _ arg1: Int32) -> View!
+
+  @JavaMethod
+  open fn dispatchUnhandledMove(_ arg0: View?, _ arg1: Int32) -> Boolean
+
+  @JavaMethod
+  open fn setDefaultFocusHighlightEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getDefaultFocusHighlightEnabled() -> Boolean
+
+  @JavaMethod
+  open fn getFocusables(_ arg0: Int32) -> ArrayList<View>!
+
+  @JavaMethod
+  open fn addFocusables(_ arg0: ArrayList<View>?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn addFocusables(_ arg0: ArrayList<View>?, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn addKeyboardNavigationClusters(_ arg0: JavaCollection<View>?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn findViewsWithText(_ arg0: ArrayList<View>?, _ arg1: CharSequence?, _ arg2: Int32)
+
+  @JavaMethod
+  open fn getTouchables() -> ArrayList<View>!
+
+  @JavaMethod
+  open fn addTouchables(_ arg0: ArrayList<View>?)
+
+  @JavaMethod
+  open fn isAccessibilityFocused() -> Boolean
+
+  @JavaMethod
+  open fn requestFocus(_ arg0: Int32, _ arg1: Rect?) -> Boolean
+
+  @JavaMethod
+  open fn requestFocus(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn requestFocus() -> Boolean
+
+  @JavaMethod
+  open fn restoreDefaultFocus() -> Boolean
+
+  @JavaMethod
+  open fn requestFocusFromTouch() -> Boolean
+
+  @JavaMethod
+  open fn getImportantForAccessibility() -> Int32
+
+  @JavaMethod
+  open fn setAccessibilityLiveRegion(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getAccessibilityLiveRegion() -> Int32
+
+  @JavaMethod
+  open fn setImportantForAccessibility(_ arg0: Int32)
+
+  @JavaMethod
+  open fn isImportantForAccessibility() -> Boolean
+
+  @JavaMethod
+  open fn getParentForAccessibility() -> ViewParent!
+
+  @JavaMethod
+  open fn addChildrenForAccessibility(_ arg0: ArrayList<View>?)
+
+  @JavaMethod
+  open fn setTransitionVisibility(_ arg0: Int32)
+
+  @JavaMethod
+  open fn dispatchNestedPrePerformAccessibilityAction(_ arg0: Int32, _ arg1: Bundle?) -> Boolean
+
+  @JavaMethod
+  open fn performAccessibilityAction(_ arg0: Int32, _ arg1: Bundle?) -> Boolean
+
+  @JavaMethod
+  open fn isTemporarilyDetached() -> Boolean
+
+  @JavaMethod
+  open fn dispatchStartTemporaryDetach()
+
+  @JavaMethod
+  open fn onStartTemporaryDetach()
+
+  @JavaMethod
+  open fn dispatchFinishTemporaryDetach()
+
+  @JavaMethod
+  open fn onFinishTemporaryDetach()
+
+  @JavaMethod
+  open fn getKeyDispatcherState() -> KeyEvent.DispatcherState!
+
+  @JavaMethod
+  open fn dispatchKeyEventPreIme(_ arg0: KeyEvent?) -> Boolean
+
+  @JavaMethod
+  open fn dispatchKeyEvent(_ arg0: KeyEvent?) -> Boolean
+
+  @JavaMethod
+  open fn dispatchKeyShortcutEvent(_ arg0: KeyEvent?) -> Boolean
+
+  @JavaMethod
+  open fn dispatchTouchEvent(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  open fn onFilterTouchEventForSecurity(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  open fn dispatchTrackballEvent(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  open fn dispatchCapturedPointerEvent(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  open fn dispatchGenericMotionEvent(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  open fn dispatchHoverEvent(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  open fn dispatchGenericPointerEvent(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  open fn dispatchGenericFocusedEvent(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  open fn dispatchWindowFocusChanged(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn onWindowFocusChanged(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn hasWindowFocus() -> Boolean
+
+  @JavaMethod
+  open fn dispatchVisibilityChanged(_ arg0: View?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn onVisibilityChanged(_ arg0: View?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn dispatchDisplayHint(_ arg0: Int32)
+
+  @JavaMethod
+  open fn onDisplayHint(_ arg0: Int32)
+
+  @JavaMethod
+  open fn dispatchWindowVisibilityChanged(_ arg0: Int32)
+
+  @JavaMethod
+  open fn onWindowVisibilityChanged(_ arg0: Int32)
+
+  @JavaMethod
+  open fn onVisibilityAggregated(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getWindowVisibility() -> Int32
+
+  @JavaMethod
+  open fn getWindowVisibleDisplayFrame(_ arg0: Rect?)
+
+  @JavaMethod
+  open fn dispatchConfigurationChanged(_ arg0: Configuration?)
+
+  @JavaMethod
+  open fn onConfigurationChanged(_ arg0: Configuration?)
+
+  @JavaMethod
+  open fn isInTouchMode() -> Boolean
+
+  @JavaMethod
+  open fn onKeyPreIme(_ arg0: Int32, _ arg1: KeyEvent?) -> Boolean
+
+  @JavaMethod
+  open fn onKeyDown(_ arg0: Int32, _ arg1: KeyEvent?) -> Boolean
+
+  @JavaMethod
+  open fn onKeyLongPress(_ arg0: Int32, _ arg1: KeyEvent?) -> Boolean
+
+  @JavaMethod
+  open fn onKeyUp(_ arg0: Int32, _ arg1: KeyEvent?) -> Boolean
+
+  @JavaMethod
+  open fn onKeyMultiple(_ arg0: Int32, _ arg1: Int32, _ arg2: KeyEvent?) -> Boolean
+
+  @JavaMethod
+  open fn onKeyShortcut(_ arg0: Int32, _ arg1: KeyEvent?) -> Boolean
+
+  @JavaMethod
+  open fn onCheckIsTextEditor() -> Boolean
+
+  @JavaMethod
+  open fn checkInputConnectionProxy(_ arg0: View?) -> Boolean
+
+  @JavaMethod
+  open fn createContextMenu(_ arg0: ContextMenu?)
+
+  @JavaMethod
+  open fn getContextMenuInfo() -> ContextMenu.ContextMenuInfo!
+
+  @JavaMethod
+  open fn onCreateContextMenu(_ arg0: ContextMenu?)
+
+  @JavaMethod
+  open fn onTrackballEvent(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  open fn onGenericMotionEvent(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  open fn onHoverEvent(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  open fn isHovered() -> Boolean
+
+  @JavaMethod
+  open fn setHovered(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn onHoverChanged(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn onTouchEvent(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  open fn cancelLongPress()
+
+  @JavaMethod
+  open fn setTouchDelegate(_ arg0: TouchDelegate?)
+
+  @JavaMethod
+  open fn getTouchDelegate() -> TouchDelegate!
+
+  @JavaMethod
+  open fn requestUnbufferedDispatch(_ arg0: MotionEvent?)
+
+  @JavaMethod
+  open fn requestUnbufferedDispatch(_ arg0: Int32)
+
+  @JavaMethod
+  open fn bringToFront()
+
+  @JavaMethod
+  open fn onScrollChanged(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn onSizeChanged(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn setScrollX(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setScrollY(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getScrollX() -> Int32
+
+  @JavaMethod
+  open fn getScrollY() -> Int32
+
+  @JavaMethod
+  open fn getDrawingRect(_ arg0: Rect?)
+
+  @JavaMethod
+  open fn getMeasuredWidth() -> Int32
+
+  @JavaMethod
+  open fn getMeasuredWidthAndState() -> Int32
+
+  @JavaMethod
+  open fn getMeasuredHeight() -> Int32
+
+  @JavaMethod
+  open fn getMeasuredHeightAndState() -> Int32
+
+  @JavaMethod
+  open fn getMeasuredState() -> Int32
+
+  @JavaMethod
+  open fn getMatrix() -> Matrix!
+
+  @JavaMethod
+  open fn getCameraDistance() -> Float
+
+  @JavaMethod
+  open fn setCameraDistance(_ arg0: Float)
+
+  @JavaMethod
+  open fn setRotation(_ arg0: Float)
+
+  @JavaMethod
+  open fn getRotationY() -> Float
+
+  @JavaMethod
+  open fn setRotationY(_ arg0: Float)
+
+  @JavaMethod
+  open fn getRotationX() -> Float
+
+  @JavaMethod
+  open fn setRotationX(_ arg0: Float)
+
+  @JavaMethod
+  open fn getScaleX() -> Float
+
+  @JavaMethod
+  open fn setScaleX(_ arg0: Float)
+
+  @JavaMethod
+  open fn getScaleY() -> Float
+
+  @JavaMethod
+  open fn setScaleY(_ arg0: Float)
+
+  @JavaMethod
+  open fn getPivotX() -> Float
+
+  @JavaMethod
+  open fn setPivotX(_ arg0: Float)
+
+  @JavaMethod
+  open fn getPivotY() -> Float
+
+  @JavaMethod
+  open fn setPivotY(_ arg0: Float)
+
+  @JavaMethod
+  open fn isPivotSet() -> Boolean
+
+  @JavaMethod
+  open fn resetPivot()
+
+  @JavaMethod
+  open fn getAlpha() -> Float
+
+  @JavaMethod
+  open fn forceHasOverlappingRendering(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn hasOverlappingRendering() -> Boolean
+
+  @JavaMethod
+  open fn getHasOverlappingRendering() -> Boolean
+
+  @JavaMethod
+  open fn setAlpha(_ arg0: Float)
+
+  @JavaMethod
+  open fn setTransitionAlpha(_ arg0: Float)
+
+  @JavaMethod
+  open fn getTransitionAlpha() -> Float
+
+  @JavaMethod
+  open fn setForceDarkAllowed(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isForceDarkAllowed() -> Boolean
+
+  @JavaMethod
+  open fn getTop() -> Int32
+
+  @JavaMethod
+  open fn setTop(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getBottom() -> Int32
+
+  @JavaMethod
+  open fn setBottom(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getLeft() -> Int32
+
+  @JavaMethod
+  open fn setLeft(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getRight() -> Int32
+
+  @JavaMethod
+  open fn setRight(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getX() -> Float
+
+  @JavaMethod
+  open fn setX(_ arg0: Float)
+
+  @JavaMethod
+  open fn getY() -> Float
+
+  @JavaMethod
+  open fn setY(_ arg0: Float)
+
+  @JavaMethod
+  open fn getZ() -> Float
+
+  @JavaMethod
+  open fn setZ(_ arg0: Float)
+
+  @JavaMethod
+  open fn getElevation() -> Float
+
+  @JavaMethod
+  open fn setElevation(_ arg0: Float)
+
+  @JavaMethod
+  open fn getTranslationX() -> Float
+
+  @JavaMethod
+  open fn setTranslationX(_ arg0: Float)
+
+  @JavaMethod
+  open fn getTranslationY() -> Float
+
+  @JavaMethod
+  open fn setTranslationY(_ arg0: Float)
+
+  @JavaMethod
+  open fn getTranslationZ() -> Float
+
+  @JavaMethod
+  open fn setTranslationZ(_ arg0: Float)
+
+  @JavaMethod
+  open fn setAnimationMatrix(_ arg0: Matrix?)
+
+  @JavaMethod
+  open fn getAnimationMatrix() -> Matrix!
+
+  @JavaMethod
+  open fn getClipToOutline() -> Boolean
+
+  @JavaMethod
+  open fn setClipToOutline(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setOutlineProvider(_ arg0: ViewOutlineProvider?)
+
+  @JavaMethod
+  open fn getOutlineProvider() -> ViewOutlineProvider!
+
+  @JavaMethod
+  open fn invalidateOutline()
+
+  @JavaMethod
+  open fn setOutlineSpotShadowColor(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getOutlineSpotShadowColor() -> Int32
+
+  @JavaMethod
+  open fn setOutlineAmbientShadowColor(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getOutlineAmbientShadowColor() -> Int32
+
+  @JavaMethod
+  open fn getHitRect(_ arg0: Rect?)
+
+  @JavaMethod
+  open fn getFocusedRect(_ arg0: Rect?)
+
+  @JavaMethod
+  open fn getGlobalVisibleRect(_ arg0: Rect?, _ arg1: Point?) -> Boolean
+
+  @JavaMethod
+  open fn getGlobalVisibleRect(_ arg0: Rect?) -> Boolean
+
+  @JavaMethod
+  open fn getLocalVisibleRect(_ arg0: Rect?) -> Boolean
+
+  @JavaMethod
+  open fn offsetTopAndBottom(_ arg0: Int32)
+
+  @JavaMethod
+  open fn offsetLeftAndRight(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getLayoutParams() -> ViewGroup.LayoutParams!
+
+  @JavaMethod
+  open fn setLayoutParams(_ arg0: ViewGroup.LayoutParams?)
+
+  @JavaMethod
+  open fn scrollTo(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn scrollBy(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn awakenScrollBars(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn awakenScrollBars(_ arg0: Int32, _ arg1: Boolean) -> Boolean
+
+  @JavaMethod
+  open fn awakenScrollBars() -> Boolean
+
+  @JavaMethod
+  open fn invalidate()
+
+  @JavaMethod
+  open fn invalidate(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn invalidate(_ arg0: Rect?)
+
+  @JavaMethod
+  open fn postDelayed(_ arg0: Runnable?, _ arg1: Int64) -> Boolean
+
+  @JavaMethod
+  open fn postOnAnimation(_ arg0: Runnable?)
+
+  @JavaMethod
+  open fn postOnAnimationDelayed(_ arg0: Runnable?, _ arg1: Int64)
+
+  @JavaMethod
+  open fn removeCallbacks(_ arg0: Runnable?) -> Boolean
+
+  @JavaMethod
+  open fn postInvalidate(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn postInvalidate()
+
+  @JavaMethod
+  open fn postInvalidateDelayed(_ arg0: Int64)
+
+  @JavaMethod
+  open fn postInvalidateDelayed(_ arg0: Int64, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32)
+
+  @JavaMethod
+  open fn postInvalidateOnAnimation(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn postInvalidateOnAnimation()
+
+  @JavaMethod
+  open fn computeScroll()
+
+  @JavaMethod
+  open fn isHorizontalFadingEdgeEnabled() -> Boolean
+
+  @JavaMethod
+  open fn setHorizontalFadingEdgeEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isVerticalFadingEdgeEnabled() -> Boolean
+
+  @JavaMethod
+  open fn setVerticalFadingEdgeEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getTopFadingEdgeStrength() -> Float
+
+  @JavaMethod
+  open fn getBottomFadingEdgeStrength() -> Float
+
+  @JavaMethod
+  open fn getLeftFadingEdgeStrength() -> Float
+
+  @JavaMethod
+  open fn getRightFadingEdgeStrength() -> Float
+
+  @JavaMethod
+  open fn isHorizontalScrollBarEnabled() -> Boolean
+
+  @JavaMethod
+  open fn setHorizontalScrollBarEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isVerticalScrollBarEnabled() -> Boolean
+
+  @JavaMethod
+  open fn setVerticalScrollBarEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setScrollbarFadingEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isScrollbarFadingEnabled() -> Boolean
+
+  @JavaMethod
+  open fn getScrollBarDefaultDelayBeforeFade() -> Int32
+
+  @JavaMethod
+  open fn setScrollBarDefaultDelayBeforeFade(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setScrollBarFadeDuration(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setScrollBarSize(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setScrollBarStyle(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getScrollBarStyle() -> Int32
+
+  @JavaMethod
+  open fn computeHorizontalScrollRange() -> Int32
+
+  @JavaMethod
+  open fn computeHorizontalScrollOffset() -> Int32
+
+  @JavaMethod
+  open fn computeHorizontalScrollExtent() -> Int32
+
+  @JavaMethod
+  open fn computeVerticalScrollRange() -> Int32
+
+  @JavaMethod
+  open fn computeVerticalScrollOffset() -> Int32
+
+  @JavaMethod
+  open fn computeVerticalScrollExtent() -> Int32
+
+  @JavaMethod
+  open fn canScrollHorizontally(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn canScrollVertically(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn onDrawScrollBars(_ arg0: Canvas?)
+
+  @JavaMethod
+  open fn onAttachedToWindow()
+
+  @JavaMethod
+  open fn onScreenStateChanged(_ arg0: Int32)
+
+  @JavaMethod
+  open fn onRtlPropertiesChanged(_ arg0: Int32)
+
+  @JavaMethod
+  open fn canResolveLayoutDirection() -> Boolean
+
+  @JavaMethod
+  open fn isLayoutDirectionResolved() -> Boolean
+
+  @JavaMethod
+  open fn onDetachedFromWindow()
+
+  @JavaMethod
+  open fn getWindowAttachCount() -> Int32
+
+  @JavaMethod
+  open fn getWindowToken() -> IBinder!
+
+  @JavaMethod
+  open fn getWindowId() -> WindowId!
+
+  @JavaMethod
+  open fn getApplicationWindowToken() -> IBinder!
+
+  @JavaMethod
+  open fn getDisplay() -> Display!
+
+  @JavaMethod
+  open fn cancelPendingInputEvents()
+
+  @JavaMethod
+  open fn onCancelPendingInputEvents()
+
+  @JavaMethod
+  open fn saveHierarchyState(_ arg0: SparseArray<Parcelable>?)
+
+  @JavaMethod
+  open fn dispatchSaveInstanceState(_ arg0: SparseArray<Parcelable>?)
+
+  @JavaMethod
+  open fn onSaveInstanceState() -> Parcelable!
+
+  @JavaMethod
+  open fn restoreHierarchyState(_ arg0: SparseArray<Parcelable>?)
+
+  @JavaMethod
+  open fn dispatchRestoreInstanceState(_ arg0: SparseArray<Parcelable>?)
+
+  @JavaMethod
+  open fn onRestoreInstanceState(_ arg0: Parcelable?)
+
+  @JavaMethod
+  open fn getDrawingTime() -> Int64
+
+  @JavaMethod
+  open fn setDuplicateParentStateEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isDuplicateParentStateEnabled() -> Boolean
+
+  @JavaMethod
+  open fn setLayerType(_ arg0: Int32, _ arg1: Paint?)
+
+  @JavaMethod
+  open fn setRenderEffect(_ arg0: RenderEffect?)
+
+  @JavaMethod
+  open fn setLayerPaint(_ arg0: Paint?)
+
+  @JavaMethod
+  open fn getLayerType() -> Int32
+
+  @JavaMethod
+  open fn buildLayer()
+
+  @JavaMethod
+  open fn setDrawingCacheEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isDrawingCacheEnabled() -> Boolean
+
+  @JavaMethod
+  open fn getDrawingCache() -> Bitmap!
+
+  @JavaMethod
+  open fn getDrawingCache(_ arg0: Boolean) -> Bitmap!
+
+  @JavaMethod
+  open fn destroyDrawingCache()
+
+  @JavaMethod
+  open fn setDrawingCacheBackgroundColor(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getDrawingCacheBackgroundColor() -> Int32
+
+  @JavaMethod
+  open fn buildDrawingCache(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn buildDrawingCache()
+
+  @JavaMethod
+  open fn isInEditMode() -> Boolean
+
+  @JavaMethod
+  open fn isPaddingOffsetRequired() -> Boolean
+
+  @JavaMethod
+  open fn getLeftPaddingOffset() -> Int32
+
+  @JavaMethod
+  open fn getRightPaddingOffset() -> Int32
+
+  @JavaMethod
+  open fn getTopPaddingOffset() -> Int32
+
+  @JavaMethod
+  open fn getBottomPaddingOffset() -> Int32
+
+  @JavaMethod
+  open fn isHardwareAccelerated() -> Boolean
+
+  @JavaMethod
+  open fn setClipBounds(_ arg0: Rect?)
+
+  @JavaMethod
+  open fn getClipBounds(_ arg0: Rect?) -> Boolean
+
+  @JavaMethod
+  open fn getClipBounds() -> Rect!
+
+  @JavaMethod
+  open fn getOverlay() -> ViewOverlay!
+
+  @JavaMethod
+  open fn getSolidColor() -> Int32
+
+  @JavaMethod
+  open fn isLayoutRequested() -> Boolean
+
+  @JavaMethod
+  open fn onLayout(_ arg0: Boolean, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32)
+
+  @JavaMethod
+  open fn setLeftTopRightBottom(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn onFinishInflate()
+
+  @JavaMethod
+  open fn invalidateDrawable(_ arg0: Drawable?)
+
+  @JavaMethod
+  open fn scheduleDrawable(_ arg0: Drawable?, _ arg1: Runnable?, _ arg2: Int64)
+
+  @JavaMethod
+  open fn unscheduleDrawable(_ arg0: Drawable?)
+
+  @JavaMethod
+  open fn unscheduleDrawable(_ arg0: Drawable?, _ arg1: Runnable?)
+
+  @JavaMethod
+  open fn verifyDrawable(_ arg0: Drawable?) -> Boolean
+
+  @JavaMethod
+  open fn drawableStateChanged()
+
+  @JavaMethod
+  open fn drawableHotspotChanged(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn dispatchDrawableHotspotChanged(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn refreshDrawableState()
+
+  @JavaMethod
+  open fn getDrawableState() -> [Int32]
+
+  @JavaMethod
+  open fn onCreateDrawableState(_ arg0: Int32) -> [Int32]
+
+  @JavaMethod
+  open fn jumpDrawablesToCurrentState()
+
+  @JavaMethod
+  open fn setBackgroundResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setBackground(_ arg0: Drawable?)
+
+  @JavaMethod
+  open fn setBackgroundDrawable(_ arg0: Drawable?)
+
+  @JavaMethod
+  open fn getBackground() -> Drawable!
+
+  @JavaMethod
+  open fn setBackgroundTintList(_ arg0: ColorStateList?)
+
+  @JavaMethod
+  open fn getBackgroundTintList() -> ColorStateList!
+
+  @JavaMethod
+  open fn setBackgroundTintMode(_ arg0: PorterDuff.Mode?)
+
+  @JavaMethod
+  open fn setBackgroundTintBlendMode(_ arg0: BlendMode?)
+
+  @JavaMethod
+  open fn getBackgroundTintMode() -> PorterDuff.Mode!
+
+  @JavaMethod
+  open fn getBackgroundTintBlendMode() -> BlendMode!
+
+  @JavaMethod
+  open fn getForeground() -> Drawable!
+
+  @JavaMethod
+  open fn setForeground(_ arg0: Drawable?)
+
+  @JavaMethod
+  open fn getForegroundGravity() -> Int32
+
+  @JavaMethod
+  open fn setForegroundGravity(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setForegroundTintList(_ arg0: ColorStateList?)
+
+  @JavaMethod
+  open fn getForegroundTintList() -> ColorStateList!
+
+  @JavaMethod
+  open fn setForegroundTintMode(_ arg0: PorterDuff.Mode?)
+
+  @JavaMethod
+  open fn setForegroundTintBlendMode(_ arg0: BlendMode?)
+
+  @JavaMethod
+  open fn getForegroundTintMode() -> PorterDuff.Mode!
+
+  @JavaMethod
+  open fn getForegroundTintBlendMode() -> BlendMode!
+
+  @JavaMethod
+  open fn onDrawForeground(_ arg0: Canvas?)
+
+  @JavaMethod
+  open fn setPadding(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn setPaddingRelative(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn getSourceLayoutResId() -> Int32
+
+  @JavaMethod
+  open fn getPaddingTop() -> Int32
+
+  @JavaMethod
+  open fn getPaddingBottom() -> Int32
+
+  @JavaMethod
+  open fn getPaddingLeft() -> Int32
+
+  @JavaMethod
+  open fn getPaddingStart() -> Int32
+
+  @JavaMethod
+  open fn getPaddingRight() -> Int32
+
+  @JavaMethod
+  open fn getPaddingEnd() -> Int32
+
+  @JavaMethod
+  open fn isPaddingRelative() -> Boolean
+
+  @JavaMethod
+  open fn setSelected(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn dispatchSetSelected(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isSelected() -> Boolean
+
+  @JavaMethod
+  open fn setActivated(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn dispatchSetActivated(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isActivated() -> Boolean
+
+  @JavaMethod
+  open fn getViewTreeObserver() -> ViewTreeObserver!
+
+  @JavaMethod
+  open fn getRootView() -> View!
+
+  @JavaMethod
+  open fn transformMatrixToGlobal(_ arg0: Matrix?)
+
+  @JavaMethod
+  open fn transformMatrixToLocal(_ arg0: Matrix?)
+
+  @JavaMethod
+  open fn getLocationOnScreen(_ arg0: [Int32])
+
+  @JavaMethod
+  open fn getLocationInWindow(_ arg0: [Int32])
+
+  @JavaMethod
+  open fn findViewById(_ arg0: Int32) -> View!
+
+  @JavaMethod
+  open fn requireViewById(_ arg0: Int32) -> View!
+
+  @JavaMethod
+  open fn findViewWithTag(_ arg0: JavaObject?) -> View!
+
+  @JavaMethod
+  open fn setId(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getUniqueDrawingId() -> Int64
+
+  @JavaMethod
+  open fn getTag(_ arg0: Int32) -> JavaObject!
+
+  @JavaMethod
+  open fn getTag() -> JavaObject!
+
+  @JavaMethod
+  open fn setTag(_ arg0: Int32, _ arg1: JavaObject?)
+
+  @JavaMethod
+  open fn setTag(_ arg0: JavaObject?)
+
+  @JavaMethod
+  open fn getBaseline() -> Int32
+
+  @JavaMethod
+  open fn isInLayout() -> Boolean
+
+  @JavaMethod
+  open fn requestLayout()
+
+  @JavaMethod
+  open fn forceLayout()
+
+  @JavaMethod
+  open fn measure(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setMeasuredDimension(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getSuggestedMinimumHeight() -> Int32
+
+  @JavaMethod
+  open fn getSuggestedMinimumWidth() -> Int32
+
+  @JavaMethod
+  open fn getMinimumHeight() -> Int32
+
+  @JavaMethod
+  open fn setMinimumHeight(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getMinimumWidth() -> Int32
+
+  @JavaMethod
+  open fn setMinimumWidth(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getAnimation() -> Animation!
+
+  @JavaMethod
+  open fn startAnimation(_ arg0: Animation?)
+
+  @JavaMethod
+  open fn clearAnimation()
+
+  @JavaMethod
+  open fn setAnimation(_ arg0: Animation?)
+
+  @JavaMethod
+  open fn onAnimationStart()
+
+  @JavaMethod
+  open fn onAnimationEnd()
+
+  @JavaMethod
+  open fn onSetAlpha(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn gatherTransparentRegion(_ arg0: Region?) -> Boolean
+
+  @JavaMethod
+  open fn playSoundEffect(_ arg0: Int32)
+
+  @JavaMethod
+  open fn performHapticFeedback(_ arg0: Int32, _ arg1: Int32) -> Boolean
+
+  @JavaMethod
+  open fn performHapticFeedback(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn setSystemUiVisibility(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getSystemUiVisibility() -> Int32
+
+  @JavaMethod
+  open fn getWindowSystemUiVisibility() -> Int32
+
+  @JavaMethod
+  open fn onWindowSystemUiVisibilityChanged(_ arg0: Int32)
+
+  @JavaMethod
+  open fn dispatchWindowSystemUiVisiblityChanged(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setOnSystemUiVisibilityChangeListener(_ arg0: View.OnSystemUiVisibilityChangeListener?)
+
+  @JavaMethod
+  open fn dispatchSystemUiVisibilityChanged(_ arg0: Int32)
+
+  @JavaMethod
+  open fn startDrag(_ arg0: ClipData?, _ arg1: View.DragShadowBuilder?, _ arg2: JavaObject?, _ arg3: Int32) -> Boolean
+
+  @JavaMethod
+  open fn startDragAndDrop(_ arg0: ClipData?, _ arg1: View.DragShadowBuilder?, _ arg2: JavaObject?, _ arg3: Int32) -> Boolean
+
+  @JavaMethod
+  open fn cancelDragAndDrop()
+
+  @JavaMethod
+  open fn updateDragShadow(_ arg0: View.DragShadowBuilder?)
+
+  @JavaMethod
+  open fn onDragEvent(_ arg0: DragEvent?) -> Boolean
+
+  @JavaMethod
+  open fn dispatchDragEvent(_ arg0: DragEvent?) -> Boolean
+
+  @JavaMethod
+  open fn overScrollBy(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, _ arg5: Int32, _ arg6: Int32, _ arg7: Int32, _ arg8: Boolean) -> Boolean
+
+  @JavaMethod
+  open fn onOverScrolled(_ arg0: Int32, _ arg1: Int32, _ arg2: Boolean, _ arg3: Boolean)
+
+  @JavaMethod
+  open fn getOverScrollMode() -> Int32
+
+  @JavaMethod
+  open fn setOverScrollMode(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setNestedScrollingEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isNestedScrollingEnabled() -> Boolean
+
+  @JavaMethod
+  open fn startNestedScroll(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn stopNestedScroll()
+
+  @JavaMethod
+  open fn hasNestedScrollingParent() -> Boolean
+
+  @JavaMethod
+  open fn dispatchNestedScroll(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: [Int32]) -> Boolean
+
+  @JavaMethod
+  open fn dispatchNestedPreScroll(_ arg0: Int32, _ arg1: Int32, _ arg2: [Int32], _ arg3: [Int32]) -> Boolean
+
+  @JavaMethod
+  open fn dispatchNestedFling(_ arg0: Float, _ arg1: Float, _ arg2: Boolean) -> Boolean
+
+  @JavaMethod
+  open fn dispatchNestedPreFling(_ arg0: Float, _ arg1: Float) -> Boolean
+
+  @JavaMethod
+  open fn setTextDirection(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getTextDirection() -> Int32
+
+  @JavaMethod
+  open fn canResolveTextDirection() -> Boolean
+
+  @JavaMethod
+  open fn isTextDirectionResolved() -> Boolean
+
+  @JavaMethod
+  open fn setTextAlignment(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getTextAlignment() -> Int32
+
+  @JavaMethod
+  open fn canResolveTextAlignment() -> Boolean
+
+  @JavaMethod
+  open fn isTextAlignmentResolved() -> Boolean
+
+  @JavaMethod
+  open fn onResolvePointerIcon(_ arg0: MotionEvent?, _ arg1: Int32) -> PointerIcon!
+
+  @JavaMethod
+  open fn setPointerIcon(_ arg0: PointerIcon?)
+
+  @JavaMethod
+  open fn getPointerIcon() -> PointerIcon!
+
+  @JavaMethod
+  open fn hasPointerCapture() -> Boolean
+
+  @JavaMethod
+  open fn requestPointerCapture()
+
+  @JavaMethod
+  open fn releasePointerCapture()
+
+  @JavaMethod
+  open fn onPointerCaptureChange(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn dispatchPointerCaptureChanged(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn onCapturedPointerEvent(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  open fn setOnCapturedPointerListener(_ arg0: View.OnCapturedPointerListener?)
+
+  @JavaMethod
+  open fn animate() -> ViewPropertyAnimator!
+
+  @JavaMethod
+  open fn setTransitionName(_ arg0: String)
+
+  @JavaMethod
+  open fn getTransitionName() -> String
+
+  @JavaMethod
+  open fn getScrollCaptureHint() -> Int32
+
+  @JavaMethod
+  open fn setScrollCaptureHint(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setScrollCaptureCallback(_ arg0: ScrollCaptureCallback?)
+
+  @JavaMethod
+  open fn dispatchScrollCaptureSearch(_ arg0: Rect?, _ arg1: Point?, _ arg2: JavaConsumer<ScrollCaptureTarget>?)
+
+  @JavaMethod
+  open fn onScrollCaptureSearch(_ arg0: Rect?, _ arg1: Point?, _ arg2: JavaConsumer<ScrollCaptureTarget>?)
+
+  @JavaMethod
+  open fn setTooltipText(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn getTooltipText() -> CharSequence!
+
+  @JavaMethod
+  open fn addOnUnhandledKeyEventListener(_ arg0: View.OnUnhandledKeyEventListener?)
+
+  @JavaMethod
+  open fn removeOnUnhandledKeyEventListener(_ arg0: View.OnUnhandledKeyEventListener?)
+
+  @JavaMethod
+  open fn setAutoHandwritingEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isAutoHandwritingEnabled() -> Boolean
+
+  @JavaMethod
+  open fn clearViewTranslationCallback()
+
+  @JavaMethod
+  open fn getRootSurfaceControl() -> AttachedSurfaceControl!
+
+  @JavaMethod
+  open fn getWidth() -> Int32
+
+  @JavaMethod
+  open fn getHeight() -> Int32
+
+  @JavaMethod
+  open fn getRotation() -> Float
+
+  @JavaMethod
+  open fn getScrollBarSize() -> Int32
+
+  @JavaMethod
+  open fn getScrollBarFadeDuration() -> Int32
+
+  @JavaMethod
+  open fn onDraw(_ arg0: Canvas?)
+
+  @JavaMethod
+  open fn setBackgroundColor(_ arg0: Int32)
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn getResources() -> Resources!
+
+  @JavaMethod
+  open fn getParent() -> ViewParent!
+
+  @JavaMethod
+  open fn isEnabled() -> Boolean
+
+  @JavaMethod
+  open fn getId() -> Int32
+
+  @JavaMethod
+  open fn isOpaque() -> Boolean
+
+  @JavaMethod
+  open fn getHandler() -> Handler!
+
+  @JavaMethod
+  open fn getContext() -> Context!
+
+  @JavaMethod
+  open fn isDirty() -> Boolean
+
+  @JavaMethod
+  open fn post(_ arg0: Runnable?) -> Boolean
+}
+extension JavaClass<View> {
+  @JavaStaticField(isFinal: true)
+  public var ACCESSIBILITY_LIVE_REGION_ASSERTIVE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACCESSIBILITY_LIVE_REGION_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACCESSIBILITY_LIVE_REGION_POLITE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_FLAG_INCLUDE_NOT_IMPORTANT_VIEWS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_DATE: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_DAY: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_MONTH: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_YEAR: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_CREDIT_CARD_NUMBER: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_CREDIT_CARD_SECURITY_CODE: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_EMAIL_ADDRESS: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_NAME: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_PASSWORD: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_PHONE: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_POSTAL_ADDRESS: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_POSTAL_CODE: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_USERNAME: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_TYPE_DATE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_TYPE_LIST: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_TYPE_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_TYPE_TEXT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_TYPE_TOGGLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DRAG_FLAG_ACCESSIBILITY_ACTION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DRAG_FLAG_GLOBAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DRAG_FLAG_GLOBAL_PERSISTABLE_URI_PERMISSION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DRAG_FLAG_GLOBAL_PREFIX_URI_PERMISSION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DRAG_FLAG_GLOBAL_URI_READ: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DRAG_FLAG_GLOBAL_URI_WRITE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DRAG_FLAG_OPAQUE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DRAWING_CACHE_QUALITY_AUTO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DRAWING_CACHE_QUALITY_HIGH: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DRAWING_CACHE_QUALITY_LOW: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FIND_VIEWS_WITH_CONTENT_DESCRIPTION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FIND_VIEWS_WITH_TEXT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FOCUSABLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FOCUSABLES_ALL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FOCUSABLES_TOUCH_MODE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FOCUSABLE_AUTO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FOCUS_BACKWARD: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FOCUS_DOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FOCUS_FORWARD: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FOCUS_LEFT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FOCUS_RIGHT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FOCUS_UP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var GONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var HAPTIC_FEEDBACK_ENABLED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_ACCESSIBILITY_AUTO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_ACCESSIBILITY_NO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_ACCESSIBILITY_YES: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_AUTOFILL_AUTO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_AUTOFILL_NO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_AUTOFILL_YES: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_AUTOFILL_YES_EXCLUDE_DESCENDANTS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_CONTENT_CAPTURE_AUTO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_CONTENT_CAPTURE_NO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_CONTENT_CAPTURE_NO_EXCLUDE_DESCENDANTS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_CONTENT_CAPTURE_YES: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_CONTENT_CAPTURE_YES_EXCLUDE_DESCENDANTS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var INVISIBLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var KEEP_SCREEN_ON: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LAYER_TYPE_HARDWARE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LAYER_TYPE_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LAYER_TYPE_SOFTWARE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LAYOUT_DIRECTION_INHERIT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LAYOUT_DIRECTION_LOCALE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LAYOUT_DIRECTION_LTR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LAYOUT_DIRECTION_RTL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MEASURED_HEIGHT_STATE_SHIFT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MEASURED_SIZE_MASK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MEASURED_STATE_MASK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MEASURED_STATE_TOO_SMALL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NOT_FOCUSABLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NO_ID: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var OVER_SCROLL_ALWAYS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var OVER_SCROLL_IF_CONTENT_SCROLLS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var OVER_SCROLL_NEVER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCREEN_STATE_OFF: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCREEN_STATE_ON: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLLBARS_INSIDE_INSET: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLLBARS_INSIDE_OVERLAY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLLBARS_OUTSIDE_INSET: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLLBARS_OUTSIDE_OVERLAY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLLBAR_POSITION_DEFAULT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLLBAR_POSITION_LEFT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLLBAR_POSITION_RIGHT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_AXIS_HORIZONTAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_AXIS_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_AXIS_VERTICAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_CAPTURE_HINT_AUTO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_CAPTURE_HINT_EXCLUDE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_CAPTURE_HINT_EXCLUDE_DESCENDANTS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_CAPTURE_HINT_INCLUDE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_INDICATOR_BOTTOM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_INDICATOR_END: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_INDICATOR_LEFT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_INDICATOR_RIGHT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_INDICATOR_START: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_INDICATOR_TOP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOUND_EFFECTS_ENABLED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATUS_BAR_HIDDEN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATUS_BAR_VISIBLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_FLAG_FULLSCREEN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_FLAG_HIDE_NAVIGATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_FLAG_IMMERSIVE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_FLAG_IMMERSIVE_STICKY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_FLAG_LAYOUT_STABLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_FLAG_LIGHT_STATUS_BAR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_FLAG_LOW_PROFILE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_FLAG_VISIBLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_LAYOUT_FLAGS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_ALIGNMENT_CENTER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_ALIGNMENT_GRAVITY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_ALIGNMENT_INHERIT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_ALIGNMENT_TEXT_END: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_ALIGNMENT_TEXT_START: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_ALIGNMENT_VIEW_END: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_ALIGNMENT_VIEW_START: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_DIRECTION_ANY_RTL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_DIRECTION_FIRST_STRONG: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_DIRECTION_FIRST_STRONG_LTR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_DIRECTION_FIRST_STRONG_RTL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_DIRECTION_INHERIT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_DIRECTION_LOCALE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_DIRECTION_LTR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_DIRECTION_RTL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var VISIBLE: Int32
+
+  @JavaStaticMethod
+  public fn mergeDrawableStates(_ arg0: [Int32], _ arg1: [Int32]) -> [Int32]
+
+  @JavaStaticMethod
+  public fn combineMeasuredStates(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn resolveSizeAndState(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn getDefaultSize(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn generateViewId() -> Int32
+
+  @JavaStaticMethod
+  public fn resolveSize(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn inflate(_ arg0: Context?, _ arg1: Int32, _ arg2: ViewGroup?) -> View!
+}

@@ -299,7 +299,7 @@ extension JSSending {
             if object.storage.transferring {
                 transferringObjects.append(object.storage.idInSource)
             }
-            if sourceTid == nil {
+            if sourceTid == Nothing {
                 sourceTid = object.storage.sourceTid
             } else {
                 guard sourceTid == object.storage.sourceTid else {

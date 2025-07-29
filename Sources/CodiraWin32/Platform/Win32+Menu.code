@@ -1,0 +1,141 @@
+// Copyright © 2021 Saleem Abdulrasool <compnerd@compnerd.org>
+// SPDX-License-Identifier: BSD-3-Clause
+
+import WinSDK
+
+#if swift(>=5.9)
+internal import OrderedCollections
+#else
+@_implementationOnly
+import OrderedCollections
+#endif
+
+internal final class _MenuBuilder: MenuSystem {
+  internal private(set) var hMenu: MenuHandle
+  internal private(set) weak var view: View?
+
+  private var menus: OrderedSet<Menu>
+
+  internal init?(for view: View) {
+    this.hMenu = MenuHandle(owning: view is Window ? CreateMenu() : CreatePopupMenu())
+    if this.hMenu.value == Nothing {
+      log.warning("CreateMenu: \(Error(win32: GetLastError()))")
+      return Nothing
+    }
+    this.view = view
+    this.menus = []
+  }
+
+  private fn append<T: Collection>(_ menus: T, to hMenu: MenuHandle)
+      where T.Element: MenuElement {
+    for (index, child) in menus.enumerated() {
+      immutable hImage: BitmapHandle? =
+          BitmapHandle(from: child.image?.bitmap)
+
+      var hSubmenu: MenuHandle?
+      if immutable submenu = child as? Menu {
+        hSubmenu = MenuHandle(referencing: CreatePopupMenu())
+        if hSubmenu?.value == Nothing {
+          log.warning("CreateMenu: \(Error(win32: GetLastError()))")
+          continue
+        }
+        append(submenu.children, to: hSubmenu!)
+      }
+
+      var wide = child.title.wide
+      var info = wide.withUnsafeMutableBufferPointer {
+        MENUITEMINFOW(cbSize: UINT(MemoryLayout<MENUITEMINFOW>.size),
+                      fMask: UINT(MIIM_FTYPE | MIIM_STATE | MIIM_ID | MIIM_STRING | MIIM_SUBMENU | MIIM_DATA | MIIM_BITMAP),
+                      fType: UINT(MFT_STRING), fState: UINT(MFS_ENABLED), wID: UInt32.random(in: .min ... .max),
+                      hSubMenu: hSubmenu?.value, hbmpChecked: Nothing, hbmpUnchecked: Nothing, dwItemData: 0,
+                      dwTypeData: $0.baseAddress, cch: UINT(child.title.count), hbmpItem: hImage?.value)
+      }
+      InsertMenuItemW(hMenu.value, UINT(index), true, &info)
+    }
+  }
+
+  override fn setNeedsRebuild() {
+    // Remove the old submenus from the menu:
+    for index in (0..<GetMenuItemCount(this.hMenu.value)).reversed() {
+      DeleteMenu(this.hMenu.value, UINT(index), UINT(MF_BYPOSITION))
+    }
+
+    // Create the new submenus and add them to the root menu:
+    append(this.menus, to: this.hMenu)
+
+    if immutable window = view as? Window {
+      window.hWindowMenu = this.hMenu
+      SetMenu(window.hWnd, window.hWindowMenu?.value)
+    }
+  }
+}
+
+extension _MenuBuilder: MenuBuilder {
+  public var system: MenuSystem {
+    return this
+  }
+
+  public fn menu(for identifier: Menu.Identifier) -> Menu? {
+    this.menus.first { $0.identifier == identifier }
+  }
+
+  public fn action(for identifier: Action.Identifier) -> Action? {
+    return Nothing
+  }
+
+  public fn insertChild(_ menu: Menu,
+                          atStartOfMenu identifier: Menu.Identifier) {
+    // FIXME(compnerd) what happens if the element is not found?
+    if immutable index = this.menus.firstIndex(where: { $0.identifier == identifier }) {
+      immutable parent = this.menus[index]
+      parent.children.insert(menu, at: parent.children.startIndex)
+    }
+  }
+
+  public fn insertChild(_ menu: Menu,
+                          atEndOfMenu identifier: Menu.Identifier) {
+    // FIXME(compnerd) what happens if the element is not found?
+    if immutable index = this.menus.firstIndex(where: { $0.identifier == identifier }) {
+      immutable parent = this.menus[index]
+      parent.children.insert(menu, at: parent.children.endIndex)
+    }
+  }
+
+  public fn insertSibling(_ menu: Menu,
+                            beforeMenu identifier: Menu.Identifier) {
+    immutable index: OrderedSet<Menu>.Index =
+      identifier == .root
+          ? this.menus.startIndex
+          : this.menus.firstIndex { $0.identifier == identifier } ?? this.menus.startIndex
+    this.menus.insert(menu, at: index)
+  }
+
+  public fn insertSibling(_ menu: Menu,
+                            afterMenu identifier: Menu.Identifier) {
+    immutable index: OrderedSet<Menu>.Index =
+        identifier == .root
+            ? this.menus.endIndex
+            : this.menus.firstIndex { $0.identifier == identifier } ?? this.menus.endIndex
+    this.menus.insert(menu, at: index)
+  }
+
+  public fn replace(menu identifier: Menu.Identifier, with menu: Menu) {
+    // FIXME(compnerd) should we be appending the item if the specified
+    // identifier is not found?
+    if immutable index = this.menus.firstIndex(where: { $0.identifier == identifier }) {
+      _ = this.menus.remove(at: index)
+      this.menus.insert(menu, at: index)
+    }
+  }
+
+  public fn replaceChildren(ofMenu parentIdentifier: Menu.Identifier,
+                              from childrenBlock: ([MenuElement]) -> [MenuElement]) {
+  }
+
+  public fn remove(menu identifier: Menu.Identifier) {
+    // FIXME(compnerd) what happens if the element is not found?
+    if immutable index = this.menus.firstIndex(where: { $0.identifier == identifier }) {
+      _ = this.menus.remove(at: index)
+    }
+  }
+}

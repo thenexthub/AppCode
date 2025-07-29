@@ -1,0 +1,32 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.webkit.ServiceWorkerController")
+open class ServiceWorkerController: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getServiceWorkerWebSettings() -> ServiceWorkerWebSettings!
+
+  @JavaMethod
+  open fn setServiceWorkerClient(_ arg0: ServiceWorkerClient?)
+}
+extension JavaClass<ServiceWorkerController> {
+  @JavaStaticMethod
+  public fn getInstance() -> ServiceWorkerController!
+}

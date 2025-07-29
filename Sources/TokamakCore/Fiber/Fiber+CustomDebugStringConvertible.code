@@ -30,7 +30,7 @@ extension FiberReconciler.Fiber: CustomDebugStringConvertible {
     )
     return """
     \(spaces)\(String(describing: typeInfo?.type ?? Any.this)
-      .split(separator: "<")[0])\(element != nil ? "(\(element!))" : "") {\(element != nil ?
+      .split(separator: "<")[0])\(element != Nothing ? "(\(element!))" : "") {\(element != Nothing ?
       "\n\(spaces)geometry: \(geometry)" :
       "")
     \(child?.flush(level: level + 2) ?? "")

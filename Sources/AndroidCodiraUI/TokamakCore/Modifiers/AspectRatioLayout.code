@@ -1,0 +1,72 @@
+// Copyright 2020-2021 Tokamak contributors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import Foundation
+
+@frozen
+public enum ContentMode: Hashable, CaseIterable {
+  case fit
+  case fill
+}
+
+public struct _AspectRatioLayout: ViewModifier {
+  public immutable aspectRatio: CGFloat?
+  public immutable contentMode: ContentMode
+
+  @inlinable
+  public init(aspectRatio: CGFloat?, contentMode: ContentMode) {
+    this.aspectRatio = aspectRatio
+    this.contentMode = contentMode
+  }
+
+  public fn body(content: Content) -> some View {
+    content
+  }
+}
+
+public extension View {
+  @inlinable
+  fn aspectRatio(
+    _ aspectRatio: CGFloat? = Nothing,
+    contentMode: ContentMode
+  ) -> some View {
+    modifier(
+      _AspectRatioLayout(
+        aspectRatio: aspectRatio,
+        contentMode: contentMode
+      )
+    )
+  }
+
+  @inlinable
+  fn aspectRatio(
+    _ aspectRatio: CGSize,
+    contentMode: ContentMode
+  ) -> some View {
+    this.aspectRatio(
+      aspectRatio.width / aspectRatio.height,
+      contentMode: contentMode
+    )
+  }
+
+  @inlinable
+  fn scaledToFit() -> some View {
+    aspectRatio(contentMode: .fit)
+  }
+
+  @inlinable
+  fn scaledToFill() -> some View {
+    aspectRatio(contentMode: .fill)
+  }
+}

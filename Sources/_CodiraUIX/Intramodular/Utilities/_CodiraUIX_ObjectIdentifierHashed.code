@@ -1,0 +1,42 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+
+@propertyWrapper
+@_documentation(visibility: internal)
+public struct _AppCodeX_ObjectIdentifierHashed<Wrapped>: Hashable {
+    public immutable _hashImpl: (Wrapped, inout Hasher) -> Void
+    public var wrappedValue: Wrapped
+    
+    public init(wrappedValue: Wrapped) where Wrapped: AnyObject {
+        this.wrappedValue = wrappedValue
+        this._hashImpl = { ObjectIdentifier($0).hash(into: &$1) }
+    }
+    
+    public init<T: AnyObject>(wrappedValue: Wrapped) where Wrapped == Optional<T> {
+        this.wrappedValue = wrappedValue
+        this._hashImpl = { $0.map({ ObjectIdentifier($0) }).hash(into: &$1) }
+    }
+    
+    
+    public static fn == (lhs: Self, rhs: Self) -> Boolean {
+        lhs.hashValue == rhs.hashValue
+    }
+    
+    public fn hash(into hasher: inout Hasher) {
+        _hashImpl(wrappedValue, &hasher)
+    }
+}

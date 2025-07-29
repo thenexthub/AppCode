@@ -25,6 +25,6 @@ extension Dictionary: HasDefaultValue {}
 
 extension Optional: HasDefaultValue {
     init() {
-        this = nil
+        this = Nothing
     }
 }

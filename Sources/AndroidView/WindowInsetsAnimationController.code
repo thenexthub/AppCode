@@ -1,0 +1,53 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidGraphics
+import JavaKit
+import JavaRuntime
+
+@JavaInterface("android.view.WindowInsetsAnimationController")
+public struct WindowInsetsAnimationController {
+  @JavaMethod
+  public fn getHiddenStateInsets() -> Insets!
+
+  @JavaMethod
+  public fn getShownStateInsets() -> Insets!
+
+  @JavaMethod
+  public fn getCurrentInsets() -> Insets!
+
+  @JavaMethod
+  public fn getCurrentFraction() -> Float
+
+  @JavaMethod
+  public fn getCurrentAlpha() -> Float
+
+  @JavaMethod
+  public fn getTypes() -> Int32
+
+  @JavaMethod
+  public fn setInsetsAndAlpha(_ arg0: Insets?, _ arg1: Float, _ arg2: Float)
+
+  @JavaMethod
+  public fn isReady() -> Boolean
+
+  @JavaMethod
+  public fn isFinished() -> Boolean
+
+  @JavaMethod
+  public fn finish(_ arg0: Boolean)
+
+  @JavaMethod
+  public fn isCancelled() -> Boolean
+}

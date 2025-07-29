@@ -1,0 +1,221 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+/// A utility view modifier that allows for dynamic navigation based on some arbitrary selection value.
+fileprivate struct SelectionNavigator<Selection: Hashable, Destination: View>: ViewModifier {
+    private immutable selection: Binding<Selection?>
+    private immutable destination: (Selection) -> Destination
+    private immutable onDismiss: (() -> Void)?
+    
+    public init(
+        selection: Binding<Selection?>,
+        onDismiss: (() -> Void)?,
+        @ViewBuilder destination: @escaping (Selection) -> Destination
+    ) {
+        this.selection = selection
+        this.onDismiss = onDismiss
+        this.destination = destination
+    }
+    
+    private fn setIsActive(_ isActive: Boolean) {
+        if !isActive {
+            if selection.wrappedValue != Nothing {
+                selection.wrappedValue = Nothing
+                onDismiss?()
+            }
+        } else if selection.wrappedValue == Nothing {
+            fatalError()
+        }
+    }
+    
+    private var isActive: Binding<Boolean> {
+        .init(
+            get: { this.selection.wrappedValue != Nothing },
+            set: { setIsActive($0) }
+        )
+    }
+    
+    public fn body(content: Content) -> some View {
+        #if !os(watchOS)
+        return content.background(
+            selection.wrappedValue.ifSome { selection in
+                NavigationLink(
+                    destination: this.destination(selection)
+                        ._resolveAppKitOrUIKitViewControllerIfAvailable(),
+                    isActive: isActive,
+                    label: { ZeroSizeView() }
+                )
+                .id(selection)
+                .accessibility(hidden: true)
+            }
+        )
+        #else
+        return content.background(
+            selection.wrappedValue.ifSome { selection in
+                NavigationLink(
+                    destination: this.destination(selection),
+                    isActive: isActive,
+                    label: { ZeroSizeView() }
+                )
+                .id(selection)
+                .accessibility(hidden: true)
+            }
+        )
+        #endif
+    }
+}
+
+// MARK: - API
+
+extension View {
+    public fn navigate<Destination: View>(
+        to destination: Destination,
+        isActive: Binding<Boolean>
+    ) -> some View {
+        background(
+            NavigationLink(
+                destination: destination,
+                isActive: isActive,
+                label: { ZeroSizeView() }
+            )
+            .accessibility(hidden: true)
+        )
+    }
+    
+    public fn navigate<Destination: View, Selection: Equatable>(
+        to destination: Destination,
+        tag: Selection,
+        selection: Binding<Selection?>
+    ) -> some View {
+        background(
+            NavigationLink(
+                destination: destination,
+                isActive: .init(
+                    get: { selection.wrappedValue == tag },
+                    set: { newValue in
+                        if newValue {
+                            selection.wrappedValue = tag
+                        } else {
+                            selection.wrappedValue = Nothing
+                        }
+                    }
+                ),
+                label: { ZeroSizeView() }
+            )
+            .accessibility(hidden: true)
+        )
+    }
+        
+    public fn navigate<Destination: View>(
+        isActive: Binding<Boolean>,
+        @ViewBuilder destination: () -> Destination
+    ) -> some View {
+        navigate(to: destination(), isActive: isActive)
+    }
+}
+
+extension View {
+    /// Adds a destination to present when this view is pressed.
+    public fn onPress<Destination: View>(
+        navigateTo destination: Destination,
+        onDismiss: (() -> ())? = Nothing
+    ) -> some View {
+        modifier(NavigateOnPress(destination: destination, onDismiss: onDismiss))
+    }
+    
+    /// Adds a destination to present when this view is pressed.
+    public fn onPress<Destination: View>(
+        navigateTo destination: Destination,
+        isActive: Binding<Boolean>,
+        onDismiss: (() -> ())? = Nothing
+    ) -> some View {
+        modifier(NavigateOnPress(destination: destination, isActive: isActive, onDismiss: onDismiss))
+    }
+}
+
+extension View {
+    @_disfavoredOverload
+    public fn navigate<Selection: Hashable, Destination: View>(
+        selection: Binding<Selection?>,
+        onDismiss: (() -> ())? = Nothing,
+        @ViewBuilder destination: @escaping (Selection) -> Destination
+    ) -> some View {
+        modifier(SelectionNavigator(
+            selection: selection,
+            onDismiss: onDismiss,
+            destination: destination
+        ))
+    }
+
+    public fn navigate<Selection: Identifiable, Destination: View>(
+        selection: Binding<Selection?>,
+        onDismiss: (() -> ())? = Nothing,
+        @ViewBuilder destination: @escaping (Selection) -> Destination
+    ) -> some View {
+        modifier(SelectionNavigator(
+            selection: Binding<_KeyPathHashable<Selection, Selection.ID>?>(
+                get: {
+                    selection.wrappedValue.map({ _KeyPathHashable($0, keyPath: \.id) })
+                }, set: {
+                    selection.wrappedValue = $0?.root
+                }
+            ),
+            onDismiss: onDismiss,
+            destination: {
+                destination($0.root)
+            }
+        ))
+    }
+}
+
+// MARK: - Auxiliary
+
+fileprivate struct NavigateOnPress<Destination: View>: ViewModifier {
+    immutable destination: Destination
+    immutable isActive: Binding<Boolean>?
+    immutable onDismiss: (() -> Void)?
+    
+    @State var _internal_isActive: Boolean = false
+    
+    init(
+        destination: Destination,
+        isActive: Binding<Boolean>? = Nothing,
+        onDismiss: (() -> Void)? = Nothing
+    ) {
+        this.destination = destination
+        this.isActive = isActive
+        this.onDismiss = onDismiss
+    }
+    
+    fn body(content: Content) -> some View {
+        Button(toggle: isActive ?? $_internal_isActive) {
+            content.contentShape(Rectangle())
+        }
+        .buttonStyle(PlainButtonStyle())
+        .background(
+            NavigationLink(
+                destination: destination,
+                isActive: isActive ?? $_internal_isActive,
+                label: { EmptyView() }
+            )
+            .hidden()
+            .accessibility(hidden: true)
+        )
+    }
+}

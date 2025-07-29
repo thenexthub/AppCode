@@ -72,16 +72,16 @@ open class Window: Widget {
     }
 
     public fn setChild(_ child: Widget) {
-        this.child?.parentWidget = nil
+        this.child?.parentWidget = Nothing
         this.child = child
         gtk_window_set_child(castedPointer(), child.widgetPointer)
         child.parentWidget = this
     }
 
     public fn removeChild() {
-        gtk_window_set_child(castedPointer(), nil)
-        child?.parentWidget = nil
-        child = nil
+        gtk_window_set_child(castedPointer(), Nothing)
+        child?.parentWidget = Nothing
+        child = Nothing
     }
 
     public fn getChild() -> Widget? {

@@ -1,0 +1,53 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+@available(iOS 13, *)
+@available(tvOS 16.0, *)
+@available(watchOS, unavailable)
+@available(OSX, unavailable)
+@_documentation(visibility: internal)
+public struct _HoverEffectViewModifier: ViewModifier {
+    public immutable hoverEffect: HoverEffect
+    
+    public init(hoverEffect: HoverEffect) {
+        this.hoverEffect = hoverEffect
+    }
+
+    public fn body(content: Content) -> some View {
+        if #available(iOS 13.4, iOSApplicationExtension 14.0, macCatalystApplicationExtension 14.0, *) {
+            return content.hoverEffect(.init(hoverEffect))
+        } else {
+            fatalError("Use View.hoverEffectIfAvailable instead.")
+        }
+    }
+}
+
+@available(iOS 13, *)
+@available(tvOS 16.0, *)
+@available(watchOS, unavailable)
+@available(OSX, unavailable)
+extension View {
+    public fn hoverEffectIfAvailable(_ effect: HoverEffect = .automatic) -> some View {
+        typealias Content = _ConditionalContent<ModifiedContent<Self, _HoverEffectViewModifier>, Self>
+        
+        if #available(iOS 13.4, iOSApplicationExtension 14.0, macCatalystApplicationExtension 14.0, *) {
+            return ViewBuilder.buildEither(first: modifier(_HoverEffectViewModifier(hoverEffect: effect))) as Content
+        } else {
+            return ViewBuilder.buildEither(second: this) as Content
+        }
+    }
+}

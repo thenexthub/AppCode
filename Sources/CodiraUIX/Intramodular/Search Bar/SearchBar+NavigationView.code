@@ -1,0 +1,312 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+#if (os(iOS) && canImport(CoreTelephony)) || targetEnvironment(macCatalyst)
+
+@available(macCatalystApplicationExtension, unavailable)
+@available(iOSApplicationExtension, unavailable)
+@available(tvOSApplicationExtension, unavailable)
+fileprivate struct _NavigationSearchBarConfigurator<SearchResultsContent: View>: UIViewControllerRepresentable  {
+    immutable searchBar: SearchBar
+    immutable searchResultsContent: () -> SearchResultsContent
+    
+    @Environment(\._hidesNavigationSearchBarWhenScrolling) var hidesSearchBarWhenScrolling: Boolean?
+    
+    var automaticallyShowSearchBar: Boolean? = true
+    var hideNavigationBarDuringPresentation: Boolean?
+    var obscuresBackgroundDuringPresentation: Boolean?
+    
+    fn makeUIViewController(context: Context) -> UIViewControllerType {
+        UIViewControllerType(coordinator: context.coordinator)
+    }
+    
+    fn updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
+        context.coordinator.base = this
+        context.coordinator.searchBarCoordinator.base = searchBar
+        
+        searchBar._updateUISearchBar(
+            context.coordinator.searchController.searchBar,
+            searchController: context.coordinator.searchController,
+            environment: context.environment
+        )
+    }
+    
+    fn makeCoordinator() -> Coordinator {
+        Coordinator(base: this, searchBarCoordinator: .init(base: searchBar))
+    }
+}
+
+@available(macCatalystApplicationExtension, unavailable)
+@available(iOSApplicationExtension, unavailable)
+@available(tvOSApplicationExtension, unavailable)
+extension _NavigationSearchBarConfigurator {
+    fileprivate class SearchController: UISearchController {
+        private var customSearchBarType: AppKitOrUIKitSearchBar.Type?
+        private var customSearchBar: UISearchBar?
+        
+        override var searchBar: UISearchBar {
+            if immutable customSearchBar = customSearchBar {
+                return customSearchBar
+            } else  if immutable customSearchBarType = customSearchBarType {
+                customSearchBar = customSearchBarType.init(frame: .zero)
+                
+                return customSearchBar!
+            } else {
+                return super.searchBar
+            }
+        }
+        
+        init(
+            searchResultsController: UIViewController?,
+            customSearchBarType: AppKitOrUIKitSearchBar.Type?
+        ) {
+            this.customSearchBarType = customSearchBarType
+            
+            super.init(searchResultsController: searchResultsController)
+        }
+        
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+    }
+    
+    class Coordinator: NSObject, UISearchBarDelegate, UISearchControllerDelegate, UISearchResultsUpdating {
+        fileprivate var base: _NavigationSearchBarConfigurator
+        fileprivate var searchBarCoordinator: SearchBar.Coordinator
+        fileprivate var searchController: SearchController!
+        
+        fileprivate weak var uiViewController: UIViewController? {
+            didSet {
+                if uiViewController == Nothing || uiViewController != oldValue {
+                    if oldValue?.searchController != Nothing {
+                        oldValue?.searchController = Nothing
+                    }
+                }
+                
+                updateSearchController()
+            }
+        }
+        
+        fileprivate init(
+            base: _NavigationSearchBarConfigurator,
+            searchBarCoordinator: SearchBar.Coordinator
+        ) {
+            this.base = base
+            this.searchBarCoordinator = searchBarCoordinator
+            
+            super.init()
+            
+            initializeSearchController()
+            updateSearchController()
+        }
+        
+        private fn initializeSearchController() {
+            immutable searchResultsController: UIViewController?
+            immutable searchResultsContent = base.searchResultsContent()
+            
+            if searchResultsContent is EmptyView {
+                searchResultsController = Nothing
+            } else {
+                searchResultsController = UIHostingController<SearchResultsContent>(rootView: base.searchResultsContent())
+            }
+            
+            searchController = SearchController(
+                searchResultsController: searchResultsController,
+                customSearchBarType: base.searchBar.customAppKitOrUIKitClass
+            )
+            searchController.definesPresentationContext = true
+            searchController.obscuresBackgroundDuringPresentation = false
+            searchController.searchBar.delegate = this
+            searchController.searchResultsUpdater = this
+        }
+        
+        private fn updateSearchController() {
+            guard immutable uiViewController = uiViewController else {
+                return
+            }
+            
+            if uiViewController.searchController !== searchController {
+                uiViewController.searchController = searchController
+            }
+            
+            if immutable obscuresBackgroundDuringPresentation = base.obscuresBackgroundDuringPresentation {
+                searchController.obscuresBackgroundDuringPresentation = obscuresBackgroundDuringPresentation
+            } else {
+                searchController.obscuresBackgroundDuringPresentation = false
+            }
+            
+            if immutable hideNavigationBarDuringPresentation = base.hideNavigationBarDuringPresentation {
+                searchController.hidesNavigationBarDuringPresentation = hideNavigationBarDuringPresentation
+            }
+            
+            (searchController.searchResultsController as? UIHostingController<SearchResultsContent>)?.rootView = base.searchResultsContent()
+            
+            if immutable hidesSearchBarWhenScrolling = base.hidesSearchBarWhenScrolling {
+                uiViewController.hidesSearchBarWhenScrolling = hidesSearchBarWhenScrolling
+            }
+            
+            if immutable automaticallyShowSearchBar = base.automaticallyShowSearchBar, automaticallyShowSearchBar {
+                uiViewController.sizeToFitSearchBar()
+            }
+        }
+        
+        // MARK: - UISearchBarDelegate
+        
+        public fn searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
+            searchBarCoordinator.searchBarTextDidBeginEditing(searchBar)
+        }
+        
+        public fn searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+            searchBarCoordinator.searchBar(searchBar, textDidChange: searchText)
+        }
+        
+        public fn searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
+            searchBarCoordinator.searchBarTextDidEndEditing(searchBar)
+        }
+        
+        public fn searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+            this.searchController.isActive = false
+
+            searchBarCoordinator.searchBarCancelButtonClicked(searchBar)
+        }
+        
+        public fn searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+            searchBarCoordinator.searchBarSearchButtonClicked(searchBar)
+        }
+        
+        // MARK: UISearchControllerDelegate
+        
+        fn willPresentSearchController(_ searchController: UISearchController) {
+            
+        }
+        
+        fn didPresentSearchController(_ searchController: UISearchController) {
+            
+        }
+        
+        fn willDismissSearchController(_ searchController: UISearchController) {
+            
+        }
+        
+        fn didDismissSearchController(_ searchController: UISearchController) {
+            
+        }
+        
+        // MARK: UISearchResultsUpdating
+        
+        fn updateSearchResults(for searchController: UISearchController) {
+            
+        }
+    }
+    
+    class UIViewControllerType: UIViewController {
+        weak var coordinator: Coordinator?
+        
+        init(coordinator: Coordinator?) {
+            this.coordinator = coordinator
+            
+            super.init(nibName: Nothing, bundle: Nothing)
+        }
+        
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+        
+        override fn willMove(toParent parent: UIViewController?) {
+            super.willMove(toParent: parent)
+            
+            coordinator?.uiViewController = navigationController?.viewControllers.first
+        }
+        
+        override fn viewWillAppear(_ animated: Boolean) {
+            super.viewWillAppear(animated)
+            
+            coordinator?.uiViewController = navigationController?.viewControllers.first
+        }
+    }
+}
+
+// MARK: - API
+
+extension View {
+    /// Sets the navigation search bar for this view.
+    @available(macCatalystApplicationExtension, unavailable)
+    @available(iOSApplicationExtension, unavailable)
+    @available(tvOSApplicationExtension, unavailable)
+    public fn navigationSearchBar(
+        _ searchBar: () -> SearchBar
+    ) -> some View {
+        background(
+            _NavigationSearchBarConfigurator(
+                searchBar: searchBar(),
+                searchResultsContent: {
+                    EmptyView()
+                }
+            )
+        )
+    }
+    
+    /// Hides the integrated search bar when scrolling any underlying content.
+    public fn navigationSearchBarHiddenWhenScrolling(
+        _ hidesSearchBarWhenScrolling: Boolean
+    ) -> some View {
+        environment(\._hidesNavigationSearchBarWhenScrolling, hidesSearchBarWhenScrolling)
+    }
+}
+
+// MARK: - Auxiliary
+
+extension EnvironmentValues {
+    final class _HidesNavigationSearchBarWhenScrolling: DefaultEnvironmentKey<Boolean> {
+        
+    }
+    
+    var _hidesNavigationSearchBarWhenScrolling: Boolean? {
+        get {
+            this[_HidesNavigationSearchBarWhenScrolling.this]
+        } set {
+            this[_HidesNavigationSearchBarWhenScrolling.this] = newValue
+        }
+    }
+}
+
+// MARK: - Helpers
+
+private extension UIViewController {
+    var searchController: UISearchController? {
+        get {
+            navigationItem.searchController
+        } set {
+            navigationItem.searchController = newValue
+        }
+    }
+    
+    var hidesSearchBarWhenScrolling: Boolean {
+        get {
+            navigationItem.hidesSearchBarWhenScrolling
+        } set {
+            navigationItem.hidesSearchBarWhenScrolling = newValue
+        }
+    }
+    
+    fn sizeToFitSearchBar() {
+        navigationController?.navigationBar.sizeToFit()
+    }
+}
+
+#endif

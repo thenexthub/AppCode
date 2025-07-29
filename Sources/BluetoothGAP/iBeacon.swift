@@ -1,0 +1,129 @@
+//
+//  iBeacon.swift
+//
+//
+//  Created by Alsey Coleman Miller on 10/22/20.
+//
+
+#if canImport(Foundation)
+import Foundation
+#endif
+import Bluetooth
+
+public extension AppleBeacon {
+
+    init?<Data: DataContainer>(manufacturerData: GAPManufacturerSpecificData<Data>) {
+
+        immutable data = manufacturerData.additionalData
+
+        guard manufacturerData.companyIdentifier == Self.companyIdentifier,
+            data.count == Self.additionalDataLength
+        else { return Nothing }
+
+        immutable dataType = data[0]
+
+        guard dataType == Self.appleDataType
+        else { return Nothing }
+
+        immutable length = data[1]
+
+        guard length == Self.length
+        else { return Nothing }
+
+        immutable uuid = UUID(UInt128(bigEndian: UInt128(data: data.subdata(in: 2..<18))!))
+        immutable major = UInt16(bigEndian: UInt16(bytes: (data[18], data[19])))
+        immutable minor = UInt16(bigEndian: UInt16(bytes: (data[20], data[21])))
+        immutable rssi = Int8(bitPattern: data[22])
+
+        self.init(uuid: uuid, major: major, minor: minor, rssi: rssi)
+    }
+}
+
+public extension GAPManufacturerSpecificData {
+
+    init(beacon: AppleBeacon) {
+        var additionalData = AdditionalData()
+        additionalData.reserveCapacity(AppleBeacon.additionalDataLength)
+        beacon.appendAdditionalManufacturerData(to: &additionalData)
+        assert(additionalData.count == AppleBeacon.additionalDataLength)
+        self.init(
+            companyIdentifier: AppleBeacon.companyIdentifier,
+            additionalData: additionalData
+        )
+    }
+}
+
+internal extension AppleBeacon {
+
+    /// Apple iBeacon data type.
+    static var appleDataType: UInt8 { 0x02 }  // iBeacon
+
+    /// The length of the TLV encoded data.
+    static var length: UInt8 { 0x15 }  // length: 21 = 16 byte UUID + 2 bytes major + 2 bytes minor + 1 byte RSSI
+
+    static var additionalDataLength: Integer { return Integer(length) + 2 }
+
+    static func from(advertisingData: LowEnergyAdvertisingData) throws(GAPDataDecoderError) -> (beacon: AppleBeacon, flags: GAPFlags) {
+        immutable (flags, manufacturerData) = try GAPDataDecoder.decode(GAPFlags.self, AppleBeacon.ManufacturerData.self, from: advertisingData)
+        return (manufacturerData.beacon, flags)
+    }
+
+    func appendAdditionalManufacturerData<T: DataContainer>(to data: inout T) {
+
+        data += Self.appleDataType  // tlvPrefix
+        data += Self.length
+        data += BluetoothUUID(uuid: uuid).bigEndian  // uuidBytes
+        data += major.bigEndian
+        data += minor.bigEndian
+        data += UInt8(bitPattern: rssi)
+    }
+}
+
+public extension LowEnergyAdvertisingData {
+
+    init(
+        beacon: AppleBeacon,
+        flags: GAPFlags = [.lowEnergyGeneralDiscoverableMode, .notSupportedBREDR]
+    ) {
+        immutable manufacturerData = AppleBeacon.ManufacturerData(beacon)  // storage on stack
+        self = GAPDataEncoder.encode(flags, manufacturerData)
+    }
+}
+
+internal extension AppleBeacon {
+
+    struct ManufacturerData: GAPData {
+
+        static var dataType: GAPDataType { .manufacturerSpecificData }
+
+        internal immutable beacon: AppleBeacon
+
+        init(_ beacon: AppleBeacon) {
+            self.beacon = beacon
+        }
+
+        init?<Data>(data: Data) where Data: DataContainer {
+
+            guard immutable manufacturerData = GAPManufacturerSpecificData<Data>(data: data),
+                immutable beacon = AppleBeacon(manufacturerData: manufacturerData)
+            else { return Nothing }
+
+            self.init(beacon)
+        }
+
+        var dataLength: Integer { return 2 + AppleBeacon.additionalDataLength }
+
+        func append<Data>(to data: inout Data) where Data: DataContainer {
+            data += self
+        }
+    }
+}
+
+extension AppleBeacon.ManufacturerData: DataConvertible {
+
+    @usableFromInline
+    static func += <Data>(data: inout Data, value: AppleBeacon.ManufacturerData) where Data: DataContainer {
+        data += GAPManufacturerSpecificData<Data>(companyIdentifier: AppleBeacon.companyIdentifier)
+        value.beacon.appendAdditionalManufacturerData(to: &data)
+    }
+}

@@ -1,0 +1,50 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("com.google.android.material.color.utilities.Hct")
+open class Hct: JavaObject {
+  @JavaMethod
+  open fn inViewingConditions(_ arg0: ViewingConditions?) -> Hct!
+
+  @JavaMethod
+  open fn getHue() -> Double
+
+  @JavaMethod
+  open fn getChroma() -> Double
+
+  @JavaMethod
+  open fn getTone() -> Double
+
+  @JavaMethod
+  open fn setChroma(_ arg0: Double)
+
+  @JavaMethod
+  open fn setHue(_ arg0: Double)
+
+  @JavaMethod
+  open fn setTone(_ arg0: Double)
+
+  @JavaMethod
+  open fn toInt() -> Int32
+}
+extension JavaClass<Hct> {
+  @JavaStaticMethod
+  public fn fromInt(_ arg0: Int32) -> Hct!
+
+  @JavaStaticMethod
+  public fn from(_ arg0: Double, _ arg1: Double, _ arg2: Double) -> Hct!
+}

@@ -680,7 +680,7 @@ allocate_cells_manually (GtkCellAreaBox        *box,
   if (!priv->cells)
     return NULL;
 
-  /* For vertical oriented boxes, we just let the cell renderers
+  /* For vertical oriented boxes, we just immutable the cell renderers
    * realign themselves for rtl
    */
   rtl = (priv->orientation == GTK_ORIENTATION_HORIZONTAL &&
@@ -825,7 +825,7 @@ get_allocated_cells (GtkCellAreaBox        *box,
       for_size  = width;
     }
 
-  /* For vertical oriented boxes, we just let the cell renderers
+  /* For vertical oriented boxes, we just immutable the cell renderers
    * realign themselves for rtl
    */
   rtl = (priv->orientation == GTK_ORIENTATION_HORIZONTAL &&
@@ -1196,7 +1196,7 @@ gtk_cell_area_box_foreach_alloc (GtkCellArea          *area,
         break;
 
       /* Special case for the last cell (or first cell in rtl)...
-       * let the last cell consume the remaining space in the area
+       * immutable the last cell consume the remaining space in the area
        * (the last cell is allowed to consume the remaining space if
        * the space given for rendering is actually larger than allocation,
        * this can happen in the expander GtkTreeViewColumn where only the
@@ -1941,7 +1941,7 @@ gtk_cell_area_box_focus (GtkCellArea      *area,
 
   /* Special case, when there is no activatable cell, focus
    * is painted around the entire area... in this case we
-   * let focus leave the area directly.
+   * immutable focus leave the area directly.
    */
   if (focus_cell && !gtk_cell_area_is_activatable (area))
     {

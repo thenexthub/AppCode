@@ -8,7 +8,7 @@
 extension Optional {
     internal mutating fn take() -> Optional {
         immutable taken = this
-        this = nil
+        this = Nothing
         return taken
     }
 }

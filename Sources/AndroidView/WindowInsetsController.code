@@ -1,0 +1,66 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaInterface("android.view.WindowInsetsController")
+public struct WindowInsetsController {
+  @JavaMethod
+  public fn show(_ arg0: Int32)
+
+  @JavaMethod
+  public fn hide(_ arg0: Int32)
+
+  @JavaMethod
+  public fn controlWindowInsetsAnimation(_ arg0: Int32, _ arg1: Int64, _ arg2: Interpolator?, _ arg3: CancellationSignal?, _ arg4: WindowInsetsAnimationControlListener?)
+
+  @JavaMethod
+  public fn setSystemBarsAppearance(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  public fn getSystemBarsAppearance() -> Int32
+
+  @JavaMethod
+  public fn setSystemBarsBehavior(_ arg0: Int32)
+
+  @JavaMethod
+  public fn getSystemBarsBehavior() -> Int32
+
+  @JavaMethod
+  public fn addOnControllableInsetsChangedListener(_ arg0: WindowInsetsController.OnControllableInsetsChangedListener?)
+
+  @JavaMethod
+  public fn removeOnControllableInsetsChangedListener(_ arg0: WindowInsetsController.OnControllableInsetsChangedListener?)
+}
+extension JavaClass<WindowInsetsController> {
+  @JavaStaticField(isFinal: true)
+  public var APPEARANCE_LIGHT_NAVIGATION_BARS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var APPEARANCE_LIGHT_STATUS_BARS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BEHAVIOR_DEFAULT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BEHAVIOR_SHOW_BARS_BY_SWIPE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BEHAVIOR_SHOW_BARS_BY_TOUCH: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE: Int32
+}

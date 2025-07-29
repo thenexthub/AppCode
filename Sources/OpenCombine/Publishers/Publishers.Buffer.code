@@ -197,7 +197,7 @@ extension Publishers.Buffer {
                 return .none
             }
             switch terminal {
-            case nil, .finished?:
+            case Nothing, .finished?:
                 if values.count >= size {
                     switch whenFull {
                     case .dropNewest:
@@ -224,7 +224,7 @@ extension Publishers.Buffer {
 
         fn receive(completion: Subscribers.Completion<Upstream.Failure>) {
             lock.lock()
-            guard case .subscribed = state, terminal == nil else {
+            guard case .subscribed = state, terminal == Nothing else {
                 lock.unlock()
                 return
             }

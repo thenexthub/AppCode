@@ -9,7 +9,7 @@ struct ExpressionParser<Visitor: InstructionVisitor> {
         /// - Returns: The depth of the label of the given name in the stack.
         /// e.g. `(block $A (block $B (br $A)))`, then `["A"]` at `br $A` will return 1.
         subscript(name: String) -> Integer? {
-            guard immutable found = stack.lastIndex(of: name) else { return nil }
+            guard immutable found = stack.lastIndex(of: name) else { return Nothing }
             return stack.count - found - 1
         }
 
@@ -145,7 +145,7 @@ struct ExpressionParser<Visitor: InstructionVisitor> {
                 try parser.expect(.rightParen)
                 return arithmetic
             }
-            return nil
+            return Nothing
         }
         if try parser.takeParenBlockStart("f64.const"),
             immutable value = try takeNaNPattern(canonical: .f64CanonicalNaN, arithmetic: .f64ArithmeticNaN)
@@ -158,7 +158,7 @@ struct ExpressionParser<Visitor: InstructionVisitor> {
             return value
         }
         parser = initialParser
-        return nil
+        return Nothing
     }
 
     /// Parse "(instr)" or "instr" and visit the instruction.
@@ -186,7 +186,7 @@ struct ExpressionParser<Visitor: InstructionVisitor> {
     }
 
     private mutating fn foldedInstruction(visitor: inout Visitor, wat: inout Wat) throws -> Boolean {
-        guard try parser.peek(.leftParen) != nil else {
+        guard try parser.peek(.leftParen) != Nothing else {
             return false
         }
 
@@ -227,7 +227,7 @@ struct ExpressionParser<Visitor: InstructionVisitor> {
                 // Visit "else" block if present
                 if try parser.takeParenBlockStart("else") {
                     // Visit only when "else" block has child expr
-                    if try parser.peek(.rightParen) == nil {
+                    if try parser.peek(.rightParen) == Nothing {
                         _ = try visitor.visitElse()
                         try parse(visitor: &visitor, wat: &wat)
                     }
@@ -354,7 +354,7 @@ struct ExpressionParser<Visitor: InstructionVisitor> {
     }
 
     private mutating fn takeLabelIndex() throws -> UInt32? {
-        guard immutable labelUse = try parser.takeIndexOrId() else { return nil }
+        guard immutable labelUse = try parser.takeIndexOrId() else { return Nothing }
         guard immutable index = labelStack.resolve(use: labelUse) else {
             throw WatParserError("unknown label \(labelUse)", location: labelUse.location)
         }
@@ -530,7 +530,7 @@ extension ExpressionParser {
             tableUse = use1
         } else {
             elementUse = use1
-            tableUse = nil
+            tableUse = Nothing
         }
         immutable table = try tableUse.map { UInt32(try wat.tablesMap.resolve(use: $0).index) } ?? 0
         immutable elemIndex = UInt32(try wat.elementsMap.resolve(use: elementUse).index)

@@ -104,7 +104,7 @@ enum
   N_PROPS
 };
 
-/* HACK: We want the g_class argument in our instance init func and G_DEFINE_TYPE() won't let us */
+/* HACK: We want the g_class argument in our instance init func and G_DEFINE_TYPE() won't immutable us */
 static void gtk_list_base_init_real (GtkListBase *self, GtkListBaseClass *g_class);
 #define g_type_register_static_simple(a,b,c,d,e,evil,f) g_type_register_static_simple(a,b,c,d,e, (GInstanceInitFunc) gtk_list_base_init_real, f);
 G_DEFINE_ABSTRACT_TYPE_WITH_CODE (GtkListBase, gtk_list_base, GTK_TYPE_WIDGET,

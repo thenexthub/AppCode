@@ -1,0 +1,70 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.bluetooth.BluetoothGattCallback")
+open class BluetoothGattCallback: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn onMtuChanged(_ arg0: BluetoothGatt?, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn onPhyUpdate(_ arg0: BluetoothGatt?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn onPhyRead(_ arg0: BluetoothGatt?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn onDescriptorRead(_ arg0: BluetoothGatt?, _ arg1: BluetoothGattDescriptor?, _ arg2: Int32)
+
+  @JavaMethod
+  open fn onDescriptorRead(_ arg0: BluetoothGatt?, _ arg1: BluetoothGattDescriptor?, _ arg2: Int32, _ arg3: [Int8])
+
+  @JavaMethod
+  open fn onDescriptorWrite(_ arg0: BluetoothGatt?, _ arg1: BluetoothGattDescriptor?, _ arg2: Int32)
+
+  @JavaMethod
+  open fn onReadRemoteRssi(_ arg0: BluetoothGatt?, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn onServiceChanged(_ arg0: BluetoothGatt?)
+
+  @JavaMethod
+  open fn onConnectionStateChange(_ arg0: BluetoothGatt?, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn onServicesDiscovered(_ arg0: BluetoothGatt?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn onCharacteristicRead(_ arg0: BluetoothGatt?, _ arg1: BluetoothGattCharacteristic?, _ arg2: [Int8], _ arg3: Int32)
+
+  @JavaMethod
+  open fn onCharacteristicRead(_ arg0: BluetoothGatt?, _ arg1: BluetoothGattCharacteristic?, _ arg2: Int32)
+
+  @JavaMethod
+  open fn onCharacteristicWrite(_ arg0: BluetoothGatt?, _ arg1: BluetoothGattCharacteristic?, _ arg2: Int32)
+
+  @JavaMethod
+  open fn onCharacteristicChanged(_ arg0: BluetoothGatt?, _ arg1: BluetoothGattCharacteristic?)
+
+  @JavaMethod
+  open fn onCharacteristicChanged(_ arg0: BluetoothGatt?, _ arg1: BluetoothGattCharacteristic?, _ arg2: [Int8])
+
+  @JavaMethod
+  open fn onReliableWriteCompleted(_ arg0: BluetoothGatt?, _ arg1: Int32)
+}

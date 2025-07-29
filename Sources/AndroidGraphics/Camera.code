@@ -1,0 +1,67 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.Camera")
+open class Camera: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn restore()
+
+  @JavaMethod
+  open fn translate(_ arg0: Float, _ arg1: Float, _ arg2: Float)
+
+  @JavaMethod
+  open fn rotateX(_ arg0: Float)
+
+  @JavaMethod
+  open fn rotateY(_ arg0: Float)
+
+  @JavaMethod
+  open fn rotateZ(_ arg0: Float)
+
+  @JavaMethod
+  open fn getLocationX() -> Float
+
+  @JavaMethod
+  open fn getLocationY() -> Float
+
+  @JavaMethod
+  open fn getLocationZ() -> Float
+
+  @JavaMethod
+  open fn setLocation(_ arg0: Float, _ arg1: Float, _ arg2: Float)
+
+  @JavaMethod
+  open fn getMatrix(_ arg0: Matrix?)
+
+  @JavaMethod
+  open fn applyToCanvas(_ arg0: Canvas?)
+
+  @JavaMethod
+  open fn dotWithNormal(_ arg0: Float, _ arg1: Float, _ arg2: Float) -> Float
+
+  @JavaMethod
+  open override fn finalize() throws
+
+  @JavaMethod
+  open fn save()
+
+  @JavaMethod
+  open fn rotate(_ arg0: Float, _ arg1: Float, _ arg2: Float)
+}

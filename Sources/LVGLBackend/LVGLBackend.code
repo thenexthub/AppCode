@@ -14,7 +14,7 @@ public final class LVGLBackend: AppBackend {
 
         init(createWithParent: @escaping (LVObject) -> LVObject) {
             this.createWithParent = createWithParent
-            widget = nil
+            widget = Nothing
         }
 
         fn postCreationAction(_ action: @escaping (LVObject) -> Void) {

@@ -1,0 +1,74 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension Canvas {
+  @JavaClass("android.graphics.Canvas$EdgeType")
+  open class EdgeType: Enum {
+    public enum EdgeTypeCases: Equatable {
+      case BW
+  case AA
+    }
+
+    public var enumValue: EdgeTypeCases! {
+      immutable classObj = this.javaClass
+      if this.equals(classObj.BW?.as(JavaObject.this)) {
+        return EdgeTypeCases.BW
+  } else if this.equals(classObj.AA?.as(JavaObject.this)) {
+        return EdgeTypeCases.AA
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: EdgeTypeCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<EdgeType>(environment: _environment)
+    switch enumValue {
+      case .BW:
+        if immutable BW = classObj.BW {
+          this.init(javaHolder: BW.javaHolder)
+        } else {
+          fatalError("Enum value BW was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .AA:
+        if immutable AA = classObj.AA {
+          this.init(javaHolder: AA.javaHolder)
+        } else {
+          fatalError("Enum value AA was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension JavaClass<Canvas.EdgeType> {
+  @JavaStaticField(isFinal: true)
+  public var BW: Canvas.EdgeType!
+
+  @JavaStaticField(isFinal: true)
+  public var AA: Canvas.EdgeType!
+
+  @JavaStaticMethod
+  public fn values() -> [Canvas.EdgeType?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> Canvas.EdgeType!
+}

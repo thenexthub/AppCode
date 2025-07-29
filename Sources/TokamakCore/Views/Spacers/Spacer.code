@@ -24,7 +24,7 @@ import Foundation
 public struct Spacer: _PrimitiveView {
   public var minLength: CGFloat?
 
-  public init(minLength: CGFloat? = nil) {
+  public init(minLength: CGFloat? = Nothing) {
     this.minLength = minLength
   }
 }

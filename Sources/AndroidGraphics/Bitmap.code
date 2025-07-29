@@ -1,0 +1,224 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import AndroidOS
+import AndroidUtil
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.Bitmap", implements: Parcelable.this)
+open class Bitmap: JavaObject {
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getColor(_ arg0: Int32, _ arg1: Int32) -> Color!
+
+  @JavaMethod
+  open fn setWidth(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getWidth() -> Int32
+
+  @JavaMethod
+  open fn getHeight() -> Int32
+
+  @JavaMethod
+  open fn hasAlpha() -> Boolean
+
+  @JavaMethod
+  open fn getDensity() -> Int32
+
+  @JavaMethod
+  open fn setDensity(_ arg0: Int32)
+
+  @JavaMethod
+  open fn reconfigure(_ arg0: Int32, _ arg1: Int32, _ arg2: Bitmap.Config?)
+
+  @JavaMethod
+  open fn setHeight(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setConfig(_ arg0: Bitmap.Config?)
+
+  @JavaMethod
+  open fn recycle()
+
+  @JavaMethod
+  open fn isRecycled() -> Boolean
+
+  @JavaMethod
+  open fn getGenerationId() -> Int32
+
+  @JavaMethod
+  open fn isMutable() -> Boolean
+
+  @JavaMethod
+  open fn asShared() -> Bitmap!
+
+  @JavaMethod
+  open fn getNinePatchChunk() -> [Int8]
+
+  @JavaMethod
+  open fn isPremultiplied() -> Boolean
+
+  @JavaMethod
+  open fn setPremultiplied(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getScaledWidth(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn getScaledWidth(_ arg0: DisplayMetrics?) -> Int32
+
+  @JavaMethod
+  open fn getScaledWidth(_ arg0: Canvas?) -> Int32
+
+  @JavaMethod
+  open fn getScaledHeight(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn getScaledHeight(_ arg0: Canvas?) -> Int32
+
+  @JavaMethod
+  open fn getScaledHeight(_ arg0: DisplayMetrics?) -> Int32
+
+  @JavaMethod
+  open fn getRowBytes() -> Int32
+
+  @JavaMethod
+  open fn getByteCount() -> Int32
+
+  @JavaMethod
+  open fn getAllocationByteCount() -> Int32
+
+  @JavaMethod
+  open fn getConfig() -> Bitmap.Config!
+
+  @JavaMethod
+  open fn setHasAlpha(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn hasMipMap() -> Boolean
+
+  @JavaMethod
+  open fn setHasMipMap(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getColorSpace() -> ColorSpace!
+
+  @JavaMethod
+  open fn setColorSpace(_ arg0: ColorSpace?)
+
+  @JavaMethod
+  open fn eraseColor(_ arg0: Int64)
+
+  @JavaMethod
+  open fn eraseColor(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getPixel(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  open fn getPixels(_ arg0: [Int32], _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, _ arg5: Int32, _ arg6: Int32)
+
+  @JavaMethod
+  open fn setPixel(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn setPixels(_ arg0: [Int32], _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, _ arg5: Int32, _ arg6: Int32)
+
+  @JavaMethod
+  open fn extractAlpha() -> Bitmap!
+
+  @JavaMethod
+  open fn extractAlpha(_ arg0: Paint?, _ arg1: [Int32]) -> Bitmap!
+
+  @JavaMethod
+  open fn sameAs(_ arg0: Bitmap?) -> Boolean
+
+  @JavaMethod
+  open fn prepareToDraw()
+
+  @JavaMethod
+  open fn compress(_ arg0: Bitmap.CompressFormat?, _ arg1: Int32, _ arg2: OutputStream?) -> Boolean
+
+  @JavaMethod
+  open fn copy(_ arg0: Bitmap.Config?, _ arg1: Boolean) -> Bitmap!
+}
+extension JavaClass<Bitmap> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<Bitmap>!
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+
+  @JavaStaticMethod
+  public fn createScaledBitmap(_ arg0: Bitmap?, _ arg1: Int32, _ arg2: Int32, _ arg3: Boolean) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn createBitmap(_ arg0: DisplayMetrics?, _ arg1: [Int32], _ arg2: Int32, _ arg3: Int32, _ arg4: Bitmap.Config?) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn createBitmap(_ arg0: [Int32], _ arg1: Int32, _ arg2: Int32, _ arg3: Bitmap.Config?) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn createBitmap(_ arg0: DisplayMetrics?, _ arg1: [Int32], _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, _ arg5: Int32, _ arg6: Bitmap.Config?) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn createBitmap(_ arg0: Picture?) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn createBitmap(_ arg0: Picture?, _ arg1: Int32, _ arg2: Int32, _ arg3: Bitmap.Config?) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn createBitmap(_ arg0: Bitmap?) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn createBitmap(_ arg0: DisplayMetrics?, _ arg1: Int32, _ arg2: Int32, _ arg3: Bitmap.Config?) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn createBitmap(_ arg0: Int32, _ arg1: Int32, _ arg2: Bitmap.Config?) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn createBitmap(_ arg0: Bitmap?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, _ arg5: Matrix?, _ arg6: Boolean) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn createBitmap(_ arg0: Bitmap?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn createBitmap(_ arg0: [Int32], _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, _ arg5: Bitmap.Config?) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn createBitmap(_ arg0: DisplayMetrics?, _ arg1: Int32, _ arg2: Int32, _ arg3: Bitmap.Config?, _ arg4: Boolean, _ arg5: ColorSpace?) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn createBitmap(_ arg0: DisplayMetrics?, _ arg1: Int32, _ arg2: Int32, _ arg3: Bitmap.Config?, _ arg4: Boolean) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn createBitmap(_ arg0: Int32, _ arg1: Int32, _ arg2: Bitmap.Config?, _ arg3: Boolean, _ arg4: ColorSpace?) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn createBitmap(_ arg0: Int32, _ arg1: Int32, _ arg2: Bitmap.Config?, _ arg3: Boolean) -> Bitmap!
+}

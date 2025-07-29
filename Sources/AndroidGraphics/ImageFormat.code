@@ -1,0 +1,95 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.ImageFormat")
+open class ImageFormat: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+}
+extension JavaClass<ImageFormat> {
+  @JavaStaticField(isFinal: true)
+  public var DEPTH16: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DEPTH_JPEG: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DEPTH_POINT_CLOUD: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLEX_RGBA_8888: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLEX_RGB_888: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var HEIC: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var JPEG: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NV16: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NV21: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PRIVATE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RAW10: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RAW12: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RAW_PRIVATE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RAW_SENSOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RGB_565: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var UNKNOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var Y8: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var YCBCR_P010: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var YUV_420_888: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var YUV_422_888: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var YUV_444_888: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var YUY2: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var YV12: Int32
+
+  @JavaStaticMethod
+  public fn getBitsPerPixel(_ arg0: Int32) -> Int32
+}

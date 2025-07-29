@@ -51,7 +51,7 @@ extension UIKitBackend {
             listView.selectRow(
                 at: IndexPath(indexes: [0, index]), animated: false, scrollPosition: .none)
         } else {
-            listView.selectRow(at: nil, animated: false, scrollPosition: .none)
+            listView.selectRow(at: Nothing, animated: false, scrollPosition: .none)
         }
     }
 }
@@ -99,7 +99,7 @@ class UICustomTableViewDelegate: NSObject, UITableViewDelegate, UITableViewDataS
             selectionHandler?(path.row)
             return path
         } else {
-            return nil
+            return Nothing
         }
     }
 }

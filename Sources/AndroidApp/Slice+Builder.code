@@ -1,0 +1,52 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+extension Slice {
+  @JavaClass("android.app.slice.Slice$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Slice.Builder?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn addRemoteInput(_ arg0: RemoteInput?, _ arg1: String, _ arg2: List<JavaString>?) -> Slice.Builder!
+
+  @JavaMethod
+  open fn setCallerNeeded(_ arg0: Boolean) -> Slice.Builder!
+
+  @JavaMethod
+  open fn addHints(_ arg0: List<JavaString>?) -> Slice.Builder!
+
+  @JavaMethod
+  open fn addSubSlice(_ arg0: Slice?, _ arg1: String) -> Slice.Builder!
+
+  @JavaMethod
+  open fn addText(_ arg0: CharSequence?, _ arg1: String, _ arg2: List<JavaString>?) -> Slice.Builder!
+
+  @JavaMethod
+  open fn addInt(_ arg0: Int32, _ arg1: String, _ arg2: List<JavaString>?) -> Slice.Builder!
+
+  @JavaMethod
+  open fn addLong(_ arg0: Int64, _ arg1: String, _ arg2: List<JavaString>?) -> Slice.Builder!
+
+  @JavaMethod
+  open fn addAction(_ arg0: PendingIntent?, _ arg1: Slice?, _ arg2: String) -> Slice.Builder!
+
+  @JavaMethod
+  open fn build() -> Slice!
+  }
+}

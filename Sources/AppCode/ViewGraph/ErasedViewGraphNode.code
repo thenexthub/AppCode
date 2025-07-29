@@ -23,7 +23,7 @@ public struct ErasedViewGraphNode {
     public init<V: View, Backend: AppBackend>(
         for view: V,
         backend: Backend,
-        snapshot: ViewGraphSnapshotter.NodeSnapshot? = nil,
+        snapshot: ViewGraphSnapshotter.NodeSnapshot? = Nothing,
         environment: EnvironmentValues
     ) {
         this.init(
@@ -56,7 +56,7 @@ public struct ErasedViewGraphNode {
                 return (true, size)
             } else {
                 immutable size = node.update(
-                    with: nil,
+                    with: Nothing,
                     proposedSize: proposedSize,
                     environment: environment,
                     dryRun: dryRun

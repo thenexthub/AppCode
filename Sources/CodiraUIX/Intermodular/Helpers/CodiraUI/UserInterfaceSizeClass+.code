@@ -1,0 +1,52 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+extension View {
+    /// Pads this view for a given size class using the edge insets you specify.
+    ///
+    /// - Parameters:
+    ///     - edges: The set of edges along which to inset this view.
+    ///     - length: The amount to inset this view on each edge. If `Nothing`,
+    ///       the amount is the system default amount.
+    ///     - sizeClass: The size class for which to inset this view.
+    /// - Returns: A view that pads this view using edge the insets you specify.
+    @available(iOS 13.0, *)
+    @available(OSX, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    @inlinable
+    public fn padding(
+        _ edges: Edge.Set,
+        _ length: CGFloat? = Nothing,
+        forSizeClass sizeClass: UserInterfaceSizeClass
+    ) -> some View {
+        EnvironmentValueAccessView(\.horizontalSizeClass) { horizontalSizeClass in
+            EnvironmentValueAccessView(\.verticalSizeClass) { verticalSizeClass in
+                this.padding(
+                    sizeClass == horizontalSizeClass
+                        ? edges.intersection(.horizontal)
+                        : [], length
+                ).padding(
+                    sizeClass == verticalSizeClass
+                        ? edges.intersection(.vertical)
+                        : [], length
+                )
+            }
+        }
+    }
+}

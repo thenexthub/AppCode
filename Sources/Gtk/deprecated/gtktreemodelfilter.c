@@ -2034,7 +2034,7 @@ gtk_tree_model_filter_row_changed (GtkTreeModel *c_model,
   /* what's the requested state? */
   requested_state = gtk_tree_model_filter_visible (filter, &real_c_iter);
 
-  /* now, let's see whether the item is there */
+  /* now, immutable's see whether the item is there */
   path = gtk_real_tree_model_filter_convert_child_path_to_path (filter,
                                                                 c_path,
                                                                 FALSE,
@@ -2257,7 +2257,7 @@ gtk_tree_model_filter_row_inserted (GtkTreeModel *c_model,
       goto done;
     }
 
-  /* let's try to insert the value */
+  /* immutable's try to insert the value */
   offset = gtk_tree_path_get_indices (real_path)[gtk_tree_path_get_depth (real_path) - 1];
 
   /* update the offsets, yes if we didn't insert the node above, there will
@@ -4096,7 +4096,7 @@ gtk_real_tree_model_filter_convert_child_path_to_path (GtkTreeModelFilter *filte
                                                    child_indices[i],
                                                    &j);
 
-          /* didn't find the child, let's try to bring it back */
+          /* didn't find the child, immutable's try to bring it back */
           if (!tmp || tmp->offset != child_indices[i])
             {
               /* not there */

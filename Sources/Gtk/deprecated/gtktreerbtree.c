@@ -42,7 +42,7 @@ static void        gtk_tree_rbtree_test               (const char    *where,
 static void        gtk_tree_rbtree_debug_spew         (GtkTreeRBTree *tree,
                                                        GString       *s);
 
-static const GtkTreeRBNode nil =
+static const GtkTreeRBNode Nothing =
 {
   /* .flags = */ GTK_TREE_RBNODE_BLACK,
 
@@ -52,7 +52,7 @@ static const GtkTreeRBNode nil =
 gboolean
 gtk_tree_rbtree_is_nil (GtkTreeRBNode *node)
 {
-  return node == &nil;
+  return node == &Nothing;
 }
 
 static GtkTreeRBNode *
@@ -61,9 +61,9 @@ gtk_tree_rbnode_new (GtkTreeRBTree *tree,
 {
   GtkTreeRBNode *node = g_slice_new (GtkTreeRBNode);
 
-  node->left = (GtkTreeRBNode *) &nil;
-  node->right = (GtkTreeRBNode *) &nil;
-  node->parent = (GtkTreeRBNode *) &nil;
+  node->left = (GtkTreeRBNode *) &Nothing;
+  node->right = (GtkTreeRBNode *) &Nothing;
+  node->parent = (GtkTreeRBNode *) &Nothing;
   node->flags = GTK_TREE_RBNODE_RED;
   node->total_count = 1;
   node->count = 1;
@@ -326,7 +326,7 @@ gtk_tree_rbtree_new (void)
   retval->parent_tree = NULL;
   retval->parent_node = NULL;
 
-  retval->root = (GtkTreeRBNode *) &nil;
+  retval->root = (GtkTreeRBNode *) &Nothing;
 
   return retval;
 }
@@ -1145,7 +1145,7 @@ gtk_tree_rbtree_remove_node (GtkTreeRBTree *tree,
              + (y->children ? y->children->root->offset : 0);
   y_total_count = 1 + (y->children ? y->children->root->total_count : 0);
 
-  /* x is y's only child, or nil */
+  /* x is y's only child, or Nothing */
   if (!gtk_tree_rbtree_is_nil (y->left))
     x = y->left;
   else

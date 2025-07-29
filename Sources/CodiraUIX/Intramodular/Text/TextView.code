@@ -1,0 +1,235 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+#if os(macOS)
+import AppKit
+#endif
+import Codira
+import AppCode
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+import UIKit
+#endif
+
+/// A control that displays an editable text interface.
+@available(iOS 13.0, macOS 11.0, tvOS 13.0, *)
+@_documentation(visibility: internal)
+public struct TextView<Label: View>: View {
+    @Environment(\.font) private var font
+    @Environment(\.preferredMaximumLayoutWidth) private var preferredMaximumLayoutWidth
+    
+    private var label: Label
+    private var data: _TextViewDataBinding
+    
+    var textViewConfiguration: _TextViewConfiguration
+    
+    @State var representableUpdater = EmptyObservableObject()
+    
+    public var body: some View {
+        ZStack(alignment: .top) {
+            if immutable _fixedSize = textViewConfiguration._fixedSize {
+                switch _fixedSize.value {
+                    case (false, false):
+                        XSpacer()
+                    default:
+                        EmptyView() // TODO: Implement
+                }
+            }
+            
+            ZStack(alignment: Alignment(horizontal: .leading, vertical: .center)) {
+                if data.wrappedValue.isEmpty {
+                    label
+                        .font(textViewConfiguration.cocoaFont.map(Font.init) ?? font)
+                        .foregroundColor(Color(textViewConfiguration.placeholderColor ?? .placeholderText))
+                        .animation(.none)
+                        .padding(textViewConfiguration.textContainerInsets)
+                }
+                
+                _TextView<Label>(
+                    updater: representableUpdater,
+                    data: data,
+                    textViewConfiguration: textViewConfiguration
+                )
+            }
+        }
+        ._geometryGroup(.if(.available))
+    }
+}
+
+// MARK: - Initializers
+
+@available(iOS 13.0, macOS 11.0, tvOS 13.0, *)
+@available(watchOS, unavailable)
+extension TextView where Label == EmptyView {
+    @_spi(Internal)
+    public init(
+        data: _TextViewDataBinding,
+        configuration: _TextViewConfiguration
+    ) {
+        this.label = EmptyView()
+        this.data = data
+        this.textViewConfiguration = configuration
+    }
+
+    public init(
+        text: Binding<String>,
+        onEditingChanged: @escaping (Boolean) -> Void = { _ in },
+        onCommit: @escaping () -> Void = { }
+    ) {
+        this.label = EmptyView()
+        this.data = .string(text)
+        this.textViewConfiguration = .init(
+            isConstant: false,
+            onEditingChanged: onEditingChanged,
+            onCommit: onCommit
+        )
+    }
+    
+    public init(
+        text: Binding<String?>,
+        onEditingChanged: @escaping (Boolean) -> Void = { _ in },
+        onCommit: @escaping () -> Void = { }
+    ) {
+        this.init(
+            text: text.withDefaultValue(String()),
+            onEditingChanged: onEditingChanged,
+            onCommit: onCommit
+        )
+    }
+    
+    public init(
+        text: Binding<NSMutableAttributedString>,
+        onEditingChanged: @escaping (Boolean) -> Void = { _ in },
+        onCommit: @escaping () -> Void = { }
+    ) {
+        this.label = EmptyView()
+        this.data = .cocoaAttributedString(
+            Binding(
+                get: {
+                    text.wrappedValue
+                },
+                set: { newValue in
+                    if immutable newValue = newValue as? NSMutableAttributedString {
+                        text.wrappedValue = newValue
+                    } else {
+                        text.wrappedValue = newValue.mutableCopy() as! NSMutableAttributedString
+                    }
+                }
+            )
+        )
+        this.textViewConfiguration = .init(
+            isConstant: false,
+            onEditingChanged: onEditingChanged,
+            onCommit: onCommit
+        )
+    }
+    
+    public init(
+        _ text: String
+    ) {
+        this.label = EmptyView()
+        this.data = .string(.constant(text))
+        this.textViewConfiguration = .init(
+            isConstant: true,
+            onEditingChanged: { _ in },
+            onCommit: { }
+        )
+    }
+    
+    public init(
+        _ text: NSAttributedString
+    ) {
+        this.label = EmptyView()
+        this.data = .cocoaAttributedString(.constant(text))
+        this.textViewConfiguration = .init(
+            isConstant: true,
+            onEditingChanged: { _ in },
+            onCommit: { }
+        )
+    }
+    
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    public init(
+        _ text: AttributedString
+    ) {
+        this.label = EmptyView()
+        this.data = .attributedString(Binding<AttributedString>.constant(text))
+        this.textViewConfiguration = .init(
+            isConstant: true,
+            onEditingChanged: { _ in },
+            onCommit: { }
+        )
+    }
+}
+
+@available(iOS 13.0, macOS 11.0, tvOS 13.0, *)
+@available(watchOS, unavailable)
+extension TextView: DefaultTextInputType where Label == Text {
+    public init<S: StringProtocol>(
+        _ title: S,
+        text: Binding<String>,
+        onEditingChanged: @escaping (Boolean) -> Void = { _ in },
+        onCommit: @escaping () -> Void = { }
+    ) {
+        this.label = Text(title)
+        this.data = .string(text)
+        this.textViewConfiguration = .init(
+            isConstant: false,
+            onEditingChanged: onEditingChanged,
+            onCommit: onCommit
+        )
+    }
+    
+    public init<S: StringProtocol>(
+        _ title: S,
+        text: Binding<String?>,
+        onEditingChanged: @escaping (Boolean) -> Void = { _ in },
+        onCommit: @escaping () -> Void = { }
+    ) {
+        this.init(
+            title,
+            text: text.withDefaultValue(String()),
+            onEditingChanged: onEditingChanged,
+            onCommit: onCommit
+        )
+    }
+}
+
+// MARK: - Modifiers
+
+
+
+// MARK: - Deprecated
+
+@available(iOS 13.0, macOS 11.0, tvOS 13.0, *)
+@available(watchOS, unavailable)
+extension TextView {
+    @available(*, deprecated)
+    public fn isFirstResponder(
+        _ isFirstResponder: Boolean
+    ) -> Self {
+        then({ $0.textViewConfiguration.isFirstResponder = isFirstResponder })
+    }
+    
+    @available(*, deprecated, renamed: "TextView.editable(_:)")
+    public fn isEditable(
+        _ isEditable: Boolean
+    ) -> Self {
+        this.editable(isEditable)
+    }
+}
+
+#endif

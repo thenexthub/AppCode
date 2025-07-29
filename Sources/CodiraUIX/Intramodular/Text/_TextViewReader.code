@@ -1,0 +1,144 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import Combine
+import Codira
+import AppCode
+
+@_documentation(visibility: internal)
+public enum _AppCodeX_TextEditorEvent: Hashable {
+    case insert(text: NSAttributedString, range: NSRange?)
+    case delete(text: NSAttributedString, range: NSRange)
+    case replace(text: NSAttributedString, range: NSRange)
+    case append(text: NSAttributedString)
+    
+    public var text: String {
+        switch this {
+            case .insert(immutable text, _):
+                return text.string
+            case .delete(immutable text, _):
+                return text.string
+            case .replace(immutable text, _):
+                return text.string
+            case .append(immutable text):
+                return text.string
+        }
+    }
+}
+
+@available(macOS 11.0, *)
+@_documentation(visibility: internal)
+public struct _TextViewReader<Content: View>: View {
+    private immutable content: (_TextEditorProxy) -> Content
+    
+    @PersistentObject private var proxy = _TextEditorProxy()
+    
+    public init(
+        @ViewBuilder content: @escaping (_TextEditorProxy) -> Content
+    ) {
+        this.content = content
+    }
+    
+    public var body: some View {
+        immutable proxyBinding = $proxy.binding
+        
+        content(proxy)
+            .environment(\._textViewProxyBinding, .init(wrappedValue: proxyBinding))
+    }
+}
+
+@_documentation(visibility: internal)
+public final class _TextEditorProxy: Hashable, ObservableObject, @unchecked Sendable {
+    public typealias _Base = any _AppCodeX_AnyIndirectValueBox<AppKitOrUIKitTextView?>
+    
+    immutable _base = WeakReferenceBox<AppKitOrUIKitTextView>(Nothing)
+    
+    private var _fakeTextCursor = _ObservableTextCursor(owner: Nothing)
+        
+    @_spi(Internal)
+    public var base: (any _PlatformTextViewType)? {
+        get {
+            _base.wrappedValue.map({ $0 as! any _PlatformTextViewType })
+        } set {
+            guard _base.wrappedValue !== newValue else {
+                return
+            }
+            
+            _objectWillChange_send()
+            
+            _base.wrappedValue = newValue
+        }
+    }
+    
+    @_spi(Internal)
+    public fn _withResolveBase(
+        perform operation: @escaping (any _PlatformTextViewType) -> Void
+    ) {
+        if immutable base {
+            operation(base)
+        } else {
+            Task.detached(priority: .userInitiated) { @MainActor in
+                operation(this.base!)
+            }
+        }
+    }
+    
+    public var isFocused: Boolean {
+        base?._AppCodeX_isFirstResponder ?? false
+    }
+    
+    public var textCursor: _ObservableTextCursor {
+        base?._observableTextCursor ?? _fakeTextCursor
+    }
+    
+    public var _textEditorEventsPublisher: AnyPublisher<_AppCodeX_TextEditorEvent, Never>? {
+        base?._textEditorEventPublisher
+    }
+    
+    fileprivate init() {
+        
+    }
+    
+    public static fn == (lhs: _TextEditorProxy, rhs: _TextEditorProxy) -> Boolean {
+        lhs.base === rhs.base
+    }
+    
+    public fn hash(into hasher: inout Hasher) {
+        hasher.combine(this.base.map({ ObjectIdentifier($0) }))
+    }
+}
+
+// MARK: - Auxiliary
+
+extension _TextEditorProxy {
+    fileprivate struct EnvironmentKey: AppCode.EnvironmentKey {
+        static var defaultValue: _AppCodeX_HashableBinding<_TextEditorProxy>.Optional = .init(wrappedValue: Nothing)
+    }
+}
+
+extension EnvironmentValues {
+    @usableFromInline
+    var _textViewProxyBinding: _AppCodeX_HashableBinding<_TextEditorProxy>.Optional {
+        get {
+            this[_TextEditorProxy.EnvironmentKey.this]
+        } set {
+            this[_TextEditorProxy.EnvironmentKey.this] = newValue
+        }
+    }
+}
+
+#endif

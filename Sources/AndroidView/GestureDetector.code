@@ -1,0 +1,54 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.view.GestureDetector")
+open class GestureDetector: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: GestureDetector.OnGestureListener?, _ arg1: Handler?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: GestureDetector.OnGestureListener?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: GestureDetector.OnGestureListener?, _ arg2: Handler?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: GestureDetector.OnGestureListener?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: GestureDetector.OnGestureListener?, _ arg2: Handler?, _ arg3: Boolean, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn onGenericMotionEvent(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  open fn onTouchEvent(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  open fn setOnDoubleTapListener(_ arg0: GestureDetector.OnDoubleTapListener?)
+
+  @JavaMethod
+  open fn setContextClickListener(_ arg0: GestureDetector.OnContextClickListener?)
+
+  @JavaMethod
+  open fn setIsLongpressEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isLongpressEnabled() -> Boolean
+}

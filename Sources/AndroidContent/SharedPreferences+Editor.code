@@ -1,0 +1,52 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+extension SharedPreferences {
+  @JavaInterface("android.content.SharedPreferences$Editor")
+  public struct Editor {
+  @JavaMethod
+  public fn putString(_ arg0: String, _ arg1: String) -> SharedPreferences.Editor!
+
+  @JavaMethod
+  public fn putStringSet(_ arg0: String, _ arg1: JavaSet<JavaString>?) -> SharedPreferences.Editor!
+
+  @JavaMethod
+  public fn remove(_ arg0: String) -> SharedPreferences.Editor!
+
+  @JavaMethod
+  public fn putBoolean(_ arg0: String, _ arg1: Boolean) -> SharedPreferences.Editor!
+
+  @JavaMethod
+  public fn putInt(_ arg0: String, _ arg1: Int32) -> SharedPreferences.Editor!
+
+  @JavaMethod
+  public fn putLong(_ arg0: String, _ arg1: Int64) -> SharedPreferences.Editor!
+
+  @JavaMethod
+  public fn putFloat(_ arg0: String, _ arg1: Float) -> SharedPreferences.Editor!
+
+  @JavaMethod
+  public fn clear() -> SharedPreferences.Editor!
+
+  @JavaMethod
+  public fn commit() -> Boolean
+
+  @JavaMethod
+  public fn apply()
+  }
+}

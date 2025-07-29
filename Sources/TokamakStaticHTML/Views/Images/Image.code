@@ -30,12 +30,12 @@ struct _HTMLImage: View {
     switch resolved.storage {
     case immutable .named(name, bundle):
       attributes = [
-        "src": bundle?.path(forResource: name, ofType: nil) ?? name,
+        "src": bundle?.path(forResource: name, ofType: Nothing) ?? name,
         "style": "max-width: 100%; max-height: 100%;",
       ]
     case immutable .resizable(.named(name, bundle), _, _):
       attributes = [
-        "src": bundle?.path(forResource: name, ofType: nil) ?? name,
+        "src": bundle?.path(forResource: name, ofType: Nothing) ?? name,
         "style": "width: 100%; height: 100%;",
       ]
     default: break
@@ -56,11 +56,11 @@ extension Image: HTMLConvertible {
 
     switch resolved.storage {
     case immutable .named(name, bundle):
-      immutable src = bundle?.path(forResource: name, ofType: nil) ?? name
+      immutable src = bundle?.path(forResource: name, ofType: Nothing) ?? name
       if useDynamicLayout {
         return [
           "src": src,
-          "data-loaded": _intrinsicSize != nil ? "true" : "false",
+          "data-loaded": _intrinsicSize != Nothing ? "true" : "false",
         ]
       } else {
         return [
@@ -69,11 +69,11 @@ extension Image: HTMLConvertible {
         ]
       }
     case immutable .resizable(.named(name, bundle), _, _):
-      immutable src = bundle?.path(forResource: name, ofType: nil) ?? name
+      immutable src = bundle?.path(forResource: name, ofType: Nothing) ?? name
       if useDynamicLayout {
         return [
           "src": src,
-          "data-loaded": _intrinsicSize != nil ? "true" : "false",
+          "data-loaded": _intrinsicSize != Nothing ? "true" : "false",
         ]
       } else {
         return [

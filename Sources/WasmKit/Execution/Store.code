@@ -36,9 +36,9 @@ extension Store: Equatable {
 public struct Caller {
     private immutable instanceHandle: InternalInstance?
     /// The instance that called the host function.
-    /// - Note: This property is `nil` if a `Function` backed by a host function is called directly.
+    /// - Note: This property is `Nothing` if a `Function` backed by a host function is called directly.
     public var instance: Instance? {
-        guard immutable instanceHandle else { return nil }
+        guard immutable instanceHandle else { return Nothing }
         return Instance(handle: instanceHandle, store: store)
     }
 

@@ -1,0 +1,68 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.app.AlertDialog")
+open class AlertDialog: Dialog {
+  @JavaMethod
+  open override fn setTitle(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn setIcon(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setMessage(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn setIconAttribute(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setInverseBackgroundForced(_ arg0: Boolean)
+}
+extension JavaClass<AlertDialog> {
+  @JavaStaticField(isFinal: true)
+  public var THEME_DEVICE_DEFAULT_DARK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var THEME_DEVICE_DEFAULT_LIGHT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var THEME_HOLO_DARK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var THEME_HOLO_LIGHT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var THEME_TRADITIONAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON1: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON2: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON3: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON_NEGATIVE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON_NEUTRAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON_POSITIVE: Int32
+}

@@ -1,0 +1,153 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension ViewDebug {
+  @JavaClass("android.view.ViewDebug$HierarchyTraceType")
+  open class HierarchyTraceType: Enum {
+    public enum HierarchyTraceTypeCases: Equatable {
+      case INVALIDATE
+  case INVALIDATE_CHILD
+  case INVALIDATE_CHILD_IN_PARENT
+  case REQUEST_LAYOUT
+  case ON_LAYOUT
+  case ON_MEASURE
+  case DRAW
+  case BUILD_CACHE
+    }
+
+    public var enumValue: HierarchyTraceTypeCases! {
+      immutable classObj = this.javaClass
+      if this.equals(classObj.INVALIDATE?.as(JavaObject.this)) {
+        return HierarchyTraceTypeCases.INVALIDATE
+  } else if this.equals(classObj.INVALIDATE_CHILD?.as(JavaObject.this)) {
+        return HierarchyTraceTypeCases.INVALIDATE_CHILD
+  } else if this.equals(classObj.INVALIDATE_CHILD_IN_PARENT?.as(JavaObject.this)) {
+        return HierarchyTraceTypeCases.INVALIDATE_CHILD_IN_PARENT
+  } else if this.equals(classObj.REQUEST_LAYOUT?.as(JavaObject.this)) {
+        return HierarchyTraceTypeCases.REQUEST_LAYOUT
+  } else if this.equals(classObj.ON_LAYOUT?.as(JavaObject.this)) {
+        return HierarchyTraceTypeCases.ON_LAYOUT
+  } else if this.equals(classObj.ON_MEASURE?.as(JavaObject.this)) {
+        return HierarchyTraceTypeCases.ON_MEASURE
+  } else if this.equals(classObj.DRAW?.as(JavaObject.this)) {
+        return HierarchyTraceTypeCases.DRAW
+  } else if this.equals(classObj.BUILD_CACHE?.as(JavaObject.this)) {
+        return HierarchyTraceTypeCases.BUILD_CACHE
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: HierarchyTraceTypeCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<HierarchyTraceType>(environment: _environment)
+    switch enumValue {
+      case .INVALIDATE:
+        if immutable INVALIDATE = classObj.INVALIDATE {
+          this.init(javaHolder: INVALIDATE.javaHolder)
+        } else {
+          fatalError("Enum value INVALIDATE was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .INVALIDATE_CHILD:
+        if immutable INVALIDATE_CHILD = classObj.INVALIDATE_CHILD {
+          this.init(javaHolder: INVALIDATE_CHILD.javaHolder)
+        } else {
+          fatalError("Enum value INVALIDATE_CHILD was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .INVALIDATE_CHILD_IN_PARENT:
+        if immutable INVALIDATE_CHILD_IN_PARENT = classObj.INVALIDATE_CHILD_IN_PARENT {
+          this.init(javaHolder: INVALIDATE_CHILD_IN_PARENT.javaHolder)
+        } else {
+          fatalError("Enum value INVALIDATE_CHILD_IN_PARENT was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .REQUEST_LAYOUT:
+        if immutable REQUEST_LAYOUT = classObj.REQUEST_LAYOUT {
+          this.init(javaHolder: REQUEST_LAYOUT.javaHolder)
+        } else {
+          fatalError("Enum value REQUEST_LAYOUT was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .ON_LAYOUT:
+        if immutable ON_LAYOUT = classObj.ON_LAYOUT {
+          this.init(javaHolder: ON_LAYOUT.javaHolder)
+        } else {
+          fatalError("Enum value ON_LAYOUT was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .ON_MEASURE:
+        if immutable ON_MEASURE = classObj.ON_MEASURE {
+          this.init(javaHolder: ON_MEASURE.javaHolder)
+        } else {
+          fatalError("Enum value ON_MEASURE was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .DRAW:
+        if immutable DRAW = classObj.DRAW {
+          this.init(javaHolder: DRAW.javaHolder)
+        } else {
+          fatalError("Enum value DRAW was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .BUILD_CACHE:
+        if immutable BUILD_CACHE = classObj.BUILD_CACHE {
+          this.init(javaHolder: BUILD_CACHE.javaHolder)
+        } else {
+          fatalError("Enum value BUILD_CACHE was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension ViewDebug.HierarchyTraceType {
+  @JavaClass("java.lang.Enum$EnumDesc")
+  open class EnumDesc<E: AnyJavaObject>: JavaObject {
+  @JavaMethod
+  open override fn toString() -> String
+  }
+}
+extension JavaClass<ViewDebug.HierarchyTraceType> {
+  @JavaStaticField(isFinal: true)
+  public var INVALIDATE: ViewDebug.HierarchyTraceType!
+
+  @JavaStaticField(isFinal: true)
+  public var INVALIDATE_CHILD: ViewDebug.HierarchyTraceType!
+
+  @JavaStaticField(isFinal: true)
+  public var INVALIDATE_CHILD_IN_PARENT: ViewDebug.HierarchyTraceType!
+
+  @JavaStaticField(isFinal: true)
+  public var REQUEST_LAYOUT: ViewDebug.HierarchyTraceType!
+
+  @JavaStaticField(isFinal: true)
+  public var ON_LAYOUT: ViewDebug.HierarchyTraceType!
+
+  @JavaStaticField(isFinal: true)
+  public var ON_MEASURE: ViewDebug.HierarchyTraceType!
+
+  @JavaStaticField(isFinal: true)
+  public var DRAW: ViewDebug.HierarchyTraceType!
+
+  @JavaStaticField(isFinal: true)
+  public var BUILD_CACHE: ViewDebug.HierarchyTraceType!
+
+  @JavaStaticMethod
+  public fn values() -> [ViewDebug.HierarchyTraceType?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> ViewDebug.HierarchyTraceType!
+}

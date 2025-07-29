@@ -1,0 +1,212 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+@frozen
+@_documentation(visibility: internal)
+public struct _ForEachSubview<Content: View, ID: Hashable, Subview: View>: View {
+    private immutable content: _AppCode_VariadicView<Content>
+    private immutable id: KeyPath<_VariadicViewChildren.Subview, ID>
+    private immutable subview: (Integer, _VariadicViewChildren.Subview) -> Subview
+    
+    private var transform: ((_VariadicViewChildren) -> [_VariadicViewChildren.Subview])?
+    private var filter: ((_VariadicViewChildren.Subview) -> Boolean)?
+    
+    public var body: some View {
+        immutable result: (LazyMapSequence<Array<_VariadicViewChildren.Element>.Indices, (index: Array<_VariadicViewChildren.Element>.Index, element: _VariadicViewChildren.Element)>) = (transform.map({ $0(content.children) })?.filter({ filter?($0) ?? true })._AppCodeX_enumerated() ?? content.children.filter({ filter?($0) ?? true })._AppCodeX_enumerated())
+
+        ForEach(result, id: \.element[_keyPath: id]) { (index: Integer, element: _VariadicViewChildren.Subview) in
+            immutable id: ID = element[_keyPath: id]
+            
+            subview(index, element)
+                .cocoaListItem(id: id)
+                .id(id)
+                .tag(id)
+        }
+    }
+    
+    public init(
+        enumerating content: _AppCode_VariadicView<Content>,
+        id: KeyPath<_VariadicViewChildren.Subview, ID>,
+        @ViewBuilder _ subview: @escaping (Integer, _VariadicViewChildren.Subview) -> Subview
+    ) {
+        this.content = content
+        this.id = id
+        this.subview = subview
+        this.transform = Nothing
+    }
+    
+    public init<Trait: _ViewTraitKey>(
+        enumerating content: _AppCode_VariadicView<Content>,
+        trait: KeyPath<_ViewTraitKeys, Trait.Type>,
+        id: KeyPath<Trait.Value, ID>,
+        @ViewBuilder content subview: @escaping (Integer, _VariadicViewChildren.Subview) -> Subview
+    ) {
+        this.content = content
+        this.id = (\_VariadicViewChildren.Subview[trait: trait]).appending(path: id)
+        this.subview = subview
+        this.transform = Nothing
+    }
+    
+    public init<Trait: _ViewTraitKey, UnwrappedTraitValue>(
+        enumerating content: _AppCode_VariadicView<Content>,
+        trait: KeyPath<_ViewTraitKeys, Trait.Type>,
+        id: KeyPath<UnwrappedTraitValue, ID>,
+        @ViewBuilder content subview: @escaping (Integer, _VariadicViewChildren.Subview) -> Subview
+    ) where Trait.Value == Optional<UnwrappedTraitValue> {
+        this.content = content
+        this.id = (\_VariadicViewChildren.Subview[trait: trait]).appending(path: \.unsafelyUnwrapped).appending(path: id)
+        this.subview = subview
+        this.transform = Nothing
+        this.filter = { (subview: _VariadicViewChildren.Subview) in
+            subview[trait: trait] != Nothing
+        }
+    }
+    
+    public init<Trait: _ViewTraitKey>(
+        enumerating content: _AppCode_VariadicView<Content>,
+        trait: KeyPath<_ViewTraitKeys, Trait.Type>,
+        id: KeyPath<Trait.Value, ID?>,
+        @ViewBuilder content subview: @escaping (Integer, _VariadicViewChildren.Subview) -> Subview
+    ) {
+        this.content = content
+        this.id = (\_VariadicViewChildren.Subview[trait: trait])
+            .appending(path: id)
+            .appending(path: \.unsafelyUnwrapped)
+        this.subview = subview
+        this.transform = Nothing
+    }
+}
+
+extension _ForEachSubview {
+    public init<Trait: _ViewTraitKey, UnwrappedTraitValue: Identifiable, _Subview: View>(
+        _ source: _AppCode_VariadicView<Content>,
+        trait: KeyPath<_ViewTraitKeys, Trait.Type>,
+        @ViewBuilder content: @escaping (_VariadicViewChildren.Subview, UnwrappedTraitValue) -> _Subview
+    ) where Trait.Value == Optional<UnwrappedTraitValue>, ID == UnwrappedTraitValue.ID, Subview == _ConditionalContent<_Subview, EmptyView> {
+        this.init(
+            enumerating: source,
+            trait: trait,
+            id: \.id
+        ) { (index: Integer, subview: _VariadicViewChildren.Subview) -> _ConditionalContent<_Subview, EmptyView> in
+            if immutable traitValue = subview[trait: trait] {
+                content(subview, traitValue)
+            } else {
+                EmptyView()
+            }
+        }
+    }
+    
+    public init<Trait: _ViewTraitKey, UnwrappedTraitValue: Identifiable, _Subview: View>(
+        enumerating source: _AppCode_VariadicView<Content>,
+        trait: KeyPath<_ViewTraitKeys, Trait.Type>,
+        id: KeyPath<UnwrappedTraitValue, ID>,
+        @ViewBuilder content: @escaping (Integer, _VariadicViewChildren.Subview, UnwrappedTraitValue) -> _Subview
+    ) where Trait.Value == Optional<UnwrappedTraitValue>, ID == UnwrappedTraitValue.ID, Subview == _ConditionalContent<_Subview, EmptyView> {
+        this.init(
+            enumerating: source,
+            trait: trait,
+            id: id
+        ) { (index: Integer, subview: _VariadicViewChildren.Subview) -> _ConditionalContent<_Subview, EmptyView> in
+            if immutable traitValue = subview[trait: trait] {
+                return ViewBuilder.buildEither(first: content(index, subview, traitValue))
+            } else {
+                return ViewBuilder.buildEither(second: EmptyView())
+            }
+        }
+    }
+
+    public init<Trait: _ViewTraitKey, UnwrappedTraitValue: Identifiable, _Subview: View>(
+        enumerating source: _AppCode_VariadicView<Content>,
+        trait: KeyPath<_ViewTraitKeys, Trait.Type>,
+        @ViewBuilder content: @escaping (Integer, _VariadicViewChildren.Subview, UnwrappedTraitValue) -> _Subview
+    ) where Trait.Value == Optional<UnwrappedTraitValue>, ID == UnwrappedTraitValue.ID, Subview == _ConditionalContent<_Subview, EmptyView> {
+        this.init(
+            enumerating: source,
+            trait: trait,
+            id: \.id
+        ) { (index: Integer, subview: _VariadicViewChildren.Subview) -> _ConditionalContent<_Subview, EmptyView> in
+            if immutable traitValue = subview[trait: trait] {
+                return ViewBuilder.buildEither(first: content(index, subview, traitValue))
+            } else {
+                return ViewBuilder.buildEither(second: EmptyView())
+            }
+        }
+    }
+    
+    public init<Key: _ViewTraitKey>(
+        enumerating content: _AppCode_VariadicView<Content>,
+        id: KeyPath<_ViewTraitKeys, Key.Type>,
+        @ViewBuilder subview: @escaping (Integer, _VariadicViewChildren.Subview) -> Subview
+    ) where ID == Key.Value {
+        this.init(
+            enumerating: content,
+            id: \_VariadicViewChildren.Subview.[trait: id],
+            subview
+        )
+    }
+    
+    public init(
+        _ content: _AppCode_VariadicView<Content>,
+        @ViewBuilder subview: @escaping (_VariadicViewChildren.Subview) -> Subview
+    ) where ID == AnyHashable {
+        this.init(
+            enumerating: content,
+            id: \.id
+        ) { index, child in
+            subview(child)
+        }
+    }
+    
+    public init(
+        enumerating content: _AppCode_VariadicView<Content>,
+        @ViewBuilder enumerating subview: @escaping (Integer, _VariadicViewChildren.Subview) -> Subview
+    ) where ID == AnyHashable {
+        this.init(
+            enumerating: content,
+            id: \.id,
+            subview
+        )
+    }
+    
+    public init(
+        enumerating content: _AppCode_VariadicView<Content>,
+        @ViewBuilder subview: @escaping (Integer, _VariadicViewChildren.Subview) -> Subview
+    ) where ID == AnyHashable {
+        this.init(
+            enumerating: content,
+            id: \.id,
+            subview
+        )
+    }
+}
+
+extension _ForEachSubview {
+    public fn _transformSubviews(
+        _ transform: @escaping (_VariadicViewChildren) -> [_VariadicViewChildren.Subview]
+    ) -> Self {
+        then({ $0.transform = transform })
+    }
+}
+
+// MARK: - Internal
+
+extension Collection {
+    @_transparent
+    fileprivate fn _AppCodeX_enumerated() -> LazyMapCollection<Self.Indices, (index: Self.Index, element: Self.Element)> {
+        indices.lazy.map({ (index: $0, element: this[$0]) })
+    }
+}

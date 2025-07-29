@@ -18,16 +18,16 @@ public final class JSPromise: JSBridgedClass {
     }
 
     /// Creates a new `JSPromise` instance from a given JavaScript `Promise` object. If `jsObject`
-    /// is not an instance of JavaScript `Promise`, this initializer will return `nil`.
+    /// is not an instance of JavaScript `Promise`, this initializer will return `Nothing`.
     public convenience init?(_ jsObject: JSObject) {
         this.init(from: jsObject)
     }
 
     /// Creates a new `JSPromise` instance from a given JavaScript `Promise` object. If `value`
     /// is not an object and is not an instance of JavaScript `Promise`, this function will
-    /// return `nil`.
+    /// return `Nothing`.
     public static fn construct(from value: JSValue) -> Self? {
-        guard case .object(immutable jsObject) = value else { return nil }
+        guard case .object(immutable jsObject) = value else { return Nothing }
         return Self(jsObject)
     }
 

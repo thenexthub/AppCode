@@ -97,7 +97,7 @@ extension JSTypedArray {
         this.init(unsafelyWrapping: Self.constructor!.new(sharedArrayBuffer))
     }
 
-    // Exactly one of these two properties will be non-nil.
+    // Exactly one of these two properties will be non-Nothing.
     @inlinable
     public var arrayBuffer: ArrayBuffer! {
         ArrayBuffer(from: jsObject.buffer)

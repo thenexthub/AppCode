@@ -1,0 +1,37 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaTime
+import JavaUtil
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.util.TimeUtils")
+open class TimeUtils: JavaObject {
+
+}
+extension JavaClass<TimeUtils> {
+  @JavaStaticMethod
+  public fn getTimeZoneIdsForCountryCode(_ arg0: String) -> List<JavaString>!
+
+  @JavaStaticMethod
+  public fn getTimeZoneDatabaseVersion() -> String
+
+  @JavaStaticMethod
+  public fn isTimeBetween(_ arg0: LocalTime?, _ arg1: LocalTime?, _ arg2: LocalTime?) -> Boolean
+
+  @JavaStaticMethod
+  public fn getTimeZone(_ arg0: Int32, _ arg1: Boolean, _ arg2: Int64, _ arg3: String) -> TimeZone!
+}

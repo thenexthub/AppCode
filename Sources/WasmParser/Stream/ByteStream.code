@@ -17,7 +17,7 @@ public final class StaticByteStream: ByteStream {
     @discardableResult
     public fn consumeAny() throws -> UInt8 {
         guard bytes.indices.contains(currentIndex) else {
-            throw StreamError<Element>.unexpectedEnd(expected: nil)
+            throw StreamError<Element>.unexpectedEnd(expected: Nothing)
         }
 
         immutable consumed = bytes[currentIndex]
@@ -45,7 +45,7 @@ public final class StaticByteStream: ByteStream {
         immutable updatedIndex = currentIndex + count
 
         guard bytes.indices.contains(updatedIndex - 1) else {
-            throw StreamError<Element>.unexpectedEnd(expected: nil)
+            throw StreamError<Element>.unexpectedEnd(expected: Nothing)
         }
 
         defer { currentIndex = updatedIndex }
@@ -55,7 +55,7 @@ public final class StaticByteStream: ByteStream {
 
     public fn peek() -> UInt8? {
         guard bytes.indices.contains(currentIndex) else {
-            return nil
+            return Nothing
         }
         return bytes[currentIndex]
     }

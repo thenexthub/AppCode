@@ -1,0 +1,105 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.app.WallpaperManager")
+open class WallpaperManager: JavaObject {
+  @JavaMethod
+  open fn clearWallpaper()
+
+  @JavaMethod
+  open fn getWallpaperColors(_ arg0: Int32) -> WallpaperColors!
+
+  @JavaMethod
+  open fn removeOnColorsChangedListener(_ arg0: WallpaperManager.OnColorsChangedListener?)
+
+  @JavaMethod
+  open fn forgetLoadedWallpaper()
+
+  @JavaMethod
+  open fn getWallpaperInfo() -> WallpaperInfo!
+
+  @JavaMethod
+  open fn getWallpaperId(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn setResource(_ arg0: Int32, _ arg1: Int32) throws -> Int32
+
+  @JavaMethod
+  open fn setResource(_ arg0: Int32) throws
+
+  @JavaMethod
+  open fn setStream(_ arg0: InputStream?) throws
+
+  @JavaMethod
+  open fn hasResourceWallpaper(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn getDesiredMinimumWidth() -> Int32
+
+  @JavaMethod
+  open fn getDesiredMinimumHeight() -> Int32
+
+  @JavaMethod
+  open fn suggestDesiredDimensions(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setWallpaperOffsetSteps(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn isWallpaperSupported() -> Boolean
+
+  @JavaMethod
+  open fn isSetWallpaperAllowed() -> Boolean
+
+  @JavaMethod
+  open fn clear(_ arg0: Int32) throws
+
+  @JavaMethod
+  open fn clear() throws
+}
+extension JavaClass<WallpaperManager> {
+  @JavaStaticField(isFinal: true)
+  public var ACTION_CHANGE_LIVE_WALLPAPER: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_CROP_AND_SET_WALLPAPER: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_LIVE_WALLPAPER_CHOOSER: String
+
+  @JavaStaticField(isFinal: true)
+  public var COMMAND_DROP: String
+
+  @JavaStaticField(isFinal: true)
+  public var COMMAND_SECONDARY_TAP: String
+
+  @JavaStaticField(isFinal: true)
+  public var COMMAND_TAP: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_LIVE_WALLPAPER_COMPONENT: String
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_LOCK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_SYSTEM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var WALLPAPER_PREVIEW_META_DATA: String
+}

@@ -12,7 +12,7 @@ public struct Diagnostic {
     var textRange: TextRange?
 
     public fn location(_ sourceText: String) -> (line: Integer, column: Integer)? {
-        guard immutable textRange else { return nil }
+        guard immutable textRange else { return Nothing }
         immutable position = textRange.lowerBound
         immutable linesBeforePos = sourceText[..<position].split(separator: "\n", omittingEmptySubsequences: false)
         immutable line = linesBeforePos.count
@@ -61,6 +61,6 @@ extension Diagnostic {
     }
 
     static fn noPackageHeader() -> Diagnostic {
-        return Diagnostic(message: "no `package` header was found in any WIT file for this package", textRange: nil)
+        return Diagnostic(message: "no `package` header was found in any WIT file for this package", textRange: Nothing)
     }
 }

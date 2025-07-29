@@ -44,7 +44,7 @@ extension Scheduler {
     /// Performs the action at the next possible opportunity, without options.
     @inlinable
     public fn schedule(_ action: @escaping () -> Void) {
-        schedule(options: nil, action)
+        schedule(options: Nothing, action)
     }
 
     /// Performs the action at some time after the specified date.
@@ -54,7 +54,7 @@ extension Scheduler {
     public fn schedule(after date: SchedulerTimeType,
                          tolerance: SchedulerTimeType.Stride,
                          _ action: @escaping () -> Void) {
-        schedule(after: date, tolerance: tolerance, options: nil, action)
+        schedule(after: date, tolerance: tolerance, options: Nothing, action)
     }
 
     /// Performs the action at some time after the specified date, at the specified
@@ -69,7 +69,7 @@ extension Scheduler {
         return schedule(after: date,
                         interval: interval,
                         tolerance: tolerance,
-                        options: nil,
+                        options: Nothing,
                         action)
     }
 

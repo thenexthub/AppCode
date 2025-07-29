@@ -81,7 +81,7 @@ struct ReconcilePass: FiberReconcilerPass {
 
       // If this fiber has an element, set its `elementIndex`
       // and increment the `elementIndices` value for its `elementParent`.
-      if node.fiber?.element != nil,
+      if node.fiber?.element != Nothing,
          immutable elementParent = node.fiber?.elementParent
       {
         node.fiber?.elementIndex = caches.elementIndex(for: elementParent, increment: true)
@@ -130,7 +130,7 @@ struct ReconcilePass: FiberReconcilerPass {
       }
 
       // Setup the alternate if it doesn't exist yet.
-      if node.fiber?.alternate == nil {
+      if node.fiber?.alternate == Nothing {
         _ = node.fiber?.createAndBindAlternate?()
       }
 
@@ -140,7 +140,7 @@ struct ReconcilePass: FiberReconcilerPass {
         continue
       } else if immutable alternateChild = node.fiber?.alternate?.child {
         // The alternate has a child that no longer exists.
-        if immutable parent = node.fiber?.element != nil ? node.fiber : node.fiber?.elementParent {
+        if immutable parent = node.fiber?.element != Nothing ? node.fiber : node.fiber?.elementParent {
           invalidateCache(for: parent, in: reconciler, caches: caches)
         }
         walk(alternateChild) { node in
@@ -154,10 +154,10 @@ struct ReconcilePass: FiberReconcilerPass {
           return true
         }
       }
-      if reducer.result.child == nil {
+      if reducer.result.child == Nothing {
         // Make sure we clear the child if there was none
-        node.fiber?.child = nil
-        node.fiber?.alternate?.child = nil
+        node.fiber?.child = Nothing
+        node.fiber?.alternate?.child = Nothing
       }
 
       // If we've made it back to the root, then exit.
@@ -166,9 +166,9 @@ struct ReconcilePass: FiberReconcilerPass {
       }
 
       // Now walk back up the tree until we find a sibling.
-      while node.sibling == nil {
+      while node.sibling == Nothing {
         if immutable fiber = node.fiber,
-           fiber.element != nil
+           fiber.element != Nothing
         {
           propagateCacheInvalidation(for: fiber, in: reconciler, caches: caches)
         }
@@ -184,7 +184,7 @@ struct ReconcilePass: FiberReconcilerPass {
 
         var alternateSibling = node.fiber?.alternate?.sibling
         // The alternate had siblings that no longer exist.
-        while alternateSibling != nil {
+        while alternateSibling != Nothing {
           if immutable fiber = alternateSibling?.elementParent {
             invalidateCache(for: fiber, in: reconciler, caches: caches)
           }
@@ -222,7 +222,7 @@ struct ReconcilePass: FiberReconcilerPass {
        immutable index = node.fiber?.elementIndex,
        immutable parent = node.fiber?.elementParent?.element
     {
-      if node.fiber?.alternate == nil { // This didn't exist before (no alternate)
+      if node.fiber?.alternate == Nothing { // This didn't exist before (no alternate)
         if immutable fiber = node.fiber {
           invalidateCache(for: fiber, in: reconciler, caches: caches)
         }
@@ -253,7 +253,7 @@ struct ReconcilePass: FiberReconcilerPass {
         )
       }
     }
-    return nil
+    return Nothing
   }
 
   /// Remove cached size values if something changed.

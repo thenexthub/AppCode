@@ -1,0 +1,52 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension R {
+  @JavaClass("android.R$dimen")
+  open class dimen: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+  }
+}
+extension JavaClass<R.dimen> {
+  @JavaStaticField(isFinal: true)
+  public var app_icon_size: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var dialog_min_width_major: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var dialog_min_width_minor: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var notification_large_icon_height: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var notification_large_icon_width: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var system_app_widget_background_radius: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var system_app_widget_inner_radius: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var thumbnail_height: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var thumbnail_width: Int32
+}

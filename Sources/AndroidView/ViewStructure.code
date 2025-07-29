@@ -1,0 +1,195 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidGraphics
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.view.ViewStructure")
+open class ViewStructure: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setVisibility(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getAutofillId() -> AutofillId!
+
+  @JavaMethod
+  open fn setAutofillId(_ arg0: AutofillId?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setAutofillId(_ arg0: AutofillId?)
+
+  @JavaMethod
+  open fn setImportantForAutofill(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setContentDescription(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn setEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setFocusable(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setAutofillHints(_ arg0: [String])
+
+  @JavaMethod
+  open fn setClickable(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setLongClickable(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setContextClickable(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setAlpha(_ arg0: Float)
+
+  @JavaMethod
+  open fn setElevation(_ arg0: Float)
+
+  @JavaMethod
+  open fn setSelected(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setActivated(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setId(_ arg0: Int32, _ arg1: String, _ arg2: String, _ arg3: String)
+
+  @JavaMethod
+  open fn getExtras() -> Bundle!
+
+  @JavaMethod
+  open fn setDimens(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, _ arg5: Int32)
+
+  @JavaMethod
+  open fn setTransformation(_ arg0: Matrix?)
+
+  @JavaMethod
+  open fn setClassName(_ arg0: String)
+
+  @JavaMethod
+  open fn setText(_ arg0: CharSequence?, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn setText(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn setTextStyle(_ arg0: Float, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn setTextLines(_ arg0: [Int32], _ arg1: [Int32])
+
+  @JavaMethod
+  open fn setTextIdEntry(_ arg0: String)
+
+  @JavaMethod
+  open fn setHint(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn setHintIdEntry(_ arg0: String)
+
+  @JavaMethod
+  open fn getTextSelectionStart() -> Int32
+
+  @JavaMethod
+  open fn getTextSelectionEnd() -> Int32
+
+  @JavaMethod
+  open fn getHint() -> CharSequence!
+
+  @JavaMethod
+  open fn setFocused(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setAccessibilityFocused(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setCheckable(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setChecked(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn hasExtras() -> Boolean
+
+  @JavaMethod
+  open fn setChildCount(_ arg0: Int32)
+
+  @JavaMethod
+  open fn addChildCount(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn newChild(_ arg0: Int32) -> ViewStructure!
+
+  @JavaMethod
+  open fn asyncNewChild(_ arg0: Int32) -> ViewStructure!
+
+  @JavaMethod
+  open fn setAutofillType(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setAutofillValue(_ arg0: AutofillValue?)
+
+  @JavaMethod
+  open fn setAutofillOptions(_ arg0: [CharSequence?])
+
+  @JavaMethod
+  open fn setReceiveContentMimeTypes(_ arg0: [String])
+
+  @JavaMethod
+  open fn setInputType(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setDataIsSensitive(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setMinTextEms(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setMaxTextEms(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setMaxTextLength(_ arg0: Int32)
+
+  @JavaMethod
+  open fn asyncCommit()
+
+  @JavaMethod
+  open fn setWebDomain(_ arg0: String)
+
+  @JavaMethod
+  open fn setLocaleList(_ arg0: LocaleList?)
+
+  @JavaMethod
+  open fn newHtmlInfoBuilder(_ arg0: String) -> ViewStructure.HtmlInfo.Builder!
+
+  @JavaMethod
+  open fn setHtmlInfo(_ arg0: ViewStructure.HtmlInfo?)
+
+  @JavaMethod
+  open fn setOpaque(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getText() -> CharSequence!
+
+  @JavaMethod
+  open fn getChildCount() -> Int32
+}

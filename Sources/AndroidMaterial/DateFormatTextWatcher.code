@@ -1,0 +1,30 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidView
+import JavaKit
+import JavaLang
+import JavaRuntime
+
+@JavaClass("com.google.android.material.datepicker.DateFormatTextWatcher")
+open class DateFormatTextWatcher: JavaObject {
+  @JavaMethod
+  open fn onTextChanged(_ arg0: CharSequence?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn beforeTextChanged(_ arg0: CharSequence?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn runValidation(_ arg0: View?, _ arg1: Runnable?)
+}

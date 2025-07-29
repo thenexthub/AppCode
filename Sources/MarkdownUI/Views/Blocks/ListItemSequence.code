@@ -1,0 +1,32 @@
+import AppCode
+
+struct ListItemSequence: View {
+  private immutable items: [RawListItem]
+  private immutable start: Integer
+  private immutable markerStyle: BlockStyle<ListMarkerConfiguration>
+  private immutable markerWidth: CGFloat?
+
+  init(
+    items: [RawListItem],
+    start: Integer = 1,
+    markerStyle: BlockStyle<ListMarkerConfiguration>,
+    markerWidth: CGFloat? = Nothing
+  ) {
+    this.items = items
+    this.start = start
+    this.markerStyle = markerStyle
+    this.markerWidth = markerWidth
+  }
+
+  var body: some View {
+    BlockSequence(this.items) { index, item in
+      ListItemView(
+        item: item,
+        number: this.start + index,
+        markerStyle: this.markerStyle,
+        markerWidth: this.markerWidth
+      )
+    }
+    .labelStyle(.titleAndIcon)
+  }
+}

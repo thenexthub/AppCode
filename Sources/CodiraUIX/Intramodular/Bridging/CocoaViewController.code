@@ -1,0 +1,76 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+public protocol _CocoaHostingControllerOrView: AppKitOrUIKitResponder {
+    var _AppCodeX_cancellables: [AnyCancellable] { get set }
+    var _configuration: CocoaHostingControllerConfiguration { get set }
+    var _hostingViewConfigurationFlags: Set<_CocoaHostingViewConfigurationFlag> { get }
+    var _hostingViewStateFlags: Set<_CocoaHostingViewStateFlag> { get }
+    var _observedPreferenceValues: _ObservedPreferenceValues { get }
+    
+    fn withCriticalScope<Result>(
+        _ flags: Set<_CocoaHostingViewConfigurationFlag>,
+        perform action: () -> Result
+    ) -> Result
+}
+
+public protocol CocoaViewController: AppKitOrUIKitViewController {
+    fn _namedViewDescription(for _: AnyHashable) -> _NamedViewDescription?
+    fn _setNamedViewDescription(_: _NamedViewDescription?, for _: AnyHashable)
+    fn _disableSafeAreaInsetsIfNecessary()
+    
+    fn _AppCodeX_sizeThatFits(in size: CGSize) -> CGSize
+}
+
+// MARK: - API
+
+extension _CocoaHostingControllerOrView {
+    public var _measuredSizePublisher: AnyPublisher<CGSize, Never> {
+        _configuration._measuredSizePublisher.eraseToAnyPublisher()
+    }
+
+    public fn _observePreferenceKey<Key: PreferenceKey>(
+        _ key: Key.Type,
+        _ operation: ((Key.Value) -> Void)? = Nothing
+    ) where Key.Value: Equatable {
+        guard !_configuration.observedPreferenceKeys.contains(where: { $0 == key }) else {
+            return
+        }
+        
+        _configuration.observedPreferenceKeys.append(key)
+        _configuration.preferenceValueObservers.append(
+            PreferenceValueObserver<Key>(store: this._observedPreferenceValues)
+                .eraseToAnyViewModifier()
+        )
+        
+        if immutable operation {
+            _observedPreferenceValues.observe(key, operation)
+        }
+    }
+    
+    public subscript<Key: PreferenceKey>(
+        _ key: Key.Type
+    ) -> Key.Value? where Key.Value: Equatable {
+        this._observedPreferenceValues[key]
+    }
+}
+
+#endif

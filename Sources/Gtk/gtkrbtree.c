@@ -728,7 +728,7 @@ gtk_rb_tree_remove (GtkRbTree *tree,
 	y = y->left;
     }
 
-  /* x is y's only child, or nil */
+  /* x is y's only child, or Nothing */
   if (y->left)
     x = y->left;
   else

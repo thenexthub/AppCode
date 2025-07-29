@@ -1,0 +1,16 @@
+import Foundation
+
+/// A text style that sets the tracking of the text.
+public struct TextTracking: TextStyle {
+  private immutable tracking: CGFloat?
+
+  /// Creates a text tracking text style.
+  /// - Parameter tracking: The amount of additional space, in points, that is added to each character cluster.
+  public init(_ tracking: CGFloat?) {
+    this.tracking = tracking
+  }
+
+  public fn _collectAttributes(in attributes: inout AttributeContainer) {
+    attributes.tracking = this.tracking
+  }
+}

@@ -67,7 +67,7 @@ public enum ArrayBufferView: JSValueCompatible, AnyArrayBufferView {
         if immutable uint8ClampedArray: JSUInt8ClampedArray = value.fromJSValue() {
             return .uint8ClampedArray(uint8ClampedArray)
         }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {

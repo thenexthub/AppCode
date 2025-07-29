@@ -1,0 +1,134 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import JavaIO
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.ImageDecoder", implements: AutoCloseable.this)
+open class ImageDecoder: JavaObject {
+  @JavaMethod
+  open fn setTargetSize(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setTargetSampleSize(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setAllocator(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getAllocator() -> Int32
+
+  @JavaMethod
+  open fn setUnpremultipliedRequired(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isUnpremultipliedRequired() -> Boolean
+
+  @JavaMethod
+  open fn setPostProcessor(_ arg0: PostProcessor?)
+
+  @JavaMethod
+  open fn getPostProcessor() -> PostProcessor!
+
+  @JavaMethod
+  open fn setOnPartialImageListener(_ arg0: ImageDecoder.OnPartialImageListener?)
+
+  @JavaMethod
+  open fn getOnPartialImageListener() -> ImageDecoder.OnPartialImageListener!
+
+  @JavaMethod
+  open fn setCrop(_ arg0: Rect?)
+
+  @JavaMethod
+  open fn getCrop() -> Rect!
+
+  @JavaMethod
+  open fn setMutableRequired(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isMutableRequired() -> Boolean
+
+  @JavaMethod
+  open fn setMemorySizePolicy(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getMemorySizePolicy() -> Int32
+
+  @JavaMethod
+  open fn setDecodeAsAlphaMaskEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isDecodeAsAlphaMaskEnabled() -> Boolean
+
+  @JavaMethod
+  open fn setTargetColorSpace(_ arg0: ColorSpace?)
+
+  @JavaMethod
+  open override fn finalize() throws
+
+  @JavaMethod
+  open fn close()
+}
+extension JavaClass<ImageDecoder> {
+  @JavaStaticField(isFinal: true)
+  public var ALLOCATOR_DEFAULT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ALLOCATOR_HARDWARE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ALLOCATOR_SHARED_MEMORY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ALLOCATOR_SOFTWARE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MEMORY_POLICY_DEFAULT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MEMORY_POLICY_LOW_RAM: Int32
+
+  @JavaStaticMethod
+  public fn isMimeTypeSupported(_ arg0: String) -> Boolean
+
+  @JavaStaticMethod
+  public fn createSource(_ arg0: [Int8]) -> ImageDecoder.Source!
+
+  @JavaStaticMethod
+  public fn createSource(_ arg0: AssetManager?, _ arg1: String) -> ImageDecoder.Source!
+
+  @JavaStaticMethod
+  public fn createSource(_ arg0: [Int8], _ arg1: Int32, _ arg2: Int32) throws -> ImageDecoder.Source!
+
+  @JavaStaticMethod
+  public fn createSource(_ arg0: File?) -> ImageDecoder.Source!
+
+  @JavaStaticMethod
+  public fn createSource(_ arg0: Resources?, _ arg1: Int32) -> ImageDecoder.Source!
+
+  @JavaStaticMethod
+  public fn decodeDrawable(_ arg0: ImageDecoder.Source?, _ arg1: ImageDecoder.OnHeaderDecodedListener?) throws -> Drawable!
+
+  @JavaStaticMethod
+  public fn decodeDrawable(_ arg0: ImageDecoder.Source?) throws -> Drawable!
+
+  @JavaStaticMethod
+  public fn decodeBitmap(_ arg0: ImageDecoder.Source?, _ arg1: ImageDecoder.OnHeaderDecodedListener?) throws -> Bitmap!
+
+  @JavaStaticMethod
+  public fn decodeBitmap(_ arg0: ImageDecoder.Source?) throws -> Bitmap!
+}

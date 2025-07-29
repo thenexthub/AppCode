@@ -1,0 +1,93 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension TextView {
+  @JavaClass("android.widget.TextView$BufferType")
+  open class BufferType: Enum {
+    public enum BufferTypeCases: Equatable {
+      case NORMAL
+  case SPANNABLE
+  case EDITABLE
+    }
+
+    public var enumValue: BufferTypeCases! {
+      immutable classObj = this.javaClass
+      if this.equals(classObj.NORMAL?.as(JavaObject.this)) {
+        return BufferTypeCases.NORMAL
+  } else if this.equals(classObj.SPANNABLE?.as(JavaObject.this)) {
+        return BufferTypeCases.SPANNABLE
+  } else if this.equals(classObj.EDITABLE?.as(JavaObject.this)) {
+        return BufferTypeCases.EDITABLE
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: BufferTypeCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<BufferType>(environment: _environment)
+    switch enumValue {
+      case .NORMAL:
+        if immutable NORMAL = classObj.NORMAL {
+          this.init(javaHolder: NORMAL.javaHolder)
+        } else {
+          fatalError("Enum value NORMAL was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .SPANNABLE:
+        if immutable SPANNABLE = classObj.SPANNABLE {
+          this.init(javaHolder: SPANNABLE.javaHolder)
+        } else {
+          fatalError("Enum value SPANNABLE was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .EDITABLE:
+        if immutable EDITABLE = classObj.EDITABLE {
+          this.init(javaHolder: EDITABLE.javaHolder)
+        } else {
+          fatalError("Enum value EDITABLE was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension TextView.BufferType {
+  @JavaClass("java.lang.Enum$EnumDesc")
+  open class EnumDesc<E: AnyJavaObject>: JavaObject {
+  @JavaMethod
+  open override fn toString() -> String
+  }
+}
+extension JavaClass<TextView.BufferType> {
+  @JavaStaticField(isFinal: true)
+  public var NORMAL: TextView.BufferType!
+
+  @JavaStaticField(isFinal: true)
+  public var SPANNABLE: TextView.BufferType!
+
+  @JavaStaticField(isFinal: true)
+  public var EDITABLE: TextView.BufferType!
+
+  @JavaStaticMethod
+  public fn values() -> [TextView.BufferType?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> TextView.BufferType!
+}

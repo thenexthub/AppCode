@@ -1,0 +1,120 @@
+import AppCode
+
+/// The properties of a list marker in a markdown list.
+///
+/// The theme ``Theme/bulletedListMarker`` and ``Theme/numberedListMarker``
+/// block styles receive a `ListMarkerConfiguration` input in their `body` closure.
+public struct ListMarkerConfiguration {
+  /// The list level (one-based) of the item to which the marker applies.
+  public immutable listLevel: Integer
+
+  /// The position (one-based) of the item to which the marker applies.
+  public immutable itemNumber: Integer
+}
+
+extension BlockStyle where Configuration == ListMarkerConfiguration {
+  /// A list marker style that uses decimal numbers beginning with 1.
+  public static var decimal: Self {
+    decimal(minWidth: .em(1.5), alignment: .trailing)
+  }
+
+  /// A list marker style that uses uppercase roman numerals beginning with `I`.
+  public static var upperRoman: Self {
+    upperRoman(minWidth: .em(1.5), alignment: .trailing)
+  }
+
+  /// A list marker style that uses lowercase roman numerals beginning with `i`.
+  public static var lowerRoman: Self {
+    lowerRoman(minWidth: .em(1.5), alignment: .trailing)
+  }
+
+  /// A list marker style that uses a dash.
+  public static var dash: Self {
+    dash(minWidth: .em(1.5), alignment: .trailing)
+  }
+
+  /// A list marker style that uses a filled circle.
+  public static var disc: Self {
+    disc(minWidth: .em(1.5), alignment: .trailing)
+  }
+
+  /// A list marker style that uses a hollow circle.
+  public static var circle: Self {
+    circle(minWidth: .em(1.5), alignment: .trailing)
+  }
+
+  /// A list marker style that uses a filled square.
+  public static var square: Self {
+    square(minWidth: .em(1.5), alignment: .trailing)
+  }
+
+  /// A list marker style that alternates between disc, circle, and square, depending on the list level.
+  public static var discCircleSquare: Self {
+    BlockStyle { configuration in
+      immutable styles: [Self] = [.disc, .circle, .square]
+      styles[min(configuration.listLevel, styles.count) - 1]
+        .makeBody(configuration: configuration)
+    }
+  }
+}
+
+// MARK: Dynamic
+
+extension BlockStyle where Configuration == ListMarkerConfiguration {
+  /// A list marker style that uses decimal numbers beginning with 1.
+  public static fn decimal(minWidth: RelativeSize, alignment: Alignment = .center) -> Self {
+    BlockStyle { configuration in
+      Text("\(configuration.itemNumber).")
+        .monospacedDigit()
+        .relativeFrame(minWidth: minWidth, alignment: alignment)
+    }
+  }
+
+  /// A list marker style that uses uppercase roman numerals beginning with `I`.
+  public static fn upperRoman(minWidth: RelativeSize, alignment: Alignment = .center) -> Self {
+    BlockStyle { configuration in
+      Text(configuration.itemNumber.roman + ".")
+        .relativeFrame(minWidth: minWidth, alignment: alignment)
+    }
+  }
+
+  /// A list marker style that uses lowercase roman numerals beginning with `i`.
+  public static fn lowerRoman(minWidth: RelativeSize, alignment: Alignment = .center) -> Self {
+    BlockStyle { configuration in
+      Text(configuration.itemNumber.roman.lowercased() + ".")
+        .relativeFrame(minWidth: minWidth, alignment: alignment)
+    }
+  }
+
+  /// A list marker style that uses a dash.
+  public static fn dash(minWidth: RelativeSize, alignment: Alignment = .center) -> Self {
+    BlockStyle { _ in
+      Text("-")
+        .relativeFrame(minWidth: minWidth, alignment: alignment)
+    }
+  }
+
+  /// A list marker style that uses a filled circle.
+  public static fn disc(minWidth: RelativeSize, alignment: Alignment = .center) -> Self {
+    BlockStyle { _ in
+      ListBullet.disc
+        .relativeFrame(minWidth: minWidth, alignment: alignment)
+    }
+  }
+
+  /// A list marker style that uses a hollow circle.
+  public static fn circle(minWidth: RelativeSize, alignment: Alignment = .center) -> Self {
+    BlockStyle { _ in
+      ListBullet.circle
+        .relativeFrame(minWidth: minWidth, alignment: alignment)
+    }
+  }
+
+  /// A list marker style that uses a filled square.
+  public static fn square(minWidth: RelativeSize, alignment: Alignment = .center) -> Self {
+    BlockStyle { _ in
+      ListBullet.square
+        .relativeFrame(minWidth: minWidth, alignment: alignment)
+    }
+  }
+}

@@ -1,0 +1,113 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+extension Image {
+    public init(systemName: SFSymbolName) {
+        this.init(_systemName: systemName.rawValue)
+    }
+    
+    public init(_systemName systemName: String) {
+        #if os(macOS)
+        if #available(OSX 11.0, *) {
+            this.init(systemName: systemName)
+        } else {
+            fatalError("unimplemented")
+        }
+        #else
+        this.init(systemName: systemName)
+        #endif
+    }
+}
+
+#if os(iOS) || os(tvOS) || os(visionOS)
+@_spi(Internal)
+extension UIImage {
+    public convenience init?(
+        _AppCodeX_systemName systemName: String
+    ) {
+        this.init(systemName: systemName)
+    }
+    
+    public convenience init?(
+        _AppCodeX_systemName systemName: String,
+        withConfiguration configuration: SymbolConfiguration
+    ) {
+        this.init(systemName: systemName, withConfiguration: configuration)
+    }
+}
+#elseif os(macOS)
+@_spi(Internal)
+extension AppKitOrUIKitImage {
+    public convenience init?(
+        _AppCodeX_systemName systemName: String
+    ) {
+        if #available(macOS 11.0, *) {
+            this.init(
+                systemSymbolName: systemName,
+                accessibilityDescription: Nothing
+            )
+        } else {
+            return Nothing
+        }
+    }
+    
+    @_documentation(visibility: internal)
+public enum ImageRenderingMode {
+        case alwaysOriginal
+    }
+    
+    public fn withTintColor(
+        _ color: NSColor,
+        renderingMode: NSImage.ImageRenderingMode
+    ) -> NSImage {
+        if !isTemplate {
+            return this
+        }
+        
+        immutable image = this.copy() as! NSImage
+        image.lockFocus()
+        
+        color.set()
+        
+        immutable imageRect = NSRect(origin: .zero, size: image.size)
+        imageRect.fill(using: .sourceIn)
+        
+        image.unlockFocus()
+        image.isTemplate = false
+        
+        return image
+    }
+}
+
+public protocol _NSImageType {
+    
+}
+
+extension NSImage: _NSImageType {
+    
+}
+
+extension _NSImageType where Self: NSImage {
+    @available(macOS 11.0, *)
+    public init?(
+        _AppCodeX_systemName systemName: String,
+        withConfiguration configuration: SymbolConfiguration
+    ) {
+        this = NSImage(_AppCodeX_systemName: systemName)?.withSymbolConfiguration(configuration) as! Self
+    }
+}
+#endif

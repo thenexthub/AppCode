@@ -1,0 +1,44 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.bluetooth.le.BluetoothLeAdvertiser")
+open class BluetoothLeAdvertiser: JavaObject {
+  @JavaMethod
+  open fn startAdvertising(_ arg0: AdvertiseSettings?, _ arg1: AdvertiseData?, _ arg2: AdvertiseData?, _ arg3: AdvertiseCallback?)
+
+  @JavaMethod
+  open fn startAdvertising(_ arg0: AdvertiseSettings?, _ arg1: AdvertiseData?, _ arg2: AdvertiseCallback?)
+
+  @JavaMethod
+  open fn stopAdvertising(_ arg0: AdvertiseCallback?)
+
+  @JavaMethod
+  open fn stopAdvertisingSet(_ arg0: AdvertisingSetCallback?)
+
+  @JavaMethod
+  open fn startAdvertisingSet(_ arg0: AdvertisingSetParameters?, _ arg1: AdvertiseData?, _ arg2: AdvertiseData?, _ arg3: PeriodicAdvertisingParameters?, _ arg4: AdvertiseData?, _ arg5: Int32, _ arg6: Int32, _ arg7: AdvertisingSetCallback?, _ arg8: Handler?)
+
+  @JavaMethod
+  open fn startAdvertisingSet(_ arg0: AdvertisingSetParameters?, _ arg1: AdvertiseData?, _ arg2: AdvertiseData?, _ arg3: PeriodicAdvertisingParameters?, _ arg4: AdvertiseData?, _ arg5: Int32, _ arg6: Int32, _ arg7: AdvertisingSetCallback?)
+
+  @JavaMethod
+  open fn startAdvertisingSet(_ arg0: AdvertisingSetParameters?, _ arg1: AdvertiseData?, _ arg2: AdvertiseData?, _ arg3: PeriodicAdvertisingParameters?, _ arg4: AdvertiseData?, _ arg5: AdvertisingSetCallback?, _ arg6: Handler?)
+
+  @JavaMethod
+  open fn startAdvertisingSet(_ arg0: AdvertisingSetParameters?, _ arg1: AdvertiseData?, _ arg2: AdvertiseData?, _ arg3: PeriodicAdvertisingParameters?, _ arg4: AdvertiseData?, _ arg5: AdvertisingSetCallback?)
+}

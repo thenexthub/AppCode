@@ -1,0 +1,53 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension SystemUpdatePolicy {
+  @JavaClass("android.app.admin.SystemUpdatePolicy$ValidationFailedException")
+  open class ValidationFailedException: IllegalArgumentException {
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn getErrorCode() -> Int32
+  }
+}
+extension JavaClass<SystemUpdatePolicy.ValidationFailedException> {
+  @JavaStaticField(isFinal: true)
+  public var ERROR_COMBINED_FREEZE_PERIOD_TOO_CLOSE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR_COMBINED_FREEZE_PERIOD_TOO_LONG: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR_DUPLICATE_OR_OVERLAP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR_NEW_FREEZE_PERIOD_TOO_CLOSE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR_NEW_FREEZE_PERIOD_TOO_LONG: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR_UNKNOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

@@ -1,0 +1,58 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension Build {
+  @JavaClass("android.os.Build$VERSION")
+  open class VERSION: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+  }
+}
+extension JavaClass<Build.VERSION> {
+  @JavaStaticField(isFinal: true)
+  public var BASE_OS: String
+
+  @JavaStaticField(isFinal: true)
+  public var CODENAME: String
+
+  @JavaStaticField(isFinal: true)
+  public var INCREMENTAL: String
+
+  @JavaStaticField(isFinal: true)
+  public var MEDIA_PERFORMANCE_CLASS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PREVIEW_SDK_INT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RELEASE: String
+
+  @JavaStaticField(isFinal: true)
+  public var RELEASE_OR_CODENAME: String
+
+  @JavaStaticField(isFinal: true)
+  public var RELEASE_OR_PREVIEW_DISPLAY: String
+
+  @JavaStaticField(isFinal: true)
+  public var SDK: String
+
+  @JavaStaticField(isFinal: true)
+  public var SDK_INT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SECURITY_PATCH: String
+}

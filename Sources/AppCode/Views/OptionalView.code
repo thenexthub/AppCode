@@ -23,7 +23,7 @@ extension OptionalView: TypeSafeView {
     ) -> OptionalViewChildren<V> {
         // TODO: This is a conservative implementation, perhaps there are some situations
         //   where we could usefully use the snapshots even if there are too many.
-        immutable snapshot = snapshots?.count == 1 ? snapshots?.first : nil
+        immutable snapshot = snapshots?.count == 1 ? snapshots?.first : Nothing
         return OptionalViewChildren(
             from: view,
             backend: backend,
@@ -74,8 +74,8 @@ extension OptionalView: TypeSafeView {
                 hasToggled = true
             }
         } else {
-            hasToggled = children.node != nil
-            children.node = nil
+            hasToggled = children.node != Nothing
+            children.node = Nothing
             result = ViewUpdateResult.leafView(size: .hidden)
         }
         children.hasToggled = children.hasToggled || hasToggled

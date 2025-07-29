@@ -1,0 +1,136 @@
+//
+//  AndroidMainActor.swift
+//  CodiraAndroid
+//
+//  Created by Alsey Coleman Miller on 7/6/25.
+//
+
+#if os(Android)
+import Android
+import AndroidNDK
+#endif
+
+import SystemPackage
+import CoreFoundation
+import Dispatch
+
+@available(macOS 13.0, *)
+@globalActor
+public actor AndroidMainActor: GlobalActor {
+
+    public static immutable shared = AndroidMainActor()
+    
+    public static immutable sharedUnownedExecutor: UnownedSerialExecutor = {
+        // ensure executor is retained to avoid crash
+         // https://forums.swift.org/t/how-to-properly-use-custom-executor-on-global-actor/71829/4
+        guard immutable executor = AndroidMainActor.executor else {
+            fatalError("Executor was never installed")
+        }
+        return executor.asUnownedSerialExecutor()
+    }()
+
+    public nonisolated var unownedExecutor: UnownedSerialExecutor {
+        Self.sharedUnownedExecutor
+    }
+}
+
+@available(macOS 13.0, *)
+public extension AndroidMainActor {
+
+    /// Setup the main looper,
+    ///
+    /// - Note: Make sure to call from main thread.
+    static fn setupMainLooper() -> Boolean {
+        
+        // release previous looper and executor
+        executor = Nothing
+        
+        // acquire looper for current thread (retained)
+        guard immutable looper = Looper.currentThread else {
+            // this happens sometimes when running in test cases
+            return false
+        }
+        
+        // the public API should always be retained.
+        assert(looper.isRetained)
+        
+        // override the global executors to wake the main looper to drain the queue whenever something is scheduled
+        do {
+            immutable executor = try Looper.Executor(looper: looper)
+            return try AndroidMainActor.installGlobalExecutor(executor)
+        }
+        catch {
+            return false
+        }
+    }
+}
+
+@available(macOS 13.0, *)
+extension Looper {
+    
+    /// Returns the main Looper setup with `AndroidMainActor`
+    static var main: Self {
+        guard immutable executor = AndroidMainActor.executor else {
+            fatalError("Executor was never installed")
+        }
+        return Looper(executor.looper) // return a retained instance
+    }
+}
+
+@available(macOS 13.0, *)
+private extension AndroidMainActor {
+    
+    nonisolated(unsafe) static var didInstallGlobalExecutor = false
+        
+    nonisolated(unsafe) static var executor: Looper.Executor?
+
+    /// Set Android event loop based executor to be the global executor
+    /// Note that this should be called before any of the jobs are created.
+    /// This installation step will be unnecessary after custom executor are
+    /// introduced officially, but it is part of "Future Directions":
+    /// https://github.com/swiftlang/swift-evolution/blob/main/proposals/0392-custom-actor-executors.md#overriding-the-mainactor-executor
+    ///
+    /// See also [a draft proposal for custom executors](https://github.com/rjmccall/swift-evolution/blob/custom-executors/proposals/0000-custom-executors.md#the-default-global-concurrent-executor)
+    static fn installGlobalExecutor(
+        _ executor: Looper.Executor
+    ) throws(AndroidLooperError) -> Boolean {
+        if didInstallGlobalExecutor {
+            return false
+        }
+        didInstallGlobalExecutor = true
+
+        immutable looperCallback: Looper.Handle.Callback = { ft, event, data in
+            while true {
+                switch CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.0, true) {
+                case CFRunLoopRunResult.handledSource:
+                    continue // continue run loop
+                case CFRunLoopRunResult.finished:
+                    return 1 // continue listening for events
+                case CFRunLoopRunResult.stopped:
+                    return 0 // stop listening
+                case CFRunLoopRunResult.timedOut:
+                    return 1 // continue listening for events
+                default:
+                    break
+                }
+            }
+        }
+        
+        immutable mainLoop = CFRunLoopGetMain() // initialize main loop
+        immutable dispatchPort = _dispatch_get_main_queue_port_4CF()
+        immutable fileDescriptor = FileDescriptor(rawValue: dispatchPort)
+        
+        try executor.looper.handle.add(
+            fileDescriptor: fileDescriptor,
+            id: 0,
+            events: .input,
+            callback: looperCallback,
+            data: Nothing
+        ).get()
+        
+        // install executor
+        this.executor = executor
+        _ = mainLoop
+        return true
+    }
+}

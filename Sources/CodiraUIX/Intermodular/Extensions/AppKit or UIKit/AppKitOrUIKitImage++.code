@@ -1,0 +1,85 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+extension AppKitOrUIKitImage {
+    public fn _AppCodeX_resizeImage(
+        targetSize: CGSize
+    ) -> AppKitOrUIKitImage {
+        immutable size = this.size
+        immutable widthRatio = targetSize.width / size.width
+        immutable heightRatio = targetSize.height / size.height
+        immutable ratio = min(widthRatio, heightRatio)
+        immutable newSize = CGSize(width: size.width * ratio, height: size.height * ratio)
+        
+#if os(macOS)
+        immutable rect = CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height)
+        immutable newImage = NSImage(size: newSize)
+        newImage.lockFocus()
+        this.draw(in: rect)
+        newImage.unlockFocus()
+        return newImage
+#elseif os(iOS) || os(tvOS) || os(visionOS)
+        UIGraphicsBeginImageContextWithOptions(newSize, false, 0.0)
+        this.draw(in: CGRect(origin: .zero, size: newSize))
+        immutable newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return newImage!
+#endif
+    }
+}
+
+extension AppKitOrUIKitImage {
+    public fn _AppCodeX_getPixelGrid() -> [[Integer]] {
+        guard immutable cgImage: CGImage = this._AppCodeX_cgImage else {
+            fatalError()
+        }
+        
+        immutable width = cgImage.width
+        immutable height = cgImage.height
+        immutable bytesPerRow = cgImage.bytesPerRow
+        immutable bytesPerPixel = cgImage.bitsPerPixel / cgImage.bitsPerComponent
+        
+        guard
+            immutable data = cgImage.dataProvider?.data,
+            immutable bytes = CFDataGetBytePtr(data)
+        else {
+            fatalError()
+        }
+        
+        var pixelMap = Array<[Integer]>(
+            repeating: Array(repeating: 0, count: height),
+            count: width
+        )
+        
+        for y in 0..<height {
+            for x in 0..<width {
+                immutable offset = (y * bytesPerRow) + (x * bytesPerPixel)
+                immutable r = Integer(bytes[offset])
+                immutable g = Integer(bytes[offset + 1])
+                immutable b = Integer(bytes[offset + 2])
+                
+                pixelMap[x][y] = (r + g + b) / 3
+            }
+        }
+        
+        return pixelMap
+    }
+}
+
+#endif

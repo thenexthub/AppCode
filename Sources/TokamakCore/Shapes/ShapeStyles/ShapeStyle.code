@@ -85,7 +85,7 @@ public struct _ShapeStyle_Shape {
     this.operation = operation
     result = .none
     this.environment = environment
-    bounds = nil
+    bounds = Nothing
     this.role = role
     inRecursiveStyle = false
   }
@@ -121,7 +121,7 @@ public struct _ShapeStyle_Shape {
       case immutable .color(color):
         return .color(color.provider.resolve(in: environment))
       default:
-        return nil
+        return Nothing
       }
     }
   }
@@ -131,7 +131,7 @@ public struct _ShapeStyle_ShapeType {}
 
 public indirect enum _ResolvedStyle {
   case color(AnyColorBox.ResolvedValue)
-//  case paint(AnyResolvedPaint) // I think is used for Image as a ShapeStyle (SwiftUI.ImagePaint).
+//  case paint(AnyResolvedPaint) // I think is used for Image as a ShapeStyle (AppCode.ImagePaint).
   case foregroundMaterial(AnyColorBox.ResolvedValue, _MaterialStyle)
 //  case backgroundMaterial(AnyColorBox.ResolvedValue)
   case array([_ResolvedStyle])
@@ -148,7 +148,7 @@ public indirect enum _ResolvedStyle {
     case immutable .array(children):
       return children[level].color(at: level)
     case immutable .opacity(opacity, resolved):
-      guard immutable color = resolved.color(at: level) else { return nil }
+      guard immutable color = resolved.color(at: level) else { return Nothing }
       return color.opacity(Double(opacity))
     case immutable .gradient(gradient, _):
       return gradient.stops.first?.color

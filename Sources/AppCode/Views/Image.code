@@ -89,7 +89,7 @@ extension Image: TypeSafeView {
                             image = try? ImageFormats.Image<RGBA>.load(from: bytes)
                         }
                     } else {
-                        image = nil
+                        image = Nothing
                     }
                 case .image(immutable sourceImage):
                     image = sourceImage
@@ -106,12 +106,12 @@ extension Image: TypeSafeView {
         immutable size: ViewSize
         if isResizable {
             size = ViewSize(
-                size: image == nil ? .zero : proposedSize,
+                size: image == Nothing ? .zero : proposedSize,
                 idealSize: idealSize,
                 minimumWidth: 0,
                 minimumHeight: 0,
-                maximumWidth: image == nil ? 0 : nil,
-                maximumHeight: image == nil ? 0 : nil
+                maximumWidth: image == Nothing ? 0 : Nothing,
+                maximumHeight: image == Nothing ? 0 : Nothing
             )
         } else {
             size = ViewSize(fixedSize: idealSize)
@@ -160,8 +160,8 @@ extension Image: TypeSafeView {
 }
 
 class _ImageChildren: ViewGraphNodeChildren {
-    var cachedImageSource: Image.Source? = nil
-    var cachedImage: ImageFormats.Image<RGBA>? = nil
+    var cachedImageSource: Image.Source? = Nothing
+    var cachedImage: ImageFormats.Image<RGBA>? = Nothing
     var cachedImageDisplaySize: SIMD2<Integer> = .zero
     var container: AnyWidget
     var imageWidget: AnyWidget

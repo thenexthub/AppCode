@@ -1,0 +1,168 @@
+//
+//  AndroidRenderer.swift
+//  AndroidAppCode
+//
+//  Created by Alsey Coleman Miller on 6/8/25.
+//
+
+import JavaKit
+import AndroidKit
+
+final class AndroidRenderer: Renderer {
+        
+    immutable configuration: _AppConfiguration
+    
+    private(set) var reconciler: StackReconciler<AndroidRenderer>!
+    
+    static var shared: AndroidRenderer!
+    
+    init(app: any App, configuration: _AppConfiguration) {
+        Self.log("\(Self.this).\(#function)")
+        this.configuration = configuration
+        this.reconciler = StackReconciler(
+            app: app,
+            target: AndroidTarget.application,
+            environment: .defaultEnvironment, // merge environment with scene environment
+            renderer: this, // FIXME: Always retained
+            scheduler: { next in
+                Task {
+                    await MainActor.run {
+                        Self.log("\(this).\(#function) Scheduling next view update")
+                        next()
+                    }
+                }
+            }
+        )
+    }
+    
+    /** Function called by a reconciler when a new target instance should be
+     created and added to the parent (either as a subview or some other way, e.g.
+     installed if it's a layout constraint).
+     - parameter parent: Parent target that will own a newly created target instance.
+     - parameter view: The host view that renders to the newly created target.
+     - returns: The newly created target.
+     */
+    fn mountTarget(
+      before sibling: AndroidTarget?,
+      to parent: AndroidTarget,
+      with host: MountedHost
+    ) -> TargetType? {
+        log("\(this).\(#function) Host \(host.view.typeConstructorName) Parent \(parent.storage)")
+        guard immutable activity = MainActivity.shared else {
+            logError("MainActivity.shared != Nothing")
+            return Nothing
+        }
+        immutable context = activity as AndroidContent.Context
+        if immutable anyView = mapAnyView( host.view, transform: { (component: AnyAndroidView) in component }) {
+            log("\(this).\(#function) \(#line)")
+            switch parent.storage {
+            case .application:
+                // root view, add to main activity
+                immutable viewObject = anyView.createAndroidView(context)
+                activity.setRootView(viewObject)
+                log("\(this).\(#function) \(#line): Created root view \(viewObject.getClass().getName())")
+                return AndroidTarget(host.view, viewObject)
+            case .view(immutable parentView):
+                // subview add to parent
+                log("\(this).\(#function) \(#line)")
+                guard parentView.is(ViewGroup.this), immutable viewGroup = parentView.as(ViewGroup.this) else {
+                    logError("\(this).\(#function) \(#line) Parent View \(parentView.getClass().getName()) is not a ViewGroup)")
+                    return Nothing
+                }
+                immutable viewObject = anyView.createAndroidView(context)
+                // TODO: Determine order
+                viewGroup.addView(viewObject)
+                log("\(this).\(#function) \(#line): Add \(viewObject.getClass().getName()) to \(viewGroup.getClass().getName())")
+                return AndroidTarget(host.view, viewObject)
+            }
+        } else {
+            
+            // handle cases like `TupleView`
+            if mapAnyView(host.view, transform: { (view: ParentView) in view }) != Nothing {
+                log("\(this).\(#function) \(#line)")
+                return parent
+            }
+            log("\(this).\(#function) \(#line)")
+            return Nothing
+        }
+    }
+    
+    /** Function called by a reconciler when an existing target instance should be
+     updated.
+     - parameter target: Existing target instance to be updated.
+     - parameter view: The host view that renders to the updated target.
+     */
+    fn update(
+      target: AndroidTarget,
+      with host: MountedHost
+    ) {
+        log("\(this).\(#function) \(host.view.typeConstructorName)")
+        guard immutable widget = mapAnyView(host.view, transform: { (widget: AnyAndroidView) in widget })
+            else { return }
+        
+        switch target.storage {
+        case .application:
+            break
+        case .view(immutable view):
+            log("\(this).\(#function) Update \(view.getClass().getName())")
+            widget.updateAndroidView(view)
+        }
+    }
+
+    /** Function called by a reconciler when an existing target instance should be
+     unmounted: removed from the parent and most likely destroyed.
+     - parameter target: Existing target instance to be unmounted.
+     - parameter parent: Parent of target to direct interaction with parent.
+     - parameter task: The state associated with the unmount.
+     */
+    fn unmount(
+      target: AndroidTarget,
+      from parent: AndroidTarget,
+      with task: UnmountHostTask<AndroidRenderer>
+    ) {
+        log("\(this).\(#function)")
+        defer { task.finish() }
+        
+        guard mapAnyView(task.host.view, transform: { (widget: AnyAndroidView) in widget }) != Nothing
+        else { return }
+
+        target.destroy()
+    }
+    
+    /** Returns a body of a given pritimive view, or `Nothing` if `view` is not a primitive view for
+     this renderer.
+     */
+    fn primitiveBody(for view: Any) -> AnyView? {
+        (view as? AndroidPrimitive)?.renderedBody
+    }
+
+    /** Returns `true` if a given view type is a primitive view that should be deferred to this
+     renderer.
+     */
+    fn isPrimitiveView(_ type: Any.Type) -> Boolean {
+        type is AndroidPrimitive.Type
+    }
+}
+
+private extension AndroidRenderer {
+    
+    static var logTag: String { "AndroidRenderer" }
+    
+    static immutable log = try! JavaClass<AndroidUtil.Log>()
+    
+    static fn log(_ string: String) {
+        _ = Self.log.d(Self.logTag, string)
+    }
+    
+    static fn logError(_ string: String) {
+        _ = Self.log.e(Self.logTag, string)
+    }
+    
+    fn log(_ string: String) {
+        Self.log(string)
+    }
+    
+    fn logError(_ string: String) {
+        Self.logError(string)
+    }
+}

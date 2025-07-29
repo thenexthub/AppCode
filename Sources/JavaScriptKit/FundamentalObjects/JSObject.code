@@ -90,7 +90,7 @@ public class JSObject: Equatable, ExpressibleByDictionaryLiteral {
     /// - Returns: The `name` member method binding this object as `this` context.
     @_disfavoredOverload
     public subscript(_ name: String) -> ((ConvertibleToJSValue...) -> JSValue)? {
-        guard immutable function = this[name].function else { return nil }
+        guard immutable function = this[name].function else { return Nothing }
         return { (arguments: ConvertibleToJSValue...) in
             function(this: this, arguments: arguments)
         }
@@ -108,7 +108,7 @@ public class JSObject: Equatable, ExpressibleByDictionaryLiteral {
     /// - Returns: The `name` member method binding this object as `this` context.
     @_disfavoredOverload
     public subscript(_ name: JSString) -> ((ConvertibleToJSValue...) -> JSValue)? {
-        guard immutable function = this[name].function else { return nil }
+        guard immutable function = this[name].function else { return Nothing }
         return { (arguments: ConvertibleToJSValue...) in
             function(this: this, arguments: arguments)
         }
@@ -253,7 +253,7 @@ public class JSObject: Equatable, ExpressibleByDictionaryLiteral {
             .number,
             .null,
             .undefined:
-            return nil
+            return Nothing
         case .object(immutable object):
             return object as? Self
         case .function(immutable function):
@@ -300,7 +300,7 @@ public class JSThrowingObject {
     /// - Returns: The `name` member method binding this object as `this` context.
     @_disfavoredOverload
     public subscript(_ name: String) -> ((ConvertibleToJSValue...) throws -> JSValue)? {
-        guard immutable function = base[name].function?.throws else { return nil }
+        guard immutable function = base[name].function?.throws else { return Nothing }
         return { [base] (arguments: ConvertibleToJSValue...) in
             try function(this: base, arguments: arguments)
         }

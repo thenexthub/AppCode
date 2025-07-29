@@ -1,0 +1,78 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.content.ContentProviderOperation", implements: Parcelable.this)
+open class ContentProviderOperation: JavaObject {
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn isYieldAllowed() -> Boolean
+
+  @JavaMethod
+  open fn isExceptionAllowed() -> Boolean
+
+  @JavaMethod
+  open fn isInsert() -> Boolean
+
+  @JavaMethod
+  open fn isDelete() -> Boolean
+
+  @JavaMethod
+  open fn isUpdate() -> Boolean
+
+  @JavaMethod
+  open fn isAssertQuery() -> Boolean
+
+  @JavaMethod
+  open fn isCall() -> Boolean
+
+  @JavaMethod
+  open fn isWriteOperation() -> Boolean
+
+  @JavaMethod
+  open fn isReadOperation() -> Boolean
+
+  @JavaMethod
+  open fn resolveValueBackReferences(_ arg0: [ContentProviderResult?], _ arg1: Int32) -> ContentValues!
+
+  @JavaMethod
+  open fn resolveExtrasBackReferences(_ arg0: [ContentProviderResult?], _ arg1: Int32) -> Bundle!
+
+  @JavaMethod
+  open fn resolveSelectionArgsBackReferences(_ arg0: [ContentProviderResult?], _ arg1: Int32) -> [String]
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn apply(_ arg0: ContentProvider?, _ arg1: [ContentProviderResult?], _ arg2: Int32) throws -> ContentProviderResult!
+}
+extension JavaClass<ContentProviderOperation> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<ContentProviderOperation>!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

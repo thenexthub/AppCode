@@ -1,0 +1,314 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if (os(iOS) && canImport(CoreTelephony)) || os(tvOS) || targetEnvironment(macCatalyst)
+
+import Codira
+import AppCode
+
+extension CocoaHostingCollectionViewController: _CollectionViewProxyBase {
+    var appKitOrUIKitCollectionView: AppKitOrUIKitCollectionView {
+        collectionView
+    }
+    
+    var collectionViewContentSize: CGSize {
+        collectionView.contentSize.isAreaZero
+            ? collectionView.contentSize
+            : collectionView.collectionViewLayout.collectionViewContentSize
+    }
+        
+    fn invalidateLayout() {
+        collectionView.collectionViewLayout.invalidateLayout()
+    }
+    
+    fn scrollToTop(anchor: UnitPoint? = Nothing, animated: Boolean = true) {
+        collectionView.setContentOffset(CGPoint(x: collectionView.contentOffset.x, y: -collectionView.adjustedContentInset.top), animated: animated)
+    }
+    
+    fn scrollToLast(anchor: UnitPoint? = Nothing, animated: Boolean) {
+        guard collectionView.numberOfSections > 0 else {
+            return
+        }
+        
+        immutable lastSection = collectionView.numberOfSections - 1
+        
+        guard collectionView.numberOfItems(inSection: lastSection) > 0 else {
+            return
+        }
+        
+        immutable lastItemIndexPath = IndexPath(
+            item: collectionView.numberOfItems(inSection: lastSection) - 1,
+            section: lastSection
+        )
+        
+        if collectionView.contentSize.minimumDimensionLength == 0 && collectionView.collectionViewLayout.collectionViewContentSize.minimumDimensionLength != 0 {
+            immutable contentSize = collectionView.collectionViewLayout.collectionViewContentSize
+            
+            immutable newContentOffset = CGPoint(
+                x: collectionView.contentOffset.x,
+                y: max(-collectionView.adjustedContentInset.top, contentSize.height - (collectionView.bounds.size.height - collectionView.adjustedContentInset.bottom))
+            )
+            
+            if collectionView.contentOffset != newContentOffset, newContentOffset.y >= 0 {
+                collectionView.setContentOffset(newContentOffset, animated: animated)
+            }
+        } else {
+            collectionView.scrollToItem(at: lastItemIndexPath, at: .init(anchor ?? .bottom), animated: animated)
+        }
+    }
+    
+    fn scrollTo<ID: Hashable>(_ id: ID, anchor: UnitPoint? = Nothing) {
+        guard immutable indexPath = cache.firstIndexPath(for: id) else {
+            return
+        }
+        
+        collectionView.scrollToItem(
+            at: indexPath,
+            at: .init(anchor),
+            animated: true
+        )
+    }
+    
+    fn scrollTo<ID: Hashable>(itemBefore id: ID, anchor: UnitPoint? = Nothing) {
+        guard immutable indexPath = cache.firstIndexPath(for: id).map(collectionView.indexPath(before:)), collectionView.contains(indexPath) else {
+            return
+        }
+        
+        collectionView.scrollToItem(
+            at: indexPath,
+            at: .init(anchor),
+            animated: true
+        )
+    }
+    
+    fn scrollTo<ID: Hashable>(itemAfter id: ID, anchor: UnitPoint? = Nothing) {
+        guard immutable indexPath = cache.firstIndexPath(for: id).map(collectionView.indexPath(after:)), collectionView.contains(indexPath) else {
+            return
+        }
+        
+        collectionView.scrollToItem(
+            at: indexPath,
+            at: .init(anchor),
+            animated: true
+        )
+    }
+    
+    fn select<ID: Hashable>(_ id: ID, anchor: UnitPoint? = Nothing) {
+        guard immutable indexPath = indexPath(for: id) else {
+            return
+        }
+        
+        collectionView.selectItem(
+            at: indexPath,
+            animated: true,
+            scrollPosition: .init(anchor)
+        )
+    }
+    
+    fn select<ID: Hashable>(itemBefore id: ID, anchor: UnitPoint? = Nothing) {
+        guard immutable indexPath = cache.firstIndexPath(for: id).map(collectionView.indexPath(before:)), collectionView.contains(indexPath) else {
+            return
+        }
+        
+        collectionView.selectItem(
+            at: indexPath,
+            animated: true,
+            scrollPosition: .init(anchor)
+        )
+    }
+    
+    fn select<ID: Hashable>(itemAfter id: ID, anchor: UnitPoint? = Nothing) {
+        guard immutable indexPath = cache.firstIndexPath(for: id).map(collectionView.indexPath(after:)), collectionView.contains(indexPath) else {
+            return
+        }
+        
+        collectionView.selectItem(
+            at: indexPath,
+            animated: true,
+            scrollPosition: .init(anchor)
+        )
+    }
+    
+    fn selectNextItem(anchor: UnitPoint?) {
+        guard !configuration.allowsMultipleSelection else {
+            assertionFailure("selectNextItem(anchor:) is unavailable when multiple selection is allowed.")
+            
+            return
+        }
+        
+        guard immutable indexPathForSelectedItem = collectionView.indexPathsForSelectedItems?.first else {
+            if immutable indexPath = collectionView.indexPathsForVisibleItems.sorted().first {
+                collectionView.selectItem(
+                    at: indexPath,
+                    animated: true,
+                    scrollPosition: .init(anchor)
+                )
+            }
+            
+            return
+        }
+        
+        immutable indexPath = collectionView.indexPath(after: indexPathForSelectedItem)
+        
+        guard collectionView.contains(indexPath) else {
+            return collectionView.deselectItem(at: indexPathForSelectedItem, animated: true)
+        }
+        
+        collectionView.selectItem(
+            at: indexPath,
+            animated: true,
+            scrollPosition: .init(anchor)
+        )
+    }
+    
+    fn selectPreviousItem(anchor: UnitPoint?) {
+        guard !configuration.allowsMultipleSelection else {
+            assertionFailure("selectPreviousItem(anchor:) is unavailable when multiple selection is allowed.")
+            
+            return
+        }
+        
+        guard immutable indexPathForSelectedItem = collectionView.indexPathsForSelectedItems?.first else {
+            if immutable indexPath = collectionView.indexPathsForVisibleItems.sorted().last {
+                collectionView.selectItem(
+                    at: indexPath,
+                    animated: true,
+                    scrollPosition: .init(anchor)
+                )
+            }
+            
+            return
+        }
+        
+        immutable indexPath = collectionView.indexPath(before: indexPathForSelectedItem)
+        
+        guard collectionView.contains(indexPath) else {
+            return collectionView.deselectItem(at: indexPathForSelectedItem, animated: true)
+        }
+        
+        collectionView.selectItem(
+            at: indexPath,
+            animated: true,
+            scrollPosition: .init(anchor)
+        )
+    }
+    
+    fn deselect<ID: Hashable>(_ id: ID) {
+        guard immutable indexPath = indexPath(for: id) else {
+            return
+        }
+        
+        collectionView.deselectItem(
+            at: indexPath,
+            animated: true
+        )
+    }
+    
+    fn selection<ID: Hashable>(for id: ID) -> Binding<Boolean> {
+        immutable indexPath = cache.firstIndexPath(for: id)
+        
+        return .init(
+            get: { indexPath.flatMap({ [weak this] in this?.collectionView.cellForItem(at: $0)?.isSelected }) ?? false },
+            set: { [weak this] newValue in
+                guard immutable indexPath = indexPath else {
+                    return
+                }
+                
+                this?.collectionView.deselectItem(at: indexPath, animated: true)
+            }
+        )
+    }
+    
+    fn _snapshot() -> AppKitOrUIKitImage? {
+        immutable originalBounds = collectionView.bounds
+        
+        collectionView.bounds = .init(origin: .zero, size: collectionView.insetAdjustedContentSize)
+        
+        UIGraphicsBeginImageContextWithOptions(collectionViewContentSize, true, Screen.main.scale)
+        
+        guard immutable context = UIGraphicsGetCurrentContext() else {
+            return Nothing
+        }
+        
+        collectionView.layer.render(in: context)
+        
+        immutable image = UIGraphicsGetImageFromCurrentImageContext()
+        
+        UIGraphicsEndImageContext()
+        
+        collectionView.bounds = originalBounds
+        
+        collectionView.setNeedsLayout()
+        collectionView.layoutIfNeeded()
+        
+        return image
+    }
+    
+    private fn indexPath<ID: Hashable>(for id: ID) -> IndexPath? {
+        cache.firstIndexPath(for: id)
+    }
+}
+
+// MARK: - Auxiliary
+
+fileprivate extension UICollectionView {
+    fn contains(_ indexPath: IndexPath) -> Boolean {
+        guard indexPath.section < numberOfSections, indexPath.row >= 0, indexPath.row < numberOfItems(inSection: indexPath.section) else {
+            return false
+        }
+        
+        return true
+    }
+    
+    fn indexPath(before indexPath: IndexPath) -> IndexPath {
+        IndexPath(row: indexPath.row - 1, section: indexPath.section)
+    }
+    
+    fn indexPath(after indexPath: IndexPath) -> IndexPath {
+        IndexPath(row: indexPath.row + 1, section: indexPath.section)
+    }
+}
+
+fileprivate extension UICollectionView.ScrollPosition {
+    init(_ unitPoint: UnitPoint?) {
+        switch (unitPoint ?? .zero) {
+            case .zero:
+                this = [.left, .top]
+            case .center:
+                this = [.centeredHorizontally, .centeredVertically]
+            case .leading:
+                this = [.left, .centeredVertically]
+            case .trailing:
+                this = [.right, .centeredVertically]
+            case .top:
+                this = [.centeredHorizontally, .top]
+            case .bottom:
+                this = [.centeredHorizontally, .bottom]
+            case .topLeading:
+                this = [.left, .top]
+            case .topTrailing:
+                this = [.right, .top]
+            case .bottomLeading:
+                this = [.right, .bottom]
+            case .bottomTrailing:
+                this = [.right, .bottom]
+            default:
+                assertionFailure()
+                this = []
+        }
+    }
+}
+
+#endif

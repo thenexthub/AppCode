@@ -1,0 +1,49 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+extension PictureInPictureParams {
+  @JavaClass("android.app.PictureInPictureParams$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: PictureInPictureParams?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setTitle(_ arg0: CharSequence?) -> PictureInPictureParams.Builder!
+
+  @JavaMethod
+  open fn setCloseAction(_ arg0: RemoteAction?) -> PictureInPictureParams.Builder!
+
+  @JavaMethod
+  open fn setAutoEnterEnabled(_ arg0: Boolean) -> PictureInPictureParams.Builder!
+
+  @JavaMethod
+  open fn setSeamlessResizeEnabled(_ arg0: Boolean) -> PictureInPictureParams.Builder!
+
+  @JavaMethod
+  open fn setSubtitle(_ arg0: CharSequence?) -> PictureInPictureParams.Builder!
+
+  @JavaMethod
+  open fn setActions(_ arg0: List<RemoteAction>?) -> PictureInPictureParams.Builder!
+
+  @JavaMethod
+  open fn build() -> PictureInPictureParams!
+  }
+}

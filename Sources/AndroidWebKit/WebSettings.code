@@ -1,0 +1,362 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.webkit.WebSettings")
+open class WebSettings: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setMediaPlaybackRequiresUserGesture(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getMediaPlaybackRequiresUserGesture() -> Boolean
+
+  @JavaMethod
+  open fn setAllowUniversalAccessFromFileURLs(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getAllowUniversalAccessFromFileURLs() -> Boolean
+
+  @JavaMethod
+  open fn setJavaScriptCanOpenWindowsAutomatically(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getJavaScriptCanOpenWindowsAutomatically() -> Boolean
+
+  @JavaMethod
+  open fn setBuiltInZoomControls(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getBuiltInZoomControls() -> Boolean
+
+  @JavaMethod
+  open fn setDisplayZoomControls(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getDisplayZoomControls() -> Boolean
+
+  @JavaMethod
+  open fn setAllowContentAccess(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getAllowContentAccess() -> Boolean
+
+  @JavaMethod
+  open fn setLoadWithOverviewMode(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getLoadWithOverviewMode() -> Boolean
+
+  @JavaMethod
+  open fn setEnableSmoothTransition(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn enableSmoothTransition() -> Boolean
+
+  @JavaMethod
+  open fn setLightTouchEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getLightTouchEnabled() -> Boolean
+
+  @JavaMethod
+  open fn setSupportMultipleWindows(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn supportMultipleWindows() -> Boolean
+
+  @JavaMethod
+  open fn setStandardFontFamily(_ arg0: String)
+
+  @JavaMethod
+  open fn getStandardFontFamily() -> String
+
+  @JavaMethod
+  open fn setSansSerifFontFamily(_ arg0: String)
+
+  @JavaMethod
+  open fn getSansSerifFontFamily() -> String
+
+  @JavaMethod
+  open fn setCursiveFontFamily(_ arg0: String)
+
+  @JavaMethod
+  open fn getCursiveFontFamily() -> String
+
+  @JavaMethod
+  open fn setFantasyFontFamily(_ arg0: String)
+
+  @JavaMethod
+  open fn getFantasyFontFamily() -> String
+
+  @JavaMethod
+  open fn setMinimumLogicalFontSize(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getMinimumLogicalFontSize() -> Int32
+
+  @JavaMethod
+  open fn setDefaultFixedFontSize(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getDefaultFixedFontSize() -> Int32
+
+  @JavaMethod
+  open fn setLoadsImagesAutomatically(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getLoadsImagesAutomatically() -> Boolean
+
+  @JavaMethod
+  open fn setBlockNetworkImage(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getBlockNetworkImage() -> Boolean
+
+  @JavaMethod
+  open fn setBlockNetworkLoads(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getBlockNetworkLoads() -> Boolean
+
+  @JavaMethod
+  open fn setJavaScriptEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setAllowFileAccessFromFileURLs(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setGeolocationDatabasePath(_ arg0: String)
+
+  @JavaMethod
+  open fn setDomStorageEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getDomStorageEnabled() -> Boolean
+
+  @JavaMethod
+  open fn setGeolocationEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getJavaScriptEnabled() -> Boolean
+
+  @JavaMethod
+  open fn getAllowFileAccessFromFileURLs() -> Boolean
+
+  @JavaMethod
+  open fn setDefaultTextEncodingName(_ arg0: String)
+
+  @JavaMethod
+  open fn getDefaultTextEncodingName() -> String
+
+  @JavaMethod
+  open fn setNeedInitialFocus(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setMixedContentMode(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getMixedContentMode() -> Int32
+
+  @JavaMethod
+  open fn setOffscreenPreRaster(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getOffscreenPreRaster() -> Boolean
+
+  @JavaMethod
+  open fn setSafeBrowsingEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getSafeBrowsingEnabled() -> Boolean
+
+  @JavaMethod
+  open fn setAlgorithmicDarkeningAllowed(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isAlgorithmicDarkeningAllowed() -> Boolean
+
+  @JavaMethod
+  open fn setDisabledActionModeMenuItems(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getDisabledActionModeMenuItems() -> Int32
+
+  @JavaMethod
+  open fn setSupportZoom(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn supportZoom() -> Boolean
+
+  @JavaMethod
+  open fn setAllowFileAccess(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getAllowFileAccess() -> Boolean
+
+  @JavaMethod
+  open fn setSaveFormData(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getSaveFormData() -> Boolean
+
+  @JavaMethod
+  open fn setSavePassword(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getSavePassword() -> Boolean
+
+  @JavaMethod
+  open fn setTextZoom(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getTextZoom() -> Int32
+
+  @JavaMethod
+  open fn setTextSize(_ arg0: WebSettings.TextSize?)
+
+  @JavaMethod
+  open fn getTextSize() -> WebSettings.TextSize!
+
+  @JavaMethod
+  open fn setDefaultZoom(_ arg0: WebSettings.ZoomDensity?)
+
+  @JavaMethod
+  open fn getDefaultZoom() -> WebSettings.ZoomDensity!
+
+  @JavaMethod
+  open fn setUseWideViewPort(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getUseWideViewPort() -> Boolean
+
+  @JavaMethod
+  open fn setLayoutAlgorithm(_ arg0: WebSettings.LayoutAlgorithm?)
+
+  @JavaMethod
+  open fn getLayoutAlgorithm() -> WebSettings.LayoutAlgorithm!
+
+  @JavaMethod
+  open fn setFixedFontFamily(_ arg0: String)
+
+  @JavaMethod
+  open fn getFixedFontFamily() -> String
+
+  @JavaMethod
+  open fn setSerifFontFamily(_ arg0: String)
+
+  @JavaMethod
+  open fn getSerifFontFamily() -> String
+
+  @JavaMethod
+  open fn setMinimumFontSize(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getMinimumFontSize() -> Int32
+
+  @JavaMethod
+  open fn setDefaultFontSize(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getDefaultFontSize() -> Int32
+
+  @JavaMethod
+  open fn setPluginState(_ arg0: WebSettings.PluginState?)
+
+  @JavaMethod
+  open fn setDatabasePath(_ arg0: String)
+
+  @JavaMethod
+  open fn setDatabaseEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getDatabasePath() -> String
+
+  @JavaMethod
+  open fn getDatabaseEnabled() -> Boolean
+
+  @JavaMethod
+  open fn getPluginState() -> WebSettings.PluginState!
+
+  @JavaMethod
+  open fn setUserAgentString(_ arg0: String)
+
+  @JavaMethod
+  open fn getUserAgentString() -> String
+
+  @JavaMethod
+  open fn setRenderPriority(_ arg0: WebSettings.RenderPriority?)
+
+  @JavaMethod
+  open fn setCacheMode(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getCacheMode() -> Int32
+
+  @JavaMethod
+  open fn setForceDark(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getForceDark() -> Int32
+}
+extension JavaClass<WebSettings> {
+  @JavaStaticField(isFinal: true)
+  public var FORCE_DARK_AUTO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FORCE_DARK_OFF: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FORCE_DARK_ON: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LOAD_CACHE_ELSE_NETWORK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LOAD_CACHE_ONLY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LOAD_DEFAULT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LOAD_NORMAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LOAD_NO_CACHE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MENU_ITEM_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MENU_ITEM_PROCESS_TEXT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MENU_ITEM_SHARE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MENU_ITEM_WEB_SEARCH: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MIXED_CONTENT_ALWAYS_ALLOW: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MIXED_CONTENT_COMPATIBILITY_MODE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MIXED_CONTENT_NEVER_ALLOW: Int32
+}

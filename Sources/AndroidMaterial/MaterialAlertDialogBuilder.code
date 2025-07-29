@@ -1,0 +1,143 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidGraphics
+import AndroidView
+import AndroidWidget
+import JavaKit
+import JavaRuntime
+
+@JavaClass("com.google.android.material.dialog.MaterialAlertDialogBuilder")
+open class MaterialAlertDialogBuilder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setAdapter(_ arg0: ListAdapter?, _ arg1: DialogInterface.OnClickListener?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setOnItemSelectedListener(_ arg0: AdapterView.OnItemSelectedListener?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setIcon(_ arg0: Drawable?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setIcon(_ arg0: Int32) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setBackgroundInsetStart(_ arg0: Int32) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setBackgroundInsetTop(_ arg0: Int32) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setBackgroundInsetEnd(_ arg0: Int32) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setBackgroundInsetBottom(_ arg0: Int32) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setTitle(_ arg0: CharSequence?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setTitle(_ arg0: Int32) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setCustomTitle(_ arg0: View?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setMessage(_ arg0: Int32) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setMessage(_ arg0: CharSequence?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setIconAttribute(_ arg0: Int32) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setPositiveButton(_ arg0: CharSequence?, _ arg1: DialogInterface.OnClickListener?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setPositiveButton(_ arg0: Int32, _ arg1: DialogInterface.OnClickListener?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setPositiveButtonIcon(_ arg0: Drawable?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setNegativeButton(_ arg0: CharSequence?, _ arg1: DialogInterface.OnClickListener?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setNegativeButton(_ arg0: Int32, _ arg1: DialogInterface.OnClickListener?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setNegativeButtonIcon(_ arg0: Drawable?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setNeutralButton(_ arg0: Int32, _ arg1: DialogInterface.OnClickListener?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setNeutralButton(_ arg0: CharSequence?, _ arg1: DialogInterface.OnClickListener?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setNeutralButtonIcon(_ arg0: Drawable?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setCancelable(_ arg0: Boolean) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setOnCancelListener(_ arg0: DialogInterface.OnCancelListener?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setOnDismissListener(_ arg0: DialogInterface.OnDismissListener?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setItems(_ arg0: Int32, _ arg1: DialogInterface.OnClickListener?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setItems(_ arg0: [CharSequence?], _ arg1: DialogInterface.OnClickListener?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setMultiChoiceItems(_ arg0: [CharSequence?], _ arg1: [Boolean], _ arg2: DialogInterface.OnMultiChoiceClickListener?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setMultiChoiceItems(_ arg0: Int32, _ arg1: [Boolean], _ arg2: DialogInterface.OnMultiChoiceClickListener?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setSingleChoiceItems(_ arg0: ListAdapter?, _ arg1: Int32, _ arg2: DialogInterface.OnClickListener?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setSingleChoiceItems(_ arg0: Int32, _ arg1: Int32, _ arg2: DialogInterface.OnClickListener?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setSingleChoiceItems(_ arg0: [CharSequence?], _ arg1: Int32, _ arg2: DialogInterface.OnClickListener?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setView(_ arg0: View?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setView(_ arg0: Int32) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setOnKeyListener(_ arg0: DialogInterface.OnKeyListener?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn setBackground(_ arg0: Drawable?) -> MaterialAlertDialogBuilder!
+
+  @JavaMethod
+  open fn getBackground() -> Drawable!
+}

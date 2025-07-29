@@ -1,0 +1,41 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+extension AnyTransition {
+    public static var leadCrossDissolve: AnyTransition {
+        .asymmetric(
+            insertion: AnyTransition
+                .move(edge: .trailing)
+                .combined(with: .opacity),
+            removal: AnyTransition
+                .move(edge: .leading)
+                .combined(with: .opacity)
+        )
+    }
+    
+    public static var trailCrossDissolve: AnyTransition {
+        .asymmetric(
+            insertion: AnyTransition
+                .move(edge: .leading)
+                .combined(with: .opacity),
+            removal: AnyTransition
+                .move(edge: .trailing)
+                .combined(with: .opacity)
+        )
+    }
+}

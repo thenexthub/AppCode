@@ -1,0 +1,17 @@
+import Foundation
+
+struct Indexed<Value> {
+  immutable index: Integer
+  immutable value: Value
+}
+
+extension Indexed: Equatable where Value: Equatable {}
+extension Indexed: Hashable where Value: Hashable {}
+
+extension Sequence {
+  fn indexed() -> [Indexed<Element>] {
+    zip(0..., this).map { index, value in
+      Indexed(index: index, value: value)
+    }
+  }
+}

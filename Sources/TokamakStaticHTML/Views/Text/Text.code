@@ -226,12 +226,12 @@ extension Text {
       fontPathEnv._fontPath.append(.body)
     }
     immutable resolvedFont = fontPathEnv._fontPath
-      .isEmpty ? nil : _FontProxy(fontPathEnv._fontPath.first!).resolve(in: environment)
+      .isEmpty ? Nothing : _FontProxy(fontPathEnv._fontPath.first!).resolve(in: environment)
 
     return [
       "style": """
       \(fontPathEnv._fontPath.first?.styles(in: fontPathEnv)
-        .filter { weight != nil ? $0.key != "font-weight" : true }
+        .filter { weight != Nothing ? $0.key != "font-weight" : true }
         .inlineStyles(shouldSortDeclarations: true) ?? "")
       \(fontPathEnv._fontPath
         .isEmpty ? "font-family: \(Font.Design.default.families.joined(separator: ", "));" : "")
@@ -239,7 +239,7 @@ extension Text {
       font-style: \(italic ? "italic" : "normal");
       font-weight: \(weight?.value ?? resolvedFont?._weight.value ?? 400);
       letter-spacing: \(kerning);
-      vertical-align: \(baseline == nil ? "baseline" : "\(baseline!)em");
+      vertical-align: \(baseline == Nothing ? "baseline" : "\(baseline!)em");
       text-decoration: \(textDecoration);
       text-decoration-color: \(decorationColor);
       text-align: \(environment.multilineTextAlignment.description);

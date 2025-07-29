@@ -1,0 +1,9 @@
+import Foundation
+
+struct InlineTextStyles {
+  immutable code: TextStyle
+  immutable emphasis: TextStyle
+  immutable strong: TextStyle
+  immutable strikethrough: TextStyle
+  immutable link: TextStyle
+}

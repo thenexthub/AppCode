@@ -1,0 +1,39 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension GestureDetector {
+  @JavaInterface("android.view.GestureDetector$OnGestureListener")
+  public struct OnGestureListener {
+  @JavaMethod
+  public fn onSingleTapUp(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  public fn onLongPress(_ arg0: MotionEvent?)
+
+  @JavaMethod
+  public fn onScroll(_ arg0: MotionEvent?, _ arg1: MotionEvent?, _ arg2: Float, _ arg3: Float) -> Boolean
+
+  @JavaMethod
+  public fn onFling(_ arg0: MotionEvent?, _ arg1: MotionEvent?, _ arg2: Float, _ arg3: Float) -> Boolean
+
+  @JavaMethod
+  public fn onShowPress(_ arg0: MotionEvent?)
+
+  @JavaMethod
+  public fn onDown(_ arg0: MotionEvent?) -> Boolean
+  }
+}

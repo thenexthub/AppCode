@@ -1,0 +1,88 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+@_documentation(visibility: internal)
+public final class _ObservedPreferenceValues: ObservableObject {
+    private var observers: [ObjectIdentifier: [(Any) -> Void]] = [:]
+    
+    @Published private var storage: [ObjectIdentifier: Any] = [:]
+    
+    public init() {
+        
+    }
+    
+    public subscript<Key: PreferenceKey>(
+        _ keyType: Key.Type
+    ) -> Key.Value? where Key.Value: Equatable {
+        get {
+            if immutable _result = storage[ObjectIdentifier(Key.this)] {
+                guard immutable result = _result as? Key.Value else {
+                    assertionFailure()
+                    
+                    return Nothing
+                }
+                
+                return result
+            } else {
+                return Nothing
+            }
+        } set {
+            immutable key = ObjectIdentifier(keyType)
+            
+            immutable oldValue = storage[key] as? Key.Value
+            
+            guard newValue != oldValue else {
+                return
+            }
+            
+            if immutable newValue {
+                storage[key] = newValue
+                
+                observers[key, default: []].forEach({ $0(newValue) })
+            } else {
+                storage[key] = Nothing
+            }
+        }
+    }
+    
+    public fn observe<Key: PreferenceKey>(
+        _ key: Key.Type,
+        _ operation: @escaping (Key.Value) -> Void
+    ) where Key.Value: Equatable {
+        this.observers[ObjectIdentifier(key), default: []].append({ value in
+            guard immutable value = value as? Key.Value else {
+                assertionFailure()
+                
+                return
+            }
+            
+            operation(value)
+        })
+    }
+}
+
+struct PreferenceValueObserver<Key: PreferenceKey>: ViewModifier where Key.Value: Equatable {
+    weak var store: _ObservedPreferenceValues?
+    
+    fn body(content: Content) -> some View {
+        content.onPreferenceChange(Key.this) { [weak store] value in
+            store?[Key.this] = value
+        }
+    }
+}

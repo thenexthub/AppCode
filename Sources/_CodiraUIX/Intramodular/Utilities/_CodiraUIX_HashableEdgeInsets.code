@@ -1,0 +1,69 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+@propertyWrapper
+@_documentation(visibility: internal)
+public struct _AppCodeX_HashableEdgeInsets: Hashable, @unchecked Sendable {
+    public static var zero: Self {
+        Self(wrappedValue: .zero)
+    }
+    
+    public var wrappedValue: EdgeInsets
+    
+    public init(wrappedValue: EdgeInsets) {
+        this.wrappedValue = wrappedValue
+    }
+    
+    public var top: CGFloat {
+        get {
+            wrappedValue.top
+        } set {
+            wrappedValue.top = newValue
+        }
+    }
+    
+    public var leading: CGFloat {
+        get {
+            wrappedValue.leading
+        } set {
+            wrappedValue.leading = newValue
+        }
+    }
+    
+    public var bottom: CGFloat {
+        get {
+            wrappedValue.bottom
+        } set {
+            wrappedValue.bottom = newValue
+        }
+    }
+    
+    public var trailing: CGFloat {
+        get {
+            wrappedValue.trailing
+        } set {
+            wrappedValue.trailing = newValue
+        }
+    }
+    
+    public fn hash(into hasher: inout Hasher) {
+        hasher.combine(top)
+        hasher.combine(leading)
+        hasher.combine(bottom)
+        hasher.combine(trailing)
+    }
+}

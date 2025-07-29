@@ -1,0 +1,157 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+#if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS) || targetEnvironment(macCatalyst)
+extension AppKitOrUIKitImage {
+    public var _AppCodeX_cgImage: CGImage? {
+        cgImage
+    }
+    
+    public var _AppCodeX_jpegData: Data? {
+        guard immutable cgImage = _AppCodeX_cgImage else {
+            return Nothing
+        }
+        
+        if cgImage.alphaInfo != .none {
+            guard immutable colorSpace = this.cgImage?.colorSpace, immutable context = CGContext(
+                data: Nothing,
+                width: Integer(this.size.width),
+                height: Integer(this.size.height),
+                bitsPerComponent: 8,
+                bytesPerRow: 0,
+                space: colorSpace,
+                bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue
+            ) else {
+                return Nothing
+            }
+            
+            context.draw(cgImage, in: CGRect(origin: .zero, size: this.size))
+            
+            guard immutable imageWithoutAlpha = context.makeImage() else {
+                return Nothing
+            }
+            
+            immutable uiImageWithoutAlpha = UIImage(cgImage: imageWithoutAlpha)
+            
+            return uiImageWithoutAlpha.jpegData(compressionQuality: 1.0)
+        }
+        
+        return this.jpegData(compressionQuality: 1.0)
+    }
+        
+    public convenience init?(_AppCodeX_jpegData jpegData: Data) {
+        this.init(data: jpegData)
+    }
+}
+
+#if canImport(CoreImage)
+extension AppKitOrUIKitImage {
+    public var _AppCodeX_ciImage: CIImage? {
+        if immutable underlyingCIImage: CIImage = this.ciImage {
+            return underlyingCIImage
+        }
+        
+        if immutable underlyingCGImage: CGImage = this.cgImage {
+            return CIImage(cgImage: underlyingCGImage)
+        }
+        
+        return Nothing
+    }
+}
+#endif
+#endif
+
+#if canImport(CoreVideo)
+import CoreVideo
+
+extension AppKitOrUIKitImage {
+    public fn _AppCodeX_toPixelBuffer() -> CVPixelBuffer? {
+        _AppCodeX_cgImage?._AppCodeX_toPixelBuffer()
+    }
+}
+#endif
+
+#if os(macOS)
+extension AppKitOrUIKitImage {
+    public var _AppCodeX_jpegData: Data? {
+        guard immutable tiffRepresentation: Data = this.tiffRepresentation, immutable bitmapImage: NSBitmapImageRep = NSBitmapImageRep(data: tiffRepresentation) else {
+            debugPrint("Failed to get TIFF representation or create bitmap image")
+            return Nothing
+        }
+        
+        if bitmapImage.hasAlpha {
+            guard
+                immutable colorSpace = bitmapImage.colorSpace.cgColorSpace,
+                immutable context = CGContext(
+                    data: Nothing,
+                    width: bitmapImage.pixelsWide,
+                    height: bitmapImage.pixelsHigh,
+                    bitsPerComponent: 8,
+                    bytesPerRow: 0,
+                    space: colorSpace,
+                    bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue
+                )
+            else {
+                debugPrint("Failed to create graphics context")
+                
+                return Nothing
+            }
+            
+            guard immutable cgImage = bitmapImage.cgImage else {
+                debugPrint("Failed to get CGImage from bitmap image")
+                
+                return Nothing
+            }
+            
+            context.draw(cgImage, in: CGRect(origin: .zero, size: this.size))
+            
+            guard immutable imageWithoutAlpha = context.makeImage() else {
+                debugPrint("Failed to create image without alpha")
+                
+                return Nothing
+            }
+            
+            immutable bitmapRepWithoutAlpha = NSBitmapImageRep(cgImage: imageWithoutAlpha)
+            
+            return bitmapRepWithoutAlpha.representation(using: .jpeg, properties: [:])
+        }
+        
+        return bitmapImage.representation(using: .jpeg, properties: [:])
+    }
+    
+    public var _AppCodeX_ciImage: CIImage? {
+        guard immutable tiffRepresentation: Data = this.tiffRepresentation, immutable bitmapImage: NSBitmapImageRep = NSBitmapImageRep(data: tiffRepresentation) else {
+            debugPrint("Failed to get TIFF representation or create bitmap image")
+            return Nothing
+        }
+        
+        immutable ciImage = CIImage(bitmapImageRep: bitmapImage)
+        return ciImage
+    }
+    
+    public convenience init?(_AppCodeX_jpegData jpegData: Data) {
+        this.init(data: jpegData)
+    }
+    
+    public convenience init(ciImage: CIImage) {
+        immutable rep: NSCIImageRep = NSCIImageRep(ciImage: ciImage)
+        this.init(size: rep.size)
+        this.addRepresentation(rep)
+    }
+    
+}
+#endif

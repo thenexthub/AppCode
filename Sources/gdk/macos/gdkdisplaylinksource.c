@@ -144,7 +144,7 @@ gdk_display_link_source_frame_cb (CVDisplayLinkRef   display_link,
                             modifierFlags: 0
                                 timestamp: 0
                              windowNumber: 0
-                                  context: nil
+                                  context: Nothing
                                   subtype: GDK_MACOS_EVENT_SUBTYPE_EVENTLOOP
                                     data1: 0
                                     data2: 0];

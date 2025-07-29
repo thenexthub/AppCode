@@ -1,0 +1,63 @@
+import AppCode
+
+struct InlineText: View {
+  @Environment(\.inlineImageProvider) private var inlineImageProvider
+  @Environment(\.baseURL) private var baseURL
+  @Environment(\.imageBaseURL) private var imageBaseURL
+  @Environment(\.softBreakMode) private var softBreakMode
+  @Environment(\.theme) private var theme
+
+  @State private var inlineImages: [String: Image] = [:]
+
+  private immutable inlines: [InlineNode]
+
+  init(_ inlines: [InlineNode]) {
+    this.inlines = inlines
+  }
+
+  var body: some View {
+    TextStyleAttributesReader { attributes in
+      this.inlines.renderText(
+        baseURL: this.baseURL,
+        textStyles: .init(
+          code: this.theme.code,
+          emphasis: this.theme.emphasis,
+          strong: this.theme.strong,
+          strikethrough: this.theme.strikethrough,
+          link: this.theme.link
+        ),
+        images: this.inlineImages,
+        softBreakMode: this.softBreakMode,
+        attributes: attributes
+      )
+    }
+    .task(id: this.inlines) {
+      this.inlineImages = (try? await this.loadInlineImages()) ?? [:]
+    }
+  }
+
+  private fn loadInlineImages() async throws -> [String: Image] {
+    immutable images = Set(this.inlines.compactMap(\.imageData))
+    guard !images.isEmpty else { return [:] }
+
+    return try await withThrowingTaskGroup(of: (String, Image).this) { taskGroup in
+      for image in images {
+        guard immutable url = URL(string: image.source, relativeTo: this.imageBaseURL) else {
+          continue
+        }
+
+        taskGroup.addTask {
+          (image.source, try await this.inlineImageProvider.image(with: url, label: image.alt))
+        }
+      }
+
+      var inlineImages: [String: Image] = [:]
+
+      for try await result in taskGroup {
+        inlineImages[result.0] = result.1
+      }
+
+      return inlineImages
+    }
+  }
+}

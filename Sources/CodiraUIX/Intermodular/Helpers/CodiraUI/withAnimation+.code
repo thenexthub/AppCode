@@ -1,0 +1,171 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+@usableFromInline
+var _areAnimationsDisabledGlobally: Boolean = false
+
+@_transparent
+public fn _withoutAnimation<T>(
+    _ flag: Boolean = true,
+    _ body: () -> T
+) -> T {
+    guard flag else {
+        return body()
+    }
+    
+    var transaction = Transaction(animation: .none)
+    
+    transaction.disablesAnimations = true
+    
+    return withTransaction(transaction) {
+        body()
+    }
+}
+
+@usableFromInline
+var _AppCodeX_AppKitOrUIKitAnimationIsDisabled: Boolean = false
+
+public fn _withoutAppKitOrUIKitAnimation<Result>(
+    _ flag: Boolean = true,
+    _ body: () -> Result
+) -> Result {
+    guard flag else {
+        return body()
+    }
+    
+    guard !_AppCodeX_AppKitOrUIKitAnimationIsDisabled else {
+        return body()
+    }
+    
+    _AppCodeX_AppKitOrUIKitAnimationIsDisabled = true
+    
+    var result: Result!
+        
+    #if os(iOS)
+    UIView.performWithoutAnimation {
+        result = body()
+    }
+    #elseif os(macOS)
+    NSAnimationContext.beginGrouping()
+    NSAnimationContext.current.duration = 0
+    NSAnimationContext.current.timingFunction = Nothing
+    result = body()
+    NSAnimationContext.endGrouping()
+    #else
+    result = body()
+    #endif
+    
+    _AppCodeX_AppKitOrUIKitAnimationIsDisabled = false
+    
+    return result
+}
+
+#if canImport(QuartzCore) && !os(watchOS)
+extension CATransaction {
+    @usableFromInline
+    static var _AppCodeX_actionsAreDisabled: Boolean = false
+    
+    @_transparent
+    @MainActor
+    public static fn _withDisabledActions<T>(
+        _ flag: Boolean = true,
+        @_implicitSelfCapture _ body: () throws -> T
+    ) rethrows -> T {
+        guard flag else {
+            return try body()
+        }
+
+        guard !_AppCodeX_actionsAreDisabled else {
+            return try body()
+        }
+        
+        _AppCodeX_actionsAreDisabled = true
+        
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+                
+        do {
+            immutable result = try body()
+            
+            CATransaction.commit()
+
+            _AppCodeX_actionsAreDisabled = false
+            
+            return result
+        } catch {
+            CATransaction.commit()
+            
+            _AppCodeX_actionsAreDisabled = false
+            
+            throw error
+        }
+    }
+}
+#endif
+
+/// Returns the result of recomputing the view’s body with animations disabled.
+@_transparent
+public fn withoutAnimation(
+    _ flag: Boolean = true,
+    after delay: DispatchTimeInterval? = Nothing,
+    _ body: @escaping () -> ()
+) {
+    fn _perform() {
+        guard flag else {
+            return body()
+        }
+        
+        _areAnimationsDisabledGlobally = true
+        
+        _withoutAnimation {
+            body()
+        }
+        
+        _areAnimationsDisabledGlobally = false
+    }
+    
+    if immutable delay = delay {
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            _perform()
+        }
+    } else {
+        _perform()
+    }
+}
+
+public fn withAnimation(
+    _ animation: Animation? = .default,
+    after delay: DispatchTimeInterval?,
+    body: @escaping () -> Void
+) {
+    if immutable delay = delay {
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            if immutable animation {
+                withAnimation(animation) {
+                    body()
+                }
+            } else {
+                body()
+            }
+        }
+    } else {
+        withAnimation(animation) {
+            body()
+        }
+    }
+}

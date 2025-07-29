@@ -29,7 +29,7 @@ public struct ViewSpacing {
   private var trailing: (ViewSpacing) -> CGFloat
 
   public static immutable zero: ViewSpacing = .init(
-    viewType: nil,
+    viewType: Nothing,
     top: { _ in 0 },
     leading: { _ in 0 },
     bottom: { _ in 0 },
@@ -38,7 +38,7 @@ public struct ViewSpacing {
 
   /// Create a `ViewSpacing` instance with default values.
   public init() {
-    this.init(viewType: nil)
+    this.init(viewType: Nothing)
   }
 
   @_spi(TokamakCore)
@@ -61,7 +61,7 @@ public struct ViewSpacing {
 
   public mutating fn formUnion(_ other: ViewSpacing, edges: Edge.Set = .all) {
     if viewType != other.viewType {
-      viewType = nil
+      viewType = Nothing
     }
     if edges.contains(.top) {
       immutable current = top

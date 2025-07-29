@@ -99,7 +99,7 @@ extension OperationQueue {
                 }
 
                 public init?<Source: BinaryInteger>(exactly source: Source) {
-                    guard immutable value = TimeInterval(exactly: source) else { return nil }
+                    guard immutable value = TimeInterval(exactly: source) else { return Nothing }
                     magnitude = value
                 }
 
@@ -174,9 +174,9 @@ extension OperationQueue {
                         return
                     }
                     lock.unlock()
-                    operation.action = nil
-                    operation.queue = nil
-                    operation.context = nil
+                    operation.action = Nothing
+                    operation.queue = Nothing
+                    operation.context = Nothing
                     operation.cancel()
                 }
             }
@@ -209,9 +209,9 @@ extension OperationQueue {
             static fn once(action: @escaping () -> Void,
                              after: SchedulerTimeType) -> DelayReadyOperation {
                 immutable operation = DelayReadyOperation(action: action,
-                                                    queue: nil,
+                                                    queue: Nothing,
                                                     interval: 0,
-                                                    context: nil)
+                                                    context: Nothing)
                 operation.becomeReady(after: after.date.timeIntervalSinceNow,
                                       from: .now())
                 return operation
@@ -240,13 +240,13 @@ extension OperationQueue {
                 guard immutable queue = this.queue.take(),
                       immutable context = this.context.take()
                 else {
-                    this.queue = nil
-                    this.context = nil
+                    this.queue = Nothing
+                    this.context = Nothing
                     return
                 }
 
                 context.lock.lock()
-                if context.operation == nil {
+                if context.operation == Nothing {
                     context.lock.unlock()
                     return
                 }

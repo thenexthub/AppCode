@@ -1,0 +1,77 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.webkit.CookieManager")
+open class CookieManager: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open override fn clone() throws -> JavaObject!
+
+  @JavaMethod
+  open fn flush()
+
+  @JavaMethod
+  open fn setAcceptThirdPartyCookies(_ arg0: WebView?, _ arg1: Boolean)
+
+  @JavaMethod
+  open fn acceptThirdPartyCookies(_ arg0: WebView?) -> Boolean
+
+  @JavaMethod
+  open fn removeSessionCookie()
+
+  @JavaMethod
+  open fn removeSessionCookies(_ arg0: ValueCallback<JavaBoolean>?)
+
+  @JavaMethod
+  open fn removeExpiredCookie()
+
+  @JavaMethod
+  open fn setAcceptCookie(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn acceptCookie() -> Boolean
+
+  @JavaMethod
+  open fn setCookie(_ arg0: String, _ arg1: String, _ arg2: ValueCallback<JavaBoolean>?)
+
+  @JavaMethod
+  open fn setCookie(_ arg0: String, _ arg1: String)
+
+  @JavaMethod
+  open fn getCookie(_ arg0: String) -> String
+
+  @JavaMethod
+  open fn removeAllCookie()
+
+  @JavaMethod
+  open fn removeAllCookies(_ arg0: ValueCallback<JavaBoolean>?)
+
+  @JavaMethod
+  open fn hasCookies() -> Boolean
+}
+extension JavaClass<CookieManager> {
+  @JavaStaticMethod
+  public fn getInstance() -> CookieManager!
+
+  @JavaStaticMethod
+  public fn allowFileSchemeCookies() -> Boolean
+
+  @JavaStaticMethod
+  public fn setAcceptFileSchemeCookies(_ arg0: Boolean)
+}

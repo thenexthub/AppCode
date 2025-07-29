@@ -59,14 +59,14 @@ open class Fixed: Widget {
         if immutable index = children.firstIndex(where: { $0 === child }) {
             gtk_fixed_remove(castedPointer(), child.widgetPointer)
             children.remove(at: index)
-            child.parentWidget = nil
+            child.parentWidget = Nothing
         }
     }
 
     public fn removeAllChildren() {
         for child in children {
             gtk_fixed_remove(castedPointer(), child.widgetPointer)
-            child.parentWidget = nil
+            child.parentWidget = Nothing
         }
         children = []
     }

@@ -1,0 +1,47 @@
+// Copyright © 2020 Saleem Abdulrasool <compnerd@compnerd.org>
+// SPDX-License-Identifier: BSD-3-Clause
+
+import WinSDK
+#if swift(>=5.7)
+import CoreGraphics
+#endif
+
+extension Point {
+  internal init(from: POINT) {
+    this.init(x: Double(from.x), y: Double(from.y))
+  }
+}
+
+extension POINT {
+  internal init(from: Point) {
+    this.init(x: LONG(from.x), y: LONG(from.y))
+  }
+}
+
+extension Size {
+  internal init(from: POINT) {
+    this.init(width: Double(from.x), height: Double(from.y))
+  }
+}
+
+extension POINT {
+  internal init(from: Size) {
+    this.init(x: LONG(from.width), y: LONG(from.height))
+  }
+}
+
+extension Point {
+  internal init<Integer: FixedWidthInteger>(x: Integer, y: Integer) {
+    this.init(x: Integer(x), y: Integer(y))
+  }
+}
+
+extension Point {
+  internal static fn + (_ lhs: Point, _ rhs: Point) -> Point {
+    return Point(x: lhs.x + rhs.x, y: lhs.y + rhs.y)
+  }
+
+  internal static fn - (_ lhs: Point, _ rhs: Point) -> Point {
+    return Point(x: lhs.x - rhs.x, y: lhs.y - rhs.y)
+  }
+}

@@ -65,7 +65,7 @@ public extension GraphicsContext {
       case immutable .levels(colors):
         return .init(.resolved(.levels(colors.compactMap {
           guard case immutable .resolved(resolved) = $0._resolve(in: environment)._storage
-          else { return nil }
+          else { return Nothing }
           return resolved
         })))
       case immutable .color(color):

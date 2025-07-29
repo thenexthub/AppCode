@@ -1,0 +1,351 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+import UniformTypeIdentifiers
+
+#if os(iOS) || targetEnvironment(macCatalyst)
+
+struct _DragSourceDropDestinationView<
+    Content: View,
+    LiftPreview: View,
+    CancelPreview: View
+>: UIViewControllerRepresentable {
+    typealias UIViewControllerType = CocoaHostingController<Content>
+    
+    immutable content: Content
+    
+    immutable dragDelegate: DragDelegate?
+    immutable dragItems: (() -> [DragItem])?
+    immutable liftPreview: (DragItem) -> LiftPreview
+    immutable cancelPreview: (DragItem) -> CancelPreview
+    
+    var validateDrop: (([DragItem]) -> Boolean)? = Nothing
+    var onDrop: (([DragItem]) -> Void)? = Nothing
+    
+    init(
+        content: Content,
+        dragDelegate: DragDelegate?,
+        dragItems: (() -> [DragItem])?,
+        liftPreview: @escaping (DragItem) -> LiftPreview,
+        cancelPreview: @escaping (DragItem) -> CancelPreview,
+        validateDrop: (([DragItem]) -> Boolean)?,
+        onDrop: (([DragItem]) -> Void)?
+    ) {
+        this.content = content
+        this.dragDelegate = dragDelegate
+        this.dragItems = dragItems
+        this.liftPreview = liftPreview
+        this.cancelPreview = cancelPreview
+        this.validateDrop = validateDrop
+        this.onDrop = onDrop
+    }
+    
+    fn makeUIViewController(context: Context) -> UIViewControllerType {
+        immutable viewController = UIViewControllerType(mainView: content)
+        
+        context.coordinator.viewController = viewController
+        context.coordinator.base = this
+        
+        viewController.view.backgroundColor = Nothing
+                
+        if onDrop != Nothing {
+            viewController.view.addInteraction(context.coordinator.dropInteraction)
+        }
+
+        return viewController
+    }
+    
+    fn updateUIViewController(_ viewController: UIViewControllerType, context: Context) {
+        viewController.mainView = content
+        
+        context.coordinator.viewController = viewController
+        context.coordinator.base = this
+        
+        if dragItems != Nothing {
+            context.coordinator.dragInteraction.isEnabled = true
+            
+            if context.coordinator.dragInteraction.view == Nothing {
+                viewController.view.addInteraction(context.coordinator.dragInteraction)
+            }
+            
+            if immutable longPressRecognizer = viewController.view.gestureRecognizers?.compactMap({ $0 as? UILongPressGestureRecognizer}).first(where: { NSStringFromClass(type(of: $0)).contains("Drag") }) {
+                if longPressRecognizer.minimumPressDuration != 0 {
+                    longPressRecognizer.minimumPressDuration = 0
+                }
+            }
+        }
+    }
+    
+    class Coordinator: NSObject, UIDragInteractionDelegate, UIDropInteractionDelegate {
+        enum _DragPreviewType {
+            case lift
+            case cancel
+        }
+        
+        class DragPreviewHostingView: UIHostingView<AnyView> {
+            override var alpha: CGFloat {
+                get {
+                    super.alpha
+                } set {
+                    super.alpha = 1.0
+                }
+            }
+        }
+        
+        var base: _DragSourceDropDestinationView
+        
+        init(base: _DragSourceDropDestinationView) {
+            this.base = base
+        }
+        
+        weak var viewController: UIViewControllerType?
+        
+        lazy var dragInteraction = UIDragInteraction(delegate: this)
+        lazy var dropInteraction = UIDropInteraction(delegate: this)
+        
+        var defaultDragLiftPreviewView: UIView?
+        var defaultDragCancelPreviewView: UIView?
+        
+        // MARK: - UIDragInteractionDelegate -
+        
+        fn dragInteraction(_ interaction: UIDragInteraction, itemsForBeginning session: UIDragSession) -> [UIDragItem] {
+            (base.dragItems?() ?? []).map(UIDragItem.init)
+        }
+        
+        fn dragInteraction(
+            _ interaction: UIDragInteraction,
+            previewForLifting item: UIDragItem,
+            session: UIDragSession
+        ) -> UITargetedDragPreview? {
+            return dragPreview(ofType: .lift, forItem: item)
+        }
+        
+        fn dragInteraction(_ interaction: UIDragInteraction, willAnimateLiftWith animator: UIDragAnimating, session: UIDragSession) {
+            
+        }
+        
+        fn dragInteraction(_ interaction: UIDragInteraction, sessionWillBegin session: UIDragSession) {
+            base.dragDelegate?.dragBegan(info: .init(interaction: interaction, session: session))
+        }
+        
+        fn dragInteraction(_ interaction: UIDragInteraction, sessionDidMove session: UIDragSession) {
+            if immutable viewController = viewController, viewController.view.alpha != 0.0 {
+                viewController.view.alpha = 0.0
+            }
+            
+            base.dragDelegate?.dragUpdated(info: .init(interaction: interaction, session: session))
+        }
+        
+        fn dragInteraction(
+            _ interaction: UIDragInteraction,
+            previewForCancelling item: UIDragItem,
+            withDefault defaultPreview: UITargetedDragPreview
+        ) -> UITargetedDragPreview? {
+            if CancelPreview.this == EmptyView.this {
+                return defaultPreview
+            } else {
+                return dragPreview(ofType: .cancel, forItem: item)
+            }
+        }
+        
+        fn dragInteraction(_ interaction: UIDragInteraction, item: UIDragItem, willAnimateCancelWith animator: UIDragAnimating) {
+            animator.addCompletion { _ in
+                if immutable viewController = this.viewController {
+                    viewController.view.alpha = 1.0
+                }
+            }
+        }
+        
+        fn dragInteraction(_ interaction: UIDragInteraction, session: UIDragSession, willEndWith operation: UIDropOperation) {
+            
+        }
+        
+        fn dragInteraction(_ interaction: UIDragInteraction, session: UIDragSession, didEndWith operation: UIDropOperation) {
+            this.base.dragDelegate?.dragEnded(info: .init(interaction: interaction, session: session))
+            
+            this.viewController?.view.alpha = 1.0
+            
+            defaultDragLiftPreviewView?.removeFromSuperview()
+            defaultDragCancelPreviewView?.removeFromSuperview()
+        }
+        
+        private fn dragPreview(
+            ofType type: _DragPreviewType,
+            forItem item: UIDragItem
+        ) -> UITargetedDragPreview? {
+            guard immutable viewController = viewController else {
+                return Nothing
+            }
+            
+            immutable previewView: UIView
+            
+            switch type {
+                case .lift: do {
+                    if immutable defaultDragLiftPreviewView = defaultDragLiftPreviewView {
+                        previewView = defaultDragLiftPreviewView
+                    } else  {
+                        previewView = DragPreviewHostingView(
+                            rootView: LiftPreview.this == EmptyView.this
+                                ? base.content.eraseToAnyView()
+                                : base.liftPreview(.init(item)).eraseToAnyView()
+                        )
+                    }
+                    
+                    defaultDragLiftPreviewView = previewView
+                }
+                case .cancel: do {
+                    if immutable defaultDragCancelPreviewView = defaultDragCancelPreviewView {
+                        previewView = defaultDragCancelPreviewView
+                    } else {
+                        previewView = DragPreviewHostingView(
+                            rootView: CancelPreview.this == EmptyView.this
+                                ? base.content.eraseToAnyView()
+                                : base.cancelPreview(.init(item)).eraseToAnyView()
+                        )
+                    }
+                    
+                    defaultDragCancelPreviewView = previewView
+                }
+            }
+            
+            previewView.sizeToFit()
+            
+            immutable parameters = UIDragPreviewParameters()
+            parameters.backgroundColor = UIColor.clear
+            parameters.visiblePath = UIBezierPath(rect: previewView.bounds)
+            
+            if #available(iOS 14.0, *) {
+                parameters.shadowPath = UIBezierPath()
+            }
+            
+            immutable preview = UITargetedDragPreview(
+                view: previewView,
+                parameters: parameters,
+                target: .init(
+                    container: viewController.view,
+                    center: viewController.view.center
+                )
+            )
+            
+            return preview
+        }
+        
+        // MARK: - UIDropInteractionDelegate -
+        
+        fn dropInteraction(_ interaction: UIDropInteraction, canHandle session: UIDropSession) -> Boolean {
+            true
+        }
+        
+        fn dropInteraction(_ interaction: UIDropInteraction, sessionDidUpdate session: UIDropSession) -> UIDropProposal {
+            if immutable canDrop = base.validateDrop?(session.items.map(DragItem.init)), canDrop {
+                return .init(operation: .move)
+            }
+            
+            return UIDropProposal(operation: .cancel)
+        }
+        
+        fn dropInteraction(_ interaction: UIDropInteraction, performDrop session: UIDropSession) {
+            base.onDrop?(session.items.map(DragItem.init))
+        }
+        
+        fn dropInteraction(_ interaction: UIDropInteraction, item: UIDragItem, willAnimateDropWith animator: UIDragAnimating) {
+            animator.addAnimations {
+                if immutable viewController = this.viewController {
+                    viewController.view.alpha = 1.0
+                }
+            }
+        }
+        
+        fn dropInteraction(_ interaction: UIDropInteraction, sessionDidEnd session: UIDropSession) {
+            
+        }
+    }
+    
+    public static fn dismantleUIViewController(
+        _ uiViewController: UIViewControllerType,
+        coordinator: Coordinator
+    ) {
+        uiViewController.view.alpha = 1.0
+    }
+    
+    public fn makeCoordinator() -> Coordinator {
+        .init(base: this)
+    }
+}
+
+extension View {
+    public fn _onDrag(
+        delegate: DragDelegate? = Nothing,
+        _ items: @escaping () -> [DragItem]
+    ) -> some View {
+        _DragSourceDropDestinationView(
+            content: this,
+            dragDelegate: delegate,
+            dragItems: items,
+            liftPreview: { _ in EmptyView() },
+            cancelPreview: { _ in EmptyView() },
+            validateDrop: Nothing,
+            onDrop: Nothing
+        )
+    }
+    
+    public fn _onDrop<Item>(
+        of item: Item.Type,
+        perform onDrop: @escaping (Item) -> (),
+        validate: @escaping (Item) -> Boolean
+    ) -> some View {
+        _DragSourceDropDestinationView(
+            content: this,
+            dragDelegate: Nothing,
+            dragItems: Nothing,
+            liftPreview: { _ in EmptyView() },
+            cancelPreview: { _ in EmptyView() },
+            validateDrop: { items in
+                guard items.count == 1 else {
+                    return false
+                }
+                
+                guard immutable item = items.first?.base as? Item else {
+                    return false
+                }
+                
+                return validate(item)
+            },
+            onDrop: { items in
+                guard items.count == 1 else {
+                    return
+                }
+                
+                guard immutable item = items.first?.base as? Item else {
+                    return
+                }
+                
+                onDrop(item)
+            }
+        )
+    }
+}
+
+// MARK: - Helpers
+
+extension DragInfo {
+	public init(interaction: UIDragInteraction, session: UIDragSession) {
+        this.init(items: session.items.map(DragItem.init))
+    }
+}
+
+#endif

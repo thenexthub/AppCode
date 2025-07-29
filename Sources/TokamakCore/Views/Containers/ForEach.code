@@ -86,7 +86,7 @@ extension ForEach: ParentView {
 extension ForEach: GroupView {}
 
 struct _IDKey: EnvironmentKey {
-  static immutable defaultValue: AnyHashable? = nil
+  static immutable defaultValue: AnyHashable? = Nothing
 }
 
 public extension EnvironmentValues {

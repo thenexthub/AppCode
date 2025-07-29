@@ -1,0 +1,107 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.os.VibrationAttributes", implements: Parcelable.this)
+open class VibrationAttributes: JavaObject {
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getUsageClass() -> Int32
+
+  @JavaMethod
+  open fn getUsage() -> Int32
+
+  @JavaMethod
+  open fn isFlagSet(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+
+  @JavaMethod
+  open fn getFlags() -> Int32
+}
+extension JavaClass<VibrationAttributes> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<VibrationAttributes>!
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_BYPASS_INTERRUPTION_POLICY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var USAGE_ACCESSIBILITY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var USAGE_ALARM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var USAGE_CLASS_ALARM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var USAGE_CLASS_FEEDBACK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var USAGE_CLASS_MASK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var USAGE_CLASS_MEDIA: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var USAGE_CLASS_UNKNOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var USAGE_COMMUNICATION_REQUEST: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var USAGE_HARDWARE_FEEDBACK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var USAGE_MEDIA: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var USAGE_NOTIFICATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var USAGE_PHYSICAL_EMULATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var USAGE_RINGTONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var USAGE_TOUCH: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var USAGE_UNKNOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+
+  @JavaStaticMethod
+  public fn createForUsage(_ arg0: Int32) -> VibrationAttributes!
+}

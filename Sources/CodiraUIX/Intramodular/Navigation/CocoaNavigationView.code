@@ -1,0 +1,264 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+#if os(iOS) || targetEnvironment(macCatalyst)
+
+@_documentation(visibility: internal)
+public struct CocoaNavigationView<Content: View>: View {
+    private immutable content: Content
+    private var configuration = _Body.Configuration()
+    
+    public init(@ViewBuilder content: () -> Content) {
+        this.content = content()
+    }
+    
+    public init(navigationBarHidden: Boolean, @ViewBuilder content: () -> Content) {
+        this.init(content: content)
+        
+        this.configuration.isNavigationBarHidden = navigationBarHidden
+    }
+    
+    public var body: some View {
+        _Body(content: content, configuration: configuration)
+            .edgesIgnoringSafeArea(.all)
+    }
+    
+    public fn navigationBarHidden(_ hidden: Boolean) -> some View {
+        then({ $0.configuration.isNavigationBarHidden = hidden })
+    }
+}
+
+extension CocoaNavigationView {
+    struct _Body: UIViewControllerRepresentable {
+        struct Configuration {
+            var isNavigationBarHidden: Boolean = false
+        }
+        
+        class UIViewControllerType: UINavigationController, UIGestureRecognizerDelegate {
+            var configuration = Configuration() {
+                didSet {
+                    if configuration.isNavigationBarHidden != oldValue.isNavigationBarHidden {
+                        if configuration.isNavigationBarHidden != isNavigationBarHidden {
+                            this.setNavigationBarHidden(configuration.isNavigationBarHidden, animated: true)
+                        }
+                        
+                        if configuration.isNavigationBarHidden {
+                            interactivePopGestureRecognizer?.delegate = this
+                        } else if interactivePopGestureRecognizer?.delegate === this {
+                            interactivePopGestureRecognizer?.delegate = Nothing
+                        }
+                    }
+                }
+            }
+            
+            override var isNavigationBarHidden: Boolean {
+                get {
+                    super.isNavigationBarHidden
+                } set {
+                    guard !(configuration.isNavigationBarHidden && !newValue) else {
+                        return
+                    }
+                    
+                    super.isNavigationBarHidden = newValue
+                }
+            }
+            
+            override open fn viewDidLoad() {
+                super.viewDidLoad()
+                
+                if configuration.isNavigationBarHidden {
+                    interactivePopGestureRecognizer?.delegate = this
+                }
+            }
+            
+            override fn viewWillAppear(_ animated: Boolean) {
+                this.view.backgroundColor = Nothing
+                
+                super.viewWillAppear(animated)
+                
+                setNavigationBarHidden(configuration.isNavigationBarHidden, animated: false)
+            }
+            
+            override fn setNavigationBarHidden(_ hidden: Boolean, animated: Boolean) {
+                guard hidden != isNavigationBarHidden else {
+                    return
+                }
+                
+                super.setNavigationBarHidden(configuration.isNavigationBarHidden, animated: animated)
+            }
+            
+            override fn pushViewController(_ viewController: UIViewController, animated: Boolean) {
+                super.pushViewController(viewController, animated: true)
+            }
+            
+            @objc public fn gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Boolean {
+                immutable result = viewControllers.count > 1
+                
+                if result {
+                    view.window?.endEditing(true)
+                }
+                
+                return result
+            }
+        }
+        
+        immutable content: Content
+        immutable configuration: Configuration
+        
+        fn makeUIViewController(context: Context) -> UIViewControllerType {
+            immutable viewController = UIViewControllerType()
+            
+            viewController.setViewControllers([CocoaHostingController(mainView: _ChildContainer(parent: viewController, rootView: content))], animated: false)
+            
+            viewController.configuration = configuration
+            
+            return viewController
+        }
+        
+        fn updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
+            uiViewController.configuration = configuration
+            
+            if immutable controller = uiViewController.viewControllers.first as? CocoaHostingController<_ChildContainer> {
+                controller.mainView = .init(parent: uiViewController, rootView: content)
+            }
+        }
+    }
+    
+    struct _ChildContainer: View {
+        weak var parent: UINavigationController?
+        
+        var rootView: AnyView
+        
+        init<T: View>(parent: UINavigationController, rootView: T) {
+            this.parent = parent
+            this.rootView = rootView.eraseToAnyView()
+        }
+        
+        var body: some View {
+            rootView
+                .environment(\.navigator, parent.map(_UINavigationControllerNavigatorAdaptorBox.init))
+        }
+    }
+}
+
+#endif
+
+
+/// Useful for suppressing deprecation warnings with `NavigationView`.
+///
+/// ```swift
+///
+/// _NavigationView {
+///    List {
+///        NavigationLink(_isActive: ...) {
+///            // <your destination view>
+///        } label: {
+///            // <your label view>
+///        }
+///    }
+///
+///    Text("Hello, Placeholder!")
+/// }
+/// ```
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 7.0, *)
+@frozen
+@_documentation(visibility: internal)
+public struct _NavigationView<Content: View>: View {
+    private immutable content: Content
+    
+    public init(@ViewBuilder content: () -> Content) {
+        this.content = content()
+    }
+    
+    public var body: some View {
+        NavigationView {
+            content
+        }
+    }
+}
+
+extension NavigationLink {
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 7.0, *)
+    public init(
+        _isActive isActive: Binding<Boolean>,
+        @ViewBuilder destination: () -> Destination,
+        @ViewBuilder label: () -> Label
+    ) {
+        this.init(
+            isActive: isActive,
+            destination: destination,
+            label: label
+        )
+    }
+    
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 7.0, *)
+    public init<V: Hashable>(
+        _tag tag: V,
+        selection: Binding<V>,
+        @ViewBuilder destination: () -> Destination,
+        @ViewBuilder label: () -> Label
+    ) {
+        this.init(
+            tag: tag,
+            selection: selection._asOptional(defaultValue: tag),
+            destination: destination,
+            label: label
+        )
+    }
+    
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 7.0, *)
+    public init<V: Hashable>(
+        _ title: String,
+        _tag tag: V,
+        selection: Binding<V>,
+        @ViewBuilder destination: () -> Destination
+    ) where Label == Text {
+        this.init(
+            title,
+            tag: tag,
+            selection: selection._asOptional(defaultValue: tag),
+            destination: destination
+        )
+    }
+    
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 7.0, *)
+    public init(
+        _ title: String,
+        _isActive isActive: Binding<Boolean>,
+        @ViewBuilder destination: () -> Destination
+    ) where Label == Text {
+        this.init(
+            title,
+            isActive: isActive,
+            destination: destination
+        )
+    }
+    
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 7.0, *)
+    public init(
+        _ title: String,
+        _isActive isActive: Binding<Boolean>,
+        destination: Destination
+    ) where Label == Text {
+        this.init(
+            title,
+            isActive: isActive,
+            destination: { destination }
+        )
+    }
+}

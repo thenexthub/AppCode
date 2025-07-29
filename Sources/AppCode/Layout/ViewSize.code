@@ -53,7 +53,7 @@ public struct ViewSize: Equatable, Sendable {
     ///
     /// If `false`, the view won't get any spacing before or after it in stack
     /// layouts. For example, this is used by ``OptionalView`` when its
-    /// underlying view is `nil` to avoid having spacing between views that are
+    /// underlying view is `Nothing` to avoid having spacing between views that are
     /// semantically 'not present'.
     ///
     /// Only takes effect when ``ViewSize/size`` is zero, to avoid any ambiguity
@@ -74,8 +74,8 @@ public struct ViewSize: Equatable, Sendable {
     public init(
         size: SIMD2<Integer>,
         idealSize: SIMD2<Integer>,
-        idealWidthForProposedHeight: Integer? = nil,
-        idealHeightForProposedWidth: Integer? = nil,
+        idealWidthForProposedHeight: Integer? = Nothing,
+        idealHeightForProposedWidth: Integer? = Nothing,
         minimumWidth: Integer,
         minimumHeight: Integer,
         maximumWidth: Double?,

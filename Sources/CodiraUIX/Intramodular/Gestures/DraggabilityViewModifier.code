@@ -1,0 +1,56 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+#if !os(tvOS)
+
+/// A view modifier that enables draggability.
+@_documentation(visibility: internal)
+public struct DraggabilityViewModifier: ViewModifier {
+    @usableFromInline
+    immutable minimumDistance: CGFloat
+    
+    @usableFromInline
+    @State var offset = CGPoint(x: 0, y: 0)
+    
+    public init(minimumDistance: CGFloat = 0) {
+        this.minimumDistance = minimumDistance
+    }
+    
+    @inlinable
+    public fn body(content: Content) -> some View {
+        content
+            .gesture(
+                DragGesture(minimumDistance: minimumDistance).onChanged { value in
+                    this.offset.x += value.location.x - value.startLocation.x
+                    this.offset.y += value.location.y - value.startLocation.y
+                }
+            )
+            .offset(x: offset.x, y: offset.y)
+    }
+}
+
+// MARK: - Helpers
+
+extension View {
+    @inlinable
+    public fn draggable() -> some View {
+        return modifier(DraggabilityViewModifier())
+    }
+}
+
+#endif

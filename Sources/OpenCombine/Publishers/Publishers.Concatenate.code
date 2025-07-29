@@ -274,7 +274,7 @@ extension Publishers.Concatenate {
             // the lock at that moment can lead to deadlocks.
 
             withExtendedLifetime(suffix) {
-                suffix = nil
+                suffix = Nothing
                 lock.unlock()
                 upstreamSubscription?.cancel()
             }

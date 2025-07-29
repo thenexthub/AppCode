@@ -1,0 +1,164 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+extension PackageInstaller {
+  @JavaClass("android.content.pm.PackageInstaller$SessionInfo", implements: Parcelable.this)
+  open class SessionInfo: JavaObject {
+  @JavaMethod
+  open fn getSessionId() -> Int32
+
+  @JavaMethod
+  open fn getInstallerAttributionTag() -> String
+
+  @JavaMethod
+  open fn getProgress() -> Float
+
+  @JavaMethod
+  open fn getInstallReason() -> Int32
+
+  @JavaMethod
+  open fn getAppPackageName() -> String
+
+  @JavaMethod
+  open fn getAppLabel() -> CharSequence!
+
+  @JavaMethod
+  open fn createDetailsIntent() -> Intent!
+
+  @JavaMethod
+  open fn getMode() -> Int32
+
+  @JavaMethod
+  open fn getInstallLocation() -> Int32
+
+  @JavaMethod
+  open fn getOriginatingUid() -> Int32
+
+  @JavaMethod
+  open fn getPackageSource() -> Int32
+
+  @JavaMethod
+  open fn isMultiPackage() -> Boolean
+
+  @JavaMethod
+  open fn isStaged() -> Boolean
+
+  @JavaMethod
+  open fn isStagedSessionActive() -> Boolean
+
+  @JavaMethod
+  open fn getParentSessionId() -> Int32
+
+  @JavaMethod
+  open fn hasParentSessionId() -> Boolean
+
+  @JavaMethod
+  open fn getChildSessionIds() -> [Int32]
+
+  @JavaMethod
+  open fn isStagedSessionApplied() -> Boolean
+
+  @JavaMethod
+  open fn isStagedSessionReady() -> Boolean
+
+  @JavaMethod
+  open fn isStagedSessionFailed() -> Boolean
+
+  @JavaMethod
+  open fn getStagedSessionErrorCode() -> Int32
+
+  @JavaMethod
+  open fn getStagedSessionErrorMessage() -> String
+
+  @JavaMethod
+  open fn isCommitted() -> Boolean
+
+  @JavaMethod
+  open fn getCreatedMillis() -> Int64
+
+  @JavaMethod
+  open fn getUpdatedMillis() -> Int64
+
+  @JavaMethod
+  open fn getRequireUserAction() -> Int32
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getUser() -> UserHandle!
+
+  @JavaMethod
+  open fn getInstallerPackageName() -> String
+
+  @JavaMethod
+  open fn isSealed() -> Boolean
+
+  @JavaMethod
+  open fn getSize() -> Int64
+
+  @JavaMethod
+  open fn isActive() -> Boolean
+  }
+}
+extension JavaClass<PackageInstaller.SessionInfo> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<PackageInstaller.SessionInfo>!
+
+  @JavaStaticField(isFinal: true)
+  public var INVALID_ID: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SESSION_ACTIVATION_FAILED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SESSION_CONFLICT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SESSION_NO_ERROR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SESSION_UNKNOWN_ERROR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SESSION_VERIFICATION_FAILED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STAGED_SESSION_ACTIVATION_FAILED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STAGED_SESSION_CONFLICT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STAGED_SESSION_NO_ERROR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STAGED_SESSION_UNKNOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STAGED_SESSION_VERIFICATION_FAILED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

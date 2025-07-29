@@ -23,6 +23,6 @@ extension Stream {
 
     @usableFromInline
     fn hasReachedEnd() throws -> Boolean {
-        try peek() == nil
+        try peek() == Nothing
     }
 }

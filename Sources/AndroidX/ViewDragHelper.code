@@ -1,0 +1,147 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidView
+import JavaKit
+import JavaRuntime
+
+@JavaClass("androidx.customview.widget.ViewDragHelper")
+open class ViewDragHelper: JavaObject {
+  @JavaMethod
+  open fn canScroll(_ arg0: View?, _ arg1: Boolean, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, _ arg5: Int32) -> Boolean
+
+  @JavaMethod
+  open fn setMinVelocity(_ arg0: Float)
+
+  @JavaMethod
+  open fn getMinVelocity() -> Float
+
+  @JavaMethod
+  open fn getViewDragState() -> Int32
+
+  @JavaMethod
+  open fn setEdgeTrackingEnabled(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getEdgeSize() -> Int32
+
+  @JavaMethod
+  open fn setEdgeSize(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getDefaultEdgeSize() -> Int32
+
+  @JavaMethod
+  open fn captureChildView(_ arg0: View?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getCapturedView() -> View!
+
+  @JavaMethod
+  open fn getActivePointerId() -> Int32
+
+  @JavaMethod
+  open fn getTouchSlop() -> Int32
+
+  @JavaMethod
+  open fn smoothSlideViewTo(_ arg0: View?, _ arg1: Int32, _ arg2: Int32) -> Boolean
+
+  @JavaMethod
+  open fn settleCapturedViewAt(_ arg0: Int32, _ arg1: Int32) -> Boolean
+
+  @JavaMethod
+  open fn flingCapturedView(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn continueSettling(_ arg0: Boolean) -> Boolean
+
+  @JavaMethod
+  open fn isPointerDown(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn shouldInterceptTouchEvent(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  open fn processTouchEvent(_ arg0: MotionEvent?)
+
+  @JavaMethod
+  open fn checkTouchSlop(_ arg0: Int32, _ arg1: Int32) -> Boolean
+
+  @JavaMethod
+  open fn checkTouchSlop(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn isEdgeTouched(_ arg0: Int32, _ arg1: Int32) -> Boolean
+
+  @JavaMethod
+  open fn isEdgeTouched(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn isCapturedViewUnder(_ arg0: Int32, _ arg1: Int32) -> Boolean
+
+  @JavaMethod
+  open fn isViewUnder(_ arg0: View?, _ arg1: Int32, _ arg2: Int32) -> Boolean
+
+  @JavaMethod
+  open fn findTopChildUnder(_ arg0: Int32, _ arg1: Int32) -> View!
+
+  @JavaMethod
+  open fn cancel()
+
+  @JavaMethod
+  open fn abort()
+}
+extension JavaClass<ViewDragHelper> {
+  @JavaStaticField(isFinal: true)
+  public var INVALID_POINTER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATE_IDLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATE_DRAGGING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATE_SETTLING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var EDGE_LEFT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var EDGE_RIGHT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var EDGE_TOP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var EDGE_BOTTOM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var EDGE_ALL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DIRECTION_HORIZONTAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DIRECTION_VERTICAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DIRECTION_ALL: Int32
+
+  @JavaStaticMethod
+  public fn create(_ arg0: ViewGroup?, _ arg1: Float, _ arg2: ViewDragHelper.Callback?) -> ViewDragHelper!
+
+  @JavaStaticMethod
+  public fn create(_ arg0: ViewGroup?, _ arg1: ViewDragHelper.Callback?) -> ViewDragHelper!
+}

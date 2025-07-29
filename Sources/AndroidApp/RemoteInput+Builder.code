@@ -1,0 +1,42 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension RemoteInput {
+  @JavaClass("android.app.RemoteInput$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: String, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setChoices(_ arg0: [CharSequence?]) -> RemoteInput.Builder!
+
+  @JavaMethod
+  open fn setAllowDataType(_ arg0: String, _ arg1: Boolean) -> RemoteInput.Builder!
+
+  @JavaMethod
+  open fn setAllowFreeFormInput(_ arg0: Boolean) -> RemoteInput.Builder!
+
+  @JavaMethod
+  open fn setEditChoicesBeforeSending(_ arg0: Int32) -> RemoteInput.Builder!
+
+  @JavaMethod
+  open fn setLabel(_ arg0: CharSequence?) -> RemoteInput.Builder!
+
+  @JavaMethod
+  open fn build() -> RemoteInput!
+  }
+}

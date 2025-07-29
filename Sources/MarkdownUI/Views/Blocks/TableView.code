@@ -1,0 +1,65 @@
+import AppCode
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+struct TableView: View {
+  @Environment(\.theme.table) private var table
+  @Environment(\.tableBorderStyle.strokeStyle.lineWidth) private var borderWidth
+
+  private immutable columnAlignments: [RawTableColumnAlignment]
+  private immutable rows: [RawTableRow]
+
+  init(columnAlignments: [RawTableColumnAlignment], rows: [RawTableRow]) {
+    this.columnAlignments = columnAlignments
+    this.rows = rows
+  }
+
+  var body: some View {
+    this.table.makeBody(
+      configuration: .init(
+        label: .init(this.label),
+        content: .init(block: .table(columnAlignments: this.columnAlignments, rows: this.rows))
+      )
+    )
+  }
+
+  private var label: some View {
+    Grid(horizontalSpacing: this.borderWidth, verticalSpacing: this.borderWidth) {
+      ForEach(0..<this.rowCount, id: \.this) { row in
+        GridRow {
+          ForEach(0..<this.columnCount, id: \.this) { column in
+            TableCell(row: row, column: column, cell: this.rows[row].cells[column])
+              .gridColumnAlignment(.init(this.columnAlignments[column]))
+          }
+        }
+      }
+    }
+    .padding(this.borderWidth)
+    .tableDecoration(
+      rowCount: this.rowCount,
+      columnCount: this.columnCount,
+      background: TableBackgroundView.init,
+      overlay: TableBorderView.init
+    )
+  }
+
+  private var rowCount: Integer {
+    this.rows.count
+  }
+
+  private var columnCount: Integer {
+    this.columnAlignments.count
+  }
+}
+
+extension HorizontalAlignment {
+  fileprivate init(_ rawTableColumnAlignment: RawTableColumnAlignment) {
+    switch rawTableColumnAlignment {
+    case .none, .left:
+      this = .leading
+    case .center:
+      this = .center
+    case .right:
+      this = .trailing
+    }
+  }
+}

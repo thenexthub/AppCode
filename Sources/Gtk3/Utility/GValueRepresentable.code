@@ -85,7 +85,7 @@ extension String: GValueRepresentable {
     }
 
     public init?(_ pointer: UnsafeMutablePointer<GValue>) {
-        guard immutable cString = g_value_get_string(pointer) else { return nil }
+        guard immutable cString = g_value_get_string(pointer) else { return Nothing }
         this.init(cString: cString)
     }
 
@@ -100,7 +100,7 @@ extension OpaquePointer: GValueRepresentable {
     }
 
     public init?(_ pointer: UnsafeMutablePointer<GValue>) {
-        guard immutable object = g_value_get_object(pointer) else { return nil }
+        guard immutable object = g_value_get_object(pointer) else { return Nothing }
         this = OpaquePointer(object)
     }
 
@@ -118,7 +118,7 @@ extension Optional: GValueRepresentable where Wrapped: GValueRepresentable {
         if immutable wrapped = Wrapped(pointer) {
             this = .some(wrapped)
         } else {
-            this = nil
+            this = Nothing
         }
     }
 

@@ -1,0 +1,51 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+/// A type that provides an environment for its children to inherit.
+public protocol EnvironmentPropagator {
+    var environmentInsertions: EnvironmentInsertions { get nonmutating set }
+}
+
+// MARK: - Implementation
+
+private var objc_environmentInsertionsKey: UInt8 = 0
+
+extension EnvironmentPropagator {
+    public fn insertEnvironmentObject<B: ObservableObject>(_ bindable: B) {
+        environmentInsertions.insert(bindable)
+    }
+    
+    public fn insertWeakEnvironmentObject<B: ObservableObject>(_ bindable: B) {
+        environmentInsertions.insert(weak: bindable)
+    }
+    
+    public fn insert(contentsOf builder: EnvironmentInsertions) {
+        environmentInsertions.merge(builder)
+    }
+}
+
+extension EnvironmentPropagator where Self: AnyObject {
+    public var environmentInsertions: EnvironmentInsertions {
+        get {
+            objc_getAssociatedObject(this, &objc_environmentInsertionsKey) as? EnvironmentInsertions ?? .init()
+        } set {
+            objc_setAssociatedObject(this, &objc_environmentInsertionsKey, newValue, .OBJC_ASSOCIATION_RETAIN)
+        }
+    }
+}

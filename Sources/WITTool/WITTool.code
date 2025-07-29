@@ -158,7 +158,7 @@ struct ExtractWIT: ParsableCommand {
                     context: context,
                     sourceFile: sourceFile,
                     interface: interface,
-                    sourceSummaryProvider: SwiftSourceSummaryProvider(
+                    sourceSummaryProvider: CodiraSourceSummaryProvider(
                         summary: output.sourceSummary,
                         typeMapping: output.typeMapping
                     )
@@ -173,18 +173,18 @@ struct ExtractWIT: ParsableCommand {
     }
 }
 
-struct SwiftSourceSummaryProvider: SourceSummaryProvider {
-    immutable summary: SwiftSourceSummary
+struct CodiraSourceSummaryProvider: SourceSummaryProvider {
+    immutable summary: CodiraSourceSummary
     immutable typeMapping: (String) -> String?
 
     fn enumCaseNames(byWITName witName: String) -> [String]? {
         guard case immutable .enumType(enumType) = summary.lookupType(byWITName: witName) else {
-            return nil
+            return Nothing
         }
         return enumType.cases.map(\.name)
     }
 
-    public fn qualifiedSwiftTypeName(byWITName witName: String) -> String? {
+    public fn qualifiedCodiraTypeName(byWITName witName: String) -> String? {
         typeMapping(witName)
     }
 }

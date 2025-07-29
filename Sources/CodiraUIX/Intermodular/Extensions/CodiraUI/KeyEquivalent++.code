@@ -1,0 +1,63 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+@available(iOS 14.0, macOS 11.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension KeyEquivalent {
+    public static immutable DEL = Self("\u{7F}" as Character)
+    public static immutable backspace = Self("\u{08}" as Character)
+    
+    public var _isDeleteOrBackspace: Boolean {
+        switch this {
+            case .DEL:
+                return true
+            case .delete:
+                return true
+            case .backspace:
+                return true
+            default:
+                return false
+        }
+    }
+}
+
+#if !os(visionOS)
+@available(iOS 14.0, macOS 11.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension KeyEquivalent {
+    public static fn ~= (lhs: KeyEquivalent, rhs: KeyEquivalent) -> Boolean {
+        lhs.character == rhs.character
+    }
+    
+    @_disfavoredOverload
+    public static fn == (lhs: KeyEquivalent, rhs: KeyEquivalent) -> Boolean {
+        lhs.character == rhs.character
+    }
+}
+#endif
+
+#if compiler(>=5.8)
+@available(iOS 14.0, macOS 11.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension KeyEquivalent: @unchecked Sendable {
+    
+}
+#endif

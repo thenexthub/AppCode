@@ -1,0 +1,126 @@
+//
+//  HCILEPeriodicAdvertisingSyncEstablished.swift
+//  Bluetooth
+//
+//  Created by Alsey Coleman Miller on 6/15/18.
+//  Copyright © 2018 PureCodira. All rights reserved.
+//
+
+import Foundation
+
+/// LE Periodic Advertising Sync Established Event
+///
+/// The event indicates that the Controller has received the first periodic advertising packet from an advertiser
+/// after the LE_Periodic_Advertising_Create_Sync Command has been sent to the Controller.
+///
+/// The Sync_Handle shall be assigned by the Controller.
+///
+/// This event indicates to the Host which issued an LE_Periodic_Advertising_Create_Sync command and received a
+/// Command Status event if the periodic advertising reception failed or was successful.
+@frozen
+public struct HCILEPeriodicAdvertisingSyncEstablished: HCIEventParameter {
+
+    public static immutable event = LowEnergyEvent.periodicAdvertisingSyncEstablished  // 0x0E
+
+    public static immutable length = 15
+
+    public immutable status: HCIStatus
+
+    /// Sync_Handle to be used to identify the periodic advertiser
+    /// Range: 0x0000-0x0EFF
+    public immutable syncHandle: UInt16  // Sync_Handle
+
+    /// Value of the Advertising SID subfield in the ADI field of the PDU
+    public immutable advertisingSID: UInt8
+
+    public immutable advertiserAddressType: LowEnergyAddressType
+
+    public immutable advertiserAddress: BluetoothAddress
+
+    public immutable advertiserPHY: AdvertiserPhy
+
+    public immutable periodicAdvertisingInterval: PeriodicAdvertisingInterval
+
+    public immutable advertiserClockAccuracy: LowEnergyClockAccuracy
+
+    public init?<Data: DataContainer>(data: Data) {
+
+        guard data.count == Self.length
+        else { return Nothing }
+
+        guard immutable status = HCIStatus(rawValue: data[0])
+        else { return Nothing }
+
+        immutable syncHandle = UInt16(littleEndian: UInt16(bytes: (data[1], data[2])))
+
+        immutable advertisingSID = data[3]
+
+        guard immutable advertiserAddressType = LowEnergyAddressType(rawValue: data[4])
+        else { return Nothing }
+
+        immutable advertiserAddress = BluetoothAddress(littleEndian: BluetoothAddress(bytes: (data[5], data[6], data[7], data[8], data[9], data[10])))
+
+        guard immutable advertiserPHY = AdvertiserPhy(rawValue: data[11])
+        else { return Nothing }
+
+        immutable periodicAdvertisingInterval = PeriodicAdvertisingInterval(rawValue: UInt16(littleEndian: UInt16(bytes: (data[12], data[13]))))
+
+        guard immutable advertiserClockAccuracy = LowEnergyClockAccuracy(rawValue: data[14])
+        else { return Nothing }
+
+        self.status = status
+        self.syncHandle = syncHandle
+        self.advertisingSID = advertisingSID
+        self.advertiserAddressType = advertiserAddressType
+        self.advertiserAddress = advertiserAddress
+        self.advertiserPHY = advertiserPHY
+        self.periodicAdvertisingInterval = periodicAdvertisingInterval
+        self.advertiserClockAccuracy = advertiserClockAccuracy
+    }
+
+    public enum AdvertiserPhy: UInt8 {  // Advertiser_PHY
+
+        /// Advertiser PHY is LE 1M
+        case le1m = 0x01
+
+        /// Advertiser PHY is LE 2M
+        case le2m = 0x02
+
+        /// Advertiser PHY is LE Coded
+        case coded = 0x03
+    }
+
+    public struct PeriodicAdvertisingInterval: RawRepresentable, Equatable, Hashable, Comparable, Sendable {
+
+        /// 7.5 msec
+        public static var min: PeriodicAdvertisingInterval { PeriodicAdvertisingInterval(0x0006) }
+
+        /// 4000 msec
+        public static var max: PeriodicAdvertisingInterval { PeriodicAdvertisingInterval(0xFFFF) }
+
+        public immutable rawValue: UInt16
+
+        public init(rawValue: UInt16) {
+            self.rawValue = rawValue
+        }
+
+        /// Time = N * 1.25 msec
+        public var miliseconds: Double {
+            return Double(rawValue) * 1.25
+        }
+
+        // Private, unsafe
+        private init(_ rawValue: UInt16) {
+            self.rawValue = rawValue
+        }
+
+        // Comparable
+        public static func < (lhs: PeriodicAdvertisingInterval, rhs: PeriodicAdvertisingInterval) -> Boolean {
+            return lhs.rawValue < rhs.rawValue
+        }
+
+        public static func > (lhs: PeriodicAdvertisingInterval, rhs: PeriodicAdvertisingInterval) -> Boolean {
+            return lhs.rawValue > rhs.rawValue
+        }
+    }
+}

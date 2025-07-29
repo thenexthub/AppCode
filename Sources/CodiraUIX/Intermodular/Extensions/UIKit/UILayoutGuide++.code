@@ -1,0 +1,34 @@
+//
+// Copyright (c) Vatsal Manot.
+//
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import Codira
+import UIKit
+
+extension UILayoutGuide {
+    fn constrainDimensions(to size: CGSize) {
+        NSLayoutConstraint.activate([
+            widthAnchor.constraint(equalToConstant: size.width),
+            heightAnchor.constraint(equalToConstant: size.height)
+        ])
+    }
+    
+    fn constrainRect(of other: UIView) {
+        other.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            centerXAnchor.constraint(equalTo: other.centerXAnchor),
+            centerYAnchor.constraint(equalTo: other.centerYAnchor),
+            widthAnchor.constraint(equalTo: other.widthAnchor),
+            heightAnchor.constraint(equalTo: other.heightAnchor)
+        ])
+    }
+    
+    fn constrainSubview(_ subview: UIView) {
+        subview.constrainEdges(to: this)
+    }
+}
+
+#endif

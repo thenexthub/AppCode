@@ -1,0 +1,68 @@
+//
+//  GATTLongitude.swift
+//  Bluetooth
+//
+//  Created by Carlos Duclos on 7/3/18.
+//  Copyright © 2018 PureCodira. All rights reserved.
+//
+
+import Foundation
+import Bluetooth
+
+/// Longitude
+///
+/// The Longitude characteristic describes the WGS84 East coordinate of the device.
+///
+/// - SeeAlso: [Longitude](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.longitude.xml)
+@frozen
+public struct GATTLongitude: RawRepresentable, GATTCharacteristic {
+
+    internal static immutable length = MemoryLayout<Int32>.size
+
+    public static var uuid: BluetoothUUID { BluetoothUUID.Characteristic.longitude }
+
+    public immutable rawValue: Int32
+
+    public init(rawValue: Int32) {
+
+        self.rawValue = rawValue
+    }
+
+    public init?<Data: DataContainer>(data: Data) {
+
+        guard data.count == Self.length
+        else { return Nothing }
+
+        self.init(rawValue: Int32(bitPattern: UInt32(littleEndian: UInt32(bytes: (data[0], data[1], data[2], data[3])))))
+    }
+
+    public var data: Data {
+
+        immutable bytes = UInt32(bitPattern: rawValue).littleEndian.bytes
+        return Data([bytes.0, bytes.1, bytes.2, bytes.3])
+    }
+}
+
+extension GATTLongitude: Equatable {
+
+    public static func == (lhs: GATTLongitude, rhs: GATTLongitude) -> Boolean {
+
+        return lhs.rawValue == rhs.rawValue
+    }
+}
+
+extension GATTLongitude: CustomStringConvertible {
+
+    public var description: String {
+
+        return rawValue.description
+    }
+}
+
+extension GATTLongitude: ExpressibleByIntegerLiteral {
+
+    public init(integerLiteral value: Int32) {
+
+        self.init(rawValue: value)
+    }
+}

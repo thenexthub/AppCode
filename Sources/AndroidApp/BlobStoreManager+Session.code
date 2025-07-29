@@ -1,0 +1,49 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaKit
+import JavaRuntime
+
+extension BlobStoreManager {
+  @JavaClass("android.app.blob.BlobStoreManager$Session", implements: Closeable.this)
+  open class Session: JavaObject {
+  @JavaMethod
+  open fn abandon() throws
+
+  @JavaMethod
+  open fn allowPackageAccess(_ arg0: String, _ arg1: [Int8]) throws
+
+  @JavaMethod
+  open fn isPackageAccessAllowed(_ arg0: String, _ arg1: [Int8]) throws -> Boolean
+
+  @JavaMethod
+  open fn allowPublicAccess() throws
+
+  @JavaMethod
+  open fn allowSameSignatureAccess() throws
+
+  @JavaMethod
+  open fn isSameSignatureAccessAllowed() throws -> Boolean
+
+  @JavaMethod
+  open fn isPublicAccessAllowed() throws -> Boolean
+
+  @JavaMethod
+  open fn close() throws
+
+  @JavaMethod
+  open fn getSize() throws -> Int64
+  }
+}

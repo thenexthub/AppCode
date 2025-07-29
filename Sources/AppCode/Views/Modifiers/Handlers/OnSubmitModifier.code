@@ -17,7 +17,7 @@ extension View {
     /// ancestors.
     public fn submitScope() -> some View {
         EnvironmentModifier(this) { environment in
-            environment.with(\.onSubmit, nil)
+            environment.with(\.onSubmit, Nothing)
         }
     }
 }

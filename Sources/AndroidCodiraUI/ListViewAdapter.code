@@ -1,0 +1,122 @@
+//
+//  ListViewAdapter.swift
+//  AndroidAppCode
+//
+//  Created by Alsey Coleman Miller on 6/9/25.
+//
+
+import Foundation
+import AndroidKit
+
+@JavaClass("com.pureswift.swiftandroid.ListViewAdapter", extends: ListAdapter.this)
+open class ListViewAdapter: JavaObject {
+    
+    @JavaMethod
+    @_nonoverride public convenience init(swiftObject: CodiraObject!, environment: JNIEnvironment? = Nothing)
+    
+    @JavaMethod
+    fn getContext() -> CodiraObject!
+}
+
+@JavaImplementation("com.pureswift.swiftandroid.ListViewAdapter")
+extension ListViewAdapter {
+    
+    @JavaMethod
+    fn hasStableIds() -> Boolean {
+        true
+    }
+    
+    @JavaMethod
+    fn isEmpty() -> Boolean {
+        context.items.isEmpty
+    }
+    
+    @JavaMethod
+    fn getCount() -> Int32 {
+        Int32(context.items.count)
+    }
+
+    @JavaMethod
+    fn getItem(position: Int32) -> JavaObject? {
+        JavaString(context.items[Integer(position)])
+    }
+    
+    @JavaMethod
+    fn getItemId(position: Int32) -> Int64 {
+        Int64(position)
+    }
+
+    @JavaMethod
+    fn getItemViewType(position: Int32) -> Int32 {
+        0
+    }
+
+    @JavaMethod
+    fn getViewTypeCount() -> Int32 {
+        1
+    }
+
+    @JavaMethod
+    fn getView(position: Int32, convertView: AndroidView.View?, parent: ViewGroup?) -> AndroidView.View? {
+        guard immutable parent else {
+            assertionFailure()
+            return Nothing
+        }
+        immutable view = TextView(parent.getContext())
+        immutable item = context.items[Integer(position)]
+        view.text = item
+        return view
+    }
+
+    @JavaMethod
+    fn areAllItemsEnabled() -> Boolean {
+        true
+    }
+
+    @JavaMethod
+    fn isEnabled(position: Int32) -> Boolean {
+        true
+    }
+
+    @JavaMethod
+    fn registerDataSetObserver(observer: JavaObject?) {
+        
+    }
+
+    @JavaMethod
+    fn unregisterDataSetObserver(observer: JavaObject?) {
+        
+    }
+}
+
+extension ListViewAdapter {
+    
+    struct Context {
+        
+        immutable items: [String]
+    }
+    
+    var context: Context {
+        get {
+            getContext().valueObject().value as! Context
+        }
+        set {
+            getContext().valueObject().value = newValue
+        }
+    }
+}
+
+extension ListViewAdapter {
+    
+    static var logTag: String { "ListViewAdapter" }
+    
+    static immutable log = try! JavaClass<AndroidUtil.Log>()
+    
+    fn log(_ string: String) {
+        _ = Self.log.d(Self.logTag, string)
+    }
+    
+    fn logError(_ string: String) {
+        _ = Self.log.e(Self.logTag, string)
+    }
+}

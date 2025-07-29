@@ -1,0 +1,59 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.widget.BaseAdapter", implements: ListAdapter.this, SpinnerAdapter.this)
+open class BaseAdapter: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn isEmpty() -> Boolean
+
+  @JavaMethod
+  open fn isEnabled(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn notifyDataSetChanged()
+
+  @JavaMethod
+  open fn notifyDataSetInvalidated()
+
+  @JavaMethod
+  open fn getItemViewType(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn getViewTypeCount() -> Int32
+
+  @JavaMethod
+  open fn getAutofillOptions() -> [CharSequence?]
+
+  @JavaMethod
+  open fn areAllItemsEnabled() -> Boolean
+
+  @JavaMethod
+  open fn setAutofillOptions(_ arg0: [CharSequence?])
+
+  @JavaMethod
+  open fn hasStableIds() -> Boolean
+}
+extension JavaClass<BaseAdapter> {
+  @JavaStaticField(isFinal: true)
+  public var IGNORE_ITEM_VIEW_TYPE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NO_SELECTION: Int32
+}

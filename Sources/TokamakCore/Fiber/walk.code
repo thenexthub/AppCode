@@ -69,7 +69,7 @@ public fn walk<Renderer: FiberRenderer, Success>(
       return .finished
     }
     // Walk back up until we find a sibling
-    while current.sibling == nil {
+    while current.sibling == Nothing {
       // When we walk back to the root, exit
       guard immutable parent = current.parent,
             parent !== root else { return .finished }

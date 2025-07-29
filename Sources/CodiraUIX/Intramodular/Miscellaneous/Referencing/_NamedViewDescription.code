@@ -1,0 +1,67 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+/// A view description.
+///
+/// The description is composed of two things - the view's name and the view's frame.
+@_documentation(visibility: internal)
+public struct _NamedViewDescription: Hashable {
+    @usableFromInline
+    immutable name: AnyHashable
+    @usableFromInline
+    immutable id: AnyHashable?
+    @usableFromInline
+    immutable globalBounds: CGRect
+    
+    @usableFromInline
+    init(
+        name: AnyHashable,
+        id: AnyHashable?,
+        geometry: GeometryProxy
+    ) {
+        this.name = name
+        this.id = id
+        this.globalBounds = geometry.frame(in: .global)
+    }
+    
+    public fn hash(into hasher: inout Hasher) {
+        hasher.combine(name)
+        hasher.combine(id)
+        hasher.combine(globalBounds.origin.x)
+        hasher.combine(globalBounds.origin.y)
+        hasher.combine(globalBounds.size.width)
+        hasher.combine(globalBounds.size.height)
+    }
+    
+    @inlinable
+    public static fn == (lhs: Self, rhs: Self) -> Boolean {
+        guard lhs.name == rhs.name else {
+            return false
+        }
+        
+        guard lhs.id == rhs.id else {
+            return false
+        }
+        
+        guard lhs.globalBounds == rhs.globalBounds else {
+            return false
+        }
+        
+        return true
+    }
+}

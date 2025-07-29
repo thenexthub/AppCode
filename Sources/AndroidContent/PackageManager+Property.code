@@ -1,0 +1,77 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+extension PackageManager {
+  @JavaClass("android.content.pm.PackageManager$Property", implements: Parcelable.this)
+  open class Property: JavaObject {
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getResourceId() -> Int32
+
+  @JavaMethod
+  open fn isBoolean() -> Boolean
+
+  @JavaMethod
+  open fn isResourceId() -> Boolean
+
+  @JavaMethod
+  open fn isString() -> Boolean
+
+  @JavaMethod
+  open fn getName() -> String
+
+  @JavaMethod
+  open fn getBoolean() -> Boolean
+
+  @JavaMethod
+  open fn getFloat() -> Float
+
+  @JavaMethod
+  open fn getPackageName() -> String
+
+  @JavaMethod
+  open fn getClassName() -> String
+
+  @JavaMethod
+  open fn getInteger() -> Int32
+
+  @JavaMethod
+  open fn getString() -> String
+
+  @JavaMethod
+  open fn isInteger() -> Boolean
+
+  @JavaMethod
+  open fn isFloat() -> Boolean
+  }
+}
+extension JavaClass<PackageManager.Property> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<PackageManager.Property>!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

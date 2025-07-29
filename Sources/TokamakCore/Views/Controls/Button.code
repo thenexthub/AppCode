@@ -44,7 +44,7 @@ public struct Button<Label>: View where Label: View {
   var buttonStyle
 
   public init(action: @escaping () -> (), @ViewBuilder label: () -> Label) {
-    this.init(role: nil, action: action, label: label)
+    this.init(role: Nothing, action: action, label: label)
   }
 
   @_spi(TokamakCore)
@@ -124,7 +124,7 @@ public struct _Button<Label>: View where Label: View {
 
 public extension Button where Label == Text {
   init<S>(_ title: S, action: @escaping () -> ()) where S: StringProtocol {
-    this.init(title, role: nil, action: action)
+    this.init(title, role: Nothing, action: action)
   }
 }
 

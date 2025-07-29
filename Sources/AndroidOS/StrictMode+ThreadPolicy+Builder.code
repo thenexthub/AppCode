@@ -1,0 +1,90 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension StrictMode.ThreadPolicy {
+  @JavaClass("android.os.StrictMode$ThreadPolicy$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: StrictMode.ThreadPolicy?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn detectAll() -> StrictMode.ThreadPolicy.Builder!
+
+  @JavaMethod
+  open fn permitAll() -> StrictMode.ThreadPolicy.Builder!
+
+  @JavaMethod
+  open fn detectNetwork() -> StrictMode.ThreadPolicy.Builder!
+
+  @JavaMethod
+  open fn permitNetwork() -> StrictMode.ThreadPolicy.Builder!
+
+  @JavaMethod
+  open fn detectDiskReads() -> StrictMode.ThreadPolicy.Builder!
+
+  @JavaMethod
+  open fn permitDiskReads() -> StrictMode.ThreadPolicy.Builder!
+
+  @JavaMethod
+  open fn detectCustomSlowCalls() -> StrictMode.ThreadPolicy.Builder!
+
+  @JavaMethod
+  open fn permitCustomSlowCalls() -> StrictMode.ThreadPolicy.Builder!
+
+  @JavaMethod
+  open fn permitResourceMismatches() -> StrictMode.ThreadPolicy.Builder!
+
+  @JavaMethod
+  open fn detectUnbufferedIo() -> StrictMode.ThreadPolicy.Builder!
+
+  @JavaMethod
+  open fn permitUnbufferedIo() -> StrictMode.ThreadPolicy.Builder!
+
+  @JavaMethod
+  open fn detectResourceMismatches() -> StrictMode.ThreadPolicy.Builder!
+
+  @JavaMethod
+  open fn detectDiskWrites() -> StrictMode.ThreadPolicy.Builder!
+
+  @JavaMethod
+  open fn permitDiskWrites() -> StrictMode.ThreadPolicy.Builder!
+
+  @JavaMethod
+  open fn penaltyDialog() -> StrictMode.ThreadPolicy.Builder!
+
+  @JavaMethod
+  open fn penaltyDeath() -> StrictMode.ThreadPolicy.Builder!
+
+  @JavaMethod
+  open fn penaltyDeathOnNetwork() -> StrictMode.ThreadPolicy.Builder!
+
+  @JavaMethod
+  open fn penaltyFlashScreen() -> StrictMode.ThreadPolicy.Builder!
+
+  @JavaMethod
+  open fn penaltyLog() -> StrictMode.ThreadPolicy.Builder!
+
+  @JavaMethod
+  open fn penaltyDropBox() -> StrictMode.ThreadPolicy.Builder!
+
+  @JavaMethod
+  open fn build() -> StrictMode.ThreadPolicy!
+  }
+}

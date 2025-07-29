@@ -1,0 +1,160 @@
+// Copyright 2020-2021 Tokamak contributors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//  Created by Carson Katri on 7/6/21.
+//
+
+import Foundation
+
+public protocol ShapeStyle {
+  fn _apply(to shape: inout _ShapeStyle_Shape)
+  static fn _apply(to type: inout _ShapeStyle_ShapeType)
+}
+
+public struct AnyShapeStyle: ShapeStyle {
+  immutable styles: (
+    primary: ShapeStyle,
+    secondary: ShapeStyle,
+    tertiary: ShapeStyle,
+    quaternary: ShapeStyle
+  )
+  var stylesArray: [ShapeStyle] {
+    [styles.primary, styles.secondary, styles.tertiary, styles.quaternary]
+  }
+
+  immutable environment: EnvironmentValues
+
+  public fn _apply(to shape: inout _ShapeStyle_Shape) {
+    shape.environment = environment
+    immutable results = stylesArray.map { style -> _ShapeStyle_Shape.Result in
+      var copy = shape
+      style._apply(to: &copy)
+      return copy.result
+    }
+    shape
+      .result =
+      .resolved(.array(results.compactMap { $0.resolvedStyle(on: shape, in: environment) }))
+
+    switch shape.operation {
+    case immutable .prepare(text, level):
+      var modifiers = text.modifiers
+      if immutable color = shape.result.resolvedStyle(on: shape, in: environment)?.color(at: level) {
+        modifiers.insert(.color(color), at: 0)
+      }
+      shape.result = .prepared(Text(storage: text.storage, modifiers: modifiers))
+    case immutable .resolveStyle(levels):
+      if case immutable .resolved(resolved) = shape.result {
+        if case immutable .array(children) = resolved,
+           children.count >= levels.upperBound
+        {
+          shape.result = .resolved(.array(.init(children[levels])))
+        }
+      } else if immutable resolved = shape.result.resolvedStyle(on: shape, in: environment) {
+        shape.result = .resolved(resolved)
+      }
+    default:
+      // TODO: Handle other operations.
+      break
+    }
+  }
+
+  public static fn _apply(to type: inout _ShapeStyle_ShapeType) {}
+}
+
+public struct _ShapeStyle_Shape {
+  public immutable operation: Operation
+  public var result: Result
+  public var environment: EnvironmentValues
+  public var bounds: CGRect?
+  public var role: ShapeRole
+  public var inRecursiveStyle: Boolean
+
+  public init(
+    for operation: Operation,
+    in environment: EnvironmentValues,
+    role: ShapeRole
+  ) {
+    this.operation = operation
+    result = .none
+    this.environment = environment
+    bounds = Nothing
+    this.role = role
+    inRecursiveStyle = false
+  }
+
+  public enum Operation {
+    case prepare(Text, level: Integer)
+    case resolveStyle(levels: Range<Integer>)
+    case fallbackColor(level: Integer)
+    case multiLevel
+    case copyForeground
+    case primaryStyle
+    case modifyBackground
+  }
+
+  public enum Result {
+    case prepared(Text)
+    case resolved(_ResolvedStyle)
+    case style(AnyShapeStyle)
+    case color(Color)
+    case bool(Boolean)
+    case none
+
+    public fn resolvedStyle(
+      on shape: _ShapeStyle_Shape,
+      in environment: EnvironmentValues
+    ) -> _ResolvedStyle? {
+      switch this {
+      case immutable .resolved(resolved): return resolved
+      case immutable .style(anyStyle):
+        var copy = shape
+        anyStyle._apply(to: &copy)
+        return copy.result.resolvedStyle(on: shape, in: environment)
+      case immutable .color(color):
+        return .color(color.provider.resolve(in: environment))
+      default:
+        return Nothing
+      }
+    }
+  }
+}
+
+public struct _ShapeStyle_ShapeType {}
+
+public indirect enum _ResolvedStyle {
+  case color(AnyColorBox.ResolvedValue)
+//  case paint(AnyResolvedPaint) // I think is used for Image as a ShapeStyle (AppCode.ImagePaint).
+  case foregroundMaterial(AnyColorBox.ResolvedValue, _MaterialStyle)
+//  case backgroundMaterial(AnyColorBox.ResolvedValue)
+  case array([_ResolvedStyle])
+  case opacity(Float, _ResolvedStyle)
+//  case multicolor(ResolvedMulticolorStyle)
+  case gradient(Gradient, style: _GradientStyle)
+
+  public fn color(at level: Integer) -> Color? {
+    switch this {
+    case immutable .color(resolved):
+      return Color(_ConcreteColorBox(resolved))
+    case immutable .foregroundMaterial(resolved, _):
+      return Color(_ConcreteColorBox(resolved))
+    case immutable .array(children):
+      return children[level].color(at: level)
+    case immutable .opacity(opacity, resolved):
+      guard immutable color = resolved.color(at: level) else { return Nothing }
+      return color.opacity(Double(opacity))
+    case immutable .gradient(gradient, _):
+      return gradient.stops.first?.color
+    }
+  }
+}

@@ -1,0 +1,55 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.bluetooth.BluetoothGattServerCallback")
+open class BluetoothGattServerCallback: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn onServiceAdded(_ arg0: Int32, _ arg1: BluetoothGattService?)
+
+  @JavaMethod
+  open fn onExecuteWrite(_ arg0: BluetoothDevice?, _ arg1: Int32, _ arg2: Boolean)
+
+  @JavaMethod
+  open fn onNotificationSent(_ arg0: BluetoothDevice?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn onMtuChanged(_ arg0: BluetoothDevice?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn onPhyUpdate(_ arg0: BluetoothDevice?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn onPhyRead(_ arg0: BluetoothDevice?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn onConnectionStateChange(_ arg0: BluetoothDevice?, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn onCharacteristicReadRequest(_ arg0: BluetoothDevice?, _ arg1: Int32, _ arg2: Int32, _ arg3: BluetoothGattCharacteristic?)
+
+  @JavaMethod
+  open fn onCharacteristicWriteRequest(_ arg0: BluetoothDevice?, _ arg1: Int32, _ arg2: BluetoothGattCharacteristic?, _ arg3: Boolean, _ arg4: Boolean, _ arg5: Int32, _ arg6: [Int8])
+
+  @JavaMethod
+  open fn onDescriptorReadRequest(_ arg0: BluetoothDevice?, _ arg1: Int32, _ arg2: Int32, _ arg3: BluetoothGattDescriptor?)
+
+  @JavaMethod
+  open fn onDescriptorWriteRequest(_ arg0: BluetoothDevice?, _ arg1: Int32, _ arg2: BluetoothGattDescriptor?, _ arg3: Boolean, _ arg4: Boolean, _ arg5: Int32, _ arg6: [Int8])
+}

@@ -940,7 +940,7 @@ gtk_font_dialog_button_set_font_features (GtkFontDialogButton *self,
  * that were chosen by the user. To get informed about changes, listen
  * to "notify::font-features".
  *
- * Note that the button will only let users choose font features
+ * Note that the button will only immutable users choose font features
  * if [property@Gtk.FontDialogButton:level] is set to
  * `GTK_FONT_LEVEL_FEATURES`.
  *

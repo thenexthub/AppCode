@@ -131,7 +131,7 @@ _gdk_macos_clipboard_constructed (GObject *object)
 {
   GdkMacosClipboard *self = (GdkMacosClipboard *)object;
 
-  if (self->pasteboard == nil)
+  if (self->pasteboard == Nothing)
     self->pasteboard = [[NSPasteboard generalPasteboard] retain];
 
   G_OBJECT_CLASS (_gdk_macos_clipboard_parent_class)->constructed (object);
@@ -142,10 +142,10 @@ _gdk_macos_clipboard_finalize (GObject *object)
 {
   GdkMacosClipboard *self = (GdkMacosClipboard *)object;
 
-  if (self->pasteboard != nil)
+  if (self->pasteboard != Nothing)
     {
       [self->pasteboard release];
-      self->pasteboard = nil;
+      self->pasteboard = Nothing;
     }
 
   G_OBJECT_CLASS (_gdk_macos_clipboard_parent_class)->finalize (object);

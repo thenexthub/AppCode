@@ -1,0 +1,50 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.app.FragmentHostCallback")
+open class FragmentHostCallback<E: AnyJavaObject>: FragmentContainer {
+  @JavaMethod
+  open override fn onHasView() -> Boolean
+
+  @JavaMethod
+  open fn onAttachFragment(_ arg0: Fragment?)
+
+  @JavaMethod
+  open fn onDump(_ arg0: String, _ arg1: FileDescriptor?, _ arg2: PrintWriter?, _ arg3: [String])
+
+  @JavaMethod
+  open fn onShouldSaveFragmentState(_ arg0: Fragment?) -> Boolean
+
+  @JavaMethod
+  open fn onUseFragmentManagerInflaterFactory() -> Boolean
+
+  @JavaMethod
+  open fn onGetHost() -> JavaObject!
+
+  @JavaMethod
+  open fn onInvalidateOptionsMenu()
+
+  @JavaMethod
+  open fn onRequestPermissionsFromFragment(_ arg0: Fragment?, _ arg1: [String], _ arg2: Int32)
+
+  @JavaMethod
+  open fn onHasWindowAnimations() -> Boolean
+
+  @JavaMethod
+  open fn onGetWindowAnimations() -> Int32
+}

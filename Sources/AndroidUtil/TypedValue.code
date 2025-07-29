@@ -1,0 +1,212 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.util.TypedValue")
+open class TypedValue: JavaObject {
+  @JavaField(isFinal: false)
+  public var assetCookie: Int32
+
+  @JavaField(isFinal: false)
+  public var changingConfigurations: Int32
+
+  @JavaField(isFinal: false)
+  public var data: Int32
+
+  @JavaField(isFinal: false)
+  public var density: Int32
+
+  @JavaField(isFinal: false)
+  public var resourceId: Int32
+
+  @JavaField(isFinal: false)
+  public var sourceResourceId: Int32
+
+  @JavaField(isFinal: false)
+  public var string: CharSequence!
+
+  @JavaField(isFinal: false)
+  public var type: Int32
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn isColorType() -> Boolean
+
+  @JavaMethod
+  open fn getComplexUnit() -> Int32
+
+  @JavaMethod
+  open fn getDimension(_ arg0: DisplayMetrics?) -> Float
+
+  @JavaMethod
+  open fn getFraction(_ arg0: Float, _ arg1: Float) -> Float
+
+  @JavaMethod
+  open fn coerceToString() -> CharSequence!
+
+  @JavaMethod
+  open fn setTo(_ arg0: TypedValue?)
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn getFloat() -> Float
+}
+extension JavaClass<TypedValue> {
+  @JavaStaticField(isFinal: true)
+  public var COMPLEX_MANTISSA_MASK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COMPLEX_MANTISSA_SHIFT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COMPLEX_RADIX_0p23: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COMPLEX_RADIX_16p7: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COMPLEX_RADIX_23p0: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COMPLEX_RADIX_8p15: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COMPLEX_RADIX_MASK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COMPLEX_RADIX_SHIFT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COMPLEX_UNIT_DIP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COMPLEX_UNIT_FRACTION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COMPLEX_UNIT_FRACTION_PARENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COMPLEX_UNIT_IN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COMPLEX_UNIT_MASK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COMPLEX_UNIT_MM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COMPLEX_UNIT_PT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COMPLEX_UNIT_PX: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COMPLEX_UNIT_SHIFT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COMPLEX_UNIT_SP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DATA_NULL_EMPTY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DATA_NULL_UNDEFINED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_DEFAULT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_ATTRIBUTE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_DIMENSION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_FIRST_COLOR_INT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_FIRST_INT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_FLOAT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_FRACTION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_INT_BOOLEAN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_INT_COLOR_ARGB4: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_INT_COLOR_ARGB8: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_INT_COLOR_RGB4: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_INT_COLOR_RGB8: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_INT_DEC: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_INT_HEX: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_LAST_COLOR_INT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_LAST_INT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_NULL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_REFERENCE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_STRING: Int32
+
+  @JavaStaticMethod
+  public fn complexToFloat(_ arg0: Int32) -> Float
+
+  @JavaStaticMethod
+  public fn complexToDimension(_ arg0: Int32, _ arg1: DisplayMetrics?) -> Float
+
+  @JavaStaticMethod
+  public fn complexToDimensionPixelOffset(_ arg0: Int32, _ arg1: DisplayMetrics?) -> Int32
+
+  @JavaStaticMethod
+  public fn complexToDimensionPixelSize(_ arg0: Int32, _ arg1: DisplayMetrics?) -> Int32
+
+  @JavaStaticMethod
+  public fn applyDimension(_ arg0: Int32, _ arg1: Float, _ arg2: DisplayMetrics?) -> Float
+
+  @JavaStaticMethod
+  public fn complexToFraction(_ arg0: Int32, _ arg1: Float, _ arg2: Float) -> Float
+
+  @JavaStaticMethod
+  public fn coerceToString(_ arg0: Int32, _ arg1: Int32) -> String
+}

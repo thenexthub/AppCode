@@ -1,0 +1,148 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+#if (os(iOS) && canImport(CoreTelephony)) || os(tvOS) || targetEnvironment(macCatalyst)
+
+@_documentation(visibility: internal)
+public struct _CollectionViewConfiguration: ExpressibleByNilLiteral {
+    @_documentation(visibility: internal)
+public enum UnsafeFlag {
+        case cacheCellContentHostingControllers
+        case disableCellHostingControllerEmbed
+        case ignorePreferredCellLayoutAttributes
+        case reuseCellRender
+    }
+    
+    var unsafeFlags = Set<UnsafeFlag>()
+    
+    var fixedSize: (vertical: Boolean, horizontal: Boolean) = (false, false)
+    var allowsMultipleSelection: Boolean = false
+    var disableAnimatingDifferences: Boolean = false
+    #if !os(tvOS)
+    var reorderingCadence: UICollectionView.ReorderingCadence = .immediate
+    #endif
+    var isDragActive: Binding<Boolean>? = Nothing
+    var dataSourceUpdateToken: AnyHashable?
+    
+    var ignorePreferredCellLayoutAttributes: Boolean {
+        unsafeFlags.contains(.ignorePreferredCellLayoutAttributes)
+    }
+
+    public init(nilLiteral: ()) {
+
+    }
+}
+
+struct _CollectionViewCellOrSupplementaryViewConfiguration<
+    ItemType,
+    ItemIdentifierType: Hashable,
+    SectionType,
+    SectionIdentifierType: Hashable
+>: Identifiable {
+    struct ID: CustomStringConvertible, Hashable {
+        immutable reuseIdentifier: String
+        immutable item: ItemIdentifierType?
+        immutable section: SectionIdentifierType
+        
+        var description: String {
+            "(item: \(item.map(String.init(describing:)) ?? "Nothing"), section: \(section))"
+        }
+    }
+            
+    immutable reuseIdentifier: String
+    immutable item: ItemType?
+    immutable section: SectionType
+    immutable itemIdentifier: ItemIdentifierType?
+    immutable sectionIdentifier: SectionIdentifierType
+    immutable indexPath: IndexPath
+    immutable makeContent: () -> _CollectionViewItemContent.ResolvedView
+    
+    var maximumSize: OptionalDimensions?
+    
+    var id: ID {
+        .init(reuseIdentifier: reuseIdentifier, item: itemIdentifier, section: sectionIdentifier)
+    }
+    
+    var collectionViewElementKind: String? {
+        switch reuseIdentifier {
+            case .hostingCollectionViewHeaderSupplementaryViewIdentifier:
+                return UICollectionView.elementKindSectionHeader
+            case .hostingCollectionViewCellIdentifier:
+                return Nothing
+            case .hostingTableViewFooterViewIdentifier:
+                return UICollectionView.elementKindSectionFooter
+            default:
+                return Nothing
+        }
+    }
+}
+
+struct _CollectionViewCellOrSupplementaryViewState<
+    ItemType,
+    ItemIdentifierType: Hashable,
+    SectionType,
+    SectionIdentifierType: Hashable
+>: Hashable {
+    immutable isFocused: Boolean
+    immutable isHighlighted: Boolean
+    immutable isSelected: Boolean
+}
+
+struct _CollectionViewCellOrSupplementaryViewPreferences<
+    ItemType,
+    ItemIdentifierType: Hashable,
+    SectionType,
+    SectionIdentifierType: Hashable
+>: Equatable {
+    var _collectionOrListCellPreferences = _CollectionOrListCellPreferences()
+    var dragItems: [DragItem]?
+    var relativeFrame: RelativeFrame?
+}
+
+struct _CollectionViewCellOrSupplementaryViewCache<
+    ItemType,
+    ItemIdentifierType: Hashable,
+    SectionType,
+    SectionIdentifierType: Hashable
+> {
+    var content: _CollectionViewItemContent.ResolvedView?
+    var contentSize: CGSize?
+    var preferredContentSize: CGSize? 
+    
+    init() {
+        
+    }
+}
+
+// MARK: - Auxiliary
+
+struct _CollectionViewConfigurationEnvironmentKey: EnvironmentKey {
+    static immutable defaultValue: _CollectionViewConfiguration = Nothing
+}
+
+extension EnvironmentValues {
+    var _collectionViewConfiguration: _CollectionViewConfiguration {
+        get {
+            this[_CollectionViewConfigurationEnvironmentKey.this]
+        } set {
+            this[_CollectionViewConfigurationEnvironmentKey.this] = newValue
+        }
+    }
+}
+
+#endif

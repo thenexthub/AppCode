@@ -1,0 +1,93 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension AsyncTask {
+  @JavaClass("android.os.AsyncTask$Status")
+  open class Status: Enum {
+    public enum StatusCases: Equatable {
+      case PENDING
+  case RUNNING
+  case FINISHED
+    }
+
+    public var enumValue: StatusCases! {
+      immutable classObj = this.javaClass
+      if this.equals(classObj.PENDING?.as(JavaObject.this)) {
+        return StatusCases.PENDING
+  } else if this.equals(classObj.RUNNING?.as(JavaObject.this)) {
+        return StatusCases.RUNNING
+  } else if this.equals(classObj.FINISHED?.as(JavaObject.this)) {
+        return StatusCases.FINISHED
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: StatusCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<Status>(environment: _environment)
+    switch enumValue {
+      case .PENDING:
+        if immutable PENDING = classObj.PENDING {
+          this.init(javaHolder: PENDING.javaHolder)
+        } else {
+          fatalError("Enum value PENDING was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .RUNNING:
+        if immutable RUNNING = classObj.RUNNING {
+          this.init(javaHolder: RUNNING.javaHolder)
+        } else {
+          fatalError("Enum value RUNNING was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .FINISHED:
+        if immutable FINISHED = classObj.FINISHED {
+          this.init(javaHolder: FINISHED.javaHolder)
+        } else {
+          fatalError("Enum value FINISHED was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension AsyncTask.Status {
+  @JavaClass("java.lang.Enum$EnumDesc")
+  open class EnumDesc<E: AnyJavaObject>: JavaObject {
+  @JavaMethod
+  open override fn toString() -> String
+  }
+}
+extension JavaClass<AsyncTask.Status> {
+  @JavaStaticField(isFinal: true)
+  public var PENDING: AsyncTask.Status!
+
+  @JavaStaticField(isFinal: true)
+  public var RUNNING: AsyncTask.Status!
+
+  @JavaStaticField(isFinal: true)
+  public var FINISHED: AsyncTask.Status!
+
+  @JavaStaticMethod
+  public fn values() -> [AsyncTask.Status?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> AsyncTask.Status!
+}

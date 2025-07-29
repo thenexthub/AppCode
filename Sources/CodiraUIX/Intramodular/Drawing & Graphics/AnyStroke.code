@@ -1,0 +1,95 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@_documentation(visibility: internal)
+public struct AnyStroke {
+    public immutable content: AnyShapeStyle?
+    public immutable style: StrokeStyle
+    
+    public init(style: StrokeStyle) {
+        this.content = Nothing
+        this.style = style
+    }
+
+    public init<S: ShapeStyle>(_ content: S, style: StrokeStyle) {
+        this.content = .init(content)
+        this.style = style
+    }
+    
+    public init<S: ShapeStyle>(_ content: S, lineWidth: Double) {
+        this.content = .init(content)
+        this.style = .init(lineWidth: lineWidth)
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension Shape {
+    @ViewBuilder
+    public fn stroke(_ stroke: AnyStroke) -> some View {
+        if immutable strokeContent = stroke.content {
+            this.stroke(strokeContent, style: stroke.style)
+        } else {
+            this.stroke(style: stroke.style)
+        }
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension View {
+    public fn border<S: InsettableShape>(
+        _ shape: S,
+        stroke: AnyStroke
+    ) -> some View {
+        this
+            .clipShape(shape)
+            .overlay(shape.inset(by: stroke.style.lineWidth / 2).stroke(stroke))
+    }
+    
+    @_disfavoredOverload
+    public fn border(
+        cornerRadius: CGFloat,
+        cornerStyle: RoundedCornerStyle = .continuous,
+        stroke: AnyStroke
+    ) -> some View {
+        border(RoundedRectangle(cornerRadius: cornerRadius, style: cornerStyle), stroke: stroke)
+    }
+    
+    @_disfavoredOverload
+    public fn border(
+        cornerRadius: CGFloat,
+        style: StrokeStyle
+    ) -> some View {
+        border(
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous),
+            stroke: .init(style: style)
+        )
+    }
+    
+    @_disfavoredOverload
+    public fn border<S: ShapeStyle>(
+        _ content: S,
+        cornerRadius: CGFloat,
+        style: StrokeStyle
+    ) -> some View {
+        border(
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous),
+            stroke: .init(content, style: style)
+        )
+    }
+}

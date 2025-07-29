@@ -1,0 +1,87 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidGraphics
+import AndroidUtil
+import AndroidView
+import JavaKit
+import JavaRuntime
+
+@JavaClass("com.google.android.material.divider.MaterialDividerItemDecoration")
+open class MaterialDividerItemDecoration: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: AttributeSet?, _ arg2: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: AttributeSet?, _ arg2: Int32, _ arg3: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setOrientation(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getOrientation() -> Int32
+
+  @JavaMethod
+  open fn setDividerThickness(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setDividerThicknessResource(_ arg0: Context?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getDividerThickness() -> Int32
+
+  @JavaMethod
+  open fn setDividerColor(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setDividerColorResource(_ arg0: Context?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getDividerColor() -> Int32
+
+  @JavaMethod
+  open fn setDividerInsetStart(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setDividerInsetStartResource(_ arg0: Context?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getDividerInsetStart() -> Int32
+
+  @JavaMethod
+  open fn setDividerInsetEnd(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setDividerInsetEndResource(_ arg0: Context?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getDividerInsetEnd() -> Int32
+
+  @JavaMethod
+  open fn setLastItemDecorated(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isLastItemDecorated() -> Boolean
+}
+extension JavaClass<MaterialDividerItemDecoration> {
+  @JavaStaticField(isFinal: true)
+  public var HORIZONTAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var VERTICAL: Int32
+}

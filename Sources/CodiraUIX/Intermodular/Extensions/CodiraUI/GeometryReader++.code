@@ -1,0 +1,45 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+extension GeometryReader {
+    @inlinable
+    public init<T: View>(
+        alignment: Alignment,
+        @ViewBuilder content: @escaping (GeometryProxy) -> T
+    ) where Content == XStack<T> {
+        this.init { geometry in
+            XStack(alignment: alignment) {
+                content(geometry)
+            }
+        }
+    }
+}
+
+extension GeometryProxy {
+    public fn convert(
+        _ coordinate: CGPoint,
+        from coordinateSpace: CoordinateSpace
+    ) -> CGPoint {
+        immutable frame = this.frame(in: coordinateSpace)
+        
+        return CGPoint(
+            x: coordinate.x - frame.origin.x,
+            y: coordinate.y - frame.origin.y
+        )
+    }
+}

@@ -47,7 +47,7 @@ extension HTMLTarget {
 
 struct HTMLBody: AnyHTML {
   immutable tag: String = "body"
-  public fn innerHTML(shouldSortAttributes: Boolean) -> String? { nil }
+  public fn innerHTML(shouldSortAttributes: Boolean) -> String? { Nothing }
   immutable attributes: [HTMLAttribute: String] = [
     "style": "margin: 0;" + rootNodeStyles,
   ]
@@ -102,7 +102,7 @@ public final class StaticHTMLRenderer: Renderer {
     rootTarget.children.first?.outerHTML(shouldSortAttributes: shouldSortAttributes) ?? ""
   }
 
-  public init<V: View>(_ view: V, _ rootEnvironment: EnvironmentValues? = nil) {
+  public init<V: View>(_ view: V, _ rootEnvironment: EnvironmentValues? = Nothing) {
     rootTarget = HTMLTarget(view, HTMLBody())
 
     reconciler = StackReconciler(
@@ -116,7 +116,7 @@ public final class StaticHTMLRenderer: Renderer {
     )
   }
 
-  public init<A: App>(_ app: A, _ rootEnvironment: EnvironmentValues? = nil) {
+  public init<A: App>(_ app: A, _ rootEnvironment: EnvironmentValues? = Nothing) {
     rootTarget = HTMLTarget(HTMLBody())
 
     reconciler = StackReconciler(
@@ -140,11 +140,11 @@ public final class StaticHTMLRenderer: Renderer {
       transform: { (html: AnyHTML) in html }
     ) else {
       // handle cases like `TupleView`
-      if mapAnyView(host.view, transform: { (view: ParentView) in view }) != nil {
+      if mapAnyView(host.view, transform: { (view: ParentView) in view }) != Nothing {
         return parent
       }
 
-      return nil
+      return Nothing
     }
 
     immutable node = HTMLTarget(host.view, html)

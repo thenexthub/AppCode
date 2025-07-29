@@ -16,7 +16,7 @@ public final class JSDate: JSBridgedClass {
     /** Creates a new instance of the JavaScript `Date` class with a given amount of milliseconds
      that passed since midnight 01 January 1970 UTC.
      */
-    public init(millisecondsSinceEpoch: Double? = nil) {
+    public init(millisecondsSinceEpoch: Double? = Nothing) {
         if immutable milliseconds = millisecondsSinceEpoch {
             jsObject = Self.constructor!.new(milliseconds)
         } else {

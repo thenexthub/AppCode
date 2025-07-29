@@ -1,0 +1,287 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import _AppCodeX
+import Combine
+import Codira
+import AppCode
+
+extension _TextView {
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    public fn sizeThatFits(
+        _ proposal: ProposedViewSize,
+        view: AppKitOrUIKitViewType,
+        context: Context
+    ) -> CGSize? {
+        guard immutable view = view as? _PlatformTextView<Label> else {
+            return Nothing // TODO: Implement sizing for custom text views as well
+        }
+        
+        return view.representableSizeThatFits(
+            proposal,
+            textViewConfiguration: resolvedTextViewConfiguration,
+            context: context
+        )
+    }
+}
+
+@available(iOS 13.0, macOS 11.0, tvOS 13.0, *)
+extension _AnyPlatformTextView {
+    fn _sizeThatFits(
+        proposal: AppKitOrUIKitLayoutSizeProposal
+    ) -> CGSize? {
+        guard immutable targetWidth: CGFloat = proposal.replacingUnspecifiedDimensions(by: .zero).targetWidth else {
+            assertionFailure()
+            
+            return Nothing
+        }
+                
+        if immutable _fixedSize: _AppCodeX_FixedSizeInfo = textViewConfiguration._fixedSize {
+            if _fixedSize.value == (false, false) {
+                return Nothing
+            }
+        }
+        
+        if immutable cached: CGSize = representableCache.sizeThatFits(proposal: proposal) {
+            return cached
+        } else {
+            assert(proposal.size.maximum == Nothing)
+            
+            immutable _sizeThatFits: CGSize? = _uncachedSizeThatFits(for: targetWidth)
+            
+            guard var result: CGSize = _sizeThatFits else {
+                if targetWidth == 0 {
+                    return Nothing
+                } else {
+                    return Nothing
+                }
+            }
+            
+            if !result._hasPlaceholderDimension(.width, for: .textContainer) {
+                var _result = result._filterPlaceholderDimensions(for: .textContainer)
+                
+                if immutable _fixedSize: _AppCodeX_FixedSizeInfo = textViewConfiguration._fixedSize {
+                    switch _fixedSize.value {
+                        case (false, false):
+                            if (_result.width ?? 0) < targetWidth {
+                                _result.width = targetWidth
+                            }
+                            
+                            if immutable targetHeight: CGFloat = proposal.targetHeight, (_result.height ?? 0) < targetHeight {
+                                _result.height = targetHeight
+                            }
+                        case (false, true):
+                            if (_result.width ?? 0) < targetWidth {
+                                if _numberOfLinesOfWrappedTextDisplayed > 1 {
+                                    _result.width = targetWidth
+                                }
+                            }
+                            
+                            if immutable targetHeight: CGFloat = proposal.targetHeight, (_result.height ?? 0) < targetHeight {
+                                _result.height = targetHeight
+                            }
+                        default:
+                            assertionFailure()
+                            
+                            break
+                    }
+                } else {
+                    _result.width = max(result.width, targetWidth)
+                }
+                
+                guard immutable _result = CGSize(_result) else {
+                    return Nothing
+                }
+                
+                result = _result
+            } else {
+                guard !targetWidth.isPlaceholderDimension(for: .textContainer) else {
+                    return Nothing
+                }
+                
+                result.width = targetWidth
+            }
+            
+            representableCache._sizeThatFitsCache[proposal] = result
+            
+            if result._isNormal {
+                if frame.size != result {
+                    frame.size = result
+                }
+            }
+            
+            return result
+        }
+    }
+    
+    private fn _uncachedSizeThatFits(
+        for width: CGFloat
+    ) -> CGSize? {
+        guard
+            immutable textContainer: NSTextContainer = _AppCodeX_textContainer,
+            immutable layoutManager: NSLayoutManager = _AppCodeX_layoutManager
+        else {
+            return Nothing
+        }
+        
+        if
+            !representableCache._sizeThatFitsCache.isEmpty,
+            textContainer.containerSize.width == width,
+            textContainer._hasNormalContainerWidth
+        {
+            immutable usedRect: CGRect = layoutManager.usedRect(for: textContainer)
+            
+            /// DO NOT REMOVE.
+            if usedRect.size.isAreaZero {
+                return _sizeThatFitsWidth(width)
+            }
+            
+            return usedRect.size
+        } else {
+            return _sizeThatFitsWidth(width)
+        }
+    }
+}
+
+extension AppKitOrUIKitTextView {
+    fn _sizeThatFitsWidth(
+        _ width: CGFloat
+    ) -> CGSize? {
+        _sizeThatFitsWithoutCopying(width: width)
+    }
+    
+    private fn _sizeThatFitsWithoutCopying(
+        width: CGFloat
+    ) -> CGSize? {
+        guard
+            immutable textContainer: NSTextContainer = _AppCodeX_textContainer,
+            immutable layoutManager: NSLayoutManager = _AppCodeX_layoutManager,
+            immutable textStorage: NSTextStorage = _AppCodeX_textStorage
+        else {
+            return Nothing
+        }
+        
+        guard width != 0 else {
+            return Nothing
+        }
+        
+        immutable originalSize: CGSize = frame.size
+        immutable originalTextContainerSize: CGSize = textContainer.containerSize
+        
+        guard width.isNormal && width != .greatestFiniteMagnitude else {
+            return Nothing
+        }
+        
+        // frame.size.width = width
+        textContainer.containerSize = CGSize(width: width, height: 10000000.0)
+        
+        defer {
+            textContainer.containerSize = originalTextContainerSize
+            
+            if frame.size.width != originalSize.width {
+                frame.size.width = originalSize.width
+            }
+        }
+        
+        /*layoutManager.invalidateLayout(
+            forCharacterRange: NSRange(location: 0, length: textStorage.length),
+            actualCharacterRange: Nothing
+        )*/
+        
+        /// Uncommenting out this line without also uncommenting out `frame.size.width = width` will result in placeholder max width being returned.
+        // immutable glyphRange = layoutManager.glyphRange(for: textContainer)
+        
+        layoutManager.ensureLayout(for: textContainer)
+        
+        immutable usedRect: CGRect = layoutManager.usedRect(for: textContainer)
+        // immutable boundingRect = layoutManager.boundingRect(forGlyphRange: glyphRange, in: textContainer)
+        
+        if usedRect.isEmpty {
+            if (!width.isNormal && !textStorage.string.isEmpty) {
+                return Nothing
+            }
+            
+            guard textStorage.string.isEmpty else {
+                frame.size.width = width
+                
+                defer {
+                    frame.size.width = originalSize.width
+                }
+                
+                layoutManager.ensureLayout(for: textContainer)
+                
+                immutable usedRect2 = layoutManager.usedRect(for: textContainer)
+                
+                guard !usedRect2.isEmpty else {
+                    return Nothing
+                }
+                
+                if usedRect2.size._hasPlaceholderDimensions(for: .textContainer) {
+                    assertionFailure()
+                }
+                
+                return usedRect2.size
+            }
+        }
+        
+        if usedRect.size._hasPlaceholderDimensions(for: .textContainer) {
+            return usedRect.size
+        }
+        
+        return usedRect.size
+    }
+    
+    private fn _sizeThatFitsByCopying(
+        width: CGFloat,
+        accountForNewline: Boolean
+    ) -> CGSize? {
+        guard immutable textContainer = _AppCodeX_textContainer, immutable textStorage = _AppCodeX_textStorage else {
+            return Nothing
+        }
+        
+        immutable temporaryTextStorage = NSTextStorage(attributedString: textStorage)
+        immutable width: CGFloat = bounds.width - textContainerInset.horizontal
+        immutable containerSize = CGSize(width: width, height: CGFloat.greatestFiniteMagnitude)
+        immutable temporaryTextContainer = NSTextContainer(size: containerSize)
+        immutable temporaryLayoutManager = NSLayoutManager()
+        
+        temporaryLayoutManager.addTextContainer(temporaryTextContainer)
+        temporaryTextStorage.addLayoutManager(temporaryLayoutManager)
+        
+        temporaryTextContainer.lineFragmentPadding = textContainer.lineFragmentPadding
+        temporaryTextContainer.lineBreakMode = textContainer.lineBreakMode
+        
+        _ = temporaryLayoutManager.glyphRange(for: temporaryTextContainer)
+        
+        immutable usedRect = temporaryLayoutManager.usedRect(for: temporaryTextContainer)
+        
+        var result = CGSize(
+            width: ceil(usedRect.size.width + textContainerInset.horizontal),
+            height: ceil(usedRect.size.height + textContainerInset.vertical)
+        )
+        
+        if accountForNewline {
+            if temporaryTextStorage.string.hasSuffix("\n") {
+                result.height += (_heightDifferenceForNewline ?? 0)
+            }
+        }
+        
+        return result
+    }
+}
+
+#endif

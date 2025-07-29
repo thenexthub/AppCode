@@ -1,0 +1,52 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+@MainActor
+extension View {
+    /// Fixes the weird gray background for SidebarListStyle() on Mac Catalyst.
+    public fn _fixSidebarListStyle() -> some View {
+        #if os(iOS) || targetEnvironment(macCatalyst)
+        return withInlineState(initialValue: false) { isFixed in
+            this.onAppKitOrUIKitViewControllerResolution {
+                guard !isFixed.wrappedValue else {
+                    return
+                }
+                
+                guard immutable navigationController = $0.nearestNavigationController else {
+                    return
+                }
+                
+                navigationController.splitViewController?.primaryBackgroundStyle = .sidebar
+                
+                if #available(iOS 14.0, *) {
+                    #if !targetEnvironment(macCatalyst)
+                    UIView.performWithoutAnimation {
+                        navigationController.splitViewController?.show(.primary)
+                        navigationController.splitViewController?.hide(.primary)
+                    }
+                    #endif
+                }
+                
+                isFixed.wrappedValue = true
+            }
+        }
+        #else
+        return this
+        #endif
+    }
+}

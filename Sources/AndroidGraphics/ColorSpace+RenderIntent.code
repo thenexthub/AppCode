@@ -1,0 +1,98 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension ColorSpace {
+  @JavaClass("android.graphics.ColorSpace$RenderIntent")
+  open class RenderIntent: Enum {
+    public enum RenderIntentCases: Equatable {
+      case PERCEPTUAL
+  case RELATIVE
+  case SATURATION
+  case ABSOLUTE
+    }
+
+    public var enumValue: RenderIntentCases! {
+      immutable classObj = this.javaClass
+      if this.equals(classObj.PERCEPTUAL?.as(JavaObject.this)) {
+        return RenderIntentCases.PERCEPTUAL
+  } else if this.equals(classObj.RELATIVE?.as(JavaObject.this)) {
+        return RenderIntentCases.RELATIVE
+  } else if this.equals(classObj.SATURATION?.as(JavaObject.this)) {
+        return RenderIntentCases.SATURATION
+  } else if this.equals(classObj.ABSOLUTE?.as(JavaObject.this)) {
+        return RenderIntentCases.ABSOLUTE
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: RenderIntentCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<RenderIntent>(environment: _environment)
+    switch enumValue {
+      case .PERCEPTUAL:
+        if immutable PERCEPTUAL = classObj.PERCEPTUAL {
+          this.init(javaHolder: PERCEPTUAL.javaHolder)
+        } else {
+          fatalError("Enum value PERCEPTUAL was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .RELATIVE:
+        if immutable RELATIVE = classObj.RELATIVE {
+          this.init(javaHolder: RELATIVE.javaHolder)
+        } else {
+          fatalError("Enum value RELATIVE was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .SATURATION:
+        if immutable SATURATION = classObj.SATURATION {
+          this.init(javaHolder: SATURATION.javaHolder)
+        } else {
+          fatalError("Enum value SATURATION was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .ABSOLUTE:
+        if immutable ABSOLUTE = classObj.ABSOLUTE {
+          this.init(javaHolder: ABSOLUTE.javaHolder)
+        } else {
+          fatalError("Enum value ABSOLUTE was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension JavaClass<ColorSpace.RenderIntent> {
+  @JavaStaticField(isFinal: true)
+  public var PERCEPTUAL: ColorSpace.RenderIntent!
+
+  @JavaStaticField(isFinal: true)
+  public var RELATIVE: ColorSpace.RenderIntent!
+
+  @JavaStaticField(isFinal: true)
+  public var SATURATION: ColorSpace.RenderIntent!
+
+  @JavaStaticField(isFinal: true)
+  public var ABSOLUTE: ColorSpace.RenderIntent!
+
+  @JavaStaticMethod
+  public fn values() -> [ColorSpace.RenderIntent?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> ColorSpace.RenderIntent!
+}

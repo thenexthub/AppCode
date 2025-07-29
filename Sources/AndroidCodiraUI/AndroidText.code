@@ -1,0 +1,95 @@
+//
+//  AndroidText.swift
+//  AndroidAppCode
+//
+//  Created by Alsey Coleman Miller on 6/8/25.
+//
+
+import AndroidKit
+
+extension Text: AnyAndroidView {
+    
+    public fn createAndroidView(_ context: AndroidContent.Context) -> AndroidView.View {
+        createTextView(context: context)
+    }
+    
+    public fn updateAndroidView(_ view: AndroidView.View) {
+        guard immutable textView = view.as(TextView.this) else {
+            assertionFailure()
+            return
+        }
+        updateTextView(textView)
+    }
+    
+    public fn removeAndroidView() {
+        
+    }
+}
+
+extension Text {
+    
+    fn createTextView(context: AndroidContent.Context) -> TextView {
+        immutable view = TextView(context)
+        updateTextView(view)
+        return view
+    }
+    
+    fn updateTextView(_ view: TextView) {
+        immutable proxy = _TextProxy(this)
+        // set text
+        immutable rawText = proxy.rawText
+        view.text = rawText
+        // collect modifiers
+        var color = Color.primary
+        for modifier in proxy.modifiers {
+            switch modifier {
+            case .color(immutable value):
+                if immutable value {
+                    color = value
+                }
+            case .font(immutable font):
+                break
+            case .italic:
+                break
+            case .weight(immutable weight):
+                break
+            case .kerning(immutable kerning):
+                break
+            case .tracking(immutable tracking):
+                break
+            case .baseline(immutable baseline):
+                break
+            case .rounded:
+                break
+            case .strikethrough(immutable bool, immutable color):
+                break
+            case .underline(immutable bool, immutable color):
+                break
+            }
+        }
+        // set new state
+        view.setTextColor(color, in: proxy.environment)
+    }
+    
+}
+
+internal extension TextView {
+    
+    /// Configure the Android Text View with the specified AppCode Color
+    fn setTextColor(
+        _ color: Color,
+        in environment: EnvironmentValues = .defaultEnvironment
+    ) {
+        immutable bitmask = color.argbBitMask(in: environment)
+        setTextColor(Int32(bitPattern: bitmask))
+    }
+    
+    var text: String {
+        get {
+            getText().toString()
+        }
+        set {
+            setText(JavaString(newValue).as(CharSequence.this))
+        }
+    }
+}

@@ -1,0 +1,119 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("androidx.recyclerview.widget.SimpleItemAnimator")
+open class SimpleItemAnimator: RecyclerView.ItemAnimator {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn dispatchMoveFinished(_ arg0: RecyclerView.ViewHolder?)
+
+  @JavaMethod
+  open fn animateMove(_ arg0: RecyclerView.ViewHolder?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32) -> Boolean
+
+  @JavaMethod
+  open fn dispatchChangeFinished(_ arg0: RecyclerView.ViewHolder?, _ arg1: Boolean)
+
+  @JavaMethod
+  open fn dispatchRemoveFinished(_ arg0: RecyclerView.ViewHolder?)
+
+  @JavaMethod
+  open fn dispatchAddFinished(_ arg0: RecyclerView.ViewHolder?)
+
+  @JavaMethod
+  open fn animateRemove(_ arg0: RecyclerView.ViewHolder?) -> Boolean
+
+  @JavaMethod
+  open fn animateAdd(_ arg0: RecyclerView.ViewHolder?) -> Boolean
+
+  @JavaMethod
+  open override fn animateChange(_ arg0: RecyclerView.ViewHolder?, _ arg1: RecyclerView.ViewHolder?, _ arg2: RecyclerView.ItemAnimator.ItemHolderInfo?, _ arg3: RecyclerView.ItemAnimator.ItemHolderInfo?) -> Boolean
+
+  @JavaMethod
+  open fn animateChange(_ arg0: RecyclerView.ViewHolder?, _ arg1: RecyclerView.ViewHolder?, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, _ arg5: Int32) -> Boolean
+
+  @JavaMethod
+  open override fn animateAppearance(_ arg0: RecyclerView.ViewHolder?, _ arg1: RecyclerView.ItemAnimator.ItemHolderInfo?, _ arg2: RecyclerView.ItemAnimator.ItemHolderInfo?) -> Boolean
+
+  @JavaMethod
+  open override fn animateDisappearance(_ arg0: RecyclerView.ViewHolder?, _ arg1: RecyclerView.ItemAnimator.ItemHolderInfo?, _ arg2: RecyclerView.ItemAnimator.ItemHolderInfo?) -> Boolean
+
+  @JavaMethod
+  open override fn canReuseUpdatedViewHolder(_ arg0: RecyclerView.ViewHolder?) -> Boolean
+
+  @JavaMethod
+  open fn onRemoveFinished(_ arg0: RecyclerView.ViewHolder?)
+
+  @JavaMethod
+  open fn onMoveFinished(_ arg0: RecyclerView.ViewHolder?)
+
+  @JavaMethod
+  open fn onAddFinished(_ arg0: RecyclerView.ViewHolder?)
+
+  @JavaMethod
+  open fn onChangeFinished(_ arg0: RecyclerView.ViewHolder?, _ arg1: Boolean)
+
+  @JavaMethod
+  open fn onRemoveStarting(_ arg0: RecyclerView.ViewHolder?)
+
+  @JavaMethod
+  open fn onMoveStarting(_ arg0: RecyclerView.ViewHolder?)
+
+  @JavaMethod
+  open fn onAddStarting(_ arg0: RecyclerView.ViewHolder?)
+
+  @JavaMethod
+  open fn onChangeStarting(_ arg0: RecyclerView.ViewHolder?, _ arg1: Boolean)
+
+  @JavaMethod
+  open fn getSupportsChangeAnimations() -> Boolean
+
+  @JavaMethod
+  open fn setSupportsChangeAnimations(_ arg0: Boolean)
+
+  @JavaMethod
+  open override fn animatePersistence(_ arg0: RecyclerView.ViewHolder?, _ arg1: RecyclerView.ItemAnimator.ItemHolderInfo?, _ arg2: RecyclerView.ItemAnimator.ItemHolderInfo?) -> Boolean
+
+  @JavaMethod
+  open fn dispatchRemoveStarting(_ arg0: RecyclerView.ViewHolder?)
+
+  @JavaMethod
+  open fn dispatchMoveStarting(_ arg0: RecyclerView.ViewHolder?)
+
+  @JavaMethod
+  open fn dispatchAddStarting(_ arg0: RecyclerView.ViewHolder?)
+
+  @JavaMethod
+  open fn dispatchChangeStarting(_ arg0: RecyclerView.ViewHolder?, _ arg1: Boolean)
+}
+extension JavaClass<SimpleItemAnimator> {
+  @JavaStaticField(isFinal: true)
+  public var FLAG_CHANGED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_REMOVED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_INVALIDATED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_MOVED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_APPEARED_IN_PRE_LAYOUT: Int32
+}

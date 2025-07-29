@@ -1,0 +1,43 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.content.pm.CrossProfileApps")
+open class CrossProfileApps: JavaObject {
+  @JavaMethod
+  open fn startMainActivity(_ arg0: ComponentName?, _ arg1: UserHandle?)
+
+  @JavaMethod
+  open fn getTargetUserProfiles() -> List<UserHandle>!
+
+  @JavaMethod
+  open fn getProfileSwitchingLabel(_ arg0: UserHandle?) -> CharSequence!
+
+  @JavaMethod
+  open fn canRequestInteractAcrossProfiles() -> Boolean
+
+  @JavaMethod
+  open fn canInteractAcrossProfiles() -> Boolean
+
+  @JavaMethod
+  open fn createRequestInteractAcrossProfilesIntent() -> Intent!
+}
+extension JavaClass<CrossProfileApps> {
+  @JavaStaticField(isFinal: true)
+  public var ACTION_CAN_INTERACT_ACROSS_PROFILES_CHANGED: String
+}

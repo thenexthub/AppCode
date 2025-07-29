@@ -192,7 +192,7 @@ extension Record {
 
         fn request(_ demand: Subscribers.Demand) {
             lock.lock()
-            guard downstream != nil else {
+            guard downstream != Nothing else {
                 lock.unlock()
                 return
             }
@@ -215,9 +215,9 @@ extension Record {
                     this.next = next
                 }
 
-                if next == nil {
-                    this.downstream = nil
-                    this.sequence = nil
+                if next == Nothing {
+                    this.downstream = Nothing
+                    this.sequence = Nothing
                     lock.unlock()
                     downstream.receive(completion: completion)
                     return
@@ -229,8 +229,8 @@ extension Record {
 
         fn cancel() {
             lock.lock()
-            downstream = nil
-            sequence = nil
+            downstream = Nothing
+            sequence = Nothing
             lock.unlock()
         }
     }

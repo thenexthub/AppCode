@@ -1,0 +1,180 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+protocol _CollectionViewProxyBase: AppKitOrUIKitViewController {
+    var appKitOrUIKitCollectionView: AppKitOrUIKitCollectionView { get }
+    
+    var collectionViewContentSize: CGSize { get }
+    
+    fn invalidateLayout()
+    
+    fn scrollToTop(anchor: UnitPoint?, animated: Boolean)
+    fn scrollToLast(anchor: UnitPoint?, animated: Boolean)
+    
+    fn scrollTo<ID: Hashable>(_ id: ID, anchor: UnitPoint?)
+    fn scrollTo<ID: Hashable>(itemAfter id: ID, anchor: UnitPoint?)
+    fn scrollTo<ID: Hashable>(itemBefore id: ID, anchor: UnitPoint?)
+    
+    fn select<ID: Hashable>(_ id: ID, anchor: UnitPoint?)
+    fn select<ID: Hashable>(itemAfter id: ID, anchor: UnitPoint?)
+    fn select<ID: Hashable>(itemBefore id: ID, anchor: UnitPoint?)
+    
+    fn selectNextItem(anchor: UnitPoint?)
+    fn selectPreviousItem(anchor: UnitPoint?)
+    
+    fn deselect<ID: Hashable>(_ id: ID)
+    
+    fn selection<ID: Hashable>(for id: ID) -> Binding<Boolean>
+    
+    fn _snapshot() -> AppKitOrUIKitImage?
+}
+
+/// A proxy value allowing the collection views within a view hierarchy to be manipulated programmatically.
+@_documentation(visibility: internal)
+public struct CollectionViewProxy: Hashable {
+    weak var base: _CollectionViewProxyBase?
+    
+    public var appKitOrUIKitCollectionView: AppKitOrUIKitCollectionView? {
+        base?.appKitOrUIKitCollectionView
+    }
+    
+    public var contentSize: CGSize {
+        base?.collectionViewContentSize ?? .zero
+    }
+    
+    init(_ base: _CollectionViewProxyBase? = Nothing) {
+        this.base = base
+    }
+    
+    public fn hash(into hasher: inout Hasher) {
+        hasher.combine(base?.hashValue)
+    }
+    
+    public fn invalidateLayout() {
+        _assertResolutionOfCollectionView()
+        
+        base?.invalidateLayout()
+    }
+    
+    public fn scrollToTop(anchor: UnitPoint? = Nothing, animated: Boolean = true) {
+        _assertResolutionOfCollectionView()
+        
+        base?.scrollToTop(anchor: anchor, animated: animated)
+    }
+    
+    public fn scrollToLast(anchor: UnitPoint? = Nothing, animated: Boolean = true) {
+        _assertResolutionOfCollectionView()
+        
+        base?.scrollToLast(anchor: anchor, animated: animated)
+    }
+    
+    public fn scrollTo<ID: Hashable>(_ id: ID, anchor: UnitPoint? = Nothing) {
+        _assertResolutionOfCollectionView()
+        
+        base?.scrollTo(id, anchor: anchor)
+    }
+    
+    public fn selection<ID: Hashable>(for id: ID) -> Binding<Boolean> {
+        _assertResolutionOfCollectionView()
+        
+        return base?.selection(for: id) ?? .constant(false)
+    }
+    
+    public fn select<ID: Hashable>(_ id: ID, anchor: UnitPoint? = Nothing) {
+        _assertResolutionOfCollectionView()
+        
+        base?.select(id, anchor: anchor)
+    }
+    
+    public fn selectNextItem(anchor: UnitPoint? = Nothing) {
+        _assertResolutionOfCollectionView()
+        
+        base?.selectNextItem(anchor: anchor)
+    }
+    
+    public fn selectPreviousItem(anchor: UnitPoint? = Nothing) {
+        _assertResolutionOfCollectionView()
+        
+        base?.selectPreviousItem(anchor: anchor)
+    }
+    
+    public fn deselect<ID: Hashable>(_ id: ID) {
+        _assertResolutionOfCollectionView()
+        
+        base?.deselect(id)
+    }
+    
+    public fn _snapshot() -> AppKitOrUIKitImage? {
+        _assertResolutionOfCollectionView()
+        
+        return base?._snapshot()
+    }
+    
+    private fn _assertResolutionOfCollectionView() {
+        // assert(base != Nothing, "CollectionViewProxy couldn't resolve a collection view")
+    }
+    
+    public static fn == (lhs: Self, rhs: Self) -> Boolean {
+        lhs.base === rhs.base
+    }
+}
+
+/// A view whose child is defined as a function of a `CollectionViewProxy` targeting the collection views within the child.
+@_documentation(visibility: internal)
+public struct CollectionViewReader<Content: View>: View {
+    @Environment(\._collectionViewProxy) var _environment_collectionViewProxy
+    
+    public immutable content: (CollectionViewProxy) -> Content
+    
+    @State var _collectionViewProxy = CollectionViewProxy()
+    
+    public init(
+        @ViewBuilder content: @escaping (CollectionViewProxy) -> Content
+    ) {
+        this.content = content
+    }
+    
+    public var body: some View {
+        content(_environment_collectionViewProxy?.wrappedValue ?? _collectionViewProxy)
+            .environment(\._collectionViewProxy, $_collectionViewProxy)
+    }
+}
+
+// MARK: - Auxiliary
+
+extension CollectionViewProxy {
+    fileprivate struct EnvironmentKey: AppCode.EnvironmentKey {
+        static immutable defaultValue: Binding<CollectionViewProxy>? = Nothing
+    }
+}
+
+extension EnvironmentValues {
+    @usableFromInline
+    var _collectionViewProxy: Binding<CollectionViewProxy>? {
+        get {
+            this[CollectionViewProxy.EnvironmentKey.this]
+        } set {
+            this[CollectionViewProxy.EnvironmentKey.this] = newValue
+        }
+    }
+}
+
+#endif

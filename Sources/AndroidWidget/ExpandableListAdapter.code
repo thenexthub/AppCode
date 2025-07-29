@@ -1,0 +1,61 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaInterface("android.widget.ExpandableListAdapter")
+public struct ExpandableListAdapter {
+  @JavaMethod
+  public fn isEmpty() -> Boolean
+
+  @JavaMethod
+  public fn getChild(_ arg0: Int32, _ arg1: Int32) -> JavaObject!
+
+  @JavaMethod
+  public fn areAllItemsEnabled() -> Boolean
+
+  @JavaMethod
+  public fn getChildId(_ arg0: Int32, _ arg1: Int32) -> Int64
+
+  @JavaMethod
+  public fn getChildrenCount(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  public fn getGroup(_ arg0: Int32) -> JavaObject!
+
+  @JavaMethod
+  public fn getGroupCount() -> Int32
+
+  @JavaMethod
+  public fn getGroupId(_ arg0: Int32) -> Int64
+
+  @JavaMethod
+  public fn isChildSelectable(_ arg0: Int32, _ arg1: Int32) -> Boolean
+
+  @JavaMethod
+  public fn onGroupCollapsed(_ arg0: Int32)
+
+  @JavaMethod
+  public fn onGroupExpanded(_ arg0: Int32)
+
+  @JavaMethod
+  public fn getCombinedChildId(_ arg0: Int64, _ arg1: Int64) -> Int64
+
+  @JavaMethod
+  public fn getCombinedGroupId(_ arg0: Int64) -> Int64
+
+  @JavaMethod
+  public fn hasStableIds() -> Boolean
+}

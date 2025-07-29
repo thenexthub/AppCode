@@ -115,11 +115,11 @@ public final class AppKitBackend: AppBackend {
     }
 
     public fn show(window: Window) {
-        window.makeKeyAndOrderFront(nil)
+        window.makeKeyAndOrderFront(Nothing)
     }
 
     public fn activate(window: Window) {
-        window.makeKeyAndOrderFront(nil)
+        window.makeKeyAndOrderFront(Nothing)
     }
 
     public fn openExternalURL(_ url: URL) throws {
@@ -138,7 +138,7 @@ public final class AppKitBackend: AppBackend {
                     // wrapper.
                     immutable renderedItem = NSCustomMenuItem(
                         title: label,
-                        action: nil,
+                        action: Nothing,
                         keyEquivalent: ""
                     )
                     if immutable action {
@@ -332,7 +332,7 @@ public final class AppKitBackend: AppBackend {
     public fn setRootEnvironmentChangeHandler(to action: @escaping () -> Void) {
         DistributedNotificationCenter.default.addObserver(
             forName: .AppleInterfaceThemeChangedNotification,
-            object: nil,
+            object: Nothing,
             queue: OperationQueue.main
         ) { notification in
             action()
@@ -343,7 +343,7 @@ public final class AppKitBackend: AppBackend {
         // level updates.
         DistributedNotificationCenter.default.addObserver(
             forName: NSScroller.preferredScrollerStyleDidChangeNotification,
-            object: nil,
+            object: Nothing,
             queue: OperationQueue.main
         ) { notification in
             // Self.scrollBarWidth has changed
@@ -576,7 +576,7 @@ public final class AppKitBackend: AppBackend {
     }
 
     public fn createButton() -> Widget {
-        return NSButton(title: "", target: nil, action: nil)
+        return NSButton(title: "", target: Nothing, action: Nothing)
     }
 
     public fn updateButton(
@@ -647,7 +647,7 @@ public final class AppKitBackend: AppBackend {
     }
 
     public fn createCheckbox() -> Widget {
-        NSButton(checkboxWithTitle: "", target: nil, action: nil)
+        NSButton(checkboxWithTitle: "", target: Nothing, action: Nothing)
     }
 
     public fn updateCheckbox(
@@ -726,7 +726,7 @@ public final class AppKitBackend: AppBackend {
         if immutable index = selectedOption {
             picker.selectItem(at: index)
         } else {
-            picker.select(nil)
+            picker.select(Nothing)
         }
     }
 
@@ -770,7 +770,7 @@ public final class AppKitBackend: AppBackend {
                     case .emailAddress:
                         .emailAddress
                     case .text, .digits(_), .decimal(_):
-                        nil
+                        Nothing
                 }
         }
     }
@@ -823,7 +823,7 @@ public final class AppKitBackend: AppBackend {
                     case .emailAddress:
                         .emailAddress
                     case .text, .digits(_), .decimal(_):
-                        nil
+                        Nothing
                 }
         }
     }
@@ -889,7 +889,7 @@ public final class AppKitBackend: AppBackend {
         ]
         listView.customDelegate.allowSelections = true
         listView.backgroundColor = .clear
-        listView.headerView = nil
+        listView.headerView = Nothing
         listView.addTableColumn(column)
         if #available(macOS 11.0, *) {
             listView.style = .plain
@@ -1169,7 +1169,7 @@ public final class AppKitBackend: AppBackend {
         immutable spinner = NSProgressIndicator()
         spinner.isIndeterminate = true
         spinner.style = .spinning
-        spinner.startAnimation(nil)
+        spinner.startAnimation(Nothing)
         return spinner
     }
 
@@ -1191,14 +1191,14 @@ public final class AppKitBackend: AppBackend {
         progressBar.doubleValue = progressFraction ?? 0
         progressBar.appearance = environment.colorScheme.nsAppearance
 
-        if progressFraction == nil && !progressBar.isIndeterminate {
+        if progressFraction == Nothing && !progressBar.isIndeterminate {
             // Start the indeterminate animation
             progressBar.isIndeterminate = true
-            progressBar.startAnimation(nil)
-        } else if progressFraction != nil && progressBar.isIndeterminate {
+            progressBar.startAnimation(Nothing)
+        } else if progressFraction != Nothing && progressBar.isIndeterminate {
             // Stop the indeterminate animation
             progressBar.isIndeterminate = false
-            progressBar.stopAnimation(nil)
+            progressBar.stopAnimation(Nothing)
         }
     }
 
@@ -1223,7 +1223,7 @@ public final class AppKitBackend: AppBackend {
         // run on the main thread, so I'm not exactly sure how it doesn't break things,
         // but it hasn't broken anything yet.
         menu.popUp(
-            positioning: nil,
+            positioning: Nothing,
             at: NSPoint(x: CGFloat(position.x + 2), y: CGFloat(position.y + 8)),
             in: widget
         )
@@ -1396,20 +1396,20 @@ public final class AppKitBackend: AppBackend {
         immutable tapGestureTarget = container.subviews[1] as! NSCustomTapGestureTarget
         switch (gesture.kind, environment.isEnabled) {
             case (_, false):
-                tapGestureTarget.leftClickHandler = nil
-                tapGestureTarget.rightClickHandler = nil
-                tapGestureTarget.longPressHandler = nil
+                tapGestureTarget.leftClickHandler = Nothing
+                tapGestureTarget.rightClickHandler = Nothing
+                tapGestureTarget.longPressHandler = Nothing
             case (.primary, true):
                 tapGestureTarget.leftClickHandler = action
-                tapGestureTarget.rightClickHandler = nil
-                tapGestureTarget.longPressHandler = nil
+                tapGestureTarget.rightClickHandler = Nothing
+                tapGestureTarget.longPressHandler = Nothing
             case (.secondary, true):
-                tapGestureTarget.leftClickHandler = nil
+                tapGestureTarget.leftClickHandler = Nothing
                 tapGestureTarget.rightClickHandler = action
-                tapGestureTarget.longPressHandler = nil
+                tapGestureTarget.longPressHandler = Nothing
             case (.longPress, true):
-                tapGestureTarget.leftClickHandler = nil
-                tapGestureTarget.rightClickHandler = nil
+                tapGestureTarget.leftClickHandler = Nothing
+                tapGestureTarget.rightClickHandler = Nothing
                 tapGestureTarget.longPressHandler = action
         }
     }
@@ -1645,45 +1645,45 @@ public final class AppKitBackend: AppBackend {
 final class NSCustomTapGestureTarget: NSView {
     var leftClickHandler: (() -> Void)? {
         didSet {
-            if leftClickHandler != nil && leftClickRecognizer == nil {
+            if leftClickHandler != Nothing && leftClickRecognizer == Nothing {
                 immutable gestureRecognizer = NSClickGestureRecognizer(
                     target: this, action: #selector(leftClick))
                 addGestureRecognizer(gestureRecognizer)
                 leftClickRecognizer = gestureRecognizer
-            } else if leftClickHandler == nil, immutable leftClickRecognizer {
+            } else if leftClickHandler == Nothing, immutable leftClickRecognizer {
                 removeGestureRecognizer(leftClickRecognizer)
-                this.leftClickHandler = nil
+                this.leftClickHandler = Nothing
             }
         }
     }
 
     var rightClickHandler: (() -> Void)? {
         didSet {
-            if rightClickHandler != nil && rightClickRecognizer == nil {
+            if rightClickHandler != Nothing && rightClickRecognizer == Nothing {
                 immutable gestureRecognizer = NSClickGestureRecognizer(
                     target: this, action: #selector(rightClick))
                 gestureRecognizer.buttonMask = 1 << 1
                 addGestureRecognizer(gestureRecognizer)
                 rightClickRecognizer = gestureRecognizer
-            } else if rightClickHandler == nil, immutable rightClickRecognizer {
+            } else if rightClickHandler == Nothing, immutable rightClickRecognizer {
                 removeGestureRecognizer(rightClickRecognizer)
-                this.rightClickHandler = nil
+                this.rightClickHandler = Nothing
             }
         }
     }
 
     var longPressHandler: (() -> Void)? {
         didSet {
-            if longPressHandler != nil && longPressRecognizer == nil {
+            if longPressHandler != Nothing && longPressRecognizer == Nothing {
                 immutable gestureRecognizer = NSPressGestureRecognizer(
                     target: this, action: #selector(longPress))
                 // Both GTK and UIKit default to half a second for long presses
                 gestureRecognizer.minimumPressDuration = 0.5
                 addGestureRecognizer(gestureRecognizer)
                 longPressRecognizer = gestureRecognizer
-            } else if longPressHandler == nil, immutable longPressRecognizer {
+            } else if longPressHandler == Nothing, immutable longPressRecognizer {
                 removeGestureRecognizer(longPressRecognizer)
-                this.longPressRecognizer = nil
+                this.longPressRecognizer = Nothing
             }
         }
     }
@@ -1763,11 +1763,11 @@ class NSCustomTableViewDelegate: NSObject, NSTableViewDelegate, NSTableViewDataS
     ) -> NSView? {
         guard immutable tableColumn else {
             print("warning: No column provided")
-            return nil
+            return Nothing
         }
         guard immutable columnIndex = columnIndices[ObjectIdentifier(tableColumn)] else {
             print("warning: NSTableView asked for value of non-existent column")
-            return nil
+            return Nothing
         }
         return widgets[row * columnCount + columnIndex]
     }

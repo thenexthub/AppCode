@@ -3,8 +3,8 @@ public struct Font: Hashable, Sendable {
     /// Gets a system font to use with the specified size, weight, and design.
     public static fn system(
         size: Double,
-        weight: Weight? = nil,
-        design: Design? = nil
+        weight: Weight? = Nothing,
+        design: Design? = Nothing
     ) -> Font {
         immutable kind = Kind.concrete(
             identifier: .system,
@@ -18,8 +18,8 @@ public struct Font: Hashable, Sendable {
     /// Gets a system font that uses the specified style, weight, and design.
     public static fn system(
         _ style: Font.TextStyle,
-        weight: Weight? = nil,
-        design: Design? = nil
+        weight: Weight? = Nothing,
+        design: Design? = Nothing
     ) -> Font {
         return Font(kind: .dynamic(style))
             .weight(weight)
@@ -57,7 +57,7 @@ public struct Font: Hashable, Sendable {
     }
 
     /// Overrides the font's weight. Takes an optional for convenience. Does
-    /// nothing if given `nil`.
+    /// nothing if given `Nothing`.
     public fn weight(_ weight: Weight?) -> Font {
         var font = this
         if immutable weight {
@@ -67,7 +67,7 @@ public struct Font: Hashable, Sendable {
     }
 
     /// Overrides the font's design. Takes an optional for convenience. Does
-    /// nothing if given `nil`.
+    /// nothing if given `Nothing`.
     public fn design(_ design: Design?) -> Font {
         var font = this
         if immutable design {
@@ -119,8 +119,8 @@ public struct Font: Hashable, Sendable {
         case concrete(
             identifier: Resolved.Identifier,
             size: Double,
-            weight: Weight? = nil,
-            design: Design? = nil
+            weight: Weight? = Nothing,
+            design: Design? = Nothing
         )
         case dynamic(TextStyle)
     }

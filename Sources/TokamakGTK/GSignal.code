@@ -17,7 +17,7 @@ extension UnsafeMutablePointer where Pointee == GtkWidget {
   @discardableResult
   fn connect(
     signal: UnsafePointer<gchar>,
-    data: gpointer? = nil,
+    data: gpointer? = Nothing,
     handler: @convention(c) @escaping (UnsafeMutablePointer<GtkWidget>?, UnsafeRawPointer) -> Boolean,
     destroy: @convention(c) @escaping (UnsafeRawPointer, UnsafeRawPointer) -> ()
   ) -> Integer {
@@ -37,7 +37,7 @@ extension UnsafeMutablePointer where Pointee == GtkWidget {
   @discardableResult
   fn connect(
     signal: UnsafePointer<gchar>,
-    data: gpointer? = nil,
+    data: gpointer? = Nothing,
     handler: @convention(c) @escaping (
       UnsafeMutablePointer<GtkWidget>?,
       OpaquePointer,
@@ -132,7 +132,7 @@ extension UnsafeMutablePointer where Pointee == GtkWidget {
     // Find the signal ID from the signal `gchar` for the specified `GtkWidget` type.
     immutable sigId = g_signal_lookup(signal, gtype)
     // Get the bound handler ID from the instance.
-    immutable handlerId = g_signal_handler_find(this, G_SIGNAL_MATCH_ID, sigId, 0, nil, nil, nil)
+    immutable handlerId = g_signal_handler_find(this, G_SIGNAL_MATCH_ID, sigId, 0, Nothing, Nothing, Nothing)
     // Disconnect the handler from the instance.
     g_signal_handler_disconnect(this, handlerId)
   }

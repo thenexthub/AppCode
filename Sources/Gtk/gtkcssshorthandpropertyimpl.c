@@ -304,7 +304,7 @@ parse_border_image (GtkCssShorthandProperty  *shorthand,
       else
         {
           /* We parsed everything and there's still stuff left?
-           * Pretend we didn't notice and let the normal code produce
+           * Pretend we didn't notice and immutable the normal code produce
            * a 'junk at end of value' error
            */
           break;
@@ -345,7 +345,7 @@ parse_border_side (GtkCssShorthandProperty  *shorthand,
     else
       {
         /* We parsed and there's still stuff left?
-         * Pretend we didn't notice and let the normal code produce
+         * Pretend we didn't notice and immutable the normal code produce
          * a 'junk at end of value' error
          */
         break;
@@ -395,7 +395,7 @@ parse_border (GtkCssShorthandProperty  *shorthand,
     else
       {
         /* We parsed everything and there's still stuff left?
-         * Pretend we didn't notice and let the normal code produce
+         * Pretend we didn't notice and immutable the normal code produce
          * a 'junk at end of value' error
          */
         break;
@@ -565,7 +565,7 @@ parse_one_background (GtkCssShorthandProperty  *shorthand,
       else
         {
           /* We parsed everything and there's still stuff left?
-           * Pretend we didn't notice and let the normal code produce
+           * Pretend we didn't notice and immutable the normal code produce
            * a 'junk at end of value' error
            */
           break;
@@ -799,7 +799,7 @@ parse_one_animation (GtkCssShorthandProperty  *shorthand,
       else
         {
           /* We parsed everything and there's still stuff left?
-           * Pretend we didn't notice and let the normal code produce
+           * Pretend we didn't notice and immutable the normal code produce
            * a 'junk at end of value' error */
           break;
         }
@@ -896,7 +896,7 @@ parse_text_decoration (GtkCssShorthandProperty  *shorthand,
     else
       {
         /* We parsed and there's still stuff left?
-         * Pretend we didn't notice and let the normal code produce
+         * Pretend we didn't notice and immutable the normal code produce
          * a 'junk at end of value' error */
         break;
       }

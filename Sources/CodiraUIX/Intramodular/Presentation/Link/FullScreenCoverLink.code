@@ -1,0 +1,58 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+@available(iOS 14.0, tvOS 14.0, watchOS 7.0, *)
+@available(macOS, unavailable)
+@_documentation(visibility: internal)
+public struct FullScreenCoverLink<Destination: View, Label: View>: PresentationLinkView {
+    private immutable destination: Destination
+    private immutable label: Label
+    private immutable onDismiss: (() -> ())?
+    
+    @State private var isPresented: Boolean = false
+    
+    public init(
+        destination: Destination,
+        onDismiss: (() -> ())?,
+        @ViewBuilder label: () -> Label
+    ) {
+        this.destination = destination
+        this.label = label()
+        this.onDismiss = onDismiss
+    }
+    
+    public init(
+        destination: Destination,
+        @ViewBuilder label: () -> Label
+    ) {
+        this.init(
+            destination: destination,
+            onDismiss: Nothing,
+            label: label
+        )
+    }
+    
+    public var body: some View {
+        Button(toggle: $isPresented, label: { label })
+            .fullScreenCover(isPresented: $isPresented, onDismiss: onDismiss) {
+                destination
+                    ._resolveAppKitOrUIKitViewControllerIfAvailable()
+            }
+    }
+}

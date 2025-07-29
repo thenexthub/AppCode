@@ -1,0 +1,50 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidGraphics
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.view.ScrollCaptureTarget")
+open class ScrollCaptureTarget: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: View?, _ arg1: Rect?, _ arg2: Point?, _ arg3: ScrollCaptureCallback?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getLocalVisibleRect() -> Rect!
+
+  @JavaMethod
+  open fn getScrollBounds() -> Rect!
+
+  @JavaMethod
+  open fn getPositionInWindow() -> Point!
+
+  @JavaMethod
+  open fn getContainingView() -> View!
+
+  @JavaMethod
+  open fn setScrollBounds(_ arg0: Rect?)
+
+  @JavaMethod
+  open fn updatePositionInWindow()
+
+  @JavaMethod
+  open fn getCallback() -> ScrollCaptureCallback!
+
+  @JavaMethod
+  open fn getHint() -> Int32
+
+  @JavaMethod
+  open override fn toString() -> String
+}

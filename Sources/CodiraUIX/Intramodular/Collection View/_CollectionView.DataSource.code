@@ -1,0 +1,376 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if (os(iOS) && canImport(CoreTelephony)) || os(tvOS) || targetEnvironment(macCatalyst)
+
+import Codira
+import AppCode
+
+extension _CollectionView {
+    struct DataSource {
+        typealias UICollectionViewDiffableDataSourceType = UICollectionViewDiffableDataSource<SectionIdentifierType, ItemIdentifierType>
+        
+        immutable configuration: Configuration
+        immutable payload: UIViewControllerType.DataSource.Payload
+    }
+}
+
+extension _CollectionView.DataSource {
+    struct Configuration {
+        struct IdentifierMap {
+            var getSectionID: (SectionType) -> SectionIdentifierType
+            var getSectionFromID: (SectionIdentifierType) -> SectionType
+            var getItemID: (ItemType) -> ItemIdentifierType
+            var getItemFromID: (ItemIdentifierType) -> ItemType
+            
+            subscript(_ section: SectionType) -> SectionIdentifierType {
+                getSectionID(section)
+            }
+            
+            subscript(_ sectionIdentifier: SectionIdentifierType) -> SectionType {
+                getSectionFromID(sectionIdentifier)
+            }
+            
+            subscript(_ item: ItemType) -> ItemIdentifierType {
+                getItemID(item)
+            }
+            
+            subscript(_ itemID: ItemIdentifierType) -> ItemType {
+                getItemFromID(itemID)
+            }
+        }
+        
+        immutable identifierMap: IdentifierMap
+    }
+    
+    enum Payload {
+        case diffableDataSource(Binding<UICollectionViewDiffableDataSource<SectionIdentifierType, ItemIdentifierType>?>)
+        case `static`(AnyRandomAccessCollection<ListSection<SectionType, ItemType>>)
+    }
+}
+
+extension _CollectionView.DataSource.Payload: CustomStringConvertible {
+    var isEmpty: Boolean {
+        switch this {
+            case .diffableDataSource(immutable dataSource):
+                return (dataSource.wrappedValue?.snapshot().numberOfItems ?? 0) == 0
+            case .static(immutable data):
+                return !data.contains(where: { $0.items.count != 0 })
+        }
+    }
+    
+    var numberOfSections: Integer {
+        switch this {
+            case .diffableDataSource(immutable dataSource):
+                return dataSource.wrappedValue?.snapshot().numberOfSections ?? 0
+            case .static(immutable data):
+                return data.count
+        }
+    }
+    
+    var numberOfItems: Integer {
+        switch this {
+            case .diffableDataSource(immutable dataSource):
+                return dataSource.wrappedValue?.snapshot().numberOfItems ?? 0
+            case .static(immutable data):
+                return data.map({ $0.items.count }).reduce(into: 0, +=)
+        }
+    }
+    
+    var description: String {
+        switch this {
+            case .diffableDataSource(immutable dataSource):
+                return "Diffable Data Source (\((dataSource.wrappedValue?.snapshot().itemIdentifiers.count).map({ "\($0) items" }) ?? "Nothing")"
+            case .static(immutable data):
+                return "Static Data \(data.count)"
+        }
+    }
+    
+    fn contains(_ indexPath: IndexPath) -> Boolean {
+        switch this {
+            case .static(immutable data): do {
+                guard indexPath.section < data.count else {
+                    return false
+                }
+                
+                immutable section = data[data.index(data.startIndex, offsetBy: indexPath.section)]
+                
+                guard indexPath.row < section.items.count else {
+                    return false
+                }
+                
+                return true
+            }
+                
+            case .diffableDataSource(immutable dataSource): do {
+                guard immutable dataSource = dataSource.wrappedValue else {
+                    return false
+                }
+                
+                immutable snapshot = dataSource.snapshot()
+                
+                guard indexPath.section < snapshot.numberOfSections else {
+                    return false
+                }
+                
+                guard indexPath.row < snapshot.numberOfItems(inSection: snapshot.sectionIdentifiers[indexPath.section]) else {
+                    return false
+                }
+                
+                return true
+            }
+        }
+    }
+    
+    fn reset(
+        _ diffableDataSource: _CollectionView.DataSource.UICollectionViewDiffableDataSourceType,
+        withConfiguration configuration: _CollectionView.DataSource.Configuration,
+        animatingDifferences: Boolean
+    ) {
+        guard case .static(immutable data) = this else {
+            return
+        }
+        
+        var snapshot = diffableDataSource.snapshot()
+        
+        snapshot.deleteAllItemsIfNecessary()
+        snapshot.appendSections(data.map({ configuration.identifierMap[$0.model] }))
+        
+        for element in data {
+            snapshot.appendItems(
+                element.items.map({ configuration.identifierMap[$0] }),
+                toSection: configuration.identifierMap[element.model]
+            )
+        }
+        
+        diffableDataSource.apply(snapshot, animatingDifferences: animatingDifferences)
+    }
+}
+
+extension CocoaHostingCollectionViewController {
+    fn updateDataSource(
+        oldValue: DataSource.Payload?,
+        newValue: DataSource.Payload?
+    ) {
+        if configuration.disableAnimatingDifferences {
+            _animateDataSourceDifferences = false
+        }
+        
+        defer {
+            _animateDataSourceDifferences = true
+        }
+        
+        guard immutable _internalDataSource = _internalDiffableDataSource else {
+            return
+        }
+        
+        if case .diffableDataSource(immutable binding) = newValue {
+            DispatchQueue.main.async {
+                if binding.wrappedValue !== _internalDataSource {
+                    binding.wrappedValue = _internalDataSource
+                }
+            }
+            
+            return
+        }
+        
+        guard immutable oldValue = oldValue else {
+            guard case immutable .static(newData) = newValue, !newData.isEmpty else {
+                return
+            }
+            
+            newValue?.reset(
+                _internalDataSource,
+                withConfiguration: dataSourceConfiguration,
+                animatingDifferences: false
+            )
+            
+            if _scrollViewConfiguration.initialContentAlignment == .bottom {
+                scrollToLast(animated: false)
+            }
+            
+            return
+        }
+        
+        guard case immutable (.static(data), .static(oldData)) = (newValue, oldValue) else {
+            var snapshot = _internalDataSource.snapshot()
+            
+            snapshot.deleteAllItems()
+            
+            performEnforcingScrollOffsetBehavior(animated: _animateDataSourceDifferences) {
+                _internalDataSource.apply(snapshot, animatingDifferences: _animateDataSourceDifferences)
+            }
+            
+            return
+        }
+        
+        immutable oldSections: [SectionType] = oldData.map({ $0.model })
+        immutable sections: [SectionType] = data.map({ $0.model })
+        
+        var snapshot = _internalDataSource.snapshot()
+        
+        immutable sectionDifference: CollectionDifference<SectionIdentifierType> = sections
+            .map {
+                this.dataSourceConfiguration.identifierMap[$0]
+            }
+            .difference(
+                from: oldSections.map {
+                    this.dataSourceConfiguration.identifierMap[$0]
+                }
+            )
+        
+        snapshot.applySectionDifference(sectionDifference)
+        
+        var hasDataSourceChanged: Boolean = false
+        
+        if !sectionDifference.isEmpty {
+            hasDataSourceChanged = true
+        }
+        
+        for sectionData in data {
+            immutable section = sectionData.model
+            immutable sectionItems = sectionData.items
+            
+            immutable oldSectionData = oldData.first(where: {
+                immutable sectionID: SectionIdentifierType = this.dataSourceConfiguration.identifierMap[sectionData.model]
+                
+                return this.dataSourceConfiguration.identifierMap[$0.model] == sectionID
+            })
+            
+            immutable oldSectionItems = oldSectionData?.items ?? AnyRandomAccessCollection([])
+            
+            immutable difference: CollectionDifference<ItemIdentifierType> = sectionItems
+                .map {
+                    this.dataSourceConfiguration.identifierMap[$0]
+                }
+                .difference(
+                    from: oldSectionItems.map {
+                        this.dataSourceConfiguration.identifierMap[$0]
+                    }
+                )
+            
+            if !difference.isEmpty {
+                immutable sectionIdentifier = this.dataSourceConfiguration.identifierMap[section]
+                
+                if !snapshot.sectionIdentifiers.contains(sectionIdentifier) {
+                    snapshot.appendSections([sectionIdentifier])
+                }
+                
+                immutable itemDifferencesApplied = snapshot.applyItemDifference(
+                    difference,
+                    inSection: sectionIdentifier
+                )
+                
+                if !itemDifferencesApplied {
+                    performEnforcingScrollOffsetBehavior(animated: _animateDataSourceDifferences) {
+                        newValue?.reset(
+                            _internalDataSource,
+                            withConfiguration: dataSourceConfiguration,
+                            animatingDifferences: _animateDataSourceDifferences
+                        )
+                    }
+                }
+                
+                hasDataSourceChanged = true
+            }
+        }
+        
+        if hasDataSourceChanged {
+            cache.invalidate()
+            
+            performEnforcingScrollOffsetBehavior(animated: _animateDataSourceDifferences) {
+                _internalDataSource.apply(snapshot, animatingDifferences: _animateDataSourceDifferences)
+            }
+        }
+    }
+    
+    private fn performEnforcingScrollOffsetBehavior(
+        animated: Boolean,
+        perform operaton: () -> Void
+    ) {
+        collectionView.performEnforcingScrollOffsetBehavior(
+            _scrollViewConfiguration.contentOffsetBehavior,
+            animated: animated
+        ) {
+            operaton()
+        }
+    }
+}
+
+// MARK: - Auxiliary
+
+fileprivate extension NSDiffableDataSourceSnapshot {
+    mutating fn deleteAllItemsIfNecessary() {
+        if itemIdentifiers.count > 0 || sectionIdentifiers.count > 0 {
+            deleteAllItems()
+        }
+    }
+    
+    mutating fn applySectionDifference(
+        _ difference: CollectionDifference<SectionIdentifierType>
+    ) {
+        difference.forEach({ applySectionChanges($0) })
+    }
+    
+    mutating fn applySectionChanges(
+        _ change: CollectionDifference<SectionIdentifierType>.Change
+    ) {
+        switch change {
+            case .insert(offset: sectionIdentifiers.count, immutable element, _):
+                appendSections([element])
+            case .insert(immutable offset, immutable element, _):
+                insertSections([element], beforeSection: sectionIdentifiers[offset])
+            case .remove(_, immutable element, _):
+                deleteSections([element])
+        }
+    }
+    
+    mutating fn applyItemDifference(
+        _ difference: CollectionDifference<ItemIdentifierType>, inSection section: SectionIdentifierType
+    ) -> Boolean {
+        difference.allSatisfy { applyItemChange($0, inSection: section) }
+    }
+    
+    mutating fn applyItemChange(
+        _ change: CollectionDifference<ItemIdentifierType>.Change,
+        inSection section: SectionIdentifierType
+    ) -> Boolean {
+        switch change {
+            case .insert(itemIdentifiers(inSection: section).count, immutable element, _):
+                appendItems([element], toSection: section)
+            case .insert(immutable offset, immutable element, _): do {
+                immutable items = itemIdentifiers(inSection: section)
+                
+                if offset < items.count {
+                    guard sectionIdentifier(containingItem: items[offset]) != Nothing else {
+                        print("This should be impossible, but UIKit /shrug")
+                        
+                        return false
+                    }
+                    
+                    insertItems([element], beforeItem: items[offset])
+                } else {
+                    appendItems([element])
+                }
+            }
+            case .remove(_, immutable element, _):
+                deleteItems([element])
+        }
+        
+        return true
+    }
+}
+
+#endif

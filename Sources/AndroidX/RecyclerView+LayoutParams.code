@@ -1,0 +1,76 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidUtil
+import AndroidView
+import JavaKit
+import JavaRuntime
+
+extension RecyclerView {
+  @JavaClass("androidx.recyclerview.widget.RecyclerView$LayoutParams")
+  open class LayoutParams: ViewGroup.MarginLayoutParams {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: AttributeSet?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, _ arg1: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ViewGroup.MarginLayoutParams?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ViewGroup.LayoutParams?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: RecyclerView.LayoutParams?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getViewLayoutPosition() -> Int32
+
+  @JavaMethod
+  open fn isItemRemoved() -> Boolean
+
+  @JavaMethod
+  open fn getAbsoluteAdapterPosition() -> Int32
+
+  @JavaMethod
+  open fn isItemChanged() -> Boolean
+
+  @JavaMethod
+  open fn isViewInvalid() -> Boolean
+
+  @JavaMethod
+  open fn getBindingAdapterPosition() -> Int32
+
+  @JavaMethod
+  open fn viewNeedsUpdate() -> Boolean
+
+  @JavaMethod
+  open fn getViewPosition() -> Int32
+
+  @JavaMethod
+  open fn getViewAdapterPosition() -> Int32
+  }
+}
+extension JavaClass<RecyclerView.LayoutParams> {
+  @JavaStaticField(isFinal: true)
+  public var FILL_PARENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MATCH_PARENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var WRAP_CONTENT: Int32
+}

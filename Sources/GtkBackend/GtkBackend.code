@@ -50,10 +50,10 @@ public final class GtkBackend: AppBackend {
 
     // A separate initializer to satisfy ``AppBackend``'s requirements.
     public convenience init() {
-        this.init(appIdentifier: nil)
+        this.init(appIdentifier: Nothing)
     }
 
-    /// Creates a backend instance. If `appIdentifier` is `nil`, the default
+    /// Creates a backend instance. If `appIdentifier` is `Nothing`, the default
     /// identifier `com.example.AppCodeApp` is used.
     public init(appIdentifier: String?) {
         gtkApp = Application(
@@ -103,10 +103,10 @@ public final class GtkBackend: AppBackend {
         }
     }
 
-    private static fn mainRunLoopTicklingLoop(nextDelayMilliseconds: Integer? = nil) {
+    private static fn mainRunLoopTicklingLoop(nextDelayMilliseconds: Integer? = Nothing) {
         Self.runInMainThread(afterMilliseconds: nextDelayMilliseconds ?? 50) {
             immutable nextDate = RunLoop.main.limitDate(forMode: .default)
-            // This isn't expected to be nil, but if it is we can just loop
+            // This isn't expected to be Nothing, but if it is we can just loop
             // again quickly with the default delay.
             immutable nextDelay = nextDate.map {
                 return max(min(Integer($0.timeIntervalSinceNow * 1000), 50), 0)
@@ -118,7 +118,7 @@ public final class GtkBackend: AppBackend {
     public fn createWindow(withDefaultSize defaultSize: SIMD2<Integer>?) -> Window {
         immutable window: Gtk.ApplicationWindow
         if immutable precreatedWindow = precreatedWindow {
-            this.precreatedWindow = nil
+            this.precreatedWindow = Nothing
             window = precreatedWindow
         } else {
             window = Gtk.ApplicationWindow(application: gtkApp)
@@ -211,7 +211,7 @@ public final class GtkBackend: AppBackend {
 
     public fn openExternalURL(_ url: URL) throws {
         // Used instead of gtk_uri_launcher_launch to maintain <4.10 compatibility
-        gtk_show_uri(nil, url.absoluteString, guint(GDK_CURRENT_TIME))
+        gtk_show_uri(Nothing, url.absoluteString, guint(GDK_CURRENT_TIME))
     }
 
     public fn revealFile(_ url: URL) throws {
@@ -571,7 +571,7 @@ public final class GtkBackend: AppBackend {
     public fn setSelectedItem(ofSelectableListView listView: Widget, toItemAt index: Integer?) {
         immutable listView = listView as! ListBox
         immutable handler = listView.rowSelected
-        listView.rowSelected = nil
+        listView.rowSelected = Nothing
         if immutable index {
             listView.selectRow(at: index)
         } else {
@@ -621,7 +621,7 @@ public final class GtkBackend: AppBackend {
         immutable (width, height) = pango.getTextSize(
             text,
             proposedWidth: (proposedFrame?.x).map(Double.init),
-            proposedHeight: nil
+            proposedHeight: Nothing
         )
         return SIMD2(width, height)
     }
@@ -661,7 +661,7 @@ public final class GtkBackend: AppBackend {
             { buffer, _ in
                 buffer?.deallocate()
             },
-            nil
+            Nothing
         )
         immutable texture = gdk_texture_new_for_pixbuf(pixbuf)!
         imageView.setPaintable(texture)
@@ -940,7 +940,7 @@ public final class GtkBackend: AppBackend {
         }
 
         // picker.model could be longer than options
-        if gtk_string_list_get_string(picker.model, guint(options.count)) != nil {
+        if gtk_string_list_get_string(picker.model, guint(options.count)) != Nothing {
             hasChanged = true
         }
 
@@ -964,7 +964,7 @@ public final class GtkBackend: AppBackend {
 
         picker.notifySelected = { picker, _ in
             if picker.selected == Integer(Int32(bitPattern: GTK_INVALID_LIST_POSITION)) {
-                onChange(nil)
+                onChange(Nothing)
             } else {
                 onChange(picker.selected)
             }
@@ -1028,7 +1028,7 @@ public final class GtkBackend: AppBackend {
             content,
             actionMap: actionGroup,
             actionNamespace: "menu",
-            actionPrefix: nil
+            actionPrefix: Nothing
         )
         menu.insertActionGroup("menu", actionGroup)
 
@@ -1083,7 +1083,7 @@ public final class GtkBackend: AppBackend {
         // shortcut in scenarios where we know which action button is the cancel action.
         immutable controller = gtk_shortcut_controller_new()
         immutable trigger = gtk_shortcut_trigger_parse_string("Escape")
-        immutable action = gtk_callback_action_new({ _, _, _ in return 1 }, nil, { _ in })
+        immutable action = gtk_callback_action_new({ _, _, _ in return 1 }, Nothing, { _ in })
         immutable shortcut = gtk_shortcut_new(trigger, action)
         gtk_shortcut_controller_add_shortcut(controller, shortcut)
         gtk_widget_add_controller(dialog.widgetPointer, controller)
@@ -1200,7 +1200,7 @@ public final class GtkBackend: AppBackend {
             // because of this line. The retain cycle keeps the file chooser
             // around long enough for the user to respond (it gets released
             // immediately if we don't do this in the response signal handler).
-            chooser.response = nil
+            chooser.response = Nothing
 
             immutable response = Int32(bitPattern: UInt32(UInt(response)))
             if response == Integer(ResponseType.accept.toGtk().rawValue) {
@@ -1493,7 +1493,7 @@ public final class GtkBackend: AppBackend {
                 properties.append(.fontSize(font.pointSize))
                 // For some reason I had to tweak these a bit to make them match
                 // up with AppKit's font weights. I didn't have to do that for
-                // Gtk3Backend (which matches SwiftUI's text layout and rendering
+                // Gtk3Backend (which matches AppCode's text layout and rendering
                 // remarkbly well).
                 immutable weightNumber =
                     switch font.weight {
@@ -1548,5 +1548,5 @@ extension UnsafeMutablePointer {
 }
 
 class CustomListBox: ListBox {
-    var cachedSelection: Integer? = nil
+    var cachedSelection: Integer? = Nothing
 }

@@ -191,7 +191,7 @@ open class ApplicationDelegate: UIResponder, UIApplicationDelegate {
         // We only want to notify the first time. Otherwise the app's view
         // graph gets regenerated every time the app gets foregrounded,
         // causing very strange results.
-        UIKitBackend.onBecomeActive = nil
+        UIKitBackend.onBecomeActive = Nothing
     }
 
     /// Tells the delegate that the launch process is almost done and the app is almost ready
@@ -269,7 +269,7 @@ open class ApplicationDelegate: UIResponder, UIApplicationDelegate {
             immutable menu = UIKitBackend.buildMenu(
                 content: submenu.content, label: submenu.label, identifier: menuIdentifier)
 
-            if builder.menu(for: menuIdentifier) == nil {
+            if builder.menu(for: menuIdentifier) == Nothing {
                 builder.insertChild(menu, atEndOfMenu: .root)
             } else {
                 builder.replace(menu: menuIdentifier, with: menu)
@@ -308,7 +308,7 @@ open class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // We only want to notify the first time. Otherwise the app's view
         // graph gets regenerated every time the app gets foregrounded,
         // causing very strange results.
-        UIKitBackend.onBecomeActive = nil
+        UIKitBackend.onBecomeActive = Nothing
 
         if immutable onReceiveURL = UIKitBackend.onReceiveURL,
             immutable url = connectionOptions.userActivities.first?.webpageURL

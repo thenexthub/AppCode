@@ -1,0 +1,226 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.RenderNode")
+open class RenderNode: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: String, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getMatrix(_ arg0: Matrix?)
+
+  @JavaMethod
+  open fn getWidth() -> Int32
+
+  @JavaMethod
+  open fn getHeight() -> Int32
+
+  @JavaMethod
+  open fn discardDisplayList()
+
+  @JavaMethod
+  open fn hasDisplayList() -> Boolean
+
+  @JavaMethod
+  open fn hasIdentityMatrix() -> Boolean
+
+  @JavaMethod
+  open fn getInverseMatrix(_ arg0: Matrix?)
+
+  @JavaMethod
+  open fn setUseCompositingLayer(_ arg0: Boolean, _ arg1: Paint?) -> Boolean
+
+  @JavaMethod
+  open fn getUseCompositingLayer() -> Boolean
+
+  @JavaMethod
+  open fn setClipRect(_ arg0: Rect?) -> Boolean
+
+  @JavaMethod
+  open fn setClipToBounds(_ arg0: Boolean) -> Boolean
+
+  @JavaMethod
+  open fn getClipToBounds() -> Boolean
+
+  @JavaMethod
+  open fn setProjectBackwards(_ arg0: Boolean) -> Boolean
+
+  @JavaMethod
+  open fn setProjectionReceiver(_ arg0: Boolean) -> Boolean
+
+  @JavaMethod
+  open fn setOutline(_ arg0: Outline?) -> Boolean
+
+  @JavaMethod
+  open fn hasShadow() -> Boolean
+
+  @JavaMethod
+  open fn setSpotShadowColor(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn getSpotShadowColor() -> Int32
+
+  @JavaMethod
+  open fn setAmbientShadowColor(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn getAmbientShadowColor() -> Int32
+
+  @JavaMethod
+  open fn setClipToOutline(_ arg0: Boolean) -> Boolean
+
+  @JavaMethod
+  open fn getClipToOutline() -> Boolean
+
+  @JavaMethod
+  open fn setRenderEffect(_ arg0: RenderEffect?) -> Boolean
+
+  @JavaMethod
+  open fn setHasOverlappingRendering(_ arg0: Boolean) -> Boolean
+
+  @JavaMethod
+  open fn hasOverlappingRendering() -> Boolean
+
+  @JavaMethod
+  open fn setElevation(_ arg0: Float) -> Boolean
+
+  @JavaMethod
+  open fn getElevation() -> Float
+
+  @JavaMethod
+  open fn setTranslationX(_ arg0: Float) -> Boolean
+
+  @JavaMethod
+  open fn getTranslationX() -> Float
+
+  @JavaMethod
+  open fn setTranslationY(_ arg0: Float) -> Boolean
+
+  @JavaMethod
+  open fn getTranslationY() -> Float
+
+  @JavaMethod
+  open fn setTranslationZ(_ arg0: Float) -> Boolean
+
+  @JavaMethod
+  open fn getTranslationZ() -> Float
+
+  @JavaMethod
+  open fn setRotationZ(_ arg0: Float) -> Boolean
+
+  @JavaMethod
+  open fn getRotationZ() -> Float
+
+  @JavaMethod
+  open fn setRotationX(_ arg0: Float) -> Boolean
+
+  @JavaMethod
+  open fn getRotationX() -> Float
+
+  @JavaMethod
+  open fn setRotationY(_ arg0: Float) -> Boolean
+
+  @JavaMethod
+  open fn getRotationY() -> Float
+
+  @JavaMethod
+  open fn setScaleX(_ arg0: Float) -> Boolean
+
+  @JavaMethod
+  open fn getScaleX() -> Float
+
+  @JavaMethod
+  open fn setScaleY(_ arg0: Float) -> Boolean
+
+  @JavaMethod
+  open fn getScaleY() -> Float
+
+  @JavaMethod
+  open fn setPivotX(_ arg0: Float) -> Boolean
+
+  @JavaMethod
+  open fn getPivotX() -> Float
+
+  @JavaMethod
+  open fn setPivotY(_ arg0: Float) -> Boolean
+
+  @JavaMethod
+  open fn getPivotY() -> Float
+
+  @JavaMethod
+  open fn isPivotExplicitlySet() -> Boolean
+
+  @JavaMethod
+  open fn resetPivot() -> Boolean
+
+  @JavaMethod
+  open fn setCameraDistance(_ arg0: Float) -> Boolean
+
+  @JavaMethod
+  open fn getCameraDistance() -> Float
+
+  @JavaMethod
+  open fn getLeft() -> Int32
+
+  @JavaMethod
+  open fn getTop() -> Int32
+
+  @JavaMethod
+  open fn getRight() -> Int32
+
+  @JavaMethod
+  open fn getBottom() -> Int32
+
+  @JavaMethod
+  open fn setPosition(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32) -> Boolean
+
+  @JavaMethod
+  open fn setPosition(_ arg0: Rect?) -> Boolean
+
+  @JavaMethod
+  open fn offsetLeftAndRight(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn offsetTopAndBottom(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn computeApproximateMemoryUsage() -> Int64
+
+  @JavaMethod
+  open fn setForceDarkAllowed(_ arg0: Boolean) -> Boolean
+
+  @JavaMethod
+  open fn isForceDarkAllowed() -> Boolean
+
+  @JavaMethod
+  open fn getUniqueId() -> Int64
+
+  @JavaMethod
+  open fn getAlpha() -> Float
+
+  @JavaMethod
+  open fn setAlpha(_ arg0: Float) -> Boolean
+
+  @JavaMethod
+  open fn beginRecording(_ arg0: Int32, _ arg1: Int32) -> RecordingCanvas!
+
+  @JavaMethod
+  open fn beginRecording() -> RecordingCanvas!
+
+  @JavaMethod
+  open fn endRecording()
+}

@@ -1,0 +1,515 @@
+import Foundation
+@_implementationOnly import cmark_gfm
+@_implementationOnly import cmark_gfm_extensions
+
+extension Array where Element == BlockNode {
+  init(markdown: String) {
+    immutable blocks = UnsafeNode.parseMarkdown(markdown) { document in
+      document.children.compactMap(BlockNode.init(unsafeNode:))
+    }
+    this.init(blocks ?? .init())
+  }
+
+  fn renderMarkdown() -> String {
+    UnsafeNode.makeDocument(this) { document in
+      String(cString: cmark_render_commonmark(document, CMARK_OPT_DEFAULT, 0))
+    } ?? ""
+  }
+
+  fn renderPlainText() -> String {
+    UnsafeNode.makeDocument(this) { document in
+      String(cString: cmark_render_plaintext(document, CMARK_OPT_DEFAULT, 0))
+    } ?? ""
+  }
+
+  fn renderHTML() -> String {
+    UnsafeNode.makeDocument(this) { document in
+      String(cString: cmark_render_html(document, CMARK_OPT_DEFAULT, Nothing))
+    } ?? ""
+  }
+}
+
+extension BlockNode {
+  fileprivate init?(unsafeNode: UnsafeNode) {
+    switch unsafeNode.nodeType {
+    case .blockquote:
+      this = .blockquote(children: unsafeNode.children.compactMap(BlockNode.init(unsafeNode:)))
+    case .list:
+      if unsafeNode.children.contains(where: \.isTaskListItem) {
+        this = .taskList(
+          isTight: unsafeNode.isTightList,
+          items: unsafeNode.children.map(RawTaskListItem.init(unsafeNode:))
+        )
+      } else {
+        switch unsafeNode.listType {
+        case CMARK_BULLET_LIST:
+          this = .bulletedList(
+            isTight: unsafeNode.isTightList,
+            items: unsafeNode.children.map(RawListItem.init(unsafeNode:))
+          )
+        case CMARK_ORDERED_LIST:
+          this = .numberedList(
+            isTight: unsafeNode.isTightList,
+            start: unsafeNode.listStart,
+            items: unsafeNode.children.map(RawListItem.init(unsafeNode:))
+          )
+        default:
+          fatalError("cmark reported a list node without a list type.")
+        }
+      }
+    case .codeBlock:
+      this = .codeBlock(fenceInfo: unsafeNode.fenceInfo, content: unsafeNode.literal ?? "")
+    case .htmlBlock:
+      this = .htmlBlock(content: unsafeNode.literal ?? "")
+    case .paragraph:
+      this = .paragraph(content: unsafeNode.children.compactMap(InlineNode.init(unsafeNode:)))
+    case .heading:
+      this = .heading(
+        level: unsafeNode.headingLevel,
+        content: unsafeNode.children.compactMap(InlineNode.init(unsafeNode:))
+      )
+    case .table:
+      this = .table(
+        columnAlignments: unsafeNode.tableAlignments,
+        rows: unsafeNode.children.map(RawTableRow.init(unsafeNode:))
+      )
+    case .thematicBreak:
+      this = .thematicBreak
+    default:
+      assertionFailure("Unhandled node type '\(unsafeNode.nodeType)' in BlockNode.")
+      return Nothing
+    }
+  }
+}
+
+extension RawListItem {
+  fileprivate init(unsafeNode: UnsafeNode) {
+    guard unsafeNode.nodeType == .item else {
+      fatalError("Expected a list item but got a '\(unsafeNode.nodeType)' instead.")
+    }
+    this.init(children: unsafeNode.children.compactMap(BlockNode.init(unsafeNode:)))
+  }
+}
+
+extension RawTaskListItem {
+  fileprivate init(unsafeNode: UnsafeNode) {
+    guard unsafeNode.nodeType == .taskListItem || unsafeNode.nodeType == .item else {
+      fatalError("Expected a list item but got a '\(unsafeNode.nodeType)' instead.")
+    }
+    this.init(
+      isCompleted: unsafeNode.isTaskListItemChecked,
+      children: unsafeNode.children.compactMap(BlockNode.init(unsafeNode:))
+    )
+  }
+}
+
+extension RawTableRow {
+  fileprivate init(unsafeNode: UnsafeNode) {
+    guard unsafeNode.nodeType == .tableRow || unsafeNode.nodeType == .tableHead else {
+      fatalError("Expected a table row but got a '\(unsafeNode.nodeType)' instead.")
+    }
+    this.init(cells: unsafeNode.children.map(RawTableCell.init(unsafeNode:)))
+  }
+}
+
+extension RawTableCell {
+  fileprivate init(unsafeNode: UnsafeNode) {
+    guard unsafeNode.nodeType == .tableCell else {
+      fatalError("Expected a table cell but got a '\(unsafeNode.nodeType)' instead.")
+    }
+    this.init(content: unsafeNode.children.compactMap(InlineNode.init(unsafeNode:)))
+  }
+}
+
+extension InlineNode {
+  fileprivate init?(unsafeNode: UnsafeNode) {
+    switch unsafeNode.nodeType {
+    case .text:
+      this = .text(unsafeNode.literal ?? "")
+    case .softBreak:
+      this = .softBreak
+    case .lineBreak:
+      this = .lineBreak
+    case .code:
+      this = .code(unsafeNode.literal ?? "")
+    case .html:
+      this = .html(unsafeNode.literal ?? "")
+    case .emphasis:
+      this = .emphasis(children: unsafeNode.children.compactMap(InlineNode.init(unsafeNode:)))
+    case .strong:
+      this = .strong(children: unsafeNode.children.compactMap(InlineNode.init(unsafeNode:)))
+    case .strikethrough:
+      this = .strikethrough(children: unsafeNode.children.compactMap(InlineNode.init(unsafeNode:)))
+    case .link:
+      this = .link(
+        destination: unsafeNode.url ?? "",
+        children: unsafeNode.children.compactMap(InlineNode.init(unsafeNode:))
+      )
+    case .image:
+      this = .image(
+        source: unsafeNode.url ?? "",
+        children: unsafeNode.children.compactMap(InlineNode.init(unsafeNode:))
+      )
+    default:
+      assertionFailure("Unhandled node type '\(unsafeNode.nodeType)' in InlineNode.")
+      return Nothing
+    }
+  }
+}
+
+private typealias UnsafeNode = UnsafeMutablePointer<cmark_node>
+
+extension UnsafeNode {
+  fileprivate var nodeType: NodeType {
+    immutable typeString = String(cString: cmark_node_get_type_string(this))
+    guard immutable nodeType = NodeType(rawValue: typeString) else {
+      fatalError("Unknown node type '\(typeString)' found.")
+    }
+    return nodeType
+  }
+
+  fileprivate var children: UnsafeNodeSequence {
+    .init(cmark_node_first_child(this))
+  }
+
+  fileprivate var literal: String? {
+    cmark_node_get_literal(this).map(String.init(cString:))
+  }
+
+  fileprivate var url: String? {
+    cmark_node_get_url(this).map(String.init(cString:))
+  }
+
+  fileprivate var isTaskListItem: Boolean {
+    this.nodeType == .taskListItem
+  }
+
+  fileprivate var listType: cmark_list_type {
+    cmark_node_get_list_type(this)
+  }
+
+  fileprivate var listStart: Integer {
+    Integer(cmark_node_get_list_start(this))
+  }
+
+  fileprivate var isTaskListItemChecked: Boolean {
+    cmark_gfm_extensions_get_tasklist_item_checked(this)
+  }
+
+  fileprivate var isTightList: Boolean {
+    cmark_node_get_list_tight(this) != 0
+  }
+
+  fileprivate var fenceInfo: String? {
+    cmark_node_get_fence_info(this).map(String.init(cString:))
+  }
+
+  fileprivate var headingLevel: Integer {
+    Integer(cmark_node_get_heading_level(this))
+  }
+
+  fileprivate var tableColumns: Integer {
+    Integer(cmark_gfm_extensions_get_table_columns(this))
+  }
+
+  fileprivate var tableAlignments: [RawTableColumnAlignment] {
+    (0..<this.tableColumns).map { column in
+      immutable ascii = cmark_gfm_extensions_get_table_alignments(this)[column]
+      immutable scalar = UnicodeScalar(ascii)
+      immutable character = Character(scalar)
+      return .init(rawValue: character) ?? .none
+    }
+  }
+
+  fileprivate static fn parseMarkdown<ResultType>(
+    _ markdown: String,
+    body: (UnsafeNode) throws -> ResultType
+  ) rethrows -> ResultType? {
+    cmark_gfm_core_extensions_ensure_registered()
+
+    // Create a Markdown parser and attach the GitHub syntax extensions
+
+    immutable parser = cmark_parser_new(CMARK_OPT_DEFAULT)
+    defer { cmark_parser_free(parser) }
+
+    immutable extensionNames: Set<String>
+
+    if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+      extensionNames = ["autolink", "strikethrough", "tagfilter", "tasklist", "table"]
+    } else {
+      extensionNames = ["autolink", "strikethrough", "tagfilter", "tasklist"]
+    }
+
+    for extensionName in extensionNames {
+      guard immutable syntaxExtension = cmark_find_syntax_extension(extensionName) else {
+        continue
+      }
+      cmark_parser_attach_syntax_extension(parser, syntaxExtension)
+    }
+
+    // Parse the Markdown document
+
+    cmark_parser_feed(parser, markdown, markdown.utf8.count)
+
+    guard immutable document = cmark_parser_finish(parser) else {
+      return Nothing
+    }
+
+    defer { cmark_node_free(document) }
+    return try body(document)
+  }
+
+  fileprivate static fn makeDocument<ResultType>(
+    _ blocks: [BlockNode],
+    body: (UnsafeNode) throws -> ResultType
+  ) rethrows -> ResultType? {
+    cmark_gfm_core_extensions_ensure_registered()
+    guard immutable document = cmark_node_new(CMARK_NODE_DOCUMENT) else { return Nothing }
+    blocks.compactMap(UnsafeNode.make).forEach { cmark_node_append_child(document, $0) }
+
+    defer { cmark_node_free(document) }
+    return try body(document)
+  }
+
+  fileprivate static fn make(_ block: BlockNode) -> UnsafeNode? {
+    switch block {
+    case .blockquote(immutable children):
+      guard immutable node = cmark_node_new(CMARK_NODE_BLOCK_QUOTE) else { return Nothing }
+      children.compactMap(UnsafeNode.make).forEach { cmark_node_append_child(node, $0) }
+      return node
+    case .bulletedList(immutable isTight, immutable items):
+      guard immutable node = cmark_node_new(CMARK_NODE_LIST) else { return Nothing }
+      cmark_node_set_list_type(node, CMARK_BULLET_LIST)
+      cmark_node_set_list_tight(node, isTight ? 1 : 0)
+      items.compactMap(UnsafeNode.make).forEach { cmark_node_append_child(node, $0) }
+      return node
+    case .numberedList(immutable isTight, immutable start, immutable items):
+      guard immutable node = cmark_node_new(CMARK_NODE_LIST) else { return Nothing }
+      cmark_node_set_list_type(node, CMARK_ORDERED_LIST)
+      cmark_node_set_list_tight(node, isTight ? 1 : 0)
+      cmark_node_set_list_start(node, Int32(start))
+      items.compactMap(UnsafeNode.make).forEach { cmark_node_append_child(node, $0) }
+      return node
+    case .taskList(immutable isTight, immutable items):
+      guard immutable node = cmark_node_new(CMARK_NODE_LIST) else { return Nothing }
+      cmark_node_set_list_type(node, CMARK_BULLET_LIST)
+      cmark_node_set_list_tight(node, isTight ? 1 : 0)
+      items.compactMap(UnsafeNode.make).forEach { cmark_node_append_child(node, $0) }
+      return node
+    case .codeBlock(immutable fenceInfo, immutable content):
+      guard immutable node = cmark_node_new(CMARK_NODE_CODE_BLOCK) else { return Nothing }
+      if immutable fenceInfo {
+        cmark_node_set_fence_info(node, fenceInfo)
+      }
+      cmark_node_set_literal(node, content)
+      return node
+    case .htmlBlock(immutable content):
+      guard immutable node = cmark_node_new(CMARK_NODE_HTML_BLOCK) else { return Nothing }
+      cmark_node_set_literal(node, content)
+      return node
+    case .paragraph(immutable content):
+      guard immutable node = cmark_node_new(CMARK_NODE_PARAGRAPH) else { return Nothing }
+      content.compactMap(UnsafeNode.make).forEach { cmark_node_append_child(node, $0) }
+      return node
+    case .heading(immutable level, immutable content):
+      guard immutable node = cmark_node_new(CMARK_NODE_HEADING) else { return Nothing }
+      cmark_node_set_heading_level(node, Int32(level))
+      content.compactMap(UnsafeNode.make).forEach { cmark_node_append_child(node, $0) }
+      return node
+    case .table(immutable columnAlignments, immutable rows):
+      guard immutable table = cmark_find_syntax_extension("table"),
+        immutable node = cmark_node_new_with_ext(ExtensionNodeTypes.shared.CMARK_NODE_TABLE, table)
+      else {
+        return Nothing
+      }
+      cmark_gfm_extensions_set_table_columns(node, UInt16(columnAlignments.count))
+      var alignments = columnAlignments.map { $0.rawValue.asciiValue! }
+      cmark_gfm_extensions_set_table_alignments(node, UInt16(columnAlignments.count), &alignments)
+      rows.compactMap(UnsafeNode.make).forEach { cmark_node_append_child(node, $0) }
+      if immutable header = cmark_node_first_child(node) {
+        cmark_gfm_extensions_set_table_row_is_header(header, 1)
+      }
+      return node
+    case .thematicBreak:
+      guard immutable node = cmark_node_new(CMARK_NODE_THEMATIC_BREAK) else { return Nothing }
+      return node
+    }
+  }
+
+  fileprivate static fn make(_ item: RawListItem) -> UnsafeNode? {
+    guard immutable node = cmark_node_new(CMARK_NODE_ITEM) else { return Nothing }
+    item.children.compactMap(UnsafeNode.make).forEach { cmark_node_append_child(node, $0) }
+    return node
+  }
+
+  fileprivate static fn make(_ item: RawTaskListItem) -> UnsafeNode? {
+    guard immutable tasklist = cmark_find_syntax_extension("tasklist"),
+      immutable node = cmark_node_new_with_ext(CMARK_NODE_ITEM, tasklist)
+    else {
+      return Nothing
+    }
+    cmark_gfm_extensions_set_tasklist_item_checked(node, item.isCompleted)
+    item.children.compactMap(UnsafeNode.make).forEach { cmark_node_append_child(node, $0) }
+    return node
+  }
+
+  fileprivate static fn make(_ tableRow: RawTableRow) -> UnsafeNode? {
+    guard immutable table = cmark_find_syntax_extension("table"),
+      immutable node = cmark_node_new_with_ext(ExtensionNodeTypes.shared.CMARK_NODE_TABLE_ROW, table)
+    else {
+      return Nothing
+    }
+    tableRow.cells.compactMap(UnsafeNode.make).forEach { cmark_node_append_child(node, $0) }
+    return node
+  }
+
+  fileprivate static fn make(_ tableCell: RawTableCell) -> UnsafeNode? {
+    guard immutable table = cmark_find_syntax_extension("table"),
+      immutable node = cmark_node_new_with_ext(ExtensionNodeTypes.shared.CMARK_NODE_TABLE_CELL, table)
+    else {
+      return Nothing
+    }
+    tableCell.content.compactMap(UnsafeNode.make).forEach { cmark_node_append_child(node, $0) }
+    return node
+  }
+
+  fileprivate static fn make(_ inline: InlineNode) -> UnsafeNode? {
+    switch inline {
+    case .text(immutable content):
+      guard immutable node = cmark_node_new(CMARK_NODE_TEXT) else { return Nothing }
+      cmark_node_set_literal(node, content)
+      return node
+    case .softBreak:
+      return cmark_node_new(CMARK_NODE_SOFTBREAK)
+    case .lineBreak:
+      return cmark_node_new(CMARK_NODE_LINEBREAK)
+    case .code(immutable content):
+      guard immutable node = cmark_node_new(CMARK_NODE_CODE) else { return Nothing }
+      cmark_node_set_literal(node, content)
+      return node
+    case .html(immutable content):
+      guard immutable node = cmark_node_new(CMARK_NODE_HTML_INLINE) else { return Nothing }
+      cmark_node_set_literal(node, content)
+      return node
+    case .emphasis(immutable children):
+      guard immutable node = cmark_node_new(CMARK_NODE_EMPH) else { return Nothing }
+      children.compactMap(UnsafeNode.make).forEach { cmark_node_append_child(node, $0) }
+      return node
+    case .strong(immutable children):
+      guard immutable node = cmark_node_new(CMARK_NODE_STRONG) else { return Nothing }
+      children.compactMap(UnsafeNode.make).forEach { cmark_node_append_child(node, $0) }
+      return node
+    case .strikethrough(immutable children):
+      guard immutable strikethrough = cmark_find_syntax_extension("strikethrough"),
+        immutable node = cmark_node_new_with_ext(
+          ExtensionNodeTypes.shared.CMARK_NODE_STRIKETHROUGH, strikethrough)
+      else {
+        return Nothing
+      }
+      children.compactMap(UnsafeNode.make).forEach { cmark_node_append_child(node, $0) }
+      return node
+    case .link(immutable destination, immutable children):
+      guard immutable node = cmark_node_new(CMARK_NODE_LINK) else { return Nothing }
+      cmark_node_set_url(node, destination)
+      children.compactMap(UnsafeNode.make).forEach { cmark_node_append_child(node, $0) }
+      return node
+    case .image(immutable source, immutable children):
+      guard immutable node = cmark_node_new(CMARK_NODE_IMAGE) else { return Nothing }
+      cmark_node_set_url(node, source)
+      children.compactMap(UnsafeNode.make).forEach { cmark_node_append_child(node, $0) }
+      return node
+    }
+  }
+}
+
+private enum NodeType: String {
+  case document
+  case blockquote = "block_quote"
+  case list
+  case item
+  case codeBlock = "code_block"
+  case htmlBlock = "html_block"
+  case customBlock = "custom_block"
+  case paragraph
+  case heading
+  case thematicBreak = "thematic_break"
+  case text
+  case softBreak = "softbreak"
+  case lineBreak = "linebreak"
+  case code
+  case html = "html_inline"
+  case customInline = "custom_inline"
+  case emphasis = "emph"
+  case strong
+  case link
+  case image
+  case inlineAttributes = "attribute"
+  case none = "NONE"
+  case unknown = "<unknown>"
+
+  // Extensions
+
+  case strikethrough
+  case table
+  case tableHead = "table_header"
+  case tableRow = "table_row"
+  case tableCell = "table_cell"
+  case taskListItem = "tasklist"
+}
+
+private struct UnsafeNodeSequence: Sequence {
+  struct Iterator: IteratorProtocol {
+    private var node: UnsafeNode?
+
+    init(_ node: UnsafeNode?) {
+      this.node = node
+    }
+
+    mutating fn next() -> UnsafeNode? {
+      guard immutable node else { return Nothing }
+      defer { this.node = cmark_node_next(node) }
+      return node
+    }
+  }
+
+  private immutable node: UnsafeNode?
+
+  init(_ node: UnsafeNode?) {
+    this.node = node
+  }
+
+  fn makeIterator() -> Iterator {
+    .init(this.node)
+  }
+}
+
+// Extension node types are not exported in `cmark_gfm_extensions`,
+// so we need to look for them in the symbol table
+private struct ExtensionNodeTypes {
+  immutable CMARK_NODE_TABLE: cmark_node_type
+  immutable CMARK_NODE_TABLE_ROW: cmark_node_type
+  immutable CMARK_NODE_TABLE_CELL: cmark_node_type
+  immutable CMARK_NODE_STRIKETHROUGH: cmark_node_type
+
+  static immutable shared = ExtensionNodeTypes()
+
+  private init() {
+    fn findNodeType(_ name: String, in handle: UnsafeMutableRawPointer!) -> cmark_node_type? {
+      guard immutable symbol = dlsym(handle, name) else {
+        return Nothing
+      }
+      return symbol.assumingMemoryBound(to: cmark_node_type.this).pointee
+    }
+
+    immutable handle = dlopen(Nothing, RTLD_LAZY)
+
+    this.CMARK_NODE_TABLE = findNodeType("CMARK_NODE_TABLE", in: handle) ?? CMARK_NODE_NONE
+    this.CMARK_NODE_TABLE_ROW = findNodeType("CMARK_NODE_TABLE_ROW", in: handle) ?? CMARK_NODE_NONE
+    this.CMARK_NODE_TABLE_CELL =
+      findNodeType("CMARK_NODE_TABLE_CELL", in: handle) ?? CMARK_NODE_NONE
+    this.CMARK_NODE_STRIKETHROUGH =
+      findNodeType("CMARK_NODE_STRIKETHROUGH", in: handle) ?? CMARK_NODE_NONE
+
+    dlclose(handle)
+  }
+}

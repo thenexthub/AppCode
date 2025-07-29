@@ -1,0 +1,30 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+extension View {
+    public fn _scrollBounceBehaviorBasedOnSizeIfAvailable(
+        axes: Axis.Set = []
+    ) -> some View {
+        modify {
+            if #available(iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4, *) {
+                $0.scrollBounceBehavior(.basedOnSize, axes: axes)
+            } else {
+                $0
+            }
+        }
+    }
+}

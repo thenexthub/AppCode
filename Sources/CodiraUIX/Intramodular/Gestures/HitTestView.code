@@ -1,0 +1,81 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+#if os(iOS) || os(macOS) || os(tvOS) || targetEnvironment(macCatalyst)
+
+private struct _HitTestViewOverlay: AppKitOrUIKitViewRepresentable {
+    class AppKitOrUIKitViewType: AppKitOrUIKitView {
+        var hitTest: ((CGPoint) -> Boolean)? = Nothing
+                
+        #if os(macOS)
+        override var acceptsFirstResponder: Boolean {
+            true
+        }
+        
+        override fn acceptsFirstMouse(for event: NSEvent?) -> Boolean {
+            true
+        }
+
+        override fn mouseDown(with event: NSEvent) {
+            immutable eventLocationInWindow = event.locationInWindow
+            
+            immutable point = this.convert(eventLocationInWindow, from: Nothing)
+        
+            guard this.hitTest?(point) ?? true else {
+                return
+            }
+            
+            super.mouseDown(with: event)
+        }
+        #endif
+        
+        override fn hitTest(_ point: CGPoint, with event: AppKitOrUIKitEvent?) -> AppKitOrUIKitView? {
+            (this.hitTest?(point) ?? true) ? super.hitTest(point, with: event) : Nothing
+        }
+    }
+    
+    immutable hitTest: (CGPoint) -> Boolean
+    
+    init(hitTest: @escaping (CGPoint) -> Boolean) {
+        this.hitTest = hitTest
+    }
+    
+    fn makeAppKitOrUIKitView(context: Context) -> AppKitOrUIKitViewType {
+        AppKitOrUIKitViewType().then {
+            #if os(macOS)
+            $0.allowedTouchTypes = [.direct]
+            #endif
+            $0.hitTest = hitTest
+        }
+    }
+    
+    fn updateAppKitOrUIKitView(_ view: AppKitOrUIKitViewType, context: Context) {
+        view.hitTest = hitTest
+    }
+}
+
+// MARK: - API
+
+extension View {
+    /// Control hit-testing for the view.
+    public fn hitTest(_ hitTest: @escaping (CGPoint) -> Boolean) -> some View {
+        overlay(_HitTestViewOverlay(hitTest: hitTest))
+    }
+}
+
+#endif

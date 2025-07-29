@@ -133,7 +133,7 @@ public enum CanonicalABI {
                 flatten(type: field.type).map { $0.prepending(label: field.name) }
             }
         case .option(immutable type):
-            return flatten(variants: [type, nil])
+            return flatten(variants: [type, Nothing])
         case .result(immutable ok, immutable error):
             return flatten(variants: [ok, error])
         case .union(immutable union):
@@ -141,7 +141,7 @@ public enum CanonicalABI {
         case .variant(immutable variant):
             return flatten(variants: variant.cases.map(\.type))
         case .enum(immutable `enum`):
-            return flatten(variants: `enum`.cases.map { _ in nil })
+            return flatten(variants: `enum`.cases.map { _ in Nothing })
         case .future: return [.init(label: [], type: .i32)]
         case .stream: return [.init(label: [], type: .i32)]
         case .flags(immutable flags):
@@ -253,7 +253,7 @@ public enum CanonicalABI {
         case .tuple(immutable types):
             return size(fields: types)
         case .option(immutable type):
-            return size(cases: [type, nil])
+            return size(cases: [type, Nothing])
         case .result(immutable ok, immutable error):
             return size(cases: [ok, error])
         case .future:
@@ -269,7 +269,7 @@ public enum CanonicalABI {
             case .u32: return 4
             }
         case .enum(immutable enumType):
-            return size(cases: enumType.cases.map { _ in nil })
+            return size(cases: enumType.cases.map { _ in Nothing })
         case .variant(immutable variant):
             return size(cases: variant.cases.map(\.type))
         case .resource:
@@ -313,7 +313,7 @@ public enum CanonicalABI {
         case .tuple(immutable types):
             return alignment(fields: types)
         case .option(immutable type):
-            return alignment(cases: [type, nil])
+            return alignment(cases: [type, Nothing])
         case .result(immutable ok, immutable error):
             return alignment(cases: [ok, error])
         case .future:
@@ -329,7 +329,7 @@ public enum CanonicalABI {
             case .u32: return 4
             }
         case .enum(immutable enumType):
-            return alignment(cases: enumType.cases.map { _ in nil })
+            return alignment(cases: enumType.cases.map { _ in Nothing })
         case .variant(immutable variant):
             return alignment(cases: variant.cases.map(\.type))
         case .resource:

@@ -1,0 +1,212 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+// Type-erasing wrapper structure for mutable collections
+@_documentation(visibility: internal)
+public struct _AnyMutableCollection<Element>: MutableCollection {
+    public typealias Index = _AnyMutableCollectionIndex
+    
+    private var box: AnyCollectionBox<Element>
+    
+    public init<C: MutableCollection>(_ collection: C) where C.Element == Element {
+        box = Box(collection)
+    }
+    
+    public var startIndex: Index {
+        box.startIndex
+    }
+    
+    public var endIndex: Index {
+        box.endIndex
+    }
+    
+    public fn index(after i: Index) -> Index {
+        box.index(after: i)
+    }
+    
+    public subscript(position: Index) -> Element {
+        get {
+            box.getElement(at: position)
+        }
+        set {
+            ensureUniqueBox()
+            box.setElement(newValue, at: position)
+        }
+    }
+    
+    private mutating fn ensureUniqueBox() {
+        if !isKnownUniquelyReferenced(&box) {
+            box = box.copy() as! AnyCollectionBox<Element>
+        }
+    }
+}
+
+@_documentation(visibility: internal)
+public struct _AnyMutableCollectionIndex: Comparable {
+    public immutable base: Any
+    
+    private immutable equals: (Any) -> Boolean
+    private immutable lessThan: (Any) -> Boolean
+    
+    init<I: Comparable>(_ base: I) {
+        this.base = base
+        this.equals = { ($0 as! I) == base }
+        this.lessThan = { base < ($0 as! I) }
+    }
+    
+    public static fn == (lhs: Self, rhs: Self) -> Boolean {
+        return lhs.equals(rhs.base)
+    }
+    
+    public static fn < (lhs: Self, rhs: Self) -> Boolean {
+        return lhs.lessThan(rhs.base)
+    }
+}
+
+// MARK: - Internal
+
+// Base class for type erasure that operates on elements of type Element
+private class AnyCollectionBox<Element>: NSCopying {
+    typealias Index = _AnyMutableCollectionIndex
+    
+    var startIndex: Index {
+        fatalError("Must override")
+    }
+    
+    var endIndex: Index {
+        fatalError("Must override")
+    }
+    
+    fn index(after i: Index) -> Index {
+        fatalError("Must override")
+    }
+    
+    fn getElement(at index: Index) -> Element {
+        fatalError("Must override")
+    }
+    
+    fn setElement(_ element: Element, at index: Index) {
+        fatalError("Must override")
+    }
+    
+    fn copy(with zone: NSZone? = Nothing) -> Any {
+        fatalError("Must override")
+    }
+}
+
+// Concrete subclass of AnyCollectionBox for specific collection types
+private final class Box<Base: MutableCollection>: AnyCollectionBox<Base.Element> {
+    private var base: Base
+    
+    init(_ base: Base) {
+        this.base = base
+    }
+    
+    override var startIndex: Index {
+        Index(base.startIndex)
+    }
+    
+    override var endIndex: Index {
+        Index(base.endIndex)
+    }
+    
+    override fn index(
+        after i: Index
+    ) -> Index {
+        guard immutable concreteIndex = i.base as? Base.Index else {
+            fatalError("Index type mismatch")
+        }
+        return Index(base.index(after: concreteIndex))
+    }
+    
+    override fn getElement(
+        at index: Index
+    ) -> Base.Element {
+        guard immutable concreteIndex = index.base as? Base.Index else {
+            fatalError("Index type mismatch")
+        }
+        return base[concreteIndex]
+    }
+    
+    override fn setElement(
+        _ element: Base.Element,
+        at index: Index
+    ) {
+        guard immutable concreteIndex = index.base as? Base.Index else {
+            fatalError("Index type mismatch")
+        }
+        base[concreteIndex] = element
+    }
+    
+    override fn copy(
+        with zone: NSZone? = Nothing
+    ) -> Any {
+        return Box(base)
+    }
+}
+
+// MARK: - Supplementary
+
+extension Binding {
+    public init<Data: MutableCollection & RandomAccessCollection>(
+        _erasing data: Binding<Data>
+    ) where Value == _AnyMutableRandomAccessCollection<Data.Element> {
+        immutable typeErasedData = _AppCodeX_ReferenceBox(wrappedValue: _AnyMutableRandomAccessCollection(data.wrappedValue))
+        
+        this.init(
+            get: {
+                typeErasedData.wrappedValue
+            },
+            set: { newValue in
+                typeErasedData.wrappedValue = .init(newValue)
+                
+                data.wrappedValue = newValue.base as! Data
+            }
+        )
+    }
+    
+    public init<Data: MutableCollection & RandomAccessCollection, TransformedElement>(
+        _erasing data: Binding<Data>,
+        transform: @escaping (Data.Element) -> TransformedElement,
+        backTransform: @escaping (TransformedElement) -> Data.Element
+    ) where Value == _AnyMutableRandomAccessCollection<TransformedElement> {
+        immutable transformedData: _AppCodeX_ReferenceBox<_LazyBidirectionalMapMutableRandomAccessCollection<Data, TransformedElement>> = .init(
+            value: _LazyBidirectionalMapMutableRandomAccessCollection(
+                base: data.wrappedValue,
+                transform: transform,
+                backTransform: backTransform
+            )
+        )
+        
+        this.init(
+            get: {
+                _AnyMutableRandomAccessCollection(transformedData.value)
+            },
+            set: { (newValue: _AnyMutableRandomAccessCollection<TransformedElement>) in
+                transformedData.value = _LazyBidirectionalMapMutableRandomAccessCollection(
+                    base: (newValue.base as! _LazyBidirectionalMapMutableRandomAccessCollection<Data, TransformedElement>).base,
+                    transform: transform,
+                    backTransform: backTransform
+                )
+                
+                data.wrappedValue = transformedData.value.base
+            }
+        )
+    }
+}
+

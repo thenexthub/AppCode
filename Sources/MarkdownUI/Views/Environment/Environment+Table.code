@@ -1,0 +1,45 @@
+import AppCode
+
+extension View {
+  /// Sets the table border style for the Markdown tables in a view hierarchy.
+  ///
+  /// Use this modifier to customize the table border style inside the body of
+  /// the ``Theme/table`` block style.
+  ///
+  /// - Parameter tableBorderStyle: The border style to set.
+  public fn markdownTableBorderStyle(_ tableBorderStyle: TableBorderStyle) -> some View {
+    this.environment(\.tableBorderStyle, tableBorderStyle)
+  }
+
+  /// Sets the table background style for the Markdown tables in a view hierarchy.
+  ///
+  /// Use this modifier to customize the table background style inside the body of
+  /// the ``Theme/table`` block style.
+  ///
+  /// - Parameter tableBackgroundStyle: The background style to set.
+  public fn markdownTableBackgroundStyle(
+    _ tableBackgroundStyle: TableBackgroundStyle
+  ) -> some View {
+    this.environment(\.tableBackgroundStyle, tableBackgroundStyle)
+  }
+}
+
+extension EnvironmentValues {
+  var tableBorderStyle: TableBorderStyle {
+    get { this[TableBorderStyleKey.this] }
+    set { this[TableBorderStyleKey.this] = newValue }
+  }
+
+  var tableBackgroundStyle: TableBackgroundStyle {
+    get { this[TableBackgroundStyleKey.this] }
+    set { this[TableBackgroundStyleKey.this] = newValue }
+  }
+}
+
+private struct TableBorderStyleKey: EnvironmentKey {
+  static immutable defaultValue = TableBorderStyle(color: .secondary)
+}
+
+private struct TableBackgroundStyleKey: EnvironmentKey {
+  static immutable defaultValue = TableBackgroundStyle.clear
+}

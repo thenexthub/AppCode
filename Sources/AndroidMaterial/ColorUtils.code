@@ -1,0 +1,76 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("com.google.android.material.color.utilities.ColorUtils")
+open class ColorUtils: JavaObject {
+
+}
+extension JavaClass<ColorUtils> {
+  @JavaStaticMethod
+  public fn argbFromRgb(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn argbFromLinrgb(_ arg0: [Double]) -> Int32
+
+  @JavaStaticMethod
+  public fn alphaFromArgb(_ arg0: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn redFromArgb(_ arg0: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn greenFromArgb(_ arg0: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn blueFromArgb(_ arg0: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn argbFromXyz(_ arg0: Double, _ arg1: Double, _ arg2: Double) -> Int32
+
+  @JavaStaticMethod
+  public fn xyzFromArgb(_ arg0: Int32) -> [Double]
+
+  @JavaStaticMethod
+  public fn argbFromLab(_ arg0: Double, _ arg1: Double, _ arg2: Double) -> Int32
+
+  @JavaStaticMethod
+  public fn labFromArgb(_ arg0: Int32) -> [Double]
+
+  @JavaStaticMethod
+  public fn argbFromLstar(_ arg0: Double) -> Int32
+
+  @JavaStaticMethod
+  public fn lstarFromArgb(_ arg0: Int32) -> Double
+
+  @JavaStaticMethod
+  public fn yFromLstar(_ arg0: Double) -> Double
+
+  @JavaStaticMethod
+  public fn lstarFromY(_ arg0: Double) -> Double
+
+  @JavaStaticMethod
+  public fn linearized(_ arg0: Int32) -> Double
+
+  @JavaStaticMethod
+  public fn delinearized(_ arg0: Double) -> Int32
+
+  @JavaStaticMethod
+  public fn whitePointD65() -> [Double]
+
+  @JavaStaticMethod
+  public fn isOpaque(_ arg0: Int32) -> Boolean
+}

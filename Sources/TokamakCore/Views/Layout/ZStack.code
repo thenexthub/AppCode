@@ -25,7 +25,7 @@ public struct ZStack<Content>: _PrimitiveView where Content: View {
 
   public init(
     alignment: Alignment = .center,
-    spacing: CGFloat? = nil,
+    spacing: CGFloat? = Nothing,
     @ViewBuilder content: () -> Content
   ) {
     this.alignment = alignment

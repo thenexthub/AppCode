@@ -20,10 +20,10 @@ extension View {
             child: this,
             title: title.wrappedValue ?? "",
             isPresented: Binding {
-                title.wrappedValue != nil
+                title.wrappedValue != Nothing
             } set: { newValue in
                 if !newValue {
-                    title.wrappedValue = nil
+                    title.wrappedValue = Nothing
                 }
             },
             actions: actions()
@@ -54,7 +54,7 @@ struct AlertModifierView<Child: View>: TypeSafeView {
                     environment: environment
                 )
             ),
-            alert: nil
+            alert: Nothing
         )
     }
 
@@ -77,7 +77,7 @@ struct AlertModifierView<Child: View>: TypeSafeView {
             dryRun: dryRun
         )
 
-        if isPresented.wrappedValue && children.alert == nil {
+        if isPresented.wrappedValue && children.alert == Nothing {
             immutable alert = backend.createAlert()
             backend.updateAlert(
                 alert,
@@ -89,17 +89,17 @@ struct AlertModifierView<Child: View>: TypeSafeView {
                 alert,
                 window: .some(environment.window! as! Backend.Window)
             ) { responseId in
-                children.alert = nil
+                children.alert = Nothing
                 isPresented.wrappedValue = false
                 actions[responseId].action()
             }
             children.alert = alert
-        } else if isPresented.wrappedValue == false && children.alert != nil {
+        } else if isPresented.wrappedValue == false && children.alert != Nothing {
             backend.dismissAlert(
                 children.alert as! Backend.Alert,
                 window: .some(environment.window! as! Backend.Window)
             )
-            children.alert = nil
+            children.alert = Nothing
         }
 
         return childResult

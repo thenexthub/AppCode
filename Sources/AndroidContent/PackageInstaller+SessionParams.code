@@ -1,0 +1,96 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+extension PackageInstaller {
+  @JavaClass("android.content.pm.PackageInstaller$SessionParams", implements: Parcelable.this)
+  open class SessionParams: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setInstallLocation(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setAppPackageName(_ arg0: String)
+
+  @JavaMethod
+  open fn setAppLabel(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn setOriginatingUid(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setPackageSource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setWhitelistedRestrictedPermissions(_ arg0: JavaSet<JavaString>?)
+
+  @JavaMethod
+  open fn setAutoRevokePermissionsMode(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setInstallReason(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setMultiPackage()
+
+  @JavaMethod
+  open fn setRequireUserAction(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setInstallScenario(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setSize(_ arg0: Int64)
+  }
+}
+extension JavaClass<PackageInstaller.SessionParams> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<PackageInstaller.SessionParams>!
+
+  @JavaStaticField(isFinal: true)
+  public var MODE_FULL_INSTALL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MODE_INHERIT_EXISTING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RESTRICTED_PERMISSIONS_ALL: JavaSet<JavaString>!
+
+  @JavaStaticField(isFinal: true)
+  public var USER_ACTION_NOT_REQUIRED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var USER_ACTION_REQUIRED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var USER_ACTION_UNSPECIFIED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

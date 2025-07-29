@@ -1,0 +1,359 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.Canvas")
+open class Canvas: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Bitmap?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn restore()
+
+  @JavaMethod
+  open fn translate(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn getMatrix() -> Matrix!
+
+  @JavaMethod
+  open fn getMatrix(_ arg0: Matrix?)
+
+  @JavaMethod
+  open fn getWidth() -> Int32
+
+  @JavaMethod
+  open fn getHeight() -> Int32
+
+  @JavaMethod
+  open fn quickReject(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Canvas.EdgeType?) -> Boolean
+
+  @JavaMethod
+  open fn quickReject(_ arg0: Path?) -> Boolean
+
+  @JavaMethod
+  open fn quickReject(_ arg0: RectF?, _ arg1: Canvas.EdgeType?) -> Boolean
+
+  @JavaMethod
+  open fn quickReject(_ arg0: Path?, _ arg1: Canvas.EdgeType?) -> Boolean
+
+  @JavaMethod
+  open fn quickReject(_ arg0: RectF?) -> Boolean
+
+  @JavaMethod
+  open fn quickReject(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float) -> Boolean
+
+  @JavaMethod
+  open fn getDensity() -> Int32
+
+  @JavaMethod
+  open fn setDensity(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setBitmap(_ arg0: Bitmap?)
+
+  @JavaMethod
+  open fn isHardwareAccelerated() -> Boolean
+
+  @JavaMethod
+  open fn enableZ()
+
+  @JavaMethod
+  open fn disableZ()
+
+  @JavaMethod
+  open fn getMaximumBitmapWidth() -> Int32
+
+  @JavaMethod
+  open fn getMaximumBitmapHeight() -> Int32
+
+  @JavaMethod
+  open fn saveLayer(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Paint?, _ arg5: Int32) -> Int32
+
+  @JavaMethod
+  open fn saveLayer(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Paint?) -> Int32
+
+  @JavaMethod
+  open fn saveLayer(_ arg0: RectF?, _ arg1: Paint?, _ arg2: Int32) -> Int32
+
+  @JavaMethod
+  open fn saveLayer(_ arg0: RectF?, _ arg1: Paint?) -> Int32
+
+  @JavaMethod
+  open fn saveLayerAlpha(_ arg0: RectF?, _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  open fn saveLayerAlpha(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Int32) -> Int32
+
+  @JavaMethod
+  open fn saveLayerAlpha(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Int32, _ arg5: Int32) -> Int32
+
+  @JavaMethod
+  open fn saveLayerAlpha(_ arg0: RectF?, _ arg1: Int32, _ arg2: Int32) -> Int32
+
+  @JavaMethod
+  open fn getSaveCount() -> Int32
+
+  @JavaMethod
+  open fn restoreToCount(_ arg0: Int32)
+
+  @JavaMethod
+  open fn skew(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn setMatrix(_ arg0: Matrix?)
+
+  @JavaMethod
+  open fn clipRect(_ arg0: Rect?) -> Boolean
+
+  @JavaMethod
+  open fn clipRect(_ arg0: RectF?) -> Boolean
+
+  @JavaMethod
+  open fn clipRect(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Region.Op?) -> Boolean
+
+  @JavaMethod
+  open fn clipRect(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float) -> Boolean
+
+  @JavaMethod
+  open fn clipRect(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32) -> Boolean
+
+  @JavaMethod
+  open fn clipRect(_ arg0: RectF?, _ arg1: Region.Op?) -> Boolean
+
+  @JavaMethod
+  open fn clipRect(_ arg0: Rect?, _ arg1: Region.Op?) -> Boolean
+
+  @JavaMethod
+  open fn clipOutRect(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float) -> Boolean
+
+  @JavaMethod
+  open fn clipOutRect(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32) -> Boolean
+
+  @JavaMethod
+  open fn clipOutRect(_ arg0: Rect?) -> Boolean
+
+  @JavaMethod
+  open fn clipOutRect(_ arg0: RectF?) -> Boolean
+
+  @JavaMethod
+  open fn clipPath(_ arg0: Path?) -> Boolean
+
+  @JavaMethod
+  open fn clipPath(_ arg0: Path?, _ arg1: Region.Op?) -> Boolean
+
+  @JavaMethod
+  open fn clipOutPath(_ arg0: Path?) -> Boolean
+
+  @JavaMethod
+  open fn getDrawFilter() -> DrawFilter!
+
+  @JavaMethod
+  open fn setDrawFilter(_ arg0: DrawFilter?)
+
+  @JavaMethod
+  open fn getClipBounds(_ arg0: Rect?) -> Boolean
+
+  @JavaMethod
+  open fn getClipBounds() -> Rect!
+
+  @JavaMethod
+  open fn drawPicture(_ arg0: Picture?, _ arg1: Rect?)
+
+  @JavaMethod
+  open fn drawPicture(_ arg0: Picture?)
+
+  @JavaMethod
+  open fn drawPicture(_ arg0: Picture?, _ arg1: RectF?)
+
+  @JavaMethod
+  open fn drawArc(_ arg0: RectF?, _ arg1: Float, _ arg2: Float, _ arg3: Boolean, _ arg4: Paint?)
+
+  @JavaMethod
+  open fn drawArc(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Float, _ arg5: Float, _ arg6: Boolean, _ arg7: Paint?)
+
+  @JavaMethod
+  open fn drawARGB(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn drawBitmap(_ arg0: Bitmap?, _ arg1: Rect?, _ arg2: RectF?, _ arg3: Paint?)
+
+  @JavaMethod
+  open fn drawBitmap(_ arg0: Bitmap?, _ arg1: Float, _ arg2: Float, _ arg3: Paint?)
+
+  @JavaMethod
+  open fn drawBitmap(_ arg0: Bitmap?, _ arg1: Matrix?, _ arg2: Paint?)
+
+  @JavaMethod
+  open fn drawBitmap(_ arg0: Bitmap?, _ arg1: Rect?, _ arg2: Rect?, _ arg3: Paint?)
+
+  @JavaMethod
+  open fn drawBitmap(_ arg0: [Int32], _ arg1: Int32, _ arg2: Int32, _ arg3: Float, _ arg4: Float, _ arg5: Int32, _ arg6: Int32, _ arg7: Boolean, _ arg8: Paint?)
+
+  @JavaMethod
+  open fn drawBitmap(_ arg0: [Int32], _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, _ arg5: Int32, _ arg6: Int32, _ arg7: Boolean, _ arg8: Paint?)
+
+  @JavaMethod
+  open fn drawBitmapMesh(_ arg0: Bitmap?, _ arg1: Int32, _ arg2: Int32, _ arg3: [Float], _ arg4: Int32, _ arg5: [Int32], _ arg6: Int32, _ arg7: Paint?)
+
+  @JavaMethod
+  open fn drawCircle(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Paint?)
+
+  @JavaMethod
+  open fn drawColor(_ arg0: Int32)
+
+  @JavaMethod
+  open fn drawColor(_ arg0: Int32, _ arg1: BlendMode?)
+
+  @JavaMethod
+  open fn drawColor(_ arg0: Int32, _ arg1: PorterDuff.Mode?)
+
+  @JavaMethod
+  open fn drawColor(_ arg0: Int64, _ arg1: BlendMode?)
+
+  @JavaMethod
+  open fn drawColor(_ arg0: Int64)
+
+  @JavaMethod
+  open fn drawLine(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Paint?)
+
+  @JavaMethod
+  open fn drawLines(_ arg0: [Float], _ arg1: Paint?)
+
+  @JavaMethod
+  open fn drawLines(_ arg0: [Float], _ arg1: Int32, _ arg2: Int32, _ arg3: Paint?)
+
+  @JavaMethod
+  open fn drawOval(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Paint?)
+
+  @JavaMethod
+  open fn drawOval(_ arg0: RectF?, _ arg1: Paint?)
+
+  @JavaMethod
+  open fn drawPaint(_ arg0: Paint?)
+
+  @JavaMethod
+  open fn drawPatch(_ arg0: NinePatch?, _ arg1: RectF?, _ arg2: Paint?)
+
+  @JavaMethod
+  open fn drawPatch(_ arg0: NinePatch?, _ arg1: Rect?, _ arg2: Paint?)
+
+  @JavaMethod
+  open fn drawPath(_ arg0: Path?, _ arg1: Paint?)
+
+  @JavaMethod
+  open fn drawPoint(_ arg0: Float, _ arg1: Float, _ arg2: Paint?)
+
+  @JavaMethod
+  open fn drawPoints(_ arg0: [Float], _ arg1: Paint?)
+
+  @JavaMethod
+  open fn drawPoints(_ arg0: [Float], _ arg1: Int32, _ arg2: Int32, _ arg3: Paint?)
+
+  @JavaMethod
+  open fn drawPosText(_ arg0: [UInt16], _ arg1: Int32, _ arg2: Int32, _ arg3: [Float], _ arg4: Paint?)
+
+  @JavaMethod
+  open fn drawPosText(_ arg0: String, _ arg1: [Float], _ arg2: Paint?)
+
+  @JavaMethod
+  open fn drawRect(_ arg0: RectF?, _ arg1: Paint?)
+
+  @JavaMethod
+  open fn drawRect(_ arg0: Rect?, _ arg1: Paint?)
+
+  @JavaMethod
+  open fn drawRect(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Paint?)
+
+  @JavaMethod
+  open fn drawRGB(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn drawRoundRect(_ arg0: RectF?, _ arg1: Float, _ arg2: Float, _ arg3: Paint?)
+
+  @JavaMethod
+  open fn drawRoundRect(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Float, _ arg5: Float, _ arg6: Paint?)
+
+  @JavaMethod
+  open fn drawDoubleRoundRect(_ arg0: RectF?, _ arg1: [Float], _ arg2: RectF?, _ arg3: [Float], _ arg4: Paint?)
+
+  @JavaMethod
+  open fn drawDoubleRoundRect(_ arg0: RectF?, _ arg1: Float, _ arg2: Float, _ arg3: RectF?, _ arg4: Float, _ arg5: Float, _ arg6: Paint?)
+
+  @JavaMethod
+  open fn drawGlyphs(_ arg0: [Int32], _ arg1: Int32, _ arg2: [Float], _ arg3: Int32, _ arg4: Int32, _ arg5: Font?, _ arg6: Paint?)
+
+  @JavaMethod
+  open fn drawText(_ arg0: [UInt16], _ arg1: Int32, _ arg2: Int32, _ arg3: Float, _ arg4: Float, _ arg5: Paint?)
+
+  @JavaMethod
+  open fn drawText(_ arg0: CharSequence?, _ arg1: Int32, _ arg2: Int32, _ arg3: Float, _ arg4: Float, _ arg5: Paint?)
+
+  @JavaMethod
+  open fn drawText(_ arg0: String, _ arg1: Int32, _ arg2: Int32, _ arg3: Float, _ arg4: Float, _ arg5: Paint?)
+
+  @JavaMethod
+  open fn drawText(_ arg0: String, _ arg1: Float, _ arg2: Float, _ arg3: Paint?)
+
+  @JavaMethod
+  open fn drawTextOnPath(_ arg0: String, _ arg1: Path?, _ arg2: Float, _ arg3: Float, _ arg4: Paint?)
+
+  @JavaMethod
+  open fn drawTextOnPath(_ arg0: [UInt16], _ arg1: Int32, _ arg2: Int32, _ arg3: Path?, _ arg4: Float, _ arg5: Float, _ arg6: Paint?)
+
+  @JavaMethod
+  open fn drawTextRun(_ arg0: [UInt16], _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, _ arg5: Float, _ arg6: Float, _ arg7: Boolean, _ arg8: Paint?)
+
+  @JavaMethod
+  open fn drawTextRun(_ arg0: CharSequence?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, _ arg5: Float, _ arg6: Float, _ arg7: Boolean, _ arg8: Paint?)
+
+  @JavaMethod
+  open fn drawTextRun(_ arg0: MeasuredText?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, _ arg5: Float, _ arg6: Float, _ arg7: Boolean, _ arg8: Paint?)
+
+  @JavaMethod
+  open fn drawVertices(_ arg0: Canvas.VertexMode?, _ arg1: Int32, _ arg2: [Float], _ arg3: Int32, _ arg4: [Float], _ arg5: Int32, _ arg6: [Int32], _ arg7: Int32, _ arg8: [Int16], _ arg9: Int32, _ arg10: Int32, _ arg11: Paint?)
+
+  @JavaMethod
+  open fn drawRenderNode(_ arg0: RenderNode?)
+
+  @JavaMethod
+  open fn scale(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn scale(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float)
+
+  @JavaMethod
+  open fn concat(_ arg0: Matrix?)
+
+  @JavaMethod
+  open fn save() -> Int32
+
+  @JavaMethod
+  open fn isOpaque() -> Boolean
+
+  @JavaMethod
+  open fn rotate(_ arg0: Float, _ arg1: Float, _ arg2: Float)
+
+  @JavaMethod
+  open fn rotate(_ arg0: Float)
+}
+extension JavaClass<Canvas> {
+  @JavaStaticField(isFinal: true)
+  public var ALL_SAVE_FLAG: Int32
+}

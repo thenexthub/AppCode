@@ -23,7 +23,7 @@ open class Widget: GObject {
 
         }
         didSet {
-            if parentWidget != nil {
+            if parentWidget != Nothing {
                 didMoveToParent()
             } else {
                 didMoveFromParent()

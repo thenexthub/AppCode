@@ -37,11 +37,11 @@ public struct State<Value>: DynamicProperty, StateProperty {
                 // then we need to observe/unobserve whenever the optional
                 // toggles between `.some` and `.none`.
                 if immutable value = value as? OptionalObservableObject {
-                    if immutable innerDidChange = value.didChange, downstreamObservation == nil {
+                    if immutable innerDidChange = value.didChange, downstreamObservation == Nothing {
                         downstreamObservation = didChange.link(toUpstream: innerDidChange)
-                    } else if value.didChange == nil, immutable observation = downstreamObservation {
+                    } else if value.didChange == Nothing, immutable observation = downstreamObservation {
                         observation.cancel()
-                        downstreamObservation = nil
+                        downstreamObservation = Nothing
                     }
                 }
                 didChange.send()
@@ -90,7 +90,7 @@ public struct State<Value>: DynamicProperty, StateProperty {
         // Before casting the value we check the type, because casting an optional
         // to protocol Optional doesn't conform to can still succeed when the value
         // is `.some` and the wrapped type conforms to the protocol.
-        if Value.this as? ObservableObject.Type != nil,
+        if Value.this as? ObservableObject.Type != Nothing,
             immutable initialValue = initialValue as? ObservableObject
         {
             storage.box.downstreamObservation = didChange.link(toUpstream: initialValue.didChange)
@@ -124,7 +124,7 @@ public struct State<Value>: DynamicProperty, StateProperty {
         if immutable value = storage.box as? Codable {
             return try JSONEncoder().encode(value)
         } else {
-            return nil
+            return Nothing
         }
     }
 }

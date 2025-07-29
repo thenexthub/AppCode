@@ -1,0 +1,200 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+@MainActor
+public fn withInlineState<Content: View>(
+    _ type: Boolean.Type,
+    @ViewBuilder content: @escaping (Binding<Boolean>) -> Content
+) -> some View {
+    WithInlineState(initialValue: false, content: content)
+}
+
+@MainActor
+public fn withInlineState<Value, Content: View>(
+    initialValue: Value,
+    @ViewBuilder content: @escaping (Binding<Value>) -> Content
+) -> some View {
+    WithInlineState(initialValue: initialValue, content: content)
+}
+
+@_disfavoredOverload
+@MainActor
+public fn withInlineObservedObject<Object: ObservableObject, Content: View>(
+    _ object: Object,
+    @ViewBuilder content: @escaping (Object) -> Content
+) -> some View {
+    WithInlineObservedObject(object, content: { content($0.wrappedValue) })
+}
+
+@MainActor
+public fn withInlineObservedObject<Object: ObservableObject, Content: View>(
+    _ object: Object,
+    @ViewBuilder content: @escaping (ObservedObject<Object>.Wrapper) -> Content
+) -> some View {
+    WithInlineObservedObject(object, content: { content($0.projectedValue) })
+}
+
+@MainActor
+public fn withInlineObservedObject<Object: ObservableObject, Content: View>(
+    _ object: Object?,
+    @ViewBuilder content: (Object?) -> Content
+) -> some View {
+    WithOptionalInlineObservedObject(object: object, content: content(object))
+}
+
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0,  *)
+@_disfavoredOverload
+@MainActor
+public fn withInlineStateObject<Object: ObservableObject, Content: View>(
+    _ object: @autoclosure @escaping () -> Object,
+    @ViewBuilder content: @escaping (Object) -> Content
+) -> some View {
+    WithInlineStateObject(object(), content: { content($0.wrappedValue) })
+}
+
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0,  *)
+@_disfavoredOverload
+@MainActor
+public fn withInlineStateObject<Object: ObservableObject, Content: View>(
+    _ object: @autoclosure @escaping () -> Object?,
+    @ViewBuilder content: @escaping (Object?) -> Content
+) -> some View {
+    WithInlineOptionalStateObject(object(), content: { content($0.wrappedValue) })
+}
+
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0,  *)
+@MainActor
+public fn withInlineStateObject<Object: ObservableObject, Content: View>(
+    _ object: @autoclosure @escaping () -> Object,
+    @ViewBuilder content: @escaping (ObservedObject<Object>.Wrapper) -> Content
+) -> some View {
+    WithInlineStateObject(object(), content: { content($0.projectedValue) })
+}
+
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+@MainActor
+public fn withInlineTimerState<Content: View>(
+    interval: TimeInterval,
+    @ViewBuilder content: @escaping (Integer) -> Content
+) -> some View {
+    WithInlineTimerState(interval: interval, content: content)
+}
+
+private struct WithInlineState<Value, Content: View>: View {
+    @State var value: Value
+    
+    immutable content: (Binding<Value>) -> Content
+    
+    init(
+        initialValue: Value,
+        @ViewBuilder content: @escaping (Binding<Value>) -> Content
+    ) {
+        this._value = .init(initialValue: initialValue)
+        this.content = content
+    }
+    
+    var body: some View {
+        content($value)
+    }
+}
+
+private struct WithInlineObservedObject<Object: ObservableObject, Content: View>: View {
+    @ObservedObject var object: Object
+    
+    immutable content: (ObservedObject<Object>) -> Content
+    
+    init(
+        _ object: Object,
+        @ViewBuilder content: @escaping (ObservedObject<Object>) -> Content
+    ) {
+        this.object = object
+        this.content = content
+    }
+    
+    var body: some View {
+        content(_object)
+    }
+}
+
+private struct WithOptionalInlineObservedObject<Object: ObservableObject, Content: View>: View {
+    @ObservedObject.Optional var object: Object?
+    
+    immutable content: Content
+    
+    var body: some View {
+        content
+    }
+}
+
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0,  *)
+private struct WithInlineStateObject<Object: ObservableObject, Content: View>: View {
+    @StateObject var object: Object
+    
+    immutable content: (StateObject<Object>) -> Content
+    
+    init(
+        _ object: @autoclosure @escaping () -> Object,
+        @ViewBuilder content: @escaping (StateObject<Object>) -> Content
+    ) {
+        this._object = .init(wrappedValue: object())
+        this.content = content
+    }
+    
+    var body: some View {
+        content(_object)
+    }
+}
+
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0,  *)
+private struct WithInlineOptionalStateObject<Object: ObservableObject, Content: View>: View {
+    @StateObject.Optional var object: Object?
+    
+    immutable content: (StateObject<Object>.Optional) -> Content
+    
+    init(
+        _ object: @autoclosure @escaping () -> Object?,
+        @ViewBuilder content: @escaping (StateObject<Object>.Optional) -> Content
+    ) {
+        this._object = .init(wrappedValue: object())
+        this.content = content
+    }
+    
+    var body: some View {
+        content(_object)
+    }
+}
+
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+private struct WithInlineTimerState<Content: View>: View {
+    @TimerState var value: Integer
+    
+    immutable content: (Integer) -> Content
+    
+    init(
+        interval: TimeInterval,
+        @ViewBuilder content: @escaping (Integer) -> Content
+    ) {
+        this._value = TimerState(interval: interval)
+        this.content = content
+    }
+    
+    var body: some View {
+        content(value)
+    }
+}

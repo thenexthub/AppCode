@@ -1,0 +1,142 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.app.ActivityManager")
+open class ActivityManager: JavaObject {
+  @JavaMethod
+  open fn clearApplicationUserData() -> Boolean
+
+  @JavaMethod
+  open fn getMemoryClass() -> Int32
+
+  @JavaMethod
+  open fn getLargeMemoryClass() -> Int32
+
+  @JavaMethod
+  open fn isLowRamDevice() -> Boolean
+
+  @JavaMethod
+  open fn getRecentTasks(_ arg0: Int32, _ arg1: Int32) throws -> List<ActivityManager.RecentTaskInfo>!
+
+  @JavaMethod
+  open fn getAppTasks() -> List<ActivityManager.AppTask>!
+
+  @JavaMethod
+  open fn getRunningTasks(_ arg0: Int32) throws -> List<ActivityManager.RunningTaskInfo>!
+
+  @JavaMethod
+  open fn moveTaskToFront(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getRunningServices(_ arg0: Int32) throws -> List<ActivityManager.RunningServiceInfo>!
+
+  @JavaMethod
+  open fn getMemoryInfo(_ arg0: ActivityManager.MemoryInfo?)
+
+  @JavaMethod
+  open fn getProcessesInErrorState() -> List<ActivityManager.ProcessErrorStateInfo>!
+
+  @JavaMethod
+  open fn isBackgroundRestricted() -> Boolean
+
+  @JavaMethod
+  open fn getRunningAppProcesses() -> List<ActivityManager.RunningAppProcessInfo>!
+
+  @JavaMethod
+  open fn getHistoricalProcessExitReasons(_ arg0: String, _ arg1: Int32, _ arg2: Int32) -> List<ApplicationExitInfo>!
+
+  @JavaMethod
+  open fn setProcessStateSummary(_ arg0: [Int8])
+
+  @JavaMethod
+  open fn restartPackage(_ arg0: String)
+
+  @JavaMethod
+  open fn killBackgroundProcesses(_ arg0: String)
+
+  @JavaMethod
+  open fn getLauncherLargeIconDensity() -> Int32
+
+  @JavaMethod
+  open fn getLauncherLargeIconSize() -> Int32
+
+  @JavaMethod
+  open fn dumpPackageState(_ arg0: FileDescriptor?, _ arg1: String)
+
+  @JavaMethod
+  open fn setWatchHeapLimit(_ arg0: Int64)
+
+  @JavaMethod
+  open fn clearWatchHeapLimit()
+
+  @JavaMethod
+  open fn isInLockTaskMode() -> Boolean
+
+  @JavaMethod
+  open fn getLockTaskModeState() -> Int32
+
+  @JavaMethod
+  open fn appNotResponding(_ arg0: String)
+}
+extension JavaClass<ActivityManager> {
+  @JavaStaticField(isFinal: true)
+  public var ACTION_REPORT_HEAP_LIMIT: String
+
+  @JavaStaticField(isFinal: true)
+  public var LOCK_TASK_MODE_LOCKED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LOCK_TASK_MODE_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LOCK_TASK_MODE_PINNED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var META_HOME_ALTERNATE: String
+
+  @JavaStaticField(isFinal: true)
+  public var MOVE_TASK_NO_USER_ACTION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MOVE_TASK_WITH_HOME: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RECENT_IGNORE_UNAVAILABLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RECENT_WITH_EXCLUDED: Int32
+
+  @JavaStaticMethod
+  public fn isLowMemoryKillReportSupported() -> Boolean
+
+  @JavaStaticMethod
+  public fn getMyMemoryState(_ arg0: ActivityManager.RunningAppProcessInfo?)
+
+  @JavaStaticMethod
+  public fn isUserAMonkey() -> Boolean
+
+  @JavaStaticMethod
+  public fn isRunningInTestHarness() -> Boolean
+
+  @JavaStaticMethod
+  public fn isRunningInUserTestHarness() -> Boolean
+
+  @JavaStaticMethod
+  public fn setVrThread(_ arg0: Int32)
+}

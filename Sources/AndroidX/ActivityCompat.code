@@ -1,0 +1,118 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidApp
+import AndroidContent
+import AndroidOS
+import AndroidView
+import JavaKit
+import JavaKitReflection
+import JavaRuntime
+
+@JavaClass("androidx.core.app.ActivityCompat")
+open class ActivityCompat: JavaObject {
+
+}
+extension ActivityCompat {
+  @JavaInterface("androidx.core.app.ActivityCompat$OnRequestPermissionsResultCallback")
+  public struct OnRequestPermissionsResultCallback {
+  @JavaMethod
+  public fn onRequestPermissionsResult(_ arg0: Int32, _ arg1: [String], _ arg2: [Int32])
+  }
+}
+extension ActivityCompat {
+  @JavaInterface("androidx.core.app.ActivityCompat$PermissionCompatDelegate")
+  public struct PermissionCompatDelegate {
+  @JavaMethod
+  public fn requestPermissions(_ arg0: Activity?, _ arg1: [String], _ arg2: Int32) -> Boolean
+
+  @JavaMethod
+  public fn onActivityResult(_ arg0: Activity?, _ arg1: Int32, _ arg2: Int32, _ arg3: Intent?) -> Boolean
+  }
+}
+extension ActivityCompat {
+  @JavaInterface("androidx.core.app.ActivityCompat$RequestPermissionsRequestCodeValidator")
+  public struct RequestPermissionsRequestCodeValidator {
+  @JavaMethod
+  public fn validateRequestPermissionsRequestCode(_ arg0: Int32)
+  }
+}
+extension ActivityCompat {
+  @JavaInterface("androidx.core.content.ContextCompat$RegisterReceiverFlags", extends: Annotation.this)
+  public struct RegisterReceiverFlags {
+  @JavaMethod
+  public fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  public fn toString() -> String
+
+  @JavaMethod
+  public fn hashCode() -> Int32
+
+  @JavaMethod
+  public fn annotationType() -> JavaClass<Annotation>!
+  }
+}
+extension JavaClass<ActivityCompat> {
+  @JavaStaticField(isFinal: true)
+  public var RECEIVER_VISIBLE_TO_INSTANT_APPS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RECEIVER_EXPORTED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RECEIVER_NOT_EXPORTED: Int32
+
+  @JavaStaticMethod
+  public fn invalidateOptionsMenu(_ arg0: Activity?) -> Boolean
+
+  @JavaStaticMethod
+  public fn startActivityForResult(_ arg0: Activity?, _ arg1: Intent?, _ arg2: Int32, _ arg3: Bundle?)
+
+  @JavaStaticMethod
+  public fn startIntentSenderForResult(_ arg0: Activity?, _ arg1: IntentSender?, _ arg2: Int32, _ arg3: Intent?, _ arg4: Int32, _ arg5: Int32, _ arg6: Int32, _ arg7: Bundle?) throws
+
+  @JavaStaticMethod
+  public fn finishAffinity(_ arg0: Activity?)
+
+  @JavaStaticMethod
+  public fn finishAfterTransition(_ arg0: Activity?)
+
+  @JavaStaticMethod
+  public fn requireViewById(_ arg0: Activity?, _ arg1: Int32) -> View!
+
+  @JavaStaticMethod
+  public fn postponeEnterTransition(_ arg0: Activity?)
+
+  @JavaStaticMethod
+  public fn startPostponedEnterTransition(_ arg0: Activity?)
+
+  @JavaStaticMethod
+  public fn requestPermissions(_ arg0: Activity?, _ arg1: [String], _ arg2: Int32)
+
+  @JavaStaticMethod
+  public fn shouldShowRequestPermissionRationale(_ arg0: Activity?, _ arg1: String) -> Boolean
+
+  @JavaStaticMethod
+  public fn isLaunchedFromBubble(_ arg0: Activity?) -> Boolean
+
+  @JavaStaticMethod
+  public fn recreate(_ arg0: Activity?)
+
+  @JavaStaticMethod
+  public fn setPermissionCompatDelegate(_ arg0: ActivityCompat.PermissionCompatDelegate?)
+
+  @JavaStaticMethod
+  public fn getPermissionCompatDelegate() -> ActivityCompat.PermissionCompatDelegate!
+}

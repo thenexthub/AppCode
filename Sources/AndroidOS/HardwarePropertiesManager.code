@@ -1,0 +1,56 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.os.HardwarePropertiesManager")
+open class HardwarePropertiesManager: JavaObject {
+  @JavaMethod
+  open fn getDeviceTemperatures(_ arg0: Int32, _ arg1: Int32) -> [Float]
+
+  @JavaMethod
+  open fn getCpuUsages() -> [CpuUsageInfo?]
+
+  @JavaMethod
+  open fn getFanSpeeds() -> [Float]
+}
+extension JavaClass<HardwarePropertiesManager> {
+  @JavaStaticField(isFinal: true)
+  public var DEVICE_TEMPERATURE_BATTERY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DEVICE_TEMPERATURE_CPU: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DEVICE_TEMPERATURE_GPU: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DEVICE_TEMPERATURE_SKIN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEMPERATURE_CURRENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEMPERATURE_SHUTDOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEMPERATURE_THROTTLING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEMPERATURE_THROTTLING_BELOW_VR_MIN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var UNDEFINED_TEMPERATURE: Float
+}

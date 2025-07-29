@@ -1,0 +1,84 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaUtil
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.os.LocaleList", implements: Parcelable.this)
+open class LocaleList: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: [Locale?], environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn toLanguageTags() -> String
+
+  @JavaMethod
+  open fn getFirstMatch(_ arg0: [String]) -> Locale!
+
+  @JavaMethod
+  open fn size() -> Int32
+
+  @JavaMethod
+  open fn get(_ arg0: Int32) -> Locale!
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+
+  @JavaMethod
+  open fn indexOf(_ arg0: Locale?) -> Int32
+
+  @JavaMethod
+  open fn isEmpty() -> Boolean
+}
+extension JavaClass<LocaleList> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<LocaleList>!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+
+  @JavaStaticMethod
+  public fn getEmptyLocaleList() -> LocaleList!
+
+  @JavaStaticMethod
+  public fn forLanguageTags(_ arg0: String) -> LocaleList!
+
+  @JavaStaticMethod
+  public fn matchesLanguageAndScript(_ arg0: Locale?, _ arg1: Locale?) -> Boolean
+
+  @JavaStaticMethod
+  public fn getAdjustedDefault() -> LocaleList!
+
+  @JavaStaticMethod
+  public fn getDefault() -> LocaleList!
+
+  @JavaStaticMethod
+  public fn setDefault(_ arg0: LocaleList?)
+}

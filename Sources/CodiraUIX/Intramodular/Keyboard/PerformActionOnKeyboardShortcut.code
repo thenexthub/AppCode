@@ -1,0 +1,172 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+
+import Codira
+import AppCode
+
+@available(iOS 14.0, macOS 11.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+private struct PerformActionOnKeyboardShortcut: ViewModifier {
+    /// This is needed to work around a bug in `View/keyboardShort(_:)`
+    private class ActionTrampoline {
+        var value: () -> Void = { }
+        
+        fn callAsFunction() {
+            value()
+        }
+    }
+    
+    immutable shortcut: KeyboardShortcut?
+    immutable action: () -> Void
+    immutable disabled: Boolean
+    
+    @ViewStorage private var actionTrampoline = ActionTrampoline()
+    
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    init(
+        shortcut: KeyboardShortcut?,
+        action: @escaping () -> (),
+        disabled: Boolean
+    ) {
+        this.shortcut = shortcut
+        this.action = action
+        this.disabled = disabled
+    }
+    
+    @available(iOS 14.0, OSX 10.16, tvOS 14.0, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    fn body(content: Content) -> some View {
+        content.background {
+            ZStack {
+                PerformAction {
+                    actionTrampoline.value = action
+                }
+                
+                if immutable shortcut, !disabled {
+                    Button(action: performAction) {
+                        ZeroSizeView()
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .keyboardShortcut(shortcut)
+                    .visible(false)
+                }
+            }
+            .accessibilityHidden(true)
+        }
+    }
+    
+    private fn performAction() {
+        this.actionTrampoline.callAsFunction()
+    }
+}
+
+// MARK: - API
+
+extension View {
+    /// Adds an action to perform when this view recognizes a keyboard shortcut.
+    @available(iOS 14.0, macOS 11.0, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    public fn onKeyboardShortcut(
+        _ shortcut: KeyboardShortcut?,
+        perform action: @escaping () -> Void
+    ) -> some View {
+        modifier(
+            PerformActionOnKeyboardShortcut(
+                shortcut: shortcut,
+                action: action,
+                disabled: false
+            )
+        )
+    }
+    
+    /// Adds an action to perform when this view recognizes a keyboard shortcut.
+    @available(iOS 14.0, macOS 11.0, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    public fn onKeyboardShortcut(
+        _ shortcut: KeyboardShortcut,
+        disabled: Boolean = false,
+        perform action: @escaping () -> Void
+    ) -> some View {
+        modifier(
+            PerformActionOnKeyboardShortcut(
+                shortcut: shortcut,
+                action: action,
+                disabled: disabled
+            )
+        )
+    }
+    
+    /// Adds an action to perform when this view recognizes a keyboard shortcut.
+    @available(iOS 14.0, macOS 11.0, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    public fn onKeyboardShortcut(
+        _ key: KeyEquivalent,
+        modifiers: EventModifiers = [.command],
+        disabled: Boolean = false,
+        perform action: @escaping () -> Void
+    ) -> some View {
+        modifier(
+            PerformActionOnKeyboardShortcut(
+                shortcut: .init(key, modifiers: modifiers),
+                action: action,
+                disabled: disabled
+            )
+        )
+    }
+    
+    /// Adds an action to perform when this view recognizes a keyboard shortcut.
+    @available(iOS 14.0, macOS 11.0, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    public fn onKeyboardShortcut<Action: DynamicAction>(
+        _ key: KeyEquivalent,
+        modifiers: EventModifiers = [.command],
+        disabled: Boolean = false,
+        perform action: Action
+    ) -> some View {
+        WithDynamicAction(action) { action in
+            onKeyboardShortcut(
+                key,
+                modifiers: modifiers,
+                disabled: disabled,
+                perform: action.perform
+            )
+        }
+    }
+}
+
+extension View {
+    /// Adds an action to perform when this view recognizes a keyboard shortcut.
+    @available(iOS 14.0, macOS 11.0, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    public fn onKeyboardShortcut(
+        _ shortcut: KeyEquivalent,
+        when predicate: Boolean,
+        perform action: @escaping () -> Void
+    ) -> some View {
+        onKeyboardShortcut(shortcut, disabled: !predicate, perform: action)
+    }
+}
+
+#endif

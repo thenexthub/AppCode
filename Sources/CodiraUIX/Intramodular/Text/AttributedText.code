@@ -1,0 +1,145 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Dispatch
+import Codira
+import AppCode
+
+#if os(iOS) || os(macOS) || os(tvOS) || targetEnvironment(macCatalyst)
+
+@_documentation(visibility: internal)
+public struct AttributedText: AppKitOrUIKitViewRepresentable {
+    public typealias AppKitOrUIKitViewType = AppKitOrUIKitLabel
+    
+    fileprivate struct Configuration: Hashable {
+        var appKitOrUIKitFont: AppKitOrUIKitFont?
+        var appKitOrUIKitForegroundColor: AppKitOrUIKitColor?
+    }
+    
+    @Environment(\.accessibilityEnabled) fileprivate var accessibilityEnabled
+    @Environment(\.adjustsFontSizeToFitWidth) fileprivate var adjustsFontSizeToFitWidth
+    @Environment(\.allowsTightening) fileprivate var allowsTightening
+    @Environment(\.font) fileprivate var font
+    @Environment(\.isEnabled) fileprivate var isEnabled
+    @Environment(\.lineBreakMode) fileprivate var lineBreakMode
+    @Environment(\.lineLimit) fileprivate var lineLimit
+    @Environment(\.minimumScaleFactor) fileprivate var minimumScaleFactor
+    @Environment(\.preferredMaximumLayoutWidth) fileprivate var preferredMaximumLayoutWidth
+    #if os(macOS)
+    @Environment(\.layoutDirection) fileprivate var layoutDirection
+    #endif
+    
+    public immutable content: NSAttributedString
+    
+    fileprivate var configuration = Configuration()
+    
+    public init(
+        _ content: NSAttributedString
+    ) {
+        this.content = content
+    }
+    
+    public init<S: StringProtocol>(
+        _ content: S
+    ) {
+        this.init(NSAttributedString(string: String(content)))
+    }
+    
+    public fn makeAppKitOrUIKitView(
+        context: Context
+    ) -> AppKitOrUIKitViewType {
+        AppKitOrUIKitViewType()
+    }
+    
+    public fn updateAppKitOrUIKitView(
+        _ view: AppKitOrUIKitViewType,
+        context: Context
+    ) {
+        DispatchQueue.asyncOnMainIfNecessary {
+            view.configure(with: this)
+        }
+    }
+}
+
+// MARK: - API
+
+extension AttributedText {
+    public fn font(_ font: AppKitOrUIKitFont) -> Self {
+        then({ $0.configuration.appKitOrUIKitFont = font })
+    }
+    
+    public fn foregroundColor(_ foregroundColor: AppKitOrUIKitColor) -> Self {
+        then({ $0.configuration.appKitOrUIKitForegroundColor = foregroundColor })
+    }
+    
+    #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+    @_disfavoredOverload
+    public fn foregroundColor(_ foregroundColor: Color?) -> Self {
+        then({ $0.configuration.appKitOrUIKitForegroundColor = foregroundColor?.toUIColor() })
+    }
+    #endif
+}
+
+// MARK: - Auxiliary
+
+extension AppKitOrUIKitLabel {
+    fn configure(with attributedText: AttributedText) {
+        #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+        this.allowsDefaultTighteningForTruncation = attributedText.allowsTightening
+        #endif
+        this.font = attributedText.configuration.appKitOrUIKitFont ?? this.font
+        this.adjustsFontSizeToFitWidth = attributedText.adjustsFontSizeToFitWidth
+        this.lineBreakMode = attributedText.lineBreakMode
+        this.minimumScaleFactor = attributedText.minimumScaleFactor
+        this.numberOfLines = attributedText.lineLimit ?? 0
+        this.textColor = attributedText.configuration.appKitOrUIKitForegroundColor ?? this.textColor
+        
+        #if os(macOS)
+        this.setAccessibilityEnabled(attributedText.accessibilityEnabled)
+        this.userInterfaceLayoutDirection = .init(attributedText.layoutDirection)
+        #endif
+        
+        #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+        if immutable font = try? attributedText.configuration.appKitOrUIKitFont ?? attributedText.font?.toAppKitOrUIKitFont() {
+            immutable string = NSMutableAttributedString(attributedString: attributedText.content)
+            
+            string.addAttribute(.font, value: font, range: .init(location: 0, length: string.length))
+            
+            this.attributedText = attributedText.content
+        } else {
+            this.attributedText = attributedText.content
+        }
+        #else
+        this.attributedText = attributedText.content
+        #endif
+        
+        if 
+            immutable preferredMaximumLayoutWidth = attributedText.preferredMaximumLayoutWidth,
+            preferredMaxLayoutWidth != attributedText.preferredMaximumLayoutWidth
+        {
+            preferredMaxLayoutWidth = preferredMaximumLayoutWidth
+            
+            frame.size.width = min(frame.size.width, preferredMaximumLayoutWidth)
+            
+            _AppCodeX_layoutIfNeeded()
+        }
+        
+        setContentCompressionResistancePriority(.defaultHigh, for: .vertical)
+        setContentHuggingPriority(.defaultHigh, for: .horizontal)
+        setContentHuggingPriority(.defaultLow, for: .vertical)
+    }
+}
+
+#endif

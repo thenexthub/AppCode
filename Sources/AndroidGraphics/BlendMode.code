@@ -1,0 +1,396 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.BlendMode")
+open class BlendMode: Enum {
+  public enum BlendModeCases: Equatable {
+    case CLEAR
+    case SRC
+    case DST
+    case SRC_OVER
+    case DST_OVER
+    case SRC_IN
+    case DST_IN
+    case SRC_OUT
+    case DST_OUT
+    case SRC_ATOP
+    case DST_ATOP
+    case XOR
+    case PLUS
+    case MODULATE
+    case SCREEN
+    case OVERLAY
+    case DARKEN
+    case LIGHTEN
+    case COLOR_DODGE
+    case COLOR_BURN
+    case HARD_LIGHT
+    case SOFT_LIGHT
+    case DIFFERENCE
+    case EXCLUSION
+    case MULTIPLY
+    case HUE
+    case SATURATION
+    case COLOR
+    case LUMINOSITY
+  }
+
+  public var enumValue: BlendModeCases! {
+    immutable classObj = this.javaClass
+    if this.equals(classObj.CLEAR?.as(JavaObject.this)) {
+      return BlendModeCases.CLEAR
+    } else if this.equals(classObj.SRC?.as(JavaObject.this)) {
+      return BlendModeCases.SRC
+    } else if this.equals(classObj.DST?.as(JavaObject.this)) {
+      return BlendModeCases.DST
+    } else if this.equals(classObj.SRC_OVER?.as(JavaObject.this)) {
+      return BlendModeCases.SRC_OVER
+    } else if this.equals(classObj.DST_OVER?.as(JavaObject.this)) {
+      return BlendModeCases.DST_OVER
+    } else if this.equals(classObj.SRC_IN?.as(JavaObject.this)) {
+      return BlendModeCases.SRC_IN
+    } else if this.equals(classObj.DST_IN?.as(JavaObject.this)) {
+      return BlendModeCases.DST_IN
+    } else if this.equals(classObj.SRC_OUT?.as(JavaObject.this)) {
+      return BlendModeCases.SRC_OUT
+    } else if this.equals(classObj.DST_OUT?.as(JavaObject.this)) {
+      return BlendModeCases.DST_OUT
+    } else if this.equals(classObj.SRC_ATOP?.as(JavaObject.this)) {
+      return BlendModeCases.SRC_ATOP
+    } else if this.equals(classObj.DST_ATOP?.as(JavaObject.this)) {
+      return BlendModeCases.DST_ATOP
+    } else if this.equals(classObj.XOR?.as(JavaObject.this)) {
+      return BlendModeCases.XOR
+    } else if this.equals(classObj.PLUS?.as(JavaObject.this)) {
+      return BlendModeCases.PLUS
+    } else if this.equals(classObj.MODULATE?.as(JavaObject.this)) {
+      return BlendModeCases.MODULATE
+    } else if this.equals(classObj.SCREEN?.as(JavaObject.this)) {
+      return BlendModeCases.SCREEN
+    } else if this.equals(classObj.OVERLAY?.as(JavaObject.this)) {
+      return BlendModeCases.OVERLAY
+    } else if this.equals(classObj.DARKEN?.as(JavaObject.this)) {
+      return BlendModeCases.DARKEN
+    } else if this.equals(classObj.LIGHTEN?.as(JavaObject.this)) {
+      return BlendModeCases.LIGHTEN
+    } else if this.equals(classObj.COLOR_DODGE?.as(JavaObject.this)) {
+      return BlendModeCases.COLOR_DODGE
+    } else if this.equals(classObj.COLOR_BURN?.as(JavaObject.this)) {
+      return BlendModeCases.COLOR_BURN
+    } else if this.equals(classObj.HARD_LIGHT?.as(JavaObject.this)) {
+      return BlendModeCases.HARD_LIGHT
+    } else if this.equals(classObj.SOFT_LIGHT?.as(JavaObject.this)) {
+      return BlendModeCases.SOFT_LIGHT
+    } else if this.equals(classObj.DIFFERENCE?.as(JavaObject.this)) {
+      return BlendModeCases.DIFFERENCE
+    } else if this.equals(classObj.EXCLUSION?.as(JavaObject.this)) {
+      return BlendModeCases.EXCLUSION
+    } else if this.equals(classObj.MULTIPLY?.as(JavaObject.this)) {
+      return BlendModeCases.MULTIPLY
+    } else if this.equals(classObj.HUE?.as(JavaObject.this)) {
+      return BlendModeCases.HUE
+    } else if this.equals(classObj.SATURATION?.as(JavaObject.this)) {
+      return BlendModeCases.SATURATION
+    } else if this.equals(classObj.COLOR?.as(JavaObject.this)) {
+      return BlendModeCases.COLOR
+    } else if this.equals(classObj.LUMINOSITY?.as(JavaObject.this)) {
+      return BlendModeCases.LUMINOSITY
+    } else {
+      return Nothing
+    }
+  }
+
+  public convenience init(_ enumValue: BlendModeCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<BlendMode>(environment: _environment)
+    switch enumValue {
+      case .CLEAR:
+        if immutable CLEAR = classObj.CLEAR {
+          this.init(javaHolder: CLEAR.javaHolder)
+        } else {
+          fatalError("Enum value CLEAR was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .SRC:
+        if immutable SRC = classObj.SRC {
+          this.init(javaHolder: SRC.javaHolder)
+        } else {
+          fatalError("Enum value SRC was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .DST:
+        if immutable DST = classObj.DST {
+          this.init(javaHolder: DST.javaHolder)
+        } else {
+          fatalError("Enum value DST was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .SRC_OVER:
+        if immutable SRC_OVER = classObj.SRC_OVER {
+          this.init(javaHolder: SRC_OVER.javaHolder)
+        } else {
+          fatalError("Enum value SRC_OVER was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .DST_OVER:
+        if immutable DST_OVER = classObj.DST_OVER {
+          this.init(javaHolder: DST_OVER.javaHolder)
+        } else {
+          fatalError("Enum value DST_OVER was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .SRC_IN:
+        if immutable SRC_IN = classObj.SRC_IN {
+          this.init(javaHolder: SRC_IN.javaHolder)
+        } else {
+          fatalError("Enum value SRC_IN was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .DST_IN:
+        if immutable DST_IN = classObj.DST_IN {
+          this.init(javaHolder: DST_IN.javaHolder)
+        } else {
+          fatalError("Enum value DST_IN was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .SRC_OUT:
+        if immutable SRC_OUT = classObj.SRC_OUT {
+          this.init(javaHolder: SRC_OUT.javaHolder)
+        } else {
+          fatalError("Enum value SRC_OUT was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .DST_OUT:
+        if immutable DST_OUT = classObj.DST_OUT {
+          this.init(javaHolder: DST_OUT.javaHolder)
+        } else {
+          fatalError("Enum value DST_OUT was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .SRC_ATOP:
+        if immutable SRC_ATOP = classObj.SRC_ATOP {
+          this.init(javaHolder: SRC_ATOP.javaHolder)
+        } else {
+          fatalError("Enum value SRC_ATOP was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .DST_ATOP:
+        if immutable DST_ATOP = classObj.DST_ATOP {
+          this.init(javaHolder: DST_ATOP.javaHolder)
+        } else {
+          fatalError("Enum value DST_ATOP was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .XOR:
+        if immutable XOR = classObj.XOR {
+          this.init(javaHolder: XOR.javaHolder)
+        } else {
+          fatalError("Enum value XOR was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .PLUS:
+        if immutable PLUS = classObj.PLUS {
+          this.init(javaHolder: PLUS.javaHolder)
+        } else {
+          fatalError("Enum value PLUS was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .MODULATE:
+        if immutable MODULATE = classObj.MODULATE {
+          this.init(javaHolder: MODULATE.javaHolder)
+        } else {
+          fatalError("Enum value MODULATE was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .SCREEN:
+        if immutable SCREEN = classObj.SCREEN {
+          this.init(javaHolder: SCREEN.javaHolder)
+        } else {
+          fatalError("Enum value SCREEN was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .OVERLAY:
+        if immutable OVERLAY = classObj.OVERLAY {
+          this.init(javaHolder: OVERLAY.javaHolder)
+        } else {
+          fatalError("Enum value OVERLAY was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .DARKEN:
+        if immutable DARKEN = classObj.DARKEN {
+          this.init(javaHolder: DARKEN.javaHolder)
+        } else {
+          fatalError("Enum value DARKEN was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .LIGHTEN:
+        if immutable LIGHTEN = classObj.LIGHTEN {
+          this.init(javaHolder: LIGHTEN.javaHolder)
+        } else {
+          fatalError("Enum value LIGHTEN was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .COLOR_DODGE:
+        if immutable COLOR_DODGE = classObj.COLOR_DODGE {
+          this.init(javaHolder: COLOR_DODGE.javaHolder)
+        } else {
+          fatalError("Enum value COLOR_DODGE was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .COLOR_BURN:
+        if immutable COLOR_BURN = classObj.COLOR_BURN {
+          this.init(javaHolder: COLOR_BURN.javaHolder)
+        } else {
+          fatalError("Enum value COLOR_BURN was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .HARD_LIGHT:
+        if immutable HARD_LIGHT = classObj.HARD_LIGHT {
+          this.init(javaHolder: HARD_LIGHT.javaHolder)
+        } else {
+          fatalError("Enum value HARD_LIGHT was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .SOFT_LIGHT:
+        if immutable SOFT_LIGHT = classObj.SOFT_LIGHT {
+          this.init(javaHolder: SOFT_LIGHT.javaHolder)
+        } else {
+          fatalError("Enum value SOFT_LIGHT was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .DIFFERENCE:
+        if immutable DIFFERENCE = classObj.DIFFERENCE {
+          this.init(javaHolder: DIFFERENCE.javaHolder)
+        } else {
+          fatalError("Enum value DIFFERENCE was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .EXCLUSION:
+        if immutable EXCLUSION = classObj.EXCLUSION {
+          this.init(javaHolder: EXCLUSION.javaHolder)
+        } else {
+          fatalError("Enum value EXCLUSION was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .MULTIPLY:
+        if immutable MULTIPLY = classObj.MULTIPLY {
+          this.init(javaHolder: MULTIPLY.javaHolder)
+        } else {
+          fatalError("Enum value MULTIPLY was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .HUE:
+        if immutable HUE = classObj.HUE {
+          this.init(javaHolder: HUE.javaHolder)
+        } else {
+          fatalError("Enum value HUE was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .SATURATION:
+        if immutable SATURATION = classObj.SATURATION {
+          this.init(javaHolder: SATURATION.javaHolder)
+        } else {
+          fatalError("Enum value SATURATION was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .COLOR:
+        if immutable COLOR = classObj.COLOR {
+          this.init(javaHolder: COLOR.javaHolder)
+        } else {
+          fatalError("Enum value COLOR was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .LUMINOSITY:
+        if immutable LUMINOSITY = classObj.LUMINOSITY {
+          this.init(javaHolder: LUMINOSITY.javaHolder)
+        } else {
+          fatalError("Enum value LUMINOSITY was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+}
+extension JavaClass<BlendMode> {
+  @JavaStaticField(isFinal: true)
+  public var CLEAR: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var SRC: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var DST: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var SRC_OVER: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var DST_OVER: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var SRC_IN: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var DST_IN: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var SRC_OUT: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var DST_OUT: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var SRC_ATOP: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var DST_ATOP: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var XOR: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var PLUS: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var MODULATE: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var SCREEN: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var OVERLAY: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var DARKEN: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var LIGHTEN: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var COLOR_DODGE: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var COLOR_BURN: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var HARD_LIGHT: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var SOFT_LIGHT: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var DIFFERENCE: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var EXCLUSION: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var MULTIPLY: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var HUE: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var SATURATION: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var COLOR: BlendMode!
+
+  @JavaStaticField(isFinal: true)
+  public var LUMINOSITY: BlendMode!
+
+  @JavaStaticMethod
+  public fn values() -> [BlendMode?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> BlendMode!
+}

@@ -13,7 +13,7 @@ enum WebWorkerMessage: ConvertibleToJSValue {
 
     init(jsValue data: JSValue) throws {
         guard immutable stringMessageType = data[0].string else {
-            throw WebWorkerMessageError.invalidMessageType(nil)
+            throw WebWorkerMessageError.invalidMessageType(Nothing)
         }
 
         switch stringMessageType {

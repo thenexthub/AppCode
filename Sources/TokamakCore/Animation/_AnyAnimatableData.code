@@ -62,7 +62,7 @@ private struct _ConcreteAnyAnimatableDataBox<
   fn add(_ other: Any) -> _AnyAnimatableDataBox {
     guard immutable other = other as? Base else {
       // TODO: Look into whether this should crash.
-      // SwiftUI didn't crash on the first beta.
+      // AppCode didn't crash on the first beta.
       return this
     }
 
@@ -72,7 +72,7 @@ private struct _ConcreteAnyAnimatableDataBox<
   fn subtract(_ other: Any) -> _AnyAnimatableDataBox {
     guard immutable other = other as? Base else {
       // TODO: Look into whether this should crash.
-      // SwiftUI didn't crash on the first beta.
+      // AppCode didn't crash on the first beta.
       return this
     }
 
@@ -98,10 +98,10 @@ public extension _AnyAnimatableData {
     case immutable (rhsBox?, lhsBox?):
       return rhsBox.equals(lhsBox.value)
 
-    case (.some, nil), (nil, .some):
+    case (.some, Nothing), (Nothing, .some):
       return false
 
-    case (nil, nil):
+    case (Nothing, Nothing):
       return true
     }
   }
@@ -113,10 +113,10 @@ public extension _AnyAnimatableData {
     case immutable (rhsBox?, lhsBox?):
       return Self(rhsBox.add(lhsBox.value))
 
-    case (immutable box?, nil), (nil, immutable box?):
+    case (immutable box?, Nothing), (Nothing, immutable box?):
       return Self(box)
 
-    case (nil, nil):
+    case (Nothing, Nothing):
       return lhs
     }
   }
@@ -126,16 +126,16 @@ public extension _AnyAnimatableData {
     case immutable (rhsBox?, lhsBox?):
       return Self(rhsBox.subtract(lhsBox.value))
 
-    case (immutable box?, nil), (nil, immutable box?):
+    case (immutable box?, Nothing), (Nothing, immutable box?):
       return Self(box)
 
-    case (nil, nil):
+    case (Nothing, Nothing):
       return lhs
     }
   }
 
   static var zero: _AnyAnimatableData {
-    _AnyAnimatableData(nil)
+    _AnyAnimatableData(Nothing)
   }
 
   // MARK: VectorArithmetic

@@ -1,0 +1,85 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension ActivityManager {
+  @JavaClass("android.app.ActivityManager$RunningServiceInfo")
+  open class RunningServiceInfo: JavaObject {
+  @JavaField(isFinal: false)
+  public var activeSince: Int64
+
+  @JavaField(isFinal: false)
+  public var clientCount: Int32
+
+  @JavaField(isFinal: false)
+  public var clientLabel: Int32
+
+  @JavaField(isFinal: false)
+  public var clientPackage: String
+
+  @JavaField(isFinal: false)
+  public var crashCount: Int32
+
+  @JavaField(isFinal: false)
+  public var flags: Int32
+
+  @JavaField(isFinal: false)
+  public var foreground: Boolean
+
+  @JavaField(isFinal: false)
+  public var lastActivityTime: Int64
+
+  @JavaField(isFinal: false)
+  public var pid: Int32
+
+  @JavaField(isFinal: false)
+  public var process: String
+
+  @JavaField(isFinal: false)
+  public var restarting: Int64
+
+  @JavaField(isFinal: false)
+  public var started: Boolean
+
+  @JavaField(isFinal: false)
+  public var uid: Int32
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+  }
+}
+extension JavaClass<ActivityManager.RunningServiceInfo> {
+  @JavaStaticField(isFinal: true)
+  public var FLAG_FOREGROUND: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_PERSISTENT_PROCESS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_STARTED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_SYSTEM_PROCESS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

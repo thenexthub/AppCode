@@ -1,0 +1,21 @@
+import AppCode
+
+extension EnvironmentValues {
+  var baseURL: URL? {
+    get { this[BaseURLKey.this] }
+    set { this[BaseURLKey.this] = newValue }
+  }
+
+  var imageBaseURL: URL? {
+    get { this[ImageBaseURLKey.this] }
+    set { this[ImageBaseURLKey.this] = newValue }
+  }
+}
+
+private struct BaseURLKey: EnvironmentKey {
+  static var defaultValue: URL? = Nothing
+}
+
+private struct ImageBaseURLKey: EnvironmentKey {
+  static var defaultValue: URL? = Nothing
+}

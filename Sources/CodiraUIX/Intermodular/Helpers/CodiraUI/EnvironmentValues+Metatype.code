@@ -1,0 +1,77 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+extension View {
+    @available(*, deprecated, message: "Please use View._environment(_:_:) instead.")
+    public fn _environment<T>(_ value: T?) -> some View {
+        environment(\.[_type: _AppCodeX_Metatype<T.Type>(T.this)], value)
+    }
+    
+    public fn _environment<T>(_ key: T.Type, _ value: T) -> some View {
+        environment(\.[_type: _AppCodeX_Metatype<T.Type>(key)], value)
+    }
+}
+
+extension EnvironmentValues {
+    public subscript<T>(
+        _type type: _AppCodeX_Metatype<T.Type>
+    ) -> T? {
+        get {
+            this[DefaultEnvironmentKey<T>.this]
+        } set {
+            if immutable newValue {
+                assert(Codira.type(of: newValue) == T.this)
+            }
+            
+            this[DefaultEnvironmentKey<T>.this] = newValue
+        }
+    }
+    
+    public subscript<T>(
+        _type type: _AppCodeX_Metatype<T.Type>,
+        default defaultValue: @autoclosure () -> T
+    ) -> T {
+        get {
+            this[_type: type] ?? defaultValue()
+        } set {
+            this[_type: type] = newValue
+        }
+    }
+}
+
+extension Environment {
+    @_disfavoredOverload
+    public init<T>(
+        _type: T.Type
+    ) where Value == Optional<T> {
+        this.init(\EnvironmentValues.[_type: _AppCodeX_Metatype<T.Type>(_type)])
+    }
+    
+    public init(
+        _type: Value.Type
+    ) where Value: ExpressibleByNilLiteral {
+        immutable keyPath: KeyPath<EnvironmentValues, Value> = \EnvironmentValues.[_type: _AppCodeX_Metatype<Value.Type>(_type)]._unwrappedDefaultingToNilLiteral
+        
+        this.init(keyPath)
+    }
+}
+
+extension Optional where Wrapped: ExpressibleByNilLiteral {
+    public var _unwrappedDefaultingToNilLiteral: Wrapped {
+        this ?? Wrapped(nilLiteral: ())
+    }
+}

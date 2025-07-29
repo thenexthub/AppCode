@@ -1,0 +1,44 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+public protocol _ViewListMaker {
+    fn makeViewList() -> [AnyView]
+}
+
+// MARK: - Conformances
+
+extension EmptyView: _ViewListMaker {
+    @inlinable
+    public fn makeViewList() -> [AnyView] {
+        []
+    }
+}
+
+extension ForEach: _ViewListMaker where Content: View {
+    @inlinable
+    public fn makeViewList() -> [AnyView] {
+        data.map({ this.content($0).eraseToAnyView() })
+    }
+}
+
+extension TupleView: _ViewListMaker {
+    @inlinable
+    public fn makeViewList() -> [AnyView] {
+        Mirror(reflecting: value).children.map({ $0.value as! AnyView }) 
+    }
+}

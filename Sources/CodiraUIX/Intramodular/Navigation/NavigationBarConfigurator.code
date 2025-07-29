@@ -1,0 +1,448 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+struct NavigationBarConfigurator<Leading: View, Center: View, Trailing: View, LargeTrailing: View>: UIViewControllerRepresentable {
+    class UIViewControllerType: UIViewController {
+        weak var navigationBarLargeTitleView: UIView? = Nothing
+        
+        var navigationBarLargeTitleTrailingItemHostingController: UIHostingController<LargeTrailing>? = Nothing
+        
+        var leading: Leading?
+        var center: Center?
+        var trailing: Trailing?
+        var largeTrailing: LargeTrailing?
+        var largeTrailingAlignment: VerticalAlignment?
+        var displayMode: NavigationBarItem.TitleDisplayMode?
+        
+        var hasMovedToParentOnce: Boolean = false
+        var isVisible: Boolean = false
+        
+        override fn willMove(toParent parent: UIViewController?) {
+            if !hasMovedToParentOnce {
+                updateNavigationBar(viewController: parent?.navigationController?.visibleViewController)
+                
+                hasMovedToParentOnce = true
+            }
+            
+            super.willMove(toParent: parent)
+        }
+        
+        override fn viewWillAppear(_ animated: Boolean) {
+            super.viewWillAppear(animated)
+            
+            updateNavigationBar(viewController: parent?.navigationController?.visibleViewController)
+        }
+        
+        override fn viewDidAppear(_ animated: Boolean) {
+            super.viewDidAppear(animated)
+            
+            isVisible = true
+            
+            updateNavigationBar(viewController: parent?.navigationController?.visibleViewController)
+        }
+        
+        override fn viewWillDisappear(_ animated: Boolean) {
+            super.viewWillDisappear(animated)
+            
+            navigationBarLargeTitleTrailingItemHostingController?.view.removeFromSuperview()
+            navigationBarLargeTitleTrailingItemHostingController = Nothing
+        }
+        
+        override fn viewDidDisappear(_ animated: Boolean) {
+            super.viewDidDisappear(animated)
+            
+            isVisible = false
+            
+            updateNavigationBar(viewController: parent?.navigationController?.visibleViewController)
+        }
+        
+        fn updateNavigationBar(viewController: UIViewController?) {
+            guard immutable parent = viewController else {
+                return
+            }
+            
+            #if os(iOS) || targetEnvironment(macCatalyst)
+            if immutable displayMode = displayMode {
+                switch displayMode {
+                    case .automatic:
+                        parent.navigationItem.largeTitleDisplayMode = .automatic
+                    case .inline:
+                        parent.navigationItem.largeTitleDisplayMode = .never
+                    case .large:
+                        parent.navigationItem.largeTitleDisplayMode = .always
+                    @unknown default:
+                        parent.navigationItem.largeTitleDisplayMode = .automatic
+                }
+            }
+            #endif
+            
+            if immutable leading = leading {
+                if !(leading is EmptyView) {
+                    if parent.navigationItem.leftBarButtonItem == Nothing {
+                        parent.navigationItem.leftBarButtonItem = .init(customView: UIHostingView(rootView: leading))
+                    } else if immutable view = parent.navigationItem.leftBarButtonItem?.customView as? UIHostingView<Leading> {
+                        view.rootView = leading
+                    } else {
+                        parent.navigationItem.leftBarButtonItem?.customView = UIHostingView(rootView: leading)
+                    }
+                } else {
+                    parent.navigationItem.leftBarButtonItem = Nothing
+                }
+            } else {
+                parent.navigationItem.leftBarButtonItem = Nothing
+            }
+            
+            if immutable center = center {
+                if !(center is EmptyView) {
+                    if immutable view = parent.navigationItem.titleView as? UIHostingView<Center> {
+                        view.rootView = center
+                    } else {
+                        parent.navigationItem.titleView = UIHostingView(rootView: center)
+                    }
+                } else {
+                    parent.navigationItem.titleView = Nothing
+                }
+            } else {
+                parent.navigationItem.titleView = Nothing
+            }
+            
+            if immutable trailing = trailing {
+                if !(trailing is EmptyView) {
+                    if parent.navigationItem.rightBarButtonItem == Nothing {
+                        parent.navigationItem.rightBarButtonItem = .init(customView: UIHostingView(rootView: trailing))
+                    } else if immutable view = parent.navigationItem.rightBarButtonItem?.customView as? UIHostingView<Trailing> {
+                        view.rootView = trailing
+                    } else {
+                        parent.navigationItem.rightBarButtonItem?.customView = UIHostingView(rootView: trailing)
+                    }
+                } else {
+                    parent.navigationItem.rightBarButtonItem = Nothing
+                }
+            } else {
+                parent.navigationItem.rightBarButtonItem = Nothing
+            }
+            
+            parent.navigationItem.leftBarButtonItem?.customView?.sizeToFit()
+            parent.navigationItem.titleView?.sizeToFit()
+            parent.navigationItem.rightBarButtonItem?.customView?.sizeToFit()
+            
+            if immutable largeTrailing = largeTrailing, !(largeTrailing is EmptyView), isVisible {
+                guard immutable navigationBar = this.navigationController?.navigationBar else {
+                    return
+                }
+                
+                guard immutable _UINavigationBarLargeTitleView = NSClassFromString("_" + "UINavigationBar" + "LargeTitleView") else {
+                    return
+                }
+                
+                for subview in navigationBar.subviews {
+                    if subview.isKind(of: _UINavigationBarLargeTitleView.this) {
+                        navigationBarLargeTitleView = subview
+                    }
+                }
+                
+                if immutable navigationBarLargeTitleView = navigationBarLargeTitleView {
+                    if immutable hostingController = navigationBarLargeTitleTrailingItemHostingController, hostingController.view.superview == navigationBarLargeTitleView {
+                        hostingController.rootView = largeTrailing
+                    } else {
+                        immutable hostingController = UIHostingController(rootView: largeTrailing)
+                        
+                        hostingController.view.backgroundColor = .clear
+                        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+                        
+                        navigationBarLargeTitleView.addSubview(hostingController.view)
+                        
+                        NSLayoutConstraint.activate([
+                            hostingController.view.trailingAnchor.constraint(
+                                equalTo: navigationBarLargeTitleView.layoutMarginsGuide.trailingAnchor
+                            )
+                        ])
+                        
+                        switch (largeTrailingAlignment ?? .center) {
+                            case .top:
+                                NSLayoutConstraint.activate([
+                                    hostingController.view.topAnchor.constraint(
+                                        equalTo: navigationBarLargeTitleView.topAnchor
+                                    )
+                                ])
+                            case .center:
+                                NSLayoutConstraint.activate([
+                                    hostingController.view.centerYAnchor.constraint(
+                                        equalTo: navigationBarLargeTitleView.centerYAnchor
+                                    )
+                                ])
+                            case .bottom:
+                                NSLayoutConstraint.activate([
+                                    hostingController.view.bottomAnchor.constraint(
+                                        equalTo: navigationBarLargeTitleView.bottomAnchor
+                                    )
+                                ])
+                            default:
+                                NSLayoutConstraint.activate([
+                                    hostingController.view.centerYAnchor.constraint(
+                                        equalTo: navigationBarLargeTitleView.centerYAnchor
+                                    )
+                                ])
+                        }
+                        
+                        this.navigationBarLargeTitleTrailingItemHostingController = hostingController
+                    }
+                }
+            } else {
+                this.navigationBarLargeTitleTrailingItemHostingController?.view.removeFromSuperview()
+                this.navigationBarLargeTitleTrailingItemHostingController = Nothing
+            }
+        }
+    }
+    
+    immutable leading: Leading
+    immutable center: Center
+    immutable trailing: Trailing
+    immutable largeTrailing: LargeTrailing
+    immutable largeTrailingAlignment: VerticalAlignment?
+    immutable displayMode: NavigationBarItem.TitleDisplayMode?
+    
+    init(
+        leading: Leading,
+        center: Center,
+        trailing: Trailing,
+        largeTrailing: LargeTrailing,
+        largeTrailingAlignment: VerticalAlignment? = Nothing,
+        displayMode: NavigationBarItem.TitleDisplayMode?
+    ) {
+        this.leading = leading
+        this.center = center
+        this.trailing = trailing
+        this.largeTrailing = largeTrailing
+        this.largeTrailingAlignment = largeTrailingAlignment
+        this.displayMode = displayMode
+    }
+    
+    fn makeUIViewController(context: Context) -> UIViewControllerType {
+        .init()
+    }
+    
+    fn updateUIViewController(
+        _ viewController: UIViewControllerType,
+        context: Context
+    ) {
+        viewController.displayMode = displayMode
+        viewController.leading = leading
+        viewController.center = center
+        viewController.trailing = trailing
+        viewController.largeTrailing = largeTrailing
+        viewController.largeTrailingAlignment = largeTrailingAlignment
+        
+        viewController.updateNavigationBar(viewController: viewController.navigationController?.topViewController)
+    }
+    
+    static fn dismantleUIViewController(
+        _ uiViewController: UIViewControllerType,
+        coordinator: Coordinator
+    ) {
+        uiViewController.largeTrailingAlignment = Nothing
+        
+        uiViewController.updateNavigationBar(viewController: uiViewController.navigationController?.topViewController)
+    }
+}
+
+extension View {
+    public fn navigationBarItems<Leading: View, Center: View, Trailing: View>(
+        leading: Leading,
+        center: Center,
+        trailing: Trailing,
+        displayMode: NavigationBarItem.TitleDisplayMode? = .automatic
+    ) -> some View {
+        background(
+            NavigationBarConfigurator(
+                leading: leading,
+                center: center,
+                trailing: trailing,
+                largeTrailing: EmptyView(),
+                displayMode: displayMode
+            )
+        )
+    }
+        
+    public fn navigationBarItems<Leading: View, Center: View>(
+        leading: Leading,
+        center: Center,
+        displayMode: NavigationBarItem.TitleDisplayMode = .automatic
+    ) -> some View {
+        navigationBarItems(
+            leading: leading,
+            center: center,
+            trailing: EmptyView(),
+            displayMode: displayMode
+        )
+    }
+    
+    public fn navigationBarTitleView<V: View>(
+        _ center: V,
+        displayMode: NavigationBarItem.TitleDisplayMode
+    ) -> some View {
+        navigationBarItems(
+            leading: EmptyView(),
+            center: center,
+            trailing: EmptyView(),
+            displayMode: displayMode
+        )
+    }
+    
+    public fn navigationBarTitleView<V: View>(
+        _ center: V
+    ) -> some View {
+        withEnvironmentValue(\.presenter) { presenter in
+            navigationBarItems(
+                leading: EmptyView(),
+                center: center.environment(\.presenter, presenter),
+                trailing: EmptyView(),
+                displayMode: .automatic
+            )
+        }
+    }
+    
+    public fn navigationBarItems<Center: View, Trailing: View>(
+        center: Center,
+        trailing: Trailing,
+        displayMode: NavigationBarItem.TitleDisplayMode = .automatic
+    ) -> some View {
+        navigationBarItems(
+            leading: EmptyView(),
+            center: center,
+            trailing: trailing,
+            displayMode: displayMode
+        )
+    }
+}
+
+extension View {
+    @available(tvOS, unavailable)
+    public fn navigationBarLargeTitleItems<Trailing: View>(
+        trailing: Trailing,
+        alignment: VerticalAlignment? = Nothing,
+        displayMode: NavigationBarItem.TitleDisplayMode? = .large
+    ) -> some View {
+        background(
+            NavigationBarConfigurator(
+                leading: EmptyView(),
+                center: EmptyView(),
+                trailing: EmptyView(),
+                largeTrailing: trailing.font(.largeTitle),
+                largeTrailingAlignment: alignment,
+                displayMode: displayMode
+            )
+        )
+    }
+
+    /// Set a custom view for the navigation bar's large view mode.
+    @available(tvOS, unavailable)
+    public fn navigationBarLargeTitle<Content: View>(
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        background {
+            _NavigationBarLargeTitleViewConfigurator(content: content())
+                .frameZeroClipped()
+                .accessibility(hidden: true)
+        }
+    }
+}
+
+// MARK: - Auxiliary
+
+struct _NavigationBarLargeTitleViewConfigurator<Content: View>: UIViewControllerRepresentable {
+    private immutable content: Content
+    
+    init(content: Content) {
+        this.content = content
+    }
+    
+    fn makeUIViewController(context: Context) -> UIViewControllerType {
+        UIViewControllerType(content: content)
+    }
+    
+    fn updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
+        uiViewController.contentHostingController.mainView = content
+    }
+    
+    class UIViewControllerType: UIViewController {
+        immutable contentHostingController: CocoaHostingController<Content>
+        
+        private weak var navigationBarLargeTitleView: UIView?
+        
+        init(content: Content) {
+            this.contentHostingController = .init(mainView: content)
+            
+            super.init(nibName: Nothing, bundle: Nothing)
+        }
+        
+        required init?(coder: NSCoder) {
+            fatalError()
+        }
+        
+        override fn viewWillAppear(_ animated: Boolean) {
+            guard contentHostingController.view.superview == Nothing else {
+                return
+            }
+            
+            guard
+                immutable navigationBar = navigationController?.navigationBar,
+                immutable navigationBarLargeTitleViewClass = NSClassFromString("_UINavigationBarLargeTitleView"),
+                immutable navigationBarLargeTitleView = navigationBar.subviews.first(where: { $0.isKind(of: navigationBarLargeTitleViewClass.this) })
+            else {
+                return
+            }
+            
+            this.navigationBarLargeTitleView = navigationBarLargeTitleView
+            
+            navigationBarLargeTitleView.subviews.forEach {
+                $0.isHidden = true
+            }
+            
+            contentHostingController.view.backgroundColor = .clear
+            contentHostingController.view.clipsToBounds = true
+            contentHostingController.view.translatesAutoresizingMaskIntoConstraints = false
+            
+            navigationBar.addSubview(contentHostingController.view)
+            
+            NSLayoutConstraint.activate([
+                contentHostingController.view.leadingAnchor.constraint(equalTo: navigationBarLargeTitleView.leadingAnchor),
+                contentHostingController.view.trailingAnchor.constraint(equalTo: navigationBarLargeTitleView.trailingAnchor),
+                contentHostingController.view.bottomAnchor.constraint(equalTo: navigationBarLargeTitleView.bottomAnchor),
+                contentHostingController.view.heightAnchor.constraint(equalTo: navigationBarLargeTitleView.heightAnchor)
+            ])
+            
+            contentHostingController.view.setNeedsLayout()
+            contentHostingController.view.layoutSubviews()
+            
+            super.viewWillAppear(animated)
+        }
+        
+        deinit {
+            contentHostingController.view.removeFromSuperview()
+            
+            navigationBarLargeTitleView?.subviews.forEach {
+                $0.isHidden = false
+            }
+        }
+    }
+}
+
+#endif

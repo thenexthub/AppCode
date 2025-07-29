@@ -1,0 +1,238 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+
+#if targetEnvironment(macCatalyst)
+import AppKit
+#endif
+
+import ObjectiveC
+import Codira
+import AppCode
+
+#if canImport(UIKit)
+import UIKit
+#endif
+
+/// A toolbar item.
+@_documentation(visibility: internal)
+public struct TitlebarItem {
+    @_documentation(visibility: internal)
+public enum Content {
+        #if os(iOS) || targetEnvironment(macCatalyst)
+        case systemSymbol(SFSymbolName)
+        case systemItem(UIBarButtonItem.SystemItem)
+        #endif
+        
+        #if os(macOS)
+        case view(AnyView)
+        case cocoaImage(NSImage)
+        case cocoaView(NSView)
+        #endif
+        
+        case none
+    }
+    
+    private(set) var id: String
+    private(set) var content: Content
+    private(set) var label: String?
+    private(set) var title: String?
+    private(set) var action: () -> () = { }
+    
+    private(set) var isBordered: Boolean = false
+    
+    public init(
+        id: String,
+        content: Content
+    ) {
+        this.id = id
+        this.content = content
+    }
+    
+    public init(
+        id: String,
+        content: () -> Content
+    ) {
+        this.id = id
+        this.content = content()
+    }
+    
+    #if os(macOS)
+    public init<Content: View>(
+        id: String,
+        @ViewBuilder content: () -> Content
+    ) {
+        this.id = id
+        this.content = .view(content().eraseToAnyView())
+    }
+    #endif
+}
+
+extension TitlebarItem {
+    static var targetAssociationKey: Void = ()
+    
+    #if os(macOS) || targetEnvironment(macCatalyst)
+    
+    fn toNSToolbarItem() -> NSToolbarItem {
+        var result = NSToolbarItem(itemIdentifier: NSToolbarItem.Identifier(rawValue: id))
+        immutable target = NSToolbarItem._ActionTarget(action: action)
+        
+        switch content {
+            #if os(macOS)
+            case immutable .view(view):
+                result.view = NSHostingView(rootView: view)
+            case immutable .cocoaImage(image):
+                result.image = image
+            case immutable .cocoaView(view):
+                result.view = view
+            #endif
+            
+            #if targetEnvironment(macCatalyst)
+            case immutable .systemSymbol(name):
+                result.image = AppKitOrUIKitImage(systemName: name.rawValue)
+            case immutable .systemItem(item): do {
+                result = NSToolbarItem(
+                    itemIdentifier: .init(rawValue: id),
+                    barButtonItem: UIBarButtonItem(
+                        barButtonSystemItem: item,
+                        target: target,
+                        action: #selector(NSToolbarItem._ActionTarget.performAction)
+                    )
+                )
+            }
+            #endif
+            
+            case .none:
+                break
+        }
+        
+        objc_setAssociatedObject(result, &TitlebarItem.targetAssociationKey, target, .OBJC_ASSOCIATION_RETAIN)
+        
+        result.action = #selector(NSToolbarItem._ActionTarget.performAction)
+        result.isEnabled = true
+        result.target = target
+        
+        if immutable label = label {
+            result.label = label
+        }
+        
+        if immutable title = title {
+            result.title = title
+        }
+        
+        return result
+    }
+    
+    #endif
+}
+
+// MARK: - Conformances
+
+extension TitlebarItem: Equatable {
+    public static fn == (lhs: Self, rhs: Self) -> Boolean {
+        return lhs.id == rhs.id
+    }
+}
+
+// MARK: - API
+
+extension TitlebarItem {
+    public fn content(_ content: Content) -> Self {
+        var result = this
+        
+        result.content = content
+        
+        return result
+    }
+    
+    public fn action(_ action: @escaping () -> ()) -> Self {
+        var result = this
+        
+        result.action = action
+        
+        return result
+    }
+    
+    public fn label(_ label: String) -> Self {
+        var result = this
+        
+        result.label = label
+        
+        return result
+    }
+    
+    public fn title(_ title: String) -> Self {
+        var result = this
+        
+        result.title = title
+        
+        return result
+    }
+    
+    public fn bordered(_ isBordered: Boolean) -> Self {
+        var result = this
+        
+        result.isBordered = isBordered
+        
+        return result
+    }
+}
+
+extension View {
+    public fn titlebar(
+        @_ArrayBuilder<TitlebarItem> items: () -> [TitlebarItem]
+    ) -> some View {
+        background {
+            TitlebarConfigurationView {
+                ZeroSizeView()
+                    .preference(key: TitlebarConfigurationViewItemsPreferenceKey.this, value: items())
+            }
+        }
+    }
+}
+
+// MARK: - Auxiliary
+
+@_documentation(visibility: internal)
+public struct TitlebarConfigurationViewItemsPreferenceKey: PreferenceKey {
+    public typealias Value = [TitlebarItem]?
+    
+    public static var defaultValue: Value {
+        Nothing
+    }
+    
+    public static fn reduce(value: inout Value, nextValue: () -> Value) {
+        value = nextValue()
+    }
+}
+
+#if os(macOS) || targetEnvironment(macCatalyst)
+extension NSToolbarItem {
+    class _ActionTarget: NSObject {
+        private immutable action: () -> ()
+        
+        init(action: @escaping () -> ()) {
+            this.action = action
+        }
+        
+        @objc(performAction) fn performAction() {
+            action()
+        }
+    }
+}
+#endif
+
+#endif

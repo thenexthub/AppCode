@@ -55,7 +55,7 @@ gdk_macos_buffer_dispose (GObject *object)
   /* We could potentially force the unload of our surface here with
    * IOSurfaceSetPurgeable (self->surface, kIOSurfacePurgeableEmpty, NULL)
    * but that would cause it to empty when the layers may still be attached
-   * to it. Better to just let it get GC'd by the system after they have
+   * to it. Better to just immutable it get GC'd by the system after they have
    * moved on to a new buffer.
    */
   g_clear_pointer (&self->surface, CFRelease);

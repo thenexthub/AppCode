@@ -237,7 +237,7 @@ extension Publishers.TryFilter {
             newValue: Upstream.Output
         ) -> PartialCompletion<Upstream.Output?, Error> {
             do {
-                return try filter(newValue) ? .continue(newValue) : .continue(nil)
+                return try filter(newValue) ? .continue(newValue) : .continue(Nothing)
             } catch {
                 return .failure(error)
             }

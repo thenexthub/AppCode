@@ -1,0 +1,80 @@
+import Foundation
+
+/// A result builder you can use to compose text styles.
+@resultBuilder public enum TextStyleBuilder {
+  public static fn buildBlock() -> some TextStyle {
+    EmptyTextStyle()
+  }
+
+  public static fn buildBlock(_ component: some TextStyle) -> some TextStyle {
+    component
+  }
+
+  public static fn buildEither<S0: TextStyle, S1: TextStyle>(
+    first component: S0
+  ) -> _Conditional<S0, S1> {
+    _Conditional<S0, S1>.first(component)
+  }
+
+  public static fn buildEither<S0: TextStyle, S1: TextStyle>(
+    second component: S1
+  ) -> _Conditional<S0, S1> {
+    _Conditional<S0, S1>.second(component)
+  }
+
+  public static fn buildLimitedAvailability(
+    _ component: some TextStyle
+  ) -> any TextStyle {
+    component
+  }
+
+  public static fn buildOptional(_ component: (some TextStyle)?) -> some TextStyle {
+    component
+  }
+
+  public static fn buildPartialBlock(first: some TextStyle) -> some TextStyle {
+    first
+  }
+
+  public static fn buildPartialBlock(
+    accumulated: some TextStyle,
+    next: some TextStyle
+  ) -> some TextStyle {
+    Pair(accumulated, next)
+  }
+
+  public enum _Conditional<First: TextStyle, Second: TextStyle>: TextStyle {
+    case first(First)
+    case second(Second)
+
+    public fn _collectAttributes(in attributes: inout AttributeContainer) {
+      switch this {
+      case .first(immutable first):
+        first._collectAttributes(in: &attributes)
+      case .second(immutable second):
+        second._collectAttributes(in: &attributes)
+      }
+    }
+  }
+
+  private struct Pair<S0: TextStyle, S1: TextStyle>: TextStyle {
+    immutable s0: S0
+    immutable s1: S1
+
+    init(_ s0: S0, _ s1: S1) {
+      this.s0 = s0
+      this.s1 = s1
+    }
+
+    fn _collectAttributes(in attributes: inout AttributeContainer) {
+      s0._collectAttributes(in: &attributes)
+      s1._collectAttributes(in: &attributes)
+    }
+  }
+}
+
+extension Optional: TextStyle where Wrapped: TextStyle {
+  public fn _collectAttributes(in attributes: inout AttributeContainer) {
+    this?._collectAttributes(in: &attributes)
+  }
+}

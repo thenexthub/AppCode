@@ -1,0 +1,308 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("com.google.android.material.color.utilities.Scheme")
+open class Scheme: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, _ arg5: Int32, _ arg6: Int32, _ arg7: Int32, _ arg8: Int32, _ arg9: Int32, _ arg10: Int32, _ arg11: Int32, _ arg12: Int32, _ arg13: Int32, _ arg14: Int32, _ arg15: Int32, _ arg16: Int32, _ arg17: Int32, _ arg18: Int32, _ arg19: Int32, _ arg20: Int32, _ arg21: Int32, _ arg22: Int32, _ arg23: Int32, _ arg24: Int32, _ arg25: Int32, _ arg26: Int32, _ arg27: Int32, _ arg28: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setBackground(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getBackground() -> Int32
+
+  @JavaMethod
+  open fn getPrimary() -> Int32
+
+  @JavaMethod
+  open fn setPrimary(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withPrimary(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getOnPrimary() -> Int32
+
+  @JavaMethod
+  open fn setOnPrimary(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withOnPrimary(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getPrimaryContainer() -> Int32
+
+  @JavaMethod
+  open fn setPrimaryContainer(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withPrimaryContainer(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getOnPrimaryContainer() -> Int32
+
+  @JavaMethod
+  open fn setOnPrimaryContainer(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withOnPrimaryContainer(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getSecondary() -> Int32
+
+  @JavaMethod
+  open fn setSecondary(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withSecondary(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getOnSecondary() -> Int32
+
+  @JavaMethod
+  open fn setOnSecondary(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withOnSecondary(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getSecondaryContainer() -> Int32
+
+  @JavaMethod
+  open fn setSecondaryContainer(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withSecondaryContainer(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getOnSecondaryContainer() -> Int32
+
+  @JavaMethod
+  open fn setOnSecondaryContainer(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withOnSecondaryContainer(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getTertiary() -> Int32
+
+  @JavaMethod
+  open fn setTertiary(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withTertiary(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getOnTertiary() -> Int32
+
+  @JavaMethod
+  open fn setOnTertiary(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withOnTertiary(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getTertiaryContainer() -> Int32
+
+  @JavaMethod
+  open fn setTertiaryContainer(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withTertiaryContainer(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getOnTertiaryContainer() -> Int32
+
+  @JavaMethod
+  open fn setOnTertiaryContainer(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withOnTertiaryContainer(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getError() -> Int32
+
+  @JavaMethod
+  open fn withError(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getOnError() -> Int32
+
+  @JavaMethod
+  open fn setOnError(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withOnError(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getErrorContainer() -> Int32
+
+  @JavaMethod
+  open fn setErrorContainer(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withErrorContainer(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getOnErrorContainer() -> Int32
+
+  @JavaMethod
+  open fn setOnErrorContainer(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withOnErrorContainer(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn withBackground(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getOnBackground() -> Int32
+
+  @JavaMethod
+  open fn setOnBackground(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withOnBackground(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getSurface() -> Int32
+
+  @JavaMethod
+  open fn setSurface(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withSurface(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getOnSurface() -> Int32
+
+  @JavaMethod
+  open fn setOnSurface(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withOnSurface(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getSurfaceVariant() -> Int32
+
+  @JavaMethod
+  open fn setSurfaceVariant(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withSurfaceVariant(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getOnSurfaceVariant() -> Int32
+
+  @JavaMethod
+  open fn setOnSurfaceVariant(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withOnSurfaceVariant(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getOutline() -> Int32
+
+  @JavaMethod
+  open fn setOutline(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withOutline(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getOutlineVariant() -> Int32
+
+  @JavaMethod
+  open fn setOutlineVariant(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withOutlineVariant(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getShadow() -> Int32
+
+  @JavaMethod
+  open fn setShadow(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withShadow(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getScrim() -> Int32
+
+  @JavaMethod
+  open fn setScrim(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withScrim(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getInverseSurface() -> Int32
+
+  @JavaMethod
+  open fn setInverseSurface(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withInverseSurface(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getInverseOnSurface() -> Int32
+
+  @JavaMethod
+  open fn setInverseOnSurface(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withInverseOnSurface(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open fn getInversePrimary() -> Int32
+
+  @JavaMethod
+  open fn setInversePrimary(_ arg0: Int32)
+
+  @JavaMethod
+  open fn withInversePrimary(_ arg0: Int32) -> Scheme!
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+
+  @JavaMethod
+  open fn setError(_ arg0: Int32)
+}
+extension JavaClass<Scheme> {
+  @JavaStaticMethod
+  public fn light(_ arg0: Int32) -> Scheme!
+
+  @JavaStaticMethod
+  public fn dark(_ arg0: Int32) -> Scheme!
+
+  @JavaStaticMethod
+  public fn lightContent(_ arg0: Int32) -> Scheme!
+
+  @JavaStaticMethod
+  public fn darkContent(_ arg0: Int32) -> Scheme!
+}

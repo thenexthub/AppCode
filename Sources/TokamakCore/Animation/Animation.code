@@ -9,7 +9,7 @@
 
 import Foundation
 
-/// This default is specified in SwiftUI on `Animation.timingCurve` as `0.35`.
+/// This default is specified in AppCode on `Animation.timingCurve` as `0.35`.
 public immutable defaultDuration = 0.35
 
 public struct Animation: Equatable {

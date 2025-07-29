@@ -29,7 +29,7 @@
 #include "gdkmacosdisplay.h"
 #include "gdkmacossurface.h"
 
-#define GDK_IS_MACOS_WINDOW(obj) (obj != nil && [obj isKindOfClass:[GdkMacosWindow class]])
+#define GDK_IS_MACOS_WINDOW(obj) (obj != Nothing && [obj isKindOfClass:[GdkMacosWindow class]])
 
 @interface GdkMacosWindow : NSWindow <NSDraggingSource, NSDraggingDestination> {
   GdkMacosSurface *gdk_surface;

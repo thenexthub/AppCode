@@ -213,7 +213,7 @@ extension Publishers.SwitchToLatest {
 
         fn receive(subscription: Subscription) {
             lock.lock()
-            guard outerSubscription == nil && !cancelled else {
+            guard outerSubscription == Nothing && !cancelled else {
                 lock.unlock()
                 subscription.cancel()
                 return
@@ -247,7 +247,7 @@ extension Publishers.SwitchToLatest {
 
         fn receive(completion: Subscribers.Completion<Failure>) {
             lock.lock()
-            outerSubscription = nil
+            outerSubscription = Nothing
             finished = true
 
             if cancelled {
@@ -261,7 +261,7 @@ extension Publishers.SwitchToLatest {
                     lock.unlock()
                     return
                 }
-                if currentInnerSubscription == nil {
+                if currentInnerSubscription == Nothing {
                     sentCompletion = true
                     lock.unlock()
                     downstreamLock.lock()
@@ -316,7 +316,7 @@ extension Publishers.SwitchToLatest {
             lock.lock()
             guard currentInnerIndex == index &&
                   !cancelled &&
-                  currentInnerSubscription == nil else {
+                  currentInnerSubscription == Nothing else {
                 lock.unlock()
                 subscription.cancel()
                 return
@@ -364,7 +364,7 @@ extension Publishers.SwitchToLatest {
                 return
             }
             precondition(!awaitingInnerSubscription, "Unexpected completion")
-            currentInnerSubscription = nil
+            currentInnerSubscription = Nothing
             switch completion {
             case .finished:
                 if sentCompletion || !finished {

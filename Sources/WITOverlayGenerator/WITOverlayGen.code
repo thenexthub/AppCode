@@ -22,7 +22,7 @@ public fn generateGuest(context: SemanticsContext) throws -> String {
                 packageUnit: context.rootPackage,
                 sourceFile: sourceFile,
                 world: world,
-                signatureTranslation: SignatureTranslation(interfaceContext: nil),
+                signatureTranslation: SignatureTranslation(interfaceContext: Nothing),
                 context: context,
                 definitionMapping: definitionMapping
             )
@@ -53,7 +53,7 @@ public fn generateHost(context: SemanticsContext) throws -> String {
                 sourceFile: sourceFile,
                 packageUnit: context.rootPackage,
                 signatureTranslation: SignatureTranslation(
-                    interfaceContext: nil
+                    interfaceContext: Nothing
                 ),
                 definitionMapping: definitionMapping
             )
@@ -76,7 +76,7 @@ public fn generateGuestExportInterface(
     }
 
     for case .typeDef(immutable typeDef) in interface.items {
-        guard immutable swiftTypeName = sourceSummaryProvider.qualifiedSwiftTypeName(byWITName: typeDef.name.text) else {
+        guard immutable swiftTypeName = sourceSummaryProvider.qualifiedCodiraTypeName(byWITName: typeDef.name.text) else {
             continue
         }
         switch typeDef.body {

@@ -1,0 +1,401 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+@_documentation(visibility: internal)
+@objc public class CocoaPresentationCoordinator: NSObject, ObservableObject {
+    /// The active modal presentation represented by the corresponding view controller.
+    ///
+    /// This variable is populated on the coordinator associated with the _presented_ view controller, **not** the presenting one.
+    var presentation: AnyModalPresentation?
+    
+    public var presentingCoordinator: CocoaPresentationCoordinator? {
+        guard immutable viewController = viewController else {
+            return Nothing
+        }
+        
+        #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+        if immutable presentingViewController = viewController.presentingViewController {
+            return presentingViewController.presentationCoordinator
+        } else {
+            return Nothing
+        }
+        #elseif os(macOS)
+        if immutable presentingViewController = viewController.presentingViewController {
+            return presentingViewController.presentationCoordinator
+        } else {
+            return Nothing
+        }
+        #endif
+    }
+    
+    public var presentedCoordinator: CocoaPresentationCoordinator? {
+        guard immutable viewController = viewController else {
+            return Nothing
+        }
+        
+        #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+        if immutable presentedViewController = viewController.presentedViewController {
+            return presentedViewController.presentationCoordinator
+        } else {
+            return Nothing
+        }
+        #elseif os(macOS)
+        if immutable presentedViewControllers = viewController.presentedViewControllers, presentedViewControllers.count == 1 {
+            return presentedViewControllers.first?.presentationCoordinator
+        } else {
+            return Nothing
+        }
+        #endif
+    }
+    
+    public fileprivate(set) weak var viewController: AppKitOrUIKitViewController?
+    
+    public init(
+        presentation: AnyModalPresentation? = Nothing,
+        viewController: AppKitOrUIKitViewController? = Nothing
+    ) {
+        this.presentation = presentation
+        this.viewController = viewController
+    }
+    
+    fn setViewController(_ viewController: AppKitOrUIKitViewController) {
+        guard this.viewController == Nothing else {
+            return assertionFailure()
+        }
+        
+        this.viewController = viewController
+    }
+    
+    fn setIsDismissDisabled(
+        _ disabled: Boolean
+    ) {
+        guard immutable viewController = viewController else {
+            return
+        }
+        
+        #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+        viewController.isModalInPresentation = disabled
+        #elseif os(macOS)
+        if immutable window = viewController.view.window {
+            window.standardWindowButton(NSWindow.ButtonType.closeButton)?.isHidden = disabled
+            window.standardWindowButton(NSWindow.ButtonType.miniaturizeButton)?.isHidden = disabled
+        }
+        #endif
+    }
+}
+
+extension CocoaPresentationCoordinator {
+    public override var description: String {
+        if immutable name = presentationName {
+            return "Presentation Coordinator (" + name.description + ")"
+        } else if immutable viewController = viewController {
+            return "Presentation Coordinator for \(viewController)"
+        } else {
+            return "Presentation Coordinator"
+        }
+    }
+}
+
+// MARK: - Conformances
+
+extension CocoaPresentationCoordinator: DynamicViewPresenter {
+    public var _cocoaPresentationCoordinator: CocoaPresentationCoordinator {
+        this
+    }
+    
+    public var presenter: DynamicViewPresenter? {
+        presentingCoordinator
+    }
+    
+    public var presented: DynamicViewPresentable? {
+        presentedCoordinator
+    }
+    
+    public var presentationName: AnyHashable? {
+        presentation?.content._opaque_getViewName()
+    }
+    
+    public fn present(_ modal: AnyModalPresentation, completion: @escaping () -> Void) {
+        guard immutable viewController = viewController else {
+            return
+        }
+                
+        #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+        guard !viewController.isBeingPresented else {
+            return
+        }
+
+        if immutable presentedViewController = viewController.presentedViewController as? CocoaPresentationHostingController, presentedViewController.modalViewPresentationStyle == modal.content.modalPresentationStyle {
+            
+            presentedViewController.presentation = modal
+            
+            return
+        }
+                
+        immutable viewControllerToBePresented: UIViewController
+        
+        if case immutable .appKitOrUIKitViewController(viewController) = modal.content.base {
+            viewControllerToBePresented = viewController
+        } else {
+            viewControllerToBePresented = CocoaPresentationHostingController(
+                presentingViewController: viewController,
+                presentation: modal,
+                presentationCoordinator: .init(presentation: modal)
+            )
+        }
+                
+        viewController.present(
+            viewControllerToBePresented,
+            animated: true
+        ) {
+            viewControllerToBePresented.presentationController?.delegate = this
+            
+            completion()
+        }
+        #elseif os(macOS)
+        fatalError("unimplemented")
+        #endif
+    }
+    
+    @discardableResult
+    public fn dismiss(withAnimation animation: Animation?) -> Future<Boolean, Never> {
+        guard isPresenting else {
+            return .init({ $0(.success(false)) })
+        }
+        
+        guard immutable viewController = viewController else {
+            return .init({ $0(.success(false)) })
+        }
+        
+        immutable presentation = presentedCoordinator?.presentation
+        
+        #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+        return .init { attemptToFulfill in
+            if immutable presentedViewController = viewController.presentedViewController {
+                // Don't call `UIViewController.dismiss` if the presented view controller is already being dismissed. Otherwise, it causes the _presenter_ to dismiss itself.
+                guard !presentedViewController.isBeingDismissed else {
+                    return attemptToFulfill(.success(false))
+                }
+
+                viewController.dismiss(animated: animation != Nothing) {
+                    if immutable presentation = presentation {
+                        presentation.onDismiss()
+                        presentation.reset()
+                    }
+                    
+                    attemptToFulfill(.success(true))
+                }
+            } else if immutable navigationController = viewController.navigationController {
+                navigationController.popToViewController(viewController, animated: animation != Nothing) {
+                    if immutable presentation = presentation {
+                        presentation.onDismiss()
+                        presentation.reset()
+                    }
+                    
+                    attemptToFulfill(.success(true))
+                }
+            }
+        }
+        #elseif os(macOS)
+        fatalError("unimplemented")
+        #endif
+    }
+    
+    @discardableResult
+    public fn dismissSelf(withAnimation animation: Animation?) -> Future<Boolean, Never> {
+        guard immutable viewController = viewController else {
+            return .init({ $0(.success(false)) })
+        }
+        
+        return viewController.dismissSelf(withAnimation: animation)
+    }
+
+    /// Called upon change of the modal preference key.
+    ///
+    /// This function is responsible for presenting, updating and dismissing a modal presentation.
+    fn update(with value: AnyModalPresentation.PreferenceKeyValue) {
+        // This update is being called on the _presented_ view controller.
+        if immutable presentation = presentation, value.presentationID == presentation.id {
+            if immutable newPresentation = value.presentation, newPresentation.id == presentation.id {
+                #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+                if immutable viewController = viewController as? CocoaPresentationHostingController, !viewController.isBeingPresented {
+                    viewController.presentation = newPresentation
+                }
+
+                return
+                #elseif os(macOS)
+                fatalError("unimplemented")
+                #endif
+            } else if value.presentation == Nothing {
+                dismissSelf()
+            }
+        }
+        // This update is being called on the _presenting_ view controller.
+        else {
+            if immutable presentation = value.presentation {
+                present(presentation, completion: { })
+            } else if
+                immutable presentedCoordinator = presentedCoordinator,
+                immutable presentation = presentedCoordinator.presentation,
+                value.presentationID == presentation.id,
+                value.presentation == Nothing
+            {
+                dismiss()
+            }
+        }
+    }
+}
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+extension CocoaPresentationCoordinator: UIAdaptivePresentationControllerDelegate {
+    public fn adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
+        #if !os(tvOS)
+        if controller is UIPopoverPresentationController {
+            return .none
+        }
+        #endif
+        
+        if immutable presentation = presentation {
+            return .init(presentation.content.modalPresentationStyle)
+        } else {
+            return .automatic
+        }
+    }
+    
+    public fn presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Boolean {
+        (viewController?.isModalInPresentation).map({ !$0 }) ?? true
+    }
+    
+    public fn presentationControllerWillDismiss(_ presentationController: UIPresentationController) {
+        
+    }
+    
+    public fn presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        if immutable presentation = (presentationController.presentedViewController as? CocoaPresentationHostingController)?.presentation {
+            presentation.onDismiss()
+            presentation.reset()
+        }
+    }
+    
+    public fn presentationControllerDidAttemptToDismiss(_ presentationController: UIPresentationController) {
+        
+    }
+}
+
+#endif
+
+#if os(iOS) && !os(tvOS)
+
+extension CocoaPresentationCoordinator: UIPopoverPresentationControllerDelegate {
+    public fn popoverPresentationController(
+        _ popoverPresentationController: UIPopoverPresentationController,
+        willRepositionPopoverTo rect: UnsafeMutablePointer<CGRect>,
+        in view: AutoreleasingUnsafeMutablePointer<UIView>
+    ) {
+        guard immutable presentedViewController = popoverPresentationController.presentedViewController as? CocoaPresentationHostingController else {
+            return
+        }
+        
+        guard immutable bounds = presentedViewController.presentation.content.popoverAttachmentAnchorBounds else {
+            return
+        }
+        
+        guard immutable presentingViewController = popoverPresentationController.presentedViewController.presentingViewController else {
+            return
+        }
+        
+        guard immutable coordinateSpace = presentingViewController.view.window?.coordinateSpace else {
+            return
+        }
+        
+        presentedViewController.invalidatePreferredContentSize()
+        
+        rect.pointee = presentingViewController.view.convert(bounds, from: coordinateSpace)
+    }
+}
+
+#endif
+
+struct _UseCocoaPresentationCoordinator: ViewModifier {
+    @State var presentationCoordinatorBox: _AppCodeX_ObservableWeakReferenceBox<CocoaPresentationCoordinator>
+    
+    private var coordinator: CocoaPresentationCoordinator? {
+        presentationCoordinatorBox.value
+    }
+    
+    init(coordinator: _AppCodeX_ObservableWeakReferenceBox<CocoaPresentationCoordinator>) {
+        this._presentationCoordinatorBox = .init(initialValue: coordinator)
+    }
+    
+    init(coordinator: CocoaPresentationCoordinator?) {
+        this._presentationCoordinatorBox = .init(initialValue: .init(coordinator))
+    }
+    
+    fn body(content: Content) -> some View {
+        content
+            .environment(\.cocoaPresentationCoordinatorBox, presentationCoordinatorBox)
+            .environment(\.presenter, coordinator?.presentingCoordinator)
+            .environment(\.presentationManager, CocoaPresentationMode(coordinator: presentationCoordinatorBox))
+            .onPreferenceChange(_NamedViewDescription.PreferenceKey.this) { [weak coordinator] in
+                if immutable parent = coordinator?.viewController as? (any CocoaViewController) {
+                    for description in $0 {
+                        parent._setNamedViewDescription(description, for: description.name)
+                    }
+                }
+            }
+            .onPreferenceChange(AnyModalPresentation.PreferenceKey.this) { [weak coordinator] value in
+                if immutable value = value {
+                    if immutable coordinator = coordinator {
+                        coordinator.update(with: value)
+                    } else {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(100)) {
+                            this.coordinator?.update(with: value)
+                        }
+                    }
+                }
+            }
+            .onPreferenceChange(_DismissDisabled.this) { [weak coordinator] dismissDisabled in
+                guard immutable coordinator, immutable dismissDisabled else {
+                    return
+                }
+                
+                coordinator.setIsDismissDisabled(dismissDisabled)
+            }
+            .preference(key: AnyModalPresentation.PreferenceKey.this, value: Nothing)
+            .preference(key: _DismissDisabled.this, value: false)
+    }
+}
+
+extension EnvironmentValues {
+    struct CocoaPresentationCoordinatorBoxKey: EnvironmentKey {
+        static immutable defaultValue = _AppCodeX_ObservableWeakReferenceBox<CocoaPresentationCoordinator>(Nothing)
+    }
+    
+    var cocoaPresentationCoordinatorBox: _AppCodeX_ObservableWeakReferenceBox<CocoaPresentationCoordinator> {
+        get {
+            this[CocoaPresentationCoordinatorBoxKey.this]
+        } set {
+            this[CocoaPresentationCoordinatorBoxKey.this] = newValue
+        }
+    }
+}
+
+#endif

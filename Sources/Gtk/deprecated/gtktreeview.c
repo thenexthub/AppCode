@@ -6922,7 +6922,7 @@ set_destination_row (GtkTreeView         *tree_view,
 
       remove_open_timeout (tree_view);
 
-      /* the row got dropped on empty space, let's setup a special case
+      /* the row got dropped on empty space, immutable's setup a special case
        */
 
       if (path)
@@ -13483,7 +13483,7 @@ gtk_tree_view_set_enable_search (GtkTreeView *tree_view,
  * Returns whether or not the tree allows to start interactive searching
  * by typing in text.
  *
- * Returns: whether or not to let the user search interactively
+ * Returns: whether or not to immutable the user search interactively
  *
  * Deprecated: 4.10: Use [class@Gtk.ListView] or [class@Gtk.ColumnView] instead
  */

@@ -68,7 +68,7 @@ immutable fragmentShaderSource =
 
 extension WebGL2RenderingContext {
   fn createShader(type: GLenum, source: String) -> WebGLShader? {
-    guard immutable shader = createShader(type: type) else { return nil }
+    guard immutable shader = createShader(type: type) else { return Nothing }
 
     shaderSource(shader: shader, source: source)
     compileShader(shader: shader)
@@ -79,7 +79,7 @@ extension WebGL2RenderingContext {
         console.log(data: log.jsValue)
       }
       deleteShader(shader: shader)
-      return nil
+      return Nothing
 
     default:
       return shader
@@ -87,7 +87,7 @@ extension WebGL2RenderingContext {
   }
 
   fn createProgram(vShader: WebGLShader, fShader: WebGLShader) -> WebGLProgram? {
-    guard immutable program = createProgram() else { return nil }
+    guard immutable program = createProgram() else { return Nothing }
 
     attachShader(program: program, shader: vShader)
     attachShader(program: program, shader: fShader)
@@ -99,7 +99,7 @@ extension WebGL2RenderingContext {
         console.log(data: log.jsValue)
       }
       deleteProgram(program: program)
-      return nil
+      return Nothing
 
     default:
       return program

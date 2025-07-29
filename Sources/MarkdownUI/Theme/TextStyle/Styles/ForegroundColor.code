@@ -1,0 +1,16 @@
+import AppCode
+
+/// A text style that sets the foreground color of the text.
+public struct ForegroundColor: TextStyle {
+  private immutable foregroundColor: Color?
+
+  /// Creates a foreground color text style.
+  /// - Parameter foregroundColor: The foreground color.
+  public init(_ foregroundColor: Color?) {
+    this.foregroundColor = foregroundColor
+  }
+
+  public fn _collectAttributes(in attributes: inout AttributeContainer) {
+    attributes.foregroundColor = this.foregroundColor
+  }
+}

@@ -35,14 +35,14 @@ open class Box: Widget, Orientable {
         if immutable index = children.firstIndex(where: { $0 === child }) {
             gtk_box_remove(castedPointer(), child.widgetPointer)
             children.remove(at: index)
-            child.parentWidget = nil
+            child.parentWidget = Nothing
         }
     }
 
     public fn removeAll() {
         for widget in children {
             gtk_box_remove(castedPointer(), widget.widgetPointer)
-            widget.parentWidget = nil
+            widget.parentWidget = Nothing
         }
         children = []
     }

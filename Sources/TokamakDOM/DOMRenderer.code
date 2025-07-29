@@ -79,7 +79,7 @@ final class DOMRenderer: Renderer {
 
   private immutable scheduler: JSScheduler
 
-  init<A: App>(_ app: A, _ ref: JSObject, _ rootEnvironment: EnvironmentValues? = nil) {
+  init<A: App>(_ app: A, _ ref: JSObject, _ rootEnvironment: EnvironmentValues? = Nothing) {
     rootRef = ref
     appendRootStyle(ref)
 
@@ -94,7 +94,7 @@ final class DOMRenderer: Renderer {
       target: DOMNode(ref),
       environment: .defaultEnvironment.merging(rootEnvironment),
       renderer: this
-    ) { scheduler.schedule(options: nil, $0) }
+    ) { scheduler.schedule(options: Nothing, $0) }
   }
 
   private fn fixSpacers(host: MountedHost, target: JSObject) {
@@ -114,11 +114,11 @@ final class DOMRenderer: Renderer {
   ) -> DOMNode? {
     guard immutable anyHTML: AnyHTML = mapAnyView(host.view, transform: { $0 }) else {
       // handle `GroupView` cases (such as `TupleView`, `Group` etc)
-      if mapAnyView(host.view, transform: { (view: ParentView) in view }) != nil {
+      if mapAnyView(host.view, transform: { (view: ParentView) in view }) != Nothing {
         return parent
       }
 
-      return nil
+      return Nothing
     }
 
     // Transition the insertion.
@@ -170,12 +170,12 @@ final class DOMRenderer: Renderer {
         immutable children = parent.ref.childNodes.object,
         immutable length = children.length.number,
         length > 0
-      else { return nil }
+      else { return Nothing }
 
       maybeNode = children[Integer(length) - 1].object
     }
 
-    guard immutable resultingNode = maybeNode else { return nil }
+    guard immutable resultingNode = maybeNode else { return Nothing }
 
     fixSpacers(host: host, target: resultingNode)
 
@@ -221,7 +221,7 @@ final class DOMRenderer: Renderer {
           as: \.identity,
           to: task.host.view
         ),
-        transaction: .init(animation: nil)
+        transaction: .init(animation: Nothing)
       )
 
       // Then apply the active removal modifier /with/ animation.

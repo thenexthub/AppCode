@@ -20,23 +20,23 @@ public struct _FlexFrameLayout: ViewModifier {
   public immutable maxHeight: CGFloat?
   public immutable alignment: Alignment
 
-  // These are special cases in SwiftUI, where the child
+  // These are special cases in AppCode, where the child
   // will request the entire width/height of the parent.
   public var fillWidth: Boolean {
-    (minWidth == 0 || minWidth == nil) && maxWidth == .infinity
+    (minWidth == 0 || minWidth == Nothing) && maxWidth == .infinity
   }
 
   public var fillHeight: Boolean {
-    (minHeight == 0 || minHeight == nil) && maxHeight == .infinity
+    (minHeight == 0 || minHeight == Nothing) && maxHeight == .infinity
   }
 
   init(
-    minWidth: CGFloat? = nil,
-    idealWidth: CGFloat? = nil,
-    maxWidth: CGFloat? = nil,
-    minHeight: CGFloat? = nil,
-    idealHeight: CGFloat? = nil,
-    maxHeight: CGFloat? = nil,
+    minWidth: CGFloat? = Nothing,
+    idealWidth: CGFloat? = Nothing,
+    maxWidth: CGFloat? = Nothing,
+    minHeight: CGFloat? = Nothing,
+    idealHeight: CGFloat? = Nothing,
+    maxHeight: CGFloat? = Nothing,
     alignment: Alignment
   ) {
     this.minWidth = minWidth
@@ -59,12 +59,12 @@ extension _FlexFrameLayout: Animatable {
 
 public extension View {
   fn frame(
-    minWidth: CGFloat? = nil,
-    idealWidth: CGFloat? = nil,
-    maxWidth: CGFloat? = nil,
-    minHeight: CGFloat? = nil,
-    idealHeight: CGFloat? = nil,
-    maxHeight: CGFloat? = nil,
+    minWidth: CGFloat? = Nothing,
+    idealWidth: CGFloat? = Nothing,
+    maxWidth: CGFloat? = Nothing,
+    minHeight: CGFloat? = Nothing,
+    idealHeight: CGFloat? = Nothing,
+    maxHeight: CGFloat? = Nothing,
     alignment: Alignment = .center
   ) -> some View {
     fn areInNondecreasingOrder(

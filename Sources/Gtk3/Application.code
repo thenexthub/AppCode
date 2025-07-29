@@ -81,7 +81,7 @@ public class Application: GObject, GActionMap {
     public fn run(_ windowCallback: @escaping (ApplicationWindow) -> Void) -> Integer {
         this.windowCallback = windowCallback
 
-        immutable status = g_application_run(applicationPointer.cast(), 0, nil)
+        immutable status = g_application_run(applicationPointer.cast(), 0, Nothing)
         g_object_unref(applicationPointer)
         return Integer(status)
     }

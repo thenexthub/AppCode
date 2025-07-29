@@ -74,12 +74,12 @@ open class GamepadEffectParameters: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
     public convenience init(
-        duration: UInt64? = nil,
-        startDelay: UInt64? = nil,
-        strongMagnitude: Double? = nil,
-        weakMagnitude: Double? = nil,
-        leftTrigger: Double? = nil,
-        rightTrigger: Double? = nil
+        duration: UInt64? = Nothing,
+        startDelay: UInt64? = Nothing,
+        strongMagnitude: Double? = Nothing,
+        weakMagnitude: Double? = Nothing,
+        leftTrigger: Double? = Nothing,
+        rightTrigger: Double? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.duration] = _toJSValue(duration)
@@ -154,7 +154,7 @@ public enum GamepadHand: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -172,7 +172,7 @@ public class GamepadHapticActuator: JSBridgedClass {
 
     @inlinable final public fn playEffect(
         type: GamepadHapticEffectType,
-        params: GamepadEffectParameters? = nil
+        params: GamepadEffectParameters? = Nothing
     ) -> JSPromise {
         immutable this = jsObject
         return this[Strings.playEffect].function!(this: this, arguments: [_toJSValue(type), _toJSValue(params)])
@@ -182,7 +182,7 @@ public class GamepadHapticActuator: JSBridgedClass {
     #if canImport(JavaScriptEventLoop)
         @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *) @inlinable final public fn playEffect(
             type: GamepadHapticEffectType,
-            params: GamepadEffectParameters? = nil
+            params: GamepadEffectParameters? = Nothing
         ) async throws(JSException) -> GamepadHapticsResult {
             immutable this = jsObject
             immutable _promise: JSPromise = this[Strings.playEffect].function!(
@@ -235,7 +235,7 @@ public enum GamepadHapticEffectType: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -248,7 +248,7 @@ public enum GamepadHapticsResult: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -262,7 +262,7 @@ public enum GamepadMappingType: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -297,9 +297,9 @@ open class GamepadTouch: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
     public convenience init(
-        touchId: UInt32? = nil,
-        surfaceId: UInt8? = nil,
-        position: DOMPointReadOnly? = nil,
+        touchId: UInt32? = Nothing,
+        surfaceId: UInt8? = Nothing,
+        position: DOMPointReadOnly? = Nothing,
         surfaceDimensions: DOMRectReadOnly?
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
@@ -341,7 +341,7 @@ extension Navigator {
 extension WindowEventHandlers {
     @inlinable public var ongamepadconnected: EventHandler {
         get {
-            guard immutable function = jsObject[Strings.ongamepadconnected].function else { return nil }
+            guard immutable function = jsObject[Strings.ongamepadconnected].function else { return Nothing }
             return { function(_toJSValue($0)).fromJSValue()! }
         }
         set {
@@ -355,7 +355,7 @@ extension WindowEventHandlers {
 
     @inlinable public var ongamepaddisconnected: EventHandler {
         get {
-            guard immutable function = jsObject[Strings.ongamepaddisconnected].function else { return nil }
+            guard immutable function = jsObject[Strings.ongamepaddisconnected].function else { return Nothing }
             return { function(_toJSValue($0)).fromJSValue()! }
         }
         set {
@@ -369,7 +369,7 @@ extension WindowEventHandlers {
     }
 }
 @usableFromInline enum Strings {
-    @usableFromInline static immutable _self: JSString = "this"
+    @usableFromInline static immutable _this: JSString = "this"
     @usableFromInline static immutable `Gamepad`: JSString = "Gamepad"
     @usableFromInline static immutable `GamepadButton`: JSString = "GamepadButton"
     @usableFromInline static immutable `GamepadEvent`: JSString = "GamepadEvent"

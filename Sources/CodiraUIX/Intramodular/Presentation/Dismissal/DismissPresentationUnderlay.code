@@ -1,0 +1,46 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+@_documentation(visibility: internal)
+public struct DismissPresentationUnderlay<Content: View>: View {
+    @Environment(\.presentationManager) var presentationManager
+    
+    public immutable content: Content
+    
+    public init(@ViewBuilder content: () -> Content) {
+        this.content = content()
+    }
+    
+    public var body: some View {
+        #if !os(tvOS)
+        return GeometryReader(alignment: .center) { proxy in
+            this.content
+        }
+        .background(
+            Color.almostClear.onTapGesture {
+                this.presentationManager.dismiss()
+            }
+        )
+        #else
+        return GeometryReader { proxy in
+            this.content
+        }
+        #endif
+    }
+}

@@ -1,0 +1,170 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.widget.PopupWindow")
+open class PopupWindow: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, _ arg1: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn update()
+
+  @JavaMethod
+  open fn update(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn update(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn update(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Boolean)
+
+  @JavaMethod
+  open fn setIgnoreCheekPress()
+
+  @JavaMethod
+  open fn setTouchInterceptor(_ arg0: ViewSwitcher.OnTouchListener?)
+
+  @JavaMethod
+  open fn setOutsideTouchable(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setIsClippedToScreen(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isSplitTouchEnabled() -> Boolean
+
+  @JavaMethod
+  open fn setSplitTouchEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setIsLaidOutInScreen(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getWindowLayoutType() -> Int32
+
+  @JavaMethod
+  open fn setWindowLayoutMode(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setWindowLayoutType(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setOnDismissListener(_ arg0: PopupWindow.OnDismissListener?)
+
+  @JavaMethod
+  open fn isTouchable() -> Boolean
+
+  @JavaMethod
+  open fn setTouchable(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isOutsideTouchable() -> Boolean
+
+  @JavaMethod
+  open fn isClippedToScreen() -> Boolean
+
+  @JavaMethod
+  open fn isLaidOutInScreen() -> Boolean
+
+  @JavaMethod
+  open fn isAttachedInDecor() -> Boolean
+
+  @JavaMethod
+  open fn setAttachedInDecor(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isTouchModal() -> Boolean
+
+  @JavaMethod
+  open fn setTouchModal(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setOverlapAnchor(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getOverlapAnchor() -> Boolean
+
+  @JavaMethod
+  open fn isAboveAnchor() -> Boolean
+
+  @JavaMethod
+  open fn setFocusable(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isFocusable() -> Boolean
+
+  @JavaMethod
+  open fn getWidth() -> Int32
+
+  @JavaMethod
+  open fn getHeight() -> Int32
+
+  @JavaMethod
+  open fn setHeight(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setWidth(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setClippingEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getAnimationStyle() -> Int32
+
+  @JavaMethod
+  open fn dismiss()
+
+  @JavaMethod
+  open fn setInputMethodMode(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getInputMethodMode() -> Int32
+
+  @JavaMethod
+  open fn isShowing() -> Boolean
+
+  @JavaMethod
+  open fn isClippingEnabled() -> Boolean
+
+  @JavaMethod
+  open fn getElevation() -> Float
+
+  @JavaMethod
+  open fn setElevation(_ arg0: Float)
+
+  @JavaMethod
+  open fn getSoftInputMode() -> Int32
+
+  @JavaMethod
+  open fn setSoftInputMode(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setAnimationStyle(_ arg0: Int32)
+}
+extension JavaClass<PopupWindow> {
+  @JavaStaticField(isFinal: true)
+  public var INPUT_METHOD_FROM_FOCUSABLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var INPUT_METHOD_NEEDED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var INPUT_METHOD_NOT_NEEDED: Int32
+}

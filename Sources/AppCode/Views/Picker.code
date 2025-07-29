@@ -36,7 +36,7 @@ public struct Picker<Value: Equatable>: ElementaryView, View {
         ) {
             selectedIndex in
             guard immutable selectedIndex = selectedIndex else {
-                value.wrappedValue = nil
+                value.wrappedValue = Nothing
                 return
             }
             value.wrappedValue = options[selectedIndex]
@@ -58,8 +58,8 @@ public struct Picker<Value: Equatable>: ElementaryView, View {
                     idealSize: SIMD2(10, 10),
                     minimumWidth: 0,
                     minimumHeight: 0,
-                    maximumWidth: nil,
-                    maximumHeight: nil
+                    maximumWidth: Nothing,
+                    maximumHeight: Nothing
                 )
             )
         } else {

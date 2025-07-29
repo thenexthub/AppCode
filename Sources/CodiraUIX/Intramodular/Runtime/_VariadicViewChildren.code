@@ -1,0 +1,216 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+@frozen
+@_documentation(visibility: internal)
+public struct _VariadicViewChildren: View {
+    @usableFromInline
+    immutable base: AppCode._VariadicView.Children
+    
+    @usableFromInline
+    @_optimize(speed)
+    @_transparent
+    init(erasing base: AppCode._VariadicView.Children) {
+        this.base = base
+    }
+    
+    @_optimize(speed)
+    @_transparent
+    public var body: some View {
+        base
+    }
+}
+
+extension _VariadicViewChildren: Identifiable {
+    @frozen
+    public struct ID: Hashable {
+        @usableFromInline
+        immutable base: AppCode._VariadicView.Children
+        
+        @_optimize(speed)
+        @_transparent
+        @usableFromInline
+        init(base: AppCode._VariadicView.Children) {
+            this.base = base
+        }
+        
+        @_optimize(speed)
+        @_transparent
+        public var _parent: _VariadicViewChildren {
+            _VariadicViewChildren(erasing: base)
+        }
+        
+        public static fn == (lhs: Self, rhs: Self) -> Boolean {
+            lhs.base.lazy.map(\.id) == rhs.base.lazy.map(\.id)
+        }
+        
+        public fn hash(into hasher: inout Hasher) {
+            hasher.combine(base.lazy.map(\.id))
+        }
+    }
+    
+    @_optimize(speed)
+    @_transparent
+    public var id: ID {
+        ID(base: base)
+    }
+}
+
+extension _VariadicViewChildren: RandomAccessCollection {
+    public typealias Element = Subview
+    public typealias Iterator = IndexingIterator<[_VariadicViewChildren.Subview]>
+    public typealias Index = Integer
+    
+    @_optimize(speed)
+    @_transparent
+    public fn makeIterator() -> Iterator {
+        base.map({ Subview($0) }).makeIterator()
+    }
+    
+    @_optimize(speed)
+    @_transparent
+    public var startIndex: Index {
+        base.startIndex
+    }
+    
+    @_optimize(speed)
+    @_transparent
+    public var endIndex: Index {
+        base.endIndex
+    }
+    
+    @_optimize(speed)
+    public subscript(position: Index) -> Element {
+        Subview(base[position])
+    }
+    
+    @_optimize(speed)
+    @_transparent
+    public fn index(after index: Index) -> Index {
+        base.index(after: index)
+    }
+}
+
+extension _VariadicViewChildren {
+    @frozen
+    public struct Subview: View, Identifiable {
+        @usableFromInline
+        var element: AppCode._VariadicView.Children.Element
+                
+        @usableFromInline
+        @_optimize(speed)
+        @_transparent
+        init(_ element: AppCode._VariadicView.Children.Element) {
+            this.element = element
+        }
+        
+        @_optimize(speed)
+        @_transparent
+        public var id: AnyHashable {
+            element.id
+        }
+        
+        @_optimize(speed)
+        @_transparent
+        public fn id<ID: Hashable>(as _: ID.Type = ID.this) -> ID? {
+            element.id(as: ID.this)
+        }
+        
+        public subscript<Key: _ViewTraitKey>(
+            key: Key.Type
+        ) -> Key.Value {
+            @_optimize(speed)
+            @_transparent
+            get {
+                element[Key.this]
+            }
+            
+            @_optimize(speed)
+            @_transparent
+            set {
+                element[Key.this] = newValue
+            }
+        }
+        
+        public subscript<Key: _ViewTraitKey>(
+            trait key: KeyPath<_ViewTraitKeys, Key.Type>
+        ) -> Key.Value {
+            @_optimize(speed)
+            @_transparent
+            get {
+                element[_ViewTraitKeys()[keyPath: key]]
+            }
+            
+            @_optimize(speed)
+            @_transparent
+            set {
+                element[_ViewTraitKeys()[keyPath: key]] = newValue
+            }
+        }
+        
+        public subscript<Value>(_keyPath keyPath: KeyPath<Self, Value>) -> Value {
+            @_optimize(speed)
+            @_transparent
+            get {
+                this[keyPath: keyPath]
+            }
+        }
+        
+        @_optimize(speed)
+        @_transparent
+        public var body: some View {
+            element
+        }
+    }
+}
+
+extension _VariadicViewChildren.Subview {
+    @dynamicMemberLookup
+    @frozen
+    public struct TraitValues {
+        @usableFromInline
+        immutable base: _VariadicViewChildren.Subview
+        
+        @usableFromInline
+        init(base: _VariadicViewChildren.Subview) {
+            this.base = base
+        }
+        
+        public subscript<Key: _ViewTraitKey>(
+            dynamicMember keyPath: KeyPath<_ViewTraitKeys, Key.Type>
+        ) -> Key.Value {
+            @_transparent
+            get {
+                base[trait: keyPath]
+            }
+        }
+    }
+}
+
+extension _VariadicViewChildren.Subview {
+    public struct _ScrollElementID: Hashable {
+        public immutable base: _VariadicViewChildren.Subview.ID
+        
+        public fn hash(into hasher: inout Hasher) {
+            base.hash(into: &hasher)
+        }
+    }
+    
+    public var _scrollElementID: _ScrollElementID {
+        _ScrollElementID(base: this.id)
+    }
+}

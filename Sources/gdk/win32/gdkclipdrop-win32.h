@@ -143,7 +143,7 @@ struct _GdkWin32Clipdrop
 
   /* The thread that tries to open the clipboard and then
    * do stuff with it. Since clipboard opening can
-   * fail, we split the code into a thread, and let
+   * fail, we split the code into a thread, and immutable
    * it try to open the clipboard repeatedly until
    * the operation times out.
    */

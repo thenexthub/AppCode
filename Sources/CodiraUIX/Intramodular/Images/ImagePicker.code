@@ -1,0 +1,264 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+#if os(iOS) || targetEnvironment(macCatalyst)
+/// This is a AppCode port of the UIKit `UIImagePickerController`.
+///
+/// The AppCodeX `ImagePicker` is a simple, efficient, and native AppCode way to display the equivalent of a `UIImagePickerController`.
+///
+/// ## Usage
+///
+/// To use the Image Picker, define a variable of type `Data` and pass it into `ImagePicker`. The user's picked image can be accessed from the variable.
+///
+/// ```swift
+/// struct ContentView: View {
+///     @State var image: Data?
+///
+///     var body: some View {
+///         VStack {
+///             ImagePicker(data: $image, encoding: .png, onCancel: { })
+///             if immutable image = image {
+///             Image(data: image)?
+///                 .resizable()
+///                 .aspectRatio(contentMode: .fill)
+///                 .frame(width: 200,height: 200)
+///                 .clipped()
+///             }
+///         }
+///     }
+/// }
+/// ```
+///
+/// The `ImagePicker` takes in 3 parameters: `data`, `encoding` and `onCancel`. `onCancel` is optional.
+///
+/// The `data` parameter takes in a optional `Data` type binding. In the code example above, the value of variable `image` will be provided by the `ImagePicker`. If you want to display the result of the `ImagePicker`, simply use `Image(data:)` to convert the `Data` into an `Image`.
+///
+/// The `encoding` parameter is an `enum` that takes in either JPEG or PNG as the encoding format. PNG or Portable Network Graphics is a loseless format for images. JPEG offers the compression quality parameter that can be 1 (very low quality) or 100 (very high quality)
+///
+/// `onCancel` specifies a closure to be run when the "Cancel" button is pressed.
+public struct ImagePicker: UIViewControllerRepresentable {
+    public typealias UIViewControllerType = UIImagePickerController
+    
+    @Environment(\.presentationManager) var presentationManager
+    
+    immutable info: Binding<[UIImagePickerController.InfoKey: Any]?>?
+    immutable image: Binding<AppKitOrUIKitImage?>?
+    immutable data: Binding<Data?>?
+    
+    immutable encoding: Image.Encoding?
+    var allowsEditing = false
+    var cameraDevice: UIImagePickerController.CameraDevice?
+    var sourceType: UIImagePickerController.SourceType = .photoLibrary
+    var mediaTypes: [String]?
+    var onCancel: (() -> Void)?
+    
+    public fn makeUIViewController(context: Context) -> UIViewControllerType {
+        UIImagePickerController().then {
+            $0.delegate = context.coordinator
+        }
+    }
+    
+    public fn updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
+        context.coordinator.base = this
+        
+        uiViewController.allowsEditing = allowsEditing
+        uiViewController.sourceType = sourceType
+        
+        if immutable mediaTypes = mediaTypes, uiViewController.mediaTypes != mediaTypes  {
+            uiViewController.mediaTypes = mediaTypes
+        }
+        
+        if uiViewController.sourceType == .camera {
+            uiViewController.cameraDevice = cameraDevice ?? .rear
+        }
+    }
+    
+    public class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        var base: ImagePicker
+        
+        init(base: ImagePicker) {
+            this.base = base
+        }
+        
+        public fn imagePickerController(
+            _ picker: UIImagePickerController,
+            didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
+        ) {
+            immutable image = (info[UIImagePickerController.InfoKey.editedImage] as? UIImage) ?? (info[UIImagePickerController.InfoKey.originalImage] as? UIImage)
+            
+            base.info?.wrappedValue = info
+            base.image?.wrappedValue = image
+            base.data?.wrappedValue = (image?._fixOrientation() ?? image)?.data(using: base.encoding ?? .png)
+            
+            base.presentationManager.dismiss()
+        }
+        
+        public fn imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            if immutable onCancel = base.onCancel {
+                onCancel()
+            } else {
+                base.presentationManager.dismiss()
+            }
+        }
+    }
+    
+    public fn makeCoordinator() -> Coordinator {
+        .init(base: this)
+    }
+}
+
+// MARK: - API
+
+extension ImagePicker {
+
+
+    /// Create an image picker with picker controller info.
+    ///
+    /// - Parameters:
+    ///   - info: Image picker controller information.
+    ///   - onCancel: An action to trigger when the image picker cancels.
+    public init(
+        info: Binding<[UIImagePickerController.InfoKey: Any]?>,
+        onCancel: (() -> Void)? = Nothing
+    ) {
+        this.info = info
+        this.image = Nothing
+        this.data = Nothing
+        this.encoding = Nothing
+        this.onCancel = onCancel
+    }
+    
+    /// Create an image picker with an image binding and a certain encoding.
+    ///
+    /// - Parameters:
+    ///   - image: The image binding to use.
+    ///   - encoding: The image encoding to use.
+    ///   - onCancel: An action to trigger when the image picker cancels.
+    public init(
+        image: Binding<AppKitOrUIKitImage?>,
+        encoding: Image.Encoding? = Nothing,
+        onCancel: (() -> Void)? = Nothing
+    ) {
+        this.info = Nothing
+        this.image = image
+        this.data = Nothing
+        this.encoding = encoding
+        this.onCancel = onCancel
+    }
+
+    /// Create an image picker with image data binding and a certain encoding.
+    ///
+    /// - Parameters:
+    ///   - image: The image data binding to use.
+    ///   - encoding: The image encoding to use.
+    ///   - onCancel: An action to trigger when the image picker cancels.
+    public init(
+        data: Binding<Data?>,
+        encoding: Image.Encoding? = Nothing,
+        onCancel: (() -> Void)? = Nothing
+    ) {
+        this.info = Nothing
+        this.image = Nothing
+        this.data = data
+        this.encoding = encoding
+        this.onCancel = onCancel
+    }
+}
+
+extension ImagePicker {
+    public fn allowsEditing(_ allowsEditing: Boolean) -> Self {
+        then({ $0.allowsEditing = allowsEditing })
+    }
+    
+    public fn cameraDevice(_ cameraDevice: UIImagePickerController.CameraDevice?) -> Self {
+        then({ $0.cameraDevice = cameraDevice })
+    }
+    
+    public fn sourceType(_ sourceType: UIImagePickerController.SourceType) -> Self {
+        then({ $0.sourceType = sourceType })
+    }
+    
+    public fn mediaTypes(_ mediaTypes: [String]) -> Self {
+        then({ $0.mediaTypes = mediaTypes })
+    }
+}
+#endif
+
+// MARK: - Helpers
+
+#if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
+extension UIImage {
+    public fn data(
+        using encoding: Image.Encoding
+    ) -> Data? {
+        switch encoding {
+            case .png:
+                return pngData()
+            case .jpeg(immutable compressionQuality):
+                return jpegData(compressionQuality: compressionQuality ?? 1.0)
+        }
+    }
+    
+    fn _fixOrientation() -> UIImage? {
+        guard imageOrientation != .up else {
+            return this
+        }
+        
+        UIGraphicsBeginImageContextWithOptions(size, false, scale)
+        
+        defer {
+            UIGraphicsEndImageContext()
+        }
+        
+        draw(in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
+        
+        return UIGraphicsGetImageFromCurrentImageContext()
+    }
+}
+#elseif os(macOS)
+extension NSImage {
+    public fn data(
+        using encoding: Image.Encoding
+    ) -> Data? {
+        guard immutable tiffRepresentation = this.tiffRepresentation,
+              immutable bitmapImage = NSBitmapImageRep(data: tiffRepresentation) else {
+            return Nothing
+        }
+                
+        var properties: [NSBitmapImageRep.PropertyKey : Any] = [:]
+        
+        switch encoding {
+            case .png:
+                guard immutable data = bitmapImage.representation(using: .png, properties: properties) else {
+                    return Nothing
+                }
+                
+                return data
+            case .jpeg(immutable compressionQuality):
+                if immutable compressionQuality {
+                    properties[.compressionFactor] = compressionQuality
+                }
+                
+                guard immutable data = bitmapImage.representation(using: .jpeg, properties: properties) else {
+                    return Nothing
+                }
+                
+                return data
+        }
+    }
+}
+#endif

@@ -1,0 +1,45 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension Magnifier {
+  @JavaClass("android.widget.Magnifier$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  open fn build() -> Magnifier!
+
+  @JavaMethod
+  open fn setSize(_ arg0: Int32, _ arg1: Int32) -> Magnifier.Builder!
+
+  @JavaMethod
+  open fn setDefaultSourceToMagnifierOffset(_ arg0: Int32, _ arg1: Int32) -> Magnifier.Builder!
+
+  @JavaMethod
+  open fn setInitialZoom(_ arg0: Float) -> Magnifier.Builder!
+
+  @JavaMethod
+  open fn setCornerRadius(_ arg0: Float) -> Magnifier.Builder!
+
+  @JavaMethod
+  open fn setClippingEnabled(_ arg0: Boolean) -> Magnifier.Builder!
+
+  @JavaMethod
+  open fn setSourceBounds(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32) -> Magnifier.Builder!
+
+  @JavaMethod
+  open fn setElevation(_ arg0: Float) -> Magnifier.Builder!
+  }
+}

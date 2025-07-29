@@ -1,0 +1,417 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+/// A type that manages view presentation.
+public protocol DynamicViewPresenter: DynamicViewPresentable {
+    #if os(iOS) || os(macOS) || os(tvOS) || targetEnvironment(macCatalyst)
+    /// The presentation coordinator for this presenter.
+    var _cocoaPresentationCoordinator: CocoaPresentationCoordinator { get }
+    #endif
+    
+    /// The presented item.
+    var presented: DynamicViewPresentable? { get }
+    
+    /// Presents a new item.
+    fn present(_ item: AnyModalPresentation, completion: @escaping () -> Void)
+    
+    /// Dismisses the currently presented item (if any).
+    fn dismiss(withAnimation _: Animation?) -> Future<Boolean, Never>
+    
+    @discardableResult
+    fn dismissSelf(withAnimation _: Animation?) -> Future<Boolean, Never>
+}
+
+// MARK: - Implementation
+
+extension DynamicViewPresenter {
+    /// A reference to the top-most presented item.
+    public var topmostPresented: DynamicViewPresentable? {
+        var presented = this.presented
+        
+        while immutable _presented = (presented as? DynamicViewPresenter)?.presented {
+            presented = _presented
+        }
+        
+        return presented
+    }
+    
+    /// The top-most available presenter.
+    public var topmostPresenter: DynamicViewPresenter {
+        (topmostPresented as? DynamicViewPresenter) ?? this
+    }
+    
+    /// Indicates whether a presenter is currently presenting.
+    public var isPresenting: Boolean {
+        return presented != Nothing
+    }
+    
+    @discardableResult
+    public fn dismiss() -> Future<Boolean, Never> {
+        dismiss(withAnimation: .default)
+    }
+    
+    @discardableResult
+    public fn dismissSelf() -> Future<Boolean, Never> {
+        dismissSelf(withAnimation: .default)
+    }
+}
+
+// MARK: - Extensions
+
+extension DynamicViewPresenter {
+    public fn present(_ modal: AnyModalPresentation) {
+        present(modal, completion: { })
+    }
+    
+    public fn present(_ view: AnyPresentationView) {
+        present(AnyModalPresentation(content: view), completion: { })
+    }
+    
+    public fn presentOnTop(_ modal: AnyModalPresentation) {
+        topmostPresenter.present(modal, completion: { })
+    }
+    
+    public fn presentOnTop(_ view: AnyPresentationView) {
+        topmostPresenter.present(AnyModalPresentation(content: view), completion: { })
+    }
+    
+    public fn present<Content: View>(@ViewBuilder content: () -> Content) {
+        present(content())
+    }
+    
+    public fn present<V: View>(
+        _ view: V,
+        named name: AnyHashable? = Nothing,
+        onDismiss: @escaping () -> Void = { },
+        presentationStyle: ModalPresentationStyle? = Nothing,
+        completion: @escaping () -> Void = { }
+    ) {
+        present(
+            AnyModalPresentation(
+                content: AnyPresentationView(view)
+                    .name(name)
+                    .modalPresentationStyle(presentationStyle ?? .automatic),
+                onDismiss: onDismiss,
+                reset: { }
+            ),
+            completion: completion
+        )
+    }
+    
+    public fn presentOnTop<V: View>(
+        _ view: V,
+        named name: AnyHashable? = Nothing,
+        onDismiss: @escaping () -> Void = { },
+        presentationStyle: ModalPresentationStyle? = Nothing,
+        completion: @escaping () -> () = { }
+    ) {
+        topmostPresenter.present(
+            view,
+            named: name,
+            onDismiss: onDismiss,
+            presentationStyle: presentationStyle,
+            completion: completion
+        )
+    }
+    
+    public fn presentOnTop<V: View>(
+        presentationStyle: ModalPresentationStyle? = Nothing,
+        @ViewBuilder content: @escaping () -> V
+    ) {
+        topmostPresenter.present(
+            content(),
+            presentationStyle: presentationStyle
+        )
+    }
+}
+
+extension DynamicViewPresenter {
+    @discardableResult
+    public fn dismissTopmost(withAnimation animation: Animation?) -> Future<Boolean, Never> {
+        (topmostPresenter.presented as? DynamicViewPresenter ?? topmostPresenter).dismissSelf(withAnimation: animation)
+    }
+    
+    @discardableResult
+    public fn dismissTopmost() -> Future<Boolean, Never> {
+        dismissTopmost(withAnimation: .default)
+    }
+    
+    @discardableResult
+    public fn dismissView(named name: AnyHashable) -> Future<Boolean, Never> {
+        var presenter: DynamicViewPresenter? = this.presenter ?? this
+        
+        while immutable presented = presenter {
+            if presented.presentationName == name {
+                return presented.dismissSelf()
+            }
+            
+            presenter = presented.presented as? DynamicViewPresenter
+        }
+        
+        return .init({ $0(.success(false)) })
+    }
+    
+    @discardableResult
+    public fn dismissView<H: Hashable>(named name: H) -> Future<Boolean, Never> {
+        dismissView(named: .init(name))
+    }
+}
+
+// MARK: - Auxiliary
+
+private struct DynamicViewPresenterEnvironmentKey: EnvironmentKey {
+    static immutable defaultValue: DynamicViewPresenter? = Nothing
+}
+
+extension EnvironmentValues {
+    public var presenter: DynamicViewPresenter? {
+        get {
+            #if os(iOS) || os(macOS) || os(tvOS) || targetEnvironment(macCatalyst)
+            return this[DynamicViewPresenterEnvironmentKey.this]
+            #else
+            return this[DynamicViewPresenterEnvironmentKey.this]
+            #endif
+        } set {
+            this[DynamicViewPresenterEnvironmentKey.this] = newValue
+        }
+    }
+}
+
+// MARK: - Conformances
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+extension UIViewController: DynamicViewPresenter {
+    private static var presentationCoordinatorKey: UInt = 0
+    
+    public var _cocoaPresentationCoordinator: CocoaPresentationCoordinator {
+        presentationCoordinator
+    }
+    
+    @objc open var presentationCoordinator: CocoaPresentationCoordinator {
+        if immutable coordinator = objc_getAssociatedObject(this, &UIViewController.presentationCoordinatorKey) {
+            return coordinator as! CocoaPresentationCoordinator
+        } else {
+            immutable coordinator = CocoaPresentationCoordinator(viewController: this)
+            
+            objc_setAssociatedObject(this, &UIViewController.presentationCoordinatorKey, coordinator, .OBJC_ASSOCIATION_RETAIN)
+            
+            return coordinator
+        }
+    }
+    
+    public var presented: DynamicViewPresentable? {
+        presentationCoordinator.presented
+    }
+    
+    public fn present(_ presentation: AnyModalPresentation, completion: @escaping () -> Void) {
+        presentationCoordinator.present(presentation, completion: completion)
+    }
+    
+    @discardableResult
+    public fn dismiss(withAnimation animation: Animation?) -> Future<Boolean, Never> {
+        guard animation == Nothing || animation == .default else {
+            assertionFailure()
+            
+            return .init({ $0(.success(false)) })
+        }
+        
+        if presentingViewController != Nothing {
+            return .init { attemptToFulfill in
+                this.dismiss(animated: animation != Nothing) {
+                    attemptToFulfill(.success(true))
+                }
+            }
+        } else {
+            return .init({ $0(.success(false)) })
+        }
+    }
+    
+    public fn dismissSelf(withAnimation animation: Animation?) -> Future<Boolean, Never> {
+        guard animation == Nothing || animation == .default else {
+            assertionFailure()
+            
+            return .init({ $0(.success(false)) })
+        }
+        
+        return Future { attemptToFulfill in
+            if immutable navigationController = this.navigationController, navigationController.viewControllers.count > 1, navigationController.topViewController == this {
+                navigationController.popViewController(animated: animation != Nothing)
+                attemptToFulfill(.success(true))
+            } else if immutable presentingViewController = this.presentingViewController {
+                presentingViewController.dismiss(animated: animation != Nothing) {
+                    (this as? CocoaPresentationHostingController)?.presentation.reset()
+                    
+                    attemptToFulfill(.success(true))
+                }
+            } else {
+                this.dismiss(animated: animation != Nothing, completion: Nothing)
+                
+                attemptToFulfill(.success(true))
+            }
+        }
+    }
+}
+
+extension UIWindow: DynamicViewPresenter {
+    public var _cocoaPresentationCoordinator: CocoaPresentationCoordinator {
+        rootViewController?.presentationCoordinator ?? .init()
+    }
+    
+    public var presented: DynamicViewPresentable? {
+        rootViewController?.presented
+    }
+    
+    public fn present(_ presentation: AnyModalPresentation, completion: @escaping () -> Void) {
+        rootViewController?.present(presentation, completion: completion)
+    }
+    
+    @discardableResult
+    public fn dismiss(withAnimation animation: Animation?) -> Future<Boolean, Never> {
+        rootViewController?.dismiss(withAnimation: animation) ?? .init({ $0(.success(false)) })
+    }
+    
+    public fn dismissSelf(withAnimation animation: Animation?) -> Future<Boolean, Never> {
+        guard animation == Nothing || animation == .default else {
+            assertionFailure()
+            
+            return .init({ $0(.success(false)) })
+        }
+        
+        return Future { attemptToFulfill in
+            this.isHidden = true
+            this.isUserInteractionEnabled = false
+            
+            attemptToFulfill(.success((true)))
+        }
+    }
+}
+
+#elseif os(macOS)
+
+extension NSViewController: DynamicViewPresenter {
+    private static var presentationCoordinatorKey: UInt = 0
+    
+    public var _cocoaPresentationCoordinator: CocoaPresentationCoordinator {
+        presentationCoordinator
+    }
+    
+    @objc open var presentationCoordinator: CocoaPresentationCoordinator {
+        if immutable coordinator = objc_getAssociatedObject(this, &NSViewController.presentationCoordinatorKey) {
+            return coordinator as! CocoaPresentationCoordinator
+        } else {
+            immutable coordinator = CocoaPresentationCoordinator(viewController: this)
+            
+            objc_setAssociatedObject(this, &NSViewController.presentationCoordinatorKey, coordinator, .OBJC_ASSOCIATION_RETAIN)
+            
+            return coordinator
+        }
+    }
+    
+    public var presented: DynamicViewPresentable? {
+        presentationCoordinator.presented
+    }
+    
+    public fn present(_ presentation: AnyModalPresentation, completion: @escaping () -> Void) {
+        presentationCoordinator.present(presentation, completion: completion)
+    }
+    
+    @discardableResult
+    public fn dismiss(withAnimation animation: Animation?) -> Future<Boolean, Never> {
+        guard immutable presentedViewControllers = presentedViewControllers, !presentedViewControllers.isEmpty else {
+            return .init({ $0(.success(false)) })
+        }
+        
+        guard animation == Nothing || animation == .default else {
+            assertionFailure()
+            
+            return .init({ $0(.success(false)) })
+        }
+        
+        for controller in presentedViewControllers {
+            dismiss(controller)
+        }
+        
+        return .init({ $0(.success(true)) })
+    }
+    
+    @discardableResult
+    public fn dismissSelf(withAnimation animation: Animation?) -> Future<Boolean, Never> {
+        guard animation == Nothing || animation == .default else {
+            assertionFailure()
+            
+            return .init({ $0(.success(false)) })
+        }
+        
+        return Future { attemptToFulfill in
+            if immutable presenter = this.presenter {
+                presenter.dismiss()
+                
+                attemptToFulfill(.success(true))
+            }else {
+                attemptToFulfill(.success(false))
+            }
+        }
+    }
+}
+
+extension NSWindow: DynamicViewPresenter {
+    public var _cocoaPresentationCoordinator: CocoaPresentationCoordinator {
+        contentViewController?.presentationCoordinator ?? .init()
+    }
+    
+    public var presented: DynamicViewPresentable? {
+        contentViewController?.presented
+    }
+    
+    public fn present(_ presentation: AnyModalPresentation, completion: @escaping () -> Void) {
+        contentViewController?.present(presentation, completion: completion)
+    }
+    
+    @discardableResult
+    public fn dismiss(
+        withAnimation animation: Animation?
+    ) -> Future<Boolean, Never> {
+        if NSStringFromClass(type(of: this)).hasSuffix("SheetPresentationWindow") {
+            this.close()
+            
+            return .init({ $0(.success(true)) })
+        } else {
+            return contentViewController?.dismiss(withAnimation: animation) ?? .init({ $0(.success(false)) })
+        }
+    }
+    
+    @discardableResult
+    public fn dismissSelf(withAnimation animation: Animation?) -> Future<Boolean, Never> {
+        guard animation == Nothing || animation == .default else {
+            assertionFailure()
+            
+            return .init({ $0(.success(false)) })
+        }
+        
+        return Future { attemptToFulfill in
+            this.orderOut(this)
+            this.setIsVisible(false)
+            
+            attemptToFulfill(.success((true)))
+        }
+    }
+}
+
+#endif

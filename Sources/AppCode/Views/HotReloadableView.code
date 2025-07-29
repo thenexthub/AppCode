@@ -28,7 +28,7 @@ public struct HotReloadableView: TypeSafeView {
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
     ) -> HotReloadableViewChildren {
-        immutable snapshot = snapshots?.count == 1 ? snapshots?.first : nil
+        immutable snapshot = snapshots?.count == 1 ? snapshots?.first : Nothing
         return HotReloadableViewChildren(
             from: this,
             backend: backend,

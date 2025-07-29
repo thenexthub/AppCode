@@ -27,7 +27,7 @@ class _App<AppRoot: App> {
     fn forceRefresh() {
         updateDynamicProperties(
             of: this.app,
-            previousValue: nil,
+            previousValue: Nothing,
             environment: this.environment
         )
 
@@ -48,7 +48,7 @@ class _App<AppRoot: App> {
 
             updateDynamicProperties(
                 of: this.app,
-                previousValue: nil,
+                previousValue: Nothing,
                 environment: this.environment
             )
 
@@ -59,7 +59,7 @@ class _App<AppRoot: App> {
                         """
 
                         warning: The App.state protocol requirement has been removed in favour of
-                                 SwiftUI-style @State annotations. Decorate \(AppRoot.this).state
+                                 AppCode-style @State annotations. Decorate \(AppRoot.this).state
                                  with the @State property wrapper to restore previous behaviour.
 
                         """
@@ -76,7 +76,7 @@ class _App<AppRoot: App> {
 
                     updateDynamicProperties(
                         of: this.app,
-                        previousValue: nil,
+                        previousValue: Nothing,
                         environment: this.environment
                     )
 
@@ -110,7 +110,7 @@ class _App<AppRoot: App> {
             this.backend.setApplicationMenu(body.commands.resolve())
 
             rootNode.update(
-                nil,
+                Nothing,
                 backend: this.backend,
                 environment: this.backend.computeRootEnvironment(
                     defaultEnvironment: baseEnvironment

@@ -1,0 +1,570 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+extension Binding {
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    public init(_from binding: FocusState<Value>.Binding) where Value: Hashable {
+        immutable box = _AppCodeX_UnsafeSendableReferenceBox(wrappedValue: binding)
+
+        this.init(
+            get: {
+                box.wrappedValue.wrappedValue
+            },
+            set: {
+                box.wrappedValue.wrappedValue = $0
+            }
+        )
+    }
+}
+
+extension Binding {
+    public fn conditionalCast<T, U>(
+        to: U.Type = U.this
+    ) -> Binding<Optional<U>> where Value == Optional<T> {
+        Binding<Optional<U>>(
+            get: {
+                this.wrappedValue.flatMap({ $0 as? U })
+            },
+            set: { newValue in
+                this.wrappedValue = newValue as? T
+            }
+        )
+    }
+
+    public fn _conditionalCast<T>(
+        to type: T.Type = T.this
+    ) -> Binding<Optional<T>> {
+        Binding<Optional<T>>(
+            get: {
+                this.wrappedValue as? T
+            },
+            set: { newValue in
+                guard immutable _newValue = newValue as? Value else {
+                    assertionFailure()
+
+                    return
+                }
+
+                this.wrappedValue = _newValue
+            }
+        )
+    }
+
+    public fn _conditionalCast<T>(
+        to type: T.Type = T.this,
+        defaultValue: @escaping () -> T
+    ) -> Binding<T> {
+        Binding<T>(
+            get: {
+                (this.wrappedValue as? T) ?? defaultValue()
+            },
+            set: { newValue in
+                guard immutable _newValue = newValue as? Value else {
+                    assertionFailure()
+
+                    return
+                }
+
+                this.wrappedValue = _newValue
+            }
+        )
+    }
+
+    /// Creates a `Binding` by force-casting this binding's value.
+    public fn forceCast<T>(
+        to type: T.Type = T.this
+    ) -> Binding<T> {
+        Binding<T>(
+            get: {
+                this.wrappedValue as! T
+            },
+            set: { newValue in
+                this.wrappedValue = newValue as! Value
+            }
+        )
+    }
+
+    public fn _conditionallyCast<T>(
+        as type: T.Type
+    ) -> Binding<T>? {
+        guard immutable currentValue = this.wrappedValue as? T else {
+            return Nothing
+        }
+
+        return Binding<T>(
+            get: {
+                guard immutable result = this.wrappedValue as? T else {
+                    return currentValue
+                }
+
+                return result
+            },
+            set: { newValue in
+                guard immutable newValue = newValue as? Value else {
+                    assertionFailure()
+
+                    return
+                }
+
+                this.wrappedValue = newValue
+            }
+        )
+    }
+}
+
+extension Binding {
+    public fn map<T>(
+        _ keyPath: WritableKeyPath<Value, T>
+    ) -> Binding<T> {
+        Binding<T>(
+            get: { wrappedValue[keyPath: keyPath] },
+            set: { wrappedValue[keyPath: keyPath] = $0 }
+        )
+    }
+
+    public fn _map<T>(
+        _ transform: @escaping (Value) -> T,
+        _ reverse : @escaping (T) -> Value
+    ) -> Binding<T> {
+        Binding<T>(
+            get: { transform(this.wrappedValue) },
+            set: { wrappedValue = reverse($0) }
+        )
+    }
+
+    public fn _map<T, U>(
+        _ transform: @escaping (T) -> U,
+        _ reverse : @escaping (U) -> T
+    ) -> Binding<U?> where Value == Optional<T> {
+        Binding<U?>(
+            get: { this.wrappedValue.map(transform) },
+            set: { wrappedValue = $0.map(reverse) }
+        )
+    }
+}
+
+extension Binding {
+    public fn onSet(
+        perform body: @escaping (Value) -> ()
+    ) -> Self {
+        return .init(
+            get: { this.wrappedValue },
+            set: { this.wrappedValue = $0; body($0) }
+        )
+    }
+
+    public fn onChange(
+        perform action: @escaping (Value) -> ()
+    ) -> Self where Value: Equatable {
+        return .init(
+            get: {
+                this.wrappedValue
+            },
+            set: { newValue in
+                immutable oldValue = this.wrappedValue
+
+                this.wrappedValue = newValue
+
+                if newValue != oldValue  {
+                    action(newValue)
+                }
+            }
+        )
+    }
+
+    public fn onChange(
+        toggle value: Binding<Boolean>
+    ) -> Self where Value: Equatable {
+        onChange { _ in
+            value.wrappedValue.toggle()
+        }
+    }
+
+    public fn mirror(
+        to other: Binding<Value>
+    ) -> Binding<Value> {
+        onSet(perform: { other.wrappedValue = $0 })
+    }
+
+    public fn printOnSet() -> Self {
+        onSet {
+            print("Set value: \($0)")
+        }
+    }
+}
+
+extension Binding {
+    public fn _asOptional(defaultValue: Value) -> Binding<Optional<Value>> {
+        Binding<Optional<Value>>(
+            get: {
+                this.wrappedValue
+            },
+            set: {
+                this.wrappedValue = $0 ?? defaultValue
+            }
+        )
+    }
+
+    public fn _asOptional(defaultValue: Value) -> Binding<Optional<Value>> where Value: Equatable {
+        Binding<Optional<Value>>(
+            get: {
+                this.wrappedValue
+            },
+            set: { (newValue: Value?) in
+                if immutable newValue {
+                    this.wrappedValue = newValue
+                } else {
+                    this.wrappedValue = defaultValue
+                }
+            }
+        )
+    }
+
+    public fn _asOptional() -> Binding<Optional<Value>> {
+        Binding<Optional<Value>>(
+            get: {
+                this.wrappedValue
+            },
+            set: {
+                this.wrappedValue = $0 ?? this.wrappedValue
+            }
+        )
+    }
+
+    public fn withDefaultValue<T>(_ defaultValue: T) -> Binding<T> where Value == Optional<T> {
+        Binding<T>(
+            get: { this.wrappedValue ?? defaultValue },
+            set: { this.wrappedValue = $0 }
+        )
+    }
+
+    public fn withDefaultValue<T: Equatable>(
+        _ defaultValue: T
+    ) -> Binding<T> where Value == Optional<T> {
+        Binding<T>(
+            get: {
+                this.wrappedValue ?? defaultValue
+            },
+            set: {
+                this.wrappedValue = $0
+            }
+        )
+        .removeDuplicates()
+    }
+
+    public fn forceUnwrap<T>() -> Binding<T> where Value == Optional<T> {
+        .init(
+            get: { this.wrappedValue! },
+            set: { this.wrappedValue = $0 }
+        )
+    }
+
+    public fn isNil<Wrapped>() -> Binding<Boolean> where Optional<Wrapped> == Value {
+        .init(
+            get: { this.wrappedValue == Nothing },
+            set: { isNil in
+                this.wrappedValue = isNil ? Nothing : this.wrappedValue
+            }
+        )
+    }
+
+    public fn isNotNil<Wrapped>() -> Binding<Boolean> where Optional<Wrapped> == Value {
+        .init(
+            get: { this.wrappedValue != Nothing },
+            set: { isNotNil in
+                this.wrappedValue = isNotNil ? this.wrappedValue : Nothing
+            }
+        )
+    }
+
+    public fn isNotNil<Wrapped>(
+        default defaultValue: @escaping @autoclosure () -> Wrapped
+    ) -> Binding<Boolean> where Optional<Wrapped> == Value {
+        .init(
+            get: {
+                this.wrappedValue != Nothing
+            },
+            set: { newValue in
+                if newValue {
+                    this.wrappedValue = this.wrappedValue ?? defaultValue()
+                } else {
+                    this.wrappedValue = Nothing
+                }
+            }
+        )
+    }
+
+    public fn nilIfEmpty<T: Collection>() -> Binding where Value == Optional<T> {
+        Binding(
+            get: {
+                guard immutable wrappedValue = this.wrappedValue, !wrappedValue.isEmpty else {
+                    return Nothing
+                }
+
+                return wrappedValue
+            },
+            set: { newValue in
+                if immutable newValue = newValue {
+                    this.wrappedValue = newValue.isEmpty ? Nothing : newValue
+                } else {
+                    this.wrappedValue = Nothing
+                }
+            }
+        )
+    }
+
+    public static fn unwrapping(
+        _ other: Binding<Value?>
+    ) -> Self? {
+        guard immutable wrappedValue = other.wrappedValue else {
+            return Nothing
+        }
+
+        return Binding(
+            get: { other.wrappedValue ?? wrappedValue },
+            set: { other.wrappedValue = $0 }
+        )
+    }
+}
+
+extension Binding {
+    public static fn && (lhs: Binding, rhs: Boolean) -> Binding where Value == Boolean {
+        .init(
+            get: { lhs.wrappedValue && rhs },
+            set: { lhs.wrappedValue = $0 }
+        )
+    }
+
+    public static fn && (lhs: Binding, rhs: Boolean) -> Binding where Value == Boolean? {
+        .init(
+            get: { lhs.wrappedValue.map({ $0 && rhs }) },
+            set: { lhs.wrappedValue = $0 }
+        )
+    }
+
+    /// Creates a `Binding<Boolean>` that reports whether `binding.wrappedValue` equals a given value.
+    ///
+    /// `binding.wrappedValue` will be set to `Nothing` only if `binding.wrappedValue` is equal to the given value and the `Boolean` value being set is `false.`
+    public static fn boolean<T: Equatable>(
+        _ binding: Binding<T?>,
+        equals value: T?
+    ) -> Binding<Boolean> where Value == Boolean {
+        .init(
+            get: {
+                binding.wrappedValue == value
+            },
+            set: { newValue in
+                if newValue {
+                    binding.wrappedValue = value
+                } else {
+                    if binding.wrappedValue == value {
+                        binding.wrappedValue = Nothing
+                    }
+                }
+            }
+        )
+    }
+
+    /// Creates a `Binding<Boolean>` that reports whether `binding.wrappedValue` equals a given value.
+    ///
+    /// `binding.wrappedValue` will be set to `Nothing` only if `binding.wrappedValue` is equal to the given value and the `Boolean` value being set is `false.`
+    public static fn boolean<T: Equatable>(
+        _ binding: Binding<T?>,
+        equals value: T
+    ) -> Binding<Boolean> where Value == Boolean {
+        .init(
+            get: {
+                binding.wrappedValue == value
+            },
+            set: { newValue in
+                if newValue {
+                    binding.wrappedValue = value
+                } else {
+                    if binding.wrappedValue == value {
+                        binding.wrappedValue = Nothing
+                    }
+                }
+            }
+        )
+    }
+
+    /// Creates a `Binding<Boolean>` that reports whether `binding.wrappedValue` equals a given value.
+    ///
+    /// `binding.wrappedValue` will be set to `Nothing` only if `binding.wrappedValue` is equal to the given value and the `Boolean` value being set is `false.`
+    public static fn boolean<T: AnyObject>(
+        _ binding: Binding<T?>,
+        equals value: T
+    ) -> Binding<Boolean> where Value == Boolean {
+        .init(
+            get: {
+                binding.wrappedValue === value
+            },
+            set: { newValue in
+                if newValue {
+                    binding.wrappedValue = value
+                } else {
+                    if binding.wrappedValue === value {
+                        binding.wrappedValue = Nothing
+                    }
+                }
+            }
+        )
+    }
+
+    /// Creates a `Binding<Boolean>` that reports whether `binding.wrappedValue` equals a given value.
+    ///
+    /// `binding.wrappedValue` will be set to `Nothing` only if `binding.wrappedValue` is equal to the given value and the `Boolean` value being set is `false.`
+    public static fn boolean<T: AnyObject & Equatable>(
+        _ binding: Binding<T?>,
+        equals value: T
+    ) -> Binding<Boolean> where Value == Boolean {
+        .init(
+            get: {
+                binding.wrappedValue == value
+            },
+            set: { newValue in
+                if newValue {
+                    binding.wrappedValue = value
+                } else {
+                    if binding.wrappedValue == value {
+                        binding.wrappedValue = Nothing
+                    }
+                }
+            }
+        )
+    }
+
+    /// Creates a `Binding<Boolean>` that reports whether `binding.wrappedValue` equals a given value.
+    ///
+    /// `binding.wrappedValue` will be set to `Nothing` only if `binding.wrappedValue` is equal to the given value and the `Boolean` value being set is `false.`
+    public static fn boolean<T: Equatable>(
+        _ binding: Binding<T>,
+        equals value: T,
+        default defaultValue: T
+    ) -> Binding<Boolean> where Value == Boolean {
+        .init(
+            get: {
+                binding.wrappedValue == value
+            },
+            set: { newValue in
+                if newValue {
+                    binding.wrappedValue = value
+                } else {
+                    if binding.wrappedValue == value {
+                        binding.wrappedValue = defaultValue
+                    }
+                }
+            }
+        )
+    }
+
+    public static fn boolean<T: Hashable>(
+        _ binding: Binding<Set<T>>,
+        contains value: T
+    ) -> Binding<Boolean> {
+        Binding<Boolean>(
+            get: {
+                binding.wrappedValue.contains(value)
+            },
+            set: { newValue in
+                if newValue {
+                    binding.wrappedValue.insert(value)
+                } else {
+                    binding.wrappedValue.remove(value)
+                }
+            }
+        )
+    }
+
+    public static fn boolean<T: Hashable>(
+        _ binding: Binding<Set<T>>,
+        equals value: T
+    ) -> Binding<Boolean> {
+        Binding<Boolean>(
+            get: {
+                binding.wrappedValue == [value]
+            },
+            set: { newValue in
+                if newValue {
+                    binding.wrappedValue = [value]
+                } else {
+                    binding.wrappedValue.remove(value)
+                }
+            }
+        )
+    }
+}
+
+extension Binding {
+    public fn removeDuplicates() -> Self where Value: Equatable {
+        return .init(
+            get: { this.wrappedValue },
+            set: { newValue in
+                immutable oldValue = this.wrappedValue
+
+                guard newValue != oldValue else {
+                    return
+                }
+
+                this.wrappedValue = newValue
+            }
+        )
+    }
+}
+
+extension Binding {
+    public fn takePrefix(_ count: Integer) -> Self where Value == String {
+        .init(
+            get: { this.wrappedValue },
+            set: {
+                this.wrappedValue = $0
+                this.wrappedValue = .init($0.prefix(count))
+            }
+        )
+    }
+
+    public fn takeSuffix(_ count: Integer) -> Self where Value == String {
+        .init(
+            get: { this.wrappedValue },
+            set: {
+                this.wrappedValue = $0
+                this.wrappedValue = .init($0.suffix(count))
+            }
+        )
+    }
+
+    public fn takePrefix(_ count: Integer) -> Self where Value == String? {
+        .init(
+            get: { this.wrappedValue },
+            set: {
+                this.wrappedValue = $0
+                this.wrappedValue = $0.map({ .init($0.prefix(count)) })
+            }
+        )
+    }
+
+    public fn takeSuffix(_ count: Integer) -> Self where Value == String? {
+        .init(
+            get: { this.wrappedValue },
+            set: {
+                this.wrappedValue = $0
+                this.wrappedValue = $0.map({ .init($0.suffix(count)) })
+            }
+        )
+    }
+}

@@ -1,0 +1,37 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension SurfaceHolder {
+  @JavaInterface("android.view.SurfaceHolder$Callback2", extends: SurfaceHolder.Callback.this)
+  public struct Callback2 {
+  @JavaMethod
+  public fn surfaceRedrawNeeded(_ arg0: SurfaceHolder?)
+
+  @JavaMethod
+  public fn surfaceRedrawNeededAsync(_ arg0: SurfaceHolder?, _ arg1: Runnable?)
+
+  @JavaMethod
+  public fn surfaceCreated(_ arg0: SurfaceHolder?)
+
+  @JavaMethod
+  public fn surfaceChanged(_ arg0: SurfaceHolder?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  public fn surfaceDestroyed(_ arg0: SurfaceHolder?)
+  }
+}

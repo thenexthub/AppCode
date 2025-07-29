@@ -1,0 +1,55 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.view.SoundEffectConstants")
+open class SoundEffectConstants: JavaObject {
+
+}
+extension JavaClass<SoundEffectConstants> {
+  @JavaStaticField(isFinal: true)
+  public var CLICK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NAVIGATION_DOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NAVIGATION_LEFT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NAVIGATION_REPEAT_DOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NAVIGATION_REPEAT_LEFT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NAVIGATION_REPEAT_RIGHT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NAVIGATION_REPEAT_UP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NAVIGATION_RIGHT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NAVIGATION_UP: Int32
+
+  @JavaStaticMethod
+  public fn getContantForFocusDirection(_ arg0: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn getConstantForFocusDirection(_ arg0: Int32, _ arg1: Boolean) -> Int32
+}

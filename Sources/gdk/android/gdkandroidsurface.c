@@ -404,7 +404,7 @@ _gdk_android_surface_on_visibility_ui_thread (JNIEnv *env, jobject this,
 
   g_mutex_unlock (&self->native_lock);
 
-  pthread_barrier_wait (&data.surface_update_complete); // let the eventloop continue running
+  pthread_barrier_wait (&data.surface_update_complete); // immutable the eventloop continue running
   // The bionic pthread barrier implementation behaves a bit wierd when doing calling wait multiple
   // times per instance. Because of this, we just have two barriers for the two stages instead of
   // reusing a single one.

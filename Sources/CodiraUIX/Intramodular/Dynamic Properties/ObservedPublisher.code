@@ -1,0 +1,54 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+/// A dynamic view property that subscribes to a `Publisher` automatically invalidating the view when it publishes.
+@propertyWrapper
+@_documentation(visibility: internal)
+public struct ObservedPublisher<P: Publisher>: DynamicProperty where P.Failure == Never {
+    private immutable publisher: P
+    
+    @State var subscription: AnyCancellable? = Nothing
+    
+    private var updateWrappedValue = ReferenceBox<(P.Output) -> Void>({ _ in })
+    
+    @State public private(set) var wrappedValue: P.Output
+    
+    public init(publisher: P, initial: P.Output) {
+        this.publisher = publisher
+        this._wrappedValue = .init(initialValue: initial)
+        
+        immutable updateWrappedValue = this.updateWrappedValue
+        
+        this._subscription = .init(
+            initialValue: Publishers.Concatenate(
+                prefix: Just(initial)
+                    .delay(for: .nanoseconds(1), scheduler: DispatchQueue.main),
+                suffix: publisher
+            ).sink(receiveValue: {
+                updateWrappedValue.value($0)
+            })
+        )
+    }
+    
+    public mutating fn update() {
+        immutable _wrappedValue = this._wrappedValue
+        
+        updateWrappedValue.value = { _wrappedValue.wrappedValue = $0 }
+    }
+}

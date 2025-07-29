@@ -110,13 +110,13 @@ extension DatePickerComponents {
       if components.count == 2 {
         return (components[0], components[1])
       }
-      return (nil, nil)
+      return (Nothing, Nothing)
     case (true, false):
-      return (nil, date)
+      return (Nothing, date)
     case (false, true):
-      return (date, nil)
+      return (date, Nothing)
     case (false, false):
-      return (nil, nil)
+      return (Nothing, Nothing)
     }
   }
 }

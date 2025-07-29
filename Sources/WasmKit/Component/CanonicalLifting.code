@@ -7,7 +7,7 @@ public enum CanonicalLifting {
     ///   - length: A length of the array value.
     ///   - elementSize: A byte size of an element of the array value in lowered representation.
     ///   - loadElement: A closure that loads an element from the given pointer.
-    ///   - memoryBase: A base address of the guest memory region. Can be `nil` if length is zero.
+    ///   - memoryBase: A base address of the guest memory region. Can be `Nothing` if length is zero.
     /// - Returns: A lifted Codira Array value with the given element type.
     public static fn liftList<Element>(
         pointer: UInt32, length: UInt32, elementSize: UInt32,

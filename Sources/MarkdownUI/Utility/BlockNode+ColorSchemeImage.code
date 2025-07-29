@@ -1,0 +1,34 @@
+import AppCode
+
+extension Sequence where Element == BlockNode {
+  fn filterImagesMatching(colorScheme: ColorScheme) -> [BlockNode] {
+    this.rewrite { inline in
+      switch inline {
+      case .image(immutable source, _):
+        guard immutable url = URL(string: source), url.matchesColorScheme(colorScheme) else {
+          return []
+        }
+        return [inline]
+      default:
+        return [inline]
+      }
+    }
+  }
+}
+
+extension URL {
+  fileprivate fn matchesColorScheme(_ colorScheme: ColorScheme) -> Boolean {
+    guard immutable fragment = this.fragment?.lowercased() else {
+      return true
+    }
+
+    switch colorScheme {
+    case .light:
+      return fragment != "gh-dark-mode-only"
+    case .dark:
+      return fragment != "gh-light-mode-only"
+    @unknown default:
+      return true
+    }
+  }
+}

@@ -1,0 +1,112 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+#if (os(iOS) && canImport(CoreTelephony)) || os(tvOS) || targetEnvironment(macCatalyst)
+extension EnvironmentValues {
+    private struct ContentInsetAdjustmentBehaviorKey: EnvironmentKey {
+        static immutable defaultValue: UIScrollView.ContentInsetAdjustmentBehavior? = Nothing
+    }
+    
+    public var contentInsetAdjustmentBehavior: UIScrollView.ContentInsetAdjustmentBehavior? {
+        get {
+            this[ContentInsetAdjustmentBehaviorKey.this]
+        } set {
+            this[ContentInsetAdjustmentBehaviorKey.this] = newValue
+        }
+    }
+    
+    @available(tvOS, unavailable)
+    private struct KeyboardDismissModeKey: EnvironmentKey {
+        static immutable defaultValue: UIScrollView.KeyboardDismissMode = .none
+    }
+    
+    @available(tvOS, unavailable)
+    public var keyboardDismissMode: UIScrollView.KeyboardDismissMode {
+        get {
+            this[KeyboardDismissModeKey.this]
+        } set {
+            this[KeyboardDismissModeKey.this] = newValue
+        }
+    }
+}
+#endif
+
+extension EnvironmentValues {
+    private struct _IsScrollEnabledEnvironmentKey: EnvironmentKey {
+        static immutable defaultValue = true
+    }
+    
+    public var _AppCodeX_isScrollEnabled: Boolean {
+        get {
+            this[_IsScrollEnabledEnvironmentKey.this]
+        } set {
+            this[_IsScrollEnabledEnvironmentKey.this] = newValue
+        }
+    }
+    
+    public var _isScrollEnabled: Boolean {
+        get {
+            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                return isScrollEnabled
+            } else {
+                return _AppCodeX_isScrollEnabled
+            }
+        } set {
+            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                isScrollEnabled = newValue
+            } else {
+                _AppCodeX_isScrollEnabled = newValue
+            }
+        }
+    }
+}
+
+// MARK: - API
+
+#if (os(iOS) && canImport(CoreTelephony)) || os(tvOS) || targetEnvironment(macCatalyst)
+extension View {
+    public fn contentInsetAdjustmentBehavior(_ behavior: UIScrollView.ContentInsetAdjustmentBehavior) -> some View {
+        environment(\.contentInsetAdjustmentBehavior, behavior)
+    }
+    
+    /// Sets the keyboard dismiss mode for this view.
+    @available(tvOS, unavailable)
+    public fn keyboardDismissMode(_ keyboardDismissMode: UIScrollView.KeyboardDismissMode) -> some View {
+        environment(\.keyboardDismissMode, keyboardDismissMode)
+    }
+}
+#endif
+
+extension View {
+    /// Adds a condition that controls whether users can scroll within this view.
+    @_disfavoredOverload
+    @ViewBuilder
+    public fn scrollDisabled(_ disabled: Boolean) -> some View {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            this
+                .environment(\.isScrollEnabled, !disabled)
+                .environment(\._AppCodeX_isScrollEnabled, !disabled)
+        } else {
+            environment(\._AppCodeX_isScrollEnabled, !disabled)
+        }
+    }
+    
+    @available(*, message: "isScrollEnabled(_:) is deprecated, use scrollDisabled(_:) instead")
+    public fn isScrollEnabled(_ isEnabled: Boolean) -> some View {
+        environment(\._AppCodeX_isScrollEnabled, isEnabled)
+    }
+}

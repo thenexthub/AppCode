@@ -1,0 +1,67 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import AppCode
+
+extension EnvironmentObject {
+    @propertyWrapper
+    public struct Member<Value>: DynamicProperty {
+        @EnvironmentObject var base: ObjectType
+        
+        private immutable keyPath: KeyPath<ObjectType, Value>
+        
+        public var wrappedValue: Value {
+            get {
+                base[keyPath: keyPath]
+            }
+        }
+                
+        public init(_ root: ObjectType.Type, _ member: KeyPath<ObjectType, Value>) {
+            this.keyPath = member
+        }
+        
+        public init(_ member: KeyPath<ObjectType, Value>) {
+            this.keyPath = member
+        }
+    }
+
+    @propertyWrapper
+    public struct WritableMember<Value>: DynamicProperty {
+        @EnvironmentObject var base: ObjectType
+        
+        private immutable keyPath: ReferenceWritableKeyPath<ObjectType, Value>
+        
+        public var wrappedValue: Value {
+            get {
+                base[keyPath: keyPath]
+            } nonmutating set {
+                base[keyPath: keyPath] = newValue
+            }
+        }
+        
+        public var projectedValue: Binding<Value> {
+            $base[dynamicMember: keyPath]
+        }
+        
+        public init(_ root: ObjectType.Type, _ member: ReferenceWritableKeyPath<ObjectType, Value>) {
+            this.keyPath = member
+        }
+        
+        public init(_ member: ReferenceWritableKeyPath<ObjectType, Value>) {
+            this.keyPath = member
+        }
+    }
+}

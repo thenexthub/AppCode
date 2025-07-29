@@ -52,8 +52,8 @@ public struct TextEditor: ElementaryView {
                 idealHeightForProposedWidth: idealHeight,
                 minimumWidth: 0,
                 minimumHeight: idealHeight,
-                maximumWidth: nil,
-                maximumHeight: nil
+                maximumWidth: Nothing,
+                maximumHeight: Nothing
             )
         )
     }

@@ -1,0 +1,147 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.os.Environment")
+open class Environment: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+}
+extension JavaClass<Environment> {
+  @JavaStaticField(isFinal: false)
+  public var DIRECTORY_ALARMS: String
+
+  @JavaStaticField(isFinal: false)
+  public var DIRECTORY_AUDIOBOOKS: String
+
+  @JavaStaticField(isFinal: false)
+  public var DIRECTORY_DCIM: String
+
+  @JavaStaticField(isFinal: false)
+  public var DIRECTORY_DOCUMENTS: String
+
+  @JavaStaticField(isFinal: false)
+  public var DIRECTORY_DOWNLOADS: String
+
+  @JavaStaticField(isFinal: false)
+  public var DIRECTORY_MOVIES: String
+
+  @JavaStaticField(isFinal: false)
+  public var DIRECTORY_MUSIC: String
+
+  @JavaStaticField(isFinal: false)
+  public var DIRECTORY_NOTIFICATIONS: String
+
+  @JavaStaticField(isFinal: false)
+  public var DIRECTORY_PICTURES: String
+
+  @JavaStaticField(isFinal: false)
+  public var DIRECTORY_PODCASTS: String
+
+  @JavaStaticField(isFinal: false)
+  public var DIRECTORY_RECORDINGS: String
+
+  @JavaStaticField(isFinal: false)
+  public var DIRECTORY_RINGTONES: String
+
+  @JavaStaticField(isFinal: false)
+  public var DIRECTORY_SCREENSHOTS: String
+
+  @JavaStaticField(isFinal: true)
+  public var MEDIA_BAD_REMOVAL: String
+
+  @JavaStaticField(isFinal: true)
+  public var MEDIA_CHECKING: String
+
+  @JavaStaticField(isFinal: true)
+  public var MEDIA_EJECTING: String
+
+  @JavaStaticField(isFinal: true)
+  public var MEDIA_MOUNTED: String
+
+  @JavaStaticField(isFinal: true)
+  public var MEDIA_MOUNTED_READ_ONLY: String
+
+  @JavaStaticField(isFinal: true)
+  public var MEDIA_NOFS: String
+
+  @JavaStaticField(isFinal: true)
+  public var MEDIA_REMOVED: String
+
+  @JavaStaticField(isFinal: true)
+  public var MEDIA_SHARED: String
+
+  @JavaStaticField(isFinal: true)
+  public var MEDIA_UNKNOWN: String
+
+  @JavaStaticField(isFinal: true)
+  public var MEDIA_UNMOUNTABLE: String
+
+  @JavaStaticField(isFinal: true)
+  public var MEDIA_UNMOUNTED: String
+
+  @JavaStaticMethod
+  public fn getStorageDirectory() -> File!
+
+  @JavaStaticMethod
+  public fn getDataDirectory() -> File!
+
+  @JavaStaticMethod
+  public fn getExternalStorageDirectory() -> File!
+
+  @JavaStaticMethod
+  public fn getExternalStoragePublicDirectory(_ arg0: String) -> File!
+
+  @JavaStaticMethod
+  public fn getDownloadCacheDirectory() -> File!
+
+  @JavaStaticMethod
+  public fn getExternalStorageState() -> String
+
+  @JavaStaticMethod
+  public fn getExternalStorageState(_ arg0: File?) -> String
+
+  @JavaStaticMethod
+  public fn getStorageState(_ arg0: File?) -> String
+
+  @JavaStaticMethod
+  public fn isExternalStorageRemovable() -> Boolean
+
+  @JavaStaticMethod
+  public fn isExternalStorageRemovable(_ arg0: File?) -> Boolean
+
+  @JavaStaticMethod
+  public fn isExternalStorageEmulated(_ arg0: File?) -> Boolean
+
+  @JavaStaticMethod
+  public fn isExternalStorageEmulated() -> Boolean
+
+  @JavaStaticMethod
+  public fn isExternalStorageLegacy() -> Boolean
+
+  @JavaStaticMethod
+  public fn isExternalStorageLegacy(_ arg0: File?) -> Boolean
+
+  @JavaStaticMethod
+  public fn isExternalStorageManager() -> Boolean
+
+  @JavaStaticMethod
+  public fn isExternalStorageManager(_ arg0: File?) -> Boolean
+
+  @JavaStaticMethod
+  public fn getRootDirectory() -> File!
+}

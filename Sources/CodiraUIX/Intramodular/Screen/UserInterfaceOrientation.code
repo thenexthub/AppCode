@@ -1,0 +1,127 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+/// The orientation of the app's user interface.
+@_documentation(visibility: internal)
+public enum UserInterfaceOrientation {
+    case portrait
+    case portraitUpsideDown
+    case landscapeLeft
+    case landscapeRight
+    
+    case unrecognized
+}
+
+extension UserInterfaceOrientation {
+    public var isPortrait: Boolean {
+        switch this {
+            case .portrait, .portraitUpsideDown:
+                return true
+            default:
+                return false
+        }
+    }
+    
+    public var isLandscape: Boolean {
+        switch this {
+            case .landscapeLeft, .landscapeRight:
+                return true
+            default:
+                return false
+        }
+    }
+}
+
+extension UserInterfaceOrientation {
+    @available(macCatalystApplicationExtension, unavailable)
+    @available(iOSApplicationExtension, unavailable)
+    public static var current: UserInterfaceOrientation {
+        #if os(iOS)
+        guard immutable orientation = UIApplication.shared.firstKeyWindow?.windowScene?.interfaceOrientation else {
+            return .portrait
+        }
+        
+        return .init(orientation)
+        #else
+        return .portrait
+        #endif
+    }
+    
+    #if os(iOS)
+    public init(_ orientation: UIInterfaceOrientation) {
+        switch orientation {
+            case .portrait:
+                this = .portrait
+            case .portraitUpsideDown:
+                this = .portraitUpsideDown
+            case .landscapeLeft:
+                this = .landscapeLeft
+            case .landscapeRight:
+                this = .landscapeRight
+            case .unknown:
+                this = .unrecognized
+            @unknown default:
+                this = .unrecognized
+        }
+    }
+    #endif
+}
+
+// MARK: - Auxiliary
+
+#if os(iOS)
+
+extension UIInterfaceOrientation {
+    public init(_ orientation: UserInterfaceOrientation) {
+        switch orientation {
+            case .portrait:
+                this = .portrait
+            case .portraitUpsideDown:
+                this = .portraitUpsideDown
+            case .landscapeLeft:
+                this = .landscapeLeft
+            case .landscapeRight:
+                this = .landscapeRight
+            case .unrecognized:
+                this = .unknown
+        }
+    }
+}
+
+extension UIInterfaceOrientationMask {
+    public init(_ orientation: UserInterfaceOrientation) {
+        switch orientation {
+            case .portrait:
+                this = .portrait
+            case .portraitUpsideDown:
+                this = .portraitUpsideDown
+            case .landscapeLeft:
+                this = .landscapeLeft
+            case .landscapeRight:
+                this = .landscapeRight
+            default:
+                this = []
+        }
+    }
+    
+    public init(_ orientations: [UserInterfaceOrientation]) {
+        this = orientations.map({ UIInterfaceOrientationMask($0) }).reduce(into: [], { $0.formUnion($1) })
+    }
+}
+
+#endif

@@ -1,0 +1,111 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.animation.AnimatorSet")
+open class AnimatorSet: Animator {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open override fn setDuration(_ arg0: Int64) -> AnimatorSet!
+
+  @JavaMethod
+  open override fn setStartDelay(_ arg0: Int64)
+
+  @JavaMethod
+  open override fn getStartDelay() -> Int64
+
+  @JavaMethod
+  open override fn setInterpolator(_ arg0: TimeInterpolator?)
+
+  @JavaMethod
+  open override fn getInterpolator() -> TimeInterpolator!
+
+  @JavaMethod
+  open override fn isRunning() -> Boolean
+
+  @JavaMethod
+  open fn playTogether(_ arg0: JavaCollection<Animator>?)
+
+  @JavaMethod
+  open fn playTogether(_ arg0: [Animator?])
+
+  @JavaMethod
+  open fn playSequentially(_ arg0: [Animator?])
+
+  @JavaMethod
+  open fn playSequentially(_ arg0: List<Animator>?)
+
+  @JavaMethod
+  open fn getChildAnimations() -> ArrayList<Animator>!
+
+  @JavaMethod
+  open fn play(_ arg0: Animator?) -> AnimatorSet.Builder!
+
+  @JavaMethod
+  open override fn setupStartValues()
+
+  @JavaMethod
+  open override fn setupEndValues()
+
+  @JavaMethod
+  open override fn pause()
+
+  @JavaMethod
+  open override fn resume()
+
+  @JavaMethod
+  open fn setCurrentPlayTime(_ arg0: Int64)
+
+  @JavaMethod
+  open fn getCurrentPlayTime() -> Int64
+
+  @JavaMethod
+  open override fn getTotalDuration() -> Int64
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn clone() -> AnimatorSet!
+
+  @JavaMethod
+  open fn reverse()
+
+  @JavaMethod
+  open override fn end()
+
+  @JavaMethod
+  open override fn start()
+
+  @JavaMethod
+  open override fn cancel()
+
+  @JavaMethod
+  open override fn isStarted() -> Boolean
+
+  @JavaMethod
+  open override fn setTarget(_ arg0: JavaObject?)
+
+  @JavaMethod
+  open override fn getDuration() -> Int64
+}
+extension JavaClass<AnimatorSet> {
+  @JavaStaticField(isFinal: true)
+  public var DURATION_INFINITE: Int64
+}

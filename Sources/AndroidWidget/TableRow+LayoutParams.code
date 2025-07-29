@@ -1,0 +1,55 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension TableRow {
+  @JavaClass("android.widget.TableRow$LayoutParams")
+  open class LayoutParams: LinearLayout.LayoutParams {
+  @JavaField(isFinal: false)
+  public var column: Int32
+
+  @JavaField(isFinal: false)
+  public var span: Int32
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ViewSwitcher.LayoutParams?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ViewSwitcher.MarginLayoutParams?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, _ arg1: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, _ arg1: Int32, _ arg2: Float, environment: JNIEnvironment? = Nothing)
+  }
+}
+extension JavaClass<TableRow.LayoutParams> {
+  @JavaStaticField(isFinal: true)
+  public var FILL_PARENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MATCH_PARENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var WRAP_CONTENT: Int32
+}

@@ -1,0 +1,71 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.widget.Magnifier")
+open class Magnifier: JavaObject {
+  @JavaMethod
+  open fn update()
+
+  @JavaMethod
+  open fn getWidth() -> Int32
+
+  @JavaMethod
+  open fn getHeight() -> Int32
+
+  @JavaMethod
+  open fn show(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn show(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float)
+
+  @JavaMethod
+  open fn dismiss()
+
+  @JavaMethod
+  open fn getSourceWidth() -> Int32
+
+  @JavaMethod
+  open fn getSourceHeight() -> Int32
+
+  @JavaMethod
+  open fn setZoom(_ arg0: Float)
+
+  @JavaMethod
+  open fn getZoom() -> Float
+
+  @JavaMethod
+  open fn getCornerRadius() -> Float
+
+  @JavaMethod
+  open fn isClippingEnabled() -> Boolean
+
+  @JavaMethod
+  open fn getElevation() -> Float
+
+  @JavaMethod
+  open fn getDefaultVerticalSourceToMagnifierOffset() -> Int32
+
+  @JavaMethod
+  open fn getDefaultHorizontalSourceToMagnifierOffset() -> Int32
+}
+extension JavaClass<Magnifier> {
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_BOUND_MAX_IN_SURFACE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_BOUND_MAX_VISIBLE: Int32
+}

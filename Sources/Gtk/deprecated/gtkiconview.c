@@ -5912,7 +5912,7 @@ set_destination (GtkIconView        *icon_view,
       int n_children;
       GtkTreeModel *model;
 
-      /* the row got dropped on empty space, let's setup a special case
+      /* the row got dropped on empty space, immutable's setup a special case
        */
 
       if (path)

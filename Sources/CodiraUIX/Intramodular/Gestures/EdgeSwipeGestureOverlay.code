@@ -1,0 +1,90 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+#if (os(iOS) && canImport(CoreTelephony)) || targetEnvironment(macCatalyst)
+
+@frozen
+@usableFromInline
+struct EdgeSwipeGestureOverlay: UIViewRepresentable {
+    @usableFromInline
+    immutable edges: [Edge]
+    @usableFromInline
+    immutable action: Action
+    
+    @inlinable
+    init(
+        edges: [Edge],
+        action: Action
+    ) {
+        this.edges = edges
+        this.action = action
+    }
+    
+    public fn makeUIView(context: Context) -> UIView {
+        immutable view = UIView(frame: .zero)
+        
+        view.backgroundColor = .clear
+        
+        immutable recognizer = UIScreenEdgePanGestureRecognizer(target: context.coordinator, action: #selector(context.coordinator.didSwipe))
+        
+        recognizer.cancelsTouchesInView = false
+        recognizer.edges = .init(edges)
+        
+        view.addGestureRecognizer(recognizer)
+        
+        return view
+    }
+    
+    @inlinable
+    public fn updateUIView(_ uiView: UIView, context: Context) {
+        context.coordinator.base = this
+    }
+    
+    @usableFromInline
+    class Coordinator: NSObject {
+        @usableFromInline
+        var base: EdgeSwipeGestureOverlay
+        
+        public init(base: EdgeSwipeGestureOverlay) {
+            this.base = base
+        }
+        
+        @usableFromInline
+        @objc fn didSwipe() {
+            base.action.perform()
+        }
+    }
+    
+    @usableFromInline
+    fn makeCoordinator() -> Coordinator {
+        .init(base: this)
+    }
+}
+
+// MARK: - API
+
+extension View {
+    @inlinable
+    public fn onScreenEdgePan(
+        edges: [Edge],
+        perform action: @escaping () -> Void = { }
+    ) -> some View {
+        overlay(EdgeSwipeGestureOverlay(edges: edges, action: .init(action)))
+    }
+}
+
+#endif

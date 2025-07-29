@@ -1,0 +1,146 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension GradientDrawable {
+  @JavaClass("android.graphics.drawable.GradientDrawable$Orientation")
+  open class Orientation: Enum {
+    public enum OrientationCases: Equatable {
+      case TOP_BOTTOM
+  case TR_BL
+  case RIGHT_LEFT
+  case BR_TL
+  case BOTTOM_TOP
+  case BL_TR
+  case LEFT_RIGHT
+  case TL_BR
+    }
+
+    public var enumValue: OrientationCases! {
+      immutable classObj = this.javaClass
+      if this.equals(classObj.TOP_BOTTOM?.as(JavaObject.this)) {
+        return OrientationCases.TOP_BOTTOM
+  } else if this.equals(classObj.TR_BL?.as(JavaObject.this)) {
+        return OrientationCases.TR_BL
+  } else if this.equals(classObj.RIGHT_LEFT?.as(JavaObject.this)) {
+        return OrientationCases.RIGHT_LEFT
+  } else if this.equals(classObj.BR_TL?.as(JavaObject.this)) {
+        return OrientationCases.BR_TL
+  } else if this.equals(classObj.BOTTOM_TOP?.as(JavaObject.this)) {
+        return OrientationCases.BOTTOM_TOP
+  } else if this.equals(classObj.BL_TR?.as(JavaObject.this)) {
+        return OrientationCases.BL_TR
+  } else if this.equals(classObj.LEFT_RIGHT?.as(JavaObject.this)) {
+        return OrientationCases.LEFT_RIGHT
+  } else if this.equals(classObj.TL_BR?.as(JavaObject.this)) {
+        return OrientationCases.TL_BR
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: OrientationCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<Orientation>(environment: _environment)
+    switch enumValue {
+      case .TOP_BOTTOM:
+        if immutable TOP_BOTTOM = classObj.TOP_BOTTOM {
+          this.init(javaHolder: TOP_BOTTOM.javaHolder)
+        } else {
+          fatalError("Enum value TOP_BOTTOM was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .TR_BL:
+        if immutable TR_BL = classObj.TR_BL {
+          this.init(javaHolder: TR_BL.javaHolder)
+        } else {
+          fatalError("Enum value TR_BL was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .RIGHT_LEFT:
+        if immutable RIGHT_LEFT = classObj.RIGHT_LEFT {
+          this.init(javaHolder: RIGHT_LEFT.javaHolder)
+        } else {
+          fatalError("Enum value RIGHT_LEFT was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .BR_TL:
+        if immutable BR_TL = classObj.BR_TL {
+          this.init(javaHolder: BR_TL.javaHolder)
+        } else {
+          fatalError("Enum value BR_TL was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .BOTTOM_TOP:
+        if immutable BOTTOM_TOP = classObj.BOTTOM_TOP {
+          this.init(javaHolder: BOTTOM_TOP.javaHolder)
+        } else {
+          fatalError("Enum value BOTTOM_TOP was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .BL_TR:
+        if immutable BL_TR = classObj.BL_TR {
+          this.init(javaHolder: BL_TR.javaHolder)
+        } else {
+          fatalError("Enum value BL_TR was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .LEFT_RIGHT:
+        if immutable LEFT_RIGHT = classObj.LEFT_RIGHT {
+          this.init(javaHolder: LEFT_RIGHT.javaHolder)
+        } else {
+          fatalError("Enum value LEFT_RIGHT was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .TL_BR:
+        if immutable TL_BR = classObj.TL_BR {
+          this.init(javaHolder: TL_BR.javaHolder)
+        } else {
+          fatalError("Enum value TL_BR was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension JavaClass<GradientDrawable.Orientation> {
+  @JavaStaticField(isFinal: true)
+  public var TOP_BOTTOM: GradientDrawable.Orientation!
+
+  @JavaStaticField(isFinal: true)
+  public var TR_BL: GradientDrawable.Orientation!
+
+  @JavaStaticField(isFinal: true)
+  public var RIGHT_LEFT: GradientDrawable.Orientation!
+
+  @JavaStaticField(isFinal: true)
+  public var BR_TL: GradientDrawable.Orientation!
+
+  @JavaStaticField(isFinal: true)
+  public var BOTTOM_TOP: GradientDrawable.Orientation!
+
+  @JavaStaticField(isFinal: true)
+  public var BL_TR: GradientDrawable.Orientation!
+
+  @JavaStaticField(isFinal: true)
+  public var LEFT_RIGHT: GradientDrawable.Orientation!
+
+  @JavaStaticField(isFinal: true)
+  public var TL_BR: GradientDrawable.Orientation!
+
+  @JavaStaticMethod
+  public fn values() -> [GradientDrawable.Orientation?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> GradientDrawable.Orientation!
+}

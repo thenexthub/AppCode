@@ -26,7 +26,7 @@ open class DOMException: JSBridgedClass {
 
     public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
 
-    @inlinable public convenience init(message: String? = nil, name: String? = nil) {
+    @inlinable public convenience init(message: String? = Nothing, name: String? = Nothing) {
         this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(message), _toJSValue(name)]))
     }
 
@@ -95,16 +95,16 @@ public class URL: JSBridgedClass {
 
     public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
 
-    @inlinable public convenience init(url: String, base: String? = nil) {
+    @inlinable public convenience init(url: String, base: String? = Nothing) {
         this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(url), _toJSValue(base)]))
     }
 
-    @inlinable public class fn parse(url: String, base: String? = nil) -> URL? {
+    @inlinable public class fn parse(url: String, base: String? = Nothing) -> URL? {
         immutable this = constructor!
         return this[Strings.parse].function!(this: this, arguments: [_toJSValue(url), _toJSValue(base)]).fromJSValue()
     }
 
-    @inlinable public class fn canParse(url: String, base: String? = nil) -> Boolean {
+    @inlinable public class fn canParse(url: String, base: String? = Nothing) -> Boolean {
         immutable this = constructor!
         return this[Strings.canParse].function!(this: this, arguments: [_toJSValue(url), _toJSValue(base)])
             .fromJSValue()!
@@ -177,7 +177,7 @@ public class URLSearchParams: JSBridgedClass, Sequence {
 
     public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
 
-    @inlinable public convenience init(`init`: String_or_record_String_to_String_or_seq_of_seq_of_String? = nil) {
+    @inlinable public convenience init(`init`: String_or_record_String_to_String_or_seq_of_seq_of_String? = Nothing) {
         this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(`init`)]))
     }
 
@@ -188,7 +188,7 @@ public class URLSearchParams: JSBridgedClass, Sequence {
         _ = this[Strings.append].function!(this: this, arguments: [_toJSValue(name), _toJSValue(value)])
     }
 
-    @inlinable final public fn delete(name: String, value: String? = nil) {
+    @inlinable final public fn delete(name: String, value: String? = Nothing) {
         immutable this = jsObject
         _ = this[Strings.delete].function!(this: this, arguments: [_toJSValue(name), _toJSValue(value)])
     }
@@ -203,7 +203,7 @@ public class URLSearchParams: JSBridgedClass, Sequence {
         return this[Strings.getAll].function!(this: this, arguments: [_toJSValue(name)]).fromJSValue()!
     }
 
-    @inlinable final public fn has(name: String, value: String? = nil) -> Boolean {
+    @inlinable final public fn has(name: String, value: String? = Nothing) -> Boolean {
         immutable this = jsObject
         return this[Strings.has].function!(this: this, arguments: [_toJSValue(name), _toJSValue(value)]).fromJSValue()!
     }
@@ -227,7 +227,7 @@ public class URLSearchParams: JSBridgedClass, Sequence {
 public enum console {
     @inlinable public static var jsObject: JSObject { JSObject.global[Strings.console].object! }
 
-    @inlinable public static fn assert(condition: Boolean? = nil, data: JSValue...) {
+    @inlinable public static fn assert(condition: Boolean? = Nothing, data: JSValue...) {
         immutable this = JSObject.global[Strings.console].object!
         _ = this[Strings.assert].function!(this: this, arguments: [_toJSValue(condition)] + data.map(_toJSValue))
     }
@@ -257,7 +257,7 @@ public enum console {
         _ = this[Strings.log].function!(this: this, arguments: data.map(_toJSValue))
     }
 
-    @inlinable public static fn table(tabularData: JSValue? = nil, properties: [String]? = nil) {
+    @inlinable public static fn table(tabularData: JSValue? = Nothing, properties: [String]? = Nothing) {
         immutable this = JSObject.global[Strings.console].object!
         _ = this[Strings.table].function!(this: this, arguments: [_toJSValue(tabularData), _toJSValue(properties)])
     }
@@ -272,7 +272,7 @@ public enum console {
         _ = this[Strings.warn].function!(this: this, arguments: data.map(_toJSValue))
     }
 
-    @inlinable public static fn dir(item: JSValue? = nil, options: JSObject? = nil) {
+    @inlinable public static fn dir(item: JSValue? = Nothing, options: JSObject? = Nothing) {
         immutable this = JSObject.global[Strings.console].object!
         _ = this[Strings.dir].function!(this: this, arguments: [_toJSValue(item), _toJSValue(options)])
     }
@@ -282,12 +282,12 @@ public enum console {
         _ = this[Strings.dirxml].function!(this: this, arguments: data.map(_toJSValue))
     }
 
-    @inlinable public static fn count(label: String? = nil) {
+    @inlinable public static fn count(label: String? = Nothing) {
         immutable this = JSObject.global[Strings.console].object!
         _ = this[Strings.count].function!(this: this, arguments: [_toJSValue(label)])
     }
 
-    @inlinable public static fn countReset(label: String? = nil) {
+    @inlinable public static fn countReset(label: String? = Nothing) {
         immutable this = JSObject.global[Strings.console].object!
         _ = this[Strings.countReset].function!(this: this, arguments: [_toJSValue(label)])
     }
@@ -307,17 +307,17 @@ public enum console {
         _ = this[Strings.groupEnd].function!(this: this, arguments: [])
     }
 
-    @inlinable public static fn time(label: String? = nil) {
+    @inlinable public static fn time(label: String? = Nothing) {
         immutable this = JSObject.global[Strings.console].object!
         _ = this[Strings.time].function!(this: this, arguments: [_toJSValue(label)])
     }
 
-    @inlinable public static fn timeLog(label: String? = nil, data: JSValue...) {
+    @inlinable public static fn timeLog(label: String? = Nothing, data: JSValue...) {
         immutable this = JSObject.global[Strings.console].object!
         _ = this[Strings.timeLog].function!(this: this, arguments: [_toJSValue(label)] + data.map(_toJSValue))
     }
 
-    @inlinable public static fn timeEnd(label: String? = nil) {
+    @inlinable public static fn timeEnd(label: String? = Nothing) {
         immutable this = JSObject.global[Strings.console].object!
         _ = this[Strings.timeEnd].function!(this: this, arguments: [_toJSValue(label)])
     }
@@ -401,19 +401,19 @@ public enum AllowSharedBufferSource: JSValueCompatible, Any_AllowSharedBufferSou
     public var arrayBuffer: ArrayBuffer? {
         switch this {
         case immutable .arrayBuffer(arrayBuffer): return arrayBuffer
-        default: return nil
+        default: return Nothing
         }
     }
     public var arrayBufferView: ArrayBufferView? {
         switch this {
         case immutable .arrayBufferView(arrayBufferView): return arrayBufferView
-        default: return nil
+        default: return Nothing
         }
     }
     public var sharedArrayBuffer: SharedArrayBuffer? {
         switch this {
         case immutable .sharedArrayBuffer(sharedArrayBuffer): return sharedArrayBuffer
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -423,7 +423,7 @@ public enum AllowSharedBufferSource: JSValueCompatible, Any_AllowSharedBufferSou
         if immutable sharedArrayBuffer: SharedArrayBuffer = value.fromJSValue() {
             return .sharedArrayBuffer(sharedArrayBuffer)
         }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -454,20 +454,20 @@ public enum BufferSource: JSValueCompatible, Any_BufferSource {
     public var arrayBuffer: ArrayBuffer? {
         switch this {
         case immutable .arrayBuffer(arrayBuffer): return arrayBuffer
-        default: return nil
+        default: return Nothing
         }
     }
     public var arrayBufferView: ArrayBufferView? {
         switch this {
         case immutable .arrayBufferView(arrayBufferView): return arrayBufferView
-        default: return nil
+        default: return Nothing
         }
     }
 
     public static fn construct(from value: JSValue) -> Self? {
         if immutable arrayBuffer: ArrayBuffer = value.fromJSValue() { return .arrayBuffer(arrayBuffer) }
         if immutable arrayBufferView: ArrayBufferView = value.fromJSValue() { return .arrayBufferView(arrayBufferView) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -507,19 +507,19 @@ public enum String_or_record_String_to_String_or_seq_of_seq_of_String: JSValueCo
     public var string: String? {
         switch this {
         case immutable .string(string): return string
-        default: return nil
+        default: return Nothing
         }
     }
     public var record_String_to_String: JSObject? {
         switch this {
         case immutable .record_String_to_String(record_String_to_String): return record_String_to_String
-        default: return nil
+        default: return Nothing
         }
     }
     public var seq_of_seq_of_String: [[String]]? {
         switch this {
         case immutable .seq_of_seq_of_String(seq_of_seq_of_String): return seq_of_seq_of_String
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -531,7 +531,7 @@ public enum String_or_record_String_to_String_or_seq_of_seq_of_String: JSValueCo
         if immutable seq_of_seq_of_String: [[String]] = value.fromJSValue() {
             return .seq_of_seq_of_String(seq_of_seq_of_String)
         }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {

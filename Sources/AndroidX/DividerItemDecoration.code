@@ -1,0 +1,47 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidGraphics
+import AndroidView
+import JavaKit
+import JavaRuntime
+
+@JavaClass("androidx.recyclerview.widget.DividerItemDecoration")
+open class DividerItemDecoration: RecyclerView.ItemDecoration {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getDrawable() -> Drawable!
+
+  @JavaMethod
+  open override fn onDraw(_ arg0: Canvas?, _ arg1: RecyclerView?, _ arg2: RecyclerView.State?)
+
+  @JavaMethod
+  open override fn getItemOffsets(_ arg0: Rect?, _ arg1: View?, _ arg2: RecyclerView?, _ arg3: RecyclerView.State?)
+
+  @JavaMethod
+  open fn setOrientation(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setDrawable(_ arg0: Drawable?)
+}
+extension JavaClass<DividerItemDecoration> {
+  @JavaStaticField(isFinal: true)
+  public var HORIZONTAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var VERTICAL: Int32
+}

@@ -1,0 +1,61 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+extension SyncRequest {
+  @JavaClass("android.content.SyncRequest$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setExtras(_ arg0: Bundle?) -> SyncRequest.Builder!
+
+  @JavaMethod
+  open fn syncOnce() -> SyncRequest.Builder!
+
+  @JavaMethod
+  open fn syncPeriodic(_ arg0: Int64, _ arg1: Int64) -> SyncRequest.Builder!
+
+  @JavaMethod
+  open fn setDisallowMetered(_ arg0: Boolean) -> SyncRequest.Builder!
+
+  @JavaMethod
+  open fn setRequiresCharging(_ arg0: Boolean) -> SyncRequest.Builder!
+
+  @JavaMethod
+  open fn setNoRetry(_ arg0: Boolean) -> SyncRequest.Builder!
+
+  @JavaMethod
+  open fn setIgnoreSettings(_ arg0: Boolean) -> SyncRequest.Builder!
+
+  @JavaMethod
+  open fn setIgnoreBackoff(_ arg0: Boolean) -> SyncRequest.Builder!
+
+  @JavaMethod
+  open fn setManual(_ arg0: Boolean) -> SyncRequest.Builder!
+
+  @JavaMethod
+  open fn setExpedited(_ arg0: Boolean) -> SyncRequest.Builder!
+
+  @JavaMethod
+  open fn setScheduleAsExpeditedJob(_ arg0: Boolean) -> SyncRequest.Builder!
+
+  @JavaMethod
+  open fn build() -> SyncRequest!
+  }
+}

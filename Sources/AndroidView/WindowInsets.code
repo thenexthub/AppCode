@@ -1,0 +1,129 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidGraphics
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.view.WindowInsets")
+open class WindowInsets: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: WindowInsets?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn isVisible(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn getRoundedCorner(_ arg0: Int32) -> RoundedCorner!
+
+  @JavaMethod
+  open fn getSystemWindowInsets() -> Insets!
+
+  @JavaMethod
+  open fn getInsets(_ arg0: Int32) -> Insets!
+
+  @JavaMethod
+  open fn getInsetsIgnoringVisibility(_ arg0: Int32) -> Insets!
+
+  @JavaMethod
+  open fn getSystemWindowInsetLeft() -> Int32
+
+  @JavaMethod
+  open fn getSystemWindowInsetTop() -> Int32
+
+  @JavaMethod
+  open fn getSystemWindowInsetRight() -> Int32
+
+  @JavaMethod
+  open fn getSystemWindowInsetBottom() -> Int32
+
+  @JavaMethod
+  open fn hasSystemWindowInsets() -> Boolean
+
+  @JavaMethod
+  open fn hasInsets() -> Boolean
+
+  @JavaMethod
+  open fn getDisplayCutout() -> DisplayCutout!
+
+  @JavaMethod
+  open fn getPrivacyIndicatorBounds() -> Rect!
+
+  @JavaMethod
+  open fn consumeDisplayCutout() -> WindowInsets!
+
+  @JavaMethod
+  open fn isConsumed() -> Boolean
+
+  @JavaMethod
+  open fn isRound() -> Boolean
+
+  @JavaMethod
+  open fn consumeSystemWindowInsets() -> WindowInsets!
+
+  @JavaMethod
+  open fn replaceSystemWindowInsets(_ arg0: Rect?) -> WindowInsets!
+
+  @JavaMethod
+  open fn replaceSystemWindowInsets(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32) -> WindowInsets!
+
+  @JavaMethod
+  open fn getStableInsets() -> Insets!
+
+  @JavaMethod
+  open fn getStableInsetTop() -> Int32
+
+  @JavaMethod
+  open fn getStableInsetLeft() -> Int32
+
+  @JavaMethod
+  open fn getStableInsetRight() -> Int32
+
+  @JavaMethod
+  open fn getStableInsetBottom() -> Int32
+
+  @JavaMethod
+  open fn hasStableInsets() -> Boolean
+
+  @JavaMethod
+  open fn getSystemGestureInsets() -> Insets!
+
+  @JavaMethod
+  open fn getMandatorySystemGestureInsets() -> Insets!
+
+  @JavaMethod
+  open fn getTappableElementInsets() -> Insets!
+
+  @JavaMethod
+  open fn consumeStableInsets() -> WindowInsets!
+
+  @JavaMethod
+  open fn inset(_ arg0: Insets?) -> WindowInsets!
+
+  @JavaMethod
+  open fn inset(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32) -> WindowInsets!
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+}
+extension JavaClass<WindowInsets> {
+  @JavaStaticField(isFinal: true)
+  public var CONSUMED: WindowInsets!
+}

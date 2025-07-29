@@ -1,0 +1,54 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaUtil
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaInterface("android.content.SharedPreferences")
+public struct SharedPreferences {
+  @JavaMethod
+  public fn getStringSet(_ arg0: String, _ arg1: JavaSet<JavaString>?) -> JavaSet<JavaString>!
+
+  @JavaMethod
+  public fn edit() -> SharedPreferences.Editor!
+
+  @JavaMethod
+  public fn registerOnSharedPreferenceChangeListener(_ arg0: SharedPreferences.OnSharedPreferenceChangeListener?)
+
+  @JavaMethod
+  public fn unregisterOnSharedPreferenceChangeListener(_ arg0: SharedPreferences.OnSharedPreferenceChangeListener?)
+
+  @JavaMethod
+  public fn getBoolean(_ arg0: String, _ arg1: Boolean) -> Boolean
+
+  @JavaMethod
+  public fn getInt(_ arg0: String, _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  public fn getLong(_ arg0: String, _ arg1: Int64) -> Int64
+
+  @JavaMethod
+  public fn getFloat(_ arg0: String, _ arg1: Float) -> Float
+
+  @JavaMethod
+  public fn contains(_ arg0: String) -> Boolean
+
+  @JavaMethod
+  public fn getAll() -> Map<JavaString, JavaObject>!
+
+  @JavaMethod
+  public fn getString(_ arg0: String, _ arg1: String) -> String
+}

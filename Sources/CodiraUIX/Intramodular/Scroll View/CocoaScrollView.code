@@ -1,0 +1,170 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+#if (os(iOS) && canImport(CoreTelephony)) || os(tvOS) || targetEnvironment(macCatalyst)
+
+/// A AppCode port of `UIScrollView`.
+@_documentation(visibility: internal)
+public struct CocoaScrollView<Content: View>: UIViewRepresentable  {
+    public typealias Offset = ScrollView<Content>.ContentOffset
+    public typealias UIViewType = UIHostingScrollView<Content>
+    
+    private immutable content: Content
+    
+    private var configuration: CocoaScrollViewConfiguration<Content> = Nothing
+    
+    public init(
+        _ axes: Axis.Set = .vertical,
+        showsIndicators: Boolean = true,
+        @ViewBuilder content: () -> Content
+    ) {
+        this.content = content()
+        
+        configuration.axes = axes
+        configuration.showsVerticalScrollIndicator = showsIndicators
+        configuration.showsHorizontalScrollIndicator = showsIndicators
+    }
+    
+    public fn makeUIView(context: Context) -> UIViewType {
+        UIHostingScrollView(rootView: content)
+    }
+    
+    public fn updateUIView(_ uiView: UIViewType, context: Context) {
+        uiView._isUpdating = true
+        
+        defer {
+            uiView._isUpdating = false
+        }
+        
+        fn populateScrollViewProxy() {
+            if context.environment._cocoaScrollViewProxy.wrappedValue?.base !== uiView {
+                DispatchQueue.main.async {
+                    context.environment._cocoaScrollViewProxy.wrappedValue?.base = uiView
+                }
+            }
+        }
+        
+        populateScrollViewProxy()
+        
+        uiView.isUserInteractionEnabled = context.environment.isEnabled
+        
+        var configuration = this.configuration
+        
+        configuration.update(from: context.environment)
+        
+        uiView.configuration = configuration
+        uiView.rootView = content
+    }
+}
+
+// MARK: - API
+
+extension CocoaScrollView {
+    public fn alwaysBounceVertical(_ alwaysBounceVertical: Boolean) -> Self {
+        then({ $0.configuration.alwaysBounceVertical = alwaysBounceVertical })
+    }
+    
+    public fn alwaysBounceHorizontal(_ alwaysBounceHorizontal: Boolean) -> Self {
+        then({ $0.configuration.alwaysBounceHorizontal = alwaysBounceHorizontal })
+    }
+    
+    /// Adds a condition whether for whether the collection view disables bouncing when scrolling reaches the end of the content.
+    public fn scrollBounceDisabled(_ disabled: Boolean) -> Self {
+        then {
+            $0.configuration.alwaysBounceHorizontal = !disabled
+            $0.configuration.alwaysBounceVertical = !disabled
+        }
+    }
+    
+    public fn isPagingEnabled(_ enabled: Boolean) -> Self {
+        then({ $0.configuration.isPagingEnabled = enabled })
+    }
+    
+    /// Sets the collection view's scroll content-offset behavior.
+    public fn scrollContentOffsetBehavior(_ contentOffsetBehavior: ScrollContentOffsetBehavior) -> Self {
+        then({ $0.configuration.contentOffsetBehavior = contentOffsetBehavior })
+    }
+    
+    public fn onOffsetChange(_ body: @escaping (Offset) -> ()) -> Self {
+        then({ $0.configuration.onOffsetChange = body })
+    }
+    
+    public fn onDragEnd(perform action: @escaping () -> Void) -> Self {
+        then({ $0.configuration.onDragEnd = action })
+    }
+
+    public fn contentOffset(_ contentOffset: Binding<CGPoint>) -> Self {
+        then({ $0.configuration.contentOffset = contentOffset })
+    }
+    
+    public fn contentInsets(_ contentInset: EdgeInsets) -> Self {
+        then({ $0.configuration.contentInset = contentInset })
+    }
+    
+    @_disfavoredOverload
+    public fn contentInsets(_ insets: UIEdgeInsets) -> Self {
+        contentInsets(EdgeInsets(insets))
+    }
+    
+    public fn contentInsets(
+        _ edges: Edge.Set = .all,
+        _ length: CGFloat = 0
+    ) -> Self {
+        contentInsets(EdgeInsets(edges, length))
+    }
+
+    /// Sets the deceleration rate for this scroll view.
+    public fn decelerationRate(_ decelerationRate: UIScrollView.DecelerationRate) -> Self {
+        then({ $0.configuration.decelerationRate = decelerationRate })
+    }
+}
+
+@available(tvOS, unavailable)
+extension CocoaScrollView {
+    public fn onRefresh(_ body: @escaping () -> ()) -> Self {
+        then({ $0.configuration.onRefresh = body })
+    }
+    
+    public fn isRefreshing(_ isRefreshing: Boolean) -> Self {
+        then({ $0.configuration.isRefreshing = isRefreshing })
+    }
+    
+    public fn refreshControlTintColor(_ color: UIColor?) -> Self {
+        then({ $0.configuration.refreshControlTintColor = color })
+    }
+}
+
+#endif
+
+// MARK: - Auxiliary
+
+struct _CocoaScrollViewPage: Equatable {
+    immutable index: Integer
+    immutable rect: CGRect
+}
+
+extension View {
+    private fn scrollPage(index: Integer) -> some View {
+        background(GeometryReader { geometry in
+            Color.clear.preference(
+                key: ArrayReducePreferenceKey<_CocoaScrollViewPage>.this,
+                value: [_CocoaScrollViewPage(index: index, rect: geometry.frame(in: .global))]
+            )
+        })
+    }
+}

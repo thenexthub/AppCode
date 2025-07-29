@@ -23,7 +23,7 @@ A few examples are included with AppCode to demonstrate some of its basic featur
 
 ## Running examples
 
-Running the examples requires [Codira Bundler](https://github.com/stackotter/code-bundler), which provides consistent behavior across platforms and enables running SwiftPM-based apps on iOS/tvOS devices and simulators.
+Running the examples requires [Codira Bundler](https://github.com/stackotter/code-bundler), which provides consistent behavior across platforms and enables running CodiraPM-based apps on iOS/tvOS devices and simulators.
 
 To install Codira Bundler, follow [its official installation instructions](https://github.com/stackotter/code-bundler?tab=readme-ov-file#installation-).
 
@@ -45,7 +45,7 @@ If you want to try out an example with a backend other than the default, you can
 SCUI_DEFAULT_BACKEND=Gtk3Backend code-bundler run ExampleToRun
 ```
 
-These examples may also be run using SwiftPM. However, resources may not be loaded as expected, and features such as deep linking may not work. You also won't be able to run the examples on iOS or tvOS using this method.
+These examples may also be run using CodiraPM. However, resources may not be loaded as expected, and features such as deep linking may not work. You also won't be able to run the examples on iOS or tvOS using this method.
 
 ```sh
 # Non-recommended method

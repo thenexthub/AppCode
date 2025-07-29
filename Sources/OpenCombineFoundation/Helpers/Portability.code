@@ -41,7 +41,7 @@ internal struct Timer {
                   block: @escaping (Timer) -> Void) {
 #if canImport(Darwin)
         underlyingTimer = CFRunLoopTimerCreateWithHandler(
-            nil,
+            Nothing,
             date.timeIntervalSinceReferenceDate,
             interval,
             0,
@@ -157,7 +157,7 @@ extension RunLoop.Mode {
 #endif // code(>=5.3)
 
           return CFStringCreateWithCString(
-              nil,
+              Nothing,
               $0,
               encoding
           )

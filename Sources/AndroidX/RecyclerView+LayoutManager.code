@@ -1,0 +1,446 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidGraphics
+import JavaLang
+import AndroidOS
+import AndroidUtil
+import AndroidView
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+extension RecyclerView {
+  @JavaClass("androidx.recyclerview.widget.RecyclerView$LayoutManager")
+  open class LayoutManager: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setMeasuredDimension(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setMeasuredDimension(_ arg0: Rect?, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn requestLayout()
+
+  @JavaMethod
+  open fn removeAndRecycleAllViews(_ arg0: RecyclerView.Recycler?)
+
+  @JavaMethod
+  open fn onAdapterChanged(_ arg0: RecyclerView.Adapter?, _ arg1: RecyclerView.Adapter?)
+
+  @JavaMethod
+  open fn getBaseline() -> Int32
+
+  @JavaMethod
+  open fn onSaveInstanceState() -> Parcelable!
+
+  @JavaMethod
+  open fn onRestoreInstanceState(_ arg0: Parcelable?)
+
+  @JavaMethod
+  open fn addView(_ arg0: View?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn addView(_ arg0: View?)
+
+  @JavaMethod
+  open fn assertNotInLayoutOrScroll(_ arg0: String)
+
+  @JavaMethod
+  open fn smoothScrollToPosition(_ arg0: RecyclerView?, _ arg1: RecyclerView.State?, _ arg2: Int32)
+
+  @JavaMethod
+  open fn isLayoutReversed() -> Boolean
+
+  @JavaMethod
+  open fn getItemCount() -> Int32
+
+  @JavaMethod
+  open fn scrollHorizontallyBy(_ arg0: Int32, _ arg1: RecyclerView.Recycler?, _ arg2: RecyclerView.State?) -> Int32
+
+  @JavaMethod
+  open fn scrollVerticallyBy(_ arg0: Int32, _ arg1: RecyclerView.Recycler?, _ arg2: RecyclerView.State?) -> Int32
+
+  @JavaMethod
+  open fn getChildAt(_ arg0: Int32) -> View!
+
+  @JavaMethod
+  open fn computeHorizontalScrollOffset(_ arg0: RecyclerView.State?) -> Int32
+
+  @JavaMethod
+  open fn computeHorizontalScrollExtent(_ arg0: RecyclerView.State?) -> Int32
+
+  @JavaMethod
+  open fn computeHorizontalScrollRange(_ arg0: RecyclerView.State?) -> Int32
+
+  @JavaMethod
+  open fn computeVerticalScrollOffset(_ arg0: RecyclerView.State?) -> Int32
+
+  @JavaMethod
+  open fn computeVerticalScrollExtent(_ arg0: RecyclerView.State?) -> Int32
+
+  @JavaMethod
+  open fn computeVerticalScrollRange(_ arg0: RecyclerView.State?) -> Int32
+
+  @JavaMethod
+  open fn onInterceptFocusSearch(_ arg0: View?, _ arg1: Int32) -> View!
+
+  @JavaMethod
+  open fn getLayoutDirection() -> Int32
+
+  @JavaMethod
+  open fn findContainingItemView(_ arg0: View?) -> View!
+
+  @JavaMethod
+  open fn onFocusSearchFailed(_ arg0: View?, _ arg1: Int32, _ arg2: RecyclerView.Recycler?, _ arg3: RecyclerView.State?) -> View!
+
+  @JavaMethod
+  open fn getFocusedChild() -> View!
+
+  @JavaMethod
+  open fn onRequestChildFocus(_ arg0: RecyclerView?, _ arg1: View?, _ arg2: View?) -> Boolean
+
+  @JavaMethod
+  open fn onRequestChildFocus(_ arg0: RecyclerView?, _ arg1: RecyclerView.State?, _ arg2: View?, _ arg3: View?) -> Boolean
+
+  @JavaMethod
+  open fn requestChildRectangleOnScreen(_ arg0: RecyclerView?, _ arg1: View?, _ arg2: Rect?, _ arg3: Boolean, _ arg4: Boolean) -> Boolean
+
+  @JavaMethod
+  open fn requestChildRectangleOnScreen(_ arg0: RecyclerView?, _ arg1: View?, _ arg2: Rect?, _ arg3: Boolean) -> Boolean
+
+  @JavaMethod
+  open fn onAddFocusables(_ arg0: RecyclerView?, _ arg1: ArrayList<View>?, _ arg2: Int32, _ arg3: Int32) -> Boolean
+
+  @JavaMethod
+  open fn onAttachedToWindow(_ arg0: RecyclerView?)
+
+  @JavaMethod
+  open fn onDetachedFromWindow(_ arg0: RecyclerView?, _ arg1: RecyclerView.Recycler?)
+
+  @JavaMethod
+  open fn onDetachedFromWindow(_ arg0: RecyclerView?)
+
+  @JavaMethod
+  open fn removeCallbacks(_ arg0: Runnable?) -> Boolean
+
+  @JavaMethod
+  open fn getPosition(_ arg0: View?) -> Int32
+
+  @JavaMethod
+  open fn isAutoMeasureEnabled() -> Boolean
+
+  @JavaMethod
+  open fn onMeasure(_ arg0: RecyclerView.Recycler?, _ arg1: RecyclerView.State?, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn getMinimumWidth() -> Int32
+
+  @JavaMethod
+  open fn getMinimumHeight() -> Int32
+
+  @JavaMethod
+  open fn supportsPredictiveItemAnimations() -> Boolean
+
+  @JavaMethod
+  open fn onItemsChanged(_ arg0: RecyclerView?)
+
+  @JavaMethod
+  open fn hasFocus() -> Boolean
+
+  @JavaMethod
+  open fn isFocused() -> Boolean
+
+  @JavaMethod
+  open fn onLayoutChildren(_ arg0: RecyclerView.Recycler?, _ arg1: RecyclerView.State?)
+
+  @JavaMethod
+  open fn onLayoutCompleted(_ arg0: RecyclerView.State?)
+
+  @JavaMethod
+  open fn removeDetachedView(_ arg0: View?)
+
+  @JavaMethod
+  open fn checkLayoutParams(_ arg0: RecyclerView.LayoutParams?) -> Boolean
+
+  @JavaMethod
+  open fn generateDefaultLayoutParams() -> RecyclerView.LayoutParams!
+
+  @JavaMethod
+  open fn generateLayoutParams(_ arg0: Context?, _ arg1: AttributeSet?) -> RecyclerView.LayoutParams!
+
+  @JavaMethod
+  open fn generateLayoutParams(_ arg0: ViewGroup.LayoutParams?) -> RecyclerView.LayoutParams!
+
+  @JavaMethod
+  open fn onScrollStateChanged(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getClipToPadding() -> Boolean
+
+  @JavaMethod
+  open fn isAttachedToWindow() -> Boolean
+
+  @JavaMethod
+  open fn assertInLayoutOrScroll(_ arg0: String)
+
+  @JavaMethod
+  open fn offsetChildrenVertical(_ arg0: Int32)
+
+  @JavaMethod
+  open fn offsetChildrenHorizontal(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getDecoratedBoundsWithMargins(_ arg0: View?, _ arg1: Rect?)
+
+  @JavaMethod
+  open fn removeView(_ arg0: View?)
+
+  @JavaMethod
+  open fn removeViewAt(_ arg0: Int32)
+
+  @JavaMethod
+  open fn removeAllViews()
+
+  @JavaMethod
+  open fn measureChild(_ arg0: View?, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn measureChildWithMargins(_ arg0: View?, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn canScrollVertically() -> Boolean
+
+  @JavaMethod
+  open fn getDecoratedTop(_ arg0: View?) -> Int32
+
+  @JavaMethod
+  open fn getDecoratedBottom(_ arg0: View?) -> Int32
+
+  @JavaMethod
+  open fn getPaddingTop() -> Int32
+
+  @JavaMethod
+  open fn getHeight() -> Int32
+
+  @JavaMethod
+  open fn getPaddingBottom() -> Int32
+
+  @JavaMethod
+  open fn canScrollHorizontally() -> Boolean
+
+  @JavaMethod
+  open fn getDecoratedLeft(_ arg0: View?) -> Int32
+
+  @JavaMethod
+  open fn getDecoratedRight(_ arg0: View?) -> Int32
+
+  @JavaMethod
+  open fn getPaddingLeft() -> Int32
+
+  @JavaMethod
+  open fn getWidth() -> Int32
+
+  @JavaMethod
+  open fn getPaddingRight() -> Int32
+
+  @JavaMethod
+  open fn findViewByPosition(_ arg0: Int32) -> View!
+
+  @JavaMethod
+  open fn postOnAnimation(_ arg0: Runnable?)
+
+  @JavaMethod
+  open fn scrollToPosition(_ arg0: Int32)
+
+  @JavaMethod
+  open fn performAccessibilityAction(_ arg0: RecyclerView.Recycler?, _ arg1: RecyclerView.State?, _ arg2: Int32, _ arg3: Bundle?) -> Boolean
+
+  @JavaMethod
+  open fn getPaddingStart() -> Int32
+
+  @JavaMethod
+  open fn getPaddingEnd() -> Int32
+
+  @JavaMethod
+  open fn getRowCountForAccessibility(_ arg0: RecyclerView.Recycler?, _ arg1: RecyclerView.State?) -> Int32
+
+  @JavaMethod
+  open fn getColumnCountForAccessibility(_ arg0: RecyclerView.Recycler?, _ arg1: RecyclerView.State?) -> Int32
+
+  @JavaMethod
+  open fn startSmoothScroll(_ arg0: RecyclerView.SmoothScroller?)
+
+  @JavaMethod
+  open fn detachAndScrapAttachedViews(_ arg0: RecyclerView.Recycler?)
+
+  @JavaMethod
+  open fn removeAndRecycleViewAt(_ arg0: Int32, _ arg1: RecyclerView.Recycler?)
+
+  @JavaMethod
+  open fn addDisappearingView(_ arg0: View?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn addDisappearingView(_ arg0: View?)
+
+  @JavaMethod
+  open fn layoutDecoratedWithMargins(_ arg0: View?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32)
+
+  @JavaMethod
+  open fn getHeightMode() -> Int32
+
+  @JavaMethod
+  open fn getWidthMode() -> Int32
+
+  @JavaMethod
+  open fn collectInitialPrefetchPositions(_ arg0: Int32, _ arg1: RecyclerView.LayoutManager.LayoutPrefetchRegistry?)
+
+  @JavaMethod
+  open fn collectAdjacentPrefetchPositions(_ arg0: Int32, _ arg1: Int32, _ arg2: RecyclerView.State?, _ arg3: RecyclerView.LayoutManager.LayoutPrefetchRegistry?)
+
+  @JavaMethod
+  open fn endAnimation(_ arg0: View?)
+
+  @JavaMethod
+  open fn moveView(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn attachView(_ arg0: View?, _ arg1: Int32, _ arg2: RecyclerView.LayoutParams?)
+
+  @JavaMethod
+  open fn attachView(_ arg0: View?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn attachView(_ arg0: View?)
+
+  @JavaMethod
+  open fn detachViewAt(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getLeftDecorationWidth(_ arg0: View?) -> Int32
+
+  @JavaMethod
+  open fn getTopDecorationHeight(_ arg0: View?) -> Int32
+
+  @JavaMethod
+  open fn getRightDecorationWidth(_ arg0: View?) -> Int32
+
+  @JavaMethod
+  open fn getBottomDecorationHeight(_ arg0: View?) -> Int32
+
+  @JavaMethod
+  open fn isSmoothScrolling() -> Boolean
+
+  @JavaMethod
+  open fn onItemsUpdated(_ arg0: RecyclerView?, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn onItemsUpdated(_ arg0: RecyclerView?, _ arg1: Int32, _ arg2: Int32, _ arg3: JavaObject?)
+
+  @JavaMethod
+  open fn isLayoutHierarchical(_ arg0: RecyclerView.Recycler?, _ arg1: RecyclerView.State?) -> Boolean
+
+  @JavaMethod
+  open fn getSelectionModeForAccessibility(_ arg0: RecyclerView.Recycler?, _ arg1: RecyclerView.State?) -> Int32
+
+  @JavaMethod
+  open fn performAccessibilityActionForItem(_ arg0: RecyclerView.Recycler?, _ arg1: RecyclerView.State?, _ arg2: View?, _ arg3: Int32, _ arg4: Bundle?) -> Boolean
+
+  @JavaMethod
+  open fn setAutoMeasureEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setItemPrefetchEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isItemPrefetchEnabled() -> Boolean
+
+  @JavaMethod
+  open fn detachView(_ arg0: View?)
+
+  @JavaMethod
+  open fn detachAndScrapView(_ arg0: View?, _ arg1: RecyclerView.Recycler?)
+
+  @JavaMethod
+  open fn detachAndScrapViewAt(_ arg0: Int32, _ arg1: RecyclerView.Recycler?)
+
+  @JavaMethod
+  open fn removeAndRecycleView(_ arg0: View?, _ arg1: RecyclerView.Recycler?)
+
+  @JavaMethod
+  open fn ignoreView(_ arg0: View?)
+
+  @JavaMethod
+  open fn stopIgnoringView(_ arg0: View?)
+
+  @JavaMethod
+  open fn isMeasurementCacheEnabled() -> Boolean
+
+  @JavaMethod
+  open fn setMeasurementCacheEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getDecoratedMeasuredWidth(_ arg0: View?) -> Int32
+
+  @JavaMethod
+  open fn getDecoratedMeasuredHeight(_ arg0: View?) -> Int32
+
+  @JavaMethod
+  open fn layoutDecorated(_ arg0: View?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32)
+
+  @JavaMethod
+  open fn getTransformedBoundingBox(_ arg0: View?, _ arg1: Boolean, _ arg2: Rect?)
+
+  @JavaMethod
+  open fn calculateItemDecorationsForChild(_ arg0: View?, _ arg1: Rect?)
+
+  @JavaMethod
+  open fn isViewPartiallyVisible(_ arg0: View?, _ arg1: Boolean, _ arg2: Boolean) -> Boolean
+
+  @JavaMethod
+  open fn onItemsAdded(_ arg0: RecyclerView?, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn onItemsRemoved(_ arg0: RecyclerView?, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn onItemsMoved(_ arg0: RecyclerView?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn requestSimpleAnimationsInNextLayout()
+
+  @JavaMethod
+  open fn getItemViewType(_ arg0: View?) -> Int32
+
+  @JavaMethod
+  open fn getChildCount() -> Int32
+  }
+}
+extension JavaClass<RecyclerView.LayoutManager> {
+  @JavaStaticMethod
+  public fn chooseSize(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn getChildMeasureSpec(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Boolean) -> Int32
+
+  @JavaStaticMethod
+  public fn getChildMeasureSpec(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Boolean) -> Int32
+
+  @JavaStaticMethod
+  public fn getProperties(_ arg0: Context?, _ arg1: AttributeSet?, _ arg2: Int32, _ arg3: Int32) -> RecyclerView.LayoutManager.Properties!
+}

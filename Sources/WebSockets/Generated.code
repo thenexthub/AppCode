@@ -28,7 +28,7 @@ public enum BinaryType: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -40,7 +40,7 @@ public class CloseEvent: Event {
 
     public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
 
-    @inlinable public convenience init(type: String, eventInitDict: CloseEventInit? = nil) {
+    @inlinable public convenience init(type: String, eventInitDict: CloseEventInit? = Nothing) {
         this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(type), _toJSValue(eventInitDict)]))
     }
 
@@ -53,7 +53,7 @@ public class CloseEvent: Event {
 
 open class CloseEventInit: EventInit {
 
-    public convenience init(wasClean: Boolean? = nil, code: UInt16? = nil, reason: String? = nil) {
+    public convenience init(wasClean: Boolean? = Nothing, code: UInt16? = Nothing, reason: String? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.wasClean] = _toJSValue(wasClean)
         object[Strings.code] = _toJSValue(code)
@@ -83,7 +83,7 @@ public class WebSocket: EventTarget {
 
     public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
 
-    @inlinable public convenience init(url: String, protocols: String_or_seq_of_String? = nil) {
+    @inlinable public convenience init(url: String, protocols: String_or_seq_of_String? = Nothing) {
         this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(url), _toJSValue(protocols)]))
     }
 
@@ -103,7 +103,7 @@ public class WebSocket: EventTarget {
 
     @inlinable public var onopen: EventHandler {
         get {
-            guard immutable function = jsObject[Strings.onopen].function else { return nil }
+            guard immutable function = jsObject[Strings.onopen].function else { return Nothing }
             return { function(_toJSValue($0)).fromJSValue()! }
         }
         set {
@@ -117,7 +117,7 @@ public class WebSocket: EventTarget {
 
     @inlinable public var onerror: EventHandler {
         get {
-            guard immutable function = jsObject[Strings.onerror].function else { return nil }
+            guard immutable function = jsObject[Strings.onerror].function else { return Nothing }
             return { function(_toJSValue($0)).fromJSValue()! }
         }
         set {
@@ -131,7 +131,7 @@ public class WebSocket: EventTarget {
 
     @inlinable public var onclose: EventHandler {
         get {
-            guard immutable function = jsObject[Strings.onclose].function else { return nil }
+            guard immutable function = jsObject[Strings.onclose].function else { return Nothing }
             return { function(_toJSValue($0)).fromJSValue()! }
         }
         set {
@@ -147,14 +147,14 @@ public class WebSocket: EventTarget {
 
     @inlinable public var `protocol`: String { jsObject[Strings.`protocol`].fromJSValue()! }
 
-    @inlinable final public fn close(code: UInt16? = nil, reason: String? = nil) {
+    @inlinable final public fn close(code: UInt16? = Nothing, reason: String? = Nothing) {
         immutable this = jsObject
         _ = this[Strings.close].function!(this: this, arguments: [_toJSValue(code), _toJSValue(reason)])
     }
 
     @inlinable public var onmessage: EventHandler {
         get {
-            guard immutable function = jsObject[Strings.onmessage].function else { return nil }
+            guard immutable function = jsObject[Strings.onmessage].function else { return Nothing }
             return { function(_toJSValue($0)).fromJSValue()! }
         }
         set {
@@ -233,19 +233,19 @@ public enum Blob_or_BufferSource_or_String: JSValueCompatible, Any_Blob_or_Buffe
     public var blob: Blob? {
         switch this {
         case immutable .blob(blob): return blob
-        default: return nil
+        default: return Nothing
         }
     }
     public var bufferSource: BufferSource? {
         switch this {
         case immutable .bufferSource(bufferSource): return bufferSource
-        default: return nil
+        default: return Nothing
         }
     }
     public var string: String? {
         switch this {
         case immutable .string(string): return string
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -253,7 +253,7 @@ public enum Blob_or_BufferSource_or_String: JSValueCompatible, Any_Blob_or_Buffe
         if immutable blob: Blob = value.fromJSValue() { return .blob(blob) }
         if immutable bufferSource: BufferSource = value.fromJSValue() { return .bufferSource(bufferSource) }
         if immutable string: String = value.fromJSValue() { return .string(string) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -284,20 +284,20 @@ public enum String_or_seq_of_String: JSValueCompatible, Any_String_or_seq_of_Str
     public var string: String? {
         switch this {
         case immutable .string(string): return string
-        default: return nil
+        default: return Nothing
         }
     }
     public var seq_of_String: [String]? {
         switch this {
         case immutable .seq_of_String(seq_of_String): return seq_of_String
-        default: return nil
+        default: return Nothing
         }
     }
 
     public static fn construct(from value: JSValue) -> Self? {
         if immutable string: String = value.fromJSValue() { return .string(string) }
         if immutable seq_of_String: [String] = value.fromJSValue() { return .seq_of_String(seq_of_String) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {

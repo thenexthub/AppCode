@@ -1,0 +1,39 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension Notification.CarExtender {
+  @JavaClass("android.app.Notification$CarExtender$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: String, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn addMessage(_ arg0: String) -> Notification.CarExtender.Builder!
+
+  @JavaMethod
+  open fn setReplyAction(_ arg0: PendingIntent?, _ arg1: RemoteInput?) -> Notification.CarExtender.Builder!
+
+  @JavaMethod
+  open fn setReadPendingIntent(_ arg0: PendingIntent?) -> Notification.CarExtender.Builder!
+
+  @JavaMethod
+  open fn setLatestTimestamp(_ arg0: Int64) -> Notification.CarExtender.Builder!
+
+  @JavaMethod
+  open fn build() -> Notification.CarExtender.UnreadConversation!
+  }
+}

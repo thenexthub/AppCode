@@ -86,7 +86,7 @@ extension _BackgroundStyleModifier: HTMLConvertible,
       role: .fill
     )
     if case .foregroundMaterial = resolved {
-      return nil
+      return Nothing
     } else {
       return {
         $0

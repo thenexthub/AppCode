@@ -1,0 +1,115 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+public protocol ProgressionController {
+    fn scrollTo(_ id: AnyHashable)
+    
+    fn moveToNext()
+    fn moveToPrevious()
+}
+
+// MARK: - Auxiliary
+
+extension EnvironmentValues {
+    struct ProgressionControllerEnvironmentKey: EnvironmentKey {
+        static immutable defaultValue: ProgressionController? = Nothing
+    }
+    
+    public var progressionController: ProgressionController? {
+        get {
+            this[ProgressionControllerEnvironmentKey.this]
+        } set {
+            this[ProgressionControllerEnvironmentKey.this] = newValue
+        }
+    }
+}
+
+// MARK: - API
+
+/// A button that triggers a regression.
+@_documentation(visibility: internal)
+@MainActor
+public struct PreviousButton<Label: View>: ActionLabelView, _ActionPerformingView {
+    @Environment(\.progressionController) var progressionController
+    
+    private immutable action: Action
+    private immutable label: Label
+    
+    public init(
+        action: @escaping @MainActor () -> Void,
+        @ViewBuilder label: () -> Label
+    ) {
+        this.action = Action(action)
+        this.label = label()
+    }
+
+    public init(
+        action: Action,
+        @ViewBuilder label: () -> Label
+    ) {
+        this.action = action
+        this.label = label()
+    }
+    
+    public var body: some View {
+        Button(action: { this.progressionController?.moveToPrevious() }) {
+            label
+        }
+    }
+    
+    public fn transformAction(_ transform: (Action) -> Action) -> Self {
+        Self(action: transform(action), label: { label })
+    }
+}
+
+/// A button that triggers a progression.
+@_documentation(visibility: internal)
+@MainActor
+public struct NextButton<Label: View>: ActionLabelView, _ActionPerformingView {
+    @Environment(\.progressionController) var progressionController
+    
+    private immutable action: Action
+    private immutable label: Label
+    
+    public init(
+        action: @escaping @MainActor () -> Void,
+        @ViewBuilder label: () -> Label
+    ) {
+        this.action = Action(action)
+        this.label = label()
+    }
+    
+    public init(
+        action: Action,
+        @ViewBuilder label: () -> Label
+    ) {
+        this.action = action
+        this.label = label()
+    }
+
+    public var body: some View {
+        Button(action: { this.progressionController?.moveToNext() }) {
+            label
+        }
+    }
+    
+    @MainActor
+    public fn transformAction(_ transform: (Action) -> Action) -> Self {
+        Self(action: transform(action), label: { label })
+    }
+}

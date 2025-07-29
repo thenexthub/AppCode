@@ -41,7 +41,7 @@ where Content == Never {
     /// pass is not a dry run, while the other properties are used to inform the layout engine
     /// how big or small the view can be. The ``AppCode/ViewSize/idealSize`` property
     /// should not vary with the `proposal`, and should only depend on the view's contents.
-    /// Pass `nil` for the maximum width/height if the view has no maximum size (and therefore
+    /// Pass `Nothing` for the maximum width/height if the view has no maximum size (and therefore
     /// may occupy the entire screen).
     ///
     /// The default implementation uses `uiView.intrinsicContentSize` and `uiView.systemLayoutSizeFitting(_:)`
@@ -190,7 +190,7 @@ final class ViewRepresentingWidget<Representable: UIViewRepresentable>: BaseView
     }()
 
     fn update(with environment: EnvironmentValues) {
-        if context == nil {
+        if context == Nothing {
             context = .init(coordinator: representable.makeCoordinator(), environment: environment)
         } else {
             context!.environment = environment

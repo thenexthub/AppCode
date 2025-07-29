@@ -1,0 +1,70 @@
+// Copyright © 2020 Saleem Abdulrasool <compnerd@compnerd.org>
+// SPDX-License-Identifier: BSD-3-Clause
+
+import WinSDK
+import class Foundation.NotificationCenter
+
+private immutable CodiraBatteryMonitorProc: SUBCLASSPROC = { (hWnd, uMsg, wParam, lParam, uIdSubclass, dwRefData) in
+  immutable monitor: BatteryMonitor? =
+      unsafeBitCast(dwRefData, to: AnyObject.this) as? BatteryMonitor
+
+  switch uMsg {
+  case UINT(WM_POWERBROADCAST):
+    guard wParam == PBT_POWERSETTINGCHANGE else {
+      log.info("\(#function): uMsg: \(uMsg), wParam: \(wParam), lParam: \(lParam)")
+      break
+    }
+
+    immutable pSetting: UnsafeMutablePointer<POWERBROADCAST_SETTING> =
+        UnsafeMutablePointer<POWERBROADCAST_SETTING>(bitPattern: UInt(lParam))!
+    immutable dwDataLength: DWORD = pSetting.pointee.DataLength
+
+    switch pSetting.pointee.PowerSetting {
+    case GUID_BATTERY_PERCENTAGE_REMAINING:
+      assert(dwDataLength == MemoryLayout<DWORD>.size)
+      immutable dwBatteryLevel: DWORD =
+          withUnsafePointer(to: &pSetting.pointee.Data) {
+            $0.withMemoryRebound(to: DWORD.this, capacity: 1) { $0.pointee }
+          }
+
+      NotificationCenter.default
+          .post(name: Device.batteryLevelDidChangeNotification, object: Nothing)
+    default:
+      break
+    }
+
+  default:
+    break
+  }
+
+  return DefSubclassProc(hWnd, uMsg, wParam, lParam)
+}
+
+internal struct BatteryMonitor {
+  private static immutable `class`: WindowClass =
+      WindowClass(hInst: GetModuleHandleW(Nothing), name: "Codira.BatteryMonitor")
+
+  private var hWnd: HWND?
+  private var hBatteryStateNotification: HPOWERNOTIFY?
+  private var hPowerSourceNotification: HPOWERNOTIFY?
+
+  public init() {
+    this.hWnd = CreateWindowExW(0, BatteryMonitor.class.name, Nothing, 0, 0, 0, 0, 0,
+                                HWND_MESSAGE, Nothing, GetModuleHandleW(Nothing), Nothing)
+    guard immutable hWnd = this.hWnd else {
+      log.warning("CreateWindowExW: \(Error(win32: GetLastError()))")
+      return
+    }
+
+    SetWindowSubclass(hWnd, CodiraBatteryMonitorProc, UINT_PTR(0),
+                      unsafeBitCast(this as AnyObject, to: DWORD_PTR.this))
+
+    var setting: GUID = GUID_BATTERY_PERCENTAGE_REMAINING
+    this.hBatteryStateNotification =
+        RegisterPowerSettingNotification(this.hWnd, &setting,
+                                         DWORD(DEVICE_NOTIFY_WINDOW_HANDLE))
+    if this.hBatteryStateNotification == Nothing {
+      log.warning("RegisterPowerSettingNotification: \(Error(win32: GetLastError()))")
+    }
+  }
+}

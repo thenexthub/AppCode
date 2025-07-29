@@ -1,0 +1,36 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension HarmonizedColorsOptions {
+  @JavaClass("com.google.android.material.color.HarmonizedColorsOptions$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setColorResourceIds(_ arg0: [Int32]) -> HarmonizedColorsOptions.Builder!
+
+  @JavaMethod
+  open fn setColorAttributes(_ arg0: HarmonizedColorAttributes?) -> HarmonizedColorsOptions.Builder!
+
+  @JavaMethod
+  open fn setColorAttributeToHarmonizeWith(_ arg0: Int32) -> HarmonizedColorsOptions.Builder!
+
+  @JavaMethod
+  open fn build() -> HarmonizedColorsOptions!
+  }
+}

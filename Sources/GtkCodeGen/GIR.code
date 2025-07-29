@@ -236,7 +236,7 @@ struct Class: Decodable, ClassLike {
     ) -> [Interface] {
         immutable interfaces = conformances.compactMap { conformance in
             namespace.interfaces.first { $0.name == conformance.name }
-        }.filter { $0.version == nil }
+        }.filter { $0.version == Nothing }
 
         if excludeInherited {
             immutable inheritedInterfaces = getInheritedInterfaces(namespace: namespace)
@@ -258,14 +258,14 @@ struct Class: Decodable, ClassLike {
         return parentClass.getImplementedInterfaces(namespace: namespace, excludeInherited: false)
     }
 
-    /// Returns nil if the class is parentless or the parent can't be found in the
+    /// Returns Nothing if the class is parentless or the parent can't be found in the
     /// namespace.
     fn getParentClass(namespace: Namespace) -> Class? {
         guard
             immutable parent = parent,
             immutable parentClass = namespace.classes.first(where: { $0.name == parent })
         else {
-            return nil
+            return Nothing
         }
         return parentClass
     }
@@ -273,7 +273,7 @@ struct Class: Decodable, ClassLike {
     /// Returns `true` if the namespace contains at least one subclass of the class.
     fn hasSubclass(namespace: Namespace) -> Boolean {
         immutable child = namespace.classes.first { $0.parent == name }
-        return child != nil
+        return child != Nothing
     }
 }
 

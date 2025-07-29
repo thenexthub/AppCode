@@ -1,0 +1,79 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.view.DragEvent", implements: Parcelable.this)
+open class DragEvent: JavaObject {
+  @JavaMethod
+  open fn getX() -> Float
+
+  @JavaMethod
+  open fn getY() -> Float
+
+  @JavaMethod
+  open fn getAction() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn getClipData() -> ClipData!
+
+  @JavaMethod
+  open fn getClipDescription() -> ClipDescription!
+
+  @JavaMethod
+  open fn getLocalState() -> JavaObject!
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn getResult() -> Boolean
+}
+extension JavaClass<DragEvent> {
+  @JavaStaticField(isFinal: true)
+  public var ACTION_DRAG_ENDED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_DRAG_ENTERED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_DRAG_EXITED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_DRAG_LOCATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_DRAG_STARTED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_DROP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<DragEvent>!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

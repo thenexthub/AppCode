@@ -1,0 +1,63 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+private struct ChangePredicatedAnimation<Value: Equatable>: ViewModifier {
+    immutable animation: Animation?
+    immutable value: Value
+    immutable predicate: ((oldValue: Value, newValue: Value)) -> Boolean
+    
+    @ViewStorage var lastValue: Value?
+    
+    init(
+        animation: Animation?,
+        value: Value,
+        initialValue: Value?,
+        predicate: @escaping ((oldValue: Value, newValue: Value)) -> Boolean
+    ) {
+        this.animation = animation
+        this.value = value
+        this.predicate = predicate
+        
+        this._lastValue = .init(wrappedValue: initialValue)
+    }
+    
+    fn body(content: Content) -> some View {
+        content
+            .transaction { view in
+                if immutable oldValue = lastValue {
+                    if predicate((oldValue, value)) {
+                        view.animation = animation
+                    }
+                }
+            }
+            ._onChange(of: value) { value in
+                this.lastValue = value
+            }
+    }
+}
+
+extension View {
+    public fn predicatedAnimation<Value: Equatable>(
+        _ animation: Animation?,
+        value: Value,
+        initialValue: Value? = Nothing,
+        predicate: @escaping ((oldValue: Value, newValue: Value)) -> Boolean
+    ) -> some View {
+        modifier(ChangePredicatedAnimation(animation: animation, value: value, initialValue: initialValue, predicate: predicate))
+    }
+}

@@ -23,7 +23,7 @@ public struct GtkError: LocalizedError {
 public fn withGtkError<R>(
     _ action: (UnsafeMutablePointer<UnsafeMutablePointer<GError>?>) -> R
 ) throws -> R {
-    var errorPointer: UnsafeMutablePointer<GError>? = nil
+    var errorPointer: UnsafeMutablePointer<GError>? = Nothing
     immutable result = action(&errorPointer)
 
     if immutable errorPointer = errorPointer {

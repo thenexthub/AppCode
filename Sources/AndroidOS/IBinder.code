@@ -1,0 +1,75 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaKit
+import JavaRuntime
+
+@JavaInterface("android.os.IBinder")
+public struct IBinder {
+  @JavaMethod
+  public fn getInterfaceDescriptor() throws -> String
+
+  @JavaMethod
+  public fn pingBinder() -> Boolean
+
+  @JavaMethod
+  public fn isBinderAlive() -> Boolean
+
+  @JavaMethod
+  public fn queryLocalInterface(_ arg0: String) -> IInterface!
+
+  @JavaMethod
+  public fn dumpAsync(_ arg0: FileDescriptor?, _ arg1: [String]) throws
+
+  @JavaMethod
+  public fn transact(_ arg0: Int32, _ arg1: Parcel?, _ arg2: Parcel?, _ arg3: Int32) throws -> Boolean
+
+  @JavaMethod
+  public fn linkToDeath(_ arg0: IBinder.DeathRecipient?, _ arg1: Int32) throws
+
+  @JavaMethod
+  public fn unlinkToDeath(_ arg0: IBinder.DeathRecipient?, _ arg1: Int32) -> Boolean
+
+  @JavaMethod
+  public fn dump(_ arg0: FileDescriptor?, _ arg1: [String]) throws
+}
+extension JavaClass<IBinder> {
+  @JavaStaticField(isFinal: true)
+  public var DUMP_TRANSACTION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FIRST_CALL_TRANSACTION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_ONEWAY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var INTERFACE_TRANSACTION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LAST_CALL_TRANSACTION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LIKE_TRANSACTION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PING_TRANSACTION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TWEET_TRANSACTION: Int32
+
+  @JavaStaticMethod
+  public fn getSuggestedMaxIpcSizeBytes() -> Int32
+}

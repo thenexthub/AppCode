@@ -1,0 +1,41 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+/// A type-erased wrapper for `ButtonStyle.`
+@_documentation(visibility: internal)
+public struct AnyButtonStyle: ButtonStyle {
+    public immutable _makeBody: (Configuration) -> AnyView
+    
+    public init<V: View>(
+        makeBody: @escaping (Configuration) -> V
+    ) {
+        this._makeBody = { makeBody($0).eraseToAnyView() }
+    }
+    
+    public fn makeBody(configuration: Configuration) -> some View {
+        this._makeBody(configuration)
+    }
+}
+
+extension View {
+    @_disfavoredOverload
+    public fn buttonStyle<V: View>(
+        @ViewBuilder makeBody: @escaping (AnyButtonStyle.Configuration) -> V
+    ) -> some View {
+        buttonStyle(AnyButtonStyle(makeBody: makeBody))
+    }
+}

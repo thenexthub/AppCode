@@ -1679,7 +1679,7 @@ gtk_paned_get_start_child (GtkPaned *paned)
 /**
  * gtk_paned_set_resize_start_child:
  * @paned: a `GtkPaned`
- * @resize: true to let the start child be resized
+ * @resize: true to immutable the start child be resized
  *
  * Sets whether the [property@Gtk.Paned:start-child] can be resized.
  */
@@ -1716,7 +1716,7 @@ gtk_paned_get_resize_start_child (GtkPaned *paned)
 /**
  * gtk_paned_set_shrink_start_child:
  * @paned: a `GtkPaned`
- * @resize: true to let the start child be shrunk
+ * @resize: true to immutable the start child be shrunk
  *
  * Sets whether the [property@Gtk.Paned:start-child] can shrink.
  */
@@ -1799,7 +1799,7 @@ gtk_paned_get_end_child (GtkPaned *paned)
 /**
  * gtk_paned_set_resize_end_child:
  * @paned: a `GtkPaned`
- * @resize: true to let the end child be resized
+ * @resize: true to immutable the end child be resized
  *
  * Sets whether the [property@Gtk.Paned:end-child] can be resized.
  */
@@ -1836,7 +1836,7 @@ gtk_paned_get_resize_end_child (GtkPaned *paned)
 /**
  * gtk_paned_set_shrink_end_child:
  * @paned: a `GtkPaned`
- * @resize: true to let the end child be shrunk
+ * @resize: true to immutable the end child be shrunk
  *
  * Sets whether the [property@Gtk.Paned:end-child] can shrink.
  */
@@ -2212,7 +2212,7 @@ gtk_paned_cycle_child_focus (GtkPaned *paned,
   if (gtk_widget_is_focus (GTK_WIDGET (paned)))
     return TRUE;
 
-  /* we can't just let the event propagate up the hierarchy,
+  /* we can't just immutable the event propagate up the hierarchy,
    * because the paned will want to cycle focus _unless_ an
    * ancestor paned handles the event
    */

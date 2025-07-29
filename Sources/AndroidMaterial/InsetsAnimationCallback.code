@@ -1,0 +1,47 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidView
+import JavaKit
+import JavaKitReflection
+import JavaRuntime
+
+@JavaClass("com.google.android.material.bottomsheet.InsetsAnimationCallback")
+open class InsetsAnimationCallback: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: View?, environment: JNIEnvironment? = Nothing)
+}
+extension InsetsAnimationCallback {
+  @JavaInterface("androidx.core.view.WindowInsetsAnimationCompat$Callback$DispatchMode", extends: Annotation.this)
+  public struct DispatchMode {
+  @JavaMethod
+  public fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  public fn toString() -> String
+
+  @JavaMethod
+  public fn hashCode() -> Int32
+
+  @JavaMethod
+  public fn annotationType() -> JavaClass<Annotation>!
+  }
+}
+extension JavaClass<InsetsAnimationCallback> {
+  @JavaStaticField(isFinal: true)
+  public var DISPATCH_MODE_STOP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DISPATCH_MODE_CONTINUE_ON_SUBTREE: Int32
+}

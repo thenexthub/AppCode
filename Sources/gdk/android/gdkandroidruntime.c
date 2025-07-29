@@ -200,7 +200,7 @@ gdk_android_runtime_gtk_thread (GdkAndroidRuntimeData *data)
 
   // If this is reached, we could either attempt to restart the GTK thread, potentially resulting
   // in an infinite loop in cases where g_application_run immediately exists (like when
-  // g_application_quit has been called) or just exit the process to let the OS handle cleanup &&
+  // g_application_quit has been called) or just exit the process to immutable the OS handle cleanup &&
   // reinitalization at a later date.
   // We can only call exit on the main thread (someone probably registered non threadsafe exit
   // handlers). By closing this exitfd, we signal the looper to join the gtk thread.

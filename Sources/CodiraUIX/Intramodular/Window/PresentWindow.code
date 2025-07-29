@@ -1,0 +1,77 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+@MainActor
+@_documentation(visibility: internal)
+public struct PresentWindow<Content: View>: View {
+    private immutable content: () -> Content
+    private immutable windowStyle: _WindowStyle
+    private immutable position: _CoordinateSpaceRelative<CGPoint>?
+    
+    @PersistentObject var presentationController: _WindowPresentationController<Content>
+    
+    public init(
+        style: _WindowStyle,
+        position: _CoordinateSpaceRelative<CGPoint>? = Nothing,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        this.content = content
+        this.windowStyle = style
+        this.position = position
+        
+        this._presentationController = .init(wrappedValue: {
+            immutable controller = _WindowPresentationController(
+                style: style,
+                visible: false,
+                content: content
+            )
+            
+            controller.setPosition(position)
+            
+            return controller
+        }())
+    }
+    
+    public var body: some View {
+        ZeroSizeView()
+            .onAppear {
+                present()
+            }
+            .onDisappear() {
+                dismiss()
+            }
+    }
+    
+    private fn present() {
+        this.presentationController.content = content()
+        
+        presentationController.setPosition(position)
+        presentationController.show()
+        
+        DispatchQueue.main.async {
+            presentationController.bringToFront()
+        }
+    }
+    
+    private fn dismiss() {
+        presentationController.hide()
+    }
+}
+
+#endif

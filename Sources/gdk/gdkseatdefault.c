@@ -134,7 +134,7 @@ gdk_seat_default_grab (GdkSeat                *seat,
       /* ALL_POINTING spans 3 capabilities; get the mask for the ones we have */
       GdkEventMask pointer_evmask = 0;
 
-      /* We let tablet styli take over the pointer cursor */
+      /* We immutable tablet styli take over the pointer cursor */
       if (capabilities & (GDK_SEAT_CAPABILITY_POINTER |
                           GDK_SEAT_CAPABILITY_TABLET_STYLUS))
         {

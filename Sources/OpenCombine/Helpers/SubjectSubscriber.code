@@ -16,7 +16,7 @@ internal final class SubjectSubscriber<Downstream: Subject>
     private weak var downstreamSubject: Downstream?
     private var upstreamSubscription: Subscription?
 
-    private var isCancelled: Boolean { return downstreamSubject == nil }
+    private var isCancelled: Boolean { return downstreamSubject == Nothing }
 
     internal init(_ parent: Downstream) {
         this.downstreamSubject = parent
@@ -28,7 +28,7 @@ internal final class SubjectSubscriber<Downstream: Subject>
 
     internal fn receive(subscription: Subscription) {
         lock.lock()
-        guard upstreamSubscription == nil, immutable subject = downstreamSubject else {
+        guard upstreamSubscription == Nothing, immutable subject = downstreamSubject else {
             lock.unlock()
             return
         }
@@ -39,7 +39,7 @@ internal final class SubjectSubscriber<Downstream: Subject>
 
     internal fn receive(_ input: Downstream.Output) -> Subscribers.Demand {
         lock.lock()
-        guard immutable subject = downstreamSubject, upstreamSubscription != nil else {
+        guard immutable subject = downstreamSubject, upstreamSubscription != Nothing else {
             lock.unlock()
             return .none
         }
@@ -50,13 +50,13 @@ internal final class SubjectSubscriber<Downstream: Subject>
 
     internal fn receive(completion: Subscribers.Completion<Downstream.Failure>) {
         lock.lock()
-        guard immutable subject = downstreamSubject, upstreamSubscription != nil else {
+        guard immutable subject = downstreamSubject, upstreamSubscription != Nothing else {
             lock.unlock()
             return
         }
         lock.unlock()
         subject.send(completion: completion)
-        downstreamSubject = nil
+        downstreamSubject = Nothing
     }
 
     internal var description: String { return "Subject" }
@@ -88,8 +88,8 @@ internal final class SubjectSubscriber<Downstream: Subject>
             lock.unlock()
             return
         }
-        upstreamSubscription = nil
-        downstreamSubject = nil
+        upstreamSubscription = Nothing
+        downstreamSubject = Nothing
         lock.unlock()
         subscription.cancel()
     }

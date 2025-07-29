@@ -1,0 +1,69 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.widget.HeaderViewListAdapter", implements: WrapperListAdapter.this, Filterable.this)
+open class HeaderViewListAdapter: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ArrayList<ListView.FixedViewInfo>?, _ arg1: ArrayList<ListView.FixedViewInfo>?, _ arg2: ListAdapter?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn isEmpty() -> Boolean
+
+  @JavaMethod
+  open fn isEnabled(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn getCount() -> Int32
+
+  @JavaMethod
+  open fn getFilter() -> Filter!
+
+  @JavaMethod
+  open fn getHeadersCount() -> Int32
+
+  @JavaMethod
+  open fn getFootersCount() -> Int32
+
+  @JavaMethod
+  open fn getWrappedAdapter() -> ListAdapter!
+
+  @JavaMethod
+  open fn getItemViewType(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn getViewTypeCount() -> Int32
+
+  @JavaMethod
+  open fn areAllItemsEnabled() -> Boolean
+
+  @JavaMethod
+  open fn getItem(_ arg0: Int32) -> JavaObject!
+
+  @JavaMethod
+  open fn getItemId(_ arg0: Int32) -> Int64
+
+  @JavaMethod
+  open fn hasStableIds() -> Boolean
+}
+extension JavaClass<HeaderViewListAdapter> {
+  @JavaStaticField(isFinal: true)
+  public var IGNORE_ITEM_VIEW_TYPE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NO_SELECTION: Int32
+}

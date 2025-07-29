@@ -1,0 +1,44 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.webkit.WebIconDatabase")
+open class WebIconDatabase: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn close()
+
+  @JavaMethod
+  open fn open(_ arg0: String)
+
+  @JavaMethod
+  open fn requestIconForPageUrl(_ arg0: String, _ arg1: WebIconDatabase.IconListener?)
+
+  @JavaMethod
+  open fn retainIconForPageUrl(_ arg0: String)
+
+  @JavaMethod
+  open fn releaseIconForPageUrl(_ arg0: String)
+
+  @JavaMethod
+  open fn removeAllIcons()
+}
+extension JavaClass<WebIconDatabase> {
+  @JavaStaticMethod
+  public fn getInstance() -> WebIconDatabase!
+}

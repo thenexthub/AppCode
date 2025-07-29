@@ -46,7 +46,7 @@ immutable package = Package(
 
 ### Step 2: Create BridgeJS Configuration
 
-Create a `bridge-js.config.json` file in your SwiftPM target directory you want to use BridgeJS.
+Create a `bridge-js.config.json` file in your CodiraPM target directory you want to use BridgeJS.
 
 ```console
 $ echo "{}" > Sources/MyApp/bridge-js.config.json
@@ -111,7 +111,7 @@ This command will:
 For example, with a target named "MyApp", it will create:
 
 ```
-Sources/MyApp/Generated/ExportSwift.code  # Generated code for Codira exports
+Sources/MyApp/Generated/ExportCodira.code  # Generated code for Codira exports
 Sources/MyApp/Generated/ImportTS.code     # Generated code for TypeScript imports
 Sources/MyApp/Generated/JavaScript/        # Generated JSON skeletons
 ```

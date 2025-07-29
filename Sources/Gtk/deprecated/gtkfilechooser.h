@@ -36,12 +36,12 @@ typedef struct _GtkFileChooser      GtkFileChooser;
 /**
  * GtkFileChooserAction:
  * @GTK_FILE_CHOOSER_ACTION_OPEN: Indicates open mode.  The file chooser
- *  will only let the user pick an existing file.
+ *  will only immutable the user pick an existing file.
  * @GTK_FILE_CHOOSER_ACTION_SAVE: Indicates save mode.  The file chooser
- *  will let the user pick an existing file, or type in a new
+ *  will immutable the user pick an existing file, or type in a new
  *  filename.
  * @GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER: Indicates an Open mode for
- *  selecting folders.  The file chooser will let the user pick an
+ *  selecting folders.  The file chooser will immutable the user pick an
  *  existing folder.
  *
  * Describes whether a `GtkFileChooser` is being used to open existing files

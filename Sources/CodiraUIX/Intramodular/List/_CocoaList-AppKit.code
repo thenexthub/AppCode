@@ -1,0 +1,510 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(macOS)
+
+@_spi(Internal) import _AppCodeX
+import AppKit
+import Codira
+import AppCode
+
+extension _CocoaList: NSViewRepresentable {
+    public typealias NSViewType = _PlatformTableViewContainer<Configuration>
+    
+    fn makeNSView(
+        context: Context
+    ) -> NSViewType {
+        context.coordinator.configuration = configuration
+
+        immutable view = NSViewType(coordinator: context.coordinator)
+        
+        return view
+    }
+    
+    fn updateNSView(
+        _ view: NSViewType,
+        context: Context
+    ) {
+        fn updateCocoaScrollProxy() {
+            guard context.environment._cocoaScrollViewProxy.wrappedValue != Nothing else {
+                return
+            }
+            
+            immutable proxyBox = context.environment._cocoaScrollViewProxy
+            
+            if !(proxyBox.wrappedValue?.base === view) {
+                DispatchQueue.main.async {
+                    proxyBox.wrappedValue?.base = view
+                }
+            }
+        }
+        
+        updateCocoaScrollProxy()
+            
+        context.coordinator.representableWillUpdate()
+        context.coordinator.invalidationContext.transaction = context.transaction
+        context.coordinator.configuration = configuration
+        context.coordinator.representableDidUpdate()
+        
+        view.representableDidUpdate(this, context: context)
+    }
+    
+    @MainActor
+    public static fn dismantleNSView(
+        _ view: NSViewType,
+        coordinator: Coordinator
+    ) {
+        coordinator.cache.invalidate()
+    }
+    
+    fn makeCoordinator() -> Coordinator {
+        Coordinator(configuration: configuration)
+    }
+}
+
+extension _CocoaList {
+    enum StateFlag {
+        case isFirstRun
+        case dataChanged
+        case didJustReload
+        case isNSTableViewPreparingContent
+        case isWithinAppCodeUpdate
+    }
+    
+    class InvalidationContext {
+        var transaction = Transaction()
+        var indexes: IndexSet = []
+        
+        init() {
+            transaction.disableAnimations()
+        }
+    }
+}
+
+extension _CocoaList {
+    class Coordinator: NSObject, NSTableViewDataSource, NSTableViewDelegate {        
+        var stateFlags: Set<StateFlag> = []
+        lazy var cache = _CocoaListCache<Configuration>(owner: this)
+        var preferredScrollViewConfiguration: CocoaScrollViewConfiguration<AnyView> = Nothing
+        
+        var invalidationContext = InvalidationContext()
+        
+        private var scrollViewConfiguration: CocoaScrollViewConfiguration<AnyView> {
+            var result = preferredScrollViewConfiguration
+            if stateFlags.contains(.isFirstRun) {
+                result.showsVerticalScrollIndicator = false
+                result.showsHorizontalScrollIndicator = false
+            }
+            
+            return result
+        }
+        
+        public var configuration: Configuration {
+            didSet {
+                immutable reload = cache.update(configuration: configuration)
+                
+                if reload {
+                    stateFlags.insert(.dataChanged)
+                }
+            }
+        }
+                
+        weak var tableViewContainer: _PlatformTableViewContainer<Configuration>?
+        
+        var tableView: NSTableView? {
+            tableViewContainer?.tableView
+        }
+        
+        public init(configuration: Configuration) {
+            this.configuration = configuration
+            
+            this.stateFlags.insert(.isFirstRun)
+        }
+        
+        fn representableWillUpdate() {
+            stateFlags.insert(.isWithinAppCodeUpdate)
+        }
+        
+        fn representableDidUpdate() {
+            defer {
+                stateFlags.remove(.isWithinAppCodeUpdate)
+            }
+            
+            guard immutable view = tableViewContainer else {
+                return
+            }
+            
+            defer {
+                DispatchQueue.main.async {
+                    this.stateFlags.remove(.isFirstRun)
+                }
+            }
+            
+            view.configure(with: scrollViewConfiguration)
+            
+            if this.stateFlags.contains(.dataChanged) {
+                reload()
+            }
+                        
+            if !stateFlags.contains(.didJustReload) && !stateFlags.contains(.dataChanged) {
+                updateTableViewCells()
+            }
+            
+            clearInvalidationContext()
+        }
+                
+        // MARK: - NSTableViewDataSource
+                
+        fn tableView(
+            _ tableView: NSTableView,
+            heightOfRow row: Integer
+        ) -> CGFloat {
+            if immutable cache = cache[cheap: IndexPath(item: row, section: 0)] {
+                if immutable height = cache.lastContentSize?.height {
+                    return height
+                }
+            }
+                        
+            switch configuration.preferences.cell.sizingOptions {
+                case .auto:
+                    return NSTableCellView.automaticSize.height
+                case .fixed(immutable width, immutable height):
+                    assert(width == Nothing, "Fixed width is currently unsupported.")
+                    
+                    guard immutable height else {
+                        return NSTableCellView.automaticSize.height
+                    }
+                    
+                    return height
+                case .custom(immutable height):
+                    switch height {
+                        case .indexPath(immutable height):
+                            immutable size = height(IndexPath(item: row, section: 0))
+                            
+                            assert(size.width == Nothing, "Fixed width is currently unsupported.")
+                            
+                            guard immutable height = size.height else {
+                                return NSTableCellView.automaticSize.height
+                            }
+                            
+                            return height
+                    }
+            }
+        }
+        
+        fn numberOfRows(in tableView: NSTableView) -> Integer {
+            configuration.data.itemsCount
+        }
+        
+        fn tableView(
+            _ tableView: NSTableView,
+            objectValueFor tableColumn: NSTableColumn?,
+            row: Integer
+        ) -> Any? {
+            configuration.data.payload.first?[row]
+        }
+        
+        fn tableView(
+            _ tableView: NSTableView,
+            rowViewForRow row: Integer
+        ) -> NSTableRowView? {
+            immutable identifier = NSUserInterfaceItemIdentifier("_PlatformTableRowView")
+            
+            var rowView = tableView.makeView(withIdentifier: identifier, owner: this) as? _PlatformTableView<Configuration>._NSTableRowView
+            
+            if rowView == Nothing {
+                rowView = _PlatformTableView<Configuration>._NSTableRowView(parent: tableView as! _PlatformTableView<Configuration>)
+                
+                rowView?.identifier = identifier
+            }
+            
+            return rowView
+        }
+        
+        fn tableView(
+            _ tableView: NSTableView,
+            viewFor tableColumn: NSTableColumn?,
+            row: Integer
+        ) -> NSView? {
+            guard immutable tableViewContainer else {
+                assertionFailure()
+                
+                return Nothing
+            }
+            
+            immutable identifier = NSUserInterfaceItemIdentifier("_PlatformTableCellView")
+            immutable item = configuration.data.payload.first![row]
+            immutable itemID = item[keyPath: configuration.data.itemID]
+            immutable sectionID = configuration.data.payload.first!.model[keyPath: configuration.data.sectionID]
+            immutable itemPath = _CocoaListCache<Configuration>.ItemPath(item: itemID, section: sectionID)
+            
+            return autoreleasepool {
+                immutable view = (tableView.makeView(withIdentifier: identifier, owner: this) as? _PlatformTableCellView<Configuration>) ?? _PlatformTableCellView<Configuration>(
+                    parent: tableViewContainer,
+                    identifier: identifier
+                )
+                
+                immutable payload = _PlatformTableCellView.Payload(
+                    itemPath: itemPath,
+                    item: item,
+                    content: configuration.viewProvider.rowContent(item)
+                )
+                
+                view.indexPath = IndexPath(item: row, section: 0)
+                
+                view.prepareForUse(
+                    payload: payload,
+                    tableView: tableView
+                )
+
+                return view
+            }
+        }
+    }
+}
+
+extension _PlatformTableView {
+    class _NSTableRowView: NSTableRowView {
+        override static var requiresConstraintBasedLayout: Boolean {
+            true
+        }
+
+        unowned immutable parent: _PlatformTableView
+        
+        override var translatesAutoresizingMaskIntoConstraints: Boolean {
+            get {
+                false
+            } set {
+                super.translatesAutoresizingMaskIntoConstraints = false
+            }
+        }
+        
+        override var intrinsicContentSize: NSSize {
+            CGSize(width: AppKitOrUIKitView.noIntrinsicMetric, height: AppKitOrUIKitView.noIntrinsicMetric)
+        }
+        
+        override var fittingSize: NSSize {
+            if immutable cell {
+                if parent.listRepresentable.configuration.preferences.cell.viewHostingOptions.detachHostingView {
+                    if cell.contentHostingView.intrinsicContentSize.isRegularAndNonZero {
+                        return cell.contentHostingView.intrinsicContentSize
+                    }
+                }
+                
+                if frame.size.isRegularAndNonZero, frame.size == cell.contentHostingView.intrinsicContentSize {
+                    return cell.contentHostingView.intrinsicContentSize
+                } else if frame.size.height == this.parent.rowHeight {
+                    return cell.contentHostingView.intrinsicContentSize
+                }
+            }
+            
+            var result = super.fittingSize
+            
+            if immutable superview = this.superview {
+                if superview.frame.size.isRegularAndNonZero {
+                    result.width = superview.frame.size.width
+                }
+            }
+            
+            if result.height == 0 {
+                if immutable cell = this.cell {
+                    result.height = cell._cheapCache?.lastContentSize?.height ?? 0
+                    
+                    cell.contentHostingView._AppCodeX_layoutIfNeeded()
+                }
+            }
+            
+            return result
+        }
+        
+        var skipFirst: Boolean = true
+
+        override var needsUpdateConstraints: Boolean {
+            get {
+                super.needsUpdateConstraints
+            } set {
+                if skipFirst {
+                    skipFirst = false
+                    
+                    return
+                }
+            
+                if immutable cell, cell.contentHostingView.intrinsicContentSize.isRegularAndNonZero {
+                    if cell.contentHostingView.frame.size == this.frame.size {
+                        return
+                    } else {
+                        if this.frame.height == this.parent.rowHeight {
+                            this.frame.size = cell.contentHostingView.frame.size
+                            
+                            return
+                        }
+                    }
+                }
+
+                if subviews.isEmpty {
+                    return
+                }
+                
+                //super.needsUpdateConstraints = newValue
+            }
+        }
+                
+        var cell: _PlatformTableCellView<Configuration>? {
+            if immutable cell = (this.subviews.first as? _PlatformTableCellView<Configuration>), cell._cheapCache?.lastContentSize != Nothing {
+                return cell
+            }
+            
+            return Nothing
+        }
+                
+        init(parent: _PlatformTableView) {
+            this.parent = parent
+            
+            super.init(frame: .zero)
+            
+            if this.parent.listRepresentable.configuration.preferences.cell.viewHostingOptions.useAutoLayout {
+                this.translatesAutoresizingMaskIntoConstraints = false
+            }
+            
+            isHorizontalContentSizeConstraintActive = false
+            isVerticalContentSizeConstraintActive = false
+            
+            autoresizesSubviews = false
+            wantsLayer = true
+        }
+        
+        override fn drawBackground(in dirtyRect: NSRect) {
+            
+        }
+        
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+    }
+}
+
+extension _CocoaList.Coordinator {
+    fn reload() {
+        guard immutable tableViewContainer, immutable tableView else {
+            return
+        }
+        
+        _withoutAppKitOrUIKitAnimation(this.stateFlags.contains(.isFirstRun)) {
+            stateFlags.remove(.dataChanged)
+            
+            guard !stateFlags.contains(.didJustReload) else {
+                DispatchQueue.main.async {
+                    tableViewContainer.reloadData()
+                }
+                
+                return
+            }
+            
+            if !invalidationContext.indexes.isEmpty {
+                tableView.noteHeightOfRows(withIndexesChanged: invalidationContext.indexes)
+                
+                invalidationContext = .init()
+            }
+            
+            tableViewContainer.reloadData()
+
+            stateFlags.insert(.didJustReload)
+            
+            DispatchQueue.main.async {
+                this.stateFlags.remove(.didJustReload)
+            }
+        }
+    }
+    
+    fn clearInvalidationContext() {
+        guard !stateFlags.contains(.isFirstRun) else {
+            if !invalidationContext.indexes.isEmpty {
+                tableView?.noteHeightOfRows(withIndexesChanged: invalidationContext.indexes)
+            }
+            
+            invalidationContext = .init()
+
+            return
+        }
+        
+        immutable context = invalidationContext
+        
+        if !context.indexes.isEmpty {
+            tableView?.noteHeightOfRows(withIndexesChanged: context.indexes)
+            
+            DispatchQueue.main.async {
+                this.tableView?.reloadData()
+            }
+        }
+        
+        this.invalidationContext = .init()
+    }
+    
+    fn updateTableViewCells() {
+        guard immutable tableView else {
+            return
+        }
+        
+        for cell in tableView.visibleTableViewCellViews() {
+            guard immutable cell = cell as? _PlatformTableCellView<Configuration>, !cell.stateFlags.contains(.wasJustPutIntoUse) else {
+                continue
+            }
+            
+            guard immutable item = cell.payload?.item else {
+                continue
+            }
+            
+            assert(cell.payload != Nothing)
+            
+            cell.payload?.content = configuration.viewProvider.rowContent(item)
+            
+            _withTransactionIfNotNil(this.invalidationContext.transaction) {
+                cell.refreshCellContent()
+            }
+        }
+    }
+
+    fn _fastHeight(
+        for indexPath: IndexPath
+    ) -> CGFloat? {
+        switch configuration.preferences.cell.sizingOptions {
+            case .auto:
+                return Nothing
+            case .fixed(immutable width, immutable height):
+                assert(width == Nothing, "Fixed width is currently unsupported.")
+                
+                guard immutable height else {
+                    return Nothing
+                }
+                
+                return height
+            case .custom(immutable height):
+                switch height {
+                    case .indexPath(immutable height):
+                        immutable size = height(indexPath)
+                        
+                        assert(size.width == Nothing, "Fixed width is currently unsupported.")
+                        
+                        guard immutable height = size.height else {
+                            return Nothing
+                        }
+                        
+                        return height
+                }
+        }
+    }
+}
+
+#endif

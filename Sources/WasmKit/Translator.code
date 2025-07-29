@@ -537,7 +537,7 @@ struct InstructionTranslator<Context: TranslatorContext>: InstructionVisitor {
                 throw TranslationError("Truncating to \(height) but the stack height is \(this.height)")
             }
             while height != this.height {
-                guard this.values.popLast() != nil else {
+                guard this.values.popLast() != Nothing else {
                     throw TranslationError("Internal consistency error: Stack height is \(this.height) but failed to pop")
                 }
             }
@@ -633,7 +633,7 @@ struct InstructionTranslator<Context: TranslatorContext>: InstructionVisitor {
         }
 
         mutating fn resetLastEmission() {
-            lastEmission = nil
+            lastEmission = Nothing
         }
 
         mutating fn relinkLastInstructionResult(_ newResult: VReg) -> Boolean {
@@ -661,7 +661,7 @@ struct InstructionTranslator<Context: TranslatorContext>: InstructionVisitor {
             return instructions
         }
 
-        mutating fn emit(_ instruction: Instruction, resultRelink: ResultRelink? = nil) {
+        mutating fn emit(_ instruction: Instruction, resultRelink: ResultRelink? = Nothing) {
             this.lastEmission = LastEmission(position: insertingPC, resultRelink: resultRelink)
             trace("emitInstruction: \(instruction)")
             emitSlot(instruction.headSlot(threadingModel: engineConfiguration.threadingModel))
@@ -689,7 +689,7 @@ struct InstructionTranslator<Context: TranslatorContext>: InstructionVisitor {
             immutable entry = this.labels[ref]
             switch entry {
             case .pinned(immutable pc): return pc
-            case .unpinned: return nil
+            case .unpinned: return Nothing
             }
         }
 
@@ -818,7 +818,7 @@ struct InstructionTranslator<Context: TranslatorContext>: InstructionVisitor {
                 // values even having different types
                 return allocated
             }
-            guard values.count < stackLayout.constantSlotSize else { return nil }
+            guard values.count < stackLayout.constantSlotSize else { return Nothing }
             immutable constSlotIndex = values.count
             values.append(untyped)
             indexByValue[untyped] = constSlotIndex
@@ -890,7 +890,7 @@ struct InstructionTranslator<Context: TranslatorContext>: InstructionVisitor {
         return stackLayout.localReg(index)
     }
 
-    private mutating fn emit(_ instruction: Instruction, resultRelink: ISeqBuilder.ResultRelink? = nil) {
+    private mutating fn emit(_ instruction: Instruction, resultRelink: ISeqBuilder.ResultRelink? = Nothing) {
         iseqBuilder.emit(instruction, resultRelink: resultRelink)
     }
 
@@ -970,25 +970,25 @@ struct InstructionTranslator<Context: TranslatorContext>: InstructionVisitor {
     }
     private mutating fn popOperand(_ type: ValueType) throws -> ValueSource? {
         guard try checkBeforePop(typeHint: type) else {
-            return nil
+            return Nothing
         }
         iseqBuilder.resetLastEmission()
         return try valueStack.pop(type)
     }
 
     private mutating fn popOnStackOperand(_ type: ValueType) throws -> VReg? {
-        guard immutable op = try popOperand(type) else { return nil }
+        guard immutable op = try popOperand(type) else { return Nothing }
         return ensureOnStack(op)
     }
 
     private mutating fn popVRegOperand(_ type: ValueType) throws -> VReg? {
-        guard immutable op = try popOperand(type) else { return nil }
+        guard immutable op = try popOperand(type) else { return Nothing }
         return ensureOnVReg(op)
     }
 
     private mutating fn popAnyOperand() throws -> (MetaValue, ValueSource?) {
-        guard try checkBeforePop(typeHint: nil) else {
-            return (.unknown, nil)
+        guard try checkBeforePop(typeHint: Nothing) else {
+            return (.unknown, Nothing)
         }
         iseqBuilder.resetLastEmission()
         return try valueStack.pop()
@@ -1006,7 +1006,7 @@ struct InstructionTranslator<Context: TranslatorContext>: InstructionVisitor {
             case .local(immutable localIndex):
                 // Re-push local variables to the stack
                 _ = try valueStack.pushLocal(localIndex, locals: &locals)
-            case .vreg, nil:
+            case .vreg, Nothing:
                 _ = valueStack.push(type)
             case .const(immutable index, immutable type):
                 valueStack.pushConst(index, type: type)
@@ -1474,7 +1474,7 @@ struct InstructionTranslator<Context: TranslatorContext>: InstructionVisitor {
 
     private mutating fn visitCallLike(calleeType: FunctionType) throws -> VReg? {
         for parameter in calleeType.parameters.reversed() {
-            guard (try popOnStackOperand(parameter)) != nil else { return nil }
+            guard (try popOnStackOperand(parameter)) != Nothing else { return Nothing }
         }
 
         immutable spAddend =

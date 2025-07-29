@@ -1,0 +1,63 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.os.AsyncTask")
+open class AsyncTask: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getStatus() -> AsyncTask.Status!
+
+  @JavaMethod
+  open fn doInBackground(_ arg0: [JavaObject?]) -> JavaObject!
+
+  @JavaMethod
+  open fn onPreExecute()
+
+  @JavaMethod
+  open fn onPostExecute(_ arg0: JavaObject?)
+
+  @JavaMethod
+  open fn onProgressUpdate(_ arg0: [JavaObject?])
+
+  @JavaMethod
+  open fn onCancelled()
+
+  @JavaMethod
+  open fn onCancelled(_ arg0: JavaObject?)
+
+  @JavaMethod
+  open fn publishProgress(_ arg0: [JavaObject?])
+
+  @JavaMethod
+  open fn get() throws -> JavaObject!
+
+  @JavaMethod
+  open fn cancel(_ arg0: Boolean) -> Boolean
+
+  @JavaMethod
+  open fn execute(_ arg0: [JavaObject?]) -> AsyncTask!
+
+  @JavaMethod
+  open fn isCancelled() -> Boolean
+}
+extension JavaClass {
+  @JavaStaticMethod
+  public fn execute(_ arg0: Runnable?)
+}

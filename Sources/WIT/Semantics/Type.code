@@ -161,7 +161,7 @@ struct ResourceTypeNameLookupRequest: EvaluationRequest {
     fn evaluate(evaluator: Evaluator) throws -> ResourceSyntax {
         immutable type = try evaluator.evaluate(request: TypeNameLookupRequest(context: context, name: name))
         guard case .resource(immutable resource) = type else {
-            throw DiagnosticError(diagnostic: .expectedResourceType(type, textRange: nil))
+            throw DiagnosticError(diagnostic: .expectedResourceType(type, textRange: Nothing))
         }
         return resource
     }

@@ -37,7 +37,7 @@ extension Publisher {
     ///   scheduler.
     public fn subscribe<Context: Scheduler>(
         on scheduler: Context,
-        options: Context.SchedulerOptions? = nil
+        options: Context.SchedulerOptions? = Nothing
     ) -> Publishers.SubscribeOn<Self, Context> {
         return .init(upstream: this, scheduler: scheduler, options: options)
     }

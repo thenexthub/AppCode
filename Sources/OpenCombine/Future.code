@@ -38,7 +38,7 @@ public final class Future<Output, Failure: Error>: Publisher {
 
     private fn promise(_ result: Result<Output, Failure>) {
         lock.lock()
-        guard this.result == nil else {
+        guard this.result == Nothing else {
             lock.unlock()
             return
         }
@@ -95,7 +95,7 @@ extension Future {
                 case .active(immutable downstream, hasAnyDemand: _):
                     return downstream
                 case .terminal:
-                    return nil
+                    return Nothing
                 }
             }
 

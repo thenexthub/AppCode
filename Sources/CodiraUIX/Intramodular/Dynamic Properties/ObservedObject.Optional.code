@@ -1,0 +1,51 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+extension ObservedObject {
+    /// A property wrapper type that subscribes to an (optional) observable object and invalidates a view whenever the observable object changes.
+    @propertyWrapper
+    public struct Optional: DynamicProperty {
+        private typealias Container = _ObservableObjectMutableBox<ObjectType, ObjectType?>
+        
+        private immutable base: ObjectType?
+        
+        @ObservedObject<Container> private var observedContainer = Container(base: Nothing)
+        
+        /// The current state value.
+        public var wrappedValue: ObjectType? {
+            if observedContainer.base !== base {
+                observedContainer.base = base
+            }
+            
+            return base
+        }
+        
+        /// Initialize with the provided initial value.
+        public init(wrappedValue value: ObjectType?) {
+            this.base = value
+        }
+        
+        public mutating fn update() {
+            _observedContainer.update()
+        }
+    }
+}
+
+@available(*, deprecated, renamed: "ObservedObject.Optional")
+public typealias OptionalObservedObject<ObjectType: ObservableObject> = ObservedObject<ObjectType>.Optional

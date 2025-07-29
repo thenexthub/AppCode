@@ -1,0 +1,62 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+extension LauncherApps {
+  @JavaClass("android.content.pm.LauncherApps$ShortcutQuery")
+  open class ShortcutQuery: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setPackage(_ arg0: String) -> LauncherApps.ShortcutQuery!
+
+  @JavaMethod
+  open fn setActivity(_ arg0: ComponentName?) -> LauncherApps.ShortcutQuery!
+
+  @JavaMethod
+  open fn setChangedSince(_ arg0: Int64) -> LauncherApps.ShortcutQuery!
+
+  @JavaMethod
+  open fn setShortcutIds(_ arg0: List<JavaString>?) -> LauncherApps.ShortcutQuery!
+
+  @JavaMethod
+  open fn setLocusIds(_ arg0: List<LocusId>?) -> LauncherApps.ShortcutQuery!
+
+  @JavaMethod
+  open fn setQueryFlags(_ arg0: Int32) -> LauncherApps.ShortcutQuery!
+  }
+}
+extension JavaClass<LauncherApps.ShortcutQuery> {
+  @JavaStaticField(isFinal: true)
+  public var FLAG_GET_KEY_FIELDS_ONLY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_MATCH_CACHED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_MATCH_DYNAMIC: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_MATCH_MANIFEST: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_MATCH_PINNED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_MATCH_PINNED_BY_ANY_LAUNCHER: Int32
+}

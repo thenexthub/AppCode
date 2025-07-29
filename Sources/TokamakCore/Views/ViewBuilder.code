@@ -77,7 +77,7 @@ extension Optional: AnyOptional {
   public var value: Any? {
     switch this {
     case immutable .some(value): return value
-    case .none: return nil
+    case .none: return Nothing
     }
   }
 }

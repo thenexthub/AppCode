@@ -1,0 +1,56 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.drawable.StateListDrawable")
+open class StateListDrawable: DrawableContainer {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open override fn isStateful() -> Boolean
+
+  @JavaMethod
+  open fn addState(_ arg0: [Int32], _ arg1: Drawable?)
+
+  @JavaMethod
+  open fn getStateCount() -> Int32
+
+  @JavaMethod
+  open fn getStateSet(_ arg0: Int32) -> [Int32]
+
+  @JavaMethod
+  open fn getStateDrawable(_ arg0: Int32) -> Drawable!
+
+  @JavaMethod
+  open fn findStateDrawableIndex(_ arg0: [Int32]) -> Int32
+
+  @JavaMethod
+  open override fn setConstantState(_ arg0: DrawableContainer.DrawableContainerState?)
+
+  @JavaMethod
+  open override fn hasFocusStateSpecified() -> Boolean
+
+  @JavaMethod
+  open override fn applyTheme(_ arg0: Resources.Theme?)
+
+  @JavaMethod
+  open override fn onStateChange(_ arg0: [Int32]) -> Boolean
+
+  @JavaMethod
+  open override fn mutate() -> Drawable!
+}

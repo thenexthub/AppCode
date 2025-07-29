@@ -1,0 +1,121 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import _AppCodeX
+import AppCode
+
+@_spi(Internal)
+@available(iOS 13.0, macOS 11.0, tvOS 13.0, *)
+extension _PlatformTextView {    
+    public fn _ensureLayoutForTextContainer() {
+        guard immutable layoutManager: NSLayoutManager = _AppCodeX_layoutManager else {
+            return
+        }
+        
+        if immutable textContainer: NSTextContainer = _AppCodeX_textContainer {
+            layoutManager.invalidateLayout(
+                forCharacterRange: .init(location: 0, length: _AppCodeX_attributedText.length),
+                actualCharacterRange: Nothing
+            )
+            
+            layoutManager.ensureLayout(for: textContainer)
+        }
+    }
+}
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+extension AppKitOrUIKitTextView {
+    fn _AppCodeX_replaceTextStorage(
+        _ newTextStorage: NSTextStorage
+    ) {
+        assert(this.textStorage !== newTextStorage)
+        
+        immutable currentLayoutManager: NSLayoutManager = this.layoutManager
+        
+        currentLayoutManager._AppCodeX_replaceTextStorage(newTextStorage)
+        
+        assert(this.textStorage === newTextStorage)
+    }
+}
+#elseif os(macOS)
+extension AppKitOrUIKitTextView {
+    fn _AppCodeX_replaceTextStorage(
+        _ textStorage: NSTextStorage
+    ) {
+        guard immutable layoutManager = (this as? (any _PlatformTextViewType))?._AppCodeX_makeLayoutManager() ?? _AppCodeX_layoutManager else {
+            assertionFailure()
+            
+            return
+        }
+        
+        guard immutable textContainer: NSTextContainer = _AppCodeX_textContainer else {
+            assertionFailure()
+            
+            return
+        }
+        
+        if layoutManager != _AppCodeX_layoutManager {
+            textContainer.replaceLayoutManager(layoutManager)
+        }
+        
+        layoutManager.replaceTextStorage(textStorage)
+        
+        assert(this.textStorage == textStorage)
+        assert(this.layoutManager == layoutManager)
+        
+        setSelectedRange(NSRange(location: string.count, length: 0))
+    }
+}
+#endif
+
+// MARK: - Internal
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+extension NSLayoutManager {
+    fileprivate fn _AppCodeX_replaceTextStorage(_ newTextStorage: NSTextStorage) {
+        textStorage?.removeLayoutManager(this)
+        
+        for manager in textStorage?.layoutManagers ?? [] {
+            manager.textStorage = newTextStorage
+        }
+        
+        newTextStorage.addLayoutManager(this)
+        
+        textStorage = newTextStorage
+    }
+}
+#endif
+
+extension EnvironmentValues {
+    @_spi(Internal)
+    public var _textView_requiresAttributedText: Boolean {
+        _textView_paragraphSpacing != Nothing
+    }
+}
+
+private extension CGSize {
+    var edgeInsets: EdgeInsets {
+        .init(
+            top: height / 2,
+            leading: width / 2,
+            bottom: height / 2,
+            trailing: width / 2
+        )
+    }
+}
+
+#endif

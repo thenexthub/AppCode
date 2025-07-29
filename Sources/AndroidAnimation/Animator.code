@@ -1,0 +1,103 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.animation.Animator", implements: Cloneable.this)
+open class Animator: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setDuration(_ arg0: Int64) -> Animator!
+
+  @JavaMethod
+  open fn setStartDelay(_ arg0: Int64)
+
+  @JavaMethod
+  open fn getStartDelay() -> Int64
+
+  @JavaMethod
+  open fn setInterpolator(_ arg0: TimeInterpolator?)
+
+  @JavaMethod
+  open fn getInterpolator() -> TimeInterpolator!
+
+  @JavaMethod
+  open fn isRunning() -> Boolean
+
+  @JavaMethod
+  open fn setupStartValues()
+
+  @JavaMethod
+  open fn setupEndValues()
+
+  @JavaMethod
+  open fn pause()
+
+  @JavaMethod
+  open fn resume()
+
+  @JavaMethod
+  open fn getTotalDuration() -> Int64
+
+  @JavaMethod
+  open fn isPaused() -> Boolean
+
+  @JavaMethod
+  open fn addListener(_ arg0: Animator.AnimatorListener?)
+
+  @JavaMethod
+  open fn removeListener(_ arg0: Animator.AnimatorListener?)
+
+  @JavaMethod
+  open fn getListeners() -> ArrayList<Animator.AnimatorListener>!
+
+  @JavaMethod
+  open fn addPauseListener(_ arg0: Animator.AnimatorPauseListener?)
+
+  @JavaMethod
+  open fn removePauseListener(_ arg0: Animator.AnimatorPauseListener?)
+
+  @JavaMethod
+  open fn removeAllListeners()
+
+  @JavaMethod
+  open override fn clone() -> Animator!
+
+  @JavaMethod
+  open fn end()
+
+  @JavaMethod
+  open fn start()
+
+  @JavaMethod
+  open fn cancel()
+
+  @JavaMethod
+  open fn isStarted() -> Boolean
+
+  @JavaMethod
+  open fn setTarget(_ arg0: JavaObject?)
+
+  @JavaMethod
+  open fn getDuration() -> Int64
+}
+extension JavaClass<Animator> {
+  @JavaStaticField(isFinal: true)
+  public var DURATION_INFINITE: Int64
+}

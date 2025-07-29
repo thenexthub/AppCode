@@ -1,0 +1,49 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension WebChromeClient {
+  @JavaClass("android.webkit.WebChromeClient$FileChooserParams")
+  open class FileChooserParams: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getTitle() -> CharSequence!
+
+  @JavaMethod
+  open fn getMode() -> Int32
+
+  @JavaMethod
+  open fn getAcceptTypes() -> [String]
+
+  @JavaMethod
+  open fn isCaptureEnabled() -> Boolean
+
+  @JavaMethod
+  open fn getFilenameHint() -> String
+  }
+}
+extension JavaClass<WebChromeClient.FileChooserParams> {
+  @JavaStaticField(isFinal: true)
+  public var MODE_OPEN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MODE_OPEN_MULTIPLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MODE_SAVE: Int32
+}

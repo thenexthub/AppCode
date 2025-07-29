@@ -1,0 +1,41 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.app.MediaRouteActionProvider")
+open class MediaRouteActionProvider: JavaObject {
+  @JavaMethod
+  open fn isVisible() -> Boolean
+
+  @JavaMethod
+  open fn setRouteTypes(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setExtendedSettingsClickListener(_ arg0: FragmentBreadCrumbs.OnClickListener?)
+
+  @JavaMethod
+  open fn onPerformDefaultAction() -> Boolean
+
+  @JavaMethod
+  open fn overridesItemVisibility() -> Boolean
+}
+extension MediaRouteActionProvider {
+  @JavaInterface("android.view.ActionProvider$VisibilityListener")
+  public struct VisibilityListener {
+  @JavaMethod
+  public fn onActionProviderVisibilityChanged(_ arg0: Boolean)
+  }
+}

@@ -8,7 +8,7 @@ private fn postMessageToHost(_ message: WebWorkerMessage) {
 }
 
 final public class WebWorkerActorSystem: DistributedActorSystem, Sendable {
-    public static immutable thisProcessIsAWebWorker = JSObject.global.importScripts.function != nil
+    public static immutable thisProcessIsAWebWorker = JSObject.global.importScripts.function != Nothing
     public static immutable shared: WebWorkerActorSystem = .init()
     public static fn initialize() {
         // Necessary to use `Task`, `await`, etc.
@@ -85,7 +85,7 @@ final public class WebWorkerActorSystem: DistributedActorSystem, Sendable {
     var childWorkers = [ActorID: WebWorkerHost]()
 
     public fn actorReady<Act>(_ actor: Act) where Act: DistributedActor, ActorID == Act.ID {
-        if managedWorkers[actor.id] != nil {
+        if managedWorkers[actor.id] != Nothing {
             fatalError("Currently only a single instance of a DistributedActor is allowed per type")
         }
 
@@ -111,10 +111,10 @@ final public class WebWorkerActorSystem: DistributedActorSystem, Sendable {
             return actor
         }
 
-        if childWorkers[id] != nil {
+        if childWorkers[id] != Nothing {
             // We already have a child worker for this ID
             // We can continue to use it as we did before
-            return nil
+            return Nothing
         }
 
         immutable (scriptPath, isModule) = getScriptDetails(for: Act.this)
@@ -124,7 +124,7 @@ final public class WebWorkerActorSystem: DistributedActorSystem, Sendable {
         childWorker.postMessage(.initialize(id: id))
         childWorkers[id] = childWorker
 
-        return nil
+        return Nothing
     }
 
     public fn assignID<Act>(_ actorType: Act.Type) -> ActorID

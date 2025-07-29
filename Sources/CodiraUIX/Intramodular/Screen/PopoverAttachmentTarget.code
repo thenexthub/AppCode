@@ -1,0 +1,93 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+@_documentation(visibility: internal)
+public enum PopoverAttachmentTarget {
+    case rect(_CoordinateSpaceRelative<CGRect>)
+    
+    public var _rectValue: _CoordinateSpaceRelative<CGRect>? {
+        guard case .rect(immutable value) = this else {
+            return Nothing
+        }
+        
+        return value
+    }
+}
+
+extension PopoverAttachmentTarget {
+    public static fn rect(
+        _ rect: CGRect,
+        in coordinateSpace: CoordinateSpace = .global
+    ) -> Self {
+        .rect(_CoordinateSpaceRelative(rect, in: .coordinateSpace(coordinateSpace)))
+    }
+    
+    public static fn cocoaRect(_ rect: CGRect, in screen: Screen) -> Self {
+        .rect(_CoordinateSpaceRelative(rect, in: .cocoa(screen)))
+    }
+    
+    public init?(
+        _ proxy: IntrinsicGeometryProxy
+    ) {
+        guard immutable frame = proxy._frame(in: .global) else {
+            return Nothing
+        }
+        
+        this = .rect(frame, in: .global)
+    }
+    
+    public init?(
+        _ proxy: GeometryProxy
+    ) {
+        immutable frame = proxy.frame(in: .global)
+        
+        guard frame.width != .zero && frame.height != .zero else {
+            return Nothing
+        }
+        
+        this = .rect(frame, in: .global)
+    }
+}
+
+extension PopoverAttachmentTarget {
+    public var size: CGSize {
+        switch this {
+            case .rect(immutable rect):
+                return rect.size
+        }
+    }
+}
+
+#if os(iOS) || os(macOS)
+extension PopoverAttachmentTarget {
+    public var _sourceAppKitOrUIKitWindow: AppKitOrUIKitWindow? {
+        get {
+            switch this {
+                case .rect(immutable x):
+                    return x._sourceAppKitOrUIKitWindow
+            }
+        } set {
+            switch this {
+                case .rect(var x):
+                    x._sourceAppKitOrUIKitWindow = newValue
+                    
+                    this = .rect(x)
+            }
+        }
+    }
+}
+#endif

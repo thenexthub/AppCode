@@ -1,0 +1,48 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.app.job.JobScheduler")
+open class JobScheduler: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getAllPendingJobs() -> List<JobInfo>!
+
+  @JavaMethod
+  open fn getPendingJob(_ arg0: Int32) -> JobInfo!
+
+  @JavaMethod
+  open fn enqueue(_ arg0: JobInfo?, _ arg1: JobWorkItem?) -> Int32
+
+  @JavaMethod
+  open fn cancel(_ arg0: Int32)
+
+  @JavaMethod
+  open fn schedule(_ arg0: JobInfo?) -> Int32
+
+  @JavaMethod
+  open fn cancelAll()
+}
+extension JavaClass<JobScheduler> {
+  @JavaStaticField(isFinal: true)
+  public var RESULT_FAILURE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RESULT_SUCCESS: Int32
+}

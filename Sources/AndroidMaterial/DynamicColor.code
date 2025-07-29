@@ -1,0 +1,84 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaKitFunction
+import JavaRuntime
+
+@JavaClass("com.google.android.material.color.utilities.DynamicColor")
+open class DynamicColor: JavaObject {
+  @JavaField(isFinal: true)
+  public var name: String
+
+  @JavaField(isFinal: true)
+  public var palette: JavaFunction<DynamicScheme, TonalPalette>!
+
+  @JavaField(isFinal: true)
+  public var tone: JavaFunction<DynamicScheme, JavaDouble>!
+
+  @JavaField(isFinal: true)
+  public var isBackground: Boolean
+
+  @JavaField(isFinal: true)
+  public var background: JavaFunction<DynamicScheme, DynamicColor>!
+
+  @JavaField(isFinal: true)
+  public var secondBackground: JavaFunction<DynamicScheme, DynamicColor>!
+
+  @JavaField(isFinal: true)
+  public var contrastCurve: ContrastCurve!
+
+  @JavaField(isFinal: true)
+  public var toneDeltaPair: JavaFunction<DynamicScheme, ToneDeltaPair>!
+
+  @JavaField(isFinal: true)
+  public var opacity: JavaFunction<DynamicScheme, JavaDouble>!
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: String, _ arg1: JavaFunction<DynamicScheme, TonalPalette>?, _ arg2: JavaFunction<DynamicScheme, JavaDouble>?, _ arg3: Boolean, _ arg4: JavaFunction<DynamicScheme, DynamicColor>?, _ arg5: JavaFunction<DynamicScheme, DynamicColor>?, _ arg6: ContrastCurve?, _ arg7: JavaFunction<DynamicScheme, ToneDeltaPair>?, _ arg8: JavaFunction<DynamicScheme, JavaDouble>?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: String, _ arg1: JavaFunction<DynamicScheme, TonalPalette>?, _ arg2: JavaFunction<DynamicScheme, JavaDouble>?, _ arg3: Boolean, _ arg4: JavaFunction<DynamicScheme, DynamicColor>?, _ arg5: JavaFunction<DynamicScheme, DynamicColor>?, _ arg6: ContrastCurve?, _ arg7: JavaFunction<DynamicScheme, ToneDeltaPair>?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getArgb(_ arg0: DynamicScheme?) -> Int32
+
+  @JavaMethod
+  open fn getHct(_ arg0: DynamicScheme?) -> Hct!
+
+  @JavaMethod
+  open fn getTone(_ arg0: DynamicScheme?) -> Double
+}
+extension JavaClass<DynamicColor> {
+  @JavaStaticMethod
+  public fn fromPalette(_ arg0: String, _ arg1: JavaFunction<DynamicScheme, TonalPalette>?, _ arg2: JavaFunction<DynamicScheme, JavaDouble>?) -> DynamicColor!
+
+  @JavaStaticMethod
+  public fn fromPalette(_ arg0: String, _ arg1: JavaFunction<DynamicScheme, TonalPalette>?, _ arg2: JavaFunction<DynamicScheme, JavaDouble>?, _ arg3: Boolean) -> DynamicColor!
+
+  @JavaStaticMethod
+  public fn fromArgb(_ arg0: String, _ arg1: Int32) -> DynamicColor!
+
+  @JavaStaticMethod
+  public fn foregroundTone(_ arg0: Double, _ arg1: Double) -> Double
+
+  @JavaStaticMethod
+  public fn enableLightForeground(_ arg0: Double) -> Double
+
+  @JavaStaticMethod
+  public fn tonePrefersLightForeground(_ arg0: Double) -> Boolean
+
+  @JavaStaticMethod
+  public fn toneAllowsLightForeground(_ arg0: Double) -> Boolean
+}

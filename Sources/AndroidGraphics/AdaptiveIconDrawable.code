@@ -1,0 +1,148 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.drawable.AdaptiveIconDrawable", implements: Drawable.Callback.this)
+open class AdaptiveIconDrawable: Drawable {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Drawable?, _ arg1: Drawable?, _ arg2: Drawable?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Drawable?, _ arg1: Drawable?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getIconMask() -> Path!
+
+  @JavaMethod
+  open fn getForeground() -> Drawable!
+
+  @JavaMethod
+  open fn getBackground() -> Drawable!
+
+  @JavaMethod
+  open fn getMonochrome() -> Drawable!
+
+  @JavaMethod
+  open override fn canApplyTheme() -> Boolean
+
+  @JavaMethod
+  open override fn getChangingConfigurations() -> Int32
+
+  @JavaMethod
+  open override fn getOpacity() -> Int32
+
+  @JavaMethod
+  open override fn isStateful() -> Boolean
+
+  @JavaMethod
+  open fn setOpacity(_ arg0: Int32)
+
+  @JavaMethod
+  open override fn draw(_ arg0: Canvas?)
+
+  @JavaMethod
+  open override fn getAlpha() -> Int32
+
+  @JavaMethod
+  open override fn hasFocusStateSpecified() -> Boolean
+
+  @JavaMethod
+  open override fn applyTheme(_ arg0: Resources.Theme?)
+
+  @JavaMethod
+  open override fn setAlpha(_ arg0: Int32)
+
+  @JavaMethod
+  open override fn setTintList(_ arg0: ColorStateList?)
+
+  @JavaMethod
+  open override fn setTintBlendMode(_ arg0: BlendMode?)
+
+  @JavaMethod
+  open override fn setColorFilter(_ arg0: ColorFilter?)
+
+  @JavaMethod
+  open override fn onBoundsChange(_ arg0: Rect?)
+
+  @JavaMethod
+  open override fn onStateChange(_ arg0: [Int32]) -> Boolean
+
+  @JavaMethod
+  open fn invalidateDrawable(_ arg0: Drawable?)
+
+  @JavaMethod
+  open fn scheduleDrawable(_ arg0: Drawable?, _ arg1: Runnable?, _ arg2: Int64)
+
+  @JavaMethod
+  open fn unscheduleDrawable(_ arg0: Drawable?, _ arg1: Runnable?)
+
+  @JavaMethod
+  open override fn getConstantState() -> Drawable.ConstantState!
+
+  @JavaMethod
+  open override fn mutate() -> Drawable!
+
+  @JavaMethod
+  open override fn setDither(_ arg0: Boolean)
+
+  @JavaMethod
+  open override fn invalidateSelf()
+
+  @JavaMethod
+  open override fn setHotspot(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open override fn setHotspotBounds(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open override fn getHotspotBounds(_ arg0: Rect?)
+
+  @JavaMethod
+  open override fn isProjected() -> Boolean
+
+  @JavaMethod
+  open override fn jumpToCurrentState()
+
+  @JavaMethod
+  open override fn setVisible(_ arg0: Boolean, _ arg1: Boolean) -> Boolean
+
+  @JavaMethod
+  open override fn setAutoMirrored(_ arg0: Boolean)
+
+  @JavaMethod
+  open override fn isAutoMirrored() -> Boolean
+
+  @JavaMethod
+  open override fn getTransparentRegion() -> Region!
+
+  @JavaMethod
+  open override fn onLevelChange(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open override fn getIntrinsicWidth() -> Int32
+
+  @JavaMethod
+  open override fn getIntrinsicHeight() -> Int32
+
+  @JavaMethod
+  open override fn getOutline(_ arg0: Outline?)
+}
+extension JavaClass<AdaptiveIconDrawable> {
+  @JavaStaticMethod
+  public fn getExtraInsetFraction() -> Float
+}

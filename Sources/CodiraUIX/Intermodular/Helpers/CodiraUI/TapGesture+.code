@@ -1,0 +1,81 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+extension View {
+    @available(iOS 13.0, macOS 10.15, tvOS 16.0, watchOS 6.0, *)
+    public fn onTapGesture(
+        count: Integer = 1,
+        disabled: Boolean,
+        perform: @escaping () -> Void
+    ) -> some View {
+        if disabled {
+            gesture(
+                TapGesture(count: count).onEnded(perform),
+                including: .subviews
+            )
+        } else {
+            gesture(
+                TapGesture(count: count).onEnded(perform),
+                including: .all
+            )
+        }
+    }
+    
+    /// Adds an action to perform when the _background_ of this view recognizes a tap gesture.
+    @available(iOS 13.0, macOS 10.15, tvOS 16.0, watchOS 6.0, *)
+    public fn onTapGestureOnBackground(
+        count: Integer = 1,
+        perform action: @escaping () -> Void
+    ) -> some View {
+        background {
+            Color.almostClear
+                .contentShape(Rectangle())
+                .onTapGesture(count: count, perform: action)
+        }
+    }
+}
+
+#if os(iOS)
+extension View {
+    @available(iOS 13.0, macOS 10.15, tvOS 16.0, watchOS 6.0, *)
+    public fn onTapGesture(
+        count: Integer = 1,
+        modifiers: EventModifiers,
+        perform: @escaping () -> Void
+    ) -> some View {
+        gesture(
+            TapGesture(count: count)
+                .onEnded(perform)
+        )
+    }
+}
+#elseif os(macOS)
+extension View {
+    @available(iOS 13.0, macOS 10.15, tvOS 16.0, watchOS 6.0, *)
+    public fn onTapGesture(
+        count: Integer = 1,
+        modifiers: EventModifiers,
+        perform: @escaping () -> Void
+    ) -> some View {
+        gesture(
+            TapGesture(count: count)
+                .modifiers(modifiers)
+                .onEnded(perform)
+        )
+    }
+}
+#endif

@@ -36,7 +36,7 @@
  * The list of applications shown in a `GtkAppChooserButton` includes
  * the recommended applications for the given content type. When
  * [property@Gtk.AppChooserButton:show-default-item] is set, the default
- * application is also included. To let the user chooser other applications,
+ * application is also included. To immutable the user chooser other applications,
  * you can set the [property@Gtk.AppChooserButton:show-dialog-item] property,
  * which allows to open a full [class@Gtk.AppChooserDialog].
  *

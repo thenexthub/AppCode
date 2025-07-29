@@ -1,0 +1,137 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.webkit.WebViewClient")
+open class WebViewClient: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn shouldInterceptRequest(_ arg0: WebView?, _ arg1: String) -> WebResourceResponse!
+
+  @JavaMethod
+  open fn shouldInterceptRequest(_ arg0: WebView?, _ arg1: WebResourceRequest?) -> WebResourceResponse!
+
+  @JavaMethod
+  open fn shouldOverrideUrlLoading(_ arg0: WebView?, _ arg1: String) -> Boolean
+
+  @JavaMethod
+  open fn shouldOverrideUrlLoading(_ arg0: WebView?, _ arg1: WebResourceRequest?) -> Boolean
+
+  @JavaMethod
+  open fn onPageCommitVisible(_ arg0: WebView?, _ arg1: String)
+
+  @JavaMethod
+  open fn onReceivedHttpError(_ arg0: WebView?, _ arg1: WebResourceRequest?, _ arg2: WebResourceResponse?)
+
+  @JavaMethod
+  open fn doUpdateVisitedHistory(_ arg0: WebView?, _ arg1: String, _ arg2: Boolean)
+
+  @JavaMethod
+  open fn onReceivedClientCertRequest(_ arg0: WebView?, _ arg1: ClientCertRequest?)
+
+  @JavaMethod
+  open fn onReceivedHttpAuthRequest(_ arg0: WebView?, _ arg1: HttpAuthHandler?, _ arg2: String, _ arg3: String)
+
+  @JavaMethod
+  open fn onReceivedLoginRequest(_ arg0: WebView?, _ arg1: String, _ arg2: String, _ arg3: String)
+
+  @JavaMethod
+  open fn onRenderProcessGone(_ arg0: WebView?, _ arg1: RenderProcessGoneDetail?) -> Boolean
+
+  @JavaMethod
+  open fn onPageFinished(_ arg0: WebView?, _ arg1: String)
+
+  @JavaMethod
+  open fn onLoadResource(_ arg0: WebView?, _ arg1: String)
+
+  @JavaMethod
+  open fn onReceivedError(_ arg0: WebView?, _ arg1: Int32, _ arg2: String, _ arg3: String)
+
+  @JavaMethod
+  open fn onReceivedError(_ arg0: WebView?, _ arg1: WebResourceRequest?, _ arg2: WebResourceError?)
+
+  @JavaMethod
+  open fn onScaleChanged(_ arg0: WebView?, _ arg1: Float, _ arg2: Float)
+
+  @JavaMethod
+  open fn onSafeBrowsingHit(_ arg0: WebView?, _ arg1: WebResourceRequest?, _ arg2: Int32, _ arg3: SafeBrowsingResponse?)
+}
+extension JavaClass<WebViewClient> {
+  @JavaStaticField(isFinal: true)
+  public var ERROR_AUTHENTICATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR_BAD_URL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR_CONNECT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR_FAILED_SSL_HANDSHAKE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR_FILE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR_FILE_NOT_FOUND: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR_HOST_LOOKUP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR_IO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR_PROXY_AUTHENTICATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR_REDIRECT_LOOP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR_TIMEOUT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR_TOO_MANY_REQUESTS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR_UNKNOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR_UNSAFE_RESOURCE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR_UNSUPPORTED_AUTH_SCHEME: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR_UNSUPPORTED_SCHEME: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAFE_BROWSING_THREAT_BILLING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAFE_BROWSING_THREAT_MALWARE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAFE_BROWSING_THREAT_PHISHING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAFE_BROWSING_THREAT_UNKNOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAFE_BROWSING_THREAT_UNWANTED_SOFTWARE: Int32
+}

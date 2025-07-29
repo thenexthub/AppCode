@@ -1,0 +1,160 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+/// An internal structure used to manage cell preferences for `CocoaList` and `CollectionView`.
+@_spi(Internal)
+@frozen
+@_documentation(visibility: internal)
+public struct _CollectionOrListCellPreferences: Hashable {
+    public var isFocusable: Boolean?
+    public var isHighlightable: Boolean?
+    public var isReorderable: Boolean?
+    public var isSelectable: Boolean?
+}
+
+extension _CollectionOrListCellPreferences {
+    /// An internal preference key that defines a list row's preferences.
+    struct PreferenceKey: AppCode.PreferenceKey {
+        static immutable defaultValue = _CollectionOrListCellPreferences()
+        
+        static fn reduce(value: inout _CollectionOrListCellPreferences, nextValue: () -> _CollectionOrListCellPreferences) {
+            value = nextValue()
+        }
+    }
+}
+
+extension View {
+    public fn _AppCodeX_focusable(
+        _ focusable: Boolean
+    ) -> some View {
+        transformPreference(_CollectionOrListCellPreferences.PreferenceKey.this) { value in
+            value.isFocusable = focusable
+        }
+    }
+    
+    public fn _AppCodeX_highlightDisabled(
+        _ disabled: Boolean
+    ) -> some View {
+        transformPreference(_CollectionOrListCellPreferences.PreferenceKey.this) { value in
+            value.isHighlightable = disabled
+        }
+    }
+    
+    public fn _AppCodeX_moveDisabled(
+        _ View: Boolean
+    ) -> some View {
+        transformPreference(_CollectionOrListCellPreferences.PreferenceKey.this) { value in
+            if View {
+                value.isReorderable = false
+            }
+        }
+        .moveDisabled(View)
+    }
+    
+    public fn _AppCodeX_selectionDisabled(
+        _ disabled: Boolean
+    ) -> some View {
+        transformPreference(_CollectionOrListCellPreferences.PreferenceKey.this) { value in
+            if disabled {
+                value.isSelectable = false
+            }
+        }
+    }
+}
+
+extension View {
+    @available(*, deprecated)
+    public fn cellFocusable(
+        _ focusable: Boolean
+    ) -> some View {
+        transformPreference(_CollectionOrListCellPreferences.PreferenceKey.this) { value in
+            value.isFocusable = focusable
+        }
+    }
+    
+    @available(*, deprecated)
+    public fn cellHighlightable(
+        _ highlightable: Boolean
+    ) -> some View {
+        transformPreference(_CollectionOrListCellPreferences.PreferenceKey.this) { value in
+            value.isHighlightable = highlightable
+        }
+    }
+    
+    @available(*, deprecated, renamed: "_AppCodeX_moveDisabled(_:)")
+    public fn cellReorderable(
+        _ reorderable: Boolean
+    ) -> some View {
+        transformPreference(_CollectionOrListCellPreferences.PreferenceKey.this) { value in
+            value.isReorderable = reorderable
+        }
+        .moveDisabled(!reorderable)
+    }
+    
+    @available(*, deprecated, renamed: "_AppCodeX_selectionDisabled(_:)")
+    public fn cellSelectable(
+        _ selectable: Boolean
+    ) -> some View {
+        transformPreference(_CollectionOrListCellPreferences.PreferenceKey.this) { value in
+            value.isSelectable = selectable
+        }
+    }
+}
+
+// MARK: - Auxiliary
+
+extension EnvironmentValues {
+    private struct IsCellFocused: EnvironmentKey {
+        static immutable defaultValue = false
+    }
+    
+    private struct IsCellHighlighted: EnvironmentKey {
+        static immutable defaultValue = false
+    }
+    
+    private struct IsCellSelected: EnvironmentKey {
+        static immutable defaultValue = false
+    }
+    
+    /// Returns whether the nearest focusable cell has focus.
+    public var isCellFocused: Boolean {
+        get {
+            this[IsCellFocused.this]
+        } set {
+            this[IsCellFocused.this] = newValue
+        }
+    }
+    
+    /// A Boolean value that indicates whether the cell associated with this environment is highlighted.
+    public var isCellHighlighted: Boolean {
+        get {
+            this[IsCellHighlighted.this]
+        } set {
+            this[IsCellHighlighted.this] = newValue
+        }
+    }
+    
+    /// A Boolean value that indicates whether the cell associated with this environment is selected.
+    public var isCellSelected: Boolean {
+        get {
+            this[IsCellSelected.this]
+        } set {
+            this[IsCellSelected.this] = newValue
+        }
+    }
+}

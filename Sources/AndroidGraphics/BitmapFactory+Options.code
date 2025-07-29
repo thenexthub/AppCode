@@ -1,0 +1,93 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension BitmapFactory {
+  @JavaClass("android.graphics.BitmapFactory$Options")
+  open class Options: JavaObject {
+  @JavaField(isFinal: false)
+  public var inBitmap: Bitmap!
+
+  @JavaField(isFinal: false)
+  public var inDensity: Int32
+
+  @JavaField(isFinal: false)
+  public var inDither: Boolean
+
+  @JavaField(isFinal: false)
+  public var inInputShareable: Boolean
+
+  @JavaField(isFinal: false)
+  public var inJustDecodeBounds: Boolean
+
+  @JavaField(isFinal: false)
+  public var inMutable: Boolean
+
+  @JavaField(isFinal: false)
+  public var inPreferQualityOverSpeed: Boolean
+
+  @JavaField(isFinal: false)
+  public var inPreferredColorSpace: ColorSpace!
+
+  @JavaField(isFinal: false)
+  public var inPreferredConfig: Bitmap.Config!
+
+  @JavaField(isFinal: false)
+  public var inPremultiplied: Boolean
+
+  @JavaField(isFinal: false)
+  public var inPurgeable: Boolean
+
+  @JavaField(isFinal: false)
+  public var inSampleSize: Int32
+
+  @JavaField(isFinal: false)
+  public var inScaled: Boolean
+
+  @JavaField(isFinal: false)
+  public var inScreenDensity: Int32
+
+  @JavaField(isFinal: false)
+  public var inTargetDensity: Int32
+
+  @JavaField(isFinal: false)
+  public var inTempStorage: [Int8]
+
+  @JavaField(isFinal: false)
+  public var mCancel: Boolean
+
+  @JavaField(isFinal: false)
+  public var outColorSpace: ColorSpace!
+
+  @JavaField(isFinal: false)
+  public var outConfig: Bitmap.Config!
+
+  @JavaField(isFinal: false)
+  public var outHeight: Int32
+
+  @JavaField(isFinal: false)
+  public var outMimeType: String
+
+  @JavaField(isFinal: false)
+  public var outWidth: Int32
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn requestCancelDecode()
+  }
+}

@@ -1,0 +1,161 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.os.Process")
+open class Process: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+}
+extension JavaClass<Process> {
+  @JavaStaticField(isFinal: true)
+  public var BLUETOOTH_UID: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FIRST_APPLICATION_UID: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var INVALID_UID: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LAST_APPLICATION_UID: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PHONE_UID: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ROOT_UID: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SHELL_UID: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SIGNAL_KILL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SIGNAL_QUIT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SIGNAL_USR1: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UID: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var THREAD_PRIORITY_AUDIO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var THREAD_PRIORITY_BACKGROUND: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var THREAD_PRIORITY_DEFAULT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var THREAD_PRIORITY_DISPLAY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var THREAD_PRIORITY_FOREGROUND: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var THREAD_PRIORITY_LESS_FAVORABLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var THREAD_PRIORITY_LOWEST: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var THREAD_PRIORITY_MORE_FAVORABLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var THREAD_PRIORITY_URGENT_AUDIO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var THREAD_PRIORITY_URGENT_DISPLAY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var THREAD_PRIORITY_VIDEO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var WIFI_UID: Int32
+
+  @JavaStaticMethod
+  public fn getElapsedCpuTime() -> Int64
+
+  @JavaStaticMethod
+  public fn getStartElapsedRealtime() -> Int64
+
+  @JavaStaticMethod
+  public fn getStartUptimeMillis() -> Int64
+
+  @JavaStaticMethod
+  public fn getStartRequestedElapsedRealtime() -> Int64
+
+  @JavaStaticMethod
+  public fn is64Bit() -> Boolean
+
+  @JavaStaticMethod
+  public fn getStartRequestedUptimeMillis() -> Int64
+
+  @JavaStaticMethod
+  public fn myPid() -> Int32
+
+  @JavaStaticMethod
+  public fn myTid() -> Int32
+
+  @JavaStaticMethod
+  public fn myUid() -> Int32
+
+  @JavaStaticMethod
+  public fn myUserHandle() -> UserHandle!
+
+  @JavaStaticMethod
+  public fn isApplicationUid(_ arg0: Int32) -> Boolean
+
+  @JavaStaticMethod
+  public fn isIsolated() -> Boolean
+
+  @JavaStaticMethod
+  public fn isSdkSandbox() -> Boolean
+
+  @JavaStaticMethod
+  public fn getUidForName(_ arg0: String) -> Int32
+
+  @JavaStaticMethod
+  public fn getGidForName(_ arg0: String) -> Int32
+
+  @JavaStaticMethod
+  public fn setThreadPriority(_ arg0: Int32) throws
+
+  @JavaStaticMethod
+  public fn setThreadPriority(_ arg0: Int32, _ arg1: Int32) throws
+
+  @JavaStaticMethod
+  public fn getExclusiveCores() -> [Int32]
+
+  @JavaStaticMethod
+  public fn getThreadPriority(_ arg0: Int32) throws -> Int32
+
+  @JavaStaticMethod
+  public fn supportsProcesses() -> Boolean
+
+  @JavaStaticMethod
+  public fn myProcessName() -> String
+
+  @JavaStaticMethod
+  public fn killProcess(_ arg0: Int32)
+
+  @JavaStaticMethod
+  public fn sendSignal(_ arg0: Int32, _ arg1: Int32)
+}

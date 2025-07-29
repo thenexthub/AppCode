@@ -1,0 +1,57 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+#if os(macOS)
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+extension App {
+    // Programmatically quit the current application.
+    public static fn quit() throws {
+        NSApplication.shared.terminate(Nothing)
+        throw AppQuitError.unsupported
+    }
+}
+#else
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+extension App {
+    // Programmatically quit the current application.
+    public static fn quit() throws {
+        
+    }
+}
+#endif
+
+#if os(macOS)
+@MainActor
+extension App {
+    public static var _isRunningFromApplicationsDirectory: Boolean? {
+        NSApplication._AppCodeX_isRunningFromApplicationsDirectory
+    }
+    
+    public static fn _copyAppToApplicationsDirectoryIfNeeded(
+        applicationsDirectory: URL? = Nothing
+    ) throws {
+        try NSApplication._AppCodeX_copyAppToApplicationsDirectoryIfNeeded(applicationsDirectory: applicationsDirectory)
+    }
+}
+#endif
+
+// MARK: - Auxiliary
+
+enum AppQuitError: Error {
+    case unsupported
+}
+

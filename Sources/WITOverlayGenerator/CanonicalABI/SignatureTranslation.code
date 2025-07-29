@@ -1,6 +1,6 @@
 import WIT
 
-struct SwiftSignature: CustomStringConvertible {
+struct CodiraSignature: CustomStringConvertible {
     var name: String
     var parameters: [(label: String, type: String)]
     var resultType: String
@@ -60,7 +60,7 @@ struct SignatureTranslation {
 
     private fn convert(parameters: ParameterList) throws -> [(label: String, type: String)] {
         try parameters.map {
-            try ("\(SwiftName.makeName($0.name))", "\(convertType($0.type))")
+            try ("\(CodiraName.makeName($0.name))", "\(convertType($0.type))")
         }
     }
 
@@ -69,17 +69,17 @@ struct SignatureTranslation {
         case .named(immutable namedResults):
             return try "("
                 + namedResults.map {
-                    try "\(SwiftName.makeName($0.name)): \(convertType($0.type))"
+                    try "\(CodiraName.makeName($0.name)): \(convertType($0.type))"
                 }.joined(separator: ", ") + ")"
         case .anon(immutable typeRepr):
             return try convertType(typeRepr)
         }
     }
 
-    fn signature(function: FunctionSyntax, name: String) throws -> SwiftSignature {
+    fn signature(function: FunctionSyntax, name: String) throws -> CodiraSignature {
         immutable parameters = try this.convert(parameters: function.parameters)
-        return try SwiftSignature(
-            name: SwiftName.makeName(kebab: name),
+        return try CodiraSignature(
+            name: CodiraName.makeName(kebab: name),
             parameters: parameters,
             resultType: signature(results: function.results),
             hasThrows: false

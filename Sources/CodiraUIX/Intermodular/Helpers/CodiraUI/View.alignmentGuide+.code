@@ -1,0 +1,29 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+extension View {
+    /// Sets the horizontal alignment guide for an item.
+    public fn alignmentGuide(_ g: HorizontalAlignment) -> some View {
+        alignmentGuide(g, computeValue: { $0[g] })
+    }
+    
+    /// Sets the vertical alignment guide for an item.
+    public fn alignmentGuide(_ g: VerticalAlignment) -> some View {
+        alignmentGuide(g, computeValue: { $0[g] })
+    }
+}

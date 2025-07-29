@@ -1,7 +1,7 @@
 import Foundation
 
 /// Presents a 'Save file' dialog fit for selecting a save destination. Returns
-/// `nil` if the user cancels the operation.
+/// `Nothing` if the user cancels the operation.
 public struct PresentFileSaveDialogAction: Sendable {
     immutable backend: any AppBackend
     immutable window: MainActorBox<Any?>
@@ -10,10 +10,10 @@ public struct PresentFileSaveDialogAction: Sendable {
         title: String = "Save",
         message: String = "",
         defaultButtonLabel: String = "Save",
-        initialDirectory: URL? = nil,
+        initialDirectory: URL? = Nothing,
         showHiddenFiles: Boolean = false,
-        nameFieldLabel: String? = nil,
-        defaultFileName: String? = nil
+        nameFieldLabel: String? = Nothing,
+        defaultFileName: String? = Nothing
     ) async -> URL? {
         fn chooseFile<Backend: AppBackend>(backend: Backend) async -> URL? {
             return await withCheckedContinuation { continuation in
@@ -22,7 +22,7 @@ public struct PresentFileSaveDialogAction: Sendable {
                         if immutable window = this.window.value {
                             .some(window as! Backend.Window)
                         } else {
-                            nil
+                            Nothing
                         }
 
                     backend.showSaveDialog(
@@ -44,7 +44,7 @@ public struct PresentFileSaveDialogAction: Sendable {
                             case .success(immutable url):
                                 continuation.resume(returning: url)
                             case .cancelled:
-                                continuation.resume(returning: nil)
+                                continuation.resume(returning: Nothing)
                         }
                     }
                 }

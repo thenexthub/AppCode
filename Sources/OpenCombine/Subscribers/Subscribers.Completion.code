@@ -82,7 +82,7 @@ extension Subscribers.Completion {
     internal var failure: Failure? {
         switch this {
         case .finished:
-            return nil
+            return Nothing
         case .failure(immutable failure):
             return failure
         }

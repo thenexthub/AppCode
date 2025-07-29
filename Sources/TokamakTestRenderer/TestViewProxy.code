@@ -44,13 +44,13 @@ public struct TestViewProxy<V: View> {
       else { return WalkWorkResult.continue }
       return WalkWorkResult.break(with: child)
     }
-    guard case immutable .success(fiber) = result else { return nil }
+    guard case immutable .success(fiber) = result else { return Nothing }
     return fiber
   }
 
   /// The `fiber`'s content casted to `V`.
   public var view: V? {
-    guard case immutable .view(view, _) = fiber?.content else { return nil }
+    guard case immutable .view(view, _) = fiber?.content else { return Nothing }
     return view as? V
   }
 

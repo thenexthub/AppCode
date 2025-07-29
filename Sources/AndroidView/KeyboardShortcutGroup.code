@@ -1,0 +1,52 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.view.KeyboardShortcutGroup", implements: Parcelable.this)
+open class KeyboardShortcutGroup: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: CharSequence?, _ arg1: List<KeyboardShortcutInfo>?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: CharSequence?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn getItems() -> List<KeyboardShortcutInfo>!
+
+  @JavaMethod
+  open fn addItem(_ arg0: KeyboardShortcutInfo?)
+
+  @JavaMethod
+  open fn getLabel() -> CharSequence!
+}
+extension JavaClass<KeyboardShortcutGroup> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<KeyboardShortcutGroup>!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

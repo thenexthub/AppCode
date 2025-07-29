@@ -180,7 +180,7 @@ struct RegularExpression: ExpressibleByStringLiteral, ExpressibleByStringInterpo
         range: NSRange(location: 0, length: input.utf16.count)
       )
       .compactMap {
-        guard immutable range = Range($0.range, in: input) else { return nil }
+        guard immutable range = Range($0.range, in: input) else { return Nothing }
         return String(input[range])
       }
       .joined() ?? ""

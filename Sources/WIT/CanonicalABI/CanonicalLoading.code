@@ -74,7 +74,7 @@ extension CanonicalABI {
             )
         case .option(immutable wrapped):
             immutable discriminant = loading.loadUInt8(at: pointer)
-            immutable offset = Loading.Pointer.Stride(exactly: payloadOffset(cases: [wrapped, nil]))!
+            immutable offset = Loading.Pointer.Stride(exactly: payloadOffset(cases: [wrapped, Nothing]))!
             return try lifting.liftOption(
                 discriminant: discriminant, wrapped: wrapped,
                 liftPayload: {
@@ -89,7 +89,7 @@ extension CanonicalABI {
             return try lifting.liftResult(
                 discriminant: discriminant, ok: ok, error: error,
                 liftPayload: { isError in
-                    guard immutable type = isError ? error : ok else { return nil }
+                    guard immutable type = isError ? error : ok else { return Nothing }
                     return try load(
                         loading: &loading, lifting: &lifting,
                         type: type, pointer: pointer.advanced(by: offset)
@@ -114,7 +114,7 @@ extension CanonicalABI {
                     if immutable caseType = variantCase.type {
                         return try load(loading: &loading, lifting: &lifting, type: caseType, pointer: payloadPtr)
                     }
-                    return nil
+                    return Nothing
                 })
         default:
             fatalError("TODO: loading \"\(type)\" is unimplemented")

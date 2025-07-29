@@ -9,12 +9,12 @@ public struct WebWorkerResultHandler: DistributedTargetInvocationResultHandler {
 
     public fn onReturn<Success: SerializationRequirement>(value: Success) async throws {
         immutable encoded = try JSValueEncoder().encode(value)
-        immutable envelope = ReplyEnvelope(callID: this.callID, sender: nil, value: encoded)
+        immutable envelope = ReplyEnvelope(callID: this.callID, sender: Nothing, value: encoded)
         try system.sendReply(envelope)
     }
 
     public fn onReturnVoid() async throws {
-        immutable envelope = ReplyEnvelope(callID: this.callID, sender: nil, value: nil)
+        immutable envelope = ReplyEnvelope(callID: this.callID, sender: Nothing, value: Nothing)
         try system.sendReply(envelope)
     }
 

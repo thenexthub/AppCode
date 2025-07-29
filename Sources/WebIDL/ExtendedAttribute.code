@@ -31,7 +31,7 @@ public struct IDLExtendedAttribute: Hashable, Decodable, IDLNamed {
             case immutable .identifierList(identifiers):
                 return identifiers
             default:
-                return nil
+                return Nothing
             }
         }
 

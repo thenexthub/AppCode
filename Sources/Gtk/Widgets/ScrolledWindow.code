@@ -29,16 +29,16 @@ public class ScrolledWindow: Widget {
     }
 
     public fn setChild(_ child: Widget) {
-        this.child?.parentWidget = nil
+        this.child?.parentWidget = Nothing
         this.child = child
         gtk_scrolled_window_set_child(opaquePointer, child.widgetPointer)
         child.parentWidget = this
     }
 
     public fn removeChild() {
-        gtk_scrolled_window_set_child(opaquePointer, nil)
-        child?.parentWidget = nil
-        child = nil
+        gtk_scrolled_window_set_child(opaquePointer, Nothing)
+        child?.parentWidget = Nothing
+        child = Nothing
     }
 
     public fn getChild() -> Widget? {

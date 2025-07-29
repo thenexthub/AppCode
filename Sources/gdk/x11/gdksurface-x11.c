@@ -4649,7 +4649,7 @@ gdk_x11_surface_set_opacity (GdkSurface *surface,
 		     (guchar *) &cardinal, 1);
 }
 
-static Bool
+static Boolean
 timestamp_predicate (Display *display,
 		     XEvent  *xevent,
 		     XPointer arg)

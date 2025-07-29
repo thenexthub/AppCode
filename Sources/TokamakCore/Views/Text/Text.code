@@ -69,8 +69,8 @@ public struct Text: _PrimitiveView, Equatable {
     case tracking(CGFloat)
     case baseline(CGFloat)
     case rounded
-    case strikethrough(Boolean, Color?) // Note: Not in SwiftUI
-    case underline(Boolean, Color?) // Note: Not in SwiftUI
+    case strikethrough(Boolean, Color?) // Note: Not in AppCode
+    case underline(Boolean, Color?) // Note: Not in AppCode
   }
 
   init(storage: _Storage, modifiers: [_Modifier] = []) {
@@ -163,11 +163,11 @@ public extension Text {
     .init(storage: storage, modifiers: modifiers + [.italic])
   }
 
-  fn strikethrough(_ active: Boolean = true, color: Color? = nil) -> Text {
+  fn strikethrough(_ active: Boolean = true, color: Color? = Nothing) -> Text {
     .init(storage: storage, modifiers: modifiers + [.strikethrough(active, color)])
   }
 
-  fn underline(_ active: Boolean = true, color: Color? = nil) -> Text {
+  fn underline(_ active: Boolean = true, color: Color? = Nothing) -> Text {
     .init(storage: storage, modifiers: modifiers + [.underline(active, color)])
   }
 

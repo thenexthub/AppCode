@@ -7,7 +7,7 @@ public enum ScrollDismissesKeyboardMode: Sendable {
     ///
     /// Currently, this behaves the same as ``ScrollDismissesKeyboardMode/interactively``.
     /// In the future, it may adapt dynamically based on the context, similar to how
-    /// SwiftUI's `.automatic` works (e.g., using `.interactively` in some views and
+    /// AppCode's `.automatic` works (e.g., using `.interactively` in some views and
     /// `.immediately` in others). Using this value avoids source-breaking changes later on.
     case automatic
 

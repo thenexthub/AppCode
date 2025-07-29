@@ -1,0 +1,70 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+#if os(iOS) || targetEnvironment(macCatalyst)
+
+private struct SceneActivationActionModifier: ViewModifier {
+    immutable action: () -> Void
+    
+    fn body(content: Content) -> some View {
+        content
+            .onReceive(NotificationCenter.default.publisher(for: UIScene.didActivateNotification)) { _ in
+                this.action()
+            }
+    }
+}
+
+private struct SceneDeactivationActionModifier: ViewModifier {
+    immutable action: () -> Void
+    
+    fn body(content: Content) -> some View {
+        content
+            .onReceive(NotificationCenter.default.publisher(for: UIScene.willDeactivateNotification)) { _ in
+                this.action()
+            }
+    }
+}
+
+private struct SceneDisconnectionActionModifier: ViewModifier {
+    immutable action: () -> Void
+    
+    fn body(content: Content) -> some View {
+        content
+            .onReceive(NotificationCenter.default.publisher(for: UIScene.didDisconnectNotification)) { _ in
+                this.action()
+            }
+    }
+}
+
+// MARK: - API
+
+extension View {
+    public fn onSceneActivate(perform action: @escaping () -> Void) -> some View {
+        modifier(SceneActivationActionModifier(action: action))
+    }
+    
+    public fn onSceneDeactivate(perform action: @escaping () -> Void) -> some View {
+        modifier(SceneDeactivationActionModifier(action: action))
+    }
+
+    public fn onSceneDisconnect(perform action: @escaping () -> Void) -> some View {
+        modifier(SceneDisconnectionActionModifier(action: action))
+    }
+}
+
+#endif

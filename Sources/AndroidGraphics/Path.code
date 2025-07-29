@@ -1,0 +1,163 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.Path")
+open class Path: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Path?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn isConvex() -> Boolean
+
+  @JavaMethod
+  open fn getFillType() -> Path.FillType!
+
+  @JavaMethod
+  open fn setFillType(_ arg0: Path.FillType?)
+
+  @JavaMethod
+  open fn isInverseFillType() -> Boolean
+
+  @JavaMethod
+  open fn toggleInverseFillType()
+
+  @JavaMethod
+  open fn isRect(_ arg0: RectF?) -> Boolean
+
+  @JavaMethod
+  open fn computeBounds(_ arg0: RectF?, _ arg1: Boolean)
+
+  @JavaMethod
+  open fn incReserve(_ arg0: Int32)
+
+  @JavaMethod
+  open fn moveTo(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn rMoveTo(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn lineTo(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn rLineTo(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn quadTo(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float)
+
+  @JavaMethod
+  open fn rQuadTo(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float)
+
+  @JavaMethod
+  open fn cubicTo(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Float, _ arg5: Float)
+
+  @JavaMethod
+  open fn rCubicTo(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Float, _ arg5: Float)
+
+  @JavaMethod
+  open fn arcTo(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Float, _ arg5: Float, _ arg6: Boolean)
+
+  @JavaMethod
+  open fn arcTo(_ arg0: RectF?, _ arg1: Float, _ arg2: Float)
+
+  @JavaMethod
+  open fn arcTo(_ arg0: RectF?, _ arg1: Float, _ arg2: Float, _ arg3: Boolean)
+
+  @JavaMethod
+  open fn addRect(_ arg0: RectF?, _ arg1: Path.Direction?)
+
+  @JavaMethod
+  open fn addRect(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Path.Direction?)
+
+  @JavaMethod
+  open fn addOval(_ arg0: RectF?, _ arg1: Path.Direction?)
+
+  @JavaMethod
+  open fn addOval(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Path.Direction?)
+
+  @JavaMethod
+  open fn addCircle(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Path.Direction?)
+
+  @JavaMethod
+  open fn addArc(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Float, _ arg5: Float)
+
+  @JavaMethod
+  open fn addArc(_ arg0: RectF?, _ arg1: Float, _ arg2: Float)
+
+  @JavaMethod
+  open fn addRoundRect(_ arg0: RectF?, _ arg1: [Float], _ arg2: Path.Direction?)
+
+  @JavaMethod
+  open fn addRoundRect(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Float, _ arg5: Float, _ arg6: Path.Direction?)
+
+  @JavaMethod
+  open fn addRoundRect(_ arg0: RectF?, _ arg1: Float, _ arg2: Float, _ arg3: Path.Direction?)
+
+  @JavaMethod
+  open fn addRoundRect(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: [Float], _ arg5: Path.Direction?)
+
+  @JavaMethod
+  open fn addPath(_ arg0: Path?, _ arg1: Matrix?)
+
+  @JavaMethod
+  open fn addPath(_ arg0: Path?, _ arg1: Float, _ arg2: Float)
+
+  @JavaMethod
+  open fn addPath(_ arg0: Path?)
+
+  @JavaMethod
+  open fn setLastPoint(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn approximate(_ arg0: Float) -> [Float]
+
+  @JavaMethod
+  open fn reset()
+
+  @JavaMethod
+  open fn isEmpty() -> Boolean
+
+  @JavaMethod
+  open fn offset(_ arg0: Float, _ arg1: Float, _ arg2: Path?)
+
+  @JavaMethod
+  open fn offset(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn transform(_ arg0: Matrix?)
+
+  @JavaMethod
+  open fn transform(_ arg0: Matrix?, _ arg1: Path?)
+
+  @JavaMethod
+  open fn set(_ arg0: Path?)
+
+  @JavaMethod
+  open fn op(_ arg0: Path?, _ arg1: Path.Op?) -> Boolean
+
+  @JavaMethod
+  open fn op(_ arg0: Path?, _ arg1: Path?, _ arg2: Path.Op?) -> Boolean
+
+  @JavaMethod
+  open fn close()
+
+  @JavaMethod
+  open fn rewind()
+}

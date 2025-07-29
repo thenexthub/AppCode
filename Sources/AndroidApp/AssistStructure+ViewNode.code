@@ -1,0 +1,196 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension AssistStructure {
+  @JavaClass("android.app.assist.AssistStructure$ViewNode")
+  open class ViewNode: JavaObject {
+  @JavaMethod
+  open fn getIdPackage() -> String
+
+  @JavaMethod
+  open fn getIdType() -> String
+
+  @JavaMethod
+  open fn getIdEntry() -> String
+
+  @JavaMethod
+  open fn getAutofillType() -> Int32
+
+  @JavaMethod
+  open fn getAutofillHints() -> [String]
+
+  @JavaMethod
+  open fn getAutofillOptions() -> [CharSequence?]
+
+  @JavaMethod
+  open fn getInputType() -> Int32
+
+  @JavaMethod
+  open fn getLeft() -> Int32
+
+  @JavaMethod
+  open fn getTop() -> Int32
+
+  @JavaMethod
+  open fn getScrollX() -> Int32
+
+  @JavaMethod
+  open fn getScrollY() -> Int32
+
+  @JavaMethod
+  open fn getWidth() -> Int32
+
+  @JavaMethod
+  open fn getHeight() -> Int32
+
+  @JavaMethod
+  open fn getElevation() -> Float
+
+  @JavaMethod
+  open fn getAlpha() -> Float
+
+  @JavaMethod
+  open fn getVisibility() -> Int32
+
+  @JavaMethod
+  open fn isAssistBlocked() -> Boolean
+
+  @JavaMethod
+  open fn isClickable() -> Boolean
+
+  @JavaMethod
+  open fn isFocusable() -> Boolean
+
+  @JavaMethod
+  open fn isFocused() -> Boolean
+
+  @JavaMethod
+  open fn isAccessibilityFocused() -> Boolean
+
+  @JavaMethod
+  open fn isCheckable() -> Boolean
+
+  @JavaMethod
+  open fn isChecked() -> Boolean
+
+  @JavaMethod
+  open fn isSelected() -> Boolean
+
+  @JavaMethod
+  open fn isActivated() -> Boolean
+
+  @JavaMethod
+  open fn isLongClickable() -> Boolean
+
+  @JavaMethod
+  open fn isContextClickable() -> Boolean
+
+  @JavaMethod
+  open fn getWebDomain() -> String
+
+  @JavaMethod
+  open fn getWebScheme() -> String
+
+  @JavaMethod
+  open fn getReceiveContentMimeTypes() -> [String]
+
+  @JavaMethod
+  open fn getTextSelectionStart() -> Int32
+
+  @JavaMethod
+  open fn getTextSelectionEnd() -> Int32
+
+  @JavaMethod
+  open fn getTextColor() -> Int32
+
+  @JavaMethod
+  open fn getTextBackgroundColor() -> Int32
+
+  @JavaMethod
+  open fn getTextSize() -> Float
+
+  @JavaMethod
+  open fn getTextStyle() -> Int32
+
+  @JavaMethod
+  open fn getTextLineCharOffsets() -> [Int32]
+
+  @JavaMethod
+  open fn getTextLineBaselines() -> [Int32]
+
+  @JavaMethod
+  open fn getTextIdEntry() -> String
+
+  @JavaMethod
+  open fn getHint() -> String
+
+  @JavaMethod
+  open fn getHintIdEntry() -> String
+
+  @JavaMethod
+  open fn getChildAt(_ arg0: Int32) -> AssistStructure.ViewNode!
+
+  @JavaMethod
+  open fn getMinTextEms() -> Int32
+
+  @JavaMethod
+  open fn getMaxTextEms() -> Int32
+
+  @JavaMethod
+  open fn getMaxTextLength() -> Int32
+
+  @JavaMethod
+  open fn getImportantForAutofill() -> Int32
+
+  @JavaMethod
+  open fn getContentDescription() -> CharSequence!
+
+  @JavaMethod
+  open fn isEnabled() -> Boolean
+
+  @JavaMethod
+  open fn getId() -> Int32
+
+  @JavaMethod
+  open fn getClassName() -> String
+
+  @JavaMethod
+  open fn isOpaque() -> Boolean
+
+  @JavaMethod
+  open fn getText() -> CharSequence!
+
+  @JavaMethod
+  open fn getChildCount() -> Int32
+  }
+}
+extension JavaClass<AssistStructure.ViewNode> {
+  @JavaStaticField(isFinal: true)
+  public var TEXT_COLOR_UNDEFINED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_STYLE_BOLD: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_STYLE_ITALIC: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_STYLE_STRIKE_THRU: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_STYLE_UNDERLINE: Int32
+}

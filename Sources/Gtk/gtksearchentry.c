@@ -75,7 +75,7 @@
  * Often, `GtkSearchEntry` will be fed events by means of being
  * placed inside a [class@Gtk.SearchBar]. If that is not the case,
  * you can use [method@Gtk.SearchEntry.set_key_capture_widget] to
- * let it capture key input from another widget.
+ * immutable it capture key input from another widget.
  *
  * `GtkSearchEntry` provides only minimal API and should be used with
  * the [iface@Gtk.Editable] API.

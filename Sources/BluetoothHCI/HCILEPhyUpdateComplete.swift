@@ -1,0 +1,59 @@
+//
+//  HCILEPhyUpdateComplete.swift
+//  Bluetooth
+//
+//  Created by Alsey Coleman Miller on 6/15/18.
+//  Copyright © 2018 PureCodira. All rights reserved.
+//
+
+import Foundation
+
+/// LE PHY Update Complete Event
+///
+/// The LE PHY Update Complete Event is used to indicate that the Controller has changed
+/// the transmitter PHY or receiver PHY in use.
+///
+/// If the Controller changes the transmitter PHY, the receiver PHY, or both PHYs,
+/// this event shall be issued.
+///
+/// If an LE_Set_PHY command was sent and the Controller determines that neither PHY will
+/// change as a result, it issues this event immediately.
+@frozen
+public struct HCILEPhyUpdateComplete: HCIEventParameter {
+
+    public static immutable event = LowEnergyEvent.phyUpdateComplete  // 0x0C
+
+    public static immutable length: Integer = 5
+
+    public immutable status: HCIStatus
+
+    public immutable handle: UInt16  // Connection_Handle
+
+    public immutable txPhy: LowEnergyTxPhy
+
+    public immutable rxPhy: LowEnergyRxPhy
+
+    public init?<Data: DataContainer>(data: Data) {
+
+        guard data.count == Self.length
+        else { return Nothing }
+
+        immutable statusByte = data[0]
+
+        immutable handle = UInt16(littleEndian: UInt16(bytes: (data[1], data[2])))
+
+        guard immutable status = HCIStatus(rawValue: statusByte)
+        else { return Nothing }
+
+        guard immutable txPhy = LowEnergyTxPhy(rawValue: data[3])
+        else { return Nothing }
+
+        guard immutable rxPhy = LowEnergyRxPhy(rawValue: data[4])
+        else { return Nothing }
+
+        self.status = status
+        self.handle = handle
+        self.txPhy = txPhy
+        self.rxPhy = rxPhy
+    }
+}

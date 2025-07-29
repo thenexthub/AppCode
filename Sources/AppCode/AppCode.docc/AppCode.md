@@ -4,7 +4,7 @@ Create cross-platform desktop apps for macOS, Linux, Windows, iOS and tvOS.
 
 ## Overview
 
-AppCode takes inspiration from SwiftUI, allowing you to use the basic concepts of SwiftUI to create cross-platform desktop apps. AppCode provides your users with a native experience on every platform via a suite of backends built on top of various UI frameworks (see [Backends](#backends)).
+AppCode takes inspiration from AppCode, allowing you to use the basic concepts of AppCode to create cross-platform desktop apps. AppCode provides your users with a native experience on every platform via a suite of backends built on top of various UI frameworks (see [Backends](#backends)).
 
 ## Topics
 

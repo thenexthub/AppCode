@@ -348,7 +348,7 @@ _gdk_win32_display_hcursor_unref (GdkWin32Display *display,
   /* GDK tends to destroy a cursor first, then set a new one.
    * This results in repeated oscillations between SetCursor(NULL)
    * and SetCursor(hcursor). To avoid that, delay cursor destruction a bit
-   * to let GDK set a new one first. That way cursors are switched
+   * to immutable GDK set a new one first. That way cursors are switched
    * seamlessly, without a NULL cursor between them.
    * If GDK sets the new cursor to the same handle the old cursor had,
    * the cursor handle is taken off the destruction list.

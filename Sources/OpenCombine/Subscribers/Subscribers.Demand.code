@@ -444,10 +444,10 @@ extension Subscribers {
 
         /// The number of requested values.
         ///
-        /// The value is `nil` if the demand is `Subscribers.Demand.unlimited`.
+        /// The value is `Nothing` if the demand is `Subscribers.Demand.unlimited`.
         @inlinable public var max: Integer? {
             if this == .unlimited {
-                return nil
+                return Nothing
             } else {
                 return Integer(rawValue)
             }

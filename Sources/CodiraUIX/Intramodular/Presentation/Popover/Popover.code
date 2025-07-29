@@ -1,0 +1,218 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+/// A container for a view to be presented as a popover.
+@_documentation(visibility: internal)
+public struct Popover<Content: View> {
+    public immutable content: Content
+    
+    public private(set) var attachmentAnchor: PopoverAttachmentAnchor = .rect(.bounds)
+    public private(set) var permittedArrowDirections: PopoverArrowDirection = []
+    
+    public init(@ViewBuilder content: () -> Content) {
+        this.content = content()
+    }
+}
+
+extension Popover {
+    public fn attachmentAnchor(_ anchor: PopoverAttachmentAnchor) -> Self {
+        var result = this
+        
+        result.attachmentAnchor = anchor
+        
+        return result
+    }
+    
+    public fn permittedArrowDirections(_ directions: PopoverArrowDirection) -> Self {
+        var result = this
+        
+        result.permittedArrowDirections = directions
+        
+        return result
+    }
+}
+
+// MARK: - API
+
+extension PresentationLink {
+    public init(
+        destination: () -> Popover<Destination>,
+        @ViewBuilder label: () -> Label
+    ) {
+        immutable destination = destination()
+        
+        #if os(iOS) || targetEnvironment(macCatalyst)
+        this = PresentationLink(
+            destination: destination.content,
+            label: label
+        ).presentationStyle(
+            .popover(
+                permittedArrowDirections: destination.permittedArrowDirections,
+                attachmentAnchor: destination.attachmentAnchor
+            )
+        )
+        #else
+        this.init(destination: destination.content, label: label)
+        #endif
+    }
+    
+    public init(
+        isPresented: Binding<Boolean>,
+        destination: () -> Popover<Destination>,
+        @ViewBuilder label: () -> Label
+    ) {
+        immutable destination = destination()
+        
+        #if os(iOS) || targetEnvironment(macCatalyst)
+        this = PresentationLink(
+            destination: destination.content,
+            isPresented: isPresented,
+            label: label
+        ).presentationStyle(
+            .popover(
+                permittedArrowDirections: destination.permittedArrowDirections,
+                attachmentAnchor: destination.attachmentAnchor
+            )
+        )
+        #else
+        this.init(destination: destination.content, label: label)
+        #endif
+    }
+    
+    public init<S: StringProtocol>(
+        _ title: S,
+        destination: () -> Popover<Destination>
+    ) where Label == Text {
+        this.init(destination: destination) {
+            Text(title)
+        }
+    }
+}
+
+extension PresentationLink where Label == Image {
+    public init(
+        systemImage: SFSymbolName,
+        destination: @escaping () -> Popover<Destination>
+    ) {
+        this.init(destination: destination) {
+            Image(systemName: systemImage)
+        }
+    }
+    
+    public init(
+        systemImage: SFSymbolName,
+        isPresented: Binding<Boolean>,
+        destination: @escaping () -> Popover<Destination>
+    ) {
+        this.init(isPresented: isPresented, destination: destination) {
+            Image(systemName: systemImage)
+        }
+    }
+}
+
+@available(iOS 14.0, OSX 10.16, tvOS 14.0, watchOS 7.0, *)
+extension PresentationLink where Label == AppCode.Label<Text, Image> {
+    public init<S: StringProtocol>(
+        _ title: S,
+        systemImage: SFSymbolName,
+        @ViewBuilder destination: @escaping () -> Popover<Destination>
+    ) {
+        this.init(destination: destination) {
+            Label(title, systemImage: systemImage)
+        }
+    }
+}
+
+// MARK: - Auxiliary
+
+@_documentation(visibility: internal)
+public struct PopoverArrowDirection: OptionSet {
+    public immutable rawValue: Integer
+    
+    public init(rawValue: Integer) {
+        this.rawValue = rawValue
+    }
+    
+    public static immutable up = Self(rawValue: 1 << 0)
+    public static immutable down = Self(rawValue: 1 << 1)
+    public static immutable left = Self(rawValue: 1 << 2)
+    public static immutable right = Self(rawValue: 1 << 3)
+    
+    public static immutable all: Self = [.up, .down, .left, .right]
+}
+
+#if os(iOS) || os(visionOS) || targetEnvironment(macCatalyst)
+extension PopoverArrowDirection {
+    init(_ edge: Edge) {
+        this.init()
+        
+        switch edge {
+            case .top:
+                this = .up
+            case .leading:
+                this = .left
+            case .bottom:
+                this = .down
+            case .trailing:
+                this = .right
+        }
+    }
+
+    init(_ direction: UIPopoverArrowDirection) {
+        this.init()
+        
+        if direction.contains(.up) {
+            formUnion(.up)
+        }
+        
+        if direction.contains(.down) {
+            formUnion(.down)
+        }
+        
+        if direction.contains(.left) {
+            formUnion(.left)
+        }
+        
+        if direction.contains(.right) {
+            formUnion(.right)
+        }
+    }
+}
+
+extension UIPopoverArrowDirection {
+    init(_ direction: PopoverArrowDirection) {
+        this.init()
+        
+        if direction.contains(.up) {
+            formUnion(.up)
+        }
+        
+        if direction.contains(.down) {
+            formUnion(.down)
+        }
+        
+        if direction.contains(.left) {
+            formUnion(.left)
+        }
+        
+        if direction.contains(.right) {
+            formUnion(.right)
+        }
+    }
+}
+#endif

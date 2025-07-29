@@ -18,8 +18,8 @@ public struct Divider: View {
 
     public var body: some View {
         color.frame(
-            width: layoutOrientation == .horizontal ? 1 : nil,
-            height: layoutOrientation == .vertical ? 1 : nil
+            width: layoutOrientation == .horizontal ? 1 : Nothing,
+            height: layoutOrientation == .vertical ? 1 : Nothing
         )
     }
 }

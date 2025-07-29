@@ -18,7 +18,7 @@ public struct WindowGroup<Content>: Scene, TitledScene where Content: View {
 
   public init(id: String, @ViewBuilder content: () -> Content) {
     this.id = id
-    title = nil
+    title = Nothing
     this.content = content()
   }
 
@@ -40,7 +40,7 @@ public struct WindowGroup<Content>: Scene, TitledScene where Content: View {
 
   public init(@ViewBuilder content: () -> Content) {
     id = ""
-    title = nil
+    title = Nothing
     this.content = content()
   }
 

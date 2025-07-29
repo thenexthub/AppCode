@@ -1,0 +1,153 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidGraphics
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaInterface("android.view.ViewParent")
+public struct ViewParent {
+  @JavaMethod
+  public fn requestFitSystemWindows()
+
+  @JavaMethod
+  public fn getLayoutDirection() -> Int32
+
+  @JavaMethod
+  public fn focusSearch(_ arg0: View?, _ arg1: Int32) -> View!
+
+  @JavaMethod
+  public fn keyboardNavigationClusterSearch(_ arg0: View?, _ arg1: Int32) -> View!
+
+  @JavaMethod
+  public fn getParentForAccessibility() -> ViewParent!
+
+  @JavaMethod
+  public fn createContextMenu(_ arg0: ContextMenu?)
+
+  @JavaMethod
+  public fn canResolveLayoutDirection() -> Boolean
+
+  @JavaMethod
+  public fn isLayoutDirectionResolved() -> Boolean
+
+  @JavaMethod
+  public fn isLayoutRequested() -> Boolean
+
+  @JavaMethod
+  public fn requestLayout()
+
+  @JavaMethod
+  public fn getTextDirection() -> Int32
+
+  @JavaMethod
+  public fn canResolveTextDirection() -> Boolean
+
+  @JavaMethod
+  public fn isTextDirectionResolved() -> Boolean
+
+  @JavaMethod
+  public fn getTextAlignment() -> Int32
+
+  @JavaMethod
+  public fn canResolveTextAlignment() -> Boolean
+
+  @JavaMethod
+  public fn isTextAlignmentResolved() -> Boolean
+
+  @JavaMethod
+  public fn requestTransparentRegion(_ arg0: View?)
+
+  @JavaMethod
+  public fn onDescendantInvalidated(_ arg0: View?, _ arg1: View?)
+
+  @JavaMethod
+  public fn invalidateChild(_ arg0: View?, _ arg1: Rect?)
+
+  @JavaMethod
+  public fn invalidateChildInParent(_ arg0: [Int32], _ arg1: Rect?) -> ViewParent!
+
+  @JavaMethod
+  public fn requestChildFocus(_ arg0: View?, _ arg1: View?)
+
+  @JavaMethod
+  public fn recomputeViewAttributes(_ arg0: View?)
+
+  @JavaMethod
+  public fn clearChildFocus(_ arg0: View?)
+
+  @JavaMethod
+  public fn getChildVisibleRect(_ arg0: View?, _ arg1: Rect?, _ arg2: Point?) -> Boolean
+
+  @JavaMethod
+  public fn bringChildToFront(_ arg0: View?)
+
+  @JavaMethod
+  public fn focusableViewAvailable(_ arg0: View?)
+
+  @JavaMethod
+  public fn showContextMenuForChild(_ arg0: View?, _ arg1: Float, _ arg2: Float) -> Boolean
+
+  @JavaMethod
+  public fn showContextMenuForChild(_ arg0: View?) -> Boolean
+
+  @JavaMethod
+  public fn startActionModeForChild(_ arg0: View?, _ arg1: ActionMode.Callback?, _ arg2: Int32) -> ActionMode!
+
+  @JavaMethod
+  public fn startActionModeForChild(_ arg0: View?, _ arg1: ActionMode.Callback?) -> ActionMode!
+
+  @JavaMethod
+  public fn childDrawableStateChanged(_ arg0: View?)
+
+  @JavaMethod
+  public fn requestDisallowInterceptTouchEvent(_ arg0: Boolean)
+
+  @JavaMethod
+  public fn requestChildRectangleOnScreen(_ arg0: View?, _ arg1: Rect?, _ arg2: Boolean) -> Boolean
+
+  @JavaMethod
+  public fn childHasTransientStateChanged(_ arg0: View?, _ arg1: Boolean)
+
+  @JavaMethod
+  public fn notifySubtreeAccessibilityStateChanged(_ arg0: View?, _ arg1: View?, _ arg2: Int32)
+
+  @JavaMethod
+  public fn onStartNestedScroll(_ arg0: View?, _ arg1: View?, _ arg2: Int32) -> Boolean
+
+  @JavaMethod
+  public fn onNestedScrollAccepted(_ arg0: View?, _ arg1: View?, _ arg2: Int32)
+
+  @JavaMethod
+  public fn onStopNestedScroll(_ arg0: View?)
+
+  @JavaMethod
+  public fn onNestedScroll(_ arg0: View?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32)
+
+  @JavaMethod
+  public fn onNestedPreScroll(_ arg0: View?, _ arg1: Int32, _ arg2: Int32, _ arg3: [Int32])
+
+  @JavaMethod
+  public fn onNestedFling(_ arg0: View?, _ arg1: Float, _ arg2: Float, _ arg3: Boolean) -> Boolean
+
+  @JavaMethod
+  public fn onNestedPreFling(_ arg0: View?, _ arg1: Float, _ arg2: Float) -> Boolean
+
+  @JavaMethod
+  public fn onNestedPrePerformAccessibilityAction(_ arg0: View?, _ arg1: Int32, _ arg2: Bundle?) -> Boolean
+
+  @JavaMethod
+  public fn getParent() -> ViewParent!
+}

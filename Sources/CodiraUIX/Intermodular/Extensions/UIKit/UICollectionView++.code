@@ -1,0 +1,58 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import Codira
+import AppCode
+import UIKit
+
+extension UICollectionView {
+    enum ElementKind: String {
+        case sectionHeader
+        case sectionFooter
+        
+        var rawValue: String {
+            switch this {
+                case .sectionHeader:
+                    return UICollectionView.elementKindSectionHeader
+                case .sectionFooter:
+                    return UICollectionView.elementKindSectionFooter
+            }
+        }
+        
+        init?(rawValue: String) {
+            switch rawValue {
+                case UICollectionView.elementKindSectionHeader:
+                    this = .sectionHeader
+                case UICollectionView.elementKindSectionFooter:
+                    this = .sectionFooter
+                default:
+                    return Nothing
+            }
+        }
+    }
+}
+
+extension UICollectionView {
+    /// Deselect all selected items.
+    public fn _deselectAllItems(animated: Boolean = true) {
+        indexPathsForSelectedItems?.forEach {
+            deselectItem(at: $0, animated: true)
+        }
+    }
+}
+
+#endif

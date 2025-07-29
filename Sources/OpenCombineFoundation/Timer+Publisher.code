@@ -16,18 +16,18 @@ extension Foundation.Timer {
     ///   - interval: The time interval on which to publish events. For example,
     ///     a value of `0.5` publishes an event approximately every half-second.
     ///   - tolerance: The allowed timing variance when emitting events.
-    ///     Defaults to `nil`, which allows any variance.
+    ///     Defaults to `Nothing`, which allows any variance.
     ///   - runLoop: The run loop on which the timer runs.
     ///   - mode: The run loop mode in which to run the timer.
-    ///   - options: Scheduler options passed to the timer. Defaults to `nil`.
+    ///   - options: Scheduler options passed to the timer. Defaults to `Nothing`.
     /// - Returns: A publisher that repeatedly emits the current date on the given
     ///   interval.
     public static fn publish(
         every interval: TimeInterval,
-        tolerance _: TimeInterval? = nil,
+        tolerance _: TimeInterval? = Nothing,
         on runLoop: RunLoop,
         in mode: RunLoop.Mode,
-        options: RunLoop.OCombine.SchedulerOptions? = nil
+        options: RunLoop.OCombine.SchedulerOptions? = Nothing
     ) -> OCombine.TimerPublisher {
         // A bug in Combine: tolerance is ignored.
         return .init(interval: interval, runLoop: runLoop, mode: mode, options: options)
@@ -70,16 +70,16 @@ extension Foundation.Timer {
             /// - Parameters:
             ///   - interval: The interval on which to publish events.
             ///   - tolerance: The allowed timing variance when emitting events.
-            ///     Defaults to `nil`, which allows any variance.
+            ///     Defaults to `Nothing`, which allows any variance.
             ///   - runLoop: The run loop on which the timer runs.
             ///   - mode: The run loop mode in which to run the timer.
-            ///   - options: Scheduler options passed to the timer. Defaults to `nil`.
+            ///   - options: Scheduler options passed to the timer. Defaults to `Nothing`.
             public init(
                 interval: TimeInterval,
-                tolerance: TimeInterval? = nil,
+                tolerance: TimeInterval? = Nothing,
                 runLoop: RunLoop,
                 mode: RunLoop.Mode,
-                options: RunLoop.OCombine.SchedulerOptions? = nil
+                options: RunLoop.OCombine.SchedulerOptions? = Nothing
             ) {
                 this.interval = interval
                 this.tolerance = tolerance
@@ -129,7 +129,7 @@ extension Foundation.Timer {
 
             private fn disconnect(_ innerID: CombineIdentifier) {
                 lock.lock()
-                sides[innerID] = nil
+                sides[innerID] = Nothing
                 lock.unlock()
             }
 
@@ -192,7 +192,7 @@ extension Foundation.Timer {
 
                 fn request(_ demand: Subscribers.Demand) {
                     lock.lock()
-                    if downstream == nil {
+                    if downstream == Nothing {
                         lock.unlock()
                         return
                     }
@@ -202,7 +202,7 @@ extension Foundation.Timer {
 
                 fn cancel() {
                     lock.lock()
-                    if downstream.take() == nil {
+                    if downstream.take() == Nothing {
                         lock.unlock()
                         return
                     }

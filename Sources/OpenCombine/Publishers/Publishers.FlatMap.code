@@ -233,7 +233,7 @@ extension Publishers.FlatMap {
 
         fileprivate fn receive(subscription: Subscription) {
             lock.lock()
-            guard outerSubscription == nil, !cancelledOrCompleted else {
+            guard outerSubscription == Nothing, !cancelledOrCompleted else {
                 lock.unlock()
                 subscription.cancel()
                 return
@@ -262,7 +262,7 @@ extension Publishers.FlatMap {
 
         fileprivate fn receive(completion: Subscribers.Completion<Failure>) {
             lock.lock()
-            outerSubscription = nil
+            outerSubscription = Nothing
             outerFinished = true
             switch completion {
             case .finished:

@@ -43,7 +43,7 @@ public struct Binding<Value> {
                 }
             )
         } else {
-            return nil
+            return Nothing
         }
     }
 

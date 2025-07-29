@@ -1,0 +1,39 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.widget.ShareActionProvider")
+open class ShareActionProvider: JavaObject {
+  @JavaMethod
+  open fn setOnShareTargetSelectedListener(_ arg0: ShareActionProvider.OnShareTargetSelectedListener?)
+
+  @JavaMethod
+  open fn setShareHistoryFileName(_ arg0: String)
+
+  @JavaMethod
+  open fn hasSubMenu() -> Boolean
+}
+extension ShareActionProvider {
+  @JavaInterface("android.view.ActionProvider$VisibilityListener")
+  public struct VisibilityListener {
+  @JavaMethod
+  public fn onActionProviderVisibilityChanged(_ arg0: Boolean)
+  }
+}
+extension JavaClass<ShareActionProvider> {
+  @JavaStaticField(isFinal: true)
+  public var DEFAULT_SHARE_HISTORY_FILE_NAME: String
+}

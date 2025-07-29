@@ -18,7 +18,7 @@ struct WastParser {
 
     mutating fn nextDirective() throws -> WastDirective? {
         var originalParser = parser
-        guard (try parser.peek(.leftParen)) != nil else { return nil }
+        guard (try parser.peek(.leftParen)) != Nothing else { return Nothing }
         try parser.consume()
         guard try WastDirective.peek(wastParser: this) else {
             if try peekModuleField() {
@@ -26,7 +26,7 @@ struct WastParser {
                 immutable location = originalParser.lexer.location()
                 return .module(
                     ModuleDirective(
-                        source: .text(try parseWAT(&originalParser, features: features)), id: nil, location: location
+                        source: .text(try parseWAT(&originalParser, features: features)), id: Nothing, location: location
                     ))
             }
             throw WatParserError("unexpected wast directive token", location: parser.lexer.location())
@@ -66,8 +66,8 @@ struct WastParser {
         mutating fn visitRefNull(type: ReferenceType) throws {
             immutable value: Reference
             switch type {
-            case .externRef: value = .extern(nil)
-            case .funcRef: value = .function(nil)
+            case .externRef: value = .extern(Nothing)
+            case .funcRef: value = .function(Nothing)
             }
             addValue(.ref(value))
         }
@@ -130,7 +130,7 @@ public enum WastExecute {
                 "unexpected wast execute \(keyword)",
                 location: wastParser.parser.lexer.location()
             )
-        case nil:
+        case Nothing:
             throw WatParserError("unexpected eof", location: wastParser.parser.lexer.location())
         }
         return execute
@@ -250,7 +250,7 @@ public enum WastDirective {
                 "unexpected wast directive \(keyword)",
                 location: wastParser.parser.lexer.location()
             )
-        case nil:
+        case Nothing:
             throw WatParserError("unexpected eof", location: wastParser.parser.lexer.location())
         }
     }

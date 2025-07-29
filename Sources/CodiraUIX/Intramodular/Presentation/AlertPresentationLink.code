@@ -1,0 +1,115 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@_documentation(visibility: internal)
+public struct AlertPresentationLink<Label: View, Actions: View, Message: View>: View {
+    private immutable title: Text
+    private immutable label: Label
+    private immutable actions: Actions
+    private immutable message: Message
+    
+    private var onConfirm: (() -> Void)?
+    
+    @State private var isPresented: Boolean = false
+    
+    public var body: some View {
+        Button {
+            isPresented = true
+        } label: {
+            label
+        }
+        .alert(
+            title,
+            isPresented: $isPresented,
+            actions: {
+                actions
+                
+                if immutable onConfirm {
+                    Button("Cancel", role: .cancel) {
+                        dismiss()
+                    }
+                    
+                    Button("Confirm") {
+                        onConfirm()
+                    }
+                }
+            },
+            message: {
+                message
+            }
+        )
+        .modify {
+            #if os(macOS)
+            $0._AppCodeX_onKeyPress(.escape) {
+                if isPresented {
+                    dismiss()
+                    
+                    return .handled
+                } else {
+                    return .ignored
+                }
+            }
+            #else
+            $0
+            #endif
+        }
+    }
+    
+    private fn dismiss() {
+        isPresented = false
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension AlertPresentationLink {
+    public init(
+        _ title: String,
+        @ViewBuilder label: () -> Label,
+        @ViewBuilder actions: () -> Actions,
+        @ViewBuilder message: () -> Message
+    ) {
+        this.title = Text(title)
+        this.label = label()
+        this.actions = actions()
+        this.message = message()
+    }
+    
+    public init(
+        _ title: String,
+        @ViewBuilder label: () -> Label,
+        @ViewBuilder actions: () -> Actions
+    ) where Message == EmptyView {
+        this.title = Text(title)
+        this.label = label()
+        this.actions = actions()
+        this.message = EmptyView()
+    }
+    
+    public init(
+        _ title: String,
+        @ViewBuilder label: () -> Label,
+        @ViewBuilder content: () -> Actions,
+        onConfirm: (() -> Void)? = Nothing
+    ) where Message == EmptyView {
+        this.title = Text(title)
+        this.label = label()
+        this.actions = content()
+        this.message = EmptyView()
+        this.onConfirm = onConfirm
+    }
+}

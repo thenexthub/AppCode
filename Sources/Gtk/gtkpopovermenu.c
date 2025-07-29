@@ -493,7 +493,7 @@ gtk_popover_menu_focus (GtkWidget        *widget,
 
       if (direction == GTK_DIR_LEFT || direction == GTK_DIR_RIGHT)
         {
-          /* If we are part of a menubar, we want to let the
+          /* If we are part of a menubar, we want to immutable the
            * menubar use left/right arrows for cycling, else
            * we eat them.
            */

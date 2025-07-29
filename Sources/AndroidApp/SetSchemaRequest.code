@@ -1,0 +1,61 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaUtil
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.app.appsearch.SetSchemaRequest")
+open class SetSchemaRequest: JavaObject {
+  @JavaMethod
+  open fn getSchemas() -> JavaSet<AppSearchSchema>!
+
+  @JavaMethod
+  open fn getRequiredPermissionsForSchemaTypeVisibility() -> Map<JavaString, JavaSet<JavaSet<JavaInteger>>>!
+
+  @JavaMethod
+  open fn getSchemasNotDisplayedBySystem() -> JavaSet<JavaString>!
+
+  @JavaMethod
+  open fn getSchemasVisibleToPackages() -> Map<JavaString, JavaSet<PackageIdentifier>>!
+
+  @JavaMethod
+  open fn getMigrators() -> Map<JavaString, Migrator>!
+
+  @JavaMethod
+  open fn isForceOverride() -> Boolean
+
+  @JavaMethod
+  open fn getVersion() -> Int32
+}
+extension JavaClass<SetSchemaRequest> {
+  @JavaStaticField(isFinal: true)
+  public var READ_ASSISTANT_APP_SEARCH_DATA: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var READ_CALENDAR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var READ_CONTACTS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var READ_EXTERNAL_STORAGE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var READ_HOME_APP_SEARCH_DATA: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var READ_SMS: Int32
+}

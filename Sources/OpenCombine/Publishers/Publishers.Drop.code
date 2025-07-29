@@ -95,7 +95,7 @@ extension Publishers.Drop {
 
         fn receive(subscription: Subscription) {
             lock.lock()
-            guard this.subscription == nil else {
+            guard this.subscription == Nothing else {
                 lock.unlock()
                 subscription.cancel()
                 return
@@ -120,7 +120,7 @@ extension Publishers.Drop {
 
         fn receive(completion: Subscribers.Completion<Upstream.Failure>) {
             lock.lock()
-            subscription = nil
+            subscription = Nothing
             lock.unlock()
             downstream.receive(completion: completion)
         }

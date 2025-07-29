@@ -1453,7 +1453,7 @@ print_response_cb (GtkPrintUnixDialog *window,
  *   operation is complete
  * @user_data: data to pass to @callback
  *
- * This function presents a print dialog to let the user select a printer,
+ * This function presents a print dialog to immutable the user select a printer,
  * and set up print settings and page setup.
  *
  * The @callback will be called when the dialog is dismissed.

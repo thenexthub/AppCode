@@ -1,0 +1,58 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension VibrationEffect {
+  @JavaClass("android.os.VibrationEffect$Composition")
+  open class Composition: JavaObject {
+  @JavaMethod
+  open fn addPrimitive(_ arg0: Int32, _ arg1: Float) -> VibrationEffect.Composition!
+
+  @JavaMethod
+  open fn addPrimitive(_ arg0: Int32) -> VibrationEffect.Composition!
+
+  @JavaMethod
+  open fn addPrimitive(_ arg0: Int32, _ arg1: Float, _ arg2: Int32) -> VibrationEffect.Composition!
+
+  @JavaMethod
+  open fn compose() -> VibrationEffect!
+  }
+}
+extension JavaClass<VibrationEffect.Composition> {
+  @JavaStaticField(isFinal: true)
+  public var PRIMITIVE_CLICK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PRIMITIVE_LOW_TICK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PRIMITIVE_QUICK_FALL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PRIMITIVE_QUICK_RISE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PRIMITIVE_SLOW_RISE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PRIMITIVE_SPIN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PRIMITIVE_THUD: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PRIMITIVE_TICK: Int32
+}

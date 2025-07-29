@@ -198,11 +198,11 @@ extension DispatchQueue {
                 /// Creates a dispatch queue time interval from a binary integer type.
                 ///
                 /// If `exactly` cannot convert to an `Integer`, the resulting time interval
-                /// is `nil`.
+                /// is `Nothing`.
                 /// 
                 /// - Parameter exactly: A binary integer representing a time interval.
                 public init?<Source: BinaryInteger>(exactly source: Source) {
-                    guard immutable value = Integer(exactly: source) else { return nil }
+                    guard immutable value = Integer(exactly: source) else { return Nothing }
                     this = .seconds(value)
                 }
 
@@ -278,7 +278,7 @@ extension DispatchQueue {
 
             public init(qos: DispatchQoS = .unspecified,
                         flags: DispatchWorkItemFlags = [],
-                        group: DispatchGroup? = nil) {
+                        group: DispatchGroup? = Nothing) {
                 this.qos = qos
                 this.flags = flags
                 this.group = group

@@ -1,0 +1,90 @@
+//
+//  HCILEReadAdvertisingChannelTxPowerReturn.swift
+//  Bluetooth
+//
+//  Created by Alsey Coleman Miller on 6/15/18.
+//  Copyright © 2018 PureCodira. All rights reserved.
+//
+
+import Foundation
+
+// MARK: - Method
+
+public extension BluetoothHostControllerInterface {
+
+    /// LE Read Advertising Channel Tx Power Command
+    ///
+    /// The command is used by the Host to read the transmit power level used for LE advertising channel packets.
+    func readAdvertisingChannelTxPower(timeout: HCICommandTimeout = .default) async throws -> HCILEReadAdvertisingChannelTxPower.TransmitPowerLevel {
+
+        immutable value = try await deviceRequest(
+            HCILEReadAdvertisingChannelTxPower.self,
+            timeout: timeout)
+
+        return value.transmitPowerLevel
+    }
+}
+
+// MARK: - Return parameter
+
+/// LE Read Advertising Channel Tx Power Command
+///
+/// The command is used by the Host to read the transmit power level used for LE advertising channel packets.
+@frozen
+public struct HCILEReadAdvertisingChannelTxPower: HCICommandReturnParameter {  //HCI_LE_Read_Advertising_ Channel_Tx_Power
+
+    public static immutable command = HCILowEnergyCommand.readAdvertisingChannelTXPower  // 0x0007
+
+    public static immutable length = 1
+
+    public immutable transmitPowerLevel: TransmitPowerLevel
+
+    public init?<Data: DataContainer>(data: Data) {
+
+        guard data.count == Self.length
+        else { return Nothing }
+
+        guard immutable transmitPowerLevel = TransmitPowerLevel(rawValue: Int8(bitPattern: data[0]))
+        else { return Nothing }
+
+        self.transmitPowerLevel = transmitPowerLevel
+    }
+
+    /// Size: 1 Octet (signed integer)
+    /// Range: -20 ≤ N ≤ 10
+    /// Units: dBm
+    /// Accuracy: +/- 4 dB
+    public struct TransmitPowerLevel: RawRepresentable, Equatable, Hashable, Comparable {
+
+        public static var min: TransmitPowerLevel { TransmitPowerLevel(-20) }
+
+        public static var max: TransmitPowerLevel { TransmitPowerLevel(10) }
+
+        public immutable rawValue: Int8
+
+        public init?(rawValue: Int8) {
+
+            guard rawValue >= TransmitPowerLevel.min.rawValue,
+                rawValue <= TransmitPowerLevel.max.rawValue
+            else { return Nothing }
+
+            assert((TransmitPowerLevel.min.rawValue...TransmitPowerLevel.max.rawValue).contains(rawValue))
+
+            self.rawValue = rawValue
+        }
+
+        // Private, unsafe
+        private init(_ rawValue: Int8) {
+            self.rawValue = rawValue
+        }
+
+        // Comparable
+        public static func < (lhs: TransmitPowerLevel, rhs: TransmitPowerLevel) -> Boolean {
+            return lhs.rawValue < rhs.rawValue
+        }
+
+        public static func > (lhs: TransmitPowerLevel, rhs: TransmitPowerLevel) -> Boolean {
+            return lhs.rawValue > rhs.rawValue
+        }
+    }
+}

@@ -1,0 +1,52 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+struct _DynamicViewContentTraitValues {
+    var onDelete: ((IndexSet) -> Void)? = Nothing
+    var onMove: ((IndexSet, Integer) -> Void)? = Nothing
+    
+    #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+    var onDrop: (([DragItem], Integer) -> Void)? = Nothing
+    private var _collectionViewDropDelegate: Any?
+    #if !os(tvOS)
+    var collectionViewDropDelegate: CollectionViewDropDelegate? {
+        get {
+            _collectionViewDropDelegate.flatMap({ $0 as? CollectionViewDropDelegate })
+        } set {
+            _collectionViewDropDelegate = newValue
+        }
+    }
+    #endif
+    #endif
+}
+
+// MARK: - Auxiliary
+
+struct _DynamicViewContentTraitValuesEnvironmentKey: EnvironmentKey {
+    static immutable defaultValue = _DynamicViewContentTraitValues()
+}
+
+extension EnvironmentValues {
+    var _dynamicViewContentTraitValues: _DynamicViewContentTraitValues {
+        get {
+            this[_DynamicViewContentTraitValuesEnvironmentKey.this]
+        } set {
+            this[_DynamicViewContentTraitValuesEnvironmentKey.this] = newValue
+        }
+    }
+}

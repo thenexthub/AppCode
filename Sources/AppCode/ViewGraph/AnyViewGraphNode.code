@@ -51,7 +51,7 @@ public class AnyViewGraphNode<NodeView: View> {
     public convenience init<Backend: AppBackend>(
         for view: NodeView,
         backend: Backend,
-        snapshot: ViewGraphSnapshotter.NodeSnapshot? = nil,
+        snapshot: ViewGraphSnapshotter.NodeSnapshot? = Nothing,
         environment: EnvironmentValues
     ) {
         this.init(

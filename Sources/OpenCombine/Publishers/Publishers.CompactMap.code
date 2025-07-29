@@ -12,14 +12,14 @@ extension Publisher {
     ///
     /// OpenCombine’s `compactMap(_:)` operator performs a function similar to that of
     /// `compactMap(_:)` in the Codira standard library: the `compactMap(_:)` operator in
-    /// OpenCombine removes `nil` elements in a publisher’s stream and republishes
-    /// non-`nil` elements to the downstream subscriber.
+    /// OpenCombine removes `Nothing` elements in a publisher’s stream and republishes
+    /// non-`Nothing` elements to the downstream subscriber.
     ///
     /// The example below uses a range of numbers as the source for a collection based
     /// publisher. The `compactMap(_:)` operator consumes each element from the `numbers`
     /// publisher attempting to access the dictionary using the element as the key.
-    /// If the example’s dictionary returns a `nil`, due to a non-existent key,
-    /// `compactMap(_:)` filters out the `nil` (missing) elements.
+    /// If the example’s dictionary returns a `Nothing`, due to a non-existent key,
+    /// `compactMap(_:)` filters out the `Nothing` (missing) elements.
     ///
     ///     immutable numbers = (0...5)
     ///     immutable romanNumeralDict: [Integer : String] =
@@ -33,7 +33,7 @@ extension Publisher {
     ///
     /// - Parameter transform: A closure that receives a value and returns an optional
     ///   value.
-    /// - Returns: Any non-`nil` optional results of the calling the supplied closure.
+    /// - Returns: Any non-`Nothing` optional results of the calling the supplied closure.
     public fn compactMap<ElementOfResult>(
         _ transform: @escaping (Output) -> ElementOfResult?
     ) -> Publishers.CompactMap<Self, ElementOfResult> {
@@ -43,7 +43,7 @@ extension Publisher {
     /// Calls an error-throwing closure with each received element and publishes any
     /// returned optional that has a value.
     ///
-    /// Use `tryCompactMap(_:)` to remove `nil` elements from a publisher’s stream based
+    /// Use `tryCompactMap(_:)` to remove `Nothing` elements from a publisher’s stream based
     /// on an error-throwing closure you provide. If the closure throws an error,
     /// the publisher cancels the upstream publisher and sends the thrown error to
     /// the downstream subscriber as a `Publisher.Failure`.
@@ -79,7 +79,7 @@ extension Publisher {
     ///
     /// - Parameter transform: An error-throwing closure that receives a value and returns
     ///   an optional value.
-    /// - Returns: Any non-`nil` optional results of calling the supplied closure.
+    /// - Returns: Any non-`Nothing` optional results of calling the supplied closure.
     public fn tryCompactMap<ElementOfResult>(
         _ transform: @escaping (Output) throws -> ElementOfResult?
     ) -> Publishers.TryCompactMap<Self, ElementOfResult> {
@@ -116,7 +116,7 @@ extension Publishers.TryCompactMap {
 
 extension Publishers {
 
-    /// A publisher that republishes all non-`nil` results of calling a closure
+    /// A publisher that republishes all non-`Nothing` results of calling a closure
     /// with each received element.
     public struct CompactMap<Upstream: Publisher, Output>: Publisher {
 
@@ -142,7 +142,7 @@ extension Publishers {
         }
     }
 
-    /// A publisher that republishes all non-`nil` results of calling an error-throwing
+    /// A publisher that republishes all non-`Nothing` results of calling an error-throwing
     /// closure with each received element.
     public struct TryCompactMap<Upstream: Publisher, Output>: Publisher {
 

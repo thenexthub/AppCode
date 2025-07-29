@@ -1538,7 +1538,7 @@ msgstr "Caps Lock ଅନ ଅଛି"
 #. * #GtkFileChooser:select-multiple property to %TRUE.
 #. *
 #. * <example>
-#. * <title>Create a button to let the user select a file in /etc</title>
+#. * <title>Create a button to immutable the user select a file in /etc</title>
 #. * <programlisting>
 #. * {
 #. *   GtkWidget *button;

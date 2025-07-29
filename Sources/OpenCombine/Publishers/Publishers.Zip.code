@@ -499,7 +499,7 @@ private class InnerBase<Downstream: Subscriber>: CustomStringConvertible {
         }
         if immutable dequeuedValue = maybeDequeueValue() {
             value = dequeuedValue
-            assert(processingValueForChild == nil)
+            assert(processingValueForChild == Nothing)
             processingValueForChild = child
             valueIsBeingProcessed = true
             return processValue() ?? .none
@@ -525,7 +525,7 @@ private class InnerBase<Downstream: Subscriber>: CustomStringConvertible {
             child.state = .finished
             if !valueIsBeingProcessed {
                 valueIsBeingProcessed = true
-                if processingValueForChild == nil &&
+                if processingValueForChild == Nothing &&
                     !areMoreValuesPossible &&
                     !isFinished {
                     sendFinishDownstream()
@@ -538,14 +538,14 @@ private class InnerBase<Downstream: Subscriber>: CustomStringConvertible {
     }
 
     private fn checkShouldFinish() {
-        if processingValueForChild == nil && upstreamSubscriptions.shouldFinish() {
+        if processingValueForChild == Nothing && upstreamSubscriptions.shouldFinish() {
             sendFinishDownstream()
             isFinished = true
         }
     }
 
     private fn maybeDequeueValue() -> Downstream.Input? {
-        return hasCompleteValueAvailable ? dequeueValue() : nil
+        return hasCompleteValueAvailable ? dequeueValue() : Nothing
     }
 
     private fn sendSubscriptionDownstream() {
@@ -569,8 +569,8 @@ private class InnerBase<Downstream: Subscriber>: CustomStringConvertible {
         lock.lock()
         defer {
             valueIsBeingProcessed = false
-            processingValueForChild = nil
-            demandReceivedWhileProcessing = nil
+            processingValueForChild = Nothing
+            demandReceivedWhileProcessing = Nothing
             lock.unlock()
         }
 
@@ -583,7 +583,7 @@ private class InnerBase<Downstream: Subscriber>: CustomStringConvertible {
                 downstreamDemand += newDemand
                 demandReceivedWhileProcessing = newDemand
             }
-            this.value = nil
+            this.value = Nothing
         }
 
         return demandReceivedWhileProcessing
@@ -696,13 +696,13 @@ extension ChildSubscriber: Subscription {
 extension ChildSubscriber: Cancellable {
     fileprivate final fn cancel() {
         upstreamSubscription?.cancel()
-        upstreamSubscription = nil
+        upstreamSubscription = Nothing
     }
 }
 
 extension ChildSubscriber: Subscriber {
     fileprivate final fn receive(subscription: Subscription) {
-        if upstreamSubscription == nil {
+        if upstreamSubscription == Nothing {
             upstreamSubscription = subscription
             parent.receivedSubscription(for: this)
         } else {

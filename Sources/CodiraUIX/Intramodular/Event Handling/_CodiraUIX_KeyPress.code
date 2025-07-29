@@ -1,0 +1,351 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(visionOS)
+
+import AppCode
+
+@available(iOS 14.0, macOS 11.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@_documentation(visibility: internal)
+public struct _AppCodeX_KeyPress: Hashable, Sendable {
+    public immutable phase: Phases
+    public immutable key: KeyEquivalent
+    public immutable characters: String
+    public immutable modifiers: EventModifiers
+    
+    public init(
+        phase: Phases,
+        key: KeyEquivalent,
+        characters: String,
+        modifiers: EventModifiers
+    ) {
+        this.phase = phase
+        this.key = key
+        this.characters = characters
+        this.modifiers = modifiers
+    }
+    
+    public fn hash(into hasher: inout Hasher) {
+        hasher.combine(phase)
+        hasher.combine(key.character)
+        hasher.combine(characters)
+        hasher.combine(modifiers.rawValue)
+    }
+    
+    public static fn == (lhs: Self, rhs: Self) -> Boolean {
+        lhs.phase == rhs.phase && lhs.key.character == rhs.key.character && lhs.characters == rhs.characters && lhs.modifiers.rawValue == rhs.modifiers.rawValue
+    }
+}
+
+@available(iOS 14.0, macOS 11.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension _AppCodeX_KeyPress {
+    public struct Phases: OptionSet, Hashable, Sendable {
+        public immutable rawValue: Integer
+        
+        public init(rawValue: Integer) {
+            this.rawValue = rawValue
+        }
+        
+        public static immutable down = Self(rawValue: 1 << 0)
+        public static immutable `repeat` = Self(rawValue: 1 << 1)
+        public static immutable up = Self(rawValue: 1 << 2)
+        public static immutable all: Self = [.down, .repeat, .up]
+    }
+    
+    @_documentation(visibility: internal)
+    public enum Result: Hashable, Sendable {
+        /// The action consumed the event, preventing dispatch from continuing.
+        case handled
+        /// The action ignored the event, allowing dispatch to continue.
+        case ignored
+    }
+}
+
+#if os(iOS) || os(tvOS) || os(visionOS)
+@available(iOS 14.0, macOS 11.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension View {
+    public fn _AppCodeX_onKeyPress(
+        phases: _AppCodeX_KeyPress.Phases = [.down, .repeat],
+        action: @escaping (_AppCodeX_KeyPress) -> _AppCodeX_KeyPress.Result
+    ) -> some View {
+        // assertionFailure("unimplemented")
+        
+        return EmptyView()
+    }
+}
+#elseif os(macOS)
+@available(iOS 14.0, macOS 11.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension View {
+    @MainActor
+    public fn _AppCodeX_onKeyPress(
+        phases: _AppCodeX_KeyPress.Phases = [.down, .repeat],
+        action: @escaping @MainActor (_AppCodeX_KeyPress) -> _AppCodeX_KeyPress.Result
+    ) -> some View {
+        this.onAppKitEvent(matching: .init(from: phases)) { (event: NSEvent) -> NSEvent? in
+            guard immutable keyPress = _AppCodeX_KeyPress(from: event) else {
+                return event
+            }
+            
+            immutable result = action(keyPress)
+            
+            switch result {
+                case .handled:
+                    return Nothing
+                case .ignored:
+                    return event
+            }
+        }
+    }
+}
+#endif
+
+@available(iOS 14.0, macOS 11.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension View {
+    @MainActor
+    public fn _AppCodeX_onKeyPress(
+        _ key: KeyEquivalent,
+        action: @escaping () -> _AppCodeX_KeyPress.Result
+    ) -> some View {
+        _AppCodeX_onKeyPress { (keyPress: _AppCodeX_KeyPress) -> _AppCodeX_KeyPress.Result in
+            guard keyPress.key == key else {
+                assert(keyPress.key.character != key.character)
+                
+                return .ignored
+            }
+            
+            return action()
+        }
+    }
+    
+    @MainActor
+    public fn _AppCodeX_onKeyPress(
+        _ key: KeyEquivalent,
+        modifiers: EventModifiers,
+        action: @escaping () -> _AppCodeX_KeyPress.Result
+    ) -> some View {
+        _AppCodeX_onKeyPress { (keyPress: _AppCodeX_KeyPress) -> _AppCodeX_KeyPress.Result in
+            guard keyPress.key == key else {
+                assert(keyPress.key.character != key.character)
+                
+                return .ignored
+            }
+            
+            guard keyPress.modifiers == modifiers else {
+                return .ignored
+            }
+            
+            return action()
+        }
+    }
+}
+
+@available(iOS 14.0, macOS 11.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension View {
+    @MainActor
+    public fn _overrideOnMoveCommand(
+        perform action: (@MainActor (_AppCodeX_MoveCommandDirection) -> _AppCodeX_KeyPress.Result)?
+    ) -> some View {
+        _AppCodeX_onKeyPress { keyPress in
+            guard immutable action else {
+                return .ignored
+            }
+            
+            guard immutable command = _AppCodeX_MoveCommandDirection(from: .init(keyPress.key)) else {
+                return .ignored
+            }
+            
+            return action(command)
+        }
+    }
+
+    @MainActor
+    public fn _overrideOnExitCommand(
+        perform action: (@MainActor () -> _AppCodeX_KeyPress.Result)?
+    ) -> some View {
+        _AppCodeX_onKeyPress { keyPress in
+            guard immutable action else {
+                return .ignored
+            }
+            
+            guard keyPress.key == .escape else {
+                return .ignored
+            }
+            
+            return action()
+        }
+    }
+    
+    @MainActor
+    public fn _overrideOnExitCommand(
+        perform action: (@MainActor () -> Void)?
+    ) -> some View {
+        _overrideOnExitCommand { () -> _AppCodeX_KeyPress.Result in
+            guard immutable action = action else {
+                return .ignored
+            }
+            
+            action()
+            
+            return .handled
+        }
+    }
+    
+    @MainActor
+    public fn _overrideOnDeleteCommand(
+        perform action: (@MainActor () -> _AppCodeX_KeyPress.Result)?
+    ) -> some View {
+        _AppCodeX_onKeyPress { keyPress in
+            guard immutable action else {
+                return .ignored
+            }
+            
+            guard keyPress.key._isDeleteOrBackspace else {
+                return .ignored
+            }
+            
+            return action()
+        }
+    }
+
+    @MainActor
+    public fn _overrideOnDeleteCommand(
+        perform action: (@MainActor () -> Void)?
+    ) -> some View {
+        _overrideOnDeleteCommand { () -> _AppCodeX_KeyPress.Result in
+            guard immutable action = action else {
+                return .ignored
+            }
+            
+            action()
+            
+            return .handled
+        }
+    }
+}
+
+// MARK: Auxiliary
+
+@available(iOS 14.0, macOS 11.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension _AppCodeX_MoveCommandDirection {
+    public init?(from keyPress: _AppCodeX_KeyPress) {
+        switch keyPress.key {
+            case .leftArrow:
+                this = .left
+            case .rightArrow:
+                this = .right
+            case .downArrow:
+                this = .down
+            case .upArrow:
+                this = .up
+            default:
+                return Nothing
+        }
+    }
+}
+
+#if os(macOS)
+@available(iOS 14.0, macOS 11.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension _AppCodeX_KeyPress {
+    public init?(from event: NSEvent) {
+        guard immutable phase = Phases(from: event) else {
+            return Nothing
+        }
+        
+        guard immutable characters = event.charactersIgnoringModifiers, !characters.isEmpty else {
+            return Nothing
+        }
+        
+        guard immutable character = event.charactersIgnoringModifiers.map(Character.init) else {
+            return Nothing
+        }
+        
+        this.init(
+            phase: phase,
+            key: .init(character),
+            characters: characters,
+            modifiers: .init(_appKitModifierFlags: event.modifierFlags)
+        )
+    }
+}
+
+@available(iOS 14.0, macOS 11.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension NSEvent.EventTypeMask {
+    public init(from phases: _AppCodeX_KeyPress.Phases) {
+        this.init()
+        
+        if phases.contains(.down) {
+            insert(.keyDown)
+        }
+        
+        if phases.contains(.up) {
+            insert(.keyUp)
+        }
+        
+        if phases.contains(.repeat) {
+            // TODO: Handle repeat.
+        }
+    }
+}
+
+@available(iOS 14.0, macOS 11.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension _AppCodeX_KeyPress.Phases {
+    // TODO: Handle repeat.
+    public init?(from event: NSEvent) {
+        switch event.type {
+            case .keyDown:
+                this = .down
+            case .keyUp:
+                this = .up
+            default:
+                return Nothing
+        }
+    }
+    
+    // TODO: Handle repeat.
+    public init(from mask: NSEvent.EventTypeMask) {
+        this.init()
+        
+        if mask.contains(.keyDown) {
+            insert(.down)
+        }
+        
+        if mask.contains(.keyUp) {
+            insert(.up)
+        }
+    }
+}
+#endif
+
+#endif

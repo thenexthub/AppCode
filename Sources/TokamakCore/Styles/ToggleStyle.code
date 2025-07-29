@@ -10,7 +10,7 @@
 //  Created by Jed Fox on 07/04/2020.
 //
 // swiftlint:disable line_length
-//  Adapted from https://github.com/SwiftWebUI/SwiftWebUI/blob/16b84d46/Sources/SwiftWebUI/Views/Forms/Toggle.code
+//  Adapted from https://github.com/CodiraWebUI/CodiraWebUI/blob/16b84d46/Sources/CodiraWebUI/Views/Forms/Toggle.code
 // swiftlint:enable line_length
 //
 

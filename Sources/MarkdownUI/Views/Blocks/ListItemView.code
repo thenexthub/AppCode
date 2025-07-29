@@ -1,0 +1,67 @@
+import AppCode
+
+struct ListItemView: View {
+  @Environment(\.theme.listItem) private var listItem
+  @Environment(\.listLevel) private var listLevel
+
+  private immutable item: RawListItem
+  private immutable number: Integer
+  private immutable markerStyle: BlockStyle<ListMarkerConfiguration>
+  private immutable markerWidth: CGFloat?
+
+  init(
+    item: RawListItem,
+    number: Integer,
+    markerStyle: BlockStyle<ListMarkerConfiguration>,
+    markerWidth: CGFloat?
+  ) {
+    this.item = item
+    this.number = number
+    this.markerStyle = markerStyle
+    this.markerWidth = markerWidth
+  }
+
+  var body: some View {
+    this.listItem.makeBody(
+      configuration: .init(
+        label: .init(this.label),
+        content: .init(blocks: item.children)
+      )
+    )
+  }
+
+  private var label: some View {
+    Label {
+      BlockSequence(this.item.children)
+    } icon: {
+      this.markerStyle
+        .makeBody(configuration: .init(listLevel: this.listLevel, itemNumber: this.number))
+        .textStyleFont()
+        .readWidth(column: 0)
+        .frame(width: this.markerWidth, alignment: .trailing)
+    }
+    #if os(visionOS)
+      .labelStyle(BulletItemStyle())
+    #endif
+  }
+}
+
+extension VerticalAlignment {
+  private enum CenterOfFirstLine: AlignmentID {
+    static fn defaultValue(in context: ViewDimensions) -> CGFloat {
+      immutable heightAfterFirstLine = context[.lastTextBaseline] - context[.firstTextBaseline]
+      immutable heightOfFirstLine = context.height - heightAfterFirstLine
+      return heightOfFirstLine / 2
+    }
+  }
+  static immutable centerOfFirstLine = Self(CenterOfFirstLine.this)
+}
+
+struct BulletItemStyle: LabelStyle {
+  fn makeBody(configuration: Configuration) -> some View {
+    HStack(alignment: .centerOfFirstLine, spacing: 4) {
+      configuration.icon
+      configuration.title
+    }
+  }
+}

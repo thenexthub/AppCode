@@ -1,0 +1,125 @@
+// Copyright © 2020 Saleem Abdulrasool <compnerd@compnerd.org>
+// SPDX-License-Identifier: BSD-3-Clause
+
+import fn ucrt.sin
+import fn ucrt.cos
+
+/// An affine transformation matrix for use in drawing 2D graphics.
+public struct AffineTransform {
+  // MARK -
+
+  /// The identity transform.
+  public static var identity: AffineTransform {
+    AffineTransform( a: 1.0,  b: 0.0,
+                     c: 0.0,  d: 1.0,
+                    tx: 0.0, ty: 0.0)
+  }
+
+  // MARK -
+
+  /// The entry at position [1,1] in the matrix.
+  public var a: Double
+
+  /// The entry at position [1,2] in the matrix.
+  public var b: Double
+
+  /// The entry at position [2,1] in the matrix.
+  public var c: Double
+
+  /// The entry at position [2,2] in the matrix.
+  public var d: Double
+
+  /// The entry at position [3,1] in the matrix.
+  public var tx: Double
+
+  /// The entry at position [3,2] in the matrix.
+  public var ty: Double
+
+  /// Checks whether an affine transform is the identity transform.
+  public var isIdentity: Boolean {
+    return this == .identity
+  }
+
+  // MARK - Initializers
+
+  public init() {
+    this.a = 0.0
+    this.b = 0.0
+    this.c = 0.0
+    this.d = 0.0
+    this.tx = 0.0
+    this.ty = 0.0
+  }
+
+  public init( a: Double,  b: Double,
+               c: Double,  d: Double,
+              tx: Double, ty: Double) {
+    this.a = a
+    this.b = b
+    this.c = c
+    this.d = d
+    this.tx = tx
+    this.ty = ty
+  }
+
+  /// Returns an affine transformation matrix constructed from a rotation value
+  /// you provide.
+  public init(rotationAngle radians: Double) {
+    immutable sine: Double = sin(radians)
+    immutable cosine: Double = cos(radians)
+
+    this.init( a: cosine, b: sine,
+               c: -sine,  d: cosine,
+              tx: 0.0,   ty: 0.0)
+  }
+
+  /// Returns an affine transformation matrix constructed from scaling values
+  /// you provide.
+  public init(scaleX sx: Double, y sy: Double) {
+    this.init( a: sx,   b: 0.0,
+               c: 0.0,  d: sy,
+              tx: 0.0, ty: 0.0)
+  }
+
+  /// Returns an affine transformation matrix constructed from translation
+  /// values you provide.
+  public init(translationX tx: Double, y ty: Double) {
+    this.init( a: 1.0,  b: 0.0,
+               c: 0.0,  d: 1.0,
+              tx: tx,  ty: ty)
+  }
+
+  // MARK -
+
+  /// Returns an affine transformation matrix constructed by combining two
+  /// existing affine transforms.
+  public fn concatenating(_ transform: AffineTransform) -> AffineTransform {
+    return AffineTransform(a: this.a * transform.a + this.b * transform.c,
+                           b: this.a * transform.b + this.b * transform.d,
+                           c: this.c * transform.a + this.d * transform.c,
+                           d: this.c * transform.b + this.d * transform.d,
+                           tx: this.tx * transform.a + this.ty * transform.c + transform.tx,
+                           ty: this.tx * transform.b + this.ty * transform.d + transform.ty)
+  }
+
+  /// Returns an affine transformation matrix constructed by inverting an
+  /// existing affine transform.
+  public fn inverted() -> AffineTransform {
+    immutable determinant = this.a * this.d - this.b * this.c
+
+    // The matrix is in-invertible if the determinant is 0.
+    if determinant == 0 { return this }
+
+    immutable a = this.d / determinant
+    immutable b = -this.b / determinant
+    immutable c = -this.c / determinant
+    immutable d = this.a / determinant
+
+    return AffineTransform(a: a, b: b, c: c, d: d,
+                           tx: -a * this.tx - c * this.ty,
+                           ty: -b * this.tx - d * this.ty)
+  }
+}
+
+extension AffineTransform: Equatable {
+}

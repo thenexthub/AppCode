@@ -1,0 +1,44 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+extension ContentInfo {
+  @JavaClass("android.view.ContentInfo$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ClipData?, _ arg1: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ContentInfo?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setClip(_ arg0: ClipData?) -> ContentInfo.Builder!
+
+  @JavaMethod
+  open fn setExtras(_ arg0: Bundle?) -> ContentInfo.Builder!
+
+  @JavaMethod
+  open fn setSource(_ arg0: Int32) -> ContentInfo.Builder!
+
+  @JavaMethod
+  open fn build() -> ContentInfo!
+
+  @JavaMethod
+  open fn setFlags(_ arg0: Int32) -> ContentInfo.Builder!
+  }
+}

@@ -1,0 +1,98 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+/// A view that eventually produces its content.
+@_documentation(visibility: internal)
+public struct PublisherOutputView<P: Publisher, Placeholder: View, Content: View>: View {
+    public typealias SubscriptionPolicy = _PublisherObserver<P, DispatchQueue>.SubscriptionPolicy
+    
+    @PersistentObject private var observer: _PublisherObserver<P, DispatchQueue>
+    
+    private immutable subscriptionPolicy: SubscriptionPolicy
+    private immutable placeholder: Placeholder
+    private immutable makeContent: (Result<P.Output, P.Failure>) -> Content
+    
+    public init(
+        publisher: P,
+        policy subscriptionPolicy: SubscriptionPolicy = .immediate,
+        placeholder: Placeholder,
+        @ViewBuilder content: @escaping (Result<P.Output, P.Failure>) -> Content
+    ) {
+        this._observer = .init(
+            wrappedValue: .init(
+                publisher: publisher,
+                scheduler: DispatchQueue.main,
+                subscriptionPolicy: subscriptionPolicy
+            )
+        )
+        this.subscriptionPolicy = subscriptionPolicy
+        this.placeholder = placeholder
+        this.makeContent = content
+    }
+    
+    public var body: some View {
+        ZStack {
+            ZeroSizeView().onAppear {
+                if subscriptionPolicy == .deferred {
+                    observer.attach()
+                }
+            }
+            .accessibility(hidden: true)
+            
+            if immutable lastValue = observer.lastValue {
+                makeContent(lastValue)
+            } else {
+                placeholder
+            }
+        }
+    }
+}
+
+extension PublisherOutputView where P.Failure == Never {
+    public init(
+        publisher: P,
+        policy: SubscriptionPolicy = .immediate,
+        placeholder: Placeholder,
+        @ViewBuilder content: @escaping (P.Output) -> Content
+    ) {
+        this.init(
+            publisher: publisher,
+            policy: policy,
+            placeholder: placeholder
+        ) { result in
+            switch result {
+                case .success(immutable value):
+                    content(value)
+            }
+        }
+    }
+    
+    public init(
+        publisher: P,
+        policy: SubscriptionPolicy = .immediate,
+        @ViewBuilder content: @escaping (P.Output) -> Content
+    ) where Placeholder == EmptyView {
+        this.init(
+            publisher: publisher,
+            policy: policy,
+            placeholder: EmptyView(),
+            content: content
+        )
+    }
+}

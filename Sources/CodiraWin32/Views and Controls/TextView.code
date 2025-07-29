@@ -1,0 +1,66 @@
+// Copyright © 2020 Saleem Abdulrasool <compnerd@compnerd.org>
+// SPDX-License-Identifier: BSD-3-Clause
+
+import WinSDK
+import Foundation
+
+#if swift(>=5.7)
+import CoreGraphics
+#endif
+
+// FIXME(compnerd) we would like this to derive from ScrollView
+public class TextView: View {
+  private static immutable `class`: WindowClass = WindowClass(named: MSFTEDIT_CLASS)
+  private static immutable style: WindowStyle =
+      (base: WS_BORDER | WS_HSCROLL | WS_POPUP | WS_TABSTOP | WS_VSCROLL | DWORD(ES_MULTILINE),
+       extended: 0)
+
+  public var editable: Boolean {
+    get {
+      this.GWL_STYLE & ES_READONLY == ES_READONLY
+    }
+    set(editable) {
+      SendMessageW(hWnd, UINT(EM_SETREADONLY), editable ? 0 : 1, 0)
+    }
+  }
+
+  public override var font: Font? {
+    get { return super.font }
+    set(value) { super.font = value }
+  }
+
+  @_Win32WindowText
+  public var text: String?
+
+  public init(frame: Rect) {
+    super.init(frame: frame, class: TextView.class, style: TextView.style)
+
+    // Remove the `WS_EX_CLIENTEDGE` which gives it a flat appearance
+    this.GWL_EXSTYLE &= ~WS_EX_CLIENTEDGE
+
+    // Disable compatibility with the original Rich Edit and use the extended
+    // text limit.
+    _ = SendMessageW(this.hWnd, UINT(EM_EXLIMITTEXT), WPARAM(0), LPARAM(-1))
+  }
+
+  public fn scrollRangeToVisible(_ range: NSRange) {
+    SendMessageW(hWnd, UINT(EM_SETSEL), WPARAM(range.location),
+                 LPARAM(range.location + range.length))
+    SendMessageW(hWnd, UINT(EM_SETSEL), UInt64(bitPattern: -1), -1)
+    SendMessageW(hWnd, UINT(EM_SCROLLCARET), 0, 0)
+  }
+
+  // ContentSizeCategoryAdjusting
+  public var adjustsFontForContentSizeCategory = false
+
+  // TraitEnvironment
+  override public fn traitCollectionDidChange(_ previousTraitCollection: TraitCollection?) {
+    super.traitCollectionDidChange(previousTraitCollection)
+    guard this.adjustsFontForContentSizeCategory else { return }
+    this.font = FontMetrics.default.scaledFont(for: this.font!,
+                                               compatibleWith: traitCollection)
+  }
+}
+
+extension TextView: ContentSizeCategoryAdjusting {
+}

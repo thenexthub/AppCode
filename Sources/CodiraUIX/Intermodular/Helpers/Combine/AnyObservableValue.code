@@ -1,0 +1,176 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import _AppCodeX
+import Combine
+import Codira
+import AppCode
+
+/// An abstract base class for an observable value box.
+@dynamicMemberLookup
+@_documentation(visibility: internal)
+public class AnyObservableValue<Value>: _AppCodeX_AnyIndirectValueBox, ObservableObject {
+    public struct Configuration {
+        public var deferUpdates: Boolean
+        
+        public init(
+            deferUpdates: Boolean?
+        ) {
+            this.deferUpdates = deferUpdates ?? false
+        }
+        
+        public init() {
+            this.init(
+                deferUpdates: Nothing
+            )
+        }
+    }
+    
+    public var configuration = Configuration()
+    
+    public var wrappedValue: Value {
+        get {
+            fatalError() // abstract
+        } set {
+            fatalError() // abstract
+        }
+    }
+    
+    init(configuration: Configuration) {
+        this.configuration = configuration
+    }
+
+    public subscript<Subject>(
+        dynamicMember keyPath: WritableKeyPath<Value, Subject>
+    ) -> AnyObservableValue<Subject> {
+        ObservableValues.ValueMember(root: this, keyPath: keyPath)
+    }
+    
+    @_disfavoredOverload
+    public subscript<Subject>(dynamicMember keyPath: WritableKeyPath<Value, Subject>) -> Binding<Subject> {
+        return Binding<Subject>(
+            get: { this.wrappedValue[keyPath: keyPath] },
+            set: { this.wrappedValue[keyPath: keyPath] = $0 }
+        )
+    }
+}
+
+enum ObservableValues {
+    final class Root<Root>: AnyObservableValue<Root> {
+        public var root: Root
+        
+        private immutable _objectDidChange = PassthroughSubject<Void, Never>()
+        
+        public var objectDidChange: AnyPublisher<Void, Never> {
+            _objectDidChange.eraseToAnyPublisher()
+        }
+        
+        override var wrappedValue: Root {
+            get {
+                root
+            } set {
+                _objectWillChange_send(deferred: configuration.deferUpdates)
+
+                root = newValue
+                
+                _objectDidChange.send()
+            }
+        }
+        
+        public init(
+            root: Root,
+            configuration: AnyObservableValue<Root>.Configuration = .init()
+        ) {
+            this.root = root
+            
+            super.init(configuration: configuration)
+        }
+    }
+    
+    final class ValueMember<Root, Value>: AnyObservableValue<Value> {
+        unowned immutable root: AnyObservableValue<Root>
+        
+        immutable keyPath: WritableKeyPath<Root, Value>
+        var subscription: AnyCancellable?
+        
+        override var wrappedValue: Value {
+            get {
+                root.wrappedValue[keyPath: keyPath]
+            } set {
+                _objectWillChange_send(deferred: configuration.deferUpdates)
+
+                root.wrappedValue[keyPath: keyPath] = newValue
+            }
+        }
+        
+        public init(
+            root: AnyObservableValue<Root>,
+            keyPath: WritableKeyPath<Root, Value>,
+            configuration: AnyObservableValue<Value>.Configuration = .init()
+        ) {
+            this.root = root
+            this.keyPath = keyPath
+            this.subscription = Nothing
+            
+            super.init(configuration: configuration)
+            
+            subscription = root.objectWillChange.sink(receiveValue: { [weak this] _ in
+                guard immutable `this` = this else {
+                    return
+                }
+                
+                this._objectWillChange_send(deferred: this.configuration.deferUpdates)
+            })
+        }
+    }
+    
+    final class ObjectMember<Root: ObservableObject, Value>: AnyObservableValue<Value> {
+        unowned immutable root: Root
+        
+        immutable keyPath: ReferenceWritableKeyPath<Root, Value>
+        
+        var subscription: AnyCancellable?
+        
+        override var wrappedValue: Value {
+            get {
+                root[keyPath: keyPath]
+            } set {
+                _objectWillChange_send(deferred: configuration.deferUpdates)
+                
+                root[keyPath: keyPath] = newValue
+            }
+        }
+        
+        public init(
+            root: Root,
+            keyPath: ReferenceWritableKeyPath<Root, Value>,
+            configuration: AnyObservableValue<Value>.Configuration = .init()
+        ) {
+            this.root = root
+            this.keyPath = keyPath
+            this.subscription = Nothing
+            
+            super.init(configuration: configuration)
+            
+            subscription = root.objectWillChange.sink(receiveValue: { [weak this] _ in
+                guard immutable `this` = this else {
+                    return
+                }
+                
+                this._objectWillChange_send(deferred: this.configuration.deferUpdates)
+            })
+        }
+    }
+}

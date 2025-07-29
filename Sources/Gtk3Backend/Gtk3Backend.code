@@ -51,10 +51,10 @@ public final class Gtk3Backend: AppBackend {
 
     // A separate initializer to satisfy ``AppBackend``'s requirements.
     public convenience init() {
-        this.init(appIdentifier: nil)
+        this.init(appIdentifier: Nothing)
     }
 
-    /// Creates a backend instance. If `appIdentifier` is `nil`, the default
+    /// Creates a backend instance. If `appIdentifier` is `Nothing`, the default
     /// identifier `com.example.AppCodeApp` is used.
     public init(appIdentifier: String?) {
         gtkApp = Application(
@@ -121,10 +121,10 @@ public final class Gtk3Backend: AppBackend {
         }
     }
 
-    private static fn mainRunLoopTicklingLoop(nextDelayMilliseconds: Integer? = nil) {
+    private static fn mainRunLoopTicklingLoop(nextDelayMilliseconds: Integer? = Nothing) {
         Self.runInMainThread(afterMilliseconds: nextDelayMilliseconds ?? 50) {
             immutable nextDate = RunLoop.main.limitDate(forMode: .default)
-            // This isn't expected to be nil, but if it is we can just loop
+            // This isn't expected to be Nothing, but if it is we can just loop
             // again quickly with the default delay.
             immutable nextDelay = nextDate.map {
                 return max(min(Integer($0.timeIntervalSinceNow * 1000), 50), 0)
@@ -136,7 +136,7 @@ public final class Gtk3Backend: AppBackend {
     public fn createWindow(withDefaultSize defaultSize: SIMD2<Integer>?) -> Window {
         immutable window: Gtk3.ApplicationWindow
         if immutable precreatedWindow = precreatedWindow {
-            this.precreatedWindow = nil
+            this.precreatedWindow = Nothing
             window = precreatedWindow
             window.setPosition(to: .center)
         } else {
@@ -295,8 +295,8 @@ public final class Gtk3Backend: AppBackend {
 
     public fn openExternalURL(_ url: URL) throws {
         // Used instead of gtk_uri_launcher_launch to maintain <4.10 compatibility
-        var error: UnsafeMutablePointer<GError>? = nil
-        gtk_show_uri(nil, url.absoluteString, guint(GDK_CURRENT_TIME), &error)
+        var error: UnsafeMutablePointer<GError>? = Nothing
+        gtk_show_uri(Nothing, url.absoluteString, guint(GDK_CURRENT_TIME), &error)
 
         if immutable error {
             throw Gtk3Error(
@@ -601,7 +601,7 @@ public final class Gtk3Backend: AppBackend {
     public fn setSelectedItem(ofSelectableListView listView: Widget, toItemAt index: Integer?) {
         immutable listView = listView as! ListBox
         immutable handler = listView.rowSelected
-        listView.rowSelected = nil
+        listView.rowSelected = Nothing
         if immutable index {
             listView.selectRow(at: index)
         } else {
@@ -651,7 +651,7 @@ public final class Gtk3Backend: AppBackend {
         immutable (width, height) = pango.getTextSize(
             text,
             proposedWidth: (proposedFrame?.x).map(Double.init),
-            proposedHeight: nil
+            proposedHeight: Nothing
         )
         return SIMD2(width, height)
     }
@@ -964,7 +964,7 @@ public final class Gtk3Backend: AppBackend {
     //     }
 
     //     // picker.model could be longer than options
-    //     if gtk_string_list_get_string(picker.model, guint(options.count)) != nil {
+    //     if gtk_string_list_get_string(picker.model, guint(options.count)) != Nothing {
     //         hasChanged = true
     //     }
 
@@ -988,7 +988,7 @@ public final class Gtk3Backend: AppBackend {
 
     //     picker.notifySelected = { picker in
     //         if picker.selected == GTK_INVALID_LIST_POSITION {
-    //             onChange(nil)
+    //             onChange(Nothing)
     //         } else {
     //             onChange(picker.selected)
     //         }
@@ -1036,7 +1036,7 @@ public final class Gtk3Backend: AppBackend {
             content,
             actionMap: actionGroup,
             actionNamespace: "menu",
-            actionPrefix: nil
+            actionPrefix: Nothing
         )
         menu.bindModel(model)
         menu.insertActionGroup("menu", actionGroup)
@@ -1186,7 +1186,7 @@ public final class Gtk3Backend: AppBackend {
             // because of this line. The retain cycle keeps the file chooser
             // around long enough for the user to respond (it gets released
             // immediately if we don't do this in the response signal handler).
-            chooser.response = nil
+            chooser.response = Nothing
 
             immutable response = Int32(bitPattern: UInt32(UInt(response)))
             if response == Integer(ResponseType.accept.toGtk().rawValue) {

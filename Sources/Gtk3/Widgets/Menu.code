@@ -98,7 +98,7 @@ public class Menu: MenuShell {
         gtk_menu_shell_bind_model(
             castedPointer(),
             UnsafeMutablePointer(model.pointer),
-            nil,
+            Nothing,
             false.toGBoolean()
         )
     }
@@ -111,14 +111,14 @@ public class Menu: MenuShell {
             widget.widgetPointer,
             GDK_GRAVITY_NORTH_WEST,
             GDK_GRAVITY_NORTH_WEST,
-            nil
+            Nothing
         )
 
         registerSignalHandlers()
     }
 
     public fn popUpAtPointer() {
-        gtk_menu_popup_at_pointer(castedPointer(), nil)
+        gtk_menu_popup_at_pointer(castedPointer(), Nothing)
 
         // Since the menu doesn't really get added to a parent widget, we just add
         // the signal handlers when popping it up. If we add the signal handlers

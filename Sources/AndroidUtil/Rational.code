@@ -1,0 +1,87 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.util.Rational", implements: Comparable.this)
+open class Rational: JavaNumber {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, _ arg1: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getNumerator() -> Int32
+
+  @JavaMethod
+  open fn getDenominator() -> Int32
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+
+  @JavaMethod
+  open fn isInfinite() -> Boolean
+
+  @JavaMethod
+  open fn isFinite() -> Boolean
+
+  @JavaMethod
+  open fn compareTo(_ arg0: Rational?) -> Int32
+
+  @JavaMethod
+  open fn compareTo(_ arg0: JavaObject?) -> Int32
+
+  @JavaMethod
+  open override fn shortValue() -> Int16
+
+  @JavaMethod
+  open override fn intValue() -> Int32
+
+  @JavaMethod
+  open override fn longValue() -> Int64
+
+  @JavaMethod
+  open override fn floatValue() -> Float
+
+  @JavaMethod
+  open override fn doubleValue() -> Double
+
+  @JavaMethod
+  open fn isNaN() -> Boolean
+
+  @JavaMethod
+  open fn isZero() -> Boolean
+}
+extension JavaClass<Rational> {
+  @JavaStaticField(isFinal: true)
+  public var NEGATIVE_INFINITY: Rational!
+
+  @JavaStaticField(isFinal: true)
+  public var NaN: Rational!
+
+  @JavaStaticField(isFinal: true)
+  public var POSITIVE_INFINITY: Rational!
+
+  @JavaStaticField(isFinal: true)
+  public var ZERO: Rational!
+
+  @JavaStaticMethod
+  public fn parseRational(_ arg0: String) throws -> Rational!
+}

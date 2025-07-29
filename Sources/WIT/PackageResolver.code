@@ -64,7 +64,7 @@ public final class PackageResolver: Hashable {
             )
             if found { return pkg }
         }
-        return nil
+        return Nothing
     }
 
     private static fn satisfyRequirement(

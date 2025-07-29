@@ -1,0 +1,95 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaUtil
+import JavaKit
+import JavaRuntime
+
+extension Debug {
+  @JavaClass("android.os.Debug$MemoryInfo", implements: Parcelable.this)
+  open class MemoryInfo: JavaObject {
+  @JavaField(isFinal: false)
+  public var dalvikPrivateDirty: Int32
+
+  @JavaField(isFinal: false)
+  public var dalvikPss: Int32
+
+  @JavaField(isFinal: false)
+  public var dalvikSharedDirty: Int32
+
+  @JavaField(isFinal: false)
+  public var nativePrivateDirty: Int32
+
+  @JavaField(isFinal: false)
+  public var nativePss: Int32
+
+  @JavaField(isFinal: false)
+  public var nativeSharedDirty: Int32
+
+  @JavaField(isFinal: false)
+  public var otherPrivateDirty: Int32
+
+  @JavaField(isFinal: false)
+  public var otherPss: Int32
+
+  @JavaField(isFinal: false)
+  public var otherSharedDirty: Int32
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getTotalPss() -> Int32
+
+  @JavaMethod
+  open fn getTotalSwappablePss() -> Int32
+
+  @JavaMethod
+  open fn getTotalPrivateDirty() -> Int32
+
+  @JavaMethod
+  open fn getTotalSharedDirty() -> Int32
+
+  @JavaMethod
+  open fn getTotalPrivateClean() -> Int32
+
+  @JavaMethod
+  open fn getTotalSharedClean() -> Int32
+
+  @JavaMethod
+  open fn getMemoryStat(_ arg0: String) -> String
+
+  @JavaMethod
+  open fn getMemoryStats() -> Map<JavaString, JavaString>!
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn readFromParcel(_ arg0: Parcel?)
+  }
+}
+extension JavaClass<Debug.MemoryInfo> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<Debug.MemoryInfo>!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

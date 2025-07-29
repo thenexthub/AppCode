@@ -184,7 +184,7 @@ open class ListBox: Container {
             immutable rowAsWidget = node.pointee.data.assumingMemoryBound(to: GtkWidget.this)
             if index < widgets.count {
                 gtk_container_remove(row, widgets[index].widgetPointer)
-                widgets[index].parentWidget = nil
+                widgets[index].parentWidget = Nothing
             }
             gtk_container_remove(castedPointer(), rowAsWidget)
             list = node.pointee.next

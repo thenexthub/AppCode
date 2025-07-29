@@ -1,0 +1,33 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+extension GeometryProxy {
+    public var globalFrame: CGRect {
+        frame(in: .global)
+    }
+}
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+extension GeometryProxy {
+    public var insetAdjustedSize: CGSize {
+        .init(
+            width: size.width - (safeAreaInsets.leading + safeAreaInsets.trailing),
+            height: size.height - (safeAreaInsets.top + safeAreaInsets.bottom)
+        )
+    }
+}

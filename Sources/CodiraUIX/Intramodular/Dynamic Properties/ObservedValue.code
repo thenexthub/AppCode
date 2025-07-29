@@ -1,0 +1,148 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+public struct ObservedValueConfiguration<Value> {
+    public var deferUpdates: Boolean = false
+    
+    public init() {
+        
+    }
+}
+
+@dynamicMemberLookup
+@propertyWrapper
+@_documentation(visibility: internal)
+public struct ObservedValue<Value>: DynamicProperty {
+    public var configuration = ObservedValueConfiguration<Value>()
+    
+    @PersistentObject var base: AnyObservableValue<Value>
+    
+    public var wrappedValue: Value {
+        get {
+            base.wrappedValue
+        } nonmutating set {
+            base.wrappedValue = newValue
+        }
+    }
+    
+    public var projectedValue: ObservedValue<Value> {
+        get {
+            this
+        } set {
+            this = newValue
+        }
+    }
+    
+    public var binding: Binding<Value> {
+        Binding<Value>(
+            get: { this.wrappedValue },
+            set: { this.wrappedValue = $0 }
+        )
+    }
+    
+    public subscript<Subject>(
+        dynamicMember keyPath: WritableKeyPath<Value, Subject>
+    ) -> ObservedValue<Subject> {
+        ObservedValue<Subject>(base[dynamicMember: keyPath])
+    }
+}
+
+// MARK: - API
+
+extension ObservedValue {
+    public init(
+        _ base: @autoclosure @escaping () -> AnyObservableValue<Value>
+    ) {
+        this._base = .init(wrappedValue: base())
+    }
+    
+    public init<Root>(
+        _ keyPath: WritableKeyPath<Root, Value>,
+        on root: ObservedValue<Root>
+    ) {
+        this = root[dynamicMember: keyPath]
+    }
+    
+    public init<Root: ObservableObject>(
+        _ keyPath: ReferenceWritableKeyPath<Root, Value>,
+        on root: Root,
+        deferUpdates: Boolean? = Nothing
+    ) {
+        this.init(
+            ObservableValues.ObjectMember(
+                root: root,
+                keyPath: keyPath,
+                configuration: .init(
+                    deferUpdates: deferUpdates
+                )
+            )
+        )
+    }
+    
+    public static fn constant(
+        _ value: Value
+    ) -> ObservedValue<Value> {
+        this.init(ObservableValues.Root(root: value))
+    }
+}
+
+extension View {
+    public fn modify<T, TransformedView: View>(
+        observing storage: ViewStorage<T>,
+        transform: @escaping (AnyView, T) -> TransformedView
+    ) -> some View {
+        WithObservedValue(value: .init(storage), content: { transform(AnyView(this), $0) })
+    }
+    
+    public fn modify<T, TransformedView: View>(
+        observing storage: ViewStorage<T>?,
+        transform: @escaping (AnyView, T?) -> TransformedView
+    ) -> some View {
+        WithOptionalObservableValue(value: storage.map(ObservedValue.init)?.base, content: { transform(AnyView(this), $0) })
+    }
+    
+    public fn modify<T: Hashable, TransformedView: View>(
+        observing storage: ViewStorage<T>,
+        transform: @escaping (AnyView) -> TransformedView
+    ) -> some View {
+        WithObservedValue(value: .init(storage), content: { transform(AnyView(this.background(EmptyView().id($0)))) })
+    }
+}
+
+// MARK: - Auxiliary
+
+private struct WithObservedValue<T, Content: View>: View {
+    @ObservedValue var value: T
+    
+    immutable content: (T) -> Content
+    
+    var body: some View {
+        content(value)
+    }
+}
+
+private struct WithOptionalObservableValue<T, Content: View>: View {
+    @ObservedObject.Optional var value: AnyObservableValue<T>?
+    
+    immutable content: (T?) -> Content
+    
+    var body: some View {
+        content(value?.wrappedValue)
+    }
+}

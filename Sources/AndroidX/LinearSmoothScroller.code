@@ -1,0 +1,74 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidUtil
+import AndroidView
+import JavaKit
+import JavaRuntime
+
+@JavaClass("androidx.recyclerview.widget.LinearSmoothScroller")
+open class LinearSmoothScroller: RecyclerView.SmoothScroller {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getHorizontalSnapPreference() -> Int32
+
+  @JavaMethod
+  open fn calculateDxToMakeVisible(_ arg0: View?, _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  open fn getVerticalSnapPreference() -> Int32
+
+  @JavaMethod
+  open fn calculateDyToMakeVisible(_ arg0: View?, _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  open fn calculateTimeForDeceleration(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn updateActionForInterimTarget(_ arg0: RecyclerView.SmoothScroller.Action?)
+
+  @JavaMethod
+  open fn calculateSpeedPerPixel(_ arg0: DisplayMetrics?) -> Float
+
+  @JavaMethod
+  open fn calculateTimeForScrolling(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn calculateDtToFit(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32) -> Int32
+
+  @JavaMethod
+  open override fn onTargetFound(_ arg0: View?, _ arg1: RecyclerView.State?, _ arg2: RecyclerView.SmoothScroller.Action?)
+
+  @JavaMethod
+  open override fn onSeekTargetStep(_ arg0: Int32, _ arg1: Int32, _ arg2: RecyclerView.State?, _ arg3: RecyclerView.SmoothScroller.Action?)
+
+  @JavaMethod
+  open override fn onStop()
+
+  @JavaMethod
+  open override fn onStart()
+}
+extension JavaClass<LinearSmoothScroller> {
+  @JavaStaticField(isFinal: true)
+  public var SNAP_TO_START: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SNAP_TO_END: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SNAP_TO_ANY: Int32
+}

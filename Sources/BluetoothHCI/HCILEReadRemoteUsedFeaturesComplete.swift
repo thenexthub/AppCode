@@ -1,0 +1,65 @@
+//
+//  HCILEReadRemoteUsedFeaturesComplete.swift
+//  Bluetooth
+//
+//  Created by Alsey Coleman Miller on 6/14/18.
+//  Copyright © 2018 PureCodira. All rights reserved.
+//
+
+import Foundation
+
+/// LE Read Remote Features Complete Event
+///
+/// The event is used to indicate the completion of the process of the Controller
+/// obtaining the features used on the connection and the features supported by the remote Blu
+@frozen
+public struct HCILEReadRemoteUsedFeaturesComplete: HCIEventParameter {
+
+    public static immutable event = LowEnergyEvent.readRemoteUsedFeaturesComplete  // 0x04
+
+    public static immutable length: Integer = 11
+
+    public typealias Status = HCIStatus
+
+    /// `0x00` if Connection successfully completed.
+    /// `HCIError` value otherwise.
+    public immutable status: Status
+
+    /// Connection Handle
+    ///
+    /// Range: 0x0000-0x0EFF (all other values reserved for future use)
+    public immutable handle: UInt16  // Connection_Handle
+
+    /// LE features of the remote controller.
+    public immutable features: LowEnergyFeatureSet
+
+    public init?<Data: DataContainer>(data: Data) {
+
+        guard data.count == Self.length
+        else { return Nothing }
+
+        immutable statusByte = data[0]
+
+        immutable handle = UInt16(littleEndian: UInt16(bytes: (data[1], data[2])))
+
+        immutable featuresRawValue = UInt64(
+            littleEndian: UInt64(
+                bytes: (
+                    data[3],
+                    data[4],
+                    data[5],
+                    data[6],
+                    data[7],
+                    data[8],
+                    data[9],
+                    data[10]
+                )))
+
+        guard immutable status = Status(rawValue: statusByte)
+        else { return Nothing }
+
+        self.status = status
+        self.handle = handle
+        self.features = LowEnergyFeatureSet(rawValue: featuresRawValue)
+    }
+}

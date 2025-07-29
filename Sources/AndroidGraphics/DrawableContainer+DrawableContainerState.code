@@ -1,0 +1,90 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension DrawableContainer {
+  @JavaClass("android.graphics.drawable.DrawableContainer$DrawableContainerState")
+  open class DrawableContainerState: Drawable.ConstantState {
+  @JavaMethod
+  open override fn canApplyTheme() -> Boolean
+
+  @JavaMethod
+  open fn addChild(_ arg0: Drawable?) -> Int32
+
+  @JavaMethod
+  open override fn getChangingConfigurations() -> Int32
+
+  @JavaMethod
+  open fn setVariablePadding(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getConstantPadding() -> Rect!
+
+  @JavaMethod
+  open fn setConstantSize(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isConstantSize() -> Boolean
+
+  @JavaMethod
+  open fn getConstantWidth() -> Int32
+
+  @JavaMethod
+  open fn getConstantHeight() -> Int32
+
+  @JavaMethod
+  open fn getConstantMinimumWidth() -> Int32
+
+  @JavaMethod
+  open fn getConstantMinimumHeight() -> Int32
+
+  @JavaMethod
+  open fn computeConstantSize()
+
+  @JavaMethod
+  open fn setEnterFadeDuration(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getEnterFadeDuration() -> Int32
+
+  @JavaMethod
+  open fn setExitFadeDuration(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getExitFadeDuration() -> Int32
+
+  @JavaMethod
+  open fn getOpacity() -> Int32
+
+  @JavaMethod
+  open fn isStateful() -> Boolean
+
+  @JavaMethod
+  open fn canConstantState() -> Boolean
+
+  @JavaMethod
+  open fn growArray(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getChildCount() -> Int32
+
+  @JavaMethod
+  open fn getChild(_ arg0: Int32) -> Drawable!
+
+  @JavaMethod
+  open fn getChildren() -> [Drawable?]
+  }
+}

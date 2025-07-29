@@ -1,0 +1,134 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension Bitmap {
+  @JavaClass("android.graphics.Bitmap$Config")
+  open class Config: Enum {
+    public enum ConfigCases: Equatable {
+      case ALPHA_8
+  case RGB_565
+  case ARGB_4444
+  case ARGB_8888
+  case RGBA_F16
+  case HARDWARE
+  case RGBA_1010102
+    }
+
+    public var enumValue: ConfigCases! {
+      immutable classObj = this.javaClass
+      if this.equals(classObj.ALPHA_8?.as(JavaObject.this)) {
+        return ConfigCases.ALPHA_8
+  } else if this.equals(classObj.RGB_565?.as(JavaObject.this)) {
+        return ConfigCases.RGB_565
+  } else if this.equals(classObj.ARGB_4444?.as(JavaObject.this)) {
+        return ConfigCases.ARGB_4444
+  } else if this.equals(classObj.ARGB_8888?.as(JavaObject.this)) {
+        return ConfigCases.ARGB_8888
+  } else if this.equals(classObj.RGBA_F16?.as(JavaObject.this)) {
+        return ConfigCases.RGBA_F16
+  } else if this.equals(classObj.HARDWARE?.as(JavaObject.this)) {
+        return ConfigCases.HARDWARE
+  } else if this.equals(classObj.RGBA_1010102?.as(JavaObject.this)) {
+        return ConfigCases.RGBA_1010102
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: ConfigCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<Config>(environment: _environment)
+    switch enumValue {
+      case .ALPHA_8:
+        if immutable ALPHA_8 = classObj.ALPHA_8 {
+          this.init(javaHolder: ALPHA_8.javaHolder)
+        } else {
+          fatalError("Enum value ALPHA_8 was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .RGB_565:
+        if immutable RGB_565 = classObj.RGB_565 {
+          this.init(javaHolder: RGB_565.javaHolder)
+        } else {
+          fatalError("Enum value RGB_565 was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .ARGB_4444:
+        if immutable ARGB_4444 = classObj.ARGB_4444 {
+          this.init(javaHolder: ARGB_4444.javaHolder)
+        } else {
+          fatalError("Enum value ARGB_4444 was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .ARGB_8888:
+        if immutable ARGB_8888 = classObj.ARGB_8888 {
+          this.init(javaHolder: ARGB_8888.javaHolder)
+        } else {
+          fatalError("Enum value ARGB_8888 was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .RGBA_F16:
+        if immutable RGBA_F16 = classObj.RGBA_F16 {
+          this.init(javaHolder: RGBA_F16.javaHolder)
+        } else {
+          fatalError("Enum value RGBA_F16 was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .HARDWARE:
+        if immutable HARDWARE = classObj.HARDWARE {
+          this.init(javaHolder: HARDWARE.javaHolder)
+        } else {
+          fatalError("Enum value HARDWARE was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .RGBA_1010102:
+        if immutable RGBA_1010102 = classObj.RGBA_1010102 {
+          this.init(javaHolder: RGBA_1010102.javaHolder)
+        } else {
+          fatalError("Enum value RGBA_1010102 was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension JavaClass<Bitmap.Config> {
+  @JavaStaticField(isFinal: true)
+  public var ALPHA_8: Bitmap.Config!
+
+  @JavaStaticField(isFinal: true)
+  public var RGB_565: Bitmap.Config!
+
+  @JavaStaticField(isFinal: true)
+  public var ARGB_4444: Bitmap.Config!
+
+  @JavaStaticField(isFinal: true)
+  public var ARGB_8888: Bitmap.Config!
+
+  @JavaStaticField(isFinal: true)
+  public var RGBA_F16: Bitmap.Config!
+
+  @JavaStaticField(isFinal: true)
+  public var HARDWARE: Bitmap.Config!
+
+  @JavaStaticField(isFinal: true)
+  public var RGBA_1010102: Bitmap.Config!
+
+  @JavaStaticMethod
+  public fn values() -> [Bitmap.Config?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> Bitmap.Config!
+}

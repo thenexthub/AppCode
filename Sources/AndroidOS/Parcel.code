@@ -1,0 +1,438 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaUtil
+import JavaKit
+import JavaKitCollection
+import JavaKitFunction
+import JavaRuntime
+
+@JavaClass("android.os.Parcel")
+open class Parcel: JavaObject {
+  @JavaMethod
+  open fn hasFileDescriptors() -> Boolean
+
+  @JavaMethod
+  open fn hasFileDescriptors(_ arg0: Int32, _ arg1: Int32) -> Boolean
+
+  @JavaMethod
+  open fn writeStringArray(_ arg0: [String])
+
+  @JavaMethod
+  open fn createStringArray() -> [String]
+
+  @JavaMethod
+  open fn readStringArray(_ arg0: [String])
+
+  @JavaMethod
+  open fn writeBinderArray(_ arg0: [IBinder?])
+
+  @JavaMethod
+  open fn writeInterfaceArray(_ arg0: [IInterface?])
+
+  @JavaMethod
+  open fn readDoubleArray(_ arg0: [Double])
+
+  @JavaMethod
+  open fn createBinderArray() -> [IBinder?]
+
+  @JavaMethod
+  open fn readBinderArray(_ arg0: [IBinder?])
+
+  @JavaMethod
+  open fn createInterfaceArray(_ arg0: JavaIntFunction<JavaArray>?, _ arg1: JavaFunction<IBinder, IInterface>?) -> [IInterface?]
+
+  @JavaMethod
+  open fn readInterfaceArray(_ arg0: [IInterface?], _ arg1: JavaFunction<IBinder, IInterface>?)
+
+  @JavaMethod
+  open fn writeTypedList(_ arg0: List<Parcelable>?)
+
+  @JavaMethod
+  open fn writeStringList(_ arg0: List<JavaString>?)
+
+  @JavaMethod
+  open fn writeBinderList(_ arg0: List<IBinder>?)
+
+  @JavaMethod
+  open fn writeInterfaceList(_ arg0: List<IInterface>?)
+
+  @JavaMethod
+  open fn writeParcelableList(_ arg0: List<Parcelable>?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn writeTypedArray(_ arg0: [Parcelable?], _ arg1: Int32)
+
+  @JavaMethod
+  open fn writeTypedObject(_ arg0: Parcelable?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn writeFixedArray(_ arg0: JavaObject?, _ arg1: Int32, _ arg2: [Int32])
+
+  @JavaMethod
+  open fn writeValue(_ arg0: JavaObject?)
+
+  @JavaMethod
+  open fn writeParcelable(_ arg0: Parcelable?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn writeParcelableCreator(_ arg0: Parcelable?)
+
+  @JavaMethod
+  open fn writeSerializable(_ arg0: Serializable?)
+
+  @JavaMethod
+  open fn writeException(_ arg0: Exception?)
+
+  @JavaMethod
+  open fn writeNoException()
+
+  @JavaMethod
+  open fn readException(_ arg0: Int32, _ arg1: String)
+
+  @JavaMethod
+  open fn readException()
+
+  @JavaMethod
+  open fn readStrongBinder() -> IBinder!
+
+  @JavaMethod
+  open fn readFileDescriptor() -> ParcelFileDescriptor!
+    
+  @JavaMethod
+  open fn readMap<K: AnyJavaObject, V: AnyJavaObject>(_ arg0: Map<K, V>?, _ arg1: JavaClassLoader?)
+
+  @JavaMethod
+  open fn readMap(_ arg0: Map<JavaObject, JavaObject>?, _ arg1: JavaClassLoader?, _ arg2: JavaClass<JavaObject>?, _ arg3: JavaClass<JavaObject>?)
+
+  @JavaMethod
+  open fn readList(_ arg0: JavaKitCollection.List<JavaObject>?, _ arg1: JavaClassLoader?, _ arg2: JavaClass<JavaObject>?)
+
+  @JavaMethod
+  open fn readList(_ arg0: JavaKitCollection.List<JavaObject>?, _ arg1: JavaClassLoader?)
+
+  @JavaMethod
+  open fn readHashMap(_ arg0: JavaClassLoader?, _ arg1: JavaClass<JavaObject>?, _ arg2: JavaClass<JavaObject>?) -> HashMap<JavaObject, JavaObject>!
+
+  @JavaMethod
+  open fn readHashMap(_ arg0: JavaClassLoader?) -> HashMap<JavaObject, JavaObject>!
+
+  @JavaMethod
+  open fn readBundle(_ arg0: JavaClassLoader?) -> Bundle!
+
+  @JavaMethod
+  open fn readBundle() -> Bundle!
+
+  @JavaMethod
+  open fn readPersistableBundle(_ arg0: JavaClassLoader?) -> PersistableBundle!
+
+  @JavaMethod
+  open fn readPersistableBundle() -> PersistableBundle!
+
+  @JavaMethod
+  open fn readByteArray(_ arg0: [Int8])
+
+  @JavaMethod
+  open fn readBlob() -> [Int8]
+
+  @JavaMethod
+  open fn readArrayList(_ arg0: JavaClassLoader?) -> ArrayList<JavaObject>!
+
+  @JavaMethod
+  open fn readArrayList(_ arg0: JavaClassLoader?, _ arg1: JavaClass<JavaObject>?) -> ArrayList<JavaObject>!
+
+  @JavaMethod
+  open fn readArray(_ arg0: JavaClassLoader?) -> [JavaObject?]
+
+  @JavaMethod
+  open fn readArray(_ arg0: JavaClassLoader?, _ arg1: JavaClass<JavaObject>?) -> [JavaObject?]
+
+  @JavaMethod
+  open fn createTypedArrayList(_ arg0: Parcelable.Creator<JavaObject>?) -> ArrayList<JavaObject>!
+
+  @JavaMethod
+  open fn readTypedList(_ arg0: List<JavaObject>?, _ arg1: Parcelable.Creator<JavaObject>?)
+
+  @JavaMethod
+  open fn createStringArrayList() -> ArrayList<JavaString>!
+
+  @JavaMethod
+  open fn createBinderArrayList() -> ArrayList<IBinder>!
+
+  @JavaMethod
+  open fn createInterfaceArrayList(_ arg0: JavaFunction<IBinder, IInterface>?) -> ArrayList<IInterface>!
+
+  @JavaMethod
+  open fn readStringList(_ arg0: List<JavaString>?)
+
+  @JavaMethod
+  open fn readBinderList(_ arg0: List<IBinder>?)
+
+  @JavaMethod
+  open fn readInterfaceList(_ arg0: List<IInterface>?, _ arg1: JavaFunction<IBinder, IInterface>?)
+
+  @JavaMethod
+  open fn readParcelableList(_ arg0: List<JavaObject>?, _ arg1: JavaClassLoader?, _ arg2: JavaClass<JavaObject>?) -> List<JavaObject>!
+
+  @JavaMethod
+  open fn readParcelableList(_ arg0: List<Parcelable>?, _ arg1: JavaClassLoader?) -> List<Parcelable>!
+
+  @JavaMethod
+  open fn createTypedArray(_ arg0: Parcelable.Creator<JavaObject>?) -> [JavaObject?]
+
+  @JavaMethod
+  open fn readTypedArray(_ arg0: [JavaObject?], _ arg1: Parcelable.Creator<JavaObject>?)
+
+  @JavaMethod
+  open fn readTypedObject(_ arg0: Parcelable.Creator<JavaObject>?) -> JavaObject!
+
+  @JavaMethod
+  open fn readFixedArray(_ arg0: JavaObject?, _ arg1: Parcelable.Creator<Parcelable>?)
+
+  @JavaMethod
+  open fn readFixedArray(_ arg0: JavaObject?)
+
+  @JavaMethod
+  open fn readFixedArray(_ arg0: JavaObject?, _ arg1: JavaFunction<IBinder, IInterface>?)
+
+  @JavaMethod
+  open fn createFixedArray(_ arg0: JavaClass<JavaObject>?, _ arg1: Parcelable.Creator<Parcelable>?, _ arg2: [Int32]) -> JavaObject!
+
+  @JavaMethod
+  open fn createFixedArray(_ arg0: JavaClass<JavaObject>?, _ arg1: JavaFunction<IBinder, IInterface>?, _ arg2: [Int32]) -> JavaObject!
+
+  @JavaMethod
+  open fn createFixedArray(_ arg0: JavaClass<JavaObject>?, _ arg1: [Int32]) -> JavaObject!
+
+  @JavaMethod
+  open fn writeParcelableArray(_ arg0: [Parcelable?], _ arg1: Int32)
+
+  @JavaMethod
+  open fn readParcelable(_ arg0: JavaClassLoader?, _ arg1: JavaClass<JavaObject>?) -> JavaObject!
+
+  @JavaMethod
+  open fn readParcelable(_ arg0: JavaClassLoader?) -> Parcelable!
+
+  @JavaMethod
+  open fn readParcelableCreator(_ arg0: JavaClassLoader?, _ arg1: JavaClass<JavaObject>?) -> Parcelable.Creator<JavaObject>!
+
+  @JavaMethod
+  open fn readParcelableCreator(_ arg0: JavaClassLoader?) -> Parcelable.Creator<JavaObject>!
+
+  @JavaMethod
+  open fn readParcelableArray(_ arg0: JavaClassLoader?) -> [Parcelable?]
+
+  @JavaMethod
+  open fn readParcelableArray(_ arg0: JavaClassLoader?, _ arg1: JavaClass<JavaObject>?) -> [JavaObject?]
+
+  @JavaMethod
+  open fn readSerializable(_ arg0: JavaClassLoader?, _ arg1: JavaClass<JavaObject>?) -> JavaObject!
+
+  @JavaMethod
+  open fn readSerializable() -> Serializable!
+
+  @JavaMethod
+  open fn recycle()
+
+  @JavaMethod
+  open fn setPropagateAllowBlocking()
+
+  @JavaMethod
+  open fn dataSize() -> Int32
+
+  @JavaMethod
+  open fn dataAvail() -> Int32
+
+  @JavaMethod
+  open fn dataPosition() -> Int32
+
+  @JavaMethod
+  open fn dataCapacity() -> Int32
+
+  @JavaMethod
+  open fn setDataSize(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setDataPosition(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setDataCapacity(_ arg0: Int32)
+
+  @JavaMethod
+  open fn marshall() -> [Int8]
+
+  @JavaMethod
+  open fn unmarshall(_ arg0: [Int8], _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn appendFrom(_ arg0: Parcel?, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn writeInterfaceToken(_ arg0: String)
+
+  @JavaMethod
+  open fn enforceInterface(_ arg0: String)
+
+  @JavaMethod
+  open fn enforceNoDataAvail()
+
+  @JavaMethod
+  open fn writeByteArray(_ arg0: [Int8])
+
+  @JavaMethod
+  open fn writeByteArray(_ arg0: [Int8], _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn writeBlob(_ arg0: [Int8], _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn writeBlob(_ arg0: [Int8])
+
+  @JavaMethod
+  open fn writeStrongBinder(_ arg0: IBinder?)
+
+  @JavaMethod
+  open fn writeStrongInterface(_ arg0: IInterface?)
+  
+  @JavaMethod
+  open fn writeFileDescriptor(_ arg0: FileDescriptor?)
+
+  @JavaMethod
+  open fn writeMap(_ arg0: Map<JavaObject, JavaObject>?)
+    
+  @JavaMethod
+  open fn writeBundle(_ arg0: Bundle?)
+
+  @JavaMethod
+  open fn writePersistableBundle(_ arg0: PersistableBundle?)
+
+  @JavaMethod
+  open fn writeArray(_ arg0: [JavaObject?])
+
+  @JavaMethod
+  open fn writeBooleanArray(_ arg0: [Boolean])
+
+  @JavaMethod
+  open fn createBooleanArray() -> [Boolean]
+
+  @JavaMethod
+  open fn readBooleanArray(_ arg0: [Boolean])
+
+  @JavaMethod
+  open fn writeCharArray(_ arg0: [UInt16])
+
+  @JavaMethod
+  open fn createCharArray() -> [UInt16]
+
+  @JavaMethod
+  open fn readCharArray(_ arg0: [UInt16])
+
+  @JavaMethod
+  open fn writeIntArray(_ arg0: [Int32])
+
+  @JavaMethod
+  open fn createIntArray() -> [Int32]
+
+  @JavaMethod
+  open fn readIntArray(_ arg0: [Int32])
+
+  @JavaMethod
+  open fn writeLongArray(_ arg0: [Int64])
+
+  @JavaMethod
+  open fn createLongArray() -> [Int64]
+
+  @JavaMethod
+  open fn readLongArray(_ arg0: [Int64])
+
+  @JavaMethod
+  open fn writeFloatArray(_ arg0: [Float])
+
+  @JavaMethod
+  open fn createFloatArray() -> [Float]
+
+  @JavaMethod
+  open fn readFloatArray(_ arg0: [Float])
+
+  @JavaMethod
+  open fn writeDoubleArray(_ arg0: [Double])
+
+  @JavaMethod
+  open fn createDoubleArray() -> [Double]
+
+  @JavaMethod
+  open override fn finalize() throws
+
+  @JavaMethod
+  open fn writeInt(_ arg0: Int32)
+
+  @JavaMethod
+  open fn readInt() -> Int32
+
+  @JavaMethod
+  open fn readLong() -> Int64
+
+  @JavaMethod
+  open fn readByte() -> Int8
+
+  @JavaMethod
+  open fn writeLong(_ arg0: Int64)
+
+  @JavaMethod
+  open fn writeByte(_ arg0: Int8)
+
+  @JavaMethod
+  open fn writeFloat(_ arg0: Float)
+
+  @JavaMethod
+  open fn readFloat() -> Float
+
+  @JavaMethod
+  open fn writeList(_ arg0: List<JavaObject>?)
+
+  @JavaMethod
+  open fn writeDouble(_ arg0: Double)
+
+  @JavaMethod
+  open fn readDouble() -> Double
+
+  @JavaMethod
+  open fn readBoolean() -> Boolean
+
+  @JavaMethod
+  open fn writeBoolean(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn readString() -> String
+
+  @JavaMethod
+  open fn writeString(_ arg0: String)
+
+  @JavaMethod
+  open fn readValue(_ arg0: JavaClassLoader?) -> JavaObject!
+
+  @JavaMethod
+  open fn createByteArray() -> [Int8]
+}
+extension JavaClass<Parcel> {
+  @JavaStaticField(isFinal: true)
+  public var STRING_CREATOR: Parcelable.Creator<JavaString>!
+
+  @JavaStaticMethod
+  public fn obtain() -> Parcel!
+
+  @JavaStaticMethod
+  public fn obtain(_ arg0: IBinder?) -> Parcel!
+}

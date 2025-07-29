@@ -97,7 +97,7 @@ extension Optional: OptionalObservableObject where Wrapped: ObservableObject {
             case .some(immutable object):
                 object.didChange
             case .none:
-                nil
+                Nothing
         }
     }
 }

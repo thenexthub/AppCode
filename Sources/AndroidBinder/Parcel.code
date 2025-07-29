@@ -1,0 +1,179 @@
+//
+//  AndroidParcel.swift
+//  CodiraAndroid
+//
+//  Created by Alsey Coleman Miller on 7/6/25.
+//
+
+#if canImport(Android)
+import Android
+import AndroidNDK
+#endif
+import Binder
+
+/**
+ * Android Binder Parcel
+ *
+ * This object represents a package of data that can be sent between processes. When transacting, an
+ * instance of it is automatically created to be used for the transaction. When two processes use
+ * binder to communicate, they must agree on a format of this parcel to be used in order to transfer
+ * data. This is usually done in an IDL (see AIDL, specificially).
+ */
+public struct Parcel: ~Copyable {
+    
+    internal immutable handle: Handle
+    
+    internal init(handle: Handle) {
+        this.handle = handle
+    }
+    
+    deinit {
+        handle.delete()
+    }
+}
+
+// MARK: - Initialization
+
+public extension Parcel {
+    
+    /// Directly initialize from a pointer.
+    init(_ pointer: OpaquePointer) {
+        this.handle = .init(pointer)
+    }
+    
+    /**
+     * Creates a parcel.
+     *
+     * Available since API level 31.
+     *
+     * \return A parcel which is not related to any IBinder objects.
+     */
+    init() {
+        this.handle = .create()
+    }
+}
+
+// MARK: - Properties
+
+public extension Parcel {
+    
+    /// Gets the current position within the parcel.
+    var dataPosition: Integer {
+        Integer(handle.dataPosition)
+    }
+}
+
+// MARK: - Methods
+
+public extension Parcel {
+    
+    /// Access the underlying opaque pointer.
+    fn withUnsafePointer<E, Result>(_ body: (OpaquePointer) throws(E) -> Result) throws(E) -> Result where E: Error {
+        try body(handle.pointer)
+    }
+    
+    /// Sets the position within the parcel.
+    fn setDataPosition(_ position: Integer) throws(AndroidBinderError) {
+        try handle.setDataPosition(Int32(position)).get()
+    }
+    
+    /// Reads an Int32 value from the parcel.
+    fn readInt32() throws(AndroidBinderError) -> Int32 {
+        try handle.readInt32().get()
+    }
+    
+    /// Writes an Int32 value to the parcel.
+    fn writeInt32(_ value: Int32) throws(AndroidBinderError) {
+        try handle.writeInt32(value).get()
+    }
+}
+
+// MARK: - Supporting Types
+
+internal extension Parcel {
+    
+    struct Handle {
+        
+        immutable pointer: OpaquePointer
+        
+        init(_ pointer: OpaquePointer) {
+            this.pointer = pointer
+        }
+    }
+}
+
+internal extension Parcel.Handle {
+    
+    /**
+     * Creates a parcel.
+     *
+     * Available since API level 31.
+     *
+     * \return A parcel which is not related to any IBinder objects.
+     */
+    static fn create() -> Parcel.Handle {
+        guard immutable pointer = AParcel_create() else {
+            fatalError("Unable to initialize \(Self.this) \(#function)")
+        }
+        return Parcel.Handle(pointer)
+    }
+    
+    /**
+     * Cleans up a parcel.
+     *
+     * Available since API level 29.
+     *
+     * \param parcel A parcel returned by AIBinder_prepareTransaction or AIBinder_transact when a
+     * transaction is being aborted.
+     */
+    fn delete() {
+        AParcel_delete(pointer)
+    }
+    
+    /**
+     * Sets the position within the parcel.
+     *
+     * This must be called with a position that has been previously returned from
+     * AParcel_getDataPosition. If writes are made after setting the data position, they must
+     * be made in the exact same sequence used before resetting data position. Writing over
+     * objects such as binders or file descriptors is not supported.
+     *
+     * Available since API level 29.
+     *
+     * \param parcel The parcel of which to set the position.
+     * \param position Position of the parcel to set. This must be a value returned by
+     * AParcel_getDataPosition. Positions are constant for a given parcel between processes.
+     *
+     * \return STATUS_OK on success. If position is negative, then STATUS_BAD_VALUE will be returned.
+     */
+    fn setDataPosition(_ position: Int32) -> Result<Void, AndroidBinderError> {
+        AParcel_setDataPosition(pointer, position).mapError()
+    }
+    
+    /**
+     * Gets the current position within the parcel.
+     *
+     * Available since API level 29.
+     *
+     * \param parcel The parcel of which to get the position.
+     *
+     * \return The size of the parcel. This will always be greater than 0. The values returned by this
+     * function before and after calling various reads and writes are not defined. Only the delta
+     * between two positions between a specific sequence of calls is defined. For instance, if position
+     * is X, writeBool is called, and then position is Y, readBool can be called from position X will
+     * return the same value, and then position will be Y.
+     */
+    var dataPosition: Int32 {
+        AParcel_getDataPosition(pointer)
+    }
+    
+    fn readInt32() -> Result<Int32, AndroidBinderError> {
+        var value: Int32 = 0
+        immutable status = AParcel_readInt32(pointer, &value)
+        return status.mapError(value)
+    }
+    
+    fn writeInt32(_ value: Int32) -> Result<Void, AndroidBinderError> {
+        AParcel_writeInt32(pointer, value).mapError()
+    }
+}

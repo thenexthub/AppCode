@@ -1,0 +1,122 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidGraphics
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.view.autofill.AutofillManager")
+open class AutofillManager: JavaObject {
+  @JavaMethod
+  open fn requestAutofill(_ arg0: View?, _ arg1: Int32, _ arg2: Rect?)
+
+  @JavaMethod
+  open fn requestAutofill(_ arg0: View?)
+
+  @JavaMethod
+  open fn notifyViewEntered(_ arg0: View?, _ arg1: Int32, _ arg2: Rect?)
+
+  @JavaMethod
+  open fn notifyViewEntered(_ arg0: View?)
+
+  @JavaMethod
+  open fn notifyViewExited(_ arg0: View?)
+
+  @JavaMethod
+  open fn notifyViewExited(_ arg0: View?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn notifyViewVisibilityChanged(_ arg0: View?, _ arg1: Int32, _ arg2: Boolean)
+
+  @JavaMethod
+  open fn notifyViewVisibilityChanged(_ arg0: View?, _ arg1: Boolean)
+
+  @JavaMethod
+  open fn notifyValueChanged(_ arg0: View?)
+
+  @JavaMethod
+  open fn notifyValueChanged(_ arg0: View?, _ arg1: Int32, _ arg2: AutofillValue?)
+
+  @JavaMethod
+  open fn notifyViewClicked(_ arg0: View?)
+
+  @JavaMethod
+  open fn notifyViewClicked(_ arg0: View?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn disableAutofillServices()
+
+  @JavaMethod
+  open fn hasEnabledAutofillServices() -> Boolean
+
+  @JavaMethod
+  open fn getAutofillServiceComponentName() -> ComponentName!
+
+  @JavaMethod
+  open fn getUserDataId() -> String
+
+  @JavaMethod
+  open fn isFieldClassificationEnabled() -> Boolean
+
+  @JavaMethod
+  open fn getDefaultFieldClassificationAlgorithm() -> String
+
+  @JavaMethod
+  open fn getAvailableFieldClassificationAlgorithms() -> List<JavaString>!
+
+  @JavaMethod
+  open fn isAutofillSupported() -> Boolean
+
+  @JavaMethod
+  open fn getNextAutofillId() -> AutofillId!
+
+  @JavaMethod
+  open fn registerCallback(_ arg0: AutofillManager.AutofillCallback?)
+
+  @JavaMethod
+  open fn unregisterCallback(_ arg0: AutofillManager.AutofillCallback?)
+
+  @JavaMethod
+  open fn showAutofillDialog(_ arg0: View?) -> Boolean
+
+  @JavaMethod
+  open fn showAutofillDialog(_ arg0: View?, _ arg1: Int32) -> Boolean
+
+  @JavaMethod
+  open fn commit()
+
+  @JavaMethod
+  open fn isEnabled() -> Boolean
+
+  @JavaMethod
+  open fn cancel()
+}
+extension JavaClass<AutofillManager> {
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_ASSIST_STRUCTURE: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_AUTHENTICATION_RESULT: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_AUTHENTICATION_RESULT_EPHEMERAL_DATASET: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_CLIENT_STATE: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_INLINE_SUGGESTIONS_REQUEST: String
+}

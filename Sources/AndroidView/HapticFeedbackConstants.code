@@ -1,0 +1,67 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.view.HapticFeedbackConstants")
+open class HapticFeedbackConstants: JavaObject {
+
+}
+extension JavaClass<HapticFeedbackConstants> {
+  @JavaStaticField(isFinal: true)
+  public var CLOCK_TICK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONFIRM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTEXT_CLICK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_IGNORE_GLOBAL_SETTING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_IGNORE_VIEW_SETTING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var GESTURE_END: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var GESTURE_START: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var KEYBOARD_PRESS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var KEYBOARD_RELEASE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var KEYBOARD_TAP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LONG_PRESS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var REJECT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_HANDLE_MOVE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var VIRTUAL_KEY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var VIRTUAL_KEY_RELEASE: Int32
+}

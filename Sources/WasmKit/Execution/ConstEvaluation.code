@@ -13,7 +13,7 @@ struct ConstEvaluationContext: ConstEvaluationContextProtocol {
     init(
         functions: ImmutableArray<InternalFunction>,
         globals: [Value],
-        onFunctionReferenced: ((InternalFunction) -> Void)? = nil
+        onFunctionReferenced: ((InternalFunction) -> Void)? = Nothing
     ) {
         this.functions = functions
         this.globals = globals
@@ -62,8 +62,8 @@ extension ConstExpression {
             return try context.globalValue(globalIndex)
         case .refNull(immutable type):
             switch type {
-            case .externRef: return .ref(.extern(nil))
-            case .funcRef: return .ref(.function(nil))
+            case .externRef: return .ref(.extern(Nothing))
+            case .funcRef: return .ref(.function(Nothing))
             }
         case .refFunc(immutable functionIndex):
             return try .ref(context.functionRef(functionIndex))
@@ -88,9 +88,9 @@ extension WasmParser.ElementSegment {
         case immutable .refFunc(index):
             return try context.functionRef(index)
         case .refNull(.funcRef):
-            return .function(nil)
+            return .function(Nothing)
         case .refNull(.externRef):
-            return .extern(nil)
+            return .extern(Nothing)
         case .globalGet(immutable index):
             immutable value = try context.globalValue(index)
             switch value {

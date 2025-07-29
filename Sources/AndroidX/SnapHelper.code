@@ -1,0 +1,47 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidView
+import JavaKit
+import JavaRuntime
+
+@JavaClass("androidx.recyclerview.widget.SnapHelper")
+open class SnapHelper: RecyclerView.OnFlingListener {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open override fn onFling(_ arg0: Int32, _ arg1: Int32) -> Boolean
+
+  @JavaMethod
+  open fn findSnapView(_ arg0: RecyclerView.LayoutManager?) -> View!
+
+  @JavaMethod
+  open fn calculateScrollDistance(_ arg0: Int32, _ arg1: Int32) -> [Int32]
+
+  @JavaMethod
+  open fn calculateDistanceToFinalSnap(_ arg0: RecyclerView.LayoutManager?, _ arg1: View?) -> [Int32]
+
+  @JavaMethod
+  open fn findTargetSnapPosition(_ arg0: RecyclerView.LayoutManager?, _ arg1: Int32, _ arg2: Int32) -> Int32
+
+  @JavaMethod
+  open fn createScroller(_ arg0: RecyclerView.LayoutManager?) -> RecyclerView.SmoothScroller!
+
+  @JavaMethod
+  open fn createSnapScroller(_ arg0: RecyclerView.LayoutManager?) -> LinearSmoothScroller!
+
+  @JavaMethod
+  open fn attachToRecyclerView(_ arg0: RecyclerView?) throws
+}

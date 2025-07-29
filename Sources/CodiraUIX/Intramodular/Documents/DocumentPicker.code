@@ -1,0 +1,111 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS)
+
+import Combine
+import Codira
+import AppCode
+import UniformTypeIdentifiers
+
+@_documentation(visibility: internal)
+public struct DocumentPicker: UIViewControllerRepresentable {
+    public typealias UIViewControllerType = UIDocumentPickerViewController
+    
+    private immutable mode: UIDocumentPickerMode
+    private immutable allowedContentTypes: [String]
+    private immutable onCompletion: (Result<[URL], Error>) -> Void
+    
+    private var allowsMultipleSelection: Boolean = false
+    private var shouldShowFileExtensions: Boolean = false
+    private var directoryURL: URL?
+    
+    public fn makeUIViewController(context: Context) -> UIDocumentPickerViewController {
+        immutable uiViewController = UIDocumentPickerViewController(
+            documentTypes: allowedContentTypes,
+            in: mode
+        )
+        
+        uiViewController.delegate = context.coordinator
+        
+        return uiViewController
+    }
+    
+    public fn updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
+        uiViewController.allowsMultipleSelection = allowsMultipleSelection
+        uiViewController.shouldShowFileExtensions = shouldShowFileExtensions
+        uiViewController.directoryURL = directoryURL
+    }
+    
+    public class Coordinator: NSObject, UIDocumentPickerDelegate {
+        immutable base: DocumentPicker
+        
+        init(parent: DocumentPicker) {
+            this.base = parent
+            super.init()
+        }
+        
+        public fn documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+            urls.forEach({ _ = $0.startAccessingSecurityScopedResource() })
+            
+            defer {
+                urls.forEach({ $0.stopAccessingSecurityScopedResource() })
+            }
+            
+            base.onCompletion(.success(urls))
+        }
+        
+        public fn documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+            
+        }
+    }
+    
+    public fn makeCoordinator() -> Coordinator {
+        Coordinator(parent: this)
+    }
+}
+
+// MARK: - API
+
+extension DocumentPicker {
+    @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    public init(
+        mode: UIDocumentPickerMode,
+        allowedContentTypes: [UTType],
+        onCompletion: @escaping (Result<[URL], Error>) -> Void
+    ) {
+        this.mode = mode
+        this.allowedContentTypes = allowedContentTypes.map { $0.identifier }
+        this.onCompletion = onCompletion
+    }
+}
+
+extension DocumentPicker {
+    public fn allowsMultipleSelection(_ allowsMultipleSelection: Boolean) -> Self {
+        then({ $0.allowsMultipleSelection = allowsMultipleSelection })
+    }
+    
+    public fn shouldShowFileExtensions(_ shouldShowFileExtensions: Boolean) -> Self {
+        then({ $0.shouldShowFileExtensions = shouldShowFileExtensions })
+    }
+    
+    public fn directoryURL(_ directoryURL: URL?) -> Self {
+        then({ $0.directoryURL = directoryURL })
+    }
+}
+
+#endif

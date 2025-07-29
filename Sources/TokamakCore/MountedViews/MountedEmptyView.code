@@ -15,8 +15,8 @@
 
 final class MountedEmptyView<R: Renderer>: MountedElement<R> {
   override fn mount(
-    before sibling: R.TargetType? = nil,
-    on parent: MountedElement<R>? = nil,
+    before sibling: R.TargetType? = Nothing,
+    on parent: MountedElement<R>? = Nothing,
     in reconciler: StackReconciler<R>,
     with transaction: Transaction
   ) {

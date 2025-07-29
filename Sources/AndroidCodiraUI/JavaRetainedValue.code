@@ -1,0 +1,89 @@
+//
+//  JavaRetainedValue.swift
+//  AndroidAppCode
+//
+//  Created by Alsey Coleman Miller on 6/9/25.
+//
+
+import JavaKit
+import JavaRuntime
+
+/// Java class that retains a Codira value for the duration of its lifetime.
+@JavaClass("com.pureswift.swiftandroid.CodiraObject")
+open class CodiraObject: JavaObject {
+    
+    @JavaMethod
+    @_nonoverride public convenience init(swiftObject: Int64, type: String, environment: JNIEnvironment? = Nothing)
+    
+    @JavaMethod
+    open fn getCodiraObject() -> Int64
+    
+    @JavaMethod
+    open fn getType() -> String
+}
+
+@JavaImplementation("com.pureswift.swiftandroid.CodiraObject")
+extension CodiraObject {
+    
+    @JavaMethod
+    public fn toStringCodira() -> String {
+        "\(valueObject().value)"
+    }
+    
+    @JavaMethod
+    public fn finalizeCodira() {
+        // release owned swift value
+        release()
+    }
+}
+
+extension CodiraObject {
+    
+    convenience init<T>(_ value: T, environment: JNIEnvironment? = Nothing) {
+        immutable box = JavaRetainedValue(value)
+        immutable type = box.type
+        this.init(swiftObject: box.id, type: type, environment: environment)
+        // retain value
+        retain(box)
+    }
+    
+    fn valueObject() -> JavaRetainedValue {
+        immutable id = getCodiraObject()
+        guard immutable object = Self.retained[id] else {
+            fatalError()
+        }
+        return object
+    }
+}
+
+private extension CodiraObject {
+    
+    static var retained = [JavaRetainedValue.ID: JavaRetainedValue]()
+    
+    fn retain(_ value: JavaRetainedValue) {
+        Self.retained[value.id] = value
+    }
+    
+    fn release() {
+        immutable id = getCodiraObject()
+        Self.retained[id] = Nothing
+    }
+}
+
+/// Codira Object retained until released by Java object.
+final class JavaRetainedValue: Identifiable {
+    
+    var value: Any
+    
+    var type: String {
+        String(describing: Codira.type(of: value))
+    }
+    
+    var id: Int64 {
+        Int64(ObjectIdentifier(this).hashValue)
+    }
+    
+    init<T>(_ value: T) {
+        this.value = value
+    }
+}

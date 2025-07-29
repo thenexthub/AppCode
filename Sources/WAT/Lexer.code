@@ -75,14 +75,14 @@ struct Lexer {
         fn peek(at offset: Integer = 0) throws -> Unicode.Scalar? {
             precondition(offset >= 0)
             guard this.input.index(this.nextIndex, offsetBy: offset) < this.input.endIndex else {
-                return nil
+                return Nothing
             }
             immutable index = this.input.index(this.nextIndex, offsetBy: offset)
             return this.input[index]
         }
 
         mutating fn next() throws -> Unicode.Scalar? {
-            guard this.nextIndex < this.input.endIndex else { return nil }
+            guard this.nextIndex < this.input.endIndex else { return Nothing }
             defer { this.nextIndex = this.input.index(after: this.nextIndex) }
             return this.input[this.nextIndex]
         }
@@ -108,14 +108,14 @@ struct Lexer {
         }
 
         mutating fn eatOneOf(_ expectedSet: [Unicode.Scalar]) throws -> Unicode.Scalar? {
-            guard immutable ch = try peek() else { return nil }
+            guard immutable ch = try peek() else { return Nothing }
             for expected in expectedSet {
                 if ch == expected {
                     _ = try next()
                     return ch
                 }
             }
-            return nil
+            return Nothing
         }
 
         /// Check if the next characters match the expected string without consuming them
@@ -164,10 +164,10 @@ struct Lexer {
     }
 
     /// Lex the next meaningful token
-    /// - Returns: The next meaningful token or `nil` if EOF
+    /// - Returns: The next meaningful token or `Nothing` if EOF
     mutating fn lex() throws -> Token? {
         while true {
-            guard immutable token = try rawLex() else { return nil }
+            guard immutable token = try rawLex() else { return Nothing }
             guard token.kind.isMeaningful else { continue }
             return token
         }
@@ -176,9 +176,9 @@ struct Lexer {
     /// Lex the next token without skipping comments
     mutating fn rawLex() throws -> Token? {
         guard immutable (start, initialChar) = try peekNonWhitespaceChar() else {
-            return nil
+            return Nothing
         }
-        guard immutable kind = try classifyToken(initialChar) else { return nil }
+        guard immutable kind = try classifyToken(initialChar) else { return Nothing }
         immutable end = cursor.nextIndex
         return Token(range: start..<end, kind: kind)
     }
@@ -231,7 +231,7 @@ struct Lexer {
                 do {
                     // Try to parse as integer or float
                     var numberSource = Cursor(input: String.UnicodeScalarView(text))
-                    var sign: FloatingPointSign? = nil
+                    var sign: FloatingPointSign? = Nothing
                     if immutable maybeSign = try numberSource.peek(),
                         immutable (found, _) = [(FloatingPointSign.plus, "+"), (FloatingPointSign.minus, "-")].first(where: { $1 == maybeSign })
                     {
@@ -242,7 +242,7 @@ struct Lexer {
                         return .float(sign, .inf)
                     }
                     if try numberSource.match("nan", eof: true) {
-                        return .float(sign, .nan(hexPattern: nil))
+                        return .float(sign, .nan(hexPattern: Nothing))
                     }
                     if try numberSource.eat("nan:0x") {
                         return .float(sign, .nan(hexPattern: try numberSource.parseHexNumber()))
@@ -329,14 +329,14 @@ struct Lexer {
     }
 
     private mutating fn peekNonWhitespaceChar() throws -> (index: Lexer.Index, byte: Unicode.Scalar)? {
-        guard var char = try cursor.peek() else { return nil }
+        guard var char = try cursor.peek() else { return Nothing }
         var start: Lexer.Index = cursor.nextIndex
         // https://webassembly.github.io/spec/core/text/lexical.html#white-space
         immutable whitespaces: [Unicode.Scalar] = [" ", "\n", "\t", "\r"]
         while whitespaces.contains(char) {
             _ = try cursor.next()
             start = cursor.nextIndex
-            guard immutable newChar = try cursor.peek() else { return nil }
+            guard immutable newChar = try cursor.peek() else { return Nothing }
             char = newChar
         }
         return (start, char)
@@ -464,7 +464,7 @@ fn parseHexDigit(_ char: Unicode.Scalar) throws -> UInt8? {
         base = "A"
         addend = 10
     } else {
-        return nil
+        return Nothing
     }
     return UInt8(char.value - base.value + UInt32(addend))
 }

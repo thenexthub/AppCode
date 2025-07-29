@@ -1,0 +1,122 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+extension RecyclerView {
+  @JavaClass("androidx.recyclerview.widget.RecyclerView$ItemAnimator")
+  open class ItemAnimator: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn endAnimations()
+
+  @JavaMethod
+  open fn getChangeDuration() -> Int64
+
+  @JavaMethod
+  open fn getAddDuration() -> Int64
+
+  @JavaMethod
+  open fn dispatchAnimationsFinished()
+
+  @JavaMethod
+  open fn runPendingAnimations()
+
+  @JavaMethod
+  open fn recordPreLayoutInformation(_ arg0: RecyclerView.State?, _ arg1: RecyclerView.ViewHolder?, _ arg2: Int32, _ arg3: List<JavaObject>?) -> RecyclerView.ItemAnimator.ItemHolderInfo!
+
+  @JavaMethod
+  open fn recordPostLayoutInformation(_ arg0: RecyclerView.State?, _ arg1: RecyclerView.ViewHolder?) -> RecyclerView.ItemAnimator.ItemHolderInfo!
+
+  @JavaMethod
+  open fn animateChange(_ arg0: RecyclerView.ViewHolder?, _ arg1: RecyclerView.ViewHolder?, _ arg2: RecyclerView.ItemAnimator.ItemHolderInfo?, _ arg3: RecyclerView.ItemAnimator.ItemHolderInfo?) -> Boolean
+
+  @JavaMethod
+  open fn animateAppearance(_ arg0: RecyclerView.ViewHolder?, _ arg1: RecyclerView.ItemAnimator.ItemHolderInfo?, _ arg2: RecyclerView.ItemAnimator.ItemHolderInfo?) -> Boolean
+
+  @JavaMethod
+  open fn animateDisappearance(_ arg0: RecyclerView.ViewHolder?, _ arg1: RecyclerView.ItemAnimator.ItemHolderInfo?, _ arg2: RecyclerView.ItemAnimator.ItemHolderInfo?) -> Boolean
+
+  @JavaMethod
+  open fn canReuseUpdatedViewHolder(_ arg0: RecyclerView.ViewHolder?, _ arg1: List<JavaObject>?) -> Boolean
+
+  @JavaMethod
+  open fn canReuseUpdatedViewHolder(_ arg0: RecyclerView.ViewHolder?) -> Boolean
+
+  @JavaMethod
+  open fn isRunning(_ arg0: RecyclerView.ItemAnimator.ItemAnimatorFinishedListener?) -> Boolean
+
+  @JavaMethod
+  open fn isRunning() -> Boolean
+
+  @JavaMethod
+  open fn endAnimation(_ arg0: RecyclerView.ViewHolder?)
+
+  @JavaMethod
+  open fn dispatchAnimationFinished(_ arg0: RecyclerView.ViewHolder?)
+
+  @JavaMethod
+  open fn animatePersistence(_ arg0: RecyclerView.ViewHolder?, _ arg1: RecyclerView.ItemAnimator.ItemHolderInfo?, _ arg2: RecyclerView.ItemAnimator.ItemHolderInfo?) -> Boolean
+
+  @JavaMethod
+  open fn obtainHolderInfo() -> RecyclerView.ItemAnimator.ItemHolderInfo!
+
+  @JavaMethod
+  open fn onAnimationFinished(_ arg0: RecyclerView.ViewHolder?)
+
+  @JavaMethod
+  open fn onAnimationStarted(_ arg0: RecyclerView.ViewHolder?)
+
+  @JavaMethod
+  open fn setMoveDuration(_ arg0: Int64)
+
+  @JavaMethod
+  open fn setAddDuration(_ arg0: Int64)
+
+  @JavaMethod
+  open fn setRemoveDuration(_ arg0: Int64)
+
+  @JavaMethod
+  open fn setChangeDuration(_ arg0: Int64)
+
+  @JavaMethod
+  open fn dispatchAnimationStarted(_ arg0: RecyclerView.ViewHolder?)
+
+  @JavaMethod
+  open fn getMoveDuration() -> Int64
+
+  @JavaMethod
+  open fn getRemoveDuration() -> Int64
+  }
+}
+extension JavaClass<RecyclerView.ItemAnimator> {
+  @JavaStaticField(isFinal: true)
+  public var FLAG_CHANGED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_REMOVED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_INVALIDATED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_MOVED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_APPEARED_IN_PRE_LAYOUT: Int32
+}

@@ -1,0 +1,227 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaLang
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.os.Bundle", implements: Cloneable.this, Parcelable.this)
+open class Bundle: BaseBundle {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: JavaClassLoader?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Bundle?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: PersistableBundle?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setClassLoader(_ arg0: JavaClassLoader?)
+
+  @JavaMethod
+  open fn deepCopy() -> Bundle!
+
+  @JavaMethod
+  open fn hasFileDescriptors() -> Boolean
+
+  @JavaMethod
+  open fn putCharSequence(_ arg0: String, _ arg1: CharSequence?)
+
+  @JavaMethod
+  open fn putParcelable(_ arg0: String, _ arg1: Parcelable?)
+
+  @JavaMethod
+  open fn putParcelableArray(_ arg0: String, _ arg1: [Parcelable?])
+
+  @JavaMethod
+  open fn putParcelableArrayList(_ arg0: String, _ arg1: ArrayList<Parcelable>?)
+
+  @JavaMethod
+  open fn putIntegerArrayList(_ arg0: String, _ arg1: ArrayList<JavaInteger>?)
+
+  @JavaMethod
+  open fn putStringArrayList(_ arg0: String, _ arg1: ArrayList<JavaString>?)
+
+  @JavaMethod
+  open fn putCharSequenceArrayList(_ arg0: String, _ arg1: ArrayList<CharSequence>?)
+
+  @JavaMethod
+  open fn putSerializable(_ arg0: String, _ arg1: Serializable?)
+
+  @JavaMethod
+  open fn putByteArray(_ arg0: String, _ arg1: [Int8])
+
+  @JavaMethod
+  open fn putShortArray(_ arg0: String, _ arg1: [Int16])
+
+  @JavaMethod
+  open fn putCharArray(_ arg0: String, _ arg1: [UInt16])
+
+  @JavaMethod
+  open fn putFloatArray(_ arg0: String, _ arg1: [Float])
+
+  @JavaMethod
+  open fn putCharSequenceArray(_ arg0: String, _ arg1: [CharSequence?])
+
+  @JavaMethod
+  open fn putBundle(_ arg0: String, _ arg1: Bundle?)
+
+  @JavaMethod
+  open fn putBinder(_ arg0: String, _ arg1: IBinder?)
+
+  @JavaMethod
+  open fn getCharSequence(_ arg0: String) -> CharSequence!
+
+  @JavaMethod
+  open fn getCharSequence(_ arg0: String, _ arg1: CharSequence?) -> CharSequence!
+
+  @JavaMethod
+  open fn getParcelable(_ arg0: String, _ arg1: JavaClass<JavaObject>?) -> JavaObject!
+
+  @JavaMethod
+  open fn getParcelable(_ arg0: String) -> Parcelable!
+
+  @JavaMethod
+  open fn getParcelableArray(_ arg0: String, _ arg1: JavaClass<JavaObject>?) -> [JavaObject?]
+
+  @JavaMethod
+  open fn getParcelableArray(_ arg0: String) -> [Parcelable?]
+
+  @JavaMethod
+  open fn getParcelableArrayList(_ arg0: String, _ arg1: JavaClass<JavaObject>?) -> ArrayList<JavaObject>!
+
+  @JavaMethod
+  open fn getParcelableArrayList(_ arg0: String) -> ArrayList<Parcelable>!
+
+  @JavaMethod
+  open fn getSerializable(_ arg0: String) -> Serializable!
+
+  @JavaMethod
+  open fn getSerializable(_ arg0: String, _ arg1: JavaClass<Serializable>?) -> Serializable!
+
+  @JavaMethod
+  open fn getIntegerArrayList(_ arg0: String) -> ArrayList<JavaInteger>!
+
+  @JavaMethod
+  open fn getStringArrayList(_ arg0: String) -> ArrayList<JavaString>!
+
+  @JavaMethod
+  open fn getCharSequenceArrayList(_ arg0: String) -> ArrayList<CharSequence>!
+
+  @JavaMethod
+  open fn getByteArray(_ arg0: String) -> [Int8]
+
+  @JavaMethod
+  open fn getShortArray(_ arg0: String) -> [Int16]
+
+  @JavaMethod
+  open fn getCharArray(_ arg0: String) -> [UInt16]
+
+  @JavaMethod
+  open fn getFloatArray(_ arg0: String) -> [Float]
+
+  @JavaMethod
+  open fn getCharSequenceArray(_ arg0: String) -> [CharSequence?]
+
+  @JavaMethod
+  open fn getBinder(_ arg0: String) -> IBinder!
+
+  @JavaMethod
+  open fn readFromParcel(_ arg0: Parcel?)
+
+  @JavaMethod
+  open override fn remove(_ arg0: String)
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn clone() -> JavaObject!
+
+  @JavaMethod
+  open fn getByte(_ arg0: String, _ arg1: Int8) -> JavaByte!
+
+  @JavaMethod
+  open fn getByte(_ arg0: String) -> Int8
+
+  @JavaMethod
+  open fn putByte(_ arg0: String, _ arg1: Int8)
+
+  @JavaMethod
+  open fn getShort(_ arg0: String, _ arg1: Int16) -> Int16
+
+  @JavaMethod
+  open fn getShort(_ arg0: String) -> Int16
+
+  @JavaMethod
+  open fn putShort(_ arg0: String, _ arg1: Int16)
+
+  @JavaMethod
+  open fn getChar(_ arg0: String) -> UInt16
+
+  @JavaMethod
+  open fn getChar(_ arg0: String, _ arg1: UInt16) -> UInt16
+
+  @JavaMethod
+  open fn putChar(_ arg0: String, _ arg1: UInt16)
+
+  @JavaMethod
+  open fn getFloat(_ arg0: String, _ arg1: Float) -> Float
+
+  @JavaMethod
+  open fn getFloat(_ arg0: String) -> Float
+
+  @JavaMethod
+  open fn putFloat(_ arg0: String, _ arg1: Float)
+
+  @JavaMethod
+  open override fn clear()
+
+  @JavaMethod
+  open fn getClassLoader() -> JavaClassLoader!
+
+  @JavaMethod
+  open fn putAll(_ arg0: Bundle?)
+
+  @JavaMethod
+  open fn getBundle(_ arg0: String) -> Bundle!
+}
+extension JavaClass<Bundle> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<Bundle>!
+
+  @JavaStaticField(isFinal: true)
+  public var EMPTY: Bundle!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

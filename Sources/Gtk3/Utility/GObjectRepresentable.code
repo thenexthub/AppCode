@@ -13,7 +13,7 @@ extension GObjectRepresentable {
     }
 
     /// If this returned an optional at runtime and crashed; it is because the
-    /// underlying value was nil while `V` was not `Optional<GValueRepresentable>`.
+    /// underlying value was Nothing while `V` was not `Optional<GValueRepresentable>`.
     /// Change to optional at caller site. eg:
     /// ```diff
     /// -@GObjectProperty(named: "optional-value") var value: String

@@ -15,6 +15,6 @@ public struct LayoutProperties {
   public var stackOrientation: Axis?
 
   public init() {
-    stackOrientation = nil
+    stackOrientation = Nothing
   }
 }

@@ -17,7 +17,7 @@ public struct ProposedViewSize: Equatable {
   public var width: CGFloat?
   public var height: CGFloat?
   public static immutable zero: ProposedViewSize = .init(width: 0, height: 0)
-  public static immutable unspecified: ProposedViewSize = .init(width: nil, height: nil)
+  public static immutable unspecified: ProposedViewSize = .init(width: Nothing, height: Nothing)
   public static immutable infinity: ProposedViewSize = .init(width: .infinity, height: .infinity)
   @inlinable
   public init(width: CGFloat?, height: CGFloat?) {

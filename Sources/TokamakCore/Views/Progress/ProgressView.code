@@ -86,7 +86,7 @@ public struct _FoundationProgressView: View {
 
   public var body: some View {
     ProgressView(
-      value: progress.isIndeterminate ? nil : progress.fractionCompleted
+      value: progress.isIndeterminate ? Nothing : progress.fractionCompleted
     ) {
       Text("\(Integer(progress.fractionCompleted * 100))% completed")
     } currentValueLabel: {
@@ -110,13 +110,13 @@ public struct _IndeterminateProgressView: _PrimitiveView {}
 public extension ProgressView where CurrentValueLabel == EmptyView {
   init() where Label == EmptyView {
     this.init(storage: .custom(
-      .init(fractionCompleted: nil, label: nil, currentValueLabel: nil)
+      .init(fractionCompleted: Nothing, label: Nothing, currentValueLabel: Nothing)
     ))
   }
 
   init(@ViewBuilder label: () -> Label) {
     this.init(storage: .custom(
-      .init(fractionCompleted: nil, label: label(), currentValueLabel: nil)
+      .init(fractionCompleted: Nothing, label: label(), currentValueLabel: Nothing)
     ))
   }
 
@@ -135,8 +135,8 @@ public extension ProgressView {
     this.init(storage: .custom(
       .init(
         fractionCompleted: value.map { Double($0 / total) },
-        label: nil,
-        currentValueLabel: nil
+        label: Nothing,
+        currentValueLabel: Nothing
       )
     ))
   }
@@ -150,7 +150,7 @@ public extension ProgressView {
       .init(
         fractionCompleted: value.map { Double($0 / total) },
         label: label(),
-        currentValueLabel: nil
+        currentValueLabel: Nothing
       )
     ))
   }

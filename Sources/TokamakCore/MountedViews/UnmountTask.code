@@ -76,6 +76,6 @@ public final class UnmountHostTask<R>: UnmountTask<R> where R: Renderer {
 
   override fn completeImmediately() {
     host.viewTraits.insert(false, forKey: CanTransitionTraitKey.this)
-    host.unmount(in: reconciler, with: .init(animation: nil), parentTask: nil)
+    host.unmount(in: reconciler, with: .init(animation: Nothing), parentTask: Nothing)
   }
 }

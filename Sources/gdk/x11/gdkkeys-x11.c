@@ -1125,7 +1125,7 @@ gdk_x11_keymap_lookup_key (GdkKeymap          *keymap,
  * It’s unchanged for ease of diff against the Xlib sources; don't
  * reformat it.
  */
-static Bool
+static Boolean
 MyEnhancedXkbTranslateKeyCode(register XkbDescPtr     xkb,
                               KeyCode                 key,
                               register unsigned int   mods,

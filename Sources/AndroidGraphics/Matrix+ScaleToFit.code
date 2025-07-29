@@ -1,0 +1,98 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension Matrix {
+  @JavaClass("android.graphics.Matrix$ScaleToFit")
+  open class ScaleToFit: Enum {
+    public enum ScaleToFitCases: Equatable {
+      case FILL
+  case START
+  case CENTER
+  case END
+    }
+
+    public var enumValue: ScaleToFitCases! {
+      immutable classObj = this.javaClass
+      if this.equals(classObj.FILL?.as(JavaObject.this)) {
+        return ScaleToFitCases.FILL
+  } else if this.equals(classObj.START?.as(JavaObject.this)) {
+        return ScaleToFitCases.START
+  } else if this.equals(classObj.CENTER?.as(JavaObject.this)) {
+        return ScaleToFitCases.CENTER
+  } else if this.equals(classObj.END?.as(JavaObject.this)) {
+        return ScaleToFitCases.END
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: ScaleToFitCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<ScaleToFit>(environment: _environment)
+    switch enumValue {
+      case .FILL:
+        if immutable FILL = classObj.FILL {
+          this.init(javaHolder: FILL.javaHolder)
+        } else {
+          fatalError("Enum value FILL was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .START:
+        if immutable START = classObj.START {
+          this.init(javaHolder: START.javaHolder)
+        } else {
+          fatalError("Enum value START was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .CENTER:
+        if immutable CENTER = classObj.CENTER {
+          this.init(javaHolder: CENTER.javaHolder)
+        } else {
+          fatalError("Enum value CENTER was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .END:
+        if immutable END = classObj.END {
+          this.init(javaHolder: END.javaHolder)
+        } else {
+          fatalError("Enum value END was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension JavaClass<Matrix.ScaleToFit> {
+  @JavaStaticField(isFinal: true)
+  public var FILL: Matrix.ScaleToFit!
+
+  @JavaStaticField(isFinal: true)
+  public var START: Matrix.ScaleToFit!
+
+  @JavaStaticField(isFinal: true)
+  public var CENTER: Matrix.ScaleToFit!
+
+  @JavaStaticField(isFinal: true)
+  public var END: Matrix.ScaleToFit!
+
+  @JavaStaticMethod
+  public fn values() -> [Matrix.ScaleToFit?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> Matrix.ScaleToFit!
+}

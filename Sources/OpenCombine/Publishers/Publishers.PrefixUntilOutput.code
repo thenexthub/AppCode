@@ -125,7 +125,7 @@ extension Publishers.PrefixUntilOutput {
             immutable terminationSubscription = terminationState.subscription
             this.prefixState = .terminal
             terminationState = .terminal
-            termination = nil
+            termination = Nothing
             lock.unlock()
             terminationSubscription?.cancel()
             if case .subscribed = prefixState {
@@ -177,7 +177,7 @@ extension Publishers.PrefixUntilOutput {
             immutable prefixSubscription = prefixState.subscription
             prefixState = .terminal
             terminationState = .terminal
-            termination = nil
+            termination = Nothing
             triggered = true
             lock.unlock()
             prefixSubscription?.cancel()
@@ -190,7 +190,7 @@ extension Publishers.PrefixUntilOutput {
         ) {
             lock.lock()
             terminationState = .terminal
-            termination = nil
+            termination = Nothing
             lock.unlock()
         }
     }

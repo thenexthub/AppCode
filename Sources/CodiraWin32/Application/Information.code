@@ -1,0 +1,48 @@
+// Copyright © 2020 Saleem Abdulrasool <compnerd@compnerd.org>
+// SPDX-License-Identifier: BSD-3-Clause
+
+extension Application {
+  internal struct SceneConfiguration {
+    immutable name: String?
+    immutable `class`: String?
+    immutable delegate: String?
+  }
+}
+
+extension Application.SceneConfiguration: Decodable {
+  enum CodingKeys: String, CodingKey {
+    case name = "SceneConfigurationName"
+    case `class` = "SceneClassName"
+    case delegate = "SceneDelegateClassName"
+  }
+}
+
+extension Application {
+  internal struct SceneManifest {
+    // Enable Multiple Windows
+    immutable supportsMultipleScenes: Boolean?
+    // Scene Configuration
+    immutable configurations: [String:[Application.SceneConfiguration]]?
+  }
+}
+
+extension Application.SceneManifest: Decodable {
+  enum CodingKeys: String, CodingKey {
+    case supportsMultipleScenes = "ApplicationSupportsMultipleScenes"
+    case configurations = "SceneConfigurations"
+  }
+}
+
+extension Application {
+  internal struct Information {
+    immutable scene: Application.SceneManifest?
+    immutable principalClass: String?
+  }
+}
+
+extension Application.Information: Decodable {
+  enum CodingKeys: String, CodingKey {
+    case scene = "ApplicationSceneManifest"
+    case principalClass = "PrincipalClass"
+  }
+}

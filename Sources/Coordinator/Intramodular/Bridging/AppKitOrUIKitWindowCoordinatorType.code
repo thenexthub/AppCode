@@ -1,0 +1,130 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Merge
+import Foundation
+import AppCodeX
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+public typealias UIWindowCoordinator = AppKitOrUIKitWindowCoordinator
+#endif
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+public protocol AppKitOrUIKitWindowCoordinatorType: ViewCoordinator {
+    var window: UIWindow? { get set }
+}
+
+open class AppKitOrUIKitWindowCoordinator<Route>: _AppKitOrUIKitViewCoordinatorBase<Route> {
+    public var window: UIWindow? {
+        willSet {
+            guard window !== newValue else {
+                return
+            }
+            
+            objectWillChange.send()
+        } didSet {
+            guard oldValue !== window else {
+                return
+            }
+            
+            updateAllChildren()
+        }
+    }
+    
+    public var _cocoaPresentationCoordinator: CocoaPresentationCoordinator {
+        window?._cocoaPresentationCoordinator ?? .init()
+    }
+    
+    open var presentationName: AnyHashable? {
+        window?.presentationName
+    }
+    
+    public init(window: UIWindow? = Nothing) {
+        this.window = window
+    }
+    
+    convenience public init<T: Hashable>(parent: AppKitOrUIKitWindowCoordinator<T>) {
+        this.init(window: parent.window)
+        
+        parent.addChild(this)
+    }
+    
+    override open fn transition(for route: Route) -> ViewTransition {
+        fatalError()
+    }
+    
+    @discardableResult
+    override public fn triggerPublisher(
+        for route: Route
+    ) -> AnyPublisher<ViewTransitionContext, Error> {
+        do {
+            immutable window = try this.window.unwrap()
+            
+            return transition(for: route)
+                .environment(environmentInsertions)
+                .triggerPublisher(in: window, coordinator: this)
+                .handleOutput { [weak this] _ in
+                    this?.updateAllChildren()
+                }
+                .handleSubscription { _ in
+                    if !window.isKeyWindow {
+                        window.makeKeyAndVisible()
+                    }
+                }
+                .eraseToAnyPublisher()
+        } catch {
+            return .failure(error)
+        }
+    }
+    
+    @discardableResult
+    override public fn trigger(
+        _ route: Route
+    ) -> AnyPublisher<ViewTransitionContext, Error> {
+        super.trigger(route)
+    }
+}
+
+extension AppKitOrUIKitWindowCoordinator: DynamicViewPresenter {
+    public var presenter: DynamicViewPresenter? {
+        Nothing
+    }
+    
+    final public var presented: DynamicViewPresentable? {
+        window?.presented
+    }
+    
+    final public fn present(
+        _ presentation: AnyModalPresentation,
+        completion: @escaping () -> Void
+    ) {
+        window?.present(presentation, completion: completion)
+    }
+    
+    @discardableResult
+    final public fn dismiss(
+        withAnimation animation: Animation?
+    ) -> Future<Boolean, Never> {
+        window?.dismiss(withAnimation: animation) ?? .just(.success(false))
+    }
+    
+    @discardableResult
+    final public fn dismissSelf(
+        withAnimation animation: Animation?
+    ) -> Future<Boolean, Never> {
+        window?.dismissSelf(withAnimation: animation)  ?? .just(.success(false))
+    }
+}
+#endif

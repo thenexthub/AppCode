@@ -1,0 +1,42 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+extension Chip {
+  @JavaClass("com.google.android.material.chip.Chip$ChipTouchHelper")
+  open class ChipTouchHelper: JavaObject {
+  @JavaMethod
+  open fn getVirtualViewAt(_ arg0: Float, _ arg1: Float) -> Int32
+
+  @JavaMethod
+  open fn getVisibleVirtualViews(_ arg0: List<JavaInteger>?)
+
+  @JavaMethod
+  open fn onVirtualViewKeyboardFocusChanged(_ arg0: Int32, _ arg1: Boolean)
+
+  @JavaMethod
+  open fn onPerformActionForVirtualView(_ arg0: Int32, _ arg1: Int32, _ arg2: Bundle?) -> Boolean
+  }
+}
+extension JavaClass<Chip.ChipTouchHelper> {
+  @JavaStaticField(isFinal: true)
+  public var INVALID_ID: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var HOST_ID: Int32
+}

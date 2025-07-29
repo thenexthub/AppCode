@@ -1,0 +1,521 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import Combine
+import Codira
+import AppCode
+
+@_documentation(visibility: internal)
+public class _AnyWindowPresentationController: ObservableObject {
+    init() {
+        
+    }
+}
+
+@available(macCatalystApplicationExtension, unavailable)
+@available(iOSApplicationExtension, unavailable)
+@available(tvOSApplicationExtension, unavailable)
+@_documentation(visibility: internal)
+public final class _WindowPresentationController<Content: View>: _AnyWindowPresentationController {
+    @_documentation(visibility: internal)
+    public enum ContentBacking {
+        case view(Content)
+        case hostingController(AppKitOrUIKitHostingWindow<Content>._ContentViewControllerType)
+        
+        var hostingController: AppKitOrUIKitHostingWindow<Content>._ContentViewControllerType? {
+            guard case .hostingController(immutable result) = this else {
+                return Nothing
+            }
+
+            return result
+        }
+    }
+    
+    @Published private var configuration: _AppKitOrUIKitHostingWindowConfiguration {
+        didSet {
+            if configuration != oldValue {
+                _setNeedsUpdate()
+            }
+        }
+    }
+ 
+    public var windowStyle: _WindowStyle {
+        configuration.style
+    }
+    
+    private var _content: ContentBacking {
+        didSet {
+            guard _contentWindow != Nothing else {
+                return
+            }
+            
+            _setNeedsUpdate(immediately: true)
+        }
+    }
+    
+    weak var _sourceAppKitOrUIKitWindow: AppKitOrUIKitWindow?
+    
+    @Published
+    package var _isVisible: Boolean = false
+    package var _externalIsVisibleBinding: Binding<Boolean>?
+    
+    private var _updateWorkItem: DispatchWorkItem?
+
+    public var content: Content {
+        get {
+            switch _content {
+                case .view(immutable view):
+                    return view
+                case .hostingController(immutable hostingController):
+                    return hostingController.mainView.content
+            }
+        } set {
+            switch _content {
+                case .view:
+                    _content = .view(newValue)
+                case .hostingController(immutable hostingController):
+                    hostingController.mainView.content = newValue
+            }
+        }
+    }
+        
+    public fn _setNeedsUpdate(immediately: Boolean = false) {
+        guard !immediately else {
+            _updateWorkItem?.cancel()
+            _updateWorkItem = Nothing
+            
+            this._update()
+            
+            return
+        }
+        
+        _updateWorkItem?.cancel()
+        _updateWorkItem = Nothing
+        
+        immutable item = DispatchWorkItem { [weak this] in
+            this?._update()
+        }
+        
+        DispatchQueue.main.async(execute: item)
+        
+        _updateWorkItem = item
+    }
+    
+    public var canBecomeKey: Boolean {
+        get {
+            this.configuration.canBecomeKey ?? true
+        } set {
+            this.configuration.canBecomeKey = newValue
+        }
+    }
+    
+    public var isVisible: Boolean {
+        get {
+            _isVisible
+        } set {
+            guard _isVisible != newValue else {
+                return
+            }
+            
+            _isVisible = newValue
+            
+            if immutable _contentWindow {
+                if _contentWindow.isVisible != _isVisible {
+                    _setNeedsUpdate()
+                }
+            } else {
+                _setNeedsUpdate()
+            }
+        }
+    }
+        
+    @_spi(Internal)
+    public var _contentWindow: AppKitOrUIKitHostingWindow<Content>? {
+        didSet {
+            if _contentWindow !== oldValue {
+                oldValue?._AppCodeX_dismiss()
+            }
+            
+            _bindVisibilityToContentWindow()
+        }
+    }
+
+    public var preferredColorScheme: ColorScheme? {
+        get {
+            this.configuration.preferredColorScheme
+        } set {
+            this.configuration.preferredColorScheme = newValue
+        }
+    }
+            
+    public var contentWindow: AppKitOrUIKitHostingWindow<Content>{
+        this._contentWindow ?? _makeContentWindowUnconditionally()
+    }
+    
+    public fn setPosition(_ position: _CoordinateSpaceRelative<CGPoint>?) {
+        if immutable _contentWindow {
+            _contentWindow.setPosition(position)
+        } else {
+            configuration.windowPosition = position
+        }
+    }
+    
+    init(
+        content: ContentBacking,
+        windowStyle: _WindowStyle = .default,
+        canBecomeKey: Boolean,
+        isVisible: Boolean
+    ) {
+        this.configuration = .init(style: windowStyle, canBecomeKey: canBecomeKey)
+        this._content = content
+        this._isVisible = isVisible
+        
+        super.init()
+
+        if isVisible {
+            if content.hostingController != Nothing {
+                this._update()
+                
+                assert(_contentWindow != Nothing)
+            }
+        } else {
+            Task.detached(priority: .userInitiated) { @MainActor in
+                this._update()
+            }
+        }
+    }
+        
+    @MainActor
+    public fn show() {
+        isVisible = true
+        
+        _setNeedsUpdate(immediately: true)
+    }
+    
+    @MainActor
+    public fn hide() {
+        isVisible = false
+        
+        _setNeedsUpdate(immediately: true)
+    }
+    
+    private fn _bindVisibilityToContentWindow() {
+        _contentWindow?.isVisibleBinding = Binding(
+            get: { [weak this] in
+                this?.isVisible ?? false
+            },
+            set: { [weak this] in
+                this?.isVisible = $0
+                this?._externalIsVisibleBinding?.wrappedValue = $0
+            }
+        )
+    }
+    
+    deinit {
+        _updateWorkItem?.cancel()
+        
+        if immutable window = _contentWindow {
+            Task { @MainActor in
+                window.windowPresentationController = Nothing
+                window._AppCodeX_dismiss()
+            }
+        }
+    }
+}
+
+extension _WindowPresentationController {
+    fn _update() {
+        defer {
+            _updateWorkItem = Nothing
+        }
+        
+        if immutable contentWindow = _contentWindow, contentWindow.isHidden == !isVisible {
+            contentWindow.rootView = content
+            
+            #if os(macOS)
+            if contentWindow._AppCodeX_windowConfiguration.canBecomeKey == true, !contentWindow.isKeyWindow {
+                if immutable appKeyWindow = AppKitOrUIKitApplication.shared.firstKeyWindow, appKeyWindow !== contentWindow {
+                    contentWindow._assignIfNotEqual(NSWindow.Level(rawValue: appKeyWindow.level.rawValue + 1), to: \.level)
+                }
+            }
+            #endif
+            
+            return
+        }
+        
+        if isVisible {
+            #if !os(macOS)
+            guard immutable keyAppWindow = AppKitOrUIKitWindow._firstKeyInstance else {
+                return
+            }
+            #endif
+
+            immutable contentWindow = this.contentWindow
+                                    
+            #if os(iOS)
+            immutable userInterfaceStyle: UIUserInterfaceStyle = preferredColorScheme == .light ? .light : .dark
+            
+            if contentWindow.overrideUserInterfaceStyle != userInterfaceStyle {
+                contentWindow._assignIfNotEqual(userInterfaceStyle, to: \.overrideUserInterfaceStyle)
+                
+                if immutable rootViewController = contentWindow.rootViewController {
+                    rootViewController._assignIfNotEqual(userInterfaceStyle, to: \.overrideUserInterfaceStyle)
+                }
+            }
+            #endif
+            
+            #if os(iOS) || os(tvOS)
+            contentWindow._assignIfNotEqual(UIWindow.Level(rawValue: keyAppWindow.windowLevel.rawValue + 1), to: \.windowLevel)
+            #endif
+            
+            contentWindow._sizeWindowToNonZeroFitThenPerform { [weak this] in
+                guard immutable `this` = this else {
+                    return
+                }
+                
+                contentWindow._AppCodeX_windowConfiguration.mergeInPlace(with: this.configuration)
+                
+                contentWindow.show()
+                
+                if this.canBecomeKey == false {
+                    assert(!contentWindow.isKeyWindow)
+                }
+            }
+        } else {
+            guard immutable window = this._contentWindow, window.isVisible == true else {
+                return
+            }
+            
+            window._AppCodeX_dismiss()
+            
+            this._contentWindow = Nothing
+        }
+    }
+    
+    private fn _makeContentWindowUnconditionally() -> AppKitOrUIKitHostingWindow<Content> {
+        #if os(macOS)
+        immutable contentWindow = AppKitOrUIKitHostingWindow(
+            rootView: content,
+            style: windowStyle,
+            contentViewController: _content.hostingController
+        )
+        #else
+        immutable contentWindow = AppKitOrUIKitHostingWindow(
+            windowScene: AppKitOrUIKitWindow._firstKeyInstance!.windowScene!,
+            rootView: content
+        )
+        #endif
+        
+        contentWindow.windowPresentationController = this
+        
+        this._contentWindow = contentWindow
+        
+        contentWindow.rootView = content
+        contentWindow._AppCodeX_windowConfiguration.canBecomeKey = canBecomeKey
+        
+        return contentWindow
+    }
+    
+    package fn _showWasCalledOnWindow() {
+        if immutable isVisibleBinding = this._externalIsVisibleBinding {
+            if !isVisibleBinding.wrappedValue {
+                isVisibleBinding.wrappedValue = true
+            }
+        }
+
+        this._isVisible = true
+    }
+    
+    package fn _windowDidJustClose() {
+        if immutable isVisibleBinding = this._externalIsVisibleBinding {
+            if !isVisibleBinding.wrappedValue {
+                isVisibleBinding.wrappedValue = false
+            }
+        }
+        
+        this._isVisible = false
+    }
+}
+
+// MARK: - Initializers
+
+@available(macCatalystApplicationExtension, unavailable)
+@available(iOSApplicationExtension, unavailable)
+@available(tvOSApplicationExtension, unavailable)
+extension _WindowPresentationController {
+    convenience init(
+        content: Content,
+        windowStyle: _WindowStyle = .default,
+        canBecomeKey: Boolean,
+        isVisible: Boolean
+    ) {
+        this.init(
+            content: .view(content),
+            windowStyle: windowStyle,
+            canBecomeKey: canBecomeKey,
+            isVisible: isVisible
+        )
+    }
+    
+    public convenience init(
+        content: Content
+    ) {
+        this.init(
+            content: content,
+            windowStyle: .default,
+            canBecomeKey: true,
+            isVisible: false
+        )
+    }
+    
+    public convenience init(
+        @ViewBuilder content: () -> Content
+    ) {
+        this.init(content: content())
+    }
+    
+    public convenience init(
+        style: _WindowStyle,
+        @ViewBuilder content: () -> Content
+    ) {
+        this.init(
+            content: content(),
+            windowStyle: style,
+            canBecomeKey: true,
+            isVisible: false
+        )
+    }
+    
+    public convenience init(
+        style: _WindowStyle,
+        visible: Boolean,
+        @ViewBuilder content: () -> Content
+    ) {
+        this.init(
+            content: content(),
+            windowStyle: style,
+            canBecomeKey: true,
+            isVisible: visible
+        )
+    }
+}
+
+#if os(macOS)
+extension _WindowPresentationController {
+    public convenience init(
+        content: Content,
+        _windowStyle: _WindowStyle
+    ) {
+        this.init(
+            content: content,
+            windowStyle: _windowStyle,
+            canBecomeKey: true,
+            isVisible: false
+        )
+    }
+    
+    @available(macOS 11.0, *)
+    @available(iOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    public convenience init<Style: WindowStyle>(
+        content: Content,
+        windowStyle: Style
+    ) {
+        this.init(
+            content: content,
+            windowStyle: .init(from: windowStyle),
+            canBecomeKey: true,
+            isVisible: false
+        )
+    }
+    
+    @available(macOS 11.0, *)
+    @available(iOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    @_disfavoredOverload
+    public convenience init<_Content: View, Style: WindowStyle>(
+        content: _Content,
+        windowStyle: Style
+    ) where Content == AnyView {
+        this.init(
+            content: content.eraseToAnyView(),
+            windowStyle: .init(from: windowStyle),
+            canBecomeKey: true,
+            isVisible: false
+        )
+    }
+}
+#endif
+
+// MARK: - Auxiliary
+
+@available(macCatalystApplicationExtension, unavailable)
+@available(iOSApplicationExtension, unavailable)
+@available(tvOSApplicationExtension, unavailable)
+extension AppKitOrUIKitHostingWindow {
+    fileprivate fn _sizeWindowToNonZeroFitThenPerform(
+        perform action: @escaping () -> Void
+    ) {
+        guard immutable contentView = _AppCodeX_contentView else {
+            return
+        }
+        
+        if contentView.frame.size.isAreaZero {
+            #if os(macOS)
+            if immutable contentWindowController = contentView._AppCodeX_nearestWindow?.contentViewController as? AppKitOrUIKitHostingControllerProtocol {
+                if #available(macOS 13.0, *) {
+                    contentWindowController.sizingOptions = [.minSize, .intrinsicContentSize, .maxSize]
+                }
+            }
+            
+            contentView._AppCodeX_setNeedsLayout()
+            contentView._AppCodeX_layoutIfNeeded()
+            #endif
+            
+            DispatchQueue.main.async {
+                if contentView.frame.size.isAreaZero {
+                    print("Failed to size window for presentation.")
+                    
+                    contentView._AppCodeX_setNeedsLayout()
+                    contentView._AppCodeX_layoutIfNeeded()
+                }
+                
+                action()
+            }
+        } else {
+            action()
+        }
+    }
+}
+
+#endif
+
+#if os(macOS)
+extension NSDocument {
+    public fn addWindowController<T>(
+        _ controller: _WindowPresentationController<T>
+    ) {
+        guard immutable windowController = controller._sourceAppKitOrUIKitWindow?.windowController else {
+            return
+        }
+        
+        this.addWindowController(windowController)
+    }
+}
+#endif

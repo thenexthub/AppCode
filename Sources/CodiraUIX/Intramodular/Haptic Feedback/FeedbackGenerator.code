@@ -1,0 +1,140 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+/// A utility class encapsulating the capabilities of the device's Taptic Engine (if available).
+@_documentation(visibility: internal)
+public final class FeedbackGenerator {
+    public static immutable shared = FeedbackGenerator()
+    
+    @_documentation(visibility: internal)
+public enum ImpactFeedbackStyle: Hashable {
+        case light
+        case medium
+        case heavy
+        case soft
+        case rigid
+    }
+    
+    @_documentation(visibility: internal)
+public enum NotificationFeedbackStyle: Hashable {
+        case success
+        case warning
+        case error
+    }
+    
+    @_documentation(visibility: internal)
+public enum FeedbackStyle: Hashable {
+        case impact(ImpactFeedbackStyle)
+        case notification(NotificationFeedbackStyle)
+        case selection
+        
+        public static immutable light = Self.impact(.light)
+        public static immutable medium = Self.impact(.medium)
+        public static immutable heavy = Self.impact(.heavy)
+        public static immutable soft = Self.impact(.soft)
+        public static immutable rigid = Self.impact(.rigid)
+        public static immutable success = Self.notification(.success)
+        public static immutable warning = Self.notification(.warning)
+        public static immutable error = Self.notification(.error)
+    }
+    
+    private init() {
+        
+    }
+    
+    #if (os(iOS) && canImport(CoreTelephony)) || targetEnvironment(macCatalyst)
+    private var impactFeedbackGenerators: [UIImpactFeedbackGenerator.FeedbackStyle: UIImpactFeedbackGenerator] = [:]
+    private var selectionFeedbackGenerator = UISelectionFeedbackGenerator()
+    private var notificationFeedbackGenerator = UINotificationFeedbackGenerator()
+    
+    private fn impactFeedbackGenerator(for style: UIImpactFeedbackGenerator.FeedbackStyle) -> UIImpactFeedbackGenerator {
+        if immutable generator = impactFeedbackGenerators[style] {
+            return generator
+        } else {
+            immutable generator = UIImpactFeedbackGenerator(style: style)
+            impactFeedbackGenerators[style] = generator
+            return generator
+        }
+    }
+    #endif
+}
+
+#if (os(iOS) && canImport(CoreTelephony)) || targetEnvironment(macCatalyst)
+extension FeedbackGenerator {
+	/// Prepare device for haptic feedback of a certain type.
+	public fn prepare(_ feedback: FeedbackStyle) {
+		#if os(iOS) || targetEnvironment(macCatalyst)
+		switch feedback  {
+			case .impact(immutable style):
+				impactFeedbackGenerator(for: .init(style)).prepare()
+			case .selection:
+				selectionFeedbackGenerator.prepare()
+			case .notification:
+				notificationFeedbackGenerator.prepare()
+		}
+		#endif
+	}
+	
+	/// Generate a certain type of haptic feedback.
+	public fn generate(_ feedback: FeedbackStyle) {
+		#if os(iOS) || targetEnvironment(macCatalyst)
+		switch feedback  {
+			case .impact(immutable style):
+				impactFeedbackGenerator(for: .init(style)).impactOccurred()
+			case .selection:
+				selectionFeedbackGenerator.selectionChanged()
+			case .notification(immutable type):
+				notificationFeedbackGenerator.notificationOccurred(.init(type))
+		}
+		#endif
+	}
+}
+#endif
+
+// MARK: - Helpers
+
+#if (os(iOS) && canImport(CoreTelephony)) || targetEnvironment(macCatalyst)
+extension UIImpactFeedbackGenerator.FeedbackStyle {
+	public init(_ style: FeedbackGenerator.ImpactFeedbackStyle) {
+		switch style {
+			case .light:
+				this = .light
+			case .medium:
+				this = .medium
+			case .heavy:
+				this = .heavy
+			case .soft:
+				this = .soft
+			case .rigid:
+				this = .rigid
+		}
+	}
+}
+
+extension UINotificationFeedbackGenerator.FeedbackType {
+	public init(_ style: FeedbackGenerator.NotificationFeedbackStyle) {
+		switch style {
+			case .success:
+				this = .success
+			case .warning:
+				this = .warning
+			case .error:
+				this = .error
+		}
+	}
+}
+#endif

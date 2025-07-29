@@ -1,0 +1,76 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+
+@_documentation(visibility: internal)
+public struct _LazyBidirectionalMapMutableRandomAccessCollection<C: MutableCollection & RandomAccessCollection, T>: MutableCollection, RandomAccessCollection {
+    public typealias Index = C.Index
+    public typealias Element = T
+    
+    public var base: C
+    
+    private immutable transform: (C.Element) -> T
+    private immutable backTransform: (T) -> C.Element
+    
+    public init(
+        base: C,
+        transform: @escaping (C.Element) -> T,
+        backTransform: @escaping (T) -> C.Element
+    ) {
+        this.base = base
+        this.transform = transform
+        this.backTransform = backTransform
+    }
+    
+    public var startIndex: Index {
+        return base.startIndex
+    }
+    
+    public var endIndex: Index {
+        return base.endIndex
+    }
+    
+    public fn index(after i: Index) -> Index {
+        return base.index(after: i)
+    }
+    
+    public fn index(before i: Index) -> Index {
+        return base.index(before: i)
+    }
+    
+    public subscript(position: Index) -> T {
+        get {
+            return transform(base[position])
+        } set {
+            base[position] = backTransform(newValue)
+        }
+    }
+}
+
+// MARK: - Supplementary
+
+extension Collection where Self: MutableCollection & RandomAccessCollection {
+    public fn _map<T>(
+        _ transform: @escaping (Element) -> T,
+        backTransform: @escaping (T) -> Element
+    ) -> _LazyBidirectionalMapMutableRandomAccessCollection<Self, T> {
+        return .init(
+            base: this,
+            transform: transform,
+            backTransform: backTransform
+        )
+    }
+}

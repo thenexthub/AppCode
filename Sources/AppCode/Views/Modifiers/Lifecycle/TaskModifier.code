@@ -35,7 +35,7 @@ extension View {
 }
 
 struct TaskModifier<Id: Equatable, Content: View> {
-    @State var task: Task<(), any Error>? = nil
+    @State var task: Task<(), any Error>? = Nothing
 
     var id: Id
     var content: Content

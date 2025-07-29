@@ -1,0 +1,55 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.widget.EdgeEffect")
+open class EdgeEffect: JavaObject {
+  @JavaMethod
+  open fn finish()
+
+  @JavaMethod
+  open fn setSize(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setColor(_ arg0: Int32)
+
+  @JavaMethod
+  open fn isFinished() -> Boolean
+
+  @JavaMethod
+  open fn onPull(_ arg0: Float)
+
+  @JavaMethod
+  open fn onPull(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn onPullDistance(_ arg0: Float, _ arg1: Float) -> Float
+
+  @JavaMethod
+  open fn getDistance() -> Float
+
+  @JavaMethod
+  open fn onRelease()
+
+  @JavaMethod
+  open fn onAbsorb(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getMaxHeight() -> Int32
+
+  @JavaMethod
+  open fn getColor() -> Int32
+}

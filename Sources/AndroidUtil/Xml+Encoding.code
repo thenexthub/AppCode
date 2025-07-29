@@ -1,0 +1,98 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension Xml {
+  @JavaClass("android.util.Xml$Encoding")
+  open class Encoding: Enum {
+    public enum EncodingCases: Equatable {
+      case US_ASCII
+  case UTF_8
+  case UTF_16
+  case ISO_8859_1
+    }
+
+    public var enumValue: EncodingCases! {
+      immutable classObj = this.javaClass
+      if this.equals(classObj.US_ASCII?.as(JavaObject.this)) {
+        return EncodingCases.US_ASCII
+  } else if this.equals(classObj.UTF_8?.as(JavaObject.this)) {
+        return EncodingCases.UTF_8
+  } else if this.equals(classObj.UTF_16?.as(JavaObject.this)) {
+        return EncodingCases.UTF_16
+  } else if this.equals(classObj.ISO_8859_1?.as(JavaObject.this)) {
+        return EncodingCases.ISO_8859_1
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: EncodingCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<Encoding>(environment: _environment)
+    switch enumValue {
+      case .US_ASCII:
+        if immutable US_ASCII = classObj.US_ASCII {
+          this.init(javaHolder: US_ASCII.javaHolder)
+        } else {
+          fatalError("Enum value US_ASCII was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .UTF_8:
+        if immutable UTF_8 = classObj.UTF_8 {
+          this.init(javaHolder: UTF_8.javaHolder)
+        } else {
+          fatalError("Enum value UTF_8 was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .UTF_16:
+        if immutable UTF_16 = classObj.UTF_16 {
+          this.init(javaHolder: UTF_16.javaHolder)
+        } else {
+          fatalError("Enum value UTF_16 was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .ISO_8859_1:
+        if immutable ISO_8859_1 = classObj.ISO_8859_1 {
+          this.init(javaHolder: ISO_8859_1.javaHolder)
+        } else {
+          fatalError("Enum value ISO_8859_1 was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension JavaClass<Xml.Encoding> {
+  @JavaStaticField(isFinal: true)
+  public var US_ASCII: Xml.Encoding!
+
+  @JavaStaticField(isFinal: true)
+  public var UTF_8: Xml.Encoding!
+
+  @JavaStaticField(isFinal: true)
+  public var UTF_16: Xml.Encoding!
+
+  @JavaStaticField(isFinal: true)
+  public var ISO_8859_1: Xml.Encoding!
+
+  @JavaStaticMethod
+  public fn values() -> [Xml.Encoding?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> Xml.Encoding!
+}

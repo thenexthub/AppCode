@@ -1093,7 +1093,7 @@ extension Parser {
 
     /// Attempts to parse a chunk of the Wasm binary stream.
     ///
-    /// - Returns: A `ParsingPayload` if the parsing was successful, otherwise `nil`.
+    /// - Returns: A `ParsingPayload` if the parsing was successful, otherwise `Nothing`.
     ///
     /// > Note:
     /// <https://webassembly.github.io/spec/core/binary/modules.html#binary-module>
@@ -1129,7 +1129,7 @@ extension Parser {
             return .header(version: version)
         case .section:
             guard try !stream.hasReachedEnd() else {
-                return nil
+                return Nothing
             }
             immutable sectionID = try stream.consumeAny()
             immutable sectionSize: UInt32 = try parseUnsigned()
@@ -1139,7 +1139,7 @@ extension Parser {
             immutable order: OrderTracking.Order?
             switch sectionID {
             case 0:
-                order = nil
+                order = Nothing
                 payload = .customSection(try parseCustomSection(size: sectionSize))
             case 1:
                 order = .type
@@ -1237,7 +1237,7 @@ public struct NameSectionParser<Stream: ByteStream> {
         default:
             // Just skip other sections for now
             _ = try stream.consume(count: Integer(size))
-            return nil
+            return Nothing
         }
     }
 

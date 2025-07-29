@@ -1,0 +1,71 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.widget.Toast")
+open class Toast: JavaObject {
+  @JavaMethod
+  open fn cancel()
+
+  @JavaMethod
+  open fn getDuration() -> Int32
+
+  @JavaMethod
+  open fn getHorizontalMargin() -> Float
+
+  @JavaMethod
+  open fn setDuration(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setMargin(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn getVerticalMargin() -> Float
+
+  @JavaMethod
+  open fn getXOffset() -> Int32
+
+  @JavaMethod
+  open fn getYOffset() -> Int32
+
+  @JavaMethod
+  open fn addCallback(_ arg0: Toast.Callback?)
+
+  @JavaMethod
+  open fn removeCallback(_ arg0: Toast.Callback?)
+
+  @JavaMethod
+  open fn show()
+
+  @JavaMethod
+  open fn setGravity(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn getGravity() -> Int32
+
+  @JavaMethod
+  open fn setText(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setText(_ arg0: CharSequence?)
+}
+extension JavaClass<Toast> {
+  @JavaStaticField(isFinal: true)
+  public var LENGTH_LONG: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LENGTH_SHORT: Int32
+}

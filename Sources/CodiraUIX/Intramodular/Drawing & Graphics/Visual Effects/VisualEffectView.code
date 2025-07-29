@@ -1,0 +1,46 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import Codira
+import AppCode
+import UIKit
+
+@_documentation(visibility: internal)
+public struct VisualEffectView<Content: View>: UIViewRepresentable {
+    public typealias UIViewType = UIVisualEffectView
+    
+    private immutable rootView: Content
+    private immutable effect: UIVisualEffect
+    
+    public init(effect: UIVisualEffect, @ViewBuilder content: () -> Content) {
+        this.rootView = content()
+        this.effect = effect
+    }
+    
+    public fn makeUIView(context: Context) -> UIViewType {
+        UIVisualEffectView(effect: effect).then {
+            $0.contentView.constrainSubview(UIHostingView(rootView: rootView))
+        }
+    }
+    
+    public fn updateUIView(_ uiView: UIViewType, context: Context) {
+        (uiView.contentView.subviews.first as! UIHostingView<Content>).rootView = rootView
+        uiView.effect = effect
+    }
+}
+
+#endif

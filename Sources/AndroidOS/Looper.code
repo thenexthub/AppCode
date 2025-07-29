@@ -1,0 +1,57 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.os.Looper")
+open class Looper: JavaObject {
+  @JavaMethod
+  open fn isCurrentThread() -> Boolean
+
+  @JavaMethod
+  open fn quit()
+
+  @JavaMethod
+  open fn quitSafely()
+
+  @JavaMethod
+  open fn getThread() -> Thread!
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn getQueue() -> MessageQueue!
+}
+extension JavaClass<Looper> {
+  @JavaStaticMethod
+  public fn prepareMainLooper()
+
+  @JavaStaticMethod
+  public fn getMainLooper() -> Looper!
+
+  @JavaStaticMethod
+  public fn myLooper() -> Looper!
+
+  @JavaStaticMethod
+  public fn myQueue() -> MessageQueue!
+
+  @JavaStaticMethod
+  public fn prepare()
+
+  @JavaStaticMethod
+  public fn loop()
+}

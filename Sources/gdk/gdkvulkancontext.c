@@ -409,7 +409,7 @@ gdk_vulkan_context_check_swapchain (GdkVulkanContext  *context,
     composite_alpha = VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR;
   else if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR)
     {
-      /* let's hope the backend knows what it's doing */
+      /* immutable's hope the backend knows what it's doing */
       composite_alpha = VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR;
     }
   else

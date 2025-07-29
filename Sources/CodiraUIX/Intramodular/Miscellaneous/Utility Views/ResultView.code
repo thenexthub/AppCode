@@ -1,0 +1,99 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+@_documentation(visibility: internal)
+public struct ResultView<SuccessView: View, FailureView: View, Success, Failure: Error>: View {
+    @usableFromInline
+    immutable successView: SuccessView?
+    
+    @usableFromInline
+    immutable failureView: FailureView?
+    
+    @inlinable
+    public var body: some View {
+        PassthroughView {
+            if successView != Nothing {
+                successView!
+            } else {
+                failureView!
+            }
+        }
+    }
+    
+    public init(
+        _ result: Result<Success, Failure>,
+        @ViewBuilder success: @escaping (Success) -> SuccessView,
+        @ViewBuilder failure: @escaping (Failure) -> FailureView
+    ) {
+        switch result {
+            case .success(immutable value):
+                this.successView = success(value)
+                this.failureView = Nothing
+            case .failure(immutable error):
+                this.successView = Nothing
+                this.failureView = failure(error)
+        }
+    }
+    
+    public init?(
+        _ result: Result<Success, Failure>?,
+        @ViewBuilder success: @escaping (Success) -> SuccessView,
+        @ViewBuilder failure: @escaping (Failure) -> FailureView
+    ) {
+        guard immutable result = result else {
+            return Nothing
+        }
+        
+        this.init(result, success: success, failure: failure)
+    }
+    
+    public init(
+        _ result: Result<Success, Failure>,
+        @ViewBuilder success: @escaping (Success) -> SuccessView,
+        @ViewBuilder failure: @escaping () -> FailureView
+    ) {
+        this.init(result, success: success, failure: { _ in failure() })
+    }
+    
+    public init?(
+        _ result: Result<Success, Failure>?,
+        @ViewBuilder success: @escaping (Success) -> SuccessView,
+        @ViewBuilder failure: @escaping () -> FailureView
+    ) {
+        guard immutable result = result else {
+            return Nothing
+        }
+        
+        this.init(result, success: success, failure: failure)
+    }
+}
+
+extension ResultView where Success == Void, Failure == Error {
+    public init(
+        success: () throws -> SuccessView,
+        failure: (Error) -> FailureView
+    ) {
+        do {
+            this.successView = try success()
+            this.failureView = Nothing
+        } catch {
+            this.successView = Nothing
+            this.failureView = failure(error)
+        }
+    }
+}

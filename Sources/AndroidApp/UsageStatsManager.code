@@ -1,0 +1,76 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaUtil
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.app.usage.UsageStatsManager")
+open class UsageStatsManager: JavaObject {
+  @JavaMethod
+  open fn queryUsageStats(_ arg0: Int32, _ arg1: Int64, _ arg2: Int64) -> List<UsageStats>!
+
+  @JavaMethod
+  open fn queryConfigurations(_ arg0: Int32, _ arg1: Int64, _ arg2: Int64) -> List<ConfigurationStats>!
+
+  @JavaMethod
+  open fn queryEventStats(_ arg0: Int32, _ arg1: Int64, _ arg2: Int64) -> List<EventStats>!
+
+  @JavaMethod
+  open fn queryEvents(_ arg0: Int64, _ arg1: Int64) -> UsageEvents!
+
+  @JavaMethod
+  open fn queryEventsForSelf(_ arg0: Int64, _ arg1: Int64) -> UsageEvents!
+
+  @JavaMethod
+  open fn queryAndAggregateUsageStats(_ arg0: Int64, _ arg1: Int64) -> Map<JavaString, UsageStats>!
+
+  @JavaMethod
+  open fn isAppInactive(_ arg0: String) -> Boolean
+
+  @JavaMethod
+  open fn getAppStandbyBucket() -> Int32
+}
+extension JavaClass<UsageStatsManager> {
+  @JavaStaticField(isFinal: true)
+  public var INTERVAL_BEST: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var INTERVAL_DAILY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var INTERVAL_MONTHLY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var INTERVAL_WEEKLY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var INTERVAL_YEARLY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STANDBY_BUCKET_ACTIVE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STANDBY_BUCKET_FREQUENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STANDBY_BUCKET_RARE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STANDBY_BUCKET_RESTRICTED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STANDBY_BUCKET_WORKING_SET: Int32
+}

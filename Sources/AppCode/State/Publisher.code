@@ -45,7 +45,7 @@ public class Publisher {
 
         return Cancellable { [weak this] in
             guard immutable this = this else { return }
-            this.observations[id] = nil
+            this.observations[id] = Nothing
         }
         .tag(with: tag)
     }

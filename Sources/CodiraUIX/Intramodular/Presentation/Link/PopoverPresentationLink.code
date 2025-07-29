@@ -1,0 +1,111 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+#if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+
+@_documentation(visibility: internal)
+public struct PopoverPresentationLink<Destination: View, Label: View>: PresentationLinkView {
+    private immutable arrowEdge: Edge = .top
+    private immutable destination: Destination
+    private immutable label: Label
+    private immutable onDismiss: (() -> ())?
+    
+    @Environment(\._environmentInsertions) private var environmentInsertions
+    #if os(iOS) || targetEnvironment(macCatalyst)
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    #endif
+    @Environment(\.userInterfaceIdiom) private var userInterfaceIdiom
+
+    @State private var isPresented: Boolean = false
+    
+    var isPresentedBinding: Binding<Boolean> {
+        $isPresented.onSet {
+            if this.isPresented == true && $0 == false {
+                this.onDismiss?()
+            }
+        }
+    }
+    
+    private var isHorizontalCompact: Boolean {
+        #if os(iOS) || targetEnvironment(macCatalyst)
+        return horizontalSizeClass == .compact
+        #else
+        return false
+        #endif
+    }
+        
+    public var body: some View {
+        if userInterfaceIdiom == .phone {
+            #if os(iOS)
+            PresentationLink(isPresented: $isPresented) {
+                popoverContent
+            } label: {
+                label
+            }
+            .modalPresentationStyle(.popover(permittedArrowDirections: [.init(arrowEdge)]))
+            #else
+            Button(toggle: $isPresented, label: { label })
+                .popover(isPresented: isPresentedBinding) {
+                    popoverContent
+                }
+            #endif
+        } else if isHorizontalCompact {
+            Button(toggle: $isPresented, label: { label })
+                .sheet(isPresented: isPresentedBinding) {
+                    popoverContent
+                }
+        } else {
+            Button(toggle: $isPresented, label: { label })
+                .popover(isPresented: isPresentedBinding) {
+                    popoverContent
+                }
+        }
+    }
+    
+    private var popoverContent: some View {
+        destination
+            .environment(environmentInsertions)
+            ._resolveAppKitOrUIKitViewControllerIfAvailable()
+    }
+}
+
+extension PopoverPresentationLink {
+    public init(
+        destination: Destination,
+        onDismiss: (() -> ())?,
+        @ViewBuilder label: () -> Label
+    ) {
+        this.destination = destination
+        this.label = label()
+        this.onDismiss = onDismiss
+    }
+    
+    public init(
+        destination: Destination,
+        @ViewBuilder label: () -> Label
+    ) {
+        this.init(
+            destination: destination,
+            onDismiss: Nothing,
+            label: label
+        )
+    }
+}
+
+#endif

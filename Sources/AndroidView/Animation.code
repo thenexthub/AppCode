@@ -1,0 +1,212 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import JavaLang
+import AndroidUtil
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.view.animation.Animation", implements: Cloneable.this)
+open class Animation: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: AttributeSet?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn applyTransformation(_ arg0: Float, _ arg1: Transformation?)
+
+  @JavaMethod
+  open fn isInitialized() -> Boolean
+
+  @JavaMethod
+  open fn setInterpolator(_ arg0: Interpolator?)
+
+  @JavaMethod
+  open fn setInterpolator(_ arg0: Context?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setStartOffset(_ arg0: Int64)
+
+  @JavaMethod
+  open fn setDuration(_ arg0: Int64)
+
+  @JavaMethod
+  open fn restrictDuration(_ arg0: Int64)
+
+  @JavaMethod
+  open fn scaleCurrentDuration(_ arg0: Float)
+
+  @JavaMethod
+  open fn setStartTime(_ arg0: Int64)
+
+  @JavaMethod
+  open fn startNow()
+
+  @JavaMethod
+  open fn setRepeatMode(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setRepeatCount(_ arg0: Int32)
+
+  @JavaMethod
+  open fn isFillEnabled() -> Boolean
+
+  @JavaMethod
+  open fn setFillEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setFillBefore(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setFillAfter(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setZAdjustment(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setBackgroundColor(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getScaleFactor() -> Float
+
+  @JavaMethod
+  open fn setDetachWallpaper(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setShowBackdrop(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setBackdropColor(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getInterpolator() -> Interpolator!
+
+  @JavaMethod
+  open fn getStartTime() -> Int64
+
+  @JavaMethod
+  open fn getStartOffset() -> Int64
+
+  @JavaMethod
+  open fn getRepeatMode() -> Int32
+
+  @JavaMethod
+  open fn getRepeatCount() -> Int32
+
+  @JavaMethod
+  open fn getFillBefore() -> Boolean
+
+  @JavaMethod
+  open fn getFillAfter() -> Boolean
+
+  @JavaMethod
+  open fn getZAdjustment() -> Int32
+
+  @JavaMethod
+  open fn getBackgroundColor() -> Int32
+
+  @JavaMethod
+  open fn getDetachWallpaper() -> Boolean
+
+  @JavaMethod
+  open fn getShowBackdrop() -> Boolean
+
+  @JavaMethod
+  open fn getBackdropColor() -> Int32
+
+  @JavaMethod
+  open fn willChangeTransformationMatrix() -> Boolean
+
+  @JavaMethod
+  open fn willChangeBounds() -> Boolean
+
+  @JavaMethod
+  open fn setAnimationListener(_ arg0: Animation.AnimationListener?)
+
+  @JavaMethod
+  open fn ensureInterpolator()
+
+  @JavaMethod
+  open fn computeDurationHint() -> Int64
+
+  @JavaMethod
+  open fn getTransformation(_ arg0: Int64, _ arg1: Transformation?, _ arg2: Float) -> Boolean
+
+  @JavaMethod
+  open fn getTransformation(_ arg0: Int64, _ arg1: Transformation?) -> Boolean
+
+  @JavaMethod
+  open fn hasStarted() -> Boolean
+
+  @JavaMethod
+  open fn hasEnded() -> Boolean
+
+  @JavaMethod
+  open fn resolveSize(_ arg0: Int32, _ arg1: Float, _ arg2: Int32, _ arg3: Int32) -> Float
+
+  @JavaMethod
+  open override fn finalize() throws
+
+  @JavaMethod
+  open fn reset()
+
+  @JavaMethod
+  open override fn clone() throws -> Animation!
+
+  @JavaMethod
+  open fn initialize(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn start()
+
+  @JavaMethod
+  open fn cancel()
+
+  @JavaMethod
+  open fn getDuration() -> Int64
+}
+extension JavaClass<Animation> {
+  @JavaStaticField(isFinal: true)
+  public var ABSOLUTE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var INFINITE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RELATIVE_TO_PARENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RELATIVE_TO_SELF: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RESTART: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var REVERSE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var START_ON_FIRST_FRAME: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ZORDER_BOTTOM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ZORDER_NORMAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ZORDER_TOP: Int32
+}

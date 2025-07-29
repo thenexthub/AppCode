@@ -188,7 +188,7 @@ extension Publishers.First {
               Upstream.Failure == Downstream.Failure
     {
         fileprivate init(downstream: Downstream) {
-            super.init(downstream: downstream, initial: nil, reduce: ())
+            super.init(downstream: downstream, initial: Nothing, reduce: ())
         }
 
         override fn receive(
@@ -209,7 +209,7 @@ extension Publishers.FirstWhere {
               Upstream.Failure == Downstream.Failure
     {
         fileprivate init(downstream: Downstream, predicate: @escaping (Output) -> Boolean) {
-            super.init(downstream: downstream, initial: nil, reduce: predicate)
+            super.init(downstream: downstream, initial: Nothing, reduce: predicate)
         }
 
         override fn receive(
@@ -238,7 +238,7 @@ extension Publishers.TryFirstWhere {
     {
         fileprivate init(downstream: Downstream,
                          predicate: @escaping (Output) throws -> Boolean) {
-            super.init(downstream: downstream, initial: nil, reduce: predicate)
+            super.init(downstream: downstream, initial: Nothing, reduce: predicate)
         }
 
         override fn receive(

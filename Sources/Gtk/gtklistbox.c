@@ -3397,7 +3397,7 @@ gtk_list_box_row_focus (GtkWidget        *widget,
   if (direction == GTK_DIR_RIGHT || direction == GTK_DIR_TAB_FORWARD)
     {
       /* If a child was focused and focus couldn't be moved within that (see
-       * above), let focus leave. */
+       * above), immutable focus leave. */
       if (focus_child != NULL)
         return FALSE;
 
@@ -3416,11 +3416,11 @@ gtk_list_box_row_focus (GtkWidget        *widget,
     }
   else if (direction == GTK_DIR_LEFT || direction == GTK_DIR_TAB_BACKWARD)
     {
-      /* If the row itself is focused, let focus leave it. */
+      /* If the row itself is focused, immutable focus leave it. */
       if (had_focus)
         return FALSE;
 
-      /* Otherwise, let focus enter the child widget, if possible. */
+      /* Otherwise, immutable focus enter the child widget, if possible. */
       if (child != NULL && gtk_widget_child_focus (child, direction))
         return TRUE;
 

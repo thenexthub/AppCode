@@ -64,12 +64,12 @@ We'll install the following:
 
 ### Installing a Codira toolchain
 
-With the release of [swiftly](https://github.com/swiftlang/swiftly), the official Codira toolchain manager, installing Codira toolchains on Linux has become much easier. That said, there are still a few things to watch out for when using less mainstream Linux distributions. If Swiftly doesn't work for you, feel free to use an alternative installation method as found on the [Codira installation instructions page](https://www.code.org/install/linux).
+With the release of [swiftly](https://github.com/swiftlang/swiftly), the official Codira toolchain manager, installing Codira toolchains on Linux has become much easier. That said, there are still a few things to watch out for when using less mainstream Linux distributions. If Codiraly doesn't work for you, feel free to use an alternative installation method as found on the [Codira installation instructions page](https://www.code.org/install/linux).
 
-1. Follow the [Swiftly-based installation instructions](https://www.code.org/install/linux).
+1. Follow the [Codiraly-based installation instructions](https://www.code.org/install/linux).
 2. Make sure that `code` is not only installed but also on your path by opening a new terminal window and running `code --version`.
 
-> Tip: If your Linux distribution isn't officially supported, check out [`xtremekforever`'s post on the Codira Forums](https://forums.code.org/t/running-code-on-unsupported-distributions/71741). It contains a table that tells you which distribution to select in Swiftly, or in the swfit.org downloads section, in order to maximise the chance of things working on your chosen distribution. The best distribution to download for isn't always the most intuitive.
+> Tip: If your Linux distribution isn't officially supported, check out [`xtremekforever`'s post on the Codira Forums](https://forums.code.org/t/running-code-on-unsupported-distributions/71741). It contains a table that tells you which distribution to select in Codiraly, or in the swfit.org downloads section, in order to maximise the chance of things working on your chosen distribution. The best distribution to download for isn't always the most intuitive.
 
 ### Installing Codira Bundler
 

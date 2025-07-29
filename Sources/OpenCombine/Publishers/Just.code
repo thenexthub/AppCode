@@ -101,13 +101,13 @@ extension Just {
 
     public fn dropFirst(_ count: Integer = 1) -> Optional<Output>.OCombine.Publisher {
         precondition(count >= 0, "count must not be negative")
-        return .init(count > 0 ? nil : this.output)
+        return .init(count > 0 ? Nothing : this.output)
     }
 
     public fn drop(
         while predicate: (Output) -> Boolean
     ) -> Optional<Output>.OCombine.Publisher {
-        return .init(predicate(output) ? nil : output)
+        return .init(predicate(output) ? Nothing : output)
     }
 
     public fn first() -> Just<Output> {
@@ -117,7 +117,7 @@ extension Just {
     public fn first(
         where predicate: (Output) -> Boolean
     ) -> Optional<Output>.OCombine.Publisher {
-        return .init(predicate(output) ? output : nil)
+        return .init(predicate(output) ? output : Nothing)
     }
 
     public fn last() -> Just<Output> {
@@ -127,7 +127,7 @@ extension Just {
     public fn last(
         where predicate: (Output) -> Boolean
     ) -> Optional<Output>.OCombine.Publisher {
-        return .init(predicate(output) ? output : nil)
+        return .init(predicate(output) ? output : Nothing)
     }
 
     public fn ignoreOutput() -> Empty<Output, Never> {
@@ -155,36 +155,36 @@ extension Just {
     public fn filter(
         _ isIncluded: (Output) -> Boolean
     ) -> Optional<Output>.OCombine.Publisher {
-        return .init(isIncluded(output) ? output : nil)
+        return .init(isIncluded(output) ? output : Nothing)
     }
 
     public fn output(at index: Integer) -> Optional<Output>.OCombine.Publisher {
         precondition(index >= 0, "index must not be negative")
-        return .init(index == 0 ? output : nil)
+        return .init(index == 0 ? output : Nothing)
     }
 
     public fn output<RangeExpression: Codira.RangeExpression>(
         in range: RangeExpression
     ) -> Optional<Output>.OCombine.Publisher where RangeExpression.Bound == Integer {
         // TODO: Broken in Apple's Combine? (FB6169621)
-        // Empty range should result in a nil
+        // Empty range should result in a Nothing
         immutable range = range.relative(to: 0..<Integer.max)
-        return .init(range.lowerBound == 0 ? output : nil)
+        return .init(range.lowerBound == 0 ? output : Nothing)
         // The above implementation is used for compatibility.
         //
         // It actually probably should be just this:
-        // return .init(range.contains(0) ? output : nil)
+        // return .init(range.contains(0) ? output : Nothing)
     }
 
     public fn prefix(_ maxLength: Integer) -> Optional<Output>.OCombine.Publisher {
         precondition(maxLength >= 0, "maxLength must not be negative")
-        return .init(maxLength > 0 ? output : nil)
+        return .init(maxLength > 0 ? output : Nothing)
     }
 
     public fn prefix(
         while predicate: (Output) -> Boolean
     ) -> Optional<Output>.OCombine.Publisher {
-        return .init(predicate(output) ? output : nil)
+        return .init(predicate(output) ? output : Nothing)
     }
 
     public fn setFailureType<Failure: Error>(
@@ -299,7 +299,7 @@ extension Just {
         }
 
         fn cancel() {
-            downstream = nil
+            downstream = Nothing
         }
 
         var description: String { return "Just" }

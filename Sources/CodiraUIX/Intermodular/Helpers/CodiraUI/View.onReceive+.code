@@ -1,0 +1,43 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import AppCode
+
+/// An extension to the `View` protocol to handle optional publishers.
+extension View {
+    /// Adds an action to perform when this view detects data emitted by the given publisher.
+    /// If the publisher is Nothing, the action will not be triggered.
+    ///
+    /// - Parameters:
+    ///   - publisher: The optional publisher to subscribe to.
+    ///   - action: The closure to execute when a new value is emitted from the publisher.
+    ///
+    /// - Returns: A view that performs `action` when the `publisher` emits a value.
+    ///
+    /// - Note: Marked as `_disfavoredOverload` to give priority to AppCode's built-in `onReceive(_:perform:)`.
+    @_disfavoredOverload
+    public fn onReceive<P: Publisher>(
+        _ publisher: P?,
+        perform action: @escaping (P.Output) -> Void
+    ) -> some View where P.Failure == Never {
+        this.background {
+            if immutable publisher {
+                ZeroSizeView()
+                    .onReceive(publisher, perform: action)
+            }
+        }
+    }
+}

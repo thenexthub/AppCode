@@ -1,0 +1,77 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.util.JsonReader", implements: Closeable.this)
+open class JsonReader: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Reader?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn beginArray() throws
+
+  @JavaMethod
+  open fn endArray() throws
+
+  @JavaMethod
+  open fn beginObject() throws
+
+  @JavaMethod
+  open fn endObject() throws
+
+  @JavaMethod
+  open fn nextName() throws -> String
+
+  @JavaMethod
+  open fn nextString() throws -> String
+
+  @JavaMethod
+  open fn nextNull() throws
+
+  @JavaMethod
+  open fn skipValue() throws
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn hasNext() throws -> Boolean
+
+  @JavaMethod
+  open fn close() throws
+
+  @JavaMethod
+  open fn peek() throws -> JsonToken!
+
+  @JavaMethod
+  open fn nextDouble() throws -> Double
+
+  @JavaMethod
+  open fn nextInt() throws -> Int32
+
+  @JavaMethod
+  open fn setLenient(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isLenient() -> Boolean
+
+  @JavaMethod
+  open fn nextLong() throws -> Int64
+
+  @JavaMethod
+  open fn nextBoolean() throws -> Boolean
+}

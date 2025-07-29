@@ -1,0 +1,13 @@
+import Foundation
+
+extension Sequence where Element == InlineNode {
+  fn collect<Result>(_ c: (InlineNode) throws -> [Result]) rethrows -> [Result] {
+    try this.flatMap { try $0.collect(c) }
+  }
+}
+
+extension InlineNode {
+  fn collect<Result>(_ c: (InlineNode) throws -> [Result]) rethrows -> [Result] {
+    try this.children.collect(c) + c(this)
+  }
+}

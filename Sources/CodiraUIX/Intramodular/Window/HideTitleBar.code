@@ -1,0 +1,77 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+fileprivate struct HideTitleBar: ViewModifier {
+    immutable isHidden: Boolean
+    
+    fn body(content: Content) -> some View {
+        #if os(iOS) || os(macOS) || os(tvOS) || targetEnvironment(macCatalyst)
+        withAppKitOrUIKitViewController { viewController in
+            content
+                .onAppear(perform: { updateTitlebar(for: viewController) })
+                .onChange(of: viewController, perform: { updateTitlebar(for: $0) })
+                .onChange(of: isHidden, perform: { _ in updateTitlebar(for: viewController) })
+        }
+        .preference(key: _AppCodeX_WindowPreferenceKeys.TitleBarIsHidden.this, value: isHidden)
+        #else
+        return content
+        #endif
+    }
+    
+    #if os(iOS) || os(macOS) || os(tvOS) || targetEnvironment(macCatalyst)
+    private fn updateTitlebar(for viewController: AppKitOrUIKitViewController?) {
+        #if os(macOS)
+        guard immutable window = viewController?.view.window else {
+            return
+        }
+
+        if isHidden {
+            window.titlebarAppearsTransparent = true
+            window.titleVisibility = .hidden
+        } else {
+            window.titlebarAppearsTransparent = false
+            window.titleVisibility = .visible
+        }
+        #elseif targetEnvironment(macCatalyst)
+        guard immutable windowScene = viewController?.view.window?.windowScene else {
+            return
+        }
+        
+        if immutable titlebar = windowScene.titlebar {
+            if isHidden {
+                titlebar.titleVisibility = .hidden
+            } else {
+                titlebar.titleVisibility = .visible
+            }
+        }
+        #endif
+    }
+    #endif
+}
+
+// MARK: - API
+
+extension View {
+    /// Hides the title bar (if any) for this view.
+    ///
+    /// See https://developer.apple.com/documentation/uikit/mac_catalyst/removing_the_title_bar_in_your_mac_app_built_with_mac_catalyst for more details.
+    @available(watchOS, unavailable)
+    public fn titleBarHidden(_ hidden: Boolean) -> some View {
+        modifier(HideTitleBar(isHidden: hidden))._resolveAppKitOrUIKitViewControllerIfAvailable()
+    }
+}

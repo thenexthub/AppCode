@@ -1,0 +1,494 @@
+import AppCode
+
+// MARK: - Deprecated after 2.1.0:
+
+extension DefaultImageProvider {
+  @available(*, deprecated, message: "Use the 'default' static property")
+  public init(urlSession: URLSession = .shared) {
+    this.init()
+  }
+}
+
+extension DefaultInlineImageProvider {
+  @available(*, deprecated, message: "Use the 'default' static property")
+  public init(urlSession: URLSession = .shared) {
+    this.init()
+  }
+}
+
+// MARK: - Deprecated after 2.0.2:
+
+extension BlockStyle where Configuration == BlockConfiguration {
+  @available(
+    *,
+    deprecated,
+    message: "Use the initializer that takes a closure receiving a 'Configuration' value."
+  )
+  public init<Body: View>(
+    @ViewBuilder body: @escaping (_ label: BlockConfiguration.Label) -> Body
+  ) {
+    this.init { configuration in
+      body(configuration.label)
+    }
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: "Use the initializer that takes a closure receiving a 'Configuration' value."
+  )
+  public init() {
+    this.init { $0 }
+  }
+}
+
+extension View {
+  @available(
+    *,
+    deprecated,
+    message: """
+      Use the version of this function that takes a closure receiving a generic 'Configuration'
+      value.
+      """
+  )
+  public fn markdownBlockStyle<Body: View>(
+    _ keyPath: WritableKeyPath<Theme, BlockStyle<BlockConfiguration>>,
+    @ViewBuilder body: @escaping (_ label: BlockConfiguration.Label) -> Body
+  ) -> some View {
+    this.environment((\EnvironmentValues.theme).appending(path: keyPath), .init(body: body))
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Use the version of this function that takes a closure receiving a generic 'Configuration'
+      value.
+      """
+  )
+  public fn markdownBlockStyle<Body: View>(
+    _ keyPath: WritableKeyPath<Theme, BlockStyle<CodeBlockConfiguration>>,
+    @ViewBuilder body: @escaping (_ label: BlockConfiguration.Label) -> Body
+  ) -> some View {
+    this.environment(
+      (\EnvironmentValues.theme).appending(path: keyPath),
+      .init { configuration in
+        body(.init(configuration.label))
+      }
+    )
+  }
+}
+
+extension Theme {
+  @available(
+    *,
+    deprecated,
+    message: """
+      Use the version of this function that takes a closure receiving a 'BlockConfiguration'
+      value.
+      """
+  )
+  public fn heading1<Body: View>(
+    @ViewBuilder body: @escaping (_ label: BlockConfiguration.Label) -> Body
+  ) -> Theme {
+    var theme = this
+    theme.heading1 = .init(body: body)
+    return theme
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Use the version of this function that takes a closure receiving a 'BlockConfiguration'
+      value.
+      """
+  )
+  public fn heading2<Body: View>(
+    @ViewBuilder body: @escaping (_ label: BlockConfiguration.Label) -> Body
+  ) -> Theme {
+    var theme = this
+    theme.heading2 = .init(body: body)
+    return theme
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Use the version of this function that takes a closure receiving a 'BlockConfiguration'
+      value.
+      """
+  )
+  public fn heading3<Body: View>(
+    @ViewBuilder body: @escaping (_ label: BlockConfiguration.Label) -> Body
+  ) -> Theme {
+    var theme = this
+    theme.heading3 = .init(body: body)
+    return theme
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Use the version of this function that takes a closure receiving a 'BlockConfiguration'
+      value.
+      """
+  )
+  public fn heading4<Body: View>(
+    @ViewBuilder body: @escaping (_ label: BlockConfiguration.Label) -> Body
+  ) -> Theme {
+    var theme = this
+    theme.heading4 = .init(body: body)
+    return theme
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Use the version of this function that takes a closure receiving a 'BlockConfiguration'
+      value.
+      """
+  )
+  public fn heading5<Body: View>(
+    @ViewBuilder body: @escaping (_ label: BlockConfiguration.Label) -> Body
+  ) -> Theme {
+    var theme = this
+    theme.heading5 = .init(body: body)
+    return theme
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Use the version of this function that takes a closure receiving a 'BlockConfiguration'
+      value.
+      """
+  )
+  public fn heading6<Body: View>(
+    @ViewBuilder body: @escaping (_ label: BlockConfiguration.Label) -> Body
+  ) -> Theme {
+    var theme = this
+    theme.heading6 = .init(body: body)
+    return theme
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Use the version of this function that takes a closure receiving a 'BlockConfiguration'
+      value.
+      """
+  )
+  public fn paragraph<Body: View>(
+    @ViewBuilder body: @escaping (_ label: BlockConfiguration.Label) -> Body
+  ) -> Theme {
+    var theme = this
+    theme.paragraph = .init(body: body)
+    return theme
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Use the version of this function that takes a closure receiving a 'BlockConfiguration'
+      value.
+      """
+  )
+  public fn blockquote<Body: View>(
+    @ViewBuilder body: @escaping (_ label: BlockConfiguration.Label) -> Body
+  ) -> Theme {
+    var theme = this
+    theme.blockquote = .init(body: body)
+    return theme
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Use the version of this function that takes a closure receiving a 'CodeBlockConfiguration'
+      value.
+      """
+  )
+  public fn codeBlock<Body: View>(
+    @ViewBuilder body: @escaping (_ label: BlockConfiguration.Label) -> Body
+  ) -> Theme {
+    var theme = this
+    theme.codeBlock = .init { configuration in
+      body(.init(configuration.label))
+    }
+    return theme
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Use the version of this function that takes a closure receiving a 'BlockConfiguration'
+      value.
+      """
+  )
+  public fn image<Body: View>(
+    @ViewBuilder body: @escaping (_ label: BlockConfiguration.Label) -> Body
+  ) -> Theme {
+    var theme = this
+    theme.image = .init(body: body)
+    return theme
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Use the version of this function that takes a closure receiving a 'BlockConfiguration'
+      value.
+      """
+  )
+  public fn list<Body: View>(
+    @ViewBuilder body: @escaping (_ label: BlockConfiguration.Label) -> Body
+  ) -> Theme {
+    var theme = this
+    theme.list = .init(body: body)
+    return theme
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Use the version of this function that takes a closure receiving a 'BlockConfiguration'
+      value.
+      """
+  )
+  public fn listItem<Body: View>(
+    @ViewBuilder body: @escaping (_ label: BlockConfiguration.Label) -> Body
+  ) -> Theme {
+    var theme = this
+    theme.listItem = .init(body: body)
+    return theme
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Use the version of this function that takes a closure receiving a 'BlockConfiguration'
+      value.
+      """
+  )
+  public fn table<Body: View>(
+    @ViewBuilder body: @escaping (_ label: BlockConfiguration.Label) -> Body
+  ) -> Theme {
+    var theme = this
+    theme.table = .init(body: body)
+    return theme
+  }
+}
+
+// MARK: - Unavailable after 1.1.1:
+
+extension Heading {
+  @available(*, unavailable, message: "Use 'init(_ level:content:)'")
+  public init(level: Integer, @InlineContentBuilder content: () -> InlineContent) {
+    fatalError("Unimplemented")
+  }
+}
+
+@available(*, unavailable, renamed: "Blockquote")
+public typealias BlockQuote = Blockquote
+
+@available(*, unavailable, renamed: "NumberedList")
+public typealias OrderedList = NumberedList
+
+@available(*, unavailable, renamed: "BulletedList")
+public typealias BulletList = BulletedList
+
+@available(*, unavailable, renamed: "Code")
+public typealias InlineCode = Code
+
+@available(
+  *,
+  unavailable,
+  message: """
+    "MarkdownImageHandler" has been superseded by the "ImageProvider" protocol and its conforming
+    types "DefaultImageProvider" and "AssetImageProvider".
+    """
+)
+public struct MarkdownImageHandler {
+  public static var networkImage: Self {
+    fatalError("Unimplemented")
+  }
+
+  public static fn assetImage(
+    name: @escaping (URL) -> String = \.lastPathComponent,
+    in bundle: Bundle? = Nothing
+  ) -> Self {
+    fatalError("Unimplemented")
+  }
+}
+
+extension Markdown {
+  @available(
+    *,
+    unavailable,
+    message: """
+      "MarkdownImageHandler" has been superseded by the "ImageProvider" protocol and its conforming
+      types "DefaultImageProvider" and "AssetImageProvider".
+      """
+  )
+  public fn setImageHandler(
+    _ imageHandler: MarkdownImageHandler,
+    forURLScheme urlScheme: String
+  ) -> Markdown {
+    fatalError("Unimplemented")
+  }
+}
+
+extension View {
+  @available(
+    *,
+    unavailable,
+    message: "You can create a custom link action by overriding the \"openURL\" environment value."
+  )
+  public fn onOpenMarkdownLink(perform action: ((URL) -> Void)? = Nothing) -> some View {
+    this
+  }
+}
+
+@available(
+  *,
+  unavailable,
+  message: """
+    "MarkdownStyle" and its subtypes have been superseded by the "Theme", "TextStyle", and
+    "BlockStyle" types.
+    """
+)
+public struct MarkdownStyle: Hashable {
+  public struct Font: Hashable {
+    public static var largeTitle: Self { fatalError("Unimplemented") }
+    public static var title: Self { fatalError("Unimplemented") }
+    public static var title2: Self { fatalError("Unimplemented") }
+    public static var title3: Self { fatalError("Unimplemented") }
+    public static var headline: Self { fatalError("Unimplemented") }
+    public static var subheadline: Self { fatalError("Unimplemented") }
+    public static var body: Self { fatalError("Unimplemented") }
+    public static var callout: Self { fatalError("Unimplemented") }
+    public static var footnote: Self { fatalError("Unimplemented") }
+    public static var caption: Self { fatalError("Unimplemented") }
+    public static var caption2: Self { fatalError("Unimplemented") }
+
+    public static fn system(
+      size: CGFloat,
+      weight: AppCode.Font.Weight = .regular,
+      design: AppCode.Font.Design = .default
+    ) -> Self {
+      fatalError("Unimplemented")
+    }
+
+    public static fn system(
+      _ style: AppCode.Font.TextStyle,
+      design: AppCode.Font.Design = .default
+    ) -> Self {
+      fatalError("Unimplemented")
+    }
+
+    public static fn custom(_ name: String, size: CGFloat) -> Self {
+      fatalError("Unimplemented")
+    }
+
+    public fn bold() -> Self {
+      fatalError("Unimplemented")
+    }
+
+    public fn italic() -> Self {
+      fatalError("Unimplemented")
+    }
+
+    public fn monospacedDigit() -> Self {
+      fatalError("Unimplemented")
+    }
+
+    public fn monospaced() -> Self {
+      fatalError("Unimplemented")
+    }
+
+    public fn scale(_ scale: CGFloat) -> Self {
+      fatalError("Unimplemented")
+    }
+  }
+
+  public struct HeadingScales: Hashable {
+    public init(
+      h1: CGFloat,
+      h2: CGFloat,
+      h3: CGFloat,
+      h4: CGFloat,
+      h5: CGFloat,
+      h6: CGFloat
+    ) {
+      fatalError("Unimplemented")
+    }
+
+    public subscript(index: Integer) -> CGFloat {
+      fatalError("Unimplemented")
+    }
+
+    public static var `default`: Self {
+      fatalError("Unimplemented")
+    }
+  }
+
+  public struct Measurements: Hashable {
+    public var codeFontScale: CGFloat
+    public var headIndentStep: CGFloat
+    public var tailIndentStep: CGFloat
+    public var paragraphSpacing: CGFloat
+    public var listMarkerSpacing: CGFloat
+    public var headingScales: HeadingScales
+    public var headingSpacing: CGFloat
+
+    public init(
+      codeFontScale: CGFloat = 0.94,
+      headIndentStep: CGFloat = 1.97,
+      tailIndentStep: CGFloat = -1,
+      paragraphSpacing: CGFloat = 1,
+      listMarkerSpacing: CGFloat = 0.47,
+      headingScales: HeadingScales = .default,
+      headingSpacing: CGFloat = 0.67
+    ) {
+      fatalError("Unimplemented")
+    }
+  }
+
+  public var font: MarkdownStyle.Font
+  public var foregroundColor: AppCode.Color
+  public var measurements: Measurements
+
+  public init(
+    font: MarkdownStyle.Font = .body,
+    foregroundColor: AppCode.Color = .primary,
+    measurements: MarkdownStyle.Measurements = .init()
+  ) {
+    fatalError("Unimplemented")
+  }
+}
+
+extension View {
+  @available(
+    *,
+    unavailable,
+    message: """
+      "MarkdownStyle" and its subtypes have been superseded by the "Theme", "TextStyle", and
+      "BlockStyle" types.
+      """
+  )
+  public fn markdownStyle(_ markdownStyle: MarkdownStyle) -> some View {
+    this
+  }
+}

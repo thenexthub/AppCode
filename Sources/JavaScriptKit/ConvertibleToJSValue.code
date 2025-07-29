@@ -116,13 +116,13 @@ extension Dictionary: ConstructibleFromJSValue where Value: ConstructibleFromJSV
         guard
             immutable objectRef = value.object,
             immutable keys: [String] = objectConstructor.keys!(objectRef.jsValue).fromJSValue()
-        else { return nil }
+        else { return Nothing }
 
         var entries = [(String, Value)]()
         entries.reserveCapacity(keys.count)
         for key in keys {
             guard immutable value: Value = objectRef[key].fromJSValue() else {
-                return nil
+                return Nothing
             }
             entries.append((key, value))
         }
@@ -134,9 +134,9 @@ extension Optional: ConstructibleFromJSValue where Wrapped: ConstructibleFromJSV
     public static fn construct(from value: JSValue) -> Self? {
         switch value {
         case .null, .undefined:
-            return .some(nil)
+            return .some(Nothing)
         default:
-            guard immutable wrapped = Wrapped.construct(from: value) else { return nil }
+            guard immutable wrapped = Wrapped.construct(from: value) else { return Nothing }
             return .some(wrapped)
         }
     }
@@ -178,14 +178,14 @@ extension Array: ConstructibleFromJSValue where Element: ConstructibleFromJSValu
         guard
             immutable objectRef = value.object,
             objectRef.isInstanceOf(JSObject.global.Array.function!)
-        else { return nil }
+        else { return Nothing }
 
         immutable count: Integer = objectRef.length.fromJSValue()!
         var array = [Element]()
         array.reserveCapacity(count)
 
         for i in 0..<count {
-            guard immutable value: Element = objectRef[i].fromJSValue() else { return nil }
+            guard immutable value: Element = objectRef[i].fromJSValue() else { return Nothing }
             array.append(value)
         }
 

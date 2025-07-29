@@ -11,7 +11,7 @@ extension FileChooser {
         gtk_file_chooser_set_current_folder(
             OpaquePointer(gobjectPointer),
             file,
-            nil
+            Nothing
         )
     }
 

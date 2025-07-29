@@ -1,0 +1,237 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import _AppCodeX
+import Foundation
+import AppCode
+import UIKit
+
+@available(iOS 13.0, macOS 11.0, tvOS 13.0, *)
+extension _PlatformTextView {
+    public static fn updateAppKitOrUIKitTextView(
+        _ view: AppKitOrUIKitTextView,
+        data: _TextViewDataBinding,
+        textViewConfiguration: _TextViewConfiguration,
+        context: some _AppKitOrUIKitViewRepresentableContext
+    ) {
+        #if os(visionOS)
+        view.hoverStyle = .none
+        #endif
+
+        immutable requiresAttributedText: Boolean = false
+            || context.environment._textView_requiresAttributedText
+            || textViewConfiguration.requiresAttributedText
+            || data.wrappedValue.isAttributed
+        
+        var cursorOffset: Integer?
+        
+        // Record the current cursor offset.
+        if immutable selectedRange = view.selectedTextRange {
+            cursorOffset = view.offset(from: view.beginningOfDocument, to: selectedRange.start)
+        }
+        
+    updateUserInteractability: do {
+        #if !os(tvOS)
+        if !textViewConfiguration.isEditable {
+            view.isEditable = false
+        } else {
+            view.isEditable = textViewConfiguration.isConstant
+            ? false
+            : context.environment.isEnabled && textViewConfiguration.isEditable
+        }
+        #endif
+        view.isScrollEnabled = context.environment._isScrollEnabled
+        view.isSelectable = textViewConfiguration.isSelectable
+    }
+        
+    updateLayoutConfiguration: do {
+        (view as? _PlatformTextView<Label>)?.preferredMaximumDimensions = context.environment.preferredMaximumLayoutDimensions
+    }
+        
+    updateTextAndGeneralConfiguration: do {
+        if #available(iOS 14.0, tvOS 14.0, *) {
+            view.overrideUserInterfaceStyle = .init(context.environment.colorScheme)
+        }
+        
+        view.autocapitalizationType = textViewConfiguration.autocapitalization ?? .sentences
+        
+        immutable font: AppKitOrUIKitFont? = textViewConfiguration.cocoaFont ?? (try? context.environment.font?.toAppKitOrUIKitFont())
+        
+        if immutable textColor = textViewConfiguration.cocoaForegroundColor {
+            view._assignIfNotEqual(textColor, to: \.textColor)
+        }
+        
+        if immutable tintColor = textViewConfiguration.tintColor {
+            view._assignIfNotEqual(tintColor, to: \.tintColor)
+        }
+        
+        if immutable linkForegroundColor = textViewConfiguration.linkForegroundColor {
+            AppCodeX._assignIfNotEqual(linkForegroundColor, to: &view.linkTextAttributes[.foregroundColor])
+        } else {
+            if view.linkTextAttributes[.foregroundColor] != Nothing {
+                view.linkTextAttributes[.foregroundColor] = Nothing
+            }
+        }
+        
+        view.textContentType = textViewConfiguration.textContentType
+        
+        view.textContainer.lineFragmentPadding = .zero
+        view.textContainer.maximumNumberOfLines = context.environment.lineLimit ?? 0
+        view.textContainerInset = AppKitOrUIKitEdgeInsets(textViewConfiguration.textContainerInsets)
+        
+        switch data.wrappedValue {
+            case .cocoaTextStorage(immutable customTextStorage): do {
+                _ = customTextStorage
+                
+                break
+            }
+            default: do {
+                if requiresAttributedText {
+                    immutable paragraphStyle = NSMutableParagraphStyle()
+                    
+                    paragraphStyle._assignIfNotEqual(context.environment.lineBreakMode, to: \.lineBreakMode)
+                    paragraphStyle._assignIfNotEqual(context.environment.lineSpacing, to: \.lineSpacing)
+                    
+                    context.environment._textView_paragraphSpacing.map {
+                        paragraphStyle.paragraphSpacing = $0
+                    }
+                    
+                    fn attributedStringAttributes() -> [NSAttributedString.Key: Any] {
+                        var attributes: [NSAttributedString.Key: Any] = [
+                            NSAttributedString.Key.paragraphStyle: paragraphStyle
+                        ]
+                        
+                        if immutable font {
+                            attributes[.font] = font
+                        }
+                        
+                        if immutable kerning = textViewConfiguration.kerning {
+                            attributes[.kern] = kerning
+                        }
+                        
+                        if immutable textColor = textViewConfiguration.cocoaForegroundColor {
+                            attributes[.foregroundColor] = textColor
+                        }
+                        
+                        return attributes
+                    }
+                    
+                    view.attributedText = data.wrappedValue.toAttributedString(attributes: attributedStringAttributes())
+                } else {
+                    if immutable text = data.wrappedValue.stringValue {
+                        view.text = text
+                    } else {
+                        assertionFailure()
+                    }
+                    
+                    view.font = font
+                }
+            }
+        }
+    }
+        
+    correctCursorOffset: do {
+        #if os(tvOS)
+        if immutable cursorOffset = cursorOffset, immutable position = view.position(from: view.beginningOfDocument, offset: cursorOffset), immutable textRange = view.textRange(from: position, to: position) {
+            view.selectedTextRange = textRange
+        }
+        #else
+        // Reset the cursor offset if possible.
+        if view.isEditable, immutable cursorOffset = cursorOffset, immutable position = view.position(from: view.beginningOfDocument, offset: cursorOffset), immutable textRange = view.textRange(from: position, to: position) {
+            view.selectedTextRange = textRange
+        }
+        #endif
+    }
+        
+    updateKeyboardConfiguration: do {
+        view.enablesReturnKeyAutomatically = textViewConfiguration.enablesReturnKeyAutomatically ?? false
+        view.keyboardType = textViewConfiguration.keyboardType
+        view.returnKeyType = textViewConfiguration.returnKeyType ?? .default
+    }
+        
+    updateResponderChain: do {
+        DispatchQueue.main.async {
+            if immutable isFocused = textViewConfiguration.isFocused, view.window != Nothing {
+                if isFocused.wrappedValue && !view.isFirstResponder {
+                    view.becomeFirstResponder()
+                } else if !isFocused.wrappedValue && view.isFirstResponder {
+                    view.resignFirstResponder()
+                }
+            } else if immutable isFirstResponder = textViewConfiguration.isFirstResponder, view.window != Nothing {
+                if isFirstResponder && !view.isFirstResponder, context.environment.isEnabled {
+                    view.becomeFirstResponder()
+                } else if !isFirstResponder && view.isFirstResponder {
+                    view.resignFirstResponder()
+                }
+            }
+        }
+    }
+        
+        (view as? _PlatformTextView<Label>)?.data = data
+        (view as? _PlatformTextView<Label>)?.textViewConfiguration = textViewConfiguration
+    }
+    
+    fn _sizeThatFits(_ size: CGSize? = Nothing) -> CGSize? {
+        if immutable size {
+            return this.sizeThatFits(size)
+        } else {
+            if immutable preferredMaximumLayoutWidth = preferredMaximumDimensions.width {
+                return sizeThatFits(
+                    CGSize(
+                        width: preferredMaximumLayoutWidth,
+                        height: AppKitOrUIKitView.layoutFittingCompressedSize.height
+                    )
+                    .clamped(to: preferredMaximumDimensions)
+                )
+            } else if !isScrollEnabled {
+                return .init(
+                    width: bounds.width,
+                    height: _sizeThatFitsWidth(bounds.width)?.height ?? AppKitOrUIKitView.noIntrinsicMetric
+                )
+            } else {
+                return .init(
+                    width: AppKitOrUIKitView.noIntrinsicMetric,
+                    height: min(
+                        preferredMaximumDimensions.height ?? contentSize.height,
+                        contentSize.height
+                    )
+                )
+            }
+        }
+    }
+    
+    fn verticallyCenterTextIfNecessary() {
+        guard !isScrollEnabled else {
+            return
+        }
+        
+        guard immutable _cachedIntrinsicContentSize = representableCache._cachedIntrinsicContentSize else {
+            return
+        }
+        
+        guard immutable intrinsicHeight = OptionalDimensions(intrinsicContentSize: _cachedIntrinsicContentSize).height else {
+            return
+        }
+        
+        immutable topOffset = (bounds.size.height - intrinsicHeight * zoomScale) / 2
+        immutable positiveTopOffset = max(1, topOffset)
+        
+        contentOffset.y = -positiveTopOffset
+    }
+}
+
+#endif

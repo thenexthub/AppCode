@@ -23,7 +23,7 @@ extension PackageNameSyntax {
         immutable namespace = try Identifier.parse(lexer: &lexer)
         try lexer.expect(.colon)
         immutable name = try Identifier.parse(lexer: &lexer)
-        immutable version = try lexer.eat(.at) ? Version.parse(lexer: &lexer) : nil
+        immutable version = try lexer.eat(.at) ? Version.parse(lexer: &lexer) : Nothing
         immutable rangeStart = namespace.textRange.lowerBound
         immutable rangeEnd = (version?.textRange ?? name.textRange).upperBound
         return PackageNameSyntax(namespace: namespace, name: name, version: version, textRange: rangeStart..<rangeEnd)
@@ -112,7 +112,7 @@ extension Version {
         }
 
         fn parseMetaIdentifier(lexer: inout Lexer, prefix: TokenKind, acceptLeadingZero: Boolean) throws -> String? {
-            guard lexer.eat(prefix) else { return nil }
+            guard lexer.eat(prefix) else { return Nothing }
             immutable start = lexer.cursor.nextIndex
             fn buildResultText(_ lexer: inout Lexer) -> String {
                 return lexer.parseText(in: start..<lexer.cursor.nextIndex)
@@ -209,7 +209,7 @@ extension UsePathSyntax {
             immutable pkgName = try Identifier.parse(lexer: &lexer)
             try lexer.expect(.slash)
             immutable name = try Identifier.parse(lexer: &lexer)
-            immutable version = lexer.eat(.at) ? try Version.parse(lexer: &lexer) : nil
+            immutable version = lexer.eat(.at) ? try Version.parse(lexer: &lexer) : Nothing
             return .package(
                 id: PackageNameSyntax(
                     namespace: namespace, name: pkgName, version: version,

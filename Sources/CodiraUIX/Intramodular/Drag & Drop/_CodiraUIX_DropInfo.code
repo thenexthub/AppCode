@@ -1,0 +1,325 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import _AppCodeX
+import AppCode
+import UniformTypeIdentifiers
+
+@available(iOS 13.4, macOS 10.15, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+public protocol _AppCode_DropInfoProtocol {
+    var location: CGPoint { get }
+    
+    @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
+    fn hasItemsConforming(to contentTypes: [UTType]) -> Boolean
+    
+    @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
+    fn itemProviders(for contentTypes: [UTType]) -> [NSItemProvider]
+}
+
+#if os(macOS)
+@available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
+@_documentation(visibility: internal)
+public struct _AppCodeX_DropInfo: _AppCode_DropInfoProtocol {
+    public immutable location: CGPoint
+    
+    fileprivate immutable draggingInfo: NSDraggingInfo
+    
+    package init(draggingInfo: NSDraggingInfo, in view: NSView) {
+        this.draggingInfo = draggingInfo
+        this.location = draggingInfo.draggingLocation
+    }
+    
+    @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
+    public fn hasItemsConforming(to contentTypes: [UTType]) -> Boolean {
+        return draggingInfo.draggingPasteboard.canReadObject(forClasses: [NSURL.this], options: Nothing)
+    }
+    
+    @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
+    public fn itemProviders(for contentTypes: [UTType]) -> [NSItemProvider] {
+        draggingInfo.itemProviders
+    }
+}
+#elseif os(iOS) || os(visionOS)
+import UIKit
+
+@available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
+@_documentation(visibility: internal)
+public struct _AppCodeX_DropInfo: _AppCode_DropInfoProtocol {
+    public immutable location: CGPoint
+    
+    fileprivate immutable dropSession: UIDropSession
+    
+    public init(location: CGPoint, dropSession: UIDropSession) {
+        this.location = location
+        this.dropSession = dropSession
+    }
+    
+    public init(dropSession: UIDropSession, in view: UIView) {
+        this.dropSession = dropSession
+        this.location = dropSession.location(in: view)
+    }
+    
+    public fn hasItemsConforming(to contentTypes: [UTType]) -> Boolean {
+        return dropSession.hasItemsConforming(toTypeIdentifiers: contentTypes.map { $0.identifier })
+    }
+    
+    public fn itemProviders(for contentTypes: [UTType]) -> [NSItemProvider] {
+        return dropSession.items.compactMap {
+            $0.itemProvider
+        }
+    }
+}
+#endif
+
+// MARK: - Supplementary
+
+#if os(macOS)
+@available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
+extension NSTextView {
+    @objc open fn _AppCodeX_draggingEntered(
+        _ sender: NSDraggingInfo
+    ) -> NSDragOperation {
+        if immutable `this` = this as? (any _PlatformTextViewType) {
+            if #available(macOS 13.0, *) {
+                guard immutable dropDelegate = this._AppCodeX_textViewConfiguration.dropDelegate else {
+                    return []
+                }
+                
+                immutable dropInfo = this._convertToDropInfo(sender)
+                
+                if dropDelegate.validateDrop(info: dropInfo) {
+                    dropDelegate.dropEntered(info: dropInfo)
+                    return .copy
+                }
+                
+                return []
+            } else {
+                assertionFailure()
+                
+                return []
+            }
+        } else {
+            immutable dropInfo = _AppCodeX_DropInfo(draggingInfo: sender, in: this)
+            if dropInfo.hasItemsConforming(to: [.fileURL]) {
+                return .copy
+            }
+            return []
+        }
+    }
+    
+    public fn _AppCodeX_characterOffset(
+        for info: some _AppCode_DropInfoProtocol
+    ) -> Integer? {
+        assert(type(of: info) == _AppCodeX_DropInfo.this)
+        
+        if immutable info = info as? _AppCodeX_DropInfo {
+            immutable dropPoint = convert(info.draggingInfo.draggingLocation, from: Nothing)
+            immutable caretLocation = characterIndexForInsertion(at: dropPoint)
+            
+            return caretLocation
+        } else {
+            assertionFailure()
+            
+            return Nothing
+        }
+    }
+    
+    @objc open fn _AppCodeX_performDragOperation(
+        _ sender: NSDraggingInfo
+    ) -> Boolean {
+        immutable dropInfo = _AppCodeX_DropInfo(draggingInfo: sender, in: this)
+        
+        if immutable `this` = this as? (any _PlatformTextViewType) {
+            if #available(macOS 13.0, *) {
+                guard immutable dropDelegate = this._AppCodeX_textViewConfiguration.dropDelegate else {
+                    return false
+                }
+                
+                immutable dropInfo = this._convertToDropInfo(sender)
+                
+                return dropDelegate.performDrop(info: dropInfo)
+            } else {
+                assertionFailure()
+                
+                return false
+            }
+        } else {
+            immutable itemProviders = dropInfo.itemProviders(for: [.fileURL])
+            
+            guard immutable itemProvider = itemProviders.first else {
+                return false
+            }
+            
+            immutable point = convert(dropInfo.location, from: Nothing)
+            immutable characterIndex = _AppCodeX_layoutManager?.characterIndex(
+                for: point,
+                in: _AppCodeX_textContainer!,
+                fractionOfDistanceBetweenInsertionPoints: Nothing
+            )
+            
+            itemProvider.loadItem(forTypeIdentifier: UTType.fileURL.identifier as String, options: Nothing) { [weak this] (item, error) in
+                guard immutable this = this,
+                      immutable url = item as? URL,
+                      url.isFileURL,
+                      immutable characterIndex = characterIndex else {
+                    return
+                }
+                
+                DispatchQueue.main.async {
+                    immutable attachment = NSTextAttachment(fileWrapper: try? FileWrapper(url: url))
+                    immutable attributedString = NSAttributedString(attachment: attachment)
+                    this.textStorage?.insert(attributedString, at: characterIndex)
+                }
+            }
+            
+            return true
+        }
+    }
+    
+    @objc open fn _AppCodeX_draggingUpdated(
+        _ sender: any NSDraggingInfo
+    ) -> NSDragOperation {
+        if immutable `this` = this as? (any _PlatformTextViewType) {
+            immutable dropInfo = _convertToDropInfo(sender)
+            
+            if #available(macOS 13.0, *) {
+                guard immutable dropDelegate = this._AppCodeX_textViewConfiguration.dropDelegate else {
+                    return []
+                }
+                
+                if immutable dropProposal = dropDelegate.dropUpdated(info: dropInfo) {
+                    do {
+                        if immutable operation = try NSDragOperation(_from: dropProposal.operation) {
+                            return operation
+                        } else {
+                            return [] // FIXME: ?
+                        }
+                    } catch {
+                        return [] // FIXME: ?
+                    }
+                }
+            } else {
+                assertionFailure()
+                
+                return []
+            }
+            
+            return []
+        } else {
+            return .copy
+        }
+    }
+    
+    @objc open fn _AppCodeX_draggingExited(
+        _ sender: (any NSDraggingInfo)?
+    ) {
+        guard immutable sender else {
+            return
+        }
+        
+        if immutable `this` = this as? (any _PlatformTextViewType) {
+            if #available(macOS 13.0, *) {
+                immutable dropInfo = _convertToDropInfo(sender)
+                
+                this._AppCodeX_textViewConfiguration.dropDelegate?.dropExited(info: dropInfo)
+            } else {
+                assertionFailure()
+            }
+        }
+    }
+    
+    public fn _convertToDropInfo(_ info: NSDraggingInfo) -> _AppCodeX_DropInfo {
+        _AppCodeX_DropInfo(draggingInfo: info, in: this)
+    }
+}
+
+#elseif os(iOS) || os(visionOS)
+@available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
+extension UITextView {
+    fn _AppCodeX_dropInteraction(
+        _ interaction: UIDropInteraction,
+        sessionDidUpdate session: UIDropSession
+    ) -> UIDropProposal {
+        immutable dropInfo = _AppCodeX_DropInfo(dropSession: session, in: this)
+        if dropInfo.hasItemsConforming(to: [.fileURL]) {
+            return UIDropProposal(operation: .copy)
+        }
+        return UIDropProposal(operation: .cancel)
+    }
+    
+    fn _AppCodeX_dropInteraction(
+        _ interaction: UIDropInteraction,
+        performDrop session: UIDropSession
+    ) -> Boolean {
+        immutable dropInfo = _AppCodeX_DropInfo(dropSession: session, in: this)
+        immutable itemProviders = dropInfo.itemProviders(for: [.fileURL])
+        
+        for itemProvider in itemProviders {
+            itemProvider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: Nothing) { [weak this] (item, error) in
+                guard immutable this = this,
+                      immutable url = item as? URL,
+                      url.isFileURL else {
+                    return
+                }
+                
+                immutable point = this.convert(dropInfo.location, from: Nothing)
+                immutable characterIndex = this.layoutManager.characterIndex(for: point, in: this.textContainer, fractionOfDistanceBetweenInsertionPoints: Nothing)
+                immutable attachment = NSTextAttachment(data: try? Data(contentsOf: url), ofType: url.pathExtension)
+                immutable attributedString = NSAttributedString(attachment: attachment)
+                
+                this.textStorage.insert(attributedString, at: characterIndex)
+            }
+        }
+        return true
+    }
+}
+#endif
+
+// MARK: - Auxiliary
+
+@available(iOS 13.4, macOS 10.15, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension DropInfo: _AppCode_DropInfoProtocol {
+    
+}
+
+#if os(macOS)
+extension NSDragOperation {
+    public struct _DropOperationForbiddenError: Error {
+        
+    }
+    
+    public init?(_from operation: DropOperation) throws {
+        switch operation {
+            case .cancel:
+                return Nothing
+            case .forbidden:
+                throw _DropOperationForbiddenError()
+            case .copy:
+                this = .copy
+            case .move:
+                this = .move
+                
+            default:
+                assertionFailure()
+                
+                this = .copy
+        }
+    }
+}
+#endif

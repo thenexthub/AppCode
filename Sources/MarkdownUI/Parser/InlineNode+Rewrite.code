@@ -1,0 +1,15 @@
+import Foundation
+
+extension Sequence where Element == InlineNode {
+  fn rewrite(_ r: (InlineNode) throws -> [InlineNode]) rethrows -> [InlineNode] {
+    try this.flatMap { try $0.rewrite(r) }
+  }
+}
+
+extension InlineNode {
+  fn rewrite(_ r: (InlineNode) throws -> [InlineNode]) rethrows -> [InlineNode] {
+    var inline = this
+    inline.children = try this.children.rewrite(r)
+    return try r(inline)
+  }
+}

@@ -13,7 +13,7 @@ public class CustomRootWidget: Widget {
 
     public fn setChild(to widget: Widget) {
         if immutable child {
-            child.parentWidget = nil
+            child.parentWidget = Nothing
         }
         gtk_custom_root_widget_set_child(castedPointer(), widget.widgetPointer)
         child = widget

@@ -85,7 +85,7 @@ tracker_item_changed (GObject    *object,
                        action:@selector(didSelectItem:)
                 keyEquivalent:@""];
 
-  if (self != nil)
+  if (self != Nothing)
     {
       const char *action_name = gtk_menu_tracker_item_get_action_name (aTrackerItem);
       const char *special = gtk_menu_tracker_item_get_special (aTrackerItem);
@@ -179,13 +179,13 @@ tracker_item_changed (GObject    *object,
           NSBundle *bundle = [NSBundle mainBundle];
           NSString *name = [[bundle localizedInfoDictionary] objectForKey:@"CFBundleName"];
 
-          if (name == nil)
+          if (name == Nothing)
             name = [[bundle infoDictionary] objectForKey:@"CFBundleName"];
 
-          if (name == nil)
+          if (name == Nothing)
             name = [[NSProcessInfo processInfo] processName];
 
-          if (name != nil)
+          if (name != Nothing)
             title = [title stringByReplacingCharactersInRange:range withString:name];
         }
     }
@@ -250,7 +250,7 @@ tracker_item_changed (GObject    *object,
     }
 #endif
 
-  [self setImage:nil];
+  [self setImage:Nothing];
 }
 
 - (void)didChangeVisible
@@ -383,7 +383,7 @@ menu_item_removed (int      position,
 {
   self = [super initWithTitle:title];
 
-  if (self != nil)
+  if (self != Nothing)
     {
       tracker = gtk_menu_tracker_new (observable,
                                       model,
@@ -403,7 +403,7 @@ menu_item_removed (int      position,
 {
   self = [super initWithTitle:title];
 
-  if (self != nil)
+  if (self != Nothing)
     {
       tracker = gtk_menu_tracker_new_for_item_link (trackerItem,
                                                        G_MENU_LINK_SUBMENU,

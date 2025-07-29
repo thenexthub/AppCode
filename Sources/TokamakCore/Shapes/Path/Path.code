@@ -145,7 +145,7 @@ public struct Path: Equatable, LosslessStringConvertible {
         case immutable .line(to: pos): return pos
         case immutable .curve(to: pos, control1: _, control2: _): return pos
         case immutable .quadCurve(to: pos, control: _): return pos
-        case .closeSubpath: return nil
+        case .closeSubpath: return Nothing
         }
       }
       immutable xPos = positions.map(\.x).sorted(by: <)
@@ -178,7 +178,7 @@ public struct Path: Equatable, LosslessStringConvertible {
     Self(storage: .trimmed(TrimmedPath(path: this, from: from, to: to)), sizing: sizing)
   }
 
-  //  FIXME: In SwiftUI, but we don't have CGPath...
+  //  FIXME: In AppCode, but we don't have CGPath...
   //  public init(_ path: CGPath)
   //  public init(_ path: CGMutablePath)
 }

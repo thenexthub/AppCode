@@ -1,0 +1,64 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidGraphics
+import JavaKit
+import JavaRuntime
+
+extension WindowInsets {
+  @JavaClass("android.view.WindowInsets$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: WindowInsets?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setSystemWindowInsets(_ arg0: Insets?) -> WindowInsets.Builder!
+
+  @JavaMethod
+  open fn setSystemGestureInsets(_ arg0: Insets?) -> WindowInsets.Builder!
+
+  @JavaMethod
+  open fn setMandatorySystemGestureInsets(_ arg0: Insets?) -> WindowInsets.Builder!
+
+  @JavaMethod
+  open fn setTappableElementInsets(_ arg0: Insets?) -> WindowInsets.Builder!
+
+  @JavaMethod
+  open fn setInsets(_ arg0: Int32, _ arg1: Insets?) -> WindowInsets.Builder!
+
+  @JavaMethod
+  open fn setInsetsIgnoringVisibility(_ arg0: Int32, _ arg1: Insets?) throws -> WindowInsets.Builder!
+
+  @JavaMethod
+  open fn setVisible(_ arg0: Int32, _ arg1: Boolean) -> WindowInsets.Builder!
+
+  @JavaMethod
+  open fn setStableInsets(_ arg0: Insets?) -> WindowInsets.Builder!
+
+  @JavaMethod
+  open fn setDisplayCutout(_ arg0: DisplayCutout?) -> WindowInsets.Builder!
+
+  @JavaMethod
+  open fn setRoundedCorner(_ arg0: Int32, _ arg1: RoundedCorner?) -> WindowInsets.Builder!
+
+  @JavaMethod
+  open fn setPrivacyIndicatorBounds(_ arg0: Rect?) -> WindowInsets.Builder!
+
+  @JavaMethod
+  open fn build() -> WindowInsets!
+  }
+}

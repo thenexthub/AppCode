@@ -1,0 +1,37 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidGraphics
+import AndroidUtil
+import AndroidWidget
+import JavaKit
+import JavaRuntime
+
+@JavaClass("com.google.android.material.animation.ImageMatrixProperty")
+open class ImageMatrixProperty: Property {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open override fn get(_ arg0: JavaObject?) -> JavaObject!
+
+  @JavaMethod
+  open fn get(_ arg0: ImageView?) -> Matrix!
+
+  @JavaMethod
+  open fn set(_ arg0: ImageView?, _ arg1: Matrix?)
+
+  @JavaMethod
+  open override fn set(_ arg0: JavaObject?, _ arg1: JavaObject?)
+}

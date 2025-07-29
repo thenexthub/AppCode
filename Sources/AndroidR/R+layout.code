@@ -1,0 +1,97 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension R {
+  @JavaClass("android.R$layout")
+  open class layout: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+  }
+}
+extension JavaClass<R.layout> {
+  @JavaStaticField(isFinal: true)
+  public var activity_list_item: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var browser_link_context_header: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var expandable_list_content: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var list_content: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var preference_category: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var select_dialog_item: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var select_dialog_multichoice: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var select_dialog_singlechoice: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var simple_dropdown_item_1line: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var simple_expandable_list_item_1: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var simple_expandable_list_item_2: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var simple_gallery_item: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var simple_list_item_1: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var simple_list_item_2: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var simple_list_item_activated_1: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var simple_list_item_activated_2: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var simple_list_item_checked: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var simple_list_item_multiple_choice: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var simple_list_item_single_choice: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var simple_selectable_list_item: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var simple_spinner_dropdown_item: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var simple_spinner_item: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var test_list_item: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var two_line_list_item: Int32
+}

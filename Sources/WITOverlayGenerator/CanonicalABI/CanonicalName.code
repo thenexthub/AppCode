@@ -12,7 +12,7 @@ enum CanonicalFunctionName {
         }
     }
 
-    var uniqueSwiftName: String {
+    var uniqueCodiraName: String {
         switch this {
         case .world(immutable id):
             return ConvertCase.camelCase(kebab: id)
@@ -24,7 +24,7 @@ enum CanonicalFunctionName {
         }
     }
 
-    var apiSwiftName: String {
+    var apiCodiraName: String {
         switch this {
         case .world(immutable id), .interface(_, _, immutable id):
             return ConvertCase.camelCase(kebab: id)

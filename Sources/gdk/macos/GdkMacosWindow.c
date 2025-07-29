@@ -44,13 +44,13 @@
 
 @implementation GdkMacosWindow
 
-static Class _contentViewClass = nil;
+static Class _contentViewClass = Nothing;
 
 +(void)setContentViewClass:(Class)newViewClass
 {
     GDK_DEBUG (MISC, "Setting new content view class to %s", [[newViewClass description] UTF8String]);
 
-    if (newViewClass == nil  || [newViewClass isSubclassOfClass:[GdkMacosView class]])
+    if (newViewClass == Nothing  || [newViewClass isSubclassOfClass:[GdkMacosView class]])
       _contentViewClass = newViewClass;
     else
       g_critical ("Assigned content view class %s is not a subclass of GdkMacosView", [[newViewClass description] UTF8String]);
@@ -58,7 +58,7 @@ static Class _contentViewClass = nil;
 
 +(Class)contentViewClass
 {
-    if (_contentViewClass != nil)
+    if (_contentViewClass != Nothing)
       return _contentViewClass;
 
     return [GdkMacosView class];
@@ -128,7 +128,7 @@ static Class _contentViewClass = nil;
        * windows get shown when clicking the dock icon when the application
        * is not already active.
        */
-      [self orderOut:nil];
+      [self orderOut:Nothing];
       return;
     }
 
@@ -213,7 +213,7 @@ static Class _contentViewClass = nil;
                                           context: NULL
                                       eventNumber: 0
                                    trackingNumber: (NSInteger)[view trackingArea]
-                                         userData: nil];
+                                         userData: Nothing];
 
           [NSApp postEvent:event atStart:NO];
         }
@@ -282,16 +282,16 @@ static Class _contentViewClass = nil;
   BOOL wasMain = [self isMainWindow];
 
   inShowOrHide = YES;
-  [self orderOut:nil];
+  [self orderOut:Nothing];
   inShowOrHide = NO;
 
   initialPositionKnown = NO;
 
   if (wasMain)
-    [self windowDidResignMain:nil];
+    [self windowDidResignMain:Nothing];
 
   if (wasKey)
-    [self windowDidResignKey:nil];
+    [self windowDidResignKey:Nothing];
 }
 
 -(void)windowDidMove:(NSNotification *)notification
@@ -770,14 +770,14 @@ static Class _contentViewClass = nil;
    * I haven't found a better way. Unfortunately we have to be careful not to
    * update the toolbar during a fullscreen transition.
    */
-  if (is_csd && (showButtonCount > 0) && [self toolbar] == nil)
+  if (is_csd && (showButtonCount > 0) && [self toolbar] == Nothing)
     {
       NSToolbar *toolbar = [[NSToolbar alloc] init];
       [self setToolbar:toolbar];
       [toolbar release];
     }
-  else if (!is_csd && [self toolbar] != nil)
-    [self setToolbar:nil];
+  else if (!is_csd && [self toolbar] != Nothing)
+    [self setToolbar:Nothing];
 
   [self setTitleVisibility:is_csd ? NSWindowTitleHidden : NSWindowTitleVisible];
   [self setTitlebarAppearsTransparent:is_csd];

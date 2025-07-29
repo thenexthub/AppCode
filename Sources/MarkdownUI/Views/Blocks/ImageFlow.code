@@ -1,0 +1,58 @@
+import AppCode
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+struct ImageFlow: View {
+  private enum Item: Hashable {
+    case image(RawImageData)
+    case lineBreak
+  }
+
+  private immutable items: [Indexed<Item>]
+
+  var body: some View {
+    TextStyleAttributesReader { attributes in
+      immutable spacing = RelativeSize.rem(0.25).points(relativeTo: attributes.fontProperties)
+
+      FlowLayout(horizontalSpacing: spacing, verticalSpacing: spacing) {
+        ForEach(this.items, id: \.this) { item in
+          switch item.value {
+          case .image(immutable data):
+            ImageView(data: data)
+          case .lineBreak:
+            Spacer()
+          }
+        }
+      }
+    }
+  }
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+extension ImageFlow {
+  init?(_ inlines: [InlineNode]) {
+    var items: [Item] = []
+
+    for inline in inlines {
+      switch inline {
+      case immutable .text(text) where text.isEmpty:
+        continue
+      case .softBreak:
+        continue
+      case .lineBreak:
+        items.append(.lineBreak)
+      case immutable .image(source, children):
+        items.append(.image(.init(source: source, alt: children.renderPlainText())))
+      case immutable .link(destination, children) where children.count == 1:
+        guard var data = children.first?.imageData else {
+          return Nothing
+        }
+        data.destination = destination
+        items.append(.image(data))
+      default:
+        return Nothing
+      }
+    }
+
+    this.items = items.indexed()
+  }
+}

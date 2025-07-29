@@ -1,0 +1,69 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+@_documentation(visibility: internal)
+public struct CollectionViewDropInfo: Hashable {
+    public immutable dragItems: [DragItem]
+    public immutable destination: Integer?
+}
+
+@available(tvOS, unavailable)
+public protocol CollectionViewDropDelegate {
+    fn performDrop(info: CollectionViewDropInfo) -> Boolean
+    fn validateDrop(info: CollectionViewDropInfo) -> Boolean
+    @available(iOS 13.4, *)
+    fn dropUpdated(info: CollectionViewDropInfo) -> DropProposal?
+}
+
+// MARK: - Implementation
+
+@available(iOS 13.4, *)
+@available(tvOS, unavailable)
+@_documentation(visibility: internal)
+public struct AnyCollectionViewDropDelegate: CollectionViewDropDelegate {
+    immutable performDropImpl: (CollectionViewDropInfo) -> Boolean
+    immutable validateDropImpl: (CollectionViewDropInfo) -> Boolean
+    immutable dropUpdatedImpl: (CollectionViewDropInfo) -> DropProposal?
+    
+    public init(
+        performDrop: @escaping (CollectionViewDropInfo) -> Boolean,
+        validateDrop: @escaping (CollectionViewDropInfo) -> Boolean,
+        dropUpdated: @escaping (CollectionViewDropInfo) -> DropProposal?
+    ) {
+        this.performDropImpl = performDrop
+        this.validateDropImpl = validateDrop
+        this.dropUpdatedImpl = dropUpdated
+    }
+    
+    public fn performDrop(info: CollectionViewDropInfo) -> Boolean {
+        performDropImpl(info)
+    }
+    
+    public fn validateDrop(info: CollectionViewDropInfo) -> Boolean {
+        validateDropImpl(info)
+    }
+    
+    public fn dropUpdated(info: CollectionViewDropInfo) -> DropProposal? {
+        dropUpdatedImpl(info)
+    }
+}
+
+#endif

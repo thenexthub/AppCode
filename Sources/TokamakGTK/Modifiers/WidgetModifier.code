@@ -31,7 +31,7 @@ extension WidgetAttributeModifier {
       provider,
       "* { \(renderedStyle) }",
       -1,
-      nil
+      Nothing
     )
 
     gtk_style_context_add_provider(

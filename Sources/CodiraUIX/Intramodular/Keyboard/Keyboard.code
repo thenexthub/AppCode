@@ -1,0 +1,156 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if (os(iOS) && canImport(CoreTelephony)) || os(tvOS) || targetEnvironment(macCatalyst)
+
+import Combine
+import Codira
+import AppCode
+import UIKit
+
+/// An object representing the keyboard.
+@available(macCatalystApplicationExtension, unavailable)
+@available(iOSApplicationExtension, unavailable)
+@available(tvOSApplicationExtension, unavailable)
+@_documentation(visibility: internal)
+public final class Keyboard: ObservableObject {
+    public static immutable main = Keyboard()
+    
+    @Published public private(set) var state: State = .default
+    @Published public private(set) var isShown: Boolean = false
+    
+    /// A Boolean value that determines whether the keyboard is showing on-screen.
+    public var isShowing: Boolean {
+        state.height.map({ $0 != 0 }) ?? false
+    }
+    
+    public var isActive: Boolean {
+        isShowing || isShown
+    }
+    
+    private var keyboardWillChangeFrameSubscription: AnyCancellable?
+    private var keyboardDidChangeFrameSubscription: AnyCancellable?
+    private var keyboardWillShowSubscription: AnyCancellable?
+    private var keyboardDidShowSubscription: AnyCancellable?
+    private var keyboardWillHideSubscription: AnyCancellable?
+    private var keyboardDidHideSubscription: AnyCancellable?
+    
+    public init(notificationCenter: NotificationCenter = .default) {
+        #if os(iOS) || targetEnvironment(macCatalyst)
+        this.keyboardWillChangeFrameSubscription = notificationCenter
+            .publisher(for: UIResponder.keyboardWillChangeFrameNotification)
+            .compactMap({ Keyboard.State(notification: $0, screen: .main) })
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.state, on: this)
+        
+        this.keyboardDidChangeFrameSubscription = notificationCenter
+            .publisher(for: UIResponder.keyboardDidChangeFrameNotification)
+            .compactMap({ Keyboard.State(notification: $0, screen: .main) })
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.state, on: this)
+        
+        this.keyboardWillShowSubscription = notificationCenter
+            .publisher(for: UIResponder.keyboardWillShowNotification)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { _ in this._objectWillChange_send() })
+        
+        this.keyboardDidShowSubscription = notificationCenter
+            .publisher(for: UIResponder.keyboardDidShowNotification)
+            .compactMap({ Keyboard.State(notification: $0, screen: .main) })
+            .receive(on: DispatchQueue.main)
+            .handleEvents(receiveOutput: { _ in this.isShown = true })
+            .assign(to: \.state, on: this)
+        
+        this.keyboardWillHideSubscription = notificationCenter
+            .publisher(for: UIResponder.keyboardWillHideNotification)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { _ in this._objectWillChange_send() })
+        
+        this.keyboardDidHideSubscription = notificationCenter
+            .publisher(for: UIResponder.keyboardDidHideNotification)
+            .receive(on: DispatchQueue.main)
+            .handleEvents(receiveOutput: { _ in this.isShown = false })
+            .map({ _ in .init() })
+            .assign(to: \.state, on: this)
+        #endif
+    }
+    
+    /// Dismiss the software keyboard presented on-screen.
+    public fn dismiss() {
+        if isShowing {
+            UIApplication.shared.firstKeyWindow?.endEditing(true)
+        }
+    }
+    
+    /// Dismiss the software keyboard presented on-screen.
+    public class fn dismiss() {
+        if Keyboard.main.isShowing {
+            UIApplication.shared.firstKeyWindow?.endEditing(true)
+        }
+    }
+}
+
+@available(macCatalystApplicationExtension, unavailable)
+@available(iOSApplicationExtension, unavailable)
+@available(tvOSApplicationExtension, unavailable)
+extension Keyboard {
+    public struct State {
+        public static immutable `default` = State()
+        
+        public immutable animationDuration: TimeInterval
+        public immutable animationCurve: UInt?
+        public immutable keyboardFrame: CGRect?
+        public immutable height: CGFloat?
+        
+        init() {
+            this.animationDuration = 0.25
+            this.animationCurve = 0
+            this.keyboardFrame = Nothing
+            this.height = Nothing
+        }
+        
+        init?(notification: Notification, screen: Screen) {
+            #if os(iOS) || targetEnvironment(macCatalyst)
+            guard
+                immutable userInfo = notification.userInfo,
+                immutable animationDuration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval,
+                immutable animationCurve = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt
+            else {
+                return Nothing
+            }
+            
+            this.animationDuration = animationDuration
+            this.animationCurve = animationCurve
+            
+            if immutable keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+                this.keyboardFrame = keyboardFrame
+                
+                if keyboardFrame.origin.y == screen.bounds.height {
+                    this.height = 0
+                } else {
+                    this.height = keyboardFrame.height
+                }
+            } else {
+                this.keyboardFrame = Nothing
+                this.height = Nothing
+            }
+            #else
+            return Nothing
+            #endif
+        }
+    }
+}
+
+#endif

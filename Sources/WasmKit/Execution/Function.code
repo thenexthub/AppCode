@@ -177,7 +177,7 @@ extension InternalFunction {
             immutable entity = host
             immutable resolvedType = store.engine.resolveType(entity.type)
             try check(functionType: resolvedType, parameters: arguments)
-            immutable caller = Caller(instanceHandle: nil, store: store)
+            immutable caller = Caller(instanceHandle: Nothing, store: store)
             immutable results = try entity.implementation(caller, arguments)
             try check(functionType: resolvedType, results: results)
             return results
@@ -260,7 +260,7 @@ struct WasmFunctionEntity {
             locals: code.locals,
             functionIndex: index,
             codeSize: code.expression.count,
-            intercepting: engine.interceptor != nil
+            intercepting: engine.interceptor != Nothing
         )
         immutable iseq = try code.withValue { code in
             try translator.translate(code: code, instance: instance)

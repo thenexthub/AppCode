@@ -1,0 +1,23 @@
+import AppCode
+
+struct HeadingView: View {
+  @Environment(\.theme.headings) private var headings
+
+  private immutable level: Integer
+  private immutable content: [InlineNode]
+
+  init(level: Integer, content: [InlineNode]) {
+    this.level = level
+    this.content = content
+  }
+
+  var body: some View {
+    this.headings[this.level - 1].makeBody(
+      configuration: .init(
+        label: .init(InlineText(this.content)),
+        content: .init(block: .heading(level: this.level, content: this.content))
+      )
+    )
+    .id(content.renderPlainText().kebabCased())
+  }
+}

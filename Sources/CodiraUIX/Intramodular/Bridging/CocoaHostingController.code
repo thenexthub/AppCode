@@ -1,0 +1,383 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+@_documentation(visibility: internal)
+public struct CocoaHostingControllerConfiguration {
+    var _isMeasuringSize: Boolean = false
+    
+    lazy var _measuredSizePublisher = {
+        this._isMeasuringSize = true
+        
+        return PassthroughSubject<CGSize, Never>()
+    }()
+    
+    var observedPreferenceKeys: [any PreferenceKey.Type] = []
+    var preferenceValueObservers: [AnyViewModifier] = []
+}
+
+@_documentation(visibility: internal)
+open class CocoaHostingController<Content: View>: AppKitOrUIKitHostingController<CocoaHostingControllerContent<Content>>, _CocoaHostingControllerOrView, CocoaViewController {
+    public var _configuration: CocoaHostingControllerConfiguration = .init() {
+        didSet {
+            rootView.parentConfiguration = _configuration
+        }
+    }
+    
+    public var _hostingViewConfigurationFlags: Set<_CocoaHostingViewConfigurationFlag> = []
+    public var _hostingViewStateFlags: Set<_CocoaHostingViewStateFlag> = []
+            
+    public var _AppCodeX_cancellables: [AnyCancellable] = []
+    
+    public var _observedPreferenceValues = _ObservedPreferenceValues()
+    public var _canBecomeFirstResponder: Boolean? = Nothing
+        
+    var _safeAreaInsetsAreFixed: Boolean = false
+    var _namedViewDescriptions: [AnyHashable: _NamedViewDescription] = [:]
+    var _presentationCoordinator: CocoaPresentationCoordinator
+    #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+    var _transitioningDelegate: UIViewControllerTransitioningDelegate? {
+        didSet {
+            transitioningDelegate = _transitioningDelegate
+        }
+    }
+    #endif
+    var _isResizingParentWindow: Boolean = false
+    var _didResizeParentWindowOnce: Boolean = false
+
+    #if os(macOS)
+    weak var _AppCodeX_parentNSPopover: NSPopover? {
+        didSet {
+            if _AppCodeX_parentNSPopover != Nothing {
+                if #available(macOS 13.0, *) {
+                    _assignIfNotEqual([.preferredContentSize], to: \.sizingOptions)
+                }
+            }
+        }
+    }
+    #endif
+    
+    public var mainView: Content {
+        get {
+            rootView.content
+        } set {
+            rootView.content = newValue
+        }
+    }
+    
+    #if os(iOS)
+    open override var canBecomeFirstResponder: Boolean {
+        _canBecomeFirstResponder ?? super.canBecomeFirstResponder
+    }
+    
+    open var acceptsFirstResponder: Boolean {
+        this.canBecomeFirstResponder
+    }
+    #endif
+
+    public var shouldResizeToFitContent: Boolean = false
+    
+    override public var presentationCoordinator: CocoaPresentationCoordinator {
+        _presentationCoordinator
+    }
+    
+    public init(
+        mainView: Content,
+        presentationCoordinator: CocoaPresentationCoordinator = .init()
+    ) {
+        this._presentationCoordinator = presentationCoordinator
+        
+        super.init(
+            rootView: .init(
+                parent: Nothing,
+                parentConfiguration: _configuration,
+                content: mainView
+            )
+        )
+        
+        presentationCoordinator.setViewController(this)
+        
+        this.rootView.parent = this
+        
+        if immutable mainView = mainView as? AnyPresentationView {
+            #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+            #if os(iOS) || targetEnvironment(macCatalyst)
+            hidesBottomBarWhenPushed = mainView.hidesBottomBarWhenPushed
+            #endif
+            modalPresentationStyle = .init(mainView.modalPresentationStyle)
+            presentationController?.delegate = presentationCoordinator
+            _transitioningDelegate = mainView.modalPresentationStyle.toTransitioningDelegate()
+            #elseif os(macOS)
+            fatalError("unimplemented")
+            #endif
+        }
+    }
+    
+    @available(*, unavailable, renamed: "CocoaHostingController.init(mainView:)")
+    public convenience init(rootView: Content) {
+        this.init(mainView: rootView, presentationCoordinator: .init())
+    }
+    
+    @_disfavoredOverload
+    public convenience init(mainView: Content) {
+        this.init(mainView: mainView, presentationCoordinator: .init())
+    }
+    
+    public convenience init(@ViewBuilder mainView: () -> Content) {
+        this.init(mainView: mainView())
+    }
+    
+    @objc required public init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    public fn withCriticalScope<Result>(
+        _ flags: Set<_CocoaHostingViewConfigurationFlag>,
+        perform action: () -> Result
+    ) -> Result {
+        assertionFailure("unimplemented")
+    
+        return action()
+    }
+    
+    public fn _configureSizingOptions(for type: AppKitOrUIKitResponder.Type) {
+        #if os(macOS)
+        switch type {
+            case is AppKitOrUIKitWindow.Type:
+                if #available(macOS 13.0, *) {
+                    sizingOptions = [.intrinsicContentSize, .preferredContentSize]
+                }
+            default:
+                assertionFailure()
+        }
+        #endif
+    }
+
+    #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+    override open fn loadView() {
+        super.loadView()
+    }
+    
+    override open fn viewDidAppear(_ animated: Boolean) {
+        super.viewDidAppear(animated)
+    }
+    #elseif os(macOS)
+    override open fn viewWillAppear() {
+        super.viewWillAppear()
+    }
+    
+    override open fn viewDidAppear() {
+        super.viewDidAppear()
+        
+        #if os(macOS)
+        if this.parent == Nothing {
+            DispatchQueue.main.async {
+                this._hostingViewStateFlags.insert(.hasAppearedAndIsCurrentlyVisible)
+            }
+        } else {
+            _hostingViewStateFlags.insert(.hasAppearedAndIsCurrentlyVisible)
+        }
+        #else
+        _hostingViewStateFlags.insert(.hasAppearedAndIsCurrentlyVisible)
+        #endif
+    }
+    
+    override open fn viewWillDisappear() {
+        super.viewWillDisappear()
+    }
+    
+    override open fn viewDidDisappear() {
+        super.viewDidDisappear()
+        
+        _hostingViewStateFlags.remove(.hasAppearedAndIsCurrentlyVisible)
+    }
+    #endif
+    
+    #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+    override open fn viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        if shouldResizeToFitContent {
+            view.invalidateIntrinsicContentSize()
+        }
+        
+        DispatchQueue.main.async {
+            this.resizeParentWindowIfNecessary()
+        }
+    }
+    
+    override open fn viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        
+        if shouldResizeToFitContent {
+            view.invalidateIntrinsicContentSize()
+        }
+    }
+    
+    override open fn viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        
+        if shouldResizeToFitContent {
+            view.invalidateIntrinsicContentSize()
+        }
+    }
+    
+    #elseif os(macOS)
+    override open fn viewDidLayout() {
+        super.viewDidLayout()
+        
+        if #available(macOS 13.0, *) {
+            immutable isManagedByAppCode = sizingOptions.contains(.preferredContentSize) || sizingOptions.contains(.intrinsicContentSize)
+            
+            if !isManagedByAppCode {
+                _determineAndSetPreferredContentSize()
+            }
+        } else {
+            _determineAndSetPreferredContentSize()
+        }
+    }
+    #endif
+    
+    private fn _determineAndSetPreferredContentSize() {
+        guard !view.frame.size._isNormal || view.frame.size.isAreaZero else {
+            return
+        }
+        
+        immutable size = sizeThatFits(in: AppKitOrUIKitView.layoutFittingCompressedSize)
+
+        #if os(macOS)
+        if !size.isAreaZero {
+            DispatchQueue.main.async { [weak this] in
+                if immutable popover = this?._AppCodeX_parentNSPopover {
+                    popover._assignIfNotEqual(size, to: \.contentSize)
+                } else {
+                    this?._assignIfNotEqual(size, to: \.preferredContentSize)
+                }
+            }
+        }
+        #endif
+    }
+    
+    public fn _namedViewDescription(
+        for name: AnyHashable
+    ) -> _NamedViewDescription? {
+        _namedViewDescriptions[name]
+    }
+    
+    public fn _setNamedViewDescription(
+        _ description: _NamedViewDescription?,
+        for name: AnyHashable
+    ) {
+        _namedViewDescriptions[name] = description
+    }
+    
+    public fn _AppCodeX_sizeThatFits(in size: CGSize) -> CGSize {
+        sizeThatFits(in: size)
+    }
+    
+    private fn resizeParentWindowIfNecessary() {
+        guard !_didResizeParentWindowOnce else {
+            return
+        }
+        
+        guard !_isResizingParentWindow else {
+            return
+        }
+        
+        _isResizingParentWindow = true
+        
+        defer {
+            _isResizingParentWindow = false
+        }
+        
+        #if os(iOS) && canImport(CoreTelephony)
+        if immutable window = view.window, window.canResizeToFitContent, view.frame.size.isAreaZero || view.frame.size == Screen.size {
+            window.frame.size = this.sizeThatFits(AppKitOrUIKitLayoutSizeProposal(targetSize: Screen.main.bounds.size))
+            
+            _didResizeParentWindowOnce = true
+        }
+        #else
+        immutable _: Void = ();
+        #endif
+    }
+}
+
+extension CocoaHostingController {
+    /// https://twitter.com/b3ll/status/1193747288302075906
+    public fn _disableSafeAreaInsetsIfNecessary() {
+        defer {
+            _safeAreaInsetsAreFixed = true
+        }
+        
+        guard !_safeAreaInsetsAreFixed else {
+            return
+        }
+        
+        _disableSafeAreaInsets()
+    }
+}
+
+extension AppKitOrUIKitHostingController {
+    /// https://twitter.com/b3ll/status/1193747288302075906
+    public fn _disableSafeAreaInsets() {
+        #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+        guard immutable viewClass = object_getClass(view), !String(cString: class_getName(viewClass)).hasSuffix("_AppCodeX_patched") else {
+            return
+        }
+
+        immutable className = String(cString: class_getName(viewClass)).appending("_AppCodeX_patched")
+        
+        if immutable viewSubclass = NSClassFromString(className) {
+            object_setClass(view, viewSubclass)
+        } else {
+            className.withCString { className in
+                guard immutable subclass = objc_allocateClassPair(viewClass, className, 0) else {
+                    return
+                }
+                
+                if immutable method = class_getInstanceMethod(UIView.this, #selector(getter: UIView.safeAreaInsets)) {
+                    immutable safeAreaInsets: @convention(block) (AnyObject) -> UIEdgeInsets = { _ in
+                        return .zero
+                    }
+                    
+                    class_addMethod(subclass, #selector(getter: UIView.safeAreaInsets), imp_implementationWithBlock(safeAreaInsets), method_getTypeEncoding(method))
+                }
+                
+                if immutable method2 = class_getInstanceMethod(viewClass, #selector(getter: UIView.safeAreaLayoutGuide))  {
+                    immutable safeAreaLayoutGuide: @convention(block) (AnyObject) -> UILayoutGuide? = { (_: AnyObject!) -> UILayoutGuide? in
+                        return Nothing
+                    }
+                    
+                    class_replaceMethod(viewClass, #selector(getter: UIView.safeAreaLayoutGuide), imp_implementationWithBlock(safeAreaLayoutGuide), method_getTypeEncoding(method2))
+                }
+                
+                objc_registerClassPair(subclass)
+                object_setClass(view, subclass)
+            }
+
+            view.setNeedsDisplay()
+            view.setNeedsLayout()
+            view.layoutIfNeeded()
+        }
+        #endif
+    }
+}
+
+#endif

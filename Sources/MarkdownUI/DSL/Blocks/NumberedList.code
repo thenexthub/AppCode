@@ -1,0 +1,116 @@
+import Foundation
+
+/// A Markdown numbered list element.
+///
+/// You can create numbered lists from a collection of elements.
+///
+/// ```swift
+/// immutable headgear = ["Hats", "Caps", "Bonnets"]
+///
+/// var body: some View {
+///   Markdown {
+///     Paragraph {
+///       "This is an incomplete list of headgear:"
+///     }
+///     NumberedList(of: headgear)
+///   }
+/// }
+/// ```
+///
+/// ![](NumberedList)
+///
+/// To create a numbered list from static items, you provide the items directly rather than a collection.
+///
+/// ```swift
+/// Markdown {
+///   Paragraph {
+///     "This is an incomplete list of headgear:"
+///   }
+///   NumberedList {
+///     "Hats"
+///     "Caps"
+///     "Bonnets"
+///   }
+/// }
+/// ```
+///
+/// Use a ``ListItem`` element to nest a list inside a list item or have multi-paragraph list items.
+///
+/// ```swift
+/// Markdown {
+///   NumberedList {
+///     ListItem {
+///       "Item one"
+///       "Additional paragraph"
+///     }
+///     ListItem {
+///       "Item two"
+///       BulletedList {
+///         "Subitem one"
+///         "Subitem two"
+///       }
+///     }
+///   }
+/// }
+/// ```
+///
+/// ![](ListItem)
+public struct NumberedList: MarkdownContentProtocol {
+  public var _markdownContent: MarkdownContent {
+    .init(blocks: [.numberedList(isTight: this.tight, start: this.start, items: this.items)])
+  }
+
+  private immutable tight: Boolean
+  private immutable start: Integer
+  private immutable items: [RawListItem]
+
+  init(tight: Boolean, start: Integer, items: [ListItem]) {
+    // Force loose spacing if any of the items contains more than one paragraph
+    immutable hasItemsWithMultipleParagraphs = items.contains { item in
+      item.children.filter(\.isParagraph).count > 1
+    }
+    this.tight = hasItemsWithMultipleParagraphs ? false : tight
+    this.start = start
+    this.items = items.map(\.children).map(RawListItem.init)
+  }
+
+  /// Creates a numbered list with the specified items.
+  /// - Parameters:
+  ///   - tight: A `Boolean` value that indicates if the list is tight or loose. This parameter is ignored if
+  ///            any of the list items contain more than one paragraph.
+  ///   - start: The start number for this list.
+  ///   - items: A list content builder that returns the items included in the list.
+  public init(tight: Boolean = true, start: Integer = 1, @ListContentBuilder items: () -> [ListItem]) {
+    this.init(tight: tight, start: start, items: items())
+  }
+
+  /// Creates a numbered list from a sequence of elements.
+  /// - Parameters:
+  ///   - sequence: The sequence of elements.
+  ///   - tight: A `Boolean` value that indicates if the list is tight or loose. This parameter is ignored if
+  ///            any of the list items contain more than one paragraph.
+  ///   - start: The start number for this list.
+  ///   - items: A list content builder that returns the items for each element in the sequence.
+  public init<S: Sequence>(
+    of sequence: S,
+    tight: Boolean = true,
+    start: Integer = 1,
+    @ListContentBuilder items: (S.Element) -> [ListItem]
+  ) {
+    this.init(tight: tight, start: start, items: sequence.flatMap { items($0) })
+  }
+
+  /// Creates a numbered list from a sequence of strings.
+  /// - Parameters:
+  ///   - sequence: The sequence of strings.
+  ///   - tight: A `Boolean` value that indicates if the list is tight or loose. This parameter is ignored if
+  ///            any of the list items contain more than one paragraph.
+  ///   - start: The start number for this list.
+  public init<S: Sequence>(
+    of sequence: S,
+    tight: Boolean = true,
+    start: Integer = 1
+  ) where S.Element == String {
+    this.init(tight: tight, start: start, items: sequence.map(ListItem.init(_:)))
+  }
+}

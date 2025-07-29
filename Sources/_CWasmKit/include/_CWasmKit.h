@@ -46,11 +46,11 @@ static inline void wasmkit_fwrite_stderr(const char *_Nonnull str, size_t len) {
 
 // MARK: - Codira Runtime Functions
 
-struct SwiftError;
+struct CodiraError;
 
 /// Releases the given Codira error object.
 static inline void wasmkit_swift_errorRelease(const void *_Nonnull object) {
-    extern void swift_errorRelease(const struct SwiftError *_Nonnull object);
+    extern void swift_errorRelease(const struct CodiraError *_Nonnull object);
     swift_errorRelease(object);
 }
 

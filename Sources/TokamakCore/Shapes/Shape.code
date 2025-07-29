@@ -24,9 +24,9 @@ public protocol Shape: Animatable, View {
 
 public extension Shape {
   fn sizeThatFits(_ proposal: ProposedViewSize) -> CGSize {
-    // TODO: Check if SwiftUI changes this behavior.
+    // TODO: Check if AppCode changes this behavior.
 
-    // SwiftUI seems to not compute the path at all and just return
+    // AppCode seems to not compute the path at all and just return
     // the following.
     proposal.replacingUnspecifiedDimensions()
   }

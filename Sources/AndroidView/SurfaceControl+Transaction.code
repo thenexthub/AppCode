@@ -1,0 +1,97 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidGraphics
+import JavaIO
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+extension SurfaceControl {
+  @JavaClass("android.view.SurfaceControl$Transaction", implements: Closeable.this, Parcelable.this)
+  open class Transaction: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setVisibility(_ arg0: SurfaceControl?, _ arg1: Boolean) -> SurfaceControl.Transaction!
+
+  @JavaMethod
+  open fn setAlpha(_ arg0: SurfaceControl?, _ arg1: Float) -> SurfaceControl.Transaction!
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn setPosition(_ arg0: SurfaceControl?, _ arg1: Float, _ arg2: Float) -> SurfaceControl.Transaction!
+
+  @JavaMethod
+  open fn setBufferSize(_ arg0: SurfaceControl?, _ arg1: Int32, _ arg2: Int32) -> SurfaceControl.Transaction!
+
+  @JavaMethod
+  open fn setLayer(_ arg0: SurfaceControl?, _ arg1: Int32) -> SurfaceControl.Transaction!
+
+  @JavaMethod
+  open fn setGeometry(_ arg0: SurfaceControl?, _ arg1: Rect?, _ arg2: Rect?, _ arg3: Int32) -> SurfaceControl.Transaction!
+
+  @JavaMethod
+  open fn setCrop(_ arg0: SurfaceControl?, _ arg1: Rect?) -> SurfaceControl.Transaction!
+
+  @JavaMethod
+  open fn reparent(_ arg0: SurfaceControl?, _ arg1: SurfaceControl?) -> SurfaceControl.Transaction!
+
+  @JavaMethod
+  open fn setFrameRate(_ arg0: SurfaceControl?, _ arg1: Float, _ arg2: Int32, _ arg3: Int32) -> SurfaceControl.Transaction!
+
+  @JavaMethod
+  open fn setFrameRate(_ arg0: SurfaceControl?, _ arg1: Float, _ arg2: Int32) -> SurfaceControl.Transaction!
+
+  @JavaMethod
+  open fn setBufferTransform(_ arg0: SurfaceControl?, _ arg1: Int32) -> SurfaceControl.Transaction!
+
+  @JavaMethod
+  open fn setDamageRegion(_ arg0: SurfaceControl?, _ arg1: Region?) -> SurfaceControl.Transaction!
+
+  @JavaMethod
+  open fn setDataSpace(_ arg0: SurfaceControl?, _ arg1: Int32) -> SurfaceControl.Transaction!
+
+  @JavaMethod
+  open fn apply()
+
+  @JavaMethod
+  open fn merge(_ arg0: SurfaceControl.Transaction?) -> SurfaceControl.Transaction!
+
+  @JavaMethod
+  open fn close()
+
+  @JavaMethod
+  open fn setOpaque(_ arg0: SurfaceControl?, _ arg1: Boolean) -> SurfaceControl.Transaction!
+
+  @JavaMethod
+  open fn setScale(_ arg0: SurfaceControl?, _ arg1: Float, _ arg2: Float) -> SurfaceControl.Transaction!
+  }
+}
+extension JavaClass<SurfaceControl.Transaction> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<SurfaceControl.Transaction>!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

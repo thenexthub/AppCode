@@ -1,0 +1,46 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.app.KeyguardManager")
+open class KeyguardManager: JavaObject {
+  @JavaMethod
+  open fn newKeyguardLock(_ arg0: String) -> KeyguardManager.KeyguardLock!
+
+  @JavaMethod
+  open fn isKeyguardLocked() -> Boolean
+
+  @JavaMethod
+  open fn isKeyguardSecure() -> Boolean
+
+  @JavaMethod
+  open fn inKeyguardRestrictedInputMode() -> Boolean
+
+  @JavaMethod
+  open fn isDeviceLocked() -> Boolean
+
+  @JavaMethod
+  open fn isDeviceSecure() -> Boolean
+
+  @JavaMethod
+  open fn requestDismissKeyguard(_ arg0: Activity?, _ arg1: KeyguardManager.KeyguardDismissCallback?)
+
+  @JavaMethod
+  open fn exitKeyguardSecurely(_ arg0: KeyguardManager.OnKeyguardExitResult?)
+
+  @JavaMethod
+  open fn removeKeyguardLockedStateListener(_ arg0: KeyguardManager.KeyguardLockedStateListener?)
+}

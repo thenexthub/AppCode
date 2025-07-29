@@ -1,0 +1,64 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.bluetooth.le.TransportDiscoveryData", implements: Parcelable.this)
+open class TransportDiscoveryData: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, _ arg1: List<TransportBlock>?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: [Int8], environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getTransportBlocks() -> List<TransportBlock>!
+
+  @JavaMethod
+  open fn totalBytes() -> Int32
+
+  @JavaMethod
+  open fn getTransportDataType() -> Int32
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+
+  @JavaMethod
+  open fn toByteArray() -> [Int8]
+}
+extension JavaClass<TransportDiscoveryData> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<TransportDiscoveryData>!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

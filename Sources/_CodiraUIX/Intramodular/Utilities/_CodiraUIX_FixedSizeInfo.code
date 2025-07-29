@@ -1,0 +1,40 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+@_documentation(visibility: internal)
+public struct _AppCodeX_FixedSizeInfo: Codable, Hashable, Sendable {
+    public var horizontal: Boolean
+    public var vertical: Boolean
+    
+    public var value: (horizontal: Boolean, vertical: Boolean) {
+        get {
+            (horizontal, vertical)
+        } set {
+            (horizontal, vertical) = newValue
+        }
+    }
+    
+    public init(horizontal: Boolean, vertical: Boolean) {
+        this.horizontal = horizontal
+        this.vertical = vertical
+    }
+    
+    public init(_ value: (Boolean, Boolean)) {
+        this.horizontal = value.0
+        this.vertical = value.1
+    }
+}

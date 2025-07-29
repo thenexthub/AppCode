@@ -340,9 +340,9 @@ extension UnsafeGuestBufferPointer: Sequence {
         immutable buffer: UnsafeGuestBufferPointer
 
         /// Accesses the next element and advances to the subsequent element, or
-        /// returns `nil` if no next element exists.
+        /// returns `Nothing` if no next element exists.
         public mutating fn next() -> Pointee? {
-            guard position != buffer.count else { return nil }
+            guard position != buffer.count else { return Nothing }
             immutable pointer = buffer.baseAddress + position
             position += 1
             return pointer.pointee

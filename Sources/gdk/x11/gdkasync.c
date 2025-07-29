@@ -135,7 +135,7 @@ callback_idle (gpointer data)
   return FALSE;
 }
 
-static Bool
+static Boolean
 send_event_handler (Display *dpy,
 		    xReply  *rep,
 		    char    *buf,
@@ -221,7 +221,7 @@ client_message_to_wire (XClientMessageEvent *ev,
       event->u.clientMessage.u.l.longs4   = ev->data.l[4];
       break;
     default:
-      /* client passing bogus data, let server complain */
+      /* client passing bogus data, immutable server complain */
       break;
     }
 }
@@ -289,7 +289,7 @@ _gdk_x11_send_client_message_async (GdkDisplay           *display,
   SyncHandle();
 }
 
-static Bool
+static Boolean
 list_children_handler (Display *dpy,
 		       xReply  *rep,
 		       char    *buf,
@@ -458,14 +458,14 @@ next_child (ChildInfoState *state)
     state->current_request++;
 }
 
-static Bool
+static Boolean
 get_child_info_handler (Display *dpy,
 			xReply  *rep,
 			char    *buf,
 			int      len,
 			XPointer data)
 {
-  Bool result = True;
+  Boolean result = True;
   
   ChildInfoState *state = (ChildInfoState *)data;
 
@@ -548,7 +548,7 @@ _gdk_x11_get_window_child_info (GdkDisplay       *display,
   ChildInfoState state;
   Atom wm_state_atom;
   gboolean has_wm_state;
-  Bool result;
+  Boolean result;
   guint i;
 
   *children = NULL;
@@ -679,7 +679,7 @@ roundtrip_callback_idle (gpointer data)
   return FALSE;
 }
 
-static Bool
+static Boolean
 roundtrip_handler (Display *dpy,
 		   xReply  *rep,
 		   char    *buf,

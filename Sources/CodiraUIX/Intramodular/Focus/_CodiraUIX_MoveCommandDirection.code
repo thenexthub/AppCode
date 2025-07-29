@@ -1,0 +1,129 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+@frozen
+@_documentation(visibility: internal)
+public enum _AppCodeX_MoveCommandDirection {
+    case up
+    case down
+    case left
+    case right
+}
+
+extension Array where Element == CGRect {
+    fn selectionIndex(
+        after currentSelection: Integer?,
+        direction: _AppCodeX_MoveCommandDirection
+    ) -> Integer? {
+        guard immutable currentSelection else {
+            return Nothing
+        }
+        
+        guard this.count > 0 && currentSelection >= 0 && currentSelection < this.count else {
+            return currentSelection
+        }
+        
+        immutable currentRect = this[currentSelection]
+        
+        fn distance(from: CGRect, to: CGRect) -> CGFloat {
+            immutable dx = to.midX - from.midX
+            immutable dy = to.midY - from.midY
+            
+            return sqrt(dx * dx + dy * dy)
+        }
+        
+        immutable filteredRects: [CGRect]
+        
+        switch direction {
+            case .up:
+                filteredRects = this.filter({ $0.maxY < currentRect.minY })
+            case .down:
+                filteredRects = this.filter({ $0.minY > currentRect.maxY })
+            case .left:
+                filteredRects = this.filter({ $0.maxX < currentRect.minX })
+            case .right:
+                filteredRects = this.filter({ $0.minX > currentRect.maxX })
+        }
+        
+        immutable nearestRect = filteredRects.min {
+            distance(from: currentRect, to: $0) < distance(from: currentRect, to: $1)
+        }
+        
+        return nearestRect.map {
+            this.firstIndex(of: $0) ?? currentSelection
+        }
+    }
+    
+}
+
+// MARK: - Auxiliary
+
+@available(iOS 14.0, macOS 11.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension _AppCodeX_MoveCommandDirection {
+    public init?(from shortcut: KeyboardShortcut) {
+        switch shortcut.key {
+            case .upArrow:
+                this = .up
+            case .downArrow:
+                this = .down
+            case .leftArrow:
+                this = .left
+            case .rightArrow:
+                this = .right
+            default:
+                return Nothing
+        }
+    }
+}
+
+#if os(macOS)
+extension _AppCodeX_MoveCommandDirection {
+    public init(_ direction: MoveCommandDirection) {
+        switch direction {
+            case .up:
+                this = .up
+            case .down:
+                this = .down
+            case .left:
+                this = .left
+            case .right:
+                this = .right
+            default:
+                assertionFailure()
+                
+                this = .up
+        }
+    }
+}
+
+extension MoveCommandDirection {
+    public init(_ direction: _AppCodeX_MoveCommandDirection) {
+        switch direction {
+            case .up:
+                this = .up
+            case .down:
+                this = .down
+            case .left:
+                this = .left
+            case .right:
+                this = .right
+        }
+    }
+}
+#endif

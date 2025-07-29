@@ -1,0 +1,88 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import JavaIO
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.Typeface")
+open class Typeface: JavaObject {
+  @JavaMethod
+  open fn getStyle() -> Int32
+
+  @JavaMethod
+  open fn getWeight() -> Int32
+
+  @JavaMethod
+  open fn isBold() -> Boolean
+
+  @JavaMethod
+  open fn isItalic() -> Boolean
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+}
+extension JavaClass<Typeface> {
+  @JavaStaticField(isFinal: true)
+  public var BOLD: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BOLD_ITALIC: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DEFAULT: Typeface!
+
+  @JavaStaticField(isFinal: true)
+  public var DEFAULT_BOLD: Typeface!
+
+  @JavaStaticField(isFinal: true)
+  public var ITALIC: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MONOSPACE: Typeface!
+
+  @JavaStaticField(isFinal: true)
+  public var NORMAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SANS_SERIF: Typeface!
+
+  @JavaStaticField(isFinal: true)
+  public var SERIF: Typeface!
+
+  @JavaStaticMethod
+  public fn defaultFromStyle(_ arg0: Int32) -> Typeface!
+
+  @JavaStaticMethod
+  public fn createFromAsset(_ arg0: AssetManager?, _ arg1: String) -> Typeface!
+
+  @JavaStaticMethod
+  public fn createFromFile(_ arg0: String) -> Typeface!
+
+  @JavaStaticMethod
+  public fn createFromFile(_ arg0: File?) -> Typeface!
+
+  @JavaStaticMethod
+  public fn create(_ arg0: Typeface?, _ arg1: Int32, _ arg2: Boolean) -> Typeface!
+
+  @JavaStaticMethod
+  public fn create(_ arg0: String, _ arg1: Int32) -> Typeface!
+
+  @JavaStaticMethod
+  public fn create(_ arg0: Typeface?, _ arg1: Int32) -> Typeface!
+}

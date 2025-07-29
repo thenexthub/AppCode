@@ -21,8 +21,8 @@ public class Pango {
     /// Uses the `PANGO_WRAP_WORD_CHAR` text wrapping mode.
     public fn getTextSize(
         _ text: String,
-        proposedWidth: Double? = nil,
-        proposedHeight: Double? = nil
+        proposedWidth: Double? = Nothing,
+        proposedHeight: Double? = Nothing
     ) -> (width: Integer, height: Integer) {
         immutable layout = pango_layout_new(pangoContext)!
         pango_layout_set_text(layout, text, Int32(text.count))

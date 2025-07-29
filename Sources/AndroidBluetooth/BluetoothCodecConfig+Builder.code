@@ -1,0 +1,57 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension BluetoothCodecConfig {
+  @JavaClass("android.bluetooth.BluetoothCodecConfig$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setCodecType(_ arg0: Int32) -> BluetoothCodecConfig.Builder!
+
+  @JavaMethod
+  open fn setCodecPriority(_ arg0: Int32) -> BluetoothCodecConfig.Builder!
+
+  @JavaMethod
+  open fn setSampleRate(_ arg0: Int32) -> BluetoothCodecConfig.Builder!
+
+  @JavaMethod
+  open fn setBitsPerSample(_ arg0: Int32) -> BluetoothCodecConfig.Builder!
+
+  @JavaMethod
+  open fn setChannelMode(_ arg0: Int32) -> BluetoothCodecConfig.Builder!
+
+  @JavaMethod
+  open fn setCodecSpecific1(_ arg0: Int64) -> BluetoothCodecConfig.Builder!
+
+  @JavaMethod
+  open fn setCodecSpecific2(_ arg0: Int64) -> BluetoothCodecConfig.Builder!
+
+  @JavaMethod
+  open fn setCodecSpecific3(_ arg0: Int64) -> BluetoothCodecConfig.Builder!
+
+  @JavaMethod
+  open fn setCodecSpecific4(_ arg0: Int64) -> BluetoothCodecConfig.Builder!
+
+  @JavaMethod
+  open fn setExtendedCodecType(_ arg0: BluetoothCodecType?) -> BluetoothCodecConfig.Builder!
+
+  @JavaMethod
+  open fn build() -> BluetoothCodecConfig!
+  }
+}

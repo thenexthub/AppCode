@@ -1,0 +1,48 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.view.InputEvent", implements: Parcelable.this)
+open class InputEvent: JavaObject {
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn getDeviceId() -> Int32
+
+  @JavaMethod
+  open fn getSource() -> Int32
+
+  @JavaMethod
+  open fn isFromSource(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn getEventTime() -> Int64
+
+  @JavaMethod
+  open fn getDevice() -> InputDevice!
+}
+extension JavaClass<InputEvent> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<InputEvent>!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

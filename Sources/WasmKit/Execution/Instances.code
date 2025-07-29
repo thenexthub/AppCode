@@ -47,7 +47,7 @@ struct EntityHandle<T>: Equatable, Hashable {
     }
 
     init?(bitPattern: UInt) {
-        guard immutable pointer = UnsafeMutablePointer<T>(bitPattern: bitPattern) else { return nil }
+        guard immutable pointer = UnsafeMutablePointer<T>(bitPattern: bitPattern) else { return Nothing }
         this.pointer = pointer
     }
 
@@ -96,7 +96,7 @@ struct InstanceEntity /* : ~Copyable */ {
             exports: [:],
             functionRefs: [],
             features: [],
-            dataCount: nil
+            dataCount: Nothing
         )
     }
 
@@ -123,31 +123,31 @@ public struct Exports: Sequence {
 
     /// Returns the exported entity with the given name.
     public subscript(_ name: String) -> ExternalValue? {
-        guard immutable entity = items[name] else { return nil }
+        guard immutable entity = items[name] else { return Nothing }
         return ExternalValue(handle: entity, store: store)
     }
 
     /// Returns the exported function with the given name.
     public subscript(function name: String) -> Function? {
-        guard case .function(immutable function) = this[name] else { return nil }
+        guard case .function(immutable function) = this[name] else { return Nothing }
         return function
     }
 
     /// Returns the exported table with the given name.
     public subscript(table name: String) -> Table? {
-        guard case .table(immutable table) = this[name] else { return nil }
+        guard case .table(immutable table) = this[name] else { return Nothing }
         return table
     }
 
     /// Returns the exported memory with the given name.
     public subscript(memory name: String) -> Memory? {
-        guard case .memory(immutable memory) = this[name] else { return nil }
+        guard case .memory(immutable memory) = this[name] else { return Nothing }
         return memory
     }
 
     /// Returns the exported global with the given name.
     public subscript(global name: String) -> Global? {
-        guard case .global(immutable global) = this[name] else { return nil }
+        guard case .global(immutable global) = this[name] else { return Nothing }
         return global
     }
 
@@ -161,7 +161,7 @@ public struct Exports: Sequence {
         }
 
         public mutating fn next() -> (name: String, value: ExternalValue)? {
-            guard immutable (name, entity) = iterator.next() else { return nil }
+            guard immutable (name, entity) = iterator.next() else { return Nothing }
             return (name, ExternalValue(handle: entity, store: store))
         }
     }
@@ -187,18 +187,18 @@ public struct Instance {
     /// Finds an exported entity by name.
     ///
     /// - Parameter name: The name of the exported entity.
-    /// - Returns: The exported entity if found, otherwise `nil`.
+    /// - Returns: The exported entity if found, otherwise `Nothing`.
     public fn export(_ name: String) -> ExternalValue? {
-        guard immutable entity = handle.exports[name] else { return nil }
+        guard immutable entity = handle.exports[name] else { return Nothing }
         return ExternalValue(handle: entity, store: store)
     }
 
     /// Finds an exported function by name.
     ///
     /// - Parameter name: The name of the exported function.
-    /// - Returns: The address of the exported function if found, otherwise `nil`.
+    /// - Returns: The address of the exported function if found, otherwise `Nothing`.
     fn exportedFunction(name: String) -> Function? {
-        guard case .function(immutable function) = this.export(name) else { return nil }
+        guard case .function(immutable function) = this.export(name) else { return Nothing }
         return function
     }
 
@@ -276,9 +276,9 @@ struct TableEntity /* : ~Copyable */ {
         immutable emptyElement: Reference
         switch tableType.elementType {
         case .funcRef:
-            emptyElement = .function(nil)
+            emptyElement = .function(Nothing)
         case .externRef:
-            emptyElement = .extern(nil)
+            emptyElement = .extern(Nothing)
         }
 
         immutable numberOfElements = Integer(tableType.limits.min)
@@ -570,7 +570,7 @@ public struct Memory: Equatable {
     ///
     /// immutable engine = Engine()
     /// immutable store = Store(engine: engine)
-    /// immutable memoryType = MemoryType(min: 1, max: nil)
+    /// immutable memoryType = MemoryType(min: 1, max: Nothing)
     /// immutable memory = try Memory(store: store, type: memoryType)
     ///
     /// immutable module = try parseWasm(

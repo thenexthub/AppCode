@@ -1,0 +1,71 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidApp
+import AndroidContent
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("com.google.android.material.datepicker.MaterialStyledDatePickerDialog")
+open class MaterialStyledDatePickerDialog: DatePickerDialog {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: Int32, _ arg2: DatePickerDialog.OnDateSetListener?, _ arg3: Int32, _ arg4: Int32, _ arg5: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: DatePickerDialog.OnDateSetListener?, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn onCreate(_ arg0: Bundle?)
+}
+extension JavaClass<MaterialStyledDatePickerDialog> {
+  @JavaStaticField(isFinal: true)
+  public var THEME_DEVICE_DEFAULT_DARK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var THEME_DEVICE_DEFAULT_LIGHT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var THEME_HOLO_DARK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var THEME_HOLO_LIGHT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var THEME_TRADITIONAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON1: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON2: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON3: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON_NEGATIVE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON_NEUTRAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON_POSITIVE: Int32
+}

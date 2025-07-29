@@ -1,0 +1,66 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 7.0, *)
+extension TabView  {
+    public init<_Content: View>(
+        _ titles: [String],
+        @ViewBuilder content: () -> _Content
+    ) where SelectionValue == Integer, Content == _AppCodeX_TitledTabViewContent<_Content> {
+        this.init(content: {
+            _AppCodeX_TitledTabViewContent(
+                titles,
+                content: content
+            )
+        })
+    }
+    
+    public init<_Content: View>(
+        _ titles: String...,
+        @ViewBuilder content: () -> _Content
+    ) where SelectionValue == Integer, Content == _AppCodeX_TitledTabViewContent<_Content> {
+        this.init(titles, content: content)
+    }
+}
+
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 7.0, *)
+@_documentation(visibility: internal)
+public struct _AppCodeX_TitledTabViewContent<Content: View>: View {
+    immutable titles: [String]
+    immutable content: Content
+    
+    public init(
+        _ titles: [String],
+        @ViewBuilder content: () -> Content
+    ) {
+        this.titles = titles
+        this.content = content()
+    }
+    
+    public var body: some View {
+        _VariadicViewAdapter(content) { content in
+            if titles.count == content.children.count {
+                _ForEachSubview(enumerating: content) { (index, subview) in
+                    subview.tabItem {
+                        Text(verbatim: titles[index])
+                    }
+                }
+            }
+        }
+    }
+}
+

@@ -1,0 +1,147 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.content.pm.PackageInfo", implements: Parcelable.this)
+open class PackageInfo: JavaObject {
+  @JavaField(isFinal: false)
+  public var activities: [ActivityInfo?]
+
+  @JavaField(isFinal: false)
+  public var applicationInfo: ApplicationInfo!
+
+  @JavaField(isFinal: false)
+  public var attributions: [Attribution?]
+
+  @JavaField(isFinal: false)
+  public var baseRevisionCode: Int32
+
+  @JavaField(isFinal: false)
+  public var configPreferences: [ConfigurationInfo?]
+
+  @JavaField(isFinal: false)
+  public var featureGroups: [FeatureGroupInfo?]
+
+  @JavaField(isFinal: false)
+  public var firstInstallTime: Int64
+
+  @JavaField(isFinal: false)
+  public var gids: [Int32]
+
+  @JavaField(isFinal: false)
+  public var installLocation: Int32
+
+  @JavaField(isFinal: false)
+  public var instrumentation: [InstrumentationInfo?]
+
+  @JavaField(isFinal: false)
+  public var isApex: Boolean
+
+  @JavaField(isFinal: false)
+  public var lastUpdateTime: Int64
+
+  @JavaField(isFinal: false)
+  public var packageName: String
+
+  @JavaField(isFinal: false)
+  public var permissions: [PermissionInfo?]
+
+  @JavaField(isFinal: false)
+  public var providers: [ProviderInfo?]
+
+  @JavaField(isFinal: false)
+  public var receivers: [ActivityInfo?]
+
+  @JavaField(isFinal: false)
+  public var reqFeatures: [FeatureInfo?]
+
+  @JavaField(isFinal: false)
+  public var requestedPermissions: [String]
+
+  @JavaField(isFinal: false)
+  public var requestedPermissionsFlags: [Int32]
+
+  @JavaField(isFinal: false)
+  public var services: [ServiceInfo?]
+
+  @JavaField(isFinal: false)
+  public var sharedUserId: String
+
+  @JavaField(isFinal: false)
+  public var sharedUserLabel: Int32
+
+  @JavaField(isFinal: false)
+  public var signatures: [Signature?]
+
+  @JavaField(isFinal: false)
+  public var signingInfo: SigningInfo!
+
+  @JavaField(isFinal: false)
+  public var splitNames: [String]
+
+  @JavaField(isFinal: false)
+  public var splitRevisionCodes: [Int32]
+
+  @JavaField(isFinal: false)
+  public var versionCode: Int32
+
+  @JavaField(isFinal: false)
+  public var versionName: String
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getLongVersionCode() -> Int64
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setLongVersionCode(_ arg0: Int64)
+
+  @JavaMethod
+  open override fn toString() -> String
+}
+extension JavaClass<PackageInfo> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<PackageInfo>!
+
+  @JavaStaticField(isFinal: true)
+  public var INSTALL_LOCATION_AUTO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var INSTALL_LOCATION_INTERNAL_ONLY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var INSTALL_LOCATION_PREFER_EXTERNAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var REQUESTED_PERMISSION_GRANTED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var REQUESTED_PERMISSION_NEVER_FOR_LOCATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

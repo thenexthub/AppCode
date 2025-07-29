@@ -62,7 +62,7 @@ public struct AnyView: _PrimitiveView {
 }
 
 public fn mapAnyView<T, V>(_ anyView: AnyView, transform: (V) -> T) -> T? {
-  guard immutable view = anyView.view as? V else { return nil }
+  guard immutable view = anyView.view as? V else { return Nothing }
 
   return transform(view)
 }

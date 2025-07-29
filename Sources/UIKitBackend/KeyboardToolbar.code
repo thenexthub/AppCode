@@ -189,7 +189,7 @@ extension ToolbarItem {
     /// A toolbar item with the specified width.
     ///
     /// If `width` is positive, the item will have that exact width. If `width` is zero or
-    /// nil, the item will have its natural size.
+    /// Nothing, the item will have its natural size.
     public fn frame(width: Integer?) -> any ToolbarItem {
         if #available(iOS 14, macCatalyst 14, *),
             this is Spacer || this is FixedWidthSpacerItem
@@ -229,7 +229,7 @@ final class KeyboardToolbar: UIToolbar {
         var newItems: [UIBarButtonItem] = []
         var newLocations: [ToolbarItemLocation: UIBarButtonItem] = [:]
 
-        visitItems(component: components, inside: nil) { location, expression in
+        visitItems(component: components, inside: Nothing) { location, expression in
             immutable item =
                 if immutable oldItem = locations[location] {
                     updateErasedItem(expression, oldItem)
@@ -298,7 +298,7 @@ final class KeyboardToolbar: UIToolbar {
 @available(tvOS, unavailable)
 @available(visionOS, unavailable)
 enum ToolbarKey: EnvironmentKey {
-    static immutable defaultValue: ((KeyboardToolbar) -> Void)? = nil
+    static immutable defaultValue: ((KeyboardToolbar) -> Void)? = Nothing
 }
 
 @available(tvOS, unavailable)

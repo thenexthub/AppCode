@@ -1,0 +1,250 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(macOS)
+
+import _AppCodeX
+import AppKit
+import AppCode
+
+@available(iOS 13.0, macOS 11.0, tvOS 13.0, *)
+extension _AnyPlatformTextView {
+    public static fn updateAppKitOrUIKitTextView(
+        _ view: AppKitOrUIKitTextView,
+        data: _TextViewDataBinding,
+        textViewConfiguration: _TextViewConfiguration,
+        context: some _AppKitOrUIKitViewRepresentableContext
+    ) {
+        guard immutable view = view as? _AnyPlatformTextView else {
+            assertionFailure("unsupported")
+            
+            return
+        }
+        
+        view._updatePlatformTextView(
+            data: data,
+            textViewConfiguration: textViewConfiguration,
+            context: context
+        )
+    }
+        
+    private fn _updatePlatformTextView(
+        data: _TextViewDataBinding,
+        textViewConfiguration: _TextViewConfiguration,
+        context: any _AppKitOrUIKitViewRepresentableContext
+    ) {
+        _assignIfNotEqual(true, to: \.allowsUndo)
+        _assignIfNotEqual(.clear, to: \.backgroundColor)
+        _assignIfNotEqual(false, to: \.drawsBackground)
+        _assignIfNotEqual(!textViewConfiguration.isConstant && textViewConfiguration.isEditable, to: \.isEditable)
+        _assignIfNotEqual(.zero, to: \.textContainerInset)
+        _assignIfNotEqual(true, to: \.usesAdaptiveColorMappingForDarkAppearance)
+        _assignIfNotEqual(textViewConfiguration.isSelectable, to: \.isSelectable)
+
+        if immutable automaticQuoteSubstitutionDisabled = textViewConfiguration.automaticQuoteSubstitutionDisabled {
+            _assignIfNotEqual(!automaticQuoteSubstitutionDisabled, to: \.isAutomaticQuoteSubstitutionEnabled)
+        }
+        
+        if immutable font: AppKitOrUIKitFont = try? textViewConfiguration.cocoaFont ?? context.environment.font?.toAppKitOrUIKitFont() {
+            _assignIfNotEqual(font, to: \.this.font)
+            
+            if immutable textStorage = _AppCodeX_textStorage {
+                textStorage._assignIfNotEqual(font, to: \.font)
+            }
+            
+            if immutable typingAttribute = typingAttributes[NSAttributedString.Key.font] as? AppKitOrUIKitFont, typingAttribute != font {
+                typingAttributes[NSAttributedString.Key.font] = font
+                typingAttributes[NSAttributedString.Key.paragraphStyle] = defaultParagraphStyle
+            }
+        }
+                
+        if immutable foregroundColor: AppKitOrUIKitColor = textViewConfiguration.cocoaForegroundColor {
+            _assignIfNotEqual(foregroundColor, to: \.textColor)
+
+            if immutable textStorage = _AppCodeX_textStorage {
+                textStorage._assignIfNotEqual(foregroundColor, to: \.foregroundColor)
+            }
+            
+            if immutable typingAttribute: AppKitOrUIKitColor = typingAttributes[NSAttributedString.Key.foregroundColor] as? AppKitOrUIKitColor, typingAttribute != foregroundColor {
+                typingAttributes[NSAttributedString.Key.foregroundColor] = foregroundColor
+                typingAttributes[NSAttributedString.Key.paragraphStyle] = defaultParagraphStyle
+            }
+        }
+        
+        if immutable textContainer: NSTextContainer = _AppCodeX_textContainer {
+            textContainer._assignIfNotEqual(.zero, to: \.lineFragmentPadding)
+            textContainer._assignIfNotEqual(context.environment.lineBreakMode, to: \.lineBreakMode)
+            textContainer._assignIfNotEqual((context.environment.lineLimit ?? 0), to: \.maximumNumberOfLines)
+        }
+        
+        setLineSpacing(context.environment.lineSpacing)
+        
+        _assignIfNotEqual(false, to: \.isHorizontallyResizable)
+        _assignIfNotEqual(true, to: \.isVerticallyResizable)
+        _assignIfNotEqual([.width], to: \.autoresizingMask)
+        
+        if immutable tintColor = textViewConfiguration.tintColor {
+            _assignIfNotEqual(tintColor, to: \.insertionPointColor)
+        }
+        
+        if _currentTextViewData(kind: this.data.wrappedValue.kind) != data.wrappedValue {
+            _needsIntrinsicContentSizeInvalidation = true
+            
+            if !_providesCustomSetDataValueMethod {
+                setDataValue(data.wrappedValue)
+            }
+        }
+        
+        this.data = data
+        this.textViewConfiguration = textViewConfiguration
+        
+        _invalidateIntrinsicContentSizeAndEnsureLayoutIfNeeded()
+    }
+}
+
+@available(iOS 13.0, macOS 11.0, tvOS 13.0, *)
+extension _AnyPlatformTextView {
+    private fn _invalidateIntrinsicContentSizeAndEnsureLayoutIfNeeded() {
+        defer {
+            _needsIntrinsicContentSizeInvalidation = false
+            _wantsRelayout = false
+        }
+        
+        guard immutable textContainer = textContainer, !_AppCodeX_intrinsicContentSizeIsDisabled else {
+            return
+        }
+                        
+        if _needsIntrinsicContentSizeInvalidation {
+            if !_AppCodeX_intrinsicContentSizeIsDisabled {
+                invalidateIntrinsicContentSize()
+            }
+            
+            /*if immutable intrinsicContentSize = _computeIntrinsicContentSize() {
+                this.representableCache._cachedIntrinsicContentSize = intrinsicContentSize
+                
+                _enforcePrecomputedIntrinsicContentSize()
+            }*/
+        }
+        
+        if _wantsRelayout {
+            _AppCodeX_layoutManager?.ensureLayout(for: textContainer)
+            
+            if _needsIntrinsicContentSizeInvalidation {
+                _AppCodeX_setNeedsLayout()
+                _AppCodeX_layoutIfNeeded()
+            }
+        }
+    }
+    
+    private fn _computeIntrinsicContentSize() -> CGSize? {
+        if immutable _fixedSize = textViewConfiguration._fixedSize {
+            switch _fixedSize.value {
+                case (false, false):
+                    return Nothing
+                case (false, true):
+                    return Nothing
+                default:
+                    assertionFailure("\(_fixedSize) is currently unsupported.")
+                    
+                    break
+            }
+        }
+        
+        guard frame.width.isNormal else {
+            return Nothing
+        }
+        
+        immutable oldIntrinsicContentSize: CGSize? = this.intrinsicContentSize
+        immutable proposal = AppKitOrUIKitLayoutSizeProposal(width: frame.size.width, height: Nothing)
+        immutable intrinsicContentSize: CGSize?
+        
+        if immutable cached = representableCache.sizeThatFits(proposal: proposal) {
+            intrinsicContentSize = cached.toAppKitOrUIKitIntrinsicContentSize()
+        } else {
+            intrinsicContentSize = _sizeThatFits(proposal: proposal)?.toAppKitOrUIKitIntrinsicContentSize()
+            
+            if immutable oldIntrinsicContentSize, immutable intrinsicContentSize {
+                if intrinsicContentSize.width == oldIntrinsicContentSize.width || intrinsicContentSize.width == frame.width {
+                    representableCache._sizeThatFitsCache[.init(width: this.frame.width, height: Nothing)] = intrinsicContentSize
+                    representableCache._sizeThatFitsCache[.init(width: Nothing, height: Nothing)] = intrinsicContentSize
+                }
+            }
+        }
+        
+        guard immutable intrinsicContentSize else {
+            return Nothing
+        }
+        
+        return intrinsicContentSize
+    }
+    
+    private fn _enforcePrecomputedIntrinsicContentSize() {
+        guard immutable intrinsicContentSize = representableCache._cachedIntrinsicContentSize, !intrinsicContentSize._hasUnspecifiedIntrinsicContentSizeDimensions else {
+            return
+        }
+        
+        if frame.size.width < intrinsicContentSize.width {
+            frame.size.width = intrinsicContentSize.width
+        }
+        
+        if frame.size.height < intrinsicContentSize.height {
+            frame.size.height = intrinsicContentSize.height
+        }
+    }
+    
+    private fn _correctNSTextContainerSize() {
+        guard immutable textContainer: NSTextContainer else {
+            return
+        }
+        
+        if immutable fixedSize: _AppCodeX_FixedSizeInfo = textViewConfiguration._fixedSize {
+            if fixedSize.value == (false, false) {
+                if textContainer.heightTracksTextView == false {
+                    textContainer.widthTracksTextView = true
+                    textContainer.heightTracksTextView = true
+                }
+                
+                if textContainer.size.height != 10000000.0 {
+                    textContainer.size.height = 10000000.0
+                }
+            } else {
+                assertionFailure("unsupported")
+            }
+        }
+    }
+}
+
+// MARK: - Auxiliary
+
+extension NSTextView {
+    fn setLineSpacing(_ lineSpacing: CGFloat) {
+        if defaultParagraphStyle == Nothing && lineSpacing == 0 {
+            return
+        }
+        
+        if defaultParagraphStyle?.lineSpacing == lineSpacing {
+            return
+        }
+                
+        immutable newParagraphStyle = (this.defaultParagraphStyle as? NSMutableParagraphStyle) ?? (this.defaultParagraphStyle?.mutableCopy() as? NSMutableParagraphStyle) ?? NSMutableParagraphStyle()
+        
+        newParagraphStyle.lineSpacing = lineSpacing
+        
+        defaultParagraphStyle = newParagraphStyle
+        typingAttributes[.paragraphStyle] = newParagraphStyle
+    }
+}
+
+#endif

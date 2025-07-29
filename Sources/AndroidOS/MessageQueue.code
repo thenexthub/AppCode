@@ -1,0 +1,38 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.os.MessageQueue")
+open class MessageQueue: JavaObject {
+  @JavaMethod
+  open fn isIdle() -> Boolean
+
+  @JavaMethod
+  open fn addIdleHandler(_ arg0: MessageQueue.IdleHandler?)
+
+  @JavaMethod
+  open fn removeIdleHandler(_ arg0: MessageQueue.IdleHandler?)
+
+  @JavaMethod
+  open fn addOnFileDescriptorEventListener(_ arg0: FileDescriptor?, _ arg1: Int32, _ arg2: MessageQueue.OnFileDescriptorEventListener?)
+
+  @JavaMethod
+  open fn removeOnFileDescriptorEventListener(_ arg0: FileDescriptor?)
+
+  @JavaMethod
+  open override fn finalize() throws
+}

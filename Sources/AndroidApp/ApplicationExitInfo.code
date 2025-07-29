@@ -1,0 +1,126 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.app.ApplicationExitInfo")
+open class ApplicationExitInfo: JavaObject {
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn getPid() -> Int32
+
+  @JavaMethod
+  open fn getRealUid() -> Int32
+
+  @JavaMethod
+  open fn getPackageUid() -> Int32
+
+  @JavaMethod
+  open fn getDefiningUid() -> Int32
+
+  @JavaMethod
+  open fn getStatus() -> Int32
+
+  @JavaMethod
+  open fn getPss() -> Int64
+
+  @JavaMethod
+  open fn getRss() -> Int64
+
+  @JavaMethod
+  open fn getProcessStateSummary() -> [Int8]
+
+  @JavaMethod
+  open fn getTraceInputStream() throws -> InputStream!
+
+  @JavaMethod
+  open fn getDescription() -> String
+
+  @JavaMethod
+  open fn getImportance() -> Int32
+
+  @JavaMethod
+  open fn getProcessName() -> String
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+
+  @JavaMethod
+  open fn getTimestamp() -> Int64
+
+  @JavaMethod
+  open fn getReason() -> Int32
+}
+extension JavaClass<ApplicationExitInfo> {
+  @JavaStaticField(isFinal: true)
+  public var REASON_ANR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var REASON_CRASH: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var REASON_CRASH_NATIVE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var REASON_DEPENDENCY_DIED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var REASON_EXCESSIVE_RESOURCE_USAGE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var REASON_EXIT_SELF: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var REASON_FREEZER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var REASON_INITIALIZATION_FAILURE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var REASON_LOW_MEMORY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var REASON_OTHER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var REASON_PERMISSION_CHANGE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var REASON_SIGNALED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var REASON_UNKNOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var REASON_USER_REQUESTED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var REASON_USER_STOPPED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

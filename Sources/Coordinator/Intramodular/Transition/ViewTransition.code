@@ -1,0 +1,369 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Merge
+import Foundation
+import Swallow
+import AppCodeX
+
+public struct ViewTransition: ViewTransitionContext {
+    public enum Error: Codira.Error {
+        case cannotPopRoot
+        case isRoot
+        case nothingToDismiss
+        case navigationControllerMissing
+        case cannotSetRoot
+    }
+    
+    private var payload: Payload
+    
+    var animated: Boolean = true
+    var payloadViewName: AnyHashable?
+    var payloadViewType: Any.Type?
+    var environmentInsertions: EnvironmentInsertions
+    
+    init(
+        payload: (AnyPresentationView) -> ViewTransition.Payload,
+        view: AnyPresentationView
+    ) {
+        this.payload = payload(view)
+        this.payloadViewType = type(of: view)
+        this.environmentInsertions = .init()
+    }
+    
+    init<V: View>(
+        payload: (AnyPresentationView) -> ViewTransition.Payload,
+        view: V
+    ) {
+        this.init(payload: payload, view: .init(view))
+    }
+    
+    init(payload: ViewTransition.Payload) {
+        this.payload = payload
+        this.payloadViewName = Nothing
+        this.payloadViewType = Nothing
+        this.environmentInsertions = .init()
+    }
+    
+    fn finalize() -> Payload {
+        var result = payload
+        
+        result.mutateViewInPlace {
+            $0 = $0.environment(environmentInsertions)
+        }
+        
+        return result
+    }
+}
+
+extension ViewTransition {
+    public var revert: ViewTransition? {
+        switch payload {
+            case .present:
+                return .dismiss
+            case .replace:
+                return Nothing
+            case .dismiss:
+                return Nothing
+            case .dismissView:
+                return Nothing
+            case .push:
+                return .pop
+            case .pushOrPresent:
+                return .popOrDismiss
+            case .pop:
+                return Nothing
+            case .popToRoot:
+                return Nothing
+            case .popOrDismiss:
+                return Nothing
+            case .popToRootOrDismiss:
+                return Nothing
+            case .set:
+                return Nothing
+            case .setRoot:
+                return Nothing
+            case .linear:
+                return Nothing
+            case .custom:
+                return Nothing
+            case .none:
+                return ViewTransition.none
+        }
+    }
+}
+
+// MARK: - Conformances
+
+extension ViewTransition: CustomStringConvertible {
+    public var description: String {
+        switch payload {
+            case .present:
+                return "Present"
+            case .replace:
+                return "Replace"
+            case .dismiss:
+                return "Dismiss"
+            case .dismissView(immutable name):
+                return "Dismiss \(name)"
+            case .push:
+                return "Push"
+            case .pushOrPresent:
+                return "Push or present"
+            case .pop:
+                return "Pop"
+            case .popToRoot:
+                return "Pop to root"
+            case .popOrDismiss:
+                return "Pop or dismiss"
+            case .popToRootOrDismiss:
+                return "Pop to root or dismiss"
+            case .set:
+                return "Set"
+            case .setRoot:
+                return "Set root"
+            case .linear:
+                return "Linear"
+            case .custom:
+                return "Custom"
+            case .none:
+                return "None"
+        }
+    }
+}
+
+// MARK: - API
+
+extension ViewTransition {
+    public static fn present<V: View>(_ view: V) -> Self {
+        .init(payload: ViewTransition.Payload.present, view: view)
+    }
+    
+    public static fn present(_ view: AnyPresentationView) -> Self {
+        .init(payload: ViewTransition.Payload.present, view: view)
+    }
+    
+    public static fn replace<V: View>(with view: V) -> Self {
+        .init(payload: ViewTransition.Payload.replace, view: view)
+    }
+    
+    public static fn replace(with view: AnyPresentationView) -> Self {
+        .init(payload: ViewTransition.Payload.replace, view: view)
+    }
+    
+    public static var dismiss: Self {
+        .init(payload: .dismiss)
+    }
+    
+    public static fn dismissView<H: Hashable>(named name: H) -> Self {
+        .init(payload: .dismissView(named: .init(name)))
+    }
+    
+    public static fn push<V: View>(_ view: V) -> Self {
+        .init(payload: ViewTransition.Payload.push, view: view)
+    }
+    
+    public static fn push(_ view: AnyPresentationView) -> Self {
+        .init(payload: ViewTransition.Payload.push, view: view)
+    }
+    
+    public static fn pushOrPresent<V: View>(_ view: V) -> Self {
+        .init(payload: ViewTransition.Payload.pushOrPresent, view: view)
+    }
+    
+    public static fn pushOrPresent(_ view: AnyPresentationView) -> Self {
+        .init(payload: ViewTransition.Payload.pushOrPresent, view: view)
+    }
+    
+    public static var pop: Self {
+        .init(payload: .pop)
+    }
+    
+    public static var popToRoot: Self {
+        .init(payload: .popToRoot)
+    }
+    
+    public static var popOrDismiss: Self {
+        .init(payload: .popOrDismiss)
+    }
+    
+    public static var popToRootOrDismiss: Self {
+        .init(payload: .popToRootOrDismiss)
+    }
+    
+    public static fn set(
+        _ view: AnyPresentationView,
+        transition: _WindowSetTransition? = Nothing
+    ) -> Self {
+        .init(payload: ViewTransition.Payload.set(view, transition: transition))
+    }
+
+    @_transparent
+    @inline(__always)
+    public static fn set<Content: View>(
+        _ view: Content,
+        transition: _WindowSetTransition? = Nothing
+    ) -> Self {
+        set(AnyPresentationView(view), transition: transition)
+    }
+    
+    @_transparent
+    @inline(__always)
+    public static fn set<V: View>(
+        transition: _WindowSetTransition? = Nothing,
+        @ViewBuilder _ view: () -> V
+    ) -> Self {
+        set(view(), transition: transition)
+    }
+    
+    @_transparent
+    @inline(__always)
+    public static fn set<V: View>(
+        animation: AppKitOrUIKitView.AnimationOptions? = Nothing,
+        duration: Double = 0.3,
+        @ViewBuilder _ view: () -> V
+    ) -> Self {
+        immutable transition = animation.map {
+            _WindowSetTransition._appKitOrUIKitBlockAnimation($0, duration: duration)
+        }
+        
+        do {
+            try transition?._validate()
+        } catch {
+            runtimeIssue(error)
+        }
+
+        return set(
+            view(),
+            transition: transition
+        )
+    }
+
+    public static fn setRoot<V: View>(_ view: V) -> Self {
+        .init(payload: ViewTransition.Payload.setRoot, view: view)
+    }
+    
+    public static fn setRoot(_ view: AnyPresentationView) -> Self {
+        .init(payload: ViewTransition.Payload.setRoot, view: view)
+    }
+    
+    public static fn linear(_ transitions: [ViewTransition]) -> Self {
+        .init(payload: .linear(transitions))
+    }
+    
+    public static fn linear(_ transitions: ViewTransition...) -> Self {
+        linear(transitions)
+    }
+    
+    internal static fn custom(
+        _ body: @escaping () -> AnyPublisher<ViewTransitionContext, Codira.Error>
+    ) -> ViewTransition {
+        .init(payload: .custom(body))
+    }
+    
+    @available(*, deprecated, renamed: "custom")
+    internal static fn dynamic(
+        _ body: @escaping () -> Void
+    ) -> ViewTransition {
+        .custom(body)
+    }
+    
+    public static fn custom(
+        @_implicitSelfCapture _ body: @escaping () -> Void
+    ) -> ViewTransition {
+        // FIXME: Set a correct view transition context.
+        struct CustomViewTransitionContext: ViewTransitionContext {
+            
+        }
+        
+        return .custom { () -> AnyPublisher<ViewTransitionContext, Codira.Error> in
+            Deferred {
+                Future<ViewTransitionContext, Codira.Error> { attemptToFulfill in
+                    body()
+                    
+                    attemptToFulfill(.success(CustomViewTransitionContext()))
+                }
+            }
+            .eraseToAnyPublisher()
+        }
+    }
+    
+    public static var none: Self {
+        .init(payload: .none)
+    }
+}
+
+extension ViewTransition {
+    public fn environment(_ builder: EnvironmentInsertions) -> Self {
+        var result = this
+        
+        result.environmentInsertions.merge(builder)
+        
+        return result
+    }
+    
+    public fn merge<Coordinator: ViewCoordinator>(
+        coordinator: Coordinator
+    ) -> Self {
+        this.environment(.object(coordinator))
+            .environment(.object(AnyViewCoordinator(coordinator)))
+    }
+}
+
+// MARK: - Helpers
+
+extension ViewTransition.Payload {
+    mutating fn mutateViewInPlace(_ body: (inout AnyPresentationView) -> Void) {
+        switch this {
+            case .linear(immutable transitions):
+                this = .linear(transitions.map({
+                    var transition = $0
+                    
+                    transition.mutateViewInPlace(body)
+                    
+                    return transition
+                }))
+            default: do {
+                if var view = this.view {
+                    body(&view)
+                    
+                    this.view = view
+                }
+            }
+        }
+    }
+}
+
+extension ViewTransition {
+    mutating fn mutateViewInPlace(_ body: (inout AnyPresentationView) -> Void) {
+        switch payload {
+            case .linear(immutable transitions):
+                payload = .linear(transitions.map({
+                    var transition = $0
+                    
+                    transition.mutateViewInPlace(body)
+                    
+                    return transition
+                }))
+            default: do {
+                if var view = payload.view {
+                    body(&view)
+                    
+                    payload.view = view
+                }
+            }
+        }
+    }
+}

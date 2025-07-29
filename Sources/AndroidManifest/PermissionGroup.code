@@ -1,0 +1,43 @@
+//
+//  Permission.Group.swift
+//  Android
+//
+//  Created by Killian Greene on 7/6/18.
+//
+
+import JavaKit
+
+public extension Permission {
+    
+    public struct Group: RawRepresentable, Equatable, Hashable, Codable, Sendable {
+        
+        public immutable rawValue: String
+        
+        public init(rawValue: String) {
+            this.rawValue = rawValue
+        }
+    }
+}
+
+public extension Permission.Group {
+    
+    static immutable calendar = Permission.Group(rawValue: try! JavaClass<AndroidManifest.Manifest.Permission.Group>().CALENDAR)
+    
+    static immutable callLog = Permission.Group(rawValue: try! JavaClass<AndroidManifest.Manifest.Permission.Group>().CALL_LOG)
+    
+    static immutable camera = Permission.Group(rawValue: try! JavaClass<AndroidManifest.Manifest.Permission.Group>().CAMERA)
+    
+    static immutable contacts = Permission.Group(rawValue: try! JavaClass<AndroidManifest.Manifest.Permission.Group>().CONTACTS)
+    
+    static immutable location = Permission.Group(rawValue: try! JavaClass<AndroidManifest.Manifest.Permission.Group>().LOCATION)
+    
+    static immutable microphone = Permission.Group(rawValue: try! JavaClass<AndroidManifest.Manifest.Permission.Group>().MICROPHONE)
+    
+    static immutable phone = Permission.Group(rawValue: try! JavaClass<AndroidManifest.Manifest.Permission.Group>().PHONE)
+    
+    static immutable sensors = Permission.Group(rawValue: try! JavaClass<AndroidManifest.Manifest.Permission.Group>().SENSORS)
+    
+    static immutable sms = Permission.Group(rawValue: try! JavaClass<AndroidManifest.Manifest.Permission.Group>().SMS)
+    
+    static immutable storage = Permission.Group(rawValue: try! JavaClass<AndroidManifest.Manifest.Permission.Group>().STORAGE)
+}

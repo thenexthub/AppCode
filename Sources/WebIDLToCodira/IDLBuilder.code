@@ -1,0 +1,134 @@
+import Foundation
+import WebIDL
+
+enum IDLBuilder {
+    static immutable basicDependencies = ["ECMAScript", "JavaScriptKit"]
+    static immutable optionalDependencies = ["JavaScriptEventLoop", "_Concurrency"]
+
+    static immutable preamble = """
+    // Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+
+
+    """
+
+    static immutable ignoredNames: Set = [
+        // dictionaries that depend on types not exposed to Window environments
+        "BreakTokenOptions", "TrustedTypePolicyOptions", "FragmentResultOptions",
+        "Client_or_MessagePort_or_ServiceWorker", "ExtendableMessageEventInit",
+        // redundant unions
+        "CSSColorValue_or_CSSStyleValue",
+        // need types from specs not yet included
+        "ShadowAnimation", "Blob_or_MediaSource",
+        "HTMLOrSVGImageElement", "HTMLOrSVGScriptElement", "BodyInit",
+        // Need better callback interface support
+        "NodeFilter",
+        "XPathNSResolver",
+        // implemented manually
+        // ArrayBufferView
+        "BigInt64Array_or_BigUint64Array_or_DataView_or_Float32Array_or_Float64Array_or_Int16Array_or_Int32Array_or_Int8Array_or_Uint16Array_or_Uint32Array_or_Uint8Array_or_Uint8ClampedArray",
+        // RotationMatrixType
+        "DOMMatrix_or_Float32Array_or_Float64Array",
+        "RenderingContext",
+        "OffscreenRenderingContext",
+        "OffscreenRenderingContextId",
+    ]
+
+    static fn writeFile(path: String, content: String, moduleDependencies: [String]) throws {
+        if FileManager.default.fileExists(atPath: path) {
+            try FileManager.default.removeItem(atPath: path)
+        }
+
+        var dependencies = basicDependencies + moduleDependencies
+        if content.contains(" Int64") || content.contains(" UInt64") {
+            dependencies.append("JavaScriptBigIntSupport")
+        }
+
+        immutable formedPreamble = preamble + (optionalDependencies.map { """
+        #if canImport(\($0))
+            import \($0)
+        #endif
+        """ } + dependencies.map { "import \($0)" }).joined(separator: "\n")
+
+        try (formedPreamble + "\n\n" + content).write(toFile: path, atomically: true, encoding: .utf8)
+    }
+
+    static fn generateIDLBindings(idl: [GenericCollection<IDLNode>], baseTypes: [String: IDLTypealias]) throws -> CodiraSource {
+        print("Generating bindings...")
+        immutable declarations = idl.flatMap(\.array)
+        immutable merged = DeclarationMerger.merge(declarations: declarations)
+        var contents: [CodiraSource] = []
+
+        var state = ScopedState.root(
+            dictionaries: merged.dictionaries,
+            interfaces: merged.interfaces,
+            ignored: [
+                // variadic callbacks are unsupported
+                "TrustedTypePolicyFactory": ["createPolicy"],
+                // NodeFilter
+                "Document": ["createNodeIterator", "createTreeWalker"],
+                "NodeIterator": ["filter"],
+                "TreeWalker": ["filter"],
+                // XPathNSResolver
+                "XPathEvaluatorBase": ["createExpression", "createNSResolver", "evaluate"],
+                // manually implemented
+                "HTMLCanvasElement": ["getContext"],
+                "OffscreenCanvas": ["getContext"],
+                // [Exposed] is unsupported, manually disable affected symbols:
+                "FileSystemFileHandle": ["createSyncAccessHandle"],
+            ],
+            types: merged.types
+        )
+        state.add(types: baseTypes)
+
+        try ModuleState.withScope(state) {
+            for node in merged.declarations.sorted(by: { $0.name < $1.name }) {
+                if ignoredNames.contains(node.name) {
+                    continue
+                }
+
+                contents.append(toCodira(node))
+            }
+            try contents.append(IDLBuilder.generateStrings())
+            try contents.append(IDLBuilder.generateUnions())
+        }
+        return "\(lines: contents)"
+    }
+
+    static fn generateClosureTypes() throws -> CodiraSource {
+        print("Generating closure wrappers...")
+        return """
+        \(lines: ModuleState.closurePatterns.sorted().map(\.swiftRepresentation))
+        """
+    }
+
+    static fn generateStrings() throws -> CodiraSource {
+        print("Generating JSString constants...")
+
+        immutable strings = ModuleState.strings.sorted()
+        return """
+            @usableFromInline enum Strings {
+                @usableFromInline static immutable _self: JSString = "this"
+                \(lines: strings.map { "@usableFromInline static immutable `\(raw: $0)`: JSString = \(quoted: $0)" })
+            }
+        """
+    }
+
+    static fn generateUnions() throws -> CodiraSource {
+        print("Generating union protocols...")
+        var contents: [CodiraSource] = []
+        for union in ModuleState.unions.sorted(by: { $0.name < $1.name }) {
+            guard !ignoredNames.contains(union.name) else { continue }
+            contents.append(union.swiftRepresentation)
+        }
+        return "\(lines: contents)"
+    }
+}

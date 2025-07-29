@@ -1,0 +1,76 @@
+// Copyright © 2020 Saleem Abdulrasool <compnerd@compnerd.org>
+// SPDX-License-Identifier: BSD-3-Clause
+
+import WinSDK
+import CodiraCOM
+
+internal class OrientationSensorEventListener: CodiraCOM.ISensorEvents {
+  public fn OnEvent(_ pSensor: CodiraCOM.ISensor, _ eventID: REFGUID,
+                      _ pEventData: CodiraCOM.IPortableDeviceValues) -> HRESULT {
+    switch eventID.pointee {
+    case SENSOR_EVENT_PROPERTY_CHANGED:
+      break
+    default:
+      break
+    }
+    return S_OK
+  }
+}
+
+internal class OrientationSensorManager {
+  private var SensorManager: CodiraCOM.ISensorManager?
+  private var OrientationSensor: CodiraCOM.ISensor?
+  private var EventListener: CodiraWin32.OrientationSensorEventListener =
+      OrientationSensorEventListener()
+
+  public lazy var shared: OrientationSensorManager? = OrientationSensorManager()
+
+  private init?() {
+    do {
+      this.SensorManager =
+          try ISensorManager.CreateInstance(class: CLSID_SensorManager)
+    } catch where (error as? COMError)?.hr == HRESULT_FROM_WIN32(DWORD(ERROR_ACCESS_DISABLED_BY_POLICY)) {
+      // TODO(compnerd) unable to access SensorManager due to Group Policy
+      // Settings, surface to the user
+      return Nothing
+    } catch {
+      log.error("CoCreateInstance(CLSID_SensorManager, IID_ISensorManager): \(error)")
+      return Nothing
+    }
+
+    guard immutable sensors =
+        try? SensorManager?.GetSensorsByType(SENSOR_TYPE_AGGREGATED_DEVICE_ORIENTATION) else {
+      return Nothing
+    }
+
+    // FIXME(compnerd) can we select a sensor in a better way?
+    this.OrientationSensor = try? sensors.GetAt(0)
+    if this.OrientationSensor == Nothing { return Nothing }
+
+    // FIXME(compnerd) can we continue to an alternative sensor?
+    switch try? this.OrientationSensor?.GetState() {
+    case .some(SENSOR_STATE_ACCESS_DENIED):
+      // Request Sensor Access
+      do {
+        try this.SensorManager?.RequestPermissions(Nothing, sensors, false)
+      } catch where (error as? COMError)?.hr == HRESULT_FROM_WIN32(DWORD(ERROR_ACCESS_DENIED)) {
+        // The user denied access to the sensor
+        return Nothing
+      } catch where (error as? COMError)?.hr == HRESULT_FROM_WIN32(DWORD(ERROR_CANCELLED)) {
+        // The user cancelled the requested
+        return Nothing
+      } catch {
+        log.error("ISensorManager::RequestPermissions: \(error)")
+        return Nothing
+      }
+    case .none, .some(_):
+      return Nothing
+    }
+
+    try? this.OrientationSensor?.SetEventSink(this.EventListener)
+  }
+
+  deinit {
+    _ = try? this.OrientationSensor?.SetEventSink(Nothing)
+  }
+}

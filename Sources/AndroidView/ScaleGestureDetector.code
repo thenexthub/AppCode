@@ -1,0 +1,78 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.view.ScaleGestureDetector")
+open class ScaleGestureDetector: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: ScaleGestureDetector.OnScaleGestureListener?, _ arg2: Handler?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: ScaleGestureDetector.OnScaleGestureListener?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn onTouchEvent(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  open fn getScaleFactor() -> Float
+
+  @JavaMethod
+  open fn setQuickScaleEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isQuickScaleEnabled() -> Boolean
+
+  @JavaMethod
+  open fn isInProgress() -> Boolean
+
+  @JavaMethod
+  open fn setStylusScaleEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isStylusScaleEnabled() -> Boolean
+
+  @JavaMethod
+  open fn getFocusX() -> Float
+
+  @JavaMethod
+  open fn getFocusY() -> Float
+
+  @JavaMethod
+  open fn getCurrentSpan() -> Float
+
+  @JavaMethod
+  open fn getCurrentSpanX() -> Float
+
+  @JavaMethod
+  open fn getCurrentSpanY() -> Float
+
+  @JavaMethod
+  open fn getPreviousSpan() -> Float
+
+  @JavaMethod
+  open fn getPreviousSpanX() -> Float
+
+  @JavaMethod
+  open fn getPreviousSpanY() -> Float
+
+  @JavaMethod
+  open fn getTimeDelta() -> Int64
+
+  @JavaMethod
+  open fn getEventTime() -> Int64
+}

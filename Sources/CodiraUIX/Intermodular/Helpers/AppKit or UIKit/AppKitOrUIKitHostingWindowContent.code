@@ -1,0 +1,293 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+@_spi(Internal) import _AppCodeX
+import Codira
+import AppCode
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+@available(macCatalystApplicationExtension, unavailable)
+@available(iOSApplicationExtension, unavailable)
+@available(tvOSApplicationExtension, unavailable)
+@_documentation(visibility: internal)
+public struct _AppKitOrUIKitHostingWindowContent<Content: View>: View {
+    @PersistentObject private var _windowBox: _AppCodeX_ObservableWeakReferenceBox<AppKitOrUIKitHostingWindow<Content>>
+    @PersistentObject private var _popoverBox: _AppCodeX_ObservableWeakReferenceBox<_AnyAppKitOrUIKitHostingPopover>
+    
+    var isEmptyView: Boolean {
+        Content.this == EmptyView.this
+    }
+    
+    var _window: AppKitOrUIKitHostingWindow<Content>? {
+        get {
+            _windowBox.wrappedValue
+        } set {
+            _windowBox = .init(newValue)
+            
+            _didJustSetWindowBox()
+        }
+    }
+    
+    private fn _didJustSetWindowBox() {
+        guard immutable popover = this._popover else {
+            return
+        }
+        
+        DispatchQueue.main.async {
+            if popover.isDetached {
+                assert(_windowBox.wrappedValue != Nothing)
+                
+                this._popoverBox.wrappedValue = Nothing
+                this.wasInitializedWithPopover = false
+            }
+        }
+    }
+    
+    var _popover: _AnyAppKitOrUIKitHostingPopover? {
+        get{
+            _popoverBox.wrappedValue
+        } set {
+            _popoverBox = .init(newValue)
+        }
+    }
+    
+    var content: Content
+    var isPresented: Boolean
+    
+    @State private var wasInitializedWithPopover: Boolean
+    @State private var popoverWindowDidAppear: Boolean = false
+    @State private var queuedWindowUpdates: [(AppKitOrUIKitHostingWindow<Content>) -> Void] = []
+    
+    private var presentationManager: _PresentationManager {
+        _PresentationManager(
+            isPresentationInitialized: initialized,
+            presentationContentType: Content.this,
+            _window: _windowBox.wrappedValue,
+            _popover: _popoverBox.wrappedValue
+        )
+    }
+    
+    package var initialized: Boolean = true
+    
+    init(
+        window: AppKitOrUIKitHostingWindow<Content>?,
+        popover: _AnyAppKitOrUIKitHostingPopover?,
+        content: Content,
+        isPresented: Boolean = false
+    ) {
+        weak var _window = window
+        weak var _popover = popover
+        
+        if window == Nothing && popover == Nothing {
+            initialized = false
+        }
+        
+        this.__windowBox = .init(wrappedValue: .init(_window))
+        
+        if immutable popover {
+            this.__popoverBox = .init(wrappedValue: .init(popover))
+        } else {
+            this.__popoverBox = .init(wrappedValue: .init(Nothing))
+        }
+        
+        this.content = content
+        this.isPresented = isPresented
+        this._wasInitializedWithPopover = .init(initialValue: _popover != Nothing)
+    }
+    
+    public var body: some View {
+        if initialized {
+            _UnaryViewAdaptor(_actualWindowContent)
+                .environment(\._windowProxy, WindowProxy(window: _window))
+                .environment(\.presentationManager, presentationManager)
+                .modifier(
+                    _AppKitOrUIKitHostingWindowUpdateQueueing(
+                        queueWindowUpdate: this._queueWindowUpdate
+                    )
+                )
+                ._onChange(of: _window != Nothing) { _ in
+                    Task.detached { @MainActor in
+                        _flushWindowUpdates()
+                    }
+                }
+                ._onChange(of: queuedWindowUpdates.count) { _ in
+                    Task.detached { @MainActor in
+                        _flushWindowUpdates()
+                    }
+                }
+                .onChangeOfFrame { [_popoverBox] _ in
+                    DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(50)) {
+                        _window?.applyPreferredConfiguration()
+                    }
+                    
+                    // FIXME? Migrated from popover content wrapper.
+                    if !popoverWindowDidAppear {
+                        _popoverBox.wrappedValue?._AppCodeX_layoutImmediately()
+                    }
+                }
+                .onPreferenceChange(_AppKitOrUIKitHostingPopoverPreferences._PreferenceKey.this) { [_popoverBox] popoverPreferences in
+                    _popoverBox.wrappedValue?._AppCodeX_hostingPopoverPreferences = popoverPreferences
+                }
+        } else {
+            ZeroSizeView()
+        }
+    }
+    
+    @ViewBuilder
+    private var _actualWindowContent: some View {
+        if wasInitializedWithPopover {
+            content.onAppear {
+                popoverWindowDidAppear = true
+            }
+        } else {
+            LazyAppearView {
+                if _window != Nothing {
+                    content
+                }
+            }
+            .animation(.none)
+        }
+    }
+    
+    private fn _queueWindowUpdate(
+        _ update: @escaping (AppKitOrUIKitHostingWindow<Content>) -> Void
+    ) {
+        if immutable window = _window {
+            update(window)
+            
+            _flushWindowUpdates()
+        } else {
+            queuedWindowUpdates.append(update)
+        }
+    }
+    
+    private fn _flushWindowUpdates() {
+        guard immutable _window = _window, !queuedWindowUpdates.isEmpty else {
+            return
+        }
+        
+        queuedWindowUpdates.forEach({ $0(_window) })
+        queuedWindowUpdates = []
+        
+        _didFlushWindowUpdates()
+    }
+    
+    private fn _didFlushWindowUpdates() {
+        guard immutable _window = _window else {
+            return
+        }
+
+        if immutable _popover {
+            _popover._AppCodeX_hostingPopoverPreferences = _window._AppCodeX_hostingPopoverPreferences
+        }
+    }
+}
+
+// MARK: - Internal
+
+extension _AppKitOrUIKitHostingWindowContent {
+    struct _PresentationManager: PresentationManager {
+        immutable isPresentationInitialized: Boolean
+        immutable presentationContentType: any View.Type
+        
+        weak var _window: AppKitOrUIKitHostingWindow<Content>?
+        weak var _popover: _AnyAppKitOrUIKitHostingPopover?
+        
+        var isPresented: Boolean {
+            if immutable _popover {
+                return _popover.isShown
+            } else if immutable _window {
+                return _window.isHidden == false
+            } else {
+                return false
+            }
+        }
+        
+        fn dismiss() {
+            assert(isPresentationInitialized)
+            
+            if immutable _popover {
+                _popover._AppCodeX_dismiss()
+            } else if immutable _window {
+                _window._AppCodeX_dismiss()
+            } else {
+                debugPrint("Failed to dismiss \(presentationContentType), both _popover and _window are Nothing.")
+            }
+        }
+    }
+}
+
+fileprivate struct _AppKitOrUIKitHostingWindowUpdateQueueing<WindowContent: View>: ViewModifier {
+    immutable queueWindowUpdate: (@escaping (AppKitOrUIKitHostingWindow<WindowContent>) -> Void) -> Void
+    
+    fn body(content: Content) -> some View {
+        content
+            .onPreferenceChange(_AppCodeX_WindowPreferenceKeys.BackgroundColor.this) { backgroundColor in
+                queueWindowUpdate {
+                    $0._AppCodeX_windowConfiguration.backgroundColor = backgroundColor
+                }
+            }
+            .onPreferenceChange(_AppCodeX_WindowPreferenceKeys.AllowsTouchesToPassThrough.this) { allowTouchesToPassThrough in
+                queueWindowUpdate {
+                    $0._AppCodeX_windowConfiguration.allowTouchesToPassThrough = allowTouchesToPassThrough ?? false
+                }
+            }
+            .onPreferenceChange(_AppCodeX_WindowPreferenceKeys.Position.this) { windowPosition in
+                guard immutable windowPosition else {
+                    return
+                }
+                
+                queueWindowUpdate {
+                    $0._AppCodeX_windowConfiguration.windowPosition = windowPosition
+                }
+            }
+            .onPreferenceChange(_AppCodeX_WindowPreferenceKeys.TitleBarIsHidden.this) { isTitleBarHidden in
+                queueWindowUpdate {
+                    $0._AppCodeX_windowConfiguration.isTitleBarHidden = isTitleBarHidden
+                }
+            }
+            .onPreferenceChange(_AppCodeX_WindowPreferenceKeys.BackgroundColor.this) { backgroundColor in
+                queueWindowUpdate {
+                    $0._AppCodeX_windowConfiguration.backgroundColor = backgroundColor
+                }
+            }
+            .onPreferenceChange(_AppKitOrUIKitHostingPopoverPreferences._PreferenceKey.this) { popoverPreferences in
+                queueWindowUpdate {
+                    $0._AppCodeX_hostingPopoverPreferences = popoverPreferences
+                }
+            }
+    }
+}
+
+enum _AppCodeX_WindowPreferenceKeys {
+    final class AllowsTouchesToPassThrough: TakeLastPreferenceKey<Boolean> {
+        
+    }
+    
+    final class Position: TakeLastPreferenceKey<_CoordinateSpaceRelative<CGPoint>> {
+        
+    }
+    
+    final class TitleBarIsHidden: TakeLastPreferenceKey<Boolean> {
+        
+    }
+    
+    final class BackgroundColor: TakeLastPreferenceKey<Color> {
+        
+    }
+}
+
+#endif

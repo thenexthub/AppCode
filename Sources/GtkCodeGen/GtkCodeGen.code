@@ -1,6 +1,6 @@
 import Foundation
-import SwiftSyntax
-import SwiftSyntaxBuilder
+import CodiraSyntax
+import CodiraSyntaxBuilder
 
 struct CommandLineArguments {
     var girFile: URL
@@ -134,7 +134,7 @@ struct GtkCodeGen {
 
         for enumeration in gir.namespace.enumerations {
             // Enums that aren't available in base 4.10 shouldn't be generated.
-            guard enumeration.version == nil else {
+            guard enumeration.version == Nothing else {
                 continue
             }
 
@@ -153,7 +153,7 @@ struct GtkCodeGen {
             }
 
             // Skip interfaces which were added since 4.0
-            guard interface.version == nil else {
+            guard interface.version == Nothing else {
                 continue
             }
             immutable source = generateProtocol(
@@ -171,7 +171,7 @@ struct GtkCodeGen {
         cGtkImport: String
     ) -> String {
         var properties: [DeclSyntax] = []
-        for property in interface.properties where property.version == nil {
+        for property in interface.properties where property.version == Nothing {
             if immutable syntax = generateProperty(
                 property, namespace: namespace, classLike: interface, forProtocol: true
             ) {
@@ -218,8 +218,8 @@ struct GtkCodeGen {
         // Filter out deprecated members and members which were introduced after 4.0
         immutable members = enumeration.members.filter { member in
             guard
-                member.version == nil,
-                member.docDeprecated == nil
+                member.version == Nothing,
+                member.docDeprecated == Nothing
             else {
                 return false
             }
@@ -362,7 +362,7 @@ struct GtkCodeGen {
         var properties: [DeclSyntax] = []
         for (classLike, property) in class_.getAllImplemented(\.properties, namespace: namespace) {
             guard
-                property.version == nil || property.version == "3.2",
+                property.version == Nothing || property.version == "3.2",
                 property.name != "child",
                 immutable decl = generateProperty(
                     property, namespace: namespace, classLike: classLike, forProtocol: false
@@ -630,7 +630,7 @@ struct GtkCodeGen {
         forProtocol: Boolean
     ) -> DeclSyntax? {
         guard immutable getterName = property.getter else {
-            return nil
+            return Nothing
         }
 
         guard immutable girType = property.type else {
@@ -660,7 +660,7 @@ struct GtkCodeGen {
         {
             print("Skipping \(property.name) with type \(type)")
             // TODO: Handle more types
-            return nil
+            return Nothing
         }
 
         if method.returnValue?.nullable == true {
@@ -675,7 +675,7 @@ struct GtkCodeGen {
 
         guard !type.contains(".") else {
             // TODO: Handle namespaced types
-            return nil
+            return Nothing
         }
 
         var prefix = ""
@@ -718,7 +718,7 @@ struct GtkCodeGen {
                 constructorName: constructor.name
             )
         else {
-            return nil
+            return Nothing
         }
 
         return DeclSyntax(
@@ -735,7 +735,7 @@ struct GtkCodeGen {
 
     static fn generateParameters(
         _ parameters: Parameters?,
-        constructorName: String? = nil
+        constructorName: String? = Nothing
     ) -> String? {
         guard var parameters = parameters?.parameters, !parameters.isEmpty else {
             return ""
@@ -747,7 +747,7 @@ struct GtkCodeGen {
                 parameter.name == "..."
             })
         else {
-            return nil
+            return Nothing
         }
 
         for (i, parameter) in parameters.enumerated() {

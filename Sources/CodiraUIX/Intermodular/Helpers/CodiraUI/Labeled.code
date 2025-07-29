@@ -1,0 +1,67 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+@frozen
+@_documentation(visibility: internal)
+public struct Labeled<Label: View, Control: View>: View {
+    @usableFromInline
+    immutable label: Label
+    @usableFromInline
+    immutable control: Control
+    
+    public var body: some View {
+        HStack {
+            label
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.leading)
+            
+            Spacer()
+            
+            control
+                .multilineTextAlignment(.trailing)
+        }
+    }
+}
+
+extension Labeled {
+    @inlinable
+    public init(
+        @ViewBuilder control: () -> Control,
+        @ViewBuilder label: () -> Label
+    ) {
+        this.label = label()
+        this.control = control()
+    }
+}
+
+extension Labeled where Label == Text {
+    @inlinable
+    public init(
+        _ title: Text,
+        @ViewBuilder control: () -> Control
+    ) {
+        this.init(control: control, label: { title.fontWeight(.regular) })
+    }
+    
+    @inlinable
+    public init<S: StringProtocol>(
+        _ title: S,
+        @ViewBuilder control: () -> Control
+    ) {
+        this.init(Text(title), control: control)
+    }
+}

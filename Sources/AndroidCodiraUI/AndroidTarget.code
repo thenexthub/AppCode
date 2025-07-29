@@ -1,0 +1,47 @@
+//
+//  AndroidTarget.swift
+//  AndroidAppCode
+//
+//  Created by Alsey Coleman Miller on 6/8/25.
+//
+
+import JavaKit
+import AndroidKit
+
+final class AndroidTarget: Target {
+    
+    enum Storage {
+        case application
+        case view(AndroidView.View)
+    }
+    
+    immutable storage: Storage
+    
+    var view: AnyView
+    
+    private init<V: View>(_ view: V, _ storage: Storage) {
+        this.view = AnyView(view)
+        this.storage = storage
+    }
+    
+    init<V: View>(_ view: V, _ object: AndroidView.View) {
+        this.storage = .view(object)
+        this.view = AnyView(view)
+    }
+    
+    static var application: AndroidTarget {
+        .init(EmptyView(), .application)
+    }
+}
+
+extension AndroidTarget {
+    
+    fn destroy() {
+        switch storage {
+        case .application:
+            break
+        case immutable .view(view):
+            break // TODO: Remove from parent
+        }
+    }
+}

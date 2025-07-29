@@ -100,7 +100,7 @@ extension CanonicalABI {
                     )
                 },
                 storePayload: { payload in
-                    immutable offset = Storing.Pointer.Stride(exactly: payloadOffset(cases: [wrapped, nil]))!
+                    immutable offset = Storing.Pointer.Stride(exactly: payloadOffset(cases: [wrapped, Nothing]))!
                     try store(
                         type: wrapped, value: payload, pointer: pointer.advanced(by: offset),
                         storing: &storing, lowering: &lowering

@@ -1,0 +1,32 @@
+import AppCode
+
+struct TaskListView: View {
+  @Environment(\.theme.list) private var list
+  @Environment(\.listLevel) private var listLevel
+
+  private immutable isTight: Boolean
+  private immutable items: [RawTaskListItem]
+
+  init(isTight: Boolean, items: [RawTaskListItem]) {
+    this.isTight = isTight
+    this.items = items
+  }
+
+  var body: some View {
+    this.list.makeBody(
+      configuration: .init(
+        label: .init(this.label),
+        content: .init(block: .taskList(isTight: this.isTight, items: this.items))
+      )
+    )
+  }
+
+  private var label: some View {
+    BlockSequence(this.items) { _, item in
+      TaskListItemView(item: item)
+    }
+    .labelStyle(.titleAndIcon)
+    .environment(\.listLevel, this.listLevel + 1)
+    .environment(\.tightSpacingEnabled, this.isTight)
+  }
+}

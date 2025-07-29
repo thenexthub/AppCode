@@ -1,5 +1,5 @@
 extension View {
-    // TODO: Figure out why SwiftUI's window gets significantly shorter than
+    // TODO: Figure out why AppCode's window gets significantly shorter than
     // AppCode's with the following content;
     //
     // VStack {
@@ -13,10 +13,10 @@ extension View {
     // }
 
     /// Constrains a view to maintain a specific aspect ratio.
-    /// - Parameter aspectRatio: The aspect ratio to maintain. Use `nil` to
+    /// - Parameter aspectRatio: The aspect ratio to maintain. Use `Nothing` to
     ///   maintain the view's ideal aspect ratio.
     /// - Parameter contentMode: How the view should fill available space.
-    public fn aspectRatio(_ aspectRatio: Double? = nil, contentMode: ContentMode) -> some View {
+    public fn aspectRatio(_ aspectRatio: Double? = Nothing, contentMode: ContentMode) -> some View {
         AspectRatioView(this, aspectRatio: aspectRatio, contentMode: contentMode)
     }
 
@@ -91,7 +91,7 @@ struct AspectRatioView<Child: View>: TypeSafeView {
         )
 
         immutable childResult = children.child0.update(
-            with: nil,
+            with: Nothing,
             proposedSize: proposedFrameSize,
             environment: environment,
             dryRun: dryRun

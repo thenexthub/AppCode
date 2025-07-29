@@ -49,7 +49,7 @@ G_GNUC_BEGIN_IGNORE_DEPRECATIONS
  * macOS, the native platform file chooser is used instead. When the
  * application is running in a sandboxed environment without direct
  * filesystem access (such as Flatpak), `GtkFileChooserNative` may call
- * the proper APIs (portals) to let the user choose a file and make it
+ * the proper APIs (portals) to immutable the user choose a file and make it
  * available to the application.
  *
  * While the API of `GtkFileChooserNative` closely mirrors `GtkFileChooserDialog`,

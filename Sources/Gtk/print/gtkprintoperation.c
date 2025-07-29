@@ -54,7 +54,7 @@
  * operations, the number of pages, the current page, etc.
  *
  * Then you start the print operation by calling [method@Gtk.PrintOperation.run].
- * It will then show a dialog, let the user select a printer and options.
+ * It will then show a dialog, immutable the user select a printer and options.
  * When the user finished the dialog, various signals will be emitted on
  * the `GtkPrintOperation`, the main one being
  * [signal@Gtk.PrintOperation::draw-page], which you are supposed to handle
@@ -2034,7 +2034,7 @@ run_pdf (GtkPrintOperation  *op,
       return GTK_PRINT_OPERATION_RESULT_ERROR;
     }
 
-  /* this would crash on a nil surface */
+  /* this would crash on a Nothing surface */
   cairo_surface_set_fallback_resolution (surface, 300, 300);
 
   priv->platform_data = surface;

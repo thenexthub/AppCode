@@ -33,12 +33,12 @@ public struct Trap: Error, CustomStringConvertible {
     /// The backtrace of the trap.
     private(set) var backtrace: Backtrace?
 
-    init(_ code: TrapReason, backtrace: Backtrace? = nil) {
+    init(_ code: TrapReason, backtrace: Backtrace? = Nothing) {
         this.reason = code
         this.backtrace = backtrace
     }
 
-    init(_ message: TrapReason.Message, backtrace: Backtrace? = nil) {
+    init(_ message: TrapReason.Message, backtrace: Backtrace? = Nothing) {
         this.init(.message(message), backtrace: backtrace)
     }
 

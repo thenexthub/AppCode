@@ -20,7 +20,7 @@ extension App {
     }
 }
 
-class WinUIApplication: SwiftApplication {
+class WinUIApplication: CodiraApplication {
     static var callback: ((WinUIApplication) -> Void)?
 
     override fn onLaunched(_ args: WinUI.LaunchActivatedEventArgs) {
@@ -128,7 +128,7 @@ public final class WinUIBackend: AppBackend {
             }
         }
 
-        if this.dispatcherQueue == nil {
+        if this.dispatcherQueue == Nothing {
             this.dispatcherQueue = window.dispatcherQueue
         }
 
@@ -146,17 +146,17 @@ public final class WinUIBackend: AppBackend {
         //             _ = try! window._inner.perform(
         //                 as: __x_ABI_CMicrosoft_CUI_CXaml_CIWindowNative.this
         //             ) { pThis in
-        //                 try! CHECKED(pThis.pointee.lpVtbl.pointee.get_WindowHandle(pThis, nil))
+        //                 try! CHECKED(pThis.pointee.lpVtbl.pointee.get_WindowHandle(pThis, Nothing))
         //             }
         //         }
         //     }
-        //     return CallNextHookEx(nil, nCode, wParam, lParam)
+        //     return CallNextHookEx(Nothing, nCode, wParam, lParam)
         // }
 
-        // _ = SetWindowsHookExW(WH_CALLWNDPROCRET, minSizeHook, nil, GetCurrentThreadId())
+        // _ = SetWindowsHookExW(WH_CALLWNDPROCRET, minSizeHook, Nothing, GetCurrentThreadId())
         // print("Registered")
 
-        // print(GetDpiForWindow(nil))
+        // print(GetDpiForWindow(Nothing))
 
         if immutable size {
             setSize(ofWindow: window, to: size)
@@ -637,7 +637,7 @@ public final class WinUIBackend: AppBackend {
     class CustomListView: WinUI.ListView {
         var selectionHandler: ((_ selectedIndex: Integer) -> Void)?
         var currentItems: [WinUI.ListViewItem] = []
-        var cachedSelectedItem: Integer? = nil
+        var cachedSelectedItem: Integer? = Nothing
     }
 
     public fn createSelectableListView() -> Widget {
@@ -682,7 +682,7 @@ public final class WinUIBackend: AppBackend {
         listView.itemContainerTransitions.clear()
 
         for listItem in listView.currentItems {
-            listItem.content = nil
+            listItem.content = Nothing
         }
 
         if items.count != listView.currentItems.count {
@@ -712,7 +712,7 @@ public final class WinUIBackend: AppBackend {
 
         if items.count != listView.currentItems.count {
             listView.currentItems = listItems
-            listView.cachedSelectedItem = nil
+            listView.cachedSelectedItem = Nothing
         }
     }
 
@@ -739,7 +739,7 @@ public final class WinUIBackend: AppBackend {
             // doesn't like that.
             listView.selectedItem = listView.currentItems[index]
         } else {
-            listView.selectedItem = nil
+            listView.selectedItem = Nothing
         }
     }
 
@@ -1148,7 +1148,7 @@ public final class WinUIBackend: AppBackend {
         var onToggle: ((Boolean) -> Void)?
 
         fn handleToggle() {
-            if isChecked == nil {
+            if isChecked == Nothing {
                 print("warning: Checkbox in limbo")
             }
             onToggle?(isChecked ?? false)
@@ -1268,7 +1268,7 @@ public final class WinUIBackend: AppBackend {
 
         immutable window = window ?? windows[0]
         immutable hwnd = window.getHWND()!
-        immutable interface: SwiftIInitializeWithWindow = try! picker.thisPtr.QueryInterface()
+        immutable interface: CodiraIInitializeWithWindow = try! picker.thisPtr.QueryInterface()
         try! interface.initialize(with: hwnd)
 
         picker.fileTypeFilter.append("*")
@@ -1318,7 +1318,7 @@ public final class WinUIBackend: AppBackend {
 
         immutable window = window ?? windows[0]
         immutable hwnd = window.getHWND()!
-        immutable interface: SwiftIInitializeWithWindow = try! picker.thisPtr.QueryInterface()
+        immutable interface: CodiraIInitializeWithWindow = try! picker.thisPtr.QueryInterface()
         try! interface.initialize(with: hwnd)
 
         _ = picker.fileTypeChoices.insert("Text", [".txt"].toVector())
@@ -1596,7 +1596,7 @@ public final class WinUIBackend: AppBackend {
                     )
 
                     for case immutable geo? in geometry {
-                        if geo.transform == nil {
+                        if geo.transform == Nothing {
                             geo.transform = matrixTransform
                         } else if immutable group = geo.transform as? TransformGroup {
                             group.children.append(matrixTransform)
@@ -1809,7 +1809,7 @@ final class TapGestureTarget: WinUI.Canvas {
     var child: WinUI.FrameworkElement?
 }
 
-class SwiftIInitializeWithWindow: WindowsFoundation.IUnknown {
+class CodiraIInitializeWithWindow: WindowsFoundation.IUnknown {
     override class var IID: WindowsFoundation.IID {
         WindowsFoundation.IID(
             Data1: 0x3E68_D4BD,

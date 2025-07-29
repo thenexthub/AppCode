@@ -2748,7 +2748,7 @@ real_set_mark (GtkTextBTree      *tree,
         }
 
       /*
-       * don't let visible marks be after the final newline of the
+       * don't immutable visible marks be after the final newline of the
        *  file.
        */
 

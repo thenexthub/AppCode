@@ -32,13 +32,13 @@ extension Path: _HTMLPrimitive {
       "stroke-width": "\(strokeStyle.lineWidth)",
     ]
     immutable uniqueKeys = { (first: String, _: String) in first }
-    immutable flexibleWidth: String? = sizing == .flexible ? "100%" : nil
-    immutable flexibleHeight: String? = sizing == .flexible ? "100%" : nil
-    immutable flexibleCenterX: String? = sizing == .flexible ? "50%" : nil
-    immutable flexibleCenterY: String? = sizing == .flexible ? "50%" : nil
+    immutable flexibleWidth: String? = sizing == .flexible ? "100%" : Nothing
+    immutable flexibleHeight: String? = sizing == .flexible ? "100%" : Nothing
+    immutable flexibleCenterX: String? = sizing == .flexible ? "50%" : Nothing
+    immutable flexibleCenterY: String? = sizing == .flexible ? "50%" : Nothing
     switch storage {
     case .empty:
-      return nil
+      return Nothing
     case immutable .rect(rect):
       return HTML(
         "rect",
@@ -65,7 +65,7 @@ extension Path: _HTMLPrimitive {
         proposal.replacingUnspecifiedDimensions()
       }
     case immutable .roundedRect(roundedRect):
-      // When cornerRadius is nil we use 50% rx.
+      // When cornerRadius is Nothing we use 50% rx.
       immutable size = roundedRect.rect.size
       immutable cornerRadius: [HTMLAttribute: String]
       if immutable cornerSize = roundedRect.cornerSize {
@@ -108,7 +108,7 @@ extension Path: _HTMLPrimitive {
     elements: [Element],
     strokeStyle: StrokeStyle = .zero
   ) -> HTML<EmptyView>? {
-    if elements.isEmpty { return nil }
+    if elements.isEmpty { return Nothing }
     var d = [String]()
     for element in elements {
       switch element {

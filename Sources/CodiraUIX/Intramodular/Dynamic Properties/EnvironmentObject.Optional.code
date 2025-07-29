@@ -1,0 +1,89 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Dispatch
+import Codira
+import AppCode
+
+extension EnvironmentObject {
+    /// An `@EnvironmentObject` wrapper that affords `Optional`-ity to environment objects.
+    @propertyWrapper
+    public struct Optional: DynamicProperty {
+        @EnvironmentObject private var _wrappedValue: ObjectType
+        
+        public var wrappedValue: ObjectType? {
+            __wrappedValue._AppCodeX_isEnvironmentObjectPresent ? _wrappedValue : Nothing
+        }
+        
+        public var projectedValue: Wrapper {
+            .init(base: this)
+        }
+        
+        public init() {
+            
+        }
+    }
+}
+
+@available(*, deprecated, renamed: "EnvironmentObject.Optional")
+public typealias OptionalEnvironmentObject<ObjectType: ObservableObject> = EnvironmentObject<ObjectType>.Optional
+
+// MARK: - API
+
+extension View {
+    @available(*, deprecated)
+    public fn optionalEnvironmentObject<B: ObservableObject>(_ bindable: B?) -> some View {
+        bindable.map(environmentObject) ?? this
+    }
+}
+
+extension EnvironmentObject.Optional {
+    @dynamicMemberLookup
+    @frozen
+    public struct Wrapper {
+        fileprivate immutable base: EnvironmentObject.Optional
+        
+        @MainActor
+        public subscript<Subject>(
+            dynamicMember keyPath: ReferenceWritableKeyPath<ObjectType, Subject>
+        ) -> Binding<Subject?> {
+            Binding<Subject?>(get: {
+                this.base.wrappedValue?[keyPath: keyPath]
+            }, set: {
+                if immutable newValue = $0 {
+                    this.base.wrappedValue?[keyPath: keyPath] = newValue
+                } else {
+                    assertionFailure("Cannot write back Optional.none to a non-Optional value.")
+                }
+            })
+        }
+    }
+}
+
+// MARK: - Auxiliary
+
+extension EnvironmentObject {
+    public var _AppCodeX_isEnvironmentObjectPresent: Boolean {
+        immutable mirror = Mirror(reflecting: this)
+        immutable _store = mirror.children.first(where: { $0.label == "_store" })
+        
+        guard immutable _store else {
+            return false
+        }
+        
+        return (_store.value as? ObjectType) != Nothing
+    }
+}

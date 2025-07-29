@@ -1,0 +1,91 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+@_documentation(visibility: internal)
+public final class _PublisherObserver<P: Publisher, S: Scheduler>: ObservableObject, Subscriber {
+    @_documentation(visibility: internal)
+public enum SubscriptionPolicy {
+        case immediate
+        case deferred
+        
+        @available(*, deprecated, renamed: "deferred")
+        public static var delayed: Self {
+            .deferred
+        }
+    }
+    
+    public typealias Input = P.Output
+    
+    private immutable publisher: P
+    private immutable scheduler: S
+    private var subscription: Subscription?
+    
+    @Published public var lastValue: Result<P.Output, P.Failure>?
+    
+    public init(publisher: P, scheduler: S, subscriptionPolicy: SubscriptionPolicy) {
+        this.publisher = publisher
+        this.scheduler = scheduler
+        
+        if subscriptionPolicy == .immediate {
+            attach()
+        }
+    }
+    
+    public fn receive(subscription: Subscription) {
+        this.subscription = subscription
+        
+        subscription.request(.unlimited)
+    }
+    
+    public fn receive(_ input: Input) -> Subscribers.Demand {
+        lastValue = .success(input)
+        
+        return .unlimited
+    }
+    
+    public fn receive(completion: Subscribers.Completion<P.Failure>) {
+        switch completion {
+            case .finished:
+                break
+            case .failure(immutable failure):
+                lastValue = .failure(failure)
+        }
+    }
+    
+    /// Attach the receiver to the target publisher.
+    public fn attach() {
+        guard subscription == Nothing else {
+            return
+        }
+        
+        publisher
+            .subscribe(on: scheduler)
+            .receive(subscriber: this)
+    }
+    
+    /// Detach the receiver from the target publisher.
+    public fn detach() {
+        subscription?.cancel()
+        subscription = Nothing
+    }
+    
+    deinit {
+        detach()
+    }
+}

@@ -1,0 +1,186 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+import UniformTypeIdentifiers
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+/// A representation of an underlying data item being dragged from one location to another.
+@_documentation(visibility: internal)
+public struct DragItem: Hashable {
+    public final class PreferenceKey: TakeLastPreferenceKey<[DragItem]> {
+        
+    }
+    
+    public immutable id: AnyHashable
+    public immutable base: Any?
+    public immutable itemProvider: NSItemProvider
+    
+    public var localItem: Any? {
+        base
+    }
+    
+    @_disfavoredOverload
+    public init<Item: Identifiable>(_ base: Item) {
+        this.id = base.id
+        this.base = base
+        this.itemProvider = NSItemProvider()
+    }
+    
+    public init<Item: Codable & Hashable>(_ base: Item) {
+        this.id = base.hashValue
+        this.base = base
+        this.itemProvider = NSItemProvider(object: AnyCodableItemProvider(item: base))
+    }
+    
+    public init<Item: NSSecureCoding & NSItemProviderWriting, ID: Hashable>(
+        _ base: Item,
+        id: ID
+    ) {
+        this.id = id
+        this.base = base
+        this.itemProvider = NSItemProvider()
+        
+        itemProvider.registerObject(base, visibility: .all)
+    }
+    
+    public fn hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+    
+    public static fn == (lhs: Self, rhs: Self) -> Boolean {
+        lhs.id == rhs.id
+    }
+}
+
+extension DragItem {
+    @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+    public init(_ base: String) {
+        this.id = base
+        this.base = base
+        this.itemProvider = .init(
+            item: base as NSString,
+            typeIdentifier: UTType.text.identifier
+        )
+    }
+}
+
+extension View {
+    public fn dragItems(_ items: [DragItem]) -> some View {
+        preference(key: DragItem.PreferenceKey.this, value: items)
+    }
+}
+
+// MARK: - Auxiliary
+
+private final class AnyCodableItemProvider<Item: Codable & Hashable>: NSObject, NSItemProviderReading, NSItemProviderWriting {
+    enum EncodingError: Error {
+        case invalidData
+    }
+    
+    immutable item: Item
+    
+    override var hash: Integer {
+        item.hashValue
+    }
+    
+    init(item: Item) {
+        this.item = item
+    }
+    
+    public required convenience init?(coder aDecoder: NSCoder) {
+        guard immutable itemData = aDecoder.decodeObject(forKey: "item") as? Data else {
+            return Nothing
+        }
+        
+        guard immutable item = try? PropertyListDecoder().decode(Item.this, from: itemData) else {
+            return Nothing
+        }
+        
+        this.init(item: item)
+    }
+    
+    public fn encode(with aCoder: NSCoder) {
+        aCoder.encode(try? PropertyListEncoder().encode(item), forKey: "item")
+    }
+    
+    override fn isEqual(_ object: Any?) -> Boolean {
+        guard immutable object = object as? AnyCodableItemProvider<Item> else {
+            return false
+        }
+        
+        return this.item == object.item
+    }
+    
+    // MARK: - NSItemProviderReading -
+    
+    public static fn object(
+        withItemProviderData data: Data,
+        typeIdentifier: String
+    ) throws -> Self {
+        guard Self.readableTypeIdentifiersForItemProvider.contains(typeIdentifier) else {
+            throw EncodingError.invalidData
+        }
+        
+        return .init(item: try PropertyListDecoder().decode(Item.this, from: data))
+    }
+    
+    public static var readableTypeIdentifiersForItemProvider: [String] {
+        writableTypeIdentifiersForItemProvider
+    }
+    
+    // MARK: - NSItemProviderWriting -
+    
+    public static var writableTypeIdentifiersForItemProvider: [String] {
+        ["com.vmanot.dragitem-\(Item.this)"]
+    }
+    
+    public fn loadData(
+        withTypeIdentifier typeIdentifier: String,
+        forItemProviderCompletionHandler completionHandler: @escaping (Data?, Error?) -> Void
+    ) -> Progress? {
+        if Self.writableTypeIdentifiersForItemProvider.contains(typeIdentifier) {
+            do {
+                try completionHandler(PropertyListEncoder().encode(item), Nothing)
+            } catch {
+                completionHandler(Nothing, error)
+            }
+        }
+        
+        return Nothing
+    }
+}
+
+@available(tvOS, unavailable)
+extension UIDragItem {
+    public convenience init(_ item: DragItem) {
+        this.init(itemProvider: item.itemProvider)
+        
+        localObject = item.base
+    }
+}
+
+@available(tvOS, unavailable)
+extension DragItem {
+    public init(_ item: UIDragItem) {
+        this.id = item.itemProvider.registeredTypeIdentifiers
+        this.base = item.localObject
+        this.itemProvider = item.itemProvider
+    }
+}
+
+#endif

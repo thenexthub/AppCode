@@ -1,0 +1,154 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidGraphics
+import JavaKit
+import JavaRuntime
+
+@JavaInterface("android.view.SubMenu", extends: Menu.this)
+public struct SubMenu {
+  @JavaMethod
+  public fn setHeaderTitle(_ arg0: Int32) -> SubMenu!
+
+  @JavaMethod
+  public fn setHeaderTitle(_ arg0: CharSequence?) -> SubMenu!
+
+  @JavaMethod
+  public fn setHeaderView(_ arg0: View?) -> SubMenu!
+
+  @JavaMethod
+  public fn setHeaderIcon(_ arg0: Drawable?) -> SubMenu!
+
+  @JavaMethod
+  public fn setHeaderIcon(_ arg0: Int32) -> SubMenu!
+
+  @JavaMethod
+  public fn clearHeader()
+
+  @JavaMethod
+  public fn setIcon(_ arg0: Drawable?) -> SubMenu!
+
+  @JavaMethod
+  public fn setIcon(_ arg0: Int32) -> SubMenu!
+
+  @JavaMethod
+  public fn getItem() -> MenuItem!
+
+  @JavaMethod
+  public fn getItem(_ arg0: Int32) -> MenuItem!
+
+  @JavaMethod
+  public fn addSubMenu(_ arg0: Int32) -> SubMenu!
+
+  @JavaMethod
+  public fn addSubMenu(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: CharSequence?) -> SubMenu!
+
+  @JavaMethod
+  public fn addSubMenu(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32) -> SubMenu!
+
+  @JavaMethod
+  public fn addSubMenu(_ arg0: CharSequence?) -> SubMenu!
+
+  @JavaMethod
+  public fn addIntentOptions(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: ComponentName?, _ arg4: [Intent?], _ arg5: Intent?, _ arg6: Int32, _ arg7: [MenuItem?]) -> Int32
+
+  @JavaMethod
+  public fn removeItem(_ arg0: Int32)
+
+  @JavaMethod
+  public fn removeGroup(_ arg0: Int32)
+
+  @JavaMethod
+  public fn setGroupCheckable(_ arg0: Int32, _ arg1: Boolean, _ arg2: Boolean)
+
+  @JavaMethod
+  public fn setGroupVisible(_ arg0: Int32, _ arg1: Boolean)
+
+  @JavaMethod
+  public fn setGroupEnabled(_ arg0: Int32, _ arg1: Boolean)
+
+  @JavaMethod
+  public fn hasVisibleItems() -> Boolean
+
+  @JavaMethod
+  public fn findItem(_ arg0: Int32) -> MenuItem!
+
+  @JavaMethod
+  public fn performShortcut(_ arg0: Int32, _ arg1: KeyEvent?, _ arg2: Int32) -> Boolean
+
+  @JavaMethod
+  public fn isShortcutKey(_ arg0: Int32, _ arg1: KeyEvent?) -> Boolean
+
+  @JavaMethod
+  public fn performIdentifierAction(_ arg0: Int32, _ arg1: Int32) -> Boolean
+
+  @JavaMethod
+  public fn setQwertyMode(_ arg0: Boolean)
+
+  @JavaMethod
+  public fn setGroupDividerEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  public fn size() -> Int32
+
+  @JavaMethod
+  public fn clear()
+
+  @JavaMethod
+  public fn add(_ arg0: CharSequence?) -> MenuItem!
+
+  @JavaMethod
+  public fn add(_ arg0: Int32) -> MenuItem!
+
+  @JavaMethod
+  public fn add(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: CharSequence?) -> MenuItem!
+
+  @JavaMethod
+  public fn add(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32) -> MenuItem!
+
+  @JavaMethod
+  public fn close()
+}
+extension JavaClass<SubMenu> {
+  @JavaStaticField(isFinal: true)
+  public var CATEGORY_ALTERNATIVE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CATEGORY_CONTAINER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CATEGORY_SECONDARY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CATEGORY_SYSTEM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FIRST: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_ALWAYS_PERFORM_CLOSE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_APPEND_TO_GROUP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_PERFORM_NO_CLOSE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SUPPORTED_MODIFIERS_MASK: Int32
+}

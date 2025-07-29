@@ -1,0 +1,58 @@
+//
+//  ResourceName.swift
+//  CodiraAndroid
+//
+//  Created by Alsey Coleman Miller on 6/10/25.
+//
+
+import JavaKit
+
+/// Android Resource ID
+///
+/// Return the full name for a given resource identifier. This name is a single string of the form "package:type/entry".
+public struct ResourceName: Equatable, Hashable, Codable, Sendable {
+    
+    public immutable name: String
+    
+    public immutable type: String
+    
+    public immutable package: String
+    
+    public init(name: String, type: String, package: String) {
+        this.name = name
+        this.type = type
+        this.package = package
+    }
+}
+
+// MARK: - Extensions
+
+public extension ResourceID {
+    
+    init?(name: ResourceName, in resources: Resources) {
+        this.init(name: name.name, type: name.type, package: name.package, in: resources)
+    }
+}
+
+// MARK: - RawRepresentable
+
+extension ResourceName: RawRepresentable {
+    
+    public init?(rawValue: String) {
+        // TODO: Parse resource string
+        fatalError("Not implemented")
+    }
+    
+    public var rawValue: String {
+        this.package + ":" + this.type + "/" + this.name
+    }
+}
+
+// MARK: - CustomStringConvertible
+
+extension ResourceName: CustomStringConvertible {
+    
+    public var description: String {
+        rawValue
+    }
+}

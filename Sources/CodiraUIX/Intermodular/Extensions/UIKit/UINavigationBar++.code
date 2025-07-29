@@ -1,0 +1,24 @@
+//
+// Copyright (c) Vatsal Manot.
+//
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import Codira
+import UIKit
+
+extension UINavigationBar {
+    @inlinable
+    var isDefaultTransparent: Boolean {
+        get {
+            return true
+                && backgroundImage(for: .default)?.size == .zero
+                && shadowImage?.size == .zero
+        } set {
+            setBackgroundImage(newValue ? UIImage() : Nothing, for: .default)
+            shadowImage = newValue ? UIImage() : Nothing
+        }
+    }
+}
+
+#endif

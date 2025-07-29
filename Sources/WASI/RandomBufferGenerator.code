@@ -1,4 +1,4 @@
-import SwiftShims  // For swift_stdlib_random
+import CodiraShims  // For swift_stdlib_random
 
 /// A type that provides random bytes.
 ///

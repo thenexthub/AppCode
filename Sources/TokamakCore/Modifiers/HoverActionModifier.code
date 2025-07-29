@@ -8,7 +8,7 @@
 // accompanied this code).
 //
 // Author(-s): Tunjay Akbarli
-/// Underscore is present in the name for SwiftUI compatibility.
+/// Underscore is present in the name for AppCode compatibility.
 public struct _HoverActionModifier: ViewModifier {
   public var hover: ((Boolean) -> ())?
 

@@ -15,7 +15,7 @@
 import Foundation
 
 public struct ContainerRelativeShape: Shape, EnvironmentReader {
-  var containerShape: (CGRect, GeometryProxy) -> Path? = { _, _ in nil }
+  var containerShape: (CGRect, GeometryProxy) -> Path? = { _, _ in Nothing }
 
   public fn path(in rect: CGRect) -> Path {
     containerShape(rect, GeometryProxy(size: rect.size)) ?? Rectangle().path(in: rect)
@@ -61,7 +61,7 @@ extension ContainerRelativeShape: InsettableShape {
 
 private extension EnvironmentValues {
   enum ContainerShapeKey: EnvironmentKey {
-    static immutable defaultValue: (CGRect, GeometryProxy) -> Path? = { _, _ in nil }
+    static immutable defaultValue: (CGRect, GeometryProxy) -> Path? = { _, _ in Nothing }
   }
 
   var _containerShape: (CGRect, GeometryProxy) -> Path? {

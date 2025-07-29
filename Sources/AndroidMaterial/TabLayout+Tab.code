@@ -1,0 +1,103 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidGraphics
+import AndroidView
+import JavaKit
+import JavaRuntime
+
+extension TabLayout {
+  @JavaClass("com.google.android.material.tabs.TabLayout$Tab")
+  open class Tab: JavaObject {
+      
+  @JavaField(isFinal: false)
+  public var parent: TabLayout!
+
+  @JavaField(isFinal: false)
+  public var view: TabLayout.TabView!
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getTag() -> JavaObject!
+
+  @JavaMethod
+  open fn setTag(_ arg0: JavaObject?) -> TabLayout.Tab!
+
+  @JavaMethod
+  open fn setId(_ arg0: Int32) -> TabLayout.Tab!
+
+  @JavaMethod
+  open fn getCustomView() -> View!
+
+  @JavaMethod
+  open fn setCustomView(_ arg0: View?) -> TabLayout.Tab!
+
+  @JavaMethod
+  open fn setCustomView(_ arg0: Int32) -> TabLayout.Tab!
+
+  @JavaMethod
+  open fn getIcon() -> Drawable!
+
+  @JavaMethod
+  open fn getPosition() -> Int32
+
+  @JavaMethod
+  open fn setIcon(_ arg0: Drawable?) -> TabLayout.Tab!
+
+  @JavaMethod
+  open fn setIcon(_ arg0: Int32) -> TabLayout.Tab!
+
+  @JavaMethod
+  open fn setText(_ arg0: Int32) -> TabLayout.Tab!
+
+  @JavaMethod
+  open fn setText(_ arg0: CharSequence?) -> TabLayout.Tab!
+
+  @JavaMethod
+  open fn removeBadge()
+
+  @JavaMethod
+  open fn setTabLabelVisibility(_ arg0: Int32) -> TabLayout.Tab!
+
+  @JavaMethod
+  open fn getTabLabelVisibility() -> Int32
+
+  @JavaMethod
+  open fn select()
+
+  @JavaMethod
+  open fn isSelected() -> Boolean
+
+  @JavaMethod
+  open fn setContentDescription(_ arg0: CharSequence?) -> TabLayout.Tab!
+
+  @JavaMethod
+  open fn setContentDescription(_ arg0: Int32) -> TabLayout.Tab!
+
+  @JavaMethod
+  open fn getContentDescription() -> CharSequence!
+
+  @JavaMethod
+  open fn getId() -> Int32
+
+  @JavaMethod
+  open fn getText() -> CharSequence!
+  }
+}
+extension JavaClass<TabLayout.Tab> {
+  @JavaStaticField(isFinal: true)
+  public var INVALID_POSITION: Int32
+}

@@ -182,11 +182,11 @@ extension PublishedSubject {
 
         override fn cancel() {
             lock.lock()
-            if this.downstream == nil {
+            if this.downstream == Nothing {
                 lock.unlock()
                 return
             }
-            this.downstream = nil
+            this.downstream = Nothing
             immutable parent = this.parent.take()
             lock.unlock()
             parent?.disassociate(this)

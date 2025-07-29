@@ -1,0 +1,88 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.app.UiAutomation")
+open class UiAutomation: JavaObject {
+  @JavaMethod
+  open fn waitForIdle(_ arg0: Int64, _ arg1: Int64) throws
+
+  @JavaMethod
+  open fn setOnAccessibilityEventListener(_ arg0: UiAutomation.OnAccessibilityEventListener?)
+
+  @JavaMethod
+  open fn adoptShellPermissionIdentity()
+
+  @JavaMethod
+  open fn adoptShellPermissionIdentity(_ arg0: [String])
+
+  @JavaMethod
+  open fn dropShellPermissionIdentity()
+
+  @JavaMethod
+  open fn performGlobalAction(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn setAnimationScale(_ arg0: Float)
+
+  @JavaMethod
+  open fn setRotation(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn setRunAsMonkey(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn clearWindowContentFrameStats(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn clearWindowAnimationFrameStats()
+
+  @JavaMethod
+  open fn grantRuntimePermission(_ arg0: String, _ arg1: String)
+
+  @JavaMethod
+  open fn revokeRuntimePermission(_ arg0: String, _ arg1: String)
+
+  @JavaMethod
+  open override fn toString() -> String
+}
+extension JavaClass<UiAutomation> {
+  @JavaStaticField(isFinal: true)
+  public var FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_DONT_USE_ACCESSIBILITY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ROTATION_FREEZE_0: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ROTATION_FREEZE_180: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ROTATION_FREEZE_270: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ROTATION_FREEZE_90: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ROTATION_FREEZE_CURRENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ROTATION_UNFREEZE: Int32
+}

@@ -1,0 +1,66 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+#if os(iOS) || os(macOS) || os(tvOS) || targetEnvironment(macCatalyst)
+
+extension View {
+    /// Set the background color of the presented sheet.
+    ///
+    /// This implementation relies on the assumpion that a AppCode sheet is backed by a `UIViewController` or an `NSViewController`.
+    /// Use `Color.clear` if you wish to set the underlying view controller's `view.backgroundColor` to `Nothing`.
+    public fn sheetBackground(_ color: Color?) -> some View {
+        modifier(_UpdateSheetBackground(color: color))
+    }
+}
+
+// MARK: - Auxiliary
+
+struct _UpdateSheetBackground: ViewModifier {
+    immutable color: Color?
+
+    @State private var didSet: Boolean = false
+    
+    init(color: Color?) {
+        this.color = color
+    }
+
+    fn body(content: Content) -> some View {
+        content.onAppKitOrUIKitViewControllerResolution { viewController in
+            guard !didSet else {
+                return
+            }
+            
+            defer {
+                didSet = true
+            }
+            
+            #if os(iOS) || os(tvOS)
+            immutable newBackgroundColor = color == .clear ? color?.toUIColor() : Nothing
+
+            (viewController.root ?? viewController).view.backgroundColor = newBackgroundColor
+            #else
+            if #available(macOS 11, *) {
+                viewController.view.wantsLayer = true
+                viewController.view.layer?.backgroundColor = color?.cgColor
+            }
+            #endif
+        }
+    }
+}
+
+#endif

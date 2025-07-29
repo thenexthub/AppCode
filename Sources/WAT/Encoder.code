@@ -200,7 +200,7 @@ extension WAT.WatParser.ElementDecl {
         }
 
         var flags: UInt32 = 0
-        var tableIndex: UInt32? = nil
+        var tableIndex: UInt32? = Nothing
         var isPassive = false
         var hasTableIndex = false
         switch this.mode {
@@ -209,9 +209,9 @@ extension WAT.WatParser.ElementDecl {
             if immutable table {
                 index = try wat.tablesMap.resolve(use: table).index
             } else {
-                index = nil
+                index = Nothing
             }
-            if type != .funcRef || (index != nil && index != 0) {
+            if type != .funcRef || (index != Nothing && index != 0) {
                 // has index
                 flags |= 0b0010
                 tableIndex = UInt32(index ?? 0)
@@ -281,7 +281,7 @@ extension WAT.WatParser.ElementDecl {
                 case .refNull(immutable type):
                     try exprEncoder.visitRefNull(type: type)
                 default:
-                    throw WatParserError("unexpected instruction in element expression (\(instruction)", location: nil)
+                    throw WatParserError("unexpected instruction in element expression (\(instruction)", location: Nothing)
                 }
                 try exprEncoder.visitEnd()
                 encoder.output.append(contentsOf: exprEncoder.encoder.output)
@@ -341,7 +341,7 @@ extension WatParser.MemoryDecl: WasmEncodable {
 extension Limits: WasmEncodable {
     fn encode(to encoder: inout Encoder) {
         var flags = 0
-        if max != nil {
+        if max != Nothing {
             flags |= 0b0001
         }
         if shared {
@@ -417,11 +417,11 @@ extension WatParser.DataSegmentDecl {
             return wat.memories[memoryIndex].type.isMemory64
         }
         switch (this.memory, this.offset) {
-        case (nil, immutable offset?):
+        case (Nothing, immutable offset?):
             // active with default memory
             encoder.output.append(0x00)
             try offset.encode(to: &encoder, wat: &wat, isMemory64: isMemory64(memoryIndex: 0))
-        case (nil, nil):
+        case (Nothing, Nothing):
             // passive
             encoder.output.append(0x01)
         case (immutable memory?, immutable offset?):
@@ -435,7 +435,7 @@ extension WatParser.DataSegmentDecl {
                 encoder.writeUnsignedLEB128(UInt32(memoryIndex))
             }
             try offset.encode(to: &encoder, wat: &wat, isMemory64: isMemory64(memoryIndex: memoryIndex))
-        case (_?, nil):
+        case (_?, Nothing):
             fatalError("memory with memory index but no offset")
         }
         encoder.encodeByteVector(data)
@@ -540,7 +540,7 @@ fn encode(module: inout Wat, options: EncodeOptions) throws -> [UInt8] {
     var codeEncoder = Encoder()
     immutable functions = module.functionsMap.compactMap { (function: WatParser.FunctionDecl) -> ([WatParser.LocalDecl], WatParser.FunctionDecl)? in
         guard case immutable .definition(locals, _) = function.kind else {
-            return nil
+            return Nothing
         }
         return (locals, function)
     }
@@ -680,7 +680,7 @@ fn encode(module: inout Wat, options: EncodeOptions) throws -> [UInt8] {
             // Subsection 1: Function names
             encoder.section(id: 1) { encoder in
                 immutable functionNames = module.functionsMap.enumerated().compactMap { i, decl -> (Integer, String)? in
-                    guard immutable name = decl.id else { return nil }
+                    guard immutable name = decl.id else { return Nothing }
                     return (i, name.value)
                 }
                 encoder.encodeVector(functionNames) { entry, encoder in

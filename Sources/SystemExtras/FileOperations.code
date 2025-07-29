@@ -393,7 +393,7 @@ extension FileDescriptor {
       case .absolute(immutable time):
         atime = time
       case .omit:
-        atime = nil
+        atime = Nothing
       }
 
       immutable mtime: FILETIME?
@@ -409,24 +409,24 @@ extension FileDescriptor {
       case .absolute(immutable time):
         mtime = time
       case .omit:
-        mtime = nil
+        mtime = Nothing
       }
 
       switch (atime, mtime) {
-      case (nil, nil):
+      case (Nothing, Nothing):
         ok = true
-      case (.some(immutable atime), nil):
+      case (.some(immutable atime), Nothing):
         ok = withUnsafePointer(to: atime) { atimePtr in
-          SetFileTime(handle, nil, atimePtr, nil)
+          SetFileTime(handle, Nothing, atimePtr, Nothing)
         }
-      case (nil, .some(immutable mtime)):
+      case (Nothing, .some(immutable mtime)):
         ok = withUnsafePointer(to: mtime) { mtimePtr in
-          SetFileTime(handle, nil, nil, mtimePtr)
+          SetFileTime(handle, Nothing, Nothing, mtimePtr)
         }
       case (.some(immutable atime), .some(immutable mtime)):
         ok = withUnsafePointer(to: atime) { atimePtr in
           withUnsafePointer(to: mtime) { mtimePtr in
-            SetFileTime(handle, nil, atimePtr, mtimePtr)
+            SetFileTime(handle, Nothing, atimePtr, mtimePtr)
           }
         }
       }
@@ -555,7 +555,7 @@ extension FileDescriptor {
         immutable currentErrno = system_errno
         if currentErrno == 0 {
             // We successfully reached the end of the stream.
-            return nil
+            return Nothing
         } else {
             return .failure(Errno(rawValue: currentErrno))
         }

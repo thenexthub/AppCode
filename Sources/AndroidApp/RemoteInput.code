@@ -1,0 +1,72 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.app.RemoteInput")
+open class RemoteInput: JavaObject {
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn getResultKey() -> String
+
+  @JavaMethod
+  open fn getChoices() -> [CharSequence?]
+
+  @JavaMethod
+  open fn getAllowedDataTypes() -> JavaSet<JavaString>!
+
+  @JavaMethod
+  open fn isDataOnly() -> Boolean
+
+  @JavaMethod
+  open fn getAllowFreeFormInput() -> Boolean
+
+  @JavaMethod
+  open fn getEditChoicesBeforeSending() -> Int32
+
+  @JavaMethod
+  open fn getLabel() -> CharSequence!
+}
+extension JavaClass<RemoteInput> {
+  @JavaStaticField(isFinal: true)
+  public var EDIT_CHOICES_BEFORE_SENDING_AUTO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var EDIT_CHOICES_BEFORE_SENDING_DISABLED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var EDIT_CHOICES_BEFORE_SENDING_ENABLED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_RESULTS_DATA: String
+
+  @JavaStaticField(isFinal: true)
+  public var RESULTS_CLIP_LABEL: String
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_CHOICE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_FREE_FORM_INPUT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

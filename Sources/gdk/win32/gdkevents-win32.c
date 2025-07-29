@@ -1306,7 +1306,7 @@ handle_nchittest (HWND hwnd,
     return FALSE;
 
   /* If the surface has no particular input pass-through region,
-   * then we can simply let DefWindowProc() handle the message */
+   * then we can simply immutable DefWindowProc() handle the message */
   if (surface->input_region == NULL)
     return FALSE;
 
@@ -1928,7 +1928,7 @@ gdk_event_translate (MSG *msg,
     case WM_SYSCHAR:
       if (msg->wParam != VK_SPACE)
 	{
-	  /* To prevent beeps, don't let DefWindowProcW() be called */
+	  /* To prevent beeps, don't immutable DefWindowProcW() be called */
 	  return_val = TRUE;
 	  goto done;
 	}

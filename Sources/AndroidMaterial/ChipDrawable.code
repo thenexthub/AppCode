@@ -1,0 +1,455 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidGraphics
+import AndroidUtil
+import JavaKit
+import JavaKitReflection
+import JavaLang
+import JavaRuntime
+
+@JavaClass("com.google.android.material.chip.ChipDrawable", implements: Drawable.Callback.this)
+open class ChipDrawable: Drawable {
+  @JavaMethod
+  open fn isCheckable() -> Boolean
+
+  @JavaMethod
+  open fn setCheckable(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setRippleColor(_ arg0: ColorStateList?)
+
+  @JavaMethod
+  open fn setRippleColorResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getRippleColor() -> ColorStateList!
+
+  @JavaMethod
+  open fn getCheckedIcon() -> Drawable!
+
+  @JavaMethod
+  open fn setCheckedIconResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setCheckedIcon(_ arg0: Drawable?)
+
+  @JavaMethod
+  open fn getCheckedIconTint() -> ColorStateList!
+
+  @JavaMethod
+  open fn setCheckedIconTint(_ arg0: ColorStateList?)
+
+  @JavaMethod
+  open override fn setColorFilter(_ arg0: ColorFilter?)
+
+  @JavaMethod
+  open override fn setTintList(_ arg0: ColorStateList?)
+
+  @JavaMethod
+  open override fn setTintMode(_ arg0: PorterDuff.Mode?)
+
+  @JavaMethod
+  open override fn getIntrinsicWidth() -> Int32
+
+  @JavaMethod
+  open override fn getIntrinsicHeight() -> Int32
+
+  @JavaMethod
+  open override fn draw(_ arg0: Canvas?)
+
+  @JavaMethod
+  open override fn isStateful() -> Boolean
+
+  @JavaMethod
+  open override fn setVisible(_ arg0: Boolean, _ arg1: Boolean) -> Boolean
+
+  @JavaMethod
+  open fn invalidateDrawable(_ arg0: Drawable?)
+
+  @JavaMethod
+  open override fn getAlpha() -> Int32
+
+  @JavaMethod
+  open override fn setAlpha(_ arg0: Int32)
+
+  @JavaMethod
+  open fn scheduleDrawable(_ arg0: Drawable?, _ arg1: Runnable?, _ arg2: Int64)
+
+  @JavaMethod
+  open fn unscheduleDrawable(_ arg0: Drawable?, _ arg1: Runnable?)
+
+  @JavaMethod
+  open fn setText(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn setUseCompatRipple(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getUseCompatRipple() -> Boolean
+
+  @JavaMethod
+  open fn setDelegate(_ arg0: ChipDrawable.Delegate?)
+
+  @JavaMethod
+  open fn onSizeChange()
+
+  @JavaMethod
+  open fn getChipTouchBounds(_ arg0: RectF?)
+
+  @JavaMethod
+  open fn getCloseIconTouchBounds(_ arg0: RectF?)
+
+  @JavaMethod
+  open fn isCloseIconStateful() -> Boolean
+
+  @JavaMethod
+  open fn setCloseIconState(_ arg0: [Int32]) -> Boolean
+
+  @JavaMethod
+  open fn getCloseIconState() -> [Int32]
+
+  @JavaMethod
+  open fn onTextSizeChange()
+
+  @JavaMethod
+  open override fn onStateChange(_ arg0: [Int32]) -> Boolean
+
+  @JavaMethod
+  open override fn onLayoutDirectionChanged(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open override fn onLevelChange(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open override fn getColorFilter() -> ColorFilter!
+
+  @JavaMethod
+  open override fn getOpacity() -> Int32
+
+  @JavaMethod
+  open override fn getOutline(_ arg0: Outline?)
+
+  @JavaMethod
+  open fn setTextSize(_ arg0: Float)
+
+  @JavaMethod
+  open fn setTextColor(_ arg0: ColorStateList?)
+
+  @JavaMethod
+  open fn setTextColor(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getChipBackgroundColor() -> ColorStateList!
+
+  @JavaMethod
+  open fn setChipBackgroundColorResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setChipBackgroundColor(_ arg0: ColorStateList?)
+
+  @JavaMethod
+  open fn getChipMinHeight() -> Float
+
+  @JavaMethod
+  open fn setChipMinHeightResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setChipMinHeight(_ arg0: Float)
+
+  @JavaMethod
+  open fn getChipCornerRadius() -> Float
+
+  @JavaMethod
+  open fn setChipCornerRadiusResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setChipCornerRadius(_ arg0: Float)
+
+  @JavaMethod
+  open fn getChipStrokeColor() -> ColorStateList!
+
+  @JavaMethod
+  open fn setChipStrokeColorResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setChipStrokeColor(_ arg0: ColorStateList?)
+
+  @JavaMethod
+  open fn getChipStrokeWidth() -> Float
+
+  @JavaMethod
+  open fn setChipStrokeWidthResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setChipStrokeWidth(_ arg0: Float)
+
+  @JavaMethod
+  open fn setTextResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setTextAppearanceResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn isChipIconVisible() -> Boolean
+
+  @JavaMethod
+  open fn isChipIconEnabled() -> Boolean
+
+  @JavaMethod
+  open fn setChipIconVisible(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setChipIconVisible(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setChipIconEnabledResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setChipIconEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getChipIcon() -> Drawable!
+
+  @JavaMethod
+  open fn setChipIconResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setChipIcon(_ arg0: Drawable?)
+
+  @JavaMethod
+  open fn getChipIconTint() -> ColorStateList!
+
+  @JavaMethod
+  open fn setChipIconTintResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setChipIconTint(_ arg0: ColorStateList?)
+
+  @JavaMethod
+  open fn getChipIconSize() -> Float
+
+  @JavaMethod
+  open fn setChipIconSizeResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setChipIconSize(_ arg0: Float)
+
+  @JavaMethod
+  open fn isCloseIconVisible() -> Boolean
+
+  @JavaMethod
+  open fn isCloseIconEnabled() -> Boolean
+
+  @JavaMethod
+  open fn setCloseIconVisible(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setCloseIconVisible(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setCloseIconEnabledResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setCloseIconEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getCloseIcon() -> Drawable!
+
+  @JavaMethod
+  open fn setCloseIconResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setCloseIcon(_ arg0: Drawable?)
+
+  @JavaMethod
+  open fn getCloseIconTint() -> ColorStateList!
+
+  @JavaMethod
+  open fn setCloseIconTintResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setCloseIconTint(_ arg0: ColorStateList?)
+
+  @JavaMethod
+  open fn getCloseIconSize() -> Float
+
+  @JavaMethod
+  open fn setCloseIconSizeResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setCloseIconSize(_ arg0: Float)
+
+  @JavaMethod
+  open fn setCloseIconContentDescription(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn getCloseIconContentDescription() -> CharSequence!
+
+  @JavaMethod
+  open fn setCheckableResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn isCheckedIconVisible() -> Boolean
+
+  @JavaMethod
+  open fn isCheckedIconEnabled() -> Boolean
+
+  @JavaMethod
+  open fn setCheckedIconVisible(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setCheckedIconVisible(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setCheckedIconEnabledResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setCheckedIconEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setCheckedIconTintResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getShowMotionSpec() -> MotionSpec!
+
+  @JavaMethod
+  open fn setShowMotionSpecResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setShowMotionSpec(_ arg0: MotionSpec?)
+
+  @JavaMethod
+  open fn getHideMotionSpec() -> MotionSpec!
+
+  @JavaMethod
+  open fn setHideMotionSpecResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setHideMotionSpec(_ arg0: MotionSpec?)
+
+  @JavaMethod
+  open fn getChipStartPadding() -> Float
+
+  @JavaMethod
+  open fn setChipStartPaddingResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setChipStartPadding(_ arg0: Float)
+
+  @JavaMethod
+  open fn getIconStartPadding() -> Float
+
+  @JavaMethod
+  open fn setIconStartPaddingResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setIconStartPadding(_ arg0: Float)
+
+  @JavaMethod
+  open fn getIconEndPadding() -> Float
+
+  @JavaMethod
+  open fn setIconEndPaddingResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setIconEndPadding(_ arg0: Float)
+
+  @JavaMethod
+  open fn getTextStartPadding() -> Float
+
+  @JavaMethod
+  open fn setTextStartPaddingResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setTextStartPadding(_ arg0: Float)
+
+  @JavaMethod
+  open fn getTextEndPadding() -> Float
+
+  @JavaMethod
+  open fn setTextEndPaddingResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setTextEndPadding(_ arg0: Float)
+
+  @JavaMethod
+  open fn getCloseIconStartPadding() -> Float
+
+  @JavaMethod
+  open fn setCloseIconStartPaddingResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setCloseIconStartPadding(_ arg0: Float)
+
+  @JavaMethod
+  open fn getCloseIconEndPadding() -> Float
+
+  @JavaMethod
+  open fn setCloseIconEndPaddingResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setCloseIconEndPadding(_ arg0: Float)
+
+  @JavaMethod
+  open fn getChipEndPadding() -> Float
+
+  @JavaMethod
+  open fn setChipEndPaddingResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setChipEndPadding(_ arg0: Float)
+
+  @JavaMethod
+  open fn getMaxWidth() -> Int32
+
+  @JavaMethod
+  open fn setMaxWidth(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getText() -> CharSequence!
+}
+extension ChipDrawable {
+  @JavaInterface("com.google.android.material.shape.MaterialShapeDrawable$CompatibilityShadowMode", extends: Annotation.this)
+  public struct CompatibilityShadowMode {
+  @JavaMethod
+  public fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  public fn toString() -> String
+
+  @JavaMethod
+  public fn hashCode() -> Int32
+
+  @JavaMethod
+  public fn annotationType() -> JavaClass<Annotation>!
+  }
+}
+extension JavaClass<ChipDrawable> {
+  @JavaStaticField(isFinal: true)
+  public var SHADOW_COMPAT_MODE_DEFAULT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SHADOW_COMPAT_MODE_NEVER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SHADOW_COMPAT_MODE_ALWAYS: Int32
+
+  @JavaStaticMethod
+  public fn createFromAttributes(_ arg0: Context?, _ arg1: AttributeSet?, _ arg2: Int32, _ arg3: Int32) -> ChipDrawable!
+
+  @JavaStaticMethod
+  public fn createFromResource(_ arg0: Context?, _ arg1: Int32) -> ChipDrawable!
+}

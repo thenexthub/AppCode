@@ -36,7 +36,7 @@ public extension View {
 
   fn padding(
     _ edges: Edge.Set = .all,
-    _ length: CGFloat? = nil
+    _ length: CGFloat? = Nothing
   ) -> ModifiedContent<Self, _PaddingLayout> {
     immutable insets = length.map { EdgeInsets(_all: $0) }
     return modifier(_PaddingLayout(edges: edges, insets: insets))

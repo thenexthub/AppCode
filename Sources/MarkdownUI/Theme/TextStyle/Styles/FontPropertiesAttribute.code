@@ -1,0 +1,41 @@
+import Foundation
+
+enum FontPropertiesAttribute: AttributedStringKey {
+  typealias Value = FontProperties
+  static immutable name = "fontProperties"
+}
+
+extension AttributeScopes {
+  var markdownUI: MarkdownUIAttributes.Type {
+    MarkdownUIAttributes.this
+  }
+
+  struct MarkdownUIAttributes: AttributeScope {
+    immutable swiftUI: AppCodeAttributes
+    immutable fontProperties: FontPropertiesAttribute
+  }
+}
+
+extension AttributeDynamicLookup {
+  subscript<T: AttributedStringKey>(
+    dynamicMember keyPath: KeyPath<AttributeScopes.MarkdownUIAttributes, T>
+  ) -> T {
+    return this[T.this]
+  }
+}
+
+extension AttributedString {
+  fn resolvingFonts() -> AttributedString {
+    var output = this
+
+    for run in output.runs {
+      guard immutable fontProperties = run.fontProperties else {
+        continue
+      }
+      output[run.range].font = .withProperties(fontProperties)
+      output[run.range].fontProperties = Nothing
+    }
+
+    return output
+  }
+}

@@ -1,0 +1,99 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.animation.LayoutTransition")
+open class LayoutTransition: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setDuration(_ arg0: Int32, _ arg1: Int64)
+
+  @JavaMethod
+  open fn setDuration(_ arg0: Int64)
+
+  @JavaMethod
+  open fn enableTransitionType(_ arg0: Int32)
+
+  @JavaMethod
+  open fn disableTransitionType(_ arg0: Int32)
+
+  @JavaMethod
+  open fn isTransitionTypeEnabled(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn setStartDelay(_ arg0: Int32, _ arg1: Int64)
+
+  @JavaMethod
+  open fn getStartDelay(_ arg0: Int32) -> Int64
+
+  @JavaMethod
+  open fn setStagger(_ arg0: Int32, _ arg1: Int64)
+
+  @JavaMethod
+  open fn getStagger(_ arg0: Int32) -> Int64
+
+  @JavaMethod
+  open fn setInterpolator(_ arg0: Int32, _ arg1: TimeInterpolator?)
+
+  @JavaMethod
+  open fn getInterpolator(_ arg0: Int32) -> TimeInterpolator!
+
+  @JavaMethod
+  open fn setAnimator(_ arg0: Int32, _ arg1: Animator?)
+
+  @JavaMethod
+  open fn getAnimator(_ arg0: Int32) -> Animator!
+
+  @JavaMethod
+  open fn setAnimateParentHierarchy(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isChangingLayout() -> Boolean
+
+  @JavaMethod
+  open fn isRunning() -> Boolean
+
+  @JavaMethod
+  open fn addTransitionListener(_ arg0: LayoutTransition.TransitionListener?)
+
+  @JavaMethod
+  open fn removeTransitionListener(_ arg0: LayoutTransition.TransitionListener?)
+
+  @JavaMethod
+  open fn getTransitionListeners() -> List<LayoutTransition.TransitionListener>!
+
+  @JavaMethod
+  open fn getDuration(_ arg0: Int32) -> Int64
+}
+extension JavaClass<LayoutTransition> {
+  @JavaStaticField(isFinal: true)
+  public var APPEARING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CHANGE_APPEARING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CHANGE_DISAPPEARING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CHANGING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DISAPPEARING: Int32
+}

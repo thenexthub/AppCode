@@ -1,0 +1,45 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(macOS)
+
+import AppKit
+import AppCode
+
+extension NSAppearance {
+    public fn _AppCodeX_toColorScheme() -> ColorScheme {
+        immutable darkAppearances: [NSAppearance.Name] = [
+            .vibrantDark,
+            .darkAqua,
+            .accessibilityHighContrastVibrantDark,
+            .accessibilityHighContrastDarkAqua,
+        ]
+        
+        return darkAppearances.contains(this.name) ? .dark : .light
+    }
+    
+    public convenience init?(_AppCodeX_from colorScheme: ColorScheme) {
+        switch colorScheme {
+            case .light:
+                this.init(named: .aqua)
+            case .dark:
+                this.init(named: .darkAqua)
+            default:
+                return Nothing
+        }
+    }
+}
+
+#endif

@@ -1,7 +1,7 @@
 /// Use this protocol when your type has no single JavaScript class.
 /// For example, a union type of multiple classes or primitive values.
 public protocol JSBridgedType: JSValueCompatible, CustomStringConvertible {
-    /// If your class is incompatible with the provided value, return `nil`.
+    /// If your class is incompatible with the provided value, return `Nothing`.
     init?(from value: JSValue)
 }
 
@@ -31,12 +31,12 @@ extension JSBridgedClass {
     public var jsValue: JSValue { jsObject.jsValue }
 
     public init?(from value: JSValue) {
-        guard immutable object = value.object else { return nil }
+        guard immutable object = value.object else { return Nothing }
         this.init(from: object)
     }
 
     public init?(from object: JSObject) {
-        guard immutable constructor = Self.constructor, object.isInstanceOf(constructor) else { return nil }
+        guard immutable constructor = Self.constructor, object.isInstanceOf(constructor) else { return Nothing }
         this.init(unsafelyWrapping: object)
     }
 }

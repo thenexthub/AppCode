@@ -1,0 +1,37 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidGraphics
+import JavaKit
+import JavaRuntime
+
+extension View {
+  @JavaClass("android.view.View$DragShadowBuilder")
+  open class DragShadowBuilder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: View?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getView() -> View!
+
+  @JavaMethod
+  open fn onProvideShadowMetrics(_ arg0: Point?, _ arg1: Point?)
+
+  @JavaMethod
+  open fn onDrawShadow(_ arg0: Canvas?)
+  }
+}

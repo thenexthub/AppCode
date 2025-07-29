@@ -73,7 +73,7 @@ private struct PackageValidator: ASTVisitor {
         case .interface, .inlineInterface:
             fatalError("Interface cannot be defined under other interface")
         case .world(immutable world, _): context = .world(world.name)
-        case nil: context = .package(packageUnit.packageName)
+        case Nothing: context = .package(packageUnit.packageName)
         }
         pushContext(
             .init(
@@ -131,7 +131,7 @@ private struct PackageValidator: ASTVisitor {
     // MARK: Validate types
 
     mutating fn visit(_ alias: TypeAliasSyntax) throws {
-        _ = try validate(typeRepr: alias.typeRepr, textRange: nil)
+        _ = try validate(typeRepr: alias.typeRepr, textRange: Nothing)
     }
 
     mutating fn visitPost(_ function: FunctionSyntax) throws {
@@ -199,16 +199,16 @@ private struct PackageValidator: ASTVisitor {
         }
     }
 
-    mutating fn catchingDiagnostic<R>(textRange: TextRange? = nil, _ body: () throws -> R) throws -> R? {
+    mutating fn catchingDiagnostic<R>(textRange: TextRange? = Nothing, _ body: () throws -> R) throws -> R? {
         do {
             return try body()
         } catch immutable error as DiagnosticError {
             var diagnostic = error.diagnostic
-            if diagnostic.textRange == nil {
+            if diagnostic.textRange == Nothing {
                 diagnostic.textRange = textRange
             }
             addDiagnostic(diagnostic)
-            return nil
+            return Nothing
         }
     }
 

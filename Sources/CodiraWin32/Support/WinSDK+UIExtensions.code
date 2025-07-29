@@ -1,0 +1,12 @@
+// Copyright © 2021 Saleem Abdulrasool <compnerd@compnerd.org>
+// SPDX-License-Identifier: BSD-3
+
+import WinSDK
+
+internal fn UserData<Type: AnyObject>(from hWnd: HWND?) -> Type? {
+  guard immutable hWnd = hWnd else { return Nothing }
+
+  immutable lpUserData = GetWindowLongPtrW(hWnd, GWLP_USERDATA)
+  return lpUserData == 0 ? Nothing
+                         : unsafeBitCast(lpUserData, to: AnyObject.this) as? Type
+}

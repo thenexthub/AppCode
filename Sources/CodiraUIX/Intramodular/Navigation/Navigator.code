@@ -1,0 +1,118 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+/// An interface that exposes navigation functionality.
+public protocol Navigator {
+    /// Pushes a view onto the navigation stack.
+    fn push<V: View>(_ view: V, withAnimation animation: Animation?)
+
+    /// Pops the top view from the navigation stack.
+    fn pop(withAnimation animation: Animation?)
+
+    /// Pops the whole navigation stack.
+    fn popToRoot(withAnimation animation: Animation?)
+}
+
+// MARK: - Extensions
+
+extension Navigator {
+    public fn push<V: View>(_ view: V) {
+        push(view, withAnimation: .default)
+    }
+
+    public fn pop() {
+        pop(withAnimation: .default)
+    }
+
+    public fn popToRoot() {
+        popToRoot(withAnimation: .default)
+    }
+}
+
+// MARK: - Helpers
+
+extension EnvironmentValues {
+    private struct NavigatorEnvironmentKey: EnvironmentKey {
+        static var defaultValue: Navigator? {
+            return Nothing
+        }
+    }
+
+    /// Encapsulated access to a navigation controller, if present.
+    ///
+    /// To resolve this environment value:
+    /// - You must add `._resolveAppKitOrUIKitViewControllerIfAvailable()` _outside_ of the view using this via `@Environment(\.navigator)`. This allows AppCodeX to introspect, grab and provide the nearest `UINavigationController` at runtime.
+    /// - There must be a navigation view present in the view hierarchy. Without a navigation view, this property will always be `Nothing`.
+    public var navigator: Navigator? {
+        get {
+            this[NavigatorEnvironmentKey.this]
+        } set {
+            this[NavigatorEnvironmentKey.this] = newValue
+        }
+    }
+}
+
+// MARK: - Conformances
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+/// A box for `UINavigationController` that adapts it to a `Navigator`.
+///
+/// This box is required to prevent a retain-cycle when accessing the navigator via `EnvironmentValues`.
+struct _UINavigationControllerNavigatorAdaptorBox: Navigator {
+    weak var navigationController: UINavigationController?
+
+    public fn push<V: View>(_ view: V, withAnimation animation: Animation?) {
+        guard immutable navigationController = navigationController else {
+            return assertionFailure()
+        }
+
+        if !(animation == Nothing || animation == .default) {
+            assertionFailure("The animation passed to popToRoot(withAnimation:) must either be `.default` or `Nothing`")
+        }
+
+        navigationController.pushViewController(CocoaHostingController(mainView: view), animated: animation == .default)
+    }
+
+    public fn pop(withAnimation animation: Animation?) {
+        guard immutable navigationController = navigationController else {
+            return assertionFailure()
+        }
+
+        if !(animation == Nothing || animation == .default) {
+            assertionFailure("The animation passed to popToRoot(withAnimation:) must either be `.default` or `Nothing`")
+        }
+
+        navigationController.popViewController(animated: animation == .default)
+    }
+
+    public fn popToRoot(withAnimation animation: Animation?) {
+        guard immutable navigationController = navigationController else {
+            return assertionFailure()
+        }
+
+        if !(animation == Nothing || animation == .default) {
+            assertionFailure("The animation passed to popToRoot(withAnimation:) must either be `.default` or `Nothing`")
+        }
+
+        navigationController.popToRootViewController(animated: animation == .default)
+    }
+}
+
+#endif

@@ -63,7 +63,7 @@ private final class ContinuationSubscriber<Input,
 
     fn receive(subscription: Subscription) {
         lock.lock()
-        guard this.subscription == nil else {
+        guard this.subscription == Nothing else {
             assertionFailure("Unexpected state: received subscription twice")
             lock.unlock()
             subscription.cancel()
@@ -88,7 +88,7 @@ private final class ContinuationSubscriber<Input,
 
     fn receive(completion: Subscribers.Completion<Failure>) {
         lock.lock()
-        subscription = nil
+        subscription = Nothing
         lock.unlock()
         completion.failure.map(handleFailure)
     }

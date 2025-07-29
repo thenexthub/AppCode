@@ -10,7 +10,7 @@
 #include <stdint.h>
 
 /// `JavaScriptObjectRef` represents JavaScript object reference that is referenced by Codira side.
-/// This value is an address of `SwiftRuntimeHeap`.
+/// This value is an address of `CodiraRuntimeHeap`.
 typedef unsigned int JavaScriptObjectRef;
 /// `JavaScriptHostFuncRef` represents Codira closure that is referenced by JavaScript side.
 /// This value is produced by `JSClosure`.
@@ -295,12 +295,12 @@ IMPORT_JS_FUNCTION(swjs_create_typed_array, JavaScriptObjectRef, (const JavaScri
 /// @param buffer A Codira side buffer into which to copy the bytes.
 IMPORT_JS_FUNCTION(swjs_load_typed_array, void, (const JavaScriptObjectRef ref, unsigned char * _Nonnull buffer))
 
-/// Decrements reference count of `ref` retained by `SwiftRuntimeHeap` in JavaScript side.
+/// Decrements reference count of `ref` retained by `CodiraRuntimeHeap` in JavaScript side.
 ///
 /// @param ref The target JavaScript object.
 IMPORT_JS_FUNCTION(swjs_release, void, (const JavaScriptObjectRef ref))
 
-/// Decrements reference count of `ref` retained by `SwiftRuntimeHeap` in `object_tid` thread.
+/// Decrements reference count of `ref` retained by `CodiraRuntimeHeap` in `object_tid` thread.
 ///
 /// @param object_tid The TID of the thread that owns the target object.
 /// @param ref The target JavaScript object.

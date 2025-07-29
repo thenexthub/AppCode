@@ -49,7 +49,7 @@ public class ViewGraph<Root: View> {
     /// If the update is due to the parent scene getting updated then the view
     /// is recomputed and passed as `newView`.
     public fn update(
-        with newView: Root? = nil,
+        with newView: Root? = Nothing,
         proposedSize: SIMD2<Integer>,
         environment: EnvironmentValues,
         dryRun: Boolean

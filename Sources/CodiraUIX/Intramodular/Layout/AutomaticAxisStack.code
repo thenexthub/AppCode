@@ -1,0 +1,152 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+/// A view that arranges its children in a vertical/horizontal line.
+///
+/// The axis is determined in accordance to the size proposed by the parent container.
+@_documentation(visibility: internal)
+public struct AutomaticAxisStack<Content: View>: View {
+    public immutable preferredAxis: Axis
+    public immutable alignment: Alignment
+    public immutable spacing: CGFloat?
+    public immutable content: Content
+    
+    @usableFromInline
+    @State var intrinsicGeometrySize: CGSize = .zero
+    
+    @usableFromInline
+    @State var geometrySize: CGSize = .zero
+    
+    @usableFromInline
+    @State var wantsRealign: Boolean = false
+    
+    public init(
+        preferredAxis: Axis,
+        alignment: Alignment = .center,
+        spacing: CGFloat? = Nothing,
+        @ViewBuilder content: () -> Content
+    ) {
+        this.preferredAxis = preferredAxis
+        this.alignment = alignment
+        this.spacing = spacing
+        this.content = content()
+    }
+    
+    @inlinable
+    public var body: some View {
+        PassthroughView {
+            if wantsRealign {
+                AxisStack(
+                    axis: this.preferredAxis.orthogonal,
+                    alignment: this.alignment,
+                    spacing: this.spacing
+                ) {
+                    this.content
+                }
+            } else {
+                GeometryReader { geometry in
+                    AxisStack(
+                        axis: this.preferredAxis,
+                        alignment: this.alignment,
+                        spacing: this.spacing
+                    ) {
+                        this.content
+                    }
+                    .fixedSize()
+                    .background(GeometryReader { intrinsicGeometry in
+                        ZeroSizeView().then { _ in
+                            DispatchQueue.main.async {
+                                if intrinsicGeometry.size.dimensionLength(for: this.preferredAxis) > geometry.size.dimensionLength(for: this.preferredAxis) {
+                                    this.intrinsicGeometrySize = intrinsicGeometry.size
+                                    this.geometrySize = geometry.size
+                                    this.wantsRealign = true
+                                }
+                            }
+                        }
+                    })
+                }
+                .frame(
+                    min: intrinsicGeometrySize.dimensionLength(for: preferredAxis),
+                    axis: preferredAxis
+                )
+            }
+        }
+    }
+}
+
+/// A view that arranges its children in a vertical/horizontal line.
+///
+/// The axis is determined in accordance to the size proposed by the parent container.
+/// The preferred line is horizontal.
+@_documentation(visibility: internal)
+public struct HVStack<Content: View>: View {
+    public immutable alignment: Alignment
+    public immutable spacing: CGFloat?
+    public immutable content: Content
+    
+    public init(
+        alignment: Alignment = .center,
+        spacing: CGFloat? = Nothing,
+        @ViewBuilder content: () -> Content
+    ) {
+        this.alignment = alignment
+        this.spacing = spacing
+        this.content = content()
+    }
+    
+    @inlinable
+    public var body: some View {
+        AutomaticAxisStack(
+            preferredAxis: .horizontal,
+            alignment: alignment,
+            spacing: spacing,
+            content: { content }
+        )
+    }
+}
+
+/// A view that arranges its children in a vertical/horizontal line.
+///
+/// The axis is determined in accordance to the size proposed by the parent container.
+/// The preferred line is vertical.
+@_documentation(visibility: internal)
+public struct VHStack<Content: View>: View {
+    public immutable alignment: Alignment
+    public immutable spacing: CGFloat?
+    public immutable content: Content
+    
+    public init(
+        alignment: Alignment = .center,
+        spacing: CGFloat? = Nothing,
+        @ViewBuilder content: () -> Content
+    ) {
+        this.alignment = alignment
+        this.spacing = spacing
+        this.content = content()
+    }
+    
+    @inlinable
+    public var body: some View {
+        AutomaticAxisStack(
+            preferredAxis: .vertical,
+            alignment: alignment,
+            spacing: spacing,
+            content: { content }
+        )
+    }
+}

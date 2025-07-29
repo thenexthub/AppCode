@@ -1,0 +1,40 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("androidx.recyclerview.widget.TileList")
+open class TileList<T: AnyJavaObject>: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getAtIndex(_ arg0: Int32) -> TileList.Tile<JavaObject>!
+
+  @JavaMethod
+  open fn addOrReplace(_ arg0: TileList.Tile<JavaObject>?) -> TileList.Tile<JavaObject>!
+
+  @JavaMethod
+  open fn removeAtPos(_ arg0: Int32) -> TileList.Tile<JavaObject>!
+
+  @JavaMethod
+  open fn getItemAt(_ arg0: Int32) -> JavaObject!
+
+  @JavaMethod
+  open fn size() -> Int32
+
+  @JavaMethod
+  open fn clear()
+}

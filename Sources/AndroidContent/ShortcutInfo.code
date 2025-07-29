@@ -1,0 +1,148 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.content.pm.ShortcutInfo", implements: Parcelable.this)
+open class ShortcutInfo: JavaObject {
+  @JavaMethod
+  open fn getExtras() -> PersistableBundle!
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getIntent() -> Intent!
+
+  @JavaMethod
+  open fn getCategories() -> JavaSet<JavaString>!
+
+  @JavaMethod
+  open fn getLocusId() -> LocusId!
+
+  @JavaMethod
+  open fn getActivity() -> ComponentName!
+
+  @JavaMethod
+  open fn getShortLabel() -> CharSequence!
+
+  @JavaMethod
+  open fn getLongLabel() -> CharSequence!
+
+  @JavaMethod
+  open fn getDisabledMessage() -> CharSequence!
+
+  @JavaMethod
+  open fn getDisabledReason() -> Int32
+
+  @JavaMethod
+  open fn getIntents() -> [Intent?]
+
+  @JavaMethod
+  open fn getRank() -> Int32
+
+  @JavaMethod
+  open fn getUserHandle() -> UserHandle!
+
+  @JavaMethod
+  open fn getLastChangedTimestamp() -> Int64
+
+  @JavaMethod
+  open fn isDynamic() -> Boolean
+
+  @JavaMethod
+  open fn isDeclaredInManifest() -> Boolean
+
+  @JavaMethod
+  open fn hasKeyFieldsOnly() -> Boolean
+
+  @JavaMethod
+  open fn isExcludedFromSurfaces(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn getExcludedFromSurfaces() -> Int32
+
+  @JavaMethod
+  open fn getCapabilities() -> List<Capability>!
+
+  @JavaMethod
+  open fn getCapabilityParams(_ arg0: Capability?) -> List<CapabilityParams>!
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn getPackage() -> String
+
+  @JavaMethod
+  open fn isEnabled() -> Boolean
+
+  @JavaMethod
+  open fn getId() -> String
+
+  @JavaMethod
+  open fn isPinned() -> Boolean
+
+  @JavaMethod
+  open fn isCached() -> Boolean
+
+  @JavaMethod
+  open fn isImmutable() -> Boolean
+}
+extension JavaClass<ShortcutInfo> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<ShortcutInfo>!
+
+  @JavaStaticField(isFinal: true)
+  public var DISABLED_REASON_APP_CHANGED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DISABLED_REASON_BACKUP_NOT_SUPPORTED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DISABLED_REASON_BY_APP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DISABLED_REASON_NOT_DISABLED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DISABLED_REASON_OTHER_RESTORE_ISSUE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DISABLED_REASON_SIGNATURE_MISMATCH: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DISABLED_REASON_UNKNOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DISABLED_REASON_VERSION_LOWER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SHORTCUT_CATEGORY_CONVERSATION: String
+
+  @JavaStaticField(isFinal: true)
+  public var SURFACE_LAUNCHER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

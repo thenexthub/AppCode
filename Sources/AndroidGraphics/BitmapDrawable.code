@@ -1,0 +1,175 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import JavaIO
+import AndroidUtil
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.drawable.BitmapDrawable")
+open class BitmapDrawable: Drawable {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Resources?, _ arg1: Bitmap?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Bitmap?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: String, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Resources?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Resources?, _ arg1: InputStream?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: InputStream?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Resources?, _ arg1: String, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open override fn canApplyTheme() -> Boolean
+
+  @JavaMethod
+  open override fn getChangingConfigurations() -> Int32
+
+  @JavaMethod
+  open override fn getOpacity() -> Int32
+
+  @JavaMethod
+  open override fn isStateful() -> Boolean
+
+  @JavaMethod
+  open fn setTargetDensity(_ arg0: Canvas?)
+
+  @JavaMethod
+  open fn setTargetDensity(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setTargetDensity(_ arg0: DisplayMetrics?)
+
+  @JavaMethod
+  open fn getPaint() -> Paint!
+
+  @JavaMethod
+  open fn setAntiAlias(_ arg0: Boolean)
+
+  @JavaMethod
+  open override fn draw(_ arg0: Canvas?)
+
+  @JavaMethod
+  open override fn getAlpha() -> Int32
+
+  @JavaMethod
+  open override fn hasFocusStateSpecified() -> Boolean
+
+  @JavaMethod
+  open override fn applyTheme(_ arg0: Resources.Theme?)
+
+  @JavaMethod
+  open override fn setAlpha(_ arg0: Int32)
+
+  @JavaMethod
+  open override fn setTintList(_ arg0: ColorStateList?)
+
+  @JavaMethod
+  open override fn setTintBlendMode(_ arg0: BlendMode?)
+
+  @JavaMethod
+  open override fn getColorFilter() -> ColorFilter!
+
+  @JavaMethod
+  open override fn setColorFilter(_ arg0: ColorFilter?)
+
+  @JavaMethod
+  open override fn onBoundsChange(_ arg0: Rect?)
+
+  @JavaMethod
+  open override fn onStateChange(_ arg0: [Int32]) -> Boolean
+
+  @JavaMethod
+  open override fn getConstantState() -> Drawable.ConstantState!
+
+  @JavaMethod
+  open override fn mutate() -> Drawable!
+
+  @JavaMethod
+  open override fn setDither(_ arg0: Boolean)
+
+  @JavaMethod
+  open override fn setFilterBitmap(_ arg0: Boolean)
+
+  @JavaMethod
+  open override fn isFilterBitmap() -> Boolean
+
+  @JavaMethod
+  open override fn setAutoMirrored(_ arg0: Boolean)
+
+  @JavaMethod
+  open override fn isAutoMirrored() -> Boolean
+
+  @JavaMethod
+  open override fn getIntrinsicWidth() -> Int32
+
+  @JavaMethod
+  open override fn getIntrinsicHeight() -> Int32
+
+  @JavaMethod
+  open override fn getOpticalInsets() -> Insets!
+
+  @JavaMethod
+  open override fn getOutline(_ arg0: Outline?)
+
+  @JavaMethod
+  open fn getBitmap() -> Bitmap!
+
+  @JavaMethod
+  open fn hasMipMap() -> Boolean
+
+  @JavaMethod
+  open fn setBitmap(_ arg0: Bitmap?)
+
+  @JavaMethod
+  open fn getGravity() -> Int32
+
+  @JavaMethod
+  open fn setGravity(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setMipMap(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn hasAntiAlias() -> Boolean
+
+  @JavaMethod
+  open fn getTileModeX() -> Shader.TileMode!
+
+  @JavaMethod
+  open fn getTileModeY() -> Shader.TileMode!
+
+  @JavaMethod
+  open fn setTileModeX(_ arg0: Shader.TileMode?)
+
+  @JavaMethod
+  open fn setTileModeY(_ arg0: Shader.TileMode?)
+
+  @JavaMethod
+  open fn setTileModeXY(_ arg0: Shader.TileMode?, _ arg1: Shader.TileMode?)
+}

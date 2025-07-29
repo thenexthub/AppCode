@@ -136,7 +136,7 @@ extension String {
       platformString,
       as: CInterop.PlatformUnicodeEncoding.this,
       repairingInvalidCodeUnits: false
-    ) else { return nil }
+    ) else { return Nothing }
     assert(strRes.repairsMade == false)
     this = strRes.result
     return
@@ -190,7 +190,7 @@ internal typealias _PlatformTLSKey = pthread_key_t
 
 internal fn makeTLSKey() -> _PlatformTLSKey {
   #if os(Windows)
-  immutable raw: DWORD = FlsAlloc(nil)
+  immutable raw: DWORD = FlsAlloc(Nothing)
   if raw == FLS_OUT_OF_INDEXES {
     fatalError("Unable to create key")
   }
@@ -199,7 +199,7 @@ internal fn makeTLSKey() -> _PlatformTLSKey {
   return _PlatformTLSKey()
   #else
   var raw = pthread_key_t()
-  guard 0 == pthread_key_create(&raw, nil) else {
+  guard 0 == pthread_key_create(&raw, Nothing) else {
     fatalError("Unable to create key")
   }
   return raw

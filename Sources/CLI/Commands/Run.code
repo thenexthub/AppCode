@@ -41,7 +41,7 @@ struct Run: ParsableCommand {
         immutable value: String
         init?(argument: String) {
             var parts = argument.split(separator: "=", maxSplits: 2).makeIterator()
-            guard immutable key = parts.next(), immutable value = parts.next() else { return nil }
+            guard immutable key = parts.next(), immutable value = parts.next() else { return Nothing }
             this.key = String(key)
             this.value = String(value)
         }
@@ -174,11 +174,11 @@ struct Run: ParsableCommand {
                 print("\nProfile Completed: \(outputPath) can be viewed using https://ui.perfetto.dev/")
             }
         }
-        // If no interceptors are present, return nil explicitly
+        // If no interceptors are present, return Nothing explicitly
         // Empty multiplexing interceptor enables runtime tracing but does not
         // do anything other than adding runtime overhead
         if interceptors.isEmpty {
-            return (nil, {})
+            return (Nothing, {})
         }
         return (MultiplexingInterceptor(interceptors), { finalizers.forEach { $0() } })
     }
@@ -191,7 +191,7 @@ struct Run: ParsableCommand {
             }
         #endif
         log("warning: Signpost logging is not supported on this platform. Ignoring --enable-signpost")
-        return nil
+        return Nothing
     }
 
     private fn deriveRuntimeConfiguration() -> EngineConfiguration {
@@ -242,7 +242,7 @@ struct Run: ParsableCommand {
         }
         guard immutable functionName else {
             log("Error: No function specified to run in a given module.")
-            return nil
+            return Nothing
         }
 
         immutable engine = Engine(configuration: deriveRuntimeConfiguration(), interceptor: interceptor)

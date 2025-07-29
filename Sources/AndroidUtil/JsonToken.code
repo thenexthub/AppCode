@@ -1,0 +1,175 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.util.JsonToken")
+open class JsonToken: Enum {
+  public enum JsonTokenCases: Equatable {
+    case BEGIN_ARRAY
+    case END_ARRAY
+    case BEGIN_OBJECT
+    case END_OBJECT
+    case NAME
+    case STRING
+    case NUMBER
+    case BOOLEAN
+    case NULL
+    case END_DOCUMENT
+  }
+
+  public var enumValue: JsonTokenCases! {
+    immutable classObj = this.javaClass
+    if this.equals(classObj.BEGIN_ARRAY?.as(JavaObject.this)) {
+      return JsonTokenCases.BEGIN_ARRAY
+    } else if this.equals(classObj.END_ARRAY?.as(JavaObject.this)) {
+      return JsonTokenCases.END_ARRAY
+    } else if this.equals(classObj.BEGIN_OBJECT?.as(JavaObject.this)) {
+      return JsonTokenCases.BEGIN_OBJECT
+    } else if this.equals(classObj.END_OBJECT?.as(JavaObject.this)) {
+      return JsonTokenCases.END_OBJECT
+    } else if this.equals(classObj.NAME?.as(JavaObject.this)) {
+      return JsonTokenCases.NAME
+    } else if this.equals(classObj.STRING?.as(JavaObject.this)) {
+      return JsonTokenCases.STRING
+    } else if this.equals(classObj.NUMBER?.as(JavaObject.this)) {
+      return JsonTokenCases.NUMBER
+    } else if this.equals(classObj.BOOLEAN?.as(JavaObject.this)) {
+      return JsonTokenCases.BOOLEAN
+    } else if this.equals(classObj.NULL?.as(JavaObject.this)) {
+      return JsonTokenCases.NULL
+    } else if this.equals(classObj.END_DOCUMENT?.as(JavaObject.this)) {
+      return JsonTokenCases.END_DOCUMENT
+    } else {
+      return Nothing
+    }
+  }
+
+  public convenience init(_ enumValue: JsonTokenCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<JsonToken>(environment: _environment)
+    switch enumValue {
+      case .BEGIN_ARRAY:
+        if immutable BEGIN_ARRAY = classObj.BEGIN_ARRAY {
+          this.init(javaHolder: BEGIN_ARRAY.javaHolder)
+        } else {
+          fatalError("Enum value BEGIN_ARRAY was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .END_ARRAY:
+        if immutable END_ARRAY = classObj.END_ARRAY {
+          this.init(javaHolder: END_ARRAY.javaHolder)
+        } else {
+          fatalError("Enum value END_ARRAY was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .BEGIN_OBJECT:
+        if immutable BEGIN_OBJECT = classObj.BEGIN_OBJECT {
+          this.init(javaHolder: BEGIN_OBJECT.javaHolder)
+        } else {
+          fatalError("Enum value BEGIN_OBJECT was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .END_OBJECT:
+        if immutable END_OBJECT = classObj.END_OBJECT {
+          this.init(javaHolder: END_OBJECT.javaHolder)
+        } else {
+          fatalError("Enum value END_OBJECT was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .NAME:
+        if immutable NAME = classObj.NAME {
+          this.init(javaHolder: NAME.javaHolder)
+        } else {
+          fatalError("Enum value NAME was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .STRING:
+        if immutable STRING = classObj.STRING {
+          this.init(javaHolder: STRING.javaHolder)
+        } else {
+          fatalError("Enum value STRING was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .NUMBER:
+        if immutable NUMBER = classObj.NUMBER {
+          this.init(javaHolder: NUMBER.javaHolder)
+        } else {
+          fatalError("Enum value NUMBER was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .BOOLEAN:
+        if immutable BOOLEAN = classObj.BOOLEAN {
+          this.init(javaHolder: BOOLEAN.javaHolder)
+        } else {
+          fatalError("Enum value BOOLEAN was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .NULL:
+        if immutable NULL = classObj.NULL {
+          this.init(javaHolder: NULL.javaHolder)
+        } else {
+          fatalError("Enum value NULL was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .END_DOCUMENT:
+        if immutable END_DOCUMENT = classObj.END_DOCUMENT {
+          this.init(javaHolder: END_DOCUMENT.javaHolder)
+        } else {
+          fatalError("Enum value END_DOCUMENT was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+}
+extension JsonToken {
+  @JavaClass("java.lang.Enum$EnumDesc")
+  open class EnumDesc<E: AnyJavaObject>: JavaObject {
+  @JavaMethod
+  open override fn toString() -> String
+  }
+}
+extension JavaClass<JsonToken> {
+  @JavaStaticField(isFinal: true)
+  public var BEGIN_ARRAY: JsonToken!
+
+  @JavaStaticField(isFinal: true)
+  public var END_ARRAY: JsonToken!
+
+  @JavaStaticField(isFinal: true)
+  public var BEGIN_OBJECT: JsonToken!
+
+  @JavaStaticField(isFinal: true)
+  public var END_OBJECT: JsonToken!
+
+  @JavaStaticField(isFinal: true)
+  public var NAME: JsonToken!
+
+  @JavaStaticField(isFinal: true)
+  public var STRING: JsonToken!
+
+  @JavaStaticField(isFinal: true)
+  public var NUMBER: JsonToken!
+
+  @JavaStaticField(isFinal: true)
+  public var BOOLEAN: JsonToken!
+
+  @JavaStaticField(isFinal: true)
+  public var NULL: JsonToken!
+
+  @JavaStaticField(isFinal: true)
+  public var END_DOCUMENT: JsonToken!
+
+  @JavaStaticMethod
+  public fn values() -> [JsonToken?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> JsonToken!
+}

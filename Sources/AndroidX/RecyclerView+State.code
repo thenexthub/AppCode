@@ -1,0 +1,66 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension RecyclerView {
+  @JavaClass("androidx.recyclerview.widget.RecyclerView$State")
+  open class State: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getItemCount() -> Int32
+
+  @JavaMethod
+  open fn getTargetScrollPosition() -> Int32
+
+  @JavaMethod
+  open fn isMeasuring() -> Boolean
+
+  @JavaMethod
+  open fn willRunSimpleAnimations() -> Boolean
+
+  @JavaMethod
+  open fn getRemainingScrollHorizontal() -> Int32
+
+  @JavaMethod
+  open fn getRemainingScrollVertical() -> Int32
+
+  @JavaMethod
+  open fn isPreLayout() -> Boolean
+
+  @JavaMethod
+  open fn didStructureChange() -> Boolean
+
+  @JavaMethod
+  open fn hasTargetScrollPosition() -> Boolean
+
+  @JavaMethod
+  open fn willRunPredictiveAnimations() -> Boolean
+
+  @JavaMethod
+  open fn remove(_ arg0: Int32)
+
+  @JavaMethod
+  open fn get(_ arg0: Int32) -> JavaObject!
+
+  @JavaMethod
+  open fn put(_ arg0: Int32, _ arg1: JavaObject?)
+
+  @JavaMethod
+  open override fn toString() -> String
+  }
+}

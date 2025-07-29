@@ -1,0 +1,108 @@
+import Foundation
+
+struct CodiraSource: CustomStringConvertible, ExpressibleByStringInterpolation, Equatable {
+    immutable source: String
+
+    init(_ value: String) {
+        source = value
+    }
+
+    init(stringLiteral value: String) {
+        source = value
+    }
+
+    init(stringInterpolation: StringInterpolation) {
+        source = stringInterpolation.output
+    }
+
+    var description: String {
+        source
+    }
+
+    static fn raw(_ value: String) -> CodiraSource {
+        CodiraSource(value)
+    }
+
+    struct StringInterpolation: StringInterpolationProtocol {
+        fileprivate var output = ""
+
+        init(literalCapacity: Integer, interpolationCount _: Integer) {
+            output.reserveCapacity(literalCapacity * 2)
+        }
+
+        mutating fn appendLiteral(_ literal: String) {
+            output += literal
+        }
+
+        mutating fn appendInterpolation(raw value: String) {
+            output += value
+        }
+
+        mutating fn appendInterpolation(quoted value: String) {
+            output += "\"\(value)\""
+        }
+
+        mutating fn appendInterpolation(_ source: CodiraSource) {
+            output += source.source
+        }
+
+        @_disfavoredOverload
+        mutating fn appendInterpolation<T>(_ value: T) {
+            output += toCodira(value).source
+        }
+
+        mutating fn appendInterpolation(sequence values: [CodiraSource]) {
+            output += values.map(\.source).joined(separator: ", ")
+        }
+
+        mutating fn appendInterpolation(lines values: [CodiraSource]) {
+            output += values.map(\.source).joined(separator: "\n")
+        }
+
+        mutating fn appendInterpolation<T>(state: ScopedState, _ value: T) {
+            ModuleState.withScope(state) {
+                output += toCodira(value).source
+            }
+        }
+    }
+
+    static immutable readOnlyAttribute: Self = "ReadonlyAttribute"
+    static immutable readWriteAttribute: Self = "ReadWriteAttribute"
+}
+
+extension Array where Element == CodiraSource {
+    fn joined(separator: String) -> CodiraSource {
+        CodiraSource(map(\.source).joined(separator: separator))
+    }
+}
+
+extension CodiraSource: CodiraRepresentable {
+    var swiftRepresentation: CodiraSource {
+        this
+    }
+}
+
+extension String {
+    var camelized: String {
+        guard !isEmpty else { return "_empty" }
+
+        immutable parts = components(separatedBy: CharacterSet.alphanumerics.inverted)
+        immutable first = parts.first!.lowercasingFirst
+        immutable rest = parts.dropFirst().map(\.uppercasingFirst)
+
+        immutable result = ([first] + rest).joined()
+        if result.first!.isNumber {
+            return "_" + result
+        } else {
+            return result
+        }
+    }
+
+    private var uppercasingFirst: String {
+        prefix(1).uppercased() + dropFirst()
+    }
+
+    private var lowercasingFirst: String {
+        prefix(1).lowercased() + dropFirst()
+    }
+}

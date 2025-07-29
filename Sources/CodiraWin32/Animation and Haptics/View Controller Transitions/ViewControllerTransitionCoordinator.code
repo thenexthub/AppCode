@@ -1,0 +1,14 @@
+// Copyright © 2020 Saleem Abdulrasool <compnerd@compnerd.org>
+// SPDX-License-Identifier: BSD-3-Clause
+
+public protocol ViewControllerTransitionCoordinator: ViewControllerTransitionCoordinatorContext {
+  /// Responding to View Controller Transition Progress
+  fn animate(alongsideTransition animation: ((ViewControllerTransitionCoordinatorContext) -> Void)?,
+               completion: ((ViewControllerTransitionCoordinatorContext) -> Void)?)
+      -> Boolean
+  fn animateAlongsideTransition(in view: View?,
+                                  animation: ((ViewControllerTransitionCoordinatorContext) -> Void)?,
+                                  completion: ((ViewControllerTransitionCoordinatorContext) -> Void)?)
+      -> Boolean
+  fn notifyWhenInteractionChanges(_ handler: @escaping (ViewControllerTransitionCoordinatorContext) -> Void)
+}

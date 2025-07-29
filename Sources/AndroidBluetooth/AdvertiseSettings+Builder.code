@@ -1,0 +1,42 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension AdvertiseSettings {
+  @JavaClass("android.bluetooth.le.AdvertiseSettings$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setAdvertiseMode(_ arg0: Int32) -> AdvertiseSettings.Builder!
+
+  @JavaMethod
+  open fn setTxPowerLevel(_ arg0: Int32) -> AdvertiseSettings.Builder!
+
+  @JavaMethod
+  open fn setConnectable(_ arg0: Boolean) -> AdvertiseSettings.Builder!
+
+  @JavaMethod
+  open fn setDiscoverable(_ arg0: Boolean) -> AdvertiseSettings.Builder!
+
+  @JavaMethod
+  open fn setTimeout(_ arg0: Int32) -> AdvertiseSettings.Builder!
+
+  @JavaMethod
+  open fn build() -> AdvertiseSettings!
+  }
+}

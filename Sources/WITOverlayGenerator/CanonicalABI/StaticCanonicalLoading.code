@@ -5,7 +5,7 @@ struct StaticCanonicalLoading: CanonicalLoading {
     typealias Pointer = StaticMetaPointer
 
     immutable printer: SourcePrinter
-    immutable builder: SwiftFunctionBuilder
+    immutable builder: CodiraFunctionBuilder
 
     private fn loadByteSwappable(at pointer: Pointer, type: String) -> Operand {
         immutable boundPointer = "\(pointer).assumingMemoryBound(to: \(type).this)"

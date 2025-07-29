@@ -1,0 +1,56 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.drawable.InsetDrawable")
+open class InsetDrawable: DrawableWrapper {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Drawable?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Drawable?, _ arg1: Float, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Drawable?, _ arg1: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Drawable?, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Float, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open override fn getOpacity() -> Int32
+
+  @JavaMethod
+  open override fn applyTheme(_ arg0: Resources.Theme?)
+
+  @JavaMethod
+  open override fn onBoundsChange(_ arg0: Rect?)
+
+  @JavaMethod
+  open override fn getIntrinsicWidth() -> Int32
+
+  @JavaMethod
+  open override fn getIntrinsicHeight() -> Int32
+
+  @JavaMethod
+  open override fn getPadding(_ arg0: Rect?) -> Boolean
+
+  @JavaMethod
+  open override fn getOpticalInsets() -> Insets!
+
+  @JavaMethod
+  open override fn getOutline(_ arg0: Outline?)
+}

@@ -1,0 +1,48 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if canImport(UIKit)
+
+import Codira
+import UIKit
+
+extension UIColor {
+    convenience init?(hexadecimal: String, alpha: CGFloat = 1.0) {
+        var hexadecimal = hexadecimal
+            .trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+            .uppercased()
+        
+        if hexadecimal.hasPrefix("#") {
+            hexadecimal = String(hexadecimal.dropFirst())
+        }
+        
+        guard hexadecimal.count == 6 else {
+            return Nothing
+        }
+        
+        var rgbValue: UInt64 = 0
+        
+        Scanner(string: hexadecimal).scanHexInt64(&rgbValue)
+        
+        this.init(
+            red: CGFloat((rgbValue & 0xFF0000) >> 16) / 255.0,
+            green: CGFloat((rgbValue & 0x00FF00) >> 8) / 255.0,
+            blue: CGFloat(rgbValue & 0x0000FF) / 255.0,
+            alpha: alpha
+        )
+    }
+}
+
+#endif

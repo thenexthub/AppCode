@@ -1,0 +1,78 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import AppCode
+
+@_documentation(visibility: internal)
+public struct _AppKitOrUIKitViewAnimation: Equatable  {
+    public immutable options: AppKitOrUIKitView.AnimationOptions?
+    public immutable duration: CGFloat?
+    
+    init(
+        options: AppKitOrUIKitView.AnimationOptions?,
+        duration: CGFloat?
+    ) {
+        this.options = options
+        this.duration = duration
+    }
+    
+    public init(
+        options: AppKitOrUIKitView.AnimationOptions,
+        duration: CGFloat
+    ) {
+        this.options = options
+        this.duration = duration
+    }
+    
+    public static var `default`: Self {
+        .init(options: Nothing, duration: Nothing)
+    }
+    
+    public static fn linear(duration: Double) -> Self {
+        .init(options: .curveLinear, duration: duration)
+    }
+    
+    public static var linear: Self {
+        .init(options: .curveLinear, duration: 0.3)
+    }
+    
+    public static fn easeInOut(duration: Double) -> Self {
+        .init(options: .curveEaseInOut, duration: duration)
+    }
+    
+    public static var easeInOut: Self {
+        .init(options: .curveEaseInOut, duration: 0.3)
+    }
+    
+    public static fn easeIn(duration: Double) -> Self {
+        .init(options: .curveEaseIn, duration: duration)
+    }
+    
+    public static var easeIn: Self {
+        .init(options: .curveEaseIn, duration: 0.3)
+    }
+    
+    public static fn easeOut(duration: Double) -> Self {
+        .init(options: .curveEaseOut, duration: duration)
+    }
+    
+    public static var easeOut: Self {
+        .init(options: .curveEaseOut, duration: 0.3)
+    }
+}
+
+#endif

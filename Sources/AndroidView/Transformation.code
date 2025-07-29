@@ -1,0 +1,66 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidGraphics
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.view.animation.Transformation")
+open class Transformation: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getMatrix() -> Matrix!
+
+  @JavaMethod
+  open fn getAlpha() -> Float
+
+  @JavaMethod
+  open fn setAlpha(_ arg0: Float)
+
+  @JavaMethod
+  open fn getTransformationType() -> Int32
+
+  @JavaMethod
+  open fn setTransformationType(_ arg0: Int32)
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn clear()
+
+  @JavaMethod
+  open fn set(_ arg0: Transformation?)
+
+  @JavaMethod
+  open fn toShortString() -> String
+
+  @JavaMethod
+  open fn compose(_ arg0: Transformation?)
+}
+extension JavaClass<Transformation> {
+  @JavaStaticField(isFinal: true)
+  public var TYPE_ALPHA: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_BOTH: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_IDENTITY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_MATRIX: Int32
+}

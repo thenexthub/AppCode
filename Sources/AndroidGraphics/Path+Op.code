@@ -1,0 +1,110 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension Path {
+  @JavaClass("android.graphics.Path$Op")
+  open class Op: Enum {
+    public enum OpCases: Equatable {
+      case DIFFERENCE
+  case INTERSECT
+  case UNION
+  case XOR
+  case REVERSE_DIFFERENCE
+    }
+
+    public var enumValue: OpCases! {
+      immutable classObj = this.javaClass
+      if this.equals(classObj.DIFFERENCE?.as(JavaObject.this)) {
+        return OpCases.DIFFERENCE
+  } else if this.equals(classObj.INTERSECT?.as(JavaObject.this)) {
+        return OpCases.INTERSECT
+  } else if this.equals(classObj.UNION?.as(JavaObject.this)) {
+        return OpCases.UNION
+  } else if this.equals(classObj.XOR?.as(JavaObject.this)) {
+        return OpCases.XOR
+  } else if this.equals(classObj.REVERSE_DIFFERENCE?.as(JavaObject.this)) {
+        return OpCases.REVERSE_DIFFERENCE
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: OpCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<Op>(environment: _environment)
+    switch enumValue {
+      case .DIFFERENCE:
+        if immutable DIFFERENCE = classObj.DIFFERENCE {
+          this.init(javaHolder: DIFFERENCE.javaHolder)
+        } else {
+          fatalError("Enum value DIFFERENCE was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .INTERSECT:
+        if immutable INTERSECT = classObj.INTERSECT {
+          this.init(javaHolder: INTERSECT.javaHolder)
+        } else {
+          fatalError("Enum value INTERSECT was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .UNION:
+        if immutable UNION = classObj.UNION {
+          this.init(javaHolder: UNION.javaHolder)
+        } else {
+          fatalError("Enum value UNION was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .XOR:
+        if immutable XOR = classObj.XOR {
+          this.init(javaHolder: XOR.javaHolder)
+        } else {
+          fatalError("Enum value XOR was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .REVERSE_DIFFERENCE:
+        if immutable REVERSE_DIFFERENCE = classObj.REVERSE_DIFFERENCE {
+          this.init(javaHolder: REVERSE_DIFFERENCE.javaHolder)
+        } else {
+          fatalError("Enum value REVERSE_DIFFERENCE was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension JavaClass<Path.Op> {
+  @JavaStaticField(isFinal: true)
+  public var DIFFERENCE: Path.Op!
+
+  @JavaStaticField(isFinal: true)
+  public var INTERSECT: Path.Op!
+
+  @JavaStaticField(isFinal: true)
+  public var UNION: Path.Op!
+
+  @JavaStaticField(isFinal: true)
+  public var XOR: Path.Op!
+
+  @JavaStaticField(isFinal: true)
+  public var REVERSE_DIFFERENCE: Path.Op!
+
+  @JavaStaticMethod
+  public fn values() -> [Path.Op?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> Path.Op!
+}

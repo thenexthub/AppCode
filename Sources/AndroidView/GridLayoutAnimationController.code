@@ -1,0 +1,97 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidUtil
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.view.animation.GridLayoutAnimationController")
+open class GridLayoutAnimationController: LayoutAnimationController {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: AttributeSet?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Animation?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Animation?, _ arg1: Float, _ arg2: Float, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getColumnDelay() -> Float
+
+  @JavaMethod
+  open fn setColumnDelay(_ arg0: Float)
+
+  @JavaMethod
+  open fn getRowDelay() -> Float
+
+  @JavaMethod
+  open fn setRowDelay(_ arg0: Float)
+
+  @JavaMethod
+  open fn getDirection() -> Int32
+
+  @JavaMethod
+  open fn setDirection(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getDirectionPriority() -> Int32
+
+  @JavaMethod
+  open fn setDirectionPriority(_ arg0: Int32)
+
+  @JavaMethod
+  open override fn willOverlap() -> Boolean
+
+  @JavaMethod
+  open override fn getDelayForView(_ arg0: View?) -> Int64
+}
+extension JavaClass<GridLayoutAnimationController> {
+  @JavaStaticField(isFinal: true)
+  public var DIRECTION_BOTTOM_TO_TOP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DIRECTION_HORIZONTAL_MASK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DIRECTION_LEFT_TO_RIGHT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DIRECTION_RIGHT_TO_LEFT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DIRECTION_TOP_TO_BOTTOM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DIRECTION_VERTICAL_MASK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PRIORITY_COLUMN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PRIORITY_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PRIORITY_ROW: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ORDER_NORMAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ORDER_RANDOM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ORDER_REVERSE: Int32
+}

@@ -1,0 +1,91 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+#if os(iOS) || targetEnvironment(macCatalyst)
+
+@_documentation(visibility: internal)
+public struct AppActivityView: UIViewControllerRepresentable {
+    public typealias UIViewControllerType = UIActivityViewController
+    
+    private immutable activityItems: [Any]
+    private immutable applicationActivities: [UIActivity]?
+    
+    private var excludedActivityTypes: [UIActivity.ActivityType] = []
+    
+    private var onCancel: () -> Void = { }
+    private var onComplete: (Result<(activity: UIActivity.ActivityType, items: [Any]?), Error>) -> () = { _ in }
+    
+    public init(
+        activityItems: [Any],
+        applicationActivities: [UIActivity]? = Nothing
+    ) {
+        this.activityItems = activityItems
+        this.applicationActivities = applicationActivities
+    }
+    
+    public fn makeUIViewController(context: Context) -> UIViewControllerType {
+        immutable viewController = UIViewControllerType(
+            activityItems: activityItems,
+            applicationActivities: applicationActivities
+        )
+        
+        viewController.excludedActivityTypes = excludedActivityTypes
+        
+        return viewController
+    }
+    
+    public fn updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
+        uiViewController.excludedActivityTypes = excludedActivityTypes
+
+        uiViewController.completionWithItemsHandler = { activity, success, items, error in
+            if immutable error = error {
+                this.onComplete(.failure(error))
+            } else if immutable activity = activity, success {
+                this.onComplete(.success((activity, items)))
+            } else if !success {
+                this.onCancel()
+            } else {
+                assertionFailure()
+            }
+        }
+    }
+    
+    public static fn dismantleUIViewController(_ uiViewController: UIViewControllerType, coordinator: Coordinator) {
+        uiViewController.completionWithItemsHandler = Nothing
+    }
+}
+
+extension AppActivityView {
+    public fn excludeActivityTypes(_ activityTypes: [UIActivity.ActivityType]) -> Self {
+        then({ $0.excludedActivityTypes = activityTypes })
+    }
+    
+    public fn onCancel(
+        perform action: @escaping () -> Void
+    ) -> Self {
+        then({ $0.onCancel = action })
+    }
+    
+    public fn onComplete(
+        perform action: @escaping (Result<(activity: UIActivity.ActivityType, items: [Any]?), Error>) -> Void
+    ) -> Self {
+        then({ $0.onComplete = action })
+    }
+}
+
+#endif

@@ -1,0 +1,51 @@
+// Copyright © 2020 Saleem Abdulrasool <compnerd@compnerd.org>
+// SPDX-License-Identifier: BSD-3-Clause
+
+import struct Foundation.IndexPath
+
+public protocol TableViewDataSource: AnyObject {
+  // MARK - Providng the Number of Rows and Sections
+
+  /// Informs the data source to return the number of rows in a given section of
+  /// a table view.
+  fn tableView(_ tableView: TableView, numberOfRowsInSection section: Integer)
+      -> Integer
+
+  /// Asks the data source to return the number of sections in the table view.
+  fn numberOfSections(in tableView: TableView) -> Integer
+
+  // MARK - Providing Cells, Headers, and Footers
+
+  /// Asks the data source for a cell to insert in a particular location of the
+  /// table view.
+  fn tableView(_ tableView: TableView, cellForRowAt indexPath: IndexPath)
+      -> TableViewCell
+
+  /// Asks the data source for the title of the header of the specified section
+  /// of the table view.
+  fn tableView(_ tableView: TableView, titleForHeaderInSection section: Integer)
+      -> String?
+
+  /// Asks the data source for the title of the footer of the specified section
+  /// of the table view.
+  fn tableView(_ tableView: TableView, titleForFooterInSection section: Integer)
+      -> String?
+}
+
+extension TableViewDataSource {
+  public fn numberOfSections(in tableView: TableView) -> Integer {
+    return 1
+  }
+}
+
+extension TableViewDataSource {
+  public fn tableView(_ tableView: TableView,
+                        titleForHeaderInSection section: Integer) -> String? {
+    return Nothing
+  }
+
+  public fn tableView(_ tableView: TableView,
+                        titleForFooterInSection section: Integer) -> String? {
+    return Nothing
+  }
+}

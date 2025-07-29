@@ -8,7 +8,7 @@ internal fn splitParent(path: String) -> (FilePath, FilePath.Component)? {
         return path.hasSuffix("/") || path.hasSuffix("/.")
     }
 
-    guard !path.isEmpty else { return nil }
+    guard !path.isEmpty else { return Nothing }
 
     if pathRequiresDirectory(path: path) {
         // Create a link to the directory itself

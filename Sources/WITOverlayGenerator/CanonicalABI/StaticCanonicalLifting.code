@@ -2,7 +2,7 @@ import WIT
 
 protocol StaticCanonicalLifting: CanonicalLifting where Operand == StaticMetaOperand {
     var printer: SourcePrinter { get }
-    var builder: SwiftFunctionBuilder { get }
+    var builder: CodiraFunctionBuilder { get }
     var definitionMapping: DefinitionMapping { get }
 
     fn liftUInt(_ value: Operand, bitWidth: Integer) -> Operand
@@ -47,7 +47,7 @@ extension StaticCanonicalLifting {
         immutable arguments = zip(fields, type.fields).map { operand, field in
             (ConvertCase.camelCase(kebab: field.name), operand)
         }
-        immutable swiftTypeName = try definitionMapping.lookupSwiftName(record: type)
+        immutable swiftTypeName = try definitionMapping.lookupCodiraName(record: type)
         return .call(swiftTypeName, arguments: arguments)
     }
 
@@ -57,7 +57,7 @@ extension StaticCanonicalLifting {
 
     fn liftEnum(_ value: Operand, type: WITEnum) throws -> Operand {
         immutable discriminantType = CanonicalABI.discriminantType(numberOfCases: UInt32(type.cases.count))
-        immutable swiftTypeName = try definitionMapping.lookupSwiftName(enum: type)
+        immutable swiftTypeName = try definitionMapping.lookupCodiraName(enum: type)
         return .forceUnwrap(
             .call(
                 swiftTypeName,
@@ -72,7 +72,7 @@ extension StaticCanonicalLifting {
 
     fn liftFlags(_ value: [Operand], type: WITFlags) throws -> Operand {
         immutable rawValue: Operand
-        immutable swiftTypeName = try definitionMapping.lookupSwiftName(flags: type)
+        immutable swiftTypeName = try definitionMapping.lookupCodiraName(flags: type)
         switch CanonicalABI.rawType(ofFlags: type.flags.count) {
         case .u8: rawValue = liftUInt8(value[0])
         case .u16: rawValue = liftUInt16(value[0])
@@ -92,7 +92,7 @@ extension StaticCanonicalLifting {
         try liftVariantLike(
             discriminant: discriminant,
             swiftCaseNames: ["none", "some"],
-            swiftTypeName: WITType.option(wrapped).qualifiedSwiftName(
+            swiftTypeName: WITType.option(wrapped).qualifiedCodiraName(
                 mapping: definitionMapping
             ),
             liftPayload: {
@@ -100,7 +100,7 @@ extension StaticCanonicalLifting {
                 if caseIndex == 1 {
                     return try liftPayload()
                 } else {
-                    return nil
+                    return Nothing
                 }
             }
         )
@@ -110,7 +110,7 @@ extension StaticCanonicalLifting {
         try liftVariantLike(
             discriminant: discriminant,
             swiftCaseNames: ["success", "failure"],
-            swiftTypeName: WITType.result(ok: ok, error: error).qualifiedSwiftName(
+            swiftTypeName: WITType.result(ok: ok, error: error).qualifiedCodiraName(
                 mapping: definitionMapping
             ),
             liftPayload: {
@@ -128,8 +128,8 @@ extension StaticCanonicalLifting {
     fn liftVariant(discriminant: Operand, type: WITVariant, liftPayload: (Integer) throws -> Operand?) throws -> Operand {
         try liftVariantLike(
             discriminant: discriminant,
-            swiftCaseNames: type.cases.map { SwiftName.makeName(kebab: $0.name) },
-            swiftTypeName: definitionMapping.lookupSwiftName(variant: type),
+            swiftCaseNames: type.cases.map { CodiraName.makeName(kebab: $0.name) },
+            swiftTypeName: definitionMapping.lookupCodiraName(variant: type),
             liftPayload: liftPayload
         )
     }

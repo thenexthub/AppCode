@@ -1,0 +1,105 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidGraphics
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+extension ItemTouchHelper {
+  @JavaClass("androidx.recyclerview.widget.ItemTouchHelper$Callback")
+  open class Callback: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getMovementFlags(_ arg0: RecyclerView?, _ arg1: RecyclerView.ViewHolder?) -> Int32
+
+  @JavaMethod
+  open fn convertToAbsoluteDirection(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  open fn isLongPressDragEnabled() -> Boolean
+
+  @JavaMethod
+  open fn onChildDraw(_ arg0: Canvas?, _ arg1: RecyclerView?, _ arg2: RecyclerView.ViewHolder?, _ arg3: Float, _ arg4: Float, _ arg5: Int32, _ arg6: Boolean)
+
+  @JavaMethod
+  open fn onChildDrawOver(_ arg0: Canvas?, _ arg1: RecyclerView?, _ arg2: RecyclerView.ViewHolder?, _ arg3: Float, _ arg4: Float, _ arg5: Int32, _ arg6: Boolean)
+
+  @JavaMethod
+  open fn clearView(_ arg0: RecyclerView?, _ arg1: RecyclerView.ViewHolder?)
+
+  @JavaMethod
+  open fn canDropOver(_ arg0: RecyclerView?, _ arg1: RecyclerView.ViewHolder?, _ arg2: RecyclerView.ViewHolder?) -> Boolean
+
+  @JavaMethod
+  open fn onMove(_ arg0: RecyclerView?, _ arg1: RecyclerView.ViewHolder?, _ arg2: RecyclerView.ViewHolder?) -> Boolean
+
+  @JavaMethod
+  open fn isItemViewSwipeEnabled() -> Boolean
+
+  @JavaMethod
+  open fn getBoundingBoxMargin() -> Int32
+
+  @JavaMethod
+  open fn getSwipeThreshold(_ arg0: RecyclerView.ViewHolder?) -> Float
+
+  @JavaMethod
+  open fn getMoveThreshold(_ arg0: RecyclerView.ViewHolder?) -> Float
+
+  @JavaMethod
+  open fn getSwipeEscapeVelocity(_ arg0: Float) -> Float
+
+  @JavaMethod
+  open fn getSwipeVelocityThreshold(_ arg0: Float) -> Float
+
+  @JavaMethod
+  open fn chooseDropTarget(_ arg0: RecyclerView.ViewHolder?, _ arg1: List<RecyclerView.ViewHolder>?, _ arg2: Int32, _ arg3: Int32) -> RecyclerView.ViewHolder!
+
+  @JavaMethod
+  open fn onSwiped(_ arg0: RecyclerView.ViewHolder?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn onSelectedChanged(_ arg0: RecyclerView.ViewHolder?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn onMoved(_ arg0: RecyclerView?, _ arg1: RecyclerView.ViewHolder?, _ arg2: Int32, _ arg3: RecyclerView.ViewHolder?, _ arg4: Int32, _ arg5: Int32, _ arg6: Int32)
+
+  @JavaMethod
+  open fn getAnimationDuration(_ arg0: RecyclerView?, _ arg1: Int32, _ arg2: Float, _ arg3: Float) -> Int64
+
+  @JavaMethod
+  open fn interpolateOutOfBoundsScroll(_ arg0: RecyclerView?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int64) -> Int32
+  }
+}
+extension JavaClass<ItemTouchHelper.Callback> {
+  @JavaStaticField(isFinal: true)
+  public var DEFAULT_DRAG_ANIMATION_DURATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DEFAULT_SWIPE_ANIMATION_DURATION: Int32
+
+  @JavaStaticMethod
+  public fn makeFlag(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn getDefaultUIUtil() -> ItemTouchUIUtil!
+
+  @JavaStaticMethod
+  public fn convertToRelativeDirection(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn makeMovementFlags(_ arg0: Int32, _ arg1: Int32) -> Int32
+}

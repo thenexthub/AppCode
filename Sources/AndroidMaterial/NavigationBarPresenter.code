@@ -1,0 +1,49 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidOS
+import AndroidView
+import JavaKit
+import JavaRuntime
+
+@JavaClass("com.google.android.material.navigation.NavigationBarPresenter")
+open class NavigationBarPresenter: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn onSaveInstanceState() -> Parcelable!
+
+  @JavaMethod
+  open fn onRestoreInstanceState(_ arg0: Parcelable?)
+
+  @JavaMethod
+  open fn setMenuView(_ arg0: NavigationBarMenuView?)
+
+  @JavaMethod
+  open fn updateMenuView(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn flagActionItems() -> Boolean
+
+  @JavaMethod
+  open fn setUpdateSuspended(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setId(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getId() -> Int32
+}

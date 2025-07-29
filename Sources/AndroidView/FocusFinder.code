@@ -1,0 +1,36 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidGraphics
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.view.FocusFinder")
+open class FocusFinder: JavaObject {
+  @JavaMethod
+  open fn findNextFocus(_ arg0: ViewGroup?, _ arg1: View?, _ arg2: Int32) -> View!
+
+  @JavaMethod
+  open fn findNextFocusFromRect(_ arg0: ViewGroup?, _ arg1: Rect?, _ arg2: Int32) -> View!
+
+  @JavaMethod
+  open fn findNextKeyboardNavigationCluster(_ arg0: View?, _ arg1: View?, _ arg2: Int32) -> View!
+
+  @JavaMethod
+  open fn findNearestTouchable(_ arg0: ViewGroup?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: [Int32]) -> View!
+}
+extension JavaClass<FocusFinder> {
+  @JavaStaticMethod
+  public fn getInstance() -> FocusFinder!
+}

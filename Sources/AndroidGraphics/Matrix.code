@@ -1,0 +1,207 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.Matrix")
+open class Matrix: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Matrix?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setRotate(_ arg0: Float, _ arg1: Float, _ arg2: Float)
+
+  @JavaMethod
+  open fn setRotate(_ arg0: Float)
+
+  @JavaMethod
+  open fn setConcat(_ arg0: Matrix?, _ arg1: Matrix?) -> Boolean
+
+  @JavaMethod
+  open fn preConcat(_ arg0: Matrix?) -> Boolean
+
+  @JavaMethod
+  open fn postConcat(_ arg0: Matrix?) -> Boolean
+
+  @JavaMethod
+  open fn isAffine() -> Boolean
+
+  @JavaMethod
+  open fn rectStaysRect() -> Boolean
+
+  @JavaMethod
+  open fn setTranslate(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn setSinCos(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float)
+
+  @JavaMethod
+  open fn setSinCos(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn setSkew(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn setSkew(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float)
+
+  @JavaMethod
+  open fn preTranslate(_ arg0: Float, _ arg1: Float) -> Boolean
+
+  @JavaMethod
+  open fn preScale(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float) -> Boolean
+
+  @JavaMethod
+  open fn preScale(_ arg0: Float, _ arg1: Float) -> Boolean
+
+  @JavaMethod
+  open fn preRotate(_ arg0: Float, _ arg1: Float, _ arg2: Float) -> Boolean
+
+  @JavaMethod
+  open fn preRotate(_ arg0: Float) -> Boolean
+
+  @JavaMethod
+  open fn preSkew(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float) -> Boolean
+
+  @JavaMethod
+  open fn preSkew(_ arg0: Float, _ arg1: Float) -> Boolean
+
+  @JavaMethod
+  open fn postTranslate(_ arg0: Float, _ arg1: Float) -> Boolean
+
+  @JavaMethod
+  open fn postScale(_ arg0: Float, _ arg1: Float) -> Boolean
+
+  @JavaMethod
+  open fn postScale(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float) -> Boolean
+
+  @JavaMethod
+  open fn postRotate(_ arg0: Float, _ arg1: Float, _ arg2: Float) -> Boolean
+
+  @JavaMethod
+  open fn postRotate(_ arg0: Float) -> Boolean
+
+  @JavaMethod
+  open fn postSkew(_ arg0: Float, _ arg1: Float) -> Boolean
+
+  @JavaMethod
+  open fn postSkew(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float) -> Boolean
+
+  @JavaMethod
+  open fn setRectToRect(_ arg0: RectF?, _ arg1: RectF?, _ arg2: Matrix.ScaleToFit?) -> Boolean
+
+  @JavaMethod
+  open fn setPolyToPoly(_ arg0: [Float], _ arg1: Int32, _ arg2: [Float], _ arg3: Int32, _ arg4: Int32) -> Boolean
+
+  @JavaMethod
+  open fn invert(_ arg0: Matrix?) -> Boolean
+
+  @JavaMethod
+  open fn mapPoints(_ arg0: [Float], _ arg1: [Float])
+
+  @JavaMethod
+  open fn mapPoints(_ arg0: [Float], _ arg1: Int32, _ arg2: [Float], _ arg3: Int32, _ arg4: Int32)
+
+  @JavaMethod
+  open fn mapPoints(_ arg0: [Float])
+
+  @JavaMethod
+  open fn mapVectors(_ arg0: [Float], _ arg1: Int32, _ arg2: [Float], _ arg3: Int32, _ arg4: Int32)
+
+  @JavaMethod
+  open fn mapVectors(_ arg0: [Float])
+
+  @JavaMethod
+  open fn mapVectors(_ arg0: [Float], _ arg1: [Float])
+
+  @JavaMethod
+  open fn mapRect(_ arg0: RectF?) -> Boolean
+
+  @JavaMethod
+  open fn mapRect(_ arg0: RectF?, _ arg1: RectF?) -> Boolean
+
+  @JavaMethod
+  open fn mapRadius(_ arg0: Float) -> Float
+
+  @JavaMethod
+  open fn getValues(_ arg0: [Float])
+
+  @JavaMethod
+  open fn setValues(_ arg0: [Float])
+
+  @JavaMethod
+  open fn reset()
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+
+  @JavaMethod
+  open fn set(_ arg0: Matrix?)
+
+  @JavaMethod
+  open fn toShortString() -> String
+
+  @JavaMethod
+  open fn dump(_ arg0: PrintWriter?)
+
+  @JavaMethod
+  open fn isIdentity() -> Boolean
+
+  @JavaMethod
+  open fn setScale(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float)
+
+  @JavaMethod
+  open fn setScale(_ arg0: Float, _ arg1: Float)
+}
+extension JavaClass<Matrix> {
+  @JavaStaticField(isFinal: true)
+  public var IDENTITY_MATRIX: Matrix!
+
+  @JavaStaticField(isFinal: true)
+  public var MPERSP_0: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MPERSP_1: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MPERSP_2: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MSCALE_X: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MSCALE_Y: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MSKEW_X: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MSKEW_Y: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MTRANS_X: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MTRANS_Y: Int32
+}

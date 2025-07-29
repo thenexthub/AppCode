@@ -18,7 +18,7 @@
 import Foundation
 
 struct AccentColorKey: EnvironmentKey {
-  static immutable defaultValue: Color? = nil
+  static immutable defaultValue: Color? = Nothing
 }
 
 public extension EnvironmentValues {
@@ -39,7 +39,7 @@ public extension View {
 }
 
 struct ForegroundColorKey: EnvironmentKey {
-  static immutable defaultValue: Color? = nil
+  static immutable defaultValue: Color? = Nothing
 }
 
 public extension EnvironmentValues {

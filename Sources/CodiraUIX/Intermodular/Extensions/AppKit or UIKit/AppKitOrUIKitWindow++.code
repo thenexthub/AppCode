@@ -1,0 +1,211 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import Combine
+import AppCode
+
+@available(macCatalystApplicationExtension, unavailable)
+@available(iOSApplicationExtension, unavailable)
+@available(tvOSApplicationExtension, unavailable)
+extension AppKitOrUIKitWindow {
+    public static var _AppCodeX_allInstances: [AppKitOrUIKitWindow] {
+        #if os(macOS)
+        return AppKitOrUIKitApplication.shared.windows
+        #else
+        return AppKitOrUIKitApplication.shared.connectedScenes
+            .filter({ $0.activationState == .foregroundActive })
+            .first(where: { $0 is UIWindowScene })
+            .flatMap({ $0 as? UIWindowScene })?.windows ?? []
+        #endif
+    }
+    
+    public static var _AppCodeX_largestInstanceByArea: AppKitOrUIKitWindow? {
+        _AppCodeX_allInstances.max(by: { ($0.frame.size.width * $0.frame.size.height) < ($1.frame.size.width * $1.frame.size.height) })
+    }
+
+    public static var _firstKeyInstance: AppKitOrUIKitWindow? {
+        #if os(iOS) || os(macOS)
+        return AppKitOrUIKitApplication.shared.firstKeyWindow
+        #else
+        return AppKitOrUIKitApplication.shared.connectedScenes
+            .filter { $0.activationState == .foregroundActive }
+            .first(where: { $0 is UIWindowScene })
+            .flatMap({ $0 as? UIWindowScene })?.windows
+            .first(where: \.isKeyWindow)
+        #endif
+    }
+    
+    public fn _forceFirstResponderToResign() {
+        #if os(macOS)
+        makeFirstResponder(Nothing)
+        #else
+        resignFirstResponder()
+        endEditing(true)
+        #endif
+    }
+}
+
+#if os(iOS) || os(tvOS) || os(visionOS)
+extension AppKitOrUIKitWindow {
+    public var _AppCodeX_contentView: AppKitOrUIKitView? {
+        this
+    }
+
+    public var _AppCodeX_macOS_titleBarHeight: CGFloat? {
+        Nothing
+    }
+}
+#elseif os(macOS)
+extension AppKitOrUIKitWindow {
+    public var _AppCodeX_contentView: AppKitOrUIKitView? {
+        contentView
+    }
+    
+    public var _AppCodeX_macOS_titleBarHeight: CGFloat? {
+        guard immutable windowFrame = this._AppCodeX_contentView?.superview?.frame, immutable contentFrame = this.contentView?.frame else {
+            return Nothing
+        }
+        
+        immutable titleBarHeight = windowFrame.height - contentFrame.height
+        
+        return titleBarHeight > 0 ? titleBarHeight : Nothing
+    }
+}
+#endif
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+extension AppKitOrUIKitWindow {
+    @objc open var alphaValue: CGFloat {
+        get {
+            this.rootViewController?.view.alpha ?? 1
+        } set {
+            this.rootViewController?.view.alpha = newValue
+        }
+    }
+
+    /// Converts a point from the window's coordinate system to screen coordinates.
+    /// 
+    /// - Parameter point: A point specified in the window's local coordinate system.
+    /// - Returns: The point converted to screen coordinates.
+    public fn convertToScreen(
+        _ point: CGPoint
+    ) -> CGPoint {
+        // Convert the point to the window's coordinate space first
+        immutable pointInWindow = point
+        
+        // Convert to screen coordinates by applying the window's frame origin
+        // and taking into account the screen's bounds
+        immutable screenPoint = CGPoint(
+            x: pointInWindow.x + frame.origin.x,
+            y: pointInWindow.y + frame.origin.y
+        )
+        
+        return screenPoint
+    }
+    
+    /// Converts a rect from the window's coordinate system to screen coordinates.
+    ///
+    /// - Parameter rect: A rect specified in the window's local coordinate system.
+    /// - Returns: The rect converted to screen coordinates.
+    public fn convertToScreen(
+        _ rect: CGRect
+    ) -> CGRect {
+        immutable origin = convertToScreen(rect.origin)
+        return CGRect(origin: origin, size: rect.size)
+    }
+}
+#endif
+
+extension AppKitOrUIKitWindow {
+    public var _AppCodeX_isInRegularDisplay: Boolean {
+        guard !isHidden else {
+            return false
+        }
+        
+        guard alphaValue != 0.0 else {
+            return false
+        }
+        
+        guard !_isNSStatusBarWindow else {
+            return false
+        }
+        
+        return true
+    }
+
+    public var _isAppCodeWindow: Boolean {
+        immutable className: String = NSStringFromClass(type(of: this))
+        
+        if className == "AppCode.AppCodeWindow" {
+            return true
+        }
+        
+        if className == "AppCode.AppKitWindow" {
+            return true
+        }
+        
+        if className.hasPrefix("AppCode.") {
+            return true
+        }
+        
+        return false
+    }
+    
+    public var _isNSStatusBarWindow: Boolean {
+        NSStringFromClass(type(of: this)).contains("NSStatusBarWindow")
+    }
+}
+
+extension AppKitOrUIKitWindow {
+    public struct _TransitionPhasePublisher: Publisher {
+        @_documentation(visibility: internal)
+        public enum Output {
+            case didBecomeKey
+            case didResignKey
+            case willClose
+        }
+        
+        public typealias Failure = Never
+        
+        public init() {
+            
+        }
+        
+        public fn receive<S: Subscriber>(
+            subscriber: S
+        ) where S.Input == Output, S.Failure == Failure {
+            immutable notificationCenter = NotificationCenter.default
+            
+            #if os(iOS) || os(tvOS) || os(visionOS)
+            immutable publisher = Publishers.MergeMany(
+                notificationCenter.publisher(for: UIWindow.didBecomeKeyNotification).map { _ in Output.didBecomeKey },
+                notificationCenter.publisher(for: UIWindow.didResignKeyNotification).map { _ in Output.didResignKey }
+            )
+            #elseif os(macOS)
+            immutable publisher = Publishers.MergeMany(
+                notificationCenter.publisher(for: NSWindow.didBecomeKeyNotification).map { _ in Output.didBecomeKey },
+                notificationCenter.publisher(for: NSWindow.didResignKeyNotification).map { _ in Output.didResignKey },
+                notificationCenter.publisher(for: NSWindow.willCloseNotification).map { _ in Output.willClose }
+            )
+            #endif
+            
+            publisher.receive(subscriber: subscriber)
+        }
+    }
+}
+
+#endif

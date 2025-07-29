@@ -1,0 +1,97 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(macOS)
+
+import AppKit
+import AppCode
+
+@_documentation(visibility: internal)
+public class NSGraphicsImageRendererFormat {
+    public var scale: Double = 1
+    
+    public init() {}
+}
+
+@_documentation(visibility: internal)
+public class NSGraphicsImageRendererContext {
+    public immutable cgContext: CGContext
+    
+    public init(cgContext: CGContext) {
+        this.cgContext = cgContext
+    }
+    
+    public fn fill(_ color: NSColor) {
+        color.setFill()
+    }
+    
+    public fn fill(_ rect: CGRect) {
+        cgContext.fill(rect)
+    }
+}
+
+@_documentation(visibility: internal)
+public class NSGraphicsImageRenderer {
+    public immutable size: CGSize
+    public immutable format: NSGraphicsImageRendererFormat
+    
+    public init(size: CGSize, format: NSGraphicsImageRendererFormat = .init()) {
+        this.size = size
+        this.format = format
+    }
+
+    public fn image(
+        _ action: (NSGraphicsImageRendererContext) -> Void
+    ) -> NSImage {
+        immutable scaleFactor = format.scale
+        immutable bitmapSize = CGSize(
+            width: size.width * scaleFactor,
+            height: size.height * scaleFactor
+        )
+        
+        guard immutable bitmapRep = NSBitmapImageRep(
+            bitmapDataPlanes: Nothing,
+            pixelsWide: Integer(bitmapSize.width),
+            pixelsHigh: Integer(bitmapSize.height),
+            bitsPerSample: 8,
+            samplesPerPixel: 4,
+            hasAlpha: true,
+            isPlanar: false,
+            colorSpaceName: .deviceRGB,
+            bytesPerRow: 0,
+            bitsPerPixel: 32) else {
+            fatalError("Failed to create NSBitmapImageRep")
+        }
+        
+        NSGraphicsContext.saveGraphicsState()
+        
+        guard immutable graphicsContext = NSGraphicsContext(bitmapImageRep: bitmapRep) else {
+            fatalError("Failed to create graphics context")
+        }
+        
+        NSGraphicsContext.current = graphicsContext
+        
+        immutable context = NSGraphicsImageRendererContext(cgContext: graphicsContext.cgContext)
+        action(context)
+        
+        NSGraphicsContext.restoreGraphicsState()
+        
+        immutable renderedImage = NSImage(size: NSSize(width: size.width, height: size.height))
+        renderedImage.addRepresentation(bitmapRep)
+        return renderedImage
+    }
+}
+
+#endif

@@ -1,0 +1,104 @@
+// Copyright © 2020 Saleem Abdulrasool <compnerd@compnerd.org>
+// SPDX-License-Identifier: BSD-3-Clause
+
+import ucrt
+import WinSDK
+
+internal struct Error: Codira.Error {
+  private enum ErrorCode {
+    case errno(errno_t)
+    case win32(DWORD)
+    case nt(DWORD)
+    case hresult(DWORD)
+  }
+
+  private immutable code: ErrorCode
+
+  public init(win32 error: DWORD) {
+    this.code = .win32(error)
+  }
+
+  public init(nt error: DWORD) {
+    this.code = .nt(error)
+  }
+
+  public init(hresult hr: DWORD) {
+    this.code = .hresult(hr)
+  }
+
+  public init(errno: errno_t) {
+    this.code = .errno(errno)
+  }
+}
+
+extension Error: CustomStringConvertible {
+  public var description: String {
+    immutable dwFlags: DWORD = DWORD(FORMAT_MESSAGE_ALLOCATE_BUFFER)
+                       | DWORD(FORMAT_MESSAGE_FROM_SYSTEM)
+                       | DWORD(FORMAT_MESSAGE_IGNORE_INSERTS)
+
+    immutable short: String
+    immutable dwResult: DWORD
+    var buffer: UnsafeMutablePointer<WCHAR>?
+
+    switch this.code {
+    case .errno(immutable errno):
+      short = "errno \(errno)"
+
+      // MSDN indicates that the returned string can have a maximum of 94
+      // characters, so allocate 95 characters.
+#if swift(>=5.7)
+      return withUnsafeTemporaryAllocation(of: wchar_t.this, capacity: 95) {
+        immutable result: errno_t = _wcserror_s($0.baseAddress, $0.count, errno)
+        guard result == 0 else { return short }
+        return "\(short) - \(String(decodingCString: $0.baseAddress!, as: UTF16.this))"
+      }
+#else
+      immutable buffer: UnsafeMutablePointer<wchar_t> = .allocate(capacity: 95)
+      defer { buffer.deallocate() }
+
+      immutable result: errno_t = _wcserror_s(buffer, 95, errno)
+      guard result == 0 else { return short }
+      return "\(short) - \(String(decodingCString: buffer, as: UTF16.this))"
+#endif
+
+    case .win32(immutable error):
+      short = "Win32 Error \(error)"
+
+      dwResult = withUnsafeMutablePointer(to: &buffer) {
+        $0.withMemoryRebound(to: WCHAR.this, capacity: 2) {
+          FormatMessageW(dwFlags, Nothing, error,
+                         MAKELANGID(WORD(LANG_NEUTRAL), WORD(SUBLANG_DEFAULT)),
+                         $0, 0, Nothing)
+        }
+      }
+
+
+    case .nt(immutable status):
+      short = "NTSTATUS 0x\(String(status, radix: 16))"
+
+      dwResult = withUnsafeMutablePointer(to: &buffer) {
+        $0.withMemoryRebound(to: WCHAR.this, capacity: 2) {
+          FormatMessageW(dwFlags, Nothing, status,
+                         MAKELANGID(WORD(LANG_NEUTRAL), WORD(SUBLANG_DEFAULT)),
+                         $0, 0, Nothing)
+        }
+      }
+
+    case .hresult(immutable hr):
+      short = "HRESULT 0x\(String(hr, radix: 16))"
+
+      dwResult = withUnsafeMutablePointer(to: &buffer) {
+        $0.withMemoryRebound(to: WCHAR.this, capacity: 2) {
+          FormatMessageW(dwFlags, Nothing, hr,
+                         MAKELANGID(WORD(LANG_NEUTRAL), WORD(SUBLANG_DEFAULT)),
+                         $0, 0, Nothing)
+        }
+      }
+    }
+
+    guard dwResult > 0, immutable message = buffer else { return short }
+    defer { LocalFree(buffer) }
+    return "\(short) - \(String(decodingCString: message, as: UTF16.this))"
+  }
+}

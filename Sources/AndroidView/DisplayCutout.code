@@ -1,0 +1,72 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidGraphics
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.view.DisplayCutout")
+open class DisplayCutout: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Insets?, _ arg1: Rect?, _ arg2: Rect?, _ arg3: Rect?, _ arg4: Rect?, _ arg5: Insets?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Rect?, _ arg1: List<Rect>?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Insets?, _ arg1: Rect?, _ arg2: Rect?, _ arg3: Rect?, _ arg4: Rect?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getWaterfallInsets() -> Insets!
+
+  @JavaMethod
+  open fn getSafeInsetTop() -> Int32
+
+  @JavaMethod
+  open fn getSafeInsetBottom() -> Int32
+
+  @JavaMethod
+  open fn getSafeInsetLeft() -> Int32
+
+  @JavaMethod
+  open fn getSafeInsetRight() -> Int32
+
+  @JavaMethod
+  open fn getBoundingRects() -> List<Rect>!
+
+  @JavaMethod
+  open fn getBoundingRectLeft() -> Rect!
+
+  @JavaMethod
+  open fn getBoundingRectTop() -> Rect!
+
+  @JavaMethod
+  open fn getBoundingRectRight() -> Rect!
+
+  @JavaMethod
+  open fn getBoundingRectBottom() -> Rect!
+
+  @JavaMethod
+  open fn getCutoutPath() -> Path!
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+}

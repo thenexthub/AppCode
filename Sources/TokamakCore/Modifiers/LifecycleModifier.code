@@ -10,17 +10,17 @@
 // FIXME: these should have standalone implementations
 public extension View {
   @_spi(TokamakCore)
-  fn _onMount(perform action: (() -> ())? = nil) -> some View {
+  fn _onMount(perform action: (() -> ())? = Nothing) -> some View {
     modifier(_AppearanceActionModifier(appear: action))
   }
 
   @_spi(TokamakCore)
-  fn _onUpdate(perform action: (() -> ())? = nil) -> some View {
+  fn _onUpdate(perform action: (() -> ())? = Nothing) -> some View {
     modifier(_LifecycleActionModifier(update: action))
   }
 
   @_spi(TokamakCore)
-  fn _onUnmount(perform action: (() -> ())? = nil) -> some View {
+  fn _onUnmount(perform action: (() -> ())? = Nothing) -> some View {
     modifier(_AppearanceActionModifier(disappear: action))
   }
 }

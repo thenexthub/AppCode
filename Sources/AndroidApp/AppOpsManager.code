@@ -1,0 +1,233 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.app.AppOpsManager")
+open class AppOpsManager: JavaObject {
+  @JavaMethod
+  open fn startWatchingMode(_ arg0: String, _ arg1: String, _ arg2: AppOpsManager.OnOpChangedListener?)
+
+  @JavaMethod
+  open fn startWatchingMode(_ arg0: String, _ arg1: String, _ arg2: Int32, _ arg3: AppOpsManager.OnOpChangedListener?)
+
+  @JavaMethod
+  open fn stopWatchingMode(_ arg0: AppOpsManager.OnOpChangedListener?)
+
+  @JavaMethod
+  open fn stopWatchingActive(_ arg0: AppOpsManager.OnOpActiveChangedListener?)
+
+  @JavaMethod
+  open fn unsafeCheckOp(_ arg0: String, _ arg1: Int32, _ arg2: String) -> Int32
+
+  @JavaMethod
+  open fn checkOp(_ arg0: String, _ arg1: Int32, _ arg2: String) -> Int32
+
+  @JavaMethod
+  open fn unsafeCheckOpNoThrow(_ arg0: String, _ arg1: Int32, _ arg2: String) -> Int32
+
+  @JavaMethod
+  open fn checkOpNoThrow(_ arg0: String, _ arg1: Int32, _ arg2: String) -> Int32
+
+  @JavaMethod
+  open fn unsafeCheckOpRaw(_ arg0: String, _ arg1: Int32, _ arg2: String) -> Int32
+
+  @JavaMethod
+  open fn unsafeCheckOpRawNoThrow(_ arg0: String, _ arg1: Int32, _ arg2: String) -> Int32
+
+  @JavaMethod
+  open fn noteOp(_ arg0: String, _ arg1: Int32, _ arg2: String) -> Int32
+
+  @JavaMethod
+  open fn noteOp(_ arg0: String, _ arg1: Int32, _ arg2: String, _ arg3: String, _ arg4: String) -> Int32
+
+  @JavaMethod
+  open fn noteOpNoThrow(_ arg0: String, _ arg1: Int32, _ arg2: String) -> Int32
+
+  @JavaMethod
+  open fn noteOpNoThrow(_ arg0: String, _ arg1: Int32, _ arg2: String, _ arg3: String, _ arg4: String) -> Int32
+
+  @JavaMethod
+  open fn noteProxyOp(_ arg0: String, _ arg1: String, _ arg2: Int32, _ arg3: String, _ arg4: String) -> Int32
+
+  @JavaMethod
+  open fn noteProxyOp(_ arg0: String, _ arg1: String) -> Int32
+
+  @JavaMethod
+  open fn noteProxyOpNoThrow(_ arg0: String, _ arg1: String, _ arg2: Int32, _ arg3: String, _ arg4: String) -> Int32
+
+  @JavaMethod
+  open fn noteProxyOpNoThrow(_ arg0: String, _ arg1: String) -> Int32
+
+  @JavaMethod
+  open fn noteProxyOpNoThrow(_ arg0: String, _ arg1: String, _ arg2: Int32) -> Int32
+
+  @JavaMethod
+  open fn checkPackage(_ arg0: Int32, _ arg1: String)
+
+  @JavaMethod
+  open fn startOp(_ arg0: String, _ arg1: Int32, _ arg2: String) -> Int32
+
+  @JavaMethod
+  open fn startOp(_ arg0: String, _ arg1: Int32, _ arg2: String, _ arg3: String, _ arg4: String) -> Int32
+
+  @JavaMethod
+  open fn startOpNoThrow(_ arg0: String, _ arg1: Int32, _ arg2: String, _ arg3: String, _ arg4: String) -> Int32
+
+  @JavaMethod
+  open fn startOpNoThrow(_ arg0: String, _ arg1: Int32, _ arg2: String) -> Int32
+
+  @JavaMethod
+  open fn startProxyOp(_ arg0: String, _ arg1: Int32, _ arg2: String, _ arg3: String, _ arg4: String) -> Int32
+
+  @JavaMethod
+  open fn startProxyOpNoThrow(_ arg0: String, _ arg1: Int32, _ arg2: String, _ arg3: String, _ arg4: String) -> Int32
+
+  @JavaMethod
+  open fn finishOp(_ arg0: String, _ arg1: Int32, _ arg2: String)
+
+  @JavaMethod
+  open fn finishOp(_ arg0: String, _ arg1: Int32, _ arg2: String, _ arg3: String)
+
+  @JavaMethod
+  open fn finishProxyOp(_ arg0: String, _ arg1: Int32, _ arg2: String, _ arg3: String)
+
+  @JavaMethod
+  open fn isOpActive(_ arg0: String, _ arg1: Int32, _ arg2: String) -> Boolean
+}
+extension JavaClass<AppOpsManager> {
+  @JavaStaticField(isFinal: true)
+  public var MODE_ALLOWED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MODE_DEFAULT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MODE_ERRORED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MODE_FOREGROUND: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MODE_IGNORED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_ADD_VOICEMAIL: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_ANSWER_PHONE_CALLS: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_BODY_SENSORS: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_CALL_PHONE: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_CAMERA: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_COARSE_LOCATION: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_FINE_LOCATION: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_GET_USAGE_STATS: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_MOCK_LOCATION: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_MONITOR_HIGH_POWER_LOCATION: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_MONITOR_LOCATION: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_PICTURE_IN_PICTURE: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_PROCESS_OUTGOING_CALLS: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_READ_CALENDAR: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_READ_CALL_LOG: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_READ_CELL_BROADCASTS: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_READ_CONTACTS: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_READ_EXTERNAL_STORAGE: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_READ_PHONE_NUMBERS: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_READ_PHONE_STATE: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_READ_SMS: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_RECEIVE_MMS: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_RECEIVE_SMS: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_RECEIVE_WAP_PUSH: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_RECORD_AUDIO: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_SEND_SMS: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_SYSTEM_ALERT_WINDOW: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_USE_FINGERPRINT: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_USE_SIP: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_WRITE_CALENDAR: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_WRITE_CALL_LOG: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_WRITE_CONTACTS: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_WRITE_EXTERNAL_STORAGE: String
+
+  @JavaStaticField(isFinal: true)
+  public var OPSTR_WRITE_SETTINGS: String
+
+  @JavaStaticField(isFinal: true)
+  public var WATCH_FOREGROUND_CHANGES: Int32
+
+  @JavaStaticMethod
+  public fn permissionToOp(_ arg0: String) -> String
+}

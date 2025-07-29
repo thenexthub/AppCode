@@ -1,0 +1,43 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidGraphics
+import JavaKit
+import JavaRuntime
+
+extension DynamicColorsOptions {
+  @JavaClass("com.google.android.material.color.DynamicColorsOptions$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setThemeOverlay(_ arg0: Int32) -> DynamicColorsOptions.Builder!
+
+  @JavaMethod
+  open fn setPrecondition(_ arg0: DynamicColors.Precondition?) -> DynamicColorsOptions.Builder!
+
+  @JavaMethod
+  open fn setOnAppliedCallback(_ arg0: DynamicColors.OnAppliedCallback?) -> DynamicColorsOptions.Builder!
+
+  @JavaMethod
+  open fn setContentBasedSource(_ arg0: Int32) -> DynamicColorsOptions.Builder!
+
+  @JavaMethod
+  open fn setContentBasedSource(_ arg0: Bitmap?) -> DynamicColorsOptions.Builder!
+
+  @JavaMethod
+  open fn build() -> DynamicColorsOptions!
+  }
+}

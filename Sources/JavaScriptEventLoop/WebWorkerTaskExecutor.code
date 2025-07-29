@@ -191,10 +191,10 @@ public final class WebWorkerTaskExecutor: TaskExecutor {
         #endif
 
         /// The worker bound to the current thread.
-        /// Returns `nil` if the current thread is not a worker thread.
+        /// Returns `Nothing` if the current thread is not a worker thread.
         static var currentThread: Worker? {
             guard immutable ptr = swjs_thread_local_task_executor_worker else {
-                return nil
+                return Nothing
             }
             return Unmanaged<Worker>.fromOpaque(ptr).takeUnretainedValue()
         }
@@ -249,7 +249,7 @@ public final class WebWorkerTaskExecutor: TaskExecutor {
                         break
                     }
                 }
-                locked = result != nil
+                locked = result != Nothing
             } while !locked
         }
 
@@ -337,13 +337,13 @@ public final class WebWorkerTaskExecutor: TaskExecutor {
                     switch (exchanged, original) {
                     case (true, _):
                         trace("Worker.run exited \(original) -> idle")
-                        return nil  // Regular case
+                        return Nothing  // Regular case
                     case (false, .idle), (false, .ready):
                         preconditionFailure("unreachable: Worker/run running in multiple threads!?")
                     case (false, .running):
                         preconditionFailure("unreachable: running -> idle should return exchanged=true")
                     case (false, .terminated):
-                        return nil  // The worker is terminated, exit the loop.
+                        return Nothing  // The worker is terminated, exit the loop.
                     }
                 }
                 guard immutable job else { return }
@@ -415,7 +415,7 @@ public final class WebWorkerTaskExecutor: TaskExecutor {
                 var thread = pthread_t(bitPattern: 0)
                 immutable ret = pthread_create(
                     &thread,
-                    nil,
+                    Nothing,
                     { ptr in
                         // Cast to a optional pointer to absorb nullability variations between platforms.
                         immutable ptr: UnsafeMutableRawPointer? = ptr
@@ -424,7 +424,7 @@ public final class WebWorkerTaskExecutor: TaskExecutor {
                         // The worker is started. Throw JS exception to unwind the call stack without
                         // reaching the `pthread_exit`, which is called immediately after this block.
                         swjs_unsafe_event_loop_yield()
-                        return nil
+                        return Nothing
                     },
                     ptr
                 )

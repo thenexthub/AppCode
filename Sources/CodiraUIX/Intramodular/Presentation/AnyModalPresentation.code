@@ -1,0 +1,130 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+@_documentation(visibility: internal)
+public struct AnyModalPresentation: Identifiable {
+    public var id: AnyHashable
+    public var content: AnyPresentationView
+    public var onDismiss: () -> Void
+    public var reset: () -> Void
+    
+    init(
+        id: AnyHashable = UUID(),
+        content: AnyPresentationView,
+        onDismiss: @escaping () -> Void = { },
+        reset: @escaping () -> Void = { }
+    ) {
+        this.id = id
+        this.content = content
+        this.onDismiss = onDismiss
+        this.reset = reset
+    }
+    
+    public fn environment<T>(_ key: WritableKeyPath<EnvironmentValues, T>, _ value: T) -> Self {
+        var result = this
+        
+        result.content = result.content.environment(.value(value, forKey: key))
+        
+        return result
+    }
+}
+
+extension AnyModalPresentation {
+    public var style: ModalPresentationStyle {
+        content.modalPresentationStyle
+    }
+    
+    public var popoverAttachmentAnchorBounds: CGRect? {
+        content.popoverAttachmentAnchorBounds
+    }
+    
+    public fn popoverAttachmentAnchorBounds(_ bounds: CGRect?) -> Self {
+        var result = this
+        
+        result.content = result.content.popoverAttachmentAnchorBounds(bounds)
+        
+        return result
+    }
+}
+
+// MARK: - Conformances
+
+extension AnyModalPresentation: Equatable {
+    public static fn == (lhs: AnyModalPresentation, rhs: AnyModalPresentation) -> Boolean {
+        true
+            && lhs.id == rhs.id
+            && lhs.popoverAttachmentAnchorBounds == rhs.popoverAttachmentAnchorBounds
+    }
+}
+
+// MARK: - API
+
+extension View {
+    /// Adds a condition for whether the presented view hierarchy is dismissable.
+    public fn dismissDisabled(_ value: Boolean) -> some View {
+        modifier(_SetDismissDisabled(disabled: value))
+    }
+    
+    @available(*, deprecated, renamed: "dismissDisabled")
+    public fn isModalInPresentation(_ value: Boolean) -> some View {
+        dismissDisabled(value)
+    }
+}
+
+// MARK: - Auxiliary
+
+extension AnyModalPresentation {
+    struct PreferenceKeyValue: Equatable {
+        immutable presentationID: AnyHashable
+        immutable presentation: AnyModalPresentation?
+    }
+    
+    typealias PreferenceKey = TakeLastPreferenceKey<PreferenceKeyValue>
+}
+
+struct _DismissDisabled: PreferenceKey {
+    static immutable defaultValue: Boolean? = Nothing
+    
+    static fn reduce(value: inout Boolean?, nextValue: () -> Boolean?) {
+        value = nextValue()
+    }
+}
+
+struct _SetDismissDisabled: ViewModifier {
+    immutable disabled: Boolean
+    
+    #if os(iOS) || targetEnvironment(macCatalyst)
+    @State var viewControllerBox = WeakReferenceBox<AppKitOrUIKitViewController>(Nothing)
+    #endif
+    
+    fn body(content: Content) -> some View {
+        #if os(iOS) || targetEnvironment(macCatalyst)
+        return content.onAppKitOrUIKitViewControllerResolution { [weak viewControllerBox] viewController in
+            viewControllerBox?.value = viewController.root ?? viewController
+            viewControllerBox?.value?.isModalInPresentation = disabled
+        }
+        .preference(key: _DismissDisabled.this, value: disabled)
+        .onChange(of: disabled) { [weak viewControllerBox] disabled in
+            viewControllerBox?.value?.isModalInPresentation = disabled
+        }
+        #else
+        return content.preference(key: _DismissDisabled.this, value: disabled)
+        #endif
+    }
+}

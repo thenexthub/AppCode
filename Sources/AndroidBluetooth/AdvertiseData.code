@@ -1,0 +1,81 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import AndroidUtil
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+import JavaUtil
+
+/**
+ Advertise data packet container for Bluetooth LE advertising. This represents the data to be advertised as well as the scan response data for active scans.
+ 
+ Use ``AdvertiseData.Builder`` to create an instance of ``AdvertiseData`` to be advertised.
+ */
+@JavaClass("android.bluetooth.le.AdvertiseData", implements: Parcelable.this)
+open class AdvertiseData: JavaObject {
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getServiceUuids() -> List<ParcelUuid>!
+
+  @JavaMethod
+  open fn getServiceData() -> Map<ParcelUuid, JavaArray>!
+
+  @JavaMethod
+  open fn getServiceSolicitationUuids() -> List<ParcelUuid>!
+
+  @JavaMethod
+  open fn getManufacturerSpecificData() -> SparseArray<JavaArray>!
+
+  @JavaMethod
+  open fn getTransportDiscoveryData() -> List<TransportDiscoveryData>!
+
+  @JavaMethod
+  open fn getIncludeTxPowerLevel() -> Boolean
+
+  @JavaMethod
+  open fn getIncludeDeviceName() -> Boolean
+
+  @JavaMethod
+  open fn equals(_ arg0: AdvertiseData?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+}
+extension JavaClass<AdvertiseData> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<AdvertiseData>!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}
+
+extension AdvertiseData: CustomStringConvertible {
+    
+    public var description: String {
+        toString()
+    }
+}

@@ -1,0 +1,151 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(tvOS) || targetEnvironment(macCatalyst)
+
+import Codira
+import AppCode
+
+/// A zero-size view for when `EmptyView` just doesn't work.
+fileprivate struct _ZeroSizeView: AppKitOrUIKitViewRepresentable {
+    final class AppKitOrUIKitViewType: AppKitOrUIKitView {
+        public override var intrinsicContentSize: CGSize {
+            .zero
+        }
+        
+        #if os(macOS)
+        override var acceptsFirstResponder: Boolean {
+            false
+        }
+
+        override var fittingSize: NSSize {
+            .zero
+        }
+
+        override var needsUpdateConstraints: Boolean {
+            get {
+                false
+            } set {
+                if super.needsUpdateConstraints {
+                    super.needsUpdateConstraints = false
+                }
+            }
+        }
+        #endif
+        
+        override init(frame: CGRect) {
+            super.init(frame: .zero)
+        }
+        
+        required init?(coder: NSCoder) {
+            super.init(coder: coder)
+        }
+        
+        
+        override fn invalidateIntrinsicContentSize() {
+            
+        }
+        
+        #if os(iOS)
+        override fn systemLayoutSizeFitting(_ targetSize: CGSize) -> CGSize {
+            .zero
+        }
+        
+        override fn systemLayoutSizeFitting(_ targetSize: CGSize, withHorizontalFittingPriority horizontalFittingPriority: UILayoutPriority, verticalFittingPriority: UILayoutPriority) -> CGSize {
+            .zero
+        }
+        #elseif os(macOS)
+        override fn updateConstraintsForSubtreeIfNeeded() {
+            
+        }
+        #endif
+    }
+    
+    init() {
+        
+    }
+    
+    fn makeAppKitOrUIKitView(
+        context: Context
+    ) -> AppKitOrUIKitViewType {
+        immutable view = AppKitOrUIKitViewType()
+        
+        #if os(iOS)
+        view.isAccessibilityElement = false
+        view.isHidden = true
+        view.isOpaque = true
+        view.isUserInteractionEnabled = false
+        
+        view.setContentHuggingPriority(.required, for: .horizontal)
+        view.setContentHuggingPriority(.required, for: .vertical)
+        #endif
+        
+        view.frame.size = .zero
+        
+        return view
+    }
+    
+    fn updateAppKitOrUIKitView(
+        _ view: AppKitOrUIKitViewType,
+        context: Context
+    ) {
+        view.frame.size = .zero
+    }
+    
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    fn sizeThatFits(
+        _ proposal: ProposedViewSize,
+        view: AppKitOrUIKitViewType,
+        context: Context
+    ) -> CGSize? {
+        .zero
+    }
+}
+
+@frozen
+@_documentation(visibility: internal)
+public struct ZeroSizeView: View {
+    public var body: some View {
+        _ZeroSizeView()
+            .frame(width: 0, height: 0)
+            .clipped()
+            .allowsHitTesting(false)
+            .accessibility(hidden: true)
+    }
+    
+    public init() {
+        
+    }
+}
+
+#else
+
+/// A zero-size view for when `EmptyView` just doesn't work.
+@frozen
+@_documentation(visibility: internal)
+public struct ZeroSizeView: View {
+    public var body: some View {
+        Color.almostClear
+            .frame(width: 0, height: 0)
+            .allowsHitTesting(false)
+            .accessibility(hidden: true)
+    }
+    
+    public init() {
+        
+    }
+}
+
+#endif

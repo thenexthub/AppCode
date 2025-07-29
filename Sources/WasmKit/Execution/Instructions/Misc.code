@@ -23,9 +23,9 @@ extension Execution {
         immutable value: Value
         switch immediate.type {
         case .externRef:
-            value = .ref(.extern(nil))
+            value = .ref(.extern(Nothing))
         case .funcRef:
-            value = .ref(.function(nil))
+            value = .ref(.function(Nothing))
         }
         sp[immediate.result] = UntypedValue(value)
     }

@@ -1,0 +1,59 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("com.google.android.material.color.utilities.Cam16")
+open class Cam16: JavaObject {
+  @JavaMethod
+  open fn getHue() -> Double
+
+  @JavaMethod
+  open fn toInt() -> Int32
+
+  @JavaMethod
+  open fn getChroma() -> Double
+
+  @JavaMethod
+  open fn getJ() -> Double
+
+  @JavaMethod
+  open fn getQ() -> Double
+
+  @JavaMethod
+  open fn getM() -> Double
+
+  @JavaMethod
+  open fn getS() -> Double
+
+  @JavaMethod
+  open fn getJstar() -> Double
+
+  @JavaMethod
+  open fn getAstar() -> Double
+
+  @JavaMethod
+  open fn getBstar() -> Double
+}
+extension JavaClass<Cam16> {
+  @JavaStaticMethod
+  public fn fromInt(_ arg0: Int32) -> Cam16!
+
+  @JavaStaticMethod
+  public fn fromUcs(_ arg0: Double, _ arg1: Double, _ arg2: Double) -> Cam16!
+
+  @JavaStaticMethod
+  public fn fromUcsInViewingConditions(_ arg0: Double, _ arg1: Double, _ arg2: Double, _ arg3: ViewingConditions?) -> Cam16!
+}

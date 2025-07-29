@@ -1,0 +1,42 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension Notification.CarExtender {
+  @JavaClass("android.app.Notification$CarExtender$UnreadConversation")
+  open class UnreadConversation: JavaObject {
+  @JavaMethod
+  open fn getMessages() -> [String]
+
+  @JavaMethod
+  open fn getRemoteInput() -> RemoteInput!
+
+  @JavaMethod
+  open fn getReplyPendingIntent() -> PendingIntent!
+
+  @JavaMethod
+  open fn getReadPendingIntent() -> PendingIntent!
+
+  @JavaMethod
+  open fn getParticipants() -> [String]
+
+  @JavaMethod
+  open fn getParticipant() -> String
+
+  @JavaMethod
+  open fn getLatestTimestamp() -> Int64
+  }
+}

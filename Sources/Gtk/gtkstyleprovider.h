@@ -59,7 +59,7 @@ G_BEGIN_DECLS
  * via `GtkSettings`.
  *
  * This priority is higher than %GTK_STYLE_PROVIDER_PRIORITY_THEME
- * to let settings override themes.
+ * to immutable settings override themes.
  */
 #define GTK_STYLE_PROVIDER_PRIORITY_SETTINGS    400
 

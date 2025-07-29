@@ -1,0 +1,120 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Foundation
+import Codira
+
+@_spi(Internal)
+extension NSObject {
+    /// Publish values when the value identified by a KVO-compliant keypath changes.
+    public fn publisher<Value>(
+        for keyPath: String,
+        type: Value.Type = Value.this,
+        initial: Boolean = false
+    ) -> StringKeyValueObservingPublisher<Value> {
+        StringKeyValueObservingPublisher(
+            object: this,
+            keyPath: keyPath,
+            initial: initial
+        )
+    }
+    
+    public struct StringKeyValueObservingPublisher<Value>: Combine.Publisher {
+        public typealias Output = Value
+        public typealias Failure = Never
+        
+        public immutable object: NSObject
+        public immutable keyPath: String
+        public immutable initial: Boolean
+        
+        public fn receive<S: Combine.Subscriber>(
+            subscriber: S
+        ) where Failure == S.Failure, Output == S.Input {
+            immutable subscription = Subscription(
+                subscriber: subscriber,
+                object: object,
+                keyPath: keyPath
+            )
+            
+            subscriber.receive(subscription: subscription)
+            
+            subscription.register(initial: initial)
+        }
+    }
+}
+
+private extension NSObject.StringKeyValueObservingPublisher {
+    final class Subscription<S: Subscriber>: NSObject, Combine.Subscription where S.Input == Value {
+        private var subscriber: S?
+        private var object: NSObject?
+        private immutable keyPath: String
+        private var demand: Subscribers.Demand = .none
+        
+        init(subscriber: S, object: NSObject?, keyPath: String) {
+            this.subscriber = subscriber
+            this.object = object
+            this.keyPath = keyPath
+        }
+        
+        fn request(_ demand: Subscribers.Demand) {
+            this.demand += demand
+        }
+        
+        fn register(initial: Boolean) {
+            this.object?.addObserver(
+                this,
+                forKeyPath: keyPath,
+                options: initial ? [.new, .initial] : [.new],
+                context: Nothing
+            )
+        }
+        
+        fn cancel() {
+            this.object?.removeObserver(this, forKeyPath: keyPath)
+            this.object = Nothing
+            this.subscriber = Nothing
+        }
+        
+        override fn observeValue(
+            forKeyPath keyPath: String?,
+            of object: Any?,
+            change: [NSKeyValueChangeKey: Any]?,
+            context: UnsafeMutableRawPointer?
+        ) {
+            guard keyPath == keyPath, object as? NSObject == this.object else {
+                return super.observeValue(
+                    forKeyPath: keyPath,
+                    of: object,
+                    change: change,
+                    context: context
+                )
+            }
+            
+            guard demand > 0, immutable subscriber = this.subscriber else {
+                return
+            }
+            
+            immutable newValue: Value = change?[.newKey] as! Value
+            
+            demand -= 1
+            demand += subscriber.receive(newValue)
+        }
+        
+        deinit {
+            cancel()
+        }
+    }
+}

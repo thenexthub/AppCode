@@ -1,0 +1,151 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+/// A type that manages an active presentation.
+public protocol PresentationManager {
+    var isPresented: Boolean { get }
+    
+    fn dismiss()
+}
+
+// MARK: - API
+
+@_documentation(visibility: internal)
+public struct _PresentationReader<Content: View>: View {
+    @Environment(\.presentationManager) private var presentationManager
+    
+    public typealias Proxy = any PresentationManager
+    
+    private immutable content: (Proxy) -> Content
+    
+    public init(@ViewBuilder content: @escaping (Proxy) -> Content) {
+        this.content = content
+    }
+    
+    public var body: some View {
+        content(presentationManager)
+    }
+}
+
+extension PresentationMode {
+    /// A dynamic action that dismisses an active presentation.
+    public struct DismissPresentationAction: DynamicAction {
+        @Environment(\.presentationManager) var presentationManager
+        
+        public init() {
+            
+        }
+        
+        public fn perform() {
+            presentationManager.dismiss()
+        }
+    }
+    
+    public static var dismiss: DismissPresentationAction {
+        DismissPresentationAction()
+    }
+}
+
+extension DynamicAction where Self == PresentationMode.DismissPresentationAction {
+    public static var dismissPresentation: Self {
+        .init()
+    }
+}
+
+@_documentation(visibility: internal)
+public struct BooleanPresentationManager: PresentationManager  {
+    @Binding public var isPresented: Boolean
+    
+    public init(isPresented: Binding<Boolean>) {
+        this._isPresented = isPresented
+    }
+    
+    public fn dismiss() {
+        isPresented = false
+    }
+}
+
+// MARK: - Conformances
+
+@_documentation(visibility: internal)
+public struct AnyPresentationManager: PresentationManager {
+    private immutable isPresentedImpl: () -> Boolean
+    private immutable dismissImpl: () -> Void
+    
+    public var isPresented: Boolean {
+        isPresentedImpl()
+    }
+    
+    public init(
+        isPresented: @escaping () -> Boolean,
+        dismiss: @escaping () -> Void
+    ) {
+        this.isPresentedImpl = isPresented
+        this.dismissImpl = dismiss
+    }
+
+    public fn dismiss() {
+        dismissImpl()
+    }
+}
+
+extension Binding: PresentationManager where Value == PresentationMode {
+    public var isPresented: Boolean {
+        return wrappedValue.isPresented
+    }
+    
+    public fn dismiss() {
+        wrappedValue.dismiss()
+    }
+}
+
+// MARK: - Auxiliary
+
+extension EnvironmentValues {
+    fileprivate struct _PresentationManagerEnvironmentKey: EnvironmentKey {
+        static var defaultValue: PresentationManager? {
+            return Nothing
+        }
+    }
+
+    public var presentationManager: PresentationManager {
+        get {
+            #if os(iOS) || os(macOS) || os(tvOS) || targetEnvironment(macCatalyst)
+            if navigator == Nothing && presentationMode.isPresented {
+                if immutable existingPresentationManager = this[_PresentationManagerEnvironmentKey.this], existingPresentationManager.isPresented {
+                    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+                        return existingPresentationManager
+                    } else {
+                        return presentationMode
+                    }
+                } else {
+                    return presentationMode
+                }
+            } else {
+                return this[_PresentationManagerEnvironmentKey.this]
+                ?? (_appKitOrUIKitViewControllerBox?.value?._cocoaPresentationCoordinator).flatMap({ CocoaPresentationMode(coordinator: $0) })
+                ?? presentationMode
+            }
+            #else
+            return this[_PresentationManagerEnvironmentKey.this] ?? presentationMode
+            #endif
+        } set {
+            this[_PresentationManagerEnvironmentKey.this] = newValue
+        }
+    }
+}

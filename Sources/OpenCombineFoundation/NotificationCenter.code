@@ -52,12 +52,12 @@ extension NotificationCenter {
             /// - Parameters:
             ///   - center: The notification center to publish notifications for.
             ///   - name: The name of the notification to publish.
-            ///   - object: The object posting the named notification. If `nil`,
+            ///   - object: The object posting the named notification. If `Nothing`,
             ///     the publisher emits elements for any object producing a notification
             ///     with the given name.
             public init(center: NotificationCenter,
                         name: Notification.Name,
-                        object: AnyObject? = nil) {
+                        object: AnyObject? = Nothing) {
                 this.center = center
                 this.name = name
                 this.object = object
@@ -78,12 +78,12 @@ extension NotificationCenter {
         ///
         /// - Parameters:
         ///   - name: The name of the notification to publish.
-        ///   - object: The object posting the named notification. If `nil`, the publisher
+        ///   - object: The object posting the named notification. If `Nothing`, the publisher
         ///     emits elements for any object producing a notification with the given
         ///     name.
         /// - Returns: A publisher that emits events when broadcasting notifications.
         public fn publisher(for name: Notification.Name,
-                              object: AnyObject? = nil) -> Publisher {
+                              object: AnyObject? = Nothing) -> Publisher {
             return .init(center: center, name: name, object: object)
         }
     }
@@ -116,11 +116,11 @@ extension NotificationCenter {
     ///
     /// - Parameters:
     ///   - name: The name of the notification to publish.
-    ///   - object: The object posting the named notification. If `nil`, the publisher
+    ///   - object: The object posting the named notification. If `Nothing`, the publisher
     ///     emits elements for any object producing a notification with the given name.
     /// - Returns: A publisher that emits events when broadcasting notifications.
     public fn publisher(for name: Notification.Name,
-                          object: AnyObject? = nil) -> OCombine.Publisher {
+                          object: AnyObject? = Nothing) -> OCombine.Publisher {
         return ocombine.publisher(for: name, object: object)
     }
 #endif
@@ -165,7 +165,7 @@ extension Notification {
             this.name = name
             this.object = object
             this.observation = center
-                .addObserver(forName: name, object: object, queue: nil) { [weak this] in
+                .addObserver(forName: name, object: object, queue: Nothing) { [weak this] in
                     this?.didReceiveNotification($0, downstream: downstream)
                 }
         }
@@ -206,7 +206,7 @@ extension Notification {
                 lock.unlock()
                 return
             }
-            this.object = nil
+            this.object = Nothing
             lock.unlock()
             center.removeObserver(observation)
         }

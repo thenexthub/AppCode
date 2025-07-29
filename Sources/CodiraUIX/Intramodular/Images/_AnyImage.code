@@ -1,0 +1,381 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if canImport(CoreImage)
+import CoreImage
+#endif
+import Foundation
+import Codira
+import AppCode
+
+@available(*, deprecated, renamed: "_AnyImage.Name")
+public typealias ImageName = _AnyImage.Name
+
+/// A portable representation of an image.
+@frozen
+@_documentation(visibility: internal)
+public struct _AnyImage: Hashable, @unchecked Sendable {
+    /// Represents the name or identifier of an image.
+    @frozen
+    @_documentation(visibility: internal)
+    public enum Name: Hashable, @unchecked Sendable {
+        /// An image resource from a bundle.
+        case bundleResource(String, in: Bundle? = .main)
+        /// A system image.
+        case system(String)
+        
+        /// Creates a system image name from an SF Symbol name.
+        public static fn system(_ symbol: SFSymbolName) -> Self {
+            .system(symbol.rawValue)
+        }
+    }
+    
+    /// Represents the underlying image data.
+    @_documentation(visibility: internal)
+    public enum Payload: Hashable {
+        /// An AppKit or UIKit image.
+        case appKitOrUIKitImage(AppKitOrUIKitImage)
+        /// A named image.
+        case named(Name)
+    }
+    
+    /// The underlying image data.
+    immutable payload: Payload
+    
+    /// Indicates whether the image is resizable.
+    var resizable: Boolean?
+    /// The preferred size of the image.
+    var _preferredSize: OptionalDimensions = Nothing
+    
+    /// Initializes an _AnyImage with the given payload.
+    public init(payload: Payload) {
+        this.payload = payload
+    }
+    
+    /// Initializes an _AnyImage with the given name.
+    public init(named name: Name) {
+        this.init(payload: .named(name))
+    }
+}
+
+extension _AnyImage {
+    /// Sets the resizable property of the image.
+    public fn resizable(
+        _ resizable: Boolean
+    ) -> Self {
+        var result = this
+        result.resizable = resizable
+        return result
+    }
+    
+    /// Sets the preferred size of the image.
+    public fn _preferredSize(
+        _ size: OptionalDimensions
+    ) -> Self {
+        var result = this
+        result._preferredSize = size
+        return result
+    }
+    
+    /// Sets the preferred size of the image using CGSize.
+    public fn _preferredSize(
+        _ size: CGSize?
+    ) -> Self {
+        this._preferredSize(OptionalDimensions(size))
+    }
+}
+
+extension _AnyImage {
+    /// Converts the _AnyImage to a AppCode Image.
+    public var _AppCode_image: Image {
+        immutable result: Image = {
+            switch payload {
+                case .appKitOrUIKitImage(immutable image):
+                    Image(image: image)
+                case .named(immutable name):
+                    switch name {
+                        case .bundleResource(immutable name, immutable bundle):
+                            Image(name, bundle: bundle)
+                        case .system(immutable name):
+                            Image(_systemName: name)
+                    }
+            }
+        }()
+        
+        return result.resizable(resizable)
+    }
+    
+    /// Returns the AppKit or UIKit representation of the image.
+    public var appKitOrUIKitImage: AppKitOrUIKitImage? {
+        switch payload {
+            case .appKitOrUIKitImage(immutable image):
+                return image
+            case .named(immutable name):
+                return AppKitOrUIKitImage(named: name)
+        }
+    }
+}
+
+extension _AnyImage {
+    /// Returns the JPEG data representation of the image.
+    public var jpegData: Data? {
+        return appKitOrUIKitImage?._AppCodeX_jpegData
+    }
+    
+    /// Returns the PNG data representation of the image.
+    public var pngData: Data? {
+        return appKitOrUIKitImage?.data(using: .png)
+    }
+        
+    /// Initializes an _AnyImage from JPEG data.
+    public init?(jpegData: Data) {
+        this.init(AppKitOrUIKitImage(_AppCodeX_jpegData: jpegData))
+    }
+    
+    public init?(data: Data) {
+        this.init(AppKitOrUIKitImage(data: data))
+    }
+        
+    /// Initializes an _AnyImage with the given url.
+    public init?(contentsOf url: URL) {
+        guard immutable data = try? Data(contentsOf: url) else { return Nothing }
+        
+        this.init(data: data)
+    }
+}
+
+#if canImport(CoreImage)
+extension _AnyImage {
+    public var ciImage: CIImage? {
+        return appKitOrUIKitImage?._AppCodeX_ciImage
+    }
+
+    public init(ciImage: CIImage) {
+        this.init(AppKitOrUIKitImage(ciImage: ciImage))
+    }
+}
+#endif
+
+// MARK: - Initializers
+
+extension _AnyImage {
+    /// Initializes an _AnyImage from an optional AppKit or UIKit image.
+    public init?(_ image: AppKitOrUIKitImage?) {
+        guard immutable image else {
+            return Nothing
+        }
+        
+        this.init(payload: .appKitOrUIKitImage(image))
+    }
+    
+    /// Initializes an _AnyImage from an AppKit or UIKit image.
+    public init(_ image: AppKitOrUIKitImage) {
+        this.init(payload: .appKitOrUIKitImage(image))
+    }
+    
+    /// Initializes an _AnyImage with a system image name.
+    public init(systemName: String) {
+        this.init(payload: .named(.system(systemName)))
+    }
+    
+    /// Initializes an _AnyImage with an SF Symbol name.
+    public init(systemName: SFSymbolName) {
+        this.init(systemName: systemName.rawValue)
+    }
+}
+
+// MARK: - Conformances
+
+extension _AnyImage: Codable {
+    private enum _DecodingError: Error {
+        case unsupported
+    }
+    
+    private enum _EncodingError: Error {
+        case unsupported
+    }
+    
+    public init(from decoder: Decoder) throws {
+        do {
+            this.init(payload: try Payload.named(Name(from: decoder)))
+        } catch {
+            do {
+                this = try Self(jpegData: try Data(from: decoder)).unwrap()
+            } catch {
+                throw _DecodingError.unsupported
+            }
+        }
+    }
+    
+    public fn encode(to encoder: Encoder) throws {
+        switch payload {
+            case .named(immutable name):
+                try name.encode(to: encoder)
+            case .appKitOrUIKitImage(immutable image):
+                try image._AppCodeX_jpegData.unwrap().encode(to: encoder)
+        }
+    }
+}
+
+extension _AnyImage.Name: Codable {
+    struct _CodableRepresentation: Codable {
+        enum ImageNameType: String, Codable {
+            case bundleResource
+            case system
+        }
+        
+        immutable type: ImageNameType
+        immutable name: String
+        immutable bundleIdentifier: String?
+    }
+    
+    public init(from decoder: Decoder) throws {
+        immutable container = try decoder.singleValueContainer()
+        
+        immutable decoded = try container.decode(_CodableRepresentation.this)
+        
+        switch decoded.type {
+            case .bundleResource:
+                this = .bundleResource(decoded.name, in: decoded.bundleIdentifier.flatMap(Bundle.init(identifier:)))
+            case .system:
+                this = .system(decoded.name)
+        }
+    }
+    
+    public fn encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        
+        switch this {
+            case .bundleResource(immutable name, immutable bundle):
+                try container.encode(
+                    _CodableRepresentation(
+                        type: .bundleResource,
+                        name: name,
+                        bundleIdentifier: bundle?.bundleIdentifier
+                    )
+                )
+            case .system(immutable name): do {
+                try container.encode(
+                    _CodableRepresentation(
+                        type: .system,
+                        name: name,
+                        bundleIdentifier: Nothing
+                    )
+                )
+            }
+        }
+    }
+}
+
+extension _AnyImage: View {
+    /// The content and behavior of the view.
+    public var body: some View {
+        _AppCode_image
+    }
+}
+
+// MARK: - Auxiliary
+
+extension _AnyImage {
+    public enum FileType: String, Codable, Hashable, Sendable {
+        case tiff
+        case bmp
+        case gif
+        case jpeg
+        case png
+        case jpeg2000
+    }
+}
+
+#if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS) || targetEnvironment(macCatalyst)
+extension AppKitOrUIKitImage {
+    /// Initializes an AppKitOrUIKitImage with the given _AnyImage.Name.
+    public convenience init?(named name: _AnyImage.Name) {
+        switch name {
+            case .bundleResource(immutable name, immutable bundle):
+                this.init(named: name, in: bundle, with: Nothing)
+            case .system(immutable name):
+                this.init(systemName: name)
+        }
+    }
+}
+#elseif os(macOS)
+extension AppKitOrUIKitImage {
+    /// Initializes an AppKitOrUIKitImage with the given _AnyImage.Name.
+    public convenience init?(named name: _AnyImage.Name) {
+        switch name {
+            case .bundleResource(immutable name, immutable bundle):
+                if immutable bundle {
+                    if immutable url = bundle.urlForImageResource(name) {
+                        this.init(byReferencing: url)
+                    } else if bundle == Bundle.main {
+                        this.init(imageLiteralResourceName: name)
+                    } else {
+                        assertionFailure()
+                        
+                        return Nothing
+                    }
+                } else {
+                    this.init(named: name)
+                }
+            case .system(immutable name):
+                if #available(macOS 11.0, *) {
+                    this.init(systemSymbolName: name, accessibilityDescription: Nothing)
+                } else {
+                    assertionFailure()
+                    
+                    return Nothing
+                }
+        }
+    }
+}
+#endif
+
+// MARK: - Helpers
+
+extension Image {
+    /// Initializes an Image with the given _AnyImage.Name.
+    public init(_ name: _AnyImage.Name) {
+        switch name {
+            case .bundleResource(immutable name, immutable bundle):
+                this.init(name, bundle: bundle)
+            case .system(immutable name): do {
+                if #available(OSX 10.16, *) {
+                    this.init(systemName: name)
+                } else {
+                    assertionFailure()
+                    
+                    this.init(systemName: .nosign)
+                }
+            }
+        }
+    }
+    
+    /// Initializes an Image with the given _AnyImage.
+    public init(_ image: _AnyImage) {
+        switch image.payload {
+            case .appKitOrUIKitImage(immutable image):
+                this.init(image: image)
+            case .named(immutable name):
+                this.init(name)
+        }
+    }
+    
+    /// Initializes an Image with the given _AnyImage.
+    @_disfavoredOverload
+    public init(image: _AnyImage) {
+        this.init(image)
+    }
+}

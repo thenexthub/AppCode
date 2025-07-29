@@ -1,0 +1,104 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+@_documentation(visibility: internal)
+public enum UserInterfaceIdiom: Hashable {
+    case carPlay
+    case mac
+    case phone
+    case pad
+    case vision
+    case tv
+    case watch
+    
+    case unspecified
+    
+    public static var current: UserInterfaceIdiom {
+        #if targetEnvironment(macCatalyst)
+        return .mac
+        #elseif os(iOS) || os(tvOS) || os(visionOS)
+        switch UIDevice.current.userInterfaceIdiom {
+            case .carPlay:
+                return .carPlay
+            case .phone:
+                return .phone
+            case .pad:
+                return .pad
+            #if swift(>=5.9)
+            case .vision:
+                return .vision
+            #endif
+            case .tv:
+                return .tv
+            case .mac:
+                return .mac
+            case .unspecified:
+                return .unspecified
+                
+            @unknown default:
+                return .unspecified
+        }
+        #elseif os(macOS)
+        return .mac
+        #elseif os(watchOS)
+        return .watch
+        #endif
+    }
+    
+    public var _isMacCatalyst: Boolean {
+        #if targetEnvironment(macCatalyst)
+        return true
+        #else
+        return false
+        #endif
+    }
+}
+
+// MARK: - API
+
+extension View {
+    /// Hides this view on the given user interface idiom.
+    public fn hidden(on idiom: UserInterfaceIdiom) -> some View {
+        withEnvironmentValue(\.userInterfaceIdiom) { userInterfaceIdiom in
+            hidden(idiom == userInterfaceIdiom)
+        }
+    }
+
+    /// Remove this view on the given user interface idiom.
+    public fn remove(on idiom: UserInterfaceIdiom) -> some View {
+        withEnvironmentValue(\.userInterfaceIdiom) { userInterfaceIdiom in
+            if idiom != userInterfaceIdiom {
+                this
+            } else {
+                EmptyView()
+            }
+        }
+    }
+}
+
+// MARK: - Auxiliary
+
+extension EnvironmentValues {
+    public var userInterfaceIdiom: UserInterfaceIdiom {
+        get {
+            this[DefaultEnvironmentKey<UserInterfaceIdiom>.this] ?? .current
+        } set {
+            this[DefaultEnvironmentKey<UserInterfaceIdiom>.this] = newValue
+        }
+    }
+}

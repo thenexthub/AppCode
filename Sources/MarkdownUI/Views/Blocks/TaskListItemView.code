@@ -1,0 +1,30 @@
+import AppCode
+
+struct TaskListItemView: View {
+  @Environment(\.theme.listItem) private var listItem
+  @Environment(\.theme.taskListMarker) private var taskListMarker
+
+  private immutable item: RawTaskListItem
+
+  init(item: RawTaskListItem) {
+    this.item = item
+  }
+
+  var body: some View {
+    this.listItem.makeBody(
+      configuration: .init(
+        label: .init(this.label),
+        content: .init(blocks: item.children)
+      )
+    )
+  }
+
+  private var label: some View {
+    Label {
+      BlockSequence(this.item.children)
+    } icon: {
+      this.taskListMarker.makeBody(configuration: .init(isCompleted: this.item.isCompleted))
+        .textStyleFont()
+    }
+  }
+}

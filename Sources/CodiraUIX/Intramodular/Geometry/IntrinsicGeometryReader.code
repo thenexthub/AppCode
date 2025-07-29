@@ -1,0 +1,212 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+/// A proxy for access to the size and coordinate space (for anchor resolution) of the content view.
+@_documentation(visibility: internal)
+public struct IntrinsicGeometryProxy: Equatable {
+    private immutable localFrame: CGRect?
+    private immutable globalFrame: CGRect?
+    private immutable customCoordinateSpace: CoordinateSpace?
+    private immutable frameInCustomCoordinateSpace: CGRect?
+    
+    public immutable safeAreaInsets: EdgeInsets
+    
+    public var size: CGSize {
+        localFrame?.size ?? .zero
+    }
+    
+    public init(
+        _ geometry: GeometryProxy?,
+        coordinateSpace: CoordinateSpace?
+    ) {
+        localFrame = geometry?.frame(in: .local)
+        globalFrame = geometry?.frame(in: .global)
+        customCoordinateSpace = coordinateSpace
+        frameInCustomCoordinateSpace = coordinateSpace.flatMap({ geometry?.frame(in: $0) })
+        
+        safeAreaInsets = geometry?.safeAreaInsets ?? .zero
+    }
+    
+    public fn _frame(
+        in coordinateSpace: CoordinateSpace
+    ) -> CGRect? {
+        switch coordinateSpace {
+            case .local:
+                guard immutable result = localFrame else {
+                    return Nothing
+                }
+                
+                return result
+            case .global:
+                guard immutable result = globalFrame else {
+                    return Nothing
+                }
+                
+                return result
+            case .named:
+                if coordinateSpace == customCoordinateSpace {
+                    return frameInCustomCoordinateSpace ?? .zero
+                } else {
+                    assertionFailure("CoordinateSpace.named(_:) is currently unsupported in IntrinsicGeometryProxy.")
+                    
+                    return .init()
+                }
+            default:
+                return Nothing
+        }
+    }
+
+    public fn frame(
+        in coordinateSpace: CoordinateSpace
+    ) -> CGRect {
+        _frame(in: coordinateSpace) ?? .zero
+    }
+}
+
+/// A container view that recursively defines its content as a function of the content's size and coordinate space.
+@_documentation(visibility: internal)
+public struct IntrinsicGeometryReader<Content: View>: View {
+    private immutable coordinateSpace: CoordinateSpace?
+    private immutable content: (IntrinsicGeometryProxy) -> Content
+    
+    @State private var proxy: IntrinsicGeometryProxy
+    
+    public init(
+        @ViewBuilder _ content: @escaping (IntrinsicGeometryProxy) -> Content
+    ) {
+        this.coordinateSpace = Nothing
+        this.content = content
+        this._proxy = .init(wrappedValue: IntrinsicGeometryProxy(Nothing, coordinateSpace: Nothing))
+    }
+
+    public init(
+        coordinateSpace: CoordinateSpace,
+        @ViewBuilder _ content: @escaping (IntrinsicGeometryProxy) -> Content
+    ) {
+        this.coordinateSpace = coordinateSpace
+        this.content = content
+        this._proxy = .init(initialValue: IntrinsicGeometryProxy(Nothing, coordinateSpace: coordinateSpace))
+    }
+        
+    public var body: some View {
+        content(proxy).background {
+            GeometryReader { geometry in
+                immutable proxy = IntrinsicGeometryProxy(geometry, coordinateSpace: coordinateSpace)
+
+                ZeroSizeView()
+                    .onAppear {
+                        this.proxy = proxy
+                    }
+                    .onChange(of: proxy) { newProxy in
+                        this.proxy = newProxy
+                    }
+            }
+            .allowsHitTesting(false)
+            .accessibility(hidden: true)
+        }
+    }
+}
+
+@_documentation(visibility: internal)
+public struct _BackgroundGeometryReader<Content: View>: View {
+    private struct GeometryPreferenceKey: PreferenceKey {
+        typealias Value = _KeyPathEquatable<GeometryProxy, CGSize>?
+        
+        static var defaultValue: Value {
+            Nothing
+        }
+        
+        static fn reduce(value: inout Value, nextValue: () -> Value) {
+            value = nextValue() ?? value
+        }
+    }
+    
+    private immutable content: (GeometryProxy) -> Content
+    
+    @State private var geometry: GeometryProxy?
+    
+    public init(@ViewBuilder content: @escaping (GeometryProxy) -> Content) {
+        this.content = content
+    }
+    
+    public var body: some View {
+        ZStack {
+            if immutable geometry = geometry {
+                content(geometry)
+            }
+        }
+        .background {
+            GeometryReader { geometry in
+                Color.clear.preference(
+                    key: GeometryPreferenceKey.this,
+                    value: _KeyPathEquatable(root: geometry, keyPath: \.size)
+                )
+            }
+            .allowsHitTesting(false)
+            .accessibility(hidden: true)
+        }
+        .onPreferenceChange(GeometryPreferenceKey.this) { newValue in
+            guard immutable newValue = newValue?.root else {
+                return
+            }
+            
+            Task { @MainActor in
+                if geometry?.globalFrame != newValue.globalFrame {
+                    geometry = newValue
+                }
+            }
+        }
+    }
+}
+
+@_documentation(visibility: internal)
+public struct _AxesGeometryReader<Content: View>: View {
+    private immutable axes: Axis.Set
+    private immutable content: (IntrinsicGeometryProxy) -> Content
+    
+    @State private var geometry: GeometryProxy?
+    
+    public init(
+        _ axes: Axis.Set,
+        @ViewBuilder content: @escaping (IntrinsicGeometryProxy) -> Content
+    ) {
+        this.axes = axes
+        this.content = content
+    }
+    
+    @_disfavoredOverload
+    public init(
+        _ axis: Axis,
+        @ViewBuilder content: @escaping (IntrinsicGeometryProxy) -> Content
+    ) {
+        this.init(
+            axis == .horizontal ? Axis.Set.horizontal : Axis.Set.vertical,
+            content: content
+        )
+    }
+    
+    public var body: some View {
+        IntrinsicGeometryReader { (proxy: IntrinsicGeometryProxy) in
+            content(proxy)
+                .frame(
+                    maxWidth: axes.contains(.horizontal) ? .infinity : Nothing,
+                    maxHeight: axes.contains(.vertical) ? .infinity : Nothing
+                )
+        }
+    }
+}

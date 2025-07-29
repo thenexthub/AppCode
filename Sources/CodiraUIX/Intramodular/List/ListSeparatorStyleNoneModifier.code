@@ -1,0 +1,45 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+#if os(iOS) || targetEnvironment(macCatalyst)
+@_documentation(visibility: internal)
+public struct ListSeparatorStyleNoneModifier: ViewModifier {
+    @inlinable
+    public fn body(content: Content) -> some View {
+        content
+            .onAppear {
+                UITableView.appearance().separatorStyle = .none
+            }.onDisappear {
+                UITableView.appearance().separatorStyle = .singleLine
+            }
+    }
+    
+    @usableFromInline
+    init() {
+        
+    }
+}
+
+extension View {
+    @available(iOS, introduced: 13.4, deprecated: 14.0, message: "This no longer works on iOS 14.")
+    @inlinable
+    public fn listSeparatorStyleNone() -> some View {
+        modifier(ListSeparatorStyleNoneModifier())
+    }
+}
+#endif

@@ -1,0 +1,280 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidApp
+import JavaUtil
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.widget.RemoteViews")
+open class RemoteViews: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: RemoteViews?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: String, _ arg1: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: String, _ arg1: Int32, _ arg2: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: RemoteViews?, _ arg1: RemoteViews?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open override fn clone() -> RemoteViews!
+
+  @JavaMethod
+  open fn getPackage() -> String
+
+  @JavaMethod
+  open fn setBoolean(_ arg0: Int32, _ arg1: String, _ arg2: Boolean)
+
+  @JavaMethod
+  open fn setByte(_ arg0: Int32, _ arg1: String, _ arg2: Int8)
+
+  @JavaMethod
+  open fn setChar(_ arg0: Int32, _ arg1: String, _ arg2: UInt16)
+
+  @JavaMethod
+  open fn setShort(_ arg0: Int32, _ arg1: String, _ arg2: Int16)
+
+  @JavaMethod
+  open fn setInt(_ arg0: Int32, _ arg1: String, _ arg2: Int32)
+
+  @JavaMethod
+  open fn setLong(_ arg0: Int32, _ arg1: String, _ arg2: Int64)
+
+  @JavaMethod
+  open fn setFloat(_ arg0: Int32, _ arg1: String, _ arg2: Float)
+
+  @JavaMethod
+  open fn setDouble(_ arg0: Int32, _ arg1: String, _ arg2: Double)
+
+  @JavaMethod
+  open fn setColor(_ arg0: Int32, _ arg1: String, _ arg2: Int32)
+
+  @JavaMethod
+  open fn setContentDescription(_ arg0: Int32, _ arg1: CharSequence?)
+
+  @JavaMethod
+  open fn setAccessibilityTraversalBefore(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setAccessibilityTraversalAfter(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setCharSequenceAttr(_ arg0: Int32, _ arg1: String, _ arg2: Int32)
+
+  @JavaMethod
+  open fn setCompoundButtonChecked(_ arg0: Int32, _ arg1: Boolean)
+
+  @JavaMethod
+  open fn setRadioGroupChecked(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setLightBackgroundLayoutId(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setTextViewTextSize(_ arg0: Int32, _ arg1: Int32, _ arg2: Float)
+
+  @JavaMethod
+  open fn setTextViewCompoundDrawables(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32)
+
+  @JavaMethod
+  open fn setImageViewResource(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setChronometerCountDown(_ arg0: Int32, _ arg1: Boolean)
+
+  @JavaMethod
+  open fn setOnClickPendingIntent(_ arg0: Int32, _ arg1: PendingIntent?)
+
+  @JavaMethod
+  open fn setPendingIntentTemplate(_ arg0: Int32, _ arg1: PendingIntent?)
+
+  @JavaMethod
+  open fn setOnCheckedChangeResponse(_ arg0: Int32, _ arg1: RemoteViews.RemoteResponse?)
+
+  @JavaMethod
+  open fn setRelativeScrollPosition(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setViewLayoutMarginDimen(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn setViewLayoutMarginAttr(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn setViewLayoutMargin(_ arg0: Int32, _ arg1: Int32, _ arg2: Float, _ arg3: Int32)
+
+  @JavaMethod
+  open fn setViewLayoutWidthDimen(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setViewLayoutWidthAttr(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setViewLayoutHeight(_ arg0: Int32, _ arg1: Float, _ arg2: Int32)
+
+  @JavaMethod
+  open fn setViewLayoutHeightDimen(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setViewLayoutHeightAttr(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setViewOutlinePreferredRadius(_ arg0: Int32, _ arg1: Float, _ arg2: Int32)
+
+  @JavaMethod
+  open fn setViewOutlinePreferredRadiusDimen(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setViewOutlinePreferredRadiusAttr(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setColorStateListAttr(_ arg0: Int32, _ arg1: String, _ arg2: Int32)
+
+  @JavaMethod
+  open fn setLabelFor(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setEmptyView(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setTextColor(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn getLayoutId() -> Int32
+
+  @JavaMethod
+  open fn addStableView(_ arg0: Int32, _ arg1: RemoteViews?, _ arg2: Int32)
+
+  @JavaMethod
+  open fn setViewVisibility(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setTextViewText(_ arg0: Int32, _ arg1: CharSequence?)
+
+  @JavaMethod
+  open fn setChronometer(_ arg0: Int32, _ arg1: Int64, _ arg2: String, _ arg3: Boolean)
+
+  @JavaMethod
+  open fn setProgressBar(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Boolean)
+
+  @JavaMethod
+  open fn setOnClickResponse(_ arg0: Int32, _ arg1: RemoteViews.RemoteResponse?)
+
+  @JavaMethod
+  open fn setRemoteAdapter(_ arg0: Int32, _ arg1: RemoteViews.RemoteCollectionItems?)
+
+  @JavaMethod
+  open fn setScrollPosition(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setViewPadding(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32)
+
+  @JavaMethod
+  open fn setViewLayoutWidth(_ arg0: Int32, _ arg1: Float, _ arg2: Int32)
+
+  @JavaMethod
+  open fn setIntDimen(_ arg0: Int32, _ arg1: String, _ arg2: Float, _ arg3: Int32)
+
+  @JavaMethod
+  open fn setIntDimen(_ arg0: Int32, _ arg1: String, _ arg2: Int32)
+
+  @JavaMethod
+  open fn setIntDimenAttr(_ arg0: Int32, _ arg1: String, _ arg2: Int32)
+
+  @JavaMethod
+  open fn setColorAttr(_ arg0: Int32, _ arg1: String, _ arg2: Int32)
+
+  @JavaMethod
+  open fn setColorInt(_ arg0: Int32, _ arg1: String, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn setColorStateList(_ arg0: Int32, _ arg1: String, _ arg2: Int32)
+
+  @JavaMethod
+  open fn setFloatDimen(_ arg0: Int32, _ arg1: String, _ arg2: Float, _ arg3: Int32)
+
+  @JavaMethod
+  open fn setFloatDimen(_ arg0: Int32, _ arg1: String, _ arg2: Int32)
+
+  @JavaMethod
+  open fn setFloatDimenAttr(_ arg0: Int32, _ arg1: String, _ arg2: Int32)
+
+  @JavaMethod
+  open fn setString(_ arg0: Int32, _ arg1: String, _ arg2: String)
+
+  @JavaMethod
+  open fn setCharSequence(_ arg0: Int32, _ arg1: String, _ arg2: Int32)
+
+  @JavaMethod
+  open fn setCharSequence(_ arg0: Int32, _ arg1: String, _ arg2: CharSequence?)
+
+  @JavaMethod
+  open fn getViewId() -> Int32
+
+  @JavaMethod
+  open fn addView(_ arg0: Int32, _ arg1: RemoteViews?)
+
+  @JavaMethod
+  open fn setDisplayedChild(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn showNext(_ arg0: Int32)
+
+  @JavaMethod
+  open fn showPrevious(_ arg0: Int32)
+
+  @JavaMethod
+  open fn removeAllViews(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setTextViewCompoundDrawablesRelative(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32)
+}
+extension JavaClass<RemoteViews> {
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_CHECKED: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_SHARED_ELEMENT_BOUNDS: String
+
+  @JavaStaticField(isFinal: true)
+  public var MARGIN_BOTTOM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MARGIN_END: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MARGIN_LEFT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MARGIN_RIGHT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MARGIN_START: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MARGIN_TOP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

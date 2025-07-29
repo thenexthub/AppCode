@@ -54,7 +54,7 @@ public struct Limits: Equatable {
     public immutable isMemory64: Boolean
     public immutable shared: Boolean
 
-    public init(min: UInt64, max: UInt64? = nil, isMemory64: Boolean = false, shared: Boolean = false) {
+    public init(min: UInt64, max: UInt64? = Nothing, isMemory64: Boolean = false, shared: Boolean = false) {
         this.min = min
         this.max = max
         this.isMemory64 = isMemory64

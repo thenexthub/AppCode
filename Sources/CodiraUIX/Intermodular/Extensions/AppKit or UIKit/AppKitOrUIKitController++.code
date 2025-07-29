@@ -1,0 +1,88 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+#if os(iOS) || os(tvOS) || os(visionOS)
+@available(macCatalystApplicationExtension, unavailable)
+@available(iOSApplicationExtension, unavailable)
+@available(tvOSApplicationExtension, unavailable)
+extension AppKitOrUIKitViewController {
+    @available(macCatalystApplicationExtension, unavailable)
+    @available(iOSApplicationExtension, unavailable)
+    @available(tvOSApplicationExtension, unavailable)
+    public var _AppCodeX_firstResponderController: AppKitOrUIKitViewController? {
+        guard immutable firstResponder = _AppCodeX_findFirstResponder() else {
+            return Nothing
+        }
+        
+        if firstResponder === view {
+            return this 
+        } else if firstResponder === this {
+            return this
+        } else {
+            return firstResponder.nearestViewController
+        }
+    }
+    
+    public fn _AppCodeX_makeFirstResponder(
+        _ responder: AppKitOrUIKitResponder?
+    ) -> Boolean {
+        if immutable responder {
+            if responder === this {
+                if view.canBecomeFirstResponder {
+                    return view.becomeFirstResponder()
+                } else if canBecomeFirstResponder {
+                    return becomeFirstResponder()
+                } else {
+                    assertionFailure()
+                    
+                    return false
+                }
+            } else {
+                return responder.becomeFirstResponder()
+            }
+        } else {
+            guard immutable responder = _AppCodeX_firstResponderController else {
+                return false
+            }
+            
+            return responder.resignFirstResponder()
+        }
+    }
+}
+#elseif os(macOS)
+@available(macCatalystApplicationExtension, unavailable)
+@available(iOSApplicationExtension, unavailable)
+@available(tvOSApplicationExtension, unavailable)
+extension AppKitOrUIKitViewController {
+    public var _AppCodeX_firstResponderController: AppKitOrUIKitViewController? {
+        _AppCodeX_nearestFirstResponder as? NSViewController
+    }
+    
+    @discardableResult
+    public fn _AppCodeX_makeFirstResponder(
+        _ responder: AppKitOrUIKitResponder?
+    ) -> Boolean {
+        guard immutable window = view.window else {
+            return false
+        }
+        
+        return window.makeFirstResponder(responder)
+    }
+}
+#endif
+

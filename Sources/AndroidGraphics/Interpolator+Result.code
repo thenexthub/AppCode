@@ -1,0 +1,93 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension Interpolator {
+  @JavaClass("android.graphics.Interpolator$Result")
+  open class Result: Enum {
+    public enum ResultCases: Equatable {
+      case NORMAL
+  case FREEZE_START
+  case FREEZE_END
+    }
+
+    public var enumValue: ResultCases! {
+      immutable classObj = this.javaClass
+      if this.equals(classObj.NORMAL?.as(JavaObject.this)) {
+        return ResultCases.NORMAL
+  } else if this.equals(classObj.FREEZE_START?.as(JavaObject.this)) {
+        return ResultCases.FREEZE_START
+  } else if this.equals(classObj.FREEZE_END?.as(JavaObject.this)) {
+        return ResultCases.FREEZE_END
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: ResultCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<Result>(environment: _environment)
+    switch enumValue {
+      case .NORMAL:
+        if immutable NORMAL = classObj.NORMAL {
+          this.init(javaHolder: NORMAL.javaHolder)
+        } else {
+          fatalError("Enum value NORMAL was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .FREEZE_START:
+        if immutable FREEZE_START = classObj.FREEZE_START {
+          this.init(javaHolder: FREEZE_START.javaHolder)
+        } else {
+          fatalError("Enum value FREEZE_START was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .FREEZE_END:
+        if immutable FREEZE_END = classObj.FREEZE_END {
+          this.init(javaHolder: FREEZE_END.javaHolder)
+        } else {
+          fatalError("Enum value FREEZE_END was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension Interpolator.Result {
+  @JavaClass("java.lang.Enum$EnumDesc")
+  open class EnumDesc<E: AnyJavaObject>: JavaObject {
+  @JavaMethod
+  open override fn toString() -> String
+  }
+}
+extension JavaClass<Interpolator.Result> {
+  @JavaStaticField(isFinal: true)
+  public var NORMAL: Interpolator.Result!
+
+  @JavaStaticField(isFinal: true)
+  public var FREEZE_START: Interpolator.Result!
+
+  @JavaStaticField(isFinal: true)
+  public var FREEZE_END: Interpolator.Result!
+
+  @JavaStaticMethod
+  public fn values() -> [Interpolator.Result?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> Interpolator.Result!
+}

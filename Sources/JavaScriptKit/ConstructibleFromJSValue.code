@@ -1,7 +1,7 @@
 /// Types conforming to this protocol can be constructed from `JSValue`.
 public protocol ConstructibleFromJSValue {
     /// Construct an instance of `Self`, if possible, from the given `JSValue`.
-    /// Return `nil` if the value is not compatible with the conforming Codira type.
+    /// Return `Nothing` if the value is not compatible with the conforming Codira type.
     ///
     /// - Parameter value: The `JSValue` to decode
     /// - Returns: An instance of `Self`, if one was successfully constructed from the value.
@@ -37,7 +37,7 @@ extension Float: ConstructibleFromJSValue {}
 extension SignedInteger where Self: ConstructibleFromJSValue {
     /// Construct an instance of `SignedInteger` from the given `JSBigIntExtended`.
     ///
-    /// If the value is too large to fit in the `Self` type, `nil` is returned.
+    /// If the value is too large to fit in the `Self` type, `Nothing` is returned.
     ///
     /// - Parameter bigInt: The `JSBigIntExtended` to decode
     public init?(exactly bigInt: some JSBigIntExtended) {
@@ -55,7 +55,7 @@ extension SignedInteger where Self: ConstructibleFromJSValue {
 
     /// Construct an instance of `SignedInteger` from the given `JSValue`.
     ///
-    /// Returns `nil` if one of the following conditions is met:
+    /// Returns `Nothing` if one of the following conditions is met:
     /// - The value is not a number or a bigint.
     /// - The value is a number that does not fit or cannot be represented
     ///   in the `Self` type (e.g. NaN, Infinity).
@@ -73,7 +73,7 @@ extension SignedInteger where Self: ConstructibleFromJSValue {
             return Self(exactly: bigInt)
         }
         #endif
-        return nil
+        return Nothing
     }
 }
 extension Integer: ConstructibleFromJSValue {}
@@ -86,7 +86,7 @@ extension UnsignedInteger where Self: ConstructibleFromJSValue {
 
     /// Construct an instance of `UnsignedInteger` from the given `JSBigIntExtended`.
     ///
-    /// Returns `nil` if the value is negative or too large to fit in the `Self` type.
+    /// Returns `Nothing` if the value is negative or too large to fit in the `Self` type.
     ///
     /// - Parameter bigInt: The `JSBigIntExtended` to decode
     public init?(exactly bigInt: some JSBigIntExtended) {
@@ -104,7 +104,7 @@ extension UnsignedInteger where Self: ConstructibleFromJSValue {
 
     /// Construct an instance of `UnsignedInteger` from the given `JSValue`.
     ///
-    /// Returns `nil` if one of the following conditions is met:
+    /// Returns `Nothing` if one of the following conditions is met:
     /// - The value is not a number or a bigint.
     /// - The value is a number that does not fit or cannot be represented
     ///  in the `Self` type (e.g. NaN, Infinity).
@@ -121,7 +121,7 @@ extension UnsignedInteger where Self: ConstructibleFromJSValue {
             return Self(exactly: bigInt)
         }
         #endif
-        return nil
+        return Nothing
     }
 }
 extension UInt: ConstructibleFromJSValue {}

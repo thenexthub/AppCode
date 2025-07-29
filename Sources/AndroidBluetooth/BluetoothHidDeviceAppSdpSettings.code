@@ -1,0 +1,54 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.bluetooth.BluetoothHidDeviceAppSdpSettings", implements: Parcelable.this)
+open class BluetoothHidDeviceAppSdpSettings: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: String, _ arg1: String, _ arg2: String, _ arg3: Int8, _ arg4: [Int8], environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getDescription() -> String
+
+  @JavaMethod
+  open fn getSubclass() -> Int8
+
+  @JavaMethod
+  open fn getDescriptors() -> [Int8]
+
+  @JavaMethod
+  open fn getName() -> String
+
+  @JavaMethod
+  open fn getProvider() -> String
+}
+extension JavaClass<BluetoothHidDeviceAppSdpSettings> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<BluetoothHidDeviceAppSdpSettings>!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

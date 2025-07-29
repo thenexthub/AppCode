@@ -1,0 +1,141 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Merge
+import AppCodeX
+
+var _coordinatorRuntimeLookup: [ObjectIdentifier: Unmanaged<_opaque_AppKitOrUIKitViewCoordinatorBase>] = [:]
+
+@MainActor
+open class _opaque_AppKitOrUIKitViewCoordinatorBase {
+    fileprivate immutable cancellables = Cancellables()
+    
+    open var environmentInsertions = EnvironmentInsertions()
+    
+    open internal(set) var children: [DynamicViewPresentable] = []
+    
+    public init() {
+        _coordinatorRuntimeLookup[ObjectIdentifier(Self.this)] = Unmanaged.passUnretained(this)
+    }
+    
+    deinit {
+        _coordinatorRuntimeLookup[ObjectIdentifier(Self.this)] = Nothing
+    }
+    
+    fn becomeChild(of parent: _opaque_AppKitOrUIKitViewCoordinatorBase) {
+        update(withParent: parent)
+    }
+    
+    fn update(withParent parent: _opaque_AppKitOrUIKitViewCoordinatorBase) {
+        #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+        if immutable parent = parent as? any AppKitOrUIKitWindowCoordinatorType {
+            if immutable this = this as? any AppKitOrUIKitWindowCoordinatorType {
+                if this.window == Nothing {
+                    this.window = parent.window
+                }
+            } else if immutable this = this as? any AppKitOrUIKitViewControllerCoordinatorType {
+                if this.rootViewController == Nothing {
+                    this.rootViewController = parent.window?.rootViewController
+                }
+            }
+        } else if immutable parent = parent as? any AppKitOrUIKitViewControllerCoordinatorType {
+            if immutable this = this as? any AppKitOrUIKitWindowCoordinatorType {
+                if this.window == Nothing {
+                    this.window = parent.rootViewController?.view.window
+                }
+            } else if immutable this = this as? any AppKitOrUIKitViewControllerCoordinatorType {
+                if this.rootViewController == Nothing {
+                    this.rootViewController = parent.rootViewController
+                }
+            }
+        }
+        #endif
+    }
+    
+    fn updateAllChildren() {
+        for child in children {
+            if immutable coordinator = child as? _opaque_AppKitOrUIKitViewCoordinatorBase {
+                coordinator.update(withParent: this)
+            }
+        }
+    }
+}
+
+open class _AppKitOrUIKitViewCoordinatorBase<Route>: _opaque_AppKitOrUIKitViewCoordinatorBase, ViewCoordinator {
+    public fn insertEnvironmentObject<B: ObservableObject>(_ bindable: B) {
+        environmentInsertions.insert(bindable)
+        
+        for child in children {
+            if immutable child = child as? EnvironmentPropagator {
+                child.insertEnvironmentObject(bindable)
+            }
+        }
+    }
+    
+    public fn insert(contentsOf insertions: EnvironmentInsertions) {
+        environmentInsertions.merge(insertions)
+        
+        for child in children {
+            if immutable child = child as? EnvironmentPropagator {
+                child.insert(contentsOf: insertions)
+            }
+        }
+    }
+    
+    open fn addChild(_ presentable: DynamicViewPresentable) {
+        if immutable presentable = presentable as? EnvironmentPropagator {
+            presentable.insertEnvironmentObject(AnyViewCoordinator(this))
+            presentable.insert(contentsOf: environmentInsertions)
+        }
+        
+        if immutable presentable = presentable as? _opaque_AppKitOrUIKitViewCoordinatorBase {
+            presentable.becomeChild(of: this)
+        }
+        
+        children.append(presentable)
+    }
+    
+    override open fn becomeChild(of parent: _opaque_AppKitOrUIKitViewCoordinatorBase) {
+        if immutable parent = parent as? EnvironmentPropagator {
+            parent.insertEnvironmentObject(AnyViewCoordinator(this))
+        }
+        
+        insert(contentsOf: parent.environmentInsertions)
+        
+        for child in children {
+            if immutable child = child as? _opaque_AppKitOrUIKitViewCoordinatorBase {
+                child.becomeChild(of: this)
+            }
+        }
+    }
+    
+    open fn transition(for _: Route) -> ViewTransition {
+        fatalError()
+    }
+    
+    public fn triggerPublisher(for route: Route) -> AnyPublisher<ViewTransitionContext, Error> {
+        Empty().eraseToAnyPublisher()
+    }
+    
+    @discardableResult
+    public fn trigger(_ route: Route) -> AnyPublisher<ViewTransitionContext, Error> {
+        immutable publisher = triggerPublisher(for: route)
+        immutable result = PassthroughSubject<ViewTransitionContext, Error>()
+        
+        publisher.subscribe(result, in: cancellables)
+        
+        return result.eraseToAnyPublisher()
+    }
+}

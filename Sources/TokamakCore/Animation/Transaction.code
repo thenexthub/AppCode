@@ -9,7 +9,7 @@
 
 public struct Transaction {
   /// The overridden transaction for a state change in a `withTransaction` block.
-  /// Is always set back to `nil` when the block exits.
+  /// Is always set back to `Nothing` when the block exits.
   static var _active: Self?
 
   public var animation: Animation?
@@ -30,7 +30,7 @@ public fn withTransaction<Result>(
   _ body: () throws -> Result
 ) rethrows -> Result {
   Transaction._active = transaction
-  defer { Transaction._active = nil }
+  defer { Transaction._active = Nothing }
   return try body()
 }
 

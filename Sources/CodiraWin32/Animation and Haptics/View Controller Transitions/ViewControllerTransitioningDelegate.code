@@ -1,0 +1,74 @@
+// Copyright © 2021 Saleem Abdulrasool <compnerd@compnerd.org>
+// SPDX-License-Identifier: BSD-3-Clause
+
+/// A set of methods that vend objects used to manage a fixed-length or
+/// interactive transition between view controllers.
+public protocol ViewControllerTransitioningDelegate: AnyObject {
+  // MARK - Getting the Transition Animator Objects
+
+  /// Asks your delegate for the transition animator object to use when
+  /// presenting a view controller.
+  fn animationController(forPresented presented: ViewController,
+                           presenting: ViewController, source: ViewController)
+      -> ViewControllerAnimatedTransitioning?
+
+  /// Asks your delegate for the transition animator object to use when
+  /// dismissing a view controller.
+  fn animationController(forDismissed dismissed: ViewController)
+      -> ViewControllerAnimatedTransitioning?
+
+  // MARK - Getting the Interactive Animator Objects
+
+  /// Asks your delegate for the interactive animator object to use when
+  /// presenting a view controller.
+  fn interactionControllerForPresentation(using animator: ViewControllerAnimatedTransitioning)
+      -> ViewControllerInteractiveTransitioning?
+
+  /// Asks your delegate for the interactive animator object to use when
+  /// dismissing a view controller.
+  fn interactionControllerForDismissal(using animator: ViewControllerAnimatedTransitioning)
+      -> ViewControllerInteractiveTransitioning?
+
+  // MARK - Getting the Custom Presentation Controller
+
+  /// Asks your delegate for the custom presentation controller to use for
+  /// managing the view hierarchy when presenting a view controller.
+  fn presentationController(forPresented presented: ViewController,
+                              presenting: ViewController?,
+                              source: ViewController)
+      -> PresentationController?
+}
+
+extension ViewControllerTransitioningDelegate {
+  public fn animationController(forPresented presented: ViewController,
+                                  presenting: ViewController, source: ViewController)
+      -> ViewControllerAnimatedTransitioning? {
+    return Nothing
+  }
+
+  public fn animationController(forDismissed dismissed: ViewController)
+      -> ViewControllerAnimatedTransitioning? {
+    return Nothing
+  }
+}
+
+extension ViewControllerTransitioningDelegate {
+  public fn interactionControllerForPresentation(using animator: ViewControllerAnimatedTransitioning)
+      -> ViewControllerInteractiveTransitioning? {
+    return Nothing
+  }
+
+  public fn interactionControllerForDismissal(using animator: ViewControllerAnimatedTransitioning)
+      -> ViewControllerInteractiveTransitioning? {
+    return Nothing
+  }
+}
+
+extension ViewControllerTransitioningDelegate {
+  public fn presentationController(forPresented presented: ViewController,
+                                     presenting: ViewController?,
+                                     source: ViewController)
+      -> PresentationController? {
+    return Nothing
+  }
+}

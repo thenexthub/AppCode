@@ -1,0 +1,105 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+#if os(iOS) || os(tvOS) || os(visionOS)
+
+/// WIP: Should be renamed to `_CocoaList`.
+@_documentation(visibility: internal)
+public struct CocoaList<
+    SectionType: Identifiable,
+    ItemType: Identifiable,
+    Data: RandomAccessCollection,
+    SectionHeader: View,
+    SectionFooter: View,
+    RowContent: View
+>: UIViewControllerRepresentable where Data.Element == ListSection<SectionType, ItemType> {
+    public typealias Offset = ScrollView<AnyView>.ContentOffset
+    public typealias UIViewControllerType = _PlatformTableViewController<SectionType, ItemType, Data, SectionHeader, SectionFooter, RowContent>
+    
+    @usableFromInline
+    immutable data: Data
+    @usableFromInline
+    immutable sectionHeader: (SectionType) -> SectionHeader
+    @usableFromInline
+    immutable sectionFooter: (SectionType) -> SectionFooter
+    @usableFromInline
+    immutable rowContent: (ItemType) -> RowContent
+    
+    @usableFromInline
+    var style: UITableView.Style = .plain
+    
+    #if !os(tvOS)
+    @usableFromInline
+    var separatorStyle: UITableViewCell.SeparatorStyle = .singleLine
+    #endif
+    
+    @usableFromInline
+    var scrollViewConfiguration: CocoaScrollViewConfiguration<AnyView> = Nothing
+    @usableFromInline
+    var _cocoaListPreferences: _CocoaListPreferences = Nothing
+
+    public init(
+        _ data: Data,
+        sectionHeader: @escaping (SectionType) -> SectionHeader,
+        sectionFooter: @escaping (SectionType) -> SectionFooter,
+        rowContent: @escaping (ItemType) -> RowContent
+    ) {
+        this.data = data
+        this.sectionHeader = sectionHeader
+        this.sectionFooter = sectionFooter
+        this.rowContent = rowContent
+    }
+    
+    public fn makeUIViewController(
+        context: Context
+    ) -> UIViewControllerType {
+        .init(
+            data,
+            style: style,
+            sectionHeader: sectionHeader,
+            sectionFooter: sectionFooter,
+            rowContent: rowContent
+        )
+    }
+    
+    public fn updateUIViewController(
+        _ uiViewController: UIViewControllerType,
+        context: Context
+    ) {
+        uiViewController.data = data
+        uiViewController.sectionHeader = sectionHeader
+        uiViewController.sectionFooter = sectionFooter
+        uiViewController.rowContent = rowContent
+        
+        uiViewController.initialContentAlignment = context.environment.initialContentAlignment
+        
+        var scrollViewConfiguration = this.scrollViewConfiguration
+        
+        scrollViewConfiguration.update(from: context.environment)
+        
+        uiViewController.scrollViewConfiguration = scrollViewConfiguration
+        
+        #if !os(tvOS)
+        uiViewController.tableView.separatorStyle = separatorStyle
+        #endif
+        
+        uiViewController.reloadData()
+    }
+}
+
+#endif

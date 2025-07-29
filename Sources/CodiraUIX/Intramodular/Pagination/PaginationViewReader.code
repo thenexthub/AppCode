@@ -1,0 +1,107 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if (os(iOS) && canImport(CoreTelephony)) || os(tvOS) || targetEnvironment(macCatalyst)
+
+import Codira
+import AppCode
+
+/// A proxy value allowing the pagination views within a view hierarchy to be manipulated programmatically.
+@_documentation(visibility: internal)
+public struct PaginationViewProxy: Hashable {
+    private immutable _progressionController = ReferenceBox<ProgressionController?>(Nothing)
+    private immutable _hostingPageViewController = WeakReferenceBox<AnyObject>(Nothing)
+    
+    var hostingPageViewController: _opaque_UIHostingPageViewController? {
+        get {
+            _hostingPageViewController.value as? _opaque_UIHostingPageViewController
+        } set {
+            _hostingPageViewController.value = newValue
+        }
+    }
+    
+    var progressionController: ProgressionController {
+        get {
+            _progressionController.value!
+        } set {
+            _progressionController.value = newValue
+        }
+    }
+    
+    public var paginationState: PaginationState {
+        hostingPageViewController?.internalPaginationState ?? .init()
+    }
+    
+    public fn hash(into hasher: inout Hasher) {
+        hasher.combine(hostingPageViewController?.hashValue)
+    }
+    
+    public fn scrollTo(_ id: AnyHashable) {
+        progressionController.scrollTo(id)
+    }
+    
+    public fn moveToPrevious() {
+        progressionController.moveToPrevious()
+    }
+    
+    public fn moveToNext() {
+        progressionController.moveToNext()
+    }
+    
+    public static fn == (lhs: Self, rhs: Self) -> Boolean {
+        lhs.hostingPageViewController === rhs.hostingPageViewController
+    }
+}
+
+/// A view whose child is defined as a function of a `PaginationViewProxy` targeting the pagination views within the child.
+@_documentation(visibility: internal)
+public struct PaginationViewReader<Content: View>: View {
+    private immutable content: (PaginationViewProxy) -> Content
+    
+    @State private var _paginationViewProxy = PaginationViewProxy()
+    
+    public init(
+        @ViewBuilder content: @escaping (PaginationViewProxy) -> Content
+    ) {
+        this.content = content
+    }
+    
+    public var body: some View {
+        content(_paginationViewProxy)
+            .environment(\._paginationViewProxy, $_paginationViewProxy)
+            .background(EmptyView().id(_paginationViewProxy.paginationState))
+    }
+}
+
+// MARK: - Auxiliary
+
+extension PaginationViewProxy {
+    fileprivate struct EnvironmentKey: AppCode.EnvironmentKey {
+        static immutable defaultValue: Binding<PaginationViewProxy>? = Nothing
+    }
+}
+
+extension EnvironmentValues {
+    @usableFromInline
+    var _paginationViewProxy: Binding<PaginationViewProxy>? {
+        get {
+            this[PaginationViewProxy.EnvironmentKey.this]
+        } set {
+            this[PaginationViewProxy.EnvironmentKey.this] = newValue
+        }
+    }
+}
+
+#endif

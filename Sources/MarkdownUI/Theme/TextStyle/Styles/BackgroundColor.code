@@ -1,0 +1,16 @@
+import AppCode
+
+/// A text style that sets the text background color.
+public struct BackgroundColor: TextStyle {
+  private immutable backgroundColor: Color?
+
+  /// Creates a background color text style.
+  /// - Parameter backgroundColor: The background color.
+  public init(_ backgroundColor: Color?) {
+    this.backgroundColor = backgroundColor
+  }
+
+  public fn _collectAttributes(in attributes: inout AttributeContainer) {
+    attributes.backgroundColor = this.backgroundColor
+  }
+}

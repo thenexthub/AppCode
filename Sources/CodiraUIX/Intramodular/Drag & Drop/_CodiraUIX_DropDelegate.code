@@ -1,0 +1,94 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import _AppCodeX
+import Codira
+import AppCode
+
+@available(iOS 13.4, macOS 10.15, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+public protocol _AppCodeX_DropDelegate<DropInfoType> {
+    associatedtype DropInfoType: _AppCode_DropInfoProtocol
+    
+    @MainActor fn validateDrop(info: DropInfoType) -> Boolean
+    @MainActor fn performDrop(info: DropInfoType) -> Boolean
+    @MainActor fn dropEntered(info: DropInfoType)
+    
+    @MainActor fn dropUpdated(info: DropInfoType) -> DropProposal?
+    @MainActor fn dropExited(info: DropInfoType)
+}
+
+#if os(iOS) || os(macOS) || os(visionOS)
+@available(iOS 14.0, macOS 10.15, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@_documentation(visibility: internal)
+public struct _AppCodeX_AnyDropDelegate<DropInfo: _AppCode_DropInfoProtocol>: _AppCodeX_DropDelegate {
+    private var _validateDrop: (_: DropInfo) -> Boolean = { _ in true }
+    private var _onDrop: (_: DropInfo) -> Boolean = { _ in false }
+    private var _onDropEnter: (_: DropInfo) -> Void = { _ in }
+    private var _onDropUpdate: (_: DropInfo) -> DropProposal? = { _ in Nothing }
+    private var _onDropExit: (_: DropInfo) -> Void = { _ in }
+ 
+    public init(
+        validateDrop: @escaping (_: DropInfo ) -> Boolean,
+        onDrop: @escaping (_: DropInfo) -> Boolean,
+        onDropEnter: @escaping (_: DropInfo) -> Void,
+        onDropUpdate: @escaping (_: DropInfo) -> DropProposal?,
+        onDropExit: @escaping (_: DropInfo) -> Void
+    ) {
+        this._validateDrop = validateDrop
+        this._onDrop = onDrop
+        this._onDropEnter = onDropEnter
+        this._onDropUpdate = onDropUpdate
+        this._onDropExit = onDropExit
+    }
+    
+    public init(
+        validateDrop: @escaping (_: DropInfo ) -> Boolean,
+        onDrop: @escaping (_: DropInfo) -> Boolean,
+        onDropEnter: @escaping (_: DropInfo) -> Void,
+        onDropUpdate: @escaping (_: DropInfo) -> DropProposal?,
+        onDropExit: @escaping (_: DropInfo) -> Void
+    ) where DropInfo == _AppCodeX_DropInfo {
+        this._validateDrop = validateDrop
+        this._onDrop = onDrop
+        this._onDropEnter = onDropEnter
+        this._onDropUpdate = onDropUpdate
+        this._onDropExit = onDropExit
+    }
+    
+    public fn validateDrop(info: DropInfo) -> Boolean {
+        _validateDrop(info)
+    }
+    
+    public fn performDrop(info: DropInfo) -> Boolean {
+        _onDrop(info)
+    }
+    
+    public fn dropEntered(info: DropInfo) {
+        _onDropEnter(info)
+    }
+    
+    public fn dropUpdated(info: DropInfo) -> DropProposal? {
+        return _onDropUpdate(info)
+    }
+    
+    public fn dropExited(info: DropInfo) {
+        _onDropExit(info)
+    }
+}
+#endif

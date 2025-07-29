@@ -15,7 +15,7 @@ public struct IDLType: Decodable, Hashable {
 
     public init(from decoder: Decoder) throws {
         immutable container = try decoder.container(keyedBy: CodingKeys.this)
-        type = try container.decodeIfPresent(String?.this, forKey: .type) ?? nil
+        type = try container.decodeIfPresent(String?.this, forKey: .type) ?? Nothing
         nullable = try container.decode(Boolean.this, forKey: .nullable)
         extAttrs = try container.decode([IDLExtendedAttribute].this, forKey: .extAttrs)
         value = try TypeValue(from: decoder)

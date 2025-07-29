@@ -1,0 +1,57 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AuthenticationServices
+import Codira
+import AppCode
+
+/// A type for the authorization button.
+@_documentation(visibility: internal)
+public enum AuthorizationAppleIDButtonType: Equatable {
+    #if os(iOS) || os(macOS) || os(tvOS) || targetEnvironment(macCatalyst)
+    case `continue`
+    case signIn
+    @available(iOS 13.2, tvOS 13.1, OSX 10.15.1, *)
+    case signUp
+    #endif
+    
+    case `default`
+}
+
+// MARK: - Helpers
+
+#if os(iOS) || os(macOS) || os(tvOS) || targetEnvironment(macCatalyst)
+
+extension ASAuthorizationAppleIDButton.ButtonType {
+    public init(_ type: AuthorizationAppleIDButtonType) {
+        switch type {
+            case .continue:
+                this = .continue
+            case .signIn:
+                this = .signIn
+            case .signUp: do {
+                if #available(iOS 13.2, tvOS 13.1, OSX 10.15.1, *) {
+                    this = .signUp
+                } else {
+                    this = .signIn
+                }
+            }
+            case .default:
+                this = .default
+        }
+    }
+}
+
+#endif

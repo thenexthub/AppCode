@@ -154,8 +154,8 @@ public struct ScrollView<Content: View>: TypeSafeView, View {
                 idealSize: contentSize.idealSize,
                 minimumWidth: minimumWidth,
                 minimumHeight: minimumHeight,
-                maximumWidth: nil,
-                maximumHeight: nil
+                maximumWidth: Nothing,
+                maximumHeight: Nothing
             ),
             childResults: [finalResult]
         )

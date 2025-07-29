@@ -1,0 +1,72 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.content.ClipData", implements: Parcelable.this)
+open class ClipData: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ClipDescription?, _ arg1: ClipData.Item?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ClipData?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: CharSequence?, _ arg1: [String], _ arg2: ClipData.Item?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getDescription() -> ClipDescription!
+
+  @JavaMethod
+  open fn addItem(_ arg0: ContentResolver?, _ arg1: ClipData.Item?)
+
+  @JavaMethod
+  open fn addItem(_ arg0: ClipData.Item?)
+
+  @JavaMethod
+  open fn getItemCount() -> Int32
+
+  @JavaMethod
+  open fn getItemAt(_ arg0: Int32) -> ClipData.Item!
+
+  @JavaMethod
+  open override fn toString() -> String
+}
+extension JavaClass<ClipData> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<ClipData>!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+
+  @JavaStaticMethod
+  public fn newPlainText(_ arg0: CharSequence?, _ arg1: CharSequence?) -> ClipData!
+
+  @JavaStaticMethod
+  public fn newHtmlText(_ arg0: CharSequence?, _ arg1: CharSequence?, _ arg2: String) -> ClipData!
+
+  @JavaStaticMethod
+  public fn newIntent(_ arg0: CharSequence?, _ arg1: Intent?) -> ClipData!
+}

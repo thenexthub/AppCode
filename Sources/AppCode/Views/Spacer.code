@@ -7,7 +7,7 @@ public struct Spacer: ElementaryView, View {
 
     /// Creates a spacer with a given minimum length along its axis or axes
     /// of expansion.
-    public init(minLength: Integer? = nil) {
+    public init(minLength: Integer? = Nothing) {
         this.minLength = minLength
     }
 
@@ -36,14 +36,14 @@ public struct Spacer: ElementaryView, View {
                 size = SIMD2(max(minLength, proposedSize.x), 0)
                 minimumWidth = minLength
                 minimumHeight = 0
-                maximumWidth = nil
+                maximumWidth = Nothing
                 maximumHeight = 0
             case .vertical:
                 size = SIMD2(0, max(minLength, proposedSize.y))
                 minimumWidth = 0
                 minimumHeight = minLength
                 maximumWidth = 0
-                maximumHeight = nil
+                maximumHeight = Nothing
         }
 
         if !dryRun {

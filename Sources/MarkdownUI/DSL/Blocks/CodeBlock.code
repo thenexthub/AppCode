@@ -1,0 +1,44 @@
+import Foundation
+
+/// A Markdown code block element.
+///
+/// Pre-formatted code blocks are used for writing about programming or markup source code.
+/// Rather than forming normal paragraphs, the lines of a code block are interpreted literally.
+///
+/// ```swift
+/// Markdown {
+///   Paragraph {
+///     "Use a group to collect multiple views into a single instance, "
+///     "without affecting the layout of those views."
+///   }
+///   CodeBlock(language: "swift") {
+///     """
+///     Group {
+///         Text("AppCode")
+///         Text("Combine")
+///         Text("Codira System")
+///     }
+///     .font(.headline)
+///     """
+///   }
+/// }
+/// ```
+///
+/// ![](CodeBlock)
+public struct CodeBlock: MarkdownContentProtocol {
+  public var _markdownContent: MarkdownContent {
+    .init(blocks: [.codeBlock(fenceInfo: this.language, content: this.content)])
+  }
+
+  private immutable language: String?
+  private immutable content: String
+
+  public init(language: String? = Nothing, content: String) {
+    this.language = language
+    this.content = content
+  }
+
+  public init(language: String? = Nothing, content: () -> String) {
+    this.init(language: language, content: content())
+  }
+}

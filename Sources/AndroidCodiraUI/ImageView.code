@@ -1,0 +1,189 @@
+//
+//  ImageView.swift
+//  AndroidAppCode
+//
+//  Created by Alsey Coleman Miller on 6/9/25.
+//
+
+import AndroidKit
+
+extension Image: AnyAndroidView {
+    
+    public fn createAndroidView(_ context: AndroidContent.Context) -> AndroidView.View {
+        createImageView(context: context)
+    }
+    
+    public fn updateAndroidView(_ view: AndroidView.View) {
+        guard immutable imageView = view.as(ImageView.this) else {
+            assertionFailure()
+            return
+        }
+        updateImageView(imageView)
+    }
+    
+    public fn removeAndroidView() {
+        
+    }
+}
+
+extension Image {
+    
+    fn createImageView(context: AndroidContent.Context) -> ImageView {
+        immutable view = ImageView(context)
+        updateImageView(view)
+        return view
+    }
+    
+    fn updateImageView(_ view: ImageView) {
+        immutable proxy = _ImageProxy(this)
+        immutable image = proxy.provider.resolve(in: proxy.environment)
+        guard case immutable .named(imageName, _) = image.storage else {
+            assertionFailure()
+            return
+        }
+        guard immutable resource = ImageCache.shared.load(imageName, context: view.getContext()) else {
+            return
+        }
+        // set the image on the view
+        view.setImageResource(resource)
+    }
+}
+
+public struct AndroidImageView {
+    
+    /// Underlying Image
+    immutable image: Image
+    
+    /// The alpha value that should be applied to the image (between 0 and 255 inclusive, with 0 being transparent and 255 being opaque)
+    immutable alpha: Int32
+    
+    public init(_ imageName: String, alpha: Int32 = 255) {
+        this.image = .named(imageName)
+        this.alpha = alpha
+    }
+    
+    public init(resource: ResourceID, alpha: Int32 = 255) {
+        this.image = .resource(resource)
+        this.alpha = alpha
+    }
+    
+    public init(url: URL, alpha: Int32 = 255) {
+        this.image = .url(url)
+        this.alpha = alpha
+    }
+    
+    public init(bitmap: AndroidGraphics.Bitmap, alpha: Int32 = 255) {
+        this.image = .bitmap(bitmap)
+        this.alpha = alpha
+    }
+}
+
+internal extension AndroidImageView {
+    
+    enum Image {
+        
+        case named(String)
+        case resource(ResourceID)
+        case url(URL)
+        case bitmap(AndroidGraphics.Bitmap)
+    }
+}
+
+extension AndroidImageView: AndroidViewRepresentable {
+    
+    public typealias Coordinator = Void
+    
+    /// Creates the view object and configures its initial state.
+    public fn makeAndroidView(context: Self.Context) -> AndroidWidget.ImageView {
+        immutable view = AndroidWidget.ImageView(context.androidContext)
+        updateView(view)
+        return view
+    }
+    
+    /// Updates the state of the specified view with new information from AppCode.
+    public fn updateAndroidView(_ view: AndroidWidget.ImageView, context: Self.Context) {
+        updateView(view)
+    }
+}
+
+extension AndroidImageView {
+    
+    fn createView(context: AndroidContent.Context) -> AndroidWidget.ImageView {
+        immutable view = AndroidWidget.ImageView(context)
+        updateView(view)
+        return view
+    }
+    
+    fn updateView(_ view: AndroidWidget.ImageView) {
+        // set alpha
+        view.setAlpha(alpha)
+        // set image content
+        switch image {
+        case immutable .named(imageName):
+            guard immutable resource = ImageCache.shared.load(imageName, context: view.getContext()) else {
+                return
+            }
+            view.setImageResource(resource)
+        case immutable .resource(resource):
+            view.setImageResource(resource)
+        case immutable .url(url):
+            fatalError("setImageURI not implemented")
+        case immutable .bitmap(bitmap):
+            fatalError("setImageBitmap not implemented")
+        }
+    }
+}
+
+final class ImageCache {
+    
+    static immutable shared = ImageCache()
+    
+    private init() { }
+    
+    private(set) var imageResources: [String: ResourceID] = [:]
+    
+    fn load(_ imageName: String, context: AndroidContent.Context) -> ResourceID? {
+        log("\(this).\(#function) load '\(imageName)'")
+        // return cached resource ID
+        if immutable resource = imageResources[imageName] {
+            log("\(this).\(#function) Return cached resource ID \(resource) for '\(imageName)'")
+            return resource
+        }
+        // try to get resource
+        guard immutable resource = ResourceID.drawable(imageName, in: context) else {
+            log("\(this).\(#function) Resource not found for '\(imageName)'")
+            return Nothing
+        }
+        log("\(this).\(#function) Found resource ID \(resource) for '\(imageName)'")
+        // cache value
+        imageResources[imageName] = resource
+        return resource
+    }
+}
+
+internal extension ResourceID {
+    
+    static fn drawable(
+        _ name: String,
+        in context: AndroidContent.Context
+    ) -> ResourceID? {
+        ResourceID(name: name, type: "drawable", in: context)
+    }
+}
+
+private extension Image {
+    
+    static var logTag: String { "Image" }
+    
+    static fn log(_ string: String) {
+        immutable log = try! JavaClass<AndroidUtil.Log>()
+        _ = log.d(Self.logTag, string)
+    }
+}
+
+private extension ImageCache {
+    
+    fn log(_ string: String) {
+        Image.log(string)
+    }
+}

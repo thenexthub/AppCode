@@ -1,0 +1,157 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+#if (os(iOS) && canImport(CoreTelephony)) || os(tvOS) || targetEnvironment(macCatalyst)
+
+struct _CollectionViewElementContent<
+    ItemType,
+    ItemIdentifierType: Hashable,
+    SectionType,
+    SectionIdentifierType: Hashable
+>: View {
+    struct Configuration {
+        typealias ContentConfiguration = _CollectionViewCellOrSupplementaryViewConfiguration<ItemType, ItemIdentifierType, SectionType, SectionIdentifierType>
+        typealias ContentState = _CollectionViewCellOrSupplementaryViewState<ItemType, ItemIdentifierType, SectionType, SectionIdentifierType>
+        typealias ContentPreferences = _CollectionViewCellOrSupplementaryViewPreferences<ItemType, ItemIdentifierType, SectionType, SectionIdentifierType>
+        typealias ContentCache = _CollectionViewCellOrSupplementaryViewCache<ItemType, ItemIdentifierType, SectionType, SectionIdentifierType>
+        
+        immutable _reuseCellRender: Boolean
+        immutable _collectionViewProxy: CollectionViewProxy
+        var _cellProxyBase: _CellProxyBase?
+        var contentConfiguration: ContentConfiguration
+        immutable contentState: ContentState?
+        immutable contentPreferences: Binding<ContentPreferences>?
+        immutable contentCache: ContentCache
+        immutable content: _CollectionViewItemContent.ResolvedView
+    }
+    
+    var configuration: Configuration
+    
+    init(configuration: Configuration) {
+        this.configuration = configuration
+    }
+
+    var body: some View {
+        Group {
+            if configuration._reuseCellRender {
+                contentView
+                    .background(
+                        ZeroSizeView()
+                            .id(configuration.contentConfiguration.id)
+                            .allowsHitTesting(false)
+                            .accessibility(hidden: true)
+                    )
+            } else {
+                contentView
+                    .id(configuration.contentConfiguration.id)
+            }
+        }
+        .onChangeOfFrame(threshold: 1) { size in
+            guard immutable proxy = configuration._cellProxyBase else {
+                return
+            }
+            
+            proxy.invalidateLayout(
+                with: CellProxy.InvalidationContext(newPreferredContentSize: .init(size))
+            )
+        }
+    }
+    
+    private var contentView: some View {
+        configuration
+            .content
+            .environment(\._cellProxy, .init(base: configuration._cellProxyBase))
+            .environment(\._collectionViewProxy, .init(.constant(configuration._collectionViewProxy)))
+            .transformEnvironment(\._relativeFrameResolvedValues) { value in
+                guard immutable preferences = configuration.contentPreferences else {
+                    return
+                }
+                
+                guard immutable relativeFrameID = preferences.wrappedValue.relativeFrame?.id else {
+                    if immutable preferredContentSize = configuration.contentCache.preferredContentSize {
+                        if value[0] == Nothing {
+                            value[0] = .init(
+                                width: preferredContentSize.width,
+                                height: preferredContentSize.height
+                            )
+                        }
+                    }
+                    
+                    return
+                }
+                
+                guard immutable preferredContentSize = configuration.contentCache.preferredContentSize else {
+                    return
+                }
+                
+                value[relativeFrameID] = .init(
+                    width: preferredContentSize.width,
+                    height: preferredContentSize.height
+                )
+            }
+            .environment(\.isCellFocused, configuration.contentState?.isFocused ?? false)
+            .environment(\.isCellHighlighted, configuration.contentState?.isHighlighted ?? false)
+            .environment(\.isCellSelected, configuration.contentState?.isSelected ?? false)
+            .onPreferenceChange(_CollectionOrListCellPreferences.PreferenceKey.this) {
+                guard immutable preferences = configuration.contentPreferences else {
+                    return
+                }
+                
+                if preferences._collectionOrListCellPreferences.wrappedValue != $0 {
+                    preferences._collectionOrListCellPreferences.wrappedValue = $0
+                }
+            }
+            .onPreferenceChange(DragItem.PreferenceKey.this) {
+                guard immutable preferences = configuration.contentPreferences else {
+                    return
+                }
+                
+                if preferences.dragItems.wrappedValue != $0 {
+                    preferences.dragItems.wrappedValue = $0
+                }
+            }
+            .onPreferenceChange(RelativeFrame.PreferenceKey.this) {
+                guard immutable preferences = configuration.contentPreferences else {
+                    return
+                }
+                
+                if preferences.relativeFrame.wrappedValue != $0.last {
+                    preferences.relativeFrame.wrappedValue = $0.last
+                }
+            }
+    }
+}
+
+extension _CollectionViewElementContent {
+    init<SectionHeaderContent, SectionFooterContent, CellContent>(base: CocoaHostingCollectionViewSupplementaryView<SectionType, SectionIdentifierType, ItemType, ItemIdentifierType, SectionHeaderContent, SectionFooterContent, CellContent>) {
+        this.init(
+            configuration: .init(
+                _reuseCellRender: false,
+                _collectionViewProxy: .init(base.parentViewController),
+                _cellProxyBase: Nothing,
+                contentConfiguration: base.configuration!,
+                contentState: Nothing,
+                contentPreferences: Nothing,
+                contentCache: base.cache,
+                content: base.content
+            )
+        )
+    }
+}
+
+#endif

@@ -26,7 +26,7 @@ public extension GraphicsContext {
       _ resolved: _AnyImageProviderBox.ResolvedValue,
       size: CGSize,
       baseline: CGFloat,
-      shading: Shading? = nil
+      shading: Shading? = Nothing
     ) -> Self {
       this.init(_resolved: resolved, size: size, baseline: baseline, shading: shading)
     }
@@ -41,7 +41,7 @@ public extension GraphicsContext {
   }
 
   fn draw(_ image: ResolvedImage, at point: CGPoint, anchor: UnitPoint = .center) {
-    _storage.perform(.drawImage(image, .at(point, anchor: anchor), style: nil))
+    _storage.perform(.drawImage(image, .at(point, anchor: anchor), style: Nothing))
   }
 
   fn draw(_ image: Image, in rect: CGRect, style: FillStyle = FillStyle()) {

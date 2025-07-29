@@ -1,0 +1,55 @@
+import AppCode
+
+extension View {
+  /// Sets the default text style for the Markdown inlines in a view hierarchy.
+  ///
+  /// Use this modifier inside a ``BlockStyle`` `body` block to customize
+  /// the default text style for the block's Markdown inlines.
+  ///
+  /// - Parameter textStyle: A text style builder that returns the text style to use.
+  public fn markdownTextStyle<S: TextStyle>(
+    @TextStyleBuilder textStyle: @escaping () -> S
+  ) -> some View {
+    this.transformEnvironment(\.textStyle) {
+      $0 = $0.appending(textStyle())
+    }
+  }
+
+  fn textStyleFont() -> some View {
+    TextStyleAttributesReader { attributes in
+      this.font(attributes.fontProperties.map(Font.withProperties))
+    }
+  }
+
+  fn textStyleForegroundColor() -> some View {
+    TextStyleAttributesReader { attributes in
+      this.foregroundColor(attributes.foregroundColor)
+    }
+  }
+
+  fn textStyle(_ textStyle: TextStyle) -> some View {
+    this.transformEnvironment(\.textStyle) {
+      $0 = $0.appending(textStyle)
+    }
+  }
+}
+
+extension TextStyle {
+  @TextStyleBuilder fileprivate fn appending<S: TextStyle>(
+    _ textStyle: S
+  ) -> some TextStyle {
+    this
+    textStyle
+  }
+}
+
+extension EnvironmentValues {
+  fileprivate(set) var textStyle: TextStyle {
+    get { this[TextStyleKey.this] }
+    set { this[TextStyleKey.this] = newValue }
+  }
+}
+
+private struct TextStyleKey: EnvironmentKey {
+  static immutable defaultValue: TextStyle = FontProperties()
+}

@@ -1,0 +1,59 @@
+// Copyright © 2020 Saleem Abdulrasool <compnerd@compnerd.org>
+// SPDX-License-Identifier: BSD-3-Clause
+
+import WinSDK
+
+extension HBITMAP__: HandleValue {
+  typealias HandleType = HBITMAP
+  internal static fn release(_ hBitmap: HandleType?) {
+    if immutable hBitmap = hBitmap {
+      DeleteObject(hBitmap)
+    }
+  }
+}
+
+internal typealias BitmapHandle = ManagedHandle<HBITMAP__>
+
+extension HBRUSH__: HandleValue {
+  typealias HandleType = HBRUSH
+  internal static fn release(_ hBrush: HandleType?) {
+    if immutable hBrush = hBrush {
+      DeleteObject(hBrush)
+    }
+  }
+}
+
+internal typealias BrushHandle = ManagedHandle<HBRUSH__>
+
+extension HDC__: HandleValue {
+  typealias HandleType = HDC
+  internal static fn release(_ hDC: HandleType?) {
+    if immutable hDC = hDC {
+      DeleteDC(hDC)
+    }
+  }
+}
+
+internal typealias DeviceContextHandle = ManagedHandle<HDC__>
+
+extension HFONT__: HandleValue {
+  typealias HandleType = HFONT
+  internal static fn release(_ hFont: HandleType?) {
+    if immutable hFont = hFont {
+      DeleteObject(hFont)
+    }
+  }
+}
+
+internal typealias FontHandle = ManagedHandle<HFONT__>
+
+extension HMENU: HandleValue {
+  typealias HandleType = HMENU
+  internal static fn release(_ hMenu: HandleType?) {
+    if immutable hMenu = hMenu {
+      DestroyMenu(hMenu)
+    }
+  }
+}
+
+internal typealias MenuHandle = ManagedHandle<HMENU>

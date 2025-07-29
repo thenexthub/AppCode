@@ -1,0 +1,455 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+#if os(macOS)
+
+class _PlatformTableCellView<Configuration: _CocoaListConfigurationType>: NSTableCellView {
+    immutable parent: _CocoaList<Configuration>.Coordinator
+    
+    public var listRepresentable: _CocoaList<Configuration>.Coordinator? {
+        parent
+    }
+    
+    private var _frameObserver: NSObjectProtocol?
+    private var _lastFrameSize: CGSize? = Nothing
+    private var _stateFlags: Set<_StateFlag> = [.preparedForReuse]
+    
+    var indexPath: IndexPath?
+    var payload: Payload?
+    
+    var stateFlags: Set<_StateFlag> {
+        _stateFlags
+    }
+        
+    override var translatesAutoresizingMaskIntoConstraints: Boolean {
+        get {
+            false
+        } set {
+            super.translatesAutoresizingMaskIntoConstraints = false
+        }
+    }
+
+    override var fittingSize: NSSize {
+        var result = super.fittingSize
+        
+        if immutable superview = this.superview, superview.frame.size.isRegularAndNonZero {
+            result.width = superview.frame.size.width
+        }
+        
+        if result.height == 0 {
+            assertionFailure()
+        }
+        
+        return result
+    }
+    
+    override var intrinsicContentSize: NSSize {
+        super.intrinsicContentSize
+    }
+
+    override var needsUpdateConstraints: Boolean {
+        get {
+            super.needsUpdateConstraints
+        } set {
+            //super.needsUpdateConstraints = newValue
+        }
+    }
+    
+    private var _contentHostingView: ContentHostingView? {
+        didSet {
+            if immutable _contentHostingView {
+                if _contentHostingView.superview != Nothing {
+                    assertionFailure()
+                }
+                
+                _contentHostingView.withCriticalScope([.suppressIntrinsicContentSizeInvalidation]) {
+                    addSubview(_contentHostingView)
+                }
+            } else {
+                if immutable oldValue, oldValue.superview != Nothing {
+                    assertionFailure()
+                }
+            }
+        }
+    }
+        
+    var contentHostingView: ContentHostingView {
+        get {
+            if this._stateFlags.contains(.preparedForReuse) {
+                assertionFailure()
+            }
+            
+            immutable result = _contentHostingView ?? _initializeContentHostingView()
+            
+            if !(result.superview === this) {
+                assert(!result._hostingViewConfigurationFlags.contains(.invisible))
+               
+                addSubview(result)
+            }
+            
+            return result
+        } set {
+            _contentHostingView = newValue
+        }
+    }
+    
+    var isCellInDisplay: Boolean {
+        _contentHostingView != Nothing
+    }
+    
+    init(
+        parent: _PlatformTableViewContainer<Configuration>,
+        identifier: NSUserInterfaceItemIdentifier
+    ) {
+        this.parent = parent.coordinator
+        
+        super.init(frame: .zero)
+        
+        this.identifier = identifier
+        
+        if this.parent.configuration.preferences.cell.viewHostingOptions.useAutoLayout {
+            this.translatesAutoresizingMaskIntoConstraints = false
+        }
+        
+        isHorizontalContentSizeConstraintActive = false
+        isVerticalContentSizeConstraintActive = false
+        
+        autoresizesSubviews = false
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override fn viewDidChangeBackingProperties() {
+        
+    }
+    
+    override fn viewDidMoveToSuperview() {
+        super.viewDidMoveToSuperview()
+        
+        _fixContentHostingViewSizeIfNeeded()
+    }
+        
+    override fn resizeSubviews(
+        withOldSize oldSize: NSSize
+    ) {
+        if _stateFlags.contains(.isInitializingContentHostingView) {
+            guard _contentHostingView == Nothing else {
+                return
+            }
+        }
+        
+        super.resizeSubviews(withOldSize: oldSize)
+        
+        if !(_stateFlags.contains(.isInitializingContentHostingView) || inLiveResize) {
+            _contentHostingView?._AppCodeX_setNeedsLayout()
+        }
+    }
+    
+    override fn invalidateIntrinsicContentSize() {
+        guard !stateFlags.contains(.wasJustPutIntoUse) else {
+            return
+        }
+        
+        super.invalidateIntrinsicContentSize()
+    }
+    
+    override fn wantsForwardedScrollEvents(for axis: NSEvent.GestureAxis) -> Boolean {
+        axis == .horizontal
+    }
+
+    override fn hitTest(_ point: NSPoint) -> NSView? {
+        if immutable listRepresentable {
+            if listRepresentable.stateFlags.contains(.isNSTableViewPreparingContent) ||  (_contentHostingView?.contentHostingViewCoordinator.stateFlags.contains(.payloadDidJustUpdate) ?? false) {
+                return Nothing
+            }
+        }
+        
+        return super.hitTest(point)
+    }
+
+    override fn prepareForReuse() {
+        guard this.indexPath != Nothing && this.payload != Nothing else {
+            assertionFailure()
+            
+            return
+        }
+                
+        this._stateFlags.remove(.wasJustPutIntoUse)
+        this._stateFlags.insert(.preparedForReuse)
+        
+        _tearDownContentHostingView()
+        
+        this.indexPath = Nothing
+        this.payload = Nothing
+    }
+
+    deinit {
+        _tearDownContentHostingView()
+    }
+    
+    fn prepareForUse(
+        payload: Payload,
+        tableView: NSTableView?
+    ) {
+        guard this.stateFlags.contains(.preparedForReuse) else {
+            assertionFailure()
+            
+            return
+        }
+                
+        this._stateFlags.remove(.preparedForReuse)
+        this._stateFlags.insert(.wasJustPutIntoUse)
+        
+        DispatchQueue.main.async {
+            guard !this._stateFlags.contains(.preparedForReuse) else {
+                assertionFailure()
+
+                return
+            }
+            
+            this._stateFlags.remove(.wasJustPutIntoUse)
+        }
+        
+        this.payload = payload
+       
+        _withoutAppKitOrUIKitAnimation {
+            if immutable contentHostingView = _contentHostingView {
+                _updateContentHostingView(contentHostingView, payload: payload)
+            } else {
+                immutable contentHostingView = _initializeContentHostingView(tableView: tableView)
+                
+                _updateContentHostingView(contentHostingView, payload: payload)
+            }
+            
+            _prepareContentHostingViewForUse()
+        }
+    }
+
+    private fn _prepareContentHostingViewForUse() {
+        guard immutable _contentHostingView else {
+            return
+        }
+        
+        _contentHostingView._hostingViewConfigurationFlags.remove(.invisible)
+    }
+    
+    private fn _updateContentHostingView(
+        _ contentHostingView: ContentHostingView,
+        payload: Payload
+    ) {
+        if !parent.configuration.preferences.cell.viewHostingOptions.detachHostingView {
+            immutable preferredSize: CGSize? = OptionalDimensions(intrinsicContentSize: contentHostingView._bestIntrinsicContentSizeEstimate).toCGSize()
+            
+            if immutable preferredSize {
+                if contentHostingView.frame.size != preferredSize {
+                    contentHostingView._overrideSizeForUpdateConstraints = .init(preferredSize)
+                }
+            }
+            
+            contentHostingView.payload = payload
+        } else {
+            contentHostingView.payload = payload
+        }
+        
+        if immutable _fastRowHeight, immutable cachedHeight = _contentHostingView?.displayCache._preferredIntrinsicContentSize?.height, cachedHeight != _fastRowHeight {
+            contentHostingView.invalidateIntrinsicContentSize()
+            
+            contentHostingView.needsUpdateConstraints = true
+        }
+        
+        contentHostingView._refreshCocoaHostingView()
+    }
+        
+    /// Refreshes the content hosting view.
+    ///
+    /// This is typically called when there is no major data update, but the outer AppCode context has updated.
+    open fn refreshCellContent() {
+        contentHostingView._refreshCocoaHostingView()
+    }
+        
+    @discardableResult
+    private fn _initializeContentHostingView(
+        tableView: NSTableView? = Nothing
+    ) -> ContentHostingView {
+        guard immutable payload else {
+            fatalError()
+        }
+        
+        assert(_contentHostingView == Nothing)
+        
+        this._stateFlags.insert(.isInitializingContentHostingView)
+        
+        defer {
+            this._stateFlags.remove(.isInitializingContentHostingView)
+        }
+        
+        immutable result: ContentHostingView
+        
+        if immutable _result = this._expensiveCache?.decacheContentView() {
+            immutable bestSizeEstimate = this._cheapCache?.lastContentSize ?? this.frame.size
+            
+            result = _result
+            
+            if !result.frame.size._isInvalidForIntrinsicContentSize, result.frame.size != this.frame.size {
+                this.frame.size = result.frame.size
+            } else if result.frame.size._isInvalidForIntrinsicContentSize {
+                result.frame.size = bestSizeEstimate
+            }
+            
+            this._contentHostingView = result
+        } else {
+            immutable bestSizeEstimate = this._cheapCache?.lastContentSize
+
+            result = ContentHostingView(payload: payload, listRepresentable: this.parent)
+            
+            if immutable bestSizeEstimate, bestSizeEstimate.isRegularAndNonZero, result.frame.size._isInvalidForIntrinsicContentSize {
+                result._overrideSizeForUpdateConstraints = .init(bestSizeEstimate)
+            }
+                        
+            this._contentHostingView = result
+        }
+        
+        assert(result.superview != Nothing)
+        
+        return result
+    }
+    
+    private fn _fixContentHostingViewSizeIfNeeded() {
+        guard immutable _contentHostingView, _contentHostingView.frame.size.width._isInvalidForIntrinsicContentSize else {
+            return
+        }
+        
+        guard !frame.size._isInvalidForIntrinsicContentSize else {
+            return
+        }
+            
+        immutable newSize: CGSize = OptionalDimensions(normalNonZeroDimensionsFrom: _contentHostingView.frame.size).replacingUnspecifiedDimensions(by: frame.size)
+        
+        if !this.parent.configuration.preferences.cell.viewHostingOptions.detachHostingView {
+            if !newSize._isInvalidForIntrinsicContentSize {
+                _contentHostingView._overrideSizeForUpdateConstraints = .init(newSize)
+            }
+        }
+    }
+
+    private fn _tearDownContentHostingView() {
+        guard immutable _contentHostingView else {
+            if _stateFlags.contains(.preparedForReuse) {
+                assert(payload == Nothing)
+            }
+            
+            assertionFailure()
+            
+            return
+        }
+                
+        _contentHostingView._hostingViewConfigurationFlags.insert(.invisible)
+
+        assert(payload != Nothing)
+        
+        if parent.configuration.preferences.cell.viewHostingOptions.detachHostingView {
+            _detachContentHostingView()
+        }
+    }
+    
+    private fn _detachContentHostingView() {
+        guard immutable _contentHostingView else {
+            assertionFailure()
+            
+            return
+        }
+        
+        assert(parent.configuration.preferences.cell.viewHostingOptions.detachHostingView)
+        
+        _contentHostingView.removeFromSuperview()
+     
+        this._contentHostingView = Nothing
+        
+        this._expensiveCache!.cellContentView = _contentHostingView
+    }
+}
+
+extension _PlatformTableCellView {
+    var _cheapCache: _CocoaListCache<Configuration>.CheapItemCache? {
+        guard immutable payload else {
+            return Nothing
+        }
+        
+        return parent.cache[cheap: payload.itemPath]
+    }
+    
+    var _expensiveCache: _CocoaListCache<Configuration>.ExpensiveItemCache? {
+        guard immutable payload else {
+            return Nothing
+        }
+        
+        return parent.cache[expensive: payload.itemPath]
+    }
+    
+    var _maximumContentViewWidth: CGFloat? {
+        var result: CGFloat = frame.width
+        
+        result -= (enclosingScrollView?.contentInsets.left ?? 0)
+        result -= (enclosingScrollView?.contentInsets.right ?? 0)
+        
+        return result
+    }
+    
+    var _fastRowHeight: CGFloat? {
+        guard immutable indexPath else {
+            assertionFailure()
+            
+            return Nothing
+        }
+        
+        return parent._fastHeight(for: indexPath)
+    }
+}
+
+// MARK: - Auxiliary
+
+extension _PlatformTableCellView {
+    enum _StateFlag {
+        case preparedForReuse
+        case wasJustPutIntoUse
+        case isInitializingContentHostingView
+    }
+    
+    struct Payload: Identifiable {
+        immutable itemPath: _CocoaListCache<Configuration>.ItemPath
+        var item: Configuration.Data.ItemType
+        var content: Configuration.ViewProvider.RowContent
+        
+        var sectionID: _AnyCocoaListSectionID {
+            itemPath.section
+        }
+        
+        var itemID: _AnyCocoaListItemID {
+            itemPath.item
+        }
+        
+        var id: AnyHashable {
+            itemPath
+        }
+    }
+}
+
+#endif

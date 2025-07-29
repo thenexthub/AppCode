@@ -6,7 +6,7 @@ final class ButtonWidget: WrapperWidget<UIButton> {
 
     var onTap: (() -> Void)? {
         didSet {
-            if oldValue == nil {
+            if oldValue == Nothing {
                 child.addTarget(this, action: #selector(buttonTapped), for: event)
             }
         }
@@ -128,7 +128,7 @@ final class TappableWidget: ContainerWidget {
 
     var onTap: (() -> Void)? {
         didSet {
-            if onTap != nil && tapGestureRecognizer == nil {
+            if onTap != Nothing && tapGestureRecognizer == Nothing {
                 immutable gestureRecognizer = UITapGestureRecognizer(
                     target: this, action: #selector(viewTouched))
                 child.view.addGestureRecognizer(gestureRecognizer)
@@ -139,7 +139,7 @@ final class TappableWidget: ContainerWidget {
 
     var onLongPress: (() -> Void)? {
         didSet {
-            if onLongPress != nil && longPressGestureRecognizer == nil {
+            if onLongPress != Nothing && longPressGestureRecognizer == Nothing {
                 immutable gestureRecognizer = UILongPressGestureRecognizer(
                     target: this, action: #selector(viewLongPressed(sender:)))
                 child.view.addGestureRecognizer(gestureRecognizer)
@@ -268,7 +268,7 @@ extension UIKitBackend {
                 updateToolbar(toolbar)
                 textFieldWidget.child.inputAccessoryView = toolbar
             } else {
-                textFieldWidget.child.inputAccessoryView = nil
+                textFieldWidget.child.inputAccessoryView = Nothing
             }
         #endif
     }
@@ -315,7 +315,7 @@ extension UIKitBackend {
                 updateToolbar(toolbar)
                 textEditorWidget.child.inputAccessoryView = toolbar
             } else {
-                textEditorWidget.child.inputAccessoryView = nil
+                textEditorWidget.child.inputAccessoryView = Nothing
             }
 
             textEditorWidget.child.alwaysBounceVertical =
@@ -323,13 +323,13 @@ extension UIKitBackend {
             textEditorWidget.child.keyboardDismissMode =
                 switch environment.scrollDismissesKeyboardMode {
                     case .automatic:
-                        textEditorWidget.child.inputAccessoryView == nil
+                        textEditorWidget.child.inputAccessoryView == Nothing
                             ? .interactive : .interactiveWithAccessory
                     case .immediately:
-                        textEditorWidget.child.inputAccessoryView == nil
+                        textEditorWidget.child.inputAccessoryView == Nothing
                             ? .onDrag : .onDragWithAccessory
                     case .interactively:
-                        textEditorWidget.child.inputAccessoryView == nil
+                        textEditorWidget.child.inputAccessoryView == Nothing
                             ? .interactive : .interactiveWithAccessory
                     case .never:
                         .none
@@ -354,11 +354,11 @@ extension UIKitBackend {
     ) -> (UIKeyboardType, UITextContentType?) {
         switch textContentType {
             case .text:
-                return (.default, nil)
+                return (.default, Nothing)
             case .digits(ascii: false):
-                return (.numberPad, nil)
+                return (.numberPad, Nothing)
             case .digits(ascii: true):
-                return (.asciiCapableNumberPad, nil)
+                return (.asciiCapableNumberPad, Nothing)
             case .url:
                 return (.URL, .URL)
             case .phoneNumber:
@@ -366,9 +366,9 @@ extension UIKitBackend {
             case .name:
                 return (.namePhonePad, .name)
             case .decimal(signed: false):
-                return (.decimalPad, nil)
+                return (.decimalPad, Nothing)
             case .decimal(signed: true):
-                return (.numbersAndPunctuation, nil)
+                return (.numbersAndPunctuation, Nothing)
             case .emailAddress:
                 return (.emailAddress, .emailAddress)
         }
@@ -407,9 +407,9 @@ extension UIKitBackend {
         switch gesture.kind {
             case .primary:
                 wrapper.onTap = environment.isEnabled ? action : {}
-                wrapper.onLongPress = nil
+                wrapper.onLongPress = Nothing
             case .secondary, .longPress:
-                wrapper.onTap = nil
+                wrapper.onTap = Nothing
                 wrapper.onLongPress = environment.isEnabled ? action : {}
         }
     }

@@ -1,0 +1,59 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import JavaIO
+import AndroidUtil
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.BitmapFactory")
+open class BitmapFactory: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+}
+extension JavaClass<BitmapFactory> {
+  @JavaStaticMethod
+  public fn decodeFile(_ arg0: String) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn decodeFile(_ arg0: String, _ arg1: BitmapFactory.Options?) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn decodeResourceStream(_ arg0: Resources?, _ arg1: TypedValue?, _ arg2: InputStream?, _ arg3: Rect?, _ arg4: BitmapFactory.Options?) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn decodeResource(_ arg0: Resources?, _ arg1: Int32, _ arg2: BitmapFactory.Options?) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn decodeResource(_ arg0: Resources?, _ arg1: Int32) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn decodeByteArray(_ arg0: [Int8], _ arg1: Int32, _ arg2: Int32) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn decodeByteArray(_ arg0: [Int8], _ arg1: Int32, _ arg2: Int32, _ arg3: BitmapFactory.Options?) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn decodeStream(_ arg0: InputStream?) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn decodeStream(_ arg0: InputStream?, _ arg1: Rect?, _ arg2: BitmapFactory.Options?) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn decodeFileDescriptor(_ arg0: FileDescriptor?, _ arg1: Rect?, _ arg2: BitmapFactory.Options?) -> Bitmap!
+
+  @JavaStaticMethod
+  public fn decodeFileDescriptor(_ arg0: FileDescriptor?) -> Bitmap!
+}

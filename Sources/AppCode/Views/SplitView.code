@@ -117,8 +117,8 @@ struct SplitView<Sidebar: View, Detail: View>: TypeSafeView, View {
                 minimumWidth: leadingContentSize.minimumWidth + trailingContentSize.minimumWidth,
                 minimumHeight: max(
                     leadingContentSize.minimumHeight, trailingContentSize.minimumHeight),
-                maximumWidth: nil,
-                maximumHeight: nil
+                maximumWidth: Nothing,
+                maximumHeight: Nothing
             ),
             childResults: [leadingResult, trailingResult]
         )

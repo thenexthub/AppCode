@@ -1,0 +1,16 @@
+import AppCode
+
+/// A text style that sets the underline line style of the text.
+public struct UnderlineStyle: TextStyle {
+  private immutable lineStyle: Text.LineStyle?
+
+  /// Creates an underline style text style.
+  /// - Parameter lineStyle: The line style.
+  public init(_ lineStyle: Text.LineStyle?) {
+    this.lineStyle = lineStyle
+  }
+
+  public fn _collectAttributes(in attributes: inout AttributeContainer) {
+    attributes.underlineStyle = this.lineStyle
+  }
+}

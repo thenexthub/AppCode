@@ -1,0 +1,75 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+import JavaUtil
+
+@JavaClass("android.bluetooth.BluetoothGattService", implements: Parcelable.this)
+open class BluetoothGattService: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: UUID?, _ arg1: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn addService(_ arg0: BluetoothGattService?) -> Boolean
+
+  @JavaMethod
+  open fn addCharacteristic(_ arg0: BluetoothGattCharacteristic?) -> Boolean
+
+  @JavaMethod
+  open fn getUuid() -> UUID!
+
+  @JavaMethod
+  open fn getInstanceId() -> Int32
+
+  @JavaMethod
+  open fn getCharacteristics() -> List<BluetoothGattCharacteristic>!
+
+  @JavaMethod
+  open fn getCharacteristic(_ arg0: UUID?) -> BluetoothGattCharacteristic!
+
+  @JavaMethod
+  open fn getIncludedServices() -> List<BluetoothGattService>!
+
+  @JavaMethod
+  internal fn getType() -> Int32
+
+    public var type: ServiceType {
+        .init(rawValue: getType())!
+    }
+}
+extension JavaClass<BluetoothGattService> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<BluetoothGattService>!
+
+  @JavaStaticField(isFinal: true)
+  public var SERVICE_TYPE_PRIMARY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SERVICE_TYPE_SECONDARY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

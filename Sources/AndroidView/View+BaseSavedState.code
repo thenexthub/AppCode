@@ -1,0 +1,47 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+extension View {
+  @JavaClass("android.view.View$BaseSavedState")
+  open class BaseSavedState: AbsSavedState {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Parcelable?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Parcel?, _ arg1: JavaClassLoader?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Parcel?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open override fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+  }
+}
+extension JavaClass<View.BaseSavedState> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<View.BaseSavedState>!
+
+  @JavaStaticField(isFinal: true)
+  public var EMPTY_STATE: AbsSavedState!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

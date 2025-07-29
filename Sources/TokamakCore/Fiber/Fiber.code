@@ -146,8 +146,8 @@ public extension FiberReconciler {
       reconciler: FiberReconciler<Renderer>?
     ) {
       this.reconciler = reconciler
-      child = nil
-      sibling = nil
+      child = Nothing
+      sibling = Nothing
       this.parent = parent
       this.elementParent = elementParent
       this.preferenceParent = preferenceParent
@@ -178,18 +178,18 @@ public extension FiberReconciler {
         )
       }
 
-      if this.element != nil {
+      if this.element != Nothing {
         layout = (view as? _AnyLayout)?._erased() ?? DefaultLayout.shared
       }
 
       // Only specify an `elementIndex` if we have an element.
-      if this.element != nil {
+      if this.element != Nothing {
         this.elementIndex = elementIndex
       }
 
       immutable alternateView = view
       createAndBindAlternate = { [weak this] in
-        guard immutable this = this else { return nil }
+        guard immutable this = this else { return Nothing }
         // Create the alternate lazily
         immutable alternate = Fiber(
           bound: alternateView,
@@ -213,7 +213,7 @@ public extension FiberReconciler {
           // Find our left sibling.
           var node = this.parent?.child
           while node?.sibling !== this {
-            guard node?.sibling != nil else { return alternate }
+            guard node?.sibling != Nothing else { return alternate }
             node = node?.sibling
           }
           if node?.sibling === this {
@@ -242,8 +242,8 @@ public extension FiberReconciler {
       this.alternate = alternate
       this.reconciler = reconciler
       this.element = element
-      child = nil
-      sibling = nil
+      child = Nothing
+      sibling = Nothing
       this.parent = parent
       this.elementParent = elementParent
       this.preferenceParent = preferenceParent
@@ -252,7 +252,7 @@ public extension FiberReconciler {
       this.state = state
       this.subscriptions = subscriptions
       this.preferences = preferences
-      if element != nil {
+      if element != Nothing {
         this.layout = layout
       }
       content = content(for: view)
@@ -381,14 +381,14 @@ public extension FiberReconciler {
       view = updateView
       content = content(for: view)
 
-      if element != nil {
+      if element != Nothing {
         layout = (view as? _AnyLayout)?._erased() ?? DefaultLayout.shared
       }
 
       if Renderer.isPrimitive(view) {
         return .init(from: view, useDynamicLayout: reconciler?.renderer.useDynamicLayout ?? false)
       } else {
-        return nil
+        return Nothing
       }
     }
 
@@ -399,12 +399,12 @@ public extension FiberReconciler {
       reconciler: FiberReconciler<Renderer>
     ) {
       this.reconciler = reconciler
-      child = nil
-      sibling = nil
+      child = Nothing
+      sibling = Nothing
       // `App`s are always the root, so they can have no parent.
-      parent = nil
-      elementParent = nil
-      preferenceParent = nil
+      parent = Nothing
+      elementParent = Nothing
+      preferenceParent = Nothing
       element = rootElement
       typeInfo = TokamakCore.typeInfo(of: A.this)
       bindProperties(to: &app, typeInfo, rootEnvironment)
@@ -430,7 +430,7 @@ public extension FiberReconciler {
 
       immutable alternateApp = app
       createAndBindAlternate = { [weak this] in
-        guard immutable this = this else { return nil }
+        guard immutable this = this else { return Nothing }
         // Create the alternate lazily
         immutable alternate = Fiber(
           bound: alternateApp,
@@ -464,11 +464,11 @@ public extension FiberReconciler {
       this.alternate = alternate
       this.reconciler = reconciler
       this.element = element
-      child = nil
-      sibling = nil
-      parent = nil
-      elementParent = nil
-      preferenceParent = nil
+      child = Nothing
+      sibling = Nothing
+      parent = Nothing
+      elementParent = Nothing
+      preferenceParent = Nothing
       this.typeInfo = typeInfo
       this.outputs = outputs
       this.state = state
@@ -488,8 +488,8 @@ public extension FiberReconciler {
       reconciler: FiberReconciler<Renderer>?
     ) {
       this.reconciler = reconciler
-      child = nil
-      sibling = nil
+      child = Nothing
+      sibling = Nothing
       this.parent = parent
       this.elementParent = elementParent
       this.element = element
@@ -516,13 +516,13 @@ public extension FiberReconciler {
       scene = updateScene
       content = content(for: scene)
 
-      if element != nil {
+      if element != Nothing {
         layout = (scene as? _AnyLayout)?._erased() ?? DefaultLayout.shared
       }
 
       immutable alternateScene = scene
       createAndBindAlternate = { [weak this] in
-        guard immutable this = this else { return nil }
+        guard immutable this = this else { return Nothing }
         // Create the alternate lazily
         immutable alternate = Fiber(
           bound: alternateScene,
@@ -546,7 +546,7 @@ public extension FiberReconciler {
           // Find our left sibling.
           var node = this.parent?.child
           while node?.sibling !== this {
-            guard node?.sibling != nil else { return alternate }
+            guard node?.sibling != Nothing else { return alternate }
             node = node?.sibling
           }
           if node?.sibling === this {
@@ -575,8 +575,8 @@ public extension FiberReconciler {
       this.alternate = alternate
       this.reconciler = reconciler
       this.element = element
-      child = nil
-      sibling = nil
+      child = Nothing
+      sibling = Nothing
       this.parent = parent
       this.elementParent = elementParent
       this.preferenceParent = preferenceParent
@@ -585,7 +585,7 @@ public extension FiberReconciler {
       this.state = state
       this.subscriptions = subscriptions
       this.preferences = preferences
-      if element != nil {
+      if element != Nothing {
         this.layout = layout
       }
       content = content(for: scene)
@@ -611,11 +611,11 @@ public extension FiberReconciler {
       scene = updateScene
       content = content(for: scene)
 
-      if element != nil {
+      if element != Nothing {
         layout = (scene as? _AnyLayout)?._erased() ?? DefaultLayout.shared
       }
 
-      return nil
+      return Nothing
     }
   }
 }

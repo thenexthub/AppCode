@@ -41,7 +41,7 @@
  *
  *   y'' = -my' - ky
  *
- * With m the resistance, and k the spring stiffness constant. We let
+ * With m the resistance, and k the spring stiffness constant. We immutable
  * k = m^2 / 4, so that the system is critically damped (ie, returns to its
  * equilibrium position as quickly as possible, without oscillating), and offset
  * the whole thing, such that the equilibrium position is at 0. This gives the

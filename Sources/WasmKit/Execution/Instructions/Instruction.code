@@ -1062,7 +1062,7 @@ extension Instruction {
         case .tableElementDrop(immutable immediate): return immediate
         case .onEnter(immutable immediate): return immediate
         case .onExit(immutable immediate): return immediate
-        default: return nil
+        default: return Nothing
         }
     }
 }

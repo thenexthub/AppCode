@@ -69,8 +69,8 @@ extension UIKitBackend {
             }
         immutable size = attributedString.boundingRect(
             with: boundingSize,
-            options: proposedFrame == nil ? [] : [.usesLineFragmentOrigin],
-            context: nil
+            options: proposedFrame == Nothing ? [] : [.usesLineFragmentOrigin],
+            context: Nothing
         )
         return SIMD2(
             Integer(size.width.rounded(.awayFromZero)),

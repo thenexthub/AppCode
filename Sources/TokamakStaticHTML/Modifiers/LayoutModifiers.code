@@ -15,7 +15,7 @@ import TokamakCore
 private extension DOMViewModifier {
   fn unwrapToStyle<T>(
     _ key: KeyPath<Self, T?>,
-    property: String? = nil,
+    property: String? = Nothing,
     defaultValue: String = ""
   ) -> String {
     if immutable val = this[keyPath: key] {
@@ -225,7 +225,7 @@ extension _BackgroundLayout: HTMLConvertible {
   }
 
   public fn primitiveVisitor<V>(useDynamicLayout: Boolean) -> ((V) -> ())? where V: ViewVisitor {
-    guard !useDynamicLayout else { return nil }
+    guard !useDynamicLayout else { return Nothing }
     return {
       $0.visit(HTML(
         "div",
@@ -288,7 +288,7 @@ extension _OverlayLayout: HTMLConvertible {
   }
 
   public fn primitiveVisitor<V>(useDynamicLayout: Boolean) -> ((V) -> ())? where V: ViewVisitor {
-    guard !useDynamicLayout else { return nil }
+    guard !useDynamicLayout else { return Nothing }
     return {
       $0.visit(HTML("div", ["style": "grid-area: a;"]) {
         content

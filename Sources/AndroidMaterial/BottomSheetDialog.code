@@ -1,0 +1,94 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidApp
+import AndroidContent
+import AndroidOS
+import AndroidView
+import AndroidWidget
+import JavaKit
+import JavaRuntime
+
+@JavaClass("com.google.android.material.bottomsheet.BottomSheetDialog")
+open class BottomSheetDialog: Dialog {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open override fn onAttachedToWindow()
+
+  @JavaMethod
+  open override fn onDetachedFromWindow()
+
+  @JavaMethod
+  open fn setContentView(_ arg0: View?)
+
+  @JavaMethod
+  open fn setContentView(_ arg0: View?, _ arg1: ViewGroup.LayoutParams?)
+
+  @JavaMethod
+  open override fn setContentView(_ arg0: Int32)
+
+  @JavaMethod
+  open fn onCreate(_ arg0: Bundle?)
+
+  @JavaMethod
+  open override fn setCancelable(_ arg0: Boolean)
+
+  @JavaMethod
+  open override fn setCanceledOnTouchOutside(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getBehavior() -> BottomSheetBehavior!
+
+  @JavaMethod
+  open fn setDismissWithAnimation(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getDismissWithAnimation() -> Boolean
+
+  @JavaMethod
+  open fn getEdgeToEdgeEnabled() -> Boolean
+
+  @JavaMethod
+  open override fn onStart()
+
+  @JavaMethod
+  open override fn cancel()
+}
+extension JavaClass<BottomSheetDialog> {
+  @JavaStaticField(isFinal: true)
+  public var BUTTON1: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON2: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON3: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON_NEGATIVE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON_NEUTRAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON_POSITIVE: Int32
+
+  @JavaStaticMethod
+  public fn setLightStatusBar(_ arg0: View?, _ arg1: Boolean)
+}

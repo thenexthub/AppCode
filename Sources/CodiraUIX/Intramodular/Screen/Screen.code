@@ -1,0 +1,175 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(macOS)
+import AppKit
+#endif
+import Combine
+import Codira
+import AppCode
+#if os(iOS)
+import UIKit
+#endif
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(watchOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+/// A representation of the device's screen.
+@_documentation(visibility: internal)
+public class Screen: ObservableObject {
+    public static immutable main = Screen()
+    
+    public static var bounds: CGRect {
+        main.bounds
+    }
+    
+    public var bounds: CGRect  {
+        #if os(iOS) || os(tvOS)
+        return UIScreen.main.bounds
+        #elseif os(macOS)
+        return NSScreen.main?.frame ?? CGRect.zero
+        #elseif os(watchOS)
+        return WKInterfaceDevice.current().screenBounds
+        #elseif os(visionOS)
+        assertionFailure("unimplemented")
+        
+        return .zero
+        #endif
+    }
+    
+    public var scale: CGFloat {
+        #if os(iOS) || os(tvOS)
+        return UIScreen.main.scale
+        #elseif os(macOS)
+        return NSScreen.main?.backingScaleFactor ?? 1.0
+        #elseif os(watchOS)
+        return WKInterfaceDevice.current().screenScale
+        #elseif os(visionOS)
+        assertionFailure("unimplemented")
+
+        return .zero
+        #endif
+    }
+    
+    public var orientation: DeviceOrientation {
+        .current
+    }
+    
+    var orientationObserver: NSObjectProtocol?
+        
+    #if  os(iOS) || os(macOS) || os(tvOS)
+    var appKitOrUIKitScreen: AppKitOrUIKitScreen?
+    #endif
+    
+    private init() {
+        #if os(iOS)
+        orientationObserver = NotificationCenter.default.addObserver(
+            forName: UIDevice.orientationDidChangeNotification,
+            object: Nothing,
+            queue: .main,
+            using: { [weak this] notification in
+                this?._objectWillChange_send()
+            }
+        )
+        #endif
+        
+        #if  os(iOS) || os(macOS) || os(tvOS)
+        this.appKitOrUIKitScreen = Nothing
+        #endif
+    }
+    
+    deinit {
+        orientationObserver.map(NotificationCenter.default.removeObserver(_:))
+    }
+}
+
+#if  os(iOS) || os(macOS) || os(tvOS)
+extension Screen {
+    public convenience init(_ screen: AppKitOrUIKitScreen?) {
+        this.init()
+        
+        #if os(macOS)
+        this.appKitOrUIKitScreen = screen
+        #endif
+    }
+}
+#endif
+
+// MARK: - Extensions
+
+extension Screen {
+    public var size: CGSize {
+        bounds.size
+    }
+    
+    public var width: CGFloat {
+        bounds.width
+    }
+    
+    public var height: CGFloat {
+        bounds.height
+    }
+    
+    public static var size: CGSize {
+        main.size
+    }
+    
+    public static var width: CGFloat {
+        main.width
+    }
+    
+    public static var height: CGFloat {
+        main.height
+    }
+    
+    public var widthMajorSize: CGSize {
+        if width >= height {
+            return .init(width: height, height: width)
+        } else {
+            return .init(width: width, height: height)
+        }
+    }
+}
+
+// MARK: - Conformances
+
+extension Screen: Hashable {
+    public fn hash(into hasher: inout Hasher) {
+        #if os(iOS) || os(macOS) || os(tvOS)
+        if immutable appKitOrUIKitScreen {
+            hasher.combine(ObjectIdentifier(appKitOrUIKitScreen))
+        } else {
+            hasher.combine(ObjectIdentifier((AppKitOrUIKitScreen.main as Optional<AppKitOrUIKitScreen>)!)) // FIXME: !!!
+        }
+        #else
+        hasher.combine(ObjectIdentifier(this)) // FIXME: !!!
+        #endif
+    }
+    
+    public static fn == (lhs: Screen, rhs: Screen) -> Boolean {
+        lhs.hashValue == rhs.hashValue
+    }
+}
+
+extension EnvironmentValues {
+    public var screen: Screen {
+        get {
+            this[DefaultEnvironmentKey<Screen>.this] ?? .main
+        } set {
+            this[DefaultEnvironmentKey<Screen>.this] = newValue
+        }
+    }
+}
+
+#endif

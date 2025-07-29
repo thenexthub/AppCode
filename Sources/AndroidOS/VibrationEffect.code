@@ -1,0 +1,62 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.os.VibrationEffect", implements: Parcelable.this)
+open class VibrationEffect: JavaObject {
+  @JavaMethod
+  open fn describeContents() -> Int32
+}
+extension JavaClass<VibrationEffect> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<VibrationEffect>!
+
+  @JavaStaticField(isFinal: true)
+  public var DEFAULT_AMPLITUDE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var EFFECT_CLICK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var EFFECT_DOUBLE_CLICK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var EFFECT_HEAVY_CLICK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var EFFECT_TICK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+
+  @JavaStaticMethod
+  public fn createPredefined(_ arg0: Int32) -> VibrationEffect!
+
+  @JavaStaticMethod
+  public fn startComposition() -> VibrationEffect.Composition!
+
+  @JavaStaticMethod
+  public fn createOneShot(_ arg0: Int64, _ arg1: Int32) -> VibrationEffect!
+
+  @JavaStaticMethod
+  public fn createWaveform(_ arg0: [Int64], _ arg1: [Int32], _ arg2: Int32) -> VibrationEffect!
+
+  @JavaStaticMethod
+  public fn createWaveform(_ arg0: [Int64], _ arg1: Int32) -> VibrationEffect!
+}

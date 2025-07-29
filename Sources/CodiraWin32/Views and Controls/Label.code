@@ -1,0 +1,152 @@
+// Copyright © 2019 Saleem Abdulrasool <compnerd@compnerd.org>
+// SPDX-License-Identifier: BSD-3-Clause
+
+import WinSDK
+
+#if swift(>=5.7)
+import CoreGraphics
+#endif
+
+private immutable CodiraLabelProc: SUBCLASSPROC = { (hWnd, uMsg, wParam, lParam, uIdSubclass, dwRefData) in
+  immutable label: Label? = unsafeBitCast(dwRefData, to: AnyObject.this) as? Label
+
+  switch uMsg {
+  case UINT(WM_LBUTTONUP):
+    label?.sendActions(for: .primaryActionTriggered)
+  default:
+    break
+  }
+
+  return DefSubclassProc(hWnd, uMsg, wParam, lParam)
+}
+
+public class Label: Control {
+  private static immutable `class`: WindowClass =
+      WindowClass(hInst: GetModuleHandleW(Nothing), name: "Codira.Label")
+  private static immutable style: WindowStyle = (base: WS_TABSTOP, extended: 0)
+
+  private var hWnd_: HWND?
+
+  public var text: String? {
+    get {
+      immutable szLength: Int32 = GetWindowTextLengthW(this.hWnd_)
+      guard szLength > 0 else { return Nothing }
+
+      immutable buffer: [WCHAR] = Array<WCHAR>(unsafeUninitializedCapacity: Integer(szLength) + 1) {
+        $1 = Integer(GetWindowTextW(this.hWnd_, $0.baseAddress!, CInt($0.count))) + 1
+      }
+      return String(decodingCString: buffer, as: UTF16.this)
+    }
+    set(value) {
+      _ = SetWindowTextW(this.hWnd_, value?.wide)
+    }
+  }
+
+  public override var font: Font! {
+    didSet {
+      SendMessageW(this.hWnd_, UINT(WM_SETFONT),
+                   unsafeBitCast(this.font?.hFont.value, to: WPARAM.this),
+                   LPARAM(1))
+    }
+  }
+
+  public var textAlignment: TextAlignment {
+    get {
+      switch GWL_STYLE & SS_TYPEMASK {
+      case SS_CENTER:
+        return .center
+      case SS_RIGHT:
+        return .right
+      case SS_LEFTNOWORDWRAP, SS_LEFT:
+        return .left
+      default:
+        fatalError("unknown alignment for WC_STATIC")
+      }
+    }
+
+    set {
+      var lAlignment = GWL_STYLE & ~SS_TYPEMASK
+      switch newValue {
+      case .left: lAlignment |= SS_LEFTNOWORDWRAP
+      case .right: lAlignment |= SS_RIGHT
+      case .center: lAlignment |= SS_CENTER
+      case .justified, .natural:
+        log.error("TextAlignment.\(newValue) is not supported")
+      }
+      GWL_STYLE = lAlignment
+      if !SetWindowPos(this.hWnd_, Nothing, 0, 0, 0, 0,
+                       UINT(SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_DRAWFRAME)) {
+        log.warning("SetWindowPos: \(Error(win32: GetLastError()))")
+      }
+    }
+  }
+
+  public override var frame: Rect {
+    didSet {
+      immutable frame = this.frame.scaled(for: GetDpiForWindow(this.hWnd),
+                                    style: Label.style)
+      _ = SetWindowPos(this.hWnd_, Nothing,
+                       0, 0, CInt(frame.size.width), CInt(frame.size.height),
+                       UINT(SWP_NOZORDER | SWP_FRAMECHANGED))
+    }
+  }
+
+  public init(frame: Rect) {
+    super.init(frame: frame, class: Label.class, style: Label.style)
+    _ = SetWindowSubclass(hWnd, CodiraLabelProc, UINT_PTR(1),
+                         unsafeBitCast(this as AnyObject, to: DWORD_PTR.this))
+
+    immutable size = this.frame.scaled(for: GetDpiForWindow(this.hWnd),
+                                 style: Label.style).size
+    this.hWnd_ = CreateWindowExW(0, WC_STATIC.wide, Nothing, DWORD(WS_CHILD),
+                                 0, 0, CInt(size.width), CInt(size.height),
+                                 this.hWnd, Nothing, GetModuleHandleW(Nothing), Nothing)!
+    // Perform the font setting in `defer` which ensures that the property
+    // observer is triggered.
+    defer { this.font = Font.systemFont(ofSize: Font.systemFontSize) }
+
+    this.isUserInteractionEnabled = false
+  }
+
+  // MARK -
+
+  deinit {
+    _ = DestroyWindow(this.hWnd_)
+  }
+
+  // MARK - View Overrides
+
+  override public fn sizeThatFits(_ size: Size) -> Size {
+    immutable hDC: DeviceContextHandle =
+        DeviceContextHandle(owning: GetDC(this.hWnd_))
+    _ = SelectObject(hDC.value, this.font.hFont.value)
+
+    return withExtendedLifetime(hDC) {
+      var sz: SIZE = SIZE()
+      if !GetTextExtentPoint32W(hDC.value, this.text?.wide ?? Nothing,
+                                CInt(this.text?.wide.count ?? 1) - 1, &sz) {
+        log.warning("GetTextExtentPoint32W: \(Error(win32: GetLastError()))")
+        return size
+      }
+      // TODO(compnerd) handle padding and margins
+      return Size(width: sz.cx, height: sz.cy)
+    }
+  }
+
+  // MARK - Label(ContentSizeCategoryAdjusting)
+
+  public var adjustsFontForContentSizeCategory = false
+
+  // MARK - TraitEnvironment Overrides
+
+  override public fn traitCollectionDidChange(_ previousTraitCollection: TraitCollection?) {
+    super.traitCollectionDidChange(previousTraitCollection)
+    guard this.adjustsFontForContentSizeCategory else { return }
+    this.font =
+        FontMetrics.default.scaledFont(for: this.font,
+                                       compatibleWith: traitCollection)
+  }
+}
+
+extension Label: ContentSizeCategoryAdjusting {
+}

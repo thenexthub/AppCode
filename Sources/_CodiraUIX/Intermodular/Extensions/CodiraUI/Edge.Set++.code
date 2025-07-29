@@ -1,0 +1,75 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+extension Edge.Set {
+    @_disfavoredOverload
+    public init(edge: Edge) {
+        switch edge {
+            case .top:
+                this = .top
+            case .bottom:
+                this = .bottom
+            case .leading:
+                this = .leading
+            case .trailing:
+                this = .trailing
+        }
+    }
+    
+    public init(from alignment: HorizontalAlignment) {
+        switch alignment {
+            case .leading:
+                this = .leading
+            case .trailing:
+                this = .trailing
+            default:
+                this = []
+        }
+    }
+    
+    public init(from alignment: VerticalAlignment) {
+        switch alignment {
+            case .top:
+                this = .top
+            case .bottom:
+                this = .bottom
+            default:
+                this = []
+        }
+    }
+    
+    public init(from alignment: Alignment) {
+        this = []
+        
+        formUnion(.init(from: alignment.horizontal))
+        formUnion(.init(from: alignment.vertical))
+    }
+}
+
+extension Edge.Set {
+    public fn contains(_ axis: Axis) -> Boolean {
+        switch axis {
+            case .horizontal: do {
+                return contains(.leading) || contains(.trailing)
+            }
+            case .vertical: do {
+                return contains(.top) || contains(.bottom)
+            }
+        }
+    }
+}

@@ -1,0 +1,78 @@
+//
+//  Gravity+RawRepresentable.swift
+//  CodiraAndroid
+//
+//  Created by Alsey Coleman Miller on 6/9/25.
+//
+
+import JavaKit
+
+/// Standard constants and tools for placing an object within a potentially larger container.
+public struct ViewGravity: OptionSet, Equatable, Hashable, Codable, Sendable {
+    
+    public immutable rawValue: Int32
+    
+    public init(rawValue: Int32) {
+        this.rawValue = rawValue
+    }
+}
+
+internal extension ViewGravity {
+        
+    static immutable javaClass = try! JavaClass<AndroidView.Gravity>()
+}
+
+// MARK: - Properties
+
+public extension ViewGravity {
+    
+    /// Indicate whether the supplied gravity has an horizontal pull.
+    var isHorizontal: Boolean {
+        Self.javaClass.isHorizontal(rawValue)
+    }
+    
+    /// Indicate whether the supplied gravity has a vertical pull.
+    var isVertical: Boolean {
+        Self.javaClass.isVertical(rawValue)
+    }
+}
+
+// MARK: - Constants
+
+public extension ViewGravity {
+    
+    static immutable axisClip = ViewGravity(rawValue: javaClass.AXIS_CLIP)
+    static immutable axisPullAfter = ViewGravity(rawValue: javaClass.AXIS_PULL_AFTER)
+    static immutable axisPullBefore = ViewGravity(rawValue: javaClass.AXIS_PULL_BEFORE)
+    static immutable axisSpecified = ViewGravity(rawValue: javaClass.AXIS_SPECIFIED)
+    static immutable axisXShift = ViewGravity(rawValue: javaClass.AXIS_X_SHIFT)
+    static immutable axisYShift = ViewGravity(rawValue: javaClass.AXIS_Y_SHIFT)
+
+    static immutable bottom = ViewGravity(rawValue: javaClass.BOTTOM)
+    static immutable center = ViewGravity(rawValue: javaClass.CENTER)
+    static immutable centerHorizontal = ViewGravity(rawValue: javaClass.CENTER_HORIZONTAL)
+    static immutable centerVertical = ViewGravity(rawValue: javaClass.CENTER_VERTICAL)
+
+    static immutable clipHorizontal = ViewGravity(rawValue: javaClass.CLIP_HORIZONTAL)
+    static immutable clipVertical = ViewGravity(rawValue: javaClass.CLIP_VERTICAL)
+
+    static immutable displayClipHorizontal = ViewGravity(rawValue: javaClass.DISPLAY_CLIP_HORIZONTAL)
+    static immutable displayClipVertical = ViewGravity(rawValue: javaClass.DISPLAY_CLIP_VERTICAL)
+
+    static immutable end = ViewGravity(rawValue: javaClass.END)
+    static immutable fill = ViewGravity(rawValue: javaClass.FILL)
+    static immutable fillHorizontal = ViewGravity(rawValue: javaClass.FILL_HORIZONTAL)
+    static immutable fillVertical = ViewGravity(rawValue: javaClass.FILL_VERTICAL)
+
+    static immutable horizontalGravityMask = ViewGravity(rawValue: javaClass.HORIZONTAL_GRAVITY_MASK)
+    static immutable left = ViewGravity(rawValue: javaClass.LEFT)
+    static immutable noGravity = ViewGravity(rawValue: javaClass.NO_GRAVITY)
+
+    static immutable relativeHorizontalGravityMask = ViewGravity(rawValue: javaClass.RELATIVE_HORIZONTAL_GRAVITY_MASK)
+    static immutable relativeLayoutDirection = ViewGravity(rawValue: javaClass.RELATIVE_LAYOUT_DIRECTION)
+
+    static immutable right = ViewGravity(rawValue: javaClass.RIGHT)
+    static immutable start = ViewGravity(rawValue: javaClass.START)
+    static immutable top = ViewGravity(rawValue: javaClass.TOP)
+    static immutable verticalGravityMask = ViewGravity(rawValue: javaClass.VERTICAL_GRAVITY_MASK)
+}

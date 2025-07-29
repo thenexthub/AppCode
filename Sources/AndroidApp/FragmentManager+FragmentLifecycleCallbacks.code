@@ -1,0 +1,45 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension FragmentManager {
+  @JavaClass("android.app.FragmentManager$FragmentLifecycleCallbacks")
+  open class FragmentLifecycleCallbacks: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn onFragmentStarted(_ arg0: FragmentManager?, _ arg1: Fragment?)
+
+  @JavaMethod
+  open fn onFragmentResumed(_ arg0: FragmentManager?, _ arg1: Fragment?)
+
+  @JavaMethod
+  open fn onFragmentPaused(_ arg0: FragmentManager?, _ arg1: Fragment?)
+
+  @JavaMethod
+  open fn onFragmentStopped(_ arg0: FragmentManager?, _ arg1: Fragment?)
+
+  @JavaMethod
+  open fn onFragmentViewDestroyed(_ arg0: FragmentManager?, _ arg1: Fragment?)
+
+  @JavaMethod
+  open fn onFragmentDestroyed(_ arg0: FragmentManager?, _ arg1: Fragment?)
+
+  @JavaMethod
+  open fn onFragmentDetached(_ arg0: FragmentManager?, _ arg1: Fragment?)
+  }
+}

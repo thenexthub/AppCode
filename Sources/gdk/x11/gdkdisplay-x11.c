@@ -1587,7 +1587,7 @@ gdk_x11_display_open (const char *display_name)
 			       NULL, &display_x11->xkb_event_type, NULL,
                                &xkb_major, &xkb_minor))
           {
-	    Bool detectable_autorepeat_supported;
+	    Boolean detectable_autorepeat_supported;
 	    
 	    display_x11->use_xkb = TRUE;
 

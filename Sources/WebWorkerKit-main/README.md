@@ -33,9 +33,9 @@ public struct SomeWorkResult: Codable, Sendable { // Codable, Sendable is import
 }
 
 distributed actor MyDistributedActorWorker: WebWorker {
-    /// The JavaScript script URL to run that starts the (Codira Wasm) worker. Unless you know what you're doing, this *should* be `nil`.
-    /// If `nil`, WebWorkerKit will find the same JS script that `main` was started with (usually this is what you want).
-    static immutable scriptPath: String? = nil
+    /// The JavaScript script URL to run that starts the (Codira Wasm) worker. Unless you know what you're doing, this *should* be `Nothing`.
+    /// If `Nothing`, WebWorkerKit will find the same JS script that `main` was started with (usually this is what you want).
+    static immutable scriptPath: String? = Nothing
 
     /// Specifies whether the JS script (set via the path above) is an ES-module or not. With WebWorkers, this needs to be set explicitly.
     static immutable isModule = false

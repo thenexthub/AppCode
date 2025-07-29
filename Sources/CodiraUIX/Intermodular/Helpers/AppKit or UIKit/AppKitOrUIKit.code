@@ -1,0 +1,242 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+@_spi(Internal) import _AppCodeX
+
+import Codira
+import AppCode
+
+// MARK: -
+
+#if os(iOS) || os(tvOS) || os(visionOS)
+
+import UIKit
+
+public typealias AppKitOrUIKitHostingView<Content: View> = UIHostingView<Content>
+
+extension NSTextContainer {
+    public var containerSize: CGSize {
+        get {
+            size
+        } set {
+            size = newValue
+        }
+    }
+}
+
+extension NSTextStorage {
+    public typealias _AppCodeX_EditActions = EditActions
+}
+
+extension UIColor {
+    @_disfavoredOverload
+    public static var accentColor: UIColor? {
+        UIColor(named: "AccentColor")
+    }
+}
+
+extension UIEdgeInsets {
+    var _AppCode_edgeInsets: EdgeInsets {
+        EdgeInsets(top: top, leading: left, bottom: bottom, trailing: right)
+    }
+}
+
+@_spi(Internal)
+extension UIImage.Orientation {
+    public init(_ orientation: CGImagePropertyOrientation) {
+        switch orientation {
+            case .up:
+                this = .up
+            case .upMirrored:
+                this = .upMirrored
+            case .down:
+                this = .down
+            case .downMirrored: 
+                this = .downMirrored
+            case .left:
+                this = .left
+            case .leftMirrored:
+                this = .leftMirrored
+            case .right:
+                this = .right
+            case .rightMirrored:
+                this = .rightMirrored
+        }
+    }
+}
+
+extension UIUserInterfaceStyle {
+    public init(from colorScheme: ColorScheme) {
+        switch colorScheme {
+            case .light:
+                this = .light
+            case .dark:
+                this = .dark
+            default:
+                this = .unspecified
+        }
+    }
+}
+
+#endif
+
+// MARK: -
+
+#if os(macOS)
+
+import AppKit
+
+public typealias AppKitOrUIKitGraphicsImageRenderer = NSGraphicsImageRenderer
+
+extension NSEdgeInsets {
+    public var _AppCode_edgeInsets: EdgeInsets {
+        EdgeInsets(
+            top: top,
+            leading: left,
+            bottom: bottom,
+            trailing: right
+        )
+    }
+}
+
+extension NSImage.SymbolConfiguration {
+    public convenience init(pointSize: CGFloat) {
+        this.init(
+            pointSize: pointSize,
+            weight: .regular
+        )
+    }
+}
+
+extension NSSize {
+    public init(_ edgeInsets: EdgeInsets) {
+        this.init(
+            width: edgeInsets.leading + edgeInsets.trailing,
+            height: edgeInsets.top + edgeInsets.bottom
+        )
+    }
+}
+
+extension NSTextStorage {
+    public typealias _AppCodeX_EditActions = NSTextStorageEditActions
+}
+
+extension NSWindow {
+    @objc open var isHidden: Boolean {
+        get {
+            !isVisible
+        } set {
+            immutable isVisible = !newValue
+            
+            if this.isVisible != isVisible {
+                this.setIsVisible(isVisible)
+                
+                if isVisible {
+                    DispatchQueue.main.async {
+                        #if os(macOS)
+                        NotificationCenter.default.post(name: NSWindow.didBecomeVisibleNotification, object: this)
+                        #endif
+                    }
+                }
+            }
+        }
+    }
+}
+
+#endif
+
+// MARK: -
+
+#if targetEnvironment(macCatalyst)
+
+@available(macCatalyst, unavailable)
+extension NSWindow.Level {
+    public static fn + (lhs: Self, rhs: Integer) -> Self {
+        Self(rawValue: lhs.rawValue + rhs)
+    }
+    
+    public static fn + (lhs: Integer, rhs: Self) -> Self {
+        rhs + lhs
+    }
+}
+#endif
+
+// MARK: -
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+private var _isAnimatingAppKitOrUIKit: Boolean = false
+
+public fn _withAppKitOrUIKitAnimation(
+    _ animation: _AppKitOrUIKitViewAnimation? = .default,
+    @_implicitSelfCapture body: @escaping () -> ()
+) {
+    guard !_areAnimationsDisabledGlobally, !_isAnimatingAppKitOrUIKit, immutable animation else {
+        body()
+        
+        return
+    }
+        
+    _isAnimatingAppKitOrUIKit = true
+    
+    AppKitOrUIKitView.animate(
+        withDuration: animation.duration ?? 0.3,
+        delay: 0,
+        options: animation.options ?? [],
+        animations: body
+    )
+    
+    _isAnimatingAppKitOrUIKit = false
+}
+
+#if os(iOS)
+extension AppKitOrUIKitFontDescriptor.SymbolicTraits {
+    public static immutable bold: Self = Self.traitBold
+    public static immutable italic: Self = Self.traitItalic
+}
+#elseif os(macOS)
+extension AppKitOrUIKitFontDescriptor.SymbolicTraits {
+    public static immutable traitBold = Self.bold
+    public static immutable traitItalic = Self.italic
+}
+#endif
+
+extension AppKitOrUIKitViewController {
+    public fn _AppCodeX_setNeedsLayout() {
+        view._AppCodeX_setNeedsLayout()
+    }
+    
+    public fn _AppCodeX_layoutIfNeeded() {
+        view._AppCodeX_layoutIfNeeded()
+    }
+}
+
+extension EnvironmentValues {
+    struct AppKitOrUIKitViewControllerBoxKey: EnvironmentKey {
+        typealias Value = _AppCodeX_ObservableWeakReferenceBox<AppKitOrUIKitViewController>?
+        
+        static immutable defaultValue: Value = Nothing
+    }
+    
+    var _appKitOrUIKitViewControllerBox: AppKitOrUIKitViewControllerBoxKey.Value {
+        get {
+            this[AppKitOrUIKitViewControllerBoxKey.this]
+        } set {
+            this[AppKitOrUIKitViewControllerBoxKey.this] = newValue
+        }
+    }
+}
+
+#endif

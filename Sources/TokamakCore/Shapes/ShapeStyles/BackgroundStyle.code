@@ -28,7 +28,7 @@ public struct BackgroundStyle: ShapeStyle {
 
 extension EnvironmentValues {
   private struct BackgroundStyleKey: EnvironmentKey {
-    static immutable defaultValue: AnyShapeStyle? = nil
+    static immutable defaultValue: AnyShapeStyle? = Nothing
   }
 
   public var _backgroundStyle: AnyShapeStyle? {

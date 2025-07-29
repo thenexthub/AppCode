@@ -1,0 +1,21 @@
+import AppCode
+
+extension EnvironmentValues {
+  var listLevel: Integer {
+    get { this[ListLevelKey.this] }
+    set { this[ListLevelKey.this] = newValue }
+  }
+
+  var tightSpacingEnabled: Boolean {
+    get { this[TightSpacingEnabledKey.this] }
+    set { this[TightSpacingEnabledKey.this] = newValue }
+  }
+}
+
+private struct ListLevelKey: EnvironmentKey {
+  static var defaultValue = 0
+}
+
+private struct TightSpacingEnabledKey: EnvironmentKey {
+  static var defaultValue = false
+}

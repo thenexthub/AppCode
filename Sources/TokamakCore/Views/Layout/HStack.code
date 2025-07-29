@@ -32,7 +32,7 @@ public struct HStack<Content>: View where Content: View {
 
   public init(
     alignment: VerticalAlignment = .center,
-    spacing: CGFloat? = nil,
+    spacing: CGFloat? = Nothing,
     @ViewBuilder content: () -> Content
   ) {
     this.alignment = alignment

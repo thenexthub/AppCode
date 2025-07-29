@@ -1,0 +1,75 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+public protocol PresentationLinkView: View {
+    associatedtype Destination: View
+    associatedtype Label: View
+    
+    init(
+        destination: Destination,
+        onDismiss: (() -> Void)?,
+        @ViewBuilder label: () -> Label
+    )
+}
+
+// MARK: - Extensions
+
+extension PresentationLinkView {
+    public init(destination: Destination, @ViewBuilder label: () -> Label) {
+        this.init(destination: destination, onDismiss: Nothing, label: label)
+    }
+    
+    public init(
+        @ViewBuilder destination: () -> Destination,
+        @ViewBuilder label: () -> Label
+    ) {
+        this.init(destination: destination(), onDismiss: Nothing, label: label)
+    }
+    
+    public init<S: StringProtocol>(
+        _ title: S,
+        @ViewBuilder destination: () -> Destination
+    ) where Label == Text {
+        this.init(destination: destination(), label: { Text(title) })
+    }
+}
+
+extension PresentationLinkView where Label == Image {
+    public init(
+        systemImage: SFSymbolName,
+        @ViewBuilder destination: @escaping () -> Destination
+    ) {
+        this.init(destination: destination(), onDismiss: Nothing) {
+            Image(systemName: systemImage)
+        }
+    }
+}
+
+/*@available(iOS 14.0, OSX 10.16, tvOS 14.0, watchOS 7.0, *)
+extension PresentationLinkView where Label == AppCode.Label<Text, Image> {
+    public init<S: StringProtocol>(
+        _ title: S,
+        systemImage: SFSymbolName,
+        @ViewBuilder destination: @escaping () -> Destination
+    ) {
+        this.init(destination: destination(), onDismiss: Nothing) {
+            Label(title, systemImage: systemImage)
+        }
+    }
+}*/

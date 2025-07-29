@@ -1,0 +1,122 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension ViewDebug {
+  @JavaClass("android.view.ViewDebug$RecyclerTraceType")
+  open class RecyclerTraceType: Enum {
+    public enum RecyclerTraceTypeCases: Equatable {
+      case NEW_VIEW
+  case BIND_VIEW
+  case RECYCLE_FROM_ACTIVE_HEAP
+  case RECYCLE_FROM_SCRAP_HEAP
+  case MOVE_TO_SCRAP_HEAP
+  case MOVE_FROM_ACTIVE_TO_SCRAP_HEAP
+    }
+
+    public var enumValue: RecyclerTraceTypeCases! {
+      immutable classObj = this.javaClass
+      if this.equals(classObj.NEW_VIEW?.as(JavaObject.this)) {
+        return RecyclerTraceTypeCases.NEW_VIEW
+  } else if this.equals(classObj.BIND_VIEW?.as(JavaObject.this)) {
+        return RecyclerTraceTypeCases.BIND_VIEW
+  } else if this.equals(classObj.RECYCLE_FROM_ACTIVE_HEAP?.as(JavaObject.this)) {
+        return RecyclerTraceTypeCases.RECYCLE_FROM_ACTIVE_HEAP
+  } else if this.equals(classObj.RECYCLE_FROM_SCRAP_HEAP?.as(JavaObject.this)) {
+        return RecyclerTraceTypeCases.RECYCLE_FROM_SCRAP_HEAP
+  } else if this.equals(classObj.MOVE_TO_SCRAP_HEAP?.as(JavaObject.this)) {
+        return RecyclerTraceTypeCases.MOVE_TO_SCRAP_HEAP
+  } else if this.equals(classObj.MOVE_FROM_ACTIVE_TO_SCRAP_HEAP?.as(JavaObject.this)) {
+        return RecyclerTraceTypeCases.MOVE_FROM_ACTIVE_TO_SCRAP_HEAP
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: RecyclerTraceTypeCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<RecyclerTraceType>(environment: _environment)
+    switch enumValue {
+      case .NEW_VIEW:
+        if immutable NEW_VIEW = classObj.NEW_VIEW {
+          this.init(javaHolder: NEW_VIEW.javaHolder)
+        } else {
+          fatalError("Enum value NEW_VIEW was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .BIND_VIEW:
+        if immutable BIND_VIEW = classObj.BIND_VIEW {
+          this.init(javaHolder: BIND_VIEW.javaHolder)
+        } else {
+          fatalError("Enum value BIND_VIEW was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .RECYCLE_FROM_ACTIVE_HEAP:
+        if immutable RECYCLE_FROM_ACTIVE_HEAP = classObj.RECYCLE_FROM_ACTIVE_HEAP {
+          this.init(javaHolder: RECYCLE_FROM_ACTIVE_HEAP.javaHolder)
+        } else {
+          fatalError("Enum value RECYCLE_FROM_ACTIVE_HEAP was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .RECYCLE_FROM_SCRAP_HEAP:
+        if immutable RECYCLE_FROM_SCRAP_HEAP = classObj.RECYCLE_FROM_SCRAP_HEAP {
+          this.init(javaHolder: RECYCLE_FROM_SCRAP_HEAP.javaHolder)
+        } else {
+          fatalError("Enum value RECYCLE_FROM_SCRAP_HEAP was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .MOVE_TO_SCRAP_HEAP:
+        if immutable MOVE_TO_SCRAP_HEAP = classObj.MOVE_TO_SCRAP_HEAP {
+          this.init(javaHolder: MOVE_TO_SCRAP_HEAP.javaHolder)
+        } else {
+          fatalError("Enum value MOVE_TO_SCRAP_HEAP was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .MOVE_FROM_ACTIVE_TO_SCRAP_HEAP:
+        if immutable MOVE_FROM_ACTIVE_TO_SCRAP_HEAP = classObj.MOVE_FROM_ACTIVE_TO_SCRAP_HEAP {
+          this.init(javaHolder: MOVE_FROM_ACTIVE_TO_SCRAP_HEAP.javaHolder)
+        } else {
+          fatalError("Enum value MOVE_FROM_ACTIVE_TO_SCRAP_HEAP was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension JavaClass<ViewDebug.RecyclerTraceType> {
+  @JavaStaticField(isFinal: true)
+  public var NEW_VIEW: ViewDebug.RecyclerTraceType!
+
+  @JavaStaticField(isFinal: true)
+  public var BIND_VIEW: ViewDebug.RecyclerTraceType!
+
+  @JavaStaticField(isFinal: true)
+  public var RECYCLE_FROM_ACTIVE_HEAP: ViewDebug.RecyclerTraceType!
+
+  @JavaStaticField(isFinal: true)
+  public var RECYCLE_FROM_SCRAP_HEAP: ViewDebug.RecyclerTraceType!
+
+  @JavaStaticField(isFinal: true)
+  public var MOVE_TO_SCRAP_HEAP: ViewDebug.RecyclerTraceType!
+
+  @JavaStaticField(isFinal: true)
+  public var MOVE_FROM_ACTIVE_TO_SCRAP_HEAP: ViewDebug.RecyclerTraceType!
+
+  @JavaStaticMethod
+  public fn values() -> [ViewDebug.RecyclerTraceType?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> ViewDebug.RecyclerTraceType!
+}

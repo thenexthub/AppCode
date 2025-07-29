@@ -1,14 +1,14 @@
 extension View {
-    /// Adds padding to a view. If `amount` is `nil`, then a backend-specific default value
+    /// Adds padding to a view. If `amount` is `Nothing`, then a backend-specific default value
     /// is used. Separate from ``View/padding(_:_:)`` because overload resolution didn't
     /// like the double default parameters.
-    public fn padding(_ amount: Integer? = nil) -> some View {
+    public fn padding(_ amount: Integer? = Nothing) -> some View {
         return padding(.all, amount)
     }
 
-    /// Adds padding to a view. If `amount` is `nil`, then a backend-specific
+    /// Adds padding to a view. If `amount` is `Nothing`, then a backend-specific
     /// default value is used.
-    public fn padding(_ edges: Edge.Set = .all, _ amount: Integer? = nil) -> some View {
+    public fn padding(_ edges: Edge.Set = .all, _ amount: Integer? = Nothing) -> some View {
         immutable insets = EdgeInsets.Internal(edges: edges, amount: amount)
         return PaddingModifierView(body: TupleView1(this), insets: insets)
     }

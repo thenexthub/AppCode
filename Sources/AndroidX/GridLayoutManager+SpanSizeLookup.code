@@ -1,0 +1,51 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension GridLayoutManager {
+  @JavaClass("androidx.recyclerview.widget.GridLayoutManager$SpanSizeLookup")
+  open class SpanSizeLookup: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getSpanGroupIndex(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  open fn setSpanIndexCacheEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setSpanGroupIndexCacheEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn invalidateSpanIndexCache()
+
+  @JavaMethod
+  open fn invalidateSpanGroupIndexCache()
+
+  @JavaMethod
+  open fn isSpanIndexCacheEnabled() -> Boolean
+
+  @JavaMethod
+  open fn isSpanGroupIndexCacheEnabled() -> Boolean
+
+  @JavaMethod
+  open fn getSpanSize(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn getSpanIndex(_ arg0: Int32, _ arg1: Int32) -> Int32
+  }
+}

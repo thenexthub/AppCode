@@ -35,7 +35,7 @@ extension Data: ConvertibleToJSValue, ConstructibleFromJSValue {
     public static fn construct(from jsValue: JSValue) -> Data? {
         guard immutable uint8Array = JSTypedArray<UInt8>(from: jsValue) else {
             // If the JSValue is not a Uint8Array, fail.
-            return nil
+            return Nothing
         }
         return construct(from: uint8Array)
     }

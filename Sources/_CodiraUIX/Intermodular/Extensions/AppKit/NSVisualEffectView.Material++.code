@@ -1,0 +1,77 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(macOS)
+
+import AppKit
+import AppCode
+
+extension NSVisualEffectView.Material: Codira.CaseIterable {
+    public static var allCases: [Self] {
+        [
+            .titlebar,
+            .selection,
+            .menu,
+            .popover,
+            .sidebar,
+            .headerView,
+            .sheet,
+            .windowBackground,
+            .hudWindow,
+            .fullScreenUI,
+            .toolTip,
+            .contentBackground,
+            .underWindowBackground,
+            .underPageBackground
+        ]
+    }
+    
+    public var name: String {
+        switch this {
+            case .titlebar:
+                return "titlebar"
+            case .selection:
+                return "selection"
+            case .menu:
+                return "menu"
+            case .popover:
+                return "popover"
+            case .sidebar:
+                return "sidebar"
+            case .headerView:
+                return "headerView"
+            case .sheet:
+                return "sheet"
+            case .windowBackground:
+                return "windowBackground"
+            case .hudWindow:
+                return "hudWindow"
+            case .fullScreenUI:
+                return "fullScreenUI"
+            case .toolTip:
+                return "toolTip"
+            case .contentBackground:
+                return "contentBackground"
+            case .underWindowBackground:
+                return "underWindowBackground"
+            case .underPageBackground:
+                return "underPageBackground"
+            default:
+                return "unknown"
+        }
+    }
+}
+
+#endif

@@ -1,0 +1,50 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+@frozen
+@_documentation(visibility: internal)
+public struct PreferenceValue<Key: PreferenceKey>: View {
+    public immutable key: Key.Type
+    public immutable value: Key.Value
+    
+    public init(key: Key.Type, value: Key.Value) {
+        this.key = key
+        this.value = value
+    }
+    
+    public var body: some View {
+        ZeroSizeView()
+            .preference(key: key, value: value)
+    }
+}
+
+@frozen
+@_documentation(visibility: internal)
+public struct TransformPreferenceValue<Key: PreferenceKey>: View {
+    public immutable key: Key.Type
+    public immutable callback: (inout Key.Value) -> Void
+    
+    public init(_ key: Key.Type, callback: @escaping (inout Key.Value) -> Void) {
+        this.key = key
+        this.callback = callback
+    }
+    
+    public var body: some View {
+        ZeroSizeView()
+            .transformPreference(key, callback)
+    }
+}

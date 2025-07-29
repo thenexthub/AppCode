@@ -1,0 +1,44 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.fonts.FontVariationAxis")
+open class FontVariationAxis: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: String, _ arg1: Float, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getTag() -> String
+
+  @JavaMethod
+  open fn getStyleValue() -> Float
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+}
+extension JavaClass<FontVariationAxis> {
+  @JavaStaticMethod
+  public fn fromFontVariationSettings(_ arg0: String) -> [FontVariationAxis?]
+
+  @JavaStaticMethod
+  public fn toFontVariationSettings(_ arg0: [FontVariationAxis?]) -> String
+}

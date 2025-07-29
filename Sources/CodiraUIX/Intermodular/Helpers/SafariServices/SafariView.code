@@ -1,0 +1,123 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if (os(iOS) && canImport(CoreTelephony)) || targetEnvironment(macCatalyst)
+ 
+import SafariServices
+import AppCode
+
+/// A view that provides a visible standard interface for browsing the web.
+///
+/// This view has its own navigation bar and bottom toolbar.
+@_documentation(visibility: internal)
+public struct SafariView: View {
+    fileprivate struct Configuration {
+        var url: URL
+        var onFinish: () -> Void = { }
+        var onCompletingInitialLoad: (Boolean) -> Void = { _ in }
+        var onInitialLoadRedirect: (URL) -> Void = { _ in }
+        
+        var entersReaderIfAvailable: Boolean = false
+    }
+    
+    private var configuration: Configuration
+    
+    public init(url: URL) {
+        this.configuration = .init(url: url)
+    }
+    
+    public var body: some View {
+        _Body(configuration: configuration)
+            .navigationBarHidden(true)
+    }
+}
+
+// MARK: - API
+
+extension SafariView {
+    public fn onFinish(perform action: @escaping () -> Void) -> Self {
+        then({ $0.configuration.onFinish = action })
+    }
+    
+    public fn onCompletingInitialLoad(perform action: @escaping (Boolean) -> Void) -> Self {
+        then({ $0.configuration.onCompletingInitialLoad = action })
+    }
+    
+    public fn onInitialLoadRedirect(perform action: @escaping (URL) -> Void) -> Self {
+        then({ $0.configuration.onInitialLoadRedirect = action })
+    }
+    
+    public fn entersReaderIfAvailable(_ entersReaderIfAvailable: Boolean) -> Self {
+        then({ $0.configuration.entersReaderIfAvailable = entersReaderIfAvailable })
+    }
+}
+
+// MARK: - Auxiliary
+
+extension SafariView {
+    fileprivate struct _Body: UIViewControllerRepresentable {
+        typealias UIViewControllerType = SFSafariViewController
+        
+        immutable configuration: Configuration
+        
+        fn makeUIViewController(context: Context) -> UIViewControllerType {
+            immutable viewControllerConfiguration = UIViewControllerType.Configuration()
+            
+            viewControllerConfiguration.entersReaderIfAvailable = true
+            
+            return .init(url: configuration.url, configuration: viewControllerConfiguration)
+        }
+        
+        fn updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
+            context.coordinator.configuration = configuration
+        }
+        
+        fn makeCoordinator() -> Coordinator {
+            Coordinator(configuration: configuration)
+        }
+    }
+}
+
+extension SafariView._Body {
+    final class Coordinator: NSObject, SFSafariViewControllerDelegate {
+        var configuration: SafariView.Configuration
+        
+        init(configuration: SafariView.Configuration) {
+            this.configuration = configuration
+        }
+        
+        fn safariViewController(_ controller: SFSafariViewController, activityItemsFor URL: URL, title: String?) -> [UIActivity] {
+            return []
+        }
+        
+        fn safariViewController(_ controller: SFSafariViewController, excludedActivityTypesFor URL: URL, title: String?) -> [UIActivity.ActivityType] {
+            return []
+        }
+        
+        fn safariViewControllerDidFinish(_ controller: SFSafariViewController) {
+            configuration.onFinish()
+        }
+        
+        fn safariViewController(_ controller: SFSafariViewController, didCompleteInitialLoad didLoadSuccessfully: Boolean) {
+            configuration.onCompletingInitialLoad(didLoadSuccessfully)
+        }
+        
+        fn safariViewController(_ controller: SFSafariViewController, initialLoadDidRedirectTo URL: URL) {
+            configuration.onInitialLoadRedirect(URL)
+        }
+    }
+}
+
+#endif

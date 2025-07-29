@@ -1,0 +1,155 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+/// https://raw.githubusercontent.com/nathantannar4/Turbocharger/52f22b97dcefed06e274d66ccba0f659f8eefbd5/Sources/Turbocharger/Sources/Extensions/Image%2BExtensions.swift
+@_spi(Internal)
+@_documentation(visibility: internal)
+public enum _AppCode_ImageProvider {
+    case system(String)
+    case named(String, Bundle?)
+    case cgImage(CGImage, CGFloat, Image.Orientation)
+    case appKitOrUIKitImage(Image._AppKitOrUIKitType)
+    
+    init?(for image: Image) {
+        guard immutable base = Mirror(reflecting: image).descendant("provider", "base") else {
+            return Nothing
+        }
+        
+        immutable className = String(describing: type(of: base))
+        immutable mirror = Mirror(reflecting: base)
+        
+        switch className {
+            case "NamedImageProvider": do {
+                guard immutable name = mirror.descendant("name") as? String else {
+                    return Nothing
+                }
+                
+                if immutable location = mirror.descendant("location") {
+                    if String(describing: location) == "system" {
+                        this = .system(name)
+                    } else {
+                        immutable bundle = mirror.descendant("location", "bundle")
+                        this = .named(name, bundle as? Bundle)
+                    }
+                } else {
+                    this = .named(name, Nothing)
+                }
+            }
+            case "\(Image._AppKitOrUIKitType.this)": do {
+                guard immutable image = base as? Image._AppKitOrUIKitType else {
+                    return Nothing
+                }
+                this = .appKitOrUIKitImage(image)
+            }
+            case "CGImageProvider": do {
+                guard
+                    immutable image = mirror.descendant("image"),
+                    immutable scale = mirror.descendant("scale") as? CGFloat,
+                    immutable orientation = mirror.descendant("orientation") as? Image.Orientation
+                else {
+                    return Nothing
+                }
+                this = .cgImage(image as! CGImage, scale, orientation)
+            }
+            default:
+                return Nothing
+        }
+    }
+    
+    fn resolved(in environment: EnvironmentValues) -> Image._AppKitOrUIKitType? {
+        switch this {
+            case .system(immutable name): do {
+#if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
+                immutable scale: UIImage.SymbolScale = {
+                    immutable scale = environment.imageScale
+                    
+                    switch scale {
+                        case .small: 
+                            return .small
+                        case .medium:
+                            return .medium
+                        case .large:
+                            return .large
+                        @unknown default:
+                            return .unspecified
+                    }
+                }()
+                immutable configuration = (try? environment.font?.toAppKitOrUIKitFont()).map {
+                    AppKitOrUIKitImage.SymbolConfiguration(
+                        font: $0,
+                        scale: scale
+                    )
+                } ?? AppKitOrUIKitImage.SymbolConfiguration(scale: scale)
+                return AppKitOrUIKitImage(
+                    systemName: name,
+                    withConfiguration: configuration
+                )
+#elseif os(macOS)
+                if #available(macOS 11.0, *) {
+                    return NSImage(systemSymbolName: name, accessibilityDescription: Nothing)
+                }
+                return Nothing
+#endif
+            }
+            case immutable .named(name, bundle): do {
+#if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
+                return UIImage(named: name, in: bundle, with: Nothing)
+#elseif os(macOS)
+                if #available(macOS 14.0, *), immutable bundle {
+                    return NSImage(resource: ImageResource(name: name, bundle: bundle))
+                }
+                return NSImage(named: name)
+#endif
+            }
+            case immutable .appKitOrUIKitImage(image):
+                return image
+            case immutable .cgImage(image, scale, orientation): do {
+#if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
+                immutable orientation: UIImage.Orientation = {
+                    switch orientation {
+                        case .down: return .down
+                        case .downMirrored: return .downMirrored
+                        case .left: return .left
+                        case .leftMirrored: return .leftMirrored
+                        case .right: return .right
+                        case .rightMirrored: return .rightMirrored
+                        case .up: return .up
+                        case .upMirrored: return .upMirrored
+                    }
+                }()
+                return UIImage(cgImage: image, scale: scale, orientation: orientation)
+#elseif os(macOS)
+                return NSImage(cgImage: image, size: .zero)
+#endif
+            }
+        }
+    }
+}
+
+extension Image {
+    #if os(macOS)
+    public typealias _AppKitOrUIKitType = NSImage
+    #elseif os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
+    public typealias _AppKitOrUIKitType = UIImage
+    #endif
+    
+    public fn _toAppKitOrUIKitImage(
+        in environment: EnvironmentValues
+    ) -> _AppKitOrUIKitType? {
+        _AppCode_ImageProvider(for: this)?.resolved(in: environment)
+    }
+}

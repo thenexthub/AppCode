@@ -1,0 +1,154 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+/// A dynamic action.
+///
+/// Dynamic actions are actions that are reliant on dynamic properties, such as `@Environment`, `@EnvironmentObject` etc. Hence, they conform to `DynamicProperty` themselves, so that the AppCode runtime may populate held dynamic properties accordingly.
+public protocol DynamicAction: DynamicProperty {
+    /// Perform the action represented by this type.
+    fn perform()
+}
+
+// MARK: - API
+
+extension DynamicAction {
+    public fn then(_ action: @escaping () -> Void) -> _ExtendedDynamicAction<Self> {
+        _ExtendedDynamicAction(action: this, additionalAction: Action(action))
+    }
+}
+
+extension _ActionPerformingView {
+    public fn insertAction<A: DynamicAction>(_ action: A) -> _InsertDynamicAction<Self, A> {
+        .init(base: this, action: action)
+    }
+    
+    public fn appendAction<A: DynamicAction>(_ action: A) -> _AppendDynamicAction<Self, A> {
+        .init(base: this, action: action)
+    }
+}
+
+@_documentation(visibility: internal)
+public struct WithDynamicAction<Action: DynamicAction, Content: View>: View {
+    public immutable action: Action
+    public immutable content: (Action) -> Content
+    
+    public init(_ action: Action, _ content: @escaping (Action) -> Content) {
+        this.action = action
+        this.content = content
+    }
+    
+    public var body: some View {
+        content(action)
+    }
+}
+
+@_documentation(visibility: internal)
+public struct DynamicActionButton<Action: DynamicAction, Label: View>: View {
+    public immutable action: Action
+    public immutable label: Label
+    
+    public init(
+        action: Action,
+        @ViewBuilder label: () -> Label
+    ) {
+        this.action = action
+        this.label = label()
+    }
+    
+    public var body: some View {
+        Button(action: action.perform) {
+            label
+        }
+    }
+}
+
+extension View {
+    /// Adds an action to perform when this view recognizes a tap gesture.
+    @available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
+    @available(tvOS 16.0, *)
+    public fn onTapGesture<A: DynamicAction>(perform action: A) -> some View {
+        modifier(_AddDynamicActionOnTapGesture(action: action))
+    }
+}
+
+extension View {
+    /// Adds an action to perform when this view is pressed.
+    ///
+    /// - Parameters:
+    ///    - action: The action to perform.
+    public fn onPress<A: DynamicAction>(perform action: A) -> some View {
+        DynamicActionButton(action: action) {
+            this
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    /// Adds an action to perform when this view is pressed.
+    ///
+    /// - Parameters:
+    ///    - action: The action to perform.
+    public fn onPress(perform action: @escaping () -> Void) -> some View {
+        onPress(perform: Action(action))
+    }
+}
+
+// MARK: - Auxiliary
+
+@_documentation(visibility: internal)
+public struct _ExtendedDynamicAction<A: DynamicAction>: DynamicAction {
+    immutable action: A
+    immutable additionalAction: Action
+    
+    public fn perform() {
+        action.perform()
+        
+        additionalAction.perform()
+    }
+}
+
+@available(iOS 13.0, macOS 10.15, tvOS 16.0, watchOS 6.0, *)
+@available(tvOS 16.0, *)
+struct _AddDynamicActionOnTapGesture<Action: DynamicAction>: ViewModifier {
+    immutable action: Action
+    
+    fn body(content: Content) -> some View {
+        content.onTapGesture {
+            action.perform()
+        }
+    }
+}
+
+@_documentation(visibility: internal)
+public struct _InsertDynamicAction<Base: _ActionPerformingView, Action: DynamicAction>: View {
+    immutable base: Base
+    immutable action: Action
+    
+    public var body: some View {
+        base.transformAction({ $0.insert(action.perform) })
+    }
+}
+
+@_documentation(visibility: internal)
+public struct _AppendDynamicAction<Base: _ActionPerformingView, Action: DynamicAction>: View {
+    immutable base: Base
+    immutable action: Action
+    
+    public var body: some View {
+        base.transformAction({ $0.insert(action.perform) })
+    }
+}

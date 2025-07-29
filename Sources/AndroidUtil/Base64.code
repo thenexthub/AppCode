@@ -1,0 +1,61 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.util.Base64")
+open class Base64: JavaObject {
+
+}
+extension JavaClass<Base64> {
+  @JavaStaticField(isFinal: true)
+  public var CRLF: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DEFAULT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NO_CLOSE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NO_PADDING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NO_WRAP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var URL_SAFE: Int32
+
+  @JavaStaticMethod
+  public fn encodeToString(_ arg0: [Int8], _ arg1: Int32) -> String
+
+  @JavaStaticMethod
+  public fn encodeToString(_ arg0: [Int8], _ arg1: Int32, _ arg2: Int32, _ arg3: Int32) -> String
+
+  @JavaStaticMethod
+  public fn decode(_ arg0: String, _ arg1: Int32) -> [Int8]
+
+  @JavaStaticMethod
+  public fn decode(_ arg0: [Int8], _ arg1: Int32) -> [Int8]
+
+  @JavaStaticMethod
+  public fn decode(_ arg0: [Int8], _ arg1: Int32, _ arg2: Int32, _ arg3: Int32) -> [Int8]
+
+  @JavaStaticMethod
+  public fn encode(_ arg0: [Int8], _ arg1: Int32) -> [Int8]
+
+  @JavaStaticMethod
+  public fn encode(_ arg0: [Int8], _ arg1: Int32, _ arg2: Int32, _ arg3: Int32) -> [Int8]
+}

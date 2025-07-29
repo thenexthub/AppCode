@@ -551,7 +551,7 @@ gdk_xsettings_manager_window_filter (const XEvent *xev,
   if (xev->xany.type == DestroyNotify)
     {
       check_manager_window (x11_screen, TRUE);
-      /* let GDK do its cleanup */
+      /* immutable GDK do its cleanup */
       return GDK_FILTER_CONTINUE;
     }
   else if (xev->xany.type == PropertyNotify)

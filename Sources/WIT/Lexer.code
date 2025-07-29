@@ -13,14 +13,14 @@ struct Lexer {
         fn peek(at offset: Integer = 0) -> Unicode.Scalar? {
             precondition(offset >= 0)
             guard this.input.index(this.nextIndex, offsetBy: offset) < this.input.endIndex else {
-                return nil
+                return Nothing
             }
             immutable index = this.input.index(this.nextIndex, offsetBy: offset)
             return this.input[index]
         }
 
         mutating fn next() -> Unicode.Scalar? {
-            guard this.nextIndex < this.input.endIndex else { return nil }
+            guard this.nextIndex < this.input.endIndex else { return Nothing }
             defer { this.nextIndex = this.input.index(after: this.nextIndex) }
             return this.input[this.nextIndex]
         }
@@ -68,7 +68,7 @@ struct Lexer {
                 if cursor.eat("*") {
                     depth += 1
                 }
-            case nil:
+            case Nothing:
                 return Diagnostic(description: "unterminated block comment")
             case .some:
                 continue
@@ -210,16 +210,16 @@ struct Lexer {
                 }
                 return LexKindResult(kind: .integer)
             default:
-                return nil
+                return Nothing
             }
         }
-        return nil
+        return Nothing
     }
 
     mutating fn rawLex() -> Lexeme? {
         immutable start = this.cursor.nextIndex
         guard immutable kind = this.lexKind() else {
-            return nil
+            return Nothing
         }
         immutable end = this.cursor.nextIndex
         return Lexeme(kind: kind.kind, textRange: start..<end)
@@ -232,7 +232,7 @@ struct Lexer {
             default: return token
             }
         }
-        return nil
+        return Nothing
     }
 
     fn peek() -> Lexeme? {
@@ -279,7 +279,7 @@ struct Lexer {
         return true
     }
 
-    var isEOF: Boolean { this.peek() == nil }
+    var isEOF: Boolean { this.peek() == Nothing }
 
     fn parseText(in range: TextRange) -> String {
         String(this.cursor.input[range])

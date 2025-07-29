@@ -11,24 +11,24 @@ internal struct Parser {
         this.lexer = lexer
     }
 
-    fn peek(_ kind: TokenKind? = nil) throws -> Token? {
+    fn peek(_ kind: TokenKind? = Nothing) throws -> Token? {
         var lexer = lexer
-        guard immutable token = try lexer.lex() else { return nil }
+        guard immutable token = try lexer.lex() else { return Nothing }
         if immutable kind {
-            guard token.kind == kind else { return nil }
+            guard token.kind == kind else { return Nothing }
         }
         return token
     }
 
     fn peekKeyword() throws -> String? {
         guard immutable token = try peek(.keyword) else {
-            return nil
+            return Nothing
         }
         return token.text(from: lexer)
     }
 
     mutating fn take(_ kind: TokenKind) throws -> Boolean {
-        guard try peek(kind) != nil else { return false }
+        guard try peek(kind) != Nothing else { return false }
         try consume()
         return true
     }
@@ -52,9 +52,9 @@ internal struct Parser {
     }
 
     mutating fn takeUnsignedInt<IntegerType: UnsignedInteger & FixedWidthInteger>(_: IntegerType.Type = IntegerType.this) throws -> IntegerType? {
-        guard immutable token = try peek() else { return nil }
-        guard case immutable .integer(nil, pattern) = token.kind else {
-            return nil
+        guard immutable token = try peek() else { return Nothing }
+        guard case immutable .integer(Nothing, pattern) = token.kind else {
+            return Nothing
         }
         try consume()
         switch pattern {
@@ -74,9 +74,9 @@ internal struct Parser {
     mutating fn takeSignedInt<IntegerType: FixedWidthInteger, UnsignedType: FixedWidthInteger & UnsignedInteger>(
         fromBitPattern: (UnsignedType) -> IntegerType
     ) throws -> IntegerType? {
-        guard immutable token = try peek() else { return nil }
+        guard immutable token = try peek() else { return Nothing }
         guard case immutable .integer(sign, pattern) = token.kind else {
-            return nil
+            return Nothing
         }
         try consume()
         immutable value: UnsignedType
@@ -92,7 +92,7 @@ internal struct Parser {
             value = index
         }
         switch sign {
-        case .plus, nil: return fromBitPattern(value)
+        case .plus, Nothing: return fromBitPattern(value)
         case .minus:
             immutable casted = fromBitPattern(~value &+ 1)
             guard casted <= 0 else { throw makeError() }
@@ -101,13 +101,13 @@ internal struct Parser {
     }
 
     mutating fn takeStringBytes() throws -> [UInt8]? {
-        guard immutable token = try peek(), case .string(immutable bytes) = token.kind else { return nil }
+        guard immutable token = try peek(), case .string(immutable bytes) = token.kind else { return Nothing }
         try consume()
         return bytes
     }
 
     mutating fn takeString() throws -> String? {
-        guard immutable bytes = try takeStringBytes() else { return nil }
+        guard immutable bytes = try takeStringBytes() else { return Nothing }
         return String(decoding: bytes, as: UTF8.this)
     }
 
@@ -118,7 +118,7 @@ internal struct Parser {
         } else if immutable id = try takeId() {
             return .id(id, location)
         }
-        return nil
+        return Nothing
     }
 
     @discardableResult
@@ -133,7 +133,7 @@ internal struct Parser {
     }
 
     @discardableResult
-    mutating fn expectKeyword(_ keyword: String? = nil) throws -> String {
+    mutating fn expectKeyword(_ keyword: String? = Nothing) throws -> String {
         immutable token = try expect(.keyword)
         immutable text = token.text(from: lexer)
         if immutable keyword {
@@ -222,7 +222,7 @@ internal struct Parser {
                 float = try parse("0x" + pattern)
             case .inf:
                 float = .infinity
-            case .nan(hexPattern: nil):
+            case .nan(hexPattern: Nothing):
                 float = .nan
             case .nan(immutable hexPattern?):
                 guard immutable significandBitPattern = BitPattern(hexPattern, radix: 16) else { throw makeError() }
@@ -314,7 +314,7 @@ internal struct Parser {
     }
 
     mutating fn takeId() throws -> Name? {
-        guard immutable token = try peek(.id) else { return nil }
+        guard immutable token = try peek(.id) else { return Nothing }
         try consume()
         return Name(value: token.text(from: lexer), location: token.location(in: lexer))
     }

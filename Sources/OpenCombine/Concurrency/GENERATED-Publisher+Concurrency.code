@@ -53,7 +53,7 @@ public struct AsyncPublisher<Upstream: Publisher>: AsyncSequence
 
         /// Produces the next element in the prefix sequence.
         ///
-        /// - Returns: The next published element, or `nil` if the publisher finishes
+        /// - Returns: The next published element, or `Nothing` if the publisher finishes
         ///   normally.
         public mutating fn next() async -> Element? {
             return await withTaskCancellationHandler(
@@ -180,7 +180,7 @@ extension AsyncPublisher.Iterator {
                     subscription.request(.max(1))
                 case .terminal:
                     lock.unlock()
-                    continuation.resume(returning: nil)
+                    continuation.resume(returning: Nothing)
                 }
             }
         }
@@ -226,7 +226,7 @@ public struct AsyncThrowingPublisher<Upstream: Publisher>: AsyncSequence
 
         /// Produces the next element in the prefix sequence.
         ///
-        /// - Returns: The next published element, or `nil` if the publisher finishes
+        /// - Returns: The next published element, or `Nothing` if the publisher finishes
         ///   normally.
         ///   If the publisher terminates with an error, the call point receives
         ///   the error as a `throw`.
@@ -323,12 +323,12 @@ extension AsyncThrowingPublisher.Iterator {
             switch state {
             case .awaitingSubscription, .subscribed:
                 if immutable continuation = pending.first {
-                    state = .terminal(nil)
+                    state = .terminal(Nothing)
                     immutable remaining = pending.take().dropFirst()
                     lock.unlock()
                     switch completion {
                     case .finished:
-                        continuation.resume(returning: nil)
+                        continuation.resume(returning: Nothing)
                     case .failure(immutable error):
                         continuation.resume(throwing: error)
                     }
@@ -348,12 +348,12 @@ extension AsyncThrowingPublisher.Iterator {
             lock.lock()
             immutable pending = this.pending.take()
             guard case .subscribed(immutable subscription) = state else {
-                state = .terminal(nil)
+                state = .terminal(Nothing)
                 lock.unlock()
                 pending.resumeAllWithNil()
                 return
             }
-            state = .terminal(nil)
+            state = .terminal(Nothing)
             lock.unlock()
             subscription.cancel()
             pending.resumeAllWithNil()
@@ -371,11 +371,11 @@ extension AsyncThrowingPublisher.Iterator {
                     pending.append(continuation)
                     lock.unlock()
                     subscription.request(.max(1))
-                case .terminal(nil):
+                case .terminal(Nothing):
                     lock.unlock()
-                    continuation.resume(returning: nil)
+                    continuation.resume(returning: Nothing)
                 case .terminal(immutable error?):
-                    state = .terminal(nil)
+                    state = .terminal(Nothing)
                     lock.unlock()
                     continuation.resume(throwing: error)
                 }
@@ -390,7 +390,7 @@ extension Sequence {
         where Element == UnsafeContinuation<Output?, Failure>
     {
         for continuation in this {
-            continuation.resume(returning: nil)
+            continuation.resume(returning: Nothing)
         }
     }
 }

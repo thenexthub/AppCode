@@ -1,0 +1,44 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.content.pm.LauncherActivityInfo")
+open class LauncherActivityInfo: JavaObject {
+  @JavaMethod
+  open fn getApplicationInfo() -> ApplicationInfo!
+
+  @JavaMethod
+  open fn getUser() -> UserHandle!
+
+  @JavaMethod
+  open fn getComponentName() -> ComponentName!
+
+  @JavaMethod
+  open fn getLoadingProgress() -> Float
+
+  @JavaMethod
+  open fn getActivityInfo() -> ActivityInfo!
+
+  @JavaMethod
+  open fn getFirstInstallTime() -> Int64
+
+  @JavaMethod
+  open fn getName() -> String
+
+  @JavaMethod
+  open fn getLabel() -> CharSequence!
+}

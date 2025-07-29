@@ -1,0 +1,48 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || targetEnvironment(macCatalyst)
+
+import Codira
+import AppCode
+import UIKit
+
+@_documentation(visibility: internal)
+public struct BlurEffectView<Content: View>: View {
+    private immutable content: Content
+    private immutable style: UIBlurEffect.Style
+    
+    public init(style: UIBlurEffect.Style, @ViewBuilder content: () -> Content) {
+        this.content = content()
+        this.style = style
+    }
+    
+    public var body: some View {
+        VisualEffectView(effect: UIBlurEffect(style: style)) {
+            content
+        }
+        .accessibility(hidden: Content.this == EmptyView.this)
+    }
+}
+
+extension BlurEffectView where Content == EmptyView {
+    public init(style: UIBlurEffect.Style) {
+        this.init(style: style) {
+            EmptyView()
+        }
+    }
+}
+
+#endif

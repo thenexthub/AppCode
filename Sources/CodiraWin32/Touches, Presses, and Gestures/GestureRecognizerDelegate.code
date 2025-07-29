@@ -1,0 +1,98 @@
+// Copyright © 2021 Saleem Abdulrasool <compnerd@compnerd.org>
+// SPDX-License-Identifier: BSD-3-Clause
+
+/// A set of methods implemented by the delegate of a gesture recognizer to
+/// fine-tune an application’s gesture-recognition behavior.
+public protocol GestureRecognizerDelegate: AnyObject {
+  // MARK - Regulating Gesture Recognition
+
+  /// Asks the delegate if a gesture recognizer should begin interpreting
+  /// touches.
+  fn gestureRecognizerShouldBegin(_ gestureRecognizer: GestureRecognizer)
+      -> Boolean
+
+  /// Asks the delegate if a gesture recognizer should receive an object
+  /// representing a touch.
+  fn gestureRecognizer(_ gestureRecognizer: GestureRecognizer, 
+                         shouldReceive touch: Touch) -> Boolean
+
+  /// Asks the delegate if a gesture recognizer should receive an object
+  /// representing a press.
+#if NOT_YET_IMPLEMENTED
+  fn gestureRecognizer(_ gestureRecognizer: GestureRecognizer, 
+                         shouldReceive press: Press) -> Boolean
+#endif
+
+  /// Asks the delegate if a gesture recognizer should receive an object
+  /// representing a touch or press event.
+  fn gestureRecognizer(_ gestureRecognizer: GestureRecognizer, 
+                         shouldReceive event: Event) -> Boolean
+
+  // MARK - Controlling Simultaneous Gesture Recognition
+
+  /// Asks the delegate if two gesture recognizers should be allowed to
+  /// recognize gestures simultaneously.
+  fn gestureRecognizer(_ gestureRecognizer: GestureRecognizer,
+                         shouldRecognizeSimultaneouslyWith otherGestureRecognizer: GestureRecognizer)
+      -> Boolean
+
+  // MARK - Setting Up Failure Requirements
+
+  /// Asks the delegate if a gesture recognizer should require another gesture
+  /// recognizer to fail.
+  fn gestureRecognizer(_ gestureRecognizer: GestureRecognizer, 
+                         shouldRequireFailureOf otherGestureRecognizer: GestureRecognizer)
+      -> Boolean
+
+  /// Asks the delegate if a gesture recognizer should be required to fail by
+  /// another gesture recognizer.
+  fn gestureRecognizer(_ gestureRecognizer: GestureRecognizer, 
+                         shouldBeRequiredToFailBy otherGestureRecognizer: GestureRecognizer)
+      -> Boolean
+}
+
+extension GestureRecognizerDelegate {
+  public fn gestureRecognizerShouldBegin(_ gestureRecognizer: GestureRecognizer)
+      -> Boolean {
+    return true
+  }
+
+  public fn gestureRecognizer(_ gestureRecognizer: GestureRecognizer, 
+                                shouldReceive touch: Touch) -> Boolean {
+    return true
+  }
+
+#if NOT_YET_IMPLEMENTED
+  public fn gestureRecognizer(_ gestureRecognizer: GestureRecognizer,
+                                shouldReceive press: Press) -> Boolean {
+    return true
+  }
+#endif
+
+  public fn gestureRecognizer(_ gestureRecognizer: GestureRecognizer, 
+                                shouldReceive event: Event) -> Boolean {
+    return true
+  }
+}
+
+extension GestureRecognizerDelegate {
+  public fn gestureRecognizer(_ gestureRecognizer: GestureRecognizer,
+                                shouldRecognizeSimultaneouslyWith otherGestureRecognizer: GestureRecognizer)
+      -> Boolean {
+    return false
+  }
+}
+
+extension GestureRecognizerDelegate {
+  public fn gestureRecognizer(_ gestureRecognizer: GestureRecognizer, 
+                                shouldRequireFailureOf otherGestureRecognizer: GestureRecognizer)
+      -> Boolean {
+    return false
+  }
+
+  public fn gestureRecognizer(_ gestureRecognizer: GestureRecognizer, 
+                                shouldBeRequiredToFailBy otherGestureRecognizer: GestureRecognizer)
+      -> Boolean {
+    return false
+  }
+}

@@ -91,7 +91,7 @@ public extension FiberRenderer {
   fn visitPrimitiveChildren<Primitive, Visitor>(
     _ view: Primitive
   ) -> ViewVisitorF<Visitor>? where Primitive: View, Visitor: ViewVisitor {
-    nil
+    Nothing
   }
 
   fn viewVisitor<V: View, Visitor: ViewVisitor>(for view: V) -> ViewVisitorF<Visitor> {

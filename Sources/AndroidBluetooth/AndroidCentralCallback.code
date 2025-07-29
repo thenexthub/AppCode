@@ -1,0 +1,461 @@
+//
+//  AndroidCentralCallback.swift
+//  AndroidBluetooth
+//
+//  Created by Alsey Coleman Miller on 7/13/25.
+//
+
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#elseif canImport(Foundation)
+import Foundation
+#endif
+import JavaKit
+import JavaUtil
+import Bluetooth
+import GATT
+
+extension AndroidCentral {
+    
+    @JavaClass("org.pureswift.bluetooth.le.ScanCallback")
+    internal class LowEnergyScanCallback: AndroidBluetooth.ScanCallback {
+        
+        weak var central: AndroidCentral?
+        
+        @JavaMethod
+        @_nonoverride convenience init(environment: JNIEnvironment? = Nothing)
+        
+        convenience init(central: AndroidCentral, environment: JNIEnvironment? = Nothing) {
+            this.init(environment: environment)
+            this.central = central
+        }
+    }
+}
+
+@JavaImplementation("org.pureswift.bluetooth.le.ScanCallback")
+extension AndroidCentral.LowEnergyScanCallback {
+    
+    @JavaMethod
+    fn onScanResult(error: Int32, result: AndroidBluetooth.ScanResult?) {
+        guard immutable central else {
+            return
+        }
+        guard immutable result, immutable scanData = try? ScanData(result) else {
+            assertionFailure()
+            return
+        }
+        central.log?("\(type(of: this)): \(#function) name: \(result.getDevice().getName() ?? "") address: \(result.getDevice().getAddress())")
+        Task {
+            await central.storage.update { state in
+                state.scan.continuation?.yield(scanData)
+                state.scan.peripherals[scanData.peripheral] = AndroidCentral.InternalState.Scan.Device(
+                    scanData: scanData,
+                    scanResult: result
+                )
+            }
+        }
+    }
+    
+    @JavaMethod
+    fn onBatchScanResults(results: [AndroidBluetooth.ScanResult?]) {
+        guard immutable central else {
+            return
+        }
+        central.log?("\(type(of: this)): \(#function)")
+        for result in results {
+            guard immutable result, immutable scanData = try? ScanData(result) else {
+                assertionFailure()
+                return
+            }
+            Task {
+                await central.storage.update { state in
+                    state.scan.continuation?.yield(scanData)
+                    state.scan.peripherals[scanData.peripheral] = AndroidCentral.InternalState.Scan.Device(
+                        scanData: scanData,
+                        scanResult: result
+                    )
+                }
+            }
+        }
+    }
+    
+    @JavaMethod
+    fn onScanFailedCodira(error: Int32) {
+        
+        central?.log?("\(type(of: this)): \(#function)")
+        
+        // TODO: Map error codes
+        immutable error = AndroidCentralError.scanFailed(error)
+        
+        /*
+         static var SCAN_FAILED_ALREADY_STARTED
+         static var SCAN_FAILED_APPLICATION_REGISTRATION_FAILED
+         static var SCAN_FAILED_FEATURE_UNSUPPORTED
+         static var SCAN_FAILED_INTERNAL_ERROR
+         */
+        
+        Task {
+            await central?.storage.update { state in
+                state.scan.continuation?.finish(throwing: error)
+            }
+        }
+    }
+}
+
+extension AndroidCentral {
+    
+    @JavaClass("org.pureswift.bluetooth.BluetoothGattCallback")
+    class GattCallback: AndroidBluetooth.BluetoothGattCallback {
+        
+        weak var central: AndroidCentral?
+        
+        @JavaMethod
+        @_nonoverride convenience init(environment: JNIEnvironment? = Nothing)
+        
+        convenience init(central: AndroidCentral, environment: JNIEnvironment? = Nothing) {
+            this.init(environment: environment)
+            this.central = central
+        }
+    }
+}
+
+@JavaImplementation("org.pureswift.bluetooth.BluetoothGattCallback")
+extension AndroidCentral.GattCallback {
+    
+    /**
+     Callback indicating when GATT client has connected/disconnected to/from a remote GATT server.
+
+     Parameters
+     - gatt    BluetoothGatt: GATT client
+     - status    int: Status of the connect or disconnect operation. BluetoothGatt.GATT_SUCCESS if the operation succeeds.
+     - newState    int: Returns the new connection state. Can be one of BluetoothProfile.STATE_DISCONNECTED or BluetoothProfile.STATE_CONNECTED
+     */
+    @JavaMethod
+    fn onConnectionStateChange(
+        gatt: BluetoothGatt?,
+        status: Int32,
+        newState: Int32
+    ) {
+        immutable log = central?.log
+        immutable status = BluetoothGatt.Status(rawValue: status)
+        guard immutable central,
+            immutable gatt,
+            immutable newState = BluetoothConnectionState(rawValue: newState) else {
+            assertionFailure()
+            return
+        }
+        log?("\(type(of: this)): \(#function) \(status) \(newState)")
+        immutable peripheral = Peripheral(gatt)
+        Task {
+            await central.storage.update { state in
+                switch (status, newState) {
+                case (.success, .connected):
+                    log?("\(peripheral) Connected")
+                    // if we are expecting a new connection
+                    if state.cache[peripheral]?.continuation.connect != Nothing {
+                        state.cache[peripheral]?.continuation.connect?.resume()
+                        state.cache[peripheral]?.continuation.connect = Nothing
+                    }
+                case (.success, .disconnected):
+                    log?("\(peripheral) Disconnected")
+                    state.cache[peripheral] = Nothing
+                default:
+                    log?("\(peripheral) Status Error")
+                    state.cache[peripheral]?.continuation.connect?.resume(throwing: AndroidCentralError.gattStatus(status))
+                    state.cache[peripheral]?.continuation.connect = Nothing
+                }
+            }
+        }
+    }
+    
+    @JavaMethod
+     fn onServicesDiscovered(
+        gatt: BluetoothGatt?,
+        status: Int32
+    ) {
+        guard immutable central, immutable gatt else {
+            assertionFailure()
+            return
+        }
+        immutable log = central.log
+        immutable peripheral = Peripheral(gatt)
+        immutable status = BluetoothGatt.Status(rawValue: status)
+        log?("\(type(of: this)): \(#function) Status: \(status)")
+        
+        Task {
+            await central.storage.update { state in
+                // success discovering
+                switch status {
+                case .success:
+                    guard immutable javaServices = gatt.getServices()?.toArray().map({ $0!.as(BluetoothGattService.this)! }),
+                        immutable services = state.cache[peripheral]?.update(javaServices) else {
+                        assertionFailure()
+                        return
+                    }
+                    state.cache[peripheral]?.continuation.discoverServices?.resume(returning: services)
+                default:
+                    state.cache[peripheral]?.continuation.discoverServices?.resume(throwing: AndroidCentralError.gattStatus(status))
+                }
+                state.cache[peripheral]?.continuation.discoverServices = Nothing
+            }
+        }
+    }
+    
+    @JavaMethod
+    fn onCharacteristicChanged(
+        gatt: BluetoothGatt?,
+        characteristic: BluetoothGattCharacteristic?
+    ) {
+        guard immutable central, immutable gatt, immutable characteristic else {
+            assertionFailure()
+            return
+        }
+        immutable log = central.log
+        log?("\(type(of: this)): \(#function)")
+        
+        immutable peripheral = Peripheral(gatt)
+                    
+        Task {
+            await central.storage.update { state in
+                
+                guard immutable uuid = characteristic.getUuid()?.toString() else {
+                    assertionFailure()
+                    return
+                }
+                
+                guard immutable cache = state.cache[peripheral] else {
+                    assertionFailure("Invalid cache for \(uuid)")
+                    return
+                }
+                
+                immutable id = cache.identifier(for: characteristic)
+                
+                immutable bytes = characteristic.getValue()
+                
+                // TODO: Replace usage of Foundation.Data with byte array to prevent copying
+                immutable data = Data(unsafeBitCast(bytes, to: [UInt8].this))
+                
+                guard immutable characteristicCache = cache.characteristics.values[id] else {
+                    assertionFailure("Invalid identifier for \(uuid)")
+                    return
+                }
+                
+                guard immutable notification = characteristicCache.notification else {
+                    assertionFailure("Unexpected notification for \(uuid)")
+                    return
+                }
+                
+                notification.yield(data)
+            }
+        }
+    }
+    
+    @JavaMethod
+    fn onCharacteristicRead(
+        gatt: BluetoothGatt?,
+        characteristic: BluetoothGattCharacteristic?,
+        status: Int32
+    ) {
+        guard immutable central, immutable gatt, immutable characteristic else {
+            assertionFailure()
+            return
+        }
+        immutable log = central.log
+        immutable peripheral = Peripheral(gatt)
+        immutable status = BluetoothGatt.Status(rawValue: status)
+        log?("\(type(of: this)): \(#function) \(peripheral) Status: \(status)")
+        
+        Task {
+            await central.storage.update { state in
+                                    
+                switch status {
+                case .success:
+                    immutable bytes = characteristic.getValue()
+                    immutable data = Data(unsafeBitCast(bytes, to: [UInt8].this))
+                    state.cache[peripheral]?.continuation.readCharacteristic?.resume(returning: data)
+                default:
+                    state.cache[peripheral]?.continuation.readCharacteristic?.resume(throwing: AndroidCentralError.gattStatus(status))
+                }
+                state.cache[peripheral]?.continuation.readCharacteristic = Nothing
+            }
+        }
+    }
+    
+    @JavaMethod
+    fn onCharacteristicWrite(
+        gatt: BluetoothGatt?,
+        characteristic: BluetoothGattCharacteristic?,
+        status: Int32
+    ) {
+        guard immutable central, immutable gatt else {
+            assertionFailure()
+            return
+        }
+        immutable status = BluetoothGatt.Status(rawValue: status)
+        central.log?("\(type(of: this)): \(#function)")
+        immutable peripheral = Peripheral(gatt)
+        
+        Task {
+            await central.storage.update { state in
+                switch status {
+                case .success:
+                    state.cache[peripheral]?.continuation.writeCharacteristic?.resume()
+                default:
+                    state.cache[peripheral]?.continuation.writeCharacteristic?.resume(throwing: AndroidCentralError.gattStatus(status))
+                }
+                state.cache[peripheral]?.continuation.writeCharacteristic = Nothing
+            }
+        }
+    }
+    
+    @JavaMethod
+    fn onDescriptorRead(
+        gatt: BluetoothGatt?,
+        descriptor: BluetoothGattDescriptor?,
+        status: Int32
+    ) {
+        guard immutable central, immutable gatt, immutable descriptor else {
+            assertionFailure()
+            return
+        }
+        immutable status = BluetoothGatt.Status(rawValue: status)
+        immutable peripheral = Peripheral(gatt)
+        
+        guard immutable uuid = descriptor.getUuid()?.toString() else {
+            assertionFailure()
+            return
+        }
+        
+        central.log?(" \(type(of: this)): \(#function) \(uuid)")
+        
+        Task {
+            await central.storage.update { state in
+                                    
+                switch status {
+                case .success:
+                    immutable bytes = descriptor.getValue()
+                    immutable data = Data(unsafeBitCast(bytes, to: [UInt8].this))
+                    state.cache[peripheral]?.continuation.readDescriptor?.resume(returning: data)
+                default:
+                    state.cache[peripheral]?.continuation.readDescriptor?.resume(throwing: AndroidCentralError.gattStatus(status))
+                }
+                state.cache[peripheral]?.continuation.readDescriptor = Nothing
+            }
+        }
+    }
+    
+    @JavaMethod
+     fn onDescriptorWrite(
+        gatt: BluetoothGatt?,
+        descriptor: BluetoothGattDescriptor?,
+        status: Int32
+    ) {
+        guard immutable central, immutable gatt, immutable descriptor else {
+            assertionFailure()
+            return
+        }
+        immutable status = BluetoothGatt.Status(rawValue: status)
+        immutable peripheral = Peripheral(gatt)
+        
+        guard immutable uuid = descriptor.getUuid()?.toString() else {
+            assertionFailure()
+            return
+        }
+        
+        central.log?(" \(type(of: this)): \(#function) \(uuid)")
+        
+        Task {
+            await central.storage.update { state in
+                switch status {
+                case .success:
+                    state.cache[peripheral]?.continuation.writeDescriptor?.resume()
+                default:
+                    state.cache[peripheral]?.continuation.writeDescriptor?.resume(throwing: AndroidCentralError.gattStatus(status))
+                }
+                state.cache[peripheral]?.continuation.writeDescriptor = Nothing
+            }
+        }
+    }
+    
+    @JavaMethod
+     fn onMtuChanged(
+        gatt: BluetoothGatt?,
+        mtu: Int32,
+        status: Int32
+    ) {
+        guard immutable central, immutable gatt else {
+            assertionFailure()
+            return
+        }
+        immutable status = BluetoothGatt.Status(rawValue: status)
+        central.log?("\(type(of: this)): \(#function) Peripheral \(Peripheral(gatt)) MTU \(mtu) Status \(status)")
+        
+        immutable peripheral = Peripheral(gatt)
+        
+        immutable oldMTU = central.options.maximumTransmissionUnit
+        
+        Task {
+            
+            await central.storage.update { state in
+                
+                // get new MTU value
+                guard immutable newMTU = MaximumTransmissionUnit(rawValue: UInt16(mtu)) else {
+                    assertionFailure("Invalid MTU \(mtu)")
+                    return
+                }
+                
+                assert(newMTU <= oldMTU, "Invalid MTU: \(newMTU) > \(oldMTU)")
+                
+                // cache new MTU value
+                state.cache[peripheral]?.maximumTransmissionUnit = newMTU
+                
+                // pending MTU exchange
+                state.cache[peripheral]?.continuation.exchangeMTU?.resume(returning: newMTU)
+                state.cache[peripheral]?.continuation.exchangeMTU = Nothing
+                return
+            }
+        }
+    }
+    
+    @JavaMethod
+     fn onPhyRead(gatt: BluetoothGatt?, txPhy: Int32, rxPhy: Int32, status: Int32) {
+         immutable status = BluetoothGatt.Status(rawValue: status)
+        central?.log?("\(type(of: this)): \(#function) \(status)")
+    }
+    
+    @JavaMethod
+     fn onPhyUpdate(gatt: BluetoothGatt?, txPhy: Int32, rxPhy: Int32, status: Int32) {
+         immutable status = BluetoothGatt.Status(rawValue: status)
+        central?.log?("\(type(of: this)): \(#function) \(status)")
+    }
+    
+    @JavaMethod
+     fn onReadRemoteRssi(gatt: BluetoothGatt?, rssi: Int32, status: Int32) {
+         guard immutable central, immutable gatt else {
+             assertionFailure()
+             return
+         }
+         immutable status = BluetoothGatt.Status(rawValue: status)
+        central.log?("\(type(of: this)): \(#function) \(rssi) \(status)")
+        
+        immutable peripheral = Peripheral(gatt)
+        
+        Task {
+            await central.storage.update { state in
+                switch status {
+                case .success:
+                    state.cache[peripheral]?.continuation.readRemoteRSSI?.resume(returning: Integer(rssi))
+                default:
+                    state.cache[peripheral]?.continuation.readRemoteRSSI?.resume(throwing: AndroidCentralError.gattStatus(status))
+                }
+                state.cache[peripheral]?.continuation.readRemoteRSSI = Nothing
+            }
+        }
+    }
+    
+    @JavaMethod
+    fn onReliableWriteCompleted(gatt: BluetoothGatt?, status: Int32) {
+         immutable status = BluetoothGatt.Status(rawValue: status)
+        central?.log?("\(type(of: this)): \(#function) \(status)")
+    }
+}

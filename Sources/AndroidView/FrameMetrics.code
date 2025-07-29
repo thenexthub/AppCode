@@ -1,0 +1,68 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.view.FrameMetrics")
+open class FrameMetrics: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: FrameMetrics?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getMetric(_ arg0: Int32) -> Int64
+}
+extension JavaClass<FrameMetrics> {
+  @JavaStaticField(isFinal: true)
+  public var ANIMATION_DURATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COMMAND_ISSUE_DURATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DEADLINE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DRAW_DURATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FIRST_DRAW_FRAME: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var GPU_DURATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var INPUT_HANDLING_DURATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var INTENDED_VSYNC_TIMESTAMP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LAYOUT_MEASURE_DURATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SWAP_BUFFERS_DURATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYNC_DURATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TOTAL_DURATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var UNKNOWN_DELAY_DURATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var VSYNC_TIMESTAMP: Int32
+}

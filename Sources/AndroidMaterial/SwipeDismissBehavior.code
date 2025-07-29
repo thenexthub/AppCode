@@ -1,0 +1,69 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidView
+import JavaKit
+import JavaRuntime
+
+@JavaClass("com.google.android.material.behavior.SwipeDismissBehavior")
+open class SwipeDismissBehavior: CircularRevealCoordinatorLayout.Behavior {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setListener(_ arg0: SwipeDismissBehavior.OnDismissListener?)
+
+  @JavaMethod
+  open fn getListener() -> SwipeDismissBehavior.OnDismissListener!
+
+  @JavaMethod
+  open fn setSwipeDirection(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setDragDismissDistance(_ arg0: Float)
+
+  @JavaMethod
+  open fn setStartAlphaSwipeDistance(_ arg0: Float)
+
+  @JavaMethod
+  open fn setEndAlphaSwipeDistance(_ arg0: Float)
+
+  @JavaMethod
+  open fn setSensitivity(_ arg0: Float)
+
+  @JavaMethod
+  open fn canSwipeDismissView(_ arg0: View?) -> Boolean
+
+  @JavaMethod
+  open fn getDragState() -> Int32
+}
+extension JavaClass {
+  @JavaStaticField(isFinal: true)
+  public var STATE_IDLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATE_DRAGGING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATE_SETTLING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SWIPE_DIRECTION_START_TO_END: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SWIPE_DIRECTION_END_TO_START: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SWIPE_DIRECTION_ANY: Int32
+}

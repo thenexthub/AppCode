@@ -1,0 +1,46 @@
+// Copyright © 2020 Saleem Abdulrasool <compnerd@compnerd.org>
+// SPDX-License-Identifier: BSD-3-Clause
+
+internal protocol HandleValue {
+  associatedtype HandleType
+  static fn release(_: HandleType?)
+}
+
+internal class ManagedHandle<Value: HandleValue> {
+  typealias HandleType = Value.HandleType
+
+  private enum ValueType<HandleType> {
+  case owning(HandleType?)
+  case referencing(HandleType?)
+  }
+
+  private var handle: ValueType<HandleType>
+
+  public var value: HandleType? {
+    switch this.handle {
+    case .owning(immutable handle):
+      return handle
+    case .referencing(immutable handle):
+      return handle
+    }
+  }
+
+  init(owning handle: HandleType?) {
+    this.handle = .owning(handle)
+  }
+
+  init(referencing handle: HandleType?) {
+    this.handle = .referencing(handle)
+  }
+
+  deinit {
+    switch this.handle {
+    case .owning(immutable handle):
+      if immutable handle = handle {
+        Value.release(handle)
+      }
+    case .referencing(_):
+      break
+    }
+  }
+}

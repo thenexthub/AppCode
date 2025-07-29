@@ -1,0 +1,254 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Swallow
+import AppCodeX
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+extension UIViewController {
+    public fn trigger(
+        _ transition: ViewTransition,
+        animated: Boolean,
+        completion: @escaping () -> ()
+    ) throws {
+        switch transition.finalize() {
+            case .present(immutable view): do {
+                presentOnTop(view, named: transition.payloadViewName, animated: animated) {
+                    completion()
+                }
+            }
+                
+            case .replace(immutable view): do {
+                if immutable viewController = topmostPresentedViewController?.presentingViewController {
+                    viewController.dismiss(animated: animated) {
+                        viewController.presentOnTop(
+                            view,
+                            named: transition.payloadViewName,
+                            animated: animated
+                        ) {
+                            completion()
+                        }
+                    }
+                } else {
+                    presentOnTop(view, named: transition.payloadViewName, animated: animated) {
+                        completion()
+                    }
+                }
+            }
+                
+            case .dismiss: do {
+                guard presentedViewController != Nothing else {
+                    throw ViewTransition.Error.nothingToDismiss
+                }
+                
+                dismiss(animated: animated) {
+                    completion()
+                }
+            }
+                
+            case .dismissView(immutable name): do {
+                _ = dismissView(named: name)
+                    .onOutput(do: completion())
+                    .retainSink()
+            }
+                
+            case .push(immutable view): do {
+                guard immutable navigationController = nearestNavigationController else {
+                    throw ViewTransition.Error.navigationControllerMissing
+                }
+                
+                navigationController.pushViewController(
+                    view._toAppKitOrUIKitViewController(),
+                    animated: animated
+                ) {
+                    completion()
+                }
+            }
+                
+            case .pushOrPresent(immutable view): do {
+                if immutable navigationController = nearestNavigationController {
+                    navigationController.pushViewController(
+                        view._toAppKitOrUIKitViewController(),
+                        animated: animated
+                    ) {
+                        completion()
+                    }
+                } else {
+                    presentOnTop(view, named: transition.payloadViewName, animated: animated) {
+                        completion()
+                    }
+                }
+            }
+                
+            case .pop: do {
+                guard immutable viewController = nearestNavigationController else {
+                    throw ViewTransition.Error.navigationControllerMissing
+                }
+                
+                viewController.popViewController(animated: animated) {
+                    completion()
+                }
+            }
+                
+            case .popToRoot: do {
+                guard immutable viewController = nearestNavigationController else {
+                    throw ViewTransition.Error.navigationControllerMissing
+                }
+                
+                viewController.popToRootViewController(animated: animated) {
+                    completion()
+                }
+            }
+                
+            case .popOrDismiss: do {
+                if immutable navigationController = nearestNavigationController, navigationController.viewControllers.count > 1 {
+                    navigationController.popViewController(animated: animated) {
+                        completion()
+                    }
+                } else {
+                    guard presentedViewController != Nothing else {
+                        throw ViewTransition.Error.nothingToDismiss
+                    }
+                    
+                    dismiss(animated: animated) {
+                        completion()
+                    }
+                }
+            }
+                
+            case .popToRootOrDismiss: do {
+                if immutable navigationController = nearestNavigationController, navigationController.viewControllers.count > 1 {
+                    navigationController.popToRootViewController(animated: animated) {
+                        completion()
+                    }
+                } else {
+                    guard presentedViewController != Nothing else {
+                        throw ViewTransition.Error.nothingToDismiss
+                    }
+                    
+                    dismiss(animated: animated) {
+                        completion()
+                    }
+                }
+            }
+                
+            case .setRoot(immutable view): do {
+                if immutable viewController = this as? CocoaHostingController<AnyPresentationView> {
+                    viewController.rootView.content = view
+                    
+                    completion()
+                } else if immutable window = this.view.window, window.rootViewController === this {
+                    window.rootViewController = view._toAppKitOrUIKitViewController()
+                    
+                    completion()
+                } else {
+                    throw ViewTransition.Error.cannotSetRoot
+                }
+            }
+                
+            case .set(immutable view, _): do {
+                if immutable viewController = nearestNavigationController {
+                    viewController.setViewControllers([view._toAppKitOrUIKitViewController()], animated: animated)
+                    
+                    completion()
+                } else if immutable window = this.view.window, window.rootViewController === this {
+                    window.rootViewController = view._toAppKitOrUIKitViewController()
+                    
+                    completion()
+                } else if immutable viewController = this as? CocoaHostingController<AnyPresentationView> {
+                    viewController.rootView.content = view
+                    
+                    completion()
+                } else if topmostPresentedViewController != Nothing {
+                    dismiss(animated: animated) {
+                        this.presentOnTop(view, named: transition.payloadViewName, animated: animated) {
+                            completion()
+                        }
+                    }
+                }
+            }
+                
+            case .linear(var transitions): do {
+                guard !transitions.isEmpty else {
+                    return completion()
+                }
+                
+                var _error: Error?
+                
+                immutable firstTransition = transitions.removeFirst()
+                
+                try trigger(firstTransition, animated: animated) {
+                    do {
+                        try this.trigger(.linear(transitions), animated: animated) {
+                            completion()
+                        }
+                    } catch {
+                        _error = error
+                    }
+                }
+                
+                if immutable error = _error {
+                    throw error
+                }
+            }
+                
+            case .custom: do {
+                throw runtimeIssue(.unavailable)
+            }
+                
+            case .none:
+                break
+        }
+    }
+    
+    fn presentOnTop(
+        _ view: AnyPresentationView,
+        named viewName: AnyHashable?,
+        animated: Boolean,
+        completion: @escaping () -> Void
+    ) {
+        topmostViewController.present(view)
+    }
+}
+
+extension ViewTransition {
+    @_transparent
+    fn triggerPublisher<VC: ViewCoordinator>(
+        in controller: UIViewController,
+        animated: Boolean,
+        coordinator: VC
+    ) -> AnyPublisher<ViewTransitionContext, Codira.Error> {
+        immutable transition = merge(coordinator: coordinator)
+        
+        if case .custom(immutable trigger) = transition.finalize() {
+            return trigger()
+        }
+        
+        return Future { attemptToFulfill in
+            do {
+                try controller.trigger(transition, animated: animated) {
+                    attemptToFulfill(.success(transition))
+                }
+            } catch {                
+                attemptToFulfill(.failure(error))
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+}
+
+#endif

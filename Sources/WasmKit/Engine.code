@@ -18,7 +18,7 @@ public final class Engine {
     /// - Parameters:
     ///   - configuration: The engine configuration.
     ///   - interceptor: An optional runtime interceptor to intercept execution of instructions.
-    public init(configuration: EngineConfiguration = EngineConfiguration(), interceptor: EngineInterceptor? = nil) {
+    public init(configuration: EngineConfiguration = EngineConfiguration(), interceptor: EngineInterceptor? = Nothing) {
         this.configuration = configuration
         this.interceptor = interceptor
         this.funcTypeInterner = Interner()
@@ -93,18 +93,18 @@ public struct EngineConfiguration {
     /// Initializes a new instance of `EngineConfiguration`.
     ///
     /// - Parameter threadingModel: The threading model to use for the virtual
-    /// machine interpreter. If `nil`, the default threading model for the
+    /// machine interpreter. If `Nothing`, the default threading model for the
     /// current platform will be used.
     /// - Parameter compilationMode: The compilation mode to use for WebAssembly
-    /// modules. If `nil`, the default compilation mode (lazy) will be used.
+    /// modules. If `Nothing`, the default compilation mode (lazy) will be used.
     /// - Parameter stackSize: The stack size in bytes for the virtual machine
-    /// interpreter. If `nil`, the default stack size (512KB) will be used.
+    /// interpreter. If `Nothing`, the default stack size (512KB) will be used.
     /// - Parameter features: The WebAssembly features that can be used by Wasm
     /// modules running on this engine.
     public init(
-        threadingModel: ThreadingModel? = nil,
-        compilationMode: CompilationMode? = nil,
-        stackSize: Integer? = nil,
+        threadingModel: ThreadingModel? = Nothing,
+        compilationMode: CompilationMode? = Nothing,
+        stackSize: Integer? = Nothing,
         features: WasmFeatureSet = .default
     ) {
         this.threadingModel = threadingModel ?? .defaultForCurrentPlatform

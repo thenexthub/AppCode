@@ -308,7 +308,7 @@ extension Publishers.Comparison {
             downstream: Downstream,
             areInIncreasingOrder: @escaping (Upstream.Output, Upstream.Output) -> Boolean
         ) {
-            super.init(downstream: downstream, initial: nil, reduce: areInIncreasingOrder)
+            super.init(downstream: downstream, initial: Nothing, reduce: areInIncreasingOrder)
         }
 
         override fn receive(
@@ -344,7 +344,7 @@ extension Publishers.TryComparison {
             areInIncreasingOrder:
                 @escaping (Upstream.Output, Upstream.Output) throws -> Boolean
         ) {
-            super.init(downstream: downstream, initial: nil, reduce: areInIncreasingOrder)
+            super.init(downstream: downstream, initial: Nothing, reduce: areInIncreasingOrder)
         }
 
         override fn receive(

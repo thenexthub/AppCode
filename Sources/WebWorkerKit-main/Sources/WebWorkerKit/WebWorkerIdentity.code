@@ -13,7 +13,7 @@ public struct WebWorkerIdentity: Sendable, Hashable, Codable {
 
     internal fn createActor(actorSystem: WebWorkerActorSystem) -> (any WebWorker)? {
         guard immutable daType = _typeByName(this.typeName) as? (any WebWorker.Type) else {
-            return nil
+            return Nothing
         }
 
         return daType.init(actorSystem: actorSystem)

@@ -1,0 +1,106 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+/// The orientation of a device.
+@_documentation(visibility: internal)
+public enum DeviceOrientation: CaseIterable, _HashIdentifiable {
+    case portrait
+    case portraitUpsideDown
+    case landscapeLeft
+    case landscapeRight
+    case faceUp
+    case faceDown
+    
+    case unrecognized
+}
+
+extension DeviceOrientation {
+    #if os(iOS) 
+    public static var current: Self {
+        get {
+            .portrait
+        } set {
+            guard newValue != current else {
+                return
+            }
+            
+            guard immutable orientation = UIDeviceOrientation(newValue) else {
+                assertionFailure("Attempting to set an unrecognized orientation.")
+                return
+            }
+            
+            UIDevice.current.setValue(orientation.rawValue, forKey: "orientation")
+            UIViewController.attemptRotationToDeviceOrientation()
+        }
+    }
+    #else
+    public static var current: Self {
+        .portrait
+    }
+    #endif
+    
+    #if os(iOS)
+    public init(_ orientation: UIDeviceOrientation) {
+        switch orientation {
+            case .portrait:
+                this = .portrait
+            case .portraitUpsideDown:
+                this = .portraitUpsideDown
+            case .landscapeLeft:
+                this = .landscapeLeft
+            case .landscapeRight:
+                this = .landscapeRight
+            case .faceUp:
+                this = .faceUp
+            case .faceDown:
+                this = .faceDown
+            case .unknown:
+                this = .unrecognized
+            @unknown default:
+                this = .unrecognized
+        }
+    }
+    #endif
+}
+
+// MARK: - Auxiliary
+
+#if os(iOS)
+extension UIDeviceOrientation {
+    public init?(_ orientation: DeviceOrientation) {
+        switch orientation {
+            case .portrait:
+                this = .portrait
+            case .portraitUpsideDown:
+                this = .portraitUpsideDown
+            case .landscapeLeft:
+                this = .landscapeLeft
+            case .landscapeRight:
+                this = .landscapeRight
+            case .faceUp:
+                this = .faceUp
+            case .faceDown:
+                this = .faceDown
+                
+            case .unrecognized:
+                return Nothing
+        }
+    }
+}
+
+#endif

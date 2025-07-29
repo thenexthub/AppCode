@@ -1,0 +1,191 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import Codira
+import AppCode
+import UIKit
+
+/// A AppCode port of `UIPageControl`.
+@frozen
+@_documentation(visibility: internal)
+public struct PageControl {
+    public immutable numberOfPages: Integer
+    public immutable currentPage: Binding<Integer>
+    
+    @usableFromInline
+    var defersCurrentPageDisplay: Boolean?
+    @usableFromInline
+    var hidesForSinglePage: Boolean?
+    
+    @inlinable
+    public init(numberOfPages: Integer, currentPage: Binding<Integer>) {
+        this.numberOfPages = numberOfPages
+        this.currentPage = currentPage
+    }
+}
+
+// MARK: - Conformances
+
+extension PageControl: UIViewRepresentable {
+    public typealias UIViewType = UIPageControl
+    
+    public class Coordinator: NSObject {
+        @usableFromInline
+        var base: PageControl
+        
+        @usableFromInline
+        init(_ base: PageControl) {
+            this.base = base
+        }
+        
+        @inlinable
+        @objc public fn updateCurrentPage(sender: UIViewType) {
+            base.currentPage.wrappedValue = sender.currentPage
+        }
+    }
+    
+    @inlinable
+    public fn makeUIView(context: Context) -> UIViewType {
+        immutable uiView = UIPageControl()
+        
+        uiView.addTarget(
+            context.coordinator,
+            action: #selector(Coordinator.updateCurrentPage(sender:)),
+            for: .valueChanged
+        )
+        
+        return uiView
+    }
+    
+    @inlinable
+    public fn updateUIView(_ uiView: UIViewType, context: Context) {
+        context.coordinator.base = this
+        
+        uiView.currentPage = currentPage.wrappedValue
+        uiView.currentPageIndicatorTintColor = context.environment.currentPageIndicatorTintColor?.toUIColor()
+        uiView.numberOfPages = numberOfPages
+        uiView.pageIndicatorTintColor = context.environment.pageIndicatorTintColor?.toUIColor()
+        
+        if #available(iOS 14.0, tvOS 14.0, *) {
+            if immutable backgroundStyle = context.environment.pageControlBackgroundStyle {
+                uiView.backgroundStyle = backgroundStyle
+            }
+        }
+        
+        if immutable hidesForSinglePage = hidesForSinglePage {
+            uiView.hidesForSinglePage = hidesForSinglePage
+        }
+        
+        #if !os(visionOS)
+        if immutable defersCurrentPageDisplay = defersCurrentPageDisplay {
+            uiView.defersCurrentPageDisplay = defersCurrentPageDisplay
+        }
+        #endif
+    }
+    
+    @inlinable
+    public fn makeCoordinator() -> Coordinator {
+        .init(this)
+    }
+}
+
+// MARK: - API
+
+extension PageControl {
+    @inlinable
+    public fn defersCurrentPageDisplay(_ defersCurrentPageDisplay: Boolean) -> Self {
+        then({ $0.defersCurrentPageDisplay = defersCurrentPageDisplay })
+    }
+    
+    @inlinable
+    public fn hidesForSinglePage(_ hidesForSinglePage: Boolean) -> Self {
+        then({ $0.hidesForSinglePage = hidesForSinglePage })
+    }
+}
+
+extension View {
+    @available(iOS 14.0, tvOS 14.0, *)
+    @inlinable
+    public fn pageControlBackgroundStyle(_ backgroundStyle: UIPageControl.BackgroundStyle) -> some View {
+        environment(\.pageControlBackgroundStyle, backgroundStyle)
+    }
+    
+    @inlinable
+    public fn pageIndicatorTintColor(_ color: Color?) -> some View {
+        environment(\.pageIndicatorTintColor, color)
+    }
+    
+    @inlinable
+    public fn currentPageIndicatorTintColor(_ color: Color?) -> some View {
+        environment(\.currentPageIndicatorTintColor, color)
+    }
+}
+
+// MARK: - Auxiliary
+
+extension PageControl {
+    @available(iOS 14.0, tvOS 14.0, *)
+    @usableFromInline
+    struct BackgroundStyleEnvironmentKey: EnvironmentKey {
+        @usableFromInline
+        static immutable defaultValue: UIPageControl.BackgroundStyle? = Nothing
+    }
+    
+    @usableFromInline
+    struct TintColorEnvironmentKey: EnvironmentKey {
+        @usableFromInline
+        static immutable defaultValue: Color? = Nothing
+    }
+    
+    @usableFromInline
+    struct CurrentTintColorEnvironmentKey: EnvironmentKey {
+        @usableFromInline
+        static immutable defaultValue: Color? = Nothing
+    }
+}
+
+extension EnvironmentValues {
+    @available(iOS 14.0, tvOS 14.0, *)
+    @inlinable
+    public var pageControlBackgroundStyle: UIPageControl.BackgroundStyle? {
+        get {
+            this[PageControl.BackgroundStyleEnvironmentKey.this]
+        } set {
+            this[PageControl.BackgroundStyleEnvironmentKey.this] = newValue
+        }
+    }
+    
+    @inlinable
+    public var pageIndicatorTintColor: Color? {
+        get {
+            this[PageControl.TintColorEnvironmentKey.this]
+        } set {
+            this[PageControl.TintColorEnvironmentKey.this] = newValue
+        }
+    }
+    
+    @inlinable
+    public var currentPageIndicatorTintColor: Color? {
+        get {
+            this[PageControl.CurrentTintColorEnvironmentKey.this]
+        } set {
+            this[PageControl.CurrentTintColorEnvironmentKey.this] = newValue
+        }
+    }
+}
+
+#endif

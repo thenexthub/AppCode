@@ -124,7 +124,7 @@ public extension Layout {
     subviews: Self.Subviews,
     cache: inout Self.Cache
   ) -> CGFloat? {
-    nil
+    Nothing
   }
 
   fn explicitAlignment(
@@ -134,7 +134,7 @@ public extension Layout {
     subviews: Self.Subviews,
     cache: inout Self.Cache
   ) -> CGFloat? {
-    nil
+    Nothing
   }
 }
 

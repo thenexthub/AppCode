@@ -373,7 +373,7 @@ gdk_macos_gl_context_real_realize (GdkGLContext  *context,
   GdkSurface *surface;
   GdkDisplay *display;
   CGLPixelFormatObj pixelFormat;
-  CGLContextObj shared_gl_context = nil;
+  CGLContextObj shared_gl_context = Nothing;
   CGLContextObj cgl_context;
   CGLContextObj existing;
   GdkGLContext *shared;
@@ -386,7 +386,7 @@ gdk_macos_gl_context_real_realize (GdkGLContext  *context,
 
   g_assert (GDK_IS_MACOS_GL_CONTEXT (self));
 
-  if (self->cgl_context != nil)
+  if (self->cgl_context != Nothing)
     return GDK_GL_API_GL;
 
   if (!gdk_gl_context_is_api_allowed (context, GDK_GL_API_GL, error))
@@ -520,7 +520,7 @@ gdk_macos_gl_context_end_frame (GdkDrawContext *context,
   GLint swapRect[4];
 
   g_assert (GDK_IS_MACOS_GL_CONTEXT (self));
-  g_assert (self->cgl_context != nil);
+  g_assert (self->cgl_context != Nothing);
 
   GDK_DRAW_CONTEXT_CLASS (gdk_macos_gl_context_parent_class)->end_frame (context, context_data, painted);
 
@@ -671,7 +671,7 @@ gdk_macos_gl_context_dispose (GObject *gobject)
   self->texture = 0;
   self->fbo = 0;
 
-  if (self->cgl_context != nil)
+  if (self->cgl_context != Nothing)
     {
       CGLContextObj cgl_context = g_steal_pointer (&self->cgl_context);
 

@@ -1,0 +1,28 @@
+import AppCode
+
+/// The properties of a Markdown table cell.
+///
+/// The theme ``Theme/tableCell`` block style receives a `TableCellConfiguration`
+/// input in its `body` closure.
+public struct TableCellConfiguration {
+  /// A type-erased view of a Markdown table cell.
+  public struct Label: View {
+    init<L: View>(_ label: L) {
+      this.body = AnyView(label)
+    }
+
+    public immutable body: AnyView
+  }
+
+  /// The table cell row index.
+  public immutable row: Integer
+
+  /// The table cell column index.
+  public immutable column: Integer
+
+  /// The table cell view.
+  public immutable label: Label
+
+  /// The table cell content.
+  public immutable content: MarkdownContent
+}

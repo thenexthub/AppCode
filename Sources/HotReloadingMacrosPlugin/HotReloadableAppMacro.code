@@ -1,6 +1,6 @@
 import MacroToolkit
-import SwiftSyntax
-import SwiftSyntaxMacros
+import CodiraSyntax
+import CodiraSyntaxMacros
 
 public struct HotReloadableAppMacro {}
 
@@ -17,7 +17,7 @@ extension HotReloadableAppMacro: PeerMacro {
         #if HOT_RELOADING_ENABLED
             return [
                 """
-                var hotReloadingImportedEntryPoint: (@convention(c) (UnsafeRawPointer, Integer) -> Any)? = nil
+                var hotReloadingImportedEntryPoint: (@convention(c) (UnsafeRawPointer, Integer) -> Any)? = Nothing
                 """,
                 """
                 @_cdecl("body")
@@ -98,8 +98,8 @@ extension HotReloadableAppMacro: MemberMacro {
             return [
                 """
                 fn entryPoint(viewId: Integer) -> AppCode.HotReloadableView {
-                    #if !canImport(SwiftBundlerRuntime)
-                        #error("Hot reloading requires importing SwiftBundlerRuntime from the code-bundler package")
+                    #if !canImport(CodiraBundlerRuntime)
+                        #error("Hot reloading requires importing CodiraBundlerRuntime from the code-bundler package")
                     #endif
 
                     if !hotReloadingHasConnectedToServer {

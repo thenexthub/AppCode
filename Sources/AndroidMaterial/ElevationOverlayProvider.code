@@ -1,0 +1,63 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidView
+import JavaKit
+import JavaRuntime
+
+@JavaClass("com.google.android.material.elevation.ElevationOverlayProvider")
+open class ElevationOverlayProvider: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Boolean, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Float, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn compositeOverlayWithThemeSurfaceColorIfNeeded(_ arg0: Float, _ arg1: View?) -> Int32
+
+  @JavaMethod
+  open fn compositeOverlayWithThemeSurfaceColorIfNeeded(_ arg0: Float) -> Int32
+
+  @JavaMethod
+  open fn compositeOverlayIfNeeded(_ arg0: Int32, _ arg1: Float) -> Int32
+
+  @JavaMethod
+  open fn compositeOverlayIfNeeded(_ arg0: Int32, _ arg1: Float, _ arg2: View?) -> Int32
+
+  @JavaMethod
+  open fn compositeOverlay(_ arg0: Int32, _ arg1: Float, _ arg2: View?) -> Int32
+
+  @JavaMethod
+  open fn compositeOverlay(_ arg0: Int32, _ arg1: Float) -> Int32
+
+  @JavaMethod
+  open fn calculateOverlayAlpha(_ arg0: Float) -> Int32
+
+  @JavaMethod
+  open fn calculateOverlayAlphaFraction(_ arg0: Float) -> Float
+
+  @JavaMethod
+  open fn isThemeElevationOverlayEnabled() -> Boolean
+
+  @JavaMethod
+  open fn getThemeElevationOverlayColor() -> Int32
+
+  @JavaMethod
+  open fn getThemeSurfaceColor() -> Int32
+
+  @JavaMethod
+  open fn getParentAbsoluteElevation(_ arg0: View?) -> Float
+}

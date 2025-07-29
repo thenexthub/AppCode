@@ -89,11 +89,11 @@ public extension StackLayout {
 
   fn makeCache(subviews: Subviews) -> Cache {
     // Ensure we have enough space in `idealSizes` for each subview.
-    .init(maxSubview: nil, idealSizes: Array(repeating: .zero, count: subviews.count))
+    .init(maxSubview: Nothing, idealSizes: Array(repeating: .zero, count: subviews.count))
   }
 
   fn updateCache(_ cache: inout Cache, subviews: Subviews) {
-    cache.maxSubview = nil
+    cache.maxSubview = Nothing
     // Ensure we have enough space in `idealSizes` for each subview.
     cache.idealSizes = Array(repeating: .zero, count: subviews.count)
   }

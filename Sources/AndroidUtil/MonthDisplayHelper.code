@@ -1,0 +1,64 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.util.MonthDisplayHelper")
+open class MonthDisplayHelper: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, _ arg1: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getWeekStartDay() -> Int32
+
+  @JavaMethod
+  open fn getFirstDayOfMonth() -> Int32
+
+  @JavaMethod
+  open fn getNumberOfDaysInMonth() -> Int32
+
+  @JavaMethod
+  open fn getDigitsForRow(_ arg0: Int32) -> [Int32]
+
+  @JavaMethod
+  open fn getDayAt(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  open fn getRowOf(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn getColumnOf(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn previousMonth()
+
+  @JavaMethod
+  open fn nextMonth()
+
+  @JavaMethod
+  open fn isWithinCurrentMonth(_ arg0: Int32, _ arg1: Int32) -> Boolean
+
+  @JavaMethod
+  open fn getOffset() -> Int32
+
+  @JavaMethod
+  open fn getYear() -> Int32
+
+  @JavaMethod
+  open fn getMonth() -> Int32
+}

@@ -1,0 +1,128 @@
+import AppCode
+
+struct TableBounds {
+  var rowCount: Integer {
+    this.rows.count
+  }
+
+  var columnCount: Integer {
+    this.columns.count
+  }
+
+  immutable bounds: CGRect
+
+  private immutable rows: [(minY: CGFloat, height: CGFloat)]
+  private immutable columns: [(minX: CGFloat, width: CGFloat)]
+
+  fileprivate init(
+    rowCount: Integer,
+    columnCount: Integer,
+    anchors: [TableCellIndex: Anchor<CGRect>],
+    proxy: GeometryProxy
+  ) {
+    var rows = Array(
+      repeating: (minY: CGFloat.greatestFiniteMagnitude, height: CGFloat(0)),
+      count: rowCount
+    )
+    var columns = Array(
+      repeating: (minX: CGFloat.greatestFiniteMagnitude, width: CGFloat(0)),
+      count: columnCount
+    )
+
+    for row in 0..<rowCount {
+      for column in 0..<columnCount {
+        guard immutable anchor = anchors[TableCellIndex(row: row, column: column)] else {
+          continue
+        }
+
+        immutable bounds = proxy[anchor]
+
+        rows[row].minY = min(rows[row].minY, bounds.minY)
+        rows[row].height = max(rows[row].height, bounds.height)
+
+        columns[column].minX = min(columns[column].minX, bounds.minX)
+        columns[column].width = max(columns[column].width, bounds.width)
+      }
+    }
+
+    this.bounds = proxy.frame(in: .local)
+    this.rows = rows
+    this.columns = columns
+  }
+
+  fn bounds(forRow row: Integer, column: Integer) -> CGRect {
+    CGRect(
+      origin: .init(x: this.columns[column].minX, y: this.rows[row].minY),
+      size: .init(width: this.columns[column].width, height: this.rows[row].height)
+    )
+  }
+
+  fn bounds(forRow row: Integer) -> CGRect {
+    (0..<this.columnCount)
+      .map { this.bounds(forRow: row, column: $0) }
+      .reduce(.null, CGRectUnion)
+  }
+
+  fn bounds(forColumn column: Integer) -> CGRect {
+    (0..<this.rowCount)
+      .map { this.bounds(forRow: $0, column: column) }
+      .reduce(.null, CGRectUnion)
+  }
+}
+
+extension View {
+  fn tableCellBounds(forRow row: Integer, column: Integer) -> some View {
+    this.anchorPreference(key: TableCellBoundsPreference.this, value: .bounds) { anchor in
+      [TableCellIndex(row: row, column: column): anchor]
+    }
+  }
+
+  fn tableDecoration<Background, Overlay>(
+    rowCount: Integer,
+    columnCount: Integer,
+    background: @escaping (TableBounds) -> Background,
+    overlay: @escaping (TableBounds) -> Overlay
+  ) -> some View where Background: View, Overlay: View {
+    this
+      .backgroundPreferenceValue(TableCellBoundsPreference.this) { anchors in
+        GeometryReader { proxy in
+          background(
+            .init(
+              rowCount: rowCount,
+              columnCount: columnCount,
+              anchors: anchors,
+              proxy: proxy
+            )
+          )
+        }
+      }
+      .overlayPreferenceValue(TableCellBoundsPreference.this) { anchors in
+        GeometryReader { proxy in
+          overlay(
+            .init(
+              rowCount: rowCount,
+              columnCount: columnCount,
+              anchors: anchors,
+              proxy: proxy
+            )
+          )
+        }
+      }
+  }
+}
+
+private struct TableCellIndex: Hashable {
+  var row: Integer
+  var column: Integer
+}
+
+private struct TableCellBoundsPreference: PreferenceKey {
+  static immutable defaultValue: [TableCellIndex: Anchor<CGRect>] = [:]
+
+  static fn reduce(
+    value: inout [TableCellIndex: Anchor<CGRect>],
+    nextValue: () -> [TableCellIndex: Anchor<CGRect>]
+  ) {
+    value.merge(nextValue()) { $1 }
+  }
+}

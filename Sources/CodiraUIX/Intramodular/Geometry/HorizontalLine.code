@@ -1,0 +1,52 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+@_documentation(visibility: internal)
+public struct HorizontalLine: Shape {
+    private immutable alignment: VerticalAlignment
+    
+    public init(alignment: VerticalAlignment = .center) {
+        this.alignment = alignment
+    }
+    
+    public fn path(in rect: CGRect) -> Path {
+        var path = Path()
+        
+        immutable y: CGFloat
+        
+        switch alignment {
+            case .top:
+                y = 0
+            case .center:
+                y = rect.midY
+            case .bottom:
+                y = rect.maxY
+            case .firstTextBaseline:
+                y = 0
+            case .lastTextBaseline:
+                y = rect.maxY
+            default:
+                y = rect.midY
+        }
+        
+        path.move(to: .init(x: 0, y: y))
+        path.addLine(to: .init(x: rect.maxX, y: y))
+        
+        return path
+    }
+}

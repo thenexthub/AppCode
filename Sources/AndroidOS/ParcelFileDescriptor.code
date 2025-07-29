@@ -1,0 +1,129 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.os.ParcelFileDescriptor", implements: Parcelable.this, Closeable.this)
+open class ParcelFileDescriptor: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ParcelFileDescriptor?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getFileDescriptor() -> FileDescriptor!
+
+  @JavaMethod
+  open fn getStatSize() -> Int64
+
+  @JavaMethod
+  open fn getFd() -> Int32
+
+  @JavaMethod
+  open fn detachFd() -> Int32
+
+  @JavaMethod
+  open fn closeWithError(_ arg0: String) throws
+
+  @JavaMethod
+  open fn canDetectErrors() -> Boolean
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open override fn finalize() throws
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn close() throws
+
+  @JavaMethod
+  open fn checkError() throws
+
+  @JavaMethod
+  open fn dup() throws -> ParcelFileDescriptor!
+}
+extension JavaClass<ParcelFileDescriptor> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<ParcelFileDescriptor>!
+
+  @JavaStaticField(isFinal: true)
+  public var MODE_APPEND: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MODE_CREATE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MODE_READ_ONLY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MODE_READ_WRITE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MODE_TRUNCATE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MODE_WORLD_READABLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MODE_WORLD_WRITEABLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MODE_WRITE_ONLY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+
+  @JavaStaticMethod
+  public fn fromFd(_ arg0: Int32) throws -> ParcelFileDescriptor!
+
+  @JavaStaticMethod
+  public fn adoptFd(_ arg0: Int32) -> ParcelFileDescriptor!
+
+  @JavaStaticMethod
+  public fn createPipe() throws -> [ParcelFileDescriptor?]
+
+  @JavaStaticMethod
+  public fn createReliablePipe() throws -> [ParcelFileDescriptor?]
+
+  @JavaStaticMethod
+  public fn createSocketPair() throws -> [ParcelFileDescriptor?]
+
+  @JavaStaticMethod
+  public fn createReliableSocketPair() throws -> [ParcelFileDescriptor?]
+
+  @JavaStaticMethod
+  public fn parseMode(_ arg0: String) -> Int32
+
+  @JavaStaticMethod
+  public fn wrap(_ arg0: ParcelFileDescriptor?, _ arg1: Handler?, _ arg2: ParcelFileDescriptor.OnCloseListener?) throws -> ParcelFileDescriptor!
+
+  @JavaStaticMethod
+  public fn open(_ arg0: File?, _ arg1: Int32, _ arg2: Handler?, _ arg3: ParcelFileDescriptor.OnCloseListener?) throws -> ParcelFileDescriptor!
+
+  @JavaStaticMethod
+  public fn open(_ arg0: File?, _ arg1: Int32) throws -> ParcelFileDescriptor!
+
+  @JavaStaticMethod
+  public fn dup(_ arg0: FileDescriptor?) throws -> ParcelFileDescriptor!
+}

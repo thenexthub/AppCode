@@ -1,0 +1,67 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension RelativeLayout {
+  @JavaClass("android.widget.RelativeLayout$LayoutParams")
+  open class LayoutParams: ViewSwitcher.MarginLayoutParams {
+  @JavaField(isFinal: false)
+  public var alignWithParent: Boolean
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: RelativeLayout.LayoutParams?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ViewSwitcher.MarginLayoutParams?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ViewSwitcher.LayoutParams?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, _ arg1: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn debug(_ arg0: String) -> String
+
+  @JavaMethod
+  open fn getRules() -> [Int32]
+
+  @JavaMethod
+  open override fn resolveLayoutDirection(_ arg0: Int32)
+
+  @JavaMethod
+  open fn addRule(_ arg0: Int32)
+
+  @JavaMethod
+  open fn addRule(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn removeRule(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getRule(_ arg0: Int32) -> Int32
+  }
+}
+extension JavaClass<RelativeLayout.LayoutParams> {
+  @JavaStaticField(isFinal: true)
+  public var FILL_PARENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MATCH_PARENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var WRAP_CONTENT: Int32
+}

@@ -142,7 +142,7 @@ extension Result.OCombine {
         }
 
         fn cancel() {
-            downstream = nil
+            downstream = Nothing
         }
 
         var description: String { return "Once" }

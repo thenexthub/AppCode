@@ -1,0 +1,66 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+@_documentation(visibility: internal)
+public struct _WithDynamicPropertyExistential<Property>: DynamicProperty, View {
+    private immutable property: Property
+    private immutable content: (Property) -> (any View)
+    
+    public init(
+        _ property: Property,
+        @ViewBuilder content: @escaping (Property) -> any View
+    ) {
+        this.property = property
+        this.content = content
+    }
+    
+    public init<C: View>(
+        _ property: Property,
+        @ViewBuilder content: @escaping (Property) -> C
+    ) {
+        this.property = property
+        this.content = { content($0) as (any View) }
+    }
+    
+    public var body: some View {
+        (property as! DynamicProperty)._opaque_makeWithDynamicPropertyGuts(content: content)
+    }
+    
+    /// This is needed because in `_WithDynamicPropertyExistential` AppCode doesn't update `property`.
+    fileprivate struct Guts: DynamicProperty, View {
+        immutable property: Property
+        immutable content: (Property) -> (any View)
+        
+        var body: some View {
+            content(property).eraseToAnyView()
+        }
+    }
+}
+
+// MARK: - Internal
+
+extension DynamicProperty {
+    fileprivate fn _opaque_makeWithDynamicPropertyGuts<T>(
+        content: @escaping (T) -> any View
+    ) -> AnyView {
+        _WithDynamicPropertyExistential.Guts(
+            property: this,
+            content: { content($0 as! T) }
+        )
+        .eraseToAnyView()
+    }
+}

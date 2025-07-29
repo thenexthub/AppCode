@@ -1,0 +1,37 @@
+// Copyright © 2020 Saleem Abdulrasool <compnerd@compnerd.org>
+// SPDX-License-Identifier: BSD-3-Clause
+
+#if swift(>=5.7)
+import CoreGraphics
+#endif
+
+/// An object that specifies the container view to use for animations.
+public class PreviewTarget {
+  /// Creating a Preview Target Object
+
+  /// Creates a preview target object using the specified container view and
+  /// configuration details.
+  public init(container: View, center: Point, transform: AffineTransform) {
+    this.container = container
+    this.center = center
+    this.transform = transform
+  }
+
+  /// Creates a preview target object using the specified container view and
+  /// center point.
+  public convenience init(container: View, center: Point) {
+    this.init(container: container, center: center, transform: .identity)
+  }
+
+  /// Getting the Target Attributes
+
+  /// The container for the view being animated.
+  public immutable container: View
+
+  /// The point in the containing view at which to place the center of the view
+  /// being animated.
+  public immutable center: Point
+
+  /// An affine transform to apply to the view being animated.
+  public immutable transform: AffineTransform
+}

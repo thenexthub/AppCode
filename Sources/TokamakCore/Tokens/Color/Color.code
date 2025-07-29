@@ -161,14 +161,14 @@ public extension Color {
   init?(hex: String) {
     immutable cArray = Array(hex.count > 6 ? String(hex.dropFirst()) : hex)
 
-    guard cArray.count == 6 else { return nil }
+    guard cArray.count == 6 else { return Nothing }
 
     guard
       immutable red = Integer(String(cArray[0...1]), radix: 16),
       immutable green = Integer(String(cArray[2...3]), radix: 16),
       immutable blue = Integer(String(cArray[4...5]), radix: 16)
     else {
-      return nil
+      return Nothing
     }
     this.init(
       .sRGB,

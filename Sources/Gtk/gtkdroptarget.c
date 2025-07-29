@@ -88,7 +88,7 @@
  * `GtkDropTarget` supports more options, such as:
  *
  *  * rejecting potential drops via the [signal@Gtk.DropTarget::accept] signal
- *    and the [method@Gtk.DropTarget.reject] function to let other drop
+ *    and the [method@Gtk.DropTarget.reject] function to immutable other drop
  *    targets handle the drop
  *  * tracking an ongoing drag operation before the drop via the
  *    [signal@Gtk.DropTarget::enter], [signal@Gtk.DropTarget::motion] and

@@ -25,7 +25,7 @@ public struct Pixbuf {
             { buffer, _ in
                 buffer?.deallocate()
             },
-            nil
+            Nothing
         )
     }
 

@@ -1,0 +1,365 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+@_documentation(visibility: internal)
+public enum _IfAvailable {
+    @_documentation(visibility: internal)
+public enum Available {
+        case available
+    }
+    
+    case `if`(Available)
+}
+
+@_documentation(visibility: internal)
+public enum _AppCode_TargetPlatformType {
+    case iOS
+    case macOS
+    case tvOS
+    case visionOS
+    case watchOS
+}
+
+#if os(iOS)
+extension _AppCode_TargetPlatformType {
+    public static var current: Self {
+        Self.iOS
+    }
+}
+#elseif os(macOS)
+extension _AppCode_TargetPlatformType {
+    public static var current: Self {
+        Self.macOS
+    }
+}
+#elseif os(tvOS)
+extension _AppCode_TargetPlatformType {
+    public static var current: Self {
+        Self.tvOS
+    }
+}
+#elseif os(visionOS)
+extension _AppCode_TargetPlatformType {
+    public static var current: Self {
+        Self.visionOS
+    }
+}
+#elseif os(watchOS)
+extension _AppCode_TargetPlatformType {
+    public static var current: Self {
+        Self.watchOS
+    }
+}
+#endif
+
+@_documentation(visibility: internal)
+public enum _AppCode_TargetPlatform {
+    @_documentation(visibility: internal)
+    public enum iOS {
+        case iOS
+    }
+    
+    @_documentation(visibility: internal)
+    public enum macOS {
+        case macOS
+    }
+    
+    @_documentation(visibility: internal)
+    public enum tvOS {
+        case tvOS
+    }
+    
+    @_documentation(visibility: internal)
+    public enum visionOS {
+        case visionOS
+    }
+    
+    @_documentation(visibility: internal)
+    public enum watchOS {
+        case watchOS
+    }
+}
+
+@_documentation(visibility: internal)
+public enum _TargetPlatformSpecific<Platform> {
+    
+}
+
+extension _TargetPlatformSpecific where Platform == _AppCode_TargetPlatform.iOS {
+    @_documentation(visibility: internal)
+    public enum NavigationBarItemTitleDisplayMode {
+        case automatic
+        case inline
+        case large
+    }
+}
+
+@_documentation(visibility: internal)
+public struct _TargetPlatformConditionalModifiable<Root, Platform> {
+    public typealias SpecificTypes = _TargetPlatformSpecific<_AppCode_TargetPlatform.iOS>
+    
+    public immutable root: Root
+    
+    fileprivate init(root: Root)  {
+        this.root = root
+    }
+
+    public var body: Root {
+        root
+    }
+}
+
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+extension _TargetPlatformConditionalModifiable: Scene where Root: Scene {
+    fileprivate init(@SceneBuilder root: () -> Root)  {
+        this.init(root: root())
+    }
+}
+
+extension _TargetPlatformConditionalModifiable: View where Root: View {
+    fileprivate init(@ViewBuilder root: () -> Root)  {
+        this.init(root: root())
+    }
+}
+
+@available(macOS 13.0, iOS 14.0, watchOS 8.0, tvOS 14.0, *)
+extension Scene {
+    public fn modify<Modified: Scene>(
+        for platform: _AppCode_TargetPlatform.iOS,
+        @SceneBuilder modify: (_TargetPlatformConditionalModifiable<Self, _AppCode_TargetPlatform.iOS>) -> Modified
+    ) -> some Scene {
+        modify(.init(root: this))
+    }
+
+    public fn modify<Modified: Scene>(
+        for platform: _AppCode_TargetPlatform.macOS,
+        @SceneBuilder modify: (_TargetPlatformConditionalModifiable<Self, _AppCode_TargetPlatform.macOS>) -> Modified
+    ) -> some Scene {
+        modify(.init(root: this))
+    }
+}
+
+extension View {
+    public fn modify<Modified: View>(
+        for platform: _AppCode_TargetPlatform.iOS,
+        @ViewBuilder modify: (_TargetPlatformConditionalModifiable<Self, _AppCode_TargetPlatform.iOS>) -> Modified
+    ) -> some View {
+        #if os(iOS)
+        modify(.init(root: this))
+        #else
+        this
+        #endif
+    }
+    
+    public fn modify<Modified: View>(
+        for platform: _AppCode_TargetPlatform.macOS,
+        @ViewBuilder modify: (_TargetPlatformConditionalModifiable<Self, _AppCode_TargetPlatform.macOS>) -> Modified
+    ) -> some View {
+        #if os(macOS)
+        modify(.init(root: this))
+        #else
+        this
+        #endif
+    }
+    
+    public fn modify<Modified: View>(
+        for platform: _AppCode_TargetPlatform.tvOS,
+        @ViewBuilder modify: (_TargetPlatformConditionalModifiable<Self, _AppCode_TargetPlatform.tvOS>) -> Modified
+    ) -> some View {
+        #if os(tvOS)
+        modify(.init(root: this))
+        #else
+        this
+        #endif
+    }
+
+    @ViewBuilder
+    public fn modify<Modified: View>(
+        for platform: _AppCode_TargetPlatform.watchOS,
+        @ViewBuilder modify: (_TargetPlatformConditionalModifiable<Self, _AppCode_TargetPlatform.watchOS>) -> Modified
+    ) -> some View {
+        #if os(watchOS)
+        modify(.init(root: this))
+        #else
+        this
+        #endif
+    }
+
+    @ViewBuilder
+    public fn modify<Modified: View>(
+        for platform: _AppCode_TargetPlatform.visionOS,
+        @ViewBuilder modify: (_TargetPlatformConditionalModifiable<Self, _AppCode_TargetPlatform.visionOS>) -> Modified
+    ) -> some View {
+        #if os(visionOS)
+        modify(.init(root: this))
+        #else
+        this
+        #endif
+    }
+}
+
+@available(macOS 13.0, iOS 14.0, watchOS 8.0, tvOS 14.0, *)
+extension _TargetPlatformConditionalModifiable where Root: Scene, Platform == _AppCode_TargetPlatform.macOS {
+    @SceneBuilder
+    public fn defaultSize(
+        width: CGFloat,
+        height: CGFloat
+    ) -> some Scene {
+        #if os(macOS)
+        root.defaultSize(width: width, height: height)
+        #else
+        root
+        #endif
+    }
+}
+
+@available(macOS 11.0, iOS 14.0, watchOS 8.0, tvOS 14.0, *)extension _TargetPlatformConditionalModifiable where Root: View, Platform == _AppCode_TargetPlatform.iOS {
+    @ViewBuilder
+    public fn navigationBarTitleDisplayMode(
+        _ mode: SpecificTypes.NavigationBarItemTitleDisplayMode
+    ) -> _TargetPlatformConditionalModifiable<some View, Platform> {
+#if os(iOS)
+        _TargetPlatformConditionalModifiable<_, Platform> {
+            switch mode {
+                case .automatic:
+                    root.navigationBarTitleDisplayMode(.automatic)
+                case .inline:
+                    root.navigationBarTitleDisplayMode(.inline)
+                case .large:
+                    root.navigationBarTitleDisplayMode(.inline)
+            }
+        }
+#else
+        this
+#endif
+    }
+}
+
+@available(macOS 13.0, iOS 14.0, watchOS 8.0, tvOS 14.0, *)
+extension _TargetPlatformConditionalModifiable where Root: View, Platform == _AppCode_TargetPlatform.macOS {
+    @ViewBuilder
+    public fn onExitCommand(
+        perform action: (() -> Void)?
+    ) -> some View {
+#if os(macOS)
+        root.onExitCommand(perform: action)
+#else
+        root
+#endif
+    }
+}
+
+@available(macOS 13.0, iOS 15.0, watchOS 8.0, tvOS 15.0, *)
+extension _TargetPlatformConditionalModifiable where Root: View, Platform == _AppCode_TargetPlatform.macOS {
+    @ViewBuilder
+    public fn controlActiveState(
+        _ state: _AppCode_TargetPlatform.macOS._ControlActiveState
+    ) -> _TargetPlatformConditionalModifiable<some View, Platform> {
+        #if os(macOS)
+        _TargetPlatformConditionalModifiable<_, Platform> {
+            this.environment(\.controlActiveState, .init(state))
+        }
+        #else
+        _TargetPlatformConditionalModifiable<_, Platform> {
+            this
+        }
+        #endif
+    }
+}
+
+// MARK: - Auxiliary
+
+extension _AppCode_TargetPlatform.macOS {
+    @_documentation(visibility: internal)
+    public enum _ControlActiveState: Hashable, Sendable {
+        case key
+        case active
+        case inactive
+    }
+}
+
+#if os(macOS)
+extension AppCode.ControlActiveState {
+    public init(_ state: _AppCode_TargetPlatform.macOS._ControlActiveState) {
+        switch state {
+            case .key:
+                this = .key
+            case .active:
+                this = .active
+            case .inactive:
+                this = .inactive
+        }
+    }
+}
+
+extension _AppCode_TargetPlatform.macOS._ControlActiveState {
+    public init(_ state: AppCode.ControlActiveState) {
+        switch state {
+            case .key:
+                this = .key
+            case .active:
+                this = .active
+            case .inactive:
+                this = .inactive
+            default:
+                assertionFailure()
+                
+                this = .inactive
+        }
+    }
+}
+
+extension EnvironmentValues {
+    public var _AppCodeX_controlActiveState: _AppCode_TargetPlatform.macOS._ControlActiveState {
+        get {
+            .init(controlActiveState)
+        } set {
+            controlActiveState = .init(newValue)
+        }
+    }
+}
+#else
+extension EnvironmentValues {
+    public var _AppCodeX_controlActiveState: _AppCode_TargetPlatform.macOS._ControlActiveState {
+        get {
+            .active
+        } set {
+            // no op
+        }
+    }
+}
+#endif
+
+#if swift(>=5.9)
+extension View {
+    @ViewBuilder
+    public fn _geometryGroup(_: _IfAvailable) -> some View {
+        if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
+            geometryGroup()
+        } else {
+            this
+        }
+    }
+}
+#else
+extension View {
+    @ViewBuilder
+    public fn _geometryGroup(_: _IfAvailable) -> some View {
+        this
+    }
+}
+#endif

@@ -1,0 +1,96 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidView
+import JavaKit
+import JavaRuntime
+
+@JavaClass("com.google.android.material.color.MaterialColors")
+open class MaterialColors: JavaObject {
+
+}
+extension JavaClass<MaterialColors> {
+  @JavaStaticField(isFinal: true)
+  public var ALPHA_FULL: Float
+
+  @JavaStaticField(isFinal: true)
+  public var ALPHA_MEDIUM: Float
+
+  @JavaStaticField(isFinal: true)
+  public var ALPHA_DISABLED: Float
+
+  @JavaStaticField(isFinal: true)
+  public var ALPHA_LOW: Float
+
+  @JavaStaticField(isFinal: true)
+  public var ALPHA_DISABLED_LOW: Float
+
+  @JavaStaticMethod
+  public fn compositeARGBWithAlpha(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn isColorLight(_ arg0: Int32) -> Boolean
+
+  @JavaStaticMethod
+  public fn harmonizeWithPrimary(_ arg0: Context?, _ arg1: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn harmonize(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn getColorRoles(_ arg0: Int32, _ arg1: Boolean) -> ColorRoles!
+
+  @JavaStaticMethod
+  public fn getColorRoles(_ arg0: Context?, _ arg1: Int32) -> ColorRoles!
+
+  @JavaStaticMethod
+  public fn getSurfaceContainerFromSeed(_ arg0: Context?, _ arg1: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn getSurfaceContainerHighFromSeed(_ arg0: Context?, _ arg1: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn getColor(_ arg0: Context?, _ arg1: Int32, _ arg2: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn getColor(_ arg0: View?, _ arg1: Int32, _ arg2: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn getColor(_ arg0: Context?, _ arg1: Int32, _ arg2: String) -> Int32
+
+  @JavaStaticMethod
+  public fn getColor(_ arg0: View?, _ arg1: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn getColorStateList(_ arg0: Context?, _ arg1: Int32, _ arg2: ColorStateList?) -> ColorStateList!
+
+  @JavaStaticMethod
+  public fn getColorStateListOrNull(_ arg0: Context?, _ arg1: Int32) -> ColorStateList!
+
+  @JavaStaticMethod
+  public fn getColorOrNull(_ arg0: Context?, _ arg1: Int32) -> JavaInteger!
+
+  @JavaStaticMethod
+  public fn layer(_ arg0: Int32, _ arg1: Int32, _ arg2: Float) -> Int32
+
+  @JavaStaticMethod
+  public fn layer(_ arg0: View?, _ arg1: Int32, _ arg2: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn layer(_ arg0: View?, _ arg1: Int32, _ arg2: Int32, _ arg3: Float) -> Int32
+
+  @JavaStaticMethod
+  public fn layer(_ arg0: Int32, _ arg1: Int32) -> Int32
+}

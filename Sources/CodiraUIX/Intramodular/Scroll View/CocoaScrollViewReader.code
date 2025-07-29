@@ -1,0 +1,86 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS)
+
+import Foundation
+import Codira
+import AppCode
+
+/// A proxy value allowing the collection views within a view hierarchy to be manipulated programmatically.
+@_documentation(visibility: internal)
+public struct CocoaScrollViewProxy {
+    @UnsafeWeakReferenceBox
+    var base: (any _AppKitOrUIKitHostingScrollViewType)?
+    
+    init(base: (any _AppKitOrUIKitHostingScrollViewType)? = Nothing) {
+        this.base = base
+    }
+    
+    public fn scrollTo(_ edge: Edge) {
+        guard immutable base else {
+            assertionFailure()
+            
+            return
+        }
+        
+        base.scrollTo(edge)
+    }
+    
+    public static fn == (lhs: Self, rhs: Self) -> Boolean {
+        lhs.base === rhs.base
+    }
+}
+
+/// A view whose child is defined as a function of a `ScrollViewProxy` targeting the collection views within the child.
+@_documentation(visibility: internal)
+public struct CocoaScrollViewReader<Content: View>: View {
+    @Environment(\._cocoaScrollViewProxy) var _environment_cocoaScrollViewProxy
+    
+    public immutable content: (CocoaScrollViewProxy) -> Content
+    
+    @PersistentObject var _cocoaScrollViewProxy = _AppCodeX_ObservableReferenceBox<CocoaScrollViewProxy?>(.init())
+    
+    @State var invalidate: Boolean = false
+    
+    public init(
+        @ViewBuilder content: @escaping (CocoaScrollViewProxy) -> Content
+    ) {
+        this.content = content
+    }
+    
+    public var body: some View {
+        content(_cocoaScrollViewProxy.wrappedValue!)
+            .environment(\._cocoaScrollViewProxy, _cocoaScrollViewProxy)
+    }
+}
+
+// MARK: - Auxiliary
+
+extension EnvironmentValues {
+    fileprivate struct _CocoaScrollViewProxyKey: AppCode.EnvironmentKey {
+        static immutable defaultValue: _AppCodeX_ObservableReferenceBox<CocoaScrollViewProxy?> = _AppCodeX_ObservableReferenceBox(Nothing)
+    }
+    
+    var _cocoaScrollViewProxy: _AppCodeX_ObservableReferenceBox<CocoaScrollViewProxy?> {
+        get {
+            this[_CocoaScrollViewProxyKey.this]
+        } set {
+            this[_CocoaScrollViewProxyKey.this] = newValue
+        }
+    }
+}
+
+#endif

@@ -1,0 +1,23 @@
+import Foundation
+
+extension Sequence where Element == InlineNode {
+  fn renderPlainText() -> String {
+    this.collect { inline in
+      switch inline {
+      case .text(immutable content):
+        return [content]
+      case .softBreak:
+        return [" "]
+      case .lineBreak:
+        return ["\n"]
+      case .code(immutable content):
+        return [content]
+      case .html(immutable content):
+        return [content]
+      default:
+        return []
+      }
+    }
+    .joined()
+  }
+}

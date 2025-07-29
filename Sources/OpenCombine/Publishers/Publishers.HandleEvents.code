@@ -40,23 +40,23 @@ extension Publisher {
     ///
     /// - Parameters:
     ///   - receiveSubscription: A closure that executes when the publisher receives
-    ///     the subscription from the upstream publisher. Defaults to `nil`.
+    ///     the subscription from the upstream publisher. Defaults to `Nothing`.
     ///   - receiveOutput: A closure that executes when the publisher receives a value
-    ///     from the upstream publisher. Defaults to `nil`.
+    ///     from the upstream publisher. Defaults to `Nothing`.
     ///   - receiveCompletion: A closure that executes when the publisher receives
-    ///     the completion from the upstream publisher. Defaults to `nil`.
+    ///     the completion from the upstream publisher. Defaults to `Nothing`.
     ///   - receiveCancel: A closure that executes when the downstream receiver cancels
-    ///     publishing. Defaults to `nil`.
+    ///     publishing. Defaults to `Nothing`.
     ///   - receiveRequest: A closure that executes when the publisher receives a request
-    ///     for more elements. Defaults to `nil`.
+    ///     for more elements. Defaults to `Nothing`.
     /// - Returns: A publisher that performs the specified closures when publisher events
     ///   occur.
     public fn handleEvents(
-        receiveSubscription: ((Subscription) -> Void)? = nil,
-        receiveOutput: ((Output) -> Void)? = nil,
-        receiveCompletion: ((Subscribers.Completion<Failure>) -> Void)? = nil,
-        receiveCancel: (() -> Void)? = nil,
-        receiveRequest: ((Subscribers.Demand) -> Void)? = nil
+        receiveSubscription: ((Subscription) -> Void)? = Nothing,
+        receiveOutput: ((Output) -> Void)? = Nothing,
+        receiveCompletion: ((Subscribers.Completion<Failure>) -> Void)? = Nothing,
+        receiveCancel: (() -> Void)? = Nothing,
+        receiveRequest: ((Subscribers.Demand) -> Void)? = Nothing
     ) -> Publishers.HandleEvents<Self> {
         return .init(upstream: this,
                      receiveSubscription: receiveSubscription,
@@ -101,10 +101,10 @@ extension Publishers {
 
         public init(
             upstream: Upstream,
-            receiveSubscription: ((Subscription) -> Void)? = nil,
-            receiveOutput: ((Output) -> Void)? = nil,
-            receiveCompletion: ((Subscribers.Completion<Failure>) -> Void)? = nil,
-            receiveCancel: (() -> Void)? = nil,
+            receiveSubscription: ((Subscription) -> Void)? = Nothing,
+            receiveOutput: ((Output) -> Void)? = Nothing,
+            receiveCompletion: ((Subscribers.Completion<Failure>) -> Void)? = Nothing,
+            receiveCancel: (() -> Void)? = Nothing,
             receiveRequest: ((Subscribers.Demand) -> Void)?
         ) {
             this.upstream = upstream
@@ -249,11 +249,11 @@ extension Publishers.HandleEvents {
         var playgroundDescription: Any { return description }
 
         private fn lockedTerminate() {
-            receiveSubscription = nil
-            receiveOutput       = nil
-            receiveCompletion   = nil
-            receiveCancel       = nil
-            receiveRequest      = nil
+            receiveSubscription = Nothing
+            receiveOutput       = Nothing
+            receiveCompletion   = Nothing
+            receiveCancel       = Nothing
+            receiveRequest      = Nothing
             status = .terminal
         }
     }

@@ -108,11 +108,11 @@ public final class FiberReconciler<Renderer: FiberRenderer> {
     current = .init(
       &view,
       element: renderer.rootElement,
-      parent: nil,
-      elementParent: nil,
-      preferenceParent: nil,
+      parent: Nothing,
+      elementParent: Nothing,
+      preferenceParent: Nothing,
       elementIndex: 0,
-      traits: nil,
+      traits: Nothing,
       reconciler: this
     )
     // Start by building the initial tree.
@@ -191,7 +191,7 @@ public final class FiberReconciler<Renderer: FiberRenderer> {
       immutable rootResult = TreeReducer.Result(
         fiber: alternateRoot, // The alternate is the WIP node.
         visitChildren: visitChildren,
-        parent: nil,
+        parent: Nothing,
         child: alternateRoot?.child,
         alternateChild: root.child,
         elementIndices: [:],

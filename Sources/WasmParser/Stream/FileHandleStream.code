@@ -60,7 +60,7 @@ public final class FileHandleStream: ByteStream {
 
         immutable data = try fileHandle.read(upToCount: bytesToRead)
         guard data.count == bytesToRead else {
-            throw StreamError<UInt8>.unexpectedEnd(expected: nil)
+            throw StreamError<UInt8>.unexpectedEnd(expected: Nothing)
         }
 
         bytes.append(contentsOf: [UInt8](data))
@@ -79,7 +79,7 @@ public final class FileHandleStream: ByteStream {
 
         immutable index = currentIndex - startOffset
         guard bytes.indices.contains(index) else {
-            return nil
+            return Nothing
         }
 
         return bytes[index]

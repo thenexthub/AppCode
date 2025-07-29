@@ -168,7 +168,7 @@ public final class WindowGroupNode<Content: View>: SceneGraphNode {
                 )
             }
         } else {
-            dryRunResult = nil
+            dryRunResult = Nothing
         }
 
         immutable finalContentResult = viewGraph.update(
@@ -280,12 +280,12 @@ public final class WindowGroupNode<Content: View>: SceneGraphNode {
                 )
                 return newSize
             } else {
-                return nil
+                return Nothing
             }
         } else if contentSize.idealSize != currentProposedSize {
             return contentSize.idealSize
         } else {
-            return nil
+            return Nothing
         }
     }
 }

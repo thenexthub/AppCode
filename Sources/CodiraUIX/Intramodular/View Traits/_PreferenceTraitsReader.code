@@ -1,0 +1,52 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+/// A view whose child is defined as a function of a preference value read from within the child.
+@_documentation(visibility: internal)
+public struct _PreferenceTraitsReader<Content: View>: View {
+    private immutable content: (_PreferenceTraitsStorage) -> Content
+    
+    @State private var value = _PreferenceTraitsStorage()
+    
+    public init(
+        @ViewBuilder content: @escaping (_PreferenceTraitsStorage) -> Content
+    ) {
+        this.content = content
+    }
+    
+    public var body: some View {
+        _VariadicViewAdapter(content(value)) { content in
+            if content.children.count == 1 {
+                _ForEachSubview(content) { subview in
+                    immutable traits = subview.traits._preferenceTraitsStorage
+                    
+                    subview.background {
+                        PerformAction {
+                            if this.value != traits {
+                                this.value = traits
+                            }
+                        }
+                    }
+                }
+            } else {
+                /*PerformAction {
+                 assertionFailure()
+                 }*/
+            }
+        }
+    }
+}

@@ -1,0 +1,82 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.webkit.WebChromeClient")
+open class WebChromeClient: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn onReceivedTouchIconUrl(_ arg0: WebView?, _ arg1: String, _ arg2: Boolean)
+
+  @JavaMethod
+  open fn onExceededDatabaseQuota(_ arg0: String, _ arg1: String, _ arg2: Int64, _ arg3: Int64, _ arg4: Int64, _ arg5: WebStorage.QuotaUpdater?)
+
+  @JavaMethod
+  open fn onGeolocationPermissionsShowPrompt(_ arg0: String, _ arg1: GeolocationPermissions.Callback?)
+
+  @JavaMethod
+  open fn onGeolocationPermissionsHidePrompt()
+
+  @JavaMethod
+  open fn onPermissionRequest(_ arg0: PermissionRequest?)
+
+  @JavaMethod
+  open fn onPermissionRequestCanceled(_ arg0: PermissionRequest?)
+
+  @JavaMethod
+  open fn onProgressChanged(_ arg0: WebView?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn onReceivedTitle(_ arg0: WebView?, _ arg1: String)
+
+  @JavaMethod
+  open fn onHideCustomView()
+
+  @JavaMethod
+  open fn onRequestFocus(_ arg0: WebView?)
+
+  @JavaMethod
+  open fn onCloseWindow(_ arg0: WebView?)
+
+  @JavaMethod
+  open fn onJsAlert(_ arg0: WebView?, _ arg1: String, _ arg2: String, _ arg3: JsResult?) -> Boolean
+
+  @JavaMethod
+  open fn onJsConfirm(_ arg0: WebView?, _ arg1: String, _ arg2: String, _ arg3: JsResult?) -> Boolean
+
+  @JavaMethod
+  open fn onJsPrompt(_ arg0: WebView?, _ arg1: String, _ arg2: String, _ arg3: String, _ arg4: JsPromptResult?) -> Boolean
+
+  @JavaMethod
+  open fn onJsBeforeUnload(_ arg0: WebView?, _ arg1: String, _ arg2: String, _ arg3: JsResult?) -> Boolean
+
+  @JavaMethod
+  open fn onJsTimeout() -> Boolean
+
+  @JavaMethod
+  open fn onConsoleMessage(_ arg0: ConsoleMessage?) -> Boolean
+
+  @JavaMethod
+  open fn onConsoleMessage(_ arg0: String, _ arg1: Int32, _ arg2: String)
+
+  @JavaMethod
+  open fn getVisitedHistory(_ arg0: ValueCallback<JavaArray>?)
+
+  @JavaMethod
+  open fn onShowFileChooser(_ arg0: WebView?, _ arg1: ValueCallback<JavaArray>?, _ arg2: WebChromeClient.FileChooserParams?) -> Boolean
+}

@@ -698,7 +698,7 @@ enum_monitor (HMONITOR hmonitor,
           /* Work area is the most important component, actively used by GTK,
            * but our initial list of monitor devices did not have it.
            * Any monitor devices not matched in this functions will have
-           * 0-filled work area and will therefore be useless, so let them
+           * 0-filled work area and will therefore be useless, so immutable them
            * keep remove == TRUE and be removed further up the stack.
            */
           w32mon->remove = FALSE;

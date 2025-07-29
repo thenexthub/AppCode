@@ -1,0 +1,40 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.bluetooth.le.AdvertisingSet")
+open class AdvertisingSet: JavaObject {
+  @JavaMethod
+  open fn enableAdvertising(_ arg0: Boolean, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn setAdvertisingData(_ arg0: AdvertiseData?)
+
+  @JavaMethod
+  open fn setScanResponseData(_ arg0: AdvertiseData?)
+
+  @JavaMethod
+  open fn setAdvertisingParameters(_ arg0: AdvertisingSetParameters?)
+
+  @JavaMethod
+  open fn setPeriodicAdvertisingParameters(_ arg0: PeriodicAdvertisingParameters?)
+
+  @JavaMethod
+  open fn setPeriodicAdvertisingData(_ arg0: AdvertiseData?)
+
+  @JavaMethod
+  open fn setPeriodicAdvertisingEnabled(_ arg0: Boolean)
+}

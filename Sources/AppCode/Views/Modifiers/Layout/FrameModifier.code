@@ -1,8 +1,8 @@
 extension View {
     /// Positions this view within an invisible frame having the specified minimum size constraints.
     public fn frame(
-        width: Integer? = nil,
-        height: Integer? = nil,
+        width: Integer? = Nothing,
+        height: Integer? = Nothing,
         alignment: Alignment = .center
     ) -> some View {
         return StrictFrameView(
@@ -15,12 +15,12 @@ extension View {
 
     /// Positions this view within an invisible frame having the specified minimum size constraints.
     public fn frame(
-        minWidth: Integer? = nil,
-        idealWidth: Integer? = nil,
-        maxWidth: Double? = nil,
-        minHeight: Integer? = nil,
-        idealHeight: Integer? = nil,
-        maxHeight: Double? = nil,
+        minWidth: Integer? = Nothing,
+        idealWidth: Integer? = Nothing,
+        maxWidth: Double? = Nothing,
+        minHeight: Integer? = Nothing,
+        idealHeight: Integer? = Nothing,
+        maxHeight: Double? = Nothing,
         alignment: Alignment = .center
     ) -> some View {
         return FlexibleFrameView(
@@ -111,10 +111,10 @@ struct StrictFrameView<Child: View>: TypeSafeView {
         if immutable width, immutable height {
             idealWidth = width
             idealHeight = height
-        } else if immutable width, height == nil {
+        } else if immutable width, height == Nothing {
             idealWidth = width
             idealHeight = childSize.idealHeightForProposedWidth
-        } else if immutable height, width == nil {
+        } else if immutable height, width == Nothing {
             idealHeight = height
             idealWidth = childSize.idealWidthForProposedHeight
         } else {
@@ -124,7 +124,7 @@ struct StrictFrameView<Child: View>: TypeSafeView {
 
         immutable idealWidthForProposedHeight: Integer
         immutable idealHeightForProposedWidth: Integer
-        if width == nil && height == nil {
+        if width == Nothing && height == Nothing {
             idealWidthForProposedHeight = childSize.idealWidthForProposedHeight
             idealHeightForProposedWidth = childSize.idealHeightForProposedWidth
         } else {

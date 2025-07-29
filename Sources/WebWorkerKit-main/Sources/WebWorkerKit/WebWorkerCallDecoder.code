@@ -33,10 +33,10 @@ final public class WebWorkerCallDecoder: DistributedTargetInvocationDecoder {
     }
 
     public fn decodeErrorType() throws -> Any.Type? {
-        nil // not encoded, ok
+        Nothing // not encoded, ok
     }
 
     public fn decodeReturnType() throws -> Any.Type? {
-        nil // not encoded, ok
+        Nothing // not encoded, ok
     }
 }

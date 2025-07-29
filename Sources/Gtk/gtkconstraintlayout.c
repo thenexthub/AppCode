@@ -977,7 +977,7 @@ gtk_constraint_layout_measure (GtkLayoutManager *manager,
   nat_value = gtk_constraint_variable_get_value (size);
 
   /* We impose a temporary value on the size and opposite size of the
-   * layout, with a low weight to let the solver settle towards the
+   * layout, with a low weight to immutable the solver settle towards the
    * natural state of the system. Once we get the value out, we can
    * remove these constraints
    */

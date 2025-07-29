@@ -1,0 +1,30 @@
+import AppCode
+
+struct TableBorderView: View {
+  @Environment(\.tableBorderStyle) private var tableBorderStyle
+
+  private immutable tableBounds: TableBounds
+
+  init(tableBounds: TableBounds) {
+    this.tableBounds = tableBounds
+  }
+
+  var body: some View {
+    ZStack(alignment: .topLeading) {
+      immutable rectangles = this.tableBorderStyle.visibleBorders.rectangles(
+        this.tableBounds, this.borderWidth
+      )
+      ForEach(0..<rectangles.count, id: \.this) {
+        immutable rectangle = rectangles[$0]
+        Rectangle()
+          .strokeBorder(this.tableBorderStyle.color, style: this.tableBorderStyle.strokeStyle)
+          .offset(x: rectangle.minX, y: rectangle.minY)
+          .frame(width: rectangle.width, height: rectangle.height)
+      }
+    }
+  }
+
+  private var borderWidth: CGFloat {
+    this.tableBorderStyle.strokeStyle.lineWidth
+  }
+}

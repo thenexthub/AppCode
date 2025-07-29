@@ -1,0 +1,94 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+extension Window {
+  @JavaInterface("android.view.Window$Callback")
+  public struct Callback {
+  @JavaMethod
+  public fn dispatchKeyEvent(_ arg0: KeyEvent?) -> Boolean
+
+  @JavaMethod
+  public fn dispatchKeyShortcutEvent(_ arg0: KeyEvent?) -> Boolean
+
+  @JavaMethod
+  public fn dispatchTouchEvent(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  public fn dispatchTrackballEvent(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  public fn dispatchGenericMotionEvent(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  public fn onWindowFocusChanged(_ arg0: Boolean)
+
+  @JavaMethod
+  public fn onAttachedToWindow()
+
+  @JavaMethod
+  public fn onDetachedFromWindow()
+
+  @JavaMethod
+  public fn onCreatePanelView(_ arg0: Int32) -> View!
+
+  @JavaMethod
+  public fn onCreatePanelMenu(_ arg0: Int32, _ arg1: Menu?) -> Boolean
+
+  @JavaMethod
+  public fn onPreparePanel(_ arg0: Int32, _ arg1: View?, _ arg2: Menu?) -> Boolean
+
+  @JavaMethod
+  public fn onMenuOpened(_ arg0: Int32, _ arg1: Menu?) -> Boolean
+
+  @JavaMethod
+  public fn onMenuItemSelected(_ arg0: Int32, _ arg1: MenuItem?) -> Boolean
+
+  @JavaMethod
+  public fn onWindowAttributesChanged(_ arg0: WindowManager.LayoutParams?)
+
+  @JavaMethod
+  public fn onContentChanged()
+
+  @JavaMethod
+  public fn onPanelClosed(_ arg0: Int32, _ arg1: Menu?)
+
+  @JavaMethod
+  public fn onSearchRequested(_ arg0: SearchEvent?) -> Boolean
+
+  @JavaMethod
+  public fn onSearchRequested() -> Boolean
+
+  @JavaMethod
+  public fn onWindowStartingActionMode(_ arg0: ActionMode.Callback?, _ arg1: Int32) -> ActionMode!
+
+  @JavaMethod
+  public fn onWindowStartingActionMode(_ arg0: ActionMode.Callback?) -> ActionMode!
+
+  @JavaMethod
+  public fn onActionModeStarted(_ arg0: ActionMode?)
+
+  @JavaMethod
+  public fn onActionModeFinished(_ arg0: ActionMode?)
+
+  @JavaMethod
+  public fn onProvideKeyboardShortcuts(_ arg0: List<KeyboardShortcutGroup>?, _ arg1: Menu?, _ arg2: Int32)
+
+  @JavaMethod
+  public fn onPointerCaptureChanged(_ arg0: Boolean)
+  }
+}

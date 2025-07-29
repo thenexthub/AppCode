@@ -16,7 +16,7 @@ extension ScrollView: GTKPrimitive {
   @_spi(TokamakCore)
   public var renderedBody: AnyView {
     AnyView(WidgetView(build: { _ in
-      gtk_scrolled_window_new(nil, nil)
+      gtk_scrolled_window_new(Nothing, Nothing)
     }) {
       if children.count > 1 {
         VStack {

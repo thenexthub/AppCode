@@ -1,0 +1,44 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.os.ResultReceiver", implements: Parcelable.this)
+open class ResultReceiver: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Handler?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn send(_ arg0: Int32, _ arg1: Bundle?)
+
+  @JavaMethod
+  open fn onReceiveResult(_ arg0: Int32, _ arg1: Bundle?)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+}
+extension JavaClass<ResultReceiver> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<ResultReceiver>!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

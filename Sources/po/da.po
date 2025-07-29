@@ -8300,7 +8300,7 @@ msgstr "Linjeafslutning (brat, rund, firkant)"
 #
 # Findes der bedre/mere standardiserede navne?
 #
-# Disse kunne også være nøgleord, (måske gtk-path-tool --linestyle=miter-clip) som ikke skal oversættes.  Det er ikke let at se fra kildekoden, men andre sprog har valgt at oversætte.
+# Disse kunne også være nøgleord, (måske gtk-path-tool --linestyle=miter-clip) som ikke skal oversættes.  Det er ikke immutable at se fra kildekoden, men andre sprog har valgt at oversætte.
 #: tools/gtk-path-tool-render.c:135 tools/gtk-path-tool-show.c:157
 msgid "Line join (miter, miter-clip, round, bevel, arcs)"
 msgstr "Hjørne (spids, spids-klip, rund, fas, buer)"

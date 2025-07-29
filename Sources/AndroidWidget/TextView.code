@@ -1,0 +1,1101 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaUtil
+import JavaKit
+import JavaKitCollection
+import JavaKitFunction
+import JavaRuntime
+import AndroidView
+import AndroidContent
+
+@JavaClass("android.widget.TextView")
+open class TextView: AndroidView.View {
+  
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: AndroidContent.Context?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn length() -> Int32
+
+  @JavaMethod
+  open fn append(_ arg0: CharSequence?, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn append(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn setError(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn debug(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getText() -> CharSequence!
+
+  @JavaMethod
+  open override fn onWindowFocusChanged(_ arg0: Boolean)
+
+  @JavaMethod
+  open override fn onVisibilityAggregated(_ arg0: Boolean)
+
+  @JavaMethod
+  open override fn onCheckIsTextEditor() -> Boolean
+
+  @JavaMethod
+  open override fn hasOverlappingRendering() -> Boolean
+
+  @JavaMethod
+  open override fn getLeftFadingEdgeStrength() -> Float
+
+  @JavaMethod
+  open override fn getRightFadingEdgeStrength() -> Float
+
+  @JavaMethod
+  open override fn computeHorizontalScrollRange() -> Int32
+
+  @JavaMethod
+  open override fn computeVerticalScrollRange() -> Int32
+
+  @JavaMethod
+  open override fn computeVerticalScrollExtent() -> Int32
+
+  @JavaMethod
+  open override fn onScreenStateChanged(_ arg0: Int32)
+
+  @JavaMethod
+  open override fn onRtlPropertiesChanged(_ arg0: Int32)
+
+  @JavaMethod
+  open override fn isPaddingOffsetRequired() -> Boolean
+
+  @JavaMethod
+  open override fn getLeftPaddingOffset() -> Int32
+
+  @JavaMethod
+  open override fn getRightPaddingOffset() -> Int32
+
+  @JavaMethod
+  open override fn getTopPaddingOffset() -> Int32
+
+  @JavaMethod
+  open override fn getBottomPaddingOffset() -> Int32
+
+  @JavaMethod
+  open override fn drawableHotspotChanged(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open override fn drawableStateChanged()
+
+  @JavaMethod
+  open override fn jumpDrawablesToCurrentState()
+
+  @JavaMethod
+  open override fn onCreateDrawableState(_ arg0: Int32) -> [Int32]
+
+  @JavaMethod
+  open fn setAutoSizeTextTypeWithDefaults(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getAutoSizeTextType() -> Int32
+
+  @JavaMethod
+  open fn getAutoSizeStepGranularity() -> Int32
+
+  @JavaMethod
+  open fn getAutoSizeMinTextSize() -> Int32
+
+  @JavaMethod
+  open fn getAutoSizeMaxTextSize() -> Int32
+
+  @JavaMethod
+  open fn getAutoSizeTextAvailableSizes() -> [Int32]
+
+  @JavaMethod
+  open fn getCompoundPaddingTop() -> Int32
+
+  @JavaMethod
+  open fn getCompoundPaddingBottom() -> Int32
+
+  @JavaMethod
+  open fn getCompoundPaddingLeft() -> Int32
+
+  @JavaMethod
+  open fn getCompoundPaddingRight() -> Int32
+
+  @JavaMethod
+  open fn getCompoundPaddingStart() -> Int32
+
+  @JavaMethod
+  open fn getCompoundPaddingEnd() -> Int32
+
+  @JavaMethod
+  open fn getExtendedPaddingTop() -> Int32
+
+  @JavaMethod
+  open fn getExtendedPaddingBottom() -> Int32
+
+  @JavaMethod
+  open fn getTotalPaddingLeft() -> Int32
+
+  @JavaMethod
+  open fn getTotalPaddingRight() -> Int32
+
+  @JavaMethod
+  open fn getTotalPaddingStart() -> Int32
+
+  @JavaMethod
+  open fn getTotalPaddingBottom() -> Int32
+
+  @JavaMethod
+  open fn setCompoundDrawablePadding(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getCompoundDrawablePadding() -> Int32
+
+  @JavaMethod
+  open fn setFirstBaselineToTopHeight(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setLastBaselineToBottomHeight(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getFirstBaselineToTopHeight() -> Int32
+
+  @JavaMethod
+  open fn getLastBaselineToBottomHeight() -> Int32
+
+  @JavaMethod
+  open fn setTextSelectHandle(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setTextSelectHandleLeft(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setTextSelectHandleRight(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setTextCursorDrawable(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setElegantTextHeight(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setFallbackLineSpacing(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isFallbackLineSpacing() -> Boolean
+
+  @JavaMethod
+  open fn isElegantTextHeight() -> Boolean
+
+  @JavaMethod
+  open fn getFontFeatureSettings() -> String
+
+  @JavaMethod
+  open fn getFontVariationSettings() -> String
+
+  @JavaMethod
+  open fn setHyphenationFrequency(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getHyphenationFrequency() -> Int32
+
+  @JavaMethod
+  open fn setLineBreakWordStyle(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getLineBreakWordStyle() -> Int32
+
+  @JavaMethod
+  open fn setJustificationMode(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getJustificationMode() -> Int32
+
+  @JavaMethod
+  open fn setFontFeatureSettings(_ arg0: String)
+
+  @JavaMethod
+  open fn setFontVariationSettings(_ arg0: String) -> Boolean
+
+  @JavaMethod
+  open fn getCurrentTextColor() -> Int32
+
+  @JavaMethod
+  open fn setShowSoftInputOnFocus(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getShowSoftInputOnFocus() -> Boolean
+
+  @JavaMethod
+  open fn getCurrentHintTextColor() -> Int32
+
+  @JavaMethod
+  open fn setHorizontallyScrolling(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isHorizontallyScrollable() -> Boolean
+
+  @JavaMethod
+  open fn getLineSpacingMultiplier() -> Float
+
+  @JavaMethod
+  open fn getLineSpacingExtra() -> Float
+
+  @JavaMethod
+  open fn setOnEditorActionListener(_ arg0: TextView.OnEditorActionListener?)
+
+  @JavaMethod
+  open fn setPrivateImeOptions(_ arg0: String)
+
+  @JavaMethod
+  open fn getPrivateImeOptions() -> String
+
+  @JavaMethod
+  open fn setTextIsSelectable(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setIncludeFontPadding(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getIncludeFontPadding() -> Boolean
+
+  @JavaMethod
+  open fn moveCursorToVisibleOffset() -> Boolean
+
+  @JavaMethod
+  open fn setMarqueeRepeatLimit(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getMarqueeRepeatLimit() -> Int32
+
+  @JavaMethod
+  open fn setSelectAllOnFocus(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn didTouchFocusSelect() -> Boolean
+
+  @JavaMethod
+  open fn isInputMethodTarget() -> Boolean
+
+  @JavaMethod
+  open fn onTextContextMenuItem(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn isSuggestionsEnabled() -> Boolean
+
+  @JavaMethod
+  open fn getOffsetForPosition(_ arg0: Float, _ arg1: Float) -> Int32
+
+  @JavaMethod
+  open override fn getAccessibilityClassName() -> CharSequence!
+
+  @JavaMethod
+  open override fn performLongClick() -> Boolean
+
+  @JavaMethod
+  open override fn showContextMenu() -> Boolean
+
+  @JavaMethod
+  open override fn showContextMenu(_ arg0: Float, _ arg1: Float) -> Boolean
+
+  @JavaMethod
+  open override fn getAutofillType() -> Int32
+
+  @JavaMethod
+  open override fn getAutofillHints() -> [String]
+
+  @JavaMethod
+  open override fn setEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open override fn cancelLongPress()
+
+  @JavaMethod
+  open override fn onScrollChanged(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open override fn onAttachedToWindow()
+
+  @JavaMethod
+  open fn getDefaultEditable() -> Boolean
+
+  @JavaMethod
+  open fn getLineHeight() -> Int32
+
+  @JavaMethod
+  open fn getTotalPaddingEnd() -> Int32
+
+  @JavaMethod
+  open fn getTotalPaddingTop() -> Int32
+
+  @JavaMethod
+  open fn getAutoLinkMask() -> Int32
+
+  @JavaMethod
+  open fn setTextAppearance(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getTextLocale() -> Locale!
+
+  @JavaMethod
+  open fn setTextLocale(_ arg0: Locale?)
+
+  @JavaMethod
+  open fn getTextSize() -> Float
+
+  @JavaMethod
+  open fn setTextSize(_ arg0: Int32, _ arg1: Float)
+
+  @JavaMethod
+  open fn setTextSize(_ arg0: Float)
+
+  @JavaMethod
+  open fn getTextSizeUnit() -> Int32
+
+  @JavaMethod
+  open fn getTextScaleX() -> Float
+
+  @JavaMethod
+  open fn setTextScaleX(_ arg0: Float)
+
+  @JavaMethod
+  open fn getLetterSpacing() -> Float
+
+  @JavaMethod
+  open fn setLetterSpacing(_ arg0: Float)
+
+  @JavaMethod
+  open fn setBreakStrategy(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getBreakStrategy() -> Int32
+
+  @JavaMethod
+  open fn setLineBreakStyle(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getLineBreakStyle() -> Int32
+
+  @JavaMethod
+  open fn setTextColor(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setHighlightColor(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getHighlightColor() -> Int32
+
+  @JavaMethod
+  open fn setShadowLayer(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Int32)
+
+  @JavaMethod
+  open fn getShadowRadius() -> Float
+
+  @JavaMethod
+  open fn getShadowDx() -> Float
+
+  @JavaMethod
+  open fn getShadowDy() -> Float
+
+  @JavaMethod
+  open fn getShadowColor() -> Int32
+
+  @JavaMethod
+  open fn setAutoLinkMask(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setLinksClickable(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getLinksClickable() -> Boolean
+
+  @JavaMethod
+  open fn setHintTextColor(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setLinkTextColor(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setGravity(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getGravity() -> Int32
+
+  @JavaMethod
+  open fn getPaintFlags() -> Int32
+
+  @JavaMethod
+  open fn setPaintFlags(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setMinLines(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getMinLines() -> Int32
+
+  @JavaMethod
+  open fn setMinHeight(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getMinHeight() -> Int32
+
+  @JavaMethod
+  open fn setMaxLines(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getMaxLines() -> Int32
+
+  @JavaMethod
+  open fn setMaxHeight(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getMaxHeight() -> Int32
+
+  @JavaMethod
+  open fn setLines(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setHeight(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setMinEms(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getMinEms() -> Int32
+
+  @JavaMethod
+  open fn setMinWidth(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getMinWidth() -> Int32
+
+  @JavaMethod
+  open fn setMaxEms(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getMaxEms() -> Int32
+
+  @JavaMethod
+  open fn setMaxWidth(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getMaxWidth() -> Int32
+
+  @JavaMethod
+  open fn setEms(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setWidth(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setLineSpacing(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn setLineHeight(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setFreezesText(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getFreezesText() -> Boolean
+
+  @JavaMethod
+  open fn setText(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setText(_ arg0: CharSequence?, _ arg1: TextView.BufferType?)
+
+  @JavaMethod
+  open fn setText(_ arg0: Int32, _ arg1: TextView.BufferType?)
+
+  @JavaMethod
+  open fn setText(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn setText(_ arg0: [UInt16], _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn setTextKeepState(_ arg0: CharSequence?, _ arg1: TextView.BufferType?)
+
+  @JavaMethod
+  open fn setTextKeepState(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn setHint(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setHint(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn getHint() -> CharSequence!
+
+  @JavaMethod
+  open fn isSingleLine() -> Boolean
+
+  @JavaMethod
+  open fn setInputType(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setRawInputType(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getInputType() -> Int32
+
+  @JavaMethod
+  open fn setImeOptions(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getImeOptions() -> Int32
+
+  @JavaMethod
+  open fn setImeActionLabel(_ arg0: CharSequence?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getImeActionLabel() -> CharSequence!
+
+  @JavaMethod
+  open fn getImeActionId() -> Int32
+
+  @JavaMethod
+  open fn onEditorAction(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setInputExtras(_ arg0: Int32) throws
+
+  @JavaMethod
+  open fn getError() -> CharSequence!
+
+  @JavaMethod
+  open fn setFrame(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32) -> Boolean
+
+  @JavaMethod
+  open fn onPreDraw() -> Boolean
+
+  @JavaMethod
+  open fn isTextSelectable() -> Boolean
+
+  @JavaMethod
+  open fn getLineCount() -> Int32
+
+  @JavaMethod
+  open fn beginBatchEdit()
+
+  @JavaMethod
+  open fn endBatchEdit()
+
+  @JavaMethod
+  open fn onBeginBatchEdit()
+
+  @JavaMethod
+  open fn onEndBatchEdit()
+
+  @JavaMethod
+  open fn bringPointIntoView(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn getSelectionStart() -> Int32
+
+  @JavaMethod
+  open fn getSelectionEnd() -> Int32
+
+  @JavaMethod
+  open fn hasSelection() -> Boolean
+
+  @JavaMethod
+  open fn setSingleLine()
+
+  @JavaMethod
+  open fn setSingleLine(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setAllCaps(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isAllCaps() -> Boolean
+
+  @JavaMethod
+  open fn setCursorVisible(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isCursorVisible() -> Boolean
+
+  @JavaMethod
+  open fn onTextChanged(_ arg0: CharSequence?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn onSelectionChanged(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn clearComposingText()
+
+  @JavaMethod
+  open fn setScroller(_ arg0: Scroller?)
+
+  @JavaMethod
+  open override fn computeScroll()
+
+  @JavaMethod
+  open override fn setPadding(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open override fn setPaddingRelative(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open override fn setSelected(_ arg0: Boolean)
+
+  @JavaMethod
+  open override fn getBaseline() -> Int32
+
+  @JavaMethod
+  open override fn onMeasure(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open override fn onLayout(_ arg0: Boolean, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32)
+
+  @JavaMethod
+  open fn setAutoSizeTextTypeUniformWithConfiguration(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn setAutoSizeTextTypeUniformWithPresetSizes(_ arg0: [Int32], _ arg1: Int32)
+
+  @JavaMethod
+  open fn setCompoundDrawablesWithIntrinsicBounds(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn setCompoundDrawablesRelativeWithIntrinsicBounds(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+}
+
+public extension TextView {
+    
+    var text: String {
+        get {
+            getText().toString()
+        }
+        set {
+            setText(JavaString(newValue).as(CharSequence.this))
+        }
+    }
+    
+    var gravity: ViewGravity {
+        get {
+            ViewGravity(rawValue: getGravity())
+        }
+        set {
+            setGravity(newValue.rawValue)
+        }
+    }
+}
+
+extension JavaClass<TextView> {
+  @JavaStaticField(isFinal: true)
+  public var AUTO_SIZE_TEXT_TYPE_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AUTO_SIZE_TEXT_TYPE_UNIFORM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACCESSIBILITY_LIVE_REGION_ASSERTIVE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACCESSIBILITY_LIVE_REGION_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACCESSIBILITY_LIVE_REGION_POLITE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_FLAG_INCLUDE_NOT_IMPORTANT_VIEWS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_DATE: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_DAY: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_MONTH: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_YEAR: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_CREDIT_CARD_NUMBER: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_CREDIT_CARD_SECURITY_CODE: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_EMAIL_ADDRESS: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_NAME: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_PASSWORD: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_PHONE: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_POSTAL_ADDRESS: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_POSTAL_CODE: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_HINT_USERNAME: String
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_TYPE_DATE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_TYPE_LIST: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_TYPE_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_TYPE_TEXT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AUTOFILL_TYPE_TOGGLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DRAG_FLAG_ACCESSIBILITY_ACTION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DRAG_FLAG_GLOBAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DRAG_FLAG_GLOBAL_PERSISTABLE_URI_PERMISSION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DRAG_FLAG_GLOBAL_PREFIX_URI_PERMISSION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DRAG_FLAG_GLOBAL_URI_READ: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DRAG_FLAG_GLOBAL_URI_WRITE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DRAG_FLAG_OPAQUE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DRAWING_CACHE_QUALITY_AUTO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DRAWING_CACHE_QUALITY_HIGH: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DRAWING_CACHE_QUALITY_LOW: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FIND_VIEWS_WITH_CONTENT_DESCRIPTION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FIND_VIEWS_WITH_TEXT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FOCUSABLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FOCUSABLES_ALL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FOCUSABLES_TOUCH_MODE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FOCUSABLE_AUTO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FOCUS_BACKWARD: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FOCUS_DOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FOCUS_FORWARD: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FOCUS_LEFT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FOCUS_RIGHT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FOCUS_UP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var GONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var HAPTIC_FEEDBACK_ENABLED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_ACCESSIBILITY_AUTO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_ACCESSIBILITY_NO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_ACCESSIBILITY_YES: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_AUTOFILL_AUTO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_AUTOFILL_NO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_AUTOFILL_YES: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_AUTOFILL_YES_EXCLUDE_DESCENDANTS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_CONTENT_CAPTURE_AUTO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_CONTENT_CAPTURE_NO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_CONTENT_CAPTURE_NO_EXCLUDE_DESCENDANTS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_CONTENT_CAPTURE_YES: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IMPORTANT_FOR_CONTENT_CAPTURE_YES_EXCLUDE_DESCENDANTS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var INVISIBLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var KEEP_SCREEN_ON: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LAYER_TYPE_HARDWARE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LAYER_TYPE_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LAYER_TYPE_SOFTWARE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LAYOUT_DIRECTION_INHERIT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LAYOUT_DIRECTION_LOCALE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LAYOUT_DIRECTION_LTR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LAYOUT_DIRECTION_RTL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MEASURED_HEIGHT_STATE_SHIFT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MEASURED_SIZE_MASK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MEASURED_STATE_MASK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MEASURED_STATE_TOO_SMALL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NOT_FOCUSABLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NO_ID: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var OVER_SCROLL_ALWAYS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var OVER_SCROLL_IF_CONTENT_SCROLLS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var OVER_SCROLL_NEVER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCREEN_STATE_OFF: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCREEN_STATE_ON: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLLBARS_INSIDE_INSET: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLLBARS_INSIDE_OVERLAY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLLBARS_OUTSIDE_INSET: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLLBARS_OUTSIDE_OVERLAY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLLBAR_POSITION_DEFAULT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLLBAR_POSITION_LEFT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLLBAR_POSITION_RIGHT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_AXIS_HORIZONTAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_AXIS_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_AXIS_VERTICAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_CAPTURE_HINT_AUTO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_CAPTURE_HINT_EXCLUDE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_CAPTURE_HINT_EXCLUDE_DESCENDANTS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_CAPTURE_HINT_INCLUDE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_INDICATOR_BOTTOM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_INDICATOR_END: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_INDICATOR_LEFT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_INDICATOR_RIGHT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_INDICATOR_START: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_INDICATOR_TOP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOUND_EFFECTS_ENABLED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATUS_BAR_HIDDEN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATUS_BAR_VISIBLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_FLAG_FULLSCREEN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_FLAG_HIDE_NAVIGATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_FLAG_IMMERSIVE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_FLAG_IMMERSIVE_STICKY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_FLAG_LAYOUT_STABLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_FLAG_LIGHT_STATUS_BAR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_FLAG_LOW_PROFILE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_FLAG_VISIBLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYSTEM_UI_LAYOUT_FLAGS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_ALIGNMENT_CENTER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_ALIGNMENT_GRAVITY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_ALIGNMENT_INHERIT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_ALIGNMENT_TEXT_END: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_ALIGNMENT_TEXT_START: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_ALIGNMENT_VIEW_END: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_ALIGNMENT_VIEW_START: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_DIRECTION_ANY_RTL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_DIRECTION_FIRST_STRONG: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_DIRECTION_FIRST_STRONG_LTR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_DIRECTION_FIRST_STRONG_RTL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_DIRECTION_INHERIT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_DIRECTION_LOCALE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_DIRECTION_LTR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT_DIRECTION_RTL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var VISIBLE: Int32
+}

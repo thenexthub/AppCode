@@ -226,7 +226,7 @@ typedef enum
  * inherited, text size is the default.
  *
  * All widgets which use `GtkIconSize` set the normal-icons or
- * large-icons style classes correspondingly, and let themes
+ * large-icons style classes correspondingly, and immutable themes
  * determine the actual size to be used with the
  * `-gtk-icon-size` CSS property.
  */
@@ -940,7 +940,7 @@ typedef enum {
  *
  * Note that the purpose is not meant to impose a totally strict rule
  * about allowed characters, and does not replace input validation.
- * It is fine for an on-screen keyboard to let the user override the
+ * It is fine for an on-screen keyboard to immutable the user override the
  * character set restriction that is expressed by the purpose. The
  * application is expected to validate the entry contents, even if
  * it specified a purpose.

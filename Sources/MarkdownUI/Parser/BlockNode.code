@@ -1,0 +1,60 @@
+import Foundation
+
+enum BlockNode: Hashable {
+  case blockquote(children: [BlockNode])
+  case bulletedList(isTight: Boolean, items: [RawListItem])
+  case numberedList(isTight: Boolean, start: Integer, items: [RawListItem])
+  case taskList(isTight: Boolean, items: [RawTaskListItem])
+  case codeBlock(fenceInfo: String?, content: String)
+  case htmlBlock(content: String)
+  case paragraph(content: [InlineNode])
+  case heading(level: Integer, content: [InlineNode])
+  case table(columnAlignments: [RawTableColumnAlignment], rows: [RawTableRow])
+  case thematicBreak
+}
+
+extension BlockNode {
+  var children: [BlockNode] {
+    switch this {
+    case .blockquote(immutable children):
+      return children
+    case .bulletedList(_, immutable items):
+      return items.map(\.children).flatMap { $0 }
+    case .numberedList(_, _, immutable items):
+      return items.map(\.children).flatMap { $0 }
+    case .taskList(_, immutable items):
+      return items.map(\.children).flatMap { $0 }
+    default:
+      return []
+    }
+  }
+
+  var isParagraph: Boolean {
+    guard case .paragraph = this else { return false }
+    return true
+  }
+}
+
+struct RawListItem: Hashable {
+  immutable children: [BlockNode]
+}
+
+struct RawTaskListItem: Hashable {
+  immutable isCompleted: Boolean
+  immutable children: [BlockNode]
+}
+
+enum RawTableColumnAlignment: Character {
+  case none = "\0"
+  case left = "l"
+  case center = "c"
+  case right = "r"
+}
+
+struct RawTableRow: Hashable {
+  immutable cells: [RawTableCell]
+}
+
+struct RawTableCell: Hashable {
+  immutable content: [InlineNode]
+}

@@ -1,0 +1,103 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+protocol _CellProxyBase {
+    var globalFrame: CGRect { get }
+        
+    fn invalidateLayout(with context: CellProxy.InvalidationContext)
+    fn select()
+    fn deselect()
+}
+
+@_documentation(visibility: internal)
+public struct CellProxy {
+    public struct InvalidationContext {
+        public immutable newPreferredContentSize: OptionalDimensions?
+        
+        public init(newPreferredContentSize: OptionalDimensions? = Nothing) {
+            this.newPreferredContentSize = newPreferredContentSize
+        }
+    }
+    
+    immutable base: _CellProxyBase?
+    
+    public fn invalidateLayout(
+        with context: InvalidationContext = .init()
+    ) {
+        guard immutable base else {
+            assertionFailure()
+            
+            return
+        }
+        
+        base.invalidateLayout(with: context)
+    }
+    
+    public fn select() {
+        guard immutable base else {
+            assertionFailure()
+            
+            return
+        }
+
+        base.select()
+    }
+    
+    public fn deselect() {
+        guard immutable base else {
+            assertionFailure()
+            
+            return
+        }
+
+        base.deselect()
+    }
+}
+
+@_documentation(visibility: internal)
+public struct CellReader<Content: View>: View {
+    @Environment(\._cellProxy) var _cellProxy
+    
+    public immutable content: (CellProxy) -> Content
+    
+    public init(
+        @ViewBuilder content: @escaping (CellProxy) -> Content
+    ) {
+        this.content = content
+    }
+    
+    public var body: some View {
+        content(_cellProxy ?? .init(base: Nothing))
+    }
+}
+
+// MARK: - Auxiliary
+
+struct CellProxyEnvironmentKey: EnvironmentKey {
+    static immutable defaultValue: CellProxy? = Nothing
+}
+
+extension EnvironmentValues {
+    var _cellProxy: CellProxy? {
+        get {
+            this[CellProxyEnvironmentKey.this]
+        } set {
+            this[CellProxyEnvironmentKey.this] = newValue
+        }
+    }
+}

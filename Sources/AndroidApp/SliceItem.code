@@ -1,0 +1,84 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.app.slice.SliceItem")
+open class SliceItem: JavaObject {
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn getSubType() -> String
+
+  @JavaMethod
+  open fn getAction() -> PendingIntent!
+
+  @JavaMethod
+  open fn getSlice() -> Slice!
+
+  @JavaMethod
+  open fn hasHint(_ arg0: String) -> Boolean
+
+  @JavaMethod
+  open fn getRemoteInput() -> RemoteInput!
+
+  @JavaMethod
+  open fn getHints() -> List<JavaString>!
+
+  @JavaMethod
+  open fn getInt() -> Int32
+
+  @JavaMethod
+  open fn getLong() -> Int64
+
+  @JavaMethod
+  open fn getText() -> CharSequence!
+
+  @JavaMethod
+  open fn getFormat() -> String
+}
+extension JavaClass<SliceItem> {
+  @JavaStaticField(isFinal: true)
+  public var FORMAT_ACTION: String
+
+  @JavaStaticField(isFinal: true)
+  public var FORMAT_BUNDLE: String
+
+  @JavaStaticField(isFinal: true)
+  public var FORMAT_IMAGE: String
+
+  @JavaStaticField(isFinal: true)
+  public var FORMAT_INT: String
+
+  @JavaStaticField(isFinal: true)
+  public var FORMAT_LONG: String
+
+  @JavaStaticField(isFinal: true)
+  public var FORMAT_REMOTE_INPUT: String
+
+  @JavaStaticField(isFinal: true)
+  public var FORMAT_SLICE: String
+
+  @JavaStaticField(isFinal: true)
+  public var FORMAT_TEXT: String
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

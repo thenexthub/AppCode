@@ -82,7 +82,7 @@ public struct Picker<Label: View, SelectionValue: Hashable, Content: View>: View
             _PickerElement(valueIndex: nestedIndex, content: nestedChildren[nestedIndex])
           }
         } else {
-          _PickerElement(valueIndex: nil, content: children[index])
+          _PickerElement(valueIndex: Nothing, content: children[index])
         }
       }
     }

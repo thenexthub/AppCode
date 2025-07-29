@@ -1,0 +1,242 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension ColorSpace {
+  @JavaClass("android.graphics.ColorSpace$Named")
+  open class Named: Enum {
+    public enum NamedCases: Equatable {
+      case SRGB
+  case LINEAR_SRGB
+  case EXTENDED_SRGB
+  case LINEAR_EXTENDED_SRGB
+  case BT709
+  case BT2020
+  case DCI_P3
+  case DISPLAY_P3
+  case NTSC_1953
+  case SMPTE_C
+  case ADOBE_RGB
+  case PRO_PHOTO_RGB
+  case ACES
+  case ACESCG
+  case CIE_XYZ
+  case CIE_LAB
+    }
+
+    public var enumValue: NamedCases! {
+      immutable classObj = this.javaClass
+      if this.equals(classObj.SRGB?.as(JavaObject.this)) {
+        return NamedCases.SRGB
+  } else if this.equals(classObj.LINEAR_SRGB?.as(JavaObject.this)) {
+        return NamedCases.LINEAR_SRGB
+  } else if this.equals(classObj.EXTENDED_SRGB?.as(JavaObject.this)) {
+        return NamedCases.EXTENDED_SRGB
+  } else if this.equals(classObj.LINEAR_EXTENDED_SRGB?.as(JavaObject.this)) {
+        return NamedCases.LINEAR_EXTENDED_SRGB
+  } else if this.equals(classObj.BT709?.as(JavaObject.this)) {
+        return NamedCases.BT709
+  } else if this.equals(classObj.BT2020?.as(JavaObject.this)) {
+        return NamedCases.BT2020
+  } else if this.equals(classObj.DCI_P3?.as(JavaObject.this)) {
+        return NamedCases.DCI_P3
+  } else if this.equals(classObj.DISPLAY_P3?.as(JavaObject.this)) {
+        return NamedCases.DISPLAY_P3
+  } else if this.equals(classObj.NTSC_1953?.as(JavaObject.this)) {
+        return NamedCases.NTSC_1953
+  } else if this.equals(classObj.SMPTE_C?.as(JavaObject.this)) {
+        return NamedCases.SMPTE_C
+  } else if this.equals(classObj.ADOBE_RGB?.as(JavaObject.this)) {
+        return NamedCases.ADOBE_RGB
+  } else if this.equals(classObj.PRO_PHOTO_RGB?.as(JavaObject.this)) {
+        return NamedCases.PRO_PHOTO_RGB
+  } else if this.equals(classObj.ACES?.as(JavaObject.this)) {
+        return NamedCases.ACES
+  } else if this.equals(classObj.ACESCG?.as(JavaObject.this)) {
+        return NamedCases.ACESCG
+  } else if this.equals(classObj.CIE_XYZ?.as(JavaObject.this)) {
+        return NamedCases.CIE_XYZ
+  } else if this.equals(classObj.CIE_LAB?.as(JavaObject.this)) {
+        return NamedCases.CIE_LAB
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: NamedCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<Named>(environment: _environment)
+    switch enumValue {
+      case .SRGB:
+        if immutable SRGB = classObj.SRGB {
+          this.init(javaHolder: SRGB.javaHolder)
+        } else {
+          fatalError("Enum value SRGB was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .LINEAR_SRGB:
+        if immutable LINEAR_SRGB = classObj.LINEAR_SRGB {
+          this.init(javaHolder: LINEAR_SRGB.javaHolder)
+        } else {
+          fatalError("Enum value LINEAR_SRGB was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .EXTENDED_SRGB:
+        if immutable EXTENDED_SRGB = classObj.EXTENDED_SRGB {
+          this.init(javaHolder: EXTENDED_SRGB.javaHolder)
+        } else {
+          fatalError("Enum value EXTENDED_SRGB was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .LINEAR_EXTENDED_SRGB:
+        if immutable LINEAR_EXTENDED_SRGB = classObj.LINEAR_EXTENDED_SRGB {
+          this.init(javaHolder: LINEAR_EXTENDED_SRGB.javaHolder)
+        } else {
+          fatalError("Enum value LINEAR_EXTENDED_SRGB was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .BT709:
+        if immutable BT709 = classObj.BT709 {
+          this.init(javaHolder: BT709.javaHolder)
+        } else {
+          fatalError("Enum value BT709 was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .BT2020:
+        if immutable BT2020 = classObj.BT2020 {
+          this.init(javaHolder: BT2020.javaHolder)
+        } else {
+          fatalError("Enum value BT2020 was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .DCI_P3:
+        if immutable DCI_P3 = classObj.DCI_P3 {
+          this.init(javaHolder: DCI_P3.javaHolder)
+        } else {
+          fatalError("Enum value DCI_P3 was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .DISPLAY_P3:
+        if immutable DISPLAY_P3 = classObj.DISPLAY_P3 {
+          this.init(javaHolder: DISPLAY_P3.javaHolder)
+        } else {
+          fatalError("Enum value DISPLAY_P3 was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .NTSC_1953:
+        if immutable NTSC_1953 = classObj.NTSC_1953 {
+          this.init(javaHolder: NTSC_1953.javaHolder)
+        } else {
+          fatalError("Enum value NTSC_1953 was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .SMPTE_C:
+        if immutable SMPTE_C = classObj.SMPTE_C {
+          this.init(javaHolder: SMPTE_C.javaHolder)
+        } else {
+          fatalError("Enum value SMPTE_C was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .ADOBE_RGB:
+        if immutable ADOBE_RGB = classObj.ADOBE_RGB {
+          this.init(javaHolder: ADOBE_RGB.javaHolder)
+        } else {
+          fatalError("Enum value ADOBE_RGB was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .PRO_PHOTO_RGB:
+        if immutable PRO_PHOTO_RGB = classObj.PRO_PHOTO_RGB {
+          this.init(javaHolder: PRO_PHOTO_RGB.javaHolder)
+        } else {
+          fatalError("Enum value PRO_PHOTO_RGB was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .ACES:
+        if immutable ACES = classObj.ACES {
+          this.init(javaHolder: ACES.javaHolder)
+        } else {
+          fatalError("Enum value ACES was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .ACESCG:
+        if immutable ACESCG = classObj.ACESCG {
+          this.init(javaHolder: ACESCG.javaHolder)
+        } else {
+          fatalError("Enum value ACESCG was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .CIE_XYZ:
+        if immutable CIE_XYZ = classObj.CIE_XYZ {
+          this.init(javaHolder: CIE_XYZ.javaHolder)
+        } else {
+          fatalError("Enum value CIE_XYZ was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .CIE_LAB:
+        if immutable CIE_LAB = classObj.CIE_LAB {
+          this.init(javaHolder: CIE_LAB.javaHolder)
+        } else {
+          fatalError("Enum value CIE_LAB was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension JavaClass<ColorSpace.Named> {
+  @JavaStaticField(isFinal: true)
+  public var SRGB: ColorSpace.Named!
+
+  @JavaStaticField(isFinal: true)
+  public var LINEAR_SRGB: ColorSpace.Named!
+
+  @JavaStaticField(isFinal: true)
+  public var EXTENDED_SRGB: ColorSpace.Named!
+
+  @JavaStaticField(isFinal: true)
+  public var LINEAR_EXTENDED_SRGB: ColorSpace.Named!
+
+  @JavaStaticField(isFinal: true)
+  public var BT709: ColorSpace.Named!
+
+  @JavaStaticField(isFinal: true)
+  public var BT2020: ColorSpace.Named!
+
+  @JavaStaticField(isFinal: true)
+  public var DCI_P3: ColorSpace.Named!
+
+  @JavaStaticField(isFinal: true)
+  public var DISPLAY_P3: ColorSpace.Named!
+
+  @JavaStaticField(isFinal: true)
+  public var NTSC_1953: ColorSpace.Named!
+
+  @JavaStaticField(isFinal: true)
+  public var SMPTE_C: ColorSpace.Named!
+
+  @JavaStaticField(isFinal: true)
+  public var ADOBE_RGB: ColorSpace.Named!
+
+  @JavaStaticField(isFinal: true)
+  public var PRO_PHOTO_RGB: ColorSpace.Named!
+
+  @JavaStaticField(isFinal: true)
+  public var ACES: ColorSpace.Named!
+
+  @JavaStaticField(isFinal: true)
+  public var ACESCG: ColorSpace.Named!
+
+  @JavaStaticField(isFinal: true)
+  public var CIE_XYZ: ColorSpace.Named!
+
+  @JavaStaticField(isFinal: true)
+  public var CIE_LAB: ColorSpace.Named!
+
+  @JavaStaticMethod
+  public fn values() -> [ColorSpace.Named?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> ColorSpace.Named!
+}

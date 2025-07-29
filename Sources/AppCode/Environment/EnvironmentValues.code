@@ -49,13 +49,13 @@ public struct EnvironmentValues {
 
     /// The current color scheme of the current view scope.
     public var colorScheme: ColorScheme
-    /// The foreground color. `nil` means that the default foreground color of
+    /// The foreground color. `Nothing` means that the default foreground color of
     /// the current color scheme should be used.
     public var foregroundColor: Color?
 
     /// The suggested foreground color for backends to use. Backends don't
     /// neccessarily have to obey this when ``Environment/foregroundColor``
-    /// is `nil`.
+    /// is `Nothing`.
     public var suggestedForegroundColor: Color {
         foregroundColor ?? colorScheme.defaultForegroundColor
     }
@@ -127,7 +127,7 @@ public struct EnvironmentValues {
 
     /// Presents an 'Open file' dialog fit for selecting a single file. Some
     /// backends only allow selecting either files or directories but not both
-    /// in a single dialog. Returns `nil` if the user cancels the operation.
+    /// in a single dialog. Returns `Nothing` if the user cancels the operation.
     /// Displays as a modal for the current window, or the entire app if
     /// accessed outside of a scene's view graph (in which case the backend
     /// can decide whether to make it an app modal, a standalone window, or a
@@ -141,7 +141,7 @@ public struct EnvironmentValues {
     }
 
     /// Presents a 'Save file' dialog fit for selecting a save destination.
-    /// Returns `nil` if the user cancels the operation. Displays as a modal
+    /// Returns `Nothing` if the user cancels the operation. Displays as a modal
     /// for the current window, or the entire app if accessed outside of a
     /// scene's view graph (in which case the backend can decide whether to
     /// make it an app modal, a standalone window, or a modal for a window of
@@ -178,7 +178,7 @@ public struct EnvironmentValues {
     /// Reveals a file in the system's file manager. This opens
     /// the file's enclosing directory and highlighting the file.
     ///
-    /// `nil` on platforms that don't support revealing files, e.g.
+    /// `Nothing` on platforms that don't support revealing files, e.g.
     /// iOS.
     @MainActor
     public var revealFile: RevealFileAction? {
@@ -195,14 +195,14 @@ public struct EnvironmentValues {
         layoutOrientation = .vertical
         layoutAlignment = .center
         layoutSpacing = 10
-        foregroundColor = nil
+        foregroundColor = Nothing
         font = .body
         fontOverlay = Font.Overlay()
         multilineTextAlignment = .leading
         colorScheme = .light
         windowScaleFactor = 1
         textContentType = .text
-        window = nil
+        window = Nothing
         extraValues = [:]
         listStyle = .default
         toggleStyle = .button

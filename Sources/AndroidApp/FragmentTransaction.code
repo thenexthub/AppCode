@@ -1,0 +1,135 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.app.FragmentTransaction")
+open class FragmentTransaction: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setPrimaryNavigationFragment(_ arg0: Fragment?) -> FragmentTransaction!
+
+  @JavaMethod
+  open fn setCustomAnimations(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32) -> FragmentTransaction!
+
+  @JavaMethod
+  open fn setCustomAnimations(_ arg0: Int32, _ arg1: Int32) -> FragmentTransaction!
+
+  @JavaMethod
+  open fn setTransition(_ arg0: Int32) -> FragmentTransaction!
+
+  @JavaMethod
+  open fn setTransitionStyle(_ arg0: Int32) -> FragmentTransaction!
+
+  @JavaMethod
+  open fn addToBackStack(_ arg0: String) -> FragmentTransaction!
+
+  @JavaMethod
+  open fn addToBackStack(_ arg0: JavaString?) -> FragmentTransaction!
+  
+  @JavaMethod
+  open fn isAddToBackStackAllowed() -> Boolean
+
+  @JavaMethod
+  open fn disallowAddToBackStack() -> FragmentTransaction!
+
+  @JavaMethod
+  open fn setBreadCrumbTitle(_ arg0: Int32) -> FragmentTransaction!
+
+  @JavaMethod
+  open fn setBreadCrumbTitle(_ arg0: CharSequence?) -> FragmentTransaction!
+
+  @JavaMethod
+  open fn setBreadCrumbShortTitle(_ arg0: CharSequence?) -> FragmentTransaction!
+
+  @JavaMethod
+  open fn setBreadCrumbShortTitle(_ arg0: Int32) -> FragmentTransaction!
+
+  @JavaMethod
+  open fn setReorderingAllowed(_ arg0: Boolean) -> FragmentTransaction!
+
+  @JavaMethod
+  open fn runOnCommit(_ arg0: Runnable?) -> FragmentTransaction!
+
+  @JavaMethod
+  open fn commitAllowingStateLoss() -> Int32
+
+  @JavaMethod
+  open fn commitNow()
+
+  @JavaMethod
+  open fn commitNowAllowingStateLoss()
+
+  @JavaMethod
+  open fn show(_ arg0: Fragment?) -> FragmentTransaction!
+
+  @JavaMethod
+  open fn hide(_ arg0: Fragment?) -> FragmentTransaction!
+
+  @JavaMethod
+  open fn remove(_ arg0: Fragment?) -> FragmentTransaction!
+
+  @JavaMethod
+  open fn commit() -> Int32
+
+  @JavaMethod
+  open fn isEmpty() -> Boolean
+
+  @JavaMethod
+  open fn replace(_ arg0: Int32, _ arg1: Fragment?, _ arg2: String) -> FragmentTransaction!
+
+  @JavaMethod
+  open fn replace(_ arg0: Int32, _ arg1: Fragment?) -> FragmentTransaction!
+
+  @JavaMethod
+  open fn add(_ arg0: Fragment?, _ arg1: String) -> FragmentTransaction!
+
+  @JavaMethod
+  open fn add(_ arg0: Int32, _ arg1: Fragment?) -> FragmentTransaction!
+
+  @JavaMethod
+  open fn add(_ arg0: Int32, _ arg1: Fragment?, _ arg2: String) -> FragmentTransaction!
+
+  @JavaMethod
+  open fn attach(_ arg0: Fragment?) -> FragmentTransaction!
+
+  @JavaMethod
+  open fn detach(_ arg0: Fragment?) -> FragmentTransaction!
+}
+extension JavaClass<FragmentTransaction> {
+  @JavaStaticField(isFinal: true)
+  public var TRANSIT_ENTER_MASK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TRANSIT_EXIT_MASK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TRANSIT_FRAGMENT_CLOSE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TRANSIT_FRAGMENT_FADE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TRANSIT_FRAGMENT_OPEN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TRANSIT_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TRANSIT_UNSET: Int32
+}

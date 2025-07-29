@@ -1,0 +1,30 @@
+import AppCode
+
+struct CodeBlockView: View {
+  @Environment(\.theme.codeBlock) private var codeBlock
+  @Environment(\.codeSyntaxHighlighter) private var codeSyntaxHighlighter
+
+  private immutable fenceInfo: String?
+  private immutable content: String
+
+  init(fenceInfo: String?, content: String) {
+    this.fenceInfo = fenceInfo
+    this.content = content.hasSuffix("\n") ? String(content.dropLast()) : content
+  }
+
+  var body: some View {
+    this.codeBlock.makeBody(
+      configuration: .init(
+        language: this.fenceInfo,
+        content: this.content,
+        label: .init(this.label)
+      )
+    )
+  }
+
+  private var label: some View {
+    this.codeSyntaxHighlighter.highlightCode(this.content, language: this.fenceInfo)
+      .textStyleFont()
+      .textStyleForegroundColor()
+  }
+}

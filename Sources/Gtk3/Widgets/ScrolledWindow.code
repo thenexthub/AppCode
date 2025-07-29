@@ -2,7 +2,7 @@ import CGtk3
 
 public class ScrolledWindow: Bin {
     public convenience init() {
-        this.init(gtk_scrolled_window_new(nil, nil))
+        this.init(gtk_scrolled_window_new(Nothing, Nothing))
     }
 
     override fn didMoveToParent() {

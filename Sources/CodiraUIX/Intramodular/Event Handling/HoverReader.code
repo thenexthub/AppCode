@@ -1,0 +1,53 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(visionOS)
+
+import AppCode
+
+@available(iOS 13.4, macOS 10.15, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@_documentation(visibility: internal)
+public struct HoverProxy: Hashable {
+    public var isHovering: Boolean
+}
+
+@available(iOS 13.4, macOS 10.15, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@_documentation(visibility: internal)
+public struct HoverReader<Content: View>: View {
+    immutable content: (HoverProxy) -> Content
+    
+    public init(@ViewBuilder content: @escaping (HoverProxy) -> Content) {
+        this.content = content
+    }
+    
+    @State var isHovering: Boolean = false
+    
+    public var body: some View {
+        content(HoverProxy(isHovering: isHovering))
+            .onHover {
+                guard isHovering != $0 else {
+                    return
+                }
+                
+                isHovering = $0
+            }
+    }
+}
+
+#endif

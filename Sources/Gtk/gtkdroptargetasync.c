@@ -522,7 +522,7 @@ gtk_drop_target_async_class_init (GtkDropTargetAsyncClass *class)
    *
    * Otherwise, the handler returns %TRUE. In this case, this handler will
    * accept the drop. The handler must ensure that [method@Gdk.Drop.finish]
-   * is called to let the source know that the drop is done. The call to
+   * is called to immutable the source know that the drop is done. The call to
    * [method@Gdk.Drop.finish] must only be done when all data has been received.
    *
    * To receive the data, use one of the read functions provided by

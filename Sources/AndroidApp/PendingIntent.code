@@ -1,0 +1,89 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.app.PendingIntent")
+open class PendingIntent: JavaObject {
+  @JavaMethod
+  open fn send(_ arg0: Int32) throws
+
+  @JavaMethod
+  open fn send() throws
+
+  @JavaMethod
+  open fn getTargetPackage() -> String
+
+  @JavaMethod
+  open fn getCreatorPackage() -> String
+
+  @JavaMethod
+  open fn getCreatorUid() -> Int32
+
+  @JavaMethod
+  open fn isActivity() -> Boolean
+
+  @JavaMethod
+  open fn isForegroundService() -> Boolean
+
+  @JavaMethod
+  open fn isService() -> Boolean
+
+  @JavaMethod
+  open fn isBroadcast() -> Boolean
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+
+  @JavaMethod
+  open fn cancel()
+
+  @JavaMethod
+  open fn isImmutable() -> Boolean
+}
+extension JavaClass<PendingIntent> {
+  @JavaStaticField(isFinal: true)
+  public var FLAG_CANCEL_CURRENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_IMMUTABLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_MUTABLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_NO_CREATE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_ONE_SHOT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_UPDATE_CURRENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

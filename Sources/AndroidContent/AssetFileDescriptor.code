@@ -1,0 +1,76 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.content.res.AssetFileDescriptor", implements: Parcelable.this, Closeable.this)
+open class AssetFileDescriptor: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ParcelFileDescriptor?, _ arg1: Int64, _ arg2: Int64, _ arg3: Bundle?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ParcelFileDescriptor?, _ arg1: Int64, _ arg2: Int64, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getExtras() -> Bundle!
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getParcelFileDescriptor() -> ParcelFileDescriptor!
+
+  @JavaMethod
+  open fn getFileDescriptor() -> FileDescriptor!
+
+  @JavaMethod
+  open fn getStartOffset() -> Int64
+
+  @JavaMethod
+  open fn getDeclaredLength() -> Int64
+
+  @JavaMethod
+  open fn createInputStream() throws -> FileInputStream!
+
+  @JavaMethod
+  open fn createOutputStream() throws -> FileOutputStream!
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn getLength() -> Int64
+
+  @JavaMethod
+  open fn close() throws
+}
+extension JavaClass<AssetFileDescriptor> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<AssetFileDescriptor>!
+
+  @JavaStaticField(isFinal: true)
+  public var UNKNOWN_LENGTH: Int64
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

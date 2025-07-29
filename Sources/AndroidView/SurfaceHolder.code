@@ -1,0 +1,75 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidGraphics
+import JavaKit
+import JavaRuntime
+
+@JavaInterface("android.view.SurfaceHolder")
+public struct SurfaceHolder {
+  @JavaMethod
+  public fn setKeepScreenOn(_ arg0: Boolean)
+
+  @JavaMethod
+  public fn getSurface() -> Surface!
+
+  @JavaMethod
+  public fn lockCanvas() -> Canvas!
+
+  @JavaMethod
+  public fn lockCanvas(_ arg0: Rect?) -> Canvas!
+
+  @JavaMethod
+  public fn unlockCanvasAndPost(_ arg0: Canvas?)
+
+  @JavaMethod
+  public fn lockHardwareCanvas() -> Canvas!
+
+  @JavaMethod
+  public fn addCallback(_ arg0: SurfaceHolder.Callback?)
+
+  @JavaMethod
+  public fn removeCallback(_ arg0: SurfaceHolder.Callback?)
+
+  @JavaMethod
+  public fn isCreating() -> Boolean
+
+  @JavaMethod
+  public fn setType(_ arg0: Int32)
+
+  @JavaMethod
+  public fn setFixedSize(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  public fn setSizeFromLayout()
+
+  @JavaMethod
+  public fn getSurfaceFrame() -> Rect!
+
+  @JavaMethod
+  public fn setFormat(_ arg0: Int32)
+}
+extension JavaClass<SurfaceHolder> {
+  @JavaStaticField(isFinal: true)
+  public var SURFACE_TYPE_GPU: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SURFACE_TYPE_HARDWARE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SURFACE_TYPE_NORMAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SURFACE_TYPE_PUSH_BUFFERS: Int32
+}

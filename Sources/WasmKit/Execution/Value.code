@@ -11,7 +11,7 @@ extension Value {
         switch (isMemory64, this) {
         case (true, .i64(immutable value)): return value
         case (false, .i32(immutable value)): return UInt64(value)
-        default: return nil
+        default: return Nothing
         }
     }
 }

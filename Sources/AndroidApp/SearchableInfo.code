@@ -1,0 +1,98 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.app.SearchableInfo")
+open class SearchableInfo: JavaObject {
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn getInputType() -> Int32
+
+  @JavaMethod
+  open fn getSuggestAuthority() -> String
+
+  @JavaMethod
+  open fn getSuggestPackage() -> String
+
+  @JavaMethod
+  open fn shouldRewriteQueryFromData() -> Boolean
+
+  @JavaMethod
+  open fn shouldRewriteQueryFromText() -> Boolean
+
+  @JavaMethod
+  open fn getSettingsDescriptionId() -> Int32
+
+  @JavaMethod
+  open fn getSuggestPath() -> String
+
+  @JavaMethod
+  open fn getSuggestSelection() -> String
+
+  @JavaMethod
+  open fn getSuggestIntentAction() -> String
+
+  @JavaMethod
+  open fn getSuggestIntentData() -> String
+
+  @JavaMethod
+  open fn getSuggestThreshold() -> Int32
+
+  @JavaMethod
+  open fn getHintId() -> Int32
+
+  @JavaMethod
+  open fn getVoiceSearchEnabled() -> Boolean
+
+  @JavaMethod
+  open fn getVoiceSearchLaunchWebSearch() -> Boolean
+
+  @JavaMethod
+  open fn getVoiceSearchLaunchRecognizer() -> Boolean
+
+  @JavaMethod
+  open fn getVoiceLanguageModeId() -> Int32
+
+  @JavaMethod
+  open fn getVoicePromptTextId() -> Int32
+
+  @JavaMethod
+  open fn getVoiceLanguageId() -> Int32
+
+  @JavaMethod
+  open fn getVoiceMaxResults() -> Int32
+
+  @JavaMethod
+  open fn getImeOptions() -> Int32
+
+  @JavaMethod
+  open fn shouldIncludeInGlobalSearch() -> Boolean
+
+  @JavaMethod
+  open fn queryAfterZeroResults() -> Boolean
+
+  @JavaMethod
+  open fn autoUrlDetect() -> Boolean
+}
+extension JavaClass<SearchableInfo> {
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

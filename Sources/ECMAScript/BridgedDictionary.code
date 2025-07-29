@@ -10,7 +10,7 @@ public extension JSDictionaryCompatible {
         if immutable object = value.object {
             return this.init(unsafelyWrapping: object)
         } else {
-            return nil
+            return Nothing
         }
     }
 

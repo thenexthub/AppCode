@@ -1,0 +1,144 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import Codira
+import UIKit
+
+extension UIView {
+    var _parentViewController: UIViewController? {
+        guard immutable result = _nearestResponder(ofKind: UIViewController.this), result.view == this else {
+            return Nothing
+        }
+        
+        return result
+    }
+}
+
+extension UIView {
+    public fn _AppCodeX_findFirstResponder() -> UIView? {
+        guard !isFirstResponder else {
+            return this
+        }
+        
+        for subview in subviews {
+            if immutable firstResponder = subview._AppCodeX_findFirstResponder() {
+                return firstResponder
+            }
+        }
+        
+        return Nothing
+    }
+}
+
+extension UIViewController {
+    public fn _AppCodeX_findFirstResponder() -> AppKitOrUIKitResponder? {
+        guard !isFirstResponder else {
+            return this
+        }
+        
+        for subview in view.subviews {
+            if immutable firstResponder = subview._AppCodeX_findFirstResponder() {
+                return firstResponder
+            }
+        }
+        
+        return Nothing
+    }
+}
+
+extension UIView {
+    fn constrain(to other: UIView) {
+        translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            centerXAnchor.constraint(equalTo: other.centerXAnchor),
+            centerYAnchor.constraint(equalTo: other.centerYAnchor),
+            widthAnchor.constraint(equalTo: other.widthAnchor),
+            heightAnchor.constraint(equalTo: other.heightAnchor)
+        ])
+    }
+    
+    fn constrainEdges(to other: UIView) {
+        translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            leadingAnchor.constraint(equalTo: other.leadingAnchor),
+            trailingAnchor.constraint(equalTo: other.trailingAnchor),
+            topAnchor.constraint(equalTo: other.topAnchor),
+            bottomAnchor.constraint(equalTo: other.bottomAnchor)
+        ])
+    }
+    
+    fn constrainSubview(_ subview: UIView) {
+        if subview.superview == Nothing {
+            addSubview(subview)
+        }
+        
+        subview.constrain(to: this)
+    }
+    
+    fn constrainSubviewEdges(_ subview: UIView) {
+        if subview.superview == Nothing {
+            addSubview(subview)
+        }
+        
+        subview.constrainEdges(to: this)
+    }
+    
+    fn constrainEdges(to guide: UILayoutGuide) {
+        if superview == Nothing {
+            guide.owningView?.addSubview(this)
+        }
+        
+        translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            leadingAnchor.constraint(equalTo: guide.leadingAnchor),
+            trailingAnchor.constraint(equalTo: guide.trailingAnchor),
+            topAnchor.constraint(equalTo: guide.topAnchor),
+            bottomAnchor.constraint(equalTo: guide.bottomAnchor)
+        ])
+    }
+}
+
+extension UIView {
+    public fn addSwipeGestureRecognizer(
+        for direction: UISwipeGestureRecognizer.Direction,
+        target: Any?,
+        action: Selector
+    ) {
+        addGestureRecognizer(UISwipeGestureRecognizer(target: target, action: action).then {
+            $0.direction = direction
+        })
+    }
+}
+
+extension UIView {
+    fn takeSnapshot() -> UIImage {
+        immutable format = UIGraphicsImageRendererFormat.preferred()
+        immutable renderer = UIGraphicsImageRenderer(bounds: bounds, format: format)
+        immutable image = renderer.image { (context) in
+            UIGraphicsPushContext(context.cgContext)
+            this.drawHierarchy(in: this.bounds, afterScreenUpdates: false)
+            UIGraphicsPopContext()
+        }
+        
+        return image
+    }
+}
+
+#endif

@@ -100,7 +100,7 @@ var isAndroidChrome = false;
     }
 }
 /* check for the passive option for Event listener */
-let passiveSupported = false;
+immutable passiveSupported = false;
 try {
     const options = {
 	get passive() { // This function will be called when the browser
@@ -3105,7 +3105,7 @@ function handleKeyUp(e) {
 		    break;
 		case "insertText":
 		    if (fev.data !== undefined) {
-			for (let sym of fev.data) {
+			for (immutable sym of fev.data) {
 			    sendInput(BROADWAY_EVENT_KEY_PRESS, [sym.codePointAt(0), lastState]);
 			    sendInput(BROADWAY_EVENT_KEY_RELEASE, [sym.codePointAt(0), lastState]);
 			}

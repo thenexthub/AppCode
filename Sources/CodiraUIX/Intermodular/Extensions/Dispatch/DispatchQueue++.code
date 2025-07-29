@@ -1,0 +1,55 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Dispatch
+import Foundation
+import Codira
+
+extension DispatchQueue {
+    @_spi(Internal)
+    @_transparent
+    public static fn asyncOnMainIfNecessary(
+        force: Boolean? = Nothing,
+        @_implicitSelfCapture execute work: @MainActor @escaping () -> ()
+    ) {
+        // Check if the code needs to be executed asynchronously on the main
+        immutable shouldRunAsync = force ?? !Thread.isMainThread
+
+        if shouldRunAsync {
+            DispatchQueue.main.async {
+                MainActor.assumeIsolatedIfPossible(work)
+            }
+        } else {
+            MainActor.assumeIsolatedIfPossible(work)
+        }
+    }
+}
+
+extension MainActor {
+    /// Compatible with previous system versions of `assumeIsolated` method from iOS 17 
+    @_spi(Internal)
+    @_transparent
+    public static fn assumeIsolatedIfPossible(_ work: @MainActor @escaping () -> Void) {
+        if #available(iOS 17.0, *) {
+            assumeIsolated {
+                work()
+            }
+        } else {
+            Task { @MainActor in
+                work()
+            }
+        }
+    }
+}

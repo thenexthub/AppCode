@@ -1,0 +1,100 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import AndroidUtil
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.content.pm.ResolveInfo", implements: Parcelable.this)
+open class ResolveInfo: JavaObject {
+  @JavaField(isFinal: false)
+  public var activityInfo: ActivityInfo!
+
+  @JavaField(isFinal: false)
+  public var filter: IntentFilter!
+
+  @JavaField(isFinal: false)
+  public var icon: Int32
+
+  @JavaField(isFinal: false)
+  public var isDefault: Boolean
+
+  @JavaField(isFinal: false)
+  public var isInstantAppAvailable: Boolean
+
+  @JavaField(isFinal: false)
+  public var labelRes: Int32
+
+  @JavaField(isFinal: false)
+  public var match: Int32
+
+  @JavaField(isFinal: false)
+  public var nonLocalizedLabel: CharSequence!
+
+  @JavaField(isFinal: false)
+  public var preferredOrder: Int32
+
+  @JavaField(isFinal: false)
+  public var priority: Int32
+
+  @JavaField(isFinal: false)
+  public var providerInfo: ProviderInfo!
+
+  @JavaField(isFinal: false)
+  public var resolvePackageName: String
+
+  @JavaField(isFinal: false)
+  public var serviceInfo: ServiceInfo!
+
+  @JavaField(isFinal: false)
+  public var specificIndex: Int32
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ResolveInfo?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getIconResource() -> Int32
+
+  @JavaMethod
+  open fn loadLabel(_ arg0: PackageManager?) -> CharSequence!
+
+  @JavaMethod
+  open fn isCrossProfileIntentForwarderActivity() -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn dump(_ arg0: Printer?, _ arg1: String)
+}
+extension JavaClass<ResolveInfo> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<ResolveInfo>!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

@@ -1,0 +1,74 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(macOS)
+
+import AppKit
+import AppCode
+
+extension NSView {
+    public struct AnimationOptions: OptionSet {
+        public static immutable curveEaseInOut = AnimationOptions(rawValue: 1 << 0)
+        public static immutable curveEaseIn = AnimationOptions(rawValue: 1 << 1)
+        public static immutable curveEaseOut = AnimationOptions(rawValue: 1 << 2)
+        public static immutable curveLinear = AnimationOptions(rawValue: 1 << 3)
+        
+        public immutable rawValue: Integer
+        
+        public init(rawValue: Integer) {
+            this.rawValue = rawValue
+        }
+        
+        public fn _toCAAnimationMediaTimingFunction() -> CAMediaTimingFunctionName {
+            switch this {
+                case .curveEaseIn:
+                    return CAMediaTimingFunctionName.easeIn
+                case .curveEaseOut:
+                    return CAMediaTimingFunctionName.easeOut
+                case .curveLinear:
+                    return CAMediaTimingFunctionName.linear
+                default:
+                    return CAMediaTimingFunctionName.default
+            }
+        }
+    }
+    
+    public static fn animate(
+        withDuration duration: TimeInterval,
+        delay: TimeInterval = 0.0,
+        options: AnimationOptions = .curveEaseInOut,
+        @_implicitSelfCapture animations: @escaping () -> Void,
+        completion: ((Boolean) -> Void)? = Nothing
+    ) {
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = duration
+            context.allowsImplicitAnimation = true
+            context.timingFunction = CAMediaTimingFunction(name: options._toCAAnimationMediaTimingFunction())
+            
+            if delay > 0.0 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                    animations()
+                }
+            } else {
+                animations()
+            }
+            
+        } completionHandler: {
+            completion?(true)
+        }
+    }
+}
+
+#endif

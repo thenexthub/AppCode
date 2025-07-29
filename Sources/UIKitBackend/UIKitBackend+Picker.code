@@ -64,7 +64,7 @@ final class UIPickerViewPicker: WrapperWidget<UIPickerView>, Picker, UIPickerVie
                 case 1...options.count:
                     options[row - 1]
                 default:
-                    nil
+                    Nothing
             }
         }
 
@@ -73,7 +73,7 @@ final class UIPickerViewPicker: WrapperWidget<UIPickerView>, Picker, UIPickerVie
             didSelectRow row: Integer,
             inComponent _: Integer
         ) {
-            onSelect?(row > 0 ? row - 1 : nil)
+            onSelect?(row > 0 ? row - 1 : Nothing)
         }
     #endif
 }
@@ -110,7 +110,7 @@ final class UITableViewPicker: WrapperWidget<UITableView>, Picker, UITableViewDe
             child.selectRow(
                 at: IndexPath(row: index, section: 0), animated: true, scrollPosition: .middle)
         } else {
-            child.selectRow(at: nil, animated: false, scrollPosition: .none)
+            child.selectRow(at: Nothing, animated: false, scrollPosition: .none)
         }
     }
 

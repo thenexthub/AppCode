@@ -1,0 +1,63 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.view.VerifiedKeyEvent", implements: Parcelable.this)
+open class VerifiedKeyEvent: VerifiedInputEvent {
+  @JavaMethod
+  open fn getFlag(_ arg0: Int32) -> JavaBoolean!
+
+  @JavaMethod
+  open fn getAction() -> Int32
+
+  @JavaMethod
+  open fn getDownTimeNanos() -> Int64
+
+  @JavaMethod
+  open fn getKeyCode() -> Int32
+
+  @JavaMethod
+  open fn getScanCode() -> Int32
+
+  @JavaMethod
+  open fn getMetaState() -> Int32
+
+  @JavaMethod
+  open override fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open override fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn getRepeatCount() -> Int32
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+}
+extension JavaClass<VerifiedKeyEvent> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<VerifiedKeyEvent>!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

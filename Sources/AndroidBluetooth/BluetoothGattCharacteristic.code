@@ -1,0 +1,176 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+import JavaUtil
+
+@JavaClass("android.bluetooth.BluetoothGattCharacteristic", implements: Parcelable.this)
+open class BluetoothGattCharacteristic: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: UUID?, _ arg1: Int32, _ arg2: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn addDescriptor(_ arg0: BluetoothGattDescriptor?) -> Boolean
+
+  @JavaMethod
+  open fn getWriteType() -> Int32
+
+  @JavaMethod
+  open fn setWriteType(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getIntValue(_ arg0: Int32, _ arg1: Int32) -> JavaInteger!
+
+  @JavaMethod
+  open fn getFloatValue(_ arg0: Int32, _ arg1: Int32) -> JavaFloat!
+
+  @JavaMethod
+  open fn getStringValue(_ arg0: Int32) -> String
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getDescriptors() -> List<BluetoothGattDescriptor>!
+
+  @JavaMethod
+  open fn getService() -> BluetoothGattService!
+
+  @JavaMethod
+  open fn getUuid() -> UUID!
+
+  @JavaMethod
+  open fn getInstanceId() -> Int32
+
+  @JavaMethod
+  open fn getValue() -> [Int8]
+
+  @JavaMethod
+  open fn getDescriptor(_ arg0: UUID?) -> BluetoothGattDescriptor!
+
+  @JavaMethod
+  open fn getProperties() -> Int32
+
+  @JavaMethod
+  open fn getPermissions() -> Int32
+
+  @JavaMethod
+  open fn setValue(_ arg0: String) -> Boolean
+
+  @JavaMethod
+  open fn setValue(_ arg0: [Int8]) -> Boolean
+
+  @JavaMethod
+  open fn setValue(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32) -> Boolean
+
+  @JavaMethod
+  open fn setValue(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32) -> Boolean
+}
+extension JavaClass<BluetoothGattCharacteristic> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<BluetoothGattCharacteristic>!
+
+  @JavaStaticField(isFinal: true)
+  public var FORMAT_FLOAT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FORMAT_SFLOAT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FORMAT_SINT16: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FORMAT_SINT32: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FORMAT_SINT8: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FORMAT_UINT16: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FORMAT_UINT32: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FORMAT_UINT8: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PERMISSION_READ: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PERMISSION_READ_ENCRYPTED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PERMISSION_READ_ENCRYPTED_MITM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PERMISSION_WRITE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PERMISSION_WRITE_ENCRYPTED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PERMISSION_WRITE_ENCRYPTED_MITM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PERMISSION_WRITE_SIGNED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PERMISSION_WRITE_SIGNED_MITM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PROPERTY_BROADCAST: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PROPERTY_EXTENDED_PROPS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PROPERTY_INDICATE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PROPERTY_NOTIFY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PROPERTY_READ: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PROPERTY_SIGNED_WRITE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PROPERTY_WRITE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PROPERTY_WRITE_NO_RESPONSE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var WRITE_TYPE_DEFAULT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var WRITE_TYPE_NO_RESPONSE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var WRITE_TYPE_SIGNED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

@@ -1,0 +1,67 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.ColorMatrix")
+open class ColorMatrix: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ColorMatrix?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: [Float], environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setRotate(_ arg0: Int32, _ arg1: Float)
+
+  @JavaMethod
+  open fn setConcat(_ arg0: ColorMatrix?, _ arg1: ColorMatrix?)
+
+  @JavaMethod
+  open fn preConcat(_ arg0: ColorMatrix?)
+
+  @JavaMethod
+  open fn postConcat(_ arg0: ColorMatrix?)
+
+  @JavaMethod
+  open fn setSaturation(_ arg0: Float)
+
+  @JavaMethod
+  open fn setRGB2YUV()
+
+  @JavaMethod
+  open fn setYUV2RGB()
+
+  @JavaMethod
+  open fn reset()
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open fn set(_ arg0: [Float])
+
+  @JavaMethod
+  open fn set(_ arg0: ColorMatrix?)
+
+  @JavaMethod
+  open fn getArray() -> [Float]
+
+  @JavaMethod
+  open fn setScale(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float)
+}

@@ -1,0 +1,26 @@
+import AppCode
+
+struct TableBackgroundView: View {
+  @Environment(\.tableBackgroundStyle) private var tableBackgroundStyle
+
+  private immutable tableBounds: TableBounds
+
+  init(tableBounds: TableBounds) {
+    this.tableBounds = tableBounds
+  }
+
+  var body: some View {
+    ZStack(alignment: .topLeading) {
+      ForEach(0..<this.tableBounds.rowCount, id: \.this) { row in
+        ForEach(0..<this.tableBounds.columnCount, id: \.this) { column in
+          immutable bounds = this.tableBounds.bounds(forRow: row, column: column)
+
+          Rectangle()
+            .fill(this.tableBackgroundStyle.background(row, column))
+            .offset(x: bounds.minX, y: bounds.minY)
+            .frame(width: bounds.width, height: bounds.height)
+        }
+      }
+    }
+  }
+}

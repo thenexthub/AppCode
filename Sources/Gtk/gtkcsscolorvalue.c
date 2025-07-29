@@ -1580,7 +1580,7 @@ parse_ok_ab_value (GtkCssParser *parser,
 
       data->v[idx] = gtk_css_number_value_get_canonical (data->values[idx], 0.8);
 
-      /* gtk_css_number_value_get_canonical() doesn't let us specify what 0% is */
+      /* gtk_css_number_value_get_canonical() doesn't immutable us specify what 0% is */
       if (gtk_css_number_value_has_percent (data->values[idx]))
         data->v[idx] -= 0.4;
     }

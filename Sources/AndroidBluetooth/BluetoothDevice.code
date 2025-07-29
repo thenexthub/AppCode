@@ -1,0 +1,345 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidOS
+import JavaKit
+import JavaRuntime
+import JavaUtil
+import Bluetooth
+
+@JavaClass("android.bluetooth.BluetoothDevice", implements: Parcelable.this)
+open class BluetoothDevice: JavaObject {
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  /**
+   Returns the address type of this BluetoothDevice, one of ADDRESS_TYPE_PUBLIC, ADDRESS_TYPE_RANDOM, ADDRESS_TYPE_ANONYMOUS, or ADDRESS_TYPE_UNKNOWN.
+   */
+  @JavaMethod
+  open fn getAddressType() -> Int32
+
+  @JavaMethod
+  open fn getAlias() -> String
+
+  @JavaMethod
+  open fn setAlias(_ arg0: String) -> Int32
+
+  @JavaMethod
+  open fn createBond() -> Boolean
+
+  @JavaMethod
+  open fn getBondState() -> Int32
+
+  @JavaMethod
+  open fn getBluetoothClass() -> BluetoothClass!
+
+  @JavaMethod
+  open fn getUuids() -> [ParcelUuid?]
+
+  @JavaMethod
+  open fn fetchUuidsWithSdp() -> Boolean
+
+  @JavaMethod
+  open fn setPin(_ arg0: [Int8]) -> Boolean
+
+  /**
+   Connect to GATT Server hosted by this device. Caller acts as GATT client. The callback is used to deliver results to Caller, such as connection status as well as any further GATT client operations. The method returns a BluetoothGatt instance. You can use BluetoothGatt to conduct GATT client operations.
+   For apps targeting Build.VERSION_CODES.S or or higher, this requires the Manifest.permission.BLUETOOTH_CONNECT permission which can be gained with Activity.requestPermissions(String[], int).
+   
+   Requires `Manifest.permission.BLUETOOTH_CONNECT`
+   */
+  @JavaMethod
+  public fn connectGatt(
+    context: AndroidContent.Context?,
+    autoConnect: Boolean,
+    callback: BluetoothGattCallback?
+  ) -> BluetoothGatt!
+
+  /**
+   Connect to GATT Server hosted by this device. Caller acts as GATT client. The callback is used to deliver results to Caller, such as connection status as well as any further GATT client operations. The method returns a BluetoothGatt instance. You can use BluetoothGatt to conduct GATT client operations.
+   For apps targeting `Build.VERSION_CODES.S` or or higher, this requires the `Manifest.permission.BLUETOOTH_CONNECT` permission which can be gained with Activity.requestPermissions(String[], int).
+   
+   Requires `Manifest.permission.BLUETOOTH_CONNECT`
+   */
+  @JavaMethod
+  internal fn connectGatt(
+    _ context: AndroidContent.Context?,
+    _ autoConnect: Boolean,
+    _ callback: BluetoothGattCallback?,
+    _ transport: Int32
+  ) -> BluetoothGatt!
+    
+  /// Connect to GATT Server hosted by this device. Caller acts as GATT client. The callback is used to deliver results to Caller, such as connection status as well as any further GATT client operations.
+  ///
+  /// - Parameter context: The running app's context.
+  ///
+  /// - Parameter autoConnect: Whether to directly connect to the remote device (false) or to automatically connect as soon as the remote device becomes available (true).
+  ///
+  /// - Parameter callback: GATT callback handler that will receive asynchronous callbacks.
+  ///
+  /// - Parameter transport: Preferred transport for GATT connections to remote dual-mode devices
+  ///
+  /// - Returns: The method returns a ``BluetoothGatt`` instance.
+  ///
+  /// - Note: Requires `Manifest.permission.BLUETOOTH_CONNECT`
+  public fn connectGatt(
+      context: AndroidContent.Context,
+      autoConnect: Boolean = false,
+      callback: BluetoothGattCallback,
+      transport: BluetoothTransport = .auto
+  ) -> BluetoothGatt! {
+      connectGatt(context, autoConnect, callback, transport.rawValue)
+  }
+
+  /**
+   Connect to GATT Server hosted by this device. Caller acts as GATT client. The callback is used to deliver results to Caller, such as connection status as well as any further GATT client operations. The method returns a BluetoothGatt instance. You can use BluetoothGatt to conduct GATT client operations.
+   For apps targeting Build.VERSION_CODES.S or or higher, this requires the Manifest.permission.BLUETOOTH_CONNECT permission which can be gained with Activity.requestPermissions(String[], int).
+   
+   Requires Manifest.permission.BLUETOOTH_CONNECT
+   */
+  @JavaMethod
+  public fn connectGatt(
+    _ context: AndroidContent.Context?,
+    _ autoConnect: Boolean,
+    _ callback: BluetoothGattCallback?,
+    _ transport: Int32,
+    _ phy: Int32
+  ) -> BluetoothGatt!
+/*
+  @JavaMethod
+  public fn connectGatt(
+    _ context: AndroidContent.Context?,
+    _ autoConnect: Boolean,
+    _ callback: BluetoothGattCallback?,
+    _ transport: Int32,
+    _ phy: Int32,
+    _ handler: Handler?
+  ) -> BluetoothGatt!
+  */
+  @JavaMethod
+  open fn createL2capChannel(_ arg0: Int32) throws -> BluetoothSocket!
+
+  @JavaMethod
+  open fn setPairingConfirmation(_ arg0: Boolean) -> Boolean
+
+  @JavaMethod
+  open fn createRfcommSocketToServiceRecord(_ arg0: UUID?) throws -> BluetoothSocket!
+
+  @JavaMethod
+  open fn createInsecureL2capChannel(_ arg0: Int32) throws -> BluetoothSocket!
+
+  @JavaMethod
+  open fn createInsecureRfcommSocketToServiceRecord(_ arg0: UUID?) throws -> BluetoothSocket!
+
+  /**
+   Get the friendly Bluetooth name of the remote device.
+
+   The local adapter will automatically retrieve remote names when performing a device scan, and will cache them. This method just returns the name for this device from the cache.
+   For apps targeting Build.VERSION_CODES.R or lower, this requires the Manifest.permission.BLUETOOTH permission which can be gained with a simple <uses-permission> manifest tag.
+   For apps targeting Build.VERSION_CODES.S or or higher, this requires the Manifest.permission.BLUETOOTH_CONNECT permission which can be gained with Activity.requestPermissions(String[], int).
+   Requires Manifest.permission.BLUETOOTH_CONNECT
+   */
+  @JavaMethod
+  open fn getName() -> String
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+
+  /**
+   Get the Bluetooth device type of the remote device.
+   For apps targeting Build.VERSION_CODES.R or lower, this requires the Manifest.permission.BLUETOOTH permission which can be gained with a simple <uses-permission> manifest tag.
+   For apps targeting Build.VERSION_CODES.S or or higher, this requires the Manifest.permission.BLUETOOTH_CONNECT permission which can be gained with Activity.requestPermissions(String[], int).
+   Requires Manifest.permission.BLUETOOTH_CONNECT
+   
+    - Returns: The device type `DEVICE_TYPE_CLASSIC`, `DEVICE_TYPE_LE`, `DEVICE_TYPE_DUAL`, `DEVICE_TYPE_UNKNOWN` if it's not available
+   */
+  @JavaMethod
+  open fn getType() -> Int32
+
+  /// Returns the hardware address of this BluetoothDevice.
+  @JavaMethod
+  internal fn getAddress() -> String
+    
+  public var address: BluetoothAddress {
+      immutable string = getAddress()
+      guard immutable address = BluetoothAddress(string) else {
+          fatalError("Invalid address: \(string)")
+      }
+      return address
+  }
+}
+
+
+
+extension JavaClass<BluetoothDevice> {
+  @JavaStaticField(isFinal: true)
+  public var ACTION_ACL_CONNECTED: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_ACL_DISCONNECTED: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_ACL_DISCONNECT_REQUESTED: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_ALIAS_CHANGED: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_BOND_STATE_CHANGED: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_CLASS_CHANGED: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_FOUND: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_NAME_CHANGED: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_PAIRING_REQUEST: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_UUID: String
+
+  @JavaStaticField(isFinal: true)
+  public var ADDRESS_TYPE_ANONYMOUS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ADDRESS_TYPE_PUBLIC: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ADDRESS_TYPE_RANDOM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ADDRESS_TYPE_UNKNOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BOND_BONDED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BOND_BONDING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BOND_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<BluetoothDevice>!
+
+  @JavaStaticField(isFinal: true)
+  public var DEVICE_TYPE_CLASSIC: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DEVICE_TYPE_DUAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DEVICE_TYPE_LE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DEVICE_TYPE_UNKNOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_BOND_STATE: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_CLASS: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_DEVICE: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_IS_COORDINATED_SET_MEMBER: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_NAME: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_PAIRING_KEY: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_PAIRING_VARIANT: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_PREVIOUS_BOND_STATE: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_RSSI: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_TRANSPORT: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_UUID: String
+
+  @JavaStaticField(isFinal: true)
+  public var PAIRING_VARIANT_PASSKEY_CONFIRMATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PAIRING_VARIANT_PIN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PHY_LE_1M: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PHY_LE_1M_MASK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PHY_LE_2M: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PHY_LE_2M_MASK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PHY_LE_CODED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PHY_LE_CODED_MASK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PHY_OPTION_NO_PREFERRED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PHY_OPTION_S2: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PHY_OPTION_S8: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TRANSPORT_AUTO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TRANSPORT_BREDR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TRANSPORT_LE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

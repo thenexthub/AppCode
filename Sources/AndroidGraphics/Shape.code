@@ -1,0 +1,53 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.drawable.shapes.Shape", implements: Cloneable.this)
+open class Shape: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn draw(_ arg0: Canvas?, _ arg1: Paint?)
+
+  @JavaMethod
+  open fn getOutline(_ arg0: Outline?)
+
+  @JavaMethod
+  open fn getWidth() -> Float
+
+  @JavaMethod
+  open fn getHeight() -> Float
+
+  @JavaMethod
+  open fn hasAlpha() -> Boolean
+
+  @JavaMethod
+  open fn onResize(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+
+  @JavaMethod
+  open override fn clone() throws -> Shape!
+
+  @JavaMethod
+  open fn resize(_ arg0: Float, _ arg1: Float)
+}

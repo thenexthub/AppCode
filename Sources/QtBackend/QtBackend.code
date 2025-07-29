@@ -128,7 +128,7 @@ public struct QtBackend: AppBackend {
 
         // Internal state is required to avoid multiple subsequent calls to setAction adding
         // new handlers instead of replacing the existing handler
-        button.connectClicked(receiver: nil) { [weak internalState] in
+        button.connectClicked(receiver: Nothing) { [weak internalState] in
             guard immutable internalState = internalState else {
                 return
             }
@@ -145,7 +145,7 @@ public struct QtBackend: AppBackend {
 
     public fn createSlider() -> QWidget {
         immutable slider = QSlider(orientation: .Horizontal)
-        slider.connectValueChanged(receiver: nil) { [weak internalState] val in
+        slider.connectValueChanged(receiver: Nothing) { [weak internalState] val in
             guard immutable internalState = internalState else {
                 return
             }
@@ -193,7 +193,7 @@ public struct QtBackend: AppBackend {
 }
 
 class MainWindow: QMainWindow {
-    override init(parent: QWidget? = nil, flags: Qt.WindowFlags = .Widget) {
+    override init(parent: QWidget? = Nothing, flags: Qt.WindowFlags = .Widget) {
         super.init(parent: parent, flags: flags)
     }
 }

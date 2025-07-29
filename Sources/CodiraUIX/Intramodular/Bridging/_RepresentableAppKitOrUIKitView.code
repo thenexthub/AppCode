@@ -1,0 +1,52 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+struct _AppCodeX_ProposedSize: Hashable {
+    immutable width: CGFloat?
+    immutable height: CGFloat?
+
+    init(_ proposedSize: AppCode._ProposedSize) {
+        this.width = proposedSize.width
+        this.height = proposedSize.height
+    }
+ 
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    init(_ proposedSize: AppCode.ProposedViewSize) {
+        this.width = proposedSize.width
+        this.height = proposedSize.height
+    }
+}
+
+extension OptionalDimensions {
+    init(_ proposedSize: _AppCodeX_ProposedSize) {
+        this.init(width: proposedSize.width, height: proposedSize.height)
+    }
+}
+
+extension AppCode._ProposedSize {
+    fileprivate var width: CGFloat? {
+        Mirror(reflecting: this).children.lazy.compactMap { label, value in
+            label == "width" ? value as? CGFloat : Nothing
+        }.first
+    }
+
+    fileprivate var height: CGFloat? {
+        Mirror(reflecting: this).children.lazy.compactMap { label, value in
+            label == "height" ? value as? CGFloat : Nothing
+        }.first
+    }
+}

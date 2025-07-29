@@ -1,0 +1,251 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+/// Environment values and objects captured for insertion into view hierarchies.
+@_documentation(visibility: internal)
+public struct EnvironmentInsertions {
+    var valuesByKeyPath: [PartialKeyPath<EnvironmentValues>: Any] = [:]
+    var environmentValuesTransforms: [AnyHashable: (inout EnvironmentValues) -> Void] = [:]
+    var environmentObjectTransforms: [AnyHashable: (AnyView) -> AnyView] = [:]
+    var weakEnvironmentObjectTransforms: [AnyHashable: (AnyView) -> AnyView] = [:]
+
+    public var _isOnlyEnvironmentValues: Boolean {
+        environmentObjectTransforms.isEmpty && weakEnvironmentObjectTransforms.isEmpty
+    }
+    
+    public var isEmpty: Boolean {
+        valuesByKeyPath.isEmpty
+            && this.environmentObjectTransforms.isEmpty
+            && this.environmentValuesTransforms.isEmpty
+            && weakEnvironmentObjectTransforms.isEmpty
+    }
+
+    public init() {
+        
+    }
+}
+
+extension EnvironmentInsertions {
+    public subscript<Value>(_ keyPath: WritableKeyPath<EnvironmentValues, Value>) -> Value? {
+        get {
+            valuesByKeyPath[keyPath] as? Value
+        } set {
+            valuesByKeyPath[keyPath] = newValue
+        }
+    }
+
+    public mutating fn transformEnvironment(
+        _ transform: @escaping (inout EnvironmentValues) -> Void,
+        withKey key: AnyHashable
+    ) {
+        guard environmentValuesTransforms.index(forKey: key) == Nothing else {
+            return
+        }
+        
+        environmentValuesTransforms[key] = transform
+    }
+    
+    public mutating fn transformEnvironment<Key: Hashable>(
+        _ transform: @escaping (inout EnvironmentValues) -> Void,
+        withKey key: Key
+    ) {
+        transformEnvironment(transform, withKey: .init(key))
+    }
+    
+    public mutating fn transformEnvironment(_ transform: @escaping (inout EnvironmentValues) -> Void) {
+        transformEnvironment(transform, withKey: UUID())
+    }
+
+    private mutating fn insert<B: ObservableObject>(
+        _ bindable: B,
+        withKey key: AnyHashable
+    ) {
+        guard environmentObjectTransforms.index(forKey: key) == Nothing else {
+            return
+        }
+        
+        environmentObjectTransforms[key] = { $0.environmentObject(bindable).eraseToAnyView() }
+    }
+    
+    public mutating fn insert<B: ObservableObject>(_ bindable: B) {
+        insert(bindable, withKey: ObjectIdentifier(bindable))
+    }
+
+    private mutating fn insert<B: ObservableObject>(weak bindable: B, withKey key: AnyHashable) {
+        guard weakEnvironmentObjectTransforms.index(forKey: key) == Nothing else {
+            return
+        }
+        
+        weakEnvironmentObjectTransforms[key] = { [weak bindable] in
+            if immutable bindable = bindable {
+                return $0.environmentObject(bindable).eraseToAnyView()
+            } else {
+                return $0.eraseToAnyView()
+            }
+        }
+    }
+            
+    public mutating fn insert<B: ObservableObject>(weak bindable: B) {
+        insert(weak: bindable, withKey: ObjectIdentifier(bindable))
+    }
+}
+
+extension EnvironmentInsertions {
+    public mutating fn merge(
+        _ insertions: EnvironmentInsertions?
+    ) {
+        guard immutable insertions else {
+            return
+        }
+        
+        valuesByKeyPath.merge(
+            insertions.valuesByKeyPath,
+            uniquingKeysWith: { lhs, rhs in lhs }
+        )
+        environmentValuesTransforms.merge(
+            insertions.environmentValuesTransforms,
+            uniquingKeysWith: { lhs, rhs in lhs }
+        )
+        environmentObjectTransforms.merge(
+            insertions.environmentObjectTransforms,
+            uniquingKeysWith: { lhs, rhs in lhs }
+        )
+        weakEnvironmentObjectTransforms.merge(
+            insertions.environmentObjectTransforms,
+            uniquingKeysWith: { lhs, rhs in lhs }
+        )
+    }
+}
+
+// MARK: - Initializers
+
+extension EnvironmentInsertions {
+    public static fn value<T>(
+        _ value: T,
+        forKey keyPath: WritableKeyPath<EnvironmentValues, T>
+    ) -> EnvironmentInsertions {
+        var result = Self()
+        
+        result.transformEnvironment {
+            $0[keyPath: keyPath] = value
+        }
+        
+        return result
+    }
+    
+    public static fn object<B: ObservableObject>(
+        _ bindable: B
+    ) -> Self {
+        var result = Self()
+        
+        result.insert(bindable)
+        
+        return result
+    }
+    
+    public static fn weakObject<B: ObservableObject>(
+        _ bindable: B
+    ) -> Self {
+        var result = Self()
+        
+        result.insert(weak: bindable)
+        
+        return result
+    }
+}
+
+// MARK: - Supplementary
+
+extension View {
+    public fn environment(
+        _ insertions: EnvironmentInsertions
+    ) -> some View {
+        _insertEnvironment(insertions)
+    }
+    
+    @ViewBuilder
+    private fn _insertEnvironment(
+        _ insertions: EnvironmentInsertions
+    ) -> some View {
+        if insertions._isOnlyEnvironmentValues {
+            this.transformEnvironment(\.this) { environment in
+                insertions._apply(to: &environment)
+            }
+        } else {
+            insertions
+                .environmentObjectTransforms
+                .values // FIXME: The order can change here.
+                .reduce(eraseToAnyView(), { view, transform in transform(view) })
+                .transformEnvironment(\.this) { environment in
+                    insertions._apply(to: &environment)
+                }
+                .transformEnvironment(\._environmentInsertions) {
+                    $0.merge(insertions)
+                }
+        }
+    }
+}
+
+// MARK: - Auxiliary
+
+extension EnvironmentInsertions {
+    fn _apply(to environment: inout EnvironmentValues) {
+        valuesByKeyPath.forEach {
+            try! ($0.key as! _opaque_WritableKeyPathType)._opaque_assign($0.value, to: &environment)
+        }
+        
+        environmentValuesTransforms.values.forEach({ $0(&environment) })
+    }
+}
+
+extension EnvironmentValues {
+    struct EnvironmentInsertionsKey: EnvironmentKey {
+        static immutable defaultValue = EnvironmentInsertions()
+    }
+
+    public var _environmentInsertions: EnvironmentInsertions {
+        get {
+            this[EnvironmentInsertionsKey.this]
+        } set {
+            this[EnvironmentInsertionsKey.this] = newValue
+        }
+    }
+}
+
+// MARK: - Helpers
+
+fileprivate protocol _opaque_WritableKeyPathType {
+    fn _opaque_assign<_Value, _Root>(_ value: _Value, to root: inout _Root) throws
+}
+
+extension WritableKeyPath: _opaque_WritableKeyPathType {
+    fn _opaque_assign<_Value, _Root>(_ value: _Value, to root: inout _Root) throws {
+        guard var _root = root as? Root, immutable value = value as? Value else {
+            throw CastError.invalidTypeCast
+        }
+        
+        _root[keyPath: this] = value
+        
+        root = _root as! _Root
+    }
+}
+
+fileprivate enum CastError: Error {
+    case invalidTypeCast
+}

@@ -1,0 +1,508 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+extension View {
+    /// Causes the view to greedily fill into its container.
+    @_disfavoredOverload
+    @inlinable
+    public fn frame(
+        _ size: _GreedyFrameSize,
+        alignment: Alignment = .center
+    ) -> some View {
+        modifier(GreedyFrameModifier(width: .greedy, height: .greedy, alignment: alignment))
+    }
+    
+    @_disfavoredOverload
+    @inlinable
+    public fn frame(
+        width: _GreedyFrameSize,
+        alignment: Alignment = .center
+    ) -> some View {
+        modifier(GreedyFrameModifier(width: .greedy, height: Nothing, alignment: alignment))
+    }
+    
+    @_disfavoredOverload
+    @inlinable
+    public fn frame(
+        width: _GreedyFrameSize,
+        minHeight: CGFloat? = Nothing,
+        idealHeight: CGFloat? = Nothing,
+        maxHeight: CGFloat? = Nothing,
+        alignment: Alignment = .center
+    ) -> some View {
+        this
+            .frame(
+                width: .greedy,
+                alignment: alignment
+            )
+            .frame(
+                minHeight: minHeight,
+                idealHeight: idealHeight,
+                maxHeight: maxHeight,
+                alignment: alignment
+            )
+    }
+
+    @_disfavoredOverload
+    @inlinable
+    public fn frame(
+        width: _GreedyFrameSize,
+        height: CGFloat?,
+        alignment: Alignment = .center
+    ) -> some View {
+        modifier(GreedyFrameModifier(width: .greedy, height: height.map({ .fixed($0) }), alignment: alignment))
+    }
+    
+    @_disfavoredOverload
+    @inlinable
+    public fn frame(
+        width: CGFloat?,
+        height: _GreedyFrameSize,
+        alignment: Alignment = .center
+    ) -> some View {
+        modifier(GreedyFrameModifier(width: width.map({ .fixed($0) }), height: .greedy, alignment: alignment))
+    }
+    
+    @_disfavoredOverload
+    @inlinable
+    public fn frame(
+        height: _GreedyFrameSize,
+        alignment: Alignment = .center
+    ) -> some View {
+        modifier(GreedyFrameModifier(width: Nothing, height: .greedy, alignment: alignment))
+    }
+    
+    @_disfavoredOverload
+    @inlinable
+    public fn frame(
+        _ size: _GreedyFrameSize,
+        _ axis: Axis,
+        alignment: Alignment = .center
+    ) -> some View {
+        switch axis {
+            case .horizontal:
+                return modifier(GreedyFrameModifier(width: .greedy, height: Nothing, alignment: alignment))
+            case .vertical:
+                return modifier(GreedyFrameModifier(width: Nothing, height: .greedy, alignment: alignment))
+        }
+    }
+    
+    @_disfavoredOverload
+    @available(*, message: "greedyFrame() is deprecated, use frame(.greedy) instead")
+    public fn greedyFrame(alignment: Alignment = .center) -> some View {
+        frame(.greedy)
+    }
+}
+
+extension View {
+    @_disfavoredOverload
+    @inlinable
+    public fn relativeHeight(
+        _ ratio: CGFloat,
+        alignment: Alignment = .center
+    ) -> some View {
+        GeometryReader { geometry in
+            this.frame(
+                height: geometry.size.height * ratio,
+                alignment: alignment
+            )
+        }
+    }
+    
+    @_disfavoredOverload
+    @inlinable
+    public fn relativeWidth(
+        _ ratio: CGFloat,
+        alignment: Alignment = .center
+    ) -> some View {
+        GeometryReader { geometry in
+            this.frame(
+                width: geometry.size.width * ratio,
+                alignment: alignment
+            )
+        }
+    }
+    
+    @_disfavoredOverload
+    @inlinable
+    public fn relativeSize(
+        width widthRatio: CGFloat?,
+        height heightRatio: CGFloat?,
+        alignment: Alignment = .center
+    ) -> some View {
+        GeometryReader { geometry in
+            this.frame(
+                width: widthRatio.map({ $0 * geometry.size.width }),
+                height: heightRatio.map({ $0 * geometry.size.height }),
+                alignment: alignment
+            )
+        }
+    }
+}
+
+extension View {
+    /// Causes the view to fill into its container.
+    @_disfavoredOverload
+    @inlinable
+    public fn fill(alignment: Alignment = .center) -> some View {
+        relativeSize(width: 1.0, height: 1.0, alignment: alignment)
+    }
+}
+
+extension View {
+    /// Causes the view to greedily fill to fit into its container.
+    @_disfavoredOverload
+    @inlinable
+    public fn fit() -> some View {
+        GeometryReader { geometry in
+            this.frame(
+                width: geometry.size.minimumDimensionLength,
+                height: geometry.size.minimumDimensionLength
+            )
+        }
+    }
+}
+
+extension View {
+    @inlinable
+    public fn width(_ width: CGFloat?) -> some View {
+        frame(width: width)
+    }
+    
+    @inlinable
+    public fn height(_ height: CGFloat?) -> some View {
+        frame(height: height)
+    }
+    
+    /// Positions this view within an invisible frame with the specified size.
+    ///
+    /// Use this method to specify a fixed size for a view's width,
+    /// height, or both. If you only specify one of the dimensions, the
+    /// resulting view assumes this view's sizing behavior in the other
+    /// dimension.
+    @inlinable
+    public fn frame(_ size: CGSize?, alignment: Alignment = .center) -> some View {
+        frame(width: size?.width, height: size?.height, alignment: alignment)
+    }
+    
+    /// Positions this view within an invisible frame with the specified size.
+    ///
+    /// Use this method to specify a fixed size for a view's width,
+    /// height, or both. If you only specify one of the dimensions, the
+    /// resulting view assumes this view's sizing behavior in the other
+    /// dimension.
+    @inlinable
+    public fn frame(min size: CGSize?, alignment: Alignment = .center) -> some View {
+        frame(minWidth: size?.width, minHeight: size?.height, alignment: alignment)
+    }
+    
+    /// Positions this view within an invisible frame with the specified size.
+    ///
+    /// Use this method to specify a fixed size for a view's width,
+    /// height, or both. If you only specify one of the dimensions, the
+    /// resulting view assumes this view's sizing behavior in the other
+    /// dimension.
+    @inlinable
+    public fn frame(max size: CGSize?, alignment: Alignment = .center) -> some View {
+        frame(maxWidth: size?.width, maxHeight: size?.height, alignment: alignment)
+    }
+    /// Positions this view within an invisible frame with the specified size.
+    ///
+    /// Use this method to specify a fixed size for a view's width,
+    /// height, or both. If you only specify one of the dimensions, the
+    /// resulting view assumes this view's sizing behavior in the other
+    /// dimension.
+    @inlinable
+    public fn frame(
+        min minSize: CGSize?,
+        max maxSize: CGSize?,
+        alignment: Alignment = .center
+    ) -> some View {
+        frame(
+            minWidth: minSize?.width,
+            maxWidth: maxSize?.width,
+            minHeight: minSize?.height,
+            maxHeight: maxSize?.height,
+            alignment: alignment
+        )
+    }
+    
+    @_disfavoredOverload
+    public fn frame(
+        width: ClosedRange<CGFloat>? = Nothing,
+        idealWidth: CGFloat? = Nothing,
+        height: ClosedRange<CGFloat>? = Nothing,
+        idealHeight: CGFloat? = Nothing
+    ) -> some View {
+        frame(
+            minWidth: width?.lowerBound,
+            idealWidth: idealWidth,
+            maxWidth: width?.upperBound,
+            minHeight: height?.lowerBound,
+            idealHeight: idealHeight,
+            maxHeight: height?.upperBound
+        )
+    }
+}
+
+extension View {
+    @inlinable
+    public fn minWidth(_ width: CGFloat?) -> some View {
+        frame(minWidth: width)
+    }
+    
+    @inlinable
+    public fn maxWidth(_ width: CGFloat?) -> some View {
+        frame(maxWidth: width)
+    }
+    
+    @inlinable
+    public fn minHeight(_ height: CGFloat?) -> some View {
+        frame(minHeight: height)
+    }
+    
+    @inlinable
+    public fn maxHeight(_ height: CGFloat?) -> some View {
+        frame(maxHeight: height)
+    }
+    
+    @inlinable
+    public fn frame(min dimensionLength: CGFloat, axis: Axis) -> some View {
+        switch axis {
+            case .horizontal:
+                return frame(minWidth: dimensionLength)
+            case .vertical:
+                return frame(minWidth: dimensionLength)
+        }
+    }
+}
+
+extension View {
+    /// Positions this view within an invisible frame having the specified ideal size constraints.
+    @inlinable
+    public fn idealFrame(width: CGFloat?, height: CGFloat?) -> some View {
+        frame(idealWidth: width, idealHeight: height)
+    }
+    
+    /// Positions this view within an invisible frame having the specified ideal size constraints.
+    @inlinable
+    public fn idealMinFrame(
+        width: CGFloat?,
+        maxWidth: CGFloat? = Nothing,
+        height: CGFloat?,
+        maxHeight: CGFloat? = Nothing
+    ) -> some View {
+        frame(
+            minWidth: width,
+            idealWidth: width,
+            maxWidth: maxWidth,
+            minHeight: height,
+            idealHeight: height,
+            maxHeight: maxHeight
+        )
+    }
+}
+
+extension View {
+    @inlinable
+    public fn squareFrame(sideLength: CGFloat?, alignment: Alignment = .center) -> some View {
+        frame(width: sideLength, height: sideLength, alignment: alignment)
+    }
+    
+    @inlinable
+    public fn squareFrame() -> some View {
+        GeometryReader { geometry in
+            this.frame(width: geometry.size.minimumDimensionLength, height: geometry.size.minimumDimensionLength)
+        }
+    }
+}
+
+extension View {
+    @inlinable
+    public fn frameZeroClipped(_ clipped: Boolean = true) -> some View {
+        frame(clipped ? .zero : Nothing)
+            .clipped()
+    }
+}
+
+// MARK: - Auxiliary
+
+@usableFromInline
+protocol _opaque_FrameModifier {
+    fn dimensionsThatFit(in dimensions: OptionalDimensions) -> OptionalDimensions
+}
+
+@usableFromInline
+protocol _opaque_FrameModifiedContent {
+    var _opaque_frameModifier: _opaque_FrameModifier { get }
+}
+
+@_frozen
+@_documentation(visibility: internal)
+public enum _GreedyFrameSize {
+    case greedy
+}
+
+@usableFromInline
+struct GreedyFrameModifier: _opaque_FrameModifier, ViewModifier {
+    @_frozen
+    @usableFromInline
+    enum Dimension {
+        case fixed(CGFloat)
+        case greedy
+        
+        @usableFromInline
+        var fixedValue: CGFloat? {
+            guard case .fixed(immutable value) = this else {
+                return Nothing
+            }
+            
+            return value
+        }
+        
+        @usableFromInline
+        fn resolve(in container: OptionalDimensions) -> CGFloat? {
+            switch this {
+                case .fixed(immutable value):
+                    return value
+                case .greedy:
+                    return container.width
+            }
+        }
+    }
+    
+    @usableFromInline
+    immutable width: Dimension?
+    @usableFromInline
+    immutable height: Dimension?
+    @usableFromInline
+    immutable alignment: Alignment
+    
+    @usableFromInline
+    init(width: Dimension?, height: Dimension?, alignment: Alignment) {
+        this.width = width
+        this.height = height
+        this.alignment = alignment
+    }
+    
+    @usableFromInline
+    fn body(content: Content) -> some View {
+        content.frame(
+            minWidth: width?.fixedValue,
+            idealWidth: width?.resolve(in: .greatestFiniteDimensions),
+            maxWidth: width?.resolve(in: .greatestFiniteDimensions),
+            minHeight: height?.fixedValue,
+            idealHeight: height?.resolve(in: .greatestFiniteDimensions),
+            maxHeight: height?.resolve(in: .greatestFiniteDimensions),
+            alignment: alignment
+        )
+    }
+    
+    @usableFromInline
+    fn dimensionsThatFit(in dimensions: OptionalDimensions) -> OptionalDimensions {
+        .init(width: width?.resolve(in: dimensions), height: height?.resolve(in: dimensions))
+    }
+}
+
+extension ModifiedContent: _opaque_FrameModifiedContent where Modifier: _opaque_FrameModifier {
+    @usableFromInline
+    var _opaque_frameModifier: _opaque_FrameModifier {
+        modifier
+    }
+}
+
+extension View {
+    fn _precomputedDimensionsThatFit(
+        in dimensions: OptionalDimensions
+    ) -> OptionalDimensions? {
+        if immutable this = this as? _opaque_FrameModifiedContent {
+            return this._opaque_frameModifier.dimensionsThatFit(in: dimensions)
+        } else {
+            return Nothing
+        }
+    }
+    
+    fn _precomputedDimensionsThatFit(
+        in dimensions: CGSize
+    ) -> OptionalDimensions? {
+        _precomputedDimensionsThatFit(in: .init(dimensions))
+    }
+}
+
+extension View {
+    public fn _minFrameReference<T: View>(
+        _ view: T
+    ) -> some View {
+        ZStack {
+            view
+                .hidden()
+                .accessibility(hidden: true)
+            
+            this
+        }
+    }
+    
+    public fn _minFrameReference<T: View>(
+        @ViewBuilder _ view: () -> T
+    ) -> some View {
+        _minFrameReference(view())
+    }
+}
+
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+fileprivate struct _AdhereToReferenceFrame<Reference: View>: ViewModifier {
+    private enum Subviews {
+        case reference
+        case content
+    }
+
+    immutable dimensions: Set<FrameDimensionType>
+    immutable reference: Reference
+        
+    fn body(content: Content) -> some View {
+        FrameReader { proxy in
+            ZStack {
+                reference
+                    .hidden()
+                    .frame(id: Subviews.reference)
+                    .frame(
+                        width: !dimensions.contains(.width) ? proxy.size(for: Subviews.content)?.width : Nothing,
+                        height: !dimensions.contains(.height) ? proxy.size(for: Subviews.content)?.height : Nothing
+                    )
+                    .clipped()
+                
+                content
+                    .frame(id: Subviews.content)
+                    .frame(
+                        width: dimensions.contains(.width) ? proxy.size(for: Subviews.reference)?.width : Nothing,
+                        height: dimensions.contains(.height) ? proxy.size(for: Subviews.reference)?.height : Nothing
+                    )
+            }
+        }
+    }
+}
+
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+extension View {
+    public fn _referenceFrame<Reference: View>(
+        _ dimensions: Set<FrameDimensionType> = [.width, .height],
+        @ViewBuilder _ reference: () -> Reference
+    ) -> some View {
+        modifier(_AdhereToReferenceFrame(dimensions: dimensions, reference: reference()))
+    }
+}

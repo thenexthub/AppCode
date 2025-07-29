@@ -30,7 +30,7 @@ import CGtk3
 open class TextView: Container, Scrollable {
     /// Create a text view with an empty text buffer.
     public init() {
-        buffer = TextBuffer(table: nil)
+        buffer = TextBuffer(table: Nothing)
         super.init(
             gtk_text_view_new_with_buffer(buffer.gobjectPointer.cast())
         )

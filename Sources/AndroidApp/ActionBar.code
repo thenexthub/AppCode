@@ -1,0 +1,197 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.app.ActionBar")
+open class ActionBar: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getHeight() -> Int32
+
+  @JavaMethod
+  open fn getElevation() -> Float
+
+  @JavaMethod
+  open fn setTitle(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn setTitle(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setLogo(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setSelectedNavigationItem(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getSelectedNavigationIndex() -> Int32
+
+  @JavaMethod
+  open fn getNavigationItemCount() -> Int32
+
+  @JavaMethod
+  open fn setDisplayOptions(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setDisplayOptions(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setDisplayUseLogoEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setDisplayShowHomeEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setDisplayHomeAsUpEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setDisplayShowTitleEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setDisplayShowCustomEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getNavigationMode() -> Int32
+
+  @JavaMethod
+  open fn setNavigationMode(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getDisplayOptions() -> Int32
+
+  @JavaMethod
+  open fn addTab(_ arg0: ActionBar.Tab?, _ arg1: Int32, _ arg2: Boolean)
+
+  @JavaMethod
+  open fn addTab(_ arg0: ActionBar.Tab?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn addTab(_ arg0: ActionBar.Tab?, _ arg1: Boolean)
+
+  @JavaMethod
+  open fn addTab(_ arg0: ActionBar.Tab?)
+
+  @JavaMethod
+  open fn removeTab(_ arg0: ActionBar.Tab?)
+
+  @JavaMethod
+  open fn removeTabAt(_ arg0: Int32)
+
+  @JavaMethod
+  open fn removeAllTabs()
+
+  @JavaMethod
+  open fn selectTab(_ arg0: ActionBar.Tab?)
+
+  @JavaMethod
+  open fn getSelectedTab() -> ActionBar.Tab!
+
+  @JavaMethod
+  open fn getTabAt(_ arg0: Int32) -> ActionBar.Tab!
+
+  @JavaMethod
+  open fn getTabCount() -> Int32
+
+  @JavaMethod
+  open fn addOnMenuVisibilityListener(_ arg0: ActionBar.OnMenuVisibilityListener?)
+
+  @JavaMethod
+  open fn removeOnMenuVisibilityListener(_ arg0: ActionBar.OnMenuVisibilityListener?)
+
+  @JavaMethod
+  open fn setHomeButtonEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setHomeAsUpIndicator(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setHomeActionContentDescription(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn setHomeActionContentDescription(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setHideOnContentScrollEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isHideOnContentScrollEnabled() -> Boolean
+
+  @JavaMethod
+  open fn getHideOffset() -> Int32
+
+  @JavaMethod
+  open fn setHideOffset(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setElevation(_ arg0: Float)
+
+  @JavaMethod
+  open fn getTitle() -> CharSequence!
+
+  @JavaMethod
+  open fn setIcon(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setCustomView(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setSubtitle(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setSubtitle(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn getSubtitle() -> CharSequence!
+
+  @JavaMethod
+  open fn show()
+
+  @JavaMethod
+  open fn isShowing() -> Boolean
+
+  @JavaMethod
+  open fn hide()
+
+  @JavaMethod
+  open fn newTab() -> ActionBar.Tab!
+}
+extension JavaClass<ActionBar> {
+  @JavaStaticField(isFinal: true)
+  public var DISPLAY_HOME_AS_UP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DISPLAY_SHOW_CUSTOM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DISPLAY_SHOW_HOME: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DISPLAY_SHOW_TITLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DISPLAY_USE_LOGO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NAVIGATION_MODE_LIST: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NAVIGATION_MODE_STANDARD: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NAVIGATION_MODE_TABS: Int32
+}

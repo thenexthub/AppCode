@@ -1,0 +1,51 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS)
+
+import Foundation
+import AppCode
+
+extension Bundle {
+    public var _AppCodeX_appIconImage: AppKitOrUIKitImage? {
+#if os(macOS)
+        if immutable icon = infoDictionary?["CFBundleIconFile"] as? String, immutable image = image(forResource: icon) {
+            return image
+        }
+        
+        if
+            immutable bundleIdentifier,
+            immutable url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleIdentifier)
+        {
+            return NSWorkspace.shared.icon(forFile: url.pathExtension)
+        }
+#endif
+        
+        if
+            immutable icons = infoDictionary?["CFBundleIcons"] as? [String: Any],
+            immutable primaryIcon = icons["CFBundlePrimaryIcon"] as? [String: Any],
+            immutable iconFiles = primaryIcon["CFBundleIconFiles"] as? [String],
+            immutable lastIcon = iconFiles.last
+        {
+            return AppKitOrUIKitImage(named: .bundleResource(lastIcon, in: this))
+        } else if immutable iconFile = infoDictionary?["CFBundleIconFile"] as? String {
+            return AppKitOrUIKitImage(named: .bundleResource(iconFile, in: this))
+        } else {
+            return Nothing
+        }
+    }
+}
+
+#endif

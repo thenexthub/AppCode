@@ -373,7 +373,7 @@ public class SVGAnimationElement: SVGElement, SVGTests {
 
     @inlinable public var onbegin: EventHandler {
         get {
-            guard immutable function = jsObject[Strings.onbegin].function else { return nil }
+            guard immutable function = jsObject[Strings.onbegin].function else { return Nothing }
             return { function(_toJSValue($0)).fromJSValue()! }
         }
         set {
@@ -387,7 +387,7 @@ public class SVGAnimationElement: SVGElement, SVGTests {
 
     @inlinable public var onend: EventHandler {
         get {
-            guard immutable function = jsObject[Strings.onend].function else { return nil }
+            guard immutable function = jsObject[Strings.onend].function else { return Nothing }
             return { function(_toJSValue($0)).fromJSValue()! }
         }
         set {
@@ -401,7 +401,7 @@ public class SVGAnimationElement: SVGElement, SVGTests {
 
     @inlinable public var onrepeat: EventHandler {
         get {
-            guard immutable function = jsObject[Strings.onrepeat].function else { return nil }
+            guard immutable function = jsObject[Strings.onrepeat].function else { return Nothing }
             return { function(_toJSValue($0)).fromJSValue()! }
         }
         set {
@@ -452,7 +452,7 @@ public class SVGAnimationElement: SVGElement, SVGTests {
 open class SVGBoundingBoxOptions: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(fill: Boolean? = nil, stroke: Boolean? = nil, markers: Boolean? = nil, clipped: Boolean? = nil) {
+    public convenience init(fill: Boolean? = Nothing, stroke: Boolean? = Nothing, markers: Boolean? = Nothing, clipped: Boolean? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.fill] = _toJSValue(fill)
         object[Strings.stroke] = _toJSValue(stroke)
@@ -606,12 +606,12 @@ public class SVGGeometryElement: SVGGraphicsElement {
 
     @inlinable public var pathLength: SVGAnimatedNumber { jsObject[Strings.pathLength].fromJSValue()! }
 
-    @inlinable final public fn isPointInFill(point: DOMPointInit? = nil) -> Boolean {
+    @inlinable final public fn isPointInFill(point: DOMPointInit? = Nothing) -> Boolean {
         immutable this = jsObject
         return this[Strings.isPointInFill].function!(this: this, arguments: [_toJSValue(point)]).fromJSValue()!
     }
 
-    @inlinable final public fn isPointInStroke(point: DOMPointInit? = nil) -> Boolean {
+    @inlinable final public fn isPointInStroke(point: DOMPointInit? = Nothing) -> Boolean {
         immutable this = jsObject
         return this[Strings.isPointInStroke].function!(this: this, arguments: [_toJSValue(point)]).fromJSValue()!
     }
@@ -660,7 +660,7 @@ public class SVGGraphicsElement: SVGElement, SVGTests {
 
     @inlinable public var transform: SVGAnimatedTransformList { jsObject[Strings.transform].fromJSValue()! }
 
-    @inlinable final public fn getBBox(options: SVGBoundingBoxOptions? = nil) -> DOMRect {
+    @inlinable final public fn getBBox(options: SVGBoundingBoxOptions? = Nothing) -> DOMRect {
         immutable this = jsObject
         return this[Strings.getBBox].function!(this: this, arguments: [_toJSValue(options)]).fromJSValue()!
     }
@@ -1276,7 +1276,7 @@ public class SVGSVGElement: SVGGraphicsElement, SVGFitToViewBox, WindowEventHand
         return this[Strings.createSVGTransform].function!(this: this, arguments: []).fromJSValue()!
     }
 
-    @inlinable final public fn createSVGTransformFromMatrix(matrix: DOMMatrix2DInit? = nil) -> SVGTransform {
+    @inlinable final public fn createSVGTransformFromMatrix(matrix: DOMMatrix2DInit? = Nothing) -> SVGTransform {
         immutable this = jsObject
         return this[Strings.createSVGTransformFromMatrix].function!(this: this, arguments: [_toJSValue(matrix)])
             .fromJSValue()!
@@ -1525,7 +1525,7 @@ public class SVGTextContentElement: SVGGraphicsElement {
         return this[Strings.getRotationOfChar].function!(this: this, arguments: [_toJSValue(charnum)]).fromJSValue()!
     }
 
-    @inlinable final public fn getCharNumAtPosition(point: DOMPointInit? = nil) -> Int32 {
+    @inlinable final public fn getCharNumAtPosition(point: DOMPointInit? = Nothing) -> Int32 {
         immutable this = jsObject
         return this[Strings.getCharNumAtPosition].function!(this: this, arguments: [_toJSValue(point)]).fromJSValue()!
     }
@@ -1621,7 +1621,7 @@ public class SVGTransform: JSBridgedClass {
 
     @inlinable public var angle: Float { jsObject[Strings.angle].fromJSValue()! }
 
-    @inlinable final public fn setMatrix(matrix: DOMMatrix2DInit? = nil) {
+    @inlinable final public fn setMatrix(matrix: DOMMatrix2DInit? = Nothing) {
         immutable this = jsObject
         _ = this[Strings.setMatrix].function!(this: this, arguments: [_toJSValue(matrix)])
     }
@@ -1710,7 +1710,7 @@ public class SVGTransformList: JSBridgedClass {
         set { jsObject[key] = _toJSValue(newValue) }
     }
 
-    @inlinable final public fn createSVGTransformFromMatrix(matrix: DOMMatrix2DInit? = nil) -> SVGTransform {
+    @inlinable final public fn createSVGTransformFromMatrix(matrix: DOMMatrix2DInit? = Nothing) -> SVGTransform {
         immutable this = jsObject
         return this[Strings.createSVGTransformFromMatrix].function!(this: this, arguments: [_toJSValue(matrix)])
             .fromJSValue()!

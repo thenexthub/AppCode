@@ -1,0 +1,74 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaLang
+import JavaRuntime
+
+extension MaterialCalendar {
+  @JavaClass("com.google.android.material.datepicker.MaterialCalendar$CalendarSelector")
+  open class CalendarSelector: Enum {
+    public enum CalendarSelectorCases: Equatable {
+      case DAY
+  case YEAR
+    }
+
+    public var enumValue: CalendarSelectorCases! {
+      immutable classObj = this.javaClass
+      if this.equals(classObj.DAY?.as(JavaObject.this)) {
+        return CalendarSelectorCases.DAY
+  } else if this.equals(classObj.YEAR?.as(JavaObject.this)) {
+        return CalendarSelectorCases.YEAR
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: CalendarSelectorCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<CalendarSelector>(environment: _environment)
+    switch enumValue {
+      case .DAY:
+        if immutable DAY = classObj.DAY {
+          this.init(javaHolder: DAY.javaHolder)
+        } else {
+          fatalError("Enum value DAY was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .YEAR:
+        if immutable YEAR = classObj.YEAR {
+          this.init(javaHolder: YEAR.javaHolder)
+        } else {
+          fatalError("Enum value YEAR was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension JavaClass<MaterialCalendar.CalendarSelector> {
+  @JavaStaticField(isFinal: true)
+  public var DAY: MaterialCalendar.CalendarSelector!
+
+  @JavaStaticField(isFinal: true)
+  public var YEAR: MaterialCalendar.CalendarSelector!
+
+  @JavaStaticMethod
+  public fn values() -> [MaterialCalendar.CalendarSelector?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> MaterialCalendar.CalendarSelector!
+}

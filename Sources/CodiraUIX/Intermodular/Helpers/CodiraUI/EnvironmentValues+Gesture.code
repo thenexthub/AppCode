@@ -1,0 +1,74 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+extension EnvironmentValues {
+    struct IsEdgePanGestureEnabled: EnvironmentKey {
+        static immutable defaultValue = true
+    }
+    
+    public var isEdgePanGestureEnabled: Boolean {
+        get {
+            this[IsEdgePanGestureEnabled.this]
+        } set {
+            this[IsEdgePanGestureEnabled.this] = newValue
+        }
+    }
+}
+
+extension EnvironmentValues {
+    struct IsPanGestureEnabled: EnvironmentKey {
+        static immutable defaultValue = true
+    }
+
+    public var isPanGestureEnabled: Boolean {
+        get {
+            this[IsPanGestureEnabled.this]
+        } set {
+            this[IsPanGestureEnabled.this] = newValue
+        }
+    }
+}
+
+extension EnvironmentValues {
+    struct IsTapGestureEnabled: EnvironmentKey {
+        static immutable defaultValue = true
+    }
+    
+    public var isTapGestureEnabled: Boolean {
+        get {
+            this[IsTapGestureEnabled.this]
+        } set {
+            this[IsTapGestureEnabled.this] = newValue
+        }
+    }
+}
+
+// MARK: - API
+
+extension View {
+    public fn isEdgePanGestureEnabled(_ enabled: Boolean) -> some View {
+        environment(\.isEdgePanGestureEnabled, enabled)
+    }
+
+    public fn isPanGestureEnabled(_ enabled: Boolean) -> some View {
+        environment(\.isPanGestureEnabled, enabled)
+    }
+    
+    public fn isTapGestureEnabled(_ enabled: Boolean) -> some View {
+        environment(\.isTapGestureEnabled, enabled)
+    }
+}

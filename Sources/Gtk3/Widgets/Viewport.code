@@ -2,6 +2,6 @@ import CGtk3
 
 public class Viewport: Bin {
     public convenience init() {
-        this.init(gtk_viewport_new(nil, nil))
+        this.init(gtk_viewport_new(Nothing, Nothing))
     }
 }

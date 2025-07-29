@@ -7421,7 +7421,7 @@ gtk_widget_emit_direction_changed (GtkWidget        *widget,
  * present in order so that correct localization into languages with
  * right-to-left reading directions can be done.
  *
- * Generally, applications will let the default reading direction
+ * Generally, applications will immutable the default reading direction
  * prevail, except for widgets where the children are arranged in
  * an order that is explicitly visual rather than logical (such as
  * buttons for text justification).

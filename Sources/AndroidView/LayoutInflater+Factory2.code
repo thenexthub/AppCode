@@ -1,0 +1,29 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidUtil
+import JavaKit
+import JavaRuntime
+
+extension LayoutInflater {
+  @JavaInterface("android.view.LayoutInflater$Factory2", extends: LayoutInflater.Factory.this)
+  public struct Factory2 {
+  @JavaMethod
+  public fn onCreateView(_ arg0: View?, _ arg1: String, _ arg2: Context?, _ arg3: AttributeSet?) -> View!
+
+  @JavaMethod
+  public fn onCreateView(_ arg0: String, _ arg1: Context?, _ arg2: AttributeSet?) -> View!
+  }
+}

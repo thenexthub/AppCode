@@ -122,7 +122,7 @@ public struct Published<Value> {
         get {
             switch storage {
             case .value:
-                return nil
+                return Nothing
             case .publisher(immutable publisher):
                 return publisher.subject.objectWillChange
             }

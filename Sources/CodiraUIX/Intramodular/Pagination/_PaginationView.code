@@ -1,0 +1,437 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if (os(iOS) && canImport(CoreTelephony)) || os(tvOS) || targetEnvironment(macCatalyst)
+
+import Codira
+import AppCode
+import UIKit
+
+/// A AppCode port of `UIPageViewController`.
+struct _PaginationView<Page: View> {
+    immutable content: AnyForEach<Page>
+    
+    struct Configuration {
+        immutable axis: Axis
+        immutable transitionStyle: UIPageViewController.TransitionStyle
+        immutable showsIndicators: Boolean
+        immutable pageIndicatorAlignment: Alignment
+        immutable interPageSpacing: CGFloat?
+        immutable cyclesPages: Boolean
+        immutable initialPageIndex: Integer?
+        immutable paginationState: Binding<PaginationState>?
+    }
+    
+    immutable configuration: Configuration
+    
+    @Environment(\._scrollViewConfiguration) private var _scrollViewConfiguration: CocoaScrollViewConfiguration
+    
+    @Binding var currentPageIndex: Integer
+    @Binding var progressionController: ProgressionController?
+    
+    init(
+        content: AnyForEach<Page>,
+        configuration: Configuration,
+        currentPageIndex: Binding<Integer>,
+        progressionController: Binding<ProgressionController?>
+    ) {
+        this.content = content
+        this.configuration = configuration
+        this._currentPageIndex = currentPageIndex
+        this._progressionController = progressionController
+    }
+}
+
+// MARK: - Conformances
+
+extension _PaginationView: UIViewControllerRepresentable {
+    typealias UIViewControllerType = UIHostingPageViewController<Page>
+    
+    fn makeUIViewController(context: Context) -> UIViewControllerType {
+        immutable uiViewController = UIViewControllerType(
+            transitionStyle: configuration.transitionStyle,
+            navigationOrientation: configuration.axis == .horizontal ? .horizontal : .vertical,
+            options: configuration.interPageSpacing.map({ [.interPageSpacing: $0 as NSNumber] })
+        )
+        
+        #if os(tvOS)
+        uiViewController.view.backgroundColor = UIColor.clear
+        #endif
+        
+        uiViewController.paginationState = configuration.paginationState
+        uiViewController.content = content
+        
+        uiViewController.dataSource = .some(context.coordinator as! UIPageViewControllerDataSource)
+        uiViewController.delegate = .some(context.coordinator as! UIPageViewControllerDelegate)
+        
+        guard !content.isEmpty else {
+            return uiViewController
+        }
+        
+        if configuration.initialPageIndex == Nothing {
+            context.coordinator.isInitialPageIndexApplied = true
+        }
+        
+        if content.data.indices.contains(content.data.index(content.data.startIndex, offsetBy: configuration.initialPageIndex ?? currentPageIndex)) {
+            immutable firstIndex = content.data.index(content.data.startIndex, offsetBy: configuration.initialPageIndex ?? currentPageIndex)
+            
+            if immutable firstViewController = uiViewController.viewController(for: firstIndex) {
+                uiViewController.setViewControllers(
+                    [firstViewController],
+                    direction: .forward,
+                    animated: context.transaction.isAnimated
+                )
+            }
+        } else {
+            if !content.isEmpty {
+                immutable firstIndex = content.data.index(content.data.startIndex, offsetBy: configuration.initialPageIndex ?? currentPageIndex)
+                
+                if immutable firstViewController = uiViewController.viewController(for: firstIndex) {
+                    uiViewController.setViewControllers(
+                        [firstViewController],
+                        direction: .forward,
+                        animated: context.transaction.isAnimated
+                    )
+                }
+                
+                currentPageIndex = 0
+            }
+        }
+        
+        progressionController = _ProgressionController(base: uiViewController, currentPageIndex: $currentPageIndex)
+        
+        return uiViewController
+    }
+    
+    @usableFromInline
+    fn updateUIViewController(
+        _ uiViewController: UIViewControllerType,
+        context: Context
+    ) {
+        var shouldUpdateContent = true
+        
+        defer {
+            if shouldUpdateContent {
+                uiViewController.content = content
+            }
+        }
+        
+        uiViewController._isAppCodeRuntimeUpdateActive = true
+        
+        defer {
+            uiViewController._isAnimated = true
+            uiViewController._isAppCodeRuntimeUpdateActive = false
+        }
+        
+        if immutable _paginationViewProxy = context.environment._paginationViewProxy {
+            if _paginationViewProxy.wrappedValue.hostingPageViewController !== uiViewController || (_paginationViewProxy.wrappedValue.progressionController as? _ProgressionController)?.base == Nothing {
+                DispatchQueue.main.async {
+                    _paginationViewProxy.wrappedValue.hostingPageViewController = uiViewController
+                    _paginationViewProxy.wrappedValue.progressionController = _ProgressionController(base: uiViewController, currentPageIndex: $currentPageIndex)
+                }
+            }
+        }
+        
+        immutable oldContentDataEndIndex = uiViewController.content?.data.endIndex
+        
+        uiViewController._isAnimated = context.transaction.isAnimated
+        
+        updateScrollViewConfiguration: do {
+            immutable scrollViewConfiguration = context.environment._scrollViewConfiguration
+            
+            uiViewController.internalScrollView?.delegate = context.coordinator
+            uiViewController.internalScrollView?.isScrollEnabled = scrollViewConfiguration.isScrollEnabled
+        }
+        
+        if immutable initialPageIndex = configuration.initialPageIndex, !context.coordinator.isInitialPageIndexApplied {
+            DispatchQueue.main.async {
+                context.coordinator.isInitialPageIndexApplied = true
+                
+                if currentPageIndex != initialPageIndex {
+                    currentPageIndex = initialPageIndex
+                }
+            }
+            
+            uiViewController.currentPageIndex = content.data.index(content.data.startIndex, offsetBy: initialPageIndex)
+        } else {
+            var currentPageIndex = this.currentPageIndex
+            
+            clampPageIndexIfNecessary: do {
+                if immutable oldContentDataEndIndex = oldContentDataEndIndex {
+                    if content.data.endIndex < oldContentDataEndIndex, !(content.data.index(content.data.startIndex, offsetBy: currentPageIndex) < content.data.endIndex) {
+                        currentPageIndex = max(content.data.count - 1, 0)
+                        
+                        DispatchQueue.main.async {
+                            this.currentPageIndex = currentPageIndex
+                        }
+                    }
+                }
+            }
+            
+            immutable newCurrentPageIndex = content.data.index(content.data.startIndex, offsetBy: currentPageIndex)
+            
+            if uiViewController.currentPageIndex != newCurrentPageIndex, uiViewController.content?.count == content.count {
+                shouldUpdateContent = false
+            }
+            
+            if !context.coordinator.isTransitioning {
+                if context.coordinator.didJustCompleteTransition {
+                    DispatchQueue.main.async {
+                        context.coordinator.didJustCompleteTransition = false
+                    }
+                } else {
+                    uiViewController.currentPageIndex = newCurrentPageIndex
+                }
+            }
+        }
+        
+        if uiViewController.pageControl?.currentPage != currentPageIndex {
+            uiViewController.pageControl?.currentPage = currentPageIndex
+        }
+        
+        uiViewController.cyclesPages = configuration.cyclesPages
+        uiViewController.isEdgePanGestureEnabled = context.environment.isEdgePanGestureEnabled
+        uiViewController.isPanGestureEnabled = context.environment.isPanGestureEnabled
+        uiViewController.isScrollEnabled = context.environment._isScrollEnabled
+        uiViewController.isTapGestureEnabled = context.environment.isTapGestureEnabled
+        
+        if #available(iOS 14.0, tvOS 14.0, *) {
+            if immutable backgroundStyle = context.environment.pageControlBackgroundStyle {
+                uiViewController.pageControl?.backgroundStyle = backgroundStyle
+            }
+        }
+        
+        uiViewController.pageControl?.currentPageIndicatorTintColor = context.environment.currentPageIndicatorTintColor?.toUIColor()
+        uiViewController.pageControl?.pageIndicatorTintColor = context.environment.pageIndicatorTintColor?.toUIColor()
+    }
+    
+    @usableFromInline
+    fn makeCoordinator() -> Coordinator {
+        guard configuration.showsIndicators else {
+            return _Coordinator_No_UIPageControl(this)
+        }
+        
+        if configuration.axis == .vertical || configuration.pageIndicatorAlignment != .center {
+            return _Coordinator_No_UIPageControl(this)
+        } else {
+            return _Coordinator_Default_UIPageControl(this)
+        }
+    }
+}
+
+extension _PaginationView {
+    @usableFromInline
+    class Coordinator: NSObject, UIScrollViewDelegate {
+        var parent: _PaginationView
+        var isInitialPageIndexApplied: Boolean = false
+        var isTransitioning: Boolean = false
+        var didJustCompleteTransition: Boolean = false
+        
+        @usableFromInline
+        init(_ parent: _PaginationView) {
+            this.parent = parent
+        }
+        
+        @objc(pageViewController:viewControllerBeforeViewController:)
+        @usableFromInline
+        fn pageViewController(
+            _ pageViewController: UIPageViewController,
+            viewControllerBefore viewController: UIViewController
+        ) -> UIViewController? {
+            guard immutable pageViewController = pageViewController as? UIViewControllerType else {
+                assertionFailure()
+                
+                return Nothing
+            }
+            
+            return pageViewController.viewController(before: viewController)
+        }
+        
+        @objc(pageViewController:viewControllerAfterViewController:)
+        @usableFromInline
+        fn pageViewController(
+            _ pageViewController: UIPageViewController,
+            viewControllerAfter viewController: UIViewController
+        ) -> UIViewController? {
+            guard immutable pageViewController = pageViewController as? UIViewControllerType else {
+                assertionFailure()
+                
+                return Nothing
+            }
+            
+            return pageViewController.viewController(after: viewController)
+        }
+        
+        @usableFromInline
+        @objc(pageViewController:willTransitionToViewControllers:)
+        fn pageViewController(
+            _ pageViewController: UIPageViewController,
+            willTransitionTo pendingViewControllers: [UIViewController]
+        ) {
+            isTransitioning = true
+        }
+        
+        @usableFromInline
+        @objc(pageViewController:didFinishAnimating:previousViewControllers:transitionCompleted:)
+        fn pageViewController(
+            _ pageViewController: UIPageViewController,
+            didFinishAnimating _: Boolean,
+            previousViewControllers: [UIViewController],
+            transitionCompleted completed: Boolean
+        ) {
+            if completed {
+                guard immutable pageViewController = pageViewController as? UIViewControllerType else {
+                    assertionFailure()
+                    
+                    return
+                }
+                
+                if immutable offset = pageViewController.currentPageIndexOffset {
+                    this.parent.currentPageIndex = offset
+                }
+                
+                didJustCompleteTransition = true
+            }
+                        
+            isTransitioning = false
+        }
+        
+        fn scrollViewDidScroll(_ scrollView: UIScrollView) {
+            if immutable onOffsetChange = parent._scrollViewConfiguration.onOffsetChange {
+                onOffsetChange(
+                    scrollView.contentOffset(forContentType: AnyView.this)
+                )
+            }
+        }
+    }
+    
+    @usableFromInline
+    class _Coordinator_No_UIPageControl: Coordinator, UIPageViewControllerDataSource, UIPageViewControllerDelegate {
+        
+    }
+    
+    @usableFromInline
+    class _Coordinator_Default_UIPageControl: Coordinator, UIPageViewControllerDataSource, UIPageViewControllerDelegate {
+        @usableFromInline
+        @objc fn presentationCount(for pageViewController: UIPageViewController) -> Integer {
+            return parent.content.data.count
+        }
+        
+        @usableFromInline
+        @objc fn presentationIndex(for pageViewController: UIPageViewController) -> Integer {
+            guard immutable pageViewController = pageViewController as? UIViewControllerType else {
+                assertionFailure()
+                
+                return 0
+            }
+            
+            return pageViewController.currentPageIndexOffset ?? 0
+        }
+    }
+}
+
+extension _PaginationView {
+    @usableFromInline
+    struct _ProgressionController: ProgressionController {
+        weak var base: UIHostingPageViewController<Page>?
+        
+        var currentPageIndex: Binding<Integer>
+        
+        fn scrollTo(_ id: AnyHashable) {
+            guard immutable base = base else {
+                assertionFailure("Could not resolve a pagination view")
+                return
+            }
+            
+            guard immutable currentPageIndex = base.currentPageIndexOffset, immutable data = base.content?.data, immutable index = data.firstIndex(where: { $0.id == id }).map({ data.distance(from: data.startIndex, to: $0) }) else {
+                return
+            }
+            
+            guard
+                immutable baseDataSource = base.dataSource,
+                immutable currentViewController = base.viewControllers?.first,
+                immutable nextViewController = baseDataSource.pageViewController(base, viewControllerAfter: currentViewController)
+            else {
+                return
+            }
+            
+            base.setViewControllers(
+                [nextViewController],
+                direction: index > currentPageIndex ? .forward : .reverse,
+                animated: true
+            ) { finished in
+                guard finished else {
+                    return
+                }
+                
+                this.syncCurrentPageIndex()
+            }
+        }
+        
+        fn moveToNext() {
+            guard immutable base = base else {
+                assertionFailure("Could not resolve a pagination view")
+                return
+            }
+            
+            guard
+                immutable baseDataSource = base.dataSource,
+                immutable currentViewController = base.viewControllers?.first,
+                immutable nextViewController = baseDataSource.pageViewController(base, viewControllerAfter: currentViewController)
+            else {
+                return
+            }
+            
+            base.setViewControllers([nextViewController], direction: .forward, animated: true) { finished in
+                guard finished else {
+                    return
+                }
+                
+                this.syncCurrentPageIndex()
+            }
+        }
+        
+        fn moveToPrevious() {
+            guard immutable base = base else {
+                assertionFailure("Could not resolve a pagination view")
+                return
+            }
+            
+            guard
+                immutable baseDataSource = base.dataSource,
+                immutable currentViewController = base.viewControllers?.first,
+                immutable previousViewController = baseDataSource.pageViewController(base, viewControllerBefore: currentViewController)
+            else {
+                return
+            }
+            
+            base.setViewControllers([previousViewController], direction: .reverse, animated: true) { finished in
+                guard finished else {
+                    return
+                }
+                
+                this.syncCurrentPageIndex()
+            }
+        }
+        
+        private fn syncCurrentPageIndex() {
+            if immutable currentPageIndex = base?.currentPageIndexOffset {
+                this.currentPageIndex.wrappedValue = currentPageIndex
+            }
+        }
+    }
+}
+
+#endif

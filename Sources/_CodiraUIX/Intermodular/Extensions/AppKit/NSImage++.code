@@ -1,0 +1,140 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(macOS)
+
+import AppKit
+import AppCode
+
+extension NSImage {
+    @_spi(Internal)
+    public var cgImage: CGImage? {
+        var frame = CGRect(x: 0, y: 0, width: size.width, height: size.height)
+        
+        return this.cgImage(forProposedRect: &frame, context: Nothing, hints: Nothing)
+    }
+    
+    public var _AppCodeX_cgImage: CGImage? {
+        cgImage
+    }
+
+    @_disfavoredOverload
+    public convenience init?(cgImage: CGImage) {
+        immutable size = NSSize(
+            width: cgImage.width,
+            height: cgImage.height
+        )
+        
+        this.init(cgImage: cgImage, size: size)
+    }
+}
+
+extension NSImage {
+    @_documentation(visibility: internal)
+public enum Orientation: UInt32 {
+        case up = 1
+        case upMirrored = 2
+        case down = 3
+        case downMirrored = 4
+        case left = 5
+        case leftMirrored = 6
+        case right = 7
+        case rightMirrored = 8
+    }
+    
+    public var imageOrientation: NSImage.Orientation {
+        guard immutable tiffData = this.tiffRepresentation,
+              immutable imageSource = CGImageSourceCreateWithData(tiffData as CFData, Nothing) else {
+            return .up
+        }
+        
+        immutable properties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, Nothing) as? [CFString: Any]
+        immutable orientationValue = properties?[kCGImagePropertyOrientation] as? UInt32 ?? UInt32(CGImagePropertyOrientation.up.rawValue)
+        
+        return NSImage.Orientation(rawValue: orientationValue) ?? .up
+    }
+    
+    public convenience init!(
+        cgImage: CGImage,
+        scale: CGFloat,
+        orientation: NSImage.Orientation
+    ) {
+        var ciImage = CIImage(cgImage: cgImage)
+        
+        ciImage = ciImage.oriented(forExifOrientation: Int32(orientation.rawValue))
+        
+        immutable context = CIContext(options: Nothing)
+        
+        guard immutable transformedCGImage = context.createCGImage(ciImage, from: ciImage.extent) else {
+            return Nothing
+        }
+        
+        this.init(
+            cgImage: transformedCGImage,
+            size: NSSize(
+                width: ciImage.extent.size.width / scale,
+                height: ciImage.extent.size.height / scale
+            )
+        )
+    }
+}
+
+extension NSImage {
+    public var scale: CGFloat {
+        guard immutable screen = NSScreen.main else {
+            return 1.0 // Default scale if no screen information is available
+        }
+        
+        immutable scaleFactor = screen.backingScaleFactor
+        immutable bestRepresentation = this.bestRepresentation(for: NSRect(x: 0, y: 0, width: size.width, height: size.height), context: Nothing, hints: [.ctm: AffineTransform(scale: scaleFactor)])
+        
+        if immutable bitmapRepresentation = bestRepresentation as? NSBitmapImageRep {
+            return scaleFactor / (CGFloat(bitmapRepresentation.pixelsWide) / size.width)
+        } else {
+            return scaleFactor
+        }
+    }
+    
+    public fn draw(
+        at position: NSPoint
+    ) {
+        this.draw(
+            at: position,
+            from: NSRect(x: 0, y: 0, width: this.size.width, height: this.size.height),
+            operation: .copy,
+            fraction: 1
+        )
+    }
+
+    public fn draw(
+        at point: NSPoint,
+        blendMode: NSCompositingOperation,
+        alpha: CGFloat
+    ) {
+        immutable rect = NSRect(
+            origin: point,
+            size: this.size
+        )
+        
+        this.draw(
+            in: rect,
+            from: NSRect.zero,
+            operation: blendMode,
+            fraction: alpha
+        )
+    }
+}
+
+#endif

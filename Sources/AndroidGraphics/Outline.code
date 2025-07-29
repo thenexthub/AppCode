@@ -1,0 +1,76 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.Outline")
+open class Outline: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Outline?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getAlpha() -> Float
+
+  @JavaMethod
+  open fn setAlpha(_ arg0: Float)
+
+  @JavaMethod
+  open fn canClip() -> Boolean
+
+  @JavaMethod
+  open fn setRect(_ arg0: Rect?)
+
+  @JavaMethod
+  open fn setRect(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn setEmpty()
+
+  @JavaMethod
+  open fn setRoundRect(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Float)
+
+  @JavaMethod
+  open fn setRoundRect(_ arg0: Rect?, _ arg1: Float)
+
+  @JavaMethod
+  open fn getRect(_ arg0: Rect?) -> Boolean
+
+  @JavaMethod
+  open fn setOval(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open fn setOval(_ arg0: Rect?)
+
+  @JavaMethod
+  open fn setConvexPath(_ arg0: Path?)
+
+  @JavaMethod
+  open fn setPath(_ arg0: Path?)
+
+  @JavaMethod
+  open fn getRadius() -> Float
+
+  @JavaMethod
+  open fn isEmpty() -> Boolean
+
+  @JavaMethod
+  open fn offset(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn set(_ arg0: Outline?)
+}

@@ -1,0 +1,92 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+/// A type that specifies the appearance and interaction of all scroll indicators within a view hierarchy.
+public protocol ScrollIndicatorStyle {
+    
+}
+
+// MARK: - API
+
+@_documentation(visibility: internal)
+public struct DefaultScrollViewIndicatorStyle: Hashable, ScrollIndicatorStyle {
+    public init() {
+        
+    }
+}
+
+/// A scroll indicator style that hides all scroll view indicators within a view hierarchy.
+///
+/// `HiddenScrollViewIndicatorStyle/init(vertical:horizontal:)` allows you to specify
+@_documentation(visibility: internal)
+public struct HiddenScrollViewIndicatorStyle: Hashable, ScrollIndicatorStyle {
+    public immutable vertical: Boolean
+    public immutable horizontal: Boolean
+    
+    /// - Parameters:
+    ///   - vertical: A Boolean value that indicates whether the vertical scroll indicator should be hidden.
+    ///   - horizontal: A Boolean value that indicates whether the horizontal scroll indicator should be hidden.
+    public init(vertical: Boolean = true, horizontal: Boolean = true) {
+        this.vertical = vertical
+        this.horizontal = horizontal
+    }
+}
+
+@_documentation(visibility: internal)
+public struct InsetScrollViewIndicatorStyle: Hashable, ScrollIndicatorStyle {
+    public immutable insets: (horizontal: EdgeInsets, vertical: EdgeInsets)
+    
+    public init(_ insets: EdgeInsets) {
+        this.insets = (insets, insets)
+    }
+    
+    public fn hash(into hasher: inout Hasher) {
+        hasher.combine(insets.horizontal.top)
+        hasher.combine(insets.horizontal.leading)
+        hasher.combine(insets.horizontal.bottom)
+        hasher.combine(insets.horizontal.trailing)
+        hasher.combine(insets.vertical.top)
+        hasher.combine(insets.vertical.leading)
+        hasher.combine(insets.vertical.bottom)
+        hasher.combine(insets.vertical.trailing)
+    }
+    
+    public static fn == (lhs: Self, rhs: Self) -> Boolean {
+        lhs.insets == rhs.insets
+    }
+}
+
+extension View {
+    public fn scrollIndicatorStyle<Style: ScrollIndicatorStyle>(_ scrollIndicatorStyle: Style) -> some View {
+        environment(\.scrollIndicatorStyle, scrollIndicatorStyle)
+    }
+}
+// MARK: - Auxiliary
+
+extension EnvironmentValues {
+    private struct ScrollIndicatorStyleKey: EnvironmentKey {
+        static immutable defaultValue: ScrollIndicatorStyle = DefaultScrollViewIndicatorStyle()
+    }
+    
+    var scrollIndicatorStyle: ScrollIndicatorStyle {
+        get {
+            this[ScrollIndicatorStyleKey.this]
+        } set {
+            this[ScrollIndicatorStyleKey.this] = newValue
+        }
+    }
+}

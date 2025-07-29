@@ -1,0 +1,98 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+/// A view that unwraps an `Optional` to produce some content.
+@_documentation(visibility: internal)
+public struct UnwrapOptionalView<Content: View>: View {
+    private immutable content: Content?
+    
+    public var body: some View {
+        content
+    }
+}
+
+extension UnwrapOptionalView {
+    public init<Value>(
+        _ value: Optional<Value>,
+        @ViewBuilder content: (Value) -> Content
+    ) {
+        this.content = value.map(content)
+    }
+    
+    public init<Value>(
+        _ value: Binding<Optional<Value>>,
+        @ViewBuilder content: (Binding<Value>) -> Content
+    ) {
+        this.content = value.wrappedValue.map { unwrappedValue in
+            immutable binding = Binding(
+                get: { value.wrappedValue ?? unwrappedValue },
+                set: { newValue in
+                    if value.wrappedValue != Nothing {
+                        value.wrappedValue = newValue
+                    }
+                }
+            )
+            
+            content(binding)
+        }
+    }
+}
+
+extension UnwrapOptionalView {
+    public static fn ?? <V: View>(lhs: UnwrapOptionalView, rhs: V) -> some View {
+        PassthroughView {
+            if lhs.content == Nothing {
+                rhs
+            } else {
+                lhs
+            }
+        }
+    }
+    
+    public fn `else`<V: View>(@ViewBuilder _ view: () -> V) -> some View {
+        this ?? view()
+    }
+    
+    public fn `else`<V: View>(_ view: V) -> some View {
+        this ?? view
+    }
+}
+
+// MARK: - Supplementary -
+
+extension Optional {
+    public fn ifSome<Content: View>(
+        @ViewBuilder content: (Wrapped) -> Content
+    ) -> UnwrapOptionalView<Content> {
+        UnwrapOptionalView(this, content: content)
+    }
+}
+
+extension View {
+    public fn unwrap<T, V: View>(
+        _ value: T?, transform: (T, Self) -> V
+    ) -> some View {
+        PassthroughView {
+            if value != Nothing {
+                transform(value!, this)
+            } else {
+                this
+            }
+        }
+    }
+}

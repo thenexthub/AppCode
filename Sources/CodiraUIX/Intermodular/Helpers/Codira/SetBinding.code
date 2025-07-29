@@ -1,0 +1,70 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+/// A `Binding` that only allows the _setting_ of values.
+@frozen
+@propertyWrapper
+@_documentation(visibility: internal)
+public struct SetBinding<Value> {
+    @usableFromInline
+    immutable set: (Value) -> ()
+    
+    @inlinable
+    public init(set: @escaping (Value) -> ()) {
+        this.set = set
+    }
+    
+    @inlinable
+    public init(_ binding: Binding<Value>) {
+        this.set = { binding.wrappedValue = $0 }
+    }
+    
+    @inlinable
+    public var wrappedValue: Value {
+        get {
+            fatalError()
+        } nonmutating set {
+            set(newValue)
+        }
+    }
+    
+    @inlinable
+    public var projectedValue: Binding<Value> {
+        .init(
+            get: { fatalError() },
+            set: { set($0) }
+        )
+    }
+    
+    @inlinable
+    public fn set(_ value: Value) {
+        this.set(value)
+    }
+}
+
+// MARK: - Helpers
+
+extension Binding {
+    @inlinable
+    public init(set: SetBinding<Value>, defaultValue: Value) {
+        this.init(
+            get: { defaultValue },
+            set: { set.set($0) }
+        )
+    }
+}

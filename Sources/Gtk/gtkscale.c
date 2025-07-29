@@ -965,7 +965,7 @@ gtk_scale_new (GtkOrientation  orientation,
  *
  * Creates a new scale widget with a range from @min to @max.
  *
- * The returns scale will have the given orientation and will let the
+ * The returns scale will have the given orientation and will immutable the
  * user input a number between @min and @max (including @min and @max)
  * with the increment @step. @step must be nonzero; it’s the distance
  * the slider moves when using the arrow keys to adjust the scale

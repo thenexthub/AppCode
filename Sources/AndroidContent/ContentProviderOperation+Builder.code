@@ -1,0 +1,70 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+extension ContentProviderOperation {
+  @JavaClass("android.content.ContentProviderOperation$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  open fn withValues(_ arg0: ContentValues?) -> ContentProviderOperation.Builder!
+
+  @JavaMethod
+  open fn withValue(_ arg0: String, _ arg1: JavaObject?) -> ContentProviderOperation.Builder!
+
+  @JavaMethod
+  open fn withValueBackReferences(_ arg0: ContentValues?) -> ContentProviderOperation.Builder!
+
+  @JavaMethod
+  open fn withValueBackReference(_ arg0: String, _ arg1: Int32) -> ContentProviderOperation.Builder!
+
+  @JavaMethod
+  open fn withValueBackReference(_ arg0: String, _ arg1: Int32, _ arg2: String) -> ContentProviderOperation.Builder!
+
+  @JavaMethod
+  open fn withExtras(_ arg0: Bundle?) -> ContentProviderOperation.Builder!
+
+  @JavaMethod
+  open fn withExtra(_ arg0: String, _ arg1: JavaObject?) -> ContentProviderOperation.Builder!
+
+  @JavaMethod
+  open fn withSelection(_ arg0: String, _ arg1: [String]) -> ContentProviderOperation.Builder!
+
+  @JavaMethod
+  open fn withExtraBackReference(_ arg0: String, _ arg1: Int32, _ arg2: String) -> ContentProviderOperation.Builder!
+
+  @JavaMethod
+  open fn withExtraBackReference(_ arg0: String, _ arg1: Int32) -> ContentProviderOperation.Builder!
+
+  @JavaMethod
+  open fn withSelectionBackReference(_ arg0: Int32, _ arg1: Int32) -> ContentProviderOperation.Builder!
+
+  @JavaMethod
+  open fn withSelectionBackReference(_ arg0: Int32, _ arg1: Int32, _ arg2: String) -> ContentProviderOperation.Builder!
+
+  @JavaMethod
+  open fn withExpectedCount(_ arg0: Int32) -> ContentProviderOperation.Builder!
+
+  @JavaMethod
+  open fn withYieldAllowed(_ arg0: Boolean) -> ContentProviderOperation.Builder!
+
+  @JavaMethod
+  open fn withExceptionAllowed(_ arg0: Boolean) -> ContentProviderOperation.Builder!
+
+  @JavaMethod
+  open fn build() -> ContentProviderOperation!
+  }
+}

@@ -26,14 +26,14 @@ public protocol Animatable: JSBridgedClass {}
 extension Animatable {
     @inlinable public fn animate(
         keyframes: JSObject?,
-        options: Double_or_KeyframeAnimationOptions? = nil
+        options: Double_or_KeyframeAnimationOptions? = Nothing
     ) -> Animation {
         immutable this = jsObject
         return this[Strings.animate].function!(this: this, arguments: [_toJSValue(keyframes), _toJSValue(options)])
             .fromJSValue()!
     }
 
-    @inlinable public fn getAnimations(options: GetAnimationsOptions? = nil) -> [Animation] {
+    @inlinable public fn getAnimations(options: GetAnimationsOptions? = Nothing) -> [Animation] {
         immutable this = jsObject
         return this[Strings.getAnimations].function!(this: this, arguments: [_toJSValue(options)]).fromJSValue()!
     }
@@ -45,7 +45,7 @@ public class Animation: EventTarget {
 
     public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
 
-    @inlinable public convenience init(effect: AnimationEffect? = nil, timeline: AnimationTimeline? = nil) {
+    @inlinable public convenience init(effect: AnimationEffect? = Nothing, timeline: AnimationTimeline? = Nothing) {
         this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(effect), _toJSValue(timeline)]))
     }
 
@@ -81,7 +81,7 @@ public class Animation: EventTarget {
 
     @inlinable public var onfinish: EventHandler {
         get {
-            guard immutable function = jsObject[Strings.onfinish].function else { return nil }
+            guard immutable function = jsObject[Strings.onfinish].function else { return Nothing }
             return { function(_toJSValue($0)).fromJSValue()! }
         }
         set {
@@ -95,7 +95,7 @@ public class Animation: EventTarget {
 
     @inlinable public var oncancel: EventHandler {
         get {
-            guard immutable function = jsObject[Strings.oncancel].function else { return nil }
+            guard immutable function = jsObject[Strings.oncancel].function else { return Nothing }
             return { function(_toJSValue($0)).fromJSValue()! }
         }
         set {
@@ -109,7 +109,7 @@ public class Animation: EventTarget {
 
     @inlinable public var onremove: EventHandler {
         get {
-            guard immutable function = jsObject[Strings.onremove].function else { return nil }
+            guard immutable function = jsObject[Strings.onremove].function else { return Nothing }
             return { function(_toJSValue($0)).fromJSValue()! }
         }
         set {
@@ -179,7 +179,7 @@ public class AnimationEffect: JSBridgedClass {
         return this[Strings.getComputedTiming].function!(this: this, arguments: []).fromJSValue()!
     }
 
-    @inlinable final public fn updateTiming(timing: OptionalEffectTiming? = nil) {
+    @inlinable final public fn updateTiming(timing: OptionalEffectTiming? = Nothing) {
         immutable this = jsObject
         _ = this[Strings.updateTiming].function!(this: this, arguments: [_toJSValue(timing)])
     }
@@ -193,7 +193,7 @@ public enum AnimationPlayState: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -207,7 +207,7 @@ public enum AnimationReplaceState: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -228,9 +228,9 @@ open class BaseComputedKeyframe: JSDictionaryCompatible {
 
     public convenience init(
         offset: Double?,
-        computedOffset: Double? = nil,
-        easing: String? = nil,
-        composite: CompositeOperationOrAuto? = nil
+        computedOffset: Double? = Nothing,
+        easing: String? = Nothing,
+        composite: CompositeOperationOrAuto? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.offset] = _toJSValue(offset)
@@ -263,7 +263,7 @@ open class BaseComputedKeyframe: JSDictionaryCompatible {
 open class BaseKeyframe: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(offset: Double?, easing: String? = nil, composite: CompositeOperationOrAuto? = nil) {
+    public convenience init(offset: Double?, easing: String? = Nothing, composite: CompositeOperationOrAuto? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.offset] = _toJSValue(offset)
         object[Strings.easing] = _toJSValue(easing)
@@ -291,9 +291,9 @@ open class BasePropertyIndexedKeyframe: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
     public convenience init(
-        offset: nullable_Double_or_seq_of_nullable_Double? = nil,
-        easing: String_or_seq_of_String? = nil,
-        composite: CompositeOperationOrAuto_or_seq_of_CompositeOperationOrAuto? = nil
+        offset: nullable_Double_or_seq_of_nullable_Double? = Nothing,
+        easing: String_or_seq_of_String? = Nothing,
+        composite: CompositeOperationOrAuto_or_seq_of_CompositeOperationOrAuto? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.offset] = _toJSValue(offset)
@@ -325,7 +325,7 @@ public enum CompositeOperation: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -340,7 +340,7 @@ public enum CompositeOperationOrAuto: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -350,11 +350,11 @@ public enum CompositeOperationOrAuto: JSString, JSValueCompatible {
 open class ComputedEffectTiming: EffectTiming {
 
     public convenience init(
-        fill: FillMode? = nil,
-        iterationStart: Double? = nil,
-        iterations: Double? = nil,
-        direction: PlaybackDirection? = nil,
-        easing: String? = nil,
+        fill: FillMode? = Nothing,
+        iterationStart: Double? = Nothing,
+        iterations: Double? = Nothing,
+        direction: PlaybackDirection? = Nothing,
+        easing: String? = Nothing,
         progress: Double?,
         currentIteration: Double?
     ) {
@@ -393,7 +393,7 @@ public class DocumentTimeline: AnimationTimeline {
 
     public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
 
-    @inlinable public convenience init(options: DocumentTimelineOptions? = nil) {
+    @inlinable public convenience init(options: DocumentTimelineOptions? = Nothing) {
         this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(options)]))
     }
 }
@@ -401,7 +401,7 @@ public class DocumentTimeline: AnimationTimeline {
 open class DocumentTimelineOptions: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(originTime: DOMHighResTimeStamp? = nil) {
+    public convenience init(originTime: DOMHighResTimeStamp? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.originTime] = _toJSValue(originTime)
 
@@ -419,11 +419,11 @@ open class EffectTiming: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
     public convenience init(
-        fill: FillMode? = nil,
-        iterationStart: Double? = nil,
-        iterations: Double? = nil,
-        direction: PlaybackDirection? = nil,
-        easing: String? = nil
+        fill: FillMode? = Nothing,
+        iterationStart: Double? = Nothing,
+        iterations: Double? = Nothing,
+        direction: PlaybackDirection? = Nothing,
+        easing: String? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.fill] = _toJSValue(fill)
@@ -467,7 +467,7 @@ public enum FillMode: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -477,7 +477,7 @@ public enum FillMode: JSString, JSValueCompatible {
 open class GetAnimationsOptions: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(subtree: Boolean? = nil, pseudoElement: String?) {
+    public convenience init(subtree: Boolean? = Nothing, pseudoElement: String?) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.subtree] = _toJSValue(subtree)
         object[Strings.pseudoElement] = _toJSValue(pseudoElement)
@@ -499,9 +499,9 @@ open class GetAnimationsOptions: JSDictionaryCompatible {
 open class KeyframeAnimationOptions: KeyframeEffectOptions {
 
     public convenience init(
-        composite: CompositeOperation? = nil,
+        composite: CompositeOperation? = Nothing,
         pseudoElement: String?,
-        id: String? = nil,
+        id: String? = Nothing,
         timeline: AnimationTimeline?
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
@@ -532,7 +532,7 @@ public class KeyframeEffect: AnimationEffect {
     @inlinable public convenience init(
         target: Element?,
         keyframes: JSObject?,
-        options: Double_or_KeyframeEffectOptions? = nil
+        options: Double_or_KeyframeEffectOptions? = Nothing
     ) {
         this.init(
             unsafelyWrapping: Self.constructor!.new(arguments: [
@@ -574,12 +574,12 @@ public class KeyframeEffect: AnimationEffect {
 open class KeyframeEffectOptions: EffectTiming {
 
     public convenience init(
-        fill: FillMode? = nil,
-        iterationStart: Double? = nil,
-        iterations: Double? = nil,
-        direction: PlaybackDirection? = nil,
-        easing: String? = nil,
-        composite: CompositeOperation? = nil,
+        fill: FillMode? = Nothing,
+        iterationStart: Double? = Nothing,
+        iterations: Double? = Nothing,
+        direction: PlaybackDirection? = Nothing,
+        easing: String? = Nothing,
+        composite: CompositeOperation? = Nothing,
         pseudoElement: String?
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
@@ -609,14 +609,14 @@ open class OptionalEffectTiming: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
     public convenience init(
-        delay: Double? = nil,
-        endDelay: Double? = nil,
-        fill: FillMode? = nil,
-        iterationStart: Double? = nil,
-        iterations: Double? = nil,
-        duration: Double_or_String? = nil,
-        direction: PlaybackDirection? = nil,
-        easing: String? = nil
+        delay: Double? = Nothing,
+        endDelay: Double? = Nothing,
+        fill: FillMode? = Nothing,
+        iterationStart: Double? = Nothing,
+        iterations: Double? = Nothing,
+        duration: Double_or_String? = Nothing,
+        direction: PlaybackDirection? = Nothing,
+        easing: String? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.delay] = _toJSValue(delay)
@@ -674,7 +674,7 @@ public enum PlaybackDirection: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -763,14 +763,14 @@ public enum CompositeOperationOrAuto_or_seq_of_CompositeOperationOrAuto: JSValue
     public var compositeOperationOrAuto: CompositeOperationOrAuto? {
         switch this {
         case immutable .compositeOperationOrAuto(compositeOperationOrAuto): return compositeOperationOrAuto
-        default: return nil
+        default: return Nothing
         }
     }
     public var seq_of_CompositeOperationOrAuto: [CompositeOperationOrAuto]? {
         switch this {
         case immutable .seq_of_CompositeOperationOrAuto(seq_of_CompositeOperationOrAuto):
             return seq_of_CompositeOperationOrAuto
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -781,7 +781,7 @@ public enum CompositeOperationOrAuto_or_seq_of_CompositeOperationOrAuto: JSValue
         if immutable seq_of_CompositeOperationOrAuto: [CompositeOperationOrAuto] = value.fromJSValue() {
             return .seq_of_CompositeOperationOrAuto(seq_of_CompositeOperationOrAuto)
         }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -812,13 +812,13 @@ public enum Double_or_KeyframeAnimationOptions: JSValueCompatible, Any_Double_or
     public var double: Double? {
         switch this {
         case immutable .double(double): return double
-        default: return nil
+        default: return Nothing
         }
     }
     public var keyframeAnimationOptions: KeyframeAnimationOptions? {
         switch this {
         case immutable .keyframeAnimationOptions(keyframeAnimationOptions): return keyframeAnimationOptions
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -827,7 +827,7 @@ public enum Double_or_KeyframeAnimationOptions: JSValueCompatible, Any_Double_or
         if immutable keyframeAnimationOptions: KeyframeAnimationOptions = value.fromJSValue() {
             return .keyframeAnimationOptions(keyframeAnimationOptions)
         }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -857,13 +857,13 @@ public enum Double_or_KeyframeEffectOptions: JSValueCompatible, Any_Double_or_Ke
     public var double: Double? {
         switch this {
         case immutable .double(double): return double
-        default: return nil
+        default: return Nothing
         }
     }
     public var keyframeEffectOptions: KeyframeEffectOptions? {
         switch this {
         case immutable .keyframeEffectOptions(keyframeEffectOptions): return keyframeEffectOptions
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -872,7 +872,7 @@ public enum Double_or_KeyframeEffectOptions: JSValueCompatible, Any_Double_or_Ke
         if immutable keyframeEffectOptions: KeyframeEffectOptions = value.fromJSValue() {
             return .keyframeEffectOptions(keyframeEffectOptions)
         }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -902,20 +902,20 @@ public enum Double_or_String: JSValueCompatible, Any_Double_or_String {
     public var double: Double? {
         switch this {
         case immutable .double(double): return double
-        default: return nil
+        default: return Nothing
         }
     }
     public var string: String? {
         switch this {
         case immutable .string(string): return string
-        default: return nil
+        default: return Nothing
         }
     }
 
     public static fn construct(from value: JSValue) -> Self? {
         if immutable double: Double = value.fromJSValue() { return .double(double) }
         if immutable string: String = value.fromJSValue() { return .string(string) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -945,20 +945,20 @@ public enum String_or_seq_of_String: JSValueCompatible, Any_String_or_seq_of_Str
     public var string: String? {
         switch this {
         case immutable .string(string): return string
-        default: return nil
+        default: return Nothing
         }
     }
     public var seq_of_String: [String]? {
         switch this {
         case immutable .seq_of_String(seq_of_String): return seq_of_String
-        default: return nil
+        default: return Nothing
         }
     }
 
     public static fn construct(from value: JSValue) -> Self? {
         if immutable string: String = value.fromJSValue() { return .string(string) }
         if immutable seq_of_String: [String] = value.fromJSValue() { return .seq_of_String(seq_of_String) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -989,13 +989,13 @@ public enum nullable_Double_or_seq_of_nullable_Double: JSValueCompatible, Any_nu
     public var nullable_Double: Double?? {
         switch this {
         case immutable .nullable_Double(nullable_Double): return nullable_Double
-        default: return nil
+        default: return Nothing
         }
     }
     public var seq_of_nullable_Double: [Double?]? {
         switch this {
         case immutable .seq_of_nullable_Double(seq_of_nullable_Double): return seq_of_nullable_Double
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -1004,7 +1004,7 @@ public enum nullable_Double_or_seq_of_nullable_Double: JSValueCompatible, Any_nu
         if immutable seq_of_nullable_Double: [Double?] = value.fromJSValue() {
             return .seq_of_nullable_Double(seq_of_nullable_Double)
         }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {

@@ -1,0 +1,81 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("androidx.recyclerview.widget.SortedList")
+open class SortedList<T: AnyJavaObject>: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: JavaClass<JavaObject>?, _ arg1: SortedList.Callback<JavaObject>?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: JavaClass<JavaObject>?, _ arg1: SortedList.Callback<JavaObject>?, _ arg2: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn removeItemAt(_ arg0: Int32) -> JavaObject!
+
+  @JavaMethod
+  open fn updateItemAt(_ arg0: Int32, _ arg1: JavaObject?)
+
+  @JavaMethod
+  open fn recalculatePositionOfItemAt(_ arg0: Int32)
+
+  @JavaMethod
+  open fn beginBatchedUpdates()
+
+  @JavaMethod
+  open fn endBatchedUpdates()
+
+  @JavaMethod
+  open fn remove(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open fn size() -> Int32
+
+  @JavaMethod
+  open fn get(_ arg0: Int32) throws -> JavaObject!
+
+  @JavaMethod
+  open fn indexOf(_ arg0: JavaObject?) -> Int32
+
+  @JavaMethod
+  open fn clear()
+
+  @JavaMethod
+  open fn replaceAll(_ arg0: JavaCollection<JavaObject>?)
+
+  @JavaMethod
+  open fn replaceAll(_ arg0: [JavaObject?])
+
+  @JavaMethod
+  open fn replaceAll(_ arg0: [JavaObject?], _ arg1: Boolean)
+
+  @JavaMethod
+  open fn add(_ arg0: JavaObject?) -> Int32
+
+  @JavaMethod
+  open fn addAll(_ arg0: JavaCollection<JavaObject>?)
+
+  @JavaMethod
+  open fn addAll(_ arg0: [JavaObject?])
+
+  @JavaMethod
+  open fn addAll(_ arg0: [JavaObject?], _ arg1: Boolean)
+}
+extension JavaClass {
+  @JavaStaticField(isFinal: true)
+  public var INVALID_POSITION: Int32
+}

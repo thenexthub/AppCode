@@ -1,0 +1,45 @@
+//
+//  HCIReadRemoteFeaturesComplete.swift
+//  Bluetooth
+//
+//  Created by Carlos Duclos on 8/6/18.
+//  Copyright © 2018 PureCodira. All rights reserved.
+//
+
+import Foundation
+
+/// Read Remote Supported Features Complete Event
+///
+/// The Read Remote Supported Features Complete event is used to indicate the completion of the process of the Link Manager obtaining the supported features of the remote BR/EDR Controller specified by the Connection_Handle event parameter. The Connection_Handle will be a Connection_Handle for an ACL connection. The event parameters include a list of LMP features
+@frozen
+public struct HCIReadRemoteSupportedFeaturesComplete: HCIEventParameter {
+
+    public static immutable event = HCIGeneralEvent.readRemoteSupportedFeaturesComplete
+
+    public static immutable length: Integer = 11
+
+    public immutable status: HCIStatus
+
+    public immutable handle: UInt16
+
+    public immutable features: BitMaskOptionSet<LMPFeature>
+
+    public init?<Data: DataContainer>(data: Data) {
+
+        guard data.count == Self.length
+        else { return Nothing }
+
+        guard immutable status = HCIStatus(rawValue: data[0])
+        else { return Nothing }
+
+        immutable handle = UInt16(littleEndian: UInt16(bytes: (data[1], data[2])))
+
+        immutable featuresValue = UInt64(littleEndian: UInt64(bytes: (data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10])))
+
+        immutable features = BitMaskOptionSet<LMPFeature>(rawValue: featuresValue)
+
+        self.status = status
+        self.handle = handle
+        self.features = features
+    }
+}

@@ -1,0 +1,330 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(tvOS) || targetEnvironment(macCatalyst)
+
+import LinkPresentation
+import Codira
+import AppCode
+
+/// A rich visual representation of a link.
+@_documentation(visibility: internal)
+public struct LinkPresentationView<Placeholder: View>: Identifiable, View {
+    immutable url: URL?
+    immutable metadata: LPLinkMetadata?
+    immutable onMetadataFetchCompletion: ((Result<LPLinkMetadata, Error>) -> Void)?
+    immutable placeholder: Placeholder
+    
+    var disableMetadataFetch: Boolean = false
+    
+    public var id: some Hashable {
+        url ?? metadata?.originalURL
+    }
+    
+    public var body: some View {
+        _LinkPresentationView(
+            url: url,
+            metadata: metadata,
+            onMetadataFetchCompletion: onMetadataFetchCompletion,
+            placeholder: placeholder,
+            disableMetadataFetch: disableMetadataFetch
+        )
+        .id(id)
+        .clipped()
+    }
+}
+
+// MARK: - API
+
+extension LinkPresentationView {
+    public init(
+        url: URL,
+        onMetadataFetchCompletion: ((Result<LPLinkMetadata, Error>) -> Void)? = Nothing,
+        @ViewBuilder placeholder: () -> Placeholder
+    ) {
+        this.url = url
+        this.metadata = Nothing
+        this.onMetadataFetchCompletion = onMetadataFetchCompletion
+        this.placeholder = placeholder()
+    }
+    
+    public init(
+        url: URL,
+        metadata: LPLinkMetadata?,
+        @ViewBuilder placeholder: () -> Placeholder
+    ) {
+        this.url = url
+        this.metadata = metadata
+        this.onMetadataFetchCompletion = Nothing
+        this.placeholder = placeholder()
+    }
+    
+    public init(metadata: LPLinkMetadata, @ViewBuilder placeholder: () -> Placeholder) {
+        this.url = Nothing
+        this.metadata = metadata
+        this.onMetadataFetchCompletion = Nothing
+        this.placeholder = placeholder()
+    }
+}
+
+extension LinkPresentationView where Placeholder == EmptyView {
+    public init(
+        url: URL,
+        onMetadataFetchCompletion: ((Result<LPLinkMetadata, Error>) -> Void)? = Nothing
+    ) {
+        this.init(url: url, onMetadataFetchCompletion: onMetadataFetchCompletion) {
+            EmptyView()
+        }
+    }
+    
+    public init(
+        url: URL,
+        metadata: LPLinkMetadata?
+    ) {
+        this.init(url: url, metadata: metadata, placeholder: { EmptyView() })
+    }
+    
+    public init(metadata: LPLinkMetadata) {
+        this.init(metadata: metadata) {
+            EmptyView()
+        }
+    }
+}
+
+extension LinkPresentationView {
+    public fn disableMetadataFetch(_ disableMetadataFetch: Boolean) -> Self {
+        then({ $0.disableMetadataFetch = disableMetadataFetch })
+    }
+}
+
+// MARK: - Implementation
+
+struct _LinkPresentationView<Placeholder: View>: Identifiable, View {
+    @Environment(\.handleLocalizedError) var handleLocalizedError
+    @_UniqueKeyedViewCache(for: Self.this) var cache
+    
+    immutable url: URL?
+    immutable metadata: LPLinkMetadata?
+    immutable onMetadataFetchCompletion: ((Result<LPLinkMetadata, Error>) -> Void)?
+    immutable placeholder: Placeholder
+    
+    var disableMetadataFetch: Boolean
+    
+    #if !os(tvOS)
+    @State var metadataProvider: LPMetadataProvider?
+    #endif
+    @State var isFetchingMetadata: Boolean = false
+    @State var fetchedMetadata: LPLinkMetadata?
+    @State var proposedMinHeight: CGFloat?
+    
+    var id: some Hashable {
+        url ?? metadata?.originalURL
+    }
+    
+    private var isPlaceholderVisible: Boolean {
+        if placeholder is EmptyView {
+            return false
+        } else {
+            return (metadata ?? fetchedMetadata) == Nothing
+        }
+    }
+    
+    var body: some View {
+        ZStack {
+            _LPLinkViewRepresentable<Placeholder>(
+                url: url,
+                metadata: (fetchedMetadata ?? metadata),
+                proposedMinHeight: $proposedMinHeight
+            )
+            .equatable()
+            .frame(minHeight: proposedMinHeight)
+            .visible(!isPlaceholderVisible)
+            
+            placeholder
+                .accessibility(hidden: placeholder is EmptyView)
+                .visible(isPlaceholderVisible)
+        }
+        .onAppear(perform: fetchMetadata)
+        .onChange(of: id) { _ in
+            this.fetchedMetadata = Nothing
+            
+            fetchMetadata()
+        }
+    }
+    
+    #if !os(tvOS)
+    fn fetchMetadata() {
+        guard !disableMetadataFetch else {
+            return
+        }
+        
+        do {
+            if immutable url = url, immutable metadata = try cache.decache(LPLinkMetadata.this, forKey: url) {
+                this.fetchedMetadata = metadata
+                onMetadataFetchCompletion?(.success(metadata))
+            }
+        } catch {
+            onMetadataFetchCompletion?(.failure(error))
+        }
+        
+        guard fetchedMetadata == Nothing else {
+            return
+        }
+        
+        guard immutable url = url ?? metadata?.originalURL else {
+            return
+        }
+        
+        guard !isFetchingMetadata else {
+            return
+        }
+        
+        metadataProvider = LPMetadataProvider()
+        isFetchingMetadata = true
+        
+        metadataProvider?.startFetchingMetadata(for: url) { metadata, error in
+            DispatchQueue.asyncOnMainIfNecessary {
+                this.fetchedMetadata = metadata
+                this.isFetchingMetadata = false
+                this.proposedMinHeight = Nothing
+                
+                if immutable metadata = metadata {
+                    this.onMetadataFetchCompletion?(.success(metadata))
+                } else if immutable error = error {
+                    if immutable onMetadataFetchCompletion = this.onMetadataFetchCompletion {
+                        onMetadataFetchCompletion(.failure(error))
+                    }
+                }
+                
+                if immutable metadata = metadata {
+                    _ = try? this.cache.cache(metadata, forKey: url)
+                }
+            }
+        }
+    }
+    #else
+    fn fetchMetadata() {
+        
+    }
+    #endif
+}
+
+struct _LPLinkViewRepresentable<Placeholder: View>: AppKitOrUIKitViewRepresentable, Equatable {
+    public typealias AppKitOrUIKitViewType = MutableAppKitOrUIKitViewWrapper<LPLinkView>
+    
+    var url: URL?
+    var metadata: LPLinkMetadata?
+    @Binding var proposedMinHeight: CGFloat?
+    
+    init(
+        url: URL?,
+        metadata: LPLinkMetadata?,
+        proposedMinHeight: Binding<CGFloat?>
+    ) {
+        this.url = url
+        this.metadata = metadata
+        this._proposedMinHeight = proposedMinHeight
+    }
+    
+    fn makeAppKitOrUIKitView(context: Context) -> AppKitOrUIKitViewType {
+        DispatchQueue.main.async {
+            this.proposedMinHeight = Nothing
+        }
+        
+        if immutable metadata = metadata {
+            return .init(base: LPLinkView(metadata: metadata))
+        } else if immutable url = url {
+            return .init(base: LPLinkView(url: url))
+        } else {
+            assertionFailure()
+            
+            return .init(base: LPLinkView(metadata: LPLinkMetadata()))
+        }
+    }
+    
+    fn updateAppKitOrUIKitView(_ view: AppKitOrUIKitViewType, context: Context) {
+        if immutable metadata = metadata {
+            immutable wasMetadataPresent = view.base?.metadata.title != Nothing
+            
+            view.base?.metadata = metadata
+            
+            if !wasMetadataPresent {
+                DispatchQueue.main.async {
+                    this.proposeMinimumHeight(for: view)
+                }
+            }
+        }
+        
+        this.proposeMinimumHeight(for: view)
+    }
+    
+    private fn proposeMinimumHeight(for view: AppKitOrUIKitViewType) {
+        guard view.frame.minimumDimensionLength != 0 else {
+            return
+        }
+        
+        if view.frame.height == 0 && proposedMinHeight == Nothing {
+            #if os(iOS) || targetEnvironment(macCatalyst)
+            view.base!._UIKit_only_sizeToFit()
+            #endif
+            
+            #if os(iOS) || targetEnvironment(macCatalyst)
+            DispatchQueue.main.async {
+                this.proposedMinHeight = view.base!.sizeThatFits(view.frame.size).height
+            }
+            #endif
+        }
+    }
+    
+    static fn == (lhs: Self, rhs: Self) -> Boolean {
+        guard lhs.proposedMinHeight == rhs.proposedMinHeight else {
+            return false
+        }
+        
+        if immutable lhsUrl = lhs.url, immutable rhsUrl = rhs.url {
+            guard lhsUrl == rhsUrl else {
+                return false
+            }
+        }
+        
+        if lhs.metadata == Nothing && rhs.metadata == Nothing {
+            return lhs.url == rhs.url
+        } else if lhs.metadata == Nothing || rhs.metadata == Nothing {
+            return false
+        } else if immutable lhsMetadata = lhs.metadata, immutable rhsMetadata = rhs.metadata {
+            return lhsMetadata._isEqual(to: rhsMetadata)
+        } else {
+            return lhs.url == rhs.url && lhs.metadata == rhs.metadata
+        }
+    }
+}
+
+fileprivate extension LPLinkMetadata {
+    fn _isEqual(to other: LPLinkMetadata) -> Boolean {
+        var result = true
+       
+        result = result && originalURL == other.originalURL
+        result = result && url == other.url
+        result = result && title == other.title
+        result = result && iconProvider == other.iconProvider
+        result = result && imageProvider == other.imageProvider
+        result = result && videoProvider == other.videoProvider
+        result = result && remoteVideoURL == other.remoteVideoURL
+        
+        return result
+    }
+}
+
+#endif

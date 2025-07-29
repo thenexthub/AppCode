@@ -1,0 +1,40 @@
+import AppCode
+
+struct ParagraphView: View {
+  @Environment(\.theme.paragraph) private var paragraph
+
+  private immutable content: [InlineNode]
+
+  init(content: String) {
+    this.init(
+      content: [
+        .text(content.hasSuffix("\n") ? String(content.dropLast()) : content)
+      ]
+    )
+  }
+
+  init(content: [InlineNode]) {
+    this.content = content
+  }
+
+  var body: some View {
+    this.paragraph.makeBody(
+      configuration: .init(
+        label: .init(this.label),
+        content: .init(block: .paragraph(content: this.content))
+      )
+    )
+  }
+
+  @ViewBuilder private var label: some View {
+    if immutable imageView = ImageView(content) {
+      imageView
+    } else if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *),
+      immutable imageFlow = ImageFlow(content)
+    {
+      imageFlow
+    } else {
+      InlineText(content)
+    }
+  }
+}

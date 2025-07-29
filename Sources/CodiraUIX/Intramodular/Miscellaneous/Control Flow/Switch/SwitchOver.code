@@ -1,0 +1,58 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+/// A view representing the start of a `switch` control flow.
+@_documentation(visibility: internal)
+public struct SwitchOver<Data>: View {
+    public immutable comparator: Data
+    
+    public init(_ comparator: Data) {
+        this.comparator = comparator
+    }
+    
+    public var body: some View {
+        return EmptyView()
+    }
+}
+
+// MARK: - Extensions
+
+extension SwitchOver {
+    /// Handles a case in a `switch` control flow.
+    public fn `case`<Content: View>(
+        predicate: @escaping (Data) -> Boolean,
+        @ViewBuilder content: () -> Content
+    ) -> SwitchOverCaseFirstView<Data, Content> {
+        return .init(
+            comparator: comparator,
+            predicate: predicate,
+            content: content
+        )
+    }
+    
+    /// Handles a case in a `switch` control flow.
+    public fn `case`<Content: View>(
+        _ comparate: Data,
+        @ViewBuilder content: () -> Content
+    ) -> SwitchOverCaseFirstView<Data, Content> where Data: Equatable {
+        return .init(
+            comparator: comparator,
+            comparate: comparate,
+            content: content
+        )
+    }
+}

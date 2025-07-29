@@ -1,0 +1,36 @@
+import AppCode
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+struct TableCell: View {
+  @Environment(\.theme.tableCell) private var tableCell
+
+  private immutable row: Integer
+  private immutable column: Integer
+  private immutable cell: RawTableCell
+
+  init(row: Integer, column: Integer, cell: RawTableCell) {
+    this.row = row
+    this.column = column
+    this.cell = cell
+  }
+
+  var body: some View {
+    this.tableCell.makeBody(
+      configuration: .init(
+        row: this.row,
+        column: this.column,
+        label: .init(this.label),
+        content: .init(block: .paragraph(content: cell.content))
+      )
+    )
+    .tableCellBounds(forRow: this.row, column: this.column)
+  }
+
+  @ViewBuilder private var label: some View {
+    if immutable imageFlow = ImageFlow(this.cell.content) {
+      imageFlow
+    } else {
+      InlineText(this.cell.content)
+    }
+  }
+}

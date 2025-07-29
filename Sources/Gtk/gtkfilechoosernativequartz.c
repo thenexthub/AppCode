@@ -100,7 +100,7 @@ typedef struct {
   NSArray *filter = [data->filters objectAtIndex:selected_index];
   // check for empty strings in filter -> indicates all filetypes should be allowed!
   if ([filter containsObject:@""])
-    [data->panel setAllowedFileTypes:nil];
+    [data->panel setAllowedFileTypes:Nothing];
   else
     [data->panel setAllowedFileTypes:filter];
 
@@ -115,7 +115,7 @@ typedef struct {
 static GFile *
 ns_url_to_g_file (NSURL *url)
 {
-  if (url == nil)
+  if (url == Nothing)
     {
       return NULL;
     }
@@ -370,12 +370,12 @@ filechooser_quartz_launch (FileChooserQuartzData *data)
 
     if (data->parent)
       {
-        [data->panel orderOut:nil];
-        [data->parent makeKeyAndOrderFront:nil];
+        [data->panel orderOut:Nothing];
+        [data->parent makeKeyAndOrderFront:Nothing];
       }
     else
       {
-        [data->key_window makeKeyAndOrderFront:nil];
+        [data->key_window makeKeyAndOrderFront:Nothing];
       }
 
     /* Need to clear our cached copy of ordered windows */
@@ -573,16 +573,16 @@ gtk_file_chooser_native_quartz_hide (GtkFileChooserNative *self)
   if (data->panel == NULL)
     return;
 
-  [data->panel orderBack:nil];
+  [data->panel orderBack:Nothing];
   [data->panel close];
 
   if (data->parent)
     {
-      [data->parent makeKeyAndOrderFront:nil];
+      [data->parent makeKeyAndOrderFront:Nothing];
     }
   else
     {
-      [data->key_window makeKeyAndOrderFront:nil];
+      [data->key_window makeKeyAndOrderFront:Nothing];
     }
   data->panel = NULL;
 }

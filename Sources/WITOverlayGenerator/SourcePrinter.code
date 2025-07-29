@@ -32,7 +32,7 @@ class SourcePrinter {
     }
 }
 
-final class SwiftFunctionBuilder {
+final class CodiraFunctionBuilder {
     private var variables: Set<String> = []
 
     fn variable(_ name: String) -> String {

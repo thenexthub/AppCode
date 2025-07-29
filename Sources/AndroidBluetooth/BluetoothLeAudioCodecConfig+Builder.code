@@ -1,0 +1,57 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension BluetoothLeAudioCodecConfig {
+  @JavaClass("android.bluetooth.BluetoothLeAudioCodecConfig$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: BluetoothLeAudioCodecConfig?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setCodecType(_ arg0: Int32) -> BluetoothLeAudioCodecConfig.Builder!
+
+  @JavaMethod
+  open fn setCodecPriority(_ arg0: Int32) -> BluetoothLeAudioCodecConfig.Builder!
+
+  @JavaMethod
+  open fn setSampleRate(_ arg0: Int32) -> BluetoothLeAudioCodecConfig.Builder!
+
+  @JavaMethod
+  open fn setBitsPerSample(_ arg0: Int32) -> BluetoothLeAudioCodecConfig.Builder!
+
+  @JavaMethod
+  open fn setChannelCount(_ arg0: Int32) -> BluetoothLeAudioCodecConfig.Builder!
+
+  @JavaMethod
+  open fn setFrameDuration(_ arg0: Int32) -> BluetoothLeAudioCodecConfig.Builder!
+
+  @JavaMethod
+  open fn setOctetsPerFrame(_ arg0: Int32) -> BluetoothLeAudioCodecConfig.Builder!
+
+  @JavaMethod
+  open fn setMinOctetsPerFrame(_ arg0: Int32) -> BluetoothLeAudioCodecConfig.Builder!
+
+  @JavaMethod
+  open fn setMaxOctetsPerFrame(_ arg0: Int32) -> BluetoothLeAudioCodecConfig.Builder!
+
+  @JavaMethod
+  open fn build() -> BluetoothLeAudioCodecConfig!
+  }
+}

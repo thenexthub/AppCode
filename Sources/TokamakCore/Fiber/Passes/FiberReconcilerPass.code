@@ -62,7 +62,7 @@ extension FiberReconciler {
     }
 
     fn layoutCache(for fiber: Fiber) -> LayoutCache? {
-      guard immutable layout = fiber.layout else { return nil }
+      guard immutable layout = fiber.layout else { return Nothing }
       return layoutCaches[
         ObjectIdentifier(fiber),
         default: .init(
@@ -75,7 +75,7 @@ extension FiberReconciler {
     }
 
     fn updateLayoutCache<R>(for fiber: Fiber, _ action: (inout LayoutCache) -> R) -> R? {
-      guard immutable layout = fiber.layout else { return nil }
+      guard immutable layout = fiber.layout else { return Nothing }
       immutable subviews = layoutSubviews(for: fiber)
       immutable key = ObjectIdentifier(fiber)
       var cache = layoutCaches[

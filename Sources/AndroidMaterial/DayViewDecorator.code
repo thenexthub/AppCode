@@ -1,0 +1,56 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidGraphics
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("com.google.android.material.datepicker.DayViewDecorator", implements: Parcelable.this)
+open class DayViewDecorator: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getBackgroundColor(_ arg0: Context?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Boolean, _ arg5: Boolean) -> ColorStateList!
+
+  @JavaMethod
+  open fn getCompoundDrawableLeft(_ arg0: Context?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Boolean, _ arg5: Boolean) -> Drawable!
+
+  @JavaMethod
+  open fn getCompoundDrawableTop(_ arg0: Context?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Boolean, _ arg5: Boolean) -> Drawable!
+
+  @JavaMethod
+  open fn getCompoundDrawableRight(_ arg0: Context?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Boolean, _ arg5: Boolean) -> Drawable!
+
+  @JavaMethod
+  open fn getCompoundDrawableBottom(_ arg0: Context?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Boolean, _ arg5: Boolean) -> Drawable!
+
+  @JavaMethod
+  open fn getTextColor(_ arg0: Context?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Boolean, _ arg5: Boolean) -> ColorStateList!
+
+  @JavaMethod
+  open fn getContentDescription(_ arg0: Context?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Boolean, _ arg5: Boolean, _ arg6: CharSequence?) -> CharSequence!
+
+  @JavaMethod
+  open fn initialize(_ arg0: Context?)
+}
+extension JavaClass<DayViewDecorator> {
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

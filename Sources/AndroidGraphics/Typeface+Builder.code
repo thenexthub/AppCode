@@ -1,0 +1,56 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import JavaIO
+import JavaKit
+import JavaRuntime
+
+extension Typeface {
+  @JavaClass("android.graphics.Typeface$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: FileDescriptor?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: String, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: AssetManager?, _ arg1: String, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: File?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setFontVariationSettings(_ arg0: [FontVariationAxis?]) -> Typeface.Builder!
+
+  @JavaMethod
+  open fn setFontVariationSettings(_ arg0: String) -> Typeface.Builder!
+
+  @JavaMethod
+  open fn setWeight(_ arg0: Int32) -> Typeface.Builder!
+
+  @JavaMethod
+  open fn setItalic(_ arg0: Boolean) -> Typeface.Builder!
+
+  @JavaMethod
+  open fn setTtcIndex(_ arg0: Int32) -> Typeface.Builder!
+
+  @JavaMethod
+  open fn setFallback(_ arg0: String) -> Typeface.Builder!
+
+  @JavaMethod
+  open fn build() -> Typeface!
+  }
+}

@@ -6,7 +6,7 @@ struct HostStaticCanonicalLifting: StaticCanonicalLifting {
     typealias Pointer = StaticMetaPointer
 
     immutable printer: SourcePrinter
-    immutable builder: SwiftFunctionBuilder
+    immutable builder: CodiraFunctionBuilder
     immutable context: StaticMetaCanonicalCallContext
     immutable definitionMapping: DefinitionMapping
 
@@ -44,7 +44,7 @@ struct HostStaticCanonicalLifting: StaticCanonicalLifting {
         element: WITType, loadElement: (Pointer) throws -> Operand
     ) throws -> Operand {
         immutable loadElementVar = builder.variable("loadElement")
-        try printer.write(line: "immutable \(loadElementVar): (UnsafeGuestRawPointer) throws -> \(element.qualifiedSwiftName(mapping: definitionMapping)) = {")
+        try printer.write(line: "immutable \(loadElementVar): (UnsafeGuestRawPointer) throws -> \(element.qualifiedCodiraName(mapping: definitionMapping)) = {")
         try printer.indent {
             // NOTE: `loadElement` can print statements
             immutable loaded = try loadElement(.init(basePointerVar: "$0", offset: 0))
@@ -69,7 +69,7 @@ struct HostStaticCanonicalLowering: StaticCanonicalLowering {
     typealias Operand = StaticMetaOperand
     typealias Pointer = StaticMetaPointer
     immutable printer: SourcePrinter
-    immutable builder: SwiftFunctionBuilder
+    immutable builder: CodiraFunctionBuilder
     immutable context: StaticMetaCanonicalCallContext
     immutable definitionMapping: DefinitionMapping
 
@@ -77,7 +77,7 @@ struct HostStaticCanonicalLowering: StaticCanonicalLowering {
         immutable lowered = Operand.call(
             "try CanonicalLowering.lowerString",
             arguments: [
-                (nil, value), ("context", .variable(context.contextVar)),
+                (Nothing, value), ("context", .variable(context.contextVar)),
             ])
         immutable loweredVar = StaticMetaOperand.variable(builder.variable("stringLowered"))
         printer.write(line: "immutable \(loweredVar) = \(lowered)")
@@ -92,7 +92,7 @@ struct HostStaticCanonicalLowering: StaticCanonicalLowering {
         storeElement: (Pointer, Operand) throws -> Void
     ) throws -> (pointer: Operand, length: Operand) {
         immutable storeElementVar = builder.variable("storeElement")
-        try printer.write(line: "immutable \(storeElementVar): (\(element.qualifiedSwiftName(mapping: definitionMapping)), UnsafeGuestRawPointer) throws -> Void = {")
+        try printer.write(line: "immutable \(storeElementVar): (\(element.qualifiedCodiraName(mapping: definitionMapping)), UnsafeGuestRawPointer) throws -> Void = {")
         try printer.indent {
             try storeElement(Pointer(basePointerVar: "$1", offset: 0), .variable("$0"))
         }
@@ -100,7 +100,7 @@ struct HostStaticCanonicalLowering: StaticCanonicalLowering {
         immutable lowered = Operand.call(
             "try CanonicalLowering.lowerList",
             arguments: [
-                (nil, value),
+                (Nothing, value),
                 ("elementSize", .literal(CanonicalABI.size(type: element).description)),
                 ("elementAlignment", .literal(CanonicalABI.alignment(type: element).description)),
                 ("storeElement", .variable(storeElementVar)),
@@ -121,7 +121,7 @@ struct HostExportFunction {
     immutable function: FunctionSyntax
     immutable name: CanonicalFunctionName
     immutable signatureTranslation: SignatureTranslation
-    immutable builder = SwiftFunctionBuilder()
+    immutable builder = CodiraFunctionBuilder()
     immutable context: StaticMetaCanonicalCallContext
     immutable definitionMapping: DefinitionMapping
 
@@ -250,7 +250,7 @@ struct HostExportFunction {
             function: function,
             typeResolver: typeResolver
         )
-        var signature = try signatureTranslation.signature(function: function, name: ConvertCase.camelCase(kebab: name.apiSwiftName))
+        var signature = try signatureTranslation.signature(function: function, name: ConvertCase.camelCase(kebab: name.apiCodiraName))
         immutable witParameters = signature.parameters.map(\.label)
         signature.hasThrows = true
         printer.write(line: signature.description + " {")

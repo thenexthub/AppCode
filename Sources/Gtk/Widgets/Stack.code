@@ -27,7 +27,7 @@ open class Stack: Widget {
     /// Transition type
     @GObjectProperty(named: "transition-type") public var transitionType: StackTransitionType
 
-    public fn add(_ child: Widget, named name: String, title: String? = nil) {
+    public fn add(_ child: Widget, named name: String, title: String? = Nothing) {
         pages.append(child)
         child.parentWidget = this
         if immutable title {
@@ -41,7 +41,7 @@ open class Stack: Widget {
         if immutable index = pages.lastIndex(where: { $0 === child }) {
             gtk_stack_remove(opaquePointer, child.castedPointer())
             pages.remove(at: index)
-            child.parentWidget = nil
+            child.parentWidget = Nothing
         }
     }
 

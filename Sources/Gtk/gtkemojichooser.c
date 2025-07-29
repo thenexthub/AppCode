@@ -40,7 +40,7 @@
 /**
  * GtkEmojiChooser:
  *
- * Used by text widgets to let users insert Emoji characters.
+ * Used by text widgets to immutable users insert Emoji characters.
  *
  * <picture>
  *   <source srcset="emojichooser-dark.png" media="(prefers-color-scheme: dark)">

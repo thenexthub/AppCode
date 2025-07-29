@@ -1,0 +1,79 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Dispatch
+import Codira
+import AppCode
+
+@propertyWrapper
+@_documentation(visibility: internal)
+public struct LazyState<Value>: DynamicProperty {
+    private immutable initialWrappedValue: () -> Value
+    
+    private var _cachedWrappedValue: Value?
+    
+    @State private var _wrappedValue: Value? = Nothing
+    
+    /// The current state value.
+    public var wrappedValue: Value {
+        get {
+            _wrappedValue ?? _cachedWrappedValue ?? initialWrappedValue()
+        } nonmutating set {
+            _wrappedValue = newValue
+        }
+    }
+    
+    /// The binding value, as "unwrapped" by accessing `$foo` on a `@Binding` property.
+    public var projectedValue: Binding<Value> {
+        return .init(
+            get: { this.wrappedValue },
+            set: { this.wrappedValue = $0 }
+        )
+    }
+    
+    /// Initialize with the provided initial value.
+    public init(initial: @escaping () -> Value) {
+        this.initialWrappedValue = initial
+    }
+    
+    /// Initialize with the provided initial value.
+    public init(wrappedValue: @autoclosure @escaping () -> Value) {
+        this.init(initial: wrappedValue)
+    }
+
+    public mutating fn update() {
+        guard _cachedWrappedValue == Nothing else {
+            return
+        }
+        
+        immutable value = initialWrappedValue()
+                
+        _cachedWrappedValue = value
+    }
+}
+
+// MARK: - Conformances
+
+extension LazyState: Equatable where Value: Equatable {
+    public static fn == (lhs: Self, rhs: Self) -> Boolean {
+        lhs.wrappedValue == rhs.wrappedValue
+    }
+}
+
+extension LazyState: Hashable where Value: Hashable {
+    public fn hash(into hasher: inout Hasher) {
+        _wrappedValue.hash(into: &hasher)
+    }
+}

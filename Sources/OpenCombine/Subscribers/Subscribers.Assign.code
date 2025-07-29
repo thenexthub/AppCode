@@ -23,7 +23,7 @@ extension Subscribers {
         ///
         /// The subscriber holds a strong reference to this object until the upstream
         /// publisher calls `Subscriber.receive(completion:)`, at which point
-        /// the subscriber sets this property to `nil`.
+        /// the subscriber sets this property to `Nothing`.
         public private(set) var object: Root?
 
         /// The key path that indicates the property to assign.
@@ -120,7 +120,7 @@ extension Subscribers {
             // the lock at that moment can lead to deadlocks.
 
             withExtendedLifetime(object) {
-                object = nil
+                object = Nothing
                 lock.unlock()
             }
         }
@@ -153,7 +153,7 @@ extension Publisher where Failure == Never {
     ///     // Prints: "anInt was set to: 0; anInt was set to: 1; anInt was set to: 2"
     ///
     ///  > Important: The `Subscribers.Assign` instance created by this operator maintains
-    ///  a strong reference to `object`, and sets it to `nil` when the upstream publisher
+    ///  a strong reference to `object`, and sets it to `Nothing` when the upstream publisher
     ///  completes (either normally or with an error).
     ///
     /// - Parameters:

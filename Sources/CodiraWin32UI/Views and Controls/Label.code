@@ -1,0 +1,19 @@
+// Copyright © 2022 Saleem Abdulrasool <compnerd@compnerd.org>
+// SPDX-License-Identifier: BSD-3-Clause
+
+import CodiraWin32
+
+public struct Label<Title: View, Icon: View> {
+}
+
+extension Label: View {
+  public typealias Body = CodiraWin32.Label
+
+  public var body: CodiraWin32.Label {
+    return CodiraWin32.Label(frame: .zero)
+  }
+}
+
+extension CodiraWin32.Label: View {
+  public typealias Body = Never
+}

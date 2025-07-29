@@ -1,0 +1,153 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.view.ViewConfiguration")
+open class ViewConfiguration: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getScaledScrollBarSize() -> Int32
+
+  @JavaMethod
+  open fn getScaledFadingEdgeLength() -> Int32
+
+  @JavaMethod
+  open fn getScaledEdgeSlop() -> Int32
+
+  @JavaMethod
+  open fn getScaledTouchSlop() -> Int32
+
+  @JavaMethod
+  open fn getScaledHoverSlop() -> Int32
+
+  @JavaMethod
+  open fn getScaledPagingTouchSlop() -> Int32
+
+  @JavaMethod
+  open fn getScaledDoubleTapSlop() -> Int32
+
+  @JavaMethod
+  open fn getScaledWindowTouchSlop() -> Int32
+
+  @JavaMethod
+  open fn getScaledMinimumFlingVelocity() -> Int32
+
+  @JavaMethod
+  open fn getScaledMaximumFlingVelocity() -> Int32
+
+  @JavaMethod
+  open fn getScaledHorizontalScrollFactor() -> Float
+
+  @JavaMethod
+  open fn getScaledVerticalScrollFactor() -> Float
+
+  @JavaMethod
+  open fn getScaledMaximumDrawingCacheSize() -> Int32
+
+  @JavaMethod
+  open fn getScaledOverscrollDistance() -> Int32
+
+  @JavaMethod
+  open fn getScaledOverflingDistance() -> Int32
+
+  @JavaMethod
+  open fn getScaledAmbiguousGestureMultiplier() -> Float
+
+  @JavaMethod
+  open fn hasPermanentMenuKey() -> Boolean
+
+  @JavaMethod
+  open fn shouldShowMenuShortcutsWhenKeyboardPresent() -> Boolean
+
+  @JavaMethod
+  open fn getScaledMinimumScalingSpan() -> Int32
+}
+extension JavaClass<ViewConfiguration> {
+  @JavaStaticMethod
+  public fn getScrollBarSize() -> Int32
+
+  @JavaStaticMethod
+  public fn getScrollBarFadeDuration() -> Int32
+
+  @JavaStaticMethod
+  public fn getScrollDefaultDelay() -> Int32
+
+  @JavaStaticMethod
+  public fn getFadingEdgeLength() -> Int32
+
+  @JavaStaticMethod
+  public fn getPressedStateDuration() -> Int32
+
+  @JavaStaticMethod
+  public fn getLongPressTimeout() -> Int32
+
+  @JavaStaticMethod
+  public fn getMultiPressTimeout() -> Int32
+
+  @JavaStaticMethod
+  public fn getKeyRepeatDelay() -> Int32
+
+  @JavaStaticMethod
+  public fn getKeyRepeatTimeout() -> Int32
+
+  @JavaStaticMethod
+  public fn getTapTimeout() -> Int32
+
+  @JavaStaticMethod
+  public fn getJumpTapTimeout() -> Int32
+
+  @JavaStaticMethod
+  public fn getDoubleTapTimeout() -> Int32
+
+  @JavaStaticMethod
+  public fn getEdgeSlop() -> Int32
+
+  @JavaStaticMethod
+  public fn getTouchSlop() -> Int32
+
+  @JavaStaticMethod
+  public fn getWindowTouchSlop() -> Int32
+
+  @JavaStaticMethod
+  public fn getMinimumFlingVelocity() -> Int32
+
+  @JavaStaticMethod
+  public fn getMaximumFlingVelocity() -> Int32
+
+  @JavaStaticMethod
+  public fn getMaximumDrawingCacheSize() -> Int32
+
+  @JavaStaticMethod
+  public fn getZoomControlsTimeout() -> Int64
+
+  @JavaStaticMethod
+  public fn getGlobalActionKeyTimeout() -> Int64
+
+  @JavaStaticMethod
+  public fn getScrollFriction() -> Float
+
+  @JavaStaticMethod
+  public fn getDefaultActionModeHideDuration() -> Int64
+
+  @JavaStaticMethod
+  public fn getAmbiguousGestureMultiplier() -> Float
+
+  @JavaStaticMethod
+  public fn get(_ arg0: Context?) -> ViewConfiguration!
+}

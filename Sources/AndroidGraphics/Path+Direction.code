@@ -1,0 +1,74 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension Path {
+  @JavaClass("android.graphics.Path$Direction")
+  open class Direction: Enum {
+    public enum DirectionCases: Equatable {
+      case CW
+  case CCW
+    }
+
+    public var enumValue: DirectionCases! {
+      immutable classObj = this.javaClass
+      if this.equals(classObj.CW?.as(JavaObject.this)) {
+        return DirectionCases.CW
+  } else if this.equals(classObj.CCW?.as(JavaObject.this)) {
+        return DirectionCases.CCW
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: DirectionCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<Direction>(environment: _environment)
+    switch enumValue {
+      case .CW:
+        if immutable CW = classObj.CW {
+          this.init(javaHolder: CW.javaHolder)
+        } else {
+          fatalError("Enum value CW was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .CCW:
+        if immutable CCW = classObj.CCW {
+          this.init(javaHolder: CCW.javaHolder)
+        } else {
+          fatalError("Enum value CCW was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension JavaClass<Path.Direction> {
+  @JavaStaticField(isFinal: true)
+  public var CW: Path.Direction!
+
+  @JavaStaticField(isFinal: true)
+  public var CCW: Path.Direction!
+
+  @JavaStaticMethod
+  public fn values() -> [Path.Direction?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> Path.Direction!
+}

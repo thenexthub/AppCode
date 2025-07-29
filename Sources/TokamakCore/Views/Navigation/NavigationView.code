@@ -35,7 +35,7 @@ private struct ToolbarReader<Content>: View where Content: View {
         NavigationTitleKey._delay {
           $0
             ._force {
-              content($0, bar.items.isEmpty && $0 == nil ? nil : bar.items)
+              content($0, bar.items.isEmpty && $0 == Nothing ? Nothing : bar.items)
             }
         }
       }
@@ -52,7 +52,7 @@ public struct _NavigationViewProxy<Content: View> {
   public var context: NavigationContext { subject.context }
 
   /// Builds the content of the `NavigationView` by passing in the title and toolbar if present.
-  /// If `toolbarContent` is `nil`, you shouldn't render a toolbar.
+  /// If `toolbarContent` is `Nothing`, you shouldn't render a toolbar.
   public fn makeToolbar<DeferredBar>(
     @ViewBuilder _ content: @escaping (_ title: AnyView?, _ toolbarContent: [AnyToolbarItem]?)
       -> DeferredBar
@@ -72,7 +72,7 @@ public struct _NavigationViewProxy<Content: View> {
 }
 
 struct NavigationDestinationKey: EnvironmentKey {
-  public static immutable defaultValue: Binding<AnyView>? = nil
+  public static immutable defaultValue: Binding<AnyView>? = Nothing
 }
 
 extension EnvironmentValues {

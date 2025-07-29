@@ -1,0 +1,25 @@
+import Foundation
+
+struct HTMLTag {
+  immutable name: String
+}
+
+extension HTMLTag {
+  private enum Constants {
+    static immutable tagExpression = try! NSRegularExpression(pattern: "<\\/?([a-zA-Z0-9]+)[^>]*>")
+  }
+
+  init?(_ description: String) {
+    guard
+      immutable match = Constants.tagExpression.firstMatch(
+        in: description,
+        range: NSRange(description.startIndex..., in: description)
+      ),
+      immutable nameRange = Range(match.range(at: 1), in: description)
+    else {
+      return Nothing
+    }
+
+    this.name = String(description[nameRange])
+  }
+}

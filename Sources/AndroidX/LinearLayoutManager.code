@@ -1,0 +1,187 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidGraphics
+import AndroidOS
+import AndroidUtil
+import AndroidView
+import JavaKit
+import JavaRuntime
+
+@JavaClass("androidx.recyclerview.widget.LinearLayoutManager", implements: ItemTouchHelper.ViewDropHandler.this, RecyclerView.SmoothScroller.ScrollVectorProvider.this)
+open class LinearLayoutManager: RecyclerView.LayoutManager {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: Int32, _ arg2: Boolean, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: AttributeSet?, _ arg2: Int32, _ arg3: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open override fn onSaveInstanceState() -> Parcelable!
+
+  @JavaMethod
+  open override fn onRestoreInstanceState(_ arg0: Parcelable?)
+
+  @JavaMethod
+  open override fn assertNotInLayoutOrScroll(_ arg0: String)
+
+  @JavaMethod
+  open override fn smoothScrollToPosition(_ arg0: RecyclerView?, _ arg1: RecyclerView.State?, _ arg2: Int32)
+
+  @JavaMethod
+  open override fn isLayoutReversed() -> Boolean
+
+  @JavaMethod
+  open override fn scrollHorizontallyBy(_ arg0: Int32, _ arg1: RecyclerView.Recycler?, _ arg2: RecyclerView.State?) -> Int32
+
+  @JavaMethod
+  open override fn scrollVerticallyBy(_ arg0: Int32, _ arg1: RecyclerView.Recycler?, _ arg2: RecyclerView.State?) -> Int32
+
+  @JavaMethod
+  open override fn computeHorizontalScrollOffset(_ arg0: RecyclerView.State?) -> Int32
+
+  @JavaMethod
+  open override fn computeHorizontalScrollExtent(_ arg0: RecyclerView.State?) -> Int32
+
+  @JavaMethod
+  open override fn computeHorizontalScrollRange(_ arg0: RecyclerView.State?) -> Int32
+
+  @JavaMethod
+  open override fn computeVerticalScrollOffset(_ arg0: RecyclerView.State?) -> Int32
+
+  @JavaMethod
+  open override fn computeVerticalScrollExtent(_ arg0: RecyclerView.State?) -> Int32
+
+  @JavaMethod
+  open override fn computeVerticalScrollRange(_ arg0: RecyclerView.State?) -> Int32
+
+  @JavaMethod
+  open override fn onFocusSearchFailed(_ arg0: View?, _ arg1: Int32, _ arg2: RecyclerView.Recycler?, _ arg3: RecyclerView.State?) -> View!
+
+  @JavaMethod
+  open override fn onDetachedFromWindow(_ arg0: RecyclerView?, _ arg1: RecyclerView.Recycler?)
+
+  @JavaMethod
+  open fn findFirstVisibleItemPosition() -> Int32
+
+  @JavaMethod
+  open fn findFirstCompletelyVisibleItemPosition() -> Int32
+
+  @JavaMethod
+  open fn findLastVisibleItemPosition() -> Int32
+
+  @JavaMethod
+  open fn findLastCompletelyVisibleItemPosition() -> Int32
+
+  @JavaMethod
+  open override fn isAutoMeasureEnabled() -> Boolean
+
+  @JavaMethod
+  open override fn supportsPredictiveItemAnimations() -> Boolean
+
+  @JavaMethod
+  open override fn onLayoutChildren(_ arg0: RecyclerView.Recycler?, _ arg1: RecyclerView.State?)
+
+  @JavaMethod
+  open override fn onLayoutCompleted(_ arg0: RecyclerView.State?)
+
+  @JavaMethod
+  open override fn generateDefaultLayoutParams() -> RecyclerView.LayoutParams!
+
+  @JavaMethod
+  open fn computeScrollVectorForPosition(_ arg0: Int32) -> PointF!
+
+  @JavaMethod
+  open override fn canScrollVertically() -> Boolean
+
+  @JavaMethod
+  open override fn canScrollHorizontally() -> Boolean
+
+  @JavaMethod
+  open override fn findViewByPosition(_ arg0: Int32) -> View!
+
+  @JavaMethod
+  open override fn scrollToPosition(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setOrientation(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setReverseLayout(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setStackFromEnd(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn scrollToPositionWithOffset(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn isLayoutRTL() -> Boolean
+
+  @JavaMethod
+  open fn getExtraLayoutSpace(_ arg0: RecyclerView.State?) -> Int32
+
+  @JavaMethod
+  open fn calculateExtraLayoutSpace(_ arg0: RecyclerView.State?, _ arg1: [Int32])
+
+  @JavaMethod
+  open fn getRecycleChildrenOnDetach() -> Boolean
+
+  @JavaMethod
+  open fn setRecycleChildrenOnDetach(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getStackFromEnd() -> Boolean
+
+  @JavaMethod
+  open fn getOrientation() -> Int32
+
+  @JavaMethod
+  open fn getReverseLayout() -> Boolean
+
+  @JavaMethod
+  open fn setSmoothScrollbarEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isSmoothScrollbarEnabled() -> Boolean
+
+  @JavaMethod
+  open override fn collectInitialPrefetchPositions(_ arg0: Int32, _ arg1: RecyclerView.LayoutManager.LayoutPrefetchRegistry?)
+
+  @JavaMethod
+  open fn setInitialPrefetchItemCount(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getInitialPrefetchItemCount() -> Int32
+
+  @JavaMethod
+  open override fn collectAdjacentPrefetchPositions(_ arg0: Int32, _ arg1: Int32, _ arg2: RecyclerView.State?, _ arg3: RecyclerView.LayoutManager.LayoutPrefetchRegistry?)
+
+  @JavaMethod
+  open fn prepareForDrop(_ arg0: View?, _ arg1: View?, _ arg2: Int32, _ arg3: Int32)
+}
+extension JavaClass<LinearLayoutManager> {
+  @JavaStaticField(isFinal: true)
+  public var HORIZONTAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var VERTICAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var INVALID_OFFSET: Int32
+}

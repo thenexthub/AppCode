@@ -1,0 +1,37 @@
+// Copyright © 2020 Saleem Abdulrasool <compnerd@compnerd.org>
+// SPDX-License-Identifier: BSD-3-Clause
+
+#if swift(>=5.7)
+import CoreGraphics
+#endif
+
+/// A set of methods for adapting the contents of your view controllers to size
+/// and trait changes.
+public protocol ContentContainer {
+  // MARK - Responding to Environment Changes
+
+  /// Notifies the container that the size of its view is about to change.
+  fn willTransition(to: Size,
+                      with coodinator: ViewControllerTransitionCoordinator)
+
+  /// Notifies the container that its trait collection changed.
+  fn willTransition(to: TraitCollection,
+                      with coordinator: ViewControllerTransitionCoordinator)
+
+  // MARK - Responding to Changes in Child View Controllers
+
+  /// The preferred size for the container's content.
+  var preferredContentSize: Size { get }
+
+  /// Returns the size of the specified child view controller's content.
+  fn size(forChildContentContainer container: ContentContainer,
+            withParentContainerSize parentSize: Size) -> Size
+
+  /// Notifies an interested controller that the preferred content size of one of
+  /// its children changed.
+  fn preferredContentSizeDidChange(forChildContentContainer container: ContentContainer)
+
+  /// Notifies the container that a child view controller was resized using auto
+  /// layout.
+  fn systemLayoutFittingSizeDidChange(forChildContentContainer container: ContentContainer)
+}

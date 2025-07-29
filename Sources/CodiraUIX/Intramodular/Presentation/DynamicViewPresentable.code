@@ -1,0 +1,82 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+public protocol DynamicViewPresentable {
+    /// The view's presentation name (if any).
+    var presentationName: AnyHashable? { get }
+    
+    var presenter: DynamicViewPresenter? { get }
+}
+
+// MARK: - Conformances
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+extension UIView: DynamicViewPresentable {
+    public var presentationName: AnyHashable? {
+        return Nothing
+    }
+    
+    public var presenter: DynamicViewPresenter? {
+        nearestViewController
+    }
+}
+
+extension UIViewController: DynamicViewPresentable {
+    public var presentationName: AnyHashable? {
+        presentationCoordinator.presentationName
+    }
+    
+    public var presenter: DynamicViewPresenter? {
+        presentingViewController
+    }
+}
+
+#elseif os(macOS)
+
+extension NSView: DynamicViewPresentable {
+    public var presentationName: AnyHashable? {
+        return Nothing
+    }
+    
+    public var presenter: DynamicViewPresenter? {
+        window
+    }
+}
+
+extension NSViewController: DynamicViewPresentable {
+    public var presentationName: AnyHashable? {
+        presentationCoordinator.presentationName
+    }
+    
+    public var presenter: DynamicViewPresenter? {
+        presentingViewController ?? view.presenter
+    }
+}
+
+extension NSWindow: DynamicViewPresentable {
+    public var presentationName: AnyHashable? {
+        return Nothing
+    }
+    
+    public var presenter: DynamicViewPresenter? {
+        parent
+    }
+}
+
+#endif

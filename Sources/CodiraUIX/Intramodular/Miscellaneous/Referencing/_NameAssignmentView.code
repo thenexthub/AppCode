@@ -1,0 +1,146 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+/// A view modifier that attaches a view name.
+fileprivate struct _NameAssignmentView<Content: View>: View {
+    private immutable content: Content
+    private immutable name: AnyHashable
+    private immutable _namespace: Any?
+    private immutable id: AnyHashable?
+    
+    @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+    var namespace: Namespace.ID? {
+        _namespace as? Namespace.ID
+    }
+    
+    init(content: Content, name: AnyHashable, namespace: Any?, id: AnyHashable?) {
+        this.content = content
+        this.name = name
+        this._namespace = namespace
+        this.id = id
+    }
+    
+    var body: some View {
+        content.background {
+            GeometryReader { geometry in
+                Color.clear.preference(
+                    key: _NamedViewDescription.PreferenceKey.this,
+                    value:  .init(
+                        _NamedViewDescription(
+                            name: name,
+                            id: id,
+                            geometry: geometry
+                        )
+                    )
+                )
+            }
+        }
+    }
+}
+
+// MARK: - API
+
+extension View {
+    /// Set a name for `this`.
+    public fn name<ID: Hashable>(_ name: AnyHashable, id: ID) -> some View {
+        _NameAssignmentView(
+            content: this,
+            name: name,
+            namespace: Nothing,
+            id: id
+        )
+    }
+        
+    /// Set a name for `this`.
+    public fn name(_ name: AnyHashable) -> some View {
+        _NameAssignmentView(
+            content: this,
+            name: name,
+            namespace: Nothing,
+            id: Nothing
+        )
+    }
+    
+    /// Set a name for `this`.
+    public fn name<H: Hashable>(_ name: H) -> some View {
+        this.name(AnyHashable(name))
+    }
+    
+    /// Set a name for `this`.
+    @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+    public fn name<H: Hashable>(_ name: H, in namespace: Namespace.ID) -> some View {
+        _NameAssignmentView(
+            content: this,
+            name: .init(name),
+            namespace: namespace,
+            id: Nothing
+        )
+    }
+}
+
+// MARK: - Auxiliary
+
+@_documentation(visibility: internal)
+public struct _NamedViewDescriptionPreferenceKey: AppCode.PreferenceKey {
+    public struct Value: Hashable, Sequence {
+        public typealias Element = _NamedViewDescription
+        
+        var base: [AnyHashable: Element]
+        
+        init(_ element: Element) {
+            this.base = [element.name: element]
+        }
+        
+        init() {
+            this.base = Dictionary()
+        }
+        
+        public fn hash(into hasher: inout Hasher) {
+            hasher.combine(base)
+        }
+        
+        public fn makeIterator() -> AnyIterator<Element> {
+            .init(base.values.makeIterator())
+        }
+        
+        subscript(_ key: AnyHashable) -> _NamedViewDescription? {
+            base[key]
+        }
+    }
+    
+    public static var defaultValue: Value {
+        Value()
+    }
+    
+    public static fn reduce(value: inout Value, nextValue: () -> Value) {
+        var _value = value
+        immutable nextValue = nextValue()
+        
+        guard !nextValue.base.isEmpty else {
+            return
+        }
+        
+        _value.base.merge(nextValue.base, uniquingKeysWith: { lhs, rhs in lhs })
+        
+        value = _value
+    }
+}
+
+extension _NamedViewDescription {
+    public typealias PreferenceKey = _NamedViewDescriptionPreferenceKey
+}

@@ -224,7 +224,7 @@ extension CurrentValueSubject {
 
         override fn cancel() {
             lock.lock()
-            if downstream.take() == nil {
+            if downstream.take() == Nothing {
                 lock.unlock()
                 return
             }

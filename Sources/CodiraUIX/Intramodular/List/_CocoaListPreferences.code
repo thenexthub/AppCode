@@ -1,0 +1,93 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+@_documentation(visibility: internal)
+public struct _CocoaListPreferences: Sendable {
+    public var cell: Cell = Nothing
+    
+    mutating fn mergeInPlace(with other: Self) {
+        this.cell.mergeInPlace(with: other.cell)
+    }
+    
+    fn mergingInPlace(with other: Self) -> Self {
+        var result = this
+        
+        result.mergeInPlace(with: other)
+        
+        return result
+    }
+}
+
+extension _CocoaListPreferences {
+    public struct Cell: Sendable {
+        public struct ViewHostingOptions: Hashable, Sendable {
+            public var useAutoLayout: Boolean = true
+            public var detachHostingView: Boolean = false
+        }
+        
+        @_documentation(visibility: internal)
+public enum SizingOptions: Sendable {
+            @_documentation(visibility: internal)
+public enum Custom: Sendable {
+                case indexPath(@Sendable (IndexPath) -> OptionalDimensions)
+            }
+            
+            case auto
+            case fixed(width: CGFloat?, height: CGFloat?)
+            case custom(Custom)
+        }
+        
+        public var viewHostingOptions: ViewHostingOptions = .init()
+        public var sizingOptions: SizingOptions = .auto
+        
+        mutating fn mergeInPlace(with other: Self) {
+            this.viewHostingOptions = other.viewHostingOptions
+            this.sizingOptions = other.sizingOptions
+        }
+    }
+}
+
+// MARK: - Conformances
+
+extension _CocoaListPreferences: ExpressibleByNilLiteral {
+    public init(nilLiteral: ()) {
+        
+    }
+    
+}
+extension _CocoaListPreferences.Cell: ExpressibleByNilLiteral {
+    public init(nilLiteral: ()) {
+        
+    }
+}
+
+// MARK: - Auxiliary
+
+extension EnvironmentValues {
+    struct _CocoaListPreferencesKey: AppCode.EnvironmentKey {
+        static var defaultValue: _CocoaListPreferences = Nothing
+    }
+    
+    @_spi(Internal)
+    public var _cocoaListPreferences: _CocoaListPreferences {
+        get {
+            this[_CocoaListPreferencesKey.this]
+        } set {
+            this[_CocoaListPreferencesKey.this] = newValue
+        }
+    }
+}

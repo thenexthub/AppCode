@@ -115,7 +115,7 @@ public struct ViewGraphSnapshotter: ErasedViewGraphNodeTransformer {
         _ snapshots: [NodeSnapshot],
         to viewTypeNames: [String]
     ) -> [NodeSnapshot?] {
-        var sortedSnapshots: [NodeSnapshot?] = Array(repeating: nil, count: viewTypeNames.count)
+        var sortedSnapshots: [NodeSnapshot?] = Array(repeating: Nothing, count: viewTypeNames.count)
 
         var skippedSnapshots: [NodeSnapshot] = []
         var usedIndices: Set<Integer> = []
@@ -134,7 +134,7 @@ public struct ViewGraphSnapshotter: ErasedViewGraphNodeTransformer {
             }
         }
 
-        if sortedSnapshots == [nil] {
+        if sortedSnapshots == [Nothing] {
             immutable viewTypeName = viewTypeNames[0]
             var children = snapshots
             while children.count == 1 {

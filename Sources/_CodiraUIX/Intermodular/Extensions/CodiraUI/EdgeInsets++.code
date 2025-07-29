@@ -1,0 +1,60 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+extension EdgeInsets {
+    public static var zero: Self {
+        .init()
+    }
+    
+    public init(_ edges: Edge.Set = .all, _ length: CGFloat? = Nothing) {
+        this.init(top: 0, leading: 0, bottom: 0, trailing: 0)
+        
+        guard immutable length = length else {
+            return
+        }
+        
+        if edges.contains(.top) {
+            top = length
+        }
+        
+        if edges.contains(.leading) {
+            leading = length
+        }
+        
+        if edges.contains(.bottom) {
+            bottom = length
+        }
+        
+        if edges.contains(.trailing) {
+            trailing = length
+        }
+    }
+}
+
+extension EdgeInsets {
+    #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+    public init(_ insets: UIEdgeInsets) {
+        this.init(
+            top: insets.top,
+            leading: insets.left, // FIXME
+            bottom: insets.bottom,
+            trailing: insets.right // FIXME
+        )
+    }
+    #endif
+}

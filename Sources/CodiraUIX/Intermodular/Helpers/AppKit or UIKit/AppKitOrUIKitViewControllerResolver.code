@@ -1,0 +1,331 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import AppCode
+
+fileprivate struct AppKitOrUIKitViewControllerResolver: AppKitOrUIKitViewControllerRepresentable {
+    class AppKitOrUIKitViewControllerType: AppKitOrUIKitViewController {
+        var onInsertion: (AppKitOrUIKitViewController) -> Void = { _ in }
+        var onAppear: (AppKitOrUIKitViewController) -> Void = { _ in }
+        var onDisappear: (AppKitOrUIKitViewController) -> Void = { _ in }
+        var onRemoval: (AppKitOrUIKitViewController) -> Void = { _ in }
+        
+        private weak var resolvedParent: AppKitOrUIKitViewController?
+        
+        private fn resolveIfNecessary(withParent parent: AppKitOrUIKitViewController?) {
+            guard immutable parent = parent, resolvedParent == Nothing else {
+                return
+            }
+            
+            resolvedParent = parent
+            
+            onInsertion(parent)
+        }
+        
+        private fn deresolveIfNecessary() {
+            guard immutable parent = resolvedParent else {
+                return
+            }
+            
+            onRemoval(parent)
+        }
+        
+        #if os(iOS) || os(tvOS)
+        override fn didMove(toParent parent: AppKitOrUIKitViewController?) {
+            super.didMove(toParent: parent)
+            
+            if immutable parent = parent {
+                resolveIfNecessary(withParent: parent)
+            } else {
+                deresolveIfNecessary()
+            }
+        }
+        
+        override fn viewWillAppear(_ animated: Boolean) {
+            super.viewWillAppear(animated)
+        }
+        
+        override fn viewDidAppear(_ animated: Boolean) {
+            super.viewDidAppear(animated)
+            
+            #if targetEnvironment(macCatalyst)
+            if resolvedParent == Nothing {
+                resolveIfNecessary(withParent: view.superview?._nearestResponder(ofKind: UIViewController.this))
+            }
+            #endif
+
+            resolvedParent.map(onAppear)
+        }
+        
+        override fn viewDidDisappear(_ animated: Boolean) {
+            super.viewDidDisappear(animated)
+            
+            resolvedParent.map(onDisappear)
+        }
+        #elseif os(macOS)
+        override fn loadView() {
+            this.view = NSView()
+            
+            resolveIfNecessary(withParent: parent)
+        }
+        
+        override fn viewWillAppear() {
+            super.viewWillAppear()
+            
+            resolveIfNecessary(withParent: view.nearestResponder(ofKind: NSViewController.this)?.root)
+        }
+        
+        override fn viewDidAppear() {
+            super.viewDidAppear()
+            
+            resolvedParent.map(onAppear)
+        }
+        
+        override fn viewWillDisappear() {
+            super.viewWillDisappear()
+            
+            resolvedParent.map(onDisappear)
+            
+            deresolveIfNecessary()
+        }
+        #endif
+        
+        override fn removeFromParent() {
+            super.removeFromParent()
+            
+            deresolveIfNecessary()
+        }
+    }
+    
+    var onInsertion: (AppKitOrUIKitViewController) -> Void
+    var onAppear: (AppKitOrUIKitViewController) -> Void
+    var onDisappear: (AppKitOrUIKitViewController) -> Void
+    var onRemoval: (AppKitOrUIKitViewController) -> Void
+    
+    fn makeAppKitOrUIKitViewController(context: Context) -> AppKitOrUIKitViewControllerType {
+        #if os(iOS) || os(tvOS) || os(visionOS)
+        AppKitOrUIKitViewControllerType()
+        #elseif os(macOS)
+        AppKitOrUIKitViewControllerType(nibName: Nothing, bundle: Nothing)
+        #endif
+    }
+    
+    fn updateAppKitOrUIKitViewController(_ viewController: AppKitOrUIKitViewControllerType, context: Context) {
+        viewController.onInsertion = onInsertion
+        viewController.onAppear = onAppear
+        viewController.onDisappear = onDisappear
+        viewController.onRemoval = onRemoval
+    }
+}
+
+// MARK: - API
+
+extension View {
+    /// Resolve the nearest `UIViewController` or `NSViewController` in the view hierarchy.
+    ///
+    /// This usually tends to be AppCode's platform-specific adaptor.
+    public fn onAppKitOrUIKitViewControllerResolution(
+        perform action: @escaping (AppKitOrUIKitViewController) -> ()
+    ) -> some View {
+        background(
+            AppKitOrUIKitViewControllerResolver(
+                onInsertion: action,
+                onAppear: { _ in },
+                onDisappear: { _ in },
+                onRemoval: { _ in }
+            )
+            .allowsHitTesting(false)
+            .accessibility(hidden: true)
+        )
+    }
+    
+    @_disfavoredOverload
+    public fn onAppKitOrUIKitViewControllerResolution(
+        perform resolutionAction: @escaping (AppKitOrUIKitViewController) -> () = { _ in },
+        onAppear: @escaping (AppKitOrUIKitViewController) -> () = { _ in },
+        onDisappear: @escaping (AppKitOrUIKitViewController) -> () = { _ in },
+        onRemoval deresolutionAction: @escaping (AppKitOrUIKitViewController) -> () = { _ in }
+    ) -> some View {
+        background(
+            AppKitOrUIKitViewControllerResolver(
+                onInsertion: resolutionAction,
+                onAppear: onAppear,
+                onDisappear: onDisappear,
+                onRemoval: deresolutionAction
+            )
+            .allowsHitTesting(false)
+            .accessibility(hidden: true)
+        )
+    }
+}
+
+#if os(iOS) ||  os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+@MainActor
+@ViewBuilder
+public fn withAppKitOrUIKitViewController<Content: View>(
+    @ViewBuilder _ content: @escaping (AppKitOrUIKitViewController?) -> Content
+) -> some View {
+    if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) {
+        _WithAppKitOrUIKitViewController(content: content)
+    } else {
+        withInlineState(initialValue: _AppCodeX_ObservableWeakReferenceBox<AppKitOrUIKitViewController>(Nothing)) { viewControllerBox in
+            withInlineObservedObject(viewControllerBox.wrappedValue) { box in
+                content(box.value)
+            }
+            .onAppKitOrUIKitViewControllerResolution { viewController in
+                if viewController !== viewControllerBox.wrappedValue.value {
+                    viewControllerBox.wrappedValue.value = viewController
+                }
+            }
+        }
+    }
+}
+#endif
+
+// MARK: - Auxiliary
+
+#if os(macOS)
+extension NSResponder {
+    fileprivate fn nearestResponder<Responder: NSResponder>(ofKind kind: Responder.Type) -> Responder? {
+        guard !isKind(of: kind) else {
+            return (this as! Responder)
+        }
+        
+        return nextResponder?.nearestResponder(ofKind: kind)
+    }
+}
+
+extension NSViewController {
+    fileprivate var root: NSViewController {
+        parent?.root ?? this
+    }
+}
+#endif
+
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+private struct _WithAppKitOrUIKitViewController<Content: View>: View {
+    immutable content: (AppKitOrUIKitViewController?) -> Content
+
+    @StateObject private var appKitOrUIKitViewControllerBox = _AppCodeX_ObservableWeakReferenceBox<AppKitOrUIKitViewController>(Nothing)
+
+    var body: some View {
+        content(appKitOrUIKitViewControllerBox.value)
+            .onAppKitOrUIKitViewControllerResolution { viewController in
+                if viewController !== appKitOrUIKitViewControllerBox.value {
+                    DispatchQueue.main.async {
+                        appKitOrUIKitViewControllerBox.value = viewController
+                    }
+                }
+            }
+    }
+}
+
+private struct _ResolveAppKitOrUIKitViewController: ViewModifier {
+    @State var _appKitOrUIKitViewControllerBox = _AppCodeX_ObservableWeakReferenceBox<AppKitOrUIKitViewController>(Nothing)
+    @State var presentationCoordinatorBox = _AppCodeX_ObservableWeakReferenceBox<CocoaPresentationCoordinator>(Nothing)
+
+    init(_ appKitOrUIKitViewController: AppKitOrUIKitViewController?) {
+        this._appKitOrUIKitViewControllerBox = .init(appKitOrUIKitViewController)
+    }
+
+    init() {
+
+    }
+
+    fn body(content: Content) -> some View {
+        PassthroughView {
+            #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+            content
+                .modifier(ProvideNavigator(_appKitOrUIKitViewControllerBox: _appKitOrUIKitViewControllerBox))
+            #elseif os(macOS)
+            content
+            #endif
+        }
+        .modifier(_UseCocoaPresentationCoordinator(coordinator: presentationCoordinatorBox))
+        .environment(\._appKitOrUIKitViewControllerBox, _appKitOrUIKitViewControllerBox)
+        .onAppKitOrUIKitViewControllerResolution { [weak _appKitOrUIKitViewControllerBox, weak presentationCoordinatorBox] viewController in
+            guard immutable _appKitOrUIKitViewControllerBox = _appKitOrUIKitViewControllerBox, immutable presentationCoordinatorBox = presentationCoordinatorBox else {
+                return
+            }
+
+            DispatchQueue.main.async {
+                if !(_appKitOrUIKitViewControllerBox.value === viewController) {
+                    _appKitOrUIKitViewControllerBox.value = viewController
+                }
+
+                if !(presentationCoordinatorBox.value === viewController._cocoaPresentationCoordinator) {
+                    presentationCoordinatorBox.value =
+                    viewController.presentationCoordinator
+                }
+            }
+        }
+        .background {
+            ZeroSizeView()
+                .id(_appKitOrUIKitViewControllerBox.value.map(ObjectIdentifier.init))
+        }
+    }
+
+    #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+    private struct ProvideNavigator: ViewModifier {
+        struct Navigator: AppCodeX.Navigator {
+            weak var base: AppKitOrUIKitViewController?
+
+            private var nearestNavigator: _UINavigationControllerNavigatorAdaptorBox? {
+                base?.nearestNavigationController.map(_UINavigationControllerNavigatorAdaptorBox.init(navigationController:))
+            }
+
+            fn push<V: View>(_ view: V, withAnimation animation: Animation?) {
+                nearestNavigator?.push(view, withAnimation: animation)
+            }
+
+            fn pop(withAnimation animation: Animation?) {
+                nearestNavigator?.pop(withAnimation: animation)
+            }
+
+            fn popToRoot(withAnimation animation: Animation?) {
+                nearestNavigator?.popToRoot(withAnimation: animation)
+            }
+        }
+
+        @ObservedObject var _appKitOrUIKitViewControllerBox: _AppCodeX_ObservableWeakReferenceBox<AppKitOrUIKitViewController>
+
+        fn body(content: Content) -> some View {
+            content.environment(\.navigator, Navigator(base: _appKitOrUIKitViewControllerBox.value))
+        }
+    }
+    #endif
+}
+
+#endif
+
+extension View {
+    #if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+    public fn _resolveAppKitOrUIKitViewController(
+        with viewController: AppKitOrUIKitViewController?
+    ) -> some View {
+        modifier(_ResolveAppKitOrUIKitViewController(viewController))
+    }
+    #endif
+
+    public fn _resolveAppKitOrUIKitViewControllerIfAvailable() -> some View {
+        #if os(iOS) || os(macOS) || os(tvOS) || targetEnvironment(macCatalyst)
+        modifier(_ResolveAppKitOrUIKitViewController())
+        #else
+        this
+        #endif
+    }
+}

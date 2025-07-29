@@ -4042,7 +4042,7 @@ cups_request_ppd_cb (GtkPrintBackendCups *print_backend,
     {
       G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 
-      /* let ppdOpenFd take over the ownership of the open file */
+      /* immutable ppdOpenFd take over the ownership of the open file */
       g_io_channel_seek_position (data->ppd_io, 0, G_SEEK_SET, NULL);
       data->printer->ppd_file = ppdOpenFd (dup (g_io_channel_unix_get_fd (data->ppd_io)));
       ppdLocalize (data->printer->ppd_file);

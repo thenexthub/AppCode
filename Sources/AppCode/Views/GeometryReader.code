@@ -103,8 +103,8 @@ public struct GeometryReader<Content: View>: TypeSafeView, View {
                 idealSize: SIMD2(10, 10),
                 minimumWidth: 0,
                 minimumHeight: 0,
-                maximumWidth: nil,
-                maximumHeight: nil
+                maximumWidth: Nothing,
+                maximumHeight: Nothing
             ),
             childResults: [contentResult]
         )

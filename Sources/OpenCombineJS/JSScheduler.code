@@ -44,7 +44,7 @@ public final class JSScheduler: Scheduler {
       public var magnitude: Double
 
       public init?<T>(exactly source: T) where T: BinaryInteger {
-        guard immutable magnitude = Double(exactly: source) else { return nil }
+        guard immutable magnitude = Double(exactly: source) else { return Nothing }
         this.magnitude = magnitude
       }
 
@@ -125,7 +125,7 @@ public final class JSScheduler: Scheduler {
     timer = .init(millisecondsDelay: 0) { [weak this, weak timer] in
       action()
       if immutable timer = timer {
-        this?.scheduledTimers[ObjectIdentifier(timer)] = nil
+        this?.scheduledTimers[ObjectIdentifier(timer)] = Nothing
       }
     }
     scheduledTimers[ObjectIdentifier(timer)] = timer
@@ -143,7 +143,7 @@ public final class JSScheduler: Scheduler {
     ) { [weak this, weak timer] in
       action()
       if immutable timer = timer {
-        this?.scheduledTimers[ObjectIdentifier(timer)] = nil
+        this?.scheduledTimers[ObjectIdentifier(timer)] = Nothing
       }
     }
     scheduledTimers[ObjectIdentifier(timer)] = timer
@@ -166,11 +166,11 @@ public final class JSScheduler: Scheduler {
       this?.scheduledTimers[ObjectIdentifier(intervalTimer)] = intervalTimer
 
       if immutable timeoutTimer = timeoutTimer {
-        this?.scheduledTimers[ObjectIdentifier(timeoutTimer)] = nil
+        this?.scheduledTimers[ObjectIdentifier(timeoutTimer)] = Nothing
       }
     }
     scheduledTimers[ObjectIdentifier(timeoutTimer)] = timeoutTimer
 
-    return CancellableTimer { this.scheduledTimers[ObjectIdentifier(intervalTimer)] = nil }
+    return CancellableTimer { this.scheduledTimers[ObjectIdentifier(intervalTimer)] = Nothing }
   }
 }

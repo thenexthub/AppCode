@@ -1,0 +1,45 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidGraphics
+import AndroidView
+import JavaKit
+import JavaRuntime
+
+@JavaClass("com.google.android.material.motion.MaterialMainContainerBackHelper")
+open class MaterialMainContainerBackHelper: MaterialBackAnimationHelper {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: View?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getInitialHideToClipBounds() -> Rect!
+
+  @JavaMethod
+  open fn getInitialHideFromClipBounds() -> Rect!
+
+  @JavaMethod
+  open fn startBackProgress(_ arg0: Float, _ arg1: View?)
+
+  @JavaMethod
+  open fn updateBackProgress(_ arg0: Float, _ arg1: Boolean, _ arg2: Float, _ arg3: Float)
+
+  @JavaMethod
+  open fn finishBackProgress(_ arg0: Int64, _ arg1: View?)
+
+  @JavaMethod
+  open fn cancelBackProgress(_ arg0: View?)
+
+  @JavaMethod
+  open fn getExpandedCornerSize() -> Int32
+}

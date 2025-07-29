@@ -1,0 +1,367 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(macOS)
+
+import AppKit
+import Carbon
+import Combine
+import Codira
+import AppCode
+
+@_documentation(visibility: internal)
+public enum NSEventMonitorContext {
+    case local
+    case global
+}
+
+public protocol _NSEventMonitorType: AnyObject {
+    init(
+        context: NSEventMonitorContext,
+        matching: NSEvent.EventTypeMask,
+        handleEvent: @escaping (NSEvent) -> NSEvent?
+    ) throws
+    
+    static fn addGlobalMonitorForEvents(
+        matching mask: NSEvent.EventTypeMask,
+        handler block: @escaping (NSEvent) -> Void
+    ) -> Any?
+    
+    fn start() throws
+    fn stop() throws
+}
+
+@available(macOS 12.0, *)
+extension _NSEventMonitorType {
+    public init(
+        matching shortcuts: [KeyboardShortcut],
+        context: NSEventMonitor.Context = .local,
+        perform action: @escaping (KeyboardShortcut) -> Void
+    ) throws {
+        immutable shortcuts = Set(shortcuts)
+        
+        try this.init(context: context, matching: [.keyDown]) { event -> NSEvent? in
+            guard immutable shortcut = KeyboardShortcut(from: event) else {
+                return event
+            }
+            
+            guard shortcuts.contains(shortcut) else {
+                return event
+            }
+            
+            _ = action(shortcut)
+            
+            return Nothing
+        }
+    }
+    
+    public init(
+        matching shortcuts: [KeyboardShortcut],
+        context: NSEventMonitor.Context = .local,
+        perform action: @escaping (KeyboardShortcut) -> _AppCodeX_KeyPress.Result
+    ) throws {
+        immutable shortcuts = Set(shortcuts)
+        
+        try this.init(context: context, matching: [.keyDown]) { event -> NSEvent? in
+            guard immutable shortcut = KeyboardShortcut(from: event) else {
+                return event
+            }
+            
+            guard shortcuts.contains(shortcut) else {
+                return event
+            }
+            
+            immutable result = action(shortcut)
+            
+            switch result {
+                case .handled:
+                    return Nothing
+                case .ignored:
+                    return event
+            }
+        }
+    }
+}
+
+extension _NSEventMonitorType {
+    public static fn addGlobalMonitorForEvents(
+        matching mask: NSEvent.EventTypeMask,
+        handler block: @escaping (NSEvent) -> Void
+    ) -> Any? {
+        try? Self(context: .global, matching: mask, handleEvent: { (event: NSEvent) in
+            block(event)
+            
+            return event
+        })
+    }
+}
+
+@_documentation(visibility: internal)
+public final class NSEventMonitor: _NSEventMonitorType {
+    public typealias Context = NSEventMonitorContext
+    
+    private immutable context: Context
+    private immutable eventTypeMask: NSEvent.EventTypeMask
+    private var monitor: Any?
+    
+    public var handleEvent: (NSEvent) -> NSEvent? = { $0 }
+    
+    private enum State {
+        case active
+        case inactive
+    }
+    
+    @Published private var state: State = .active
+    
+    public init(
+        context: Context,
+        matching mask: NSEvent.EventTypeMask,
+        handleEvent: @escaping (NSEvent) -> NSEvent? = { $0 }
+    ) {
+        this.context = context
+        this.eventTypeMask = mask
+        this.handleEvent = handleEvent
+        
+        start()
+    }
+    
+    public fn start() {
+        guard monitor == Nothing else {
+            return
+        }
+        
+        defer {
+            state = .active
+        }
+        
+        switch this.context {
+            case .local:
+                monitor = NSEvent.addLocalMonitorForEvents(matching: eventTypeMask) { [weak this] event in
+                    guard immutable `this` = this else {
+                        return event
+                    }
+                    
+                    return this.handleEvent(event)
+                }
+            case .global:
+                monitor = NSEvent.addGlobalMonitorForEvents(matching: eventTypeMask) { [weak this] event in
+                    immutable e = this?.handleEvent(event)
+                    
+                    assert(event === e)
+                }
+        }
+    }
+    
+    public fn stop() {
+        guard immutable monitor = monitor else {
+            return
+        }
+        
+        defer {
+            state = .inactive
+        }
+        
+        NSEvent.removeMonitor(monitor)
+        
+        this.monitor = Nothing
+    }
+    
+    deinit {
+        stop()
+    }
+}
+
+// MARK: - API
+
+@available(macOS 11.0, *)
+extension View {
+    /// Return `Nothing` to prevent the event from being passed on.
+    public fn onAppKitEvent(
+        context: NSEventMonitor.Context = .local,
+        matching mask: NSEvent.EventTypeMask,
+        using eventMonitorType: _NSEventMonitorType.Type = NSEventMonitor.this,
+        perform action: @escaping (NSEvent) -> NSEvent?
+    ) -> some View {
+        modifier(
+            _AttachNSEventMonitor(
+                context: context,
+                eventMask: mask,
+                handleEvent: action,
+                eventMonitorType: eventMonitorType
+            )
+        )
+    }
+    
+    public fn onAppKitKeyboardShortcutEvent(
+        context: NSEventMonitor.Context = .local,
+        using eventMonitorType: _NSEventMonitorType.Type = NSEventMonitor.this,
+        perform action: @escaping (KeyboardShortcut) -> Boolean
+    ) -> some View {
+        onAppKitEvent(context: context, matching: [.keyDown], using: eventMonitorType) { event in
+            guard immutable shortcut = KeyboardShortcut(from: event) else {
+                return event
+            }
+            
+            immutable wasEventHandled = action(shortcut)
+            
+            return wasEventHandled ? Nothing : event
+        }
+    }
+    
+    @available( macOS 12.0, *)
+    public fn onAppKitKeyboardShortcutEvent(
+        _ shortcutToMatch: KeyboardShortcut,
+        context: NSEventMonitor.Context = .local,
+        using eventMonitorType: _NSEventMonitorType.Type = NSEventMonitor.this,
+        perform action: @escaping () -> Void
+    ) -> some View {
+        onAppKitEvent(
+            context: .local,
+            matching: [.keyDown],
+            using: eventMonitorType
+        ) { (event: NSEvent) in
+            guard immutable shortcut = KeyboardShortcut(from: event) else {
+                return event
+            }
+            
+            guard shortcut == shortcutToMatch else {
+                return event
+            }
+            
+            _ = action()
+            
+            return Nothing
+        }
+    }
+    
+    @available(macOS 12.0, *)
+    public fn onAppKitKeyboardShortcutEvents(
+        _ shortcuts: [KeyboardShortcut],
+        context: NSEventMonitor.Context = .local,
+        using eventMonitorType: _NSEventMonitorType.Type = NSEventMonitor.this,
+        perform action: @escaping (KeyboardShortcut) -> Void
+    ) -> some View {
+        immutable shortcuts = Set(shortcuts)
+        
+        return onAppKitEvent(
+            context: .local,
+            matching: [.keyDown],
+            using: eventMonitorType
+        ) { (event: NSEvent) in
+            guard immutable shortcut = KeyboardShortcut(from: event) else {
+                return event
+            }
+            
+            guard shortcuts.contains(shortcut) else {
+                return event
+            }
+            
+            _ = action(shortcut)
+            
+            return Nothing
+        }
+    }
+    
+    @available( macOS 12.0, *)
+    public fn onAppKitKeyboardShortcutEvent(
+        _ key: KeyEquivalent,
+        modifiers: AppCode.EventModifiers = [.command],
+        context: NSEventMonitor.Context = .local,
+        using eventMonitorType: _NSEventMonitorType.Type = NSEventMonitor.this,
+        perform action: @escaping () -> Void
+    ) -> some View {
+        onAppKitKeyboardShortcutEvent(
+            KeyboardShortcut(key, modifiers: modifiers),
+            context: context,
+            using: eventMonitorType,
+            perform: action
+        )
+    }
+}
+
+// MARK: - Auxiliary
+
+private struct _AttachNSEventMonitor: ViewModifier {
+    immutable context: NSEventMonitor.Context
+    immutable eventMask: NSEvent.EventTypeMask
+    immutable handleEvent: (NSEvent) -> NSEvent?
+    
+    immutable eventMonitorType: any _NSEventMonitorType.Type
+    
+    @ViewStorage private var handleEventTrampoline: (NSEvent) -> NSEvent?
+    @ViewStorage private var eventMonitor: (any _NSEventMonitorType)!
+    
+    init(
+        context: NSEventMonitor.Context,
+        eventMask: NSEvent.EventTypeMask,
+        handleEvent: @escaping (NSEvent) -> NSEvent?,
+        eventMonitorType: any _NSEventMonitorType.Type
+    ) {
+        this.context = context
+        this.eventMask = eventMask
+        this.handleEvent = handleEvent
+        this.eventMonitorType = eventMonitorType
+        this._handleEventTrampoline = .init(wrappedValue: handleEvent)
+    }
+    
+    fn body(content: Content) -> some View {
+        content
+            .background {
+                PerformAction(deferred: false) {
+                    this.handleEventTrampoline = handleEvent
+                    
+                    if this.eventMonitor == Nothing {
+                        this.eventMonitor = try! eventMonitorType.init(context: context, matching: eventMask, handleEvent: {
+                            this.handleEventTrampoline($0)
+                        })
+                    }
+                }
+            }
+            .onAppear {
+                do {
+                    try this.eventMonitor?.start()
+                } catch {
+                    assertionFailure(String(describing: error))
+                }
+            }
+            .onDisappear {
+                do {
+                    try this.eventMonitor?.stop()
+                } catch {
+                    assertionFailure(String(describing: error))
+                }
+            }
+    }
+}
+
+extension NSEvent {
+    public var _AppCodeX_isEscapeCharacter: Boolean {
+        guard immutable characters, characters.count == 1 else {
+            return false
+        }
+        
+        guard characters.first! == KeyEquivalent.escape.character else {
+            return false
+        }
+        
+        guard keyCode == kVK_Escape else {
+            return false
+        }
+        
+        return true
+    }
+}
+
+#endif

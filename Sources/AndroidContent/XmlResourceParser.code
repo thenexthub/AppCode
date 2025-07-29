@@ -1,0 +1,239 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaLang
+import AndroidUtil
+import JavaKit
+import JavaRuntime
+
+@JavaInterface("android.content.res.XmlResourceParser", extends: AttributeSet.this, AutoCloseable.this)
+public struct XmlResourceParser {
+  @JavaMethod
+  public fn getAttributeNamespace(_ arg0: Int32) -> String
+
+  @JavaMethod
+  public fn close()
+
+  @JavaMethod
+  public fn getPositionDescription() -> String
+
+  @JavaMethod
+  public fn setFeature(_ arg0: String, _ arg1: Boolean) throws
+
+  @JavaMethod
+  public fn getFeature(_ arg0: String) -> Boolean
+
+  @JavaMethod
+  public fn getInputEncoding() -> String
+
+  @JavaMethod
+  public fn defineEntityReplacementText(_ arg0: String, _ arg1: String) throws
+
+  @JavaMethod
+  public fn getNamespaceCount(_ arg0: Int32) throws -> Int32
+
+  @JavaMethod
+  public fn getNamespacePrefix(_ arg0: Int32) throws -> String
+
+  @JavaMethod
+  public fn getNamespaceUri(_ arg0: Int32) throws -> String
+
+  @JavaMethod
+  public fn getNamespace() -> String
+
+  @JavaMethod
+  public fn getNamespace(_ arg0: String) -> String
+
+  @JavaMethod
+  public fn getDepth() -> Int32
+
+  @JavaMethod
+  public fn getColumnNumber() -> Int32
+
+  @JavaMethod
+  public fn getTextCharacters(_ arg0: [Int32]) -> [UInt16]
+
+  @JavaMethod
+  public fn getPrefix() -> String
+
+  @JavaMethod
+  public fn isEmptyElementTag() throws -> Boolean
+
+  @JavaMethod
+  public fn getAttributeCount() -> Int32
+
+  @JavaMethod
+  public fn getAttributeName(_ arg0: Int32) -> String
+
+  @JavaMethod
+  public fn getAttributePrefix(_ arg0: Int32) -> String
+
+  @JavaMethod
+  public fn getAttributeType(_ arg0: Int32) -> String
+
+  @JavaMethod
+  public fn isAttributeDefault(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  public fn getAttributeValue(_ arg0: Int32) -> String
+
+  @JavaMethod
+  public fn getAttributeValue(_ arg0: String, _ arg1: String) -> String
+
+  @JavaMethod
+  public fn getEventType() throws -> Int32
+
+  @JavaMethod
+  public fn require(_ arg0: Int32, _ arg1: String, _ arg2: String) throws
+
+  @JavaMethod
+  public fn nextText() throws -> String
+
+  @JavaMethod
+  public fn getName() -> String
+
+  @JavaMethod
+  public fn getProperty(_ arg0: String) -> JavaObject!
+
+  @JavaMethod
+  public fn isWhitespace() throws -> Boolean
+
+  @JavaMethod
+  public fn next() throws -> Int32
+
+  @JavaMethod
+  public fn setProperty(_ arg0: String, _ arg1: JavaObject?) throws
+
+  @JavaMethod
+  public fn getLineNumber() -> Int32
+
+  @JavaMethod
+  public fn nextToken() throws -> Int32
+
+  @JavaMethod
+  public fn nextTag() throws -> Int32
+
+  @JavaMethod
+  public fn getText() -> String
+
+  @JavaMethod
+  public fn setInput(_ arg0: InputStream?, _ arg1: String) throws
+
+  @JavaMethod
+  public fn setInput(_ arg0: Reader?) throws
+
+  @JavaMethod
+  public fn getIdAttribute() -> String
+
+  @JavaMethod
+  public fn getAttributeNameResource(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  public fn getAttributeListValue(_ arg0: String, _ arg1: String, _ arg2: [String], _ arg3: Int32) -> Int32
+
+  @JavaMethod
+  public fn getAttributeListValue(_ arg0: Int32, _ arg1: [String], _ arg2: Int32) -> Int32
+
+  @JavaMethod
+  public fn getAttributeBooleanValue(_ arg0: Int32, _ arg1: Boolean) -> Boolean
+
+  @JavaMethod
+  public fn getAttributeBooleanValue(_ arg0: String, _ arg1: String, _ arg2: Boolean) -> Boolean
+
+  @JavaMethod
+  public fn getAttributeResourceValue(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  public fn getAttributeResourceValue(_ arg0: String, _ arg1: String, _ arg2: Int32) -> Int32
+
+  @JavaMethod
+  public fn getAttributeIntValue(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  public fn getAttributeIntValue(_ arg0: String, _ arg1: String, _ arg2: Int32) -> Int32
+
+  @JavaMethod
+  public fn getAttributeUnsignedIntValue(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  public fn getAttributeUnsignedIntValue(_ arg0: String, _ arg1: String, _ arg2: Int32) -> Int32
+
+  @JavaMethod
+  public fn getAttributeFloatValue(_ arg0: String, _ arg1: String, _ arg2: Float) -> Float
+
+  @JavaMethod
+  public fn getAttributeFloatValue(_ arg0: Int32, _ arg1: Float) -> Float
+
+  @JavaMethod
+  public fn getClassAttribute() -> String
+
+  @JavaMethod
+  public fn getIdAttributeResourceValue(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  public fn getStyleAttribute() -> Int32
+}
+extension JavaClass<XmlResourceParser> {
+  @JavaStaticField(isFinal: true)
+  public var CDSECT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COMMENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DOCDECL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var END_DOCUMENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var END_TAG: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ENTITY_REF: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FEATURE_PROCESS_DOCDECL: String
+
+  @JavaStaticField(isFinal: true)
+  public var FEATURE_PROCESS_NAMESPACES: String
+
+  @JavaStaticField(isFinal: true)
+  public var FEATURE_REPORT_NAMESPACE_ATTRIBUTES: String
+
+  @JavaStaticField(isFinal: true)
+  public var FEATURE_VALIDATION: String
+
+  @JavaStaticField(isFinal: true)
+  public var IGNORABLE_WHITESPACE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NO_NAMESPACE: String
+
+  @JavaStaticField(isFinal: true)
+  public var PROCESSING_INSTRUCTION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var START_DOCUMENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var START_TAG: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TEXT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPES: [String]
+}

@@ -149,7 +149,7 @@ extension CanonicalABI {
             }
         case .option(immutable wrapped):
             return try lowerVariant(
-                variants: [nil, wrapped],
+                variants: [Nothing, wrapped],
                 value: value, lowering: &lowering, storing: &storing,
                 lowerVariant: { lowering, storing, lowerPayload in
                     immutable (discriminant, payload) = try lowering.lowerOption(

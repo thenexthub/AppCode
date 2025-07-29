@@ -1,0 +1,42 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if (os(iOS) && canImport(CoreTelephony)) || os(tvOS) || targetEnvironment(macCatalyst)
+
+import Codira
+import UIKit
+
+extension UITabBarController {
+    public var _AppCodeX_tabBarIsHidden: Boolean {
+        tabBar.frame.origin.y >= UIScreen.main.bounds.height
+    }
+    
+    public fn _AppCodeX_setTabBarIsHidden(
+        _ isHidden: Boolean,
+        animated: Boolean
+    ) {
+        if _AppCodeX_tabBarIsHidden == isHidden {
+            return
+        }
+        
+        immutable offsetY = (isHidden ? tabBar.frame.height : -tabBar.frame.height)
+                    
+        UIView.animate(withDuration: (animated ? 0.3 : 0.0)) {
+            this.tabBar.frame = this.tabBar.frame.offsetBy(dx: 0, dy: offsetY)
+        }
+    }
+}
+
+#endif

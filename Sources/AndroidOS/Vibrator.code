@@ -1,0 +1,68 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.os.Vibrator")
+open class Vibrator: JavaObject {
+  @JavaMethod
+  open fn hasVibrator() -> Boolean
+
+  @JavaMethod
+  open fn hasAmplitudeControl() -> Boolean
+
+  @JavaMethod
+  open fn vibrate(_ arg0: [Int64], _ arg1: Int32)
+
+  @JavaMethod
+  open fn vibrate(_ arg0: VibrationEffect?, _ arg1: VibrationAttributes?)
+
+  @JavaMethod
+  open fn vibrate(_ arg0: VibrationEffect?)
+
+  @JavaMethod
+  open fn vibrate(_ arg0: Int64)
+
+  @JavaMethod
+  open fn areEffectsSupported(_ arg0: [Int32]) -> [Int32]
+
+  @JavaMethod
+  open fn areAllEffectsSupported(_ arg0: [Int32]) -> Int32
+
+  @JavaMethod
+  open fn arePrimitivesSupported(_ arg0: [Int32]) -> [Boolean]
+
+  @JavaMethod
+  open fn areAllPrimitivesSupported(_ arg0: [Int32]) -> Boolean
+
+  @JavaMethod
+  open fn getPrimitiveDurations(_ arg0: [Int32]) -> [Int32]
+
+  @JavaMethod
+  open fn getId() -> Int32
+
+  @JavaMethod
+  open fn cancel()
+}
+extension JavaClass<Vibrator> {
+  @JavaStaticField(isFinal: true)
+  public var VIBRATION_EFFECT_SUPPORT_NO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var VIBRATION_EFFECT_SUPPORT_UNKNOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var VIBRATION_EFFECT_SUPPORT_YES: Int32
+}

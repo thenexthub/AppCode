@@ -1,0 +1,85 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import AndroidView
+import JavaKit
+import JavaRuntime
+
+@JavaClass("androidx.viewpager.widget.PagerAdapter")
+open class PagerAdapter: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn startUpdate(_ arg0: View?)
+
+  @JavaMethod
+  open fn startUpdate(_ arg0: ViewGroup?)
+
+  @JavaMethod
+  open fn instantiateItem(_ arg0: View?, _ arg1: Int32) -> JavaObject!
+
+  @JavaMethod
+  open fn instantiateItem(_ arg0: ViewGroup?, _ arg1: Int32) -> JavaObject!
+
+  @JavaMethod
+  open fn destroyItem(_ arg0: View?, _ arg1: Int32, _ arg2: JavaObject?)
+
+  @JavaMethod
+  open fn destroyItem(_ arg0: ViewGroup?, _ arg1: Int32, _ arg2: JavaObject?)
+
+  @JavaMethod
+  open fn setPrimaryItem(_ arg0: View?, _ arg1: Int32, _ arg2: JavaObject?)
+
+  @JavaMethod
+  open fn setPrimaryItem(_ arg0: ViewGroup?, _ arg1: Int32, _ arg2: JavaObject?)
+
+  @JavaMethod
+  open fn finishUpdate(_ arg0: View?)
+
+  @JavaMethod
+  open fn finishUpdate(_ arg0: ViewGroup?)
+
+  @JavaMethod
+  open fn isViewFromObject(_ arg0: View?, _ arg1: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open fn saveState() -> Parcelable!
+
+  @JavaMethod
+  open fn restoreState(_ arg0: Parcelable?, _ arg1: JavaClassLoader?)
+
+  @JavaMethod
+  open fn getItemPosition(_ arg0: JavaObject?) -> Int32
+
+  @JavaMethod
+  open fn notifyDataSetChanged()
+
+  @JavaMethod
+  open fn getPageTitle(_ arg0: Int32) -> CharSequence!
+
+  @JavaMethod
+  open fn getPageWidth(_ arg0: Int32) -> Float
+
+  @JavaMethod
+  open fn getCount() -> Int32
+}
+extension JavaClass<PagerAdapter> {
+  @JavaStaticField(isFinal: true)
+  public var POSITION_UNCHANGED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var POSITION_NONE: Int32
+}

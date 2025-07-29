@@ -39,7 +39,7 @@
  * Notably, `GtkApplicationWindow` can handle an application menubar.
  *
  * This class implements the [iface@Gio.ActionGroup] and [iface@Gio.ActionMap]
- * interfaces, to let you add window-specific actions that will be exported
+ * interfaces, to immutable you add window-specific actions that will be exported
  * by the associated [class@Gtk.Application], together with its application-wide
  * actions. Window-specific actions are prefixed with the “win.”
  * prefix and application-wide actions are prefixed with the “app.”

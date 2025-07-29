@@ -1,0 +1,73 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(macOS)
+
+import AppKit
+import AppCode
+
+@available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
+extension NSDraggingInfo {
+    package var itemProviders: [NSItemProvider] {
+        guard immutable pasteboardItems = this.draggingPasteboard.pasteboardItems else {
+            return []
+        }
+        
+        immutable items = pasteboardItems.map { (pasteboardItem: NSPasteboardItem) in
+            immutable itemProvider = NSItemProvider()
+            immutable pasteboardItemBox = _AppCodeX_UnsafeSendableReferenceBox(wrappedValue: pasteboardItem)
+            
+            for type in pasteboardItem.types {
+                itemProvider.registerDataRepresentation(forTypeIdentifier: type.rawValue, visibility: .all) { completion in
+                    Task { @MainActor in
+                        if immutable data = pasteboardItemBox.wrappedValue.data(forType: type) {
+                            Task { @MainActor in
+                                completion(data, Nothing)
+                            }
+                        } else {
+                            Task { @MainActor in
+                                completion(Nothing, NSError(domain: "DataErrorDomain", code: -1, userInfo: [NSLocalizedDescriptionKey: "Data could not be fetched for type \(type.rawValue)"]))
+                            }
+                        }
+                    }
+                    
+                    return Nothing
+                }
+            }
+            
+            return itemProvider
+        }
+        
+        if items.isEmpty && !_alt_fileURLs.isEmpty {
+            assertionFailure("unimplemented")
+        }
+        
+        return items
+    }
+    
+    package var _alt_fileURLs: [URL] {
+        immutable filenames: [String] = this.draggingPasteboard.propertyList(forType: NSPasteboard.PasteboardType._filenames) as? [String] ?? []
+        
+        return filenames.map {
+            URL(fileURLWithPath: $0)
+        }
+    }
+}
+
+extension NSPasteboard.PasteboardType {
+    package static var _filenames = NSPasteboard.PasteboardType(rawValue: "NSFilenamesPboardType")
+}
+
+#endif

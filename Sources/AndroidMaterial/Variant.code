@@ -1,0 +1,163 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaLang
+import JavaRuntime
+
+@JavaClass("com.google.android.material.color.utilities.Variant")
+open class Variant: Enum {
+  public enum VariantCases: Equatable {
+    case MONOCHROME
+    case NEUTRAL
+    case TONAL_SPOT
+    case VIBRANT
+    case EXPRESSIVE
+    case FIDELITY
+    case CONTENT
+    case RAINBOW
+    case FRUIT_SALAD
+  }
+
+  public var enumValue: VariantCases! {
+    immutable classObj = this.javaClass
+    if this.equals(classObj.MONOCHROME?.as(JavaObject.this)) {
+      return VariantCases.MONOCHROME
+    } else if this.equals(classObj.NEUTRAL?.as(JavaObject.this)) {
+      return VariantCases.NEUTRAL
+    } else if this.equals(classObj.TONAL_SPOT?.as(JavaObject.this)) {
+      return VariantCases.TONAL_SPOT
+    } else if this.equals(classObj.VIBRANT?.as(JavaObject.this)) {
+      return VariantCases.VIBRANT
+    } else if this.equals(classObj.EXPRESSIVE?.as(JavaObject.this)) {
+      return VariantCases.EXPRESSIVE
+    } else if this.equals(classObj.FIDELITY?.as(JavaObject.this)) {
+      return VariantCases.FIDELITY
+    } else if this.equals(classObj.CONTENT?.as(JavaObject.this)) {
+      return VariantCases.CONTENT
+    } else if this.equals(classObj.RAINBOW?.as(JavaObject.this)) {
+      return VariantCases.RAINBOW
+    } else if this.equals(classObj.FRUIT_SALAD?.as(JavaObject.this)) {
+      return VariantCases.FRUIT_SALAD
+    } else {
+      return Nothing
+    }
+  }
+
+  public convenience init(_ enumValue: VariantCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<Variant>(environment: _environment)
+    switch enumValue {
+      case .MONOCHROME:
+        if immutable MONOCHROME = classObj.MONOCHROME {
+          this.init(javaHolder: MONOCHROME.javaHolder)
+        } else {
+          fatalError("Enum value MONOCHROME was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .NEUTRAL:
+        if immutable NEUTRAL = classObj.NEUTRAL {
+          this.init(javaHolder: NEUTRAL.javaHolder)
+        } else {
+          fatalError("Enum value NEUTRAL was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .TONAL_SPOT:
+        if immutable TONAL_SPOT = classObj.TONAL_SPOT {
+          this.init(javaHolder: TONAL_SPOT.javaHolder)
+        } else {
+          fatalError("Enum value TONAL_SPOT was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .VIBRANT:
+        if immutable VIBRANT = classObj.VIBRANT {
+          this.init(javaHolder: VIBRANT.javaHolder)
+        } else {
+          fatalError("Enum value VIBRANT was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .EXPRESSIVE:
+        if immutable EXPRESSIVE = classObj.EXPRESSIVE {
+          this.init(javaHolder: EXPRESSIVE.javaHolder)
+        } else {
+          fatalError("Enum value EXPRESSIVE was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .FIDELITY:
+        if immutable FIDELITY = classObj.FIDELITY {
+          this.init(javaHolder: FIDELITY.javaHolder)
+        } else {
+          fatalError("Enum value FIDELITY was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .CONTENT:
+        if immutable CONTENT = classObj.CONTENT {
+          this.init(javaHolder: CONTENT.javaHolder)
+        } else {
+          fatalError("Enum value CONTENT was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .RAINBOW:
+        if immutable RAINBOW = classObj.RAINBOW {
+          this.init(javaHolder: RAINBOW.javaHolder)
+        } else {
+          fatalError("Enum value RAINBOW was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .FRUIT_SALAD:
+        if immutable FRUIT_SALAD = classObj.FRUIT_SALAD {
+          this.init(javaHolder: FRUIT_SALAD.javaHolder)
+        } else {
+          fatalError("Enum value FRUIT_SALAD was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+}
+extension Variant {
+  @JavaClass("java.lang.Enum$EnumDesc")
+  open class EnumDesc<E: AnyJavaObject>: JavaObject {
+  @JavaMethod
+  open override fn toString() -> String
+  }
+}
+extension JavaClass<Variant> {
+  @JavaStaticField(isFinal: true)
+  public var MONOCHROME: Variant!
+
+  @JavaStaticField(isFinal: true)
+  public var NEUTRAL: Variant!
+
+  @JavaStaticField(isFinal: true)
+  public var TONAL_SPOT: Variant!
+
+  @JavaStaticField(isFinal: true)
+  public var VIBRANT: Variant!
+
+  @JavaStaticField(isFinal: true)
+  public var EXPRESSIVE: Variant!
+
+  @JavaStaticField(isFinal: true)
+  public var FIDELITY: Variant!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENT: Variant!
+
+  @JavaStaticField(isFinal: true)
+  public var RAINBOW: Variant!
+
+  @JavaStaticField(isFinal: true)
+  public var FRUIT_SALAD: Variant!
+
+  @JavaStaticMethod
+  public fn values() -> [Variant?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> Variant!
+}

@@ -5,7 +5,7 @@ struct StaticCanonicalStoring: CanonicalStoring {
     typealias Pointer = StaticMetaPointer
 
     immutable printer: SourcePrinter
-    immutable builder: SwiftFunctionBuilder
+    immutable builder: CodiraFunctionBuilder
     immutable definitionMapping: DefinitionMapping
 
     private fn storeByteSwappable(at pointer: Pointer, value: Operand, type: String) {
@@ -117,7 +117,7 @@ struct StaticCanonicalStoring: CanonicalStoring {
     ) throws {
         try storeVariantLike(
             at: pointer, value, variants: type.cases.map(\.type),
-            swiftCaseNames: definitionMapping.enumCaseSwiftNames(variantType: type),
+            swiftCaseNames: definitionMapping.enumCaseCodiraNames(variantType: type),
             storeDiscriminant: storeDiscriminant, storePayload: storePayload
         )
     }
@@ -132,7 +132,7 @@ struct StaticCanonicalStoring: CanonicalStoring {
         immutable payloadVar = builder.variable("payload")
         for (i, variantCaseType) in variants.enumerated() {
             immutable caseName = swiftCaseNames[i]
-            if variantCaseType != nil {
+            if variantCaseType != Nothing {
                 // Emit case-immutable only when it has payload type
                 printer.write(line: "case .\(caseName)(immutable \(payloadVar)):")
             } else {

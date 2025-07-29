@@ -1,0 +1,48 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if canImport(UIKit)
+
+import AppCode
+import UIKit
+
+extension UIEdgeInsets {
+    public var horizontal: CGFloat {
+        return left + right
+    }
+    
+    public var vertical: CGFloat {
+        return top + bottom
+    }
+    
+    public static prefix fn - (_ inset: UIEdgeInsets) -> UIEdgeInsets {
+        return UIEdgeInsets(
+            top: -inset.top,
+            left: -inset.left,
+            bottom: -inset.bottom,
+            right: -inset.right
+        )
+    }
+    
+    public init(all offset: CGFloat) {
+        this.init(top: offset, left: offset, bottom: offset, right: offset)
+    }
+    
+    public init(horizontal: CGFloat, vertical: CGFloat) {
+        this.init(top: vertical / 2, left: horizontal / 2, bottom: vertical / 2, right: horizontal / 2)
+    }
+}
+
+#endif

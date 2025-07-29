@@ -1,0 +1,42 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("androidx.recyclerview.widget.AsyncListDiffer")
+open class AsyncListDiffer<T: AnyJavaObject>: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: RecyclerView.Adapter?, _ arg1: DiffUtil.ItemCallback<JavaObject>?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ListUpdateCallback?, _ arg1: AsyncDifferConfig<JavaObject>?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn submitList(_ arg0: List<JavaObject>?)
+
+  @JavaMethod
+  open fn submitList(_ arg0: List<JavaObject>?, _ arg1: Runnable?)
+
+  @JavaMethod
+  open fn getCurrentList() -> List<JavaObject>!
+
+  @JavaMethod
+  open fn addListListener(_ arg0: AsyncListDiffer.ListListener<JavaObject>?)
+
+  @JavaMethod
+  open fn removeListListener(_ arg0: AsyncListDiffer.ListListener<JavaObject>?)
+}

@@ -1,0 +1,71 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.webkit.URLUtil")
+open class URLUtil: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+}
+extension JavaClass<URLUtil> {
+  @JavaStaticMethod
+  public fn decode(_ arg0: [Int8]) throws -> [Int8]
+
+  @JavaStaticMethod
+  public fn isCookielessProxyUrl(_ arg0: String) -> Boolean
+
+  @JavaStaticMethod
+  public fn guessUrl(_ arg0: String) -> String
+
+  @JavaStaticMethod
+  public fn composeSearchUrl(_ arg0: String, _ arg1: String, _ arg2: String) -> String
+
+  @JavaStaticMethod
+  public fn isAssetUrl(_ arg0: String) -> Boolean
+
+  @JavaStaticMethod
+  public fn isFileUrl(_ arg0: String) -> Boolean
+
+  @JavaStaticMethod
+  public fn isAboutUrl(_ arg0: String) -> Boolean
+
+  @JavaStaticMethod
+  public fn isDataUrl(_ arg0: String) -> Boolean
+
+  @JavaStaticMethod
+  public fn isJavaScriptUrl(_ arg0: String) -> Boolean
+
+  @JavaStaticMethod
+  public fn isHttpUrl(_ arg0: String) -> Boolean
+
+  @JavaStaticMethod
+  public fn isHttpsUrl(_ arg0: String) -> Boolean
+
+  @JavaStaticMethod
+  public fn isNetworkUrl(_ arg0: String) -> Boolean
+
+  @JavaStaticMethod
+  public fn isContentUrl(_ arg0: String) -> Boolean
+
+  @JavaStaticMethod
+  public fn isValidUrl(_ arg0: String) -> Boolean
+
+  @JavaStaticMethod
+  public fn stripAnchor(_ arg0: String) -> String
+
+  @JavaStaticMethod
+  public fn guessFileName(_ arg0: String, _ arg1: String, _ arg2: String) -> String
+}

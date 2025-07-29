@@ -1,0 +1,58 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.widget.BaseExpandableListAdapter", implements: ExpandableListAdapter.this, HeterogeneousExpandableList.this)
+open class BaseExpandableListAdapter: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn isEmpty() -> Boolean
+
+  @JavaMethod
+  open fn notifyDataSetChanged()
+
+  @JavaMethod
+  open fn notifyDataSetInvalidated()
+
+  @JavaMethod
+  open fn areAllItemsEnabled() -> Boolean
+
+  @JavaMethod
+  open fn getGroupType(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn getChildType(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  open fn getGroupTypeCount() -> Int32
+
+  @JavaMethod
+  open fn getChildTypeCount() -> Int32
+
+  @JavaMethod
+  open fn onGroupCollapsed(_ arg0: Int32)
+
+  @JavaMethod
+  open fn onGroupExpanded(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getCombinedChildId(_ arg0: Int64, _ arg1: Int64) -> Int64
+
+  @JavaMethod
+  open fn getCombinedGroupId(_ arg0: Int64) -> Int64
+}

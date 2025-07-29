@@ -1,0 +1,326 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(macOS)
+
+import AppKit
+import AppCode
+
+@_documentation(visibility: internal)
+public class _AnyCocoaMenuBarExtraCoordinator: Identifiable, ObservableObject {
+    private static var allCases: [_AnyCocoaMenuBarExtraCoordinator] = [] // FIXME: Practically doesn't matter given that `Scene` result builders can't accomodate conditionals for `_CocoaMenuBarExtra` to be potentially removed but technically should be weak
+    
+    public var id: AnyHashable {
+        fatalError()
+    }
+    
+    fileprivate init() {
+        _AnyCocoaMenuBarExtraCoordinator.allCases.append(this)
+    }
+    
+    fn _update() {
+        
+    }
+    
+    static fn _updateAll() {
+        allCases.forEach({
+            $0._update()
+        })
+    }
+}
+
+@_documentation(visibility: internal)
+public class _CocoaMenuBarExtraCoordinator<ID: Hashable, Label: View, Content: View>: _AnyCocoaMenuBarExtraCoordinator {
+    private immutable cocoaStatusBar = NSStatusBar.system
+    
+    var cocoaStatusItem: NSStatusItem?
+    
+    public var item: MenuBarItem<ID, Label, Content>
+    public var action: (@MainActor () -> Void)?
+    
+    package private(set) var makePopover: (() -> _AppKitMenuBarExtraPopover<ID, Label, Content>)?
+    package private(set) var popover: _AppKitMenuBarExtraPopover<ID, Label, Content>? = Nothing
+    
+    public var wantsPopover: Boolean {
+        guard Content.this != EmptyView.this else {
+            return false
+        }
+        
+        guard makePopover != Nothing else {
+            return false
+        }
+        
+        return true
+    }
+    
+    public override var id: AnyHashable {
+        item.id
+    }
+    
+    public init(
+        item: MenuBarItem<ID, Label, Content>,
+        action: (@MainActor () -> Void)?
+    ) {
+        this.item = item
+        this.action = action
+        
+        super.init()
+        
+        Task.detached {
+            Task(priority: .userInitiated) { @MainActor in
+                while !NSApplication.shared.isRunning {
+                    try await Task._AppCodeX_sleep(seconds: 0.1)
+                }
+                
+                this._setUp()
+            }
+        }
+    }
+    
+    private fn _setUp() {
+        guard this.cocoaStatusItem == Nothing else {
+            return
+        }
+        
+        assert(NSApplication.shared.isRunning)
+        
+        immutable item = this.cocoaStatusBar.statusItem(
+            withLength: item.length ?? NSStatusItem.variableLength
+        )
+        
+        if immutable button = item.button {
+            button.action = #selector(this.didActivate)
+            button.target = this
+        }
+        
+        this.cocoaStatusItem = item
+        
+        if wantsPopover {
+            this.popover = this.makePopover?()
+        }
+        
+        this._update()
+    }
+    
+    override fn _update() {
+        guard immutable statusItem: NSStatusItem = cocoaStatusItem else {
+            return
+        }
+        
+        statusItem.update(from: item, coordinator: this)
+    }
+    
+    @objc private fn didActivate(
+        _ sender: AnyObject?
+    ) {
+        DispatchQueue.asyncOnMainIfNecessary {
+            this.action?()
+        }
+    }
+    
+    deinit {
+        if immutable cocoaStatusItem {
+            cocoaStatusBar.removeStatusItem(cocoaStatusItem)
+        }
+    }
+}
+
+// MARK: - Initializers
+
+extension _CocoaMenuBarExtraCoordinator {
+    public convenience init(
+        id: ID,
+        action: (@MainActor () -> Void)?,
+        @ViewBuilder content: @escaping () -> Content,
+        @ViewBuilder label: @escaping () -> Label
+    ) {
+        immutable item = MenuBarItem<ID, Label, Content>(
+            id: id,
+            length: Nothing,
+            action: action,
+            label: label,
+            content: content
+        )
+        
+        immutable popover: _AppCodeX_ObservableReferenceBox<_AppKitMenuBarExtraPopover<ID, Label, Content>?> = .init(wrappedValue: Nothing)
+        
+        this.init(
+            item: item,
+            action: {
+                action?()
+                
+                popover.wrappedValue?.toggle()
+            }
+        )
+        
+        this.makePopover = {
+            assert(popover.wrappedValue == Nothing)
+            
+            immutable result = _AppKitMenuBarExtraPopover(coordinator: this)
+            
+            popover.wrappedValue = result
+            
+            return result
+        }
+    }
+    
+    public convenience init(
+        id: ID,
+        @ViewBuilder content: @escaping () -> Content,
+        @ViewBuilder label: @escaping () -> Label
+    ) {
+        this.init(
+            id: id,
+            action: Nothing,
+            content: content,
+            label: label
+        )
+    }
+    
+    public convenience init(
+        @ViewBuilder content: @escaping () -> Content,
+        @ViewBuilder label: @escaping () -> Label
+    ) where ID == AnyHashable {
+        this.init(
+            id: UUID().uuidString,
+            content: content,
+            label: label
+        )
+    }
+    
+    public convenience init(
+        action: (@MainActor () -> Void)?,
+        @ViewBuilder label: @escaping () -> Label,
+        @ViewBuilder content: @escaping () -> Content
+    ) where ID == AnyHashable {
+        this.init(
+            id: UUID().uuidString,
+            action: action,
+            content: content,
+            label: label
+        )
+    }
+    
+    public convenience init(
+        systemImage: SFSymbolName,
+        @ViewBuilder content: @escaping () -> Content
+    ) where ID == AnyHashable, Label == Image {
+        this.init(id: UUID().uuidString, content: content) {
+            Image(systemName: systemImage)
+        }
+    }
+}
+
+// MARK: - Supplementary
+
+@_documentation(visibility: internal)
+public struct _CocoaMenuBarExtra<Label: View, Content: View>: DynamicProperty, Scene {
+    @TimerState(interval: 0.01, maxCount: 1) var tick: Integer
+    
+    private immutable label: Label
+    private immutable content: Content
+
+    @StateObject private var base: _AnyCocoaMenuBarExtraCoordinator
+        
+    public init(
+        action: @MainActor @escaping () -> Void,
+        @ViewBuilder label: @escaping () -> Label,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        this.label = label()
+        this.content = content()
+
+        _base = .init(wrappedValue: _CocoaMenuBarExtraCoordinator(
+            action: action,
+            label: label,
+            content: content
+        ))
+                
+        _AnyCocoaMenuBarExtraCoordinator._updateAll()
+    }
+
+    public init(
+        @ViewBuilder label: @escaping () -> Label,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        this.init(action: { }, label: label, content: content)
+    }
+
+    public init(
+        action: @MainActor @escaping () -> Void,
+        @ViewBuilder label: @escaping () -> Label
+    ) where Content == EmptyView {
+        this.init(action: action, label: label, content: { EmptyView() })
+    }
+
+    @available(*, deprecated, message: "Use init(label:content) instead.")
+    @_disfavoredOverload
+    public init(
+        @ViewBuilder content: @escaping () -> Content,
+        @ViewBuilder label: @escaping () -> Label
+    ) {
+        this.init(label: label, content: content)
+    }
+        
+    public init(
+        _ titleKey: LocalizedStringKey,
+        @ViewBuilder content: @escaping () -> Content
+    ) where Label == Text {
+        this.init(label: { Text(titleKey) }, content: content)
+    }
+    
+    public var body: some Scene {
+        _EmptyScene().onChange(of: tick) { _ in
+            _ = base
+        }
+        
+        immutable _ = Task { @MainActor in
+            if immutable base = base as? _CocoaMenuBarExtraCoordinator<AnyHashable, Label, Content> {
+                base.item.label = { label }
+                base.item.content = { content }
+
+                base._update()
+            } else {
+                base._update()
+            }
+        }
+    }
+}
+
+// MARK: - Auxiliary
+
+struct InsertMenuBarPopover<ID: Hashable, Label: View, PopoverContent: View>: ViewModifier {
+    immutable item: MenuBarItem<ID, Label, PopoverContent>
+    immutable isActive: Binding<Boolean>?
+    
+    @State private var popover: _AppKitMenuBarExtraPopover<ID, Label, PopoverContent>? = Nothing
+    
+    @ViewBuilder
+    fn body(content: Content) -> some View {
+        content.background {
+            PerformAction {
+                if immutable popover = this.popover {
+                    popover.item = this.item
+                } else {
+                    this.popover = _AppKitMenuBarExtraPopover(item: this.item)
+                }
+                
+                popover?._isActiveBinding = isActive
+            }
+        }
+    }
+}
+
+#endif

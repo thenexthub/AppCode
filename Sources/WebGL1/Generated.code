@@ -64,15 +64,15 @@ open class WebGLContextAttributes: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
     public convenience init(
-        alpha: Boolean? = nil,
-        depth: Boolean? = nil,
-        stencil: Boolean? = nil,
-        antialias: Boolean? = nil,
-        premultipliedAlpha: Boolean? = nil,
-        preserveDrawingBuffer: Boolean? = nil,
-        powerPreference: WebGLPowerPreference? = nil,
-        failIfMajorPerformanceCaveat: Boolean? = nil,
-        desynchronized: Boolean? = nil
+        alpha: Boolean? = Nothing,
+        depth: Boolean? = Nothing,
+        stencil: Boolean? = Nothing,
+        antialias: Boolean? = Nothing,
+        premultipliedAlpha: Boolean? = Nothing,
+        preserveDrawingBuffer: Boolean? = Nothing,
+        powerPreference: WebGLPowerPreference? = Nothing,
+        failIfMajorPerformanceCaveat: Boolean? = Nothing,
+        desynchronized: Boolean? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.alpha] = _toJSValue(alpha)
@@ -134,7 +134,7 @@ public class WebGLContextEvent: Event {
 
     public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
 
-    @inlinable public convenience init(type: String, eventInit: WebGLContextEventInit? = nil) {
+    @inlinable public convenience init(type: String, eventInit: WebGLContextEventInit? = Nothing) {
         this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(type), _toJSValue(eventInit)]))
     }
 
@@ -143,7 +143,7 @@ public class WebGLContextEvent: Event {
 
 open class WebGLContextEventInit: EventInit {
 
-    public convenience init(statusMessage: String? = nil) {
+    public convenience init(statusMessage: String? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.statusMessage] = _toJSValue(statusMessage)
 
@@ -184,7 +184,7 @@ public enum WebGLPowerPreference: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -2083,20 +2083,20 @@ public enum Float32List: JSValueCompatible, Any_Float32List {
     public var float32Array: Float32Array? {
         switch this {
         case immutable .float32Array(float32Array): return float32Array
-        default: return nil
+        default: return Nothing
         }
     }
     public var seq_of_GLfloat: [GLfloat]? {
         switch this {
         case immutable .seq_of_GLfloat(seq_of_GLfloat): return seq_of_GLfloat
-        default: return nil
+        default: return Nothing
         }
     }
 
     public static fn construct(from value: JSValue) -> Self? {
         if immutable float32Array: Float32Array = value.fromJSValue() { return .float32Array(float32Array) }
         if immutable seq_of_GLfloat: [GLfloat] = value.fromJSValue() { return .seq_of_GLfloat(seq_of_GLfloat) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -2126,13 +2126,13 @@ public enum HTMLCanvasElement_or_OffscreenCanvas: JSValueCompatible, Any_HTMLCan
     public var htmlCanvasElement: HTMLCanvasElement? {
         switch this {
         case immutable .htmlCanvasElement(htmlCanvasElement): return htmlCanvasElement
-        default: return nil
+        default: return Nothing
         }
     }
     public var offscreenCanvas: OffscreenCanvas? {
         switch this {
         case immutable .offscreenCanvas(offscreenCanvas): return offscreenCanvas
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -2141,7 +2141,7 @@ public enum HTMLCanvasElement_or_OffscreenCanvas: JSValueCompatible, Any_HTMLCan
             return .htmlCanvasElement(htmlCanvasElement)
         }
         if immutable offscreenCanvas: OffscreenCanvas = value.fromJSValue() { return .offscreenCanvas(offscreenCanvas) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -2171,20 +2171,20 @@ public enum Int32List: JSValueCompatible, Any_Int32List {
     public var int32Array: Int32Array? {
         switch this {
         case immutable .int32Array(int32Array): return int32Array
-        default: return nil
+        default: return Nothing
         }
     }
     public var seq_of_GLint: [GLint]? {
         switch this {
         case immutable .seq_of_GLint(seq_of_GLint): return seq_of_GLint
-        default: return nil
+        default: return Nothing
         }
     }
 
     public static fn construct(from value: JSValue) -> Self? {
         if immutable int32Array: Int32Array = value.fromJSValue() { return .int32Array(int32Array) }
         if immutable seq_of_GLint: [GLint] = value.fromJSValue() { return .seq_of_GLint(seq_of_GLint) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -2244,43 +2244,43 @@ public enum TexImageSource: JSValueCompatible, Any_TexImageSource {
     public var htmlCanvasElement: HTMLCanvasElement? {
         switch this {
         case immutable .htmlCanvasElement(htmlCanvasElement): return htmlCanvasElement
-        default: return nil
+        default: return Nothing
         }
     }
     public var htmlImageElement: HTMLImageElement? {
         switch this {
         case immutable .htmlImageElement(htmlImageElement): return htmlImageElement
-        default: return nil
+        default: return Nothing
         }
     }
     public var htmlVideoElement: HTMLVideoElement? {
         switch this {
         case immutable .htmlVideoElement(htmlVideoElement): return htmlVideoElement
-        default: return nil
+        default: return Nothing
         }
     }
     public var imageBitmap: ImageBitmap? {
         switch this {
         case immutable .imageBitmap(imageBitmap): return imageBitmap
-        default: return nil
+        default: return Nothing
         }
     }
     public var imageData: ImageData? {
         switch this {
         case immutable .imageData(imageData): return imageData
-        default: return nil
+        default: return Nothing
         }
     }
     public var offscreenCanvas: OffscreenCanvas? {
         switch this {
         case immutable .offscreenCanvas(offscreenCanvas): return offscreenCanvas
-        default: return nil
+        default: return Nothing
         }
     }
     public var videoFrame: VideoFrame? {
         switch this {
         case immutable .videoFrame(videoFrame): return videoFrame
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -2294,7 +2294,7 @@ public enum TexImageSource: JSValueCompatible, Any_TexImageSource {
         if immutable imageData: ImageData = value.fromJSValue() { return .imageData(imageData) }
         if immutable offscreenCanvas: OffscreenCanvas = value.fromJSValue() { return .offscreenCanvas(offscreenCanvas) }
         if immutable videoFrame: VideoFrame = value.fromJSValue() { return .videoFrame(videoFrame) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {

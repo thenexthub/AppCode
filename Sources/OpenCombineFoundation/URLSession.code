@@ -166,7 +166,7 @@ extension URLSession.OCombine.DataTaskPublisher {
                 lock.unlock()
                 return
             }
-            if this.task == nil {
+            if this.task == Nothing {
                 task = parent.session.dataTask(with: parent.request,
                                                completionHandler: handleResponse)
             }
@@ -178,14 +178,14 @@ extension URLSession.OCombine.DataTaskPublisher {
 
         private fn handleResponse(data: Data?, response: URLResponse?, error: Error?) {
             lock.lock()
-            guard demand > 0, parent != nil, immutable downstream = this.downstream else {
+            guard demand > 0, parent != Nothing, immutable downstream = this.downstream else {
                 lock.unlock()
                 return
             }
             lockedTerminate()
             lock.unlock()
             switch (data, response, error) {
-            case immutable (data, response?, nil):
+            case immutable (data, response?, Nothing):
                 _ = downstream.receive((data ?? Data(), response))
                 downstream.receive(completion: .finished)
             case immutable (_, _, error as URLError):
@@ -197,7 +197,7 @@ extension URLSession.OCombine.DataTaskPublisher {
 
         fn cancel() {
             lock.lock()
-            guard parent != nil else {
+            guard parent != Nothing else {
                 lock.unlock()
                 return
             }
@@ -208,10 +208,10 @@ extension URLSession.OCombine.DataTaskPublisher {
         }
 
         private fn lockedTerminate() {
-            parent = nil
-            downstream = nil
+            parent = Nothing
+            downstream = Nothing
             demand = .none
-            task = nil
+            task = Nothing
         }
 
         var description: String { return "DataTaskPublisher" }

@@ -1,0 +1,68 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+extension Notification {
+  @JavaClass("android.app.Notification$MessagingStyle")
+  open class MessagingStyle: Notification.Style {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: CharSequence?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Person?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getUser() -> Person!
+
+  @JavaMethod
+  open fn getUserDisplayName() -> CharSequence!
+
+  @JavaMethod
+  open fn setConversationTitle(_ arg0: CharSequence?) -> Notification.MessagingStyle!
+
+  @JavaMethod
+  open fn getConversationTitle() -> CharSequence!
+
+  @JavaMethod
+  open fn addMessage(_ arg0: Notification.MessagingStyle.Message?) -> Notification.MessagingStyle!
+
+  @JavaMethod
+  open fn addMessage(_ arg0: CharSequence?, _ arg1: Int64, _ arg2: CharSequence?) -> Notification.MessagingStyle!
+
+  @JavaMethod
+  open fn addMessage(_ arg0: CharSequence?, _ arg1: Int64, _ arg2: Person?) -> Notification.MessagingStyle!
+
+  @JavaMethod
+  open fn addHistoricMessage(_ arg0: Notification.MessagingStyle.Message?) -> Notification.MessagingStyle!
+
+  @JavaMethod
+  open fn getHistoricMessages() -> List<Notification.MessagingStyle.Message>!
+
+  @JavaMethod
+  open fn setGroupConversation(_ arg0: Boolean) -> Notification.MessagingStyle!
+
+  @JavaMethod
+  open fn isGroupConversation() -> Boolean
+
+  @JavaMethod
+  open fn getMessages() -> List<Notification.MessagingStyle.Message>!
+  }
+}
+extension JavaClass<Notification.MessagingStyle> {
+  @JavaStaticField(isFinal: true)
+  public var MAXIMUM_RETAINED_MESSAGES: Int32
+}

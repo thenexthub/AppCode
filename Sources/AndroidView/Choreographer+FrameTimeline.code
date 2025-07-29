@@ -1,0 +1,30 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension Choreographer {
+  @JavaClass("android.view.Choreographer$FrameTimeline")
+  open class FrameTimeline: JavaObject {
+  @JavaMethod
+  open fn getVsyncId() -> Int64
+
+  @JavaMethod
+  open fn getExpectedPresentationTimeNanos() -> Int64
+
+  @JavaMethod
+  open fn getDeadlineNanos() -> Int64
+  }
+}

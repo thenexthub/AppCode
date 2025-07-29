@@ -1,0 +1,32 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.util.EventLogTags")
+open class EventLogTags: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing) throws
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: BufferedReader?, environment: JNIEnvironment? = Nothing) throws
+
+  @JavaMethod
+  open fn get(_ arg0: Int32) -> EventLogTags.Description!
+
+  @JavaMethod
+  open fn get(_ arg0: String) -> EventLogTags.Description!
+}

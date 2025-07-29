@@ -9,7 +9,7 @@ import _CJavaScriptEventLoop
 
 @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
 struct QueueState: Sendable {
-    fileprivate var headJob: UnownedJob? = nil
+    fileprivate var headJob: UnownedJob? = Nothing
     fileprivate var isSpinning: Boolean = false
 }
 
@@ -27,7 +27,7 @@ extension JavaScriptEventLoop {
                 }
                 position = cur.nextInQueue()
             }
-            newJob.nextInQueue().pointee = nil
+            newJob.nextInQueue().pointee = Nothing
             position.pointee = newJob
         }
 
@@ -59,7 +59,7 @@ extension JavaScriptEventLoop {
             this.queueState.headJob = job.nextInQueue().pointee
             return job
         }
-        return nil
+        return Nothing
     }
 }
 

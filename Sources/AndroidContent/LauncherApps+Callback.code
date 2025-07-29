@@ -1,0 +1,56 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+extension LauncherApps {
+  @JavaClass("android.content.pm.LauncherApps$Callback")
+  open class Callback: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn onPackageRemoved(_ arg0: String, _ arg1: UserHandle?)
+
+  @JavaMethod
+  open fn onPackageAdded(_ arg0: String, _ arg1: UserHandle?)
+
+  @JavaMethod
+  open fn onPackageChanged(_ arg0: String, _ arg1: UserHandle?)
+
+  @JavaMethod
+  open fn onPackagesAvailable(_ arg0: [String], _ arg1: UserHandle?, _ arg2: Boolean)
+
+  @JavaMethod
+  open fn onPackagesUnavailable(_ arg0: [String], _ arg1: UserHandle?, _ arg2: Boolean)
+
+  @JavaMethod
+  open fn onPackagesSuspended(_ arg0: [String], _ arg1: UserHandle?, _ arg2: Bundle?)
+
+  @JavaMethod
+  open fn onPackagesSuspended(_ arg0: [String], _ arg1: UserHandle?)
+
+  @JavaMethod
+  open fn onPackagesUnsuspended(_ arg0: [String], _ arg1: UserHandle?)
+
+  @JavaMethod
+  open fn onShortcutsChanged(_ arg0: String, _ arg1: List<ShortcutInfo>?, _ arg2: UserHandle?)
+
+  @JavaMethod
+  open fn onPackageLoadingProgressChanged(_ arg0: String, _ arg1: UserHandle?, _ arg2: Float)
+  }
+}

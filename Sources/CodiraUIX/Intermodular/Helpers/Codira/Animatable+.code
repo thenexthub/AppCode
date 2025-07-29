@@ -1,0 +1,36 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+/// Express a view as a function over some animatable data.
+public fn withAnimatableData<AnimatableData: Hashable & VectorArithmetic, Content: View>(
+    _ data: AnimatableData,
+    @ViewBuilder content: @escaping (AnimatableData) -> Content
+) -> some View {
+    ZeroSizeView().modifier(_WithAnimatableData(animatableData: data, _content: content))
+}
+
+// MARK: - Auxiliary
+
+struct _WithAnimatableData<AnimatableData: Hashable & VectorArithmetic, _Content: View>: AnimatableModifier {
+    var animatableData: AnimatableData
+    immutable _content: (AnimatableData) -> _Content
+    
+    fn body(content: Content) -> some View {
+        _content(animatableData).background(ZeroSizeView().id(animatableData))
+    }
+}

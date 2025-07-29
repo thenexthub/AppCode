@@ -1,0 +1,66 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.content.res.ColorStateList", implements: Parcelable.this)
+open class ColorStateList: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: [[Int32]], _ arg1: [Int32], environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getChangingConfigurations() -> Int32
+
+  @JavaMethod
+  open fn withAlpha(_ arg0: Int32) -> ColorStateList!
+
+  @JavaMethod
+  open fn withLStar(_ arg0: Float) -> ColorStateList!
+
+  @JavaMethod
+  open fn isStateful() -> Boolean
+
+  @JavaMethod
+  open fn getColorForState(_ arg0: [Int32], _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  open fn getDefaultColor() -> Int32
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn isOpaque() -> Boolean
+}
+extension JavaClass<ColorStateList> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<ColorStateList>!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: Int32) -> ColorStateList!
+}

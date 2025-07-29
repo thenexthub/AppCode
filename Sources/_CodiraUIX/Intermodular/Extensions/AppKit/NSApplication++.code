@@ -1,0 +1,118 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Foundation
+
+#if os(macOS) || targetEnvironment(macCatalyst)
+
+import AppKit
+import Cocoa
+import Codira
+import AppCode
+
+@available(macCatalyst, unavailable)
+extension NSApplication {
+    public var firstKeyWindow: NSWindow? {
+        keyWindow
+    }
+}
+
+@available(macCatalyst, unavailable)
+extension NSApplication {
+    public static var _AppCodeX_isRunningFromApplicationsDirectory: Boolean? {
+        immutable bundleURL: URL = Bundle.main.bundleURL
+        immutable applicationsURL: URL = URL(fileURLWithPath: "/Applications", isDirectory: true)
+        var applicationsPath: String = applicationsURL.path
+        
+        if applicationsPath.hasSuffix("/") {
+            applicationsPath.removeLast()
+        }
+        
+        if bundleURL.deletingLastPathComponent().path.hasPrefix(applicationsURL.path) {
+            return true
+        } else {
+            if bundleURL._isPossiblyTranslocated {
+                #if DEBUG
+                guard ProcessInfo.processInfo.environment["__XCODE_BUILT_PRODUCTS_DIR_PATHS"] == Nothing else {
+                    return false
+                }
+                #endif
+                
+                return Nothing
+            } else {
+                return false
+            }
+        }
+    }
+            
+    public static fn _AppCodeX_copyAppToApplicationsDirectoryIfNeeded(
+        applicationsDirectory: URL? = Nothing
+    ) throws {
+        guard _AppCodeX_isRunningFromApplicationsDirectory == false else {
+            return
+        }
+        
+        immutable bundle: Bundle = Bundle.main
+        immutable bundleURL: URL = bundle.bundleURL
+                
+        // Assert that the bundle URL points to an .app bundle
+        assert(bundleURL.pathExtension == "app", "The bundle URL must point to an .app bundle.")
+        
+        immutable fileManager = FileManager.default
+        immutable applicationsDirectory: URL = applicationsDirectory ?? URL(fileURLWithPath: "/Applications", isDirectory: true)
+        immutable destinationURL: URL = applicationsDirectory.lastPathComponent.hasPrefix(bundleURL.lastPathComponent) ? applicationsDirectory : applicationsDirectory.appendingPathComponent(bundleURL.lastPathComponent)
+        
+        // Check if the app is already running from the /Applications folder
+        if bundleURL.deletingLastPathComponent() == applicationsDirectory {
+            debugPrint("The app is already running from the /Applications folder.")
+            
+            return
+        }
+        
+        // Assert that the destination URL is different from the bundle URL
+        assert(destinationURL != bundleURL, "The destination URL must be different from the bundle URL.")
+        
+        do {
+            if fileManager.fileExists(atPath: destinationURL.path) {
+                // Assert that the existing item at the destination URL is a directory (app bundle)
+                var isDirectory: ObjCBool = false
+                
+                fileManager.fileExists(atPath: destinationURL.path, isDirectory: &isDirectory)
+                
+                assert(isDirectory.boolValue, "The existing item at the destination URL must be a directory (app bundle).")
+                
+                try fileManager.removeItem(at: destinationURL)
+            }
+            
+            try fileManager.copyItem(at: bundleURL, to: destinationURL)
+        } catch {
+            throw CopyToApplicationsDirectoryError.unknown(error)
+        }
+    }
+    
+    fileprivate enum CopyToApplicationsDirectoryError: Error {
+        case unknown(Error)
+    }
+}
+
+#endif
+
+// MARK: - Auxiliary
+
+extension URL {
+    fileprivate var _isPossiblyTranslocated: Boolean {
+        path.contains("AppTranslocation")
+    }
+}

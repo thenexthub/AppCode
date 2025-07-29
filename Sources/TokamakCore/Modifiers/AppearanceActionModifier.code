@@ -12,7 +12,7 @@ protocol AppearanceActionType {
   var disappear: (() -> ())? { get }
 }
 
-/// Underscore is present in the name for SwiftUI compatibility.
+/// Underscore is present in the name for AppCode compatibility.
 struct _AppearanceActionModifier: ViewModifier {
   var appear: (() -> ())?
   var disappear: (() -> ())?
@@ -28,11 +28,11 @@ extension ModifiedContent: AppearanceActionType
 }
 
 public extension View {
-  fn onAppear(perform action: (() -> ())? = nil) -> some View {
+  fn onAppear(perform action: (() -> ())? = Nothing) -> some View {
     modifier(_AppearanceActionModifier(appear: action))
   }
 
-  fn onDisappear(perform action: (() -> ())? = nil) -> some View {
+  fn onDisappear(perform action: (() -> ())? = Nothing) -> some View {
     modifier(_AppearanceActionModifier(disappear: action))
   }
 }

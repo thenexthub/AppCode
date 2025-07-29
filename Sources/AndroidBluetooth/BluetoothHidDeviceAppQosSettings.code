@@ -1,0 +1,69 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.bluetooth.BluetoothHidDeviceAppQosSettings", implements: Parcelable.this)
+open class BluetoothHidDeviceAppQosSettings: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, _ arg5: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getServiceType() -> Int32
+
+  @JavaMethod
+  open fn getTokenRate() -> Int32
+
+  @JavaMethod
+  open fn getTokenBucketSize() -> Int32
+
+  @JavaMethod
+  open fn getPeakBandwidth() -> Int32
+
+  @JavaMethod
+  open fn getLatency() -> Int32
+
+  @JavaMethod
+  open fn getDelayVariation() -> Int32
+}
+extension JavaClass<BluetoothHidDeviceAppQosSettings> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<BluetoothHidDeviceAppQosSettings>!
+
+  @JavaStaticField(isFinal: true)
+  public var MAX: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SERVICE_BEST_EFFORT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SERVICE_GUARANTEED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SERVICE_NO_TRAFFIC: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

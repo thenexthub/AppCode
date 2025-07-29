@@ -1,0 +1,237 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+import JavaTime
+import JavaUtil
+
+@JavaClass("android.bluetooth.BluetoothAdapter")
+open class BluetoothAdapter: JavaObject {
+  @JavaMethod
+  open fn getRemoteDevice(_ arg0: [Int8]) -> BluetoothDevice!
+
+  @JavaMethod
+  open fn getRemoteDevice(_ arg0: String) -> BluetoothDevice!
+
+  @JavaMethod
+  open fn getRemoteLeDevice(_ arg0: String, _ arg1: Int32) -> BluetoothDevice!
+
+  @JavaMethod
+  open fn disable() -> Boolean
+
+  @JavaMethod
+  open fn getScanMode() -> Int32
+
+  @JavaMethod
+  open fn startDiscovery() -> Boolean
+
+  @JavaMethod
+  open fn cancelDiscovery() -> Boolean
+
+  @JavaMethod
+  open fn isDiscovering() -> Boolean
+
+  @JavaMethod
+  open fn isLe2MPhySupported() -> Boolean
+
+  @JavaMethod
+  open fn isLeAudioSupported() -> Int32
+
+  @JavaMethod
+  open fn getBondedDevices() -> JavaSet<BluetoothDevice>!
+
+  @JavaMethod
+  open fn getProfileProxy(_ arg0: Context?, _ arg1: BluetoothProfile.ServiceListener?, _ arg2: Int32) -> Boolean
+
+  @JavaMethod
+  open fn closeProfileProxy(_ arg0: Int32, _ arg1: BluetoothProfile?)
+
+  @JavaMethod
+  open fn startLeScan(_ arg0: [UUID?], _ arg1: BluetoothAdapter.LeScanCallback?) -> Boolean
+
+  @JavaMethod
+  open fn startLeScan(_ arg0: BluetoothAdapter.LeScanCallback?) -> Boolean
+
+  @JavaMethod
+  open fn stopLeScan(_ arg0: BluetoothAdapter.LeScanCallback?)
+
+  @JavaMethod
+  open fn getBluetoothLeAdvertiser() -> BluetoothLeAdvertiser!
+
+  @JavaMethod
+  open fn getBluetoothLeScanner() -> BluetoothLeScanner!
+
+  @JavaMethod
+  open fn getDiscoverableTimeout() -> Duration!
+
+  @JavaMethod
+  open fn isMultipleAdvertisementSupported() -> Boolean
+
+  @JavaMethod
+  open fn isOffloadedFilteringSupported() -> Boolean
+
+  @JavaMethod
+  open fn isOffloadedScanBatchingSupported() -> Boolean
+
+  @JavaMethod
+  open fn isLeCodedPhySupported() -> Boolean
+
+  @JavaMethod
+  open fn isLeExtendedAdvertisingSupported() -> Boolean
+
+  @JavaMethod
+  open fn isLePeriodicAdvertisingSupported() -> Boolean
+
+  @JavaMethod
+  open fn isLeAudioBroadcastSourceSupported() -> Int32
+
+  @JavaMethod
+  open fn getLeMaximumAdvertisingDataLength() -> Int32
+
+  @JavaMethod
+  open fn getMaxConnectedAudioDevices() -> Int32
+
+  @JavaMethod
+  open fn getProfileConnectionState(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn listenUsingRfcommWithServiceRecord(_ arg0: String, _ arg1: UUID?) throws -> BluetoothServerSocket!
+
+  @JavaMethod
+  open fn listenUsingL2capChannel() throws -> BluetoothServerSocket!
+
+  @JavaMethod
+  open fn listenUsingInsecureL2capChannel() throws -> BluetoothServerSocket!
+
+  @JavaMethod
+  open fn isLeAudioBroadcastAssistantSupported() -> Int32
+
+  @JavaMethod
+  open fn listenUsingInsecureRfcommWithServiceRecord(_ arg0: String, _ arg1: UUID?) throws -> BluetoothServerSocket!
+
+  @JavaMethod
+  open fn getName() -> String
+
+  @JavaMethod
+  open override fn finalize() throws
+
+  @JavaMethod
+  open fn isEnabled() -> Boolean
+
+  @JavaMethod
+  open fn setName(_ arg0: String) -> Boolean
+
+  @JavaMethod
+  open fn getState() -> Int32
+
+  @JavaMethod
+  open fn getAddress() -> String
+
+  @JavaMethod
+  open fn enable() -> Boolean
+}
+extension JavaClass<BluetoothAdapter> {
+  @JavaStaticField(isFinal: true)
+  public var ACTION_CONNECTION_STATE_CHANGED: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_DISCOVERY_FINISHED: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_DISCOVERY_STARTED: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_LOCAL_NAME_CHANGED: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_REQUEST_DISCOVERABLE: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_REQUEST_ENABLE: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_SCAN_MODE_CHANGED: String
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_STATE_CHANGED: String
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_CONNECTION_STATE: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_DISCOVERABLE_DURATION: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_LOCAL_NAME: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_PREVIOUS_CONNECTION_STATE: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_PREVIOUS_SCAN_MODE: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_PREVIOUS_STATE: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_SCAN_MODE: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_STATE: String
+
+  @JavaStaticField(isFinal: true)
+  public var SCAN_MODE_CONNECTABLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCAN_MODE_CONNECTABLE_DISCOVERABLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCAN_MODE_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATE_CONNECTED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATE_CONNECTING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATE_DISCONNECTED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATE_DISCONNECTING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATE_OFF: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATE_ON: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATE_TURNING_OFF: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATE_TURNING_ON: Int32
+
+  @JavaStaticMethod
+  public fn getDefaultAdapter() -> BluetoothAdapter!
+
+  @JavaStaticMethod
+  public fn checkBluetoothAddress(_ arg0: String) -> Boolean
+}

@@ -1,0 +1,170 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.app.NotificationChannel")
+open class NotificationChannel: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: String, _ arg1: CharSequence?, _ arg2: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn getDescription() -> String
+
+  @JavaMethod
+  open fn setDescription(_ arg0: String)
+
+  @JavaMethod
+  open fn getImportance() -> Int32
+
+  @JavaMethod
+  open fn setGroup(_ arg0: String)
+
+  @JavaMethod
+  open fn setBlockable(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setShowBadge(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn enableLights(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setLightColor(_ arg0: Int32)
+
+  @JavaMethod
+  open fn enableVibration(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setVibrationPattern(_ arg0: [Int64])
+
+  @JavaMethod
+  open fn setImportance(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setBypassDnd(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setLockscreenVisibility(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setAllowBubbles(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setConversationId(_ arg0: String, _ arg1: String)
+
+  @JavaMethod
+  open fn canBypassDnd() -> Boolean
+
+  @JavaMethod
+  open fn isConversation() -> Boolean
+
+  @JavaMethod
+  open fn isImportantConversation() -> Boolean
+
+  @JavaMethod
+  open fn shouldShowLights() -> Boolean
+
+  @JavaMethod
+  open fn getLightColor() -> Int32
+
+  @JavaMethod
+  open fn shouldVibrate() -> Boolean
+
+  @JavaMethod
+  open fn getVibrationPattern() -> [Int64]
+
+  @JavaMethod
+  open fn getLockscreenVisibility() -> Int32
+
+  @JavaMethod
+  open fn canShowBadge() -> Boolean
+
+  @JavaMethod
+  open fn getGroup() -> String
+
+  @JavaMethod
+  open fn canBubble() -> Boolean
+
+  @JavaMethod
+  open fn getParentChannelId() -> String
+
+  @JavaMethod
+  open fn getConversationId() -> String
+
+  @JavaMethod
+  open fn isBlockable() -> Boolean
+
+  @JavaMethod
+  open fn isDemoted() -> Boolean
+
+  @JavaMethod
+  open fn hasUserSetImportance() -> Boolean
+
+  @JavaMethod
+  open fn hasUserSetSound() -> Boolean
+
+  @JavaMethod
+  open fn getName() -> CharSequence!
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+
+  @JavaMethod
+  open fn setName(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn getId() -> String
+}
+extension JavaClass<NotificationChannel> {
+  @JavaStaticField(isFinal: true)
+  public var DEFAULT_CHANNEL_ID: String
+
+  @JavaStaticField(isFinal: true)
+  public var EDIT_CONVERSATION: String
+
+  @JavaStaticField(isFinal: true)
+  public var EDIT_IMPORTANCE: String
+
+  @JavaStaticField(isFinal: true)
+  public var EDIT_LAUNCHER: String
+
+  @JavaStaticField(isFinal: true)
+  public var EDIT_LOCKED_DEVICE: String
+
+  @JavaStaticField(isFinal: true)
+  public var EDIT_SOUND: String
+
+  @JavaStaticField(isFinal: true)
+  public var EDIT_VIBRATION: String
+
+  @JavaStaticField(isFinal: true)
+  public var EDIT_ZEN: String
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

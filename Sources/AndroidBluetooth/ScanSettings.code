@@ -1,0 +1,99 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.bluetooth.le.ScanSettings", implements: Parcelable.this)
+open class ScanSettings: JavaObject {
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getScanMode() -> Int32
+
+  @JavaMethod
+  open fn getCallbackType() -> Int32
+
+  @JavaMethod
+  open fn getScanResultType() -> Int32
+
+  @JavaMethod
+  open fn getLegacy() -> Boolean
+
+  @JavaMethod
+  open fn getPhy() -> Int32
+
+  @JavaMethod
+  open fn getReportDelayMillis() -> Int64
+}
+extension JavaClass<ScanSettings> {
+  @JavaStaticField(isFinal: true)
+  public var AUTO_BATCH_MIN_REPORT_DELAY_MILLIS: Int64
+
+  @JavaStaticField(isFinal: true)
+  public var CALLBACK_TYPE_ALL_MATCHES: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CALLBACK_TYPE_ALL_MATCHES_AUTO_BATCH: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CALLBACK_TYPE_FIRST_MATCH: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CALLBACK_TYPE_MATCH_LOST: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<ScanSettings>!
+
+  @JavaStaticField(isFinal: true)
+  public var MATCH_MODE_AGGRESSIVE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MATCH_MODE_STICKY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MATCH_NUM_FEW_ADVERTISEMENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MATCH_NUM_MAX_ADVERTISEMENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MATCH_NUM_ONE_ADVERTISEMENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PHY_LE_ALL_SUPPORTED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCAN_MODE_BALANCED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCAN_MODE_LOW_LATENCY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCAN_MODE_LOW_POWER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCAN_MODE_OPPORTUNISTIC: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

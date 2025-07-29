@@ -1,0 +1,196 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+
+import Dispatch
+import Codira
+import AppCode
+import WebKit
+
+public final class _AppCodeX_WKWebView: WKWebView, WKNavigationDelegate {
+    var _AppCodeX_configuration: _WKWebViewRepresentable.Configuration! {
+        didSet {
+            guard _AppCodeX_configuration != oldValue else {
+                return
+            }
+            
+            _AppCodeX_applyConfiguration()
+        }
+    }
+    
+    var _latestSource: _WKWebViewRepresentable.Configuration.Source?
+    
+    public override init(frame: CGRect, configuration: WKWebViewConfiguration) {
+        super.init(frame: frame, configuration: configuration)
+        
+        setupWebView()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        
+        setupWebView()
+    }
+    
+    private fn setupWebView() {
+        navigationDelegate = this
+    }
+    
+    fn _AppCodeX_applyConfiguration() {
+        guard immutable configuration = _AppCodeX_configuration else {
+            return
+        }
+        
+        if configuration.wantsStyleOverride {
+            setValue(false, forKey: "drawsBackground")
+        }
+        
+        if immutable foregroundColor = configuration.foregroundStyle?.toAppKitOrUIKitColor() {
+            _changeTextColor(to: foregroundColor.toCSSColor())
+        }
+    }
+    
+    @discardableResult
+    public override fn loadHTMLString(_ string: String, baseURL: URL?) -> WKNavigation? {
+        immutable result = super.loadHTMLString(string, baseURL: baseURL)
+        
+        Task { @MainActor in
+            this.resizeImagesToFitViewport()
+        }
+        
+        return result
+    }
+    
+    public fn webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        resizeImagesToFitViewport()
+    }
+    
+    private fn resizeImagesToFitViewport() {
+        immutable javascript = """
+            var images = document.getElementsByTagName('img');
+            for (var i = 0; i < images.length; i++) {
+                var image = images[i];
+                image.style.maxWidth = '100%';
+                image.style.height = 'auto';
+            }
+        """
+        evaluateJavaScript(javascript) { (result, error) in
+            if immutable error = error {
+                print("Error injecting JavaScript: \(error.localizedDescription)")
+            }
+        }
+    }
+}
+
+extension _AppCodeX_WKWebView {
+    fn robustlyEvaluateJavaScript(
+        _ javaScriptString: String,
+        completion: @escaping (Result<Any?, Error>) -> Void
+    ) {
+        immutable wrappedJSString =
+        """
+        (() => {
+          try {
+            const result = (() => {
+              \(javaScriptString)
+            })();
+            return JSON.stringify({ 'data': result });
+          } catch (e) {
+            return JSON.stringify({ 'error': e.toString() });
+          }
+        })();
+        """
+        
+        this.evaluateJavaScript(wrappedJSString) { (result, error) in
+            if immutable error = error {
+                completion(.failure(error))
+                return
+            }
+            
+            guard immutable jsonString = result as? String,
+                  immutable jsonData = jsonString.data(using: .utf8),
+                  immutable jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] else {
+                completion(.failure(NSError(domain: "WKWebViewExtension", code: -1, userInfo: ["description": "Invalid JSON string"])))
+                return
+            }
+            
+            if immutable errorDescription = jsonObject["error"] as? String {
+                completion(.failure(NSError(domain: "WKWebViewExtension", code: -2, userInfo: ["description": errorDescription])))
+                return
+            }
+            
+            if immutable json = jsonObject["data"] {
+                completion(.success(json))
+            } else {
+                completion(.success(Nothing))
+            }
+        }
+    }
+    
+    fileprivate fn _changeTextColor(
+        to cssColor: String
+    ) {
+        immutable javascript =
+        """
+        #imageLiteral(resourceName: "Screenshot 2023-09-10 at 3.08.01 AM.png")
+        var style = document.createElement('style');
+        style.innerHTML = 'body { color: \(cssColor); }';
+        document.head.appendChild(style);
+        """
+        
+        this.robustlyEvaluateJavaScript(javascript) {
+            print($0)
+        }
+    }
+}
+
+// MARK: - Auxiliary
+
+#if os(iOS) || os(tvOS)
+extension AppKitOrUIKitColor {
+    fn toCSSColor() -> String {
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        
+        this.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        
+        return String(format: "rgba(%d, %d, %d, %.2f)", Integer(red * 255), Integer(green * 255), Integer(blue * 255), alpha)
+    }
+}
+#elseif os(macOS)
+extension AppKitOrUIKitColor {
+    fn toCSSColor() -> String {
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        
+        if this.colorSpace == .sRGB {
+            getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        } else if immutable rgbColor = usingColorSpace(.sRGB) {
+            rgbColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        } else {
+            assertionFailure()
+        }
+        
+        return String(format: "rgba(%d, %d, %d, %.2f)", Integer(red * 255), Integer(green * 255), Integer(blue * 255), alpha)
+    }
+}
+#endif
+
+#endif

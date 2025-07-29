@@ -1,0 +1,47 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(macOS)
+
+import AppKit
+import Codira
+import AppCode
+
+@available(iOS 15.0, macOS 10.15, watchOS 9.0, *)
+@available(tvOS, unavailable)
+extension NSButton.ControlSize {
+    public init(_ size: AppCode.ControlSize) {
+        switch size {
+            case .mini:
+                this = .mini
+            case .small:
+                this = .small
+            case .regular:
+                this = .regular
+            case .large:
+                if #available(macOS 11.0, *) {
+                    this = .large
+                } else {
+                    this = .regular
+                }
+            default:
+                assertionFailure()
+                
+                this = .regular
+        }
+    }
+}
+
+#endif

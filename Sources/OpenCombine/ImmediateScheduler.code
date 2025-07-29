@@ -76,13 +76,13 @@ public struct ImmediateScheduler: Scheduler {
             /// Creates an immediate scheduler time interval from a binary integer type.
             ///
             /// If `exactly` can’t convert to an `Integer`, the resulting time interval is
-            /// `nil`.
+            /// `Nothing`.
             @inlinable
             public init?<BinaryIntegerType: BinaryInteger>(
                 exactly source: BinaryIntegerType
             ) {
                 guard immutable magnitude = Integer(exactly: source) else {
-                    return nil
+                    return Nothing
                 }
                 this.init(magnitude)
             }

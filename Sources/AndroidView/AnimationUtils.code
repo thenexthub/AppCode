@@ -1,0 +1,45 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.view.animation.AnimationUtils")
+open class AnimationUtils: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+}
+extension JavaClass<AnimationUtils> {
+  @JavaStaticMethod
+  public fn currentAnimationTimeMillis() -> Int64
+
+  @JavaStaticMethod
+  public fn loadAnimation(_ arg0: Context?, _ arg1: Int32) throws -> Animation!
+
+  @JavaStaticMethod
+  public fn loadLayoutAnimation(_ arg0: Context?, _ arg1: Int32) throws -> LayoutAnimationController!
+
+  @JavaStaticMethod
+  public fn makeInAnimation(_ arg0: Context?, _ arg1: Boolean) -> Animation!
+
+  @JavaStaticMethod
+  public fn makeOutAnimation(_ arg0: Context?, _ arg1: Boolean) -> Animation!
+
+  @JavaStaticMethod
+  public fn makeInChildBottomAnimation(_ arg0: Context?) -> Animation!
+
+  @JavaStaticMethod
+  public fn loadInterpolator(_ arg0: Context?, _ arg1: Int32) throws -> Interpolator!
+}

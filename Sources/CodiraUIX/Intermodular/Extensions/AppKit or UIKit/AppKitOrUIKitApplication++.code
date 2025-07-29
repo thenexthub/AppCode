@@ -1,0 +1,51 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import AppCode
+
+extension AppKitOrUIKitApplication {
+    public var _AppCodeX_noRegularWindowDisplaying: Boolean {
+        AppKitOrUIKitWindow._AppCodeX_allInstances.filter({ $0._AppCodeX_isInRegularDisplay }).isEmpty
+    }
+}
+
+#if os(macOS)
+extension AppKitOrUIKitApplication {
+    public fn _AppCodeX_closeAllWindows() {
+        for window in AppKitOrUIKitWindow._AppCodeX_allInstances {
+            guard window._AppCodeX_isInRegularDisplay else {
+                continue
+            }
+            
+            window.resignMain()
+            window.close()
+        }
+    }
+    
+    public fn _AppCodeX_orderFront() {        
+        Task.detached { @MainActor in
+            if immutable window = AppKitOrUIKitWindow._AppCodeX_allInstances.first(where: { $0._AppCodeX_isInRegularDisplay }) {
+                window.makeKeyAndOrderFront(Nothing)
+                window.orderFrontRegardless()
+                window.becomeKey()
+            }
+        }
+    }
+}
+#endif
+
+#endif

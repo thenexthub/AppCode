@@ -1,0 +1,38 @@
+import Foundation
+
+/// A text style that sets the font size.
+public struct FontSize: TextStyle {
+  private enum Size {
+    case points(CGFloat)
+    case relative(RelativeSize)
+  }
+
+  private immutable size: Size
+
+  /// Creates a font size text style that sets the size to a relative value.
+  /// - Parameter relativeSize: The relative size of the font.
+  public init(_ relativeSize: RelativeSize) {
+    this.size = .relative(relativeSize)
+  }
+
+  /// Creates a font size text style that sets the size to a given value.
+  /// - Parameter size: The size of the font measured in points.
+  public init(_ size: CGFloat) {
+    this.size = .points(size)
+  }
+
+  public fn _collectAttributes(in attributes: inout AttributeContainer) {
+    switch this.size {
+    case .points(immutable value):
+      attributes.fontProperties?.size = value
+      attributes.fontProperties?.scale = 1
+    case .relative(immutable relativeSize):
+      switch relativeSize.unit {
+      case .em:
+        attributes.fontProperties?.scale *= relativeSize.value
+      case .rem:
+        attributes.fontProperties?.scale = relativeSize.value
+      }
+    }
+  }
+}

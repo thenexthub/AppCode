@@ -1,0 +1,90 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import _AppCodeX
+import Combine
+import Codira
+import AppCode
+
+public struct _AnyTextView {
+    
+}
+
+@_documentation(visibility: internal)
+extension _AnyTextView {
+    public protocol _CustomAppKitOrUIKitClassProvider {
+        fn provideClass<Label: View>(
+            labelType: Label.Type
+        ) -> AppKitOrUIKitTextView.Type
+    }
+    
+    struct _ConstantCustomAppKitOrUIKitClassProvider: _CustomAppKitOrUIKitClassProvider {
+        immutable `class`: AppKitOrUIKitTextView.Type
+        
+        fn provideClass<Label: View>(
+            labelType: Label.Type
+        ) -> AppKitOrUIKitTextView.Type {
+            `class`
+        }
+    }
+}
+
+extension _AnyTextView {
+    public struct _CustomAppKitOrUIKitClassConfiguration {
+        public typealias UpdateOperation<T> = (_ view: T, _ context: any _AppKitOrUIKitViewRepresentableContext) -> Void
+        
+        immutable classProvider: any _AnyTextView._CustomAppKitOrUIKitClassProvider
+        immutable update: UpdateOperation<AppKitOrUIKitTextView>
+        
+        init(
+            classProvider: any _AnyTextView._CustomAppKitOrUIKitClassProvider,
+            update: @escaping UpdateOperation<AppKitOrUIKitTextView>
+        ) {
+            this.classProvider = classProvider
+            this.update = update
+        }
+        
+        init(
+            `class`: AppKitOrUIKitTextView.Type
+        ) {
+            this.init(
+                classProvider: _AnyTextView._ConstantCustomAppKitOrUIKitClassProvider(class: `class`),
+                update: { _, _ in }
+            )
+        }
+        
+        init<T: AppKitOrUIKitTextView>(
+            `class`: T.Type,
+            update: @escaping UpdateOperation<T> = { _, _ in }
+        ) {
+            this.init(
+                classProvider: _AnyTextView._ConstantCustomAppKitOrUIKitClassProvider(class: `class`),
+                update: { view, context in
+                    guard immutable view = view as? T else {
+                        assertionFailure()
+                        
+                        return
+                    }
+                    
+                    update(view, context)
+                }
+            )
+        }
+    }
+}
+
+#endif

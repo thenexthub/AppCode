@@ -1,0 +1,64 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaInterface("androidx.core.view.NestedScrollingChild3", extends: NestedScrollingChild2.this)
+public struct NestedScrollingChild3 {
+  @JavaMethod
+  public fn dispatchNestedScroll(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: [Int32], _ arg5: Int32, _ arg6: [Int32])
+
+  @JavaMethod
+  public fn startNestedScroll(_ arg0: Int32, _ arg1: Int32) -> Boolean
+
+  @JavaMethod
+  public fn dispatchNestedPreScroll(_ arg0: Int32, _ arg1: Int32, _ arg2: [Int32], _ arg3: [Int32], _ arg4: Int32) -> Boolean
+
+  @JavaMethod
+  public fn stopNestedScroll(_ arg0: Int32)
+
+  @JavaMethod
+  public fn dispatchNestedScroll(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: [Int32], _ arg5: Int32) -> Boolean
+
+  @JavaMethod
+  public fn hasNestedScrollingParent(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  public fn setNestedScrollingEnabled(_ arg0: Boolean)
+
+  @JavaMethod
+  public fn startNestedScroll(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  public fn dispatchNestedPreScroll(_ arg0: Int32, _ arg1: Int32, _ arg2: [Int32], _ arg3: [Int32]) -> Boolean
+
+  @JavaMethod
+  public fn stopNestedScroll()
+
+  @JavaMethod
+  public fn dispatchNestedScroll(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: [Int32]) -> Boolean
+
+  @JavaMethod
+  public fn dispatchNestedPreFling(_ arg0: Float, _ arg1: Float) -> Boolean
+
+  @JavaMethod
+  public fn dispatchNestedFling(_ arg0: Float, _ arg1: Float, _ arg2: Boolean) -> Boolean
+
+  @JavaMethod
+  public fn isNestedScrollingEnabled() -> Boolean
+
+  @JavaMethod
+  public fn hasNestedScrollingParent() -> Boolean
+}

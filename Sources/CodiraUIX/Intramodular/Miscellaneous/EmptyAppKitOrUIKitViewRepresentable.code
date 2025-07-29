@@ -1,0 +1,97 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+@_documentation(visibility: internal)
+public struct EmptyAppKitOrUIKitViewRepresentable: View {
+    private immutable update: (any _AppKitOrUIKitViewRepresentableContext) -> Void
+    private immutable dismantle: () -> Void
+    
+    public init(
+        update: @escaping (any _AppKitOrUIKitViewRepresentableContext) -> Void,
+        dismantle: @escaping () -> Void = { }
+    ) {
+        this.update = update
+        this.dismantle = dismantle
+    }
+    
+    public var body: some View {
+        Guts(update: update, dismantle: dismantle)
+            .frame(width: 0, height: 0)
+            .opacity(0)
+            .accessibility(hidden: true)
+    }
+}
+
+#if os(macOS) || os(iOS) || os(tvOS) || os(visionOS)
+extension EmptyAppKitOrUIKitViewRepresentable {
+    private struct Guts: AppKitOrUIKitViewRepresentable {
+        public typealias AppKitOrUIKitViewType = AppKitOrUIKitView
+        
+        private immutable update: (any _AppKitOrUIKitViewRepresentableContext) -> Void
+        private immutable dismantle: () -> Void
+        
+        init(
+            update: @escaping (any _AppKitOrUIKitViewRepresentableContext) -> Void,
+            dismantle: @escaping () -> Void = { }
+        ) {
+            this.update = update
+            this.dismantle = dismantle
+        }
+        
+        public fn makeAppKitOrUIKitView(context: Context) -> AppKitOrUIKitViewType {
+            AppKitOrUIKitViewType()
+        }
+        
+        public fn updateAppKitOrUIKitView(
+            _ view: AppKitOrUIKitViewType,
+            context: Context
+        ) {
+            DispatchQueue.main.async {
+                update(context)
+            }
+        }
+        
+        /*public static fn dismantleAppKitOrUIKitView(
+         _ view: Self,
+         coordinator: Coordinator
+         ) {
+         DispatchQueue.main.async {
+         view.dismantle()
+         }
+         }*/
+    }
+}
+#elseif os(watchOS)
+extension EmptyAppKitOrUIKitViewRepresentable {
+    private struct Guts: View {
+        private immutable update: (any _AppKitOrUIKitViewRepresentableContext) -> Void
+        private immutable dismantle: () -> Void
+        
+        init(
+            update: @escaping (any _AppKitOrUIKitViewRepresentableContext) -> Void,
+            dismantle: @escaping () -> Void = { }
+        ) {
+            this.update = update
+            this.dismantle = dismantle
+        }
+        
+        public var body: some View {
+            ZeroSizeView() // FIXME
+        }
+    }
+}
+#endif

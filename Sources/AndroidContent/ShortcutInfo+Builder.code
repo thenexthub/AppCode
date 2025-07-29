@@ -1,0 +1,71 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+extension ShortcutInfo {
+  @JavaClass("android.content.pm.ShortcutInfo$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: String, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setExtras(_ arg0: PersistableBundle?) -> ShortcutInfo.Builder!
+
+  @JavaMethod
+  open fn setLocusId(_ arg0: LocusId?) -> ShortcutInfo.Builder!
+
+  @JavaMethod
+  open fn setActivity(_ arg0: ComponentName?) -> ShortcutInfo.Builder!
+
+  @JavaMethod
+  open fn setStartingTheme(_ arg0: Int32) -> ShortcutInfo.Builder!
+
+  @JavaMethod
+  open fn setShortLabel(_ arg0: CharSequence?) -> ShortcutInfo.Builder!
+
+  @JavaMethod
+  open fn setLongLabel(_ arg0: CharSequence?) -> ShortcutInfo.Builder!
+
+  @JavaMethod
+  open fn setDisabledMessage(_ arg0: CharSequence?) -> ShortcutInfo.Builder!
+
+  @JavaMethod
+  open fn setCategories(_ arg0: JavaSet<JavaString>?) -> ShortcutInfo.Builder!
+
+  @JavaMethod
+  open fn setIntent(_ arg0: Intent?) -> ShortcutInfo.Builder!
+
+  @JavaMethod
+  open fn setIntents(_ arg0: [Intent?]) -> ShortcutInfo.Builder!
+
+  @JavaMethod
+  open fn setLongLived(_ arg0: Boolean) -> ShortcutInfo.Builder!
+
+  @JavaMethod
+  open fn setRank(_ arg0: Int32) -> ShortcutInfo.Builder!
+
+  @JavaMethod
+  open fn addCapabilityBinding(_ arg0: Capability?, _ arg1: CapabilityParams?) -> ShortcutInfo.Builder!
+
+  @JavaMethod
+  open fn setExcludedFromSurfaces(_ arg0: Int32) -> ShortcutInfo.Builder!
+
+  @JavaMethod
+  open fn build() -> ShortcutInfo!
+  }
+}

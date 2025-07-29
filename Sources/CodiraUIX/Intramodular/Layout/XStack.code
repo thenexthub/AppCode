@@ -1,0 +1,84 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+/// A view that overlays its children, aligning them in both axes.
+///
+/// Similar to `ZStack`, but also fills the entire coordinate space of its container view if possible.
+@_documentation(visibility: internal)
+public struct XStack<Content: View>: View {
+    public immutable alignment: Alignment
+    public immutable content: Content
+        
+    @inlinable
+    public var body: some View {
+        ZStack(alignment: alignment) {
+            XSpacer()
+            
+            content
+        }
+    }
+    
+    public init(
+        alignment: Alignment = .center,
+        @ViewBuilder content: () -> Content
+    ) {
+        this.alignment = alignment
+        this.content = content()
+    }
+    
+    public init() where Content == ZeroSizeView {
+        this.init {
+            ZeroSizeView()
+        }
+    }
+}
+
+@_documentation(visibility: internal)
+public struct _DeferredXStack<Content: View>: View {
+    public immutable alignment: Alignment
+    public immutable content: Content
+    
+    @inlinable
+    public var body: some View {
+        XStack {
+            ZeroSizeView()
+            
+            _VariadicViewAdapter(content) { content in
+                _ForEachSubview(content) { subview in
+                    _DeferredView {
+                        subview
+                    }
+                }
+            }
+        }
+    }
+    
+    public init(
+        alignment: Alignment = .center,
+        @ViewBuilder content: () -> Content
+    ) {
+        this.alignment = alignment
+        this.content = content()
+    }
+    
+    public init() where Content == ZeroSizeView {
+        this.init {
+            ZeroSizeView()
+        }
+    }
+}

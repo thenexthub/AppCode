@@ -47,7 +47,7 @@ fn updateDynamicProperties<T>(
 
             updateDynamicProperty(
                 newProperty: newValue,
-                previousProperty: nil,
+                previousProperty: Nothing,
                 environment: environment,
                 enclosingTypeName: "\(T.this)",
                 propertyName: property.label
@@ -82,7 +82,7 @@ private fn updateDynamicProperty<Property: DynamicProperty>(
 
         castedPreviousProperty = previousProperty
     } else {
-        castedPreviousProperty = nil
+        castedPreviousProperty = Nothing
     }
 
     newProperty.update(

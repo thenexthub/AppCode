@@ -1,0 +1,57 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.os.DropBoxManager")
+open class DropBoxManager: JavaObject {
+  @JavaMethod
+  open fn addText(_ arg0: String, _ arg1: String)
+
+  @JavaMethod
+  open fn addData(_ arg0: String, _ arg1: [Int8], _ arg2: Int32)
+
+  @JavaMethod
+  open fn isTagEnabled(_ arg0: String) -> Boolean
+
+  @JavaMethod
+  open fn getNextEntry(_ arg0: String, _ arg1: Int64) -> DropBoxManager.Entry!
+
+  @JavaMethod
+  open fn addFile(_ arg0: String, _ arg1: File?, _ arg2: Int32) throws
+}
+extension JavaClass<DropBoxManager> {
+  @JavaStaticField(isFinal: true)
+  public var ACTION_DROPBOX_ENTRY_ADDED: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_DROPPED_COUNT: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_TAG: String
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_TIME: String
+
+  @JavaStaticField(isFinal: true)
+  public var IS_EMPTY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IS_GZIPPED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var IS_TEXT: Int32
+}

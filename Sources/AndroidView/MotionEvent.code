@@ -1,0 +1,580 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidGraphics
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.view.MotionEvent", implements: Parcelable.this)
+open class MotionEvent: InputEvent {
+  @JavaMethod
+  open fn getX() -> Float
+
+  @JavaMethod
+  open fn getX(_ arg0: Int32) -> Float
+
+  @JavaMethod
+  open fn getY(_ arg0: Int32) -> Float
+
+  @JavaMethod
+  open fn getY() -> Float
+
+  @JavaMethod
+  open fn getAction() -> Int32
+
+  @JavaMethod
+  open fn getMetaState() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open override fn getDeviceId() -> Int32
+
+  @JavaMethod
+  open fn recycle()
+
+  @JavaMethod
+  open fn getOrientation() -> Float
+
+  @JavaMethod
+  open fn getOrientation(_ arg0: Int32) -> Float
+
+  @JavaMethod
+  open override fn getSource() -> Int32
+
+  @JavaMethod
+  open fn setSource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getActionMasked() -> Int32
+
+  @JavaMethod
+  open fn getActionIndex() -> Int32
+
+  @JavaMethod
+  open fn getDownTime() -> Int64
+
+  @JavaMethod
+  open override fn getEventTime() -> Int64
+
+  @JavaMethod
+  open fn getPressure(_ arg0: Int32) -> Float
+
+  @JavaMethod
+  open fn getPressure() -> Float
+
+  @JavaMethod
+  open fn getTouchMajor(_ arg0: Int32) -> Float
+
+  @JavaMethod
+  open fn getTouchMajor() -> Float
+
+  @JavaMethod
+  open fn getTouchMinor(_ arg0: Int32) -> Float
+
+  @JavaMethod
+  open fn getTouchMinor() -> Float
+
+  @JavaMethod
+  open fn getToolMajor() -> Float
+
+  @JavaMethod
+  open fn getToolMajor(_ arg0: Int32) -> Float
+
+  @JavaMethod
+  open fn getToolMinor() -> Float
+
+  @JavaMethod
+  open fn getToolMinor(_ arg0: Int32) -> Float
+
+  @JavaMethod
+  open fn getAxisValue(_ arg0: Int32) -> Float
+
+  @JavaMethod
+  open fn getAxisValue(_ arg0: Int32, _ arg1: Int32) -> Float
+
+  @JavaMethod
+  open fn getPointerCount() -> Int32
+
+  @JavaMethod
+  open fn getPointerId(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn getToolType(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn findPointerIndex(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn getPointerCoords(_ arg0: Int32, _ arg1: MotionEvent.PointerCoords?)
+
+  @JavaMethod
+  open fn getPointerProperties(_ arg0: Int32, _ arg1: MotionEvent.PointerProperties?)
+
+  @JavaMethod
+  open fn getButtonState() -> Int32
+
+  @JavaMethod
+  open fn getClassification() -> Int32
+
+  @JavaMethod
+  open fn getActionButton() -> Int32
+
+  @JavaMethod
+  open fn getRawX(_ arg0: Int32) -> Float
+
+  @JavaMethod
+  open fn getRawX() -> Float
+
+  @JavaMethod
+  open fn getRawY() -> Float
+
+  @JavaMethod
+  open fn getRawY(_ arg0: Int32) -> Float
+
+  @JavaMethod
+  open fn getXPrecision() -> Float
+
+  @JavaMethod
+  open fn getYPrecision() -> Float
+
+  @JavaMethod
+  open fn getHistorySize() -> Int32
+
+  @JavaMethod
+  open fn getHistoricalEventTime(_ arg0: Int32) -> Int64
+
+  @JavaMethod
+  open fn getHistoricalX(_ arg0: Int32) -> Float
+
+  @JavaMethod
+  open fn getHistoricalX(_ arg0: Int32, _ arg1: Int32) -> Float
+
+  @JavaMethod
+  open fn getHistoricalY(_ arg0: Int32) -> Float
+
+  @JavaMethod
+  open fn getHistoricalY(_ arg0: Int32, _ arg1: Int32) -> Float
+
+  @JavaMethod
+  open fn getHistoricalPressure(_ arg0: Int32) -> Float
+
+  @JavaMethod
+  open fn getHistoricalPressure(_ arg0: Int32, _ arg1: Int32) -> Float
+
+  @JavaMethod
+  open fn getHistoricalSize(_ arg0: Int32) -> Float
+
+  @JavaMethod
+  open fn getHistoricalSize(_ arg0: Int32, _ arg1: Int32) -> Float
+
+  @JavaMethod
+  open fn getHistoricalTouchMajor(_ arg0: Int32) -> Float
+
+  @JavaMethod
+  open fn getHistoricalTouchMajor(_ arg0: Int32, _ arg1: Int32) -> Float
+
+  @JavaMethod
+  open fn getHistoricalTouchMinor(_ arg0: Int32, _ arg1: Int32) -> Float
+
+  @JavaMethod
+  open fn getHistoricalTouchMinor(_ arg0: Int32) -> Float
+
+  @JavaMethod
+  open fn getHistoricalToolMajor(_ arg0: Int32, _ arg1: Int32) -> Float
+
+  @JavaMethod
+  open fn getHistoricalToolMajor(_ arg0: Int32) -> Float
+
+  @JavaMethod
+  open fn getHistoricalToolMinor(_ arg0: Int32, _ arg1: Int32) -> Float
+
+  @JavaMethod
+  open fn getHistoricalToolMinor(_ arg0: Int32) -> Float
+
+  @JavaMethod
+  open fn getHistoricalOrientation(_ arg0: Int32, _ arg1: Int32) -> Float
+
+  @JavaMethod
+  open fn getHistoricalOrientation(_ arg0: Int32) -> Float
+
+  @JavaMethod
+  open fn getHistoricalAxisValue(_ arg0: Int32, _ arg1: Int32) -> Float
+
+  @JavaMethod
+  open fn getHistoricalAxisValue(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32) -> Float
+
+  @JavaMethod
+  open fn getHistoricalPointerCoords(_ arg0: Int32, _ arg1: Int32, _ arg2: MotionEvent.PointerCoords?)
+
+  @JavaMethod
+  open fn getEdgeFlags() -> Int32
+
+  @JavaMethod
+  open fn setEdgeFlags(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setAction(_ arg0: Int32)
+
+  @JavaMethod
+  open fn offsetLocation(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn setLocation(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn addBatch(_ arg0: Int64, _ arg1: [MotionEvent.PointerCoords?], _ arg2: Int32)
+
+  @JavaMethod
+  open fn addBatch(_ arg0: Int64, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Float, _ arg5: Int32)
+
+  @JavaMethod
+  open fn isButtonPressed(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open override fn finalize() throws
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn transform(_ arg0: Matrix?)
+
+  @JavaMethod
+  open fn getSize(_ arg0: Int32) -> Float
+
+  @JavaMethod
+  open fn getSize() -> Float
+
+  @JavaMethod
+  open fn getFlags() -> Int32
+}
+extension JavaClass<MotionEvent> {
+  @JavaStaticField(isFinal: true)
+  public var ACTION_BUTTON_PRESS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_BUTTON_RELEASE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_CANCEL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_DOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_HOVER_ENTER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_HOVER_EXIT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_HOVER_MOVE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_MASK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_MOVE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_OUTSIDE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_POINTER_1_DOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_POINTER_1_UP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_POINTER_2_DOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_POINTER_2_UP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_POINTER_3_DOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_POINTER_3_UP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_POINTER_DOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_POINTER_ID_MASK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_POINTER_ID_SHIFT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_POINTER_INDEX_MASK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_POINTER_INDEX_SHIFT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_POINTER_UP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_SCROLL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACTION_UP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_BRAKE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_DISTANCE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_GAS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_GENERIC_1: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_GENERIC_10: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_GENERIC_11: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_GENERIC_12: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_GENERIC_13: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_GENERIC_14: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_GENERIC_15: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_GENERIC_16: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_GENERIC_2: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_GENERIC_3: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_GENERIC_4: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_GENERIC_5: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_GENERIC_6: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_GENERIC_7: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_GENERIC_8: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_GENERIC_9: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_HAT_X: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_HAT_Y: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_HSCROLL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_LTRIGGER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_ORIENTATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_PRESSURE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_RELATIVE_X: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_RELATIVE_Y: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_RTRIGGER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_RUDDER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_RX: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_RY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_RZ: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_SCROLL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_SIZE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_THROTTLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_TILT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_TOOL_MAJOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_TOOL_MINOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_TOUCH_MAJOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_TOUCH_MINOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_VSCROLL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_WHEEL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_X: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_Y: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var AXIS_Z: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON_BACK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON_FORWARD: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON_PRIMARY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON_SECONDARY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON_STYLUS_PRIMARY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON_STYLUS_SECONDARY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUTTON_TERTIARY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CLASSIFICATION_AMBIGUOUS_GESTURE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CLASSIFICATION_DEEP_PRESS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CLASSIFICATION_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<MotionEvent>!
+
+  @JavaStaticField(isFinal: true)
+  public var EDGE_BOTTOM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var EDGE_LEFT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var EDGE_RIGHT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var EDGE_TOP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_CANCELED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_WINDOW_IS_OBSCURED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_WINDOW_IS_PARTIALLY_OBSCURED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var INVALID_POINTER_ID: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TOOL_TYPE_ERASER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TOOL_TYPE_FINGER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TOOL_TYPE_MOUSE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TOOL_TYPE_STYLUS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TOOL_TYPE_UNKNOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+
+  @JavaStaticMethod
+  public fn obtain(_ arg0: Int64, _ arg1: Int64, _ arg2: Int32, _ arg3: Int32, _ arg4: [MotionEvent.PointerProperties?], _ arg5: [MotionEvent.PointerCoords?], _ arg6: Int32, _ arg7: Int32, _ arg8: Float, _ arg9: Float, _ arg10: Int32, _ arg11: Int32, _ arg12: Int32, _ arg13: Int32) -> MotionEvent!
+
+  @JavaStaticMethod
+  public fn obtain(_ arg0: Int64, _ arg1: Int64, _ arg2: Int32, _ arg3: Float, _ arg4: Float, _ arg5: Float, _ arg6: Float, _ arg7: Int32, _ arg8: Float, _ arg9: Float, _ arg10: Int32, _ arg11: Int32) -> MotionEvent!
+
+  @JavaStaticMethod
+  public fn obtain(_ arg0: Int64, _ arg1: Int64, _ arg2: Int32, _ arg3: Float, _ arg4: Float, _ arg5: Int32) -> MotionEvent!
+
+  @JavaStaticMethod
+  public fn obtain(_ arg0: Int64, _ arg1: Int64, _ arg2: Int32, _ arg3: Int32, _ arg4: Float, _ arg5: Float, _ arg6: Float, _ arg7: Float, _ arg8: Int32, _ arg9: Float, _ arg10: Float, _ arg11: Int32, _ arg12: Int32) -> MotionEvent!
+
+  @JavaStaticMethod
+  public fn obtain(_ arg0: Int64, _ arg1: Int64, _ arg2: Int32, _ arg3: Int32, _ arg4: [Int32], _ arg5: [MotionEvent.PointerCoords?], _ arg6: Int32, _ arg7: Float, _ arg8: Float, _ arg9: Int32, _ arg10: Int32, _ arg11: Int32, _ arg12: Int32) -> MotionEvent!
+
+  @JavaStaticMethod
+  public fn obtain(_ arg0: MotionEvent?) -> MotionEvent!
+
+  @JavaStaticMethod
+  public fn obtainNoHistory(_ arg0: MotionEvent?) -> MotionEvent!
+
+  @JavaStaticMethod
+  public fn actionToString(_ arg0: Int32) -> String
+
+  @JavaStaticMethod
+  public fn axisToString(_ arg0: Int32) -> String
+
+  @JavaStaticMethod
+  public fn axisFromString(_ arg0: String) -> Int32
+}

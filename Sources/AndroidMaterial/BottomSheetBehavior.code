@@ -1,0 +1,215 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidUtil
+import AndroidView
+import JavaKit
+import JavaRuntime
+
+@JavaClass("com.google.android.material.bottomsheet.BottomSheetBehavior", implements: MaterialBackHandler.this)
+open class BottomSheetBehavior: CircularRevealCoordinatorLayout.Behavior {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: AttributeSet?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn cancelBackProgress()
+
+  @JavaMethod
+  open override fn onAttachedToLayoutParams(_ arg0: CircularRevealCoordinatorLayout.LayoutParams?)
+
+  @JavaMethod
+  open override fn onDetachedFromLayoutParams()
+
+  @JavaMethod
+  open fn handleBackInvoked()
+
+  @JavaMethod
+  open fn setMaxHeight(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getMaxHeight() -> Int32
+
+  @JavaMethod
+  open fn setMaxWidth(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getMaxWidth() -> Int32
+
+  @JavaMethod
+  open fn isFitToContents() -> Boolean
+
+  @JavaMethod
+  open fn setFitToContents(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setPeekHeight(_ arg0: Int32, _ arg1: Boolean)
+
+  @JavaMethod
+  open fn setPeekHeight(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getPeekHeight() -> Int32
+
+  @JavaMethod
+  open fn setHalfExpandedRatio(_ arg0: Float)
+
+  @JavaMethod
+  open fn getHalfExpandedRatio() -> Float
+
+  @JavaMethod
+  open fn setExpandedOffset(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getExpandedOffset() -> Int32
+
+  @JavaMethod
+  open fn calculateSlideOffset() -> Float
+
+  @JavaMethod
+  open fn setHideable(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isHideable() -> Boolean
+
+  @JavaMethod
+  open fn setSkipCollapsed(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getSkipCollapsed() -> Boolean
+
+  @JavaMethod
+  open fn setDraggable(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isDraggable() -> Boolean
+
+  @JavaMethod
+  open fn setSignificantVelocityThreshold(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getSignificantVelocityThreshold() -> Int32
+
+  @JavaMethod
+  open fn setSaveFlags(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getSaveFlags() -> Int32
+
+  @JavaMethod
+  open fn setHideFriction(_ arg0: Float)
+
+  @JavaMethod
+  open fn getHideFriction() -> Float
+
+  @JavaMethod
+  open fn setBottomSheetCallback(_ arg0: BottomSheetBehavior.BottomSheetCallback?)
+
+  @JavaMethod
+  open fn addBottomSheetCallback(_ arg0: BottomSheetBehavior.BottomSheetCallback?)
+
+  @JavaMethod
+  open fn removeBottomSheetCallback(_ arg0: BottomSheetBehavior.BottomSheetCallback?)
+
+  @JavaMethod
+  open fn setGestureInsetBottomIgnored(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isGestureInsetBottomIgnored() -> Boolean
+
+  @JavaMethod
+  open fn setShouldRemoveExpandedCorners(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isShouldRemoveExpandedCorners() -> Boolean
+
+  @JavaMethod
+  open fn disableShapeAnimations()
+
+  @JavaMethod
+  open fn isNestedScrollingCheckEnabled() -> Boolean
+
+  @JavaMethod
+  open fn shouldSkipHalfExpandedStateWhenDragging() -> Boolean
+
+  @JavaMethod
+  open fn shouldSkipSmoothAnimation() -> Boolean
+
+  @JavaMethod
+  open fn isHideableWhenDragging() -> Boolean
+
+  @JavaMethod
+  open fn shouldExpandOnUpwardDrag(_ arg0: Int64, _ arg1: Float) -> Boolean
+
+  @JavaMethod
+  open fn setHideableInternal(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getLastStableState() -> Int32
+
+  @JavaMethod
+  open fn setUpdateImportantForAccessibilityOnSiblings(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getState() -> Int32
+
+  @JavaMethod
+  open fn setState(_ arg0: Int32)
+}
+extension JavaClass<BottomSheetBehavior> {
+  @JavaStaticField(isFinal: true)
+  public var STATE_DRAGGING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATE_SETTLING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATE_EXPANDED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATE_COLLAPSED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATE_HIDDEN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATE_HALF_EXPANDED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PEEK_HEIGHT_AUTO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAVE_PEEK_HEIGHT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAVE_FIT_TO_CONTENTS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAVE_HIDEABLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAVE_SKIP_COLLAPSED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAVE_ALL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAVE_NONE: Int32
+
+  @JavaStaticMethod
+  public fn from(_ arg0: View?) -> BottomSheetBehavior!
+}

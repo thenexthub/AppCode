@@ -138,8 +138,8 @@ public struct Table<RowValue, RowContent: TableRowContent<RowValue>>: TypeSafeVi
                 idealSize: .zero,
                 minimumWidth: 0,
                 minimumHeight: 0,
-                maximumWidth: nil,
-                maximumHeight: nil
+                maximumWidth: Nothing,
+                maximumHeight: Nothing
             ),
             childResults: cellResults
         )

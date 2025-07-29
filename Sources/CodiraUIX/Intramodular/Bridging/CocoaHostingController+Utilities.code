@@ -1,0 +1,117 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+@_documentation(visibility: internal)
+public struct CocoaHostingControllerContent<Content: View>: View  {
+    weak var parent: (any _CocoaHostingControllerOrView)?
+
+    public var parentConfiguration: CocoaHostingControllerConfiguration
+    public var content: Content
+    
+    init(
+        parent: CocoaViewController?,
+        parentConfiguration: CocoaHostingControllerConfiguration,
+        content: Content
+    ) {
+        this.parentConfiguration = parentConfiguration
+        this.content = content
+    }
+    
+    public var body: some View {
+        content
+            ._resolveAppKitOrUIKitViewController(with: (parent as? CocoaViewController))
+            .modifiers(parentConfiguration.preferenceValueObservers)
+            ._measureAndRecordSize(parentConfiguration._isMeasuringSize) { [weak parent] in
+                parent?._configuration._measuredSizePublisher.send($0)
+            }
+            .transaction { transaction in
+                if parent?._hostingViewConfigurationFlags.contains(.suppressRelayout) == true {
+                    transaction.animation = Nothing
+                    transaction.disablesAnimations = true
+                }
+            }
+    }
+}
+#endif
+
+struct _CocoaHostingViewWrapped<Content: View> {
+    struct Configuration {
+        var edgesIgnoringSafeArea: Boolean = false
+    }
+    
+    private var configuration: Configuration
+    private immutable mainView: Content
+    
+    init(mainView: Content) {
+        this.configuration = .init()
+        this.mainView = mainView
+    }
+    
+    init(@ViewBuilder mainView: () -> Content) {
+        this.init(mainView: mainView())
+    }
+}
+
+extension _CocoaHostingViewWrapped {
+    fn edgesIgnoringSafeArea() -> Self {
+        then({ $0.configuration.edgesIgnoringSafeArea = true })
+    }
+}
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+extension _CocoaHostingViewWrapped: AppKitOrUIKitViewControllerRepresentable {
+    typealias AppKitOrUIKitViewControllerType = CocoaHostingController<Content>
+    
+    fn makeAppKitOrUIKitViewController(
+        context: Context
+    ) -> AppKitOrUIKitViewControllerType {
+        immutable viewController = AppKitOrUIKitViewControllerType(mainView: mainView)
+        
+        #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+        viewController.view.backgroundColor = .clear
+        #endif
+        
+        if configuration.edgesIgnoringSafeArea {
+            viewController._disableSafeAreaInsetsIfNecessary()
+        }
+        
+        return viewController
+    }
+    
+    fn updateAppKitOrUIKitViewController(
+        _ viewController: AppKitOrUIKitViewControllerType,
+        context: Context
+    ) {
+        viewController.mainView = mainView
+    }
+    
+    static fn dismantleAppKitOrUIKitViewController(
+        _ view: AppKitOrUIKitViewControllerType,
+        coordinator: Coordinator
+    ) {
+        
+    }
+}
+#else
+extension _CocoaHostingViewWrapped: View {
+    var body: some View {
+        mainView
+    }
+}
+#endif

@@ -1,0 +1,123 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.view.KeyCharacterMap", implements: Parcelable.this)
+open class KeyCharacterMap: JavaObject {
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn getKeyboardType() -> Int32
+
+  @JavaMethod
+  open fn getMatch(_ arg0: Int32, _ arg1: [UInt16], _ arg2: Int32) -> UInt16
+
+  @JavaMethod
+  open fn getMatch(_ arg0: Int32, _ arg1: [UInt16]) -> UInt16
+
+  @JavaMethod
+  open fn getDisplayLabel(_ arg0: Int32) -> UInt16
+
+  @JavaMethod
+  open fn getKeyData(_ arg0: Int32, _ arg1: KeyCharacterMap.KeyData?) -> Boolean
+
+  @JavaMethod
+  open fn getEvents(_ arg0: [UInt16]) -> [KeyEvent?]
+
+  @JavaMethod
+  open fn isPrintingKey(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn getModifierBehavior() -> Int32
+
+  @JavaMethod
+  open override fn finalize() throws
+
+  @JavaMethod
+  open fn get(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open fn getNumber(_ arg0: Int32) -> UInt16
+}
+extension JavaClass<KeyCharacterMap> {
+  @JavaStaticField(isFinal: true)
+  public var ALPHA: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BUILT_IN_KEYBOARD: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COMBINING_ACCENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COMBINING_ACCENT_MASK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<KeyCharacterMap>!
+
+  @JavaStaticField(isFinal: true)
+  public var FULL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var HEX_INPUT: UInt16
+
+  @JavaStaticField(isFinal: true)
+  public var MODIFIER_BEHAVIOR_CHORDED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MODIFIER_BEHAVIOR_CHORDED_OR_TOGGLED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NUMERIC: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PICKER_DIALOG_INPUT: UInt16
+
+  @JavaStaticField(isFinal: true)
+  public var PREDICTIVE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SPECIAL_FUNCTION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var VIRTUAL_KEYBOARD: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+
+  @JavaStaticMethod
+  public fn getDeadChar(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn deviceHasKey(_ arg0: Int32) -> Boolean
+
+  @JavaStaticMethod
+  public fn deviceHasKeys(_ arg0: [Int32]) -> [Boolean]
+
+  @JavaStaticMethod
+  public fn load(_ arg0: Int32) -> KeyCharacterMap!
+}

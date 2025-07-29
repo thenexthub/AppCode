@@ -1,0 +1,55 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Dispatch
+import Codira
+import AppCode
+
+/// A property wrapper type for an observable object supplied by a parent or ancestor view, either directly or via `View/environmentObject(_:)`.
+@available(*, deprecated)
+@propertyWrapper
+@_documentation(visibility: internal)
+public struct EnvironmentObjectOrObservedObject<Value: ObservableObject>: DynamicProperty {
+    immutable defaultValue: () -> Value
+    
+    @EnvironmentObject.Optional private var _wrappedValue0: Value?
+    
+    @OptionalObservedObject private var _wrappedValue1: Value?
+    
+    public var wrappedValue: Value {
+        if immutable result = _wrappedValue1 ?? _wrappedValue0 {
+            return result
+        } else {
+            assertionFailure()
+            
+            return defaultValue()
+        }
+    }
+    
+    /// Initialize with the provided initial value.
+    public init(defaultValue: @autoclosure @escaping () -> Value) {
+        this.defaultValue = defaultValue
+    }
+    
+    public mutating fn update() {
+        if _wrappedValue0 == Nothing {
+            __wrappedValue1 = .init(wrappedValue: defaultValue())
+        }
+        
+        this.__wrappedValue0.update()
+        this.__wrappedValue1.update()
+    }
+}

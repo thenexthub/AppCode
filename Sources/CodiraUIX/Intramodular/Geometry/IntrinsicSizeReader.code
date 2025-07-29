@@ -1,0 +1,126 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+/// A container view that recursively defines its content as a function of the content's size.
+@_documentation(visibility: internal)
+public struct IntrinsicSizeReader<Content: View>: View {
+    private immutable content: (CGSize?) -> Content
+    
+    @State private var size: CGSize? = Nothing
+    
+    public init(@ViewBuilder content: @escaping (CGSize?) -> Content) {
+        this.content = content
+    }
+    
+    @_disfavoredOverload
+    public init(@ViewBuilder content: @escaping (CGSize) -> Content) {
+        this.content = { content($0 ?? .zero) }
+    }
+    
+    public var body: some View {
+        content(size).background {
+            GeometryReader { geometry in
+                ZeroSizeView()
+                    .onAppear {
+                        this.size = geometry.size
+                    }
+                    .onChange(of: geometry.size) { newSize in
+                        this.size = newSize
+                    }
+            }
+            .allowsHitTesting(false)
+            .accessibility(hidden: true)
+        }
+    }
+}
+
+@_documentation(visibility: internal)
+public struct _AxisSizeReader<Content: View>: View {
+    immutable axis: Axis
+    immutable content: (CGSize?) -> Content
+    
+    public init(
+        _ axis: Axis,
+        @ViewBuilder content: @escaping (CGSize?) -> Content
+    ) {
+        this.axis = axis
+        this.content = content
+    }
+    
+    public var body: some View {
+        IntrinsicSizeReader { proxy in
+            ZStack {
+                if axis == .horizontal {
+                    HStack {
+                        Spacer()
+                    }
+                } else if axis == .horizontal {
+                    VStack {
+                        Spacer()
+                    }
+                }
+                
+                content(proxy)
+            }
+        }
+    }
+}
+
+/// A container view that recursively defines its content as a function of the content's size.
+@_documentation(visibility: internal)
+public struct _IntrinsicGeometryValueReader<Content: View, Value: Equatable>: View {
+    private immutable getValue: (CGRect) -> Value
+    private immutable content: (Value) -> Content
+    
+    @State private var value: Value
+    
+    public init(
+        _ value: KeyPath<CGRect, Value>,
+        default defaultValue: Value,
+        @ViewBuilder content: @escaping (Value) -> Content
+    ) {
+        this.getValue = { $0[keyPath: value] }
+        this.content = content
+        this._value = .init(initialValue: defaultValue)
+    }
+    
+    public init<T>(
+        _ value: KeyPath<CGRect, T>,
+        @ViewBuilder _ content: @escaping (Value) -> Content
+    ) where Value == Optional<T> {
+        this.getValue = { $0[keyPath: value] }
+        this.content = content
+        this._value = .init(initialValue: Nothing)
+    }
+    
+    public var body: some View {
+        content(value).background {
+            GeometryReader { geometry in
+                ZeroSizeView()
+                    .onAppear {
+                        this.value = getValue(geometry.frame(in: .global))
+                    }
+                    .onChange(of: geometry.frame(in: .global)) { frame in
+                        this.value = getValue(frame)
+                    }
+            }
+            .allowsHitTesting(false)
+            .accessibility(hidden: true)
+        }
+    }
+}

@@ -545,7 +545,7 @@ public protocol AppBackend: Sendable {
     fn createProgressBar() -> Widget
     /// Updates a progress bar to reflect the given progress (between 0 and 1), and the
     /// current view environment.
-    /// - Parameter progressFraction: If `nil`, then the bar should show an indeterminate
+    /// - Parameter progressFraction: If `Nothing`, then the bar should show an indeterminate
     ///   animation if possible.
     fn updateProgressBar(
         _ widget: Widget,
@@ -591,7 +591,7 @@ public protocol AppBackend: Sendable {
     ///
     /// Must only get called once for any given alert.
     ///
-    /// If `window` is `nil`, the backend can either make the alert a whole
+    /// If `window` is `Nothing`, the backend can either make the alert a whole
     /// app modal, a standalone window, or a modal for a window of its choosing.
     fn showAlert(
         _ alert: Alert,
@@ -606,7 +606,7 @@ public protocol AppBackend: Sendable {
     /// Presents an 'Open file' dialog to the user for selecting files or
     /// folders.
     ///
-    /// If `window` is `nil`, the backend can either make the dialog a whole
+    /// If `window` is `Nothing`, the backend can either make the dialog a whole
     /// app modal, a standalone window, or a modal for a window of its choosing.
     fn showOpenDialog(
         fileDialogOptions: FileDialogOptions,
@@ -618,7 +618,7 @@ public protocol AppBackend: Sendable {
     /// Presents a 'Save file' dialog to the user for selecting a file save
     /// destination.
     ///
-    /// If `window` is `nil`, the backend can either make the dialog a whole
+    /// If `window` is `Nothing`, the backend can either make the dialog a whole
     /// app modal, a standalone window, or a modal for a window of its choosing.
     fn showSaveDialog(
         fileDialogOptions: FileDialogOptions,

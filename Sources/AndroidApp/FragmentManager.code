@@ -1,0 +1,100 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.app.FragmentManager")
+open class FragmentManager: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn beginTransaction() -> FragmentTransaction!
+
+  @JavaMethod
+  open fn executePendingTransactions() -> Boolean
+
+  @JavaMethod
+  open fn findFragmentById(_ arg0: Int32) -> Fragment!
+
+  @JavaMethod
+  open fn findFragmentByTag(_ arg0: String) -> Fragment!
+
+  @JavaMethod
+  open fn popBackStack(_ arg0: String, _ arg1: Int32)
+
+  @JavaMethod
+  open fn popBackStack()
+
+  @JavaMethod
+  open fn popBackStack(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn popBackStackImmediate(_ arg0: String, _ arg1: Int32) -> Boolean
+
+  @JavaMethod
+  open fn popBackStackImmediate() -> Boolean
+
+  @JavaMethod
+  open fn popBackStackImmediate(_ arg0: Int32, _ arg1: Int32) -> Boolean
+
+  @JavaMethod
+  open fn getBackStackEntryCount() -> Int32
+
+  @JavaMethod
+  open fn getBackStackEntryAt(_ arg0: Int32) -> FragmentManager.BackStackEntry!
+
+  @JavaMethod
+  open fn addOnBackStackChangedListener(_ arg0: FragmentManager.OnBackStackChangedListener?)
+
+  @JavaMethod
+  open fn removeOnBackStackChangedListener(_ arg0: FragmentManager.OnBackStackChangedListener?)
+
+  @JavaMethod
+  open fn getFragments() -> List<Fragment>!
+
+  @JavaMethod
+  open fn saveFragmentInstanceState(_ arg0: Fragment?) -> Fragment.SavedState!
+
+  @JavaMethod
+  open fn registerFragmentLifecycleCallbacks(_ arg0: FragmentManager.FragmentLifecycleCallbacks?, _ arg1: Boolean)
+
+  @JavaMethod
+  open fn unregisterFragmentLifecycleCallbacks(_ arg0: FragmentManager.FragmentLifecycleCallbacks?)
+
+  @JavaMethod
+  open fn getPrimaryNavigationFragment() -> Fragment!
+
+  @JavaMethod
+  open fn isStateSaved() -> Boolean
+
+  @JavaMethod
+  open fn invalidateOptionsMenu()
+
+  @JavaMethod
+  open fn isDestroyed() -> Boolean
+
+  @JavaMethod
+  open fn dump(_ arg0: String, _ arg1: FileDescriptor?, _ arg2: PrintWriter?, _ arg3: [String])
+}
+extension JavaClass<FragmentManager> {
+  @JavaStaticField(isFinal: true)
+  public var POP_BACK_STACK_INCLUSIVE: Int32
+
+  @JavaStaticMethod
+  public fn enableDebugLogging(_ arg0: Boolean)
+}

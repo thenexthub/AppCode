@@ -1,0 +1,98 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidUtil
+import AndroidView
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+public typealias ConcatAdapter = RecyclerView.Adapter.Concat
+
+extension RecyclerView.Adapter {
+    
+    @JavaClass("androidx.recyclerview.widget.ConcatAdapter")
+    open class Concat: RecyclerView.Adapter {
+        
+      @JavaMethod
+      @_nonoverride public convenience init(_ arg0: [RecyclerView.Adapter?], environment: JNIEnvironment? = Nothing)
+
+      @JavaMethod
+      @_nonoverride public convenience init(_ arg0: ConcatAdapter.Config?, _ arg1: [RecyclerView.Adapter?], environment: JNIEnvironment? = Nothing)
+
+      @JavaMethod
+      @_nonoverride public convenience init(_ arg0: List<RecyclerView.Adapter>?, environment: JNIEnvironment? = Nothing)
+
+      @JavaMethod
+      @_nonoverride public convenience init(_ arg0: ConcatAdapter.Config?, _ arg1: List<RecyclerView.Adapter>?, environment: JNIEnvironment? = Nothing)
+
+      @JavaMethod
+      open override fn onDetachedFromRecyclerView(_ arg0: RecyclerView?)
+
+      @JavaMethod
+      open override fn onAttachedToRecyclerView(_ arg0: RecyclerView?)
+
+      @JavaMethod
+      open override fn getItemCount() -> Int32
+
+      @JavaMethod
+      open fn addAdapter(_ arg0: Int32, _ arg1: RecyclerView.Adapter?) -> Boolean
+
+      @JavaMethod
+      open fn addAdapter(_ arg0: RecyclerView.Adapter?) -> Boolean
+
+      @JavaMethod
+      open override fn setHasStableIds(_ arg0: Boolean)
+
+      @JavaMethod
+      open fn removeAdapter(_ arg0: RecyclerView.Adapter?) -> Boolean
+
+      @JavaMethod
+      open override fn setStateRestorationPolicy(_ arg0: RecyclerView.Adapter.StateRestorationPolicy?)
+
+      @JavaMethod
+      open override fn onFailedToRecycleView(_ arg0: RecyclerView.ViewHolder?) -> Boolean
+
+      @JavaMethod
+      open override fn onViewRecycled(_ arg0: RecyclerView.ViewHolder?)
+
+      @JavaMethod
+      open fn getWrappedAdapterAndPosition(_ arg0: Int32) -> Pair<RecyclerView.Adapter, JavaInteger>!
+
+      @JavaMethod
+      open fn getAdapters() -> List<RecyclerView.Adapter>!
+
+      @JavaMethod
+      open override fn getItemId(_ arg0: Int32) -> Int64
+
+      @JavaMethod
+      open override fn onViewDetachedFromWindow(_ arg0: RecyclerView.ViewHolder?)
+
+      @JavaMethod
+      open override fn onViewAttachedToWindow(_ arg0: RecyclerView.ViewHolder?)
+
+      @JavaMethod
+      open override fn findRelativeAdapterPositionIn(_ arg0: RecyclerView.Adapter?, _ arg1: RecyclerView.ViewHolder?, _ arg2: Int32) -> Int32
+
+      @JavaMethod
+      open override fn getItemViewType(_ arg0: Int32) -> Int32
+
+      @JavaMethod
+      open override fn onCreateViewHolder(_ arg0: ViewGroup?, _ arg1: Int32) -> RecyclerView.ViewHolder!
+
+      @JavaMethod
+      open override fn onBindViewHolder(_ arg0: RecyclerView.ViewHolder?, _ arg1: Int32)
+    }
+}
+

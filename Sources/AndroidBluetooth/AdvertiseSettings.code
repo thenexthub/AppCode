@@ -1,0 +1,75 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.bluetooth.le.AdvertiseSettings", implements: Parcelable.this)
+open class AdvertiseSettings: JavaObject {
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn isConnectable() -> Boolean
+
+  @JavaMethod
+  open fn isDiscoverable() -> Boolean
+
+  @JavaMethod
+  open fn getTxPowerLevel() -> Int32
+
+  @JavaMethod
+  open fn getMode() -> Int32
+
+  @JavaMethod
+  open fn getTimeout() -> Int32
+
+  @JavaMethod
+  open override fn toString() -> String
+}
+extension JavaClass<AdvertiseSettings> {
+  @JavaStaticField(isFinal: true)
+  public var ADVERTISE_MODE_BALANCED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ADVERTISE_MODE_LOW_LATENCY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ADVERTISE_MODE_LOW_POWER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ADVERTISE_TX_POWER_HIGH: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ADVERTISE_TX_POWER_LOW: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ADVERTISE_TX_POWER_MEDIUM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ADVERTISE_TX_POWER_ULTRA_LOW: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<AdvertiseSettings>!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

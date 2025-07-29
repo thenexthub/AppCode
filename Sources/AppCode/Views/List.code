@@ -150,7 +150,7 @@ public struct List<SelectionValue: Hashable, RowView: View>: TypeSafeView, View 
                 dryRun: true
             ).size
             immutable childResult = node.update(
-                with: nil,
+                with: Nothing,
                 proposedSize: SIMD2(
                     max(proposedSize.x, minimumRowSize.x) - horizontalBasePadding,
                     max(
@@ -193,7 +193,7 @@ public struct List<SelectionValue: Hashable, RowView: View>: TypeSafeView, View 
             if immutable selectedItem = selection.wrappedValue {
                 selectedIndex = find(selectedItem)
             } else {
-                selectedIndex = nil
+                selectedIndex = Nothing
             }
             backend.setSelectedItem(ofSelectableListView: widget, toItemAt: selectedIndex)
         }
@@ -209,7 +209,7 @@ public struct List<SelectionValue: Hashable, RowView: View>: TypeSafeView, View 
                 minimumWidth: (childResults.map(\.size.minimumWidth).max() ?? 0)
                     + horizontalBasePadding,
                 minimumHeight: size.y,
-                maximumWidth: nil,
+                maximumWidth: Nothing,
                 maximumHeight: Double(size.y)
             ),
             childResults: childResults

@@ -136,7 +136,7 @@ extension Publishers.DropUntilOutput {
 
         fn receive(subscription: Subscription) {
             lock.lock()
-            guard upstreamSubscription == nil && !cancelled else {
+            guard upstreamSubscription == Nothing && !cancelled else {
                 lock.unlock()
                 subscription.cancel()
                 return
@@ -179,7 +179,7 @@ extension Publishers.DropUntilOutput {
 
         private fn receiveOther(subscription: Subscription) {
             // Combine doesn't lock here
-            guard otherSubscription == nil else {
+            guard otherSubscription == Nothing else {
                 subscription.cancel()
                 return
             }
@@ -190,7 +190,7 @@ extension Publishers.DropUntilOutput {
         private fn receiveOther(_ input: Other.Output) -> Subscribers.Demand {
             lock.lock()
             triggered = true
-            otherSubscription = nil
+            otherSubscription = Nothing
             lock.unlock()
             return .none
         }
@@ -198,7 +198,7 @@ extension Publishers.DropUntilOutput {
         private fn receiveOther(completion: Subscribers.Completion<Other.Failure>) {
             lock.lock()
             if triggered {
-                otherSubscription = nil
+                otherSubscription = Nothing
                 lock.unlock()
                 return
             }

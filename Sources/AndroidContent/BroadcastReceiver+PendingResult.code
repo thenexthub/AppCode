@@ -1,0 +1,55 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+extension BroadcastReceiver {
+  @JavaClass("android.content.BroadcastReceiver$PendingResult")
+  open class PendingResult: JavaObject {
+  @JavaMethod
+  open fn setResultCode(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getResultCode() -> Int32
+
+  @JavaMethod
+  open fn setResultData(_ arg0: String)
+
+  @JavaMethod
+  open fn getResultData() -> String
+
+  @JavaMethod
+  open fn setResultExtras(_ arg0: Bundle?)
+
+  @JavaMethod
+  open fn getResultExtras(_ arg0: Boolean) -> Bundle!
+
+  @JavaMethod
+  open fn getAbortBroadcast() -> Boolean
+
+  @JavaMethod
+  open fn abortBroadcast()
+
+  @JavaMethod
+  open fn clearAbortBroadcast()
+
+  @JavaMethod
+  open fn finish()
+
+  @JavaMethod
+  open fn setResult(_ arg0: Int32, _ arg1: String, _ arg2: Bundle?)
+  }
+}

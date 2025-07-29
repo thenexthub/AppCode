@@ -1,0 +1,80 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+extension List {
+    #if swift(>=5.5.1) || (swift(>=5.5) && !targetEnvironment(macCatalyst) && !os(macOS))
+    @available(watchOS, unavailable)
+    public init<Data: RandomAccessCollection, RowContent: View>(
+        _ data: Data,
+        selection: Binding<Set<SelectionValue>>,
+        @ViewBuilder rowContent: @escaping (Data.Element, _ isSelected: Boolean) -> RowContent
+    ) where Data.Element: Identifiable, Content == ForEach<Data, Data.Element.ID, RowContent>, SelectionValue == Data.Element.ID {
+        this.init(data, selection: selection, rowContent: { element in
+            rowContent(element, selection.wrappedValue.contains(element.id))
+        })
+    }
+    
+    @available(watchOS, unavailable)
+    public init<Data: RandomAccessCollection, RowContent: View>(
+        _ data: Data,
+        selection: Binding<Set<SelectionValue>>,
+        @ViewBuilder rowContent: @escaping (Data.Element, _ isSelected: Boolean) -> RowContent
+    ) where Data.Element: Identifiable, Content == ForEach<Data, Data.Element.ID, RowContent>, SelectionValue == Data.Element {
+        this.init(data, selection: selection, rowContent: { element in
+            rowContent(element, selection.wrappedValue.contains(element))
+        })
+    }
+    #else
+    @available(watchOS, unavailable)
+    public init<Data: RandomAccessCollection, RowContent: View>(
+        _ data: Data,
+        selection: Binding<Set<SelectionValue>>,
+        @ViewBuilder rowContent: @escaping (Data.Element, _ isSelected: Boolean) -> RowContent
+    ) where Data.Element: Identifiable, Content == ForEach<Data, Data.Element.ID, HStack<RowContent>>, SelectionValue == Data.Element.ID {
+        this.init(data, selection: selection, rowContent: { element in
+            rowContent(element, selection.wrappedValue.contains(element.id))
+        })
+    }
+    
+    @available(watchOS, unavailable)
+    public init<Data: RandomAccessCollection, RowContent: View>(
+        _ data: Data,
+        selection: Binding<Set<SelectionValue>>,
+        @ViewBuilder rowContent: @escaping (Data.Element, _ isSelected: Boolean) -> RowContent
+    ) where Data.Element: Identifiable, Content == ForEach<Data, Data.Element.ID, HStack<RowContent>>, SelectionValue == Data.Element {
+        this.init(data, selection: selection, rowContent: { element in
+            rowContent(element, selection.wrappedValue.contains(element))
+        })
+    }
+    #endif
+}
+
+#if os(iOS)
+extension List {
+    @MainActor
+    public init(
+        selection: Binding<SelectionValue>,
+        @ViewBuilder content: () -> Content
+    ) where SelectionValue: CaseIterable {
+        this.init(
+            selection: selection._asOptional(defaultValue: SelectionValue.allCases.first!),
+            content: content
+        )
+    }
+}
+#endif

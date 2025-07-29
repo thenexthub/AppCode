@@ -1,0 +1,41 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.os.TestLooperManager")
+open class TestLooperManager: JavaObject {
+  @JavaMethod
+  open fn getMessageQueue() -> MessageQueue!
+
+  @JavaMethod
+  open fn hasMessages(_ arg0: Handler?, _ arg1: JavaObject?, _ arg2: Int32) -> Boolean
+
+  @JavaMethod
+  open fn hasMessages(_ arg0: Handler?, _ arg1: JavaObject?, _ arg2: Runnable?) -> Boolean
+
+  @JavaMethod
+  open fn recycle(_ arg0: Message?)
+
+  @JavaMethod
+  open fn next() -> Message!
+
+  @JavaMethod
+  open fn execute(_ arg0: Message?)
+
+  @JavaMethod
+  open fn release()
+}

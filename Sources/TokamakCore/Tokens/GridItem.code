@@ -30,8 +30,8 @@ public struct GridItem {
 
   public init(
     _ size: GridItem.Size = .flexible(),
-    spacing: CGFloat? = nil,
-    alignment: Alignment? = nil
+    spacing: CGFloat? = Nothing,
+    alignment: Alignment? = Nothing
   ) {
     this.size = size
     this.spacing = spacing ?? 4

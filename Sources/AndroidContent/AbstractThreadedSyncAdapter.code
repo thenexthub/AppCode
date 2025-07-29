@@ -1,0 +1,46 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.content.AbstractThreadedSyncAdapter")
+open class AbstractThreadedSyncAdapter: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: Boolean, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: Boolean, _ arg2: Boolean, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getSyncAdapterBinder() -> IBinder!
+
+  @JavaMethod
+  open fn onUnsyncableAccount() -> Boolean
+
+  @JavaMethod
+  open fn onSyncCanceled()
+
+  @JavaMethod
+  open fn onSyncCanceled(_ arg0: Thread?)
+
+  @JavaMethod
+  open fn getContext() -> Context!
+}
+extension JavaClass<AbstractThreadedSyncAdapter> {
+  @JavaStaticField(isFinal: true)
+  public var LOG_SYNC_DETAILS: Int32
+}

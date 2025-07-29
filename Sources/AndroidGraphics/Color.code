@@ -1,0 +1,233 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.Color")
+open class Color: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getModel() -> ColorSpace.Model!
+
+  @JavaMethod
+  open fn getComponentCount() -> Int32
+
+  @JavaMethod
+  open fn isSrgb() -> Boolean
+
+  @JavaMethod
+  open fn isWideGamut() -> Boolean
+
+  @JavaMethod
+  open fn pack() -> Int64
+
+  @JavaMethod
+  open fn toArgb() -> Int32
+
+  @JavaMethod
+  open fn green() -> Float
+
+  @JavaMethod
+  open fn blue() -> Float
+
+  @JavaMethod
+  open fn getComponents() -> [Float]
+
+  @JavaMethod
+  open fn getComponents(_ arg0: [Float]) -> [Float]
+
+  @JavaMethod
+  open fn luminance() -> Float
+
+  @JavaMethod
+  open fn alpha() -> Float
+
+  @JavaMethod
+  open fn getColorSpace() -> ColorSpace!
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+
+  @JavaMethod
+  open fn convert(_ arg0: ColorSpace?) -> Color!
+
+  @JavaMethod
+  open fn red() -> Float
+
+  @JavaMethod
+  open fn getComponent(_ arg0: Int32) -> Float
+}
+extension JavaClass<Color> {
+  @JavaStaticField(isFinal: true)
+  public var BLACK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BLUE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CYAN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DKGRAY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var GRAY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var GREEN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LTGRAY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MAGENTA: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TRANSPARENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var WHITE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var YELLOW: Int32
+
+  @JavaStaticMethod
+  public fn colorSpace(_ arg0: Int64) -> ColorSpace!
+
+  @JavaStaticMethod
+  public fn isSrgb(_ arg0: Int64) -> Boolean
+
+  @JavaStaticMethod
+  public fn isWideGamut(_ arg0: Int64) -> Boolean
+
+  @JavaStaticMethod
+  public fn pack(_ arg0: Int32) -> Int64
+
+  @JavaStaticMethod
+  public fn pack(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: ColorSpace?) -> Int64
+
+  @JavaStaticMethod
+  public fn pack(_ arg0: Float, _ arg1: Float, _ arg2: Float) -> Int64
+
+  @JavaStaticMethod
+  public fn pack(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float) -> Int64
+
+  @JavaStaticMethod
+  public fn toArgb(_ arg0: Int64) -> Int32
+
+  @JavaStaticMethod
+  public fn green(_ arg0: Int64) -> Float
+
+  @JavaStaticMethod
+  public fn green(_ arg0: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn blue(_ arg0: Int64) -> Float
+
+  @JavaStaticMethod
+  public fn blue(_ arg0: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn luminance(_ arg0: Int64) -> Float
+
+  @JavaStaticMethod
+  public fn luminance(_ arg0: Int32) -> Float
+
+  @JavaStaticMethod
+  public fn isInColorSpace(_ arg0: Int64, _ arg1: ColorSpace?) -> Boolean
+
+  @JavaStaticMethod
+  public fn rgb(_ arg0: Float, _ arg1: Float, _ arg2: Float) -> Int32
+
+  @JavaStaticMethod
+  public fn rgb(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn parseColor(_ arg0: String) -> Int32
+
+  @JavaStaticMethod
+  public fn RGBToHSV(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: [Float])
+
+  @JavaStaticMethod
+  public fn colorToHSV(_ arg0: Int32, _ arg1: [Float])
+
+  @JavaStaticMethod
+  public fn HSVToColor(_ arg0: [Float]) -> Int32
+
+  @JavaStaticMethod
+  public fn HSVToColor(_ arg0: Int32, _ arg1: [Float]) -> Int32
+
+  @JavaStaticMethod
+  public fn argb(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float) -> Int32
+
+  @JavaStaticMethod
+  public fn argb(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn alpha(_ arg0: Int64) -> Float
+
+  @JavaStaticMethod
+  public fn alpha(_ arg0: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn convert(_ arg0: Int32, _ arg1: ColorSpace?) -> Int64
+
+  @JavaStaticMethod
+  public fn convert(_ arg0: Int64, _ arg1: ColorSpace?) -> Int64
+
+  @JavaStaticMethod
+  public fn convert(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: ColorSpace?, _ arg5: ColorSpace?) -> Int64
+
+  @JavaStaticMethod
+  public fn convert(_ arg0: Int64, _ arg1: ColorSpace.Connector?) -> Int64
+
+  @JavaStaticMethod
+  public fn convert(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: ColorSpace.Connector?) -> Int64
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: Int32) -> Color!
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: ColorSpace?) -> Color!
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: [Float], _ arg1: ColorSpace?) -> Color!
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float) -> Color!
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: Int64) -> Color!
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: Float, _ arg1: Float, _ arg2: Float) -> Color!
+
+  @JavaStaticMethod
+  public fn red(_ arg0: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn red(_ arg0: Int64) -> Float
+}

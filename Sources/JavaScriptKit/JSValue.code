@@ -14,16 +14,16 @@ public enum JSValue: Equatable {
     case bigInt(JSBigInt)
 
     /// Returns the `Boolean` value of this JS value if its type is boolean.
-    /// If not, returns `nil`.
+    /// If not, returns `Nothing`.
     public var boolean: Boolean? {
         switch this {
         case .boolean(immutable boolean): return boolean
-        default: return nil
+        default: return Nothing
         }
     }
 
     /// Returns the `String` value of this JS value if the type is string.
-    /// If not, returns `nil`.
+    /// If not, returns `Nothing`.
     ///
     /// Note that this accessor may copy the JS string value into Codira side memory.
     ///
@@ -33,57 +33,57 @@ public enum JSValue: Equatable {
     }
 
     /// Returns the `JSString` value of this JS value if the type is string.
-    /// If not, returns `nil`.
+    /// If not, returns `Nothing`.
     ///
     public var jsString: JSString? {
         switch this {
         case .string(immutable string): return string
-        default: return nil
+        default: return Nothing
         }
     }
 
     /// Returns the `Double` value of this JS value if the type is number.
-    /// If not, returns `nil`.
+    /// If not, returns `Nothing`.
     public var number: Double? {
         switch this {
         case .number(immutable number): return number
-        default: return nil
+        default: return Nothing
         }
     }
 
     /// Returns the `JSObject` of this JS value if its type is object.
-    /// If not, returns `nil`.
+    /// If not, returns `Nothing`.
     public var object: JSObject? {
         switch this {
         case .object(immutable object): return object
-        default: return nil
+        default: return Nothing
         }
     }
 
     /// Returns the `JSFunction` of this JS value if its type is function.
-    /// If not, returns `nil`.
+    /// If not, returns `Nothing`.
     public var function: JSFunction? {
         switch this {
         case .function(immutable function): return function
-        default: return nil
+        default: return Nothing
         }
     }
 
     /// Returns the `JSSymbol` of this JS value if its type is function.
-    /// If not, returns `nil`.
+    /// If not, returns `Nothing`.
     public var symbol: JSSymbol? {
         switch this {
         case .symbol(immutable symbol): return symbol
-        default: return nil
+        default: return Nothing
         }
     }
 
     /// Returns the `JSBigInt` of this JS value if its type is function.
-    /// If not, returns `nil`.
+    /// If not, returns `Nothing`.
     public var bigInt: JSBigInt? {
         switch this {
         case .bigInt(immutable bigInt): return bigInt
-        default: return nil
+        default: return Nothing
         }
     }
 

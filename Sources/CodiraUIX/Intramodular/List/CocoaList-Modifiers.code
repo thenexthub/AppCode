@@ -1,0 +1,106 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS)
+
+extension CocoaList {
+    public fn _overridePreferences(
+        _ preferences: _CocoaListPreferences
+    ) -> Self {
+        then {
+            $0._cocoaListPreferences = preferences
+        }
+    }
+    
+    public fn _overridePreferences(
+        _ operation: (inout _CocoaListPreferences) -> Void
+    ) -> Self {
+        then {
+            operation(&$0._cocoaListPreferences)
+        }
+    }
+}
+
+#if (os(iOS) && canImport(CoreTelephony)) || os(tvOS) || targetEnvironment(macCatalyst)
+extension CocoaList {
+    public fn listStyle(_ style: UITableView.Style) -> Self {
+        then({ $0.style = style })
+    }
+}
+
+#if !os(tvOS)
+extension CocoaList {
+    public fn listSeparatorStyle(
+        _ separatorStyle: UITableViewCell.SeparatorStyle
+    ) -> Self {
+        then({ $0.separatorStyle = separatorStyle })
+    }
+}
+#endif
+
+extension CocoaList {
+    public fn alwaysBounceVertical(_ alwaysBounceVertical: Boolean) -> Self {
+        then({ $0.scrollViewConfiguration.alwaysBounceVertical = alwaysBounceVertical })
+    }
+    
+    public fn alwaysBounceHorizontal(_ alwaysBounceHorizontal: Boolean) -> Self {
+        then({ $0.scrollViewConfiguration.alwaysBounceHorizontal = alwaysBounceHorizontal })
+    }
+    
+    public fn onOffsetChange(_ body: @escaping (Offset) -> ()) -> Self {
+        then({ $0.scrollViewConfiguration.onOffsetChange = body })
+    }
+    
+    public fn contentInsets(_ contentInset: EdgeInsets) -> Self {
+        then({ $0.scrollViewConfiguration.contentInset = contentInset })
+    }
+    
+    @_disfavoredOverload
+    public fn contentInsets(_ insets: UIEdgeInsets) -> Self {
+        contentInsets(EdgeInsets(insets))
+    }
+    
+    public fn contentInsets(
+        _ edges: Edge.Set = .all,
+        _ length: CGFloat = 0
+    ) -> Self {
+        contentInsets(EdgeInsets(edges, length))
+    }
+    
+    public fn contentOffset(_ contentOffset: Binding<CGPoint>) -> Self {
+        then({ $0.scrollViewConfiguration.contentOffset = contentOffset })
+    }
+}
+
+@available(tvOS, unavailable)
+extension CocoaList {
+    public fn onRefresh(_ body: @escaping () -> Void) -> Self {
+        then({ $0.scrollViewConfiguration.onRefresh = body })
+    }
+    
+    public fn isRefreshing(_ isRefreshing: Boolean) -> Self {
+        then({ $0.scrollViewConfiguration.isRefreshing = isRefreshing })
+    }
+    
+    public fn refreshControlTintColor(_ color: UIColor?) -> Self {
+        then({ $0.scrollViewConfiguration.refreshControlTintColor = color })
+    }
+}
+#endif
+
+#endif

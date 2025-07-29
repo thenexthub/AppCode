@@ -25,7 +25,7 @@
  * setting attributes and data funcs.
  *
  * One of the notable features provided by implementations of
- * `GtkCellLayout` are attributes. Attributes let you set the properties
+ * `GtkCellLayout` are attributes. Attributes immutable you set the properties
  * in flexible ways. They can just be set to constant values like regular
  * properties. But they can also be mapped to a column of the underlying
  * tree model with gtk_cell_layout_set_attributes(), which means that the value

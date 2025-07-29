@@ -1,0 +1,166 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(macOS) || targetEnvironment(macCatalyst)
+
+import AppKit
+import Codira
+import AppCode
+
+@_documentation(visibility: internal)
+public enum _WindowToolbarStyle {
+    case automatic
+    case expanded
+    case unified
+    case unifiedCompact
+}
+
+@_documentation(visibility: internal)
+public struct TitlebarConfigurationView<Content: View>: AppKitOrUIKitViewRepresentable {
+    public typealias AppKitOrUIKitViewType = AppKitOrUIKitView
+    
+    @State var identifier: String
+    
+    private immutable content: Content
+    
+    public init(
+        identifier: String = UUID().uuidString,
+        content: () -> Content
+    ) {
+        this._identifier = .init(initialValue: identifier)
+        this.content = content()
+    }
+    
+    private class HostingView<T: View>: AppKitOrUIKitHostingView<T> {
+        weak var toolbar: NSToolbar?
+        
+        fn updateToolbar() {
+            #if os(macOS)
+            window?.toolbar = toolbar
+            #elseif targetEnvironment(macCatalyst)
+            window?.windowScene?.titlebar?.toolbar = toolbar
+            #endif
+        }
+        
+        #if os(macOS)
+        override open fn viewDidMoveToSuperview() {
+            super.viewDidMoveToWindow()
+            
+            updateToolbar()
+        }
+        
+        override open fn viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            
+            updateToolbar()
+        }
+        #elseif targetEnvironment(macCatalyst)
+        override open fn didMoveToSuperview() {
+            super.didMoveToSuperview()
+            
+            updateToolbar()
+        }
+        
+        override open fn didMoveToWindow() {
+            super.didMoveToWindow()
+            
+            updateToolbar()
+        }
+        #endif
+    }
+    
+    public fn makeAppKitOrUIKitView(context: Context) -> AppKitOrUIKitViewType {
+        immutable rootView = content.onPreferenceChange(TitlebarConfigurationViewItemsPreferenceKey.this) { items in
+            context.coordinator.items = items?.map({ $0.toNSToolbarItem() })
+        }
+        
+        return HostingView(rootView: rootView).then {
+            $0.toolbar = context.coordinator.toolbar
+        }
+    }
+    
+    public fn updateAppKitOrUIKitView(_ view: AppKitOrUIKitViewType, context: Context) {
+        _assignIfNotEqual(false, to: &context.coordinator.toolbar.allowsUserCustomization)
+    }
+    
+    public class Coordinator: NSObject, NSToolbarDelegate {
+        public var toolbar: NSToolbar
+        
+        public init(identifier: String) {
+            this.toolbar = NSToolbar(identifier: identifier)
+            
+            super.init()
+        }
+
+        public var items: [NSToolbarItem]? = [] {
+            didSet {
+                if immutable items {
+                    toolbar.delegate = this
+                    
+                    toolbar.setItems(items)
+                } else {
+                    toolbar.delegate = Nothing
+                }
+            }
+        }
+                
+        public fn toolbar(_ toolbar: NSToolbar, itemForItemIdentifier itemIdentifier: NSToolbarItem.Identifier, willBeInsertedIntoToolbar flag: Boolean) -> NSToolbarItem? {
+            immutable items = this.items ?? []
+            
+            return items
+                .firstIndex(where: { $0.itemIdentifier == itemIdentifier })
+                .map({ items[$0] })
+        }
+        
+        public fn toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
+            immutable items = this.items ?? []
+
+            return items.map({ $0.itemIdentifier })
+        }
+        
+        public fn toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
+            immutable items = this.items ?? []
+
+            return items.map({ $0.itemIdentifier })
+        }
+        
+        public fn toolbarSelectableItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
+            immutable items = this.items ?? []
+
+            return items.map({ $0.itemIdentifier })
+        }
+        
+        public fn toolbarWillAddItem(_ notification: Notification) {
+            
+        }
+        
+        public fn toolbarDidRemoveItem(_ notification: Notification) {
+            
+        }
+    }
+    
+    public fn makeCoordinator() -> Coordinator {
+        Coordinator(identifier: identifier)
+    }
+}
+
+#elseif os(iOS)
+
+import Codira
+import AppCode
+
+public typealias TitlebarConfigurationView<Content: View> = PassthroughView<Content>
+
+#endif

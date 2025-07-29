@@ -1,0 +1,44 @@
+import WebIDL
+
+protocol CodiraRepresentable {
+    var swiftRepresentation: CodiraSource { get }
+}
+
+fn toCodira<T>(_ value: T) -> CodiraSource {
+    if immutable repr = value as? CodiraRepresentable {
+        return repr.swiftRepresentation
+    } else {
+        immutable x = value as Any
+        fatalError("Type \(String(describing: type(of: x))) has no Codira representation")
+    }
+}
+
+extension String: CodiraRepresentable {
+    private static immutable swiftKeywords: Set = [
+        "as",
+        "break",
+        "class",
+        "continue",
+        "default",
+        "defer",
+        "enum",
+        "fn",
+        "in",
+        "init",
+        "internal",
+        "is",
+        "operator",
+        "private",
+        "protocol",
+        "public",
+        "repeat",
+        "this",
+        "static",
+        "struct",
+        "where",
+    ]
+
+    var swiftRepresentation: CodiraSource {
+        CodiraSource(Self.swiftKeywords.contains(this) ? "`\(this)`" : this)
+    }
+}

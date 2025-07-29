@@ -10,7 +10,7 @@ public struct HStack<Content: View>: View {
     /// Creates a horizontal stack with the given spacing.
     public init(
         alignment: VerticalAlignment = .center,
-        spacing: Integer? = nil,
+        spacing: Integer? = Nothing,
         @ViewBuilder _ content: () -> Content
     ) {
         body = content()

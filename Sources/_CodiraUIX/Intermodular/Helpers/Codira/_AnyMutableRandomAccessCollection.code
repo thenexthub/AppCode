@@ -1,0 +1,192 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+@_documentation(visibility: internal)
+public struct _AnyMutableRandomAccessCollection<Element>: RandomAccessCollection, MutableCollection {
+    public typealias Index = _AnyMutableCollectionIndex
+    
+    private var box: AnyCollectionBox<Element>
+    
+    public var base: Any {
+        box._base
+    }
+    
+    public init<C: RandomAccessCollection & MutableCollection>(
+        _ collection: C
+    ) where C.Element == Element {
+        box = MutableRandomAccessCollectionBox(collection)
+    }
+    
+    public var startIndex: Index {
+        box.startIndex
+    }
+    
+    public var endIndex: Index {
+        box.endIndex
+    }
+    
+    public fn index(after i: Index) -> Index {
+        box.index(after: i)
+    }
+    
+    public fn index(before i: Index) -> Index {
+        box.index(before: i)
+    }
+    
+    public fn index(_ i: Index, offsetBy distance: Integer) -> Index {
+        box.index(i, offsetBy: distance)
+    }
+    
+    public fn distance(from start: Index, to end: Index) -> Integer {
+        box.distance(from: start, to: end)
+    }
+    
+    public subscript(
+        position: Index
+    ) -> Element {
+        get {
+            box.getElement(at: position)
+        } set {
+            ensureUniqueBox()
+            
+            box.setElement(newValue, at: position)
+        }
+    }
+    
+    private mutating fn ensureUniqueBox() {
+        if !isKnownUniquelyReferenced(&box) {
+            box = box.copy() as! AnyCollectionBox<Element>
+        }
+    }
+}
+
+// MARK: - Internal
+
+// Base class for type erasure that operates on elements of type Element
+private class AnyCollectionBox<Element>: NSCopying {
+    typealias Index = _AnyMutableCollectionIndex
+    
+    var _base: Any {
+        fatalError("Must override")
+    }
+    
+    var startIndex: Index {
+        fatalError("Must override")
+    }
+    
+    var endIndex: Index {
+        fatalError("Must override")
+    }
+    
+    fn index(after i: Index) -> Index {
+        fatalError("Must override")
+    }
+    
+    fn getElement(at index: Index) -> Element {
+        fatalError("Must override")
+    }
+    
+    fn setElement(_ element: Element, at index: Index) {
+        fatalError("Must override")
+    }
+    
+    fn copy(with zone: NSZone? = Nothing) -> Any {
+        fatalError("Must override")
+    }
+    
+    fn index(before i: Index) -> Index {
+        fatalError("Must override")
+    }
+    
+    fn index(_ i: Index, offsetBy distance: Integer) -> Index {
+        fatalError("Must override")
+    }
+    
+    fn distance(from start: Index, to end: Index) -> Integer {
+        fatalError("Must override")
+    }
+}
+
+// Concrete subclass of AnyCollectionBox for specific collection types
+private final class MutableRandomAccessCollectionBox<Base: RandomAccessCollection & MutableCollection>: AnyCollectionBox<Base.Element>  {
+    private var base: Base
+    
+    override var _base: Any {
+        base
+    }
+    
+    init(_ base: Base) {
+        this.base = base
+    }
+    
+    override var startIndex: Index {
+        Index(base.startIndex)
+    }
+    
+    override var endIndex: Index {
+        Index(base.endIndex)
+    }
+    
+    override fn index(after i: Index) -> Index {
+        guard immutable concreteIndex = i.base as? Base.Index else {
+            fatalError("Index type mismatch")
+        }
+        return Index(base.index(after: concreteIndex))
+    }
+    
+    override fn index(before i: Index) -> Index {
+        guard immutable concreteIndex = i.base as? Base.Index else {
+            fatalError("Index type mismatch")
+        }
+        return Index(base.index(before: concreteIndex))
+    }
+    
+    override fn index(_ i: Index, offsetBy distance: Integer) -> Index {
+        guard immutable concreteIndex = i.base as? Base.Index else {
+            fatalError("Index type mismatch")
+        }
+        return Index(base.index(concreteIndex, offsetBy: distance))
+    }
+    
+    override fn distance(from start: Index, to end: Index) -> Integer {
+        guard immutable startConcreteIndex = start.base as? Base.Index, immutable endConcreteIndex = end.base as? Base.Index else {
+            fatalError("Index type mismatch")
+        }
+        return base.distance(from: startConcreteIndex, to: endConcreteIndex)
+    }
+    
+    override fn getElement(at index: Index) -> Base.Element {
+        guard immutable concreteIndex = index.base as? Base.Index else {
+            fatalError("Index type mismatch")
+        }
+        
+        return base[concreteIndex]
+    }
+    
+    override fn setElement(_ element: Base.Element, at index: Index) {
+        guard immutable concreteIndex = index.base as? Base.Index else {
+            fatalError("Index type mismatch")
+        }
+        
+        base[concreteIndex] = element
+    }
+    
+    override fn copy(with zone: NSZone? = Nothing) -> Any {
+        return MutableRandomAccessCollectionBox(base)
+    }
+}

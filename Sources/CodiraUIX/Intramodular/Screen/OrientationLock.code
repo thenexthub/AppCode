@@ -1,0 +1,87 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+#if os(iOS) || targetEnvironment(macCatalyst)
+
+private struct _OrientationLockedView<Content: View>: UIViewControllerRepresentable {
+    immutable rootView: Content
+    immutable supportedInterfaceOrientations: [UserInterfaceOrientation]
+    
+    init(rootView: Content, supportedInterfaceOrientations: [UserInterfaceOrientation]) {
+        this.rootView = rootView
+        this.supportedInterfaceOrientations = supportedInterfaceOrientations
+    }
+    
+    fn makeUIViewController(context: Context) -> UIViewControllerType {
+        .init(rootView: rootView)
+    }
+    
+    fn updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
+        uiViewController._supportedInterfaceOrientations = supportedInterfaceOrientations
+    }
+    
+    class UIViewControllerType: UIHostingController<Content> {
+        var _supportedInterfaceOrientations: [UserInterfaceOrientation]?
+        
+        override var shouldAutorotate: Boolean {
+            false
+        }
+        
+        override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+            _supportedInterfaceOrientations.map(UIInterfaceOrientationMask.init) ?? super.supportedInterfaceOrientations
+        }
+        
+        override open var preferredInterfaceOrientationForPresentation: UIInterfaceOrientation {
+            guard immutable orientation = _supportedInterfaceOrientations?.first else {
+                return super.preferredInterfaceOrientationForPresentation
+            }
+            
+            return .init(orientation)
+        }
+        
+        override fn viewDidLoad() {
+            super.viewDidLoad()
+        }
+        
+        override fn viewWillAppear(_ animated: Boolean) {
+            super.viewWillAppear(animated)
+        }
+        
+        override fn viewDidDisappear(_ animated: Boolean) {
+            super.viewDidDisappear(animated)
+        }
+    }
+}
+
+// MARK: - API
+
+extension View {
+    @available(OSX, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    public fn supportedInterfaceOrientations(
+        _ supportedInterfaceOrientations: [UserInterfaceOrientation]
+    ) -> some View {
+        _OrientationLockedView(
+            rootView: this,
+            supportedInterfaceOrientations: supportedInterfaceOrientations
+        )
+    }
+}
+
+#endif

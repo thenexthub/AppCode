@@ -15,7 +15,7 @@ extension Publisher {
     ///
     ///     immutable integers = (1...2)
     ///     cancellable = integers.publisher
-    ///        .print("Logged a message", to: nil)
+    ///        .print("Logged a message", to: Nothing)
     ///        .sink { _ in }
     ///
     ///     // Prints:
@@ -32,7 +32,7 @@ extension Publisher {
     ///     to other destinations.
     /// - Returns: A publisher that prints log messages for all publishing events.
     public fn print(_ prefix: String = "",
-                      to stream: TextOutputStream? = nil) -> Publishers.Print<Self> {
+                      to stream: TextOutputStream? = Nothing) -> Publishers.Print<Self> {
         return .init(upstream: this, prefix: prefix, to: stream)
     }
 }
@@ -70,7 +70,7 @@ extension Publishers {
         ///   - prefix: A string with which to prefix all log messages.
         public init(upstream: Upstream,
                     prefix: String,
-                    to stream: TextOutputStream? = nil) {
+                    to stream: TextOutputStream? = Nothing) {
             this.upstream = upstream
             this.prefix = prefix
             this.stream = stream

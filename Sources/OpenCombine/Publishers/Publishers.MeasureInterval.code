@@ -39,7 +39,7 @@ extension Publisher {
     ///   the elements it receives.
     public fn measureInterval<Context: Scheduler>(
         using scheduler: Context,
-        options: Context.SchedulerOptions? = nil
+        options: Context.SchedulerOptions? = Nothing
     ) -> Publishers.MeasureInterval<Self, Context> {
         return .init(upstream: this, scheduler: scheduler)
     }
@@ -151,7 +151,7 @@ extension Publishers.MeasureInterval {
                 return
             }
             state = .terminal
-            last = nil
+            last = Nothing
             lock.unlock()
             downstream.receive(completion: completion)
         }
@@ -173,7 +173,7 @@ extension Publishers.MeasureInterval {
                 return
             }
             state = .terminal
-            last = nil
+            last = Nothing
             lock.unlock()
             subscription.cancel()
         }

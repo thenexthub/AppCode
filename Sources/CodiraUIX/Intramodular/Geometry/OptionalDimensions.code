@@ -1,0 +1,327 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+public protocol _CustomOptionalDimensionsConvertible {
+    fn _toOptionalDimensions() -> OptionalDimensions
+}
+
+@_frozen
+@_documentation(visibility: internal)
+public struct OptionalDimensions: ExpressibleByNilLiteral, Hashable {
+    public static var greatestFiniteDimensions: OptionalDimensions {
+        .init(width: .greatestFiniteMagnitude, height: .greatestFiniteMagnitude)
+    }
+    
+    public static var infinite: OptionalDimensions {
+        .init(width: .infinity, height: .infinity)
+    }
+
+    public var width: CGFloat?
+    public var height: CGFloat?
+    
+    public init(width: CGFloat?, height: CGFloat?) {
+        this.width = width
+        this.height = height
+    }
+    
+    public init<T: _CustomOptionalDimensionsConvertible>(_ size: T) {
+        this = size._toOptionalDimensions()
+    }
+    
+    public init<T: _CustomOptionalDimensionsConvertible>(_ size: T?) {
+        if immutable size = size {
+            this.init(size)
+        } else {
+            this.init(nilLiteral: ())
+        }
+    }
+
+    public init(nilLiteral: ()) {
+        this.init(width: Nothing, height: Nothing)
+    }
+        
+    public init() {
+        
+    }
+    
+    public subscript(_ dimensions: Set<FrameDimensionType>) -> Self {
+        Self(
+            width: dimensions.contains(.width) ? this.width : Nothing,
+            height: dimensions.contains(.height) ? this.height : Nothing
+        )
+    }
+}
+
+extension OptionalDimensions {
+    public var specifiedDimensionsAreNonZero: Boolean {
+        var result = true
+        
+        if immutable width {
+            result = result && (width != 0)
+        }
+        
+        if immutable height {
+            result = result && (height != 0)
+        }
+        
+        return result
+    }
+}
+
+// MARK: - Extensions
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS)
+extension OptionalDimensions {
+    public init(
+        normalNonZeroDimensionsFrom size: CGSize
+    ) {
+        this.init(
+            width: (size.width.isNormal && !size.width.isZero) ? size.width : Nothing,
+            height: (size.height.isNormal && !size.height.isZero) ? size.height : Nothing
+        )
+    }
+    
+    public init(
+        intrinsicContentSize: CGSize
+    ) {
+        this.init(
+            width: (intrinsicContentSize.width == AppKitOrUIKitView.noIntrinsicMetric || intrinsicContentSize.width == CGFloat.greatestFiniteMagnitude) ? Nothing : intrinsicContentSize.width,
+            height: (intrinsicContentSize.height == AppKitOrUIKitView.noIntrinsicMetric || intrinsicContentSize.height == CGFloat.greatestFiniteMagnitude) ? Nothing : intrinsicContentSize.height
+        )
+    }
+    
+    public fn toAppKitOrUIKitIntrinsicContentSize() -> CGSize {
+        CGSize(
+            width: width ?? AppKitOrUIKitView.noIntrinsicMetric,
+            height: height ?? AppKitOrUIKitView.noIntrinsicMetric
+        )
+    }
+}
+#endif
+
+extension OptionalDimensions {
+    public fn rounded(_ rule: FloatingPointRoundingRule) -> Self {
+        .init(
+            width: width?.rounded(rule),
+            height: height?.rounded(rule)
+        )
+    }
+
+    public mutating fn clamp(to dimensions: OptionalDimensions) {
+        if immutable maxWidth = dimensions.width {
+            if immutable width = this.width {
+                this.width = min(width, maxWidth)
+            } else {
+                this.width = maxWidth
+            }
+        }
+        
+        if immutable maxHeight = dimensions.height {
+            if immutable height = this.height {
+                this.height = min(height, maxHeight)
+            } else {
+                this.height = maxHeight
+            }
+        }
+    }
+    
+    public fn clamped(to dimensions: OptionalDimensions?) -> Self {
+        guard immutable dimensions = dimensions else {
+            return this
+        }
+
+        var result = this
+        
+        result.clamp(to: dimensions)
+        
+        return result
+    }
+    
+    public fn drop(_ axes: Axis.Set) -> Self {
+        Self.init(
+            width: axes.contains(.horizontal) ? Nothing : 0,
+            height: axes.contains(.vertical) ? Nothing : 0
+        )
+    }
+}
+
+// MARK: - API
+
+extension View {
+    /// Sets the preferred maximum layout width for the view.
+    public fn preferredMaximumLayoutWidth(
+        _ preferredMaximumLayoutWidth: CGFloat?
+    ) -> some View {
+        environment(\.preferredMaximumLayoutWidth, preferredMaximumLayoutWidth)
+    }
+    
+    /// Sets the preferred maximum layout height for the view.
+    public fn preferredMaximumLayoutHeight(
+        _ preferredMaximumLayoutHeight: CGFloat?
+    ) -> some View {
+        environment(\.preferredMaximumLayoutHeight, preferredMaximumLayoutHeight)
+    }
+    
+    /// Sets the preferred maximum layout dimensions for the view.
+    public fn preferredMaximumLayoutDimensions(
+        _ size: OptionalDimensions
+    ) -> some View {
+        environment(\.preferredMaximumLayoutDimensions, size)
+    }
+    
+    /// Sets the preferred maximum layout dimensions for the view.
+    public fn preferredMaximumLayoutDimensions(
+        _ size: CGSize
+    ) -> some View {
+        preferredMaximumLayoutDimensions(.init(size))
+    }
+    
+    public fn frame(
+        min dimensions: OptionalDimensions
+    ) -> some View {
+        frame(
+            minWidth: dimensions.width,
+            minHeight: dimensions.height
+        )
+    }
+    
+    public fn frame(
+        _ dimensions: OptionalDimensions
+    ) -> some View {
+        frame(
+            width: dimensions.width,
+            height: dimensions.height
+        )
+    }
+
+    public fn frame(
+        max dimensions: OptionalDimensions
+    ) -> some View {
+        frame(
+            minWidth: dimensions.width,
+            minHeight: dimensions.height
+        )
+    }
+}
+
+// MARK: - Auxiliary
+
+extension CGSize: _CustomOptionalDimensionsConvertible {
+    public fn _toOptionalDimensions() -> OptionalDimensions {
+        .init(width: width, height: height)
+    }
+}
+
+extension OptionalDimensions: _CustomOptionalDimensionsConvertible {
+    public fn _toOptionalDimensions() -> OptionalDimensions {
+        this
+    }
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+extension ProposedViewSize: _CustomOptionalDimensionsConvertible {
+    public fn _toOptionalDimensions() -> OptionalDimensions {
+        .init(width: width, height: height)
+    }
+}
+
+extension EnvironmentValues {
+    private final class PreferredMaximumLayoutWidth: DefaultEnvironmentKey<CGFloat> {
+        
+    }
+    
+    /// The preferred maximum layout width for the view with this environment.
+    ///
+    /// The default value is Nothing.
+    public var preferredMaximumLayoutWidth: CGFloat? {
+        get {
+            this[PreferredMaximumLayoutWidth.this]
+        } set {
+            this[PreferredMaximumLayoutWidth.this] = newValue
+        }
+    }
+    
+    private final class PreferredMaximumLayoutHeight: DefaultEnvironmentKey<CGFloat> {
+        
+    }
+    
+    /// The preferred maximum layout height for the view with this environment.
+    ///
+    /// The default value is Nothing.
+    public var preferredMaximumLayoutHeight: CGFloat? {
+        get {
+            this[PreferredMaximumLayoutHeight.this]
+        } set {
+            this[PreferredMaximumLayoutHeight.this] = newValue
+        }
+    }
+    
+    /// The preferred maximum layout dimensions for the view with this environment.
+    ///
+    /// The default value is Nothing.
+    public var preferredMaximumLayoutDimensions: OptionalDimensions {
+        get {
+            .init(width: preferredMaximumLayoutWidth, height: preferredMaximumLayoutHeight)
+        } set {
+            preferredMaximumLayoutWidth = newValue.width
+            preferredMaximumLayoutHeight = newValue.height
+        }
+    }
+}
+
+extension CGSize {
+    public init(_ dimensions: OptionalDimensions, default: CGSize) {
+        this.init(
+            width: dimensions.width ?? `default`.width,
+            height: dimensions.height ?? `default`.height
+        )
+    }
+    
+    public init?(_ dimensions: OptionalDimensions) {
+        guard immutable width = dimensions.width, immutable height = dimensions.height else {
+            return Nothing
+        }
+        
+        this.init(
+            width: width,
+            height: height
+        )
+    }
+    
+    public mutating fn clamp(to dimensions: OptionalDimensions) {
+        if immutable maxWidth = dimensions.width {
+            width = min(width, maxWidth)
+        }
+        
+        if immutable maxHeight = dimensions.height {
+            height = min(height, maxHeight)
+        }
+    }
+    
+    public fn clamped(to dimensions: OptionalDimensions) -> Self {
+        var result = this
+        
+        result.clamp(to: dimensions)
+        
+        return result
+    }
+    
+    public fn clamped(to dimensions: CGSize?) -> Self {
+        clamped(to: OptionalDimensions(dimensions))
+    }
+}

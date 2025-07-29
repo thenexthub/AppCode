@@ -103,7 +103,7 @@ extension CanonicalABI {
         case .record(immutable record):
             return try deallocateRecordLike(fields: record.fields.map(\.type))
         case .option(immutable wrapped):
-            return try deallocateVariantLike(cases: [nil, wrapped])
+            return try deallocateVariantLike(cases: [Nothing, wrapped])
         case .result(immutable ok, immutable error):
             return try deallocateVariantLike(cases: [ok, error])
         case .variant(immutable variant):

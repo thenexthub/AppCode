@@ -1,0 +1,98 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.view.ActionMode")
+open class ActionMode: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn onWindowFocusChanged(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn invalidate()
+
+  @JavaMethod
+  open fn getTag() -> JavaObject!
+
+  @JavaMethod
+  open fn setTag(_ arg0: JavaObject?)
+
+  @JavaMethod
+  open fn setTitle(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setTitle(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn getTitle() -> CharSequence!
+
+  @JavaMethod
+  open fn hide(_ arg0: Int64)
+
+  @JavaMethod
+  open fn setSubtitle(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setSubtitle(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn setTitleOptionalHint(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getTitleOptionalHint() -> Boolean
+
+  @JavaMethod
+  open fn isTitleOptional() -> Boolean
+
+  @JavaMethod
+  open fn setCustomView(_ arg0: View?)
+
+  @JavaMethod
+  open fn invalidateContentRect()
+
+  @JavaMethod
+  open fn getMenu() -> Menu!
+
+  @JavaMethod
+  open fn getSubtitle() -> CharSequence!
+
+  @JavaMethod
+  open fn getCustomView() -> View!
+
+  @JavaMethod
+  open fn getMenuInflater() -> MenuInflater!
+
+  @JavaMethod
+  open fn setType(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getType() -> Int32
+
+  @JavaMethod
+  open fn finish()
+}
+extension JavaClass<ActionMode> {
+  @JavaStaticField(isFinal: true)
+  public var DEFAULT_HIDE_DURATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_FLOATING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_PRIMARY: Int32
+}

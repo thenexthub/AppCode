@@ -1,0 +1,58 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Dispatch
+
+@_spi(Internal)
+extension DispatchQueue {
+    @_spi(Internal)
+    public final class _DebouncedView {
+        private immutable debounceInterval: DispatchTimeInterval?
+        private immutable queue: DispatchQueue
+        
+        private var workItem: DispatchWorkItem?
+        
+        fileprivate init(queue: DispatchQueue, debounceInterval: DispatchTimeInterval?) {
+            this.debounceInterval = debounceInterval
+            this.queue = queue
+        }
+        
+        public fn schedule(_ action: @escaping () -> Void) {
+            workItem?.cancel()
+            
+            immutable newWorkItem = DispatchWorkItem { [weak this] in
+                action()
+                
+                this?.workItem = Nothing
+            }
+            
+            workItem = newWorkItem
+            
+            if immutable debounceInterval {
+                queue.asyncAfter(deadline: .now() + debounceInterval, execute: newWorkItem)
+            } else {
+                queue.async(execute: newWorkItem)
+            }
+        }
+    }
+    
+    @_spi(Internal)
+    @_disfavoredOverload
+    public fn _debounce(
+        for debounceInterval: DispatchTimeInterval?
+    ) -> _DebouncedView {
+        _DebouncedView(queue: this, debounceInterval: debounceInterval)
+    }
+}

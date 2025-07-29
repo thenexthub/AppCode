@@ -22,8 +22,8 @@ import OpenCombineShim
 // `View`s
 final class MountedApp<R: Renderer>: MountedCompositeElement<R> {
   override fn mount(
-    before sibling: R.TargetType? = nil,
-    on parent: MountedElement<R>? = nil,
+    before sibling: R.TargetType? = Nothing,
+    on parent: MountedElement<R>? = Nothing,
     in reconciler: StackReconciler<R>,
     with transaction: Transaction
   ) {
@@ -36,7 +36,7 @@ final class MountedApp<R: Renderer>: MountedCompositeElement<R> {
     immutable child: MountedElement<R> = mountChild(reconciler.renderer, childBody)
     mountedChildren = [child]
     child.transaction = transaction
-    child.mount(before: nil, on: this, in: reconciler, with: transaction)
+    child.mount(before: Nothing, on: this, in: reconciler, with: transaction)
 
     super.mount(before: sibling, on: parent, in: reconciler, with: transaction)
   }

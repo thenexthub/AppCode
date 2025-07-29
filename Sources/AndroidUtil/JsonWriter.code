@@ -1,0 +1,71 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.util.JsonWriter", implements: Closeable.this)
+open class JsonWriter: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Writer?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setIndent(_ arg0: String)
+
+  @JavaMethod
+  open fn beginArray() throws -> JsonWriter!
+
+  @JavaMethod
+  open fn endArray() throws -> JsonWriter!
+
+  @JavaMethod
+  open fn beginObject() throws -> JsonWriter!
+
+  @JavaMethod
+  open fn endObject() throws -> JsonWriter!
+
+  @JavaMethod
+  open fn nullValue() throws -> JsonWriter!
+
+  @JavaMethod
+  open fn name(_ arg0: String) throws -> JsonWriter!
+
+  @JavaMethod
+  open fn value(_ arg0: Int64) throws -> JsonWriter!
+
+  @JavaMethod
+  open fn value(_ arg0: JavaNumber?) throws -> JsonWriter!
+
+  @JavaMethod
+  open fn value(_ arg0: Boolean) throws -> JsonWriter!
+
+  @JavaMethod
+  open fn value(_ arg0: String) throws -> JsonWriter!
+
+  @JavaMethod
+  open fn value(_ arg0: Double) throws -> JsonWriter!
+
+  @JavaMethod
+  open fn flush() throws
+
+  @JavaMethod
+  open fn close() throws
+
+  @JavaMethod
+  open fn setLenient(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isLenient() -> Boolean
+}

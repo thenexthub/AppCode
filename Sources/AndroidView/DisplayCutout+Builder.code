@@ -1,0 +1,49 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidGraphics
+import JavaKit
+import JavaRuntime
+
+extension DisplayCutout {
+  @JavaClass("android.view.DisplayCutout$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setSafeInsets(_ arg0: Insets?) -> DisplayCutout.Builder!
+
+  @JavaMethod
+  open fn setWaterfallInsets(_ arg0: Insets?) -> DisplayCutout.Builder!
+
+  @JavaMethod
+  open fn setBoundingRectLeft(_ arg0: Rect?) -> DisplayCutout.Builder!
+
+  @JavaMethod
+  open fn setBoundingRectTop(_ arg0: Rect?) -> DisplayCutout.Builder!
+
+  @JavaMethod
+  open fn setBoundingRectRight(_ arg0: Rect?) -> DisplayCutout.Builder!
+
+  @JavaMethod
+  open fn setBoundingRectBottom(_ arg0: Rect?) -> DisplayCutout.Builder!
+
+  @JavaMethod
+  open fn setCutoutPath(_ arg0: Path?) -> DisplayCutout.Builder!
+
+  @JavaMethod
+  open fn build() -> DisplayCutout!
+  }
+}

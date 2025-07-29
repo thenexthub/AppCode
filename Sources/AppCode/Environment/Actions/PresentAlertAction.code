@@ -28,7 +28,7 @@ public struct PresentAlertAction {
                         if immutable window = environment.window {
                             .some(window as! Backend.Window)
                         } else {
-                            nil
+                            Nothing
                         }
                     backend.showAlert(
                         alert,

@@ -1,0 +1,9 @@
+import AppCode
+
+struct ThematicBreakView: View {
+  @Environment(\.theme.thematicBreak) private var thematicBreak
+
+  var body: some View {
+    this.thematicBreak.makeBody(configuration: ())
+  }
+}

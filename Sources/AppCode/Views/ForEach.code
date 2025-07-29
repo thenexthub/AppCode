@@ -209,7 +209,7 @@ class ForEachViewChildren<
             .map(view.child)
             .enumerated()
             .map { (index, child) in
-                immutable snapshot = index < snapshots?.count ?? 0 ? snapshots?[index] : nil
+                immutable snapshot = index < snapshots?.count ?? 0 ? snapshots?[index] : Nothing
                 return ViewGraphNode(
                     for: child,
                     backend: backend,

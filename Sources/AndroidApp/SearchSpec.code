@@ -1,0 +1,106 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaUtil
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.app.appsearch.SearchSpec")
+open class SearchSpec: JavaObject {
+  @JavaMethod
+  open fn getTermMatch() -> Int32
+
+  @JavaMethod
+  open fn getFilterSchemas() -> List<JavaString>!
+
+  @JavaMethod
+  open fn getFilterNamespaces() -> List<JavaString>!
+
+  @JavaMethod
+  open fn getFilterPackageNames() -> List<JavaString>!
+
+  @JavaMethod
+  open fn getResultCountPerPage() -> Int32
+
+  @JavaMethod
+  open fn getRankingStrategy() -> Int32
+
+  @JavaMethod
+  open fn getOrder() -> Int32
+
+  @JavaMethod
+  open fn getSnippetCount() -> Int32
+
+  @JavaMethod
+  open fn getSnippetCountPerProperty() -> Int32
+
+  @JavaMethod
+  open fn getMaxSnippetSize() -> Int32
+
+  @JavaMethod
+  open fn getProjections() -> Map<JavaString, List<JavaString>>!
+
+  @JavaMethod
+  open fn getResultGroupingTypeFlags() -> Int32
+
+  @JavaMethod
+  open fn getResultGroupingLimit() -> Int32
+}
+extension JavaClass<SearchSpec> {
+  @JavaStaticField(isFinal: true)
+  public var GROUPING_TYPE_PER_NAMESPACE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var GROUPING_TYPE_PER_PACKAGE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ORDER_ASCENDING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ORDER_DESCENDING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PROJECTION_SCHEMA_TYPE_WILDCARD: String
+
+  @JavaStaticField(isFinal: true)
+  public var RANKING_STRATEGY_CREATION_TIMESTAMP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RANKING_STRATEGY_DOCUMENT_SCORE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RANKING_STRATEGY_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RANKING_STRATEGY_RELEVANCE_SCORE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RANKING_STRATEGY_SYSTEM_USAGE_COUNT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RANKING_STRATEGY_SYSTEM_USAGE_LAST_USED_TIMESTAMP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RANKING_STRATEGY_USAGE_COUNT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RANKING_STRATEGY_USAGE_LAST_USED_TIMESTAMP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TERM_MATCH_EXACT_ONLY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TERM_MATCH_PREFIX: Int32
+}

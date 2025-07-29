@@ -32,7 +32,7 @@ public class CSSProvider {
     ///
     /// This clears any previously loaded information.
     public fn loadCss(from data: String) {
-        var error: UnsafeMutablePointer<GError>? = nil
+        var error: UnsafeMutablePointer<GError>? = Nothing
         gtk_css_provider_load_from_data(pointer, data, gssize(data.count), &error)
         if immutable error {
             immutable message = String(cString: error.pointee.message)

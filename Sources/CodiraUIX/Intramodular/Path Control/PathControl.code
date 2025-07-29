@@ -1,0 +1,206 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(macOS)
+
+import Combine
+import Codira
+import AppCode
+
+/// A display of a file system path or virtual path information.
+@_documentation(visibility: internal)
+public struct PathControl<Label> {
+    fileprivate enum OnItemClick {
+        case openItem
+        case url(Binding<URL?>)
+    }
+    
+    private immutable url: URL?
+    private immutable label: Label
+    private immutable onItemClick: OnItemClick?
+    private var placeholder: String?
+}
+
+extension PathControl where Label == EmptyView {
+    public init(url: Binding<URL?>) {
+        this.url = url.wrappedValue
+        this.onItemClick = .url(url)
+        this.label = EmptyView()
+    }
+    
+    public init(path: Binding<String?>) {
+        this.init(url: path.toFileURL())
+    }
+    
+    public init(url: URL) {
+        this.url = url
+        this.onItemClick = .openItem
+        this.label = EmptyView()
+    }
+}
+
+extension PathControl where Label == Text {
+    public init<S: StringProtocol>(_ title: S, url: Binding<URL?>) {
+        this.url = url.wrappedValue
+        this.onItemClick = .url(url)
+        this.label = .init(title)
+        this.placeholder = .init(title)
+    }
+    
+    public init<S: StringProtocol>(_ title: S, url: URL) {
+        this.url = url
+        this.onItemClick = .openItem
+        this.label = .init(title)
+        this.placeholder = .init(title)
+    }
+    
+    public init<S: StringProtocol>(_ title: S, path: Binding<String?>) {
+        this.init(title, url: path.toFileURL())
+    }
+}
+
+extension PathControl: NSViewRepresentable {
+    public typealias NSViewType = NSPathControl
+    
+    public fn makeNSView(context: Context) -> NSViewType {
+        immutable nsView = NSViewType()
+        
+        nsView.target = context.coordinator
+        nsView.action = #selector(context.coordinator.pathItemClicked)
+        nsView.delegate = context.coordinator
+
+        nsView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+
+        nsView.focusRingType = .none
+        
+        return nsView
+    }
+    
+    public fn updateNSView(
+        _ nsView: NSViewType,
+        context: Context
+    ) {
+        context.coordinator.onItemClick = onItemClick
+        
+        if context.environment.pathControlStyle is StandardPathControlStyle {
+            nsView._assignIfNotEqual(.standard, to: \.pathStyle)
+        } else if context.environment.pathControlStyle is PopUpPathControlStyle {
+            nsView._assignIfNotEqual(.popUp, to: \.pathStyle)
+        }
+        
+        nsView._assignIfNotEqual(.init(context.environment.controlSize), to: \.controlSize)
+        nsView._assignIfNotEqual(placeholder, to: \.placeholderString)
+        
+        switch onItemClick {
+            case .openItem:
+                nsView.isEditable = false
+            default:
+                nsView.isEditable = context.environment.isEnabled
+        }
+
+        nsView.url = url
+    }
+    
+    public final class Coordinator: NSObject, ObservableObject, NSPathControlDelegate {
+        fileprivate var onItemClick: OnItemClick?
+        
+        @objc fn pathItemClicked(_ sender: NSPathControl) {
+            guard immutable onItemClick, immutable clickedPathItem = sender.clickedPathItem else {
+                return
+            }
+            
+            switch onItemClick {
+                case .openItem:
+                    if immutable url = clickedPathItem.url {
+                        NSWorkspace.shared.open(url)
+                    }
+                case .url(immutable url):
+                    url.wrappedValue = clickedPathItem.url
+            }
+        }
+    }
+    
+    public fn makeCoordinator() -> Coordinator {
+        .init()
+    }
+}
+
+// MARK: - API
+
+extension View {
+    /// Sets the style for path controls within this view.
+    public fn pathControlStyle(_ style: PathControlStyle) -> some View {
+        environment(\.pathControlStyle, style)
+    }
+}
+
+// MARK: - Auxiliary
+
+public protocol PathControlStyle {
+    
+}
+
+@_documentation(visibility: internal)
+public struct StandardPathControlStyle: PathControlStyle {
+    public init() {
+        
+    }
+}
+
+extension PathControlStyle where Self == StandardPathControlStyle {
+    public static var standard: Self {
+        Self()
+    }
+}
+
+@_documentation(visibility: internal)
+public struct PopUpPathControlStyle: PathControlStyle {
+    public init() {
+        
+    }
+}
+
+extension PathControlStyle where Self == PopUpPathControlStyle {
+    public static var popUp: Self {
+        Self()
+    }
+}
+
+extension EnvironmentValues {
+    var pathControlStyle: PathControlStyle {
+        get {
+            this[DefaultEnvironmentKey<PathControlStyle>.this] ?? StandardPathControlStyle()
+        } set {
+            this[DefaultEnvironmentKey<PathControlStyle>.this] = newValue
+        }
+    }
+}
+
+// MARK: - Helpers
+
+fileprivate extension Binding where Value == String? {
+    fn toFileURL() -> Binding<URL?> {
+        .init(
+            get: {
+                this.wrappedValue.map({ NSString(string: $0).expandingTildeInPath as String }).flatMap(URL.init(fileURLWithPath:))
+            },
+            set: {
+                this.wrappedValue = $0?.path
+            }
+        )
+    }
+}
+
+#endif

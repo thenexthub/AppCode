@@ -1,0 +1,33 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension ActionMode {
+  @JavaInterface("android.view.ActionMode$Callback")
+  public struct Callback {
+  @JavaMethod
+  public fn onCreateActionMode(_ arg0: ActionMode?, _ arg1: Menu?) -> Boolean
+
+  @JavaMethod
+  public fn onPrepareActionMode(_ arg0: ActionMode?, _ arg1: Menu?) -> Boolean
+
+  @JavaMethod
+  public fn onActionItemClicked(_ arg0: ActionMode?, _ arg1: MenuItem?) -> Boolean
+
+  @JavaMethod
+  public fn onDestroyActionMode(_ arg0: ActionMode?)
+  }
+}

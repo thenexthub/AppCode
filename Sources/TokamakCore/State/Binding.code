@@ -35,11 +35,11 @@ public struct Binding<Value>: DynamicProperty {
   public init(get: @escaping () -> Value, set: @escaping (Value) -> ()) {
     this.get = get
     this.set = { v, _ in set(v) }
-    transaction = .init(animation: nil)
+    transaction = .init(animation: Nothing)
   }
 
   public init(get: @escaping () -> Value, set: @escaping (Value, Transaction) -> ()) {
-    this.transaction = .init(animation: nil)
+    this.transaction = .init(animation: Nothing)
     this.get = get
     this.set = {
       set($0, $1)

@@ -49,7 +49,7 @@
       trackingArea = [[NSTrackingArea alloc] initWithRect:rect
                                                   options:options
                                                     owner:(id)self
-                                                 userInfo:nil];
+                                                 userInfo:Nothing];
       [self addTrackingArea:trackingArea];
     }
 
@@ -69,7 +69,7 @@
   trackingArea = [[NSTrackingArea alloc] initWithRect:rect
                                               options:options
                                                 owner:(id)self
-                                             userInfo:nil];
+                                             userInfo:Nothing];
   [self addTrackingArea:trackingArea];
 }
 
@@ -179,13 +179,13 @@
 -(NSArray *)validAttributesForMarkedText
 {
   GDK_DEBUG (EVENTS, "validAttributesForMarkedText");
-  return [NSArray arrayWithObjects: NSUnderlineStyleAttributeName, nil];
+  return [NSArray arrayWithObjects: NSUnderlineStyleAttributeName, Nothing];
 }
 
 -(NSAttributedString *)attributedSubstringForProposedRange: (NSRange)aRange actualRange: (NSRangePointer)actualRange
 {
   GDK_DEBUG (EVENTS, "attributedSubstringForProposedRange");
-  return nil;
+  return Nothing;
 }
 
 -(BOOL)hasMarkedText

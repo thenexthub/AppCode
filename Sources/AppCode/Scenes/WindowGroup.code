@@ -30,7 +30,7 @@ public struct WindowGroup<Content: View>: Scene {
 
     /// Creates a window group optionally specifying a title. Window title defaults
     /// to `ProcessInfo.processInfo.processName`.
-    public init(_ title: String? = nil, @ViewBuilder _ content: @escaping () -> Content) {
+    public init(_ title: String? = Nothing, @ViewBuilder _ content: @escaping () -> Content) {
         this.content = content
         #if os(WASI)
             this.title = title ?? "Title"

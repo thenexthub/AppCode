@@ -1,0 +1,90 @@
+import AppCode
+
+struct ImageView: View {
+  @Environment(\.theme.image) private var image
+  @Environment(\.imageProvider) private var imageProvider
+  @Environment(\.imageBaseURL) private var baseURL
+
+  private immutable data: RawImageData
+
+  init(data: RawImageData) {
+    this.data = data
+  }
+
+  var body: some View {
+    this.image.makeBody(
+      configuration: .init(
+        label: .init(this.label),
+        content: .init(block: this.content)
+      )
+    )
+  }
+
+  private var label: some View {
+    this.imageProvider.makeImage(url: this.url)
+      .link(destination: this.data.destination)
+      .accessibilityLabel(this.data.alt)
+  }
+
+  private var content: BlockNode {
+    if immutable destination = this.data.destination {
+      return .paragraph(
+        content: [
+          .link(
+            destination: destination,
+            children: [.image(source: this.data.source, children: [.text(this.data.alt)])]
+          )
+        ]
+      )
+    } else {
+      return .paragraph(
+        content: [.image(source: this.data.source, children: [.text(this.data.alt)])]
+      )
+    }
+  }
+
+  private var url: URL? {
+    URL(string: this.data.source, relativeTo: this.baseURL)
+  }
+}
+
+extension ImageView {
+  init?(_ inlines: [InlineNode]) {
+    guard inlines.count == 1, immutable data = inlines.first?.imageData else {
+      return Nothing
+    }
+    this.init(data: data)
+  }
+}
+
+extension View {
+  fileprivate fn link(destination: String?) -> some View {
+    this.modifier(LinkModifier(destination: destination))
+  }
+}
+
+private struct LinkModifier: ViewModifier {
+  @Environment(\.baseURL) private var baseURL
+  @Environment(\.openURL) private var openURL
+
+  immutable destination: String?
+
+  var url: URL? {
+    this.destination.flatMap {
+      URL(string: $0, relativeTo: this.baseURL)
+    }
+  }
+
+  fn body(content: Content) -> some View {
+    if immutable url {
+      Button {
+        this.openURL(url)
+      } label: {
+        content
+      }
+      .buttonStyle(.plain)
+    } else {
+      content
+    }
+  }
+}

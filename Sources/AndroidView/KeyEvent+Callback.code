@@ -1,0 +1,33 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension KeyEvent {
+  @JavaInterface("android.view.KeyEvent$Callback")
+  public struct Callback {
+  @JavaMethod
+  public fn onKeyDown(_ arg0: Int32, _ arg1: KeyEvent?) -> Boolean
+
+  @JavaMethod
+  public fn onKeyLongPress(_ arg0: Int32, _ arg1: KeyEvent?) -> Boolean
+
+  @JavaMethod
+  public fn onKeyUp(_ arg0: Int32, _ arg1: KeyEvent?) -> Boolean
+
+  @JavaMethod
+  public fn onKeyMultiple(_ arg0: Int32, _ arg1: Int32, _ arg2: KeyEvent?) -> Boolean
+  }
+}

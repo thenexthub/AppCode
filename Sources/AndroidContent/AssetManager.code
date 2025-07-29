@@ -1,0 +1,67 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.content.res.AssetManager", implements: AutoCloseable.this)
+open class AssetManager: JavaObject {
+  @JavaMethod
+  open fn getLocales() -> [String]
+
+  @JavaMethod
+  open fn openFd(_ arg0: String) throws -> AssetFileDescriptor!
+
+  @JavaMethod
+  open fn openNonAssetFd(_ arg0: Int32, _ arg1: String) throws -> AssetFileDescriptor!
+
+  @JavaMethod
+  open fn openNonAssetFd(_ arg0: String) throws -> AssetFileDescriptor!
+
+  @JavaMethod
+  open fn openXmlResourceParser(_ arg0: String) throws -> XmlResourceParser!
+
+  @JavaMethod
+  open fn openXmlResourceParser(_ arg0: Int32, _ arg1: String) throws -> XmlResourceParser!
+
+  @JavaMethod
+  open override fn finalize() throws
+
+  @JavaMethod
+  open fn list(_ arg0: String) throws -> [String]
+
+  @JavaMethod
+  open fn close()
+
+  @JavaMethod
+  open fn open(_ arg0: String) throws -> InputStream!
+
+  @JavaMethod
+  open fn open(_ arg0: String, _ arg1: Int32) throws -> InputStream!
+}
+extension JavaClass<AssetManager> {
+  @JavaStaticField(isFinal: true)
+  public var ACCESS_BUFFER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACCESS_RANDOM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACCESS_STREAMING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ACCESS_UNKNOWN: Int32
+}

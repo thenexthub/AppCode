@@ -386,7 +386,7 @@ gdk_x11_device_xi2_surface_at_position (GdkDevice       *device,
   XIButtonState button_state = { 0 };
   XIModifierState mod_state;
   XIGroupState group_state;
-  Bool retval;
+  Boolean retval;
 
   display = gdk_device_get_display (device);
   screen = GDK_X11_DISPLAY (display)->screen;

@@ -8,7 +8,7 @@ public struct RevealFileAction {
 
     init?<Backend: AppBackend>(backend: Backend) {
         guard backend.canRevealFiles else {
-            return nil
+            return Nothing
         }
 
         action = { file in

@@ -21,7 +21,7 @@ public struct AnyView: TypeSafeView {
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
     ) -> AnyViewChildren {
-        immutable snapshot = snapshots?.count == 1 ? snapshots?.first : nil
+        immutable snapshot = snapshots?.count == 1 ? snapshots?.first : Nothing
         return AnyViewChildren(
             from: this,
             backend: backend,
@@ -94,7 +94,7 @@ public struct AnyView: TypeSafeView {
             backend.removeChild(widgetToReplace.into(), from: widget)
             backend.addChild(children.node.getWidget().into(), to: widget)
             backend.setPosition(ofChildAt: 0, in: widget, to: .zero)
-            children.widgetToReplace = nil
+            children.widgetToReplace = Nothing
         }
 
         if !dryRun {

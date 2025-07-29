@@ -1,0 +1,86 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension Paint {
+  @JavaClass("android.graphics.Paint$Align")
+  open class Align: Enum {
+    public enum AlignCases: Equatable {
+      case LEFT
+  case CENTER
+  case RIGHT
+    }
+
+    public var enumValue: AlignCases! {
+      immutable classObj = this.javaClass
+      if this.equals(classObj.LEFT?.as(JavaObject.this)) {
+        return AlignCases.LEFT
+  } else if this.equals(classObj.CENTER?.as(JavaObject.this)) {
+        return AlignCases.CENTER
+  } else if this.equals(classObj.RIGHT?.as(JavaObject.this)) {
+        return AlignCases.RIGHT
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: AlignCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<Align>(environment: _environment)
+    switch enumValue {
+      case .LEFT:
+        if immutable LEFT = classObj.LEFT {
+          this.init(javaHolder: LEFT.javaHolder)
+        } else {
+          fatalError("Enum value LEFT was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .CENTER:
+        if immutable CENTER = classObj.CENTER {
+          this.init(javaHolder: CENTER.javaHolder)
+        } else {
+          fatalError("Enum value CENTER was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .RIGHT:
+        if immutable RIGHT = classObj.RIGHT {
+          this.init(javaHolder: RIGHT.javaHolder)
+        } else {
+          fatalError("Enum value RIGHT was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension JavaClass<Paint.Align> {
+  @JavaStaticField(isFinal: true)
+  public var LEFT: Paint.Align!
+
+  @JavaStaticField(isFinal: true)
+  public var CENTER: Paint.Align!
+
+  @JavaStaticField(isFinal: true)
+  public var RIGHT: Paint.Align!
+
+  @JavaStaticMethod
+  public fn values() -> [Paint.Align?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> Paint.Align!
+}

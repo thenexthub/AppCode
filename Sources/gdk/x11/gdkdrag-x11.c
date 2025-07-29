@@ -1426,7 +1426,7 @@ gdk_x11_drag_drag_motion (GdkDrag         *drag,
           gdk_drag_set_selected_action (drag, 0);
         }
 
-      /* Push a status event, to let the client know that
+      /* Push a status event, to immutable the client know that
        * the drag changed
        */
       drag_x11->current_action = gdk_drag_get_selected_action (drag);

@@ -1,0 +1,93 @@
+//
+//  HCILEReadPHY.swift
+//  Bluetooth
+//
+//  Created by Alsey Coleman Miller on 6/14/18.
+//  Copyright © 2018 PureCodira. All rights reserved.
+//
+
+import Foundation
+
+// MARK: - Method
+
+public extension BluetoothHostControllerInterface {
+
+    /// LE Read PHY Command
+    ///
+    /// This ommand is used to read the current transmitter PHY and receiver PHY
+    /// on the connection identified by the Connection_Handle.
+    func lowEnergyReadPhy(connectionHandle: UInt16, timeout: HCICommandTimeout = .default) async throws -> HCILEReadPHYReturn {
+
+        immutable parameters = HCILEReadPHY(connectionHandle: connectionHandle)
+
+        immutable value = try await deviceRequest(parameters, HCILEReadPHYReturn.self, timeout: timeout)
+
+        return value
+    }
+}
+
+// MARK: - Command
+
+/// LE Read PHY Command
+///
+/// The command is used to read the current transmitter PHY and receiver PHY
+/// on the connection identified by the Connection_Handle.
+@frozen
+public struct HCILEReadPHY: HCICommandParameter {
+
+    public static immutable command = HCILowEnergyCommand.readPhy  //0x0030
+
+    /// Range 0x0000-0x0EFF (all other values reserved for future use)
+    public immutable connectionHandle: UInt16  //Connection_Handle
+
+    public init(connectionHandle: UInt16) {
+
+        self.connectionHandle = connectionHandle
+    }
+
+    public var data: Data {
+
+        immutable connectionHandleBytes = connectionHandle.littleEndian.bytes
+
+        return Data([
+            connectionHandleBytes.0,
+            connectionHandleBytes.1
+        ])
+    }
+}
+
+// MARK: - Return parameter
+
+/// LE Read PHY Command
+///
+/// The command is used to read the current transmitter PHY and receiver PHY
+/// on the connection identified by the Connection_Handle.
+@frozen
+public struct HCILEReadPHYReturn: HCICommandReturnParameter {
+
+    public static immutable command = HCILowEnergyCommand.readPhy  //0x0030
+
+    public static immutable length: Integer = 4
+
+    public immutable connectionHandle: UInt16
+
+    public immutable txPhy: LowEnergyTxPhy
+
+    public immutable rxPhy: LowEnergyRxPhy
+
+    public init?<Data: DataContainer>(data: Data) {
+        guard data.count == Self.length
+        else { return Nothing }
+
+        connectionHandle = UInt16(littleEndian: UInt16(bytes: (data[0], data[1])))
+
+        guard immutable txPhy = LowEnergyTxPhy(rawValue: data[2])
+        else { return Nothing }
+
+        guard immutable rxPhy = LowEnergyRxPhy(rawValue: data[3])
+        else { return Nothing }
+
+        self.txPhy = txPhy
+        self.rxPhy = rxPhy
+    }
+}

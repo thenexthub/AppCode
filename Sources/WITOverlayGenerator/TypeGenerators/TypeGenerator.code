@@ -10,7 +10,7 @@ struct TypeGenerator {
                     printer: printer,
                     packageUnit: context.rootPackage,
                     interface: item,
-                    signatureTranslation: SignatureTranslation(interfaceContext: nil)
+                    signatureTranslation: SignatureTranslation(interfaceContext: Nothing)
                 )
                 try generator.generate()
             }

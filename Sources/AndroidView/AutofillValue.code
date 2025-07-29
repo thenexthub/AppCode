@@ -1,0 +1,81 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.view.autofill.AutofillValue", implements: Parcelable.this)
+open class AutofillValue: JavaObject {
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn getTextValue() -> CharSequence!
+
+  @JavaMethod
+  open fn getToggleValue() -> Boolean
+
+  @JavaMethod
+  open fn isToggle() -> Boolean
+
+  @JavaMethod
+  open fn getListValue() -> Int32
+
+  @JavaMethod
+  open fn isList() -> Boolean
+
+  @JavaMethod
+  open fn getDateValue() -> Int64
+
+  @JavaMethod
+  open fn isDate() -> Boolean
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+
+  @JavaMethod
+  open fn isText() -> Boolean
+}
+extension JavaClass<AutofillValue> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<AutofillValue>!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+
+  @JavaStaticMethod
+  public fn forText(_ arg0: CharSequence?) -> AutofillValue!
+
+  @JavaStaticMethod
+  public fn forToggle(_ arg0: Boolean) -> AutofillValue!
+
+  @JavaStaticMethod
+  public fn forList(_ arg0: Int32) -> AutofillValue!
+
+  @JavaStaticMethod
+  public fn forDate(_ arg0: Int64) -> AutofillValue!
+}

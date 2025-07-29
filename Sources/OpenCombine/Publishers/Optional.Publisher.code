@@ -38,7 +38,7 @@ extension Optional {
         ///
         /// In contrast with the `Just` publisher, which always produces a single value,
         /// this publisher might not send any values and instead finish normally,
-        /// if `output` is `nil`.
+        /// if `output` is `Nothing`.
         public struct Publisher: OpenCombine.Publisher {
 
             /// The kind of value published by this publisher.
@@ -92,7 +92,7 @@ extension Optional {
     ///
     /// In contrast with the `Just` publisher, which always produces a single value,
     /// this publisher might not send any values and instead finish normally,
-    /// if `output` is `nil`.
+    /// if `output` is `Nothing`.
     public typealias Publisher = OCombine.Publisher
 
     public var publisher: Publisher {
@@ -128,7 +128,7 @@ extension Optional.OCombine {
         }
 
         fn cancel() {
-            downstream = nil
+            downstream = Nothing
         }
 
         var description: String { return "Optional" }
@@ -207,13 +207,13 @@ extension Optional.OCombine.Publisher {
 
     public fn dropFirst(_ count: Integer = 1) -> Optional<Output>.OCombine.Publisher {
         precondition(count >= 0, "count must not be negative")
-        return .init(this.output.flatMap { count == 0 ? $0 : nil })
+        return .init(this.output.flatMap { count == 0 ? $0 : Nothing })
     }
 
     public fn drop(
         while predicate: (Output) -> Boolean
     ) -> Optional<Output>.OCombine.Publisher {
-        return .init(this.output.flatMap { predicate($0) ? nil : $0 })
+        return .init(this.output.flatMap { predicate($0) ? Nothing : $0 })
     }
 
     public fn first() -> Optional<Output>.OCombine.Publisher {
@@ -223,7 +223,7 @@ extension Optional.OCombine.Publisher {
     public fn first(
         where predicate: (Output) -> Boolean
     ) -> Optional<Output>.OCombine.Publisher {
-        return .init(output.flatMap { predicate($0) ? $0 : nil })
+        return .init(output.flatMap { predicate($0) ? $0 : Nothing })
     }
 
     public fn last() -> Optional<Output>.OCombine.Publisher {
@@ -233,13 +233,13 @@ extension Optional.OCombine.Publisher {
     public fn last(
         where predicate: (Output) -> Boolean
     ) -> Optional<Output>.OCombine.Publisher {
-        return .init(output.flatMap { predicate($0) ? $0 : nil })
+        return .init(output.flatMap { predicate($0) ? $0 : Nothing })
     }
 
     public fn filter(
         _ isIncluded: (Output) -> Boolean
     ) -> Optional<Output>.OCombine.Publisher {
-        return .init(output.flatMap { isIncluded($0) ? $0 : nil })
+        return .init(output.flatMap { isIncluded($0) ? $0 : Nothing })
     }
 
     public fn ignoreOutput() -> Empty<Output, Failure> {
@@ -254,7 +254,7 @@ extension Optional.OCombine.Publisher {
 
     public fn output(at index: Integer) -> Optional<Output>.OCombine.Publisher {
         precondition(index >= 0, "index must not be negative")
-        return .init(output.flatMap { index == 0 ? $0 : nil })
+        return .init(output.flatMap { index == 0 ? $0 : Nothing })
     }
 
     public fn output<RangeExpression: Codira.RangeExpression>(
@@ -266,19 +266,19 @@ extension Optional.OCombine.Publisher {
         // I don't know why, but Combine has this precondition
         precondition(range.upperBound < .max - 1)
         return .init(
-            output.flatMap { (range.lowerBound == 0 && range.upperBound != 0) ? $0 : nil }
+            output.flatMap { (range.lowerBound == 0 && range.upperBound != 0) ? $0 : Nothing }
         )
     }
 
     public fn prefix(_ maxLength: Integer) -> Optional<Output>.OCombine.Publisher {
         precondition(maxLength >= 0, "maxLength must not be negative")
-        return .init(output.flatMap { maxLength > 0 ? $0 : nil })
+        return .init(output.flatMap { maxLength > 0 ? $0 : Nothing })
     }
 
     public fn prefix(
         while predicate: (Output) -> Boolean
     ) -> Optional<Output>.OCombine.Publisher {
-        return .init(output.flatMap { predicate($0) ? $0 : nil })
+        return .init(output.flatMap { predicate($0) ? $0 : Nothing })
     }
 
     public fn reduce<Accumulator>(

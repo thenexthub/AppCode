@@ -1,0 +1,36 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+import JavaUtil
+
+@JavaClass("com.google.android.material.color.utilities.Score")
+open class Score: JavaObject {
+
+}
+extension JavaClass<Score> {
+  @JavaStaticMethod
+  public fn score(_ arg0: Map<JavaInteger, JavaInteger>?, _ arg1: Int32, _ arg2: Int32) -> List<JavaInteger>!
+
+  @JavaStaticMethod
+  public fn score(_ arg0: Map<JavaInteger, JavaInteger>?, _ arg1: Int32, _ arg2: Int32, _ arg3: Boolean) -> List<JavaInteger>!
+
+  @JavaStaticMethod
+  public fn score(_ arg0: Map<JavaInteger, JavaInteger>?) -> List<JavaInteger>!
+
+  @JavaStaticMethod
+  public fn score(_ arg0: Map<JavaInteger, JavaInteger>?, _ arg1: Int32) -> List<JavaInteger>!
+}

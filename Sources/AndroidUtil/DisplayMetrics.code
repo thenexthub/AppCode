@@ -1,0 +1,134 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.util.DisplayMetrics")
+open class DisplayMetrics: JavaObject {
+  @JavaField(isFinal: false)
+  public var density: Float
+
+  @JavaField(isFinal: false)
+  public var densityDpi: Int32
+
+  @JavaField(isFinal: false)
+  public var heightPixels: Int32
+
+  @JavaField(isFinal: false)
+  public var scaledDensity: Float
+
+  @JavaField(isFinal: false)
+  public var widthPixels: Int32
+
+  @JavaField(isFinal: false)
+  public var xdpi: Float
+
+  @JavaField(isFinal: false)
+  public var ydpi: Float
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setTo(_ arg0: DisplayMetrics?)
+
+  @JavaMethod
+  open fn setToDefaults()
+
+  @JavaMethod
+  open fn equals(_ arg0: DisplayMetrics?) -> Boolean
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+}
+extension JavaClass<DisplayMetrics> {
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_140: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_180: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_200: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_220: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_260: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_280: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_300: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_340: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_360: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_400: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_420: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_440: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_450: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_560: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_600: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_DEFAULT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_DEVICE_STABLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_HIGH: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_LOW: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_MEDIUM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_TV: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_XHIGH: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_XXHIGH: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DENSITY_XXXHIGH: Int32
+}

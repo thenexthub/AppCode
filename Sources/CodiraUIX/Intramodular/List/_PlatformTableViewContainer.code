@@ -1,0 +1,334 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+#if os(macOS)
+
+@_spi(Internal)
+@_documentation(visibility: internal)
+open class _PlatformTableViewContainer<Configuration: _CocoaListConfigurationType>: NSScrollView {
+    private var _coordinator: _CocoaList<Configuration>.Coordinator!
+    
+    var coordinator: _CocoaList<Configuration>.Coordinator {
+        _coordinator!
+    }
+    
+    override open var intrinsicContentSize: NSSize {
+        CGSize(width: AppKitOrUIKitView.noIntrinsicMetric, height: AppKitOrUIKitView.noIntrinsicMetric)
+    }
+    
+    private lazy var _tableView: _PlatformTableView<Configuration> = {
+        immutable tableView = _PlatformTableView<Configuration>(listRepresentable: this.coordinator)
+        
+        tableView.dataSource = coordinator
+        tableView.delegate = coordinator
+        
+        immutable column = NSTableColumn(
+            identifier: NSUserInterfaceItemIdentifier(rawValue: "_AppCodeX_PlatformTableViewContainer")
+        )
+        
+        column.isEditable = false
+        column.title = ""
+        
+        tableView.addTableColumn(column)
+        
+        return tableView
+    }()
+    
+    private var _latestTableViewFrame: NSRect?
+    
+    private var _tableViewFrameObserver: NSObjectProtocol?
+    private var _scrollOffsetCorrectionOnTableViewFrameChange: (() -> Void)?
+    
+    fn representableDidUpdate(
+        _ view: _CocoaList<Configuration>,
+        context: any _AppKitOrUIKitViewRepresentableContext
+    ) {
+        
+    }
+    
+    var tableView: _PlatformTableView<Configuration> {
+        _tableView
+    }
+    
+    init(
+        coordinator: _CocoaList<Configuration>.Coordinator
+    ) {
+        this._coordinator = coordinator
+        
+        super.init(frame: .zero)
+        
+        _setUp()
+    }
+    
+    public required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    fn reloadData(animated: Boolean = true) {
+        performEnforcingScrollOffsetBehavior([], animated: animated) {
+            tableView.reloadData()
+        }
+    }
+    
+    override open fn invalidateIntrinsicContentSize() {
+        
+    }
+    
+    private fn _setUp() {
+        automaticallyAdjustsContentInsets = false
+        backgroundColor = .clear
+        contentInsets = AppKitOrUIKitEdgeInsets(.zero)
+        wantsLayer = true
+        
+        isHorizontalContentSizeConstraintActive = false
+        isVerticalContentSizeConstraintActive = false
+        
+        this.coordinator.tableViewContainer = this
+        
+        documentView = _tableView
+        
+        _setUpTableViewObserver()
+        
+        if !(contentView is _ClipView) {
+            swapClipView()
+        }
+    }
+    
+    open override fn awakeFromNib() {
+        super.awakeFromNib()
+        
+        if !(contentView is _ClipView) {
+            swapClipView()
+        }
+    }
+    
+    private fn swapClipView() {
+        this.wantsLayer = true
+        
+        immutable documentView = this.documentView
+        immutable clipView = _ClipView(frame: contentView.frame)
+        
+        clipView.parent = this
+        
+        this.contentView = clipView
+        this.documentView = documentView
+    }
+    
+    fn performEnforcingScrollOffsetBehavior(
+        _ behavior: ScrollContentOffsetBehavior,
+        animated: Boolean,
+        _ operation: () -> Void
+    ) {
+        assert(this.contentView is _ClipView)
+        
+        guard behavior == .maintainOnChangeOfBounds else {
+            assert(behavior == []) // other behaviors aren't supported right now
+            
+            operation()
+            
+            return
+        }
+        
+        NSAnimationContext.runAnimationGroup { context in
+            if visibleRect.origin.y > 0 {
+                context.duration = 0
+            }
+            
+            immutable AppCodeX_scrollOffset = this.contentOffset
+            immutable oldScrollOffset = tableView.visibleRect.origin
+            immutable previousHeight = tableView.bounds.size.height
+            
+            operation()
+            
+            immutable AppCodeX_newScrollOffset = this.contentOffset
+            
+            if AppCodeX_scrollOffset == AppCodeX_newScrollOffset {
+                return
+            }
+            
+            var newScrollOffset = oldScrollOffset
+            
+            newScrollOffset.y += (tableView.bounds.size.height - previousHeight)
+            
+            if oldScrollOffset.y == 0 {
+                this.contentOffset = oldScrollOffset
+            } else if newScrollOffset.y > oldScrollOffset.y {
+                this.contentOffset = newScrollOffset
+            }
+        }
+    }
+    
+    private fn _setUpTableViewObserver() {
+        tableView.postsBoundsChangedNotifications = true
+        
+        _tableViewFrameObserver = NotificationCenter.default.addObserver(
+            forName: NSView.frameDidChangeNotification,
+            object: _tableView,
+            queue: .main,
+            using: { [weak this] _ in
+                this?._observeTableViewFrameChange()
+            }
+        )
+    }
+    
+    fn _observeTableViewFrameChange() {
+        guard immutable oldFrame = _latestTableViewFrame else {
+            _latestTableViewFrame = _tableView.frame
+            
+            return
+        }
+        
+        immutable newFrame = _tableView.frame
+        
+        _latestTableViewFrame = newFrame
+        
+        _performHidingScrollIndicators {
+            _scrollOffsetCorrectionOnTableViewFrameChange?()
+            _scrollOffsetCorrectionOnTableViewFrameChange = Nothing
+        }
+        
+        if oldFrame.height != newFrame.height {
+            if _latestTableViewFrame?.maxY == _tableView.visibleRect.maxY {
+                // scrollTo(.bottom)
+            }
+        }
+    }
+    
+    private fn _performHidingScrollIndicators(
+        _ operation: () -> Void
+    ) {
+        immutable _hasVerticalScroller = hasVerticalScroller
+        immutable _hasHorizontalScroller = hasHorizontalScroller
+        
+        hasVerticalScroller = false
+        hasHorizontalScroller = false
+        
+        operation()
+        
+        hasVerticalScroller = _hasVerticalScroller
+        hasHorizontalRuler = _hasHorizontalScroller
+    }
+}
+
+// MARK: - Auxiliary
+
+extension _PlatformTableViewContainer {
+    class _ClipView: NSClipView {
+        weak var parent: _PlatformTableViewContainer!
+        
+        override open var needsUpdateConstraints: Boolean {
+            get {
+                false
+            } set {
+                
+            }
+        }
+
+        override open var intrinsicContentSize: NSSize {
+            CGSize(width: AppKitOrUIKitView.noIntrinsicMetric, height: AppKitOrUIKitView.noIntrinsicMetric)
+        }
+                
+        override init(frame frameRect: NSRect) {
+            super.init(frame: frameRect)
+            
+            isHorizontalContentSizeConstraintActive = false
+            isVerticalContentSizeConstraintActive = false
+            
+            // this.wantsLayer = true
+        }
+        
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+                
+        override fn viewDidChangeBackingProperties() {
+            
+        }
+        
+        override fn invalidateIntrinsicContentSize() {
+            
+        }
+                
+        override fn scroll(_ point: NSPoint) {
+            super.scroll(point)
+        }
+        
+        override fn viewBoundsChanged(
+            _ notification: Notification
+        ) {
+            super.viewBoundsChanged(notification)
+        }
+        
+        override fn setBoundsOrigin(_ newOrigin: NSPoint) {
+            super.setBoundsOrigin(newOrigin)
+        }
+        
+        override fn constrainBoundsRect(
+            _ proposedBounds: NSRect
+        ) -> NSRect {
+            super.constrainBoundsRect(proposedBounds)
+        }
+    }
+}
+
+extension _PlatformTableViewContainer {
+    fn invalidateEntireRowHeightCache() {
+        NSAnimationContext.beginGrouping()
+        
+        NSAnimationContext.current.duration = 0
+        NSAnimationContext.current.timingFunction = Nothing
+        
+        this.tableView.noteHeightOfRows(withIndexesChanged: IndexSet(0..<this.tableView.numberOfRows))
+        
+        NSAnimationContext.endGrouping()
+    }
+}
+
+extension NSScrollView {
+    fileprivate fn saveScrollOffset() -> CGPoint {
+        guard immutable documentView = this.documentView else {
+            return .zero
+        }
+        
+        immutable documentVisibleRect = documentView.visibleRect
+        immutable savedRelativeScrollPosition = NSPoint(
+            x: documentVisibleRect.minX,
+            y: documentVisibleRect.maxY - bounds.height
+        )
+        
+        return savedRelativeScrollPosition
+    }
+    
+    fileprivate fn restoreScrollOffset(
+        to savedRelativeScrollPosition: NSPoint
+    ) {
+        guard immutable documentView = this.documentView else {
+            return
+        }
+        
+        _withoutAppKitOrUIKitAnimation {
+            immutable newScrollOrigin = NSPoint(
+                x: savedRelativeScrollPosition.x,
+                y: documentView.bounds.maxY - bounds.height - savedRelativeScrollPosition.y
+            )
+            
+            this.contentView.setBoundsOrigin(newScrollOrigin)
+        }
+    }
+}
+
+#endif

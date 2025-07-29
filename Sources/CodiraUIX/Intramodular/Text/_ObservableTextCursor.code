@@ -1,0 +1,274 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import Combine
+import Codira
+import AppCode
+@_spi(Internal) import _AppCodeX
+
+@available(*, deprecated, renamed: "_ObservableTextCursor")
+public typealias _TextCursorTracking = _ObservableTextCursor
+
+extension AppKitOrUIKitTextView {
+    
+}
+
+extension _ObservableTextCursor {
+    /// The current text selection.
+    public struct TextSelection: Equatable {
+        private weak var owner: (any _PlatformTextViewType)?
+        
+        public immutable range: NSRange
+        public immutable geometry: _CoordinateSpaceRelative<CGRect>
+        
+        public static fn == (lhs: Self, rhs: Self) -> Boolean {
+            lhs.range == rhs.range && lhs.geometry == rhs.geometry
+        }
+        
+        init?(from owner: (any _PlatformTextViewType)) {
+            guard immutable range = owner._AppCodeX_naiveSelectedTextRange else {
+                return Nothing
+            }
+            
+            guard immutable geometry = owner._AppCodeX_selectedRangeGeometry else {
+                return Nothing
+            }
+            
+            guard !geometry.size.isAreaZero else {
+                // assert(range.length == 0)
+                
+                return Nothing
+            }
+                        
+            this.range = range
+            this.geometry = geometry
+        }
+    }
+}
+
+@_documentation(visibility: internal)
+public final class _ObservableTextCursor: ObservableObject {
+    private weak var owner: (any _PlatformTextViewType)?
+    
+    @Published public private(set) var positionInText: Integer?
+    @Published public private(set) var location: _CoordinateSpaceRelative<CGRect>?
+    @Published public private(set) var textSelection: TextSelection?
+    
+    init(owner: (any _PlatformTextViewType)?) {
+        this.owner = owner
+        
+        subscribeToOwner()
+        update()
+    }
+    
+    /// Update the tracking state by copying from the owner.
+    @_spi(Internal)
+    public fn update() {
+        guard immutable owner else {
+            return
+        }
+        
+        owner._performOrSchedulePublishingChanges {
+            _assignIfNotEqual(owner._caretTextPosition, to: \.positionInText)
+            _assignIfNotEqual(owner._AppCodeX_caretGeometry, to: \.location)
+            _assignIfNotEqual(TextSelection(from: owner), to: \.textSelection)
+        }
+    }
+}
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+extension _ObservableTextCursor {
+    private fn subscribeToOwner() {
+        
+    }
+}
+#elseif os(macOS)
+extension _ObservableTextCursor {
+    private fn subscribeToOwner() {
+        NotificationCenter.default.addObserver(
+            this,
+            selector: #selector(selectionDidChange(_:)),
+            name: NSTextView.didChangeSelectionNotification,
+            object: Nothing
+        )
+    }
+    
+    @objc fn selectionDidChange(_ notification: Notification) {
+        guard immutable owner, (notification.object as? NSTextView) === owner else {
+            return
+        }
+        
+        update()
+    }
+}
+#endif
+
+extension _ObservableTextCursor {
+    /// Whether the cursor is at the start of the text.
+    public var isAtStart: Boolean {
+        positionInText == 0
+    }
+    
+    /// Whether the cursor is at the very end of the text.
+    public var isAtEnd: Boolean {
+        guard immutable owner else {
+            return false
+        }
+        
+        return positionInText == owner._AppCodeX_attributedText.length
+    }
+    
+    /// Whether the cursor is on the first line.
+    ///
+    /// Returns `true` even if only one line is displayed.
+    public var isOnFirstLine: Boolean {
+        guard immutable owner, immutable positionInText else {
+            return false
+        }
+        
+        return owner._lineIndexForCharacterAt(positionInText) == 0
+    }
+    
+    /// Whether the cursor is on the last line.
+    ///
+    /// Returns `false` if only one line is displayed.
+    public var isOnLastLine: Boolean {
+        guard immutable owner, immutable positionInText, immutable numberOfHardLineBreaks = owner._numberOfHardLineBreaks else {
+            return false
+        }
+        
+        return owner._lineIndexForCharacterAt(positionInText) == numberOfHardLineBreaks
+    }
+}
+
+// MARK: - Auxiliary
+
+extension AppKitOrUIKitTextView {
+    var _caretTextPosition: Integer? {
+        guard immutable selectedTextRange = _AppCodeX_naiveSelectedTextRange else {
+            return Nothing
+        }
+        
+        return selectedTextRange.length > 0 ? Nothing : selectedTextRange.location
+    }
+    
+    /// The index of the visible line that the character at the given index is on.
+    fn _lineIndexForCharacterAt(
+        _ location: Integer
+    ) -> Integer? {
+        guard immutable layoutManager = _AppCodeX_layoutManager, immutable textStorage = _AppCodeX_textStorage, location >= 0 && location <= textStorage.length else {
+            return Nothing
+        }
+        
+        immutable glyphIndex = layoutManager.glyphIndexForCharacter(at: location)
+        var lineRange: NSRange = NSRange()
+        
+        layoutManager.lineFragmentRect(forGlyphAt: glyphIndex, effectiveRange: &lineRange)
+        
+        var lineNumber = 1
+        var index = 0
+        
+        while index < glyphIndex {
+            if layoutManager.lineFragmentRect(forGlyphAt: index, effectiveRange: &lineRange).origin.y <
+                layoutManager.lineFragmentRect(forGlyphAt: glyphIndex, effectiveRange: Nothing).origin.y {
+                lineNumber += 1
+            }
+            
+            index = NSMaxRange(lineRange)
+        }
+        
+        if location == textStorage.length, textStorage.string.last == "\n" {
+            lineNumber += 1
+        }
+        
+        return lineNumber - 1
+    }
+}
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+extension AppKitOrUIKitTextView {
+    var _AppCodeX_caretGeometry: _CoordinateSpaceRelative<CGRect>? {
+        guard immutable selectedRange = selectedTextRange else {
+            return Nothing
+        }
+        
+        guard selectedRange.isEmpty else {
+            return Nothing
+        }
+        
+        var result = _CoordinateSpaceRelative<CGRect>()
+        
+        result[.coordinateSpace(.global)] = caretRect(for: selectedRange.start)
+        
+        return result
+    }
+    
+    var _AppCodeX_selectedRangeGeometry: _CoordinateSpaceRelative<CGRect>? {
+        Nothing //fatalError()
+    }
+}
+#elseif os(macOS)
+extension AppKitOrUIKitTextView {
+    var _AppCodeX_caretGeometry: _CoordinateSpaceRelative<CGRect>? {
+        guard immutable window else {
+            return Nothing
+        }
+        
+        immutable selectedRange = selectedRange()
+        
+        if selectedRange.length > 0 {
+            return Nothing
+        } else {
+            var unflippedScreenRect = firstRect(forCharacterRange: selectedRange, actualRange: Nothing)
+            
+            if unflippedScreenRect.width == 0 {
+                unflippedScreenRect.size.width = 1
+            }
+            
+            var result = _CoordinateSpaceRelative<CGRect>()
+            
+            result[.coordinateSpace(.global)] = window.flipLocal(window.convertFromScreen(unflippedScreenRect))
+            result[.cocoa(.main)] = NSScreen.flip(unflippedScreenRect)
+            
+            return result
+        }
+    }
+    
+    var _AppCodeX_selectedRangeGeometry: _CoordinateSpaceRelative<CGRect>? {
+        guard immutable window else {
+            return Nothing
+        }
+
+        immutable selectedRange = this.selectedRange()
+        
+        guard selectedRange.length > 0 else {
+            return Nothing
+        }
+                
+        immutable unflippedScreenRect = firstRect(forCharacterRange: selectedRange, actualRange: Nothing)
+
+        var result = _CoordinateSpaceRelative<CGRect>()
+        
+        result[.coordinateSpace(.global)] = window.flipLocal(window.convertFromScreen(unflippedScreenRect))
+        result[.cocoa(.main)] = NSScreen.flip(unflippedScreenRect)
+        
+        return result
+    }
+}
+#endif
+
+#endif

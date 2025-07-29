@@ -1,0 +1,211 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("com.google.android.material.color.utilities.MaterialDynamicColors")
+open class MaterialDynamicColors: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn outline() -> DynamicColor!
+
+  @JavaMethod
+  open fn highestSurface(_ arg0: DynamicScheme?) -> DynamicColor!
+
+  @JavaMethod
+  open fn primaryPaletteKeyColor() -> DynamicColor!
+
+  @JavaMethod
+  open fn secondaryPaletteKeyColor() -> DynamicColor!
+
+  @JavaMethod
+  open fn tertiaryPaletteKeyColor() -> DynamicColor!
+
+  @JavaMethod
+  open fn neutralPaletteKeyColor() -> DynamicColor!
+
+  @JavaMethod
+  open fn neutralVariantPaletteKeyColor() -> DynamicColor!
+
+  @JavaMethod
+  open fn onBackground() -> DynamicColor!
+
+  @JavaMethod
+  open fn surface() -> DynamicColor!
+
+  @JavaMethod
+  open fn surfaceDim() -> DynamicColor!
+
+  @JavaMethod
+  open fn surfaceBright() -> DynamicColor!
+
+  @JavaMethod
+  open fn surfaceContainerLowest() -> DynamicColor!
+
+  @JavaMethod
+  open fn surfaceContainerLow() -> DynamicColor!
+
+  @JavaMethod
+  open fn surfaceContainer() -> DynamicColor!
+
+  @JavaMethod
+  open fn surfaceContainerHigh() -> DynamicColor!
+
+  @JavaMethod
+  open fn surfaceContainerHighest() -> DynamicColor!
+
+  @JavaMethod
+  open fn onSurface() -> DynamicColor!
+
+  @JavaMethod
+  open fn surfaceVariant() -> DynamicColor!
+
+  @JavaMethod
+  open fn onSurfaceVariant() -> DynamicColor!
+
+  @JavaMethod
+  open fn inverseSurface() -> DynamicColor!
+
+  @JavaMethod
+  open fn inverseOnSurface() -> DynamicColor!
+
+  @JavaMethod
+  open fn outlineVariant() -> DynamicColor!
+
+  @JavaMethod
+  open fn shadow() -> DynamicColor!
+
+  @JavaMethod
+  open fn scrim() -> DynamicColor!
+
+  @JavaMethod
+  open fn surfaceTint() -> DynamicColor!
+
+  @JavaMethod
+  open fn primary() -> DynamicColor!
+
+  @JavaMethod
+  open fn onPrimary() -> DynamicColor!
+
+  @JavaMethod
+  open fn primaryContainer() -> DynamicColor!
+
+  @JavaMethod
+  open fn onPrimaryContainer() -> DynamicColor!
+
+  @JavaMethod
+  open fn inversePrimary() -> DynamicColor!
+
+  @JavaMethod
+  open fn secondary() -> DynamicColor!
+
+  @JavaMethod
+  open fn onSecondary() -> DynamicColor!
+
+  @JavaMethod
+  open fn secondaryContainer() -> DynamicColor!
+
+  @JavaMethod
+  open fn onSecondaryContainer() -> DynamicColor!
+
+  @JavaMethod
+  open fn tertiary() -> DynamicColor!
+
+  @JavaMethod
+  open fn onTertiary() -> DynamicColor!
+
+  @JavaMethod
+  open fn tertiaryContainer() -> DynamicColor!
+
+  @JavaMethod
+  open fn onTertiaryContainer() -> DynamicColor!
+
+  @JavaMethod
+  open fn onError() -> DynamicColor!
+
+  @JavaMethod
+  open fn errorContainer() -> DynamicColor!
+
+  @JavaMethod
+  open fn onErrorContainer() -> DynamicColor!
+
+  @JavaMethod
+  open fn primaryFixed() -> DynamicColor!
+
+  @JavaMethod
+  open fn primaryFixedDim() -> DynamicColor!
+
+  @JavaMethod
+  open fn onPrimaryFixed() -> DynamicColor!
+
+  @JavaMethod
+  open fn onPrimaryFixedVariant() -> DynamicColor!
+
+  @JavaMethod
+  open fn secondaryFixed() -> DynamicColor!
+
+  @JavaMethod
+  open fn secondaryFixedDim() -> DynamicColor!
+
+  @JavaMethod
+  open fn onSecondaryFixed() -> DynamicColor!
+
+  @JavaMethod
+  open fn onSecondaryFixedVariant() -> DynamicColor!
+
+  @JavaMethod
+  open fn tertiaryFixed() -> DynamicColor!
+
+  @JavaMethod
+  open fn tertiaryFixedDim() -> DynamicColor!
+
+  @JavaMethod
+  open fn onTertiaryFixed() -> DynamicColor!
+
+  @JavaMethod
+  open fn onTertiaryFixedVariant() -> DynamicColor!
+
+  @JavaMethod
+  open fn controlActivated() -> DynamicColor!
+
+  @JavaMethod
+  open fn controlNormal() -> DynamicColor!
+
+  @JavaMethod
+  open fn controlHighlight() -> DynamicColor!
+
+  @JavaMethod
+  open fn textPrimaryInverse() -> DynamicColor!
+
+  @JavaMethod
+  open fn textSecondaryAndTertiaryInverse() -> DynamicColor!
+
+  @JavaMethod
+  open fn textPrimaryInverseDisableOnly() -> DynamicColor!
+
+  @JavaMethod
+  open fn textSecondaryAndTertiaryInverseDisabled() -> DynamicColor!
+
+  @JavaMethod
+  open fn textHintInverse() -> DynamicColor!
+
+  @JavaMethod
+  open fn background() -> DynamicColor!
+
+  @JavaMethod
+  open fn error() -> DynamicColor!
+}

@@ -1,0 +1,46 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension RemoteViews {
+  @JavaClass("android.widget.RemoteViews$RemoteCollectionItems")
+  open class RemoteCollectionItems: JavaObject {
+  @JavaMethod
+  open fn getItemView(_ arg0: Int32) -> RemoteViews!
+
+  @JavaMethod
+  open fn getItemCount() -> Int32
+
+  @JavaMethod
+  open fn getViewTypeCount() -> Int32
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn getItemId(_ arg0: Int32) -> Int64
+
+  @JavaMethod
+  open fn hasStableIds() -> Boolean
+  }
+}
+extension JavaClass<RemoteViews.RemoteCollectionItems> {
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

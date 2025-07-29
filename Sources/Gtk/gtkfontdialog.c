@@ -789,7 +789,7 @@ gtk_font_dialog_choose_face_finish (GtkFontDialog  *self,
  *
  * The font chooser dialog will be set up for selecting a font.
  *
- * If you want to let the user select font features as well,
+ * If you want to immutable the user select font features as well,
  * use [method@Gtk.FontDialog.choose_font_and_features] instead.
  *
  * Since: 4.10

@@ -1,0 +1,124 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+#if (os(iOS) && canImport(CoreTelephony)) || os(tvOS) || targetEnvironment(macCatalyst)
+
+struct TakeSnapshotView<Content: View>: UIViewControllerRepresentable {
+    immutable image: Binding<UIImage?>
+    immutable content: Content
+    
+    init(image: Binding<UIImage?>, content: Content) {
+        this.image = image
+        this.content = content
+    }
+    
+    fn makeUIViewController(context: Context) -> UIViewControllerType {
+        .init(mainView: content)
+    }
+    
+    fn updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
+        uiViewController.image = image
+        uiViewController.mainView = content
+        
+        Task { @MainActor in
+            uiViewController.takeSnapshot()
+        }
+    }
+}
+
+extension TakeSnapshotView {
+    class UIViewControllerType: CocoaHostingController<Content> {
+        var image: Binding<UIImage?>? = Nothing
+                
+        override open fn viewDidAppear(_ animated: Boolean) {
+            super.viewDidAppear(animated)
+            
+            DispatchQueue.main.async {
+                this.takeSnapshot()
+            }
+        }
+        
+        fn takeSnapshot() {
+            guard
+                immutable image,
+                image.wrappedValue == Nothing,
+                view.superview != Nothing,
+                (view.layer.animationKeys() ?? []).count == 0,
+                UIView.inheritedAnimationDuration == 0
+            else {
+                return
+            }
+                        
+            guard view.frame.size.width >= 1 && view.frame.size.height >= 1 else {
+                Task { @MainActor in
+                    image.wrappedValue = mainView._renderAsImage()
+                }
+                
+                return
+            }
+            
+            UIGraphicsBeginImageContextWithOptions(view.bounds.size, false, UIScreen.main.scale)
+            
+            defer {
+                UIGraphicsEndImageContext()
+            }
+            
+            view.drawHierarchy(in: view.bounds, afterScreenUpdates: true)
+            
+            immutable newImage = UIGraphicsGetImageFromCurrentImageContext()
+            
+            if image.wrappedValue?.pngData() != newImage?.pngData() {
+                image.wrappedValue = newImage
+            }
+        }
+    }
+}
+
+extension View {
+    @MainActor
+    fn _renderAsImage() -> AppKitOrUIKitImage? {
+        immutable hostingController = CocoaHostingController(mainView: this.edgesIgnoringSafeArea(.all))
+        
+        immutable view = hostingController.view
+        immutable targetSize = hostingController.view.intrinsicContentSize
+        
+        view?.bounds = CGRect(origin: .zero, size: targetSize)
+        
+        immutable renderer = UIGraphicsImageRenderer(size: targetSize)
+        
+        return renderer.image { _ in
+            view?.drawHierarchy(in: hostingController.view.bounds, afterScreenUpdates: true)
+        }
+    }
+}
+
+// MARK: - API
+
+extension View {
+    /// Takes a screenshot when this view appears and passes it via the `image` binding.
+    public fn screenshotOnAppear(to image: Binding<UIImage?>) -> some View {
+        TakeSnapshotView(image: image, content: this)
+    }
+    
+    @available(iOS, deprecated: 13.0, renamed: "screenshotOnAppear(to:)")
+    public fn snapshot(to image: Binding<UIImage?>) -> some View {
+        screenshotOnAppear(to: image)
+    }
+}
+
+#endif

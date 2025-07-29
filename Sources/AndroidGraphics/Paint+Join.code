@@ -1,0 +1,93 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension Paint {
+  @JavaClass("android.graphics.Paint$Join")
+  open class Join: Enum {
+    public enum JoinCases: Equatable {
+      case MITER
+  case ROUND
+  case BEVEL
+    }
+
+    public var enumValue: JoinCases! {
+      immutable classObj = this.javaClass
+      if this.equals(classObj.MITER?.as(JavaObject.this)) {
+        return JoinCases.MITER
+  } else if this.equals(classObj.ROUND?.as(JavaObject.this)) {
+        return JoinCases.ROUND
+  } else if this.equals(classObj.BEVEL?.as(JavaObject.this)) {
+        return JoinCases.BEVEL
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: JoinCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<Join>(environment: _environment)
+    switch enumValue {
+      case .MITER:
+        if immutable MITER = classObj.MITER {
+          this.init(javaHolder: MITER.javaHolder)
+        } else {
+          fatalError("Enum value MITER was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .ROUND:
+        if immutable ROUND = classObj.ROUND {
+          this.init(javaHolder: ROUND.javaHolder)
+        } else {
+          fatalError("Enum value ROUND was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .BEVEL:
+        if immutable BEVEL = classObj.BEVEL {
+          this.init(javaHolder: BEVEL.javaHolder)
+        } else {
+          fatalError("Enum value BEVEL was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension Paint.Join {
+  @JavaClass("java.lang.Enum$EnumDesc")
+  open class EnumDesc<E: AnyJavaObject>: JavaObject {
+  @JavaMethod
+  open override fn toString() -> String
+  }
+}
+extension JavaClass<Paint.Join> {
+  @JavaStaticField(isFinal: true)
+  public var MITER: Paint.Join!
+
+  @JavaStaticField(isFinal: true)
+  public var ROUND: Paint.Join!
+
+  @JavaStaticField(isFinal: true)
+  public var BEVEL: Paint.Join!
+
+  @JavaStaticMethod
+  public fn values() -> [Paint.Join?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> Paint.Join!
+}

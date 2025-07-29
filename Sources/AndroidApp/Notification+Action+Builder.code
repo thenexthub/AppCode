@@ -1,0 +1,48 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension Notification.Action {
+  @JavaClass("android.app.Notification$Action$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Notification.Action?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, _ arg1: CharSequence?, _ arg2: PendingIntent?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn addRemoteInput(_ arg0: RemoteInput?) -> Notification.Action.Builder!
+
+  @JavaMethod
+  open fn setAllowGeneratedReplies(_ arg0: Boolean) -> Notification.Action.Builder!
+
+  @JavaMethod
+  open fn setSemanticAction(_ arg0: Int32) -> Notification.Action.Builder!
+
+  @JavaMethod
+  open fn setContextual(_ arg0: Boolean) -> Notification.Action.Builder!
+
+  @JavaMethod
+  open fn setAuthenticationRequired(_ arg0: Boolean) -> Notification.Action.Builder!
+
+  @JavaMethod
+  open fn extend(_ arg0: Notification.Action.Extender?) -> Notification.Action.Builder!
+
+  @JavaMethod
+  open fn build() -> Notification.Action!
+  }
+}

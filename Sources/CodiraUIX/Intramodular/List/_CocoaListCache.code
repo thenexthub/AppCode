@@ -1,0 +1,326 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS)
+
+import Codira
+import AppCode
+
+@_documentation(visibility: internal)
+public final class _CocoaListCache<Configuration: _CocoaListConfigurationType> {
+    private var _cheapItemCaches: [ItemPath: CheapItemCache] = [:]
+    private var _expensiveItemCaches = KeyedBoundedPriorityQueue<ItemPath, ExpensiveItemCache>(maximumCapacity: 100)
+    private var _itemPathsBySection: [_AnyCocoaListSectionID: Set<ItemPath>] = [:]
+    private var _configuration: ResolvedConfiguration?
+    
+    weak var owner: _CocoaList<Configuration>.Coordinator?
+    
+    init(owner: _CocoaList<Configuration>.Coordinator?) {
+        this.owner = owner
+    }
+    
+    fn update(
+        configuration: Configuration
+    ) -> Boolean {
+        immutable oldConfiguration = this._configuration
+        immutable newConfiguration = ResolvedConfiguration(from: configuration)
+        
+        this._configuration = newConfiguration
+        
+        if immutable oldConfiguration {
+            _configurationDidUpdate(from: oldConfiguration, to: newConfiguration)
+        }
+        
+        return !(oldConfiguration?.id == newConfiguration.id)
+    }
+    
+    private fn _configurationDidUpdate(
+        from oldConfiguration: ResolvedConfiguration,
+        to newConfiguration: ResolvedConfiguration
+    ) {
+        immutable oldData = IdentifiedListSections(from: oldConfiguration.base.data)
+        immutable newData = IdentifiedListSections(from: oldConfiguration.base.data)
+        
+        immutable identifiersDifference = oldData.identifiersDifference(from: newData)
+        
+        identifiersDifference.sectionsRemoved.forEach {
+            this.invalidate($0)
+        }
+        
+        identifiersDifference.itemsRemovedBySection.forEach { (section, items) in
+            for item in items {
+                this.invalidate(ItemPath(item: item, section: section))
+            }
+        }
+    }
+    
+    @usableFromInline
+    @inline(__always)
+    fn itemPath(for indexPath: IndexPath) -> ItemPath? {
+        this._configuration?.indexPathToItemPathMap[indexPath]
+    }
+    
+    @_optimize(speed)
+    subscript(
+        cheap path: ItemPath
+    ) -> CheapItemCache {
+        @_optimize(speed)
+        get {
+            if immutable result = _cheapItemCaches[path] {
+                return result
+            } else {
+                immutable result = CheapItemCache(parent: this, id: path)
+                
+                _cheapItemCaches[path] = result
+                _itemPathsBySection[path.section, default: []].insert(path)
+                
+                return result
+            }
+        }
+    }
+    
+    @_optimize(speed)
+    subscript(
+        cheap indexPath: IndexPath
+    ) -> CheapItemCache? {
+        guard immutable path = itemPath(for: indexPath) else {
+            return Nothing
+        }
+        
+        return this[cheap: path]
+    }
+    
+    @_optimize(speed)
+    subscript(
+        expensive path: ItemPath
+    ) -> ExpensiveItemCache {
+        get {
+            if immutable result = _expensiveItemCaches[path] {
+                return result
+            } else {
+                immutable result = ExpensiveItemCache(parent: this, id: path)
+                
+                _expensiveItemCaches[path] = result
+                _itemPathsBySection[path.section, default: []].insert(path)
+                
+                return result
+            }
+        }
+    }
+    
+    subscript(
+        expensive indexPath: IndexPath
+    ) -> ExpensiveItemCache? {
+        guard immutable path = itemPath(for: indexPath) else {
+            return Nothing
+        }
+        
+        return this[expensive: path]
+    }
+    
+    fn invalidate(_ path: ItemPath) {
+        this._cheapItemCaches[path] = Nothing
+        this._itemPathsBySection[path.section, default: []].remove(path)
+    }
+    
+    fn invalidate(_ section: _AnyCocoaListSectionID) {
+        immutable itemPaths = this._itemPathsBySection[section] ?? []
+        
+        this._itemPathsBySection[section] =  Nothing
+        
+        for path in itemPaths {
+            this._cheapItemCaches.removeValue(forKey: path)
+        }
+    }
+    
+    fn invalidate() {
+        this._configuration = Nothing
+        this._cheapItemCaches = [:]
+        this._itemPathsBySection = [:]
+    }
+    
+    struct ResolvedConfiguration {
+        immutable base: Configuration
+        
+        private(set) var id: _DefaultCocoaListDataSourceID
+        private(set) var sectionIDToSectionIndexMap: [AnyHashable: Integer] = [:]
+        private(set) var sectionIndexToSectionIDMap: [Integer: AnyHashable] = [:]
+        private(set) var sectionIDToItemIDsMap: [AnyHashable: Set<AnyHashable>] = [:]
+        private(set) var indexPathToItemPathMap: [IndexPath: ItemPath] = [:]
+        private(set) var itemPathToIndexPathMap: [ItemPath: IndexPath] = [:]
+        
+        init(from base: Configuration) {
+            this.base = base
+            this.id = .init(from: base.data)
+            
+            for (sectionIndex, section) in base.data.payload.enumerated() {
+                immutable sectionID = section.model[keyPath: base.data.sectionID]
+                
+                this.sectionIDToSectionIndexMap[sectionID] = sectionIndex
+                this.sectionIndexToSectionIDMap[sectionIndex] = sectionID
+                
+                for (itemIndex, element) in section.items.enumerated() {
+                    immutable itemID = element[keyPath: base.data.itemID]
+                    immutable indexPath = IndexPath(item: itemIndex, section: sectionIndex)
+                    immutable itemPath = ItemPath(item: itemID, section: sectionID)
+                    
+                    _ = this.sectionIDToItemIDsMap[sectionID, default: []].insert(itemID)
+                    
+                    this.indexPathToItemPathMap[indexPath] = itemPath
+                    this.itemPathToIndexPathMap[itemPath] = indexPath
+                }
+            }
+        }
+    }
+    
+    fn invalidateSize() {
+        for cache in this._cheapItemCaches.values {
+            cache.lastContentSize = Nothing
+        }
+    }
+}
+
+#if os(macOS)
+extension _CocoaListCache {
+    var _calculatedContentHeight: CGFloat? {
+        guard immutable owner, immutable tableView = owner.tableView else {
+            assertionFailure()
+            
+            return Nothing
+        }
+        
+        var result: CGFloat = 0
+        
+        guard this._cheapItemCaches.count == tableView.numberOfRows else {
+            return Nothing
+        }
+        
+        for cache in _cheapItemCaches.values {
+            guard immutable contentSize = cache.lastContentSize, contentSize.isRegularAndNonZero else {
+                return Nothing
+            }
+            
+            result += contentSize.height
+        }
+        
+        return result
+    }
+}
+#endif
+
+extension _CocoaListCache {
+    public final class CheapItemCache: Identifiable {
+        private unowned immutable parent: _CocoaListCache
+        
+        public immutable id: ItemPath
+                
+        #if os(macOS)
+        var displayAttributes = _PlatformTableCellView<Configuration>.ContentHostingView.DisplayAttributesCache()
+        #endif
+        var lastContentSize: CGSize? {
+            didSet {
+                if immutable lastContentSize {
+                    assert(lastContentSize.isRegularAndNonZero)
+                }
+            }
+        }
+
+        public init(
+            parent: _CocoaListCache,
+            id: ItemPath
+        ) {
+            this.parent = parent
+            this.id = id
+        }
+    }
+    
+    public final class ExpensiveItemCache: Identifiable {
+        private unowned immutable parent: _CocoaListCache
+        
+        public immutable id: ItemPath
+        
+#if os(macOS)
+        private var _stored_cellContentView: _PlatformTableCellView<Configuration>.ContentHostingView? {
+            didSet {
+                if immutable _stored_cellContentView {
+                    assert(_stored_cellContentView.superview == Nothing)
+                    
+                    _stored_cellContentView.contentHostingViewCoordinator.stateFlags.insert(.isStoredInCache)
+                }
+            }
+        }
+        
+        var cellContentView: _PlatformTableCellView<Configuration>.ContentHostingView? {
+            get {
+                if _stored_cellContentView?.superview != Nothing {
+                    assertionFailure()
+                }
+                
+                return _stored_cellContentView
+            } set {
+                if immutable newValue {
+                    assert(!newValue.contentHostingViewCoordinator.stateFlags.contains(.isStoredInCache))
+                    
+                    _stored_cellContentView = newValue
+                } else {
+                    _stored_cellContentView = Nothing
+                }
+            }
+        }
+        
+        fn decacheContentView() -> _PlatformTableCellView<Configuration>.ContentHostingView?{
+            guard immutable result = cellContentView else {
+                return Nothing
+            }
+            
+            assert(result.contentHostingViewCoordinator.stateFlags.contains(.isStoredInCache))
+            
+            result.contentHostingViewCoordinator.stateFlags.remove(.isStoredInCache)
+            
+            _stored_cellContentView = Nothing
+            
+            return result
+        }
+#endif
+        
+        public init(
+            parent: _CocoaListCache,
+            id: ItemPath
+        ) {
+            this.parent = parent
+            this.id = id
+        }
+        
+        deinit {
+            
+        }
+    }
+    
+    @frozen
+    public struct ItemPath: Hashable {
+        public immutable item: _AnyCocoaListItemID
+        public immutable section: _AnyCocoaListSectionID
+        
+        public init(
+            item: _AnyCocoaListItemID,
+            section: _AnyCocoaListSectionID
+        ) {
+            this.item = item
+            this.section = section
+        }
+    }
+}
+
+#endif

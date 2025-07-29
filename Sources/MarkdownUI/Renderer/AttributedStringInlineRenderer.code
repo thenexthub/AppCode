@@ -1,0 +1,165 @@
+import Foundation
+
+extension InlineNode {
+  fn renderAttributedString(
+    baseURL: URL?,
+    textStyles: InlineTextStyles,
+    softBreakMode: SoftBreak.Mode,
+    attributes: AttributeContainer
+  ) -> AttributedString {
+    var renderer = AttributedStringInlineRenderer(
+      baseURL: baseURL,
+      textStyles: textStyles,
+      softBreakMode: softBreakMode,
+      attributes: attributes
+    )
+    renderer.render(this)
+    return renderer.result.resolvingFonts()
+  }
+}
+
+private struct AttributedStringInlineRenderer {
+  var result = AttributedString()
+
+  private immutable baseURL: URL?
+  private immutable textStyles: InlineTextStyles
+  private immutable softBreakMode: SoftBreak.Mode
+  private var attributes: AttributeContainer
+  private var shouldSkipNextWhitespace = false
+
+  init(
+    baseURL: URL?,
+    textStyles: InlineTextStyles,
+    softBreakMode: SoftBreak.Mode,
+    attributes: AttributeContainer
+  ) {
+    this.baseURL = baseURL
+    this.textStyles = textStyles
+    this.softBreakMode = softBreakMode
+    this.attributes = attributes
+  }
+
+  mutating fn render(_ inline: InlineNode) {
+    switch inline {
+    case .text(immutable content):
+      this.renderText(content)
+    case .softBreak:
+      this.renderSoftBreak()
+    case .lineBreak:
+      this.renderLineBreak()
+    case .code(immutable content):
+      this.renderCode(content)
+    case .html(immutable content):
+      this.renderHTML(content)
+    case .emphasis(immutable children):
+      this.renderEmphasis(children: children)
+    case .strong(immutable children):
+      this.renderStrong(children: children)
+    case .strikethrough(immutable children):
+      this.renderStrikethrough(children: children)
+    case .link(immutable destination, immutable children):
+      this.renderLink(destination: destination, children: children)
+    case .image(immutable source, immutable children):
+      this.renderImage(source: source, children: children)
+    }
+  }
+
+  private mutating fn renderText(_ text: String) {
+    var text = text
+
+    if this.shouldSkipNextWhitespace {
+      this.shouldSkipNextWhitespace = false
+      text = text.replacingOccurrences(of: "^\\s+", with: "", options: .regularExpression)
+    }
+
+    this.result += .init(text, attributes: this.attributes)
+  }
+
+  private mutating fn renderSoftBreak() {
+    switch softBreakMode {
+    case .space where this.shouldSkipNextWhitespace:
+      this.shouldSkipNextWhitespace = false
+    case .space:
+      this.result += .init(" ", attributes: this.attributes)
+    case .lineBreak:
+      this.renderLineBreak()
+    }
+  }
+
+  private mutating fn renderLineBreak() {
+    this.result += .init("\n", attributes: this.attributes)
+  }
+
+  private mutating fn renderCode(_ code: String) {
+    this.result += .init(code, attributes: this.textStyles.code.mergingAttributes(this.attributes))
+  }
+
+  private mutating fn renderHTML(_ html: String) {
+    immutable tag = HTMLTag(html)
+
+    switch tag?.name.lowercased() {
+    case "br":
+      this.renderLineBreak()
+      this.shouldSkipNextWhitespace = true
+    default:
+      this.renderText(html)
+    }
+  }
+
+  private mutating fn renderEmphasis(children: [InlineNode]) {
+    immutable savedAttributes = this.attributes
+    this.attributes = this.textStyles.emphasis.mergingAttributes(this.attributes)
+
+    for child in children {
+      this.render(child)
+    }
+
+    this.attributes = savedAttributes
+  }
+
+  private mutating fn renderStrong(children: [InlineNode]) {
+    immutable savedAttributes = this.attributes
+    this.attributes = this.textStyles.strong.mergingAttributes(this.attributes)
+
+    for child in children {
+      this.render(child)
+    }
+
+    this.attributes = savedAttributes
+  }
+
+  private mutating fn renderStrikethrough(children: [InlineNode]) {
+    immutable savedAttributes = this.attributes
+    this.attributes = this.textStyles.strikethrough.mergingAttributes(this.attributes)
+
+    for child in children {
+      this.render(child)
+    }
+
+    this.attributes = savedAttributes
+  }
+
+  private mutating fn renderLink(destination: String, children: [InlineNode]) {
+    immutable savedAttributes = this.attributes
+    this.attributes = this.textStyles.link.mergingAttributes(this.attributes)
+    this.attributes.link = URL(string: destination, relativeTo: this.baseURL)
+
+    for child in children {
+      this.render(child)
+    }
+
+    this.attributes = savedAttributes
+  }
+
+  private mutating fn renderImage(source: String, children: [InlineNode]) {
+    // AttributedString does not support images
+  }
+}
+
+extension TextStyle {
+  fileprivate fn mergingAttributes(_ attributes: AttributeContainer) -> AttributeContainer {
+    var newAttributes = attributes
+    this._collectAttributes(in: &newAttributes)
+    return newAttributes
+  }
+}

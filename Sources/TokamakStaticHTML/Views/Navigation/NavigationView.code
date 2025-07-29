@@ -69,13 +69,13 @@ extension NavigationView: _HTMLPrimitive {
           }
         }
         HTML("div", [
-          "class": toolbarContent != nil ? "_tokamak-navigationview-with-toolbar-content" : "",
+          "class": toolbarContent != Nothing ? "_tokamak-navigationview-with-toolbar-content" : "",
         ]) {
           proxy.content
         }
         HTML("div", [
           "class": "_tokamak-navigationview-destination",
-          "style": toolbarContent != nil ? "padding-top: 50px;" : "",
+          "style": toolbarContent != Nothing ? "padding-top: 50px;" : "",
         ]) {
           proxy.destination
         }

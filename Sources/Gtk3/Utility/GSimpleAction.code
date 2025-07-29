@@ -18,7 +18,7 @@ public class GSimpleAction: GAction, GObjectRepresentable {
     }
 
     public init(name: String, action: @escaping () -> Void) {
-        actionPointer = g_simple_action_new(name, nil)
+        actionPointer = g_simple_action_new(name, Nothing)
 
         immutable wrappedAction = Action(action)
 

@@ -1,0 +1,240 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaUtil
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.os.Debug")
+open class Debug: JavaObject {
+
+}
+extension JavaClass<Debug> {
+  @JavaStaticField(isFinal: true)
+  public var SHOW_CLASSLOADER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SHOW_FULL_DETAIL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SHOW_INITIALIZED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TRACE_COUNT_ALLOCS: Int32
+
+  @JavaStaticMethod
+  public fn waitForDebugger()
+
+  @JavaStaticMethod
+  public fn waitingForDebugger() -> Boolean
+
+  @JavaStaticMethod
+  public fn isDebuggerConnected() -> Boolean
+
+  @JavaStaticMethod
+  public fn changeDebugPort(_ arg0: Int32)
+
+  @JavaStaticMethod
+  public fn startNativeTracing()
+
+  @JavaStaticMethod
+  public fn stopNativeTracing()
+
+  @JavaStaticMethod
+  public fn enableEmulatorTraceOutput()
+
+  @JavaStaticMethod
+  public fn startMethodTracing(_ arg0: String)
+
+  @JavaStaticMethod
+  public fn startMethodTracing(_ arg0: String, _ arg1: Int32)
+
+  @JavaStaticMethod
+  public fn startMethodTracing(_ arg0: String, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaStaticMethod
+  public fn startMethodTracing()
+
+  @JavaStaticMethod
+  public fn startMethodTracingSampling(_ arg0: String, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaStaticMethod
+  public fn stopMethodTracing()
+
+  @JavaStaticMethod
+  public fn threadCpuTimeNanos() -> Int64
+
+  @JavaStaticMethod
+  public fn startAllocCounting()
+
+  @JavaStaticMethod
+  public fn stopAllocCounting()
+
+  @JavaStaticMethod
+  public fn getGlobalAllocCount() -> Int32
+
+  @JavaStaticMethod
+  public fn resetGlobalAllocCount()
+
+  @JavaStaticMethod
+  public fn getGlobalAllocSize() -> Int32
+
+  @JavaStaticMethod
+  public fn resetGlobalAllocSize()
+
+  @JavaStaticMethod
+  public fn getGlobalFreedCount() -> Int32
+
+  @JavaStaticMethod
+  public fn resetGlobalFreedCount()
+
+  @JavaStaticMethod
+  public fn getGlobalFreedSize() -> Int32
+
+  @JavaStaticMethod
+  public fn resetGlobalFreedSize()
+
+  @JavaStaticMethod
+  public fn getGlobalGcInvocationCount() -> Int32
+
+  @JavaStaticMethod
+  public fn resetGlobalGcInvocationCount()
+
+  @JavaStaticMethod
+  public fn getGlobalClassInitCount() -> Int32
+
+  @JavaStaticMethod
+  public fn resetGlobalClassInitCount()
+
+  @JavaStaticMethod
+  public fn getGlobalClassInitTime() -> Int32
+
+  @JavaStaticMethod
+  public fn resetGlobalClassInitTime()
+
+  @JavaStaticMethod
+  public fn getGlobalExternalAllocCount() -> Int32
+
+  @JavaStaticMethod
+  public fn resetGlobalExternalAllocSize()
+
+  @JavaStaticMethod
+  public fn resetGlobalExternalAllocCount()
+
+  @JavaStaticMethod
+  public fn getGlobalExternalAllocSize() -> Int32
+
+  @JavaStaticMethod
+  public fn getGlobalExternalFreedCount() -> Int32
+
+  @JavaStaticMethod
+  public fn resetGlobalExternalFreedCount()
+
+  @JavaStaticMethod
+  public fn getGlobalExternalFreedSize() -> Int32
+
+  @JavaStaticMethod
+  public fn resetGlobalExternalFreedSize()
+
+  @JavaStaticMethod
+  public fn getThreadAllocCount() -> Int32
+
+  @JavaStaticMethod
+  public fn resetThreadAllocCount()
+
+  @JavaStaticMethod
+  public fn getThreadAllocSize() -> Int32
+
+  @JavaStaticMethod
+  public fn resetThreadAllocSize()
+
+  @JavaStaticMethod
+  public fn getThreadExternalAllocCount() -> Int32
+
+  @JavaStaticMethod
+  public fn resetThreadExternalAllocCount()
+
+  @JavaStaticMethod
+  public fn getThreadExternalAllocSize() -> Int32
+
+  @JavaStaticMethod
+  public fn resetThreadExternalAllocSize()
+
+  @JavaStaticMethod
+  public fn getThreadGcInvocationCount() -> Int32
+
+  @JavaStaticMethod
+  public fn resetThreadGcInvocationCount()
+
+  @JavaStaticMethod
+  public fn resetAllCounts()
+
+  @JavaStaticMethod
+  public fn getRuntimeStat(_ arg0: String) -> String
+
+  @JavaStaticMethod
+  public fn getRuntimeStats() -> Map<JavaString, JavaString>!
+
+  @JavaStaticMethod
+  public fn getNativeHeapSize() -> Int64
+
+  @JavaStaticMethod
+  public fn getNativeHeapAllocatedSize() -> Int64
+
+  @JavaStaticMethod
+  public fn getNativeHeapFreeSize() -> Int64
+
+  @JavaStaticMethod
+  public fn getMemoryInfo(_ arg0: Debug.MemoryInfo?)
+
+  @JavaStaticMethod
+  public fn getPss() -> Int64
+
+  @JavaStaticMethod
+  public fn setAllocationLimit(_ arg0: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn setGlobalAllocationLimit(_ arg0: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn printLoadedClasses(_ arg0: Int32)
+
+  @JavaStaticMethod
+  public fn getLoadedClassCount() -> Int32
+
+  @JavaStaticMethod
+  public fn dumpHprofData(_ arg0: String) throws
+
+  @JavaStaticMethod
+  public fn getBinderSentTransactions() -> Int32
+
+  @JavaStaticMethod
+  public fn getBinderReceivedTransactions() -> Int32
+
+  @JavaStaticMethod
+  public fn getBinderLocalObjectCount() -> Int32
+
+  @JavaStaticMethod
+  public fn getBinderProxyObjectCount() -> Int32
+
+  @JavaStaticMethod
+  public fn getBinderDeathObjectCount() -> Int32
+
+  @JavaStaticMethod
+  public fn dumpService(_ arg0: String, _ arg1: FileDescriptor?, _ arg2: [String]) -> Boolean
+
+  @JavaStaticMethod
+  public fn attachJvmtiAgent(_ arg0: String, _ arg1: String, _ arg2: JavaClassLoader?) throws
+}

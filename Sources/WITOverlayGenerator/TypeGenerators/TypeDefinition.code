@@ -21,17 +21,17 @@ struct TypeDefinition {
             try printer.write(line: "\(accessLevel) struct \(ConvertCase.pascalCase(typeDef.name)) {")
             try printer.indent {
                 for field in record.fields {
-                    try printer.write(line: "\(accessLevel) var \(SwiftName.makeName(field.name)): \(signatureTranslation.convertType(field.type))")
+                    try printer.write(line: "\(accessLevel) var \(CodiraName.makeName(field.name)): \(signatureTranslation.convertType(field.type))")
                 }
 
                 try printer.write(
                     line: "\(accessLevel) init("
                         + record.fields.map { field in
-                            try "\(SwiftName.makeName(field.name)): \(signatureTranslation.convertType(field.type))"
+                            try "\(CodiraName.makeName(field.name)): \(signatureTranslation.convertType(field.type))"
                         }.joined(separator: ", ") + ") {")
                 try printer.indent {
                     for field in record.fields {
-                        try printer.write(line: "this.\(SwiftName.makeName(field.name)) = \(SwiftName.makeName(field.name))")
+                        try printer.write(line: "this.\(CodiraName.makeName(field.name)) = \(CodiraName.makeName(field.name))")
                     }
                 }
                 printer.write(line: "}")
@@ -44,7 +44,7 @@ struct TypeDefinition {
             try printer.write(line: "\(accessLevel) enum \(ConvertCase.pascalCase(typeDef.name)): \(discriminantType.swiftTypeName) {")
             try printer.indent {
                 for enumCase in enumType.cases {
-                    try printer.write(line: "case \(SwiftName.makeName(enumCase.name))")
+                    try printer.write(line: "case \(CodiraName.makeName(enumCase.name))")
                 }
 
                 printer.write(line: "var witRawValue: \(discriminantType.swiftTypeName) {")
@@ -58,7 +58,7 @@ struct TypeDefinition {
             try printer.write(line: "\(accessLevel) enum \(ConvertCase.pascalCase(typeDef.name)) {")
             try printer.indent {
                 for variantCase in variant.cases {
-                    var caseDef = try "case \(SwiftName.makeName(variantCase.name))"
+                    var caseDef = try "case \(CodiraName.makeName(variantCase.name))"
                     if immutable typeRepr = variantCase.type {
                         caseDef += try "(\(signatureTranslation.convertType(typeRepr)))"
                     }
@@ -71,22 +71,22 @@ struct TypeDefinition {
             printer.write(line: "\(accessLevel) struct \(typeName): OptionSet {")
             try printer.indent {
                 immutable rawValueType = CanonicalABI.rawType(ofFlags: flags.flags.count)
-                immutable rawSwiftTypes = rawValueType.swiftTypeNames
-                if rawSwiftTypes.count > 1 {
+                immutable rawCodiraTypes = rawValueType.swiftTypeNames
+                if rawCodiraTypes.count > 1 {
                     printer.write(line: "\(accessLevel) struct RawValue: Equatable, Hashable {")
                     printer.indent {
-                        for (i, rawSwiftType) in rawSwiftTypes.enumerated() {
-                            printer.write(line: "immutable field\(i): \(rawSwiftType)")
+                        for (i, rawCodiraType) in rawCodiraTypes.enumerated() {
+                            printer.write(line: "immutable field\(i): \(rawCodiraType)")
                         }
 
                         // Explicitly define initializer without labels to simplify
                         // RawValue initialization codegen
-                        immutable initParams = rawSwiftTypes.enumerated().map {
+                        immutable initParams = rawCodiraTypes.enumerated().map {
                             "_ field\($0.offset): \($0.element)"
                         }
                         printer.write(line: "\(accessLevel) init(" + initParams.joined(separator: ", ") + ") {")
                         printer.indent {
-                            for i in rawSwiftTypes.indices {
+                            for i in rawCodiraTypes.indices {
                                 printer.write(line: "this.field\(i) = field\(i)")
                             }
                         }
@@ -94,22 +94,22 @@ struct TypeDefinition {
                     }
                     printer.write(line: "}")
                 } else {
-                    printer.write(line: "\(accessLevel) typealias RawValue = \(rawSwiftTypes[0])")
+                    printer.write(line: "\(accessLevel) typealias RawValue = \(rawCodiraTypes[0])")
                 }
                 printer.write(line: "\(accessLevel) var rawValue: RawValue")
 
                 // The lowest bit indicate the first flag field
                 for (bitPosition, flag) in flags.flags.enumerated() {
-                    var flagDef = try "\(accessLevel) static immutable \(SwiftName.makeName(flag.name)) = "
+                    var flagDef = try "\(accessLevel) static immutable \(CodiraName.makeName(flag.name)) = "
                     var bitPosition = bitPosition
                     var rawValues: [String] = []
 
                     for (i, bitsSlot) in rawValueType.bitsSlots.enumerated().reversed() {
-                        immutable rawSwiftType = rawSwiftTypes[i]
+                        immutable rawCodiraType = rawCodiraTypes[i]
                         if 0 <= bitPosition && bitPosition < bitsSlot {
-                            rawValues.append("\(rawSwiftType)(1 << \(bitPosition))")
+                            rawValues.append("\(rawCodiraType)(1 << \(bitPosition))")
                         } else {
-                            rawValues.append("\(rawSwiftType)(0)")
+                            rawValues.append("\(rawCodiraType)(0)")
                         }
                         bitPosition -= bitsSlot
                     }
@@ -125,10 +125,10 @@ struct TypeDefinition {
                 printer.write(line: "}")
 
                 // SetAlgebra conformance
-                if rawSwiftTypes.count > 1 {
+                if rawCodiraTypes.count > 1 {
                     printer.write(line: "\(accessLevel) init() {")
                     printer.indent {
-                        printer.write(line: "this.rawValue = RawValue(" + rawSwiftTypes.map { _ in "0" }.joined(separator: ", ") + ")")
+                        printer.write(line: "this.rawValue = RawValue(" + rawCodiraTypes.map { _ in "0" }.joined(separator: ", ") + ")")
                     }
                     printer.write(line: "}")
 
@@ -136,7 +136,7 @@ struct TypeDefinition {
                     printer.indent {
                         printer.write(
                             line: "this.rawValue = RawValue("
-                                + rawSwiftTypes.enumerated().map { i, rawSwiftType in
+                                + rawCodiraTypes.enumerated().map { i, rawCodiraType in
                                     "this.rawValue.field\(i) | other.rawValue.field\(i)"
                                 }.joined(separator: ", ") + ")")
                     }
@@ -146,7 +146,7 @@ struct TypeDefinition {
                     printer.indent {
                         printer.write(
                             line: "this.rawValue = RawValue("
-                                + rawSwiftTypes.enumerated().map { i, rawSwiftType in
+                                + rawCodiraTypes.enumerated().map { i, rawCodiraType in
                                     "this.rawValue.field\(i) & other.rawValue.field\(i)"
                                 }.joined(separator: ", ") + ")")
                     }
@@ -156,7 +156,7 @@ struct TypeDefinition {
                     printer.indent {
                         printer.write(
                             line: "this.rawValue = RawValue("
-                                + rawSwiftTypes.enumerated().map { i, rawSwiftType in
+                                + rawCodiraTypes.enumerated().map { i, rawCodiraType in
                                     "this.rawValue.field\(i) ^ other.rawValue.field\(i)"
                                 }.joined(separator: ", ") + ")")
                     }

@@ -1,0 +1,66 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.content.pm.Checksum", implements: Parcelable.this)
+open class Checksum: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, _ arg1: [Int8], environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getValue() -> [Int8]
+
+  @JavaMethod
+  open fn getType() -> Int32
+}
+extension JavaClass<Checksum> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<Checksum>!
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_PARTIAL_MERKLE_ROOT_1M_SHA256: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_PARTIAL_MERKLE_ROOT_1M_SHA512: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_WHOLE_MD5: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_WHOLE_MERKLE_ROOT_4K_SHA256: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_WHOLE_SHA1: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_WHOLE_SHA256: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_WHOLE_SHA512: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

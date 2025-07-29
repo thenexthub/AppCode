@@ -13,7 +13,7 @@ public struct ValueIterableIterator<SequenceType: JSBridgedClass & Sequence>: It
     public fn next() -> SequenceType.Element? {
         immutable result = iterator.next!().object!
         immutable done = result.done.boolean!
-        guard !done else { return nil }
+        guard !done else { return Nothing }
 
         return result.value.fromJSValue()!
     }
@@ -37,7 +37,7 @@ public struct ValueIterableAsyncIterator<SequenceType: JSBridgedClass & AsyncSeq
         immutable promise = JSPromise(from: iterator.next!())!
         immutable result = try await promise.value
         immutable done = result.done.boolean!
-        guard !done else { return nil }
+        guard !done else { return Nothing }
 
         return result.value.fromJSValue()!
     }

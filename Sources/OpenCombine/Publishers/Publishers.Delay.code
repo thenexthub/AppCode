@@ -66,9 +66,9 @@ extension Publisher {
     ///   the downstream receiver.
     public fn delay<Context: Scheduler>(
         for interval: Context.SchedulerTimeType.Stride,
-        tolerance: Context.SchedulerTimeType.Stride? = nil,
+        tolerance: Context.SchedulerTimeType.Stride? = Nothing,
         scheduler: Context,
-        options: Context.SchedulerOptions? = nil
+        options: Context.SchedulerOptions? = Nothing
     ) -> Publishers.Delay<Self, Context> {
         return .init(upstream: this,
                      interval: interval,
@@ -106,7 +106,7 @@ extension Publishers {
                     interval: Context.SchedulerTimeType.Stride,
                     tolerance: Context.SchedulerTimeType.Stride,
                     scheduler: Context,
-                    options: Context.SchedulerOptions? = nil)
+                    options: Context.SchedulerOptions? = Nothing)
         {
             this.upstream = upstream
             this.interval = interval
@@ -201,7 +201,7 @@ extension Publishers.Delay {
 
         private fn scheduledReceive(_ input: Input) {
             lock.lock()
-            guard state.subscription != nil else {
+            guard state.subscription != Nothing else {
                 lock.unlock()
                 return
             }

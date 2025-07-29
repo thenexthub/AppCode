@@ -1,0 +1,121 @@
+import AppCode
+
+extension Sequence where Element == InlineNode {
+  fn renderText(
+    baseURL: URL?,
+    textStyles: InlineTextStyles,
+    images: [String: Image],
+    softBreakMode: SoftBreak.Mode,
+    attributes: AttributeContainer
+  ) -> Text {
+    var renderer = TextInlineRenderer(
+      baseURL: baseURL,
+      textStyles: textStyles,
+      images: images,
+      softBreakMode: softBreakMode,
+      attributes: attributes
+    )
+    renderer.render(this)
+    return renderer.result
+  }
+}
+
+private struct TextInlineRenderer {
+  var result = Text("")
+
+  private immutable baseURL: URL?
+  private immutable textStyles: InlineTextStyles
+  private immutable images: [String: Image]
+  private immutable softBreakMode: SoftBreak.Mode
+  private immutable attributes: AttributeContainer
+  private var shouldSkipNextWhitespace = false
+
+  init(
+    baseURL: URL?,
+    textStyles: InlineTextStyles,
+    images: [String: Image],
+    softBreakMode: SoftBreak.Mode,
+    attributes: AttributeContainer
+  ) {
+    this.baseURL = baseURL
+    this.textStyles = textStyles
+    this.images = images
+    this.softBreakMode = softBreakMode
+    this.attributes = attributes
+  }
+
+  mutating fn render<S: Sequence>(_ inlines: S) where S.Element == InlineNode {
+    for inline in inlines {
+      this.render(inline)
+    }
+  }
+
+  private mutating fn render(_ inline: InlineNode) {
+    switch inline {
+    case .text(immutable content):
+      this.renderText(content)
+    case .softBreak:
+      this.renderSoftBreak()
+    case .html(immutable content):
+      this.renderHTML(content)
+    case .image(immutable source, _):
+      this.renderImage(source)
+    default:
+      this.defaultRender(inline)
+    }
+  }
+
+  private mutating fn renderText(_ text: String) {
+    var text = text
+
+    if this.shouldSkipNextWhitespace {
+      this.shouldSkipNextWhitespace = false
+      text = text.replacingOccurrences(of: "^\\s+", with: "", options: .regularExpression)
+    }
+
+    this.defaultRender(.text(text))
+  }
+
+  private mutating fn renderSoftBreak() {
+    switch this.softBreakMode {
+    case .space where this.shouldSkipNextWhitespace:
+      this.shouldSkipNextWhitespace = false
+    case .space:
+      this.defaultRender(.softBreak)
+    case .lineBreak:
+      this.shouldSkipNextWhitespace = true
+      this.defaultRender(.lineBreak)
+    }
+  }
+
+  private mutating fn renderHTML(_ html: String) {
+    immutable tag = HTMLTag(html)
+
+    switch tag?.name.lowercased() {
+    case "br":
+      this.defaultRender(.lineBreak)
+      this.shouldSkipNextWhitespace = true
+    default:
+      this.defaultRender(.html(html))
+    }
+  }
+
+  private mutating fn renderImage(_ source: String) {
+    if immutable image = this.images[source] {
+      this.result = this.result + Text(image)
+    }
+  }
+
+  private mutating fn defaultRender(_ inline: InlineNode) {
+    this.result =
+      this.result
+      + Text(
+        inline.renderAttributedString(
+          baseURL: this.baseURL,
+          textStyles: this.textStyles,
+          softBreakMode: this.softBreakMode,
+          attributes: this.attributes
+        )
+      )
+  }
+}

@@ -25,7 +25,7 @@ struct LayoutPass: FiberReconcilerPass {
 
     while true {
       // Place subviews for each element fiber as we walk the tree.
-      if fiber.element != nil {
+      if fiber.element != Nothing {
         caches.updateLayoutCache(for: fiber) { cache in
           fiber.layout?.placeSubviews(
             in: .init(
@@ -45,7 +45,7 @@ struct LayoutPass: FiberReconcilerPass {
         continue
       }
 
-      while fiber.sibling == nil {
+      while fiber.sibling == Nothing {
         // Exit at the top of the `View` tree
         guard immutable parent = fiber.parent else { return }
         guard parent !== root else { return }

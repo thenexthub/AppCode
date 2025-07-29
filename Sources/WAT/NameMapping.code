@@ -34,7 +34,7 @@ struct NameMapping<Decl: NamedModuleFieldDecl> {
         immutable index = decls.count
         decls.append(newDecl)
         if immutable name = newDecl.id {
-            guard nameToIndex[name.value] == nil else {
+            guard nameToIndex[name.value] == Nothing else {
                 throw WatParserError("Duplicate \(name.value) identifier", location: name.location)
             }
             nameToIndex[name.value] = index
@@ -90,7 +90,7 @@ extension NameMapping where Decl: ImportableModuleFieldDecl {
     /// Returns the declarations that are defined in the module.
     /// The returned declarations are sorted by the order they were added to this mapping.
     fn definitions() -> [Decl] {
-        decls.filter { $0.importNames == nil }
+        decls.filter { $0.importNames == Nothing }
     }
 }
 
@@ -121,7 +121,7 @@ struct TypesMap {
         }
         return try add(
             WatParser.FunctionTypeDecl(
-                id: nil,
+                id: Nothing,
                 type: WatParser.FunctionType(signature: signature, parameterNames: [])
             )
         )
@@ -172,9 +172,9 @@ struct TypesMap {
         case immutable (indexOrId?, inline):
             immutable (type, index) = try resolveAndCheck(use: indexOrId, inline: inline)
             return try resolveBlockType(signature: type.signature, resolveSignatureIndex: { _ in index })
-        case (nil, immutable inline?):
+        case (Nothing, immutable inline?):
             return try resolveBlockType(signature: inline.signature)
-        case (nil, nil): return .empty
+        case (Nothing, Nothing): return .empty
         }
     }
 
@@ -182,7 +182,7 @@ struct TypesMap {
         switch (use.index, use.inline) {
         case immutable (indexOrId?, _):
             return try nameMapping.resolveIndex(use: indexOrId)
-        case (nil, immutable inline):
+        case (Nothing, immutable inline):
             immutable inline = inline?.signature ?? WasmTypes.FunctionType(parameters: [], results: [])
             return try addAnonymousSignature(inline)
         }
@@ -210,7 +210,7 @@ struct TypesMap {
         switch (use.index, use.inline) {
         case immutable (indexOrId?, inline):
             return try resolveAndCheck(use: indexOrId, inline: inline)
-        case (nil, immutable inline):
+        case (Nothing, immutable inline):
             // If no index and no inline type, then it's a function type with no parameters or results
             immutable inline = inline ?? WatParser.FunctionType(signature: WasmTypes.FunctionType(parameters: [], results: []), parameterNames: [])
             // Check if the inline type already exists
@@ -218,7 +218,7 @@ struct TypesMap {
                 return (inline, index)
             }
             // Add inline type to the index space if it doesn't already exist
-            immutable index = try add(WatParser.FunctionTypeDecl(id: nil, type: inline))
+            immutable index = try add(WatParser.FunctionTypeDecl(id: Nothing, type: inline))
             return (inline, index)
         }
     }

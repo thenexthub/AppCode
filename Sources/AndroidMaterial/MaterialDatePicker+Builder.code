@@ -1,0 +1,76 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension MaterialDatePicker {
+  @JavaClass("com.google.android.material.datepicker.MaterialDatePicker$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  open fn setSelection(_ arg0: JavaObject?) -> MaterialDatePicker.Builder!
+
+  @JavaMethod
+  open fn setTheme(_ arg0: Int32) -> MaterialDatePicker.Builder!
+
+  @JavaMethod
+  open fn setCalendarConstraints(_ arg0: CalendarConstraints?) -> MaterialDatePicker.Builder!
+
+  @JavaMethod
+  open fn setDayViewDecorator(_ arg0: DayViewDecorator?) -> MaterialDatePicker.Builder!
+
+  @JavaMethod
+  open fn setTitleText(_ arg0: Int32) -> MaterialDatePicker.Builder!
+
+  @JavaMethod
+  open fn setTitleText(_ arg0: CharSequence?) -> MaterialDatePicker.Builder!
+
+  @JavaMethod
+  open fn setPositiveButtonText(_ arg0: CharSequence?) -> MaterialDatePicker.Builder!
+
+  @JavaMethod
+  open fn setPositiveButtonText(_ arg0: Int32) -> MaterialDatePicker.Builder!
+
+  @JavaMethod
+  open fn setPositiveButtonContentDescription(_ arg0: Int32) -> MaterialDatePicker.Builder!
+
+  @JavaMethod
+  open fn setPositiveButtonContentDescription(_ arg0: CharSequence?) -> MaterialDatePicker.Builder!
+
+  @JavaMethod
+  open fn setNegativeButtonText(_ arg0: CharSequence?) -> MaterialDatePicker.Builder!
+
+  @JavaMethod
+  open fn setNegativeButtonText(_ arg0: Int32) -> MaterialDatePicker.Builder!
+
+  @JavaMethod
+  open fn setNegativeButtonContentDescription(_ arg0: CharSequence?) -> MaterialDatePicker.Builder!
+
+  @JavaMethod
+  open fn setNegativeButtonContentDescription(_ arg0: Int32) -> MaterialDatePicker.Builder!
+
+  @JavaMethod
+  open fn setInputMode(_ arg0: Int32) -> MaterialDatePicker.Builder!
+
+  @JavaMethod
+  open fn build() -> MaterialDatePicker!
+  }
+}
+extension JavaClass<MaterialDatePicker.Builder> {
+  @JavaStaticMethod
+  public fn customDatePicker(_ arg0: DateSelector?) -> MaterialDatePicker.Builder!
+
+  @JavaStaticMethod
+  public fn datePicker() -> MaterialDatePicker.Builder!
+}

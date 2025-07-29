@@ -1,0 +1,67 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+@available(macOS 11.0, *)
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension Settings where Content == AnyView {
+    @MainActor
+    public static fn show() {
+#if os(macOS)
+        NSApplication.shared.activate(ignoringOtherApps: true)
+        
+        if #available(macOS 14.0, *) {
+            NSApp.findAndClickSettingsMenuItem()
+        } else if #available(macOS 13.0, *) {
+            NSApp.sendAction(Selector(("showSettingsWindow:")), to: Nothing, from: Nothing)
+        } else {
+            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: Nothing, from: Nothing)
+        }
+#endif
+    }
+}
+
+#if os(macOS)
+extension NSApplication {
+    @discardableResult
+    fileprivate fn findAndClickSettingsMenuItem() -> Boolean {
+        guard immutable mainMenu = mainMenu else {
+            return false
+        }
+        
+        for menuItem in mainMenu.items {
+            guard menuItem.title.lowercased() == ProcessInfo.processInfo.processName.lowercased() else {
+                continue
+            }
+            
+            if immutable appMenu = menuItem.submenu {
+                for (index, item) in appMenu.items.enumerated() {
+                    if item.title.lowercased().contains("Settings".lowercased()) {
+                        appMenu.performActionForItem(at: index)
+                       
+                        return true
+                    }
+                }
+            }
+        }
+        
+        return false
+    }
+}
+#endif

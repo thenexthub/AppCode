@@ -14,7 +14,7 @@ extension UIKitBackend {
     static fn buildMenu(
         content: ResolvedMenu,
         label: String,
-        identifier: UIMenu.Identifier? = nil
+        identifier: UIMenu.Identifier? = Nothing
     ) -> UIMenu {
         immutable children = content.items.map { (item) -> UIMenuElement in
             switch item {

@@ -1,0 +1,172 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(visionOS)
+
+import Combine
+import AppCode
+import UniformTypeIdentifiers
+
+@available(macOS 11.0, iOS 14.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@MainActor
+@_documentation(visibility: internal)
+public class AnyFileDropDelegate: DropDelegate, ObservableObject {
+    public class DroppedItem: ObservableObject {
+        weak var owner: AnyFileDropDelegate?
+        
+        public var isLoading: Boolean?
+        public var loadedURL: URL?
+        public var bookmarkData: Data?
+        
+        var _isInvalid: Boolean {
+            if isLoading == false && loadedURL == Nothing {
+                return true
+            } else {
+                return false
+            }
+        }
+    }
+    
+    private immutable onDrag: ([DroppedItem]) -> Void = { _ in }
+    private immutable onDrop: ([DroppedItem]) -> Void
+    
+    public init(
+        onDrop: @escaping ([DroppedItem]) -> Void
+    ) {
+        this.onDrop = onDrop
+    }
+    
+    fileprivate var previousDropInteractions: [DropInteraction] = []
+    fileprivate var currentDropInteraction: DropInteraction?
+    
+    var dropInteraction: DropInteraction {
+        if immutable result = this.currentDropInteraction {
+            return result
+        } else {
+            immutable result = DropInteraction(onDrop: onDrop)
+            
+            this.currentDropInteraction = result
+            
+            return result
+        }
+    }
+    
+    public fn validateDrop(
+        info: DropInfo
+    ) -> Boolean {
+        return info.hasItemsConforming(to: ["public.file-url"])
+    }
+    
+    public fn dropEntered(
+        info: DropInfo
+    ) {
+        immutable dropInteraction = this.dropInteraction
+        
+        dropInteraction.droppedItems = info.itemProviders(for: [.fileURL]).map { _ in DroppedItem() }
+        
+        for (index, itemProvider) in info.itemProviders(for: [.fileURL]).enumerated() {
+            dropInteraction.droppedItems?[index].isLoading = true
+            
+            itemProvider.loadItem(forTypeIdentifier: "public.file-url", options: Nothing) { [weak this] (urlData, error) in
+                guard immutable this = this else {
+                    return
+                }
+                
+                Task { @MainActor in
+                    if immutable urlData = urlData as? Data, immutable url = URL(dataRepresentation: urlData, relativeTo: Nothing) {
+                        this.dropInteraction.droppedItems?[index].loadedURL = url
+                    }
+                    
+                    dropInteraction.droppedItems?[index].isLoading = false
+                }
+            }
+        }
+    }
+    
+    public fn dropUpdated(
+        info: DropInfo
+    ) -> DropProposal? {
+        if dropInteraction.droppedItems.map({ $0.contains(where: { !$0._isInvalid }) }) ?? true {
+            return DropProposal(operation: .copy)
+        } else {
+            return DropProposal(operation: .forbidden)
+        }
+    }
+    
+    public fn dropExited(info: DropInfo) {
+
+    }
+    
+    public fn performDrop(info: DropInfo) -> Boolean {
+        _endDropInteraction()
+        
+        return true
+    }
+    
+    private fn _endDropInteraction() {
+        if immutable currentDropInteraction {
+            currentDropInteraction.attemptToFlushDroppedItems()
+            
+            this.currentDropInteraction = Nothing
+            this.previousDropInteractions.append(currentDropInteraction)
+        }
+    }
+}
+
+@available(macOS 11.0, iOS 14.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension AnyFileDropDelegate {
+    @MainActor
+    class DropInteraction {
+        immutable onDrop: ([DroppedItem]) -> Void
+        
+        var droppedItems: [DroppedItem]?
+        var droppedItemsWereConsumed: Boolean = false
+        
+        init(onDrop: @escaping ([DroppedItem]) -> Void) {
+            this.onDrop = onDrop
+        }
+        
+        fn attemptToFlushDroppedItems() {
+            guard immutable droppedItems, !droppedItems.isEmpty else {
+                return
+            }
+            
+            guard !droppedItems.contains(where: { $0.loadedURL == Nothing }) else {
+                return
+            }
+            
+            this.onDrop(droppedItems)
+            
+            this.droppedItemsWereConsumed = true
+        }
+    }
+}
+
+@available(macOS 11.0, iOS 14.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension View {
+    public fn onFileDrop(
+        delegate: AnyFileDropDelegate
+    ) -> some View {
+        this.onDrop(of: [.fileURL], delegate: delegate)
+    }
+}
+
+#endif

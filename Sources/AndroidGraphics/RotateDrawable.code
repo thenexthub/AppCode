@@ -1,0 +1,68 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.drawable.RotateDrawable")
+open class RotateDrawable: DrawableWrapper {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setPivotX(_ arg0: Float)
+
+  @JavaMethod
+  open fn getPivotX() -> Float
+
+  @JavaMethod
+  open fn setPivotY(_ arg0: Float)
+
+  @JavaMethod
+  open fn getPivotY() -> Float
+
+  @JavaMethod
+  open override fn draw(_ arg0: Canvas?)
+
+  @JavaMethod
+  open override fn applyTheme(_ arg0: Resources.Theme?)
+
+  @JavaMethod
+  open override fn onLevelChange(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn setFromDegrees(_ arg0: Float)
+
+  @JavaMethod
+  open fn getFromDegrees() -> Float
+
+  @JavaMethod
+  open fn setToDegrees(_ arg0: Float)
+
+  @JavaMethod
+  open fn getToDegrees() -> Float
+
+  @JavaMethod
+  open fn setPivotXRelative(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isPivotXRelative() -> Boolean
+
+  @JavaMethod
+  open fn setPivotYRelative(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isPivotYRelative() -> Boolean
+}

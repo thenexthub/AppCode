@@ -1,0 +1,66 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.app.admin.SystemUpdatePolicy")
+open class SystemUpdatePolicy: JavaObject {
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn getPolicyType() -> Int32
+
+  @JavaMethod
+  open fn getInstallWindowStart() -> Int32
+
+  @JavaMethod
+  open fn getInstallWindowEnd() -> Int32
+
+  @JavaMethod
+  open fn setFreezePeriods(_ arg0: List<FreezePeriod>?) -> SystemUpdatePolicy!
+
+  @JavaMethod
+  open fn getFreezePeriods() -> List<FreezePeriod>!
+
+  @JavaMethod
+  open override fn toString() -> String
+}
+extension JavaClass<SystemUpdatePolicy> {
+  @JavaStaticField(isFinal: true)
+  public var TYPE_INSTALL_AUTOMATIC: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_INSTALL_WINDOWED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_POSTPONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+
+  @JavaStaticMethod
+  public fn createAutomaticInstallPolicy() -> SystemUpdatePolicy!
+
+  @JavaStaticMethod
+  public fn createWindowedInstallPolicy(_ arg0: Int32, _ arg1: Int32) -> SystemUpdatePolicy!
+
+  @JavaStaticMethod
+  public fn createPostponeInstallPolicy() -> SystemUpdatePolicy!
+}

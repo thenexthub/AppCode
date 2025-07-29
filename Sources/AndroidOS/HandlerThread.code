@@ -1,0 +1,159 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.os.HandlerThread")
+open class HandlerThread: Thread {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: String, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: String, _ arg1: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getLooper() -> Looper!
+
+  @JavaMethod
+  open fn onLooperPrepared()
+
+  @JavaMethod
+  open fn quit() -> Boolean
+
+  @JavaMethod
+  open fn quitSafely() -> Boolean
+
+  @JavaMethod
+  open override fn run()
+
+  @JavaMethod
+  open fn getThreadId() -> Int32
+}
+extension HandlerThread {
+  @JavaInterface("java.lang.Thread$Builder")
+  public struct Builder {
+  @JavaMethod
+  public fn unstarted(_ arg0: Runnable?) -> Thread!
+
+  @JavaMethod
+  public fn name(_ arg0: String) -> HandlerThread.Builder!
+
+  @JavaMethod
+  public fn name(_ arg0: String, _ arg1: Int64) -> HandlerThread.Builder!
+
+  @JavaMethod
+  public fn start(_ arg0: Runnable?) -> Thread!
+
+  @JavaMethod
+  public fn uncaughtExceptionHandler(_ arg0: Thread.UncaughtExceptionHandler?) -> HandlerThread.Builder!
+
+  @JavaMethod
+  public fn inheritInheritableThreadLocals(_ arg0: Boolean) -> HandlerThread.Builder!
+  }
+}
+extension HandlerThread.Builder {
+  @JavaInterface("java.lang.Thread$Builder$OfPlatform", extends: HandlerThread.Builder.this)
+  public struct OfPlatform {
+  @JavaMethod
+  public fn name(_ arg0: String, _ arg1: Int64) -> HandlerThread.Builder!
+
+  @JavaMethod
+  public fn name(_ arg0: String, _ arg1: Int64) -> HandlerThread.Builder.OfPlatform!
+
+  @JavaMethod
+  public fn name(_ arg0: String) -> HandlerThread.Builder!
+
+  @JavaMethod
+  public fn name(_ arg0: String) -> HandlerThread.Builder.OfPlatform!
+
+  @JavaMethod
+  public fn priority(_ arg0: Int32) -> HandlerThread.Builder.OfPlatform!
+
+  @JavaMethod
+  public fn group(_ arg0: ThreadGroup?) -> HandlerThread.Builder.OfPlatform!
+
+  @JavaMethod
+  public fn daemon() -> HandlerThread.Builder.OfPlatform!
+
+  @JavaMethod
+  public fn daemon(_ arg0: Boolean) -> HandlerThread.Builder.OfPlatform!
+
+  @JavaMethod
+  public fn uncaughtExceptionHandler(_ arg0: Thread.UncaughtExceptionHandler?) -> HandlerThread.Builder.OfPlatform!
+
+  @JavaMethod
+  public fn uncaughtExceptionHandler(_ arg0: Thread.UncaughtExceptionHandler?) -> HandlerThread.Builder!
+
+  @JavaMethod
+  public fn stackSize(_ arg0: Int64) -> HandlerThread.Builder.OfPlatform!
+
+  @JavaMethod
+  public fn inheritInheritableThreadLocals(_ arg0: Boolean) -> HandlerThread.Builder.OfPlatform!
+
+  @JavaMethod
+  public fn inheritInheritableThreadLocals(_ arg0: Boolean) -> HandlerThread.Builder!
+
+  @JavaMethod
+  public fn unstarted(_ arg0: Runnable?) -> Thread!
+
+  @JavaMethod
+  public fn start(_ arg0: Runnable?) -> Thread!
+  }
+}
+extension HandlerThread.Builder {
+  @JavaInterface("java.lang.Thread$Builder$OfVirtual", extends: HandlerThread.Builder.this)
+  public struct OfVirtual {
+  @JavaMethod
+  public fn name(_ arg0: String, _ arg1: Int64) -> HandlerThread.Builder!
+
+  @JavaMethod
+  public fn name(_ arg0: String, _ arg1: Int64) -> HandlerThread.Builder.OfVirtual!
+
+  @JavaMethod
+  public fn name(_ arg0: String) -> HandlerThread.Builder!
+
+  @JavaMethod
+  public fn name(_ arg0: String) -> HandlerThread.Builder.OfVirtual!
+
+  @JavaMethod
+  public fn uncaughtExceptionHandler(_ arg0: Thread.UncaughtExceptionHandler?) -> HandlerThread.Builder!
+
+  @JavaMethod
+  public fn uncaughtExceptionHandler(_ arg0: Thread.UncaughtExceptionHandler?) -> HandlerThread.Builder.OfVirtual!
+
+  @JavaMethod
+  public fn inheritInheritableThreadLocals(_ arg0: Boolean) -> HandlerThread.Builder.OfVirtual!
+
+  @JavaMethod
+  public fn inheritInheritableThreadLocals(_ arg0: Boolean) -> HandlerThread.Builder!
+
+  @JavaMethod
+  public fn unstarted(_ arg0: Runnable?) -> Thread!
+
+  @JavaMethod
+  public fn start(_ arg0: Runnable?) -> Thread!
+  }
+}
+extension JavaClass<HandlerThread> {
+  @JavaStaticField(isFinal: true)
+  public var MIN_PRIORITY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NORM_PRIORITY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MAX_PRIORITY: Int32
+}

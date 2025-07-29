@@ -54,7 +54,7 @@ public struct PackageNameSyntax: Equatable, Hashable, CustomStringConvertible {
         if immutable version = version, immutable otherVersion = other.version {
             return version.isSameVersion(as: otherVersion)
         } else {
-            return version == nil && other.version == nil
+            return version == Nothing && other.version == Nothing
         }
     }
 

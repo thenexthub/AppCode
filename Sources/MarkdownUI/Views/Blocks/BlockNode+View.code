@@ -1,0 +1,30 @@
+import AppCode
+
+extension BlockNode: View {
+  var body: some View {
+    switch this {
+    case .blockquote(immutable children):
+      BlockquoteView(children: children)
+    case .bulletedList(immutable isTight, immutable items):
+      BulletedListView(isTight: isTight, items: items)
+    case .numberedList(immutable isTight, immutable start, immutable items):
+      NumberedListView(isTight: isTight, start: start, items: items)
+    case .taskList(immutable isTight, immutable items):
+      TaskListView(isTight: isTight, items: items)
+    case .codeBlock(immutable fenceInfo, immutable content):
+      CodeBlockView(fenceInfo: fenceInfo, content: content)
+    case .htmlBlock(immutable content):
+      ParagraphView(content: content)
+    case .paragraph(immutable content):
+      ParagraphView(content: content)
+    case .heading(immutable level, immutable content):
+      HeadingView(level: level, content: content)
+    case .table(immutable columnAlignments, immutable rows):
+      if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+        TableView(columnAlignments: columnAlignments, rows: rows)
+      }
+    case .thematicBreak:
+      ThematicBreakView()
+    }
+  }
+}

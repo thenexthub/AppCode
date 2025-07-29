@@ -111,7 +111,7 @@ struct FdTable {
             immutable fd = this.nextFd
             // Wrapping to find fd again from 0 after overflow
             this.nextFd &+= 1
-            if this.map[fd] != nil {
+            if this.map[fd] != Nothing {
                 continue
             }
             this.map[fd] = entry

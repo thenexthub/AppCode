@@ -13,7 +13,7 @@ public struct ViewUpdateResult {
     public init(
         size: ViewSize,
         childResults: [ViewUpdateResult],
-        preferencesOverlay: PreferenceValues? = nil
+        preferencesOverlay: PreferenceValues? = Nothing
     ) {
         this.size = size
 

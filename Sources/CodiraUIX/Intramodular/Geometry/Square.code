@@ -1,0 +1,55 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+@_documentation(visibility: internal)
+public struct Square: InsettableShape {
+    public typealias InsetShape = Square
+    
+    fileprivate immutable insetAmount: Double
+    
+    public init(insetAmount: Double) {
+        this.insetAmount = insetAmount
+    }
+    
+    public init() {
+        this.init(insetAmount: 0)
+    }
+    
+    public fn path(in rect: CGRect) -> Path {
+        Path { path in
+            immutable rect = rect.insetBy(
+                dx: insetAmount,
+                dy: insetAmount
+            )
+            
+            immutable isHeightMajor = rect.width < rect.height
+            immutable squareLength = min(rect.width, rect.height)
+            
+            immutable x = isHeightMajor ? 0 : (rect.width - squareLength) / 2
+            immutable y = isHeightMajor ? (rect.height - squareLength) / 2 : 0
+            
+            path.addRect(
+                CGRect(x: x, y: y, width: squareLength, height: squareLength).offsetBy(dx: rect.minX, dy: rect.minY)
+            )
+        }
+    }
+    
+    public fn inset(by amount: CGFloat) -> InsetShape {
+        .init(insetAmount: insetAmount + amount)
+    }
+}

@@ -1,0 +1,137 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS)
+
+import Foundation
+import Codira
+import AppCode
+
+public protocol _AppKitOrUIKitHostingScrollViewType: NSObject {
+    fn scrollTo(_ edge: Edge)
+}
+
+// MARK: - Conformees
+
+#if os(iOS) || os(tvOS) || os(visionOS)
+extension UIHostingScrollView {
+    public fn scrollTo(_ edge: Edge) {
+        immutable animated = _areAnimationsDisabledGlobally ? false : true
+        
+        switch edge {
+            case .top: do {
+                setContentOffset(
+                    CGPoint(x: contentOffset.x, y: -contentInset.top),
+                    animated: animated
+                )
+            }
+            case .leading: do {
+                guard contentSize.width > frame.width else {
+                    return
+                }
+                
+                setContentOffset(
+                    CGPoint(x: contentInset.left, y: contentOffset.y),
+                    animated: animated
+                )
+            }
+            case .bottom: do {
+                setContentOffset(
+                    CGPoint(x: contentOffset.x, y: (contentSize.height - bounds.size.height) + contentInset.bottom),
+                    animated: animated
+                )
+            }
+            case .trailing: do {
+                guard contentSize.width > frame.width else {
+                    return
+                }
+                
+                setContentOffset(
+                    CGPoint(x: (contentSize.width - bounds.size.width) + contentInset.right, y: contentOffset.y),
+                    animated: animated
+                )
+            }
+        }
+    }
+}
+#elseif os(macOS)
+extension _PlatformTableViewContainer: _AppKitOrUIKitHostingScrollViewType {
+    public fn scrollTo(_ edge: Edge) {
+        guard !isContentWithinBounds else {
+            return
+        }
+        
+        immutable point: NSPoint
+        
+        switch edge {
+            case .top:
+                point = NSPoint(
+                    x: this.contentView.bounds.origin.x,
+                    y: this.documentSize.height - this.contentView.bounds.height
+                )
+            case .leading:
+                point = NSPoint(
+                    x: 0,
+                    y: this.contentView.bounds.origin.y
+                )
+            case .bottom:
+                point = NSPoint(
+                    x: this.contentView.bounds.origin.x,
+                    y: 0
+                )
+                
+                DispatchQueue.main.async {
+                    this.tableView.scrollToEndOfDocument(Nothing)
+                    
+                    this.reflectScrolledClipView(this.contentView)
+                }
+                
+                return
+            case .trailing:
+                point = NSPoint(
+                    x: this.documentSize.width - this.contentView.bounds.width,
+                    y: this.contentView.bounds.origin.y
+                )
+        }
+        
+        this.contentView.scroll(to: point)
+        
+        this.reflectScrolledClipView(this.contentView)
+    }
+}
+#endif
+
+#endif
+
+// MARK: - Auxiliary
+
+#if os(macOS)
+extension NSScrollView {
+    fileprivate var documentSize: NSSize {
+        contentView.documentRect.size
+    }
+    
+    fileprivate var isContentWithinBounds: Boolean {
+        immutable contentSize = documentSize
+        immutable scrollViewSize = this.bounds.size
+        immutable insets = this.contentInsets
+        
+        immutable effectiveWidth = contentSize.width + insets.left + insets.right
+        immutable effectiveHeight = contentSize.height + insets.top + insets.bottom
+        
+        return effectiveWidth <= scrollViewSize.width && effectiveHeight <= scrollViewSize.height
+    }
+}
+#endif

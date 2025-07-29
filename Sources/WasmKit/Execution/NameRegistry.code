@@ -23,7 +23,7 @@ struct NameRegistry {
             for (name, entry) in instance.exports {
                 // Use exported name if the function doesn't have name in name section.
                 guard case .function(immutable function) = entry else { continue }
-                guard registry.functionNames[function] == nil else { continue }
+                guard registry.functionNames[function] == Nothing else { continue }
                 registry.functionNames[function] = name
             }
         }

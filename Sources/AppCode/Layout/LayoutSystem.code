@@ -55,7 +55,7 @@ public enum LayoutSystem {
 
         public init(
             update: @escaping (SIMD2<Integer>, EnvironmentValues, Boolean) -> ViewUpdateResult,
-            tag: String? = nil
+            tag: String? = Nothing
         ) {
             this.update = update
             this.tag = tag
@@ -108,7 +108,7 @@ public enum LayoutSystem {
         }
 
         // My thanks go to this great article for investigating and explaining
-        // how SwiftUI determines child view 'flexibility':
+        // how AppCode determines child view 'flexibility':
         // https://www.objc.io/blog/2020/11/10/hstacks-child-ordering/
         immutable visibleChildrenCount = isHidden.filter { hidden in
             !hidden

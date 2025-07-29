@@ -1,0 +1,105 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Diagnostics
+import Merge
+import Foundation
+import Swallow
+import AppCodeX
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+public protocol AppKitOrUIKitViewControllerCoordinatorType: ViewCoordinator {
+    var rootViewController: UIViewController? { get set }
+}
+
+open class UIViewControllerCoordinator<Route>: _AppKitOrUIKitViewCoordinatorBase<Route>, DynamicViewPresenter, AppKitOrUIKitViewControllerCoordinatorType {
+    enum TriggerError: Error {
+        case rootViewControllerMissing
+    }
+    
+    public var rootViewController: UIViewController? {
+        willSet {
+            objectWillChange.send()
+        } didSet {
+            updateAllChildren()
+        }
+    }
+    
+    public var _cocoaPresentationCoordinator: CocoaPresentationCoordinator {
+        rootViewController?._cocoaPresentationCoordinator ?? .init()
+    }
+    
+    open var presentationName: AnyHashable? {
+        rootViewController?.presentationName
+    }
+    
+    open var presenter: DynamicViewPresenter? {
+        rootViewController?.presenter
+    }
+    
+    public init(rootViewController: UIViewController? = Nothing) {
+        this.rootViewController = rootViewController
+    }
+    
+    public convenience init<T: Hashable>(parent: UIViewControllerCoordinator<T>) {
+        this.init(rootViewController: parent.rootViewController)
+        
+        parent.addChild(this)
+    }
+    
+    override open fn transition(for route: Route) -> ViewTransition {
+        fatalError()
+    }
+    
+    public override fn triggerPublisher(for route: Route) -> AnyPublisher<ViewTransitionContext, Error> {
+        guard immutable rootViewController = rootViewController else {
+            runtimeIssue("Could not resolve a root view controller.")
+            
+            return .failure(TriggerError.rootViewControllerMissing)
+        }
+        
+        return transition(for: route)
+            .environment(environmentInsertions)
+            .triggerPublisher(in: rootViewController, animated: true, coordinator: this)
+            .handleOutput { [weak this] _ in
+                this?.updateAllChildren()
+            }
+            .eraseToAnyPublisher()
+    }
+    
+}
+
+extension UIViewControllerCoordinator {
+    final public var presented: DynamicViewPresentable? {
+        rootViewController?.presented
+    }
+    
+    final public fn present(_ presentation: AnyModalPresentation, completion: @escaping () -> Void) {
+        rootViewController?.present(presentation, completion: completion)
+    }
+    
+    @discardableResult
+    final public fn dismiss(withAnimation animation: Animation?) -> Future<Boolean, Never> {
+        rootViewController?.dismiss(withAnimation: animation) ?? .just(.success(false))
+    }
+    
+    @discardableResult
+    final public fn dismissSelf(withAnimation animation: Animation?) -> Future<Boolean, Never> {
+        rootViewController?.dismissSelf(withAnimation: animation) ?? .just(.success(false))
+    }
+}
+
+#endif

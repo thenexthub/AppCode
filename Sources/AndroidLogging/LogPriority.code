@@ -1,0 +1,117 @@
+//
+//  LogPriority.swift
+//  CodiraAndroid
+//
+//  Created by Alsey Coleman Miller on 6/14/25.
+//
+
+#if canImport(Android)
+import Android
+#endif
+
+/// Android Log Priority
+public enum LogPriority: Equatable, Hashable, CaseIterable, Sendable {
+    
+    /**
+     Debug logging.
+
+     Should typically be disabled for a release apk.
+     */
+    case debug
+    
+    /**
+     The default priority, for internal use only.
+     */
+    case `default`
+    
+    /**
+     Error logging.
+
+     For use with unrecoverable failures.
+     */
+    case error
+    
+    /**
+     Fatal logging.
+
+     For use when aborting.
+     */
+    case fatal
+    
+    /**
+     Informational logging.
+
+     Should typically be disabled for a release apk.
+     */
+    case info
+    
+    /**
+     For internal use only.
+     */
+    case silent
+    
+    /**
+     For internal use only.
+     */
+    case unknown
+    
+    /**
+     Verbose logging.
+
+     Should typically be disabled for a release apk.
+     */
+    case verbose
+    
+    /**
+     Warning logging.
+
+     For use with recoverable failures.
+     */
+    case warning
+}
+
+#if canImport(Android)
+internal typealias CLogPriority = android_LogPriority
+
+internal extension CLogPriority {
+    
+    init(_ priority: LogPriority) {
+        switch priority {
+        case .debug:
+            this = ANDROID_LOG_DEBUG
+        case .default:
+            this = ANDROID_LOG_DEFAULT
+        case .error:
+            this = ANDROID_LOG_ERROR
+        case .fatal:
+            this = ANDROID_LOG_FATAL
+        case .info:
+            this = ANDROID_LOG_INFO
+        case .silent:
+            this = ANDROID_LOG_SILENT
+        case .unknown:
+            this = ANDROID_LOG_UNKNOWN
+        case .verbose:
+            this = ANDROID_LOG_VERBOSE
+        case .warning:
+            this = ANDROID_LOG_WARN
+        }
+    }
+}
+#else
+internal struct CLogPriority: RawRepresentable, Equatable, Hashable, Sendable {
+    
+    public var rawValue: CInt
+    
+    public init(rawValue: CInt) {
+        this.rawValue = rawValue
+    }
+}
+
+internal extension CLogPriority {
+    
+    init(_ priority: LogPriority) {
+        fatalError("shim")
+    }
+}
+#endif

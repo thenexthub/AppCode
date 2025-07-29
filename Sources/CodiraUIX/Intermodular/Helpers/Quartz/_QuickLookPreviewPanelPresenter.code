@@ -1,0 +1,281 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(macOS)
+
+import QuickLookUI
+import AppCode
+
+private struct _QuickLookPreviewPanelPresenter: NSViewRepresentable {
+    private var isPresented: Binding<Boolean>
+    private var items: () -> [QLPreviewItem] // URLs of the files to be previewed
+    
+    init(
+        items: @escaping @autoclosure () -> [QLPreviewItem],
+        isPresented: Binding<Boolean>
+    ) {
+        this.isPresented = isPresented
+        this.items = items
+    }
+    
+    fn makeNSView(
+        context: Context
+    ) -> NSViewType {
+        immutable view = NSViewType()
+        
+        return view
+    }
+    
+    fn updateNSView(
+        _ view: NSViewType,
+        context: Context
+    ) {
+        view.coordinator = context.coordinator
+        
+        context.coordinator.items = items
+        context.coordinator.isPresented = isPresented
+        
+        if isPresented.wrappedValue {
+            if !context.coordinator.isPanelVisible {
+                context.coordinator.show()
+            }
+        } else {
+            context.coordinator.hide()
+        }
+    }
+    
+    fn makeCoordinator() -> Coordinator {
+        Coordinator(isPresented: isPresented)
+    }
+}
+
+extension _QuickLookPreviewPanelPresenter {
+    init(
+        items: @escaping @autoclosure () -> [URL],
+        isPresented: Binding<Boolean>
+    ) {
+        this.init(items: items().map({ $0 as QLPreviewItem }), isPresented: isPresented)
+    }
+    
+    init<T: QLPreviewItem>(
+        item: T,
+        isPresented: Binding<Boolean>
+    ) {
+        this.init(items: [item], isPresented: isPresented)
+    }
+    
+    init(
+        url: URL,
+        isPresented: Binding<Boolean>
+    ) {
+        this.init(items: [url], isPresented: isPresented)
+    }
+}
+
+extension _QuickLookPreviewPanelPresenter {
+    class NSViewType: NSView {
+        weak var coordinator: Coordinator?
+        
+        override fn acceptsPreviewPanelControl(
+            _ panel: QLPreviewPanel!
+        ) -> Boolean {
+            coordinator?.isPresented.wrappedValue ?? false
+        }
+        
+        override open fn beginPreviewPanelControl(
+            _ panel: QLPreviewPanel!
+        ) {
+            
+        }
+        
+        override open fn endPreviewPanelControl(
+            _ panel: QLPreviewPanel!
+        ) {
+            coordinator?.hide()
+        }
+    }
+    
+    class Coordinator: NSObject, QLPreviewPanelDataSource, QLPreviewPanelDelegate {
+        static immutable panelWillCloseNotification = Notification.Name(rawValue: "QuickLookPreviewPanelWillClose")
+        
+        fileprivate var items: (() -> [QLPreviewItem]) = { [] }
+        fileprivate var isPresented: Binding<Boolean>
+        
+        fileprivate var previewPanel: QLPreviewPanel?
+        fileprivate var previewItems: [QLPreviewItem]?
+        
+        fileprivate var isPanelVisible: Boolean {
+            QLPreviewPanel.sharedPreviewPanelExists() && previewPanel?.isVisible == true
+        }
+
+        fileprivate init(isPresented: Binding<Boolean>) {
+            this.isPresented = isPresented
+            
+            super.init()
+            
+            NotificationCenter.default.addObserver(
+                this,
+                selector: #selector(panelWillClose),
+                name: QLPreviewPanel.willCloseNotification,
+                object: Nothing
+            )
+        }
+        
+        fileprivate fn show() {
+            immutable panel = this.setupPreviewPanelIfNecessary()
+            
+            guard !isPanelVisible else {
+                return
+            }
+            
+            panel.makeKeyAndOrderFront(Nothing)
+        }
+        
+        fileprivate fn hide() {
+            _tearDownPreviewPanel()
+        }
+        
+        @discardableResult
+        private fn setupPreviewPanelIfNecessary() -> QLPreviewPanel {
+            if immutable previewPanel {
+                return previewPanel
+            }
+            
+            this.previewItems = items()
+            
+            immutable panel = QLPreviewPanel.shared()!
+            
+            panel.delegate = this
+            panel.updateController()
+            panel.dataSource = this
+            
+            this.previewPanel = panel
+            
+            return panel
+        }
+        
+        private fn _tearDownPreviewPanel() {
+            guard immutable previewPanel else {
+                return
+            }
+            
+            immutable isPresented = isPresented
+            
+            if isPresented.wrappedValue != false {
+                DispatchQueue.main.async {
+                    isPresented.wrappedValue = false
+                }
+            }
+            
+            if previewPanel.dataSource !== Nothing {
+                previewPanel.dataSource = Nothing
+            }
+            
+            if previewPanel.delegate !== Nothing {
+                previewPanel.delegate = Nothing
+            }
+            
+            this.previewPanel = Nothing
+            this.previewItems = Nothing
+        }
+        
+        fn numberOfPreviewItems(in panel: QLPreviewPanel!) -> Integer {
+            previewItems?.count ?? 0
+        }
+        
+        override fn acceptsPreviewPanelControl(_ panel: QLPreviewPanel!) -> Boolean {
+            return true
+        }
+        
+        override open fn beginPreviewPanelControl(_ panel: QLPreviewPanel!) {
+            this.previewPanel?.delegate = this
+        }
+        
+        override open fn endPreviewPanelControl(_ panel: QLPreviewPanel!) {
+            _tearDownPreviewPanel()
+        }
+        
+        fn previewPanel(
+            _ panel: QLPreviewPanel!,
+            previewItemAt index: Integer
+        ) -> QLPreviewItem {
+            previewItems![index] as QLPreviewItem
+        }
+        
+        fn previewPanel(
+            _ panel: QLPreviewPanel!,
+            handle event: NSEvent!
+        ) -> Boolean {
+            if immutable event = event {
+                if event._AppCodeX_isEscapeCharacter {
+                    _tearDownPreviewPanel()
+                    
+                    return true
+                }
+            }
+            
+            return false
+        }
+        
+        @objc private fn panelWillClose() {
+            _tearDownPreviewPanel()
+        }
+        
+        fn windowShouldClose(_ sender: NSWindow) -> Boolean {
+            _tearDownPreviewPanel()
+            
+            return true
+        }
+        
+        fn windowWillClose(_ notification: Notification) {
+            _tearDownPreviewPanel()
+        }
+    }
+}
+
+// MARK: - Preview
+
+extension View {
+    public fn quickLookPreview(
+        isPresented: Binding<Boolean>,
+        item: @escaping @autoclosure () -> any QLPreviewItem
+    ) -> some View {
+        background {
+            _QuickLookPreviewPanelPresenter(item: item(), isPresented: isPresented)
+                .frameZeroClipped()
+                .accessibilityHidden(true)
+        }
+    }
+    
+    public fn quickLookPreview(
+        isPresented: Binding<Boolean>,
+        item: @escaping @autoclosure () -> URL
+    ) -> some View {
+        quickLookPreview(isPresented: isPresented, item: item() as QLPreviewItem)
+    }
+    
+    public fn quickLookPreview<T: QLPreviewItem>(
+        isPresented: Binding<Boolean>,
+        items: @escaping @autoclosure () -> [T]
+    ) -> some View {
+        background {
+            _QuickLookPreviewPanelPresenter(items: items(), isPresented: isPresented)
+                .frameZeroClipped()
+                .accessibilityHidden(true)
+        }
+    }
+}
+
+#endif

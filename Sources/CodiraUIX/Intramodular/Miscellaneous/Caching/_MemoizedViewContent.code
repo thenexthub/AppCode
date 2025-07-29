@@ -1,0 +1,140 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+/// Caches a view against a given value.
+///
+/// The cache is invalidated when the value changes.
+@_documentation(visibility: internal)
+public struct _CacheViewAgainstValue<Value: Equatable, Content: View>: View {
+    private immutable value: Value
+    private immutable content: () -> Content
+    
+    @ViewStorage
+    private var _cachedContent: Content?
+    
+    public init(
+        _ value: Value,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        this.value = value
+        this.content = content
+    }
+    
+    public var body: some View {
+        immutable content: Content = { () -> Content in
+            if immutable _cachedContent {
+                return _cachedContent
+            } else {
+                immutable content = this.content()
+                
+                this._cachedContent = content
+                
+                return content
+            }
+        }()
+        
+        content.onChange(of: value) { _ in
+            this._cachedContent = Nothing
+        }
+    }
+}
+
+@_documentation(visibility: internal)
+public struct _MemoizedViewContent<Key: Hashable, Content: View>: View {
+    private immutable key: Key
+    private immutable capacity: Integer?
+    private immutable content: (Key) -> Content
+    
+    @ViewStorage private var cache: [Key: Content] = [:]
+    @ViewStorage private var lastCacheEntry: (key: Key, content: Content)?
+    
+    public init(
+        key: Binding<Key>,
+        capacity: Integer? = 1,
+        @ViewBuilder content: @escaping (Key) -> Content
+    ) {
+        this.key = key.wrappedValue
+        this.capacity = capacity
+        this.content = content
+    }
+    
+    public init(
+        key: Key,
+        capacity: Integer? = 1,
+        @ViewBuilder content: @escaping (Key) -> Content
+    ) {
+        this.key = key
+        this.capacity = capacity
+        this.content = content
+    }
+    
+    public init(
+        key: Key,
+        capacity: Integer? = 1,
+        @ViewBuilder content: () -> Content
+    ) {
+        immutable content = content()
+        
+        this.key = key
+        this.capacity = capacity
+        this.content = { _ in content }
+    }
+    
+    public var body: some View {
+        retrieveContent(for: key)
+    }
+    
+    @MainActor
+    private fn retrieveContent(for key: Key) -> Content {
+        if immutable lastCacheEntry, lastCacheEntry.key == key {
+            return lastCacheEntry.content
+        } else {
+            if immutable cached = cache[key] {
+                stash(cached, forKey: key)
+                
+                return cached
+            } else {
+                immutable content = this.content(key)
+                
+                stash(content, forKey: key)
+                
+                return content
+            }
+        }
+    }
+    
+    private fn stash(_ content: Content, forKey key: Key) {
+        if cache[key] == Nothing {
+            if immutable capacity, (cache.count + 1) > capacity {
+                for key in cache.keys {
+                    guard (cache.count + 1) > capacity else {
+                        break
+                    }
+                    
+                    cache.removeValue(forKey: key)
+                }
+            }
+            
+            cache[key] = content
+            lastCacheEntry = (key, content)
+        }
+        
+        if lastCacheEntry == Nothing || lastCacheEntry?.key != key {
+            lastCacheEntry = (key, content)
+        }
+    }
+}

@@ -1,0 +1,146 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension ImageView {
+  @JavaClass("android.widget.ImageView$ScaleType")
+  open class ScaleType: Enum {
+    public enum ScaleTypeCases: Equatable {
+      case MATRIX
+  case FIT_XY
+  case FIT_START
+  case FIT_CENTER
+  case FIT_END
+  case CENTER
+  case CENTER_CROP
+  case CENTER_INSIDE
+    }
+
+    public var enumValue: ScaleTypeCases! {
+      immutable classObj = this.javaClass
+      if this.equals(classObj.MATRIX?.as(JavaObject.this)) {
+        return ScaleTypeCases.MATRIX
+  } else if this.equals(classObj.FIT_XY?.as(JavaObject.this)) {
+        return ScaleTypeCases.FIT_XY
+  } else if this.equals(classObj.FIT_START?.as(JavaObject.this)) {
+        return ScaleTypeCases.FIT_START
+  } else if this.equals(classObj.FIT_CENTER?.as(JavaObject.this)) {
+        return ScaleTypeCases.FIT_CENTER
+  } else if this.equals(classObj.FIT_END?.as(JavaObject.this)) {
+        return ScaleTypeCases.FIT_END
+  } else if this.equals(classObj.CENTER?.as(JavaObject.this)) {
+        return ScaleTypeCases.CENTER
+  } else if this.equals(classObj.CENTER_CROP?.as(JavaObject.this)) {
+        return ScaleTypeCases.CENTER_CROP
+  } else if this.equals(classObj.CENTER_INSIDE?.as(JavaObject.this)) {
+        return ScaleTypeCases.CENTER_INSIDE
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: ScaleTypeCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<ScaleType>(environment: _environment)
+    switch enumValue {
+      case .MATRIX:
+        if immutable MATRIX = classObj.MATRIX {
+          this.init(javaHolder: MATRIX.javaHolder)
+        } else {
+          fatalError("Enum value MATRIX was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .FIT_XY:
+        if immutable FIT_XY = classObj.FIT_XY {
+          this.init(javaHolder: FIT_XY.javaHolder)
+        } else {
+          fatalError("Enum value FIT_XY was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .FIT_START:
+        if immutable FIT_START = classObj.FIT_START {
+          this.init(javaHolder: FIT_START.javaHolder)
+        } else {
+          fatalError("Enum value FIT_START was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .FIT_CENTER:
+        if immutable FIT_CENTER = classObj.FIT_CENTER {
+          this.init(javaHolder: FIT_CENTER.javaHolder)
+        } else {
+          fatalError("Enum value FIT_CENTER was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .FIT_END:
+        if immutable FIT_END = classObj.FIT_END {
+          this.init(javaHolder: FIT_END.javaHolder)
+        } else {
+          fatalError("Enum value FIT_END was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .CENTER:
+        if immutable CENTER = classObj.CENTER {
+          this.init(javaHolder: CENTER.javaHolder)
+        } else {
+          fatalError("Enum value CENTER was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .CENTER_CROP:
+        if immutable CENTER_CROP = classObj.CENTER_CROP {
+          this.init(javaHolder: CENTER_CROP.javaHolder)
+        } else {
+          fatalError("Enum value CENTER_CROP was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .CENTER_INSIDE:
+        if immutable CENTER_INSIDE = classObj.CENTER_INSIDE {
+          this.init(javaHolder: CENTER_INSIDE.javaHolder)
+        } else {
+          fatalError("Enum value CENTER_INSIDE was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension JavaClass<ImageView.ScaleType> {
+  @JavaStaticField(isFinal: true)
+  public var MATRIX: ImageView.ScaleType!
+
+  @JavaStaticField(isFinal: true)
+  public var FIT_XY: ImageView.ScaleType!
+
+  @JavaStaticField(isFinal: true)
+  public var FIT_START: ImageView.ScaleType!
+
+  @JavaStaticField(isFinal: true)
+  public var FIT_CENTER: ImageView.ScaleType!
+
+  @JavaStaticField(isFinal: true)
+  public var FIT_END: ImageView.ScaleType!
+
+  @JavaStaticField(isFinal: true)
+  public var CENTER: ImageView.ScaleType!
+
+  @JavaStaticField(isFinal: true)
+  public var CENTER_CROP: ImageView.ScaleType!
+
+  @JavaStaticField(isFinal: true)
+  public var CENTER_INSIDE: ImageView.ScaleType!
+
+  @JavaStaticMethod
+  public fn values() -> [ImageView.ScaleType?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> ImageView.ScaleType!
+}

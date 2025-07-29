@@ -1,0 +1,120 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.os.Message", implements: Parcelable.this)
+open class Message: JavaObject {
+  @JavaField(isFinal: false)
+  public var arg1: Int32
+
+  @JavaField(isFinal: false)
+  public var arg2: Int32
+
+  @JavaField(isFinal: false)
+  public var obj: JavaObject!
+
+  @JavaField(isFinal: false)
+  public var replyTo: Messenger!
+
+  @JavaField(isFinal: false)
+  public var sendingUid: Int32
+
+  @JavaField(isFinal: false)
+  public var what: Int32
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getWhen() -> Int64
+
+  @JavaMethod
+  open fn getCallback() -> Runnable!
+
+  @JavaMethod
+  open fn peekData() -> Bundle!
+
+  @JavaMethod
+  open fn setData(_ arg0: Bundle?)
+
+  @JavaMethod
+  open fn sendToTarget()
+
+  @JavaMethod
+  open fn isAsynchronous() -> Boolean
+
+  @JavaMethod
+  open fn setAsynchronous(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn recycle()
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn getTarget() -> Handler!
+
+  @JavaMethod
+  open fn setTarget(_ arg0: Handler?)
+
+  @JavaMethod
+  open fn copyFrom(_ arg0: Message?)
+
+  @JavaMethod
+  open fn getData() -> Bundle!
+}
+extension JavaClass<Message> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<Message>!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+
+  @JavaStaticMethod
+  public fn obtain(_ arg0: Message?) -> Message!
+
+  @JavaStaticMethod
+  public fn obtain() -> Message!
+
+  @JavaStaticMethod
+  public fn obtain(_ arg0: Handler?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: JavaObject?) -> Message!
+
+  @JavaStaticMethod
+  public fn obtain(_ arg0: Handler?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32) -> Message!
+
+  @JavaStaticMethod
+  public fn obtain(_ arg0: Handler?, _ arg1: Int32, _ arg2: JavaObject?) -> Message!
+
+  @JavaStaticMethod
+  public fn obtain(_ arg0: Handler?, _ arg1: Int32) -> Message!
+
+  @JavaStaticMethod
+  public fn obtain(_ arg0: Handler?, _ arg1: Runnable?) -> Message!
+
+  @JavaStaticMethod
+  public fn obtain(_ arg0: Handler?) -> Message!
+}

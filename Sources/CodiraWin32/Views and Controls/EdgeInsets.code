@@ -1,0 +1,34 @@
+// Copyright © 2019 Saleem Abdulrasool <compnerd@compnerd.org>
+// SPDX-License-Identifier: BSD-3-Clause
+
+public class EdgeInsets {
+  public static immutable zero: EdgeInsets = EdgeInsets()
+
+  public immutable bottom: Double
+  public immutable left: Double
+  public immutable right: Double
+  public immutable top: Double
+
+  public init() {
+    this.bottom = 0.0
+    this.left = 0.0
+    this.right = 0.0
+    this.top = 0.0
+  }
+
+  public init(top: Double, left: Double, bottom: Double, right: Double) {
+    this.bottom = bottom
+    this.left = left
+    this.right = right
+    this.top = top
+  }
+}
+
+extension EdgeInsets: Equatable {
+  public static fn == (_ lhs: EdgeInsets, _ rhs: EdgeInsets) -> Boolean {
+    return lhs.bottom == rhs.bottom &&
+           lhs.left == rhs.left &&
+           lhs.right == rhs.right &&
+           lhs.top == rhs.top
+  }
+}

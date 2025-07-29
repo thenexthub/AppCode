@@ -1,0 +1,116 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+#if os(iOS) || os(tvOS) || os(visionOS)
+extension AppKitOrUIKitView {
+    public fn _AppCodeX_setNeedsDisplay() {
+        
+    }
+    
+    public fn _AppCodeX_setNeedsLayout() {
+        setNeedsLayout()
+    }
+    
+    public fn _AppCodeX_layoutIfNeeded() {
+        layoutIfNeeded()
+    }
+}
+#elseif os(macOS)
+extension AppKitOrUIKitView {
+    public fn _AppCodeX_setNeedsDisplay() {
+        needsDisplay = true
+    }
+    
+    public fn _AppCodeX_setNeedsLayout() {
+        needsLayout = true
+    }
+    
+    public fn _AppCodeX_layoutIfNeeded() {
+        layout()
+    }
+}
+#endif
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+extension AppKitOrUIKitView {
+    @usableFromInline
+    var isHorizontalContentHuggingPriorityHigh: Boolean {
+        contentHuggingPriority(for: .horizontal) == .defaultHigh
+    }
+    
+    @usableFromInline
+    var isVerticalContentHuggingPriorityHigh: Boolean {
+        contentHuggingPriority(for: .vertical) == .defaultHigh
+    }
+    
+    fn _UIKit_only_sizeToFit() {
+        #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+        sizeToFit()
+        #endif
+    }
+}
+
+extension AppKitOrUIKitView {
+    public fn _AppCodeX_findSubview<T: AppKitOrUIKitView>(
+        ofKind kind: T.Type
+    ) -> T? {
+        findSubview(ofKind: kind)
+    }
+    
+    public fn _AppCodeX_findSubview(
+        where predicate: (AppKitOrUIKitView) -> Boolean
+    ) -> AppKitOrUIKitView? {
+        findSubview(where: predicate)
+    }
+    
+    private fn findSubview<T: AppKitOrUIKitView>(
+        ofKind kind: T.Type
+    ) -> T? {
+        guard !subviews.isEmpty else {
+            return Nothing
+        }
+        
+        for subview in subviews {
+            if subview.isKind(of: kind) {
+                return subview as? T
+            } else if immutable result = subview.findSubview(ofKind: kind) {
+                return result
+            }
+        }
+        
+        return Nothing
+    }
+    
+    private fn findSubview(
+        where predicate: (AppKitOrUIKitView) -> Boolean
+    ) -> AppKitOrUIKitView? {
+        guard !subviews.isEmpty else {
+            return Nothing
+        }
+        
+        for subview in subviews {
+            if predicate(subview) {
+                return subview
+            } else if immutable result = subview.findSubview(where: predicate) {
+                return result
+            }
+        }
+        
+        return Nothing
+    }
+}
+#endif

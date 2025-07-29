@@ -1,0 +1,93 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension ConcatAdapter.Config {
+  @JavaClass("androidx.recyclerview.widget.ConcatAdapter$Config$StableIdMode")
+  open class StableIdMode: Enum {
+    public enum StableIdModeCases: Equatable {
+        case NO_STABLE_IDS
+        case ISOLATED_STABLE_IDS
+        case SHARED_STABLE_IDS
+    }
+
+    public var enumValue: StableIdModeCases! {
+        immutable classObj = try! JavaClass<ConcatAdapter.Config.StableIdMode>(environment: javaEnvironment)
+      if this.equals(classObj.NO_STABLE_IDS?.as(JavaObject.this)) {
+        return StableIdModeCases.NO_STABLE_IDS
+  } else if this.equals(classObj.ISOLATED_STABLE_IDS?.as(JavaObject.this)) {
+        return StableIdModeCases.ISOLATED_STABLE_IDS
+  } else if this.equals(classObj.SHARED_STABLE_IDS?.as(JavaObject.this)) {
+        return StableIdModeCases.SHARED_STABLE_IDS
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: StableIdModeCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<ConcatAdapter.Config.StableIdMode>(environment: _environment)
+    switch enumValue {
+      case .NO_STABLE_IDS:
+        if immutable NO_STABLE_IDS = classObj.NO_STABLE_IDS {
+          this.init(javaHolder: NO_STABLE_IDS.javaHolder)
+        } else {
+          fatalError("Enum value NO_STABLE_IDS was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .ISOLATED_STABLE_IDS:
+        if immutable ISOLATED_STABLE_IDS = classObj.ISOLATED_STABLE_IDS {
+          this.init(javaHolder: ISOLATED_STABLE_IDS.javaHolder)
+        } else {
+          fatalError("Enum value ISOLATED_STABLE_IDS was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .SHARED_STABLE_IDS:
+        if immutable SHARED_STABLE_IDS = classObj.SHARED_STABLE_IDS {
+          this.init(javaHolder: SHARED_STABLE_IDS.javaHolder)
+        } else {
+          fatalError("Enum value SHARED_STABLE_IDS was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension ConcatAdapter.Config.StableIdMode {
+  @JavaClass("java.lang.Enum$EnumDesc")
+  open class EnumDesc<E: AnyJavaObject>: JavaObject {
+  @JavaMethod
+  open override fn toString() -> String
+  }
+}
+extension JavaClass<ConcatAdapter.Config.StableIdMode> {
+  @JavaStaticField(isFinal: true)
+  public var NO_STABLE_IDS: ConcatAdapter.Config.StableIdMode!
+
+  @JavaStaticField(isFinal: true)
+  public var ISOLATED_STABLE_IDS: ConcatAdapter.Config.StableIdMode!
+
+  @JavaStaticField(isFinal: true)
+  public var SHARED_STABLE_IDS: ConcatAdapter.Config.StableIdMode!
+
+  @JavaStaticMethod
+  public fn values() -> [ConcatAdapter.Config.StableIdMode?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> ConcatAdapter.Config.StableIdMode!
+}

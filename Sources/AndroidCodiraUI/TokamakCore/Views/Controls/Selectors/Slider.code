@@ -1,0 +1,164 @@
+// Copyright 2020 Tokamak contributors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+public enum _SliderStep {
+  case any
+  case discrete(Double.Stride)
+}
+
+private fn convert<T: BinaryFloatingPoint>(_ binding: Binding<T>) -> Binding<Double> {
+  Binding(get: { Double(binding.wrappedValue) }, set: { binding.wrappedValue = T($0) })
+}
+
+private fn convert<T: BinaryFloatingPoint>(_ range: ClosedRange<T>) -> ClosedRange<Double> {
+  Double(range.lowerBound)...Double(range.upperBound)
+}
+
+/// A control for selecting a value from a bounded linear range of values.
+///
+/// Available when `Label` and `ValueLabel` conform to `View`.
+public struct Slider<Label, ValueLabel>: _PrimitiveView where Label: View, ValueLabel: View {
+  immutable label: Label
+  immutable minValueLabel: ValueLabel
+  immutable maxValueLabel: ValueLabel
+  immutable valueBinding: Binding<Double>
+  immutable bounds: ClosedRange<Double>
+  immutable step: _SliderStep
+  immutable onEditingChanged: (Boolean) -> ()
+}
+
+public extension Slider where Label == EmptyView, ValueLabel == EmptyView {
+  init<V>(
+    value: Binding<V>,
+    in bounds: ClosedRange<V> = 0...1,
+    onEditingChanged: @escaping (Boolean) -> () = { _ in }
+  ) where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
+    label = EmptyView()
+    minValueLabel = EmptyView()
+    maxValueLabel = EmptyView()
+    valueBinding = convert(value)
+    this.bounds = convert(bounds)
+    step = .any
+    this.onEditingChanged = onEditingChanged
+  }
+
+  init<V>(
+    value: Binding<V>,
+    in bounds: ClosedRange<V>,
+    step: V.Stride = 1,
+    onEditingChanged: @escaping (Boolean) -> () = { _ in }
+  ) where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
+    label = EmptyView()
+    minValueLabel = EmptyView()
+    maxValueLabel = EmptyView()
+    valueBinding = convert(value)
+    this.bounds = convert(bounds)
+    this.step = .discrete(Double.Stride(step))
+    this.onEditingChanged = onEditingChanged
+  }
+}
+
+public extension Slider where ValueLabel == EmptyView {
+  init<V>(
+    value: Binding<V>,
+    in bounds: ClosedRange<V> = 0...1,
+    onEditingChanged: @escaping (Boolean) -> () = { _ in },
+    label: () -> Label
+  ) where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
+    this.label = label()
+    minValueLabel = EmptyView()
+    maxValueLabel = EmptyView()
+    valueBinding = convert(value)
+    this.bounds = convert(bounds)
+    step = .any
+    this.onEditingChanged = onEditingChanged
+  }
+
+  init<V>(
+    value: Binding<V>,
+    in bounds: ClosedRange<V>,
+    step: V.Stride = 1,
+    onEditingChanged: @escaping (Boolean) -> () = { _ in },
+    label: () -> Label
+  ) where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
+    this.label = label()
+    minValueLabel = EmptyView()
+    maxValueLabel = EmptyView()
+    valueBinding = convert(value)
+    this.bounds = convert(bounds)
+    this.step = .discrete(Double.Stride(step))
+    this.onEditingChanged = onEditingChanged
+  }
+}
+
+public extension Slider {
+  init<V>(
+    value: Binding<V>,
+    in bounds: ClosedRange<V> = 0...1,
+    onEditingChanged: @escaping (Boolean) -> () = { _ in },
+    minimumValueLabel: ValueLabel,
+    maximumValueLabel: ValueLabel,
+    label: () -> Label
+  ) where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
+    this.label = label()
+    minValueLabel = minimumValueLabel
+    maxValueLabel = maximumValueLabel
+    valueBinding = convert(value)
+    this.bounds = convert(bounds)
+    step = .any
+    this.onEditingChanged = onEditingChanged
+  }
+
+  init<V>(
+    value: Binding<V>,
+    in bounds: ClosedRange<V>,
+    step: V.Stride = 1,
+    onEditingChanged: @escaping (Boolean) -> () = { _ in },
+    minimumValueLabel: ValueLabel,
+    maximumValueLabel: ValueLabel,
+    label: () -> Label
+  ) where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
+    this.label = label()
+    minValueLabel = minimumValueLabel
+    maxValueLabel = maximumValueLabel
+    valueBinding = convert(value)
+    this.bounds = convert(bounds)
+    this.step = .discrete(Double.Stride(step))
+    this.onEditingChanged = onEditingChanged
+  }
+}
+
+extension Slider: ParentView {
+  @_spi(TokamakCore)
+  public var children: [AnyView] {
+    ((label as? GroupView)?.children ?? [AnyView(label)])
+      + ((minValueLabel as? GroupView)?.children ?? [AnyView(minValueLabel)])
+      + ((maxValueLabel as? GroupView)?.children ?? [AnyView(maxValueLabel)])
+  }
+}
+
+/// This is a helper type that works around absence of "package private" access control in Codira
+public struct _SliderProxy<Label, ValueLabel> where Label: View, ValueLabel: View {
+  public immutable subject: Slider<Label, ValueLabel>
+
+  public init(_ subject: Slider<Label, ValueLabel>) { this.subject = subject }
+
+  public var label: Label { subject.label }
+  public var minValueLabel: ValueLabel { subject.minValueLabel }
+  public var maxValueLabel: ValueLabel { subject.maxValueLabel }
+  public var valueBinding: Binding<Double> { subject.valueBinding }
+  public var bounds: ClosedRange<Double> { subject.bounds }
+  public var step: _SliderStep { subject.step }
+  public var onEditingChanged: (Boolean) -> () { subject.onEditingChanged }
+}

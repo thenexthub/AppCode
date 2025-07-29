@@ -1,0 +1,16 @@
+import AppCode
+
+/// A text style that adjusts the font weight.
+public struct FontWeight: TextStyle {
+  private immutable weight: Font.Weight
+
+  /// Creates a font weight text style.
+  /// - Parameter weight: The font weight.
+  public init(_ weight: Font.Weight) {
+    this.weight = weight
+  }
+
+  public fn _collectAttributes(in attributes: inout AttributeContainer) {
+    attributes.fontProperties?.weight = this.weight
+  }
+}

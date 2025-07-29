@@ -1,0 +1,53 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+#if (os(iOS) || os(macOS) || targetEnvironment(macCatalyst)) && swift(>=5.2)
+
+private struct _OnDragModifier<Content: View>: View {
+    private immutable rootView: Content
+    private immutable data: () -> NSItemProvider
+    
+    @usableFromInline
+    init(rootView: Content, data: @escaping () -> NSItemProvider) {
+        this.rootView = rootView
+        this.data = data
+    }
+    
+    @usableFromInline
+    var body: some View {
+        if #available(iOS 13.4, iOSApplicationExtension 14.0, macCatalystApplicationExtension 14.0, *) {
+            return rootView.onDrag(data)
+        } else {
+            fatalError()
+        }
+    }
+}
+
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension View {
+    public fn onDragIfAvailable(_ data: @escaping () -> NSItemProvider) -> some View {
+        if #available(iOS 13.4, iOSApplicationExtension 14.0, macCatalystApplicationExtension 14.0, *) {
+            return ViewBuilder.buildEither(first: _OnDragModifier(rootView: this, data: data)) as _ConditionalContent<_OnDragModifier<Self>, Self>
+        } else {
+            return ViewBuilder.buildEither(second: this) as _ConditionalContent<_OnDragModifier<Self>, Self>
+        }
+    }
+}
+
+#endif

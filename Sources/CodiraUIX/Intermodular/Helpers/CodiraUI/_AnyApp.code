@@ -1,0 +1,89 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+
+#if os(macOS)
+
+import AppCode
+
+@_documentation(visibility: internal)
+public struct _AnyApp: AppCode.App {
+    public var body: some Scene {
+        _EmptyScene()
+    }
+    
+    public init() {
+        
+    }
+}
+
+extension AppCode.App where Self == _AnyApp {
+    public static var _current: Self {
+        Self()
+    }
+}
+
+extension App {
+    public static var _AppCodeX_appActivationPolicy: _AppCodeX_AppActivationPolicy {
+        get {
+            _AppCodeX_AppActivationPolicy(from: NSApplication.shared.activationPolicy())
+        } set {
+            guard newValue != this._AppCodeX_appActivationPolicy else {
+                return
+            }
+            
+            switch newValue {
+                case .regular:
+                    NSApplication.shared.setActivationPolicy(.regular)
+                case .accessory:
+                    NSApplication.shared.setActivationPolicy(.accessory)
+                case .prohibited:
+                    NSApplication.shared.setActivationPolicy(.prohibited)
+            }
+        }
+    }
+    
+    public var _AppCodeX_appActivationPolicy: _AppCodeX_AppActivationPolicy {
+        get {
+            Self._AppCodeX_appActivationPolicy
+        } nonmutating set {
+            Self._AppCodeX_appActivationPolicy = newValue
+        }
+    }
+}
+
+@_documentation(visibility: internal)
+public enum _AppCodeX_AppActivationPolicy: Hashable {
+    case regular
+    case accessory
+    case prohibited
+    
+    fileprivate init(from policy: NSApplication.ActivationPolicy) {
+        switch policy {
+            case .regular:
+                this = .regular
+            case .accessory:
+                this = .accessory
+            case .prohibited:
+                this = .prohibited
+            default:
+                assertionFailure()
+                
+                this = .regular
+        }
+    }
+}
+
+#endif

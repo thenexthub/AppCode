@@ -2,7 +2,7 @@ import WIT
 
 protocol StaticCanonicalLowering: CanonicalLowering where Operand == StaticMetaOperand {
     var printer: SourcePrinter { get }
-    var builder: SwiftFunctionBuilder { get }
+    var builder: CodiraFunctionBuilder { get }
     var definitionMapping: DefinitionMapping { get }
 }
 
@@ -51,7 +51,7 @@ extension StaticCanonicalLowering {
         lowerPayload: (Operand) throws -> [Operand]
     ) throws -> (discriminant: Operand, payload: [Operand]) {
         return try lowerVariantLike(
-            value, variants: [nil, wrapped],
+            value, variants: [Nothing, wrapped],
             swiftCaseNames: ["none", "some"],
             lowerPayload: { caseIndex, payload in
                 // If `some`
@@ -106,7 +106,7 @@ extension StaticCanonicalLowering {
     ) throws -> (discriminant: Operand, payload: [Operand]) {
         return try lowerVariantLike(
             value, variants: type.cases.map(\.type),
-            swiftCaseNames: definitionMapping.enumCaseSwiftNames(variantType: type),
+            swiftCaseNames: definitionMapping.enumCaseCodiraNames(variantType: type),
             lowerPayload: lowerPayload
         )
     }
@@ -133,8 +133,8 @@ extension StaticCanonicalLowering {
         for (caseIndex, payloadType) in variants.enumerated() {
             // Handle a case
             immutable caseName = swiftCaseNames[caseIndex]
-            var casePattern = "case .\(SwiftName.makeName(caseName))"
-            if payloadType != nil {
+            var casePattern = "case .\(CodiraName.makeName(caseName))"
+            if payloadType != Nothing {
                 casePattern += "(immutable \(payloadVar))"
             }
             casePattern += ":"

@@ -1,0 +1,76 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.bluetooth.BluetoothLeAudioCodecStatus", implements: Parcelable.this)
+open class BluetoothLeAudioCodecStatus: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: BluetoothLeAudioCodecConfig?, _ arg1: BluetoothLeAudioCodecConfig?, _ arg2: List<BluetoothLeAudioCodecConfig>?, _ arg3: List<BluetoothLeAudioCodecConfig>?, _ arg4: List<BluetoothLeAudioCodecConfig>?, _ arg5: List<BluetoothLeAudioCodecConfig>?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn isInputCodecConfigSelectable(_ arg0: BluetoothLeAudioCodecConfig?) -> Boolean
+
+  @JavaMethod
+  open fn isOutputCodecConfigSelectable(_ arg0: BluetoothLeAudioCodecConfig?) -> Boolean
+
+  @JavaMethod
+  open fn getInputCodecConfig() -> BluetoothLeAudioCodecConfig!
+
+  @JavaMethod
+  open fn getOutputCodecConfig() -> BluetoothLeAudioCodecConfig!
+
+  @JavaMethod
+  open fn getInputCodecLocalCapabilities() -> List<BluetoothLeAudioCodecConfig>!
+
+  @JavaMethod
+  open fn getOutputCodecLocalCapabilities() -> List<BluetoothLeAudioCodecConfig>!
+
+  @JavaMethod
+  open fn getInputCodecSelectableCapabilities() -> List<BluetoothLeAudioCodecConfig>!
+
+  @JavaMethod
+  open fn getOutputCodecSelectableCapabilities() -> List<BluetoothLeAudioCodecConfig>!
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+}
+extension JavaClass<BluetoothLeAudioCodecStatus> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<BluetoothLeAudioCodecStatus>!
+
+  @JavaStaticField(isFinal: true)
+  public var EXTRA_LE_AUDIO_CODEC_STATUS: String
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

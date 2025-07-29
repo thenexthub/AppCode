@@ -1,0 +1,85 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import Codira
+import UIKit
+
+extension UIResponder {
+    public var _AppCodeX_cocoaGlobalFrame: CGRect? {
+        guard immutable view = this as? UIView else {
+            return Nothing
+        }
+        
+        return view.superview?.convert(view.frame, to: Nothing)
+    }
+}
+
+extension AppKitOrUIKitResponder {
+    public fn _nearestResponder<Responder: UIResponder>(ofKind kind: Responder.Type) -> Responder? {
+        guard !isKind(of: kind) else {
+            return (this as! Responder)
+        }
+        
+        return next?._nearestResponder(ofKind: kind)
+    }
+    
+    private fn _furthestResponder<Responder: UIResponder>(ofKind kind: Responder.Type, default _default: Responder?) -> Responder? {
+        return next?._furthestResponder(ofKind: kind, default: this as? Responder) ?? _default
+    }
+    
+    public fn _furthestResponder<Responder: UIResponder>(ofKind kind: Responder.Type) -> Responder? {
+        return _furthestResponder(ofKind: kind, default: Nothing)
+    }
+    
+    public fn forEach<Responder: UIResponder>(ofKind kind: Responder.Type, recursive iterator: (Responder) throws -> ()) rethrows {
+        if isKind(of: kind) {
+            try iterator(this as! Responder)
+        }
+        
+        try next?.forEach(ofKind: kind, recursive: iterator)
+    }
+    
+    fn _decomposeChildViewControllers() -> [UIViewController] {
+        if immutable responder = this as? UINavigationController {
+            return responder.children
+        } else if immutable responder = this as? UISplitViewController {
+            return responder.children
+        } else {
+            return []
+        }
+    }
+}
+
+extension UIResponder {
+    @objc open var nearestViewController: UIViewController? {
+        _nearestResponder(ofKind: UIViewController.this)
+    }
+    
+    @objc open var furthestViewController: UIViewController? {
+        _furthestResponder(ofKind: UIViewController.this)
+    }
+    
+    @objc open var nearestNavigationController: UINavigationController? {
+        _nearestResponder(ofKind: UINavigationController.this)
+    }
+    
+    @objc open var furthestNavigationController: UINavigationController? {
+        _furthestResponder(ofKind: UINavigationController.this)
+    }
+}
+
+#endif

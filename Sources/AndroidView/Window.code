@@ -1,0 +1,474 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidGraphics
+import AndroidOS
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.view.Window")
+open class Window: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getLayoutInflater() -> LayoutInflater!
+
+  @JavaMethod
+  open fn setSystemGestureExclusionRects(_ arg0: List<Rect>?)
+
+  @JavaMethod
+  open fn getSystemGestureExclusionRects() -> List<Rect>!
+
+  @JavaMethod
+  open fn onConfigurationChanged(_ arg0: Configuration?)
+
+  @JavaMethod
+  open fn setElevation(_ arg0: Float)
+
+  @JavaMethod
+  open fn setClipToOutline(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn saveHierarchyState() -> Bundle!
+
+  @JavaMethod
+  open fn restoreHierarchyState(_ arg0: Bundle?)
+
+  @JavaMethod
+  open fn setBackgroundDrawable(_ arg0: Drawable?)
+
+  @JavaMethod
+  open fn findViewById(_ arg0: Int32) -> View!
+
+  @JavaMethod
+  open fn requireViewById(_ arg0: Int32) -> View!
+
+  @JavaMethod
+  open fn getRootSurfaceControl() -> AttachedSurfaceControl!
+
+  @JavaMethod
+  open fn setTitle(_ arg0: CharSequence?)
+
+  @JavaMethod
+  open fn setColorMode(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getColorMode() -> Int32
+
+  @JavaMethod
+  open fn isWideColorGamut() -> Boolean
+
+  @JavaMethod
+  open fn getWindowStyle() -> TypedArray!
+
+  @JavaMethod
+  open fn setContainer(_ arg0: Window?)
+
+  @JavaMethod
+  open fn getContainer() -> Window!
+
+  @JavaMethod
+  open fn hasChildren() -> Boolean
+
+  @JavaMethod
+  open fn setWindowManager(_ arg0: WindowManager?, _ arg1: IBinder?, _ arg2: String, _ arg3: Boolean)
+
+  @JavaMethod
+  open fn setWindowManager(_ arg0: WindowManager?, _ arg1: IBinder?, _ arg2: String)
+
+  @JavaMethod
+  open fn getWindowManager() -> WindowManager!
+
+  @JavaMethod
+  open fn setCallback(_ arg0: Window.Callback?)
+
+  @JavaMethod
+  open fn getCallback() -> Window.Callback!
+
+  @JavaMethod
+  open fn addOnFrameMetricsAvailableListener(_ arg0: Window.OnFrameMetricsAvailableListener?, _ arg1: Handler?)
+
+  @JavaMethod
+  open fn removeOnFrameMetricsAvailableListener(_ arg0: Window.OnFrameMetricsAvailableListener?)
+
+  @JavaMethod
+  open fn setRestrictedCaptionAreaListener(_ arg0: Window.OnRestrictedCaptionAreaChangedListener?)
+
+  @JavaMethod
+  open fn setHideOverlayWindows(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn takeSurface(_ arg0: SurfaceHolder.Callback2?)
+
+  @JavaMethod
+  open fn takeInputQueue(_ arg0: InputQueue.Callback?)
+
+  @JavaMethod
+  open fn setLayout(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setGravity(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setWindowAnimations(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setSoftInputMode(_ arg0: Int32)
+
+  @JavaMethod
+  open fn addFlags(_ arg0: Int32)
+
+  @JavaMethod
+  open fn clearFlags(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setPreferMinimalPostProcessing(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setDimAmount(_ arg0: Float)
+
+  @JavaMethod
+  open fn setDecorFitsSystemWindows(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setAttributes(_ arg0: WindowManager.LayoutParams?)
+
+  @JavaMethod
+  open fn getForcedWindowFlags() -> Int32
+
+  @JavaMethod
+  open fn hasSoftInputMode() -> Boolean
+
+  @JavaMethod
+  open fn setSustainedPerformanceMode(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn requestFeature(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn makeActive()
+
+  @JavaMethod
+  open fn setContentView(_ arg0: View?, _ arg1: ViewGroup.LayoutParams?)
+
+  @JavaMethod
+  open fn setContentView(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setContentView(_ arg0: View?)
+
+  @JavaMethod
+  open fn addContentView(_ arg0: View?, _ arg1: ViewGroup.LayoutParams?)
+
+  @JavaMethod
+  open fn getCurrentFocus() -> View!
+
+  @JavaMethod
+  open fn setTitleColor(_ arg0: Int32)
+
+  @JavaMethod
+  open fn openPanel(_ arg0: Int32, _ arg1: KeyEvent?)
+
+  @JavaMethod
+  open fn closePanel(_ arg0: Int32)
+
+  @JavaMethod
+  open fn togglePanel(_ arg0: Int32, _ arg1: KeyEvent?)
+
+  @JavaMethod
+  open fn invalidatePanelMenu(_ arg0: Int32)
+
+  @JavaMethod
+  open fn performPanelShortcut(_ arg0: Int32, _ arg1: Int32, _ arg2: KeyEvent?, _ arg3: Int32) -> Boolean
+
+  @JavaMethod
+  open fn performPanelIdentifierAction(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32) -> Boolean
+
+  @JavaMethod
+  open fn closeAllPanels()
+
+  @JavaMethod
+  open fn performContextMenuIdentifierAction(_ arg0: Int32, _ arg1: Int32) -> Boolean
+
+  @JavaMethod
+  open fn setBackgroundDrawableResource(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setBackgroundBlurRadius(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setFeatureDrawableResource(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setFeatureDrawable(_ arg0: Int32, _ arg1: Drawable?)
+
+  @JavaMethod
+  open fn setFeatureDrawableAlpha(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setFeatureInt(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn takeKeyEvents(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn superDispatchKeyEvent(_ arg0: KeyEvent?) -> Boolean
+
+  @JavaMethod
+  open fn superDispatchKeyShortcutEvent(_ arg0: KeyEvent?) -> Boolean
+
+  @JavaMethod
+  open fn superDispatchTouchEvent(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  open fn superDispatchTrackballEvent(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  open fn superDispatchGenericMotionEvent(_ arg0: MotionEvent?) -> Boolean
+
+  @JavaMethod
+  open fn getDecorView() -> View!
+
+  @JavaMethod
+  open fn peekDecorView() -> View!
+
+  @JavaMethod
+  open fn onActive()
+
+  @JavaMethod
+  open fn getFeatures() -> Int32
+
+  @JavaMethod
+  open fn hasFeature(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn getLocalFeatures() -> Int32
+
+  @JavaMethod
+  open fn setDefaultWindowFormat(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setChildDrawable(_ arg0: Int32, _ arg1: Drawable?)
+
+  @JavaMethod
+  open fn setChildInt(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setVolumeControlStream(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getVolumeControlStream() -> Int32
+
+  @JavaMethod
+  open fn setUiOptions(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setUiOptions(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setLogo(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setLocalFocus(_ arg0: Boolean, _ arg1: Boolean)
+
+  @JavaMethod
+  open fn injectInputEvent(_ arg0: InputEvent?)
+
+  @JavaMethod
+  open fn setAllowEnterTransitionOverlap(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getAllowEnterTransitionOverlap() -> Boolean
+
+  @JavaMethod
+  open fn setAllowReturnTransitionOverlap(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getAllowReturnTransitionOverlap() -> Boolean
+
+  @JavaMethod
+  open fn getTransitionBackgroundFadeDuration() -> Int64
+
+  @JavaMethod
+  open fn setTransitionBackgroundFadeDuration(_ arg0: Int64)
+
+  @JavaMethod
+  open fn getSharedElementsUseOverlay() -> Boolean
+
+  @JavaMethod
+  open fn setSharedElementsUseOverlay(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getStatusBarColor() -> Int32
+
+  @JavaMethod
+  open fn setStatusBarColor(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getNavigationBarColor() -> Int32
+
+  @JavaMethod
+  open fn setNavigationBarColor(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setNavigationBarDividerColor(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getNavigationBarDividerColor() -> Int32
+
+  @JavaMethod
+  open fn setStatusBarContrastEnforced(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isStatusBarContrastEnforced() -> Boolean
+
+  @JavaMethod
+  open fn setNavigationBarContrastEnforced(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isNavigationBarContrastEnforced() -> Boolean
+
+  @JavaMethod
+  open fn registerScrollCaptureCallback(_ arg0: ScrollCaptureCallback?)
+
+  @JavaMethod
+  open fn unregisterScrollCaptureCallback(_ arg0: ScrollCaptureCallback?)
+
+  @JavaMethod
+  open fn setDecorCaptionShade(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setResizingCaptionDrawable(_ arg0: Drawable?)
+
+  @JavaMethod
+  open fn getInsetsController() -> WindowInsetsController!
+
+  @JavaMethod
+  open fn setIcon(_ arg0: Int32)
+
+  @JavaMethod
+  open fn isShortcutKey(_ arg0: Int32, _ arg1: KeyEvent?) -> Boolean
+
+  @JavaMethod
+  open fn setType(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getAttributes() -> WindowManager.LayoutParams!
+
+  @JavaMethod
+  open fn isActive() -> Boolean
+
+  @JavaMethod
+  open fn isFloating() -> Boolean
+
+  @JavaMethod
+  open fn setFlags(_ arg0: Int32, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getContext() -> Context!
+
+  @JavaMethod
+  open fn setFormat(_ arg0: Int32)
+}
+extension JavaClass<Window> {
+  @JavaStaticField(isFinal: true)
+  public var DECOR_CAPTION_SHADE_AUTO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DECOR_CAPTION_SHADE_DARK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DECOR_CAPTION_SHADE_LIGHT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FEATURE_ACTION_BAR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FEATURE_ACTION_BAR_OVERLAY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FEATURE_ACTION_MODE_OVERLAY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FEATURE_ACTIVITY_TRANSITIONS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FEATURE_CONTENT_TRANSITIONS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FEATURE_CONTEXT_MENU: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FEATURE_CUSTOM_TITLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FEATURE_INDETERMINATE_PROGRESS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FEATURE_LEFT_ICON: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FEATURE_NO_TITLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FEATURE_OPTIONS_PANEL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FEATURE_PROGRESS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FEATURE_RIGHT_ICON: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FEATURE_SWIPE_TO_DISMISS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ID_ANDROID_CONTENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NAVIGATION_BAR_BACKGROUND_TRANSITION_NAME: String
+
+  @JavaStaticField(isFinal: true)
+  public var PROGRESS_END: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PROGRESS_INDETERMINATE_OFF: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PROGRESS_INDETERMINATE_ON: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PROGRESS_SECONDARY_END: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PROGRESS_SECONDARY_START: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PROGRESS_START: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PROGRESS_VISIBILITY_OFF: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PROGRESS_VISIBILITY_ON: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var STATUS_BAR_BACKGROUND_TRANSITION_NAME: String
+
+  @JavaStaticMethod
+  public fn getDefaultFeatures(_ arg0: Context?) -> Int32
+}

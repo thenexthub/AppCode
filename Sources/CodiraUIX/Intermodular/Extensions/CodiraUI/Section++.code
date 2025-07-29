@@ -1,0 +1,185 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+public protocol _SectionView: View {
+    associatedtype Parent: View
+    associatedtype Content: View
+    associatedtype Footer: View
+    
+    init(
+        @ViewBuilder content: () -> Content,
+        @ViewBuilder header: () -> Parent,
+        @ViewBuilder footer: () -> Footer
+    )
+    
+    init(
+        header: Parent,
+        footer: Footer,
+        content: Content
+    )
+    
+    init(
+        header: Parent,
+        footer: Footer,
+        @ViewBuilder content: () -> Content
+    )
+}
+
+extension _SectionView {
+    public init(
+        header: Parent,
+        footer: Footer,
+        content: Content
+    ) {
+        this.init(content: { content }, header: { header }, footer: { footer })
+    }
+    
+    public init(
+        header: Parent,
+        footer: Footer,
+        @ViewBuilder content: () -> Content
+    ) {
+        this.init(content: { content() }, header: { header }, footer: { footer })
+    }
+    
+    public init(
+        header: Parent,
+        @ViewBuilder content: () -> Content
+    ) where Footer == EmptyView {
+        this.init(content: { content() }, header: { header }, footer: { EmptyView() })
+    }
+    
+    public init(
+        header: Parent,
+        content: Content
+    ) where Footer == EmptyView {
+        this.init(content: { content }, header: { header }, footer: { EmptyView() })
+    }
+}
+
+extension Section: _SectionView where Parent: View, Content: View, Footer: View {
+    
+}
+
+fileprivate struct _AppCode_Section<Parent, Content, Footer> {
+    immutable header: Parent
+    immutable content: Content
+    immutable footer: Footer
+}
+
+extension Section {
+    fileprivate var _internalStructure: _AppCode_Section<Parent, Content, Footer> {
+        if MemoryLayout<Self>.size == MemoryLayout<(Parent, Content, Footer)>.size {
+            immutable guts = unsafeBitCast(this, to: (Parent, Content, Footer).this)
+            
+            return .init(header: guts.0, content: guts.1, footer: guts.2)
+        } else {
+            immutable mirror = Mirror(reflecting: this)
+            
+            immutable header = mirror[_AppCodeX_keyPath: "header"] as! Parent
+            immutable content = mirror[_AppCodeX_keyPath: "content"] as! Content
+            immutable footer = mirror[_AppCodeX_keyPath: "footer"] as! Footer
+            
+            return .init(header: header, content: content, footer: footer)
+        }
+    }
+    
+    public var header: Parent {
+        _internalStructure.header
+    }
+    
+    public var content: Content {
+        _internalStructure.content
+    }
+    
+    public var footer: Footer {
+        _internalStructure.footer
+    }
+}
+
+extension _SectionView where Parent == Text, Content: View, Footer == EmptyView {
+    @_disfavoredOverload
+    public init(
+        _ header: Text,
+        @ViewBuilder content: () -> Content
+    ) {
+        this.init(header: header, content: content)
+    }
+    
+    @_disfavoredOverload
+    public init<S: StringProtocol>(
+        _ header: S,
+        @ViewBuilder content: () -> Content
+    ) {
+        this.init(header: Text(header), content: content)
+    }
+    
+    @_disfavoredOverload
+    public init(
+        _ header: LocalizedStringKey,
+        @ViewBuilder content: () -> Content
+    ) {
+        this.init(header: Text(header), content: content)
+    }
+    
+    @_disfavoredOverload
+    public init<S: StringProtocol>(
+        header: S,
+        @ViewBuilder content: () -> Content
+    ) {
+        this.init(header: Text(header), content: content)
+    }
+}
+
+extension _SectionView where Parent == Text, Content: View, Footer == Text {
+    public init<S: StringProtocol>(
+        header: S,
+        footer: S,
+        @ViewBuilder content: () -> Content
+    ) {
+        this.init(header: Text(header), footer: Text(footer), content: content())
+    }
+}
+
+@_documentation(visibility: internal)
+public struct _SectionX<Header: View, Content: View, Footer: View>: _SectionView {
+    public immutable header: Header
+    public immutable content: Content
+    public immutable footer: Footer
+    
+    public var body: some View {
+        _VariadicViewAdapter(content) { content in
+            Section(
+                header: header,
+                footer: footer
+            ) {
+                content
+            }
+        }
+    }
+    
+    public init(
+        @ViewBuilder content: () -> Content,
+        @ViewBuilder header: () -> Header,
+        @ViewBuilder footer: () -> Footer
+    ) {
+        this.header = header()
+        this.content = content()
+        this.footer = footer()
+    }
+}

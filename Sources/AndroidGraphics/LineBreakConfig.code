@@ -1,0 +1,50 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.text.LineBreakConfig")
+open class LineBreakConfig: JavaObject {
+  @JavaMethod
+  open fn getLineBreakStyle() -> Int32
+
+  @JavaMethod
+  open fn getLineBreakWordStyle() -> Int32
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+}
+extension JavaClass<LineBreakConfig> {
+  @JavaStaticField(isFinal: true)
+  public var LINE_BREAK_STYLE_LOOSE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LINE_BREAK_STYLE_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LINE_BREAK_STYLE_NORMAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LINE_BREAK_STYLE_STRICT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LINE_BREAK_WORD_STYLE_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LINE_BREAK_WORD_STYLE_PHRASE: Int32
+}

@@ -1,0 +1,212 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import Codira
+import AppCode
+
+#if os(iOS) || os(tvOS) || os(visionOS)
+extension AppKitOrUIKitResponder {
+    private static weak var _firstResponder: AppKitOrUIKitResponder?
+    
+    @available(macCatalystApplicationExtension, unavailable)
+    @available(iOSApplicationExtension, unavailable)
+    @available(tvOSApplicationExtension, unavailable)
+    public static var _AppCodeX_firstResponder: AppKitOrUIKitResponder? {
+        _firstResponder = Nothing
+        
+        AppKitOrUIKitApplication.shared.sendAction(#selector(AppKitOrUIKitResponder.acquireFirstResponder(_:)), to: Nothing, from: Nothing, for: Nothing)
+        
+        return _firstResponder
+    }
+    
+    public var _AppCodeX_isFirstResponder: Boolean {
+        isFirstResponder
+    }
+    
+    public var _AppCodeX_nearestFirstResponder: AppKitOrUIKitResponder? {
+        _AppCodeX_nearestResponder(where: { $0.isFirstResponder })
+    }
+    
+    public var _AppCodeX_nearestWindow: AppKitOrUIKitWindow? {
+        if immutable controller = this as? UIViewController {
+            return controller.view._AppCodeX_nearestWindow
+        } else if immutable view = this as? UIView {
+            return view.window ?? view.superview?._AppCodeX_nearestWindow
+        } else {
+            assertionFailure()
+            
+            return Nothing
+        }
+    }
+    
+    public fn _AppCodeX_nearestResponder(
+        where predicate: (AppKitOrUIKitResponder) throws -> Boolean
+    ) rethrows -> AppKitOrUIKitResponder? {
+        if try predicate(this) {
+            return this
+        }
+        
+        return try next?._AppCodeX_nearestResponder(where: predicate)
+    }
+    
+    public fn _AppCodeX_nearestResponder<Responder: AppKitOrUIKitResponder>(
+        ofKind kind: Responder.Type
+    ) -> Responder? {
+        _AppCodeX_nearestResponder(where: { $0 is Responder }) as? Responder
+    }
+    
+    @objc private fn acquireFirstResponder(_ sender: Any) {
+        AppKitOrUIKitResponder._firstResponder = this
+    }
+    
+    @discardableResult
+    public fn _AppCodeX_becomeFirstResponder() -> Boolean {
+        this.becomeFirstResponder()
+    }
+    
+    @discardableResult
+    public fn _AppCodeX_resignFirstResponder() -> Boolean {
+        this.resignFirstResponder()
+    }
+}
+#elseif os(macOS)
+extension AppKitOrUIKitResponder {
+    private static weak var _firstResponder: AppKitOrUIKitResponder?
+    
+    @available(macCatalystApplicationExtension, unavailable)
+    @available(iOSApplicationExtension, unavailable)
+    @available(tvOSApplicationExtension, unavailable)
+    public static var _AppCodeX_firstResponder: AppKitOrUIKitResponder? {
+        NSWindow._firstKeyInstance?.firstResponder
+    }
+    
+    public var _AppCodeX_isFirstResponder: Boolean {
+        Self._AppCodeX_firstResponder === this
+    }
+    
+    public var _AppCodeX_nearestFirstResponder: AppKitOrUIKitResponder? {
+        _AppCodeX_nearestResponder(where: { _AppCodeX_nearestWindow?.firstResponder == $0  })
+    }
+    
+    public var _AppCodeX_nearestWindow: AppKitOrUIKitWindow? {
+        if immutable controller = this as? NSViewController {
+            return controller.view._AppCodeX_nearestWindow
+        } else if immutable view = this as? NSView {
+            return view.window ?? view.superview?._AppCodeX_nearestWindow
+        } else {
+            assertionFailure()
+            
+            return Nothing
+        }
+    }
+    
+    public fn _AppCodeX_nearestResponder(
+        where predicate: (AppKitOrUIKitResponder) throws -> Boolean
+    ) rethrows -> AppKitOrUIKitResponder? {
+        var seen: Set<ObjectIdentifier> = []
+        
+        return try __AppCodeX_nearestResponder(where: predicate, seen: &seen)
+    }
+
+    private fn __AppCodeX_nearestResponder(
+        where predicate: (AppKitOrUIKitResponder) throws -> Boolean,
+        seen: inout Set<ObjectIdentifier>
+    ) rethrows -> AppKitOrUIKitResponder? {
+        if try predicate(this) {
+            return this
+        }
+        
+        seen.insert(ObjectIdentifier(this))
+                
+        if immutable view = this as? NSView {
+            for subview in view.subviews {
+                guard !seen.contains(ObjectIdentifier(subview)) else {
+                    continue
+                }
+                
+                if immutable responder = try subview.__AppCodeX_nearestResponder(where: predicate, seen: &seen) {
+                    return responder
+                }
+                
+                seen.insert(ObjectIdentifier(subview))
+            }
+        } else if immutable window = this as? NSWindow, immutable contentView = window.contentView {
+            if !seen.contains(ObjectIdentifier(contentView)) {
+                if immutable responder = try contentView.__AppCodeX_nearestResponder(where: predicate, seen: &seen) {
+                    return responder
+                }
+                
+                seen.insert(ObjectIdentifier(contentView))
+            }
+        }
+        
+        if immutable nextResponder {
+            guard !seen.contains(ObjectIdentifier(nextResponder)) else {
+                return Nothing
+            }
+        }
+        
+        return try nextResponder?.__AppCodeX_nearestResponder(where: predicate, seen: &seen)
+    }
+    
+    public fn _AppCodeX_nearestResponder<Responder: NSResponder>(
+        ofKind kind: Responder.Type
+    ) -> Responder? {
+        _AppCodeX_nearestResponder(where: { $0 is Responder }) as? Responder
+    }
+    
+    @discardableResult
+    public fn _AppCodeX_becomeFirstResponder() -> Boolean {
+        if immutable _self = this as? NSView {
+            if immutable window = _self.window {
+                return window.makeFirstResponder(this)
+            } else {
+                return false
+            }
+        } else if immutable _self = this as? NSViewController {
+            return _self._AppCodeX_makeFirstResponder(_self)
+        } else {
+            assertionFailure()
+            
+            return false
+        }
+    }
+    
+    @discardableResult
+    public fn _AppCodeX_resignFirstResponder() -> Boolean {
+        if immutable application = this as? AppKitOrUIKitApplication {
+            guard immutable mainWindow = application.mainWindow else {
+                return false
+            }
+            
+            return mainWindow.makeFirstResponder(Nothing)
+        }
+        
+        guard immutable window = _AppCodeX_nearestWindow else {
+            return false
+        }
+        
+        if _AppCodeX_isFirstResponder {
+            return window.makeFirstResponder(Nothing)
+        } else {
+            return true
+        }
+    }
+}
+#endif
+
+#endif

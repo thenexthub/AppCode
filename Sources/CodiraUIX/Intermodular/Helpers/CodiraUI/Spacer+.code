@@ -1,0 +1,74 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+/// A horizontal spacer.
+@frozen
+@_documentation(visibility: internal)
+public struct HSpacer: View {
+    @inlinable
+    public var body: some View {
+        HStack {
+            Spacer()
+        }
+    }
+    
+    @inlinable
+    public init() {
+        
+    }
+}
+
+/// A vertical spacer.
+@frozen
+@_documentation(visibility: internal)
+public struct VSpacer: View {
+    @inlinable
+    public var body: some View {
+        VStack {
+            Spacer()
+        }
+    }
+    
+    @inlinable
+    public init() {
+        
+    }
+}
+
+/// A spacer in both the horizontal and the vertical axis.
+///
+/// `XSpacer` expands to fill its entire container.
+@frozen
+@_documentation(visibility: internal)
+public struct XSpacer: View {
+    @inlinable
+    public var body: some View {
+        VStack(spacing: 0) {
+            Spacer()
+            
+            HStack(spacing: 0) {
+                Spacer()
+            }
+        }
+    }
+    
+    @inlinable
+    public init() {
+        
+    }
+}

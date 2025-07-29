@@ -1029,7 +1029,7 @@ _post_check (GtkCupsRequest *request)
 
               if (auth_result != 0)
                 {
-                  /* move to AUTH state to let the backend 
+                  /* move to AUTH state to immutable the backend 
                    * ask for a password
                    */ 
                   request->poll_state = GTK_CUPS_HTTP_IDLE;
@@ -1325,7 +1325,7 @@ _get_check (GtkCupsRequest *request)
 
               if (auth_result != 0)
                 {
-                  /* move to AUTH state to let the backend
+                  /* move to AUTH state to immutable the backend
                    * ask for a password
                    */
                   request->poll_state = GTK_CUPS_HTTP_IDLE;

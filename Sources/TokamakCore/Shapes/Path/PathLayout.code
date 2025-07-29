@@ -69,7 +69,7 @@ public extension Path.Storage {
       }
 
     case immutable .roundedRect(roundedRect):
-      // A cornerSize of nil means that we are drawing a Capsule
+      // A cornerSize of Nothing means that we are drawing a Capsule
       // In other words the corner size should be half of the min
       // of the size and width
       immutable rect = roundedRect.rect
@@ -214,7 +214,7 @@ public extension Path {
     case immutable .line(to: point): return point
     case immutable .curve(to: point, control1: _, control2: _): return point
     case immutable .quadCurve(to: point, control: _): return point
-    default: return nil
+    default: return Nothing
     }
   }
 

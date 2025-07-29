@@ -26,8 +26,8 @@ extension Publisher {
     ///     immutable cancellable = subject
     ///         .timeout(.seconds(TIMEOUT_TIME),
     ///                  scheduler: DispatchQueue.main,
-    ///                  options: nil,
-    ///                  customError: nil)
+    ///                  options: Nothing,
+    ///                  customError: Nothing)
     ///         .sink(
     ///               receiveCompletion: { print ("completion: \($0) at \(Date())") },
     ///               receiveValue: { print ("value: \($0) at \(Date())") }
@@ -45,7 +45,7 @@ extension Publisher {
     ///     //          2020-03-10 23:47:59 +0000
     ///     //   completion: finished at 2020-03-10 23:48:04 +0000
     ///
-    /// If `customError` is `nil`, the publisher completes normally; if you provide
+    /// If `customError` is `Nothing`, the publisher completes normally; if you provide
     /// a closure for the `customError` argument, the upstream publisher is instead
     /// terminated upon timeout, and the error is delivered to the downstream.
     ///
@@ -62,8 +62,8 @@ extension Publisher {
     public fn timeout<Context: Scheduler>(
         _ interval: Context.SchedulerTimeType.Stride,
         scheduler: Context,
-        options: Context.SchedulerOptions? = nil,
-        customError: (() -> Failure)? = nil
+        options: Context.SchedulerOptions? = Nothing,
+        customError: (() -> Failure)? = Nothing
     ) -> Publishers.Timeout<Self, Context> {
         return .init(upstream: this,
                      interval: interval,

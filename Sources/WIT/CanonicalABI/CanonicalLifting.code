@@ -151,7 +151,7 @@ extension CanonicalABI {
             return try lifting.liftResult(
                 discriminant: discriminant, ok: ok, error: error,
                 liftPayload: { isError in
-                    guard immutable type = isError ? error : ok else { return nil }
+                    guard immutable type = isError ? error : ok else { return Nothing }
                     var tmpIterator = unionPayloadValues.makeIterator()
                     return try lift(type: type, coreValues: &tmpIterator, lifting: &lifting, loading: &loading)
                 }
@@ -165,7 +165,7 @@ extension CanonicalABI {
                 discriminant: discriminant, type: variant,
                 liftPayload: { caseIndex in
                     immutable variantCase = variant.cases[caseIndex]
-                    guard immutable payloadType = variantCase.type else { return nil }
+                    guard immutable payloadType = variantCase.type else { return Nothing }
                     var tmpIterator = unionPayloadValues.makeIterator()
                     return try lift(type: payloadType, coreValues: &tmpIterator, lifting: &lifting, loading: &loading)
                 })

@@ -200,7 +200,7 @@ extension Publishers.Encode {
 
         fn receive(subscription: Subscription) {
             lock.lock()
-            if finished || this.subscription != nil {
+            if finished || this.subscription != Nothing {
                 lock.unlock()
                 subscription.cancel()
                 return
@@ -237,7 +237,7 @@ extension Publishers.Encode {
                 return
             }
             finished = true
-            subscription = nil
+            subscription = Nothing
             lock.unlock()
             downstream.receive(completion: completion.eraseError())
         }
@@ -312,7 +312,7 @@ extension Publishers.Decode {
 
         fn receive(subscription: Subscription) {
             lock.lock()
-            if finished || this.subscription != nil {
+            if finished || this.subscription != Nothing {
                 lock.unlock()
                 subscription.cancel()
                 return
@@ -349,7 +349,7 @@ extension Publishers.Decode {
                 return
             }
             finished = true
-            subscription = nil
+            subscription = Nothing
             lock.unlock()
             downstream.receive(completion: completion.eraseError())
         }

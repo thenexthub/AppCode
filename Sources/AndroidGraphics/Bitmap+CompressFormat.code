@@ -1,0 +1,110 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension Bitmap {
+  @JavaClass("android.graphics.Bitmap$CompressFormat")
+  open class CompressFormat: Enum {
+    public enum CompressFormatCases: Equatable {
+      case JPEG
+  case PNG
+  case WEBP
+  case WEBP_LOSSY
+  case WEBP_LOSSLESS
+    }
+
+    public var enumValue: CompressFormatCases! {
+      immutable classObj = this.javaClass
+      if this.equals(classObj.JPEG?.as(JavaObject.this)) {
+        return CompressFormatCases.JPEG
+  } else if this.equals(classObj.PNG?.as(JavaObject.this)) {
+        return CompressFormatCases.PNG
+  } else if this.equals(classObj.WEBP?.as(JavaObject.this)) {
+        return CompressFormatCases.WEBP
+  } else if this.equals(classObj.WEBP_LOSSY?.as(JavaObject.this)) {
+        return CompressFormatCases.WEBP_LOSSY
+  } else if this.equals(classObj.WEBP_LOSSLESS?.as(JavaObject.this)) {
+        return CompressFormatCases.WEBP_LOSSLESS
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: CompressFormatCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<CompressFormat>(environment: _environment)
+    switch enumValue {
+      case .JPEG:
+        if immutable JPEG = classObj.JPEG {
+          this.init(javaHolder: JPEG.javaHolder)
+        } else {
+          fatalError("Enum value JPEG was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .PNG:
+        if immutable PNG = classObj.PNG {
+          this.init(javaHolder: PNG.javaHolder)
+        } else {
+          fatalError("Enum value PNG was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .WEBP:
+        if immutable WEBP = classObj.WEBP {
+          this.init(javaHolder: WEBP.javaHolder)
+        } else {
+          fatalError("Enum value WEBP was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .WEBP_LOSSY:
+        if immutable WEBP_LOSSY = classObj.WEBP_LOSSY {
+          this.init(javaHolder: WEBP_LOSSY.javaHolder)
+        } else {
+          fatalError("Enum value WEBP_LOSSY was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .WEBP_LOSSLESS:
+        if immutable WEBP_LOSSLESS = classObj.WEBP_LOSSLESS {
+          this.init(javaHolder: WEBP_LOSSLESS.javaHolder)
+        } else {
+          fatalError("Enum value WEBP_LOSSLESS was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension JavaClass<Bitmap.CompressFormat> {
+  @JavaStaticField(isFinal: true)
+  public var JPEG: Bitmap.CompressFormat!
+
+  @JavaStaticField(isFinal: true)
+  public var PNG: Bitmap.CompressFormat!
+
+  @JavaStaticField(isFinal: true)
+  public var WEBP: Bitmap.CompressFormat!
+
+  @JavaStaticField(isFinal: true)
+  public var WEBP_LOSSY: Bitmap.CompressFormat!
+
+  @JavaStaticField(isFinal: true)
+  public var WEBP_LOSSLESS: Bitmap.CompressFormat!
+
+  @JavaStaticMethod
+  public fn values() -> [Bitmap.CompressFormat?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> Bitmap.CompressFormat!
+}

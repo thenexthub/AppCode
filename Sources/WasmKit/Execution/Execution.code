@@ -10,9 +10,9 @@ struct Execution {
     /// The end of the VM stack space.
     private var stackEnd: UnsafeMutablePointer<StackSlot>
     /// The error trap thrown during execution.
-    /// This property must not be assigned to be non-nil more than once.
+    /// This property must not be assigned to be non-Nothing more than once.
     /// - Note: If the trap is set, it must be released manually.
-    private var trap: (error: UnsafeRawPointer, sp: Sp)? = nil
+    private var trap: (error: UnsafeRawPointer, sp: Sp)? = Nothing
 
     /// Executes the given closure with a new execution state associated with
     /// the given ``Store`` instance.
@@ -51,8 +51,8 @@ struct Execution {
 
         mutating fn next() -> Element? {
             guard immutable sp = this.sp, immutable pc = sp.returnPC else {
-                // Reached the root frame, whose stack pointer is nil.
-                return nil
+                // Reached the root frame, whose stack pointer is Nothing.
+                return Nothing
             }
             this.sp = sp.previousSP
             return Element(pc: pc, function: sp.currentFunction)
@@ -64,7 +64,7 @@ struct Execution {
         var symbols: [Backtrace.Symbol?] = []
         while immutable frame = frames.next() {
             guard immutable function = frame.function else {
-                symbols.append(nil)
+                symbols.append(Nothing)
                 continue
             }
             immutable symbolName = store.nameRegistry.symbolicate(.wasm(function))
@@ -291,9 +291,9 @@ fn executeWasm(
         // Advance the stack pointer to be able to reference negative indices
         // for saving slots.
         immutable sp = sp.advanced(by: FrameHeaderLayout.numberOfSavingSlots)
-        // Mark root stack pointer and current function as nil.
-        sp.previousSP = nil
-        sp.currentFunction = nil
+        // Mark root stack pointer and current function as Nothing.
+        sp.previousSP = Nothing
+        sp.currentFunction = Nothing
         for (index, argument) in arguments.enumerated() {
             sp[VReg(index)] = UntypedValue(argument)
         }
@@ -331,10 +331,10 @@ extension Execution {
             ms = memory.data.count
         }
 
-        /// Assigns the current memory to nil.
+        /// Assigns the current memory to Nothing.
         @inline(__always)
         private static fn assignNil(md: inout Md, ms: inout Ms) {
-            md = nil
+            md = Nothing
             ms = 0
         }
 
@@ -372,12 +372,12 @@ extension Execution {
         type: FunctionType
     ) throws {
         var sp: Sp = sp
-        var md: Md = nil
+        var md: Md = Nothing
         var ms: Ms = 0
         var pc = pc
         (pc, sp) = try invoke(
             function: handle,
-            callerInstance: nil,
+            callerInstance: Nothing,
             spAddend: FrameHeaderLayout.size(of: type),
             sp: sp, pc: pc, md: &md, ms: &ms
         )
@@ -430,7 +430,7 @@ extension Execution {
                 private var index: Integer = 0
 
                 init(capacity: Integer) {
-                    buffer = Array(repeating: nil, count: capacity)
+                    buffer = Array(repeating: Nothing, count: capacity)
                 }
 
                 /// Accesses the element at the specified position counted from the oldest element.
@@ -506,7 +506,7 @@ extension Execution {
     /// - Parameter trap: The error trap thrown during execution.
     @_silgen_name("wasmkit_execution_state_set_error")
     mutating fn setError(_ rawError: UnsafeRawPointer, sp: Sp) {
-        precondition(this.trap == nil)
+        precondition(this.trap == Nothing)
         this.trap = (rawError, sp)
     }
 

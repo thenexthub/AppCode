@@ -1,0 +1,70 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension Manifest.Permission {
+  @JavaClass("android.Manifest$permission_group")
+  open class Group: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+  }
+}
+extension JavaClass<Manifest.Permission.Group> {
+  @JavaStaticField(isFinal: true)
+  public var ACTIVITY_RECOGNITION: String
+
+  @JavaStaticField(isFinal: true)
+  public var CALENDAR: String
+
+  @JavaStaticField(isFinal: true)
+  public var CALL_LOG: String
+
+  @JavaStaticField(isFinal: true)
+  public var CAMERA: String
+
+  @JavaStaticField(isFinal: true)
+  public var CONTACTS: String
+
+  @JavaStaticField(isFinal: true)
+  public var LOCATION: String
+
+  @JavaStaticField(isFinal: true)
+  public var MICROPHONE: String
+
+  @JavaStaticField(isFinal: true)
+  public var NEARBY_DEVICES: String
+
+  @JavaStaticField(isFinal: true)
+  public var NOTIFICATIONS: String
+
+  @JavaStaticField(isFinal: true)
+  public var PHONE: String
+
+  @JavaStaticField(isFinal: true)
+  public var READ_MEDIA_AURAL: String
+
+  @JavaStaticField(isFinal: true)
+  public var READ_MEDIA_VISUAL: String
+
+  @JavaStaticField(isFinal: true)
+  public var SENSORS: String
+
+  @JavaStaticField(isFinal: true)
+  public var SMS: String
+
+  @JavaStaticField(isFinal: true)
+  public var STORAGE: String
+}

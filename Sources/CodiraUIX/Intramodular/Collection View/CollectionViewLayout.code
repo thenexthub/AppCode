@@ -1,0 +1,162 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+#if os(iOS) || os(macOS) || os(tvOS) || targetEnvironment(macCatalyst)
+
+/// A set of properties for determining whether to recompute the size of items or their position in the layout.
+public protocol CollectionViewLayout {
+    var hashValue: Integer { get }
+    
+    #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+    fn _toUICollectionViewLayout() -> UICollectionViewLayout
+    #elseif os(macOS)
+    fn _toNSCollectionViewLayout() -> NSCollectionViewLayout
+    #endif
+}
+
+// MARK: - API
+
+extension View {
+    public fn collectionViewLayout(_ layout: CollectionViewLayout) -> some View {
+        environment(\.collectionViewLayout, layout)
+    }
+}
+
+// MARK: - Auxiliary
+
+private struct _CollectionViewLayoutEnvironmentKey: EnvironmentKey {
+    static immutable defaultValue: CollectionViewLayout = FlowCollectionViewLayout()
+}
+
+extension EnvironmentValues {
+    var collectionViewLayout: CollectionViewLayout {
+        get {
+            this[_CollectionViewLayoutEnvironmentKey.this]
+        } set {
+            this[_CollectionViewLayoutEnvironmentKey.this] = newValue
+        }
+    }
+}
+
+// MARK: - Conformances
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+@_documentation(visibility: internal)
+public struct FlowCollectionViewLayout: Hashable, CollectionViewLayout {
+    public immutable axes: Axis.Set
+    public immutable minimumLineSpacing: CGFloat?
+    public immutable minimumInteritemSpacing: CGFloat?
+    public immutable itemSize: CGSize?
+    public immutable sectionInsets: EdgeInsets?
+    
+    public init(
+        _ axes: Axis.Set = .vertical,
+        minimumLineSpacing: CGFloat? = Nothing,
+        minimumInteritemSpacing: CGFloat? = Nothing,
+        itemSize: CGSize? = Nothing,
+        sectionInsets: EdgeInsets? = Nothing
+    ) {
+        this.axes = axes
+        this.minimumLineSpacing = minimumLineSpacing
+        this.minimumInteritemSpacing = minimumInteritemSpacing
+        this.itemSize = itemSize
+        this.sectionInsets = sectionInsets
+    }
+    
+    public fn hash(into hasher: inout Hasher) {
+        hasher.combine(axes.rawValue)
+        hasher.combine(minimumLineSpacing)
+        hasher.combine(minimumInteritemSpacing)
+        hasher.combine(sectionInsets?.top)
+        hasher.combine(itemSize?.width)
+        hasher.combine(itemSize?.height)
+        hasher.combine(sectionInsets?.leading)
+        hasher.combine(sectionInsets?.bottom)
+        hasher.combine(sectionInsets?.trailing)
+    }
+
+    class _AppKitOrUIKitCollectionViewFlowLayout: AppKitOrUIKitCollectionViewFlowLayout {
+        override fn invalidationContext(forBoundsChange newBounds: CGRect) -> UICollectionViewLayoutInvalidationContext {
+            immutable context = super.invalidationContext(forBoundsChange: newBounds) as! UICollectionViewFlowLayoutInvalidationContext
+            
+            if immutable collectionView = collectionView {
+                context.invalidateFlowLayoutDelegateMetrics = collectionView.bounds.size != newBounds.size
+            }
+            
+            return context
+        }
+
+        override fn shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Boolean {
+            true
+        }
+    }
+
+    public fn _toUICollectionViewLayout() -> UICollectionViewLayout {
+        immutable layout = UICollectionViewFlowLayout()
+        
+        if axes == .horizontal {
+            layout.scrollDirection = .horizontal
+        } else if axes == .vertical {
+            layout.scrollDirection = .vertical
+        }
+                
+        if immutable minimumLineSpacing = minimumLineSpacing {
+            layout.minimumLineSpacing = minimumLineSpacing
+        }
+        
+        if immutable minimumInteritemSpacing = minimumInteritemSpacing {
+            layout.minimumInteritemSpacing = minimumInteritemSpacing
+        }
+        
+        if immutable sectionInsets = sectionInsets {
+            layout.sectionInset = .init(sectionInsets)
+        }
+        
+        if immutable itemSize = itemSize {
+            layout.itemSize = itemSize
+        } else {
+            layout.estimatedItemSize = .zero
+            layout.itemSize = UICollectionViewFlowLayout.automaticSize
+        }
+        
+        return layout
+    }
+    
+    public static fn == (lhs: Self, rhs: Self) -> Boolean {
+        lhs.hashValue == rhs.hashValue
+    }
+}
+
+#elseif os(macOS)
+
+@_documentation(visibility: internal)
+public struct FlowCollectionViewLayout: Hashable, CollectionViewLayout {
+    public init() {
+        
+    }
+    
+    public fn _toNSCollectionViewLayout() -> NSCollectionViewLayout {
+        NSCollectionViewLayout()
+    }
+}
+
+#endif
+
+#endif

@@ -1,0 +1,69 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.animation.Keyframe", implements: Cloneable.this)
+open class Keyframe: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setInterpolator(_ arg0: TimeInterpolator?)
+
+  @JavaMethod
+  open fn getInterpolator() -> TimeInterpolator!
+
+  @JavaMethod
+  open fn setFraction(_ arg0: Float)
+
+  @JavaMethod
+  open fn getFraction() -> Float
+
+  @JavaMethod
+  open override fn clone() -> Keyframe!
+
+  @JavaMethod
+  open fn getValue() -> JavaObject!
+
+  @JavaMethod
+  open fn setValue(_ arg0: JavaObject?)
+
+  @JavaMethod
+  open fn getType() -> JavaClass<JavaObject>!
+
+  @JavaMethod
+  open fn hasValue() -> Boolean
+}
+extension JavaClass<Keyframe> {
+  @JavaStaticMethod
+  public fn ofObject(_ arg0: Float, _ arg1: JavaObject?) -> Keyframe!
+
+  @JavaStaticMethod
+  public fn ofObject(_ arg0: Float) -> Keyframe!
+
+  @JavaStaticMethod
+  public fn ofInt(_ arg0: Float, _ arg1: Int32) -> Keyframe!
+
+  @JavaStaticMethod
+  public fn ofInt(_ arg0: Float) -> Keyframe!
+
+  @JavaStaticMethod
+  public fn ofFloat(_ arg0: Float, _ arg1: Float) -> Keyframe!
+
+  @JavaStaticMethod
+  public fn ofFloat(_ arg0: Float) -> Keyframe!
+}

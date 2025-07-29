@@ -1,4 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: Nothing; c-basic-offset: 2 -*- */
 /* GTK - The GIMP Toolkit
  * Copyright (C) David Zeuthen <davidz@redhat.com>
  * Copyright (C) 2001 Havoc Pennington

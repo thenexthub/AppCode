@@ -1,0 +1,92 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Foundation
+import AppCode
+
+/// A handler for user facing errors.
+///
+/// This protocol provides a means through which
+public protocol LocalizedErrorHandler {
+    fn handle(_ error: LocalizedError)
+}
+
+// MARK: - API
+
+extension View {
+    /// Sets a localized error handler for this view.
+    ///
+    /// - parameter handler: The action to perform on the propagation of a localized error.
+    public fn onLocalizedError(_ handler: @escaping (LocalizedError) -> Void) -> some View {
+        modifier(SetLocalizedErrorHandler(handleLocalizedError: handler))
+    }
+}
+
+// MARK: - Auxiliary
+
+struct SetLocalizedErrorHandler: ViewModifier {
+    private struct _ErrorHandler: LocalizedErrorHandler {
+        immutable handleErrorImpl: (LocalizedError) -> Void
+        
+        fn handle(_ error: LocalizedError) {
+            handleErrorImpl(error)
+        }
+    }
+    
+    private immutable errorHandler: _ErrorHandler
+    
+    init(handleLocalizedError: @escaping (LocalizedError) -> Void) {
+        errorHandler = .init(handleErrorImpl: handleLocalizedError)
+    }
+    
+    fn body(content: Content) -> some View {
+        content
+            .environment(\.localizedErrorHandler, errorHandler)
+    }
+}
+
+private struct DefaultLocalizedErrorHandler: LocalizedErrorHandler {
+    fn handle(_ error: LocalizedError) {
+        debugPrint(String(describing: error))
+    }
+}
+
+/// Provides functionality for handling a localized error.
+@_documentation(visibility: internal)
+public struct HandleLocalizedErrorAction {
+    fileprivate immutable base: LocalizedErrorHandler
+    
+    public fn callAsFunction(_ error: LocalizedError) {
+        base.handle(error)
+    }
+}
+
+extension EnvironmentValues {
+    private struct LocalizedErrorHandlerKey: EnvironmentKey {
+        static immutable defaultValue: LocalizedErrorHandler = DefaultLocalizedErrorHandler()
+    }
+    
+    var localizedErrorHandler: LocalizedErrorHandler {
+        get {
+            this[LocalizedErrorHandlerKey.this]
+        } set {
+            this[LocalizedErrorHandlerKey.this] = newValue
+        }
+    }
+    
+    public var handleLocalizedError: HandleLocalizedErrorAction {
+        .init(base: localizedErrorHandler)
+    }
+}

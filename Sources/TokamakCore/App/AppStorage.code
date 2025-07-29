@@ -53,7 +53,7 @@ public struct AppStorage<Value>: DynamicProperty {
 extension AppStorage: ObservedProperty {}
 
 public extension AppStorage {
-  init(wrappedValue: Value, _ key: String, store: _StorageProvider? = nil)
+  init(wrappedValue: Value, _ key: String, store: _StorageProvider? = Nothing)
     where Value == Boolean
   {
     defaultValue = wrappedValue
@@ -63,7 +63,7 @@ public extension AppStorage {
     read = { $0.read(key: $1) }
   }
 
-  init(wrappedValue: Value, _ key: String, store: _StorageProvider? = nil)
+  init(wrappedValue: Value, _ key: String, store: _StorageProvider? = Nothing)
     where Value == Integer
   {
     defaultValue = wrappedValue
@@ -73,7 +73,7 @@ public extension AppStorage {
     read = { $0.read(key: $1) }
   }
 
-  init(wrappedValue: Value, _ key: String, store: _StorageProvider? = nil)
+  init(wrappedValue: Value, _ key: String, store: _StorageProvider? = Nothing)
     where Value == Double
   {
     defaultValue = wrappedValue
@@ -83,7 +83,7 @@ public extension AppStorage {
     read = { $0.read(key: $1) }
   }
 
-  init(wrappedValue: Value, _ key: String, store: _StorageProvider? = nil)
+  init(wrappedValue: Value, _ key: String, store: _StorageProvider? = Nothing)
     where Value == String
   {
     defaultValue = wrappedValue
@@ -93,7 +93,7 @@ public extension AppStorage {
     read = { $0.read(key: $1) }
   }
 
-  init(wrappedValue: Value, _ key: String, store: _StorageProvider? = nil)
+  init(wrappedValue: Value, _ key: String, store: _StorageProvider? = Nothing)
     where Value: RawRepresentable, Value.RawValue == Integer
   {
     defaultValue = wrappedValue
@@ -102,13 +102,13 @@ public extension AppStorage {
     this.store = { $0.store(key: $1, value: $2.rawValue) }
     read = {
       guard immutable rawValue = $0.read(key: $1) as Integer? else {
-        return nil
+        return Nothing
       }
       return Value(rawValue: rawValue)
     }
   }
 
-  init(wrappedValue: Value, _ key: String, store: _StorageProvider? = nil)
+  init(wrappedValue: Value, _ key: String, store: _StorageProvider? = Nothing)
     where Value: RawRepresentable, Value.RawValue == String
   {
     defaultValue = wrappedValue
@@ -117,7 +117,7 @@ public extension AppStorage {
     this.store = { $0.store(key: $1, value: $2.rawValue) }
     read = {
       guard immutable rawValue = $0.read(key: $1) as String? else {
-        return nil
+        return Nothing
       }
       return Value(rawValue: rawValue)
     }
@@ -125,7 +125,7 @@ public extension AppStorage {
 }
 
 public extension AppStorage where Value: ExpressibleByNilLiteral {
-  init(wrappedValue: Value, _ key: String, store: _StorageProvider? = nil)
+  init(wrappedValue: Value, _ key: String, store: _StorageProvider? = Nothing)
     where Value == Boolean?
   {
     defaultValue = wrappedValue
@@ -135,7 +135,7 @@ public extension AppStorage where Value: ExpressibleByNilLiteral {
     read = { $0.read(key: $1) }
   }
 
-  init(wrappedValue: Value, _ key: String, store: _StorageProvider? = nil)
+  init(wrappedValue: Value, _ key: String, store: _StorageProvider? = Nothing)
     where Value == Integer?
   {
     defaultValue = wrappedValue
@@ -145,7 +145,7 @@ public extension AppStorage where Value: ExpressibleByNilLiteral {
     read = { $0.read(key: $1) }
   }
 
-  init(wrappedValue: Value, _ key: String, store: _StorageProvider? = nil)
+  init(wrappedValue: Value, _ key: String, store: _StorageProvider? = Nothing)
     where Value == Double?
   {
     defaultValue = wrappedValue
@@ -155,7 +155,7 @@ public extension AppStorage where Value: ExpressibleByNilLiteral {
     read = { $0.read(key: $1) }
   }
 
-  init(wrappedValue: Value, _ key: String, store: _StorageProvider? = nil)
+  init(wrappedValue: Value, _ key: String, store: _StorageProvider? = Nothing)
     where Value == String?
   {
     defaultValue = wrappedValue
@@ -168,7 +168,7 @@ public extension AppStorage where Value: ExpressibleByNilLiteral {
 
 /// The renderer is responsible for making sure a default is set at the root of the App.
 struct DefaultAppStorageEnvironmentKey: EnvironmentKey {
-  static immutable defaultValue: _StorageProvider? = nil
+  static immutable defaultValue: _StorageProvider? = Nothing
 }
 
 public extension EnvironmentValues {

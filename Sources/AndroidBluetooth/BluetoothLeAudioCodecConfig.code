@@ -1,0 +1,162 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.bluetooth.BluetoothLeAudioCodecConfig", implements: Parcelable.this)
+open class BluetoothLeAudioCodecConfig: JavaObject {
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getCodecType() -> Int32
+
+  @JavaMethod
+  open fn getCodecPriority() -> Int32
+
+  @JavaMethod
+  open fn getSampleRate() -> Int32
+
+  @JavaMethod
+  open fn getBitsPerSample() -> Int32
+
+  @JavaMethod
+  open fn getCodecName() -> String
+
+  @JavaMethod
+  open fn getChannelCount() -> Int32
+
+  @JavaMethod
+  open fn getFrameDuration() -> Int32
+
+  @JavaMethod
+  open fn getOctetsPerFrame() -> Int32
+
+  @JavaMethod
+  open fn getMinOctetsPerFrame() -> Int32
+
+  @JavaMethod
+  open fn getMaxOctetsPerFrame() -> Int32
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+}
+extension JavaClass<BluetoothLeAudioCodecConfig> {
+  @JavaStaticField(isFinal: true)
+  public var BITS_PER_SAMPLE_16: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BITS_PER_SAMPLE_24: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BITS_PER_SAMPLE_32: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var BITS_PER_SAMPLE_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CHANNEL_COUNT_1: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CHANNEL_COUNT_2: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CHANNEL_COUNT_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CODEC_PRIORITY_DEFAULT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CODEC_PRIORITY_DISABLED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CODEC_PRIORITY_HIGHEST: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<BluetoothLeAudioCodecConfig>!
+
+  @JavaStaticField(isFinal: true)
+  public var FRAME_DURATION_10000: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FRAME_DURATION_7500: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FRAME_DURATION_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAMPLE_RATE_11025: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAMPLE_RATE_16000: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAMPLE_RATE_176400: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAMPLE_RATE_192000: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAMPLE_RATE_22050: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAMPLE_RATE_24000: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAMPLE_RATE_32000: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAMPLE_RATE_384000: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAMPLE_RATE_44100: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAMPLE_RATE_48000: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAMPLE_RATE_8000: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAMPLE_RATE_88200: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAMPLE_RATE_96000: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SAMPLE_RATE_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_CODEC_TYPE_INVALID: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_CODEC_TYPE_LC3: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

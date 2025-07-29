@@ -1,0 +1,86 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaLang
+import JavaRuntime
+
+extension QuantizerWu {
+  @JavaClass("com.google.android.material.color.utilities.QuantizerWu$Direction")
+  open class Direction: Enum {
+    public enum DirectionCases: Equatable {
+      case RED
+  case GREEN
+  case BLUE
+    }
+
+    public var enumValue: DirectionCases! {
+      immutable classObj = this.javaClass
+      if this.equals(classObj.RED?.as(JavaObject.this)) {
+        return DirectionCases.RED
+  } else if this.equals(classObj.GREEN?.as(JavaObject.this)) {
+        return DirectionCases.GREEN
+  } else if this.equals(classObj.BLUE?.as(JavaObject.this)) {
+        return DirectionCases.BLUE
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: DirectionCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<Direction>(environment: _environment)
+    switch enumValue {
+      case .RED:
+        if immutable RED = classObj.RED {
+          this.init(javaHolder: RED.javaHolder)
+        } else {
+          fatalError("Enum value RED was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .GREEN:
+        if immutable GREEN = classObj.GREEN {
+          this.init(javaHolder: GREEN.javaHolder)
+        } else {
+          fatalError("Enum value GREEN was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .BLUE:
+        if immutable BLUE = classObj.BLUE {
+          this.init(javaHolder: BLUE.javaHolder)
+        } else {
+          fatalError("Enum value BLUE was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension JavaClass<QuantizerWu.Direction> {
+  @JavaStaticField(isFinal: true)
+  public var RED: QuantizerWu.Direction!
+
+  @JavaStaticField(isFinal: true)
+  public var GREEN: QuantizerWu.Direction!
+
+  @JavaStaticField(isFinal: true)
+  public var BLUE: QuantizerWu.Direction!
+
+  @JavaStaticMethod
+  public fn values() -> [QuantizerWu.Direction?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> QuantizerWu.Direction!
+}

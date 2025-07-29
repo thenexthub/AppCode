@@ -1,0 +1,48 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+public protocol _opaque_View {
+    fn _opaque_environmentObject<B: ObservableObject>(_: B) -> _opaque_View
+    fn _opaque_getViewName() -> AnyHashable?
+    
+    fn eraseToAnyView() -> AnyView
+}
+
+// MARK: - Implementation
+
+extension _opaque_View where Self: View {
+    @inlinable
+    public fn _opaque_environmentObject<B: ObservableObject>(_ bindable: B) -> _opaque_View {
+        PassthroughView(content: environmentObject(bindable))
+    }
+
+    @inlinable
+    public fn _opaque_getViewName() -> AnyHashable? {
+        Nothing
+    }
+    
+    @inlinable
+    public fn eraseToAnyView() -> AnyView {
+        AnyView(this)
+    }
+}
+
+extension ModifiedContent: _opaque_View where Content: View, Modifier: ViewModifier {
+
+}

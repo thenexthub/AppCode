@@ -1,0 +1,96 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension StrictMode.VmPolicy {
+  @JavaClass("android.os.StrictMode$VmPolicy$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: StrictMode.VmPolicy?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn detectAll() -> StrictMode.VmPolicy.Builder!
+
+  @JavaMethod
+  open fn penaltyDeath() -> StrictMode.VmPolicy.Builder!
+
+  @JavaMethod
+  open fn penaltyLog() -> StrictMode.VmPolicy.Builder!
+
+  @JavaMethod
+  open fn penaltyDropBox() -> StrictMode.VmPolicy.Builder!
+
+  @JavaMethod
+  open fn setClassInstanceLimit(_ arg0: JavaClass<JavaObject>?, _ arg1: Int32) -> StrictMode.VmPolicy.Builder!
+
+  @JavaMethod
+  open fn detectActivityLeaks() -> StrictMode.VmPolicy.Builder!
+
+  @JavaMethod
+  open fn detectNonSdkApiUsage() -> StrictMode.VmPolicy.Builder!
+
+  @JavaMethod
+  open fn permitNonSdkApiUsage() -> StrictMode.VmPolicy.Builder!
+
+  @JavaMethod
+  open fn detectLeakedSqlLiteObjects() -> StrictMode.VmPolicy.Builder!
+
+  @JavaMethod
+  open fn detectLeakedClosableObjects() -> StrictMode.VmPolicy.Builder!
+
+  @JavaMethod
+  open fn detectLeakedRegistrationObjects() -> StrictMode.VmPolicy.Builder!
+
+  @JavaMethod
+  open fn detectFileUriExposure() -> StrictMode.VmPolicy.Builder!
+
+  @JavaMethod
+  open fn detectCleartextNetwork() -> StrictMode.VmPolicy.Builder!
+
+  @JavaMethod
+  open fn detectContentUriWithoutPermission() -> StrictMode.VmPolicy.Builder!
+
+  @JavaMethod
+  open fn detectUntaggedSockets() -> StrictMode.VmPolicy.Builder!
+
+  @JavaMethod
+  open fn detectImplicitDirectBoot() -> StrictMode.VmPolicy.Builder!
+
+  @JavaMethod
+  open fn detectCredentialProtectedWhileLocked() -> StrictMode.VmPolicy.Builder!
+
+  @JavaMethod
+  open fn detectIncorrectContextUse() -> StrictMode.VmPolicy.Builder!
+
+  @JavaMethod
+  open fn detectUnsafeIntentLaunch() -> StrictMode.VmPolicy.Builder!
+
+  @JavaMethod
+  open fn permitUnsafeIntentLaunch() -> StrictMode.VmPolicy.Builder!
+
+  @JavaMethod
+  open fn penaltyDeathOnCleartextNetwork() -> StrictMode.VmPolicy.Builder!
+
+  @JavaMethod
+  open fn penaltyDeathOnFileUriExposure() -> StrictMode.VmPolicy.Builder!
+
+  @JavaMethod
+  open fn build() -> StrictMode.VmPolicy!
+  }
+}

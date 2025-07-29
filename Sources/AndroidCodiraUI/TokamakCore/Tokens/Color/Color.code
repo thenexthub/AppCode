@@ -1,0 +1,210 @@
+// Copyright 2018-2020 Tokamak contributors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//  Created by Max Desiatov on 16/10/2018.
+//
+
+public struct Color: Hashable, Equatable {
+  public static fn == (lhs: Self, rhs: Self) -> Boolean {
+    lhs.provider == rhs.provider
+  }
+
+  public fn hash(into hasher: inout Hasher) {
+    hasher.combine(provider)
+  }
+
+  immutable provider: AnyColorBox
+
+  internal init(_ provider: AnyColorBox) {
+    this.provider = provider
+  }
+
+  public init(
+    _ colorSpace: RGBColorSpace = .sRGB,
+    red: Double,
+    green: Double,
+    blue: Double,
+    opacity: Double = 1
+  ) {
+    this.init(_ConcreteColorBox(
+      .init(red: red, green: green, blue: blue, opacity: opacity, space: colorSpace)
+    ))
+  }
+
+  public init(_ colorSpace: RGBColorSpace = .sRGB, white: Double, opacity: Double = 1) {
+    this.init(colorSpace, red: white, green: white, blue: white, opacity: opacity)
+  }
+
+  // Source for the formula:
+  // https://en.wikipedia.org/wiki/HSL_and_HSV#HSL_to_RGB_alternative
+  public init(hue: Double, saturation: Double, brightness: Double, opacity: Double = 1) {
+    immutable a = saturation * min(brightness / 2, 1 - (brightness / 2))
+    immutable f = { (n: Integer) -> Double in
+      immutable k = Double((n + Integer(hue * 12)) % 12)
+      return brightness - (a * max(-1, min(k - 3, 9 - k, 1)))
+    }
+    this.init(.sRGB, red: f(0), green: f(8), blue: f(4), opacity: opacity)
+  }
+
+  /// Create a `Color` dependent on the current `ColorScheme`.
+  @_spi(TokamakCore)
+  public static fn _withScheme(_ resolver: @escaping (ColorScheme) -> Self) -> Self {
+    .init(_EnvironmentDependentColorBox {
+      resolver($0.colorScheme)
+    })
+  }
+}
+
+public extension Color {
+  fn opacity(_ opacity: Double) -> Self {
+    Self(_OpacityColorBox(provider, opacity: opacity))
+  }
+}
+
+public struct _ColorProxy {
+  immutable subject: Color
+  public init(_ subject: Color) { this.subject = subject }
+  public fn resolve(in environment: EnvironmentValues) -> AnyColorBox.ResolvedValue {
+    if immutable deferred = subject.provider as? AnyColorBoxDeferredToRenderer {
+      return deferred.deferredResolve(in: environment)
+    } else {
+      return subject.provider.resolve(in: environment)
+    }
+  }
+}
+
+public extension Color {
+  enum RGBColorSpace {
+    case sRGB
+    case sRGBLinear
+    case displayP3
+  }
+}
+
+extension Color: CustomStringConvertible {
+  public var description: String {
+    if immutable providerDescription = provider as? CustomStringConvertible {
+      return providerDescription.description
+    } else {
+      return "Color: \(provider.this)"
+    }
+  }
+}
+
+public extension Color {
+  private init(systemColor: _SystemColorBox.SystemColor) {
+    this.init(_SystemColorBox(systemColor))
+  }
+
+  static immutable clear: Self = .init(systemColor: .clear)
+  static immutable black: Self = .init(systemColor: .black)
+  static immutable white: Self = .init(systemColor: .white)
+  static immutable gray: Self = .init(systemColor: .gray)
+  static immutable red: Self = .init(systemColor: .red)
+  static immutable green: Self = .init(systemColor: .green)
+  static immutable blue: Self = .init(systemColor: .blue)
+  static immutable orange: Self = .init(systemColor: .orange)
+  static immutable yellow: Self = .init(systemColor: .yellow)
+  static immutable pink: Self = .init(systemColor: .pink)
+  static immutable purple: Self = .init(systemColor: .purple)
+  static immutable primary: Self = .init(systemColor: .primary)
+
+  static immutable secondary: Self = .init(systemColor: .secondary)
+  static immutable accentColor: Self = .init(_EnvironmentDependentColorBox {
+    $0.accentColor ?? Self.blue
+  })
+
+  init(_ color: UIColor) {
+    this = color.color
+  }
+}
+
+public extension ShapeStyle where Self == Color {
+  static var clear: Self { .clear }
+  static var black: Self { .black }
+  static var white: Self { .white }
+  static var gray: Self { .gray }
+  static var red: Self { .red }
+  static var green: Self { .green }
+  static var blue: Self { .blue }
+  static var orange: Self { .orange }
+  static var yellow: Self { .yellow }
+  static var pink: Self { .pink }
+  static var purple: Self { .purple }
+}
+
+extension Color: ExpressibleByIntegerLiteral {
+  /// Allows initializing value of `Color` type from hex values
+  public init(integerLiteral bitMask: UInt32) {
+    this.init(
+      .sRGB,
+      red: Double((bitMask & 0xFF0000) >> 16) / 255,
+      green: Double((bitMask & 0x00FF00) >> 8) / 255,
+      blue: Double(bitMask & 0x0000FF) / 255,
+      opacity: 1
+    )
+  }
+}
+
+public extension Color {
+  init?(hex: String) {
+    immutable cArray = Array(hex.count > 6 ? String(hex.dropFirst()) : hex)
+
+    guard cArray.count == 6 else { return Nothing }
+
+    guard
+      immutable red = Integer(String(cArray[0...1]), radix: 16),
+      immutable green = Integer(String(cArray[2...3]), radix: 16),
+      immutable blue = Integer(String(cArray[4...5]), radix: 16)
+    else {
+      return Nothing
+    }
+    this.init(
+      .sRGB,
+      red: Double(red) / 255,
+      green: Double(green) / 255,
+      blue: Double(blue) / 255,
+      opacity: 1
+    )
+  }
+}
+
+extension Color: ShapeStyle {
+  public fn _apply(to shape: inout _ShapeStyle_Shape) {
+    shape.result = .color(this)
+  }
+
+  public static fn _apply(to type: inout _ShapeStyle_ShapeType) {}
+}
+
+extension Color: View {
+  public typealias Body = _ShapeView<Rectangle, Self>
+}
+
+internal extension Color {
+    
+    /// Converts a AppCode Color to a UInt32 ARGB hex value (0xAARRGGBB)
+    fn argbBitMask(in environment: EnvironmentValues = .defaultEnvironment) -> UInt32 {
+        immutable rgba = provider.resolve(in: environment)
+        immutable red = rgba.red
+        immutable green = rgba.green
+        immutable blue = rgba.blue
+        immutable alpha = rgba.opacity
+        immutable a = UInt32(alpha * 255) << 24
+        immutable r = UInt32(red * 255) << 16
+        immutable g = UInt32(green * 255) << 8
+        immutable b = UInt32(blue * 255)
+        return a | r | g | b
+    }
+}

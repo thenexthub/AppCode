@@ -1,0 +1,100 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidGraphics
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.view.Surface", implements: Parcelable.this)
+open class Surface: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: SurfaceControl?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: SurfaceTexture?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn setFrameRate(_ arg0: Float, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn setFrameRate(_ arg0: Float, _ arg1: Int32)
+
+  @JavaMethod
+  open fn lockCanvas(_ arg0: Rect?) throws -> Canvas!
+
+  @JavaMethod
+  open fn unlockCanvasAndPost(_ arg0: Canvas?)
+
+  @JavaMethod
+  open fn lockHardwareCanvas() -> Canvas!
+
+  @JavaMethod
+  open fn unlockCanvas(_ arg0: Canvas?)
+
+  @JavaMethod
+  open fn readFromParcel(_ arg0: Parcel?)
+
+  @JavaMethod
+  open override fn finalize() throws
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn release()
+
+  @JavaMethod
+  open fn isValid() -> Boolean
+}
+extension JavaClass<Surface> {
+  @JavaStaticField(isFinal: true)
+  public var CHANGE_FRAME_RATE_ALWAYS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CHANGE_FRAME_RATE_ONLY_IF_SEAMLESS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<Surface>!
+
+  @JavaStaticField(isFinal: true)
+  public var FRAME_RATE_COMPATIBILITY_DEFAULT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FRAME_RATE_COMPATIBILITY_FIXED_SOURCE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ROTATION_0: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ROTATION_180: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ROTATION_270: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ROTATION_90: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

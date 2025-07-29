@@ -24,7 +24,7 @@ public struct LazyVGrid<Content>: _PrimitiveView where Content: View {
   public init(
     columns: [GridItem],
     alignment: HorizontalAlignment = .center,
-    spacing: CGFloat? = nil,
+    spacing: CGFloat? = Nothing,
     pinnedViews: PinnedScrollableViews = .init(),
     @ViewBuilder content: () -> Content
   ) {

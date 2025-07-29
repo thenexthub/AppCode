@@ -1,0 +1,180 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension Notification {
+  @JavaClass("android.app.Notification$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  open fn setShortcutId(_ arg0: String) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setBadgeIconType(_ arg0: Int32) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setGroupAlertBehavior(_ arg0: Int32) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setBubbleMetadata(_ arg0: Notification.BubbleMetadata?) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setChannelId(_ arg0: String) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setTimeoutAfter(_ arg0: Int64) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setWhen(_ arg0: Int64) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setShowWhen(_ arg0: Boolean) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setUsesChronometer(_ arg0: Boolean) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setChronometerCountDown(_ arg0: Boolean) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setSmallIcon(_ arg0: Int32) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setSmallIcon(_ arg0: Int32, _ arg1: Int32) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setContentTitle(_ arg0: CharSequence?) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setContentText(_ arg0: CharSequence?) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setSubText(_ arg0: CharSequence?) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setSettingsText(_ arg0: CharSequence?) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setRemoteInputHistory(_ arg0: [CharSequence?]) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setNumber(_ arg0: Int32) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setContentInfo(_ arg0: CharSequence?) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setProgress(_ arg0: Int32, _ arg1: Int32, _ arg2: Boolean) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setContentIntent(_ arg0: PendingIntent?) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setDeleteIntent(_ arg0: PendingIntent?) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setFullScreenIntent(_ arg0: PendingIntent?, _ arg1: Boolean) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setTicker(_ arg0: CharSequence?) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setVibrate(_ arg0: [Int64]) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setLights(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setOngoing(_ arg0: Boolean) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setColorized(_ arg0: Boolean) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setOnlyAlertOnce(_ arg0: Boolean) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setForegroundServiceBehavior(_ arg0: Int32) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setAutoCancel(_ arg0: Boolean) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setLocalOnly(_ arg0: Boolean) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setDefaults(_ arg0: Int32) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setCategory(_ arg0: String) -> Notification.Builder!
+
+  @JavaMethod
+  open fn addPerson(_ arg0: String) -> Notification.Builder!
+
+  @JavaMethod
+  open fn addPerson(_ arg0: Person?) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setGroup(_ arg0: String) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setGroupSummary(_ arg0: Boolean) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setSortKey(_ arg0: String) -> Notification.Builder!
+
+  @JavaMethod
+  open fn addAction(_ arg0: Notification.Action?) -> Notification.Builder!
+
+  @JavaMethod
+  open fn addAction(_ arg0: Int32, _ arg1: CharSequence?, _ arg2: PendingIntent?) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setActions(_ arg0: [Notification.Action?]) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setStyle(_ arg0: Notification.Style?) -> Notification.Builder!
+
+  @JavaMethod
+  open fn getStyle() -> Notification.Style!
+
+  @JavaMethod
+  open fn setVisibility(_ arg0: Int32) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setPublicVersion(_ arg0: Notification?) -> Notification.Builder!
+
+  @JavaMethod
+  open fn extend(_ arg0: Notification.Extender?) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setFlag(_ arg0: Int32, _ arg1: Boolean) -> Notification.Builder!
+
+  @JavaMethod
+  open fn setAllowSystemGeneratedContextualActions(_ arg0: Boolean) -> Notification.Builder!
+
+  @JavaMethod
+  open fn getNotification() -> Notification!
+
+  @JavaMethod
+  open fn setPriority(_ arg0: Int32) -> Notification.Builder!
+
+  @JavaMethod
+  open fn build() -> Notification!
+
+  @JavaMethod
+  open fn setColor(_ arg0: Int32) -> Notification.Builder!
+  }
+}

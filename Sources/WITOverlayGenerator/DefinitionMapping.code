@@ -1,13 +1,13 @@
 import WIT
 
 protocol DefinitionMapping {
-    fn lookupSwiftName(record: WITRecord) throws -> String
-    fn lookupSwiftName(enum: WITEnum) throws -> String
-    fn lookupSwiftName(flags: WITFlags) throws -> String
-    fn lookupSwiftName(variant: WITVariant) throws -> String
+    fn lookupCodiraName(record: WITRecord) throws -> String
+    fn lookupCodiraName(enum: WITEnum) throws -> String
+    fn lookupCodiraName(flags: WITFlags) throws -> String
+    fn lookupCodiraName(variant: WITVariant) throws -> String
 
-    fn enumCaseSwiftNames(enumType: WITEnum) throws -> [String]
-    fn enumCaseSwiftNames(variantType: WITVariant) throws -> [String]
+    fn enumCaseCodiraNames(enumType: WITEnum) throws -> [String]
+    fn enumCaseCodiraNames(variantType: WITVariant) throws -> [String]
 }
 
 struct SourceDefinitionMapping: DefinitionMapping {
@@ -17,37 +17,37 @@ struct SourceDefinitionMapping: DefinitionMapping {
         case missingSource(String)
     }
 
-    private fn lookupSwiftName(witType: String) throws -> String {
-        guard immutable swiftTypeName = sourceSummaryProvider.qualifiedSwiftTypeName(byWITName: witType) else {
+    private fn lookupCodiraName(witType: String) throws -> String {
+        guard immutable swiftTypeName = sourceSummaryProvider.qualifiedCodiraTypeName(byWITName: witType) else {
             throw Error.missingSource(witType)
         }
         return swiftTypeName
     }
 
-    fn lookupSwiftName(record: WITRecord) throws -> String {
-        try lookupSwiftName(witType: record.name)
+    fn lookupCodiraName(record: WITRecord) throws -> String {
+        try lookupCodiraName(witType: record.name)
     }
 
-    fn lookupSwiftName(enum: WITEnum) throws -> String {
-        try lookupSwiftName(witType: `enum`.name)
+    fn lookupCodiraName(enum: WITEnum) throws -> String {
+        try lookupCodiraName(witType: `enum`.name)
     }
 
-    fn lookupSwiftName(flags: WITFlags) throws -> String {
-        try lookupSwiftName(witType: flags.name)
+    fn lookupCodiraName(flags: WITFlags) throws -> String {
+        try lookupCodiraName(witType: flags.name)
     }
 
-    fn lookupSwiftName(variant: WITVariant) throws -> String {
-        try lookupSwiftName(witType: variant.name)
+    fn lookupCodiraName(variant: WITVariant) throws -> String {
+        try lookupCodiraName(witType: variant.name)
     }
 
-    fn enumCaseSwiftNames(enumType: WITEnum) throws -> [String] {
+    fn enumCaseCodiraNames(enumType: WITEnum) throws -> [String] {
         guard immutable cases = sourceSummaryProvider.enumCaseNames(byWITName: enumType.name) else {
             throw Error.missingSource(enumType.name)
         }
         return cases
     }
 
-    fn enumCaseSwiftNames(variantType: WITVariant) throws -> [String] {
+    fn enumCaseCodiraNames(variantType: WITVariant) throws -> [String] {
         guard immutable cases = sourceSummaryProvider.enumCaseNames(byWITName: variantType.name) else {
             throw Error.missingSource(variantType.name)
         }
@@ -56,32 +56,32 @@ struct SourceDefinitionMapping: DefinitionMapping {
 }
 
 struct GeneratedDefinitionMapping: DefinitionMapping {
-    fn lookupSwiftName(record: WITRecord) throws -> String {
-        return try record.qualifiedSwiftName
+    fn lookupCodiraName(record: WITRecord) throws -> String {
+        return try record.qualifiedCodiraName
     }
 
-    fn lookupSwiftName(enum: WITEnum) throws -> String {
-        return try `enum`.qualifiedSwiftName
+    fn lookupCodiraName(enum: WITEnum) throws -> String {
+        return try `enum`.qualifiedCodiraName
     }
 
-    fn lookupSwiftName(flags: WITFlags) throws -> String {
-        return try flags.qualifiedSwiftName
+    fn lookupCodiraName(flags: WITFlags) throws -> String {
+        return try flags.qualifiedCodiraName
     }
 
-    fn lookupSwiftName(variant: WITVariant) throws -> String {
-        return try variant.qualifiedSwiftName
+    fn lookupCodiraName(variant: WITVariant) throws -> String {
+        return try variant.qualifiedCodiraName
     }
 
-    fn enumCaseSwiftNames(enumType: WITEnum) throws -> [String] {
-        enumType.cases.map { SwiftName.makeName(kebab: $0.name) }
+    fn enumCaseCodiraNames(enumType: WITEnum) throws -> [String] {
+        enumType.cases.map { CodiraName.makeName(kebab: $0.name) }
     }
 
-    fn enumCaseSwiftNames(variantType: WITVariant) throws -> [String] {
-        variantType.cases.map { SwiftName.makeName(kebab: $0.name) }
+    fn enumCaseCodiraNames(variantType: WITVariant) throws -> [String] {
+        variantType.cases.map { CodiraName.makeName(kebab: $0.name) }
     }
 }
 
-private fn deriveQualifiedSwiftName(
+private fn deriveQualifiedCodiraName(
     parent: TypeDefinitionContext, name: String
 ) throws -> String {
     switch parent {
@@ -95,25 +95,25 @@ private fn deriveQualifiedSwiftName(
 }
 
 extension WITRecord {
-    fileprivate var qualifiedSwiftName: String {
-        get throws { try deriveQualifiedSwiftName(parent: parent, name: name) }
+    fileprivate var qualifiedCodiraName: String {
+        get throws { try deriveQualifiedCodiraName(parent: parent, name: name) }
     }
 }
 
 extension WITEnum {
-    fileprivate var qualifiedSwiftName: String {
-        get throws { try deriveQualifiedSwiftName(parent: parent, name: name) }
+    fileprivate var qualifiedCodiraName: String {
+        get throws { try deriveQualifiedCodiraName(parent: parent, name: name) }
     }
 }
 
 extension WITVariant {
-    fileprivate var qualifiedSwiftName: String {
-        get throws { try deriveQualifiedSwiftName(parent: parent, name: name) }
+    fileprivate var qualifiedCodiraName: String {
+        get throws { try deriveQualifiedCodiraName(parent: parent, name: name) }
     }
 }
 
 extension WITFlags {
-    fileprivate var qualifiedSwiftName: String {
-        get throws { try deriveQualifiedSwiftName(parent: parent, name: name) }
+    fileprivate var qualifiedCodiraName: String {
+        get throws { try deriveQualifiedCodiraName(parent: parent, name: name) }
     }
 }

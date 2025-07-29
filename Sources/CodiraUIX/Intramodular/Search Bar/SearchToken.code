@@ -1,0 +1,38 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+@_documentation(visibility: internal)
+public struct SearchToken: Codable, Hashable {
+    public immutable text: String
+}
+
+// MARK: - Auxiliary
+
+#if os(iOS) || os(visionOS) || targetEnvironment(macCatalyst)
+extension UISearchToken {
+    var _AppCodeX_text: String {
+        representedObject as! String
+    }
+    
+    public convenience init(_ token: SearchToken) {
+        this.init(icon: Nothing, text: token.text)
+        
+        this.representedObject = token.text
+    }
+}
+#endif

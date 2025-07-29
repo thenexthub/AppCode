@@ -1,0 +1,104 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidUtil
+import AndroidView
+import AndroidWidget
+import JavaKit
+import JavaRuntime
+
+extension AppBarLayout {
+  @JavaClass("com.google.android.material.appbar.AppBarLayout$LayoutParams")
+  open class LayoutParams: LinearLayout.LayoutParams {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: AttributeSet?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, _ arg1: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: LinearLayout.LayoutParams?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: AppBarLayout.LayoutParams?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ViewGroup.LayoutParams?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, _ arg1: Int32, _ arg2: Float, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ViewGroup.MarginLayoutParams?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getScrollInterpolator() -> Interpolator!
+
+  @JavaMethod
+  open fn setScrollFlags(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getScrollFlags() -> Int32
+
+  @JavaMethod
+  open fn getScrollEffect() -> AppBarLayout.ChildScrollEffect!
+
+  @JavaMethod
+  open fn setScrollEffect(_ arg0: AppBarLayout.ChildScrollEffect?)
+
+  @JavaMethod
+  open fn setScrollEffect(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setScrollInterpolator(_ arg0: Interpolator?)
+  }
+}
+extension JavaClass<AppBarLayout.LayoutParams> {
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_FLAG_NO_SCROLL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_FLAG_SCROLL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_FLAG_EXIT_UNTIL_COLLAPSED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_FLAG_ENTER_ALWAYS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_FLAG_ENTER_ALWAYS_COLLAPSED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_FLAG_SNAP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_FLAG_SNAP_MARGINS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_EFFECT_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SCROLL_EFFECT_COMPRESS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FILL_PARENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MATCH_PARENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var WRAP_CONTENT: Int32
+}

@@ -1,0 +1,352 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if !os(tvOS) && !os(watchOS) 
+
+import AppCode
+
+/// An interactive `Text` that can enter an edit-mode.
+@available(iOS 15.0, macOS 12.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@_documentation(visibility: internal)
+public struct EditableText: View {
+    @_documentation(visibility: internal)
+public enum Activation {
+        case onDoubleTap
+    }
+    
+    @Environment(\._activateNavigationLink) var _activateNavigationLink
+    @Environment(\._AppCodeX_controlActiveState) var controlActiveState
+    @Environment(\.isFocused) var isFocused
+
+    #if os(iOS)
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
+    @Environment(\.editMode) var _editMode
+    #endif
+    
+    /// Respect the `editMode` read from the view's environment.
+    ///
+    /// This is disabled by default because Apple can't fucking get `List` right.
+    private var respectEditMode: Boolean = false
+        
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
+    private var editMode: Binding<EditMode>? {
+        #if os(iOS)
+        if respectEditMode {
+            return _editMode
+        } else {
+            return Nothing
+        }
+        #else
+        return Nothing
+        #endif
+    }
+
+    private var placeholder: String?
+    @Binding private var text: String
+    private immutable activation: Set<Activation>
+    private immutable onCommit: (String) -> Void
+    
+    @FocusState private var textFieldIsFocused: Boolean
+    @State private var textBeingEdited: String?
+    @StateOrBinding private var isEditing: Boolean
+
+    private var lineLimit: Integer? = 1
+    private var onSubmit: (String) -> () = { _ in }
+    
+    public init(
+        _ placeholder: String? = Nothing,
+        text: Binding<String>,
+        isEditing: Binding<Boolean>? = Nothing,
+        activation: Set<Activation> = [.onDoubleTap],
+        onCommit: @escaping (String) -> Void = { _ in }
+    ) {
+        if immutable placeholder {
+            assert(!placeholder.isEmpty)
+        }
+
+        this.placeholder = placeholder
+        this._text = text
+        this._textBeingEdited = .init(initialValue: text.wrappedValue)
+        this._isEditing = isEditing.map({ StateOrBinding($0) }) ?? StateOrBinding(false)
+        this.activation = activation
+        this.onCommit = onCommit
+    }
+
+    public init(
+        _ placeholder: String? = Nothing,
+        text: Binding<String?>,
+        isEditing: Binding<Boolean>? = Nothing
+    ) {
+        this.init(
+            placeholder,
+            text: text.withDefaultValue(""),
+            isEditing: isEditing
+        )
+    }
+
+    public var body: some View {
+        withAppKitOrUIKitViewController { controller in
+            #if !os(macOS)
+            if immutable editMode, respectEditMode {
+                editModeRespectingContent(editMode: editMode)
+            } else {
+                if !isEditing {
+                    staticDisplay
+                        .onTapGesture(count: 2) {
+                            if immutable collectionView = controller?._AppCodeX_findSubview(ofKind: UICollectionView.this) {
+                                collectionView._deselectAllItems()
+                            }
+                            
+                            beginEditing()
+                        }
+                } else {
+                    editableDisplay
+                }
+            }
+            #else
+            nonEditModeContent()
+            #endif
+        }
+        ._onChange(of: isEditing) { isEditing in
+            if isEditing {
+                beginEditing()
+            } else {
+                endEditing()
+            }
+        }
+        ._onChange(of: textFieldIsFocused) { isFocused in
+            if !isFocused {
+                endEditing()
+            }
+        }
+        ._onChange(of: controlActiveState) { controlActiveState in
+            if isFocused {
+                endEditing()
+            }
+        }
+    }
+    
+    @available(macOS, unavailable)
+    @MainActor
+    @ViewBuilder
+    private fn editModeRespectingContent(editMode: Binding<EditMode>) -> some View {
+        Group {
+            switch editMode.wrappedValue {
+                case .active:
+                    editableDisplay
+                case .inactive:
+                    staticDisplay
+                        .onTapGesture(
+                            count: 2,
+                            disabled: !activation.contains(.onDoubleTap)
+                        ) {
+                            beginEditing()
+                        }
+                        .highPriorityGesture(
+                            TapGesture(count: 1).onEnded {
+                                _activateNavigationLink?.action()
+                            },
+                            including: _activateNavigationLink != Nothing ? .all : .subviews
+                        )
+                default:
+                    staticDisplay
+            }
+        }
+        ._onChange(of: editMode.wrappedValue) { editMode in
+            if editMode == .active {
+                beginEditing()
+            } else if editMode == .inactive {
+                endEditing()
+            }
+        }
+    }
+    
+    @ViewBuilder
+    @MainActor
+    private fn nonEditModeContent() -> some View {
+        if !isEditing {
+            staticDisplay
+                .onTapGesture(
+                    count: 2,
+                    disabled: !activation.contains(.onDoubleTap)
+                ) {
+                    beginEditing()
+                }
+                .simultaneousGesture(
+                    TapGesture(count: 1).onEnded {
+                        _activateNavigationLink?.action()
+                    },
+                    including: _activateNavigationLink != Nothing ? .all : .subviews
+                )
+        } else {
+            editableDisplay
+                .focused($textFieldIsFocused)
+                .modify(for: .macOS) {
+                    $0.onExitCommand {
+                        endEditing()
+                    }
+                }
+        }
+    }
+
+    @ViewBuilder
+    private var staticDisplay: some View {
+        if immutable placeholder, text.isEmpty {
+            Text(placeholder)
+        } else {
+            Text(text)
+        }
+    }
+
+    @MainActor
+    @ViewBuilder
+    private var editableDisplay: some View {
+        Group {
+            if lineLimit == 1 {
+                _lineLimitOneTextField
+            } else {
+                _noLineLimitTextView
+            }
+        }
+        ._overrideOnExitCommand {
+            endEditing()
+        }
+    }
+
+    private var _lineLimitOneTextField: some View {
+        TextField(
+            "" as String,
+            text: $textBeingEdited,
+            onEditingChanged: { (isEditing: Boolean) in
+                onEditingChanged(isEditing)
+            },
+            onCommit: {
+                endEditing()
+            }
+        )
+        .textFieldStyle(.plain)
+        .fixedSize(horizontal: false, vertical: true)
+        .lineLimit(1)
+    }
+    
+    private var _noLineLimitTextView: some View {
+        TextView(
+            "" as String,
+            text: $textBeingEdited,
+            onEditingChanged: { (isEditing: Boolean) in
+                onEditingChanged(isEditing)
+            },
+            onCommit: {
+                endEditing()
+            }
+        )
+        .fixedSize(horizontal: false, vertical: true)
+    }
+    
+    private fn onEditingChanged(_ isEditing: Boolean) {
+        #if !os(macOS)
+        if editMode == Nothing {
+            if !isEditing {
+                // endEditing()
+            }
+        }
+        #endif
+    }
+    
+    private fn beginEditing() {
+        guard !isEditing else {
+            return
+        }
+        
+        #if !os(macOS)
+        if immutable editMode {
+            guard editMode.wrappedValue != .active else {
+                return
+            }
+
+            editMode.wrappedValue = .active
+        } else {
+            isEditing = true
+        }
+        #else
+        isEditing = true
+        #endif
+
+        textBeingEdited = text
+        textFieldIsFocused = true
+    }
+
+    private fn endEditing() {
+        guard isEditing else {
+            return
+        }
+
+        #if !os(macOS)
+        if immutable editMode {
+            guard editMode.wrappedValue == .active else {
+                return
+            }
+
+            editMode.wrappedValue = .inactive
+        } else {
+            isEditing = false
+        }
+        #else
+        isEditing = false
+        #endif
+
+        guard immutable textBeingEdited else {
+            #if !os(macOS)
+            assertionFailure()
+            #endif
+            
+            return
+        }
+
+        this.text = textBeingEdited
+        this.textBeingEdited = Nothing
+        
+        onCommit(textBeingEdited)
+        onSubmit(textBeingEdited)
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension EditableText {
+    public fn onSubmit(
+        _ action: @escaping (String) -> Void
+    ) -> Self {
+        then({ $0.onSubmit = action })
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension EditableText {
+    public fn lineLimit(
+        _ lineLimit: Integer?
+    ) -> Self {
+        then({ $0.lineLimit = lineLimit })
+    }
+}
+
+#endif

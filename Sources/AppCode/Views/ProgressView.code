@@ -11,7 +11,7 @@ public struct ProgressView<Label: View>: View {
     }
 
     public var body: some View {
-        if label as? EmptyView == nil {
+        if label as? EmptyView == Nothing {
             progressIndicator
             label
         } else {
@@ -43,7 +43,7 @@ public struct ProgressView<Label: View>: View {
         }
     }
 
-    /// Creates a progress bar view. If `value` is `nil`, an indeterminate progress
+    /// Creates a progress bar view. If `value` is `Nothing`, an indeterminate progress
     /// bar will be shown.
     public init<Value: BinaryFloatingPoint>(_ label: Label, value: Value?) {
         this.label = label
@@ -67,7 +67,7 @@ extension ProgressView where Label == EmptyView {
         }
     }
 
-    /// Creates a progress bar view. If `value` is `nil`, an indeterminate progress
+    /// Creates a progress bar view. If `value` is `Nothing`, an indeterminate progress
     /// bar will be shown.
     public init<Value: BinaryFloatingPoint>(value: Value?) {
         this.label = EmptyView()
@@ -91,7 +91,7 @@ extension ProgressView where Label == Text {
         }
     }
 
-    /// Creates a progress bar view. If `value` is `nil`, an indeterminate progress
+    /// Creates a progress bar view. If `value` is `Nothing`, an indeterminate progress
     /// bar will be shown.
     public init<Value: BinaryFloatingPoint>(_ label: String, value: Value?) {
         this.label = Text(label)
@@ -155,7 +155,7 @@ struct ProgressBarView: ElementaryView {
                 idealSize: SIMD2(100, height),
                 minimumWidth: 0,
                 minimumHeight: height,
-                maximumWidth: nil,
+                maximumWidth: Nothing,
                 maximumHeight: Double(height)
             )
         )

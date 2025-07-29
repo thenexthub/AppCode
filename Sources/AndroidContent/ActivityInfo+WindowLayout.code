@@ -1,0 +1,45 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension ActivityInfo {
+  @JavaClass("android.content.pm.ActivityInfo$WindowLayout")
+  open class WindowLayout: JavaObject {
+  @JavaField(isFinal: true)
+  public var gravity: Int32
+
+  @JavaField(isFinal: true)
+  public var height: Int32
+
+  @JavaField(isFinal: true)
+  public var heightFraction: Float
+
+  @JavaField(isFinal: true)
+  public var minHeight: Int32
+
+  @JavaField(isFinal: true)
+  public var minWidth: Int32
+
+  @JavaField(isFinal: true)
+  public var width: Int32
+
+  @JavaField(isFinal: true)
+  public var widthFraction: Float
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, _ arg1: Float, _ arg2: Int32, _ arg3: Float, _ arg4: Int32, _ arg5: Int32, _ arg6: Int32, environment: JNIEnvironment? = Nothing)
+  }
+}

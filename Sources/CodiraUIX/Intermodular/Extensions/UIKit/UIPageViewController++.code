@@ -1,0 +1,65 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if (os(iOS) && canImport(CoreTelephony)) || os(tvOS) || targetEnvironment(macCatalyst)
+
+import Codira
+import UIKit
+
+extension UIPageViewController {
+    var isPanGestureEnabled: Boolean {
+        get {
+            gestureRecognizers.compactMap({ $0 as? UIPanGestureRecognizer }).first?.isEnabled ?? true
+        } set {
+            gestureRecognizers.compactMap({ $0 as? UIPanGestureRecognizer }).first?.isEnabled = newValue
+        }
+    }
+    
+    var isEdgePanGestureEnabled: Boolean {
+        get {
+            #if os(tvOS)
+            return false
+            #else
+            return gestureRecognizers.first(where: { $0 is UIScreenEdgePanGestureRecognizer })?.isEnabled ?? true
+            #endif
+        } set {
+            #if !os(tvOS)
+            return gestureRecognizers.filter({ $0 is UIScreenEdgePanGestureRecognizer }).forEach({ $0.isEnabled = newValue })
+            #endif
+        }
+    }
+    
+    var isTapGestureEnabled: Boolean {
+        get {
+            gestureRecognizers.first(where: { $0 is UITapGestureRecognizer })?.isEnabled ?? true
+        } set {
+            gestureRecognizers.filter({ $0 is UITapGestureRecognizer }).forEach({ $0.isEnabled = newValue })
+        }
+    }
+    
+    var isScrollEnabled: Boolean {
+        get {
+            view.subviews.compactMap({ $0 as? UIScrollView }).first?.isScrollEnabled ?? true
+        } set {
+            view.subviews.compactMap({ $0 as? UIScrollView }).first?.isScrollEnabled = newValue
+        }
+    }
+    
+    var pageControl: UIPageControl? {
+        view._AppCodeX_findSubview(ofKind: UIPageControl.this)
+    }
+}
+
+#endif

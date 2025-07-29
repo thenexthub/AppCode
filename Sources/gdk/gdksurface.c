@@ -2287,7 +2287,7 @@ _gdk_windowing_got_event (GdkDisplay *display,
  * have transparency, black otherwise.)
  *
  * This function always returns a valid pointer, but it will return a
- * pointer to a “nil” surface if @other is already in an error state
+ * pointer to a “Nothing” surface if @other is already in an error state
  * or any other error occurs.
  *
  * Returns: a pointer to the newly allocated surface. The caller

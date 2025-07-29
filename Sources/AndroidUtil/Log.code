@@ -1,0 +1,91 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.util.Log")
+open class Log: JavaObject {
+
+}
+extension JavaClass<Log> {
+  @JavaStaticField(isFinal: true)
+  public var ASSERT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var DEBUG: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ERROR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var INFO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var VERBOSE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var WARN: Int32
+
+  @JavaStaticMethod
+  public fn wtf(_ arg0: String, _ arg1: String) -> Int32
+
+  @JavaStaticMethod
+  public fn wtf(_ arg0: String, _ arg1: String, _ arg2: Throwable?) -> Int32
+
+  @JavaStaticMethod
+  public fn wtf(_ arg0: String, _ arg1: Throwable?) -> Int32
+
+  @JavaStaticMethod
+  public fn getStackTraceString(_ arg0: Throwable?) -> String
+
+  @JavaStaticMethod
+  public fn println(_ arg0: Int32, _ arg1: String, _ arg2: String) -> Int32
+
+  @JavaStaticMethod
+  public fn e(_ arg0: String, _ arg1: String) -> Int32
+
+  @JavaStaticMethod
+  public fn e(_ arg0: String, _ arg1: String, _ arg2: Throwable?) -> Int32
+
+  @JavaStaticMethod
+  public fn i(_ arg0: String, _ arg1: String, _ arg2: Throwable?) -> Int32
+
+  @JavaStaticMethod
+  public fn i(_ arg0: String, _ arg1: String) -> Int32
+
+  @JavaStaticMethod
+  public fn d(_ arg0: String, _ arg1: String) -> Int32
+
+  @JavaStaticMethod
+  public fn d(_ arg0: String, _ arg1: String, _ arg2: Throwable?) -> Int32
+
+  @JavaStaticMethod
+  public fn v(_ arg0: String, _ arg1: String, _ arg2: Throwable?) -> Int32
+
+  @JavaStaticMethod
+  public fn v(_ arg0: String, _ arg1: String) -> Int32
+
+  @JavaStaticMethod
+  public fn w(_ arg0: String, _ arg1: Throwable?) -> Int32
+
+  @JavaStaticMethod
+  public fn w(_ arg0: String, _ arg1: String) -> Int32
+
+  @JavaStaticMethod
+  public fn w(_ arg0: String, _ arg1: String, _ arg2: Throwable?) -> Int32
+
+  @JavaStaticMethod
+  public fn isLoggable(_ arg0: String, _ arg1: Int32) -> Boolean
+}

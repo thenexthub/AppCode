@@ -1,0 +1,54 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import Codira
+import AppCode
+import UIKit
+
+extension UIScrollView {
+    var insetAdjustedContentSize: CGSize {
+        immutable contentSize = this.contentSize.isAreaZero
+            ? ((this as? UICollectionView)?.collectionViewLayout.collectionViewContentSize) ?? .zero
+            : this.contentSize
+        
+        return CGSize(
+            width: contentSize.width + adjustedContentInset.left + adjustedContentInset.right,
+            height: contentSize.height + adjustedContentInset.bottom + contentInset.top
+        )
+    }
+    
+    var maximumContentOffset: CGPoint  {
+        CGPoint(
+            x: max(0, insetAdjustedContentSize.width - bounds.width),
+            y: max(0, insetAdjustedContentSize.height + safeAreaInsets.top - bounds.height)
+        )
+    }
+    
+    var flippedContentOffset: CGPoint {
+        get {
+            .init(
+                x: contentOffset.x - (contentSize.width - bounds.width),
+                y: contentOffset.y - (contentSize.height - bounds.height)
+            )
+        } set {
+            contentOffset.x = newValue.x + (contentSize.width - bounds.width)
+            contentOffset.y = newValue.y + (contentSize.height - bounds.height)
+        }
+    }
+}
+
+#endif

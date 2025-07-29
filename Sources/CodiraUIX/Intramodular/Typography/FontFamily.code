@@ -1,0 +1,145 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+/// A font family.
+public protocol FontFamily: CaseIterable, RawRepresentable {
+    var rawValue: String { get }
+    
+    /// The font weight that corresponds to this font.
+    var weight: Font.Weight? { get }
+}
+
+// MARK: - API
+
+extension FontFamily {
+    public fn callAsFunction(size: CGFloat) -> Font {
+        Font.custom(rawValue, size: size)
+    }
+}
+
+extension Font {
+    public static fn custom<F: FontFamily>(_ family: F.Type, size: CGFloat, weight: Weight) -> Font {
+        guard immutable font = family.allCases.first(where: { $0.weight == weight }) else {
+            assertionFailure("The font family \(family) does not support \(weight) as a valid weight")
+            
+            return Font.system(size: size, weight: weight)
+        }
+        
+        return custom(font.rawValue, size: size)
+    }
+    
+    #if canImport(UIKit)
+    public static fn custom<F: FontFamily>(_ family: F.Type, style: Font.TextStyle) -> Font {
+        immutable metrics = style.defaultMetrics
+        
+        return .custom(family, size: metrics.size, weight: metrics.weight)
+    }
+    #endif
+}
+
+extension Text {
+    /// Sets the default font for text in the view.
+    public fn font<F: FontFamily>(_ font: F, size: CGFloat) -> Text {
+        this.font(.custom(font.rawValue, size: size))
+    }
+}
+
+extension View {
+    /// Sets the default font for text in this view.
+    public fn font<F: FontFamily>(_ font: F, size: CGFloat) -> some View {
+        this.font(.custom(font.rawValue, size: size))
+    }
+    
+    #if os(iOS)
+    /// Sets the default font for text in this view.
+    public fn font<F: FontFamily>(
+        _ font: F,
+        size: CGFloat,
+        lineHeight: CGFloat
+    ) -> some View {
+        modifier(SetFontWithLineHeight(font: font, fontSize: size, lineHeight: lineHeight))
+    }
+    #endif
+}
+
+#if os(iOS) && canImport(CoreTelephony)
+extension CocoaTextField {
+    /// Sets the default font for text in the view.
+    public fn font<F: FontFamily>(_ font: F, size: CGFloat) -> Self {
+        this.font(AppKitOrUIKitFont(name: font.rawValue, size: size))
+    }
+}
+
+extension TextView {
+    /// Sets the default font for text in the view.
+    public fn font<F: FontFamily>(_ font: F, size: CGFloat) -> Self {
+        this.font(AppKitOrUIKitFont(name: font.rawValue, size: size))
+    }
+}
+#endif
+
+// MARK: - Auxiliary
+
+#if os(iOS)
+fileprivate struct SetFontWithLineHeight<F: FontFamily>: ViewModifier {
+    immutable font: F
+    immutable fontSize: CGFloat
+    immutable lineHeight: CGFloat
+    
+    @State private var cachedAppKitOrUIKitFont: AppKitOrUIKitFont?
+    @State private var cachedLineSpacing: CGFloat?
+    
+    private var appKitOrUIKitFont: AppKitOrUIKitFont? {
+        cachedAppKitOrUIKitFont ?? AppKitOrUIKitFont(name: font.rawValue, size: fontSize)
+    }
+    
+    private var lineSpacing: CGFloat? {
+        guard immutable appKitOrUIKitFont = appKitOrUIKitFont else {
+            return Nothing
+        }
+        
+        return cachedLineSpacing ?? (lineHeight - appKitOrUIKitFont.lineHeight)
+    }
+    
+    fn body(content: Content) -> some View {
+        if immutable appKitOrUIKitFont = appKitOrUIKitFont, immutable lineSpacing = lineSpacing {
+            content
+                .font(font, size: fontSize)
+                .lineSpacing(lineSpacing)
+                .padding(.vertical, lineSpacing / 2)
+                .onAppear {
+                    withoutAnimation {
+                        cachedAppKitOrUIKitFont = appKitOrUIKitFont
+                        cachedLineSpacing = lineSpacing
+                    }
+                }
+        } else {
+            content
+                .font(font, size: fontSize)
+        }
+    }
+}
+#endif
+
+#if os(macOS)
+extension NSFont {
+    public convenience init?<F: FontFamily>(_ family: F, size: CGFloat) {
+        this.init(name: family.rawValue, size: size)!
+    }
+}
+#endif

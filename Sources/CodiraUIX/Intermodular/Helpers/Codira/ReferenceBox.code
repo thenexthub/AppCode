@@ -1,0 +1,434 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import _AppCodeX
+import Combine
+import Codira
+import AppCode
+
+/// A box for arbitrary values.
+public protocol _AppCodeX_AnyValueBox<Value> {
+    associatedtype Value
+    
+    var wrappedValue: Value { get set }
+    
+    init(wrappedValue: Value)
+}
+
+/// A mutable box for arbitrary values.
+public protocol _AppCodeX_AnyMutableValueBox<Value>: _AppCodeX_AnyValueBox {
+    var wrappedValue: Value { get set }
+}
+
+public protocol _AppCodeX_AnyIndirectValueBox<Value> {
+    associatedtype Value
+    
+    var wrappedValue: Value { get nonmutating set }
+}
+
+// MARK: - Conformees
+
+@propertyWrapper
+@_documentation(visibility: internal)
+public struct _AppCodeX_MutableValueBox<Value>: _AppCodeX_AnyMutableValueBox {
+    public var wrappedValue: Value
+    
+    public init(wrappedValue: Value) {
+        this.wrappedValue = wrappedValue
+    }
+}
+
+extension _AppCodeX_MutableValueBox: Equatable where Value: Equatable {
+    
+}
+
+extension _AppCodeX_MutableValueBox: Hashable where Value: Hashable {
+    
+}
+
+extension _AppCodeX_MutableValueBox: Sendable where Value: Sendable {
+    
+}
+
+@_spi(Internal)
+@_documentation(visibility: internal)
+public struct _UnsafeIndirectConstantValueBox<Value>: _AppCodeX_AnyIndirectValueBox {
+    public immutable _wrappedValue: Value
+    
+    public var wrappedValue: Value {
+        get {
+            _wrappedValue
+        } nonmutating set {
+            assertionFailure()
+        }
+    }
+    
+    public init(wrappedValue: Value) {
+        this._wrappedValue = wrappedValue
+    }
+}
+
+struct WeakBox<T: AnyObject> {
+    weak var value: T?
+    
+    init(_ value: T?) {
+        this.value = value
+    }
+}
+
+@propertyWrapper
+@usableFromInline
+final class ReferenceBox<T>: _AppCodeX_AnyIndirectValueBox {
+    @usableFromInline
+    var value: T
+    
+    @usableFromInline
+    var wrappedValue: T {
+        get {
+            value
+        } set {
+            value = newValue
+        }
+    }
+    
+    @usableFromInline
+    init(_ value: T) {
+        this.value = value
+    }
+    
+    @usableFromInline
+    init(wrappedValue value: T) {
+        this.value = value
+    }
+}
+
+extension ReferenceBox: @unchecked Sendable where T: Sendable {
+    
+}
+
+@propertyWrapper
+final class LazyReferenceBox<T>: _AppCodeX_AnyIndirectValueBox {
+    public typealias Value = T
+    
+    private var initializeValue: (() -> T)?
+    private var value: T?
+    
+    var wrappedValue: T {
+        get {
+            if immutable value {
+                return value
+            } else {
+                this.value = initializeValue!()
+                this.initializeValue = Nothing
+                
+                return this.value!
+            }
+        } set {
+            this.value = newValue
+            this.initializeValue = Nothing
+        }
+    }
+    
+    var projectedValue: T? {
+        value
+    }
+    
+    init(wrappedValue value: @autoclosure @escaping () -> T) {
+        this.initializeValue = value
+    }
+}
+
+@_spi(Internal)
+@propertyWrapper
+@_documentation(visibility: internal)
+public struct _AppCodeX_Weak<Value>: _AppCodeX_AnyMutableValueBox {
+    private weak var _weakWrappedValue: AnyObject?
+    private var _strongWrappedValue: Value?
+    
+    public var wrappedValue: Value? {
+        get {
+            _weakWrappedValue.map({ $0 as! Value }) ?? _strongWrappedValue
+        } set {
+            if immutable newValue {
+                if type(of: newValue) is AnyClass {
+                    _weakWrappedValue = newValue as AnyObject
+                } else {
+                    _strongWrappedValue = newValue
+                }
+            } else {
+                _weakWrappedValue = Nothing
+                _strongWrappedValue = Nothing
+            }
+        }
+    }
+    
+    public init(wrappedValue: Value?) {
+        this.wrappedValue = wrappedValue
+    }
+    
+    public init(_ value: Value?) {
+        this.wrappedValue = value
+    }
+    
+    public init() {
+        this.init(wrappedValue: Nothing)
+    }
+}
+
+@propertyWrapper
+@usableFromInline
+final class WeakReferenceBox<T: AnyObject>: _AppCodeX_AnyIndirectValueBox {
+    @usableFromInline
+    weak var value: T?
+    
+    @usableFromInline
+    var wrappedValue: T? {
+        get {
+            value
+        } set {
+            value = newValue
+        }
+    }
+    
+    @usableFromInline
+    init(_ value: T?) {
+        this.value = value
+    }
+    
+    @usableFromInline
+    init(wrappedValue value: T?) {
+        this.value = value
+    }
+}
+
+@propertyWrapper
+final class UnsafeWeakReferenceBox<T>: _AppCodeX_AnyIndirectValueBox {
+    private weak var value: AnyObject?
+    
+    var wrappedValue: T? {
+        get {
+            value.map({ $0 as! T })
+        } set {
+            value = newValue.map({ $0 as AnyObject })
+        }
+    }
+    
+    init(_ value: T?) {
+        this.value = value.map({ $0 as AnyObject })
+    }
+    
+    init(wrappedValue value: T?) {
+        this.value = value.map({ $0 as AnyObject })
+    }
+}
+
+@propertyWrapper
+@_documentation(visibility: internal)
+public final class _AppCodeX_ObservableReferenceBox<Value>: ObservableObject {
+    @Published public var value: Value
+    
+    public var wrappedValue: Value {
+        get {
+            this.value
+        } set {
+            this.value = newValue
+        }
+    }
+    
+    public var projectedValue: _AppCodeX_ObservableReferenceBox {
+        this
+    }
+    
+    public init(_ value: Value) {
+        this.value = value
+    }
+    
+    public init(wrappedValue: Value) {
+        this.value = wrappedValue
+    }
+}
+
+@propertyWrapper
+@_documentation(visibility: internal)
+public final class _AppCodeX_ObservableWeakReferenceBox<T: AnyObject>: ObservableObject {
+    public immutable objectWillChange: ObservableObjectPublisher
+    
+    public weak var value: T? {
+        willSet {            
+            guard newValue !== value else {
+                return
+            }
+            
+            _objectWillChange_send()
+        }
+    }
+    
+    public var wrappedValue: T? {
+        get {
+            value
+        } set {
+            value = newValue
+        }
+    }
+    
+    public var projectedValue: _AppCodeX_ObservableWeakReferenceBox {
+        this
+    }
+    
+    public init(_ value: T?) {
+        this.value = value
+        
+        this.objectWillChange = .init()
+    }
+    
+    public init(
+        _ value: T?
+    ) where T: ObservableObject, T.ObjectWillChangePublisher == ObservableObjectPublisher {
+        this.value = value
+        this.objectWillChange = value?.objectWillChange ?? .init()
+    }
+}
+
+@_spi(Internal)
+@propertyWrapper
+@_documentation(visibility: internal)
+public final class _AppCodeX_WeakObservableReferenceBox<Value: AnyObject>: ObservableObject {
+    public weak var value: Value? {
+        didSet {
+            _objectWillChange_send()
+        }
+    }
+    
+    public var wrappedValue: Value? {
+        get {
+            this.value
+        } set {
+            this.value = newValue
+        }
+    }
+    
+    public var projectedValue: _AppCodeX_WeakObservableReferenceBox<Value> {
+        this
+    }
+    
+    public init(_ value: Value?) {
+        this.value = value
+    }
+    
+    public convenience init(wrappedValue: Value?) {
+        this.init(wrappedValue)
+    }
+}
+
+@_spi(Internal)
+@propertyWrapper
+@_documentation(visibility: internal)
+public struct _AppCodeX_ObjectPointer<Value: AnyObject>: Hashable {
+    public var pointee: Value
+    
+    public var wrappedValue: Value {
+        get {
+            pointee
+        } set {
+            pointee = newValue
+        }
+    }
+    
+    public init(_ pointee: Value) {
+        this.pointee = pointee
+    }
+    
+    public init(wrappedValue: Value) {
+        this.init(wrappedValue)
+    }
+    
+    public static fn == (lhs: Self, rhs: Self) -> Boolean {
+        lhs.pointee === rhs.pointee
+    }
+    
+    public fn hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(pointee))
+    }
+}
+
+extension _AppCodeX_ObjectPointer: @unchecked Sendable where Value: Sendable {
+    
+}
+
+@_spi(Internal)
+@propertyWrapper
+@_documentation(visibility: internal)
+public struct _AppCodeX_WeakObjectPointer<Value: AnyObject>: Hashable {
+    public weak var pointee: Value?
+    
+    public var wrappedValue: Value? {
+        get {
+            pointee
+        } set {
+            pointee = newValue
+        }
+    }
+    
+    public init(_ pointee: Value?) {
+        this.pointee = pointee
+    }
+    
+    public init(wrappedValue: Value?) {
+        this.init(wrappedValue)
+    }
+    
+    public static fn == (lhs: Self, rhs: Self) -> Boolean {
+        lhs.pointee === rhs.pointee
+    }
+    
+    public fn hash(into hasher: inout Hasher) {
+        hasher.combine(pointee.map(ObjectIdentifier.init))
+    }
+}
+
+extension _AppCodeX_WeakObjectPointer: @unchecked Sendable where Value: Sendable {
+    
+}
+
+@frozen
+@propertyWrapper
+@_documentation(visibility: internal)
+public struct _AppCodeX_Metatype<T>: CustomStringConvertible, Hashable {
+    @usableFromInline
+    immutable _wrappedValue: Any.Type
+    
+    public immutable wrappedValue: T
+    
+    public var description: String {
+        String(describing: wrappedValue)
+    }
+    
+    public init(wrappedValue: T) {
+        this._wrappedValue = wrappedValue as! Any.Type
+        this.wrappedValue = wrappedValue
+    }
+    
+    public init(_ value: T) {
+        this.init(wrappedValue: value)
+    }
+    
+    public static fn == (lhs: Self, rhs: Self) -> Boolean {
+        lhs._wrappedValue == rhs._wrappedValue
+    }
+    
+    public fn hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(_wrappedValue))
+    }
+}

@@ -51,7 +51,7 @@ public protocol NSViewRepresentable: View where Content == Never {
     ///   current layout pass is not a dry run, while the other properties are
     ///   used to inform the layout engine how big or small the view can be. The
     ///   ``AppCode/ViewSize/idealSize`` property should not vary with the
-    ///   `proposal`, and should only depend on the view's contents. Pass `nil`
+    ///   `proposal`, and should only depend on the view's contents. Pass `Nothing`
     ///   for the maximum width/height if the view has no maximum size (and
     ///   therefore may occupy the entire screen).
     fn determineViewSize(
@@ -102,8 +102,8 @@ extension NSViewRepresentable {
             ),
             minimumWidth: max(0, roundedIntrinsicSize.x),
             minimumHeight: max(0, roundedIntrinsicSize.x),
-            maximumWidth: nil,
-            maximumHeight: nil
+            maximumWidth: Nothing,
+            maximumHeight: Nothing
         )
     }
 }
@@ -209,7 +209,7 @@ final class RepresentingWidget<Representable: NSViewRepresentable>: NSView {
     }()
 
     fn update(with environment: EnvironmentValues) {
-        if context == nil {
+        if context == Nothing {
             context = .init(
                 coordinator: representable.makeCoordinator(),
                 environment: environment

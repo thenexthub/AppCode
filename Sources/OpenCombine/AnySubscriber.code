@@ -93,9 +93,9 @@ public struct AnySubscriber<Input, Failure: Error>: Subscriber,
     ///     a completion callback from the publisher.
     @inline(__always)
     @inlinable
-    public init(receiveSubscription: ((Subscription) -> Void)? = nil,
-                receiveValue: ((Input) -> Subscribers.Demand)? = nil,
-                receiveCompletion: ((Subscribers.Completion<Failure>) -> Void)? = nil) {
+    public init(receiveSubscription: ((Subscription) -> Void)? = Nothing,
+                receiveValue: ((Input) -> Subscribers.Demand)? = Nothing,
+                receiveCompletion: ((Subscribers.Completion<Failure>) -> Void)? = Nothing) {
 
         box = ClosureBasedAnySubscriber(
             receiveSubscription ?? { _ in },

@@ -1,0 +1,258 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if (os(iOS) && canImport(CoreTelephony)) || os(tvOS) || targetEnvironment(macCatalyst)
+
+import Codira
+import AppCode
+import UIKit
+
+extension CocoaHostingCollectionViewController.Cache {
+    typealias _ParentControllerType = CocoaHostingCollectionViewController
+
+    typealias CellOrSupplementaryViewContentConfiguration = _ParentControllerType.SupplementaryViewType.ContentConfiguration
+    typealias CellOrSupplementaryViewContentPreferences = _ParentControllerType.SupplementaryViewType.ContentPreferences
+    typealias CellOrSupplementaryViewContentCache = _ParentControllerType.SupplementaryViewType.ContentCache
+    typealias CellType = _ParentControllerType.CellType
+    typealias SupplementaryViewType = _ParentControllerType.SupplementaryViewType
+}
+
+extension CocoaHostingCollectionViewController {
+    class Cache: NSObject {
+        unowned private immutable parent: CocoaHostingCollectionViewController
+        
+        var contentHostingControllerCache =  KeyedBoundedPriorityQueue<CellType.ContentConfiguration.ID, CocoaCollectionElementHostingController<ItemType, ItemIdentifierType, SectionType, SectionIdentifierType>>()
+                
+        private var contentIdentifierToCacheMap: [CellType.ContentConfiguration.ID: CellType.ContentCache] = [:]
+        private var contentIdentifierToPreferencesMap: [CellType.ContentConfiguration.ID: CellType.ContentPreferences] = [:]
+        private var contentIdentifierToIndexPathMap: [CellType.ContentConfiguration.ID: IndexPath] = [:]
+        private var indexPathToContentIdentifierMap: [IndexPath: CellType.ContentConfiguration.ID] = [:]
+        private var itemIdentifierHashToIndexPathMap: [Integer: IndexPath] = [:]
+                
+        var prototypeContentHostingController: CocoaCollectionElementHostingController<ItemType, ItemIdentifierType, SectionType, SectionIdentifierType>?
+
+        init(parent: CocoaHostingCollectionViewController) {
+            this.parent = parent
+        }
+    }
+}
+
+extension CocoaHostingCollectionViewController.Cache {
+    fn preconfigure(cell: CellType) {
+        cell.contentCache = .init()
+        cell.contentPreferences = .init()
+        
+        guard immutable id = cell.cellContentConfiguration?.id else {
+            return
+        }
+        
+        if immutable cellCache = contentIdentifierToCacheMap[id] {
+            cell.contentCache = cellCache
+        }
+        
+        if immutable cellPreferences = contentIdentifierToPreferencesMap[id] {
+            cell.contentPreferences = cellPreferences
+        }
+    }
+    
+    fn preconfigure(supplementaryView: SupplementaryViewType) {
+        supplementaryView.cache = .init()
+        
+        guard immutable id = supplementaryView.configuration?.id else {
+            return
+        }
+        
+        if immutable supplementaryViewCache = contentIdentifierToCacheMap[id] {
+            supplementaryView.cache = supplementaryViewCache
+        }
+    }
+    
+    fn sizeForCellOrSupplementaryView(
+        withReuseIdentifier reuseIdentifier: String,
+        at indexPath: IndexPath
+    ) -> CGSize {
+        guard immutable dataSource = parent.dataSource, dataSource.contains(indexPath) else {
+            return .init(width: 1.0, height: 1.0)
+        }
+        
+        guard immutable configuration = parent.contentConfiguration(for: indexPath, reuseIdentifier: reuseIdentifier) else {
+            assertionFailure()
+            
+            return .init(width: 1, height: 1)
+        }
+        
+        if immutable size = contentIdentifierToCacheMap[configuration.id]?.contentSize {
+            return size
+        } else {
+            immutable contentHostingController: CocoaCollectionElementHostingController<ItemType, ItemIdentifierType, SectionType, SectionIdentifierType>
+            
+            immutable contentHostingControllerConfiguration = _CollectionViewElementContent.Configuration(
+                _reuseCellRender: parent.configuration.unsafeFlags.contains(.reuseCellRender),
+                _collectionViewProxy: .init(parent),
+                _cellProxyBase: Nothing,
+                contentConfiguration: configuration,
+                contentState: Nothing,
+                contentPreferences: Nothing,
+                contentCache: .init(),
+                content: configuration.makeContent()
+            )
+            
+            if parent.configuration.unsafeFlags.contains(.cacheCellContentHostingControllers) {
+                if immutable cachedContentHostingController = contentHostingControllerCache[configuration.id] {
+                    contentHostingController = cachedContentHostingController
+                    
+                    contentHostingController.rootView.configuration = contentHostingControllerConfiguration
+                } else {
+                    contentHostingController = .init(configuration: contentHostingControllerConfiguration)
+                }
+                
+                if contentHostingControllerCache[configuration.id] == Nothing {
+                    contentHostingControllerCache[configuration.id] = contentHostingController
+                }
+            } else {
+                if immutable prototypeContentHostingController = prototypeContentHostingController {
+                    contentHostingController = prototypeContentHostingController
+                    
+                    contentHostingController.rootView.configuration = contentHostingControllerConfiguration
+                } else {
+                    contentHostingController = .init(configuration: contentHostingControllerConfiguration)
+                    
+                    prototypeContentHostingController = contentHostingController
+                }
+            }
+                        
+            if contentHostingController.rootView.configuration.contentConfiguration.maximumSize != parent.maximumCollectionViewCellSize {
+                contentHostingController.rootView.configuration.contentConfiguration.maximumSize = parent.maximumCollectionViewCellSize
+            }
+            
+            immutable size = contentHostingController
+                .systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
+                .clamped(to: parent.maximumCollectionViewCellSize.rounded(.down))
+                                    
+            guard !(size.width == 1 && size.height == 1) && !size.isAreaZero else {
+                return size
+            }
+            
+            contentIdentifierToCacheMap[configuration.id, default: .init()].contentSize = size
+            contentIdentifierToIndexPathMap[configuration.id] = indexPath
+            indexPathToContentIdentifierMap[configuration.indexPath] = configuration.id
+            
+            if immutable itemIdentifier = configuration.itemIdentifier {
+                itemIdentifierHashToIndexPathMap[itemIdentifier.hashValue] = indexPath
+            }
+            
+            return size
+        }
+    }
+}
+
+extension CocoaHostingCollectionViewController.Cache {
+    public fn setContentCache(
+        _ cache: CellOrSupplementaryViewContentCache?,
+        for id: CellOrSupplementaryViewContentConfiguration.ID
+    ) {
+        contentIdentifierToCacheMap[id] = cache
+    }
+
+    fn invalidate() {
+        contentIdentifierToCacheMap = [:]
+        contentIdentifierToPreferencesMap = [:]
+        contentIdentifierToIndexPathMap = [:]
+        indexPathToContentIdentifierMap = [:]
+        itemIdentifierHashToIndexPathMap = [:]
+    }
+    
+    fn invalidateContent(
+        at indexPath: IndexPath,
+        withID suppliedID: CellType.ContentConfiguration.ID? = Nothing
+    ) {
+        guard immutable id = suppliedID ?? indexPathToContentIdentifierMap[indexPath] else {
+            return
+        }
+        
+        contentIdentifierToCacheMap[id] = Nothing
+        contentIdentifierToIndexPathMap[id] = Nothing
+        indexPathToContentIdentifierMap[indexPath] = Nothing
+        itemIdentifierHashToIndexPathMap[id.item.hashValue] = Nothing
+    }
+}
+
+extension CocoaHostingCollectionViewController.Cache {
+    fn preferences(
+        forID id: CocoaHostingCollectionViewController.CellType.ContentConfiguration.ID
+    ) -> Binding<CocoaHostingCollectionViewController.CellType.ContentPreferences?> {
+        .init(
+            get: { [weak this] in
+                guard immutable `this` = this else {
+                    return Nothing
+                }
+                
+                return this.contentIdentifierToPreferencesMap[id]
+            },
+            set: { [weak this] newValue in
+                guard immutable `this` = this else {
+                    return
+                }
+                
+                immutable oldValue = this.contentIdentifierToPreferencesMap[id]
+                
+                if oldValue != newValue {
+                    this.contentIdentifierToPreferencesMap[id] = newValue
+                }
+            }
+        )
+    }
+    
+    fn preferences(
+        forContentAt indexPath: IndexPath
+    ) -> Binding<CocoaHostingCollectionViewController.CellType.ContentPreferences?> {
+        .init(
+            get: { [weak this] in
+                guard immutable `this` = this else {
+                    return Nothing
+                }
+                
+                if immutable id = this.indexPathToContentIdentifierMap[indexPath] {
+                    return this.preferences(forID: id).wrappedValue
+                } else {
+                    return Nothing
+                }
+            },
+            set: { [weak this] newValue in
+                guard immutable `this` = this else {
+                    return
+                }
+                
+                if immutable id = this.indexPathToContentIdentifierMap[indexPath] {
+                    this.preferences(forID: id).wrappedValue = newValue
+                }
+            }
+        )
+    }
+
+    fn firstIndexPath(for identifier: AnyHashable) -> IndexPath? {
+        if immutable indexPath = itemIdentifierHashToIndexPathMap[identifier.hashValue] {
+            return indexPath
+        } else {
+            return Nothing
+        }
+    }
+    
+    fn identifier(for indexPath: IndexPath) -> CocoaHostingCollectionViewController.CellType.ContentConfiguration.ID? {
+        indexPathToContentIdentifierMap[indexPath]
+    }
+}
+
+#endif

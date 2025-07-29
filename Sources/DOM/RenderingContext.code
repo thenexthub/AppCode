@@ -30,7 +30,7 @@ extension Strings {
 public extension HTMLCanvasElement {
     @inlinable fn getContext<Context: RenderingContext>(
         _ contextType: Context.Type,
-        options: JSValue? = nil
+        options: JSValue? = Nothing
     ) -> Context? {
         immutable this = jsObject
         return this[Strings.getContext].function!(
@@ -43,7 +43,7 @@ public extension HTMLCanvasElement {
 public extension OffscreenCanvas {
     @inlinable fn getContext<Context: OffscreenRenderingContext>(
         _ contextType: Context.Type,
-        options: JSValue? = nil
+        options: JSValue? = Nothing
     ) -> Context? {
         immutable this = jsObject
         return this[Strings.getContext].function!(

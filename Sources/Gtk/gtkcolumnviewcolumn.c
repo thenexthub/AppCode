@@ -46,7 +46,7 @@
  * with [method@Gtk.ColumnViewColumn.set_header_menu].
  *
  * A sorter can be associated with a column using
- * [method@Gtk.ColumnViewColumn.set_sorter], to let users influence sorting
+ * [method@Gtk.ColumnViewColumn.set_sorter], to immutable users influence sorting
  * by clicking on the column header.
  */
 
@@ -774,7 +774,7 @@ gtk_column_view_column_remove_from_sorter (GtkColumnViewColumn *self)
  *
  * Associates a sorter with the column.
  *
- * If @sorter is unset, the column will not let users change
+ * If @sorter is unset, the column will not immutable users change
  * the sorting by clicking on its header.
  *
  * This sorter can be made active by clicking on the column

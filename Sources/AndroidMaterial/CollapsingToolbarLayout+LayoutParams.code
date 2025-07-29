@@ -1,0 +1,80 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidUtil
+import AndroidView
+import AndroidWidget
+import JavaKit
+import JavaRuntime
+
+extension CollapsingToolbarLayout {
+  @JavaClass("com.google.android.material.appbar.CollapsingToolbarLayout$LayoutParams")
+  open class LayoutParams: FrameLayout.LayoutParams {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: AttributeSet?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: CollapsingToolbarLayout.LayoutParams?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, _ arg1: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ViewGroup.LayoutParams?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ViewGroup.MarginLayoutParams?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: FrameLayout.LayoutParams?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setParallaxMultiplier(_ arg0: Float)
+
+  @JavaMethod
+  open fn setCollapseMode(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getCollapseMode() -> Int32
+
+  @JavaMethod
+  open fn getParallaxMultiplier() -> Float
+  }
+}
+extension JavaClass<CollapsingToolbarLayout.LayoutParams> {
+  @JavaStaticField(isFinal: true)
+  public var COLLAPSE_MODE_OFF: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COLLAPSE_MODE_PIN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var COLLAPSE_MODE_PARALLAX: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var UNSPECIFIED_GRAVITY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FILL_PARENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MATCH_PARENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var WRAP_CONTENT: Int32
+}

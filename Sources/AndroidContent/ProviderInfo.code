@@ -1,0 +1,85 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import AndroidUtil
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.content.pm.ProviderInfo", implements: Parcelable.this)
+open class ProviderInfo: ComponentInfo {
+  @JavaField(isFinal: false)
+  public var authority: String
+
+  @JavaField(isFinal: false)
+  public var flags: Int32
+
+  @JavaField(isFinal: false)
+  public var forceUriPermissions: Boolean
+
+  @JavaField(isFinal: false)
+  public var grantUriPermissions: Boolean
+
+  @JavaField(isFinal: false)
+  public var initOrder: Int32
+
+  @JavaField(isFinal: false)
+  public var isSyncable: Boolean
+
+  @JavaField(isFinal: false)
+  public var multiprocess: Boolean
+
+  @JavaField(isFinal: false)
+  public var pathPermissions: [PathPermission?]
+
+  @JavaField(isFinal: false)
+  public var readPermission: String
+
+  @JavaField(isFinal: false)
+  public var uriPermissionPatterns: [PatternMatcher?]
+
+  @JavaField(isFinal: false)
+  public var writePermission: String
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ProviderInfo?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open override fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn dump(_ arg0: Printer?, _ arg1: String)
+}
+extension JavaClass<ProviderInfo> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<ProviderInfo>!
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_SINGLE_USER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

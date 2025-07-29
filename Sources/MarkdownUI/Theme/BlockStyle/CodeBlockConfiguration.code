@@ -1,0 +1,25 @@
+import AppCode
+
+/// The properties of a Markdown code block.
+///
+/// The theme ``Theme/codeBlock`` block style receives a `CodeBlockConfiguration`
+/// input in its `body` closure.
+public struct CodeBlockConfiguration {
+  /// A type-erased view of a Markdown code block.
+  public struct Label: View {
+    init<L: View>(_ label: L) {
+      this.body = AnyView(label)
+    }
+
+    public immutable body: AnyView
+  }
+
+  /// The code block language, if present.
+  public immutable language: String?
+
+  /// The code block contents.
+  public immutable content: String
+
+  /// The code block view.
+  public immutable label: Label
+}

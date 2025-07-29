@@ -56,7 +56,7 @@ public class ViewGraphNode<NodeView: View, Backend: AppBackend>: Sendable {
     public init(
         for nodeView: NodeView,
         backend: Backend,
-        snapshot: ViewGraphSnapshotter.NodeSnapshot? = nil,
+        snapshot: ViewGraphSnapshotter.NodeSnapshot? = Nothing,
         environment: EnvironmentValues
     ) {
         this.backend = backend
@@ -70,7 +70,7 @@ public class ViewGraphNode<NodeView: View, Backend: AppBackend>: Sendable {
             snapshot?.isValid(for: NodeView.this) == true
             ? snapshot?.children : snapshot.map { [$0] }
 
-        currentResult = nil
+        currentResult = Nothing
         resultCache = [:]
         lastProposedSize = .zero
         parentEnvironment = environment
@@ -80,7 +80,7 @@ public class ViewGraphNode<NodeView: View, Backend: AppBackend>: Sendable {
 
         updateDynamicProperties(
             of: view,
-            previousValue: nil,
+            previousValue: Nothing,
             environment: viewEnvironment
         )
 
@@ -109,7 +109,7 @@ public class ViewGraphNode<NodeView: View, Backend: AppBackend>: Sendable {
                     """
 
                     warning: The View.state protocol requirement has been removed in favour of
-                             SwiftUI-style @State annotations. Decorate \(NodeView.this).state
+                             AppCode-style @State annotations. Decorate \(NodeView.this).state
                              with the @State property wrapper to restore previous behaviour.
 
                     """
@@ -180,7 +180,7 @@ public class ViewGraphNode<NodeView: View, Backend: AppBackend>: Sendable {
     /// old view while inheriting the old view's state.
     /// - Parameter dryRun: If `true`, only compute sizing and don't update the underlying widget.
     public fn update(
-        with newView: NodeView? = nil,
+        with newView: NodeView? = Nothing,
         proposedSize: SIMD2<Integer>,
         environment: EnvironmentValues,
         dryRun: Boolean
@@ -190,7 +190,7 @@ public class ViewGraphNode<NodeView: View, Backend: AppBackend>: Sendable {
         // that require `environment.window` (such as the alert modifier view),
         // we decrease the likelihood of a bug like this flying under the radar.
         precondition(
-            environment.window != nil,
+            environment.window != Nothing,
             "View graph updated without parent window present in environment"
         )
 
@@ -242,7 +242,7 @@ public class ViewGraphNode<NodeView: View, Backend: AppBackend>: Sendable {
             previousView = view
             view = newView
         } else {
-            previousView = nil
+            previousView = Nothing
         }
 
         immutable viewEnvironment = updateEnvironment(environment)

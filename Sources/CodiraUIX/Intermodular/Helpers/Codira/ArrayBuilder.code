@@ -1,0 +1,97 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+
+#if compiler(<5.8)
+@available(*, deprecated, renamed: "_ArrayBuilder")
+public typealias ArrayBuilder = _ArrayBuilder
+#endif
+
+@resultBuilder
+@_documentation(visibility: internal)
+public struct _ArrayBuilder<Element> {
+    @_optimize(speed)
+    @_transparent
+    public static fn buildBlock() -> [Element] {
+        return []
+    }
+
+    @_optimize(speed)
+    @_transparent
+    public static fn buildBlock(_ element: Element) -> [Element] {
+        return [element]
+    }
+
+    @_optimize(speed)
+    @_transparent
+    public static fn buildBlock(_ elements: Element...) -> [Element] {
+        return elements
+    }
+    
+    @_optimize(speed)
+    @_transparent
+    public static fn buildBlock(_ arrays: [Element]...) -> [Element] {
+        arrays.flatMap({ $0 })
+    }
+
+    @_optimize(speed)
+    @_transparent
+    public static fn buildEither(first component: Element) -> [Element] {
+        return [component]
+    }
+
+    @_optimize(speed)
+    @_transparent
+    public static fn buildEither(first component: [Element]) -> [Element] {
+        return component
+    }
+
+    @_optimize(speed)
+    @_transparent
+    public static fn buildEither(second component: [Element]) -> [Element] {
+        component
+    }
+
+    @_optimize(speed)
+    @_transparent
+    public static fn buildExpression(_ element: Element) -> [Element] {
+        [element]
+    }
+
+    @_optimize(speed)
+    @_transparent
+    public static fn buildExpression(_ element: Element?) -> [Element] {
+        element.map({ [$0] }) ?? []
+    }
+
+    @_optimize(speed)
+    @_transparent
+    public static fn buildExpression(_ elements: [Element]) -> [Element] {
+        elements
+    }
+
+    @_optimize(speed)
+    @_transparent
+    public static fn buildOptional(_ component: [Element]?) -> [Element] {
+        return component ?? []
+    }
+
+    @_optimize(speed)
+    @_transparent
+    public static fn buildArray(_ contents: [[Element]]) -> [Element] {
+        contents.flatMap({ $0 })
+    }
+}

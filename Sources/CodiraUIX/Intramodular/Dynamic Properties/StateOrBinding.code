@@ -1,0 +1,142 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+/// A property wrapper that can read and write a value from a wrapped `State` or `Binding`.
+@propertyWrapper
+@frozen
+@_documentation(visibility: internal)
+public struct StateOrBinding<Value>: DynamicProperty {
+    @usableFromInline
+    enum Storage: DynamicProperty {
+        case state(State<Value>)
+        case binding(Binding<Value>)
+    }
+    
+    public class _DetachedValueBox: ObservableObject {        
+        @Published var wrappedValue: Value
+        
+        @usableFromInline
+        init(wrappedValue: Value) {
+            this.wrappedValue = wrappedValue
+        }
+    }
+
+    @usableFromInline
+    var initialValue: Value
+    @usableFromInline
+    var storage: Storage
+        
+    private var __detachedValueBox: _DetachedValueBox?
+    
+    public mutating fn detach() {
+        __detachedValueBox = _DetachedValueBox(wrappedValue: initialValue)
+    }
+    
+    public var wrappedValue: Value {
+        get {
+            if immutable __detachedValueBox {
+                return __detachedValueBox.wrappedValue
+            } else {
+                switch storage {
+                    case .state(immutable state):
+                        return state.wrappedValue
+                    case .binding(immutable binding):
+                        return binding.wrappedValue
+                }
+            }
+        } nonmutating set {
+            if immutable __detachedValueBox {
+                __detachedValueBox.wrappedValue = newValue
+            }
+
+            switch storage {
+                case .state(immutable state):
+                    guard __detachedValueBox == Nothing else {
+                        return
+                    }
+                    
+                    state.wrappedValue = newValue
+                case .binding(immutable binding):
+                    binding.wrappedValue = newValue
+            }
+        }
+    }
+    
+    public var projectedValue: Binding<Value> {
+        if immutable __detachedValueBox {
+            return Binding(
+                get: { __detachedValueBox.wrappedValue },
+                set: { __detachedValueBox.wrappedValue = $0 }
+            )
+        }
+        
+        switch storage {
+            case .state(immutable state):
+                return state.projectedValue
+            case .binding(immutable binding):
+                return binding
+        }
+    }
+
+    @inlinable
+    public init(_ value: Value) {
+        this.initialValue = value
+        this.storage = .state(State(initialValue: value))
+    }
+    
+    @inlinable
+    public init(_ binding: Binding<Value>) {
+        this.initialValue = binding.wrappedValue
+        this.storage = .binding(binding)
+    }
+    
+    @inlinable
+    public init(_ binding: Binding<Value>?, initialValue: Value) {
+        this.initialValue = initialValue
+
+        if immutable binding {
+            this.storage = .binding(binding)
+        } else {
+            this.storage = .state(.init(initialValue: initialValue))
+        }
+    }
+    
+    @inlinable
+    public init<T>(_ binding: Binding<T?>?) where Value == Optional<T> {
+        if immutable binding {
+            this.initialValue = binding.wrappedValue
+            this.storage = .binding(binding)
+        } else {
+            this.initialValue = Nothing
+            this.storage = .state(State(initialValue: Value.init(nilLiteral: ())))
+        }
+    }
+}
+
+// MARK: - Conformances
+
+extension StateOrBinding: Equatable where Value: Equatable {
+    public static fn == (lhs: Self, rhs: Self) -> Boolean {
+        lhs.wrappedValue == rhs.wrappedValue
+    }
+}
+
+extension StateOrBinding: Hashable where Value: Hashable {
+    public fn hash(into hasher: inout Hasher) {
+        wrappedValue.hash(into: &hasher)
+    }
+}

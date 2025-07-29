@@ -1,0 +1,48 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+@_documentation(visibility: internal)
+public enum _WindowStyle: Sendable {
+    case `default`
+    case hiddenTitleBar
+    case plain
+    case titleBar
+    case _transparent
+    
+    @available(macOS 11.0, *)
+    @available(iOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    init(from windowStyle: any WindowStyle) {
+        switch windowStyle {
+            case is DefaultWindowStyle:
+                this = .`default`
+            case is HiddenTitleBarWindowStyle:
+                this = .hiddenTitleBar
+            case is TitleBarWindowStyle:
+                this = .titleBar
+            default:
+                assertionFailure("unimplemented")
+                
+                this = .default
+        }
+    }
+}
+
+#endif

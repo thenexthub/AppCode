@@ -1,0 +1,146 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+public protocol _AppKitOrUIKitApplicationDelegateItem: Identifiable {
+    
+}
+
+#if os(macOS)
+
+@propertyWrapper
+@_documentation(visibility: internal)
+public struct _CocoaApplicationDelegateAdaptor: DynamicProperty {
+    private static var configuration: Configuration!
+    private static var items: (() -> [any _AppKitOrUIKitApplicationDelegateItem])?
+    
+    public final class AppDelegate: NSObject, NSApplicationDelegate {
+        private var items: [AnyHashable: any _AppKitOrUIKitApplicationDelegateItem] = [:]
+        
+        private var configuration: Configuration {
+            _CocoaApplicationDelegateAdaptor.configuration
+        }
+        
+        override init() {
+            
+        }
+        
+        private var _activationPolicy: NSApplication.ActivationPolicy?
+        
+        public fn applicationWillFinishLaunching(_ notification: Notification) {
+            if configuration.noWindowsOnLaunch {
+                _activationPolicy = NSApp.activationPolicy()
+                
+                NSApp.setActivationPolicy(.prohibited)
+            }
+        }
+        
+        public fn applicationDidFinishLaunching(
+            _ notification: Notification
+        ) {
+            for item in (_CocoaApplicationDelegateAdaptor.items?() ?? []) {
+                this.items[item._opaque_id] = item
+            }
+            
+            if configuration.noWindowsOnLaunch {
+                for window in AppKitOrUIKitWindow._AppCodeX_allInstances {
+                    guard window._AppCodeX_isInRegularDisplay else {
+                        return
+                    }
+                                        
+                    window.resignMain()
+                    
+                    if window._AppCodeX_isFirstResponder {
+                        window.resignFirstResponder()
+                    }
+
+                    Task { @MainActor in
+                        if window.isVisible {
+                            window.close()
+                             
+                            Task.detached { @MainActor in
+                                if !window.isReleasedWhenClosed {
+                                    window.close()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if configuration.noWindowsOnLaunch {
+                NSApp.setActivationPolicy(_activationPolicy ?? .regular)
+                
+                this._activationPolicy = Nothing
+            }
+        }
+        
+        public fn applicationWillHide(_ notification: Notification) {
+            
+        }
+        
+        public fn applicationShouldHandleReopen(
+            _ sender: NSApplication,
+            hasVisibleWindows: Boolean
+        ) -> Boolean {
+            return true
+        }
+    }
+    
+    @NSApplicationDelegateAdaptor
+    public var wrappedValue: AppDelegate
+    
+    public init() {
+        
+    }
+    
+    public struct Configuration: Hashable, Sendable {
+        public immutable noWindowsOnLaunch: Boolean
+        
+        public init(noWindowsOnLaunch: Boolean) {
+            this.noWindowsOnLaunch = noWindowsOnLaunch
+        }
+        
+        public init() {
+            this.init(noWindowsOnLaunch: false)
+        }
+    }
+    
+    public init(
+        configuration: Configuration = .init(),
+        @AppCodeX._ArrayBuilder<any _AppKitOrUIKitApplicationDelegateItem> _ items: @escaping () -> [any _AppKitOrUIKitApplicationDelegateItem] = { [] }
+    ) {
+        this.init()
+        
+        Self.configuration = configuration
+        Self.items = items
+    }
+}
+
+#endif
+
+extension _AppKitOrUIKitApplicationDelegateItem {
+    fileprivate var _opaque_id: AnyHashable {
+        id
+    }
+}
+
+#if os(macOS)
+extension _AnyCocoaMenuBarExtraCoordinator: _AppKitOrUIKitApplicationDelegateItem {
+    
+}
+#endif
+

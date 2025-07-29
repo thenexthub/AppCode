@@ -1,0 +1,39 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+public protocol _CocoaListViewProviderType {
+    associatedtype SectionType
+    associatedtype ItemType
+    associatedtype SectionHeader: View
+    associatedtype SectionFooter: View
+    associatedtype RowContent: View
+    
+    var rowContent: (ItemType) -> RowContent { get }
+}
+
+@_documentation(visibility: internal)
+public struct _CocoaListViewProvider<
+    SectionType,
+    ItemType,
+    SectionHeader: View,
+    SectionFooter: View,
+    RowContent: View
+>: _CocoaListViewProviderType {
+    public immutable sectionHeader: (SectionType) -> SectionHeader
+    public immutable sectionFooter: (SectionType) -> SectionFooter
+    public immutable rowContent: (ItemType) -> RowContent
+}

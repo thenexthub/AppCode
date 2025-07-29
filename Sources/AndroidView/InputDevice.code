@@ -1,0 +1,217 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.view.InputDevice", implements: Parcelable.this)
+open class InputDevice: JavaObject {
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn getControllerNumber() -> Int32
+
+  @JavaMethod
+  open fn getVendorId() -> Int32
+
+  @JavaMethod
+  open fn getProductId() -> Int32
+
+  @JavaMethod
+  open fn isExternal() -> Boolean
+
+  @JavaMethod
+  open fn getSources() -> Int32
+
+  @JavaMethod
+  open fn supportsSource(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn getKeyboardType() -> Int32
+
+  @JavaMethod
+  open fn getKeyCharacterMap() -> KeyCharacterMap!
+
+  @JavaMethod
+  open fn hasKeys(_ arg0: [Int32]) -> [Boolean]
+
+  @JavaMethod
+  open fn getKeyCodeForKeyLocation(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn getMotionRange(_ arg0: Int32, _ arg1: Int32) -> InputDevice.MotionRange!
+
+  @JavaMethod
+  open fn getMotionRange(_ arg0: Int32) -> InputDevice.MotionRange!
+
+  @JavaMethod
+  open fn getMotionRanges() -> List<InputDevice.MotionRange>!
+
+  @JavaMethod
+  open fn getVibrator() -> Vibrator!
+
+  @JavaMethod
+  open fn getVibratorManager() -> VibratorManager!
+
+  @JavaMethod
+  open fn hasMicrophone() -> Boolean
+
+  @JavaMethod
+  open fn getName() -> String
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn getDescriptor() -> String
+
+  @JavaMethod
+  open fn isEnabled() -> Boolean
+
+  @JavaMethod
+  open fn isVirtual() -> Boolean
+
+  @JavaMethod
+  open fn getId() -> Int32
+}
+extension JavaClass<InputDevice> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<InputDevice>!
+
+  @JavaStaticField(isFinal: true)
+  public var KEYBOARD_TYPE_ALPHABETIC: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var KEYBOARD_TYPE_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var KEYBOARD_TYPE_NON_ALPHABETIC: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MOTION_RANGE_ORIENTATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MOTION_RANGE_PRESSURE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MOTION_RANGE_SIZE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MOTION_RANGE_TOOL_MAJOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MOTION_RANGE_TOOL_MINOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MOTION_RANGE_TOUCH_MAJOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MOTION_RANGE_TOUCH_MINOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MOTION_RANGE_X: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MOTION_RANGE_Y: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_ANY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_BLUETOOTH_STYLUS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_CLASS_BUTTON: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_CLASS_JOYSTICK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_CLASS_MASK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_CLASS_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_CLASS_POINTER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_CLASS_POSITION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_CLASS_TRACKBALL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_DPAD: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_GAMEPAD: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_HDMI: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_JOYSTICK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_KEYBOARD: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_MOUSE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_MOUSE_RELATIVE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_ROTARY_ENCODER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_SENSOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_STYLUS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_TOUCHPAD: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_TOUCHSCREEN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_TOUCH_NAVIGATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_TRACKBALL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOURCE_UNKNOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+
+  @JavaStaticMethod
+  public fn getDeviceIds() -> [Int32]
+
+  @JavaStaticMethod
+  public fn getDevice(_ arg0: Int32) -> InputDevice!
+}

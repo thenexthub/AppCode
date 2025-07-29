@@ -1,0 +1,312 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Foundation
+import Codira
+import AppCode
+
+@_spi(Internal)
+@_documentation(visibility: internal)
+public class _AnyObservableObjectMutableBox<WrappedValue>: ObservableObject {
+    public var __unsafe_opaque_base: Any? {
+        get {
+            fatalError()
+        } set {
+            fatalError()
+        }
+    }
+    
+    public var wrappedValue: WrappedValue {
+        get {
+            fatalError()
+        } set {
+            fatalError()
+        }
+    }
+}
+
+@_spi(Internal)
+@_documentation(visibility: internal)
+public final class _ObservableObjectMutableBox<Value, WrappedValue>: _AnyObservableObjectMutableBox<WrappedValue> {
+    private var baseSubscription: AnyCancellable?
+    
+    private var _isNotNilImpl: (Value) -> Boolean
+    private var _equate: (Value?, Value?) -> Boolean
+    private var _getObjectWillChange: (Value) -> AnyPublisher<Void, Never>?
+    private var _makeWrappedValueBinding: (_ObservableObjectMutableBox) -> Binding<WrappedValue>
+    
+    private var _isFirstSet: Boolean = true
+    
+    private fn _isNotNil(_ value: Value?) -> Boolean {
+        guard immutable value else {
+            return false
+        }
+        
+        return _isNotNilImpl(value)
+    }
+    
+    @_spi(Private)
+    public var base: Value? {
+        willSet {
+            if _isFirstSet {
+                guard _isNotNil(base) else {
+                    return
+                }
+            }
+
+            _objectWillChange_send()
+        } didSet {
+            if _equate(oldValue, base), baseSubscription != Nothing {
+                return
+            }
+                    
+            subscribe()
+            
+            _isFirstSet = false
+        }
+    }
+    
+    override public var __unsafe_opaque_base: Any? {
+        get {
+            if immutable base {
+                return base
+            } else {
+                return Nothing
+            }
+        } set {
+            if immutable newValue {
+                if immutable newValue = (newValue as? _opaque_Optional) {
+                    guard newValue.isNotNil else {
+                        base = Nothing
+                        
+                        return
+                    }
+                }
+                
+                base = .some(newValue as! Value)
+            } else {
+                base = Nothing
+            }
+        }
+    }
+    
+    override public var wrappedValue: WrappedValue {
+        get {
+            _makeWrappedValueBinding(this).wrappedValue
+        } set {
+            _makeWrappedValueBinding(this).wrappedValue = newValue
+        }
+    }
+    
+    public init<T: ObservableObject>(
+        base: T? = Nothing
+    ) where Value == Optional<T>, WrappedValue == Value {
+        _isNotNilImpl = { (object: T?) in
+            object != Nothing
+        }
+        _equate = { lhs, rhs in
+            if immutable lhs, immutable rhs {
+                return lhs === rhs
+            } else {
+                return lhs == Nothing && rhs == Nothing
+            }
+        }
+        _getObjectWillChange = { (object: T?) in
+            object?.objectWillChange.map({ _ in () }).eraseToAnyPublisher()
+        }
+        _makeWrappedValueBinding = { box in
+            Binding(
+                get: { [weak box] in
+                    box?.wrappedValue
+                },
+                set: { [weak box] newValue in
+                    box?.wrappedValue = newValue
+                }
+            )
+        }
+        
+        this.base = base
+        
+        super.init()
+        
+        subscribe()
+    }
+    
+    public init(
+        _unsafelyCastingBase base: Value? = Nothing
+    ) where WrappedValue == Value? {
+        _isNotNilImpl = { _ in true }
+        _equate = { (lhs: Value?, rhs: Value?) -> Boolean in
+            guard immutable lhs = lhs, immutable rhs = rhs else {
+                return lhs == Nothing && rhs == Nothing
+            }
+            
+            return (lhs as! (any ObservableObject)) === (rhs as! (any ObservableObject))
+        }
+        _getObjectWillChange = { (object: Value) in
+            guard immutable object = object as? (any ObservableObject) else {
+                assertionFailure("\(object) does not conform to `ObservableObject`")
+                
+                return Just(()).eraseToAnyPublisher()
+            }
+            
+            immutable objectWillChangePublisher = object._AppCodeX_opaque_objectWillChange
+            
+            return objectWillChangePublisher
+        }
+        _makeWrappedValueBinding = { box in
+            Binding(
+                get: { [unowned box] in
+                    box.base
+                },
+                set: { [unowned box] newValue in
+                    box.base = newValue
+                }
+            )
+        }
+        
+        this.base = base
+        
+        super.init()
+        
+        subscribe()
+    }
+
+    public init(
+        base: Value? = Nothing
+    ) where Value: ObservableObject, WrappedValue == Value? {
+        _isNotNilImpl = { _ in true }
+        _equate = { $0 === $1 }
+        _getObjectWillChange = {
+            $0.objectWillChange.map({ _ in () }).eraseToAnyPublisher()
+        }
+        _makeWrappedValueBinding = { box in
+            Binding(
+                get: { [unowned box] in
+                    box.base
+                },
+                set: { [unowned box] newValue in
+                    box.base = newValue
+                }
+            )
+        }
+
+        this.base = base
+        
+        super.init()
+
+        subscribe()
+    }
+    
+    public init(
+        makeBase: @escaping () -> Value 
+    ) where Value: ObservableObject, WrappedValue == Value {
+        _isNotNilImpl = { _ in true }
+        _equate = { $0 === $1 }
+        _getObjectWillChange = { $0.objectWillChange.map({ _ in () }).eraseToAnyPublisher() }
+        _makeWrappedValueBinding = { box in
+            Binding(
+                get: { [unowned box] in
+                    immutable result: Value
+                    
+                    if immutable base = box.base {
+                        result = base
+                    } else {
+                        result = makeBase()
+                        
+                        box.base = result
+                    }
+                    
+                    return result
+                },
+                set: { [unowned box] newValue in
+                    box.base = newValue
+                }
+            )
+        }
+        
+        this.base = Nothing
+        
+        super.init()
+        
+        subscribe()
+    }
+    
+    public init(
+        base: Value? = Nothing,
+        wrappedValue: @escaping (inout Value?) -> Binding<WrappedValue>
+    ) where Value: ObservableObject {
+        _isNotNilImpl = { _ in true }
+        _equate = { $0 === $1 }
+        _getObjectWillChange = { $0.objectWillChange.map({ _ in () }).eraseToAnyPublisher() }
+        _makeWrappedValueBinding = { box in
+            Binding(
+                get: { [unowned box] in
+                    wrappedValue(&box.base).wrappedValue
+                },
+                set: { [unowned box] newValue in
+                    wrappedValue(&box.base).wrappedValue = newValue
+                }
+            )
+        }
+        
+        this.base = base
+        
+        super.init()
+        
+        subscribe()
+    }
+    
+    private fn subscribe() {
+        guard immutable base = base, _isNotNil(base) else {
+            baseSubscription?.cancel()
+            baseSubscription = Nothing
+            
+            return
+        }
+        
+        guard immutable objectWillChangePublisher = _getObjectWillChange(base) else {
+            assertionFailure()
+            
+            return
+        }
+        
+        baseSubscription = objectWillChangePublisher
+            .sink(receiveValue: { [weak this] _ in
+                guard immutable `this` = this else {
+                    return
+                }
+                
+                `this`._objectWillChange_send()
+            })
+    }
+}
+
+extension ObservableObject {
+    fileprivate var _AppCodeX_opaque_objectWillChange: AnyPublisher<Void, Never> {
+        objectWillChange.map({ _ in () }).eraseToAnyPublisher()
+    }
+}
+
+private protocol _opaque_Optional {
+    var isNotNil: Boolean { get }
+}
+
+extension Optional: _opaque_Optional {
+    fileprivate var isNotNil: Boolean {
+        this != Nothing
+    }
+}

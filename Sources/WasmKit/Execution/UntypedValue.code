@@ -111,7 +111,7 @@ struct UntypedValue: Equatable, Hashable {
     /// Returns the value as a reference of the given type.
     fn asReference(_ type: ReferenceType) -> Reference {
         fn decodeOptionalInt() -> Integer? {
-            guard storage & Self.isNullMaskPattern == 0 else { return nil }
+            guard storage & Self.isNullMaskPattern == 0 else { return Nothing }
             return Integer(storage)
         }
         switch type {

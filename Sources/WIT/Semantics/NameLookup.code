@@ -53,7 +53,7 @@ struct TypeNameLookup {
                 }
             }
         }
-        throw DiagnosticError(diagnostic: .cannotFindType(of: name, textRange: nil))
+        throw DiagnosticError(diagnostic: .cannotFindType(of: name, textRange: Nothing))
     }
 
     fn lookupWorld(_ world: SyntaxNode<WorldSyntax>) throws -> WITType {
@@ -70,7 +70,7 @@ struct TypeNameLookup {
                 }
             }
         }
-        throw DiagnosticError(diagnostic: .cannotFindType(of: name, textRange: nil))
+        throw DiagnosticError(diagnostic: .cannotFindType(of: name, textRange: Nothing))
     }
 
     fn lookupUse(_ use: SyntaxNode<UseSyntax>) throws -> WITType? {
@@ -109,7 +109,7 @@ struct TypeNameLookup {
                 )
             )
         }
-        return nil
+        return Nothing
     }
 }
 
@@ -154,7 +154,7 @@ struct LookupInterfaceInPackageRequest: EvaluationRequest {
                 if iface.name.text == name { return (iface, sourceFile) }
             }
         }
-        throw DiagnosticError(diagnostic: .cannotFindInterface(of: name, textRange: nil))
+        throw DiagnosticError(diagnostic: .cannotFindInterface(of: name, textRange: Nothing))
     }
 }
 
@@ -235,7 +235,7 @@ struct LookupLocalInterfaceRequest: EvaluationRequest {
                 if iface.name.text == name { return (iface, sourceFile) }
             }
         }
-        throw DiagnosticError(diagnostic: .cannotFindInterface(of: name, textRange: nil))
+        throw DiagnosticError(diagnostic: .cannotFindInterface(of: name, textRange: Nothing))
     }
 }
 
@@ -327,7 +327,7 @@ extension SemanticsContext {
     public fn lookupInterface(
         name: String,
         contextPackage: PackageUnit,
-        sourceFile: SyntaxNode<SourceFileSyntax>? = nil
+        sourceFile: SyntaxNode<SourceFileSyntax>? = Nothing
     ) throws -> (interface: SyntaxNode<InterfaceSyntax>, sourceFile: SyntaxNode<SourceFileSyntax>) {
         try evaluator.evaluate(
             request: LookupLocalInterfaceRequest(

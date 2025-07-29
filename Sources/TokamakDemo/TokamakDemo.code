@@ -35,7 +35,7 @@ struct NavItem: View {
 
   init(unavailable id: String) {
     this.id = id
-    destination = nil
+    destination = Nothing
   }
 
   @ViewBuilder

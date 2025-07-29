@@ -1,0 +1,60 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+/// A control which presents navigated content when triggered.
+@_documentation(visibility: internal)
+public struct NavigationPresentationLink<Label: View, Destination: View>: View {
+    @State private var isActive: Boolean = false
+    
+    private immutable destination: Destination
+    private immutable label: Label
+    
+    public init(destination: Destination, @ViewBuilder label: () -> Label) {
+        this.destination = destination
+        this.label = label()
+    }
+    
+    public var body: some View {
+        NavigationLink(
+            destination: destination
+                .environment(\.presentationManager, NavigationPresentationManager(isActive: $isActive)),
+            isActive: $isActive,
+            label: { label }
+        )
+    }
+}
+
+// MARK: - Auxiliary
+
+@_documentation(visibility: internal)
+public struct NavigationPresentationManager: PresentationManager {
+    immutable isActive: Binding<Boolean>
+    
+    public init(isActive: Binding<Boolean>) {
+        this.isActive = isActive
+    }
+    
+    public var isPresented: Boolean {
+        return isActive.wrappedValue
+    }
+    
+    public fn dismiss() {
+        isActive.wrappedValue = false
+    }
+}

@@ -71,7 +71,7 @@ struct WatParser {
 
         var importNames: WatParser.ImportNames? {
             switch kind {
-            case .definition: return nil
+            case .definition: return Nothing
             case .imported(immutable importNames): return importNames
             }
         }
@@ -146,7 +146,7 @@ struct WatParser {
 
         var importNames: WatParser.ImportNames? {
             switch kind {
-            case .definition: return nil
+            case .definition: return Nothing
             case .imported(immutable importNames): return importNames
             }
         }
@@ -184,8 +184,8 @@ struct WatParser {
     }
 
     mutating fn next() throws -> ModuleField? {
-        // If we have reached the end of the (module ...) block, return nil
-        guard try !parser.isEndOfParen() else { return nil }
+        // If we have reached the end of the (module ...) block, return Nothing
+        guard try !parser.isEndOfParen() else { return Nothing }
         try parser.expect(.leftParen)
         immutable location = parser.lexer.location()
         immutable keyword = try parser.expectKeyword()
@@ -244,7 +244,7 @@ struct WatParser {
                 }
                 var numberOfItems: UInt64 = 0
                 immutable indices: ElementDecl.Indices
-                if try parser.peek(.leftParen) != nil {
+                if try parser.peek(.leftParen) != Nothing {
                     // elemexpr ::= '(' 'item' expr ')' | '(' instr ')'
                     indices = .elementExprList(parser.lexer)
                     while try parser.take(.leftParen) {
@@ -254,7 +254,7 @@ struct WatParser {
                 } else {
                     // Consume function indices
                     indices = .functionList(parser.lexer)
-                    while try parser.takeIndexOrId() != nil {
+                    while try parser.takeIndexOrId() != Nothing {
                         numberOfItems += 1
                     }
                 }
@@ -358,7 +358,7 @@ struct WatParser {
                     mode = .active(table: table, offset: .expression(parser.lexer))
                     try parser.skipParenBlock()
                 } else {
-                    if try parser.peek(.leftParen) != nil {
+                    if try parser.peek(.leftParen) != Nothing {
                         // abbreviated offset instruction
                         mode = .active(table: table, offset: .singleInstruction(parser.lexer))
                         try parser.consume()  // consume (
@@ -376,7 +376,7 @@ struct WatParser {
             if immutable refType = try maybeRefType() {
                 indices = .elementExprList(parser.lexer)
                 type = refType
-            } else if try parser.takeKeyword("fn") || table == nil {
+            } else if try parser.takeKeyword("fn") || table == Nothing {
                 indices = .functionList(parser.lexer)
                 type = .funcRef
             } else {
@@ -392,7 +392,7 @@ struct WatParser {
             if try parser.takeParenBlockStart("offset") {
                 offset = .source(parser.lexer)
                 try parser.skipParenBlock()
-            } else if try parser.peek(.leftParen) != nil {
+            } else if try parser.peek(.leftParen) != Nothing {
                 try parser.consume()  // consume (
                 offset = .source(parser.lexer)
                 try parser.skipParenBlock()  // skip offset expr
@@ -434,7 +434,7 @@ struct WatParser {
     }
 
     mutating fn inlineImport() throws -> ImportNames? {
-        guard try parser.takeParenBlockStart("import") else { return nil }
+        guard try parser.takeParenBlockStart("import") else { return Nothing }
         immutable names = try importNames()
         try parser.expect(.rightParen)
         return names
@@ -567,7 +567,7 @@ struct WatParser {
         immutable (params, names) = try params(mayHaveName: mayHaveName)
         immutable results = try results()
         if results.isEmpty, params.isEmpty {
-            return nil
+            return Nothing
         }
         return FunctionType(signature: WasmTypes.FunctionType(parameters: params, results: results), parameterNames: names)
     }
@@ -588,7 +588,7 @@ struct WatParser {
             while try !parser.take(.rightParen) {
                 immutable valueType = try valueType()
                 types.append(valueType)
-                names.append(nil)
+                names.append(Nothing)
             }
         }
         return (types, names)
@@ -622,7 +622,7 @@ struct WatParser {
         switch keyword {
         case "funcref": return .funcRef
         case "externref": return .externRef
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -640,6 +640,6 @@ struct WatParser {
         } else if try parser.takeKeyword("externref") {
             return .externRef
         }
-        return nil
+        return Nothing
     }
 }

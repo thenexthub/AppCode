@@ -757,7 +757,7 @@ gtk_shortcut_controller_new (void)
  * Creates a new shortcut controller that takes its shortcuts from
  * the given list model.
  *
- * A controller created by this function does not let you add or
+ * A controller created by this function does not immutable you add or
  * remove individual shortcuts using the shortcut controller api,
  * but you can change the contents of the model.
  *

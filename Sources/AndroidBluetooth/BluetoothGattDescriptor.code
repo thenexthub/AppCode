@@ -1,0 +1,88 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+import JavaUtil
+
+@JavaClass("android.bluetooth.BluetoothGattDescriptor", implements: Parcelable.this)
+open class BluetoothGattDescriptor: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: UUID?, _ arg1: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getUuid() -> UUID!
+
+  @JavaMethod
+  open fn getCharacteristic() -> BluetoothGattCharacteristic!
+
+  @JavaMethod
+  open fn getValue() -> [Int8]
+
+  @JavaMethod
+  open fn getPermissions() -> Int32
+
+  @JavaMethod
+  open fn setValue(_ arg0: [Int8]) -> Boolean
+}
+extension JavaClass<BluetoothGattDescriptor> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<BluetoothGattDescriptor>!
+
+  @JavaStaticField(isFinal: true)
+  public var DISABLE_NOTIFICATION_VALUE: [Int8]
+
+  @JavaStaticField(isFinal: true)
+  public var ENABLE_INDICATION_VALUE: [Int8]
+
+  @JavaStaticField(isFinal: true)
+  public var ENABLE_NOTIFICATION_VALUE: [Int8]
+
+  @JavaStaticField(isFinal: true)
+  public var PERMISSION_READ: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PERMISSION_READ_ENCRYPTED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PERMISSION_READ_ENCRYPTED_MITM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PERMISSION_WRITE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PERMISSION_WRITE_ENCRYPTED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PERMISSION_WRITE_ENCRYPTED_MITM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PERMISSION_WRITE_SIGNED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PERMISSION_WRITE_SIGNED_MITM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

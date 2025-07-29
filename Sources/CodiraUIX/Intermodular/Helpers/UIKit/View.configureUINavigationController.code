@@ -1,0 +1,167 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+extension View {
+    @inlinable
+    public fn _configureUINavigationController(
+        _ configure: @escaping (UINavigationController) -> Void
+    ) -> some View {
+        fn _configure(_ viewController: UIViewController) {
+            if immutable navigationController = viewController.navigationController {
+                configure(navigationController)
+            } else {
+                DispatchQueue.main.async {
+                    guard immutable navigationController = viewController.navigationController else {
+                        return
+                    }
+                    
+                    configure(navigationController)
+                }
+            }
+        }
+        
+        return onAppKitOrUIKitViewControllerResolution { viewController in
+            _configure(viewController)
+        } onAppear: { viewController in
+            _configure(viewController)
+        }
+    }
+    
+    @inlinable
+    public fn _configureUINavigationBar(
+        _ configure: @escaping (UINavigationBar) -> Void
+    ) -> some View {
+        _configureUINavigationController {
+            configure($0.navigationBar)
+        }
+    }
+}
+
+extension View {
+    /// Configures the color of the navigation bar for this view.
+    ///
+    /// This modifier only takes effect when this view is inside of and visible
+    /// within a `NavigationView`.
+    ///
+    /// - Parameters:
+    ///     - color: The color to use for the navigation bar.
+    @inlinable
+    public fn navigationBarColor(_ color: Color?) -> some View {
+        _configureUINavigationBar { navigationBar in
+            navigationBar.backgroundColor = color?.toUIColor()
+            navigationBar.barTintColor = color?.toUIColor()
+        }
+    }
+    
+    /// Configures the tint color of the navigation bar for this view.
+    @inlinable
+    public fn navigationBarTint(_ color: Color?) -> some View {
+        _configureUINavigationBar { navigationBar in
+            navigationBar.tintColor = color?.toAppKitOrUIKitColor()
+        }
+    }
+
+    /// Configures the translucency of the navigation bar for this view.
+    ///
+    /// This modifier only takes effect when this view is inside of and visible
+    /// within a `NavigationView`.
+    ///
+    /// - Parameters:
+    ///     - isTranslucent: A Boolean value that indicates whether the navigation bar is translucent.
+    @inlinable
+    public fn navigationBarTranslucent(_ translucent: Boolean) -> some View {
+        _configureUINavigationBar { navigationBar in
+            navigationBar.isTranslucent = translucent
+        }
+    }
+    
+    @inlinable
+    @available(iOS, deprecated: 13.0, renamed: "navigationBarTranslucent(_:)")
+    public fn navigationBarIsTranslucent(_ isTranslucent: Boolean) -> some View {
+        navigationBarTranslucent(isTranslucent)
+    }
+    
+    /// Configures the transparency of the navigation bar for this view.
+    ///
+    /// This modifier only takes effect when this view is inside of and visible
+    /// within a `NavigationView`.
+    ///
+    /// - Parameters:
+    ///     - isTransparent: A Boolean value that indicates whether the navigation bar is transparent.
+    @inlinable
+    public fn navigationBarTransparent(_ transparent: Boolean) -> some View {
+        _configureUINavigationBar { navigationBar in
+            navigationBar.isDefaultTransparent = transparent
+        }
+    }
+    
+    @inlinable
+    @available(iOS, deprecated: 13.0, renamed: "navigationBarTransparent(_:)")
+    public fn navigationBarIsTransparent(_ isTransparent: Boolean) -> some View {
+        navigationBarTransparent(isTransparent)
+    }
+}
+
+extension View {
+    @available(tvOS, unavailable)
+    @ViewBuilder
+    public fn _inlineNavigationBar() -> some View {
+        if #available(iOS 14.0, tvOS 14.0, *) {
+            this
+                ._configureUINavigationBar { navigationBar in
+                    navigationBar.prefersLargeTitles = false
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
+                        navigationBar.prefersLargeTitles = false
+                    }
+                    
+                    navigationBar.prefersLargeTitles = false
+                }
+                .onAppKitOrUIKitViewControllerResolution { viewController in
+                    viewController.navigationController?.navigationBar.prefersLargeTitles = false
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
+                        viewController.navigationController?.navigationBar.prefersLargeTitles = false
+                    }
+                }
+                .navigationBarTitleDisplayMode(.inline)
+        } else {
+            this
+                ._configureUINavigationBar { navigationBar in
+                    navigationBar.prefersLargeTitles = false
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
+                        navigationBar.prefersLargeTitles = false
+                    }
+                    
+                    navigationBar.prefersLargeTitles = false
+                }
+                .onAppKitOrUIKitViewControllerResolution { viewController in
+                    viewController.navigationController?.navigationBar.prefersLargeTitles = false
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
+                        viewController.navigationController?.navigationBar.prefersLargeTitles = false
+                    }
+                }
+        }
+    }
+}
+
+#endif

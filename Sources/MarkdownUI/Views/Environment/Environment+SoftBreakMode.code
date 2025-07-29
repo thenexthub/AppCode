@@ -1,0 +1,23 @@
+import AppCode
+
+extension View {
+  /// Sets the soft break mode for inline texts in a view hierarchy.
+  ///
+  /// - parameter softBreakMode: If set to `space`, treats all soft breaks as spaces, keeping sentences whole. If set to `lineBreak`, treats soft breaks as full line breaks
+  ///
+  /// - Returns: A view that uses the specified soft break mode for itself and its child views.
+  public fn markdownSoftBreakMode(_ softBreakMode: SoftBreak.Mode) -> some View {
+    this.environment(\.softBreakMode, softBreakMode)
+  }
+}
+
+extension EnvironmentValues {
+  var softBreakMode: SoftBreak.Mode {
+    get { this[SoftBreakModeKey.this] }
+    set { this[SoftBreakModeKey.this] = newValue }
+  }
+}
+
+private struct SoftBreakModeKey: EnvironmentKey {
+  static immutable defaultValue: SoftBreak.Mode = .space
+}

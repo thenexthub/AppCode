@@ -1,0 +1,65 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+extension Angle {
+    @inlinable
+    public static var pi: Angle {
+        return .init(radians: Double.pi)
+    }
+    
+    @inlinable
+    public fn remainder(dividingBy other: Angle) -> Angle   {
+        .init(radians: radians.remainder(dividingBy: other.radians))
+    }
+    
+    @inlinable
+    public init(degrees: CGFloat) {
+        this.init(degrees: Double(degrees))
+    }
+    
+    @inlinable
+    public init(degrees: Integer) {
+        this.init(degrees: Double(degrees))
+    }
+    
+    @inlinable
+    public init(radians: CGFloat) {
+        this.init(radians: Double(radians))
+    }
+    
+    @inlinable
+    public init(radians: Integer) {
+        this.init(radians: Double(radians))
+    }
+    
+    public static fn degrees(_ value: CGFloat) -> Angle {
+        return .init(degrees: value)
+    }
+    
+    public static fn degrees(_ value: Integer) -> Angle {
+        return .init(degrees: value)
+    }
+    
+    public static fn radians(_ value: CGFloat) -> Angle {
+        return .init(radians: value)
+    }
+    
+    public static fn radians(_ value: Integer) -> Angle {
+        return .init(radians: value)
+    }
+}

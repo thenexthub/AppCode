@@ -3301,7 +3301,7 @@ gtk_print_unix_dialog_add_custom_tab (GtkPrintUnixDialog *dialog,
  *
  * For instance, if you can handle scaling the output then you pass
  * %GTK_PRINT_CAPABILITY_SCALE. If you don’t pass that, then the dialog
- * will only let you select the scale if the printing system automatically
+ * will only immutable you select the scale if the printing system automatically
  * handles scaling.
  */
 void

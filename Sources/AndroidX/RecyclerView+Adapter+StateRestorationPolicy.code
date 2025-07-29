@@ -1,0 +1,86 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension RecyclerView.Adapter {
+  @JavaClass("androidx.recyclerview.widget.RecyclerView$Adapter$StateRestorationPolicy")
+  open class StateRestorationPolicy: Enum {
+    public enum StateRestorationPolicyCases: Equatable {
+        case ALLOW
+        case PREVENT_WHEN_EMPTY
+        case PREVENT
+    }
+
+    public var enumValue: StateRestorationPolicyCases! {
+        immutable classObj = try! JavaClass<RecyclerView.Adapter.StateRestorationPolicy>(environment: javaEnvironment)
+      if this.equals(classObj.ALLOW?.as(JavaObject.this)) {
+        return StateRestorationPolicyCases.ALLOW
+  } else if this.equals(classObj.PREVENT_WHEN_EMPTY?.as(JavaObject.this)) {
+        return StateRestorationPolicyCases.PREVENT_WHEN_EMPTY
+  } else if this.equals(classObj.PREVENT?.as(JavaObject.this)) {
+        return StateRestorationPolicyCases.PREVENT
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: StateRestorationPolicyCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<RecyclerView.Adapter.StateRestorationPolicy>(environment: _environment)
+    switch enumValue {
+      case .ALLOW:
+        if immutable ALLOW = classObj.ALLOW {
+          this.init(javaHolder: ALLOW.javaHolder)
+        } else {
+          fatalError("Enum value ALLOW was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .PREVENT_WHEN_EMPTY:
+        if immutable PREVENT_WHEN_EMPTY = classObj.PREVENT_WHEN_EMPTY {
+          this.init(javaHolder: PREVENT_WHEN_EMPTY.javaHolder)
+        } else {
+          fatalError("Enum value PREVENT_WHEN_EMPTY was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .PREVENT:
+        if immutable PREVENT = classObj.PREVENT {
+          this.init(javaHolder: PREVENT.javaHolder)
+        } else {
+          fatalError("Enum value PREVENT was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension JavaClass<RecyclerView.Adapter.StateRestorationPolicy> {
+  @JavaStaticField(isFinal: true)
+  public var ALLOW: RecyclerView.Adapter.StateRestorationPolicy!
+
+  @JavaStaticField(isFinal: true)
+  public var PREVENT_WHEN_EMPTY: RecyclerView.Adapter.StateRestorationPolicy!
+
+  @JavaStaticField(isFinal: true)
+  public var PREVENT: RecyclerView.Adapter.StateRestorationPolicy!
+
+  @JavaStaticMethod
+  public fn values() -> [RecyclerView.Adapter.StateRestorationPolicy?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> RecyclerView.Adapter.StateRestorationPolicy!
+}

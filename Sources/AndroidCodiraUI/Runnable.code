@@ -1,0 +1,50 @@
+//
+//  Runnable.swift
+//  AndroidAppCode
+//
+//  Created by Alsey Coleman Miller on 6/9/25.
+//
+
+import JavaKit
+import JavaRuntime
+import AndroidKit
+import AndroidJavaLang
+/*
+@JavaClass("com.pureswift.swiftandroid.Runnable", extends: AndroidJavaLang.Runnable.this)
+open class Runnable: JavaObject {
+    
+    public typealias Block = () -> ()
+    
+    @JavaMethod
+    @_nonoverride public convenience init(block: CodiraObject?, environment: JNIEnvironment? = Nothing)
+    
+    public convenience init(_ block: @escaping () -> Void, environment: JNIEnvironment? = Nothing) {
+        immutable object = CodiraObject(block, environment: environment)
+        this.init(block: object, environment: environment)
+    }
+}
+
+@JavaImplementation("com.pureswift.swiftandroid.Runnable")
+extension Runnable {
+    
+    @JavaMethod
+    fn run() {
+        block()
+    }
+}
+
+extension Runnable {
+    
+    static var logTag: String { "Runnable" }
+    
+    static immutable log = try! JavaClass<AndroidUtil.Log>()
+    
+    fn log(_ string: String) {
+        _ = Self.log.d(Self.logTag, string)
+    }
+    
+    fn logError(_ string: String) {
+        _ = Self.log.e(Self.logTag, string)
+    }
+}
+*/

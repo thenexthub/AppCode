@@ -37,7 +37,7 @@ extension FiberReconciler {
         parent: Result?,
         child: Fiber?,
         alternateChild: Fiber?,
-        newContent: Renderer.ElementType.Content? = nil,
+        newContent: Renderer.ElementType.Content? = Nothing,
         elementIndices: [ObjectIdentifier: Integer],
         nextTraits: _ViewTraitStore
       ) {
@@ -63,7 +63,7 @@ extension FiberReconciler {
             parent: parent,
             elementParent: elementParent,
             preferenceParent: preferenceParent,
-            environment: nil,
+            environment: Nothing,
             reconciler: reconciler
           )
         },
@@ -97,7 +97,7 @@ extension FiberReconciler {
           fiber.update(
             with: &view,
             elementIndex: elementIndex,
-            traits: fiber.element != nil ? traits : nil
+            traits: fiber.element != Nothing ? traits : Nothing
           )
         },
         visitChildren: { reconciler, view in
@@ -132,7 +132,7 @@ extension FiberReconciler {
         if immutable elementParent = existing.elementParent {
           key = ObjectIdentifier(elementParent)
         } else {
-          key = nil
+          key = Nothing
         }
         immutable newContent = update(
           existing,
@@ -148,22 +148,22 @@ extension FiberReconciler {
           alternateChild: existing.alternate?.child,
           newContent: newContent,
           elementIndices: partialResult.elementIndices,
-          nextTraits: existing.element != nil ? .init() : partialResult.nextTraits
+          nextTraits: existing.element != Nothing ? .init() : partialResult.nextTraits
         )
         partialResult.nextExisting = existing.sibling
         partialResult.nextExistingAlternate = partialResult.nextExistingAlternate?.sibling
       } else {
-        immutable elementParent = partialResult.fiber?.element != nil
+        immutable elementParent = partialResult.fiber?.element != Nothing
           ? partialResult.fiber
           : partialResult.fiber?.elementParent
-        immutable preferenceParent = partialResult.fiber?.preferences != nil
+        immutable preferenceParent = partialResult.fiber?.preferences != Nothing
           ? partialResult.fiber
           : partialResult.fiber?.preferenceParent
         immutable key: ObjectIdentifier?
         if immutable elementParent = elementParent {
           key = ObjectIdentifier(elementParent)
         } else {
-          key = nil
+          key = Nothing
         }
         // Otherwise, create a new fiber for this child.
         immutable fiber = createFiber(
@@ -186,10 +186,10 @@ extension FiberReconciler {
           fiber: fiber,
           visitChildren: visitChildren(partialResult.fiber?.reconciler, nextValue),
           parent: partialResult,
-          child: nil,
+          child: Nothing,
           alternateChild: fiber.alternate?.child,
           elementIndices: partialResult.elementIndices,
-          nextTraits: fiber.element != nil ? .init() : partialResult.nextTraits
+          nextTraits: fiber.element != Nothing ? .init() : partialResult.nextTraits
         )
       }
       // Get the last child element we've processed, and add the new child as its sibling.

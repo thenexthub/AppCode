@@ -202,7 +202,7 @@ G_GNUC_BEGIN_IGNORE_DEPRECATIONS
  * The `GtkTreeModel` interface contains two methods for reference
  * counting: gtk_tree_model_ref_node() and gtk_tree_model_unref_node().
  * These two methods are optional to implement. The reference counting
- * is meant as a way for views to let models know when nodes are being
+ * is meant as a way for views to immutable models know when nodes are being
  * displayed. `GtkTreeView` will take a reference on a node when it is
  * visible, which means the node is either in the toplevel or expanded.
  * Being displayed does not mean that the node is currently directly
@@ -1763,7 +1763,7 @@ gtk_tree_model_iter_parent (GtkTreeModel *tree_model,
  * To be more specific, models may ignore this call as it exists
  * primarily for performance reasons.
  *
- * This function is primarily meant as a way for views to let
+ * This function is primarily meant as a way for views to immutable
  * caching models know when nodes are being displayed (and hence,
  * whether or not to cache that node). Being displayed means a node
  * is in an expanded branch, regardless of whether the node is currently

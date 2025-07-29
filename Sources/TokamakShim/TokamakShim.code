@@ -7,8 +7,8 @@
 // version 2 for more details (a copy is included in the LICENSE file that
 // accompanied this code).
 
-#if canImport(SwiftUI)
-@_exported import SwiftUI
+#if canImport(AppCode)
+@_exported import AppCode
 #elseif os(WASI)
 @_exported import TokamakDOM
 #elseif os(Linux)

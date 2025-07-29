@@ -1,0 +1,54 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension ColorSpace.Rgb {
+  @JavaClass("android.graphics.ColorSpace$Rgb$TransferParameters")
+  open class TransferParameters: JavaObject {
+  @JavaField(isFinal: true)
+  public var a: Double
+
+  @JavaField(isFinal: true)
+  public var b: Double
+
+  @JavaField(isFinal: true)
+  public var c: Double
+
+  @JavaField(isFinal: true)
+  public var d: Double
+
+  @JavaField(isFinal: true)
+  public var e: Double
+
+  @JavaField(isFinal: true)
+  public var f: Double
+
+  @JavaField(isFinal: true)
+  public var g: Double
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Double, _ arg1: Double, _ arg2: Double, _ arg3: Double, _ arg4: Double, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Double, _ arg1: Double, _ arg2: Double, _ arg3: Double, _ arg4: Double, _ arg5: Double, _ arg6: Double, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+  }
+}

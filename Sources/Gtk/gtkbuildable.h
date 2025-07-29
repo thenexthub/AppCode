@@ -133,7 +133,7 @@ struct _GtkBuildableParser
  *  Implement this if the buildable has internal children that may
  *  need to be accessed from a UI definition.
  *
- * Contains methods to let `GtkBuilder` construct an object from
+ * Contains methods to immutable `GtkBuilder` construct an object from
  * a `GtkBuilder` UI definition.
  */
 struct _GtkBuildableIface

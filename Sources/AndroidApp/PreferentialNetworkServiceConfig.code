@@ -1,0 +1,68 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.app.admin.PreferentialNetworkServiceConfig")
+open class PreferentialNetworkServiceConfig: JavaObject {
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn getIncludedUids() -> [Int32]
+
+  @JavaMethod
+  open fn isFallbackToDefaultConnectionAllowed() -> Boolean
+
+  @JavaMethod
+  open fn getExcludedUids() -> [Int32]
+
+  @JavaMethod
+  open fn getNetworkId() -> Int32
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+
+  @JavaMethod
+  open fn isEnabled() -> Boolean
+}
+extension JavaClass<PreferentialNetworkServiceConfig> {
+  @JavaStaticField(isFinal: true)
+  public var PREFERENTIAL_NETWORK_ID_1: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PREFERENTIAL_NETWORK_ID_2: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PREFERENTIAL_NETWORK_ID_3: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PREFERENTIAL_NETWORK_ID_4: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PREFERENTIAL_NETWORK_ID_5: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

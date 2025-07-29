@@ -1,0 +1,162 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.content.RestrictionEntry", implements: Parcelable.this)
+open class RestrictionEntry: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: String, _ arg1: [String], environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: String, _ arg1: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: String, _ arg1: Boolean, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, _ arg1: String, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: String, _ arg1: String, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Parcel?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setType(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getSelectedString() -> String
+
+  @JavaMethod
+  open fn getAllSelectedStrings() -> [String]
+
+  @JavaMethod
+  open fn getSelectedState() -> Boolean
+
+  @JavaMethod
+  open fn getIntValue() -> Int32
+
+  @JavaMethod
+  open fn setIntValue(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setSelectedString(_ arg0: String)
+
+  @JavaMethod
+  open fn setSelectedState(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn setAllSelectedStrings(_ arg0: [String])
+
+  @JavaMethod
+  open fn setChoiceValues(_ arg0: Context?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn setChoiceValues(_ arg0: [String])
+
+  @JavaMethod
+  open fn getRestrictions() -> [RestrictionEntry?]
+
+  @JavaMethod
+  open fn setRestrictions(_ arg0: [RestrictionEntry?])
+
+  @JavaMethod
+  open fn getChoiceValues() -> [String]
+
+  @JavaMethod
+  open fn setChoiceEntries(_ arg0: [String])
+
+  @JavaMethod
+  open fn setChoiceEntries(_ arg0: Context?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn getChoiceEntries() -> [String]
+
+  @JavaMethod
+  open fn setDescription(_ arg0: String)
+
+  @JavaMethod
+  open fn getTitle() -> String
+
+  @JavaMethod
+  open fn setTitle(_ arg0: String)
+
+  @JavaMethod
+  open fn getDescription() -> String
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+
+  @JavaMethod
+  open fn getKey() -> String
+
+  @JavaMethod
+  open fn getType() -> Int32
+}
+extension JavaClass<RestrictionEntry> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<RestrictionEntry>!
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_BOOLEAN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_BUNDLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_BUNDLE_ARRAY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_CHOICE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_INTEGER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_MULTI_SELECT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_NULL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TYPE_STRING: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+
+  @JavaStaticMethod
+  public fn createBundleEntry(_ arg0: String, _ arg1: [RestrictionEntry?]) -> RestrictionEntry!
+
+  @JavaStaticMethod
+  public fn createBundleArrayEntry(_ arg0: String, _ arg1: [RestrictionEntry?]) -> RestrictionEntry!
+}

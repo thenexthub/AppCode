@@ -1,0 +1,152 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.widget.ListPopupWindow")
+open class ListPopupWindow: JavaObject {
+  @JavaMethod
+  open fn setOnItemClickListener(_ arg0: AdapterView.OnItemClickListener?)
+
+  @JavaMethod
+  open fn setOnItemSelectedListener(_ arg0: AdapterView.OnItemSelectedListener?)
+
+  @JavaMethod
+  open fn getSelectedItemPosition() -> Int32
+
+  @JavaMethod
+  open fn getHorizontalOffset() -> Int32
+
+  @JavaMethod
+  open fn setHorizontalOffset(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setWindowLayoutType(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setOnDismissListener(_ arg0: PopupWindow.OnDismissListener?)
+
+  @JavaMethod
+  open fn isInputMethodNotNeeded() -> Boolean
+
+  @JavaMethod
+  open fn getWidth() -> Int32
+
+  @JavaMethod
+  open fn getHeight() -> Int32
+
+  @JavaMethod
+  open fn setSelection(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setAdapter(_ arg0: ListAdapter?)
+
+  @JavaMethod
+  open fn performItemClick(_ arg0: Int32) -> Boolean
+
+  @JavaMethod
+  open fn getSelectedItemId() -> Int64
+
+  @JavaMethod
+  open fn getSelectedItem() -> JavaObject!
+
+  @JavaMethod
+  open fn show()
+
+  @JavaMethod
+  open fn setHeight(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setWidth(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setPromptPosition(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getPromptPosition() -> Int32
+
+  @JavaMethod
+  open fn setModal(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn getAnimationStyle() -> Int32
+
+  @JavaMethod
+  open fn getVerticalOffset() -> Int32
+
+  @JavaMethod
+  open fn setVerticalOffset(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setDropDownGravity(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setContentWidth(_ arg0: Int32)
+
+  @JavaMethod
+  open fn postShow()
+
+  @JavaMethod
+  open fn dismiss()
+
+  @JavaMethod
+  open fn setInputMethodMode(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getInputMethodMode() -> Int32
+
+  @JavaMethod
+  open fn clearListSelection()
+
+  @JavaMethod
+  open fn isShowing() -> Boolean
+
+  @JavaMethod
+  open fn getListView() -> ListView!
+
+  @JavaMethod
+  open fn getSoftInputMode() -> Int32
+
+  @JavaMethod
+  open fn setSoftInputMode(_ arg0: Int32)
+
+  @JavaMethod
+  open fn isModal() -> Boolean
+
+  @JavaMethod
+  open fn setAnimationStyle(_ arg0: Int32)
+}
+extension JavaClass<ListPopupWindow> {
+  @JavaStaticField(isFinal: true)
+  public var INPUT_METHOD_FROM_FOCUSABLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var INPUT_METHOD_NEEDED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var INPUT_METHOD_NOT_NEEDED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MATCH_PARENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var POSITION_PROMPT_ABOVE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var POSITION_PROMPT_BELOW: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var WRAP_CONTENT: Int32
+}

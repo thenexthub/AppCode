@@ -1,0 +1,42 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension VoiceInteractor {
+  @JavaClass("android.app.VoiceInteractor$Request")
+  open class Request: JavaObject {
+  @JavaMethod
+  open fn getActivity() -> Activity!
+
+  @JavaMethod
+  open fn onCancel()
+
+  @JavaMethod
+  open fn onAttached(_ arg0: Activity?)
+
+  @JavaMethod
+  open fn onDetached()
+
+  @JavaMethod
+  open fn getName() -> String
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn cancel()
+  }
+}

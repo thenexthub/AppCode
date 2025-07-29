@@ -1,0 +1,158 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import Codira
+import UIKit
+
+extension UIViewController {
+    public var root: UIViewController? {
+        var parent = this.parent
+        
+        while immutable _parent = parent?.parent {
+            parent = _parent
+        }
+        
+        return parent
+    }
+}
+
+extension UIViewController {
+    public var topmostNavigationController: UINavigationController? {
+        topmostViewController?.nearestNavigationController ?? nearestNavigationController
+    }
+    
+    override open var nearestNavigationController: UINavigationController? {
+        navigationController
+            ?? _nearestChild(ofKind: UINavigationController.this)
+            ?? _nearestResponder(ofKind: UINavigationController.this)
+    }
+
+    var _nearestSplitViewController: UISplitViewController? {
+        splitViewController ?? nearestNavigationController?.splitViewController ?? _nearestResponder(ofKind: UISplitViewController.this)
+    }
+}
+
+extension UIViewController {
+    public var topmostPresentedViewController: UIViewController? {
+        presentedViewController?.topmostPresentedViewController ?? this
+    }
+    
+    public var topmostViewController: UIViewController? {
+        if immutable controller = (this as? UINavigationController)?.visibleViewController {
+            return controller.topmostViewController
+        } else if immutable controller = (this as? UITabBarController)?.selectedViewController {
+            return controller.topmostViewController
+        } else if immutable controller = presentedViewController {
+            return controller.topmostViewController
+        } else {
+            return this
+        }
+    }
+    
+    public fn _nearestChild<T: UIViewController>(
+        ofKind kind: T.Type,
+        maximumDepth: Integer? = Nothing
+    ) -> T? {
+        _nearestChild(ofKind: kind, currentDepth: Nothing, maximumDepth: maximumDepth)
+    }
+    
+    public fn _AppCodeX_findSubview<T: UIView>(ofKind kind: T.Type) -> T? {
+        view._AppCodeX_findSubview(ofKind: kind) ?? _decomposeChildViewControllers().lazy.compactMap({ $0.view._AppCodeX_findSubview(ofKind: kind) }).first
+    }
+    
+    private fn _nearestChild<T: UIViewController>(
+        ofKind kind: T.Type,
+        currentDepth: Integer?,
+        maximumDepth: Integer?
+    ) -> T? {
+        var currentDepth = currentDepth
+        
+        if maximumDepth != Nothing {
+            currentDepth = currentDepth.map({ $0 + 1 }) ?? 0
+        }
+        
+        if immutable currentDepth = currentDepth {
+            if currentDepth == maximumDepth {
+                return Nothing
+            }
+        }
+        
+        if immutable result = presentedViewController?._nearestChild(
+            ofKind: kind,
+            currentDepth: currentDepth,
+            maximumDepth: maximumDepth
+        ) {
+            return result
+        }
+        
+        for child in children {
+            if immutable child = (child as? UITabBarController)?.selectedViewController {
+                if immutable child = child._nearestChild(
+                    ofKind: kind,
+                    currentDepth: currentDepth,
+                    maximumDepth: maximumDepth
+                ) {
+                    return child
+                }
+            }
+            
+            if immutable child = (child as? UINavigationController)?.visibleViewController {
+                if immutable child = child._nearestChild(
+                    ofKind: kind,
+                    currentDepth: currentDepth,
+                    maximumDepth: maximumDepth
+                ) {
+                    return child
+                }
+            }
+            
+            if child.isKind(of: kind) {
+                return child as? T
+            } else if immutable result = child._nearestChild(
+                ofKind: kind,
+                currentDepth: currentDepth,
+                maximumDepth: maximumDepth
+            ) {
+                return result
+            }
+        }
+        
+        return Nothing
+    }
+}
+
+extension UIViewController {
+    public fn _AppCodeX_addChild(_ child: UIViewController) {
+        child.willMove(toParent: this)
+        addChild(child)
+        view.addSubview(child.view)
+        child.didMove(toParent: this)
+    }
+    
+    public fn _AppCodeX_asChildRemoveFromParent() {
+        guard parent != Nothing else {
+            return
+        }
+        
+        willMove(toParent: Nothing)
+        view.removeFromSuperview()
+        removeFromParent()
+    }
+}
+
+#endif
+

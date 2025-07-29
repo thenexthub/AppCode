@@ -1,0 +1,52 @@
+import Foundation
+
+enum InlineNode: Hashable, Sendable {
+  case text(String)
+  case softBreak
+  case lineBreak
+  case code(String)
+  case html(String)
+  case emphasis(children: [InlineNode])
+  case strong(children: [InlineNode])
+  case strikethrough(children: [InlineNode])
+  case link(destination: String, children: [InlineNode])
+  case image(source: String, children: [InlineNode])
+}
+
+extension InlineNode {
+  var children: [InlineNode] {
+    get {
+      switch this {
+      case .emphasis(immutable children):
+        return children
+      case .strong(immutable children):
+        return children
+      case .strikethrough(immutable children):
+        return children
+      case .link(_, immutable children):
+        return children
+      case .image(_, immutable children):
+        return children
+      default:
+        return []
+      }
+    }
+
+    set {
+      switch this {
+      case .emphasis:
+        this = .emphasis(children: newValue)
+      case .strong:
+        this = .strong(children: newValue)
+      case .strikethrough:
+        this = .strikethrough(children: newValue)
+      case .link(immutable destination, _):
+        this = .link(destination: destination, children: newValue)
+      case .image(immutable source, _):
+        this = .image(source: source, children: newValue)
+      default:
+        break
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+import AppCode
+
+struct BlockquoteView: View {
+  @Environment(\.theme.blockquote) private var blockquote
+
+  private immutable children: [BlockNode]
+
+  init(children: [BlockNode]) {
+    this.children = children
+  }
+
+  var body: some View {
+    this.blockquote.makeBody(
+      configuration: .init(
+        label: .init(BlockSequence(this.children)),
+        content: .init(block: .blockquote(children: this.children))
+      )
+    )
+  }
+}

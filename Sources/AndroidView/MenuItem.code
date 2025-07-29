@@ -1,0 +1,205 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidGraphics
+import JavaKit
+import JavaRuntime
+
+@JavaInterface("android.view.MenuItem")
+public struct MenuItem {
+  @JavaMethod
+  public fn getContentDescription() -> CharSequence!
+
+  @JavaMethod
+  public fn setContentDescription(_ arg0: CharSequence?) -> MenuItem!
+
+  @JavaMethod
+  public fn setEnabled(_ arg0: Boolean) -> MenuItem!
+
+  @JavaMethod
+  public fn isVisible() -> Boolean
+
+  @JavaMethod
+  public fn setTooltipText(_ arg0: CharSequence?) -> MenuItem!
+
+  @JavaMethod
+  public fn getTooltipText() -> CharSequence!
+
+  @JavaMethod
+  public fn hasSubMenu() -> Boolean
+
+  @JavaMethod
+  public fn setTitle(_ arg0: Int32) -> MenuItem!
+
+  @JavaMethod
+  public fn setTitle(_ arg0: CharSequence?) -> MenuItem!
+
+  @JavaMethod
+  public fn getTitle() -> CharSequence!
+
+  @JavaMethod
+  public fn setVisible(_ arg0: Boolean) -> MenuItem!
+
+  @JavaMethod
+  public fn getItemId() -> Int32
+
+  @JavaMethod
+  public fn getGroupId() -> Int32
+
+  @JavaMethod
+  public fn setTitleCondensed(_ arg0: CharSequence?) -> MenuItem!
+
+  @JavaMethod
+  public fn getTitleCondensed() -> CharSequence!
+
+  @JavaMethod
+  public fn getIcon() -> Drawable!
+
+  @JavaMethod
+  public fn setIconTintList(_ arg0: ColorStateList?) -> MenuItem!
+
+  @JavaMethod
+  public fn getIconTintList() -> ColorStateList!
+
+  @JavaMethod
+  public fn setIconTintMode(_ arg0: PorterDuff.Mode?) -> MenuItem!
+
+  @JavaMethod
+  public fn setIconTintBlendMode(_ arg0: BlendMode?) -> MenuItem!
+
+  @JavaMethod
+  public fn getIconTintMode() -> PorterDuff.Mode!
+
+  @JavaMethod
+  public fn getIconTintBlendMode() -> BlendMode!
+
+  @JavaMethod
+  public fn setIntent(_ arg0: Intent?) -> MenuItem!
+
+  @JavaMethod
+  public fn getIntent() -> Intent!
+
+  @JavaMethod
+  public fn setShortcut(_ arg0: UInt16, _ arg1: UInt16) -> MenuItem!
+
+  @JavaMethod
+  public fn setShortcut(_ arg0: UInt16, _ arg1: UInt16, _ arg2: Int32, _ arg3: Int32) -> MenuItem!
+
+  @JavaMethod
+  public fn setNumericShortcut(_ arg0: UInt16) -> MenuItem!
+
+  @JavaMethod
+  public fn setNumericShortcut(_ arg0: UInt16, _ arg1: Int32) -> MenuItem!
+
+  @JavaMethod
+  public fn getNumericShortcut() -> UInt16
+
+  @JavaMethod
+  public fn getNumericModifiers() -> Int32
+
+  @JavaMethod
+  public fn setAlphabeticShortcut(_ arg0: UInt16, _ arg1: Int32) -> MenuItem!
+
+  @JavaMethod
+  public fn setAlphabeticShortcut(_ arg0: UInt16) -> MenuItem!
+
+  @JavaMethod
+  public fn getAlphabeticShortcut() -> UInt16
+
+  @JavaMethod
+  public fn getAlphabeticModifiers() -> Int32
+
+  @JavaMethod
+  public fn isCheckable() -> Boolean
+
+  @JavaMethod
+  public fn isChecked() -> Boolean
+
+  @JavaMethod
+  public fn getSubMenu() -> SubMenu!
+
+  @JavaMethod
+  public fn setOnMenuItemClickListener(_ arg0: MenuItem.OnMenuItemClickListener?) -> MenuItem!
+
+  @JavaMethod
+  public fn getMenuInfo() -> ContextMenu.ContextMenuInfo!
+
+  @JavaMethod
+  public fn setShowAsAction(_ arg0: Int32)
+
+  @JavaMethod
+  public fn setShowAsActionFlags(_ arg0: Int32) -> MenuItem!
+
+  @JavaMethod
+  public fn setActionView(_ arg0: View?) -> MenuItem!
+
+  @JavaMethod
+  public fn setActionView(_ arg0: Int32) -> MenuItem!
+
+  @JavaMethod
+  public fn getActionView() -> View!
+
+  @JavaMethod
+  public fn setActionProvider(_ arg0: ActionProvider?) -> MenuItem!
+
+  @JavaMethod
+  public fn getActionProvider() -> ActionProvider!
+
+  @JavaMethod
+  public fn expandActionView() -> Boolean
+
+  @JavaMethod
+  public fn collapseActionView() -> Boolean
+
+  @JavaMethod
+  public fn isActionViewExpanded() -> Boolean
+
+  @JavaMethod
+  public fn setOnActionExpandListener(_ arg0: MenuItem.OnActionExpandListener?) -> MenuItem!
+
+  @JavaMethod
+  public fn setIcon(_ arg0: Drawable?) -> MenuItem!
+
+  @JavaMethod
+  public fn setIcon(_ arg0: Int32) -> MenuItem!
+
+  @JavaMethod
+  public fn setCheckable(_ arg0: Boolean) -> MenuItem!
+
+  @JavaMethod
+  public fn setChecked(_ arg0: Boolean) -> MenuItem!
+
+  @JavaMethod
+  public fn getOrder() -> Int32
+
+  @JavaMethod
+  public fn isEnabled() -> Boolean
+}
+extension JavaClass<MenuItem> {
+  @JavaStaticField(isFinal: true)
+  public var SHOW_AS_ACTION_ALWAYS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SHOW_AS_ACTION_IF_ROOM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SHOW_AS_ACTION_NEVER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SHOW_AS_ACTION_WITH_TEXT: Int32
+}

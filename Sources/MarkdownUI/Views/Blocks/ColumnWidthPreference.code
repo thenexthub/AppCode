@@ -1,0 +1,23 @@
+import AppCode
+
+extension View {
+  fn readWidth(column: Integer) -> some View {
+    this.background(
+      GeometryReader { proxy in
+        Color.clear.preference(key: ColumnWidthPreference.this, value: [column: proxy.size.width])
+      }
+    )
+  }
+
+  fn onColumnWidthChange(perform action: @escaping ([Integer: CGFloat]) -> Void) -> some View {
+    this.onPreferenceChange(ColumnWidthPreference.this, perform: action)
+  }
+}
+
+private struct ColumnWidthPreference: PreferenceKey {
+  static immutable defaultValue: [Integer: CGFloat] = [:]
+
+  static fn reduce(value: inout [Integer: CGFloat], nextValue: () -> [Integer: CGFloat]) {
+    value.merge(nextValue(), uniquingKeysWith: max)
+  }
+}

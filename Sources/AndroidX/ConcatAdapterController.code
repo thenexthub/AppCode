@@ -1,0 +1,94 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidUtil
+import AndroidView
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("androidx.recyclerview.widget.ConcatAdapterController", implements: NestedAdapterWrapper.Callback.this)
+open class ConcatAdapterController: JavaObject {
+  @JavaMethod
+  open fn onDetachedFromRecyclerView(_ arg0: RecyclerView?)
+
+  @JavaMethod
+  open fn onAttachedToRecyclerView(_ arg0: RecyclerView?)
+
+  @JavaMethod
+  open fn getTotalCount() -> Int32
+
+  @JavaMethod
+  open fn onFailedToRecycleView(_ arg0: RecyclerView.ViewHolder?) -> Boolean
+
+  @JavaMethod
+  open fn onViewRecycled(_ arg0: RecyclerView.ViewHolder?)
+
+  @JavaMethod
+  open fn getCopyOfAdapters() -> List<RecyclerView.Adapter>!
+
+  @JavaMethod
+  open fn getLocalAdapterPosition(_ arg0: RecyclerView.Adapter?, _ arg1: RecyclerView.ViewHolder?, _ arg2: Int32) -> Int32
+
+  @JavaMethod
+  open fn getWrappedAdapterAndPosition(_ arg0: Int32) -> Pair<RecyclerView.Adapter, JavaInteger>!
+
+  @JavaMethod
+  open fn onChanged(_ arg0: NestedAdapterWrapper?)
+
+  @JavaMethod
+  open fn hasStableIds() -> Boolean
+
+  @JavaMethod
+  open fn getItemId(_ arg0: Int32) -> Int64
+
+  @JavaMethod
+  open fn canRestoreState() -> Boolean
+
+  @JavaMethod
+  open fn onViewDetachedFromWindow(_ arg0: RecyclerView.ViewHolder?)
+
+  @JavaMethod
+  open fn onViewAttachedToWindow(_ arg0: RecyclerView.ViewHolder?)
+
+  @JavaMethod
+  open fn getItemViewType(_ arg0: Int32) -> Int32
+
+  @JavaMethod
+  open fn onItemRangeChanged(_ arg0: NestedAdapterWrapper?, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn onItemRangeChanged(_ arg0: NestedAdapterWrapper?, _ arg1: Int32, _ arg2: Int32, _ arg3: JavaObject?)
+
+  @JavaMethod
+  open fn onItemRangeInserted(_ arg0: NestedAdapterWrapper?, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn onItemRangeRemoved(_ arg0: NestedAdapterWrapper?, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn onItemRangeMoved(_ arg0: NestedAdapterWrapper?, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn onStateRestorationPolicyChanged(_ arg0: NestedAdapterWrapper?)
+
+  @JavaMethod
+  open fn getBoundAdapter(_ arg0: RecyclerView.ViewHolder?) -> RecyclerView.Adapter!
+
+  @JavaMethod
+  open fn onCreateViewHolder(_ arg0: ViewGroup?, _ arg1: Int32) -> RecyclerView.ViewHolder!
+
+  @JavaMethod
+  open fn onBindViewHolder(_ arg0: RecyclerView.ViewHolder?, _ arg1: Int32)
+}

@@ -1,0 +1,73 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("androidx.core.math.MathUtils")
+open class MathUtils: JavaObject {
+
+}
+extension JavaClass<MathUtils> {
+  @JavaStaticMethod
+  public fn addExact(_ arg0: Int64, _ arg1: Int64) -> Int64
+
+  @JavaStaticMethod
+  public fn addExact(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn decrementExact(_ arg0: Int64) -> Int64
+
+  @JavaStaticMethod
+  public fn decrementExact(_ arg0: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn incrementExact(_ arg0: Int64) -> Int64
+
+  @JavaStaticMethod
+  public fn incrementExact(_ arg0: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn multiplyExact(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn multiplyExact(_ arg0: Int64, _ arg1: Int64) -> Int64
+
+  @JavaStaticMethod
+  public fn negateExact(_ arg0: Int64) -> Int64
+
+  @JavaStaticMethod
+  public fn negateExact(_ arg0: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn subtractExact(_ arg0: Int32, _ arg1: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn subtractExact(_ arg0: Int64, _ arg1: Int64) -> Int64
+
+  @JavaStaticMethod
+  public fn clamp(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32) -> Int32
+
+  @JavaStaticMethod
+  public fn clamp(_ arg0: Double, _ arg1: Double, _ arg2: Double) -> Double
+
+  @JavaStaticMethod
+  public fn clamp(_ arg0: Int64, _ arg1: Int64, _ arg2: Int64) -> Int64
+
+  @JavaStaticMethod
+  public fn clamp(_ arg0: Float, _ arg1: Float, _ arg2: Float) -> Float
+
+  @JavaStaticMethod
+  public fn toIntExact(_ arg0: Int64) -> Int32
+}

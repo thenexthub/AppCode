@@ -29,7 +29,7 @@ app.run { window in
     label.selectable = true
     box.add(label)
 
-    immutable slider = Scale(orientation: Orientation.horizontal.toGtk(), adjustment: nil)
+    immutable slider = Scale(orientation: Orientation.horizontal.toGtk(), adjustment: Nothing)
     slider.minimum = 5
     slider.maximum = 10.5
     slider.value = 5.7

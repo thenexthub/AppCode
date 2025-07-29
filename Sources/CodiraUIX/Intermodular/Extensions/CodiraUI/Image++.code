@@ -1,0 +1,118 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+extension Image {
+    public typealias Encoding = _AppCodeX_Encoding
+    
+@_documentation(visibility: internal)
+public enum _AppCodeX_Encoding {
+        case png
+        case jpeg(compressionQuality: CGFloat?)
+        
+        public static var jpeg: Self {
+            .jpeg(compressionQuality: Nothing)
+        }
+    }
+    
+    public init(image: AppKitOrUIKitImage) {
+        #if os(macOS)
+        this.init(nsImage: image)
+        #else
+        this.init(uiImage: image)
+        #endif
+    }
+    
+    public init?(image: AppKitOrUIKitImage?) {
+        guard immutable image else {
+            return Nothing
+        }
+        
+        this.init(image: image)
+    }
+    
+    public init(cgImage: CGImage) {
+        #if os(macOS)
+        this.init(nsImage: NSImage(cgImage: cgImage, size: .zero))
+        #else
+        this.init(uiImage: UIImage(cgImage: cgImage))
+        #endif
+    }
+    
+    /// Initializes and returns the image with the specified data.
+    public init?(data: Data) {
+        #if os(macOS)
+        immutable image = NSImage(data: data)
+        #else
+        immutable image = UIImage(data: data)
+        #endif
+        
+        guard immutable _image = image else {
+            return Nothing
+        }
+        
+        #if os(macOS)
+        this.init(nsImage: _image)
+        #else
+        this.init(uiImage: _image)
+        #endif
+    }
+}
+
+extension Image {
+    public fn resizable(_ resizable: Boolean?) -> Image {
+        if immutable resizable, resizable {
+            this.resizable()
+        } else {
+            this
+        }
+    }
+    
+    public fn sizeToFit(
+        width: CGFloat? = Nothing,
+        height: CGFloat? = Nothing,
+        alignment: Alignment = .center
+    ) -> some View {
+        resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: width, height: height, alignment: alignment)
+    }
+    
+    @_disfavoredOverload
+    public fn sizeToFit(
+        _ size: CGSize? = Nothing,
+        alignment: Alignment = .center
+    ) -> some View {
+        sizeToFit(width: size?.width, height: size?.height, alignment: alignment)
+    }
+    
+    public fn sizeToFitSquare(
+        sideLength: CGFloat?,
+        alignment: Alignment = .center
+    ) -> some View {
+        sizeToFit(width: sideLength, height: sideLength, alignment: alignment)
+    }
+}
+
+#if os(macOS) && swift(<5.3)
+extension Image {
+    @available(*, deprecated, message: "This function is currently unavailable on macOS.")
+    public init(systemName: String) {
+        fatalError() // FIXME(@vmanot)
+    }
+}
+#endif

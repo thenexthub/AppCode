@@ -1,0 +1,58 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.RenderEffect")
+open class RenderEffect: JavaObject {
+
+}
+extension JavaClass<RenderEffect> {
+  @JavaStaticMethod
+  public fn createOffsetEffect(_ arg0: Float, _ arg1: Float, _ arg2: RenderEffect?) -> RenderEffect!
+
+  @JavaStaticMethod
+  public fn createOffsetEffect(_ arg0: Float, _ arg1: Float) -> RenderEffect!
+
+  @JavaStaticMethod
+  public fn createBlurEffect(_ arg0: Float, _ arg1: Float, _ arg2: RenderEffect?, _ arg3: Shader.TileMode?) -> RenderEffect!
+
+  @JavaStaticMethod
+  public fn createBlurEffect(_ arg0: Float, _ arg1: Float, _ arg2: Shader.TileMode?) -> RenderEffect!
+
+  @JavaStaticMethod
+  public fn createBitmapEffect(_ arg0: Bitmap?) -> RenderEffect!
+
+  @JavaStaticMethod
+  public fn createBitmapEffect(_ arg0: Bitmap?, _ arg1: Rect?, _ arg2: Rect?) -> RenderEffect!
+
+  @JavaStaticMethod
+  public fn createColorFilterEffect(_ arg0: ColorFilter?) -> RenderEffect!
+
+  @JavaStaticMethod
+  public fn createColorFilterEffect(_ arg0: ColorFilter?, _ arg1: RenderEffect?) -> RenderEffect!
+
+  @JavaStaticMethod
+  public fn createBlendModeEffect(_ arg0: RenderEffect?, _ arg1: RenderEffect?, _ arg2: BlendMode?) -> RenderEffect!
+
+  @JavaStaticMethod
+  public fn createChainEffect(_ arg0: RenderEffect?, _ arg1: RenderEffect?) -> RenderEffect!
+
+  @JavaStaticMethod
+  public fn createShaderEffect(_ arg0: Shader?) -> RenderEffect!
+
+  @JavaStaticMethod
+  public fn createRuntimeShaderEffect(_ arg0: RuntimeShader?, _ arg1: String) -> RenderEffect!
+}

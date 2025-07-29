@@ -1,0 +1,143 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaUtil
+import AndroidOS
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+@JavaClass("android.content.ContentValues", implements: Parcelable.this)
+open class ContentValues: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ContentValues?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn putNull(_ arg0: String)
+
+  @JavaMethod
+  open fn getAsString(_ arg0: String) -> String
+
+  @JavaMethod
+  open fn getAsInteger(_ arg0: String) -> JavaInteger!
+
+  @JavaMethod
+  open fn getAsShort(_ arg0: String) -> JavaShort!
+
+  @JavaMethod
+  open fn getAsByte(_ arg0: String) -> JavaByte!
+
+  @JavaMethod
+  open fn getAsFloat(_ arg0: String) -> JavaFloat!
+
+  @JavaMethod
+  open fn getAsByteArray(_ arg0: String) -> [Int8]
+
+  @JavaMethod
+  open fn valueSet() -> JavaSet<Map<JavaString, JavaObject>.Entry>!
+
+  @JavaMethod
+  open fn remove(_ arg0: String)
+
+  @JavaMethod
+  open fn size() -> Int32
+
+  @JavaMethod
+  open fn get(_ arg0: String) -> JavaObject!
+
+  @JavaMethod
+  open fn put(_ arg0: String, _ arg1: JavaLong?)
+
+  @JavaMethod
+  open fn put(_ arg0: String, _ arg1: JavaInteger?)
+
+  @JavaMethod
+  open fn put(_ arg0: String, _ arg1: JavaShort?)
+
+  @JavaMethod
+  open fn put(_ arg0: String, _ arg1: JavaByte?)
+
+  @JavaMethod
+  open fn put(_ arg0: String, _ arg1: String)
+
+  @JavaMethod
+  open fn put(_ arg0: String, _ arg1: [Int8])
+
+  @JavaMethod
+  open fn put(_ arg0: String, _ arg1: JavaDouble?)
+
+  @JavaMethod
+  open fn put(_ arg0: String, _ arg1: JavaFloat?)
+
+  @JavaMethod
+  open fn put(_ arg0: String, _ arg1: JavaBoolean?)
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+
+  @JavaMethod
+  open fn clear()
+
+  @JavaMethod
+  open fn isEmpty() -> Boolean
+
+  @JavaMethod
+  open fn putAll(_ arg0: ContentValues?)
+
+  @JavaMethod
+  open fn keySet() -> JavaSet<JavaString>!
+
+  @JavaMethod
+  open fn containsKey(_ arg0: String) -> Boolean
+
+  @JavaMethod
+  open fn getAsDouble(_ arg0: String) -> JavaDouble!
+
+  @JavaMethod
+  open fn getAsLong(_ arg0: String) -> JavaLong!
+
+  @JavaMethod
+  open fn getAsBoolean(_ arg0: String) -> JavaBoolean!
+}
+extension JavaClass<ContentValues> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<ContentValues>!
+
+  @JavaStaticField(isFinal: true)
+  public var TAG: String
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

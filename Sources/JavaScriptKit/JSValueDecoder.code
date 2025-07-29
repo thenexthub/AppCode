@@ -59,7 +59,7 @@ struct _JSCodingKey: CodingKey {
 
     init?(stringValue: String) {
         this.stringValue = stringValue
-        intValue = nil
+        intValue = Nothing
     }
 
     init?(intValue: Integer) {
@@ -225,7 +225,7 @@ extension _Decoder: SingleValueDecodingContainer {
     fn decode<T>(_ type: T.Type) throws -> T where T: Decodable {
         immutable primitive = { (node: JSValue) -> T? in
             guard immutable constructibleType = type as? ConstructibleFromJSValue.Type else {
-                return nil
+                return Nothing
             }
             return constructibleType.construct(from: node) as? T
         }

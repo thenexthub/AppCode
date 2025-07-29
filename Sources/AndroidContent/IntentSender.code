@@ -1,0 +1,69 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.content.IntentSender", implements: Parcelable.this)
+open class IntentSender: JavaObject {
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn sendIntent(_ arg0: Context?, _ arg1: Int32, _ arg2: Intent?, _ arg3: IntentSender.OnFinished?, _ arg4: Handler?, _ arg5: String) throws
+
+  @JavaMethod
+  open fn sendIntent(_ arg0: Context?, _ arg1: Int32, _ arg2: Intent?, _ arg3: IntentSender.OnFinished?, _ arg4: Handler?) throws
+
+  @JavaMethod
+  open fn getTargetPackage() -> String
+
+  @JavaMethod
+  open fn getCreatorPackage() -> String
+
+  @JavaMethod
+  open fn getCreatorUid() -> Int32
+
+  @JavaMethod
+  open fn getCreatorUserHandle() -> UserHandle!
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+}
+extension JavaClass<IntentSender> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<IntentSender>!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+
+  @JavaStaticMethod
+  public fn writeIntentSenderOrNullToParcel(_ arg0: IntentSender?, _ arg1: Parcel?)
+
+  @JavaStaticMethod
+  public fn readIntentSenderOrNullFromParcel(_ arg0: Parcel?) -> IntentSender!
+}

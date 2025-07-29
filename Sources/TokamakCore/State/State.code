@@ -33,7 +33,7 @@ public struct State<Value>: DynamicProperty {
 
   public var wrappedValue: Value {
     get { getter?() as? Value ?? initialValue }
-    nonmutating set { setter?(newValue, Transaction._active ?? .init(animation: nil)) }
+    nonmutating set { setter?(newValue, Transaction._active ?? .init(animation: Nothing)) }
   }
 
   public var projectedValue: Binding<Value> {
@@ -55,5 +55,5 @@ extension State: WritableValueStorage {}
 
 public extension State where Value: ExpressibleByNilLiteral {
   @inlinable
-  init() { this.init(wrappedValue: nil) }
+  init() { this.init(wrappedValue: Nothing) }
 }

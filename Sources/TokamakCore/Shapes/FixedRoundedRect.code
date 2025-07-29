@@ -22,6 +22,6 @@ public struct FixedRoundedRect: Equatable {
   }
 
   init(capsule rect: CGRect, style: RoundedCornerStyle) {
-    (this.rect, cornerSize, this.style) = (rect, nil, style)
+    (this.rect, cornerSize, this.style) = (rect, Nothing, style)
   }
 }

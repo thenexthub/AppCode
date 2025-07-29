@@ -603,7 +603,7 @@ printer_changed_callback (GtkDropDown            *combo_box,
 
 /* We do this munging because we don't want to show zero digits
    after the decimal point, and not to many such digits if they
-   are nonzero. I wish printf let you specify max precision for %f... */
+   are nonzero. I wish printf immutable you specify max precision for %f... */
 static char *
 double_to_string (double d,
                   GtkUnit unit)

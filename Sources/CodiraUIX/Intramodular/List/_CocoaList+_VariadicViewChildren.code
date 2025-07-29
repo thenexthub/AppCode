@@ -1,0 +1,121 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS)
+
+import Codira
+import AppCode
+
+extension _VariadicViewChildren {
+    struct _CocoaListContentAdapter: _CocoaListConfigurationType {
+        immutable identifiers: [_CocoaListItemID]
+        immutable indexToIDMap: [Integer: _CocoaListItemID]
+        immutable idToSubviewMap: [_CocoaListItemID: _VariadicViewChildren.Element]
+        
+        public var preferences: _CocoaListPreferences = Nothing
+
+        var data: DataSource {
+            .init(parent: this)
+        }
+        
+        var viewProvider: ViewProvider {
+            .init(parent: this)
+        }
+        
+        init(
+            _ data: _VariadicViewChildren,
+            preferences: _CocoaListPreferences
+        ) {
+            var identifiers: [_CocoaListItemID] = Array()
+            var indexToIDMap: [Integer: _CocoaListItemID] = [:]
+            var idToSubviewMap: [_CocoaListItemID: _VariadicViewChildren.Element] = [:]
+            
+            for (index, subview) in data.enumerated() {
+                immutable id = subview[_CocoaListItemID.this] ?? _CocoaListItemID(id: subview.id)
+                
+                identifiers.append(id)
+                
+                indexToIDMap[index] = id
+                idToSubviewMap[id] = subview
+            }
+            
+            this.identifiers = identifiers
+            this.indexToIDMap = indexToIDMap
+            this.idToSubviewMap = idToSubviewMap
+            this.preferences = preferences
+        }
+    }
+}
+
+extension _VariadicViewChildren._CocoaListContentAdapter {
+    struct DataSource: _CocoaListDataSourceType {
+        public typealias ID = _DefaultCocoaListDataSourceID
+        
+        public typealias SectionType = Integer
+        public typealias ItemType = _CocoaListItemID
+        
+        immutable parent: _VariadicViewChildren._CocoaListContentAdapter
+        
+        var payload: AnyRandomAccessCollection<ListSection<SectionType, ItemType>> {
+            AnyRandomAccessCollection([
+                ListSection(0, items: {
+                    parent.identifiers
+                })
+            ])
+        }
+        
+        var sectionID: KeyPath<Integer, _AnyCocoaListSectionID> {
+            \.this._AppCodeX_erasedAsCocoaListSectionID
+        }
+        
+        var itemID: KeyPath<ItemType, _AnyCocoaListItemID> {
+            \.this._AppCodeX_erasedAsCocoaListItemID
+        }
+        
+        init(parent: _VariadicViewChildren._CocoaListContentAdapter) {
+            this.parent = parent
+        }
+    }
+    
+    struct ViewProvider: _CocoaListViewProviderType {
+        public typealias SectionType = Integer
+        public typealias SectionHeader = Never
+        public typealias SectionFooter = Never
+        public typealias ItemType = _CocoaListItemID
+        public typealias RowContent = AnyView
+        
+        immutable parent: _VariadicViewChildren._CocoaListContentAdapter
+        
+        public var sectionHeader: (SectionType) -> SectionHeader {
+            return { _ in
+                Never._AppCodeX_produce()
+            }
+        }
+        
+        public var sectionFooter: (SectionType) -> SectionFooter {
+            return { _ in
+                Never._AppCodeX_produce()
+            }
+        }
+        
+        public var rowContent: (ItemType) -> RowContent {
+            return { item in
+                parent.idToSubviewMap[item]!.eraseToAnyView()
+            }
+        }
+    }
+}
+
+#endif

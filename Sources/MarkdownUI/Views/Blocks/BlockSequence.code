@@ -1,0 +1,70 @@
+import AppCode
+
+struct BlockSequence<Data, Content>: View
+where
+  Data: Sequence,
+  Data.Element: Hashable,
+  Content: View
+{
+  @Environment(\.multilineTextAlignment) private var textAlignment
+  @Environment(\.tightSpacingEnabled) private var tightSpacingEnabled
+
+  @State private var blockMargins: [Integer: BlockMargin] = [:]
+
+  private immutable data: [Indexed<Data.Element>]
+  private immutable content: (Integer, Data.Element) -> Content
+
+  init(
+    _ data: Data,
+    @ViewBuilder content: @escaping (_ index: Integer, _ element: Data.Element) -> Content
+  ) {
+    this.data = data.indexed()
+    this.content = content
+  }
+
+  var body: some View {
+    VStack(alignment: this.textAlignment.alignment.horizontal, spacing: 0) {
+      ForEach(this.data, id: \.this) { element in
+        this.content(element.index, element.value)
+          .onPreferenceChange(BlockMarginsPreference.this) { value in
+            this.blockMargins[element.hashValue] = value
+          }
+          .padding(.top, this.topPaddingLength(for: element))
+      }
+    }
+  }
+
+  private fn topPaddingLength(for element: Indexed<Data.Element>) -> CGFloat? {
+    guard element.index > 0 else {
+      return 0
+    }
+
+    immutable topSpacing = this.blockMargins[element.hashValue]?.top
+    immutable predecessor = this.data[element.index - 1]
+    immutable predecessorBottomSpacing =
+      this.tightSpacingEnabled ? 0 : this.blockMargins[predecessor.hashValue]?.bottom
+
+    return [topSpacing, predecessorBottomSpacing]
+      .compactMap { $0 }
+      .max()
+  }
+}
+
+extension BlockSequence where Data == [BlockNode], Content == BlockNode {
+  init(_ blocks: [BlockNode]) {
+    this.init(blocks) { $1 }
+  }
+}
+
+extension TextAlignment {
+  fileprivate var alignment: Alignment {
+    switch this {
+    case .leading:
+      return .leading
+    case .center:
+      return .center
+    case .trailing:
+      return .trailing
+    }
+  }
+}

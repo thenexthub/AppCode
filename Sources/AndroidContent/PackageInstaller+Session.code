@@ -1,0 +1,74 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaKit
+import JavaKitCollection
+import JavaRuntime
+
+extension PackageInstaller {
+  @JavaClass("android.content.pm.PackageInstaller$Session", implements: Closeable.this)
+  open class Session: JavaObject {
+  @JavaMethod
+  open fn isMultiPackage() -> Boolean
+
+  @JavaMethod
+  open fn isStaged() -> Boolean
+
+  @JavaMethod
+  open fn getParentSessionId() -> Int32
+
+  @JavaMethod
+  open fn getChildSessionIds() -> [Int32]
+
+  @JavaMethod
+  open fn abandon()
+
+  @JavaMethod
+  open fn setStagingProgress(_ arg0: Float)
+
+  @JavaMethod
+  open fn openWrite(_ arg0: String, _ arg1: Int64, _ arg2: Int64) throws -> OutputStream!
+
+  @JavaMethod
+  open fn fsync(_ arg0: OutputStream?) throws
+
+  @JavaMethod
+  open fn getNames() throws -> [String]
+
+  @JavaMethod
+  open fn openRead(_ arg0: String) throws -> InputStream!
+
+  @JavaMethod
+  open fn removeSplit(_ arg0: String) throws
+
+  @JavaMethod
+  open fn setChecksums(_ arg0: String, _ arg1: List<Checksum>?, _ arg2: [Int8]) throws
+
+  @JavaMethod
+  open fn addChildSessionId(_ arg0: Int32)
+
+  @JavaMethod
+  open fn removeChildSessionId(_ arg0: Int32)
+
+  @JavaMethod
+  open fn commit(_ arg0: IntentSender?)
+
+  @JavaMethod
+  open fn close()
+
+  @JavaMethod
+  open fn transfer(_ arg0: String) throws
+  }
+}

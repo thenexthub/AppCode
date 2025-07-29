@@ -1,0 +1,46 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.widget.PopupMenu")
+open class PopupMenu: JavaObject {
+  @JavaMethod
+  open fn inflate(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setOnMenuItemClickListener(_ arg0: PopupMenu.OnMenuItemClickListener?)
+
+  @JavaMethod
+  open fn getDragToOpenListener() -> ViewSwitcher.OnTouchListener!
+
+  @JavaMethod
+  open fn setOnDismissListener(_ arg0: PopupMenu.OnDismissListener?)
+
+  @JavaMethod
+  open fn setForceShowIcon(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn show()
+
+  @JavaMethod
+  open fn setGravity(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getGravity() -> Int32
+
+  @JavaMethod
+  open fn dismiss()
+}

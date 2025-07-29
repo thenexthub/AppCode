@@ -1,0 +1,64 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+extension ScanFilter {
+  @JavaClass("android.bluetooth.le.ScanFilter$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setDeviceName(_ arg0: String) -> ScanFilter.Builder!
+
+  @JavaMethod
+  open fn setDeviceAddress(_ arg0: String) -> ScanFilter.Builder!
+
+  @JavaMethod
+  open fn setServiceUuid(_ arg0: ParcelUuid?, _ arg1: ParcelUuid?) -> ScanFilter.Builder!
+
+  @JavaMethod
+  open fn setServiceUuid(_ arg0: ParcelUuid?) -> ScanFilter.Builder!
+
+  @JavaMethod
+  open fn setServiceData(_ arg0: ParcelUuid?, _ arg1: [Int8], _ arg2: [Int8]) -> ScanFilter.Builder!
+
+  @JavaMethod
+  open fn setServiceData(_ arg0: ParcelUuid?, _ arg1: [Int8]) -> ScanFilter.Builder!
+
+  @JavaMethod
+  open fn setServiceSolicitationUuid(_ arg0: ParcelUuid?, _ arg1: ParcelUuid?) -> ScanFilter.Builder!
+
+  @JavaMethod
+  open fn setServiceSolicitationUuid(_ arg0: ParcelUuid?) -> ScanFilter.Builder!
+
+  @JavaMethod
+  open fn setManufacturerData(_ arg0: Int32, _ arg1: [Int8]) -> ScanFilter.Builder!
+
+  @JavaMethod
+  open fn setManufacturerData(_ arg0: Int32, _ arg1: [Int8], _ arg2: [Int8]) -> ScanFilter.Builder!
+
+  @JavaMethod
+  open fn setAdvertisingDataTypeWithData(_ arg0: Int32, _ arg1: [Int8], _ arg2: [Int8]) -> ScanFilter.Builder!
+
+  @JavaMethod
+  open fn setAdvertisingDataType(_ arg0: Int32) -> ScanFilter.Builder!
+
+  @JavaMethod
+  open fn build() -> ScanFilter!
+  }
+}

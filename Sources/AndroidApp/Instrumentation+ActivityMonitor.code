@@ -1,0 +1,45 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension Instrumentation {
+  @JavaClass("android.app.Instrumentation$ActivityMonitor")
+  open class ActivityMonitor: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: String, _ arg1: Instrumentation.ActivityResult?, _ arg2: Boolean, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn isBlocking() -> Boolean
+
+  @JavaMethod
+  open fn getHits() -> Int32
+
+  @JavaMethod
+  open fn getLastActivity() -> Activity!
+
+  @JavaMethod
+  open fn waitForActivity() -> Activity!
+
+  @JavaMethod
+  open fn waitForActivityWithTimeout(_ arg0: Int64) -> Activity!
+
+  @JavaMethod
+  open fn getResult() -> Instrumentation.ActivityResult!
+  }
+}

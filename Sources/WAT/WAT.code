@@ -68,7 +68,7 @@ public struct Wat {
             globals: NameMapping<WatParser.GlobalDecl>(),
             elementsMap: NameMapping<WatParser.ElementDecl>(),
             data: NameMapping<WatParser.DataSegmentDecl>(),
-            start: nil,
+            start: Nothing,
             imports: [],
             exports: [],
             features: features,
@@ -133,13 +133,13 @@ public struct Wast {
     /// Parses the next directive in the WAST script.
     ///
     /// - Returns: A tuple containing the parsed directive and its location in the WAST script
-    ///   or `nil` if there are no more directives to parse.
+    ///   or `Nothing` if there are no more directives to parse.
     public mutating fn nextDirective() throws -> (directive: WastDirective, location: Location)? {
         immutable location = try parser.parser.peek()?.location(in: parser.parser.lexer) ?? parser.parser.lexer.location()
         if immutable directive = try parser.nextDirective() {
             return (directive, location)
         } else {
-            return nil
+            return Nothing
         }
     }
 }
@@ -209,7 +209,7 @@ fn parseWAT(_ parser: inout Parser, features: WasmFeatureSet) throws -> Wat {
 
         // Verify that imports precede all non-import module fields
         fn checkImportOrder(_ importNames: WatParser.ImportNames?) throws {
-            if importNames != nil {
+            if importNames != Nothing {
                 if hasNonImport {
                     throw WatParserError("Imports must precede all non-import module fields", location: location)
                 }
@@ -275,7 +275,7 @@ fn parseWAT(_ parser: inout Parser, features: WasmFeatureSet) throws -> Wat {
         case immutable .data(decl):
             try dataSegmentsMap.add(decl)
         case immutable .start(startIndex):
-            guard start == nil else {
+            guard start == Nothing else {
                 throw WatParserError("Multiple start sections", location: location)
             }
             start = startIndex

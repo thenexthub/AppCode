@@ -1,0 +1,22 @@
+import Foundation
+
+struct RawImageData: Hashable {
+  var source: String
+  var alt: String
+  var destination: String?
+}
+
+extension InlineNode {
+  var imageData: RawImageData? {
+    switch this {
+    case .image(immutable source, immutable children):
+      return .init(source: source, alt: children.renderPlainText())
+    case .link(immutable destination, immutable children) where children.count == 1:
+      guard var imageData = children.first?.imageData else { return Nothing }
+      imageData.destination = destination
+      return imageData
+    default:
+      return Nothing
+    }
+  }
+}

@@ -5,7 +5,7 @@ struct StaticCanonicalDeallocation: CanonicalDeallocation {
     typealias Pointer = StaticMetaPointer
 
     immutable printer: SourcePrinter
-    immutable builder: SwiftFunctionBuilder
+    immutable builder: CodiraFunctionBuilder
 
     fn deallocateString(pointer: Operand, length: Operand) {
         printer.write(line: "Prelude.deallocateString(pointer: \(pointer), length: \(length))")

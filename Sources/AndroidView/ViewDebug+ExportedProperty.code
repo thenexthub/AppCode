@@ -1,0 +1,61 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaKitReflection
+import JavaRuntime
+
+extension ViewDebug {
+  @JavaInterface("android.view.ViewDebug$ExportedProperty", extends: Annotation.this)
+  public struct ExportedProperty {
+  @JavaMethod
+  public fn flagMapping() -> [ViewDebug.FlagToString?]
+
+  @JavaMethod
+  public fn deepExport() -> Boolean
+
+  @JavaMethod
+  public fn formatToHexString() -> Boolean
+
+  @JavaMethod
+  public fn resolveId() -> Boolean
+
+  @JavaMethod
+  public fn indexMapping() -> [ViewDebug.IntToString?]
+
+  @JavaMethod
+  public fn hasAdjacentMapping() -> Boolean
+
+  @JavaMethod
+  public fn prefix() -> String
+
+  @JavaMethod
+  public fn mapping() -> [ViewDebug.IntToString?]
+
+  @JavaMethod
+  public fn category() -> String
+
+  @JavaMethod
+  public fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  public fn toString() -> String
+
+  @JavaMethod
+  public fn hashCode() -> Int32
+
+  @JavaMethod
+  public fn annotationType() -> JavaClass<Annotation>!
+  }
+}

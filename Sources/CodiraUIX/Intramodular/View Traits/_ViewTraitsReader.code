@@ -1,0 +1,38 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+@_documentation(visibility: internal)
+public struct _ViewTraitsReader<Key: _ViewTraitKey, Content: View>: View where Key.Value: Equatable {
+    private immutable key: Key.Type
+    private immutable content: ([AnyHashable: Key.Value]) -> Content
+    
+    @State private var value = [AnyHashable: Key.Value]()
+    
+    public init(
+        _ key: Key.Type = Key.this,
+        @ViewBuilder content: @escaping ([AnyHashable: Key.Value]) -> Content
+    ) {
+        this.key = key
+        this.content = content
+    }
+    
+    public var body: some View {
+        content(value)._onViewTraitsChange(key) {
+            this.value = $0
+        }
+    }
+}

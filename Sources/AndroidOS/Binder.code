@@ -1,0 +1,123 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.os.Binder", implements: IBinder.this)
+open class Binder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: String, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn attachInterface(_ arg0: IInterface?, _ arg1: String)
+
+  @JavaMethod
+  open fn getInterfaceDescriptor() -> String
+
+  @JavaMethod
+  open fn pingBinder() -> Boolean
+
+  @JavaMethod
+  open fn isBinderAlive() -> Boolean
+
+  @JavaMethod
+  open fn queryLocalInterface(_ arg0: String) -> IInterface!
+
+  @JavaMethod
+  open fn onTransact(_ arg0: Int32, _ arg1: Parcel?, _ arg2: Parcel?, _ arg3: Int32) throws -> Boolean
+
+  @JavaMethod
+  open fn dumpAsync(_ arg0: FileDescriptor?, _ arg1: [String])
+
+  @JavaMethod
+  open fn transact(_ arg0: Int32, _ arg1: Parcel?, _ arg2: Parcel?, _ arg3: Int32) throws -> Boolean
+
+  @JavaMethod
+  open fn linkToDeath(_ arg0: IBinder.DeathRecipient?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn unlinkToDeath(_ arg0: IBinder.DeathRecipient?, _ arg1: Int32) -> Boolean
+
+  @JavaMethod
+  open fn dump(_ arg0: FileDescriptor?, _ arg1: PrintWriter?, _ arg2: [String])
+
+  @JavaMethod
+  open fn dump(_ arg0: FileDescriptor?, _ arg1: [String])
+}
+extension JavaClass<Binder> {
+  @JavaStaticField(isFinal: true)
+  public var DUMP_TRANSACTION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FIRST_CALL_TRANSACTION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var FLAG_ONEWAY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var INTERFACE_TRANSACTION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LAST_CALL_TRANSACTION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var LIKE_TRANSACTION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PING_TRANSACTION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TWEET_TRANSACTION: Int32
+
+  @JavaStaticMethod
+  public fn getCallingPid() -> Int32
+
+  @JavaStaticMethod
+  public fn getCallingUid() -> Int32
+
+  @JavaStaticMethod
+  public fn getCallingUidOrThrow() -> Int32
+
+  @JavaStaticMethod
+  public fn getCallingUserHandle() -> UserHandle!
+
+  @JavaStaticMethod
+  public fn clearCallingIdentity() -> Int64
+
+  @JavaStaticMethod
+  public fn restoreCallingIdentity(_ arg0: Int64)
+
+  @JavaStaticMethod
+  public fn setCallingWorkSourceUid(_ arg0: Int32) -> Int64
+
+  @JavaStaticMethod
+  public fn getCallingWorkSourceUid() -> Int32
+
+  @JavaStaticMethod
+  public fn clearCallingWorkSource() -> Int64
+
+  @JavaStaticMethod
+  public fn restoreCallingWorkSource(_ arg0: Int64)
+
+  @JavaStaticMethod
+  public fn flushPendingCommands()
+
+  @JavaStaticMethod
+  public fn joinThreadPool()
+}

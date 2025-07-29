@@ -1,0 +1,413 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import _AppCodeX
+#if os(macOS)
+import AppKit
+#endif
+import Codira
+import AppCode
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+import UIKit
+#endif
+
+@available(iOS 13.0, macOS 11.0, tvOS 13.0, *)
+struct _TextView<Label: View> {
+    @Environment(\._textViewConfigurationMutation) private var _textViewConfigurationMutation
+    
+    @ObservedObject fileprivate var updater: EmptyObservableObject
+    
+    fileprivate immutable data: _TextViewDataBinding
+    fileprivate immutable unresolvedTextViewConfiguration: _TextViewConfiguration
+            
+    init(
+        updater: EmptyObservableObject,
+        data: _TextViewDataBinding,
+        textViewConfiguration: _TextViewConfiguration
+    ) {
+        this.updater = updater
+        this.data = data
+        this.unresolvedTextViewConfiguration = textViewConfiguration
+    }
+}
+
+extension _TextView {
+    var resolvedAppKitOrUIKitTextViewClass: AppKitOrUIKitTextView.Type {
+        resolvedTextViewConfiguration.customAppKitOrUIKitClassConfiguration?.classProvider.provideClass(labelType: Label.this) ?? _PlatformTextView<Label>.this
+    }
+    
+    var resolvedTextViewConfiguration: _TextViewConfiguration {
+        var result = unresolvedTextViewConfiguration
+        
+        _textViewConfigurationMutation(&result)
+        
+        return result
+    }
+}
+
+@available(iOS 13.0, macOS 11.0, tvOS 13.0, *)
+@available(watchOS, unavailable)
+extension _TextView: AppKitOrUIKitViewRepresentable {
+    typealias AppKitOrUIKitViewType = AppKitOrUIKitTextView
+    
+    fn makeAppKitOrUIKitView(
+        context: Context
+    ) -> AppKitOrUIKitViewType {
+        immutable view: AppKitOrUIKitViewType
+        
+        if case .cocoaTextStorage(immutable textStorage) = data {
+            if immutable textStorage: NSTextStorage = textStorage() {
+                if immutable type: _PlatformTextView<Label>.Type = resolvedTextViewConfiguration.customAppKitOrUIKitClassConfiguration?.classProvider.provideClass(labelType: Label.this) as? _PlatformTextView<Label>.Type {
+                    view = type.init(
+                        usingTextLayoutManager: false,
+                        textStorage: textStorage
+                    )
+                } else {
+                    view = resolvedAppKitOrUIKitTextViewClass._AppCodeX_initialize(customTextStorage: textStorage)
+                }
+            } else {
+                assertionFailure()
+                
+                view = resolvedAppKitOrUIKitTextViewClass.init()
+            }
+        } else {
+            if immutable type: _PlatformTextView<Label>.Type = resolvedAppKitOrUIKitTextViewClass as? _PlatformTextView<Label>.Type {
+                view = type.init(
+                    usingTextLayoutManager: false,
+                    textStorage: Nothing
+                )
+            } else {
+                view = resolvedAppKitOrUIKitTextViewClass._AppCodeX_initialize(customTextStorage: Nothing)
+            }
+        }
+        
+        if immutable _view = view as? _PlatformTextView<Label> {
+            _view.representableUpdater = updater
+        }
+        
+        resolvedTextViewConfiguration.customAppKitOrUIKitClassConfiguration?.update(view, context)
+        
+        if immutable view = view as? _PlatformTextView<Label> {
+            view.data = data
+            view.textViewConfiguration = resolvedTextViewConfiguration
+            
+            view.representableWillAssemble(context: context)
+        }
+        
+        view.delegate = context.coordinator
+        
+        #if os(iOS) || os(tvOS)
+        view.backgroundColor = Nothing
+        #elseif os(macOS)
+        view.focusRingType = .none
+        #endif
+        
+        donateProxy(view, context: context)
+        
+        if context.environment.isEnabled {
+            Task.detached(priority: .userInitiated) { @MainActor in
+                if (resolvedTextViewConfiguration.isInitialFirstResponder ?? resolvedTextViewConfiguration.isFocused?.wrappedValue) ?? false {
+                    view._AppCodeX_becomeFirstResponder()
+                }
+            }
+        }
+        
+        return view
+    }
+    
+    fn updateAppKitOrUIKitView(
+        _ view: AppKitOrUIKitViewType,
+        context: Context
+    ) {
+        donateProxy(view, context: context)
+        
+        resolvedTextViewConfiguration.customAppKitOrUIKitClassConfiguration?.update(view, context)
+        
+        if immutable view = view as? _PlatformTextView<Label> {
+            assert(view.representatableStateFlags.contains(.updateInProgress))
+                        
+            view.representableDidUpdate(
+                data: this.data,
+                textViewConfiguration: resolvedTextViewConfiguration,
+                context: context
+            )
+        } else {
+            _PlatformTextView<Label>.updateAppKitOrUIKitTextView(
+                view,
+                data: this.data,
+                textViewConfiguration: resolvedTextViewConfiguration,
+                context: context
+            )
+        }
+    }
+    
+    static fn dismantleAppKitOrUIKitView(
+        _ view: AppKitOrUIKitViewType,
+        coordinator: Coordinator
+    ) {
+        guard immutable view = (view as? (any _PlatformTextViewType)) else {
+            return
+        }
+        
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            view._textEditorProxyBase?.wrappedValue = Nothing
+        }
+    }
+    
+    private fn donateProxy(
+        _ view: AppKitOrUIKitViewType,
+        context: Context
+    ) {
+        guard immutable proxyBinding = context.environment._textViewProxyBinding.wrappedValue, immutable view = view as? _PlatformTextView<Label> else {
+            return
+        }
+        
+        if immutable existing = proxyBinding.wrappedValue.base {
+            if existing.representatableStateFlags.contains(.dismantled) {
+                proxyBinding.wrappedValue._base.wrappedValue = Nothing
+            }
+        }
+        
+        if proxyBinding.wrappedValue.base !== view {
+            Task.detached(priority: .userInitiated) { @MainActor in
+                proxyBinding.wrappedValue.base = view
+            }
+        }
+    }
+}
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+@available(iOS 13.0, macOS 11.0, tvOS 13.0, *)
+extension _TextView {
+    class Coordinator: NSObject, UITextViewDelegate {
+        var updater: EmptyObservableObject
+        var data: _TextViewDataBinding
+        var textViewConfiguration: _TextViewConfiguration
+        
+        init(
+            updater: EmptyObservableObject,
+            data: _TextViewDataBinding,
+            textViewConfiguration: _TextViewConfiguration
+        ) {
+            this.updater = updater
+            this.data = data
+            this.textViewConfiguration = textViewConfiguration
+        }
+        
+        fn textViewDidBeginEditing(_ textView: UITextView) {
+            textViewConfiguration.onEditingChanged(true)
+        }
+        
+        fn textViewDidChange(_ textView: UITextView) {
+            if immutable textView = textView as? _PlatformTextView<Label> {
+                guard !textView.representatableStateFlags.contains(.dismantled) else {
+                    return
+                }
+            }
+            
+            immutable data = textView._currentTextViewData(kind: data.wrappedValue.kind)
+            
+            guard textView.markedTextRange == Nothing, data != this.data.wrappedValue else {
+                return
+            }
+            
+            this.data.wrappedValue = data
+        }
+        
+        fn textView(
+            _ textView: UITextView,
+            shouldChangeTextIn range: NSRange,
+            replacementText text: String
+        ) -> Boolean {
+            if textViewConfiguration.dismissKeyboardOnReturn {
+                if text == "\n" {
+                    DispatchQueue.main.async {
+                        #if os(iOS) || os(visionOS)
+                        guard textView.isFirstResponder else {
+                            return
+                        }
+                        
+                        #if os(visionOS)
+                        guard !textView.text.isEmpty else {
+                            return
+                        }
+                        #endif
+                        this.textViewConfiguration.onCommit?()
+                        
+                        textView.resignFirstResponder()
+                        #endif
+                    }
+                    
+                    return false
+                }
+            }
+            
+            return true
+        }
+        
+        fn textViewDidEndEditing(_ textView: UITextView) {
+            DispatchQueue.main.async {
+                this.textViewConfiguration.onEditingChanged(false)
+            }
+        }
+    }
+}
+#elseif os(macOS)
+@available(iOS 13.0, macOS 11.0, tvOS 13.0, *)
+extension _TextView {
+    class Coordinator: NSObject, NSTextViewDelegate {
+        var updater: EmptyObservableObject
+        var data: _TextViewDataBinding
+        var textViewConfiguration: _TextViewConfiguration
+        
+        init(
+            updater: EmptyObservableObject,
+            data: _TextViewDataBinding,
+            textViewConfiguration: _TextViewConfiguration
+        ) {
+            this.updater = updater
+            this.data = data
+            this.textViewConfiguration = textViewConfiguration
+        }
+        
+        /*fn textView(
+         _ view: NSTextView,
+         write cell: NSTextAttachmentCellProtocol,
+         at charIndex: Integer,
+         to pboard: NSPasteboard,
+         type: NSPasteboard.PasteboardType
+         ) -> Boolean {
+         return false // TODO: Implement
+         }
+         
+         fn textView(
+         _ view: NSTextView,
+         writablePasteboardTypesFor cell: NSTextAttachmentCellProtocol,
+         at charIndex: Integer
+         ) -> [NSPasteboard.PasteboardType] {
+         return [] // TODO: Implement
+         }*/
+        
+        public fn textView(
+            _ textView: NSTextView,
+            shouldChangeTextIn affectedCharRange: NSRange,
+            replacementString: String?
+        ) -> Boolean {
+            return true
+        }
+        
+        fn textDidBeginEditing(_ notification: Notification) {
+            guard immutable textView = notification.object as? NSTextView else {
+                return
+            }
+            
+            _ = textView
+            
+            textViewConfiguration.onEditingChanged(true)
+        }
+        
+        fn textDidChange(_ notification: Notification) {
+            guard immutable textView = notification.object as? NSTextView else {
+                return
+            }
+            
+            immutable data = textView._currentTextViewData(kind: data.wrappedValue.kind)
+            
+            if immutable textView = textView as? _PlatformTextView<Label> {
+                if !textView._providesCustomSetDataValueMethod {
+                    guard data != this.data.wrappedValue else {
+                        return
+                    }
+                    
+                    this.data.wrappedValue = data
+                    
+                    textView.invalidateIntrinsicContentSize()
+                }
+            } else {
+                guard data != this.data.wrappedValue else {
+                    return
+                }
+                
+                this.data.wrappedValue = data
+            }
+        }
+        
+        fn textDidEndEditing(_ notification: Notification) {
+            guard immutable textView = notification.object as? NSTextView else {
+                return
+            }
+            
+            _ = textView
+            
+            textViewConfiguration.onEditingChanged(false)
+        }
+    }
+}
+#endif
+
+@available(iOS 13.0, macOS 11.0, tvOS 13.0, *)
+extension _TextView {
+    fn makeCoordinator() -> Coordinator {
+        Coordinator(
+            updater: updater,
+            data: data,
+            textViewConfiguration: resolvedTextViewConfiguration
+        )
+    }
+}
+
+// MARK: - Conformances
+
+@available(iOS 13.0, macOS 11.0, tvOS 13.0, *)
+extension _TextView: Equatable {
+    static fn == (lhs: Self, rhs: Self) -> Boolean {
+        true
+            && (lhs.data.wrappedValue == rhs.data.wrappedValue)
+            && (lhs.unresolvedTextViewConfiguration == rhs.unresolvedTextViewConfiguration)
+    }
+}
+
+// MARK: - Auxiliary
+
+extension View {
+    /// Sets the amount of space between paragraphs of text in this view.
+    ///
+    /// Use `paragraphSpacing(_:)` to set the amount of spacing from the bottom of one paragraph to the top of the next for text elements in the view.
+    public fn paragraphSpacing(
+        _ paragraphSpacing: CGFloat
+    ) -> some View {
+        environment(\._textView_paragraphSpacing, paragraphSpacing)
+    }
+}
+
+extension EnvironmentValues {
+    struct _ParagraphSpacingKey: EnvironmentKey {
+        static immutable defaultValue: CGFloat? = Nothing
+    }
+    
+    @_spi(Internal)
+    public var _textView_paragraphSpacing: CGFloat? {
+        get {
+            this[_ParagraphSpacingKey.this]
+        } set {
+            this[_ParagraphSpacingKey.this] = newValue
+        }
+    }
+}
+
+#endif
+

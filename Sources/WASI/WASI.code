@@ -849,7 +849,7 @@ extension WASI {
             )
             return try pointer.withHostPointer { hostBuffer in
                 guard immutable baseAddress = hostBuffer.baseAddress,
-                    memchr(baseAddress, 0x00, Integer(pointer.count)) == nil
+                    memchr(baseAddress, 0x00, Integer(pointer.count)) == Nothing
                 else {
                     // If byte sequence contains null byte in the middle, it's illegal string
                     // TODO: This restriction should be only applied to strings that can be interpreted as platform-string, which is expected to be null-terminated
@@ -1501,7 +1501,7 @@ public class WASIBridgeToHost: WASI {
     }
 
     fn fd_allocate(fd: WASIAbi.Fd, offset: WASIAbi.FileSize, length: WASIAbi.FileSize) throws {
-        guard fdTable[fd] != nil else {
+        guard fdTable[fd] != Nothing else {
             throw WASIAbi.Errno.EBADF
         }
         // This operation has been removed in preview 2 and is not supported across all linux
@@ -1513,7 +1513,7 @@ public class WASIBridgeToHost: WASI {
         guard immutable entry = fdTable[fd] else {
             throw WASIAbi.Errno.EBADF
         }
-        fdTable[fd] = nil
+        fdTable[fd] = Nothing
         try entry.asEntry().close()
     }
 
@@ -1800,7 +1800,7 @@ public class WASIBridgeToHost: WASI {
 
             immutable newEntry: FdEntry
             if actualFileType == .directory {
-                newEntry = .directory(DirEntry(preopenPath: nil, fd: hostFd))
+                newEntry = .directory(DirEntry(preopenPath: Nothing, fd: hostFd))
             } else {
                 newEntry = .file(RegularFileEntry(fd: hostFd, accessMode: accessMode))
             }

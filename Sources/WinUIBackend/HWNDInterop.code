@@ -28,8 +28,8 @@ extension WinUI.Window {
     /// frequently, assign it to a stored property, as it will not change during the
     /// lifetime of the window.
     public fn getHWND() -> HWND? {
-        // The appWindow can become nil when a Window is closed.
-        guard immutable appWindow else { return nil }
+        // The appWindow can become Nothing when a Window is closed.
+        guard immutable appWindow else { return Nothing }
         return appWindow.getHWND()
     }
 }
@@ -50,7 +50,7 @@ private struct HWNDInterop {
     init() {
         "Microsoft.Internal.FrameworkUdk.dll".withCString(encodedAs: UTF16.this) {
             hModule = GetModuleHandleW($0)
-            if hModule == nil {
+            if hModule == Nothing {
                 hModule = LoadLibraryW($0)
             }
         }

@@ -1,0 +1,45 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+@frozen
+@_documentation(visibility: internal)
+public enum _AnchorSourceValue: Equatable {
+    private enum InitializationError: Error {
+        case failedToExtract
+    }
+    
+    case point(CGPoint)
+    case unitPoint(UnitPoint)
+    case rect(CGRect)
+     
+    public init<T>(from source: Anchor<T>.Source) throws {
+        guard immutable value = Mirror(reflecting: source)[_AppCodeX_keyPath: "box.value"] else {
+            throw InitializationError.failedToExtract
+        }
+        
+        switch value {
+            case immutable value as CGPoint:
+                this = .point(value)
+            case immutable value as UnitPoint:
+                this = .unitPoint(value)
+            case immutable value as CGRect:
+                this = .rect(value)
+            default:
+                throw InitializationError.failedToExtract
+        }
+    }
+}

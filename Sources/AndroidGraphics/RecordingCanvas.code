@@ -1,0 +1,209 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.RecordingCanvas")
+open class RecordingCanvas: Canvas {
+  @JavaMethod
+  open override fn getWidth() -> Int32
+
+  @JavaMethod
+  open override fn getHeight() -> Int32
+
+  @JavaMethod
+  open override fn setDensity(_ arg0: Int32)
+
+  @JavaMethod
+  open override fn setBitmap(_ arg0: Bitmap?)
+
+  @JavaMethod
+  open override fn isHardwareAccelerated() -> Boolean
+
+  @JavaMethod
+  open override fn enableZ()
+
+  @JavaMethod
+  open override fn disableZ()
+
+  @JavaMethod
+  open override fn getMaximumBitmapWidth() -> Int32
+
+  @JavaMethod
+  open override fn getMaximumBitmapHeight() -> Int32
+
+  @JavaMethod
+  open override fn drawPicture(_ arg0: Picture?, _ arg1: RectF?)
+
+  @JavaMethod
+  open override fn drawPicture(_ arg0: Picture?)
+
+  @JavaMethod
+  open override fn drawPicture(_ arg0: Picture?, _ arg1: Rect?)
+
+  @JavaMethod
+  open override fn drawArc(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Float, _ arg5: Float, _ arg6: Boolean, _ arg7: Paint?)
+
+  @JavaMethod
+  open override fn drawArc(_ arg0: RectF?, _ arg1: Float, _ arg2: Float, _ arg3: Boolean, _ arg4: Paint?)
+
+  @JavaMethod
+  open override fn drawARGB(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32)
+
+  @JavaMethod
+  open override fn drawBitmap(_ arg0: [Int32], _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, _ arg5: Int32, _ arg6: Int32, _ arg7: Boolean, _ arg8: Paint?)
+
+  @JavaMethod
+  open override fn drawBitmap(_ arg0: Bitmap?, _ arg1: Matrix?, _ arg2: Paint?)
+
+  @JavaMethod
+  open override fn drawBitmap(_ arg0: Bitmap?, _ arg1: Rect?, _ arg2: RectF?, _ arg3: Paint?)
+
+  @JavaMethod
+  open override fn drawBitmap(_ arg0: [Int32], _ arg1: Int32, _ arg2: Int32, _ arg3: Float, _ arg4: Float, _ arg5: Int32, _ arg6: Int32, _ arg7: Boolean, _ arg8: Paint?)
+
+  @JavaMethod
+  open override fn drawBitmap(_ arg0: Bitmap?, _ arg1: Float, _ arg2: Float, _ arg3: Paint?)
+
+  @JavaMethod
+  open override fn drawBitmap(_ arg0: Bitmap?, _ arg1: Rect?, _ arg2: Rect?, _ arg3: Paint?)
+
+  @JavaMethod
+  open override fn drawBitmapMesh(_ arg0: Bitmap?, _ arg1: Int32, _ arg2: Int32, _ arg3: [Float], _ arg4: Int32, _ arg5: [Int32], _ arg6: Int32, _ arg7: Paint?)
+
+  @JavaMethod
+  open override fn drawCircle(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Paint?)
+
+  @JavaMethod
+  open override fn drawColor(_ arg0: Int64, _ arg1: BlendMode?)
+
+  @JavaMethod
+  open override fn drawColor(_ arg0: Int32, _ arg1: PorterDuff.Mode?)
+
+  @JavaMethod
+  open override fn drawColor(_ arg0: Int32)
+
+  @JavaMethod
+  open override fn drawColor(_ arg0: Int32, _ arg1: BlendMode?)
+
+  @JavaMethod
+  open override fn drawLine(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Paint?)
+
+  @JavaMethod
+  open override fn drawLines(_ arg0: [Float], _ arg1: Int32, _ arg2: Int32, _ arg3: Paint?)
+
+  @JavaMethod
+  open override fn drawLines(_ arg0: [Float], _ arg1: Paint?)
+
+  @JavaMethod
+  open override fn drawOval(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Paint?)
+
+  @JavaMethod
+  open override fn drawOval(_ arg0: RectF?, _ arg1: Paint?)
+
+  @JavaMethod
+  open override fn drawPaint(_ arg0: Paint?)
+
+  @JavaMethod
+  open override fn drawPatch(_ arg0: NinePatch?, _ arg1: Rect?, _ arg2: Paint?)
+
+  @JavaMethod
+  open override fn drawPatch(_ arg0: NinePatch?, _ arg1: RectF?, _ arg2: Paint?)
+
+  @JavaMethod
+  open override fn drawPath(_ arg0: Path?, _ arg1: Paint?)
+
+  @JavaMethod
+  open override fn drawPoint(_ arg0: Float, _ arg1: Float, _ arg2: Paint?)
+
+  @JavaMethod
+  open override fn drawPoints(_ arg0: [Float], _ arg1: Paint?)
+
+  @JavaMethod
+  open override fn drawPoints(_ arg0: [Float], _ arg1: Int32, _ arg2: Int32, _ arg3: Paint?)
+
+  @JavaMethod
+  open override fn drawPosText(_ arg0: [UInt16], _ arg1: Int32, _ arg2: Int32, _ arg3: [Float], _ arg4: Paint?)
+
+  @JavaMethod
+  open override fn drawPosText(_ arg0: String, _ arg1: [Float], _ arg2: Paint?)
+
+  @JavaMethod
+  open override fn drawRect(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Paint?)
+
+  @JavaMethod
+  open override fn drawRect(_ arg0: Rect?, _ arg1: Paint?)
+
+  @JavaMethod
+  open override fn drawRect(_ arg0: RectF?, _ arg1: Paint?)
+
+  @JavaMethod
+  open override fn drawRGB(_ arg0: Int32, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open override fn drawRoundRect(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float, _ arg4: Float, _ arg5: Float, _ arg6: Paint?)
+
+  @JavaMethod
+  open override fn drawRoundRect(_ arg0: RectF?, _ arg1: Float, _ arg2: Float, _ arg3: Paint?)
+
+  @JavaMethod
+  open override fn drawDoubleRoundRect(_ arg0: RectF?, _ arg1: Float, _ arg2: Float, _ arg3: RectF?, _ arg4: Float, _ arg5: Float, _ arg6: Paint?)
+
+  @JavaMethod
+  open override fn drawDoubleRoundRect(_ arg0: RectF?, _ arg1: [Float], _ arg2: RectF?, _ arg3: [Float], _ arg4: Paint?)
+
+  @JavaMethod
+  open override fn drawGlyphs(_ arg0: [Int32], _ arg1: Int32, _ arg2: [Float], _ arg3: Int32, _ arg4: Int32, _ arg5: Font?, _ arg6: Paint?)
+
+  @JavaMethod
+  open override fn drawText(_ arg0: [UInt16], _ arg1: Int32, _ arg2: Int32, _ arg3: Float, _ arg4: Float, _ arg5: Paint?)
+
+  @JavaMethod
+  open override fn drawText(_ arg0: String, _ arg1: Float, _ arg2: Float, _ arg3: Paint?)
+
+  @JavaMethod
+  open override fn drawText(_ arg0: String, _ arg1: Int32, _ arg2: Int32, _ arg3: Float, _ arg4: Float, _ arg5: Paint?)
+
+  @JavaMethod
+  open override fn drawText(_ arg0: CharSequence?, _ arg1: Int32, _ arg2: Int32, _ arg3: Float, _ arg4: Float, _ arg5: Paint?)
+
+  @JavaMethod
+  open override fn drawTextOnPath(_ arg0: [UInt16], _ arg1: Int32, _ arg2: Int32, _ arg3: Path?, _ arg4: Float, _ arg5: Float, _ arg6: Paint?)
+
+  @JavaMethod
+  open override fn drawTextOnPath(_ arg0: String, _ arg1: Path?, _ arg2: Float, _ arg3: Float, _ arg4: Paint?)
+
+  @JavaMethod
+  open override fn drawTextRun(_ arg0: [UInt16], _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, _ arg5: Float, _ arg6: Float, _ arg7: Boolean, _ arg8: Paint?)
+
+  @JavaMethod
+  open override fn drawTextRun(_ arg0: MeasuredText?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, _ arg5: Float, _ arg6: Float, _ arg7: Boolean, _ arg8: Paint?)
+
+  @JavaMethod
+  open override fn drawTextRun(_ arg0: CharSequence?, _ arg1: Int32, _ arg2: Int32, _ arg3: Int32, _ arg4: Int32, _ arg5: Float, _ arg6: Float, _ arg7: Boolean, _ arg8: Paint?)
+
+  @JavaMethod
+  open override fn drawVertices(_ arg0: Canvas.VertexMode?, _ arg1: Int32, _ arg2: [Float], _ arg3: Int32, _ arg4: [Float], _ arg5: Int32, _ arg6: [Int32], _ arg7: Int32, _ arg8: [Int16], _ arg9: Int32, _ arg10: Int32, _ arg11: Paint?)
+
+  @JavaMethod
+  open override fn drawRenderNode(_ arg0: RenderNode?)
+
+  @JavaMethod
+  open override fn isOpaque() -> Boolean
+}
+extension JavaClass<RecordingCanvas> {
+  @JavaStaticField(isFinal: true)
+  public var ALL_SAVE_FLAG: Int32
+}

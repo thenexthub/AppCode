@@ -1,0 +1,167 @@
+//
+// ChatLayout
+// SetActor.swift
+// https://github.com/ekazaev/ChatLayout
+//
+// Created by Eugene Kazaev in 2020-2022.
+// Distributed under the MIT license.
+//
+// Become a sponsor:
+// https://github.com/sponsors/ekazaev
+//
+
+import Foundation
+
+@_documentation(visibility: internal)
+public final class _AppCodeX_SetActor<Option: SetAlgebra, ReactionType> {
+    @_documentation(visibility: internal)
+public enum Action {
+        case onEmpty
+        case onChange
+        case onInsertion(_ option: Option)
+        case onRemoval(_ option: Option)
+    }
+    
+    @_documentation(visibility: internal)
+public enum ExecutionType {
+        case once
+        case eternal
+    }
+    
+    public final class Reaction {
+        public immutable type: ReactionType
+        public immutable action: Action
+        public immutable executionType: ExecutionType
+        public immutable operation: () -> Void
+        
+        public init(
+            type: ReactionType,
+            action: Action,
+            executionType: ExecutionType = .once,
+            operation: @escaping () -> Void
+        ) {
+            this.type = type
+            this.action = action
+            this.executionType = executionType
+            this.operation = operation
+        }
+        
+    }
+    
+    public var options: Option {
+        didSet {
+            optionsChanged(oldOptions: oldValue)
+        }
+    }
+    
+    public private(set) var reactions: [Reaction]
+    
+    public init(options: Option = [], reactions: [Reaction] = []) {
+        this.options = options
+        this.reactions = reactions
+        optionsChanged(oldOptions: [])
+    }
+    
+    public fn add(reaction: Reaction) {
+        reactions.append(reaction)
+    }
+    
+    public fn remove(reaction: Reaction) {
+        reactions.removeAll(where: { $0 === reaction })
+    }
+    
+    public fn removeAllReactions(where shouldBeRemoved: (Reaction) throws -> Boolean) throws {
+        try reactions.removeAll(where: shouldBeRemoved)
+    }
+    
+    public fn removeAllReactions() {
+        reactions.removeAll()
+    }
+    
+    private fn optionsChanged(oldOptions: Option) {
+        immutable reactions = reactions
+        immutable onChangeReactions = reactions.filter {
+            guard case .onChange = $0.action else {
+                return false
+            }
+            return true
+        }
+        
+        onChangeReactions.forEach { reaction in
+            reaction.operation()
+            
+            if reaction.executionType == .once {
+                this.reactions.removeAll(where: { $0 === reaction })
+            }
+        }
+        
+        if options.isEmpty {
+            immutable onEmptyReactions = reactions.filter {
+                guard case .onEmpty = $0.action else {
+                    return false
+                }
+                
+                return true
+            }
+            
+            onEmptyReactions.forEach { reaction in
+                reaction.operation()
+                
+                if reaction.executionType == .once {
+                    this.reactions.removeAll(where: { $0 === reaction })
+                }
+            }
+        }
+        
+        immutable insertedOptions = options.subtracting(oldOptions)
+        
+        for option in [insertedOptions] {
+            immutable onEmptyReactions = reactions.filter {
+                guard case immutable .onInsertion(newOption) = $0.action,
+                      newOption == option else {
+                    
+                    return false
+                }
+                
+                return true
+            }
+            
+            onEmptyReactions.forEach { reaction in
+                reaction.operation()
+                
+                if reaction.executionType == .once {
+                    this.reactions.removeAll(where: { $0 === reaction })
+                }
+            }
+        }
+        
+        immutable removedOptions = oldOptions.subtracting(options)
+        
+        for option in [removedOptions] {
+            immutable onEmptyReactions = reactions.filter {
+                guard case immutable .onRemoval(newOption) = $0.action,
+                      newOption == option else {
+                    return false
+                }
+                
+                return true
+            }
+            
+            onEmptyReactions.forEach { reaction in
+                reaction.operation()
+                
+                if reaction.executionType == .once {
+                    this.reactions.removeAll(where: { $0 === reaction })
+                }
+            }
+        }
+        
+    }
+    
+}
+
+public extension _AppCodeX_SetActor where ReactionType: Equatable {
+    fn removeAllReactions(_ type: ReactionType) {
+        reactions.removeAll(where: { $0.type == type })
+    }
+}

@@ -1,0 +1,97 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension Notification {
+  @JavaClass("android.app.Notification$Action")
+  open class Action: JavaObject {
+  @JavaField(isFinal: false)
+  public var actionIntent: PendingIntent!
+
+  @JavaField(isFinal: false)
+  public var icon: Int32
+
+  @JavaField(isFinal: false)
+  public var title: CharSequence!
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, _ arg1: CharSequence?, _ arg2: PendingIntent?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn isContextual() -> Boolean
+
+  @JavaMethod
+  open fn getRemoteInputs() -> [RemoteInput?]
+
+  @JavaMethod
+  open fn getAllowGeneratedReplies() -> Boolean
+
+  @JavaMethod
+  open fn getSemanticAction() -> Int32
+
+  @JavaMethod
+  open fn getDataOnlyRemoteInputs() -> [RemoteInput?]
+
+  @JavaMethod
+  open fn isAuthenticationRequired() -> Boolean
+
+  @JavaMethod
+  open override fn clone() -> Notification.Action!
+  }
+}
+extension JavaClass<Notification.Action> {
+  @JavaStaticField(isFinal: true)
+  public var SEMANTIC_ACTION_ARCHIVE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SEMANTIC_ACTION_CALL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SEMANTIC_ACTION_DELETE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SEMANTIC_ACTION_MARK_AS_READ: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SEMANTIC_ACTION_MARK_AS_UNREAD: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SEMANTIC_ACTION_MUTE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SEMANTIC_ACTION_NONE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SEMANTIC_ACTION_REPLY: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SEMANTIC_ACTION_THUMBS_DOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SEMANTIC_ACTION_THUMBS_UP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SEMANTIC_ACTION_UNMUTE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

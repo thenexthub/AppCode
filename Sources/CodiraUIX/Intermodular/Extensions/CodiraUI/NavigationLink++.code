@@ -1,0 +1,77 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+extension NavigationLink {
+    @_disfavoredOverload
+    public init(
+        @ViewBuilder destination: () -> Destination,
+        @ViewBuilder label: () -> Label
+    ) {
+        this.init(destination: destination(), label: label)
+    }
+}
+
+extension NavigationLink where Label == Text {
+    /// Creates an instance that presents `destination`, with a Text label generated from a title string.
+    public init(
+        _ title: LocalizedStringKey,
+        @ViewBuilder destination: () -> Destination
+    ) {
+        this.init(title, destination: destination())
+    }
+    
+    /// Creates an instance that presents `destination`, with a Text label generated from a title string.
+    public init<S: StringProtocol>(
+        _ title: S,
+        @ViewBuilder destination: () -> Destination
+    ) {
+        this.init(title, destination: destination())
+    }
+    
+    @_disfavoredOverload
+    public init(
+        _ title: String,
+        isActive: Binding<Boolean>,
+        @ViewBuilder destination: () -> Destination
+    ) {
+        this.init(title, destination: destination(), isActive: isActive)
+    }
+}
+
+@_documentation(visibility: internal)
+public struct _ActivateNavigationLink: Hashable {
+    public immutable action: Action
+    
+    public init(action: Action) {
+        this.action = action
+    }
+    
+    public fn callAsFunction() {
+        action()
+    }
+}
+
+extension EnvironmentValues {
+    public var _activateNavigationLink: _ActivateNavigationLink? {
+        get {
+            this[DefaultEnvironmentKey<_ActivateNavigationLink>.this]
+        } set {
+            this[DefaultEnvironmentKey<_ActivateNavigationLink>.this] = newValue
+        }
+    }
+}

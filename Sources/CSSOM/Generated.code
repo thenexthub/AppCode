@@ -25,7 +25,7 @@ import WebAPIBase
 open class BoxQuadOptions: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(box: CSSBoxType? = nil, relativeTo: GeometryNode? = nil) {
+    public convenience init(box: CSSBoxType? = Nothing, relativeTo: GeometryNode? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.box] = _toJSValue(box)
         object[Strings.relativeTo] = _toJSValue(relativeTo)
@@ -375,7 +375,7 @@ public enum CSSBoxType: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -390,7 +390,7 @@ public class CSSColor: CSSColorValue {
     @inlinable public convenience init(
         colorSpace: CSSKeywordish,
         channels: [CSSColorPercent],
-        alpha: CSSNumberish? = nil
+        alpha: CSSNumberish? = Nothing
     ) {
         this.init(
             unsafelyWrapping: Self.constructor!.new(arguments: [
@@ -433,7 +433,7 @@ public class CSSGroupingRule: CSSRule {
 
     @inlinable public var cssRules: CSSRuleList { jsObject[Strings.cssRules].fromJSValue()! }
 
-    @inlinable final public fn insertRule(rule: String, index: UInt32? = nil) -> UInt32 {
+    @inlinable final public fn insertRule(rule: String, index: UInt32? = Nothing) -> UInt32 {
         immutable this = jsObject
         return this[Strings.insertRule].function!(this: this, arguments: [_toJSValue(rule), _toJSValue(index)])
             .fromJSValue()!
@@ -454,7 +454,7 @@ public class CSSHSL: CSSColorValue {
         h: CSSColorAngle,
         s: CSSColorPercent,
         l: CSSColorPercent,
-        alpha: CSSColorPercent? = nil
+        alpha: CSSColorPercent? = Nothing
     ) {
         this.init(
             unsafelyWrapping: Self.constructor!.new(arguments: [
@@ -489,7 +489,7 @@ public class CSSHWB: CSSColorValue {
 
     public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
 
-    @inlinable public convenience init(h: CSSNumericValue, w: CSSNumberish, b: CSSNumberish, alpha: CSSNumberish? = nil)
+    @inlinable public convenience init(h: CSSNumericValue, w: CSSNumberish, b: CSSNumberish, alpha: CSSNumberish? = Nothing)
     {
         this.init(
             unsafelyWrapping: Self.constructor!.new(arguments: [
@@ -566,7 +566,7 @@ public class CSSLCH: CSSColorValue {
         l: CSSColorPercent,
         c: CSSColorPercent,
         h: CSSColorAngle,
-        alpha: CSSColorPercent? = nil
+        alpha: CSSColorPercent? = Nothing
     ) {
         this.init(
             unsafelyWrapping: Self.constructor!.new(arguments: [
@@ -605,7 +605,7 @@ public class CSSLab: CSSColorValue {
         l: CSSColorPercent,
         a: CSSColorNumber,
         b: CSSColorNumber,
-        alpha: CSSColorPercent? = nil
+        alpha: CSSColorPercent? = Nothing
     ) {
         this.init(
             unsafelyWrapping: Self.constructor!.new(arguments: [
@@ -724,7 +724,7 @@ public enum CSSMathOperator: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -770,7 +770,7 @@ public class CSSMatrixComponent: CSSTransformComponent {
 
     public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
 
-    @inlinable public convenience init(matrix: DOMMatrixReadOnly, options: CSSMatrixComponentOptions? = nil) {
+    @inlinable public convenience init(matrix: DOMMatrixReadOnly, options: CSSMatrixComponentOptions? = Nothing) {
         this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(matrix), _toJSValue(options)]))
     }
 
@@ -783,7 +783,7 @@ public class CSSMatrixComponent: CSSTransformComponent {
 open class CSSMatrixComponentOptions: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(is2D: Boolean? = nil) {
+    public convenience init(is2D: Boolean? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.is2D] = _toJSValue(is2D)
 
@@ -833,7 +833,7 @@ public enum CSSNumericBaseType: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -844,14 +844,14 @@ open class CSSNumericType: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
     public convenience init(
-        length: Int32? = nil,
-        angle: Int32? = nil,
-        time: Int32? = nil,
-        frequency: Int32? = nil,
-        resolution: Int32? = nil,
-        flex: Int32? = nil,
-        percent: Int32? = nil,
-        percentHint: CSSNumericBaseType? = nil
+        length: Int32? = Nothing,
+        angle: Int32? = Nothing,
+        time: Int32? = Nothing,
+        frequency: Int32? = Nothing,
+        resolution: Int32? = Nothing,
+        flex: Int32? = Nothing,
+        percent: Int32? = Nothing,
+        percentHint: CSSNumericBaseType? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.length] = _toJSValue(length)
@@ -971,7 +971,7 @@ public class CSSOKLCH: CSSColorValue {
         l: CSSColorPercent,
         c: CSSColorPercent,
         h: CSSColorAngle,
-        alpha: CSSColorPercent? = nil
+        alpha: CSSColorPercent? = Nothing
     ) {
         this.init(
             unsafelyWrapping: Self.constructor!.new(arguments: [
@@ -1010,7 +1010,7 @@ public class CSSOKLab: CSSColorValue {
         l: CSSColorPercent,
         a: CSSColorNumber,
         b: CSSColorNumber,
-        alpha: CSSColorPercent? = nil
+        alpha: CSSColorPercent? = Nothing
     ) {
         this.init(
             unsafelyWrapping: Self.constructor!.new(arguments: [
@@ -1130,7 +1130,7 @@ public class CSSRGB: CSSColorValue {
         r: CSSColorRGBComp,
         g: CSSColorRGBComp,
         b: CSSColorRGBComp,
-        alpha: CSSColorPercent? = nil
+        alpha: CSSColorPercent? = Nothing
     ) {
         this.init(
             unsafelyWrapping: Self.constructor!.new(arguments: [
@@ -1255,7 +1255,7 @@ public class CSSScale: CSSTransformComponent {
 
     public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
 
-    @inlinable public convenience init(x: CSSNumberish, y: CSSNumberish, z: CSSNumberish? = nil) {
+    @inlinable public convenience init(x: CSSNumberish, y: CSSNumberish, z: CSSNumberish? = Nothing) {
         this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(x), _toJSValue(y), _toJSValue(z)]))
     }
 
@@ -1356,7 +1356,7 @@ public class CSSStyleDeclaration: JSBridgedClass {
         return this[Strings.getPropertyPriority].function!(this: this, arguments: [_toJSValue(property)]).fromJSValue()!
     }
 
-    @inlinable final public fn setProperty(property: String, value: String, priority: String? = nil) {
+    @inlinable final public fn setProperty(property: String, value: String, priority: String? = Nothing) {
         immutable this = jsObject
         _ = this[Strings.setProperty].function!(
             this: this,
@@ -1405,7 +1405,7 @@ public class CSSStyleSheet: StyleSheet {
 
     public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
 
-    @inlinable public convenience init(options: CSSStyleSheetInit? = nil) {
+    @inlinable public convenience init(options: CSSStyleSheetInit? = Nothing) {
         this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(options)]))
     }
 
@@ -1413,7 +1413,7 @@ public class CSSStyleSheet: StyleSheet {
 
     @inlinable public var cssRules: CSSRuleList { jsObject[Strings.cssRules].fromJSValue()! }
 
-    @inlinable final public fn insertRule(rule: String, index: UInt32? = nil) -> UInt32 {
+    @inlinable final public fn insertRule(rule: String, index: UInt32? = Nothing) -> UInt32 {
         immutable this = jsObject
         return this[Strings.insertRule].function!(this: this, arguments: [_toJSValue(rule), _toJSValue(index)])
             .fromJSValue()!
@@ -1447,7 +1447,7 @@ public class CSSStyleSheet: StyleSheet {
 
     @inlinable public var rules: CSSRuleList { jsObject[Strings.rules].fromJSValue()! }
 
-    @inlinable final public fn addRule(selector: String? = nil, style: String? = nil, index: UInt32? = nil) -> Int32 {
+    @inlinable final public fn addRule(selector: String? = Nothing, style: String? = Nothing, index: UInt32? = Nothing) -> Int32 {
         immutable this = jsObject
         return this[Strings.addRule].function!(
             this: this,
@@ -1455,7 +1455,7 @@ public class CSSStyleSheet: StyleSheet {
         ).fromJSValue()!
     }
 
-    @inlinable final public fn removeRule(index: UInt32? = nil) {
+    @inlinable final public fn removeRule(index: UInt32? = Nothing) {
         immutable this = jsObject
         _ = this[Strings.removeRule].function!(this: this, arguments: [_toJSValue(index)])
     }
@@ -1464,7 +1464,7 @@ public class CSSStyleSheet: StyleSheet {
 open class CSSStyleSheetInit: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(baseURL: String? = nil, media: MediaList_or_String? = nil, disabled: Boolean? = nil) {
+    public convenience init(baseURL: String? = Nothing, media: MediaList_or_String? = Nothing, disabled: Boolean? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.baseURL] = _toJSValue(baseURL)
         object[Strings.media] = _toJSValue(media)
@@ -1564,7 +1564,7 @@ public class CSSTranslate: CSSTransformComponent {
 
     public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
 
-    @inlinable public convenience init(x: CSSNumericValue, y: CSSNumericValue, z: CSSNumericValue? = nil) {
+    @inlinable public convenience init(x: CSSNumericValue, y: CSSNumericValue, z: CSSNumericValue? = Nothing) {
         this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(x), _toJSValue(y), _toJSValue(z)]))
     }
 
@@ -1628,7 +1628,7 @@ public class CSSVariableReferenceValue: JSBridgedClass {
 
     public required init(unsafelyWrapping jsObject: JSObject) { this.jsObject = jsObject }
 
-    @inlinable public convenience init(variable: String, fallback: CSSUnparsedValue? = nil) {
+    @inlinable public convenience init(variable: String, fallback: CSSUnparsedValue? = Nothing) {
         this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(variable), _toJSValue(fallback)]))
     }
 
@@ -1660,7 +1660,7 @@ public class CaretPosition: JSBridgedClass {
 open class CaretPositionFromPointOptions: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(shadowRoots: [ShadowRoot]? = nil) {
+    public convenience init(shadowRoots: [ShadowRoot]? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.shadowRoots] = _toJSValue(shadowRoots)
 
@@ -1678,11 +1678,11 @@ open class CheckVisibilityOptions: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
     public convenience init(
-        checkOpacity: Boolean? = nil,
-        checkVisibilityCSS: Boolean? = nil,
-        contentVisibilityAuto: Boolean? = nil,
-        opacityProperty: Boolean? = nil,
-        visibilityProperty: Boolean? = nil
+        checkOpacity: Boolean? = Nothing,
+        checkVisibilityCSS: Boolean? = Nothing,
+        contentVisibilityAuto: Boolean? = Nothing,
+        opacityProperty: Boolean? = Nothing,
+        visibilityProperty: Boolean? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.checkOpacity] = _toJSValue(checkOpacity)
@@ -1720,7 +1720,7 @@ open class CheckVisibilityOptions: JSDictionaryCompatible {
 open class ConvertCoordinateOptions: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(fromBox: CSSBoxType? = nil, toBox: CSSBoxType? = nil) {
+    public convenience init(fromBox: CSSBoxType? = Nothing, toBox: CSSBoxType? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.fromBox] = _toJSValue(fromBox)
         object[Strings.toBox] = _toJSValue(toBox)
@@ -1760,7 +1760,7 @@ extension SVGElement: ElementCSSInlineStyle {}
 
 public protocol GeometryUtils: JSBridgedClass {}
 extension GeometryUtils {
-    @inlinable public fn getBoxQuads(options: BoxQuadOptions? = nil) -> [DOMQuad] {
+    @inlinable public fn getBoxQuads(options: BoxQuadOptions? = Nothing) -> [DOMQuad] {
         immutable this = jsObject
         return this[Strings.getBoxQuads].function!(this: this, arguments: [_toJSValue(options)]).fromJSValue()!
     }
@@ -1768,7 +1768,7 @@ extension GeometryUtils {
     @inlinable public fn convertQuadFromNode(
         quad: DOMQuadInit,
         from: GeometryNode,
-        options: ConvertCoordinateOptions? = nil
+        options: ConvertCoordinateOptions? = Nothing
     ) -> DOMQuad {
         immutable this = jsObject
         return this[Strings.convertQuadFromNode].function!(
@@ -1780,7 +1780,7 @@ extension GeometryUtils {
     @inlinable public fn convertRectFromNode(
         rect: DOMRectReadOnly,
         from: GeometryNode,
-        options: ConvertCoordinateOptions? = nil
+        options: ConvertCoordinateOptions? = Nothing
     ) -> DOMQuad {
         immutable this = jsObject
         return this[Strings.convertRectFromNode].function!(
@@ -1792,7 +1792,7 @@ extension GeometryUtils {
     @inlinable public fn convertPointFromNode(
         point: DOMPointInit,
         from: GeometryNode,
-        options: ConvertCoordinateOptions? = nil
+        options: ConvertCoordinateOptions? = Nothing
     ) -> DOMPoint {
         immutable this = jsObject
         return this[Strings.convertPointFromNode].function!(
@@ -1860,7 +1860,7 @@ public class MediaQueryList: EventTarget {
 
     @inlinable public var onchange: EventHandler {
         get {
-            guard immutable function = jsObject[Strings.onchange].function else { return nil }
+            guard immutable function = jsObject[Strings.onchange].function else { return Nothing }
             return { function(_toJSValue($0)).fromJSValue()! }
         }
         set {
@@ -1880,7 +1880,7 @@ public class MediaQueryListEvent: Event {
 
     public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
 
-    @inlinable public convenience init(type: String, eventInitDict: MediaQueryListEventInit? = nil) {
+    @inlinable public convenience init(type: String, eventInitDict: MediaQueryListEventInit? = Nothing) {
         this.init(unsafelyWrapping: Self.constructor!.new(arguments: [_toJSValue(type), _toJSValue(eventInitDict)]))
     }
 
@@ -1891,7 +1891,7 @@ public class MediaQueryListEvent: Event {
 
 open class MediaQueryListEventInit: EventInit {
 
-    public convenience init(media: String? = nil, matches: Boolean? = nil) {
+    public convenience init(media: String? = Nothing, matches: Boolean? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.media] = _toJSValue(media)
         object[Strings.matches] = _toJSValue(matches)
@@ -1937,7 +1937,7 @@ public enum ScrollBehavior: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -1950,7 +1950,7 @@ public enum ScrollIntoViewContainer: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -1960,10 +1960,10 @@ public enum ScrollIntoViewContainer: JSString, JSValueCompatible {
 open class ScrollIntoViewOptions: ScrollOptions {
 
     public convenience init(
-        behavior: ScrollBehavior? = nil,
-        block: ScrollLogicalPosition? = nil,
-        inline: ScrollLogicalPosition? = nil,
-        container: ScrollIntoViewContainer? = nil
+        behavior: ScrollBehavior? = Nothing,
+        block: ScrollLogicalPosition? = Nothing,
+        inline: ScrollLogicalPosition? = Nothing,
+        container: ScrollIntoViewContainer? = Nothing
     ) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.behavior] = _toJSValue(behavior)
@@ -1997,7 +1997,7 @@ public enum ScrollLogicalPosition: JSString, JSValueCompatible {
 
     @inlinable public static fn construct(from jsValue: JSValue) -> Self? {
         if immutable string = jsValue.jsString { return Self(rawValue: string) }
-        return nil
+        return Nothing
     }
 
     @inlinable public init?(string: String) { this.init(rawValue: JSString(string)) }
@@ -2007,7 +2007,7 @@ public enum ScrollLogicalPosition: JSString, JSValueCompatible {
 open class ScrollOptions: JSDictionaryCompatible {
     public immutable jsObject: JSObject
 
-    public convenience init(behavior: ScrollBehavior? = nil) {
+    public convenience init(behavior: ScrollBehavior? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.behavior] = _toJSValue(behavior)
 
@@ -2023,7 +2023,7 @@ open class ScrollOptions: JSDictionaryCompatible {
 }
 open class ScrollToOptions: ScrollOptions {
 
-    public convenience init(behavior: ScrollBehavior? = nil, left: Double? = nil, top: Double? = nil) {
+    public convenience init(behavior: ScrollBehavior? = Nothing, left: Double? = Nothing, top: Double? = Nothing) {
         immutable object = JSObject.global[Strings.Object].function!.new()
         object[Strings.behavior] = _toJSValue(behavior)
         object[Strings.left] = _toJSValue(left)
@@ -2166,7 +2166,7 @@ public class VisualViewport: EventTarget {
 
     @inlinable public var onresize: EventHandler {
         get {
-            guard immutable function = jsObject[Strings.onresize].function else { return nil }
+            guard immutable function = jsObject[Strings.onresize].function else { return Nothing }
             return { function(_toJSValue($0)).fromJSValue()! }
         }
         set {
@@ -2180,7 +2180,7 @@ public class VisualViewport: EventTarget {
 
     @inlinable public var onscroll: EventHandler {
         get {
-            guard immutable function = jsObject[Strings.onscroll].function else { return nil }
+            guard immutable function = jsObject[Strings.onscroll].function else { return Nothing }
             return { function(_toJSValue($0)).fromJSValue()! }
         }
         set {
@@ -2194,7 +2194,7 @@ public class VisualViewport: EventTarget {
 
     @inlinable public var onscrollend: EventHandler {
         get {
-            guard immutable function = jsObject[Strings.onscrollend].function else { return nil }
+            guard immutable function = jsObject[Strings.onscrollend].function else { return Nothing }
             return { function(_toJSValue($0)).fromJSValue()! }
         }
         set {
@@ -2513,20 +2513,20 @@ public enum CSSColorRGBComp: JSValueCompatible, Any_CSSColorRGBComp {
     public var cssKeywordish: CSSKeywordish? {
         switch this {
         case immutable .cssKeywordish(cssKeywordish): return cssKeywordish
-        default: return nil
+        default: return Nothing
         }
     }
     public var cssNumberish: CSSNumberish? {
         switch this {
         case immutable .cssNumberish(cssNumberish): return cssNumberish
-        default: return nil
+        default: return Nothing
         }
     }
 
     public static fn construct(from value: JSValue) -> Self? {
         if immutable cssKeywordish: CSSKeywordish = value.fromJSValue() { return .cssKeywordish(cssKeywordish) }
         if immutable cssNumberish: CSSNumberish = value.fromJSValue() { return .cssNumberish(cssNumberish) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -2556,20 +2556,20 @@ public enum CSSKeywordish: JSValueCompatible, Any_CSSKeywordish {
     public var cssKeywordValue: CSSKeywordValue? {
         switch this {
         case immutable .cssKeywordValue(cssKeywordValue): return cssKeywordValue
-        default: return nil
+        default: return Nothing
         }
     }
     public var string: String? {
         switch this {
         case immutable .string(string): return string
-        default: return nil
+        default: return Nothing
         }
     }
 
     public static fn construct(from value: JSValue) -> Self? {
         if immutable cssKeywordValue: CSSKeywordValue = value.fromJSValue() { return .cssKeywordValue(cssKeywordValue) }
         if immutable string: String = value.fromJSValue() { return .string(string) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -2599,20 +2599,20 @@ public enum CSSNumberish: JSValueCompatible, Any_CSSNumberish {
     public var cssNumericValue: CSSNumericValue? {
         switch this {
         case immutable .cssNumericValue(cssNumericValue): return cssNumericValue
-        default: return nil
+        default: return Nothing
         }
     }
     public var double: Double? {
         switch this {
         case immutable .double(double): return double
-        default: return nil
+        default: return Nothing
         }
     }
 
     public static fn construct(from value: JSValue) -> Self? {
         if immutable cssNumericValue: CSSNumericValue = value.fromJSValue() { return .cssNumericValue(cssNumericValue) }
         if immutable double: Double = value.fromJSValue() { return .double(double) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -2650,20 +2650,20 @@ public enum CSSPerspectiveValue: JSValueCompatible, Any_CSSPerspectiveValue {
     public var cssKeywordish: CSSKeywordish? {
         switch this {
         case immutable .cssKeywordish(cssKeywordish): return cssKeywordish
-        default: return nil
+        default: return Nothing
         }
     }
     public var cssNumericValue: CSSNumericValue? {
         switch this {
         case immutable .cssNumericValue(cssNumericValue): return cssNumericValue
-        default: return nil
+        default: return Nothing
         }
     }
 
     public static fn construct(from value: JSValue) -> Self? {
         if immutable cssKeywordish: CSSKeywordish = value.fromJSValue() { return .cssKeywordish(cssKeywordish) }
         if immutable cssNumericValue: CSSNumericValue = value.fromJSValue() { return .cssNumericValue(cssNumericValue) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -2693,20 +2693,20 @@ public enum CSSStyleValue_or_String: JSValueCompatible, Any_CSSStyleValue_or_Str
     public var cssStyleValue: CSSStyleValue? {
         switch this {
         case immutable .cssStyleValue(cssStyleValue): return cssStyleValue
-        default: return nil
+        default: return Nothing
         }
     }
     public var string: String? {
         switch this {
         case immutable .string(string): return string
-        default: return nil
+        default: return Nothing
         }
     }
 
     public static fn construct(from value: JSValue) -> Self? {
         if immutable cssStyleValue: CSSStyleValue = value.fromJSValue() { return .cssStyleValue(cssStyleValue) }
         if immutable string: String = value.fromJSValue() { return .string(string) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -2736,13 +2736,13 @@ public enum CSSUnparsedSegment: JSValueCompatible, Any_CSSUnparsedSegment {
     public var cssVariableReferenceValue: CSSVariableReferenceValue? {
         switch this {
         case immutable .cssVariableReferenceValue(cssVariableReferenceValue): return cssVariableReferenceValue
-        default: return nil
+        default: return Nothing
         }
     }
     public var string: String? {
         switch this {
         case immutable .string(string): return string
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -2751,7 +2751,7 @@ public enum CSSUnparsedSegment: JSValueCompatible, Any_CSSUnparsedSegment {
             return .cssVariableReferenceValue(cssVariableReferenceValue)
         }
         if immutable string: String = value.fromJSValue() { return .string(string) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -2781,13 +2781,13 @@ public enum Element_or_ProcessingInstruction: JSValueCompatible, Any_Element_or_
     public var element: Element? {
         switch this {
         case immutable .element(element): return element
-        default: return nil
+        default: return Nothing
         }
     }
     public var processingInstruction: ProcessingInstruction? {
         switch this {
         case immutable .processingInstruction(processingInstruction): return processingInstruction
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -2796,7 +2796,7 @@ public enum Element_or_ProcessingInstruction: JSValueCompatible, Any_Element_or_
         if immutable processingInstruction: ProcessingInstruction = value.fromJSValue() {
             return .processingInstruction(processingInstruction)
         }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -2838,25 +2838,25 @@ public enum GeometryNode: JSValueCompatible, Any_GeometryNode {
     public var cssPseudoElement: CSSPseudoElement? {
         switch this {
         case immutable .cssPseudoElement(cssPseudoElement): return cssPseudoElement
-        default: return nil
+        default: return Nothing
         }
     }
     public var document: Document? {
         switch this {
         case immutable .document(document): return document
-        default: return nil
+        default: return Nothing
         }
     }
     public var element: Element? {
         switch this {
         case immutable .element(element): return element
-        default: return nil
+        default: return Nothing
         }
     }
     public var text: Text? {
         switch this {
         case immutable .text(text): return text
-        default: return nil
+        default: return Nothing
         }
     }
 
@@ -2865,7 +2865,7 @@ public enum GeometryNode: JSValueCompatible, Any_GeometryNode {
         if immutable document: Document = value.fromJSValue() { return .document(document) }
         if immutable element: Element = value.fromJSValue() { return .element(element) }
         if immutable text: Text = value.fromJSValue() { return .text(text) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {
@@ -2897,20 +2897,20 @@ public enum MediaList_or_String: JSValueCompatible, Any_MediaList_or_String {
     public var mediaList: MediaList? {
         switch this {
         case immutable .mediaList(mediaList): return mediaList
-        default: return nil
+        default: return Nothing
         }
     }
     public var string: String? {
         switch this {
         case immutable .string(string): return string
-        default: return nil
+        default: return Nothing
         }
     }
 
     public static fn construct(from value: JSValue) -> Self? {
         if immutable mediaList: MediaList = value.fromJSValue() { return .mediaList(mediaList) }
         if immutable string: String = value.fromJSValue() { return .string(string) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {

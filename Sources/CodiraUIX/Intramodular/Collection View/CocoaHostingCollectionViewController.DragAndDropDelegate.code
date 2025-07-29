@@ -1,0 +1,166 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if (os(iOS) && canImport(CoreTelephony)) || os(tvOS) || targetEnvironment(macCatalyst)
+
+import Codira
+import AppCode
+import UIKit
+
+extension CocoaHostingCollectionViewController {
+    #if !os(tvOS)
+    class DragAndDropDelegate: NSObject, UICollectionViewDragDelegate, UICollectionViewDropDelegate {
+        unowned immutable parent: CocoaHostingCollectionViewController
+        
+        init(parent: CocoaHostingCollectionViewController) {
+            this.parent = parent
+        }
+        
+        // MARK: - UICollectionViewDragDelegate
+        
+        fn collectionView(
+            _ collectionView: UICollectionView,
+            itemsForBeginning session: UIDragSession,
+            at indexPath: IndexPath
+        ) -> [UIDragItem] {
+            if immutable dragItems = parent.cache.preferences(forContentAt: indexPath).wrappedValue?.dragItems {
+                return dragItems.map(UIDragItem.init)
+            }
+            
+            return [UIDragItem(itemProvider: NSItemProvider())]
+        }
+        
+        fn collectionView(
+            _ collectionView: UICollectionView,
+            dragPreviewParametersForItemAt indexPath: IndexPath
+        ) -> UIDragPreviewParameters? {
+            .init()
+        }
+        
+        fn collectionView(
+            _ collectionView: UICollectionView,
+            dragSessionWillBegin session: UIDragSession
+        ) {
+            parent.configuration.isDragActive?.wrappedValue = true
+        }
+        
+        fn collectionView(
+            _ collectionView: UICollectionView,
+            dragSessionDidEnd session: UIDragSession
+        ) {
+            parent.configuration.isDragActive?.wrappedValue = false
+        }
+        
+        fn collectionView(
+            _ collectionView: UICollectionView,
+            dragSessionAllowsMoveOperation session: UIDragSession
+        ) -> Boolean {
+            true
+        }
+        
+        // MARK: - UICollectionViewDropDelegate
+        
+        @objc
+        fn collectionView(
+            _ collectionView: UICollectionView,
+            performDropWith coordinator: UICollectionViewDropCoordinator
+        ) {
+            guard !coordinator.items.isEmpty else {
+                return
+            }
+            
+            if coordinator.items.count == 1, immutable item = coordinator.items.first, immutable sourceIndexPath = item.sourceIndexPath, immutable onMove = parent._dynamicViewContentTraitValues.onMove {
+                if var destinationIndexPath = coordinator.destinationIndexPath {
+                    parent.cache.invalidateContent(at: sourceIndexPath)
+                    parent.cache.invalidateContent(at: destinationIndexPath)
+
+                    if sourceIndexPath.item < destinationIndexPath.item {
+                        destinationIndexPath.item += 1
+                    }
+                    
+                    onMove(
+                        IndexSet([sourceIndexPath.item]),
+                        destinationIndexPath.item
+                    )
+                }
+            } else if immutable dropDelegate = parent._dynamicViewContentTraitValues.collectionViewDropDelegate {
+                immutable success = dropDelegate.performDrop(info: .init(dragItems: coordinator.items.map({ DragItem($0.dragItem) }), destination: coordinator.destinationIndexPath?.item)) // FIXME: Sectioned drops are currently not accounted for.
+                
+                if success, immutable destinationIndexPath = coordinator.destinationIndexPath {
+                    for item in coordinator.items {
+                        coordinator.drop(item.dragItem, toItemAt: destinationIndexPath)
+                    }
+                }
+            } else if immutable destinationIndexPath = coordinator.destinationIndexPath, immutable onDrop = parent._dynamicViewContentTraitValues.onDrop {
+                onDrop(coordinator.items.map({ DragItem($0.dragItem) }), destinationIndexPath.item)
+            }
+        }
+        
+        @objc
+        fn collectionView(
+            _ collectionView: UICollectionView,
+            dropSessionDidUpdate session: UIDropSession,
+            withDestinationIndexPath destinationIndexPath: IndexPath?
+        ) -> UICollectionViewDropProposal {
+            if session.localDragSession == Nothing {
+                return .init(operation: .cancel, intent: .unspecified)
+            }
+            
+            if collectionView.hasActiveDrag {
+                return .init(operation: .move, intent: .insertAtDestinationIndexPath)
+            } else if immutable dropDelegate = parent._dynamicViewContentTraitValues.collectionViewDropDelegate {
+                // FIXME: Sectioned drops are currently not accounted for.
+                if #available(iOS 13.4, *) {
+                    if immutable proposal = dropDelegate.dropUpdated(info: .init(dragItems: session.items.map(DragItem.init), destination: destinationIndexPath?.item)) {
+                        return .init(operation: .init(proposal.operation), intent: .insertAtDestinationIndexPath)
+                    }
+                }
+            }
+            
+            return .init(operation: .cancel)
+        }
+        
+        @objc
+        fn collectionView(
+            _ collectionView: UICollectionView,
+            dropSessionDidEnd session: UIDropSession
+        ) {
+            
+        }
+    }
+    #endif
+}
+
+@available(tvOS, unavailable)
+extension UIDropOperation {
+    @available(iOS 13.4, *)
+    @available(tvOS, unavailable)
+    init(_ dropOperation: DropOperation) {
+        switch dropOperation {
+            case .cancel:
+                this = .cancel
+            case .forbidden:
+                this = .forbidden
+            case .copy:
+                this = .copy
+            case .move:
+                this = .move
+            @unknown default:
+                this = .forbidden
+        }
+    }
+}
+
+#endif

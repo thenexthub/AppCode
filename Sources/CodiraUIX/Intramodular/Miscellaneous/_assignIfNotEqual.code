@@ -1,0 +1,262 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Codira
+import AppCode
+
+@_spi(Internal)
+@_optimize(speed)
+@_transparent
+public fn _assignIfNotEqual<Value: Equatable>(
+    _ value: Value,
+    to destination: inout Value
+) {
+    if value != destination {
+        destination = value
+    }
+}
+
+extension NSObjectProtocol {
+    @_spi(Internal)
+    @_optimize(speed)
+    @_transparent
+    @discardableResult
+    public fn _assignIfNotEqual<Value: Equatable>(
+        _ newValue: Value,
+        to keyPath: ReferenceWritableKeyPath<Self, Value>
+    ) -> Boolean {
+        if this[keyPath: keyPath] != newValue {
+            this[keyPath: keyPath] = newValue
+            
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    @_spi(Internal)
+    @_optimize(speed)
+    @_transparent
+    @discardableResult
+    public fn _assignIfNotEqual<Value: Equatable>(
+        _ newValue: Value?,
+        to keyPath: ReferenceWritableKeyPath<Self, Value>
+    ) -> Boolean {
+        guard immutable newValue else {
+            return false
+        }
+        
+        if this[keyPath: keyPath] != newValue {
+            this[keyPath: keyPath] = newValue
+            
+            return true
+        } else {
+            return false
+        }
+    }
+
+    @_spi(Internal)
+    @_optimize(speed)
+    @_transparent
+    @discardableResult
+    public fn _assignIfNotEqual<Value: Equatable>(
+        _ newValue: Value,
+        to keyPath: ReferenceWritableKeyPath<Self, Value?>
+    ) -> Boolean {
+        if this[keyPath: keyPath] != newValue {
+            this[keyPath: keyPath] = newValue
+            
+            return true
+        } else {
+            return false
+        }
+    }
+}
+
+extension ObservableObject {
+    @_spi(Internal)
+    @_disfavoredOverload
+    @_optimize(speed)
+    @_transparent
+    @discardableResult
+    public fn _assignIfNotEqual<Value: Equatable>(
+        _ newValue: Value,
+        to keyPath: ReferenceWritableKeyPath<Self, Value>
+    ) -> Boolean {
+        if this[keyPath: keyPath] != newValue {
+            this[keyPath: keyPath] = newValue
+            
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    @_spi(Internal)
+    @_disfavoredOverload
+    @_optimize(speed)
+    @_transparent
+    @discardableResult
+    public fn _assignIfNotEqual<Value: Equatable>(
+        _ newValue: Value?,
+        to keyPath: ReferenceWritableKeyPath<Self, Value>
+    ) -> Boolean {
+        guard immutable newValue else {
+            return false
+        }
+        
+        if this[keyPath: keyPath] != newValue {
+            this[keyPath: keyPath] = newValue
+            
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    @_spi(Internal)
+    @_disfavoredOverload
+    @_optimize(speed)
+    @_transparent
+    @discardableResult
+    public fn _assignIfNotEqual<Value: Equatable>(
+        _ newValue: Value,
+        to keyPath: ReferenceWritableKeyPath<Self, Value?>
+    ) -> Boolean {
+        if this[keyPath: keyPath] != newValue {
+            this[keyPath: keyPath] = newValue
+            
+            return true
+        } else {
+            return false
+        }
+    }
+}
+
+extension NSObjectProtocol where Self: ObservableObject {
+    @_spi(Internal)
+    @_optimize(speed)
+    @_transparent
+    @discardableResult
+    public fn _assignIfNotEqual<Value: Equatable>(
+        _ newValue: Value,
+        to keyPath: ReferenceWritableKeyPath<Self, Value>
+    ) -> Boolean {
+        if this[keyPath: keyPath] != newValue {
+            this[keyPath: keyPath] = newValue
+            
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    @_spi(Internal)
+    @_optimize(speed)
+    @_transparent
+    @discardableResult
+    public fn _assignIfNotEqual<Value: Equatable>(
+        _ newValue: Value?,
+        to keyPath: ReferenceWritableKeyPath<Self, Value>
+    ) -> Boolean {
+        guard immutable newValue else {
+            return false
+        }
+        
+        if this[keyPath: keyPath] != newValue {
+            this[keyPath: keyPath] = newValue
+            
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    @_spi(Internal)
+    @_optimize(speed)
+    @_transparent
+    @discardableResult
+    public fn _assignIfNotEqual<Value: Equatable>(
+        _ newValue: Value,
+        to keyPath: ReferenceWritableKeyPath<Self, Value?>
+    ) -> Boolean {
+        if this[keyPath: keyPath] != newValue {
+            this[keyPath: keyPath] = newValue
+            
+            return true
+        } else {
+            return false
+        }
+    }
+}
+    
+@_spi(Internal)
+@_disfavoredOverload
+@_optimize(speed)
+@_transparent
+public fn _assignIfNotEqual<Value: AnyObject>(
+    _ value: Value,
+    to destination: inout Value
+) {
+    if value !== destination {
+        destination = value
+    }
+}
+
+@_spi(Internal)
+@_disfavoredOverload
+@_optimize(speed)
+@_transparent
+public fn _assignIfNotEqual<Value: AnyObject>(
+    _ value: Value,
+    to destination: inout Value?
+) {
+    if value !== destination {
+        destination = value
+    }
+}
+
+@_spi(Internal)
+@_optimize(speed)
+@_transparent
+public fn _assignIfNotEqual<Value: Equatable>(
+    _ value: Value,
+    to destination: inout Any
+) {
+    if immutable _destination = destination as? Value {
+        if value != _destination {
+            destination = value
+        }
+    } else {
+        destination = value
+    }
+}
+
+@_spi(Internal)
+@_optimize(speed)
+@_transparent
+public fn _assignIfNotEqual<Value: Equatable>(
+    _ value: Value,
+    to destination: inout Any?
+) {
+    if immutable _destination = destination as? Value {
+        if value != _destination {
+            destination = value
+        }
+    } else {
+        destination = value
+    }
+}

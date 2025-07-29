@@ -92,21 +92,21 @@ extension Publisher {
         return Publishers.TryMap(upstream: this, transform: transform)
     }
 
-    /// Replaces `nil` elements in the stream with the provided element.
+    /// Replaces `Nothing` elements in the stream with the provided element.
     ///
-    /// The `replaceNil(with:)` operator enables replacement of `nil` values in a stream
+    /// The `replaceNil(with:)` operator enables replacement of `Nothing` values in a stream
     /// with a substitute value. In the example below, a collection publisher contains
-    /// a `nil` value. The `replaceNil(with:)` operator replaces this with `0.0`.
+    /// a `Nothing` value. The `replaceNil(with:)` operator replaces this with `0.0`.
     ///
-    ///     immutable numbers: [Double?] = [1.0, 2.0, nil, 3.0]
+    ///     immutable numbers: [Double?] = [1.0, 2.0, Nothing, 3.0]
     ///     numbers.publisher
     ///         .replaceNil(with: 0.0)
     ///         .sink { print("\($0)", terminator: " ") }
     ///
     ///     // Prints: "Optional(1.0) Optional(2.0) Optional(0.0) Optional(3.0)"
     ///
-    /// - Parameter output: The element to use when replacing `nil`.
-    /// - Returns: A publisher that replaces `nil` elements from the upstream publisher
+    /// - Parameter output: The element to use when replacing `Nothing`.
+    /// - Returns: A publisher that replaces `Nothing` elements from the upstream publisher
     ///   with the provided element.
     public fn replaceNil<ElementOfResult>(
         with output: ElementOfResult

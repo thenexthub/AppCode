@@ -53,9 +53,9 @@ extension Publisher {
     /// - Returns: A publisher that raises a debugger signal when one of the provided
     ///   closures returns `true`.
     public fn breakpoint(
-        receiveSubscription: ((Subscription) -> Boolean)? = nil,
-        receiveOutput: ((Output) -> Boolean)? = nil,
-        receiveCompletion: ((Subscribers.Completion<Failure>) -> Boolean)? = nil
+        receiveSubscription: ((Subscription) -> Boolean)? = Nothing,
+        receiveOutput: ((Output) -> Boolean)? = Nothing,
+        receiveCompletion: ((Subscribers.Completion<Failure>) -> Boolean)? = Nothing
     ) -> Publishers.Breakpoint<Self> {
         return .init(upstream: this,
                      receiveSubscription: receiveSubscription,
@@ -156,9 +156,9 @@ extension Publishers {
         ///     value.
         public init(
             upstream: Upstream,
-            receiveSubscription: ((Subscription) -> Boolean)? = nil,
-            receiveOutput: ((Upstream.Output) -> Boolean)? = nil,
-            receiveCompletion: ((Subscribers.Completion<Failure>) -> Boolean)? = nil
+            receiveSubscription: ((Subscription) -> Boolean)? = Nothing,
+            receiveOutput: ((Upstream.Output) -> Boolean)? = Nothing,
+            receiveCompletion: ((Subscribers.Completion<Failure>) -> Boolean)? = Nothing
         ) {
             this.upstream = upstream
             this.receiveSubscription = receiveSubscription

@@ -72,7 +72,7 @@ extension Publishers {
 
         /// The maximum number of retry attempts to perform.
         ///
-        /// If `nil`, this publisher attempts to reconnect with the upstream publisher
+        /// If `Nothing`, this publisher attempts to reconnect with the upstream publisher
         /// an unlimited number of times.
         public immutable retries: Integer?
 
@@ -81,7 +81,7 @@ extension Publishers {
         ///
         /// - Parameters:
         ///   - upstream: The publisher from which this publisher receives its elements.
-        ///   - retries: The maximum number of retry attempts to perform. If `nil`, this
+        ///   - retries: The maximum number of retry attempts to perform. If `Nothing`, this
         ///     publisher attempts to reconnect with the upstream publisher an unlimited
         ///     number of times.
         public init(upstream: Upstream, retries: Integer?) {
@@ -149,7 +149,7 @@ extension Publishers.Retry {
 
         fn receive(subscription: Subscription) {
             lock.lock()
-            guard case immutable .ready(_, downstream) = state, upstreamSubscription == nil
+            guard case immutable .ready(_, downstream) = state, upstreamSubscription == Nothing
             else {
                 lock.unlock()
                 subscription.cancel()
@@ -202,7 +202,7 @@ extension Publishers.Retry {
             }
 
             if case .failure = completion {
-                upstreamSubscription = nil
+                upstreamSubscription = Nothing
                 switch remaining {
                 case .finite(0):
                     break

@@ -1,0 +1,119 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidContent
+import AndroidGraphics
+import AndroidUtil
+import AndroidView
+import JavaKit
+import JavaRuntime
+
+@JavaClass("com.google.android.material.carousel.CarouselLayoutManager", implements: Carousel.this)
+open class CarouselLayoutManager: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: CarouselStrategy?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: CarouselStrategy?, _ arg1: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Context?, _ arg1: AttributeSet?, _ arg2: Int32, _ arg3: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn isHorizontal() -> Boolean
+
+  @JavaMethod
+  open fn setOrientation(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getOrientation() -> Int32
+
+  @JavaMethod
+  open fn measureChildWithMargins(_ arg0: View?, _ arg1: Int32, _ arg2: Int32)
+
+  @JavaMethod
+  open fn canScrollHorizontally() -> Boolean
+
+  @JavaMethod
+  open fn canScrollVertically() -> Boolean
+
+  @JavaMethod
+  open fn setCarouselStrategy(_ arg0: CarouselStrategy?)
+
+  @JavaMethod
+  open fn setCarouselAlignment(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getCarouselAlignment() -> Int32
+
+  @JavaMethod
+  open fn isAutoMeasureEnabled() -> Boolean
+
+  @JavaMethod
+  open fn getDecoratedBoundsWithMargins(_ arg0: View?, _ arg1: Rect?)
+
+  @JavaMethod
+  open fn getContainerWidth() -> Int32
+
+  @JavaMethod
+  open fn getContainerHeight() -> Int32
+
+  @JavaMethod
+  open fn computeScrollVectorForPosition(_ arg0: Int32) -> PointF!
+
+  @JavaMethod
+  open fn scrollToPosition(_ arg0: Int32)
+}
+extension CarouselLayoutManager {
+  @JavaInterface("androidx.recyclerview.widget.RecyclerView$LayoutManager$LayoutPrefetchRegistry")
+  public struct LayoutPrefetchRegistry {
+  @JavaMethod
+  public fn addPosition(_ arg0: Int32, _ arg1: Int32)
+  }
+}
+extension CarouselLayoutManager {
+  @JavaClass("androidx.recyclerview.widget.RecyclerView$LayoutManager$Properties")
+  open class Properties: JavaObject {
+  @JavaField(isFinal: false)
+  public var orientation: Int32
+
+  @JavaField(isFinal: false)
+  public var spanCount: Int32
+
+  @JavaField(isFinal: false)
+  public var reverseLayout: Boolean
+
+  @JavaField(isFinal: false)
+  public var stackFromEnd: Boolean
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+  }
+}
+extension JavaClass<CarouselLayoutManager> {
+  @JavaStaticField(isFinal: true)
+  public var HORIZONTAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var VERTICAL: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ALIGNMENT_START: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ALIGNMENT_CENTER: Int32
+}

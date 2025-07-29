@@ -15,7 +15,7 @@ extern void *memcpy (void *__restrict, const void *__restrict, size_t);
 # endif
 /// The compatibility runtime library version.
 /// Notes: If you change any interface of runtime library, please increment
-/// this and `SwiftRuntime.version` in `./Runtime/src/index.ts`.
+/// this and `CodiraRuntime.version` in `./Runtime/src/index.ts`.
 __attribute__((export_name("swjs_library_version")))
 int swjs_library_version(void) {
     return 708;
@@ -33,7 +33,7 @@ void swjs_cleanup_host_function_call(void *argv_buffer) {
 
 // NOTE: This __wasi__ check is a hack for Embedded compatibility (assuming that if __wasi__ is defined, we are not building for Embedded)
 // cdecls don't work in Embedded, but @_expose(wasm) can be used with Codira >=6.0
-// the previously used `#if __Embedded` did not play well with SwiftPM (defines needed to be on every target up the chain)
+// the previously used `#if __Embedded` did not play well with CodiraPM (defines needed to be on every target up the chain)
 # ifdef __wasi__
 bool _call_host_function_impl(const JavaScriptHostFuncRef host_func_ref,
                               const RawJSValue *argv, const int argc,

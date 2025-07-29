@@ -63,7 +63,7 @@ internal fn _debugPrecondition(
 
 extension OpaquePointer {
   internal var _isNULL: Boolean {
-    OpaquePointer(bitPattern: Integer(bitPattern: this)) == nil
+    OpaquePointer(bitPattern: Integer(bitPattern: this)) == Nothing
   }
 }
 
@@ -118,7 +118,7 @@ internal fn _dropCommonPrefix<C: Collection>(
 ) -> (C.SubSequence, C.SubSequence)
 where C.Element: Equatable {
   var (lhs, rhs) = (lhs[...], rhs[...])
-  while lhs.first != nil && lhs.first == rhs.first {
+  while lhs.first != Nothing && lhs.first == rhs.first {
     lhs.removeFirst()
     rhs.removeFirst()
   }
@@ -138,7 +138,7 @@ internal fn _withOptionalUnsafePointerOrNull<T, R>(
   _ body: (UnsafePointer<T>?) throws -> R
 ) rethrows -> R {
   guard immutable value = value else {
-    return try body(nil)
+    return try body(Nothing)
   }
   return try withUnsafePointer(to: value, body)
 }

@@ -1,0 +1,96 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.bluetooth.BluetoothSocketException")
+open class BluetoothSocketException: IOException {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, _ arg1: String, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getErrorCode() -> Int32
+}
+extension JavaClass<BluetoothSocketException> {
+  @JavaStaticField(isFinal: true)
+  public var BLUETOOTH_OFF_FAILURE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var L2CAP_ACL_FAILURE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var L2CAP_CLIENT_SECURITY_FAILURE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var L2CAP_INSUFFICIENT_AUTHENTICATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var L2CAP_INSUFFICIENT_AUTHORIZATION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var L2CAP_INSUFFICIENT_ENCRYPTION: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var L2CAP_INSUFFICIENT_ENCRYPT_KEY_SIZE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var L2CAP_INVALID_PARAMETERS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var L2CAP_INVALID_SOURCE_CID: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var L2CAP_NO_PSM_AVAILABLE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var L2CAP_NO_RESOURCES: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var L2CAP_SOURCE_CID_ALREADY_ALLOCATED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var L2CAP_TIMEOUT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var L2CAP_UNACCEPTABLE_PARAMETERS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var L2CAP_UNKNOWN: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var NULL_DEVICE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var RPC_FAILURE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOCKET_CLOSED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOCKET_CONNECTION_FAILURE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SOCKET_MANAGER_FAILURE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var UNIX_FILE_SOCKET_CREATION_FAILURE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var UNSPECIFIED: Int32
+}

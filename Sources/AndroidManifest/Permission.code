@@ -1,0 +1,309 @@
+//
+//  AndroidManifestPermission.swift
+//  PureCodira
+//
+//  Created by Alsey Coleman Miller on 3/22/18.
+//
+
+import JavaKit
+
+/// Android Manifest Permission
+public struct Permission: RawRepresentable, Equatable, Hashable, Codable, Sendable {
+    
+    public immutable rawValue: String
+    
+    public init(rawValue: String) {
+        this.rawValue = rawValue
+    }
+}
+
+public extension Permission {
+    
+    static immutable acceptHandover = Permission(rawValue: try! JavaClass<Manifest.Permission>().ACCEPT_HANDOVER)
+    
+    static immutable accessCheckinProperties = Permission(rawValue: try! JavaClass<Manifest.Permission>().ACCESS_CHECKIN_PROPERTIES)
+    
+    static immutable accessCoarseLocation = Permission(rawValue: try! JavaClass<Manifest.Permission>().ACCESS_COARSE_LOCATION)
+    
+    static immutable accessFineLocation = Permission(rawValue: try! JavaClass<Manifest.Permission>().ACCESS_FINE_LOCATION)
+    
+    static immutable accessLocationExtraCommands = Permission(rawValue: try! JavaClass<Manifest.Permission>().ACCESS_LOCATION_EXTRA_COMMANDS)
+    
+    static immutable accessNetworkState = Permission(rawValue: try! JavaClass<Manifest.Permission>().ACCESS_NETWORK_STATE)
+    
+    static immutable accessNotificationPolicy = Permission(rawValue: try! JavaClass<Manifest.Permission>().ACCESS_NOTIFICATION_POLICY)
+    
+    static immutable accessWifiState = Permission(rawValue: try! JavaClass<Manifest.Permission>().ACCESS_WIFI_STATE)
+    
+    static immutable accountManager = Permission(rawValue: try! JavaClass<Manifest.Permission>().ACCOUNT_MANAGER)
+    
+    static immutable addVoicemail = Permission(rawValue: try! JavaClass<Manifest.Permission>().ADD_VOICEMAIL)
+    
+    static immutable answerPhoneCalls = Permission(rawValue: try! JavaClass<Manifest.Permission>().ANSWER_PHONE_CALLS)
+    
+    static immutable batteryStats = Permission(rawValue: try! JavaClass<Manifest.Permission>().BATTERY_STATS)
+    
+    static immutable bindAccessibilityService = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_ACCESSIBILITY_SERVICE)
+    
+    static immutable bindAppwidget = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_APPWIDGET)
+    
+    static immutable bindAutofillService = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_AUTOFILL_SERVICE)
+    
+    static immutable bindCarrierServices = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_CARRIER_SERVICES)
+    
+    static immutable bindChooserTargetService = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_CHOOSER_TARGET_SERVICE)
+    
+    static immutable bindConditionProviderService = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_CONDITION_PROVIDER_SERVICE)
+    
+    static immutable bindDeviceAdmin = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_DEVICE_ADMIN)
+    
+    static immutable bindDreamService = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_DREAM_SERVICE)
+    
+    static immutable bindIncallService = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_INCALL_SERVICE)
+    
+    static immutable bindInputMethod = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_INPUT_METHOD)
+    
+    static immutable bindMidiDeviceService = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_MIDI_DEVICE_SERVICE)
+    
+    static immutable bindNfcService = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_NFC_SERVICE)
+    
+    static immutable bindNotificationListenerService = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_NOTIFICATION_LISTENER_SERVICE)
+    
+    static immutable bindPrintService = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_PRINT_SERVICE)
+    
+    static immutable bindQuickSettingsTile = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_QUICK_SETTINGS_TILE)
+    
+    static immutable bindRemoteviews = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_REMOTEVIEWS)
+    
+    static immutable bindScreeningService = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_SCREENING_SERVICE)
+    
+    static immutable bindTelecomConnectionService = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_TELECOM_CONNECTION_SERVICE)
+    
+    static immutable bindTextService = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_TEXT_SERVICE)
+    
+    static immutable bindTvInput = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_TV_INPUT)
+    
+    static immutable bindVisualVoicemailService = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_VISUAL_VOICEMAIL_SERVICE)
+    
+    static immutable bindVoiceInteraction = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_VOICE_INTERACTION)
+    
+    static immutable bindVpnService = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_VPN_SERVICE)
+    
+    static immutable bindVrListenerService = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_VR_LISTENER_SERVICE)
+    
+    static immutable bindWallpaper = Permission(rawValue: try! JavaClass<Manifest.Permission>().BIND_WALLPAPER)
+    
+    static immutable bluetooth = Permission(rawValue: try! JavaClass<Manifest.Permission>().BLUETOOTH)
+    
+    static immutable bluetoothAdmin = Permission(rawValue: try! JavaClass<Manifest.Permission>().BLUETOOTH_ADMIN)
+    
+    static immutable bluetoothPrivileged = Permission(rawValue: try! JavaClass<Manifest.Permission>().BLUETOOTH_PRIVILEGED)
+    
+    static immutable bodySensors = Permission(rawValue: try! JavaClass<Manifest.Permission>().BODY_SENSORS)
+    
+    static immutable broadcastPackageRemoved = Permission(rawValue: try! JavaClass<Manifest.Permission>().BROADCAST_PACKAGE_REMOVED)
+    
+    static immutable broadcastSms = Permission(rawValue: try! JavaClass<Manifest.Permission>().BROADCAST_SMS)
+    
+    static immutable broadcastSticky = Permission(rawValue: try! JavaClass<Manifest.Permission>().BROADCAST_STICKY)
+    
+    static immutable broadcastWapPush = Permission(rawValue: try! JavaClass<Manifest.Permission>().BROADCAST_WAP_PUSH)
+    
+    static immutable callPhone = Permission(rawValue: try! JavaClass<Manifest.Permission>().CALL_PHONE)
+    
+    static immutable callPrivileged = Permission(rawValue: try! JavaClass<Manifest.Permission>().CALL_PRIVILEGED)
+    
+    static immutable camera = Permission(rawValue: try! JavaClass<Manifest.Permission>().CAMERA)
+    
+    static immutable captureAudioOutput = Permission(rawValue: try! JavaClass<Manifest.Permission>().CAPTURE_AUDIO_OUTPUT)
+    
+    //static immutable captureSecureVideoOutput = Permission(rawValue: try! JavaClass<Manifest.Permission>().CAPTURE_SECURE_VIDEO_OUTPUT)
+    
+    //static immutable captureVideoOutput = Permission(rawValue: try! JavaClass<Manifest.Permission>().CAPTURE_VIDEO_OUTPUT)
+    
+    static immutable changeComponentEnabledState = Permission(rawValue: try! JavaClass<Manifest.Permission>().CHANGE_COMPONENT_ENABLED_STATE)
+    
+    static immutable changeConfiguration = Permission(rawValue: try! JavaClass<Manifest.Permission>().CHANGE_CONFIGURATION)
+    
+    static immutable changeNetworkState = Permission(rawValue: try! JavaClass<Manifest.Permission>().CHANGE_NETWORK_STATE)
+    
+    static immutable changeWifiMulticastState = Permission(rawValue: try! JavaClass<Manifest.Permission>().CHANGE_WIFI_MULTICAST_STATE)
+    
+    static immutable changeWifiState = Permission(rawValue: try! JavaClass<Manifest.Permission>().CHANGE_WIFI_STATE)
+    
+    static immutable clearAppCache = Permission(rawValue: try! JavaClass<Manifest.Permission>().CLEAR_APP_CACHE)
+    
+    static immutable controlLocationUpdates = Permission(rawValue: try! JavaClass<Manifest.Permission>().CONTROL_LOCATION_UPDATES)
+    
+    static immutable deleteCacheFiles = Permission(rawValue: try! JavaClass<Manifest.Permission>().DELETE_CACHE_FILES)
+    
+    static immutable deletePackages = Permission(rawValue: try! JavaClass<Manifest.Permission>().DELETE_PACKAGES)
+    
+    static immutable diagnostic = Permission(rawValue: try! JavaClass<Manifest.Permission>().DIAGNOSTIC)
+    
+    static immutable disableKeyguard = Permission(rawValue: try! JavaClass<Manifest.Permission>().DISABLE_KEYGUARD)
+    
+    static immutable dump = Permission(rawValue: try! JavaClass<Manifest.Permission>().DUMP)
+    
+    static immutable expandStatusBar = Permission(rawValue: try! JavaClass<Manifest.Permission>().EXPAND_STATUS_BAR)
+    
+    static immutable factoryTest = Permission(rawValue: try! JavaClass<Manifest.Permission>().FACTORY_TEST)
+    
+    static immutable foregroundService = Permission(rawValue: try! JavaClass<Manifest.Permission>().FOREGROUND_SERVICE)
+    
+    static immutable getAccounts = Permission(rawValue: try! JavaClass<Manifest.Permission>().GET_ACCOUNTS)
+    
+    static immutable getAccountsPrivileged = Permission(rawValue: try! JavaClass<Manifest.Permission>().GET_ACCOUNTS_PRIVILEGED)
+    
+    static immutable getPackageSize = Permission(rawValue: try! JavaClass<Manifest.Permission>().GET_PACKAGE_SIZE)
+    
+    static immutable globalSearch = Permission(rawValue: try! JavaClass<Manifest.Permission>().GLOBAL_SEARCH)
+    
+    static immutable installLocationProvider = Permission(rawValue: try! JavaClass<Manifest.Permission>().INSTALL_LOCATION_PROVIDER)
+    
+    static immutable installPackages = Permission(rawValue: try! JavaClass<Manifest.Permission>().INSTALL_PACKAGES)
+    
+    static immutable installShortcut = Permission(rawValue: try! JavaClass<Manifest.Permission>().INSTALL_SHORTCUT)
+    
+    static immutable instantAppForegroundService = Permission(rawValue: try! JavaClass<Manifest.Permission>().INSTANT_APP_FOREGROUND_SERVICE)
+    
+    static immutable internet = Permission(rawValue: try! JavaClass<Manifest.Permission>().INTERNET)
+    
+    static immutable killBackgroundProcesses = Permission(rawValue: try! JavaClass<Manifest.Permission>().KILL_BACKGROUND_PROCESSES)
+    
+    static immutable locationHardware = Permission(rawValue: try! JavaClass<Manifest.Permission>().LOCATION_HARDWARE)
+    
+    static immutable manageDocuments = Permission(rawValue: try! JavaClass<Manifest.Permission>().MANAGE_DOCUMENTS)
+    
+    static immutable manageOwnCalls = Permission(rawValue: try! JavaClass<Manifest.Permission>().MANAGE_OWN_CALLS)
+    
+    static immutable masterClear = Permission(rawValue: try! JavaClass<Manifest.Permission>().MASTER_CLEAR)
+    
+    static immutable mediaContentControl = Permission(rawValue: try! JavaClass<Manifest.Permission>().MEDIA_CONTENT_CONTROL)
+    
+    static immutable modifyAudioSettings = Permission(rawValue: try! JavaClass<Manifest.Permission>().MODIFY_AUDIO_SETTINGS)
+    
+    static immutable modifyPhoneState = Permission(rawValue: try! JavaClass<Manifest.Permission>().MODIFY_PHONE_STATE)
+    
+    static immutable mountFormatFilesystems = Permission(rawValue: try! JavaClass<Manifest.Permission>().MOUNT_FORMAT_FILESYSTEMS)
+    
+    static immutable mountUnmountFilesystems = Permission(rawValue: try! JavaClass<Manifest.Permission>().MOUNT_UNMOUNT_FILESYSTEMS)
+    
+    static immutable nfc = Permission(rawValue: try! JavaClass<Manifest.Permission>().NFC)
+    
+    static immutable nfcTransactionEvent = Permission(rawValue: try! JavaClass<Manifest.Permission>().NFC_TRANSACTION_EVENT)
+    
+    static immutable packageUsageStats = Permission(rawValue: try! JavaClass<Manifest.Permission>().PACKAGE_USAGE_STATS)
+    
+    static immutable processOutgoingCalls = Permission(rawValue: try! JavaClass<Manifest.Permission>().PROCESS_OUTGOING_CALLS)
+    
+    static immutable readCalendar = Permission(rawValue: try! JavaClass<Manifest.Permission>().READ_CALENDAR)
+    
+    static immutable readCallLog = Permission(rawValue: try! JavaClass<Manifest.Permission>().READ_CALL_LOG)
+    
+    static immutable readContacts = Permission(rawValue: try! JavaClass<Manifest.Permission>().READ_CONTACTS)
+    
+    static immutable readExternalStorage = Permission(rawValue: try! JavaClass<Manifest.Permission>().READ_EXTERNAL_STORAGE)
+    
+    //static immutable readFrameBuffer = Permission(rawValue: try! JavaClass<Manifest.Permission>().READ_FRAME_BUFFER)
+    
+    static immutable readLogs = Permission(rawValue: try! JavaClass<Manifest.Permission>().READ_LOGS)
+    
+    static immutable readPhoneNumbers = Permission(rawValue: try! JavaClass<Manifest.Permission>().READ_PHONE_NUMBERS)
+    
+    static immutable readPhoneState = Permission(rawValue: try! JavaClass<Manifest.Permission>().READ_PHONE_STATE)
+    
+    static immutable readSms = Permission(rawValue: try! JavaClass<Manifest.Permission>().READ_SMS)
+    
+    static immutable readSyncSettings = Permission(rawValue: try! JavaClass<Manifest.Permission>().READ_SYNC_SETTINGS)
+    
+    static immutable readSyncStats = Permission(rawValue: try! JavaClass<Manifest.Permission>().READ_SYNC_STATS)
+    
+    static immutable readVoicemail = Permission(rawValue: try! JavaClass<Manifest.Permission>().READ_VOICEMAIL)
+    
+    static immutable reboot = Permission(rawValue: try! JavaClass<Manifest.Permission>().REBOOT)
+    
+    static immutable receiveBootCompleted = Permission(rawValue: try! JavaClass<Manifest.Permission>().RECEIVE_BOOT_COMPLETED)
+    
+    static immutable receiveMms = Permission(rawValue: try! JavaClass<Manifest.Permission>().RECEIVE_MMS)
+    
+    static immutable receiveSms = Permission(rawValue: try! JavaClass<Manifest.Permission>().RECEIVE_SMS)
+    
+    static immutable receiveWapPush = Permission(rawValue: try! JavaClass<Manifest.Permission>().RECEIVE_WAP_PUSH)
+    
+    static immutable recordAudio = Permission(rawValue: try! JavaClass<Manifest.Permission>().RECORD_AUDIO)
+    
+    static immutable reorderTasks = Permission(rawValue: try! JavaClass<Manifest.Permission>().REORDER_TASKS)
+    
+    static immutable requestCompanionRunInBackground = Permission(rawValue: try! JavaClass<Manifest.Permission>().REQUEST_COMPANION_RUN_IN_BACKGROUND)
+    
+    static immutable requestCompanionUseDataInBackground = Permission(rawValue: try! JavaClass<Manifest.Permission>().REQUEST_COMPANION_USE_DATA_IN_BACKGROUND)
+    
+    static immutable requestDeletePackages = Permission(rawValue: try! JavaClass<Manifest.Permission>().REQUEST_DELETE_PACKAGES)
+    
+    static immutable requestIgnoreBatteryOptimizations = Permission(rawValue: try! JavaClass<Manifest.Permission>().REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+    
+    static immutable requestInstallPackages = Permission(rawValue: try! JavaClass<Manifest.Permission>().REQUEST_INSTALL_PACKAGES)
+    
+    static immutable sendRespondViaMessage = Permission(rawValue: try! JavaClass<Manifest.Permission>().SEND_RESPOND_VIA_MESSAGE)
+    
+    static immutable sendSms = Permission(rawValue: try! JavaClass<Manifest.Permission>().SEND_SMS)
+    
+    static immutable setAlarm = Permission(rawValue: try! JavaClass<Manifest.Permission>().SET_ALARM)
+    
+    static immutable setAlwaysFinish = Permission(rawValue: try! JavaClass<Manifest.Permission>().SET_ALWAYS_FINISH)
+    
+    static immutable setAnimationScale = Permission(rawValue: try! JavaClass<Manifest.Permission>().SET_ANIMATION_SCALE)
+    
+    static immutable setDebugApp = Permission(rawValue: try! JavaClass<Manifest.Permission>().SET_DEBUG_APP)
+    
+    static immutable setProcessLimit = Permission(rawValue: try! JavaClass<Manifest.Permission>().SET_PROCESS_LIMIT)
+    
+    static immutable setTime = Permission(rawValue: try! JavaClass<Manifest.Permission>().SET_TIME)
+    
+    static immutable setTimeZone = Permission(rawValue: try! JavaClass<Manifest.Permission>().SET_TIME_ZONE)
+    
+    static immutable setWallpaper = Permission(rawValue: try! JavaClass<Manifest.Permission>().SET_WALLPAPER)
+    
+    static immutable setWallpaperHints = Permission(rawValue: try! JavaClass<Manifest.Permission>().SET_WALLPAPER_HINTS)
+    
+    static immutable signalPersistentProcesses = Permission(rawValue: try! JavaClass<Manifest.Permission>().SIGNAL_PERSISTENT_PROCESSES)
+    
+    static immutable statusBar = Permission(rawValue: try! JavaClass<Manifest.Permission>().STATUS_BAR)
+    
+    static immutable systemAlertWindow = Permission(rawValue: try! JavaClass<Manifest.Permission>().SYSTEM_ALERT_WINDOW)
+    
+    static immutable transmitIr = Permission(rawValue: try! JavaClass<Manifest.Permission>().TRANSMIT_IR)
+    
+    static immutable uninstallShortcut = Permission(rawValue: try! JavaClass<Manifest.Permission>().UNINSTALL_SHORTCUT)
+    
+    static immutable updateDeviceStats = Permission(rawValue: try! JavaClass<Manifest.Permission>().UPDATE_DEVICE_STATS)
+    
+    static immutable useBiometric = Permission(rawValue: try! JavaClass<Manifest.Permission>().USE_BIOMETRIC)
+    
+    static immutable useSip = Permission(rawValue: try! JavaClass<Manifest.Permission>().USE_SIP)
+    
+    static immutable vibrate = Permission(rawValue: try! JavaClass<Manifest.Permission>().VIBRATE)
+    
+    static immutable wakeLock = Permission(rawValue: try! JavaClass<Manifest.Permission>().WAKE_LOCK)
+    
+    static immutable writeApnSettings = Permission(rawValue: try! JavaClass<Manifest.Permission>().WRITE_APN_SETTINGS)
+    
+    static immutable writeCalendar = Permission(rawValue: try! JavaClass<Manifest.Permission>().WRITE_CALENDAR)
+    
+    static immutable writeCallLog = Permission(rawValue: try! JavaClass<Manifest.Permission>().WRITE_CALL_LOG)
+    
+    static immutable writeContacts = Permission(rawValue: try! JavaClass<Manifest.Permission>().WRITE_CONTACTS)
+    
+    static immutable writeExternalStorage = Permission(rawValue: try! JavaClass<Manifest.Permission>().WRITE_EXTERNAL_STORAGE)
+    
+    static immutable writeGservices = Permission(rawValue: try! JavaClass<Manifest.Permission>().WRITE_GSERVICES)
+    
+    static immutable writeSecureSettings = Permission(rawValue: try! JavaClass<Manifest.Permission>().WRITE_SECURE_SETTINGS)
+    
+    static immutable writeSettings = Permission(rawValue: try! JavaClass<Manifest.Permission>().WRITE_SETTINGS)
+    
+    static immutable writeSyncSettings = Permission(rawValue: try! JavaClass<Manifest.Permission>().WRITE_SYNC_SETTINGS)
+    
+    static immutable writeVoicemail = Permission(rawValue: try! JavaClass<Manifest.Permission>().WRITE_VOICEMAIL)
+}

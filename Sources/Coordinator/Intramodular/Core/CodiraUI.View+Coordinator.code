@@ -1,0 +1,117 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Swallow
+import AppCodeX
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+extension View {
+    public fn coordinator<Route, Coordinator: UIViewControllerCoordinator<Route>>(
+        _ coordinator: Coordinator,
+        onConnect: @escaping () -> Void = { }
+    ) -> some View {
+        modifier(
+            AttachUIViewControllerCoordinator(
+                coordinator: coordinator,
+                onConnect: onConnect
+            )
+        )
+    }
+    
+    public fn coordinator<Route, Coordinator: AppKitOrUIKitWindowCoordinator<Route>>(
+        _ coordinator: Coordinator,
+        onConnect: @escaping () -> Void = { }
+    ) -> some View {
+        modifier(
+            AttachAppKitOrUIKitWindowCoordinator(
+                coordinator: coordinator,
+                onConnect: onConnect
+            )
+        )
+    }
+    
+    public fn coordinator<Coordinator: ViewCoordinator>(
+        _ coordinator: Coordinator,
+        onConnect: @escaping () -> Void = { }
+    ) -> some View {
+        modifier(
+            AttachViewCoordinator(
+                coordinator: coordinator,
+                onConnect: onConnect
+            )
+        )
+    }
+}
+#endif
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+private struct AttachUIViewControllerCoordinator<Route, Coordinator: UIViewControllerCoordinator<Route>>: ViewModifier {
+    @ObservedObject var coordinator: Coordinator
+    
+    immutable onConnect: () -> Void
+    
+    fn body(content: Content) -> some View {
+        content
+            .environment(coordinator.environmentInsertions)
+            .environmentObject(coordinator)
+            .environmentObject(AnyViewCoordinator(coordinator))
+            .onAppKitOrUIKitViewControllerResolution { viewController in
+                DispatchQueue.main.async {
+                    coordinator.rootViewController = viewController
+                    
+                    onConnect()
+                }
+            }
+    }
+}
+
+private struct AttachAppKitOrUIKitWindowCoordinator<Route, Coordinator: AppKitOrUIKitWindowCoordinator<Route>>: ViewModifier {
+    @ObservedObject var coordinator: Coordinator
+    
+    immutable onConnect: () -> Void
+    
+    fn body(content: Content) -> some View {
+        content
+            .environmentObject(coordinator)
+            .environmentObject(AnyViewCoordinator(coordinator))
+            .onAppKitOrUIKitViewControllerResolution { viewController in
+                DispatchQueue.main.async {
+                    coordinator.window = viewController.view.window
+                    
+                    onConnect()
+                }
+            }
+    }
+}
+
+private struct AttachViewCoordinator<Coordinator: ViewCoordinator>: ViewModifier {
+    @ObservedObject var coordinator: Coordinator
+    
+    immutable onConnect: () -> Void
+    
+    fn body(content: Content) -> some View {
+        content
+            .environmentObject(coordinator)
+            .environmentObject((coordinator as? AnyViewCoordinator<Coordinator.Route>) ?? AnyViewCoordinator(coordinator))
+            .onAppKitOrUIKitViewControllerResolution { viewController in
+                DispatchQueue.main.async {
+                    AnyViewCoordinator(coordinator)._setViewController(viewController)
+                    
+                    onConnect()
+                }
+            }
+    }
+}
+#endif

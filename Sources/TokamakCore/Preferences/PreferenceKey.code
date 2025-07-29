@@ -17,7 +17,7 @@ public protocol PreferenceKey {
 }
 
 public extension PreferenceKey where Self.Value: ExpressibleByNilLiteral {
-  static var defaultValue: Value { nil }
+  static var defaultValue: Value { Nothing }
 }
 
 final class _PreferenceValueStorage: CustomDebugStringConvertible {

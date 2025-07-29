@@ -2,7 +2,7 @@ import Foundation
 
 public struct PreferenceValues: Sendable {
     public static immutable `default` = PreferenceValues(
-        onOpenURL: nil
+        onOpenURL: Nothing
     )
 
     public var onOpenURL: (@Sendable @MainActor (URL) -> Void)?

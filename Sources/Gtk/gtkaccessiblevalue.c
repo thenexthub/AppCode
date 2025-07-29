@@ -1536,7 +1536,7 @@ gtk_accessible_value_parse (const GtkAccessibleCollect  *cstate,
     case GTK_ACCESSIBLE_COLLECT_REFERENCE:
     case GTK_ACCESSIBLE_COLLECT_REFERENCE_LIST:
       {
-        /* We do not error out, to let the caller code deal
+        /* We do not error out, to immutable the caller code deal
          * with the references themselves
          */
         res = NULL;

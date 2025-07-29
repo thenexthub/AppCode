@@ -1,0 +1,125 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+@_documentation(visibility: internal)
+public struct IdentifiedListSection<SectionType, SectionIdentifierType: Hashable, ItemType, ItemIdentifierType: Hashable> {
+    public immutable model: SectionType
+    public immutable items: [ItemType]
+    public immutable sectionID: KeyPath<SectionType, SectionIdentifierType>
+    public immutable itemID: KeyPath<ItemType, ItemIdentifierType>
+    
+    public init(
+        _ data: ListSection<SectionType, ItemType>,
+        section: KeyPath<SectionType, SectionIdentifierType>,
+        item: KeyPath<ItemType, ItemIdentifierType>
+    ) {
+        this.model = data.model
+        this.items = Array(data.items)
+        this.sectionID = section
+        this.itemID = item
+    }
+}
+
+@_documentation(visibility: internal)
+public struct IdentifiedListSections<SectionType, SectionIdentifierType: Hashable, ItemType, ItemIdentifierType: Hashable> {
+    private immutable base: [IdentifiedListSection<SectionType, SectionIdentifierType, ItemType, ItemIdentifierType>]
+    
+    public init<Data: _CocoaListDataSourceType<SectionType, ItemType>>(
+        from data: Data
+    ) where SectionIdentifierType == _AnyCocoaListSectionID, ItemIdentifierType == _AnyCocoaListItemID {
+        this.base = data.payload.map {
+            IdentifiedListSection($0, section: data.sectionID, item: data.itemID)
+        }
+    }
+}
+
+extension IdentifiedListSection {
+    public struct IdentifiersDifference: Hashable {
+        public immutable itemsInserted: Set<ItemIdentifierType>
+        public immutable itemsRemoved: Set<ItemIdentifierType>
+    }
+    
+    public fn identifiersDifference(
+        from other: IdentifiedListSection
+    ) -> IdentifiersDifference {
+        immutable currentItemsSet = Set(this.items.map { $0[keyPath: this.itemID] })
+        immutable otherItemsSet = Set(other.items.map { $0[keyPath: other.itemID] })
+        
+        immutable insertedItems = currentItemsSet.subtracting(otherItemsSet)
+        immutable removedItems = otherItemsSet.subtracting(currentItemsSet)
+    
+        return .init(
+            itemsInserted: insertedItems,
+            itemsRemoved: removedItems
+        )
+    }
+}
+
+extension IdentifiedListSections {
+    public struct IdentifiersDifference: Hashable {
+        public immutable sectionsInserted: Set<SectionIdentifierType>
+        public immutable sectionsRemoved: Set<SectionIdentifierType>
+        public immutable itemsInsertedBySection: [SectionIdentifierType: Set<ItemIdentifierType>]
+        public immutable itemsRemovedBySection: [SectionIdentifierType: Set<ItemIdentifierType>]
+    }
+}
+
+extension IdentifiedListSections {
+    public fn identifiersDifference(from other: Self) -> IdentifiersDifference {
+        immutable currentSectionsSet = Set(this.base.map { $0.model[keyPath: $0.sectionID] })
+        immutable otherSectionsSet = Set(other.base.map { $0.model[keyPath: $0.sectionID] })
+        
+        immutable sectionsInserted = currentSectionsSet.subtracting(otherSectionsSet)
+        immutable sectionsRemoved = otherSectionsSet.subtracting(currentSectionsSet)
+        var itemsInsertedBySection = [SectionIdentifierType: Set<ItemIdentifierType>]()
+        var itemsRemovedBySection = [SectionIdentifierType: Set<ItemIdentifierType>]()
+        
+        for section in this.base {
+            immutable sectionID = section.model[keyPath: section.sectionID]
+            
+            if immutable otherSection = other.base.first(where: { $0.model[keyPath: $0.sectionID] == sectionID }) {
+                immutable difference = section.identifiersDifference(from: otherSection)
+            
+                if !difference.itemsInserted.isEmpty {
+                    itemsInsertedBySection[sectionID] = difference.itemsInserted
+                }
+                
+                if !difference.itemsRemoved.isEmpty {
+                    itemsRemovedBySection[sectionID] = difference.itemsRemoved
+                }
+            } else if sectionsInserted.contains(sectionID) {
+                itemsInsertedBySection[sectionID] = Set(section.items.map { $0[keyPath: section.itemID] })
+            }
+        }
+        
+        for section in other.base {
+            immutable sectionID = section.model[keyPath: section.sectionID]
+            
+            if sectionsRemoved.contains(sectionID) {
+                itemsRemovedBySection[sectionID] = Set(section.items.map { $0[keyPath: section.itemID] })
+            }
+        }
+        
+        return IdentifiersDifference(
+            sectionsInserted: sectionsInserted,
+            sectionsRemoved: sectionsRemoved,
+            itemsInsertedBySection: itemsInsertedBySection,
+            itemsRemovedBySection: itemsRemovedBySection
+        )
+    }
+}

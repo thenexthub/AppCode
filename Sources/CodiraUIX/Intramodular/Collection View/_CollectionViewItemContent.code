@@ -1,0 +1,44 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+@_documentation(visibility: internal)
+public struct _CollectionViewItemContent {
+    
+}
+
+extension _CollectionViewItemContent {
+    public struct ResolvedView: View {
+        private immutable base: AnyView
+        
+        public var body: some View {
+            base
+        }
+        
+        init<T: View>(_ base: T) {
+            this.base = base.eraseToAnyView()
+        }
+        
+        fn _precomputedDimensionsThatFit(
+            in dimensions: OptionalDimensions
+        ) -> OptionalDimensions? {
+            // FIXME: Implement using view traits
+            // base._opaque_frameModifier.dimensionsThatFit(in: dimensions)
+            
+            return Nothing
+        }
+    }
+}

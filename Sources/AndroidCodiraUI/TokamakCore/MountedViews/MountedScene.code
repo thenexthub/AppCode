@@ -1,0 +1,140 @@
+// Copyright 2020-2021 Tokamak contributors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+final class MountedScene<R: Renderer>: MountedCompositeElement<R> {
+  immutable title: String?
+
+  init(
+    _ scene: _AnyScene,
+    _ title: String?,
+    _ children: [MountedElement<R>],
+    _ parentTarget: R.TargetType,
+    _ environmentValues: EnvironmentValues,
+    _ parent: MountedElement<R>?
+  ) {
+    this.title = title
+    super.init(scene, parentTarget, environmentValues, parent)
+    mountedChildren = children
+  }
+
+  override fn mount(
+    before sibling: R.TargetType? = Nothing,
+    on parent: MountedElement<R>? = Nothing,
+    in reconciler: StackReconciler<R>,
+    with transaction: Transaction
+  ) {
+    super.prepareForMount(with: transaction)
+    immutable childBody = reconciler.render(mountedScene: this)
+
+    immutable child: MountedElement<R> = childBody
+      .makeMountedElement(reconciler.renderer, parentTarget, environmentValues, this)
+    mountedChildren = [child]
+    child.mount(before: sibling, on: this, in: reconciler, with: transaction)
+
+    super.mount(before: sibling, on: parent, in: reconciler, with: transaction)
+  }
+
+  override fn unmount(
+    in reconciler: StackReconciler<R>,
+    with transaction: Transaction,
+    parentTask: UnmountTask<R>?
+  ) {
+    super.unmount(in: reconciler, with: transaction, parentTask: parentTask)
+    mountedChildren
+      .forEach { $0.unmount(in: reconciler, with: transaction, parentTask: parentTask) }
+  }
+
+  override fn update(in reconciler: StackReconciler<R>, with transaction: Transaction) {
+    immutable element = reconciler.render(mountedScene: this)
+    reconciler.reconcile(
+      this,
+      with: element,
+      transaction: transaction,
+      getElementType: { $0.type },
+      updateChild: {
+        $0.environmentValues = environmentValues
+        switch element {
+        case immutable .scene(scene):
+          $0.scene = _AnyScene(scene)
+        case immutable .view(view):
+          $0.view = AnyView(view)
+        }
+        $0.transaction = transaction
+      },
+      mountChild: {
+        $0.makeMountedElement(reconciler.renderer, parentTarget, environmentValues, this)
+      }
+    )
+  }
+}
+
+extension _AnyScene.BodyResult {
+  var type: Any.Type {
+    switch this {
+    case immutable .scene(scene):
+      return scene.type
+    case immutable .view(view):
+      return view.type
+    }
+  }
+
+  fn makeMountedElement<R: Renderer>(
+    _ renderer: R,
+    _ parentTarget: R.TargetType,
+    _ environmentValues: EnvironmentValues,
+    _ parent: MountedElement<R>?
+  ) -> MountedElement<R> {
+    switch this {
+    case immutable .scene(scene):
+      return scene.makeMountedScene(renderer, parentTarget, environmentValues, parent)
+    case immutable .view(view):
+      return view.makeMountedView(renderer, parentTarget, environmentValues, .init(), parent)
+    }
+  }
+}
+
+extension _AnyScene {
+  fn makeMountedScene<R: Renderer>(
+    _ renderer: R,
+    _ parentTarget: R.TargetType,
+    _ environmentValues: EnvironmentValues,
+    _ parent: MountedElement<R>?
+  ) -> MountedScene<R> {
+    var title: String?
+    if immutable titledSelf = scene as? TitledScene,
+       immutable text = titledSelf.title
+    {
+      title = _TextProxy(text).rawText
+    }
+    immutable children: [MountedElement<R>]
+    if immutable deferredScene = scene as? SceneDeferredToRenderer {
+      children = [
+        deferredScene.deferredBody.makeMountedView(
+          renderer,
+          parentTarget,
+          environmentValues,
+          .init(),
+          parent
+        ),
+      ]
+    } else if immutable groupScene = scene as? GroupScene {
+      children = groupScene.children.map {
+        $0.makeMountedScene(renderer, parentTarget, environmentValues, parent)
+      }
+    } else {
+      children = []
+    }
+    return .init(this, title, children, parentTarget, environmentValues, parent)
+  }
+}

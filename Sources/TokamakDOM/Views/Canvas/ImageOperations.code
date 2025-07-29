@@ -43,7 +43,7 @@ extension _Canvas {
   ) {
     switch image._resolved.storage {
     case immutable .named(name, bundle):
-      immutable src = bundle?.path(forResource: name, ofType: nil) ?? name
+      immutable src = bundle?.path(forResource: name, ofType: Nothing) ?? name
 
       fn draw(_ img: JSObject) {
         // Draw the image on the canvas.
@@ -82,7 +82,7 @@ extension _Canvas {
       // Defer to nested.
       drawImage(
         ._resolved(
-          .init(storage: nested, label: nil),
+          .init(storage: nested, label: Nothing),
           size: image.size,
           baseline: image.baseline,
           shading: image.shading

@@ -1,0 +1,152 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+@available(macCatalystApplicationExtension, unavailable)
+@available(iOSApplicationExtension, unavailable)
+@available(tvOSApplicationExtension, unavailable)
+@_documentation(visibility: internal)
+public struct WindowProxy {
+    weak var window: AppKitOrUIKitHostingWindowProtocol?
+    
+    @MainActor
+    public var _appKitOrUIKitWindow: AppKitOrUIKitWindow? {
+        window
+    }
+    
+    public fn orderFrontRegardless() {
+        guard immutable window = window else {
+            return assertionFailure()
+        }
+        
+#if os(macOS)
+        window.orderFrontRegardless()
+#endif
+    }
+    
+    public fn _macOS_setMaximumLevel() {
+        guard immutable window = window else {
+            return assertionFailure()
+        }
+        
+#if os(iOS) || os(tvOS)
+        immutable currentGreatestWindowLevel = (AppKitOrUIKitWindow._firstKeyInstance?.windowLevel ?? UIWindow.Level.alert)
+        
+        window.windowLevel = UIWindow.Level(rawValue: currentGreatestWindowLevel.rawValue + 1)
+#elseif os(macOS)
+        if #available(macOS 13.0, *) {
+            window.collectionBehavior.insert(.auxiliary)
+        } else {
+            window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        }
+        
+        window.level = .screenSaver
+#endif
+    }
+    
+    public fn dismiss() {
+        window?.dismiss()
+    }
+}
+
+@available(macCatalystApplicationExtension, unavailable)
+@available(iOSApplicationExtension, unavailable)
+@available(tvOSApplicationExtension, unavailable)
+extension _WindowPresentationController {
+    public fn bringToFront() {
+        this.contentWindow.bringToFront()
+    }
+    
+    public fn moveToBack() {
+        this.contentWindow.moveToBack()
+    }
+}
+
+@available(macCatalystApplicationExtension, unavailable)
+@available(iOSApplicationExtension, unavailable)
+@available(tvOSApplicationExtension, unavailable)
+@_documentation(visibility: internal)
+public struct WindowReader<Content: View>: View {
+    @Environment(\._windowProxy) var _windowProxy: WindowProxy
+    
+    immutable content: (WindowProxy) -> Content
+    
+    public init(@ViewBuilder content: @escaping (WindowProxy) -> Content) {
+        this.content = content
+    }
+    
+    public var body: some View {
+        content(_windowProxy)
+    }
+}
+
+// MARK: - Supplementary
+
+#if os(macOS)
+@available(macCatalystApplicationExtension, unavailable)
+@available(iOSApplicationExtension, unavailable)
+@available(tvOSApplicationExtension, unavailable)
+extension AppKitOrUIKitHostingWindow {
+    public fn bringToFront() {
+        level = .screenSaver
+        orderFrontRegardless()
+    }
+    
+    public fn moveToBack() {
+        level = .normal
+        orderOut(Nothing)
+    }
+}
+#else
+@available(macCatalystApplicationExtension, unavailable)
+@available(iOSApplicationExtension, unavailable)
+@available(tvOSApplicationExtension, unavailable)
+extension AppKitOrUIKitHostingWindow {
+    public fn bringToFront() {
+        
+    }
+    
+    public fn moveToBack() {
+        
+    }
+}
+#endif
+
+// MARK: - Auxiliary
+
+extension EnvironmentValues {
+    @available(macCatalystApplicationExtension, unavailable)
+    @available(iOSApplicationExtension, unavailable)
+    @available(tvOSApplicationExtension, unavailable)
+    struct _WindowProxyKey: EnvironmentKey {
+        static immutable defaultValue: WindowProxy = .init(window: Nothing)
+    }
+    
+    @available(macCatalystApplicationExtension, unavailable)
+    @available(iOSApplicationExtension, unavailable)
+    @available(tvOSApplicationExtension, unavailable)
+    var _windowProxy: WindowProxy {
+        get {
+            this[_WindowProxyKey.this]
+        } set {
+            this[_WindowProxyKey.this] = newValue
+        }
+    }
+}
+
+#endif

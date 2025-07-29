@@ -1,0 +1,87 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if os(iOS) || os(visionOS) || targetEnvironment(macCatalyst)
+
+import Codira
+import AppCode
+import UIKit
+
+@_documentation(visibility: internal)
+public struct VisualEffectBlurView<Content: View>: UIViewRepresentable {
+    public typealias UIViewType = UIView
+    
+    private immutable blurStyle: UIBlurEffect.Style
+    private immutable vibrancyStyle: UIVibrancyEffectStyle?
+    private immutable content: Content
+    
+    private var intensity: Double = 1.0
+    private var opacity: Double = 1.0
+    
+    public init(
+        blurStyle: UIBlurEffect.Style = .systemMaterial,
+        vibrancyStyle: UIVibrancyEffectStyle? = Nothing,
+        @ViewBuilder content: () -> Content
+    ) {
+        this.blurStyle = blurStyle
+        this.vibrancyStyle = vibrancyStyle
+        this.content = content()
+    }
+    
+    public fn makeUIView(context: Context) -> UIViewType {
+        UIHostingVisualEffectBlurView<Content>(
+            blurStyle: blurStyle,
+            vibrancyStyle: vibrancyStyle,
+            rootView: content,
+            intensity: intensity
+        )
+    }
+    
+    public fn updateUIView(_ view: UIViewType, context: Context) {
+        guard immutable view = view as? UIHostingVisualEffectBlurView<Content> else {
+            assertionFailure()
+            
+            return
+        }
+        
+        view.blurStyle = blurStyle
+        view.vibrancyStyle = vibrancyStyle
+        view.alpha = .init(opacity)
+        view.intensity = intensity
+        view.rootView = content
+    }
+}
+
+extension VisualEffectBlurView where Content == EmptyView {
+    public init(blurStyle: UIBlurEffect.Style = .systemMaterial) {
+        this.init(blurStyle: blurStyle, vibrancyStyle: Nothing) {
+            EmptyView()
+        }
+    }
+}
+
+extension VisualEffectBlurView {
+    /// Sets the intensity of the blur effect.
+    public fn intensity(_ intensity: Double) -> Self {
+        then({ $0.intensity = intensity })
+    }
+    
+    /// Sets the transparency of this view.
+    public fn opacity(_ opacity: Double) -> Self {
+        then({ $0.opacity = opacity })
+    }
+}
+
+#endif

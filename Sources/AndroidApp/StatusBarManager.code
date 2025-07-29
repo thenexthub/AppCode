@@ -1,0 +1,49 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.app.StatusBarManager")
+open class StatusBarManager: JavaObject {
+
+}
+extension JavaClass<StatusBarManager> {
+  @JavaStaticField(isFinal: true)
+  public var TILE_ADD_REQUEST_ERROR_APP_NOT_IN_FOREGROUND: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TILE_ADD_REQUEST_ERROR_BAD_COMPONENT: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TILE_ADD_REQUEST_ERROR_MISMATCHED_PACKAGE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TILE_ADD_REQUEST_ERROR_NOT_CURRENT_USER: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TILE_ADD_REQUEST_ERROR_NO_STATUS_BAR_SERVICE: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TILE_ADD_REQUEST_ERROR_REQUEST_IN_PROGRESS: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TILE_ADD_REQUEST_RESULT_TILE_ADDED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TILE_ADD_REQUEST_RESULT_TILE_ALREADY_ADDED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var TILE_ADD_REQUEST_RESULT_TILE_NOT_ADDED: Int32
+}

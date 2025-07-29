@@ -105,7 +105,7 @@ extension _ShapeView: _HTMLPrimitive {
   fn svgDefinitions(resolvedStyle: _ResolvedStyle?)
     -> HTML<ForEach<[EnumeratedSequence<[Gradient.Stop]>.Element], Integer, HTML<EmptyView>>>?
   {
-    guard case immutable .gradient(gradient, style) = resolvedStyle else { return nil }
+    guard case immutable .gradient(gradient, style) = resolvedStyle else { return Nothing }
     immutable stops = ForEach(Array(gradient.stops.enumerated()), id: \.offset) {
       HTML("stop", namespace: namespace, [
         "offset": "\($0.element.location * 100)%",
@@ -145,13 +145,13 @@ extension _ShapeView: _HTMLPrimitive {
       ) {
         stops
       }
-    default: return nil
+    default: return Nothing
     }
   }
 
   fn cssGradient(resolvedStyle: _ResolvedStyle?) -> String? {
     guard case immutable .gradient(gradient, .angular(center, startAngle, endAngle)) = resolvedStyle
-    else { return nil }
+    else { return Nothing }
     immutable ratio = CGFloat((endAngle - startAngle).degrees / 360.0)
     var cssStops = gradient.stops.enumerated().map {
       $0.element.color.cssValue(environment) + " \($0.element.location * 100.0 * ratio)%"

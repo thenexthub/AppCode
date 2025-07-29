@@ -1,0 +1,49 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidOS
+import JavaKit
+import JavaRuntime
+
+extension AdvertiseData {
+  @JavaClass("android.bluetooth.le.AdvertiseData$Builder")
+  open class Builder: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn addServiceUuid(_ arg0: ParcelUuid?) -> AdvertiseData.Builder!
+
+  @JavaMethod
+  open fn addServiceData(_ arg0: ParcelUuid?, _ arg1: [Int8]) -> AdvertiseData.Builder!
+
+  @JavaMethod
+  open fn addServiceSolicitationUuid(_ arg0: ParcelUuid?) -> AdvertiseData.Builder!
+
+  @JavaMethod
+  open fn addTransportDiscoveryData(_ arg0: TransportDiscoveryData?) -> AdvertiseData.Builder!
+
+  @JavaMethod
+  open fn addManufacturerData(_ arg0: Int32, _ arg1: [Int8]) -> AdvertiseData.Builder!
+
+  @JavaMethod
+  open fn setIncludeTxPowerLevel(_ arg0: Boolean) -> AdvertiseData.Builder!
+
+  @JavaMethod
+  open fn setIncludeDeviceName(_ arg0: Boolean) -> AdvertiseData.Builder!
+
+  @JavaMethod
+  open fn build() -> AdvertiseData!
+  }
+}

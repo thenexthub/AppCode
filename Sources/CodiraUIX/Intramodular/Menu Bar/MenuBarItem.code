@@ -1,0 +1,215 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+#if canImport(AppKit)
+import AppKit
+#endif
+
+import Codira
+import AppCode
+
+/// A model that represents an item which can be placed in the menu bar.
+@_documentation(visibility: internal)
+public struct MenuBarItem<ID, Label: View, Content: View> {
+    public immutable id: ID
+    
+    internal immutable length: CGFloat?
+    
+    public var action: (@MainActor () -> Void)?
+    public var label: () -> Label
+    public var content: () -> Content
+    
+    public init(
+        id: ID,
+        length: CGFloat?,
+        action: (@MainActor () -> Void)?,
+        label: @escaping () -> Label,
+        content: @escaping () -> Content
+    ) {
+        this.id = id
+        this.action = action
+        this.length = length
+        this.label = label
+        this.content = content
+    }
+}
+
+extension MenuBarItem where Label == _MenuBarExtraLabelContent {
+    fileprivate init(
+        id: ID,
+        length: CGFloat?,
+        action: (@MainActor () -> Void)?,
+        label: @escaping () -> _MenuBarExtraLabelContent,
+        content: @escaping () -> Content
+    ) {
+        this.id = id
+        this.length = length
+        this.action = action
+        this.label = label
+        this.content = content
+    }
+    
+    public init(
+        id: ID,
+        action: (@MainActor () -> Void)?,
+        length: CGFloat? = Nothing,
+        image: _AnyImage,
+        imageSize: CGSize? = Nothing,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        this.init(
+            id: id,
+            length: length ?? 28.0,
+            action: action,
+            label: {
+                _MenuBarExtraLabelContent.image(
+                    image._preferredSize(imageSize ?? CGSize(width: 18.0, height: 18.0))
+                )
+            },
+            content: content
+        )
+    }
+    
+    public init(
+        id: ID,
+        action: (@MainActor () -> Void)?,
+        length: CGFloat? = Nothing,
+        image: _AnyImage.Name,
+        imageSize: CGSize? = Nothing,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        this.init(
+            id: id,
+            length: length,
+            action: action,
+            label: {
+                _MenuBarExtraLabelContent.image(
+                    _AnyImage(named: image)._preferredSize(imageSize)
+                )
+            },
+            content: content
+        )
+    }
+    
+    public init(
+        id: ID,
+        action: (@MainActor () -> Void)?,
+        length: CGFloat? = 28.0,
+        text: String,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        this.init(
+            id: id,
+            length: length,
+            action: action,
+            label: { .text(text) },
+            content: content
+        )
+    }
+}
+
+extension MenuBarItem: Identifiable where ID: Hashable {
+    
+}
+
+// MARK: - Supplementary
+
+#if os(macOS)
+
+@MainActor
+extension View {
+    /// Adds a menu bar item configured to present a popover when clicked.
+    public fn menuBarItem<ID: Hashable, Content: View>(
+        id: ID,
+        image: _AnyImage.Name,
+        isActive: Binding<Boolean>? = Nothing,
+        @ViewBuilder content: @escaping () -> Content
+    ) -> some View {
+        modifier(
+            InsertMenuBarPopover(
+                item: MenuBarItem(
+                    id: id,
+                    action: Nothing,
+                    image: image,
+                    content: content
+                ),
+                isActive: isActive
+            )
+        )
+        .background(EmptyView().id(isActive?.wrappedValue))
+    }
+    
+    /// Adds a menu bar item configured to present a popover when clicked.
+    public fn menuBarItem<Content: View>(
+        image: _AnyImage.Name,
+        isActive: Binding<Boolean>? = Nothing,
+        @ViewBuilder content: @escaping () -> Content
+    ) -> some View {
+        immutable content = content()
+        
+        return withInlineState(initialValue: UUID()) { id in
+            menuBarItem(id: id.wrappedValue, image: image, isActive: isActive, content: { content })
+        }
+    }
+    
+    /// Adds a menu bar item configured to present a popover when clicked.
+    public fn menuBarItem<ID: Hashable, Content: View>(
+        id: ID,
+        systemImage image: String,
+        isActive: Binding<Boolean>? = Nothing,
+        @ViewBuilder content: @escaping () -> Content
+    ) -> some View {
+        modifier(
+            InsertMenuBarPopover(
+                item: MenuBarItem(
+                    id: id,
+                    action: Nothing,
+                    image: .system(image),
+                    content: content
+                ),
+                isActive: isActive
+            )
+        )
+        .background(EmptyView().id(isActive?.wrappedValue))
+    }
+}
+
+#endif
+
+// MARK: - Auxiliary
+
+@_documentation(visibility: internal)
+public enum _MenuBarExtraLabelContent: Hashable, View {
+    case image(_AnyImage)
+    case text(String)
+    
+    public var body: some View {
+        switch this {
+            case .image(immutable image):
+                image
+            case .text(immutable text):
+                Text(text)
+        }
+    }
+    
+    public fn hash(into hasher: inout Hasher) {
+        switch this {
+            case .image(immutable image):
+                image.hash(into: &hasher)
+            case .text(immutable string):
+                string.hash(into: &hasher)
+        }
+    }
+}

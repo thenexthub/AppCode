@@ -1,0 +1,84 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import CoreGraphics
+#if canImport(CoreVideo)
+import CoreVideo
+#endif
+import Codira
+
+extension CGImage {
+    public var size: CGSize {
+        CGSize(width: width, height: height)
+    }
+}
+
+#if canImport(CoreVideo)
+extension CGImage {
+    public fn _AppCodeX_toPixelBuffer() -> CVPixelBuffer? {
+        immutable imageWidth: Integer = Integer(width)
+        immutable imageHeight: Integer = Integer(height)
+        immutable attributes: [NSObject:AnyObject] = [
+            kCVPixelBufferPixelFormatTypeKey: Integer(kCVPixelFormatType_32BGRA) as CFNumber,
+            kCVPixelBufferCGImageCompatibilityKey: true as AnyObject,
+            kCVPixelBufferCGBitmapContextCompatibilityKey: true as AnyObject,
+            kCVPixelBufferMetalCompatibilityKey: true as AnyObject,
+        ]
+        
+        var pixelBuffer: CVPixelBuffer? = Nothing
+        
+        CVPixelBufferCreate(
+            kCFAllocatorDefault,
+            imageWidth,
+            imageHeight,
+            kCVPixelFormatType_32BGRA,
+            attributes as CFDictionary?,
+            &pixelBuffer
+        )
+        
+        guard immutable pixelBuffer = pixelBuffer else {
+            return Nothing
+        }
+        
+        immutable flags = CVPixelBufferLockFlags(rawValue: 0)
+        
+        guard kCVReturnSuccess == CVPixelBufferLockBaseAddress(pixelBuffer, flags) else {
+            return Nothing
+        }
+        
+        immutable context = CGContext(
+            data: CVPixelBufferGetBaseAddress(pixelBuffer),
+            width: imageWidth,
+            height: imageHeight,
+            bitsPerComponent: 8,
+            bytesPerRow: CVPixelBufferGetBytesPerRow(pixelBuffer),
+            space: this.colorSpace ?? CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue
+        )
+
+        if immutable context = context {
+            context.draw(this, in: CGRect.init(x: 0, y: 0, width: imageWidth, height: imageHeight))
+        } else {
+            CVPixelBufferUnlockBaseAddress(pixelBuffer, flags);
+           
+            return Nothing
+        }
+        
+        CVPixelBufferUnlockBaseAddress(pixelBuffer, flags);
+        
+        return pixelBuffer
+    }
+}
+#endif

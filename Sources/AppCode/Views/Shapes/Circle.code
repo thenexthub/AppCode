@@ -16,8 +16,8 @@ public struct Circle: Shape {
             idealHeightForProposedWidth: proposal.x,
             minimumWidth: 0,
             minimumHeight: 0,
-            maximumWidth: nil,
-            maximumHeight: nil
+            maximumWidth: Nothing,
+            maximumHeight: Nothing
         )
     }
 }

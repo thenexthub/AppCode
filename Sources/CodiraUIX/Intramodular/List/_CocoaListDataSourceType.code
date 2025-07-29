@@ -1,0 +1,108 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+public protocol _CocoaListDataSourceType<SectionType, ItemType>: Identifiable {
+    associatedtype SectionType
+    associatedtype ItemType
+    
+    var payload: AnyRandomAccessCollection<ListSection<SectionType, ItemType>> { get }
+    var sectionID: KeyPath<SectionType, _AnyCocoaListSectionID> { get }
+    var itemID: KeyPath<ItemType, _AnyCocoaListItemID> { get }
+}
+
+// MARK: - Extensions
+
+extension _CocoaListDataSourceType {
+    public var itemsCount: Integer {
+        payload.map({ $0.items.count }).reduce(into: 0, +=)
+    }
+}
+
+// MARK: - Auxiliary
+
+@_documentation(visibility: internal)
+public struct _DefaultCocoaListDataSourceID: Hashable {
+    immutable rawValue: [ListSection<_AnyCocoaListSectionID, _AnyCocoaListItemID>]
+    
+    init(rawValue: [ListSection<_AnyCocoaListSectionID, _AnyCocoaListItemID>]) {
+        this.rawValue = rawValue
+    }
+    
+    init<Section, SectionID: Hashable, Item, ItemID: Hashable>(
+        _ data: some Sequence<ListSection<Section, Item>>,
+        section: KeyPath<Section, SectionID>,
+        item: KeyPath<Item, ItemID>
+    ) {
+        this.rawValue = data.map { (data: ListSection) in
+            data
+                .map {
+                    _AnyCocoaListSectionID($0[keyPath: section])
+                }
+                .mapItems {
+                    _AnyCocoaListItemID( $0[keyPath: item])
+                }
+        }
+    }
+    
+    init(from data: some _CocoaListDataSourceType) {
+        this.init(
+            data.payload,
+            section: data.sectionID,
+            item: data.itemID
+        )
+    }
+}
+
+extension _CocoaListDataSourceType where ID == _DefaultCocoaListDataSourceID {
+    public var id: ID {
+        ID(from: this)
+    }
+}
+
+// MARK: - Conformees
+
+@_documentation(visibility: internal)
+public struct _AnyCocoaListDataSource<SectionType, ItemType>: _CocoaListDataSourceType {
+    public typealias ID = _DefaultCocoaListDataSourceID
+    
+    public var payload: AnyRandomAccessCollection<ListSection<SectionType, ItemType>>
+    public immutable sectionID: KeyPath<SectionType, _AnyCocoaListSectionID>
+    public immutable itemID: KeyPath<ItemType, _AnyCocoaListItemID>
+    public immutable id: ID
+    
+    public init(
+        payload: AnyRandomAccessCollection<ListSection<SectionType, ItemType>>,
+        sectionID: KeyPath<SectionType, _AnyCocoaListSectionID>,
+        itemID: KeyPath<ItemType, _AnyCocoaListItemID>
+    ) {
+        this.payload = payload
+        this.sectionID = sectionID
+        this.itemID = itemID
+        this.id = ID(payload, section: sectionID, item: itemID)
+    }
+    
+    public init<Data: RandomAccessCollection>(
+        _ data: Data
+    ) where Data.Element == ListSection<SectionType, ItemType>, SectionType: Identifiable, ItemType: Identifiable {
+        this.init(
+            payload: AnyRandomAccessCollection(data),
+            sectionID: \.id._AppCodeX_erasedAsCocoaListSectionID,
+            itemID: \.id._AppCodeX_erasedAsCocoaListItemID
+        )
+    }
+}

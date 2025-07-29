@@ -1,0 +1,84 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaTime
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.app.UiModeManager")
+open class UiModeManager: JavaObject {
+  @JavaMethod
+  open fn enableCarMode(_ arg0: Int32)
+
+  @JavaMethod
+  open fn disableCarMode(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getCurrentModeType() -> Int32
+
+  @JavaMethod
+  open fn setNightMode(_ arg0: Int32)
+
+  @JavaMethod
+  open fn setApplicationNightMode(_ arg0: Int32)
+
+  @JavaMethod
+  open fn getNightMode() -> Int32
+
+  @JavaMethod
+  open fn getCustomNightModeStart() -> LocalTime!
+
+  @JavaMethod
+  open fn setCustomNightModeStart(_ arg0: LocalTime?)
+
+  @JavaMethod
+  open fn getCustomNightModeEnd() -> LocalTime!
+
+  @JavaMethod
+  open fn setCustomNightModeEnd(_ arg0: LocalTime?)
+}
+extension JavaClass<UiModeManager> {
+  @JavaStaticField(isFinal: false)
+  public var ACTION_ENTER_CAR_MODE: String
+
+  @JavaStaticField(isFinal: false)
+  public var ACTION_ENTER_DESK_MODE: String
+
+  @JavaStaticField(isFinal: false)
+  public var ACTION_EXIT_CAR_MODE: String
+
+  @JavaStaticField(isFinal: false)
+  public var ACTION_EXIT_DESK_MODE: String
+
+  @JavaStaticField(isFinal: true)
+  public var DISABLE_CAR_MODE_GO_HOME: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ENABLE_CAR_MODE_ALLOW_SLEEP: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var ENABLE_CAR_MODE_GO_CAR_HOME: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MODE_NIGHT_AUTO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MODE_NIGHT_CUSTOM: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MODE_NIGHT_NO: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var MODE_NIGHT_YES: Int32
+}

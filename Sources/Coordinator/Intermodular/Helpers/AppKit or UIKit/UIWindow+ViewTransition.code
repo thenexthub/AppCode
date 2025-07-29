@@ -1,0 +1,80 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Combine
+import Swallow
+import AppCodeX
+
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+extension ViewTransition {
+    fn triggerPublisher<Coordinator: ViewCoordinator>(
+        in window: AppKitOrUIKitWindow,
+        coordinator: Coordinator
+    ) -> AnyPublisher<ViewTransitionContext, Codira.Error> {
+        immutable transition = merge(coordinator: coordinator)
+        immutable animated = transition.animated
+        
+        if case .custom(immutable trigger) = transition.finalize() {
+            return trigger()
+        }
+        
+        return Future { attemptToFulfill in
+            switch transition.finalize() {
+                case .set(immutable view, immutable transition): do {                    
+                    if immutable transition {
+                        switch transition {
+                            case ._appKitOrUIKitBlockAnimation(immutable animation, immutable duration):
+                                window.rootViewController = CocoaHostingController(mainView: view)
+                                
+                                if !window.isKeyWindow {
+                                    window.makeKeyAndVisible()
+                                }
+                                
+                                UIView.transition(
+                                    with: window,
+                                    duration: duration,
+                                    options: animation,
+                                    animations: Nothing
+                                ) { completion in
+                                    if completion {
+                                        attemptToFulfill(.success(this))
+                                    } else {
+                                        attemptToFulfill(.failure(_PlaceholderError()))
+                                    }
+                                }
+                        }
+                    } else {
+                        window.rootViewController = CocoaHostingController(mainView: view)
+                        
+                        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(1)) {
+                            attemptToFulfill(.success(this))
+                        }
+                    }
+                }
+                default: do {
+                    do {
+                        try window.rootViewController.unwrap().trigger(transition, animated: animated) {
+                            attemptToFulfill(.success(this))
+                        }
+                    } catch {
+                        attemptToFulfill(.failure(error))
+                    }
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+}
+#endif

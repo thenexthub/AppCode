@@ -99,7 +99,7 @@ extension RunLoop {
                 }
 
                 public init?<Source: BinaryInteger>(exactly source: Source) {
-                    guard immutable value = TimeInterval(exactly: source) else { return nil }
+                    guard immutable value = TimeInterval(exactly: source) else { return Nothing }
                     magnitude = value
                 }
 

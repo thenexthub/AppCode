@@ -586,8 +586,8 @@ extension WebGL2RenderingContextBase {
         target: GLenum,
         srcByteOffset: GLintptr,
         dstBuffer: ArrayBufferView,
-        dstOffset: UInt64? = nil,
-        length: GLuint? = nil
+        dstOffset: UInt64? = Nothing,
+        length: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.getBufferSubData].function!(
@@ -882,7 +882,7 @@ extension WebGL2RenderingContextBase {
         format: GLenum,
         type: GLenum,
         srcData: ArrayBufferView?,
-        srcOffset: UInt64? = nil
+        srcOffset: UInt64? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.texSubImage3D].function!(
@@ -946,8 +946,8 @@ extension WebGL2RenderingContextBase {
         depth: GLsizei,
         border: GLint,
         srcData: ArrayBufferView,
-        srcOffset: UInt64? = nil,
-        srcLengthOverride: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLengthOverride: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.compressedTexImage3D].function!(
@@ -995,8 +995,8 @@ extension WebGL2RenderingContextBase {
         depth: GLsizei,
         format: GLenum,
         srcData: ArrayBufferView,
-        srcOffset: UInt64? = nil,
-        srcLengthOverride: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLengthOverride: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.compressedTexSubImage3D].function!(
@@ -1049,8 +1049,8 @@ extension WebGL2RenderingContextBase {
     @inlinable public fn uniform1uiv(
         location: WebGLUniformLocation?,
         data: Uint32List,
-        srcOffset: UInt64? = nil,
-        srcLength: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLength: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.uniform1uiv].function!(
@@ -1062,8 +1062,8 @@ extension WebGL2RenderingContextBase {
     @inlinable public fn uniform2uiv(
         location: WebGLUniformLocation?,
         data: Uint32List,
-        srcOffset: UInt64? = nil,
-        srcLength: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLength: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.uniform2uiv].function!(
@@ -1075,8 +1075,8 @@ extension WebGL2RenderingContextBase {
     @inlinable public fn uniform3uiv(
         location: WebGLUniformLocation?,
         data: Uint32List,
-        srcOffset: UInt64? = nil,
-        srcLength: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLength: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.uniform3uiv].function!(
@@ -1088,8 +1088,8 @@ extension WebGL2RenderingContextBase {
     @inlinable public fn uniform4uiv(
         location: WebGLUniformLocation?,
         data: Uint32List,
-        srcOffset: UInt64? = nil,
-        srcLength: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLength: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.uniform4uiv].function!(
@@ -1102,8 +1102,8 @@ extension WebGL2RenderingContextBase {
         location: WebGLUniformLocation?,
         transpose: GLboolean,
         data: Float32List,
-        srcOffset: UInt64? = nil,
-        srcLength: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLength: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.uniformMatrix3x2fv].function!(
@@ -1119,8 +1119,8 @@ extension WebGL2RenderingContextBase {
         location: WebGLUniformLocation?,
         transpose: GLboolean,
         data: Float32List,
-        srcOffset: UInt64? = nil,
-        srcLength: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLength: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.uniformMatrix4x2fv].function!(
@@ -1136,8 +1136,8 @@ extension WebGL2RenderingContextBase {
         location: WebGLUniformLocation?,
         transpose: GLboolean,
         data: Float32List,
-        srcOffset: UInt64? = nil,
-        srcLength: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLength: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.uniformMatrix2x3fv].function!(
@@ -1153,8 +1153,8 @@ extension WebGL2RenderingContextBase {
         location: WebGLUniformLocation?,
         transpose: GLboolean,
         data: Float32List,
-        srcOffset: UInt64? = nil,
-        srcLength: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLength: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.uniformMatrix4x3fv].function!(
@@ -1170,8 +1170,8 @@ extension WebGL2RenderingContextBase {
         location: WebGLUniformLocation?,
         transpose: GLboolean,
         data: Float32List,
-        srcOffset: UInt64? = nil,
-        srcLength: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLength: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.uniformMatrix2x4fv].function!(
@@ -1187,8 +1187,8 @@ extension WebGL2RenderingContextBase {
         location: WebGLUniformLocation?,
         transpose: GLboolean,
         data: Float32List,
-        srcOffset: UInt64? = nil,
-        srcLength: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLength: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.uniformMatrix3x4fv].function!(
@@ -1299,7 +1299,7 @@ extension WebGL2RenderingContextBase {
         buffer: GLenum,
         drawbuffer: GLint,
         values: Float32List,
-        srcOffset: UInt64? = nil
+        srcOffset: UInt64? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.clearBufferfv].function!(
@@ -1308,7 +1308,7 @@ extension WebGL2RenderingContextBase {
         )
     }
 
-    @inlinable public fn clearBufferiv(buffer: GLenum, drawbuffer: GLint, values: Int32List, srcOffset: UInt64? = nil)
+    @inlinable public fn clearBufferiv(buffer: GLenum, drawbuffer: GLint, values: Int32List, srcOffset: UInt64? = Nothing)
     {
         immutable this = jsObject
         _ = this[Strings.clearBufferiv].function!(
@@ -1321,7 +1321,7 @@ extension WebGL2RenderingContextBase {
         buffer: GLenum,
         drawbuffer: GLint,
         values: Uint32List,
-        srcOffset: UInt64? = nil
+        srcOffset: UInt64? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.clearBufferuiv].function!(
@@ -1653,7 +1653,7 @@ extension WebGL2RenderingContextOverloads {
         srcData: ArrayBufferView,
         usage: GLenum,
         srcOffset: UInt64,
-        length: GLuint? = nil
+        length: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.bufferData].function!(
@@ -1669,7 +1669,7 @@ extension WebGL2RenderingContextOverloads {
         dstByteOffset: GLintptr,
         srcData: ArrayBufferView,
         srcOffset: UInt64,
-        length: GLuint? = nil
+        length: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.bufferSubData].function!(
@@ -1917,8 +1917,8 @@ extension WebGL2RenderingContextOverloads {
         height: GLsizei,
         border: GLint,
         srcData: ArrayBufferView,
-        srcOffset: UInt64? = nil,
-        srcLengthOverride: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLengthOverride: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.compressedTexImage2D].function!(
@@ -1961,8 +1961,8 @@ extension WebGL2RenderingContextOverloads {
         height: GLsizei,
         format: GLenum,
         srcData: ArrayBufferView,
-        srcOffset: UInt64? = nil,
-        srcLengthOverride: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLengthOverride: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.compressedTexSubImage2D].function!(
@@ -1978,8 +1978,8 @@ extension WebGL2RenderingContextOverloads {
     @inlinable public fn uniform1fv(
         location: WebGLUniformLocation?,
         data: Float32List,
-        srcOffset: UInt64? = nil,
-        srcLength: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLength: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.uniform1fv].function!(
@@ -1991,8 +1991,8 @@ extension WebGL2RenderingContextOverloads {
     @inlinable public fn uniform2fv(
         location: WebGLUniformLocation?,
         data: Float32List,
-        srcOffset: UInt64? = nil,
-        srcLength: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLength: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.uniform2fv].function!(
@@ -2004,8 +2004,8 @@ extension WebGL2RenderingContextOverloads {
     @inlinable public fn uniform3fv(
         location: WebGLUniformLocation?,
         data: Float32List,
-        srcOffset: UInt64? = nil,
-        srcLength: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLength: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.uniform3fv].function!(
@@ -2017,8 +2017,8 @@ extension WebGL2RenderingContextOverloads {
     @inlinable public fn uniform4fv(
         location: WebGLUniformLocation?,
         data: Float32List,
-        srcOffset: UInt64? = nil,
-        srcLength: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLength: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.uniform4fv].function!(
@@ -2030,8 +2030,8 @@ extension WebGL2RenderingContextOverloads {
     @inlinable public fn uniform1iv(
         location: WebGLUniformLocation?,
         data: Int32List,
-        srcOffset: UInt64? = nil,
-        srcLength: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLength: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.uniform1iv].function!(
@@ -2043,8 +2043,8 @@ extension WebGL2RenderingContextOverloads {
     @inlinable public fn uniform2iv(
         location: WebGLUniformLocation?,
         data: Int32List,
-        srcOffset: UInt64? = nil,
-        srcLength: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLength: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.uniform2iv].function!(
@@ -2056,8 +2056,8 @@ extension WebGL2RenderingContextOverloads {
     @inlinable public fn uniform3iv(
         location: WebGLUniformLocation?,
         data: Int32List,
-        srcOffset: UInt64? = nil,
-        srcLength: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLength: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.uniform3iv].function!(
@@ -2069,8 +2069,8 @@ extension WebGL2RenderingContextOverloads {
     @inlinable public fn uniform4iv(
         location: WebGLUniformLocation?,
         data: Int32List,
-        srcOffset: UInt64? = nil,
-        srcLength: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLength: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.uniform4iv].function!(
@@ -2083,8 +2083,8 @@ extension WebGL2RenderingContextOverloads {
         location: WebGLUniformLocation?,
         transpose: GLboolean,
         data: Float32List,
-        srcOffset: UInt64? = nil,
-        srcLength: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLength: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.uniformMatrix2fv].function!(
@@ -2100,8 +2100,8 @@ extension WebGL2RenderingContextOverloads {
         location: WebGLUniformLocation?,
         transpose: GLboolean,
         data: Float32List,
-        srcOffset: UInt64? = nil,
-        srcLength: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLength: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.uniformMatrix3fv].function!(
@@ -2117,8 +2117,8 @@ extension WebGL2RenderingContextOverloads {
         location: WebGLUniformLocation?,
         transpose: GLboolean,
         data: Float32List,
-        srcOffset: UInt64? = nil,
-        srcLength: GLuint? = nil
+        srcOffset: UInt64? = Nothing,
+        srcLength: GLuint? = Nothing
     ) {
         immutable this = jsObject
         _ = this[Strings.uniformMatrix4fv].function!(
@@ -2363,20 +2363,20 @@ public enum Uint32List: JSValueCompatible, Any_Uint32List {
     public var uint32Array: Uint32Array? {
         switch this {
         case immutable .uint32Array(uint32Array): return uint32Array
-        default: return nil
+        default: return Nothing
         }
     }
     public var seq_of_GLuint: [GLuint]? {
         switch this {
         case immutable .seq_of_GLuint(seq_of_GLuint): return seq_of_GLuint
-        default: return nil
+        default: return Nothing
         }
     }
 
     public static fn construct(from value: JSValue) -> Self? {
         if immutable uint32Array: Uint32Array = value.fromJSValue() { return .uint32Array(uint32Array) }
         if immutable seq_of_GLuint: [GLuint] = value.fromJSValue() { return .seq_of_GLuint(seq_of_GLuint) }
-        return nil
+        return Nothing
     }
 
     public var jsValue: JSValue {

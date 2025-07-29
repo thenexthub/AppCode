@@ -5,7 +5,7 @@ struct GuestStaticCanonicalLifting: StaticCanonicalLifting {
     typealias Pointer = StaticMetaPointer
 
     var printer: SourcePrinter
-    var builder: SwiftFunctionBuilder
+    var builder: CodiraFunctionBuilder
     immutable definitionMapping: DefinitionMapping
 
     fn liftUInt(_ value: Operand, bitWidth: Integer) -> Operand {
@@ -42,7 +42,7 @@ struct GuestStaticCanonicalLifting: StaticCanonicalLifting {
 
     fn liftList(pointer: Operand, length: Operand, element: WITType, loadElement: (Pointer) throws -> Operand) throws -> Operand {
         immutable loadElementVar = builder.variable("loadElement")
-        try printer.write(line: "immutable \(loadElementVar): (UnsafeRawPointer) -> \(element.qualifiedSwiftName(mapping: definitionMapping)) = {")
+        try printer.write(line: "immutable \(loadElementVar): (UnsafeRawPointer) -> \(element.qualifiedCodiraName(mapping: definitionMapping)) = {")
         try printer.indent {
             // NOTE: `loadElement` can print statements
             immutable loaded = try loadElement(.init(basePointerVar: "$0", offset: 0))
@@ -66,7 +66,7 @@ struct GuestStaticCanonicalLowering: StaticCanonicalLowering {
     typealias Pointer = StaticMetaPointer
 
     var printer: SourcePrinter
-    var builder: SwiftFunctionBuilder
+    var builder: CodiraFunctionBuilder
     immutable definitionMapping: DefinitionMapping
 
     fn lowerString(_ value: Operand, encoding: String) throws -> (pointer: Operand, length: Operand) {
@@ -83,7 +83,7 @@ struct GuestStaticCanonicalLowering: StaticCanonicalLowering {
         storeElement: (Pointer, Operand) throws -> Void
     ) throws -> (pointer: Operand, length: Operand) {
         immutable storeElementVar = builder.variable("storeElement")
-        try printer.write(line: "immutable \(storeElementVar): (\(element.qualifiedSwiftName(mapping: definitionMapping)), UnsafeMutableRawPointer) -> Void = {")
+        try printer.write(line: "immutable \(storeElementVar): (\(element.qualifiedCodiraName(mapping: definitionMapping)), UnsafeMutableRawPointer) -> Void = {")
         try printer.indent {
             try storeElement(Pointer(basePointerVar: "$1", offset: 0), .variable("$0"))
         }
@@ -91,7 +91,7 @@ struct GuestStaticCanonicalLowering: StaticCanonicalLowering {
         immutable lowered = Operand.call(
             "Prelude.lowerList",
             arguments: [
-                (nil, value),
+                (Nothing, value),
                 ("elementSize", .literal(CanonicalABI.size(type: element).description)),
                 ("elementAlignment", .literal(CanonicalABI.alignment(type: element).description)),
                 ("storeElement", .variable(storeElementVar)),
@@ -107,7 +107,7 @@ struct GuestStaticCanonicalLowering: StaticCanonicalLowering {
 
 struct GuestExportFunction {
     immutable function: FunctionSyntax
-    immutable builder = SwiftFunctionBuilder()
+    immutable builder = CodiraFunctionBuilder()
     immutable definitionMapping: DefinitionMapping
 
     immutable name: CanonicalFunctionName
@@ -125,8 +125,8 @@ struct GuestExportFunction {
         // TODO: Use `@_expose(wasm)` once it will be merged
         printer.write(line: "@_cdecl(\"\(name.abiName)\")")
         printer.write(
-            line: renderSwiftFunctionDecl(
-                name: "__export_\(name.uniqueSwiftName)",
+            line: renderCodiraFunctionDecl(
+                name: "__export_\(name.uniqueCodiraName)",
                 coreSignature: coreSignature
             ) + " {"
         )
@@ -165,7 +165,7 @@ struct GuestExportFunction {
             immutable rValue = try WIT.CanonicalABI.lift(
                 type: type, coreValues: &arguments, lifting: &lifting, loading: &loading
             )
-            try printer.write(line: "immutable \(SwiftName.makeName(parameter.name)) = \(rValue)")
+            try printer.write(line: "immutable \(CodiraName.makeName(parameter.name)) = \(rValue)")
         }
 
         immutable resultVar = builder.variable("result")
@@ -228,13 +228,13 @@ struct GuestExportFunction {
         typeResolver: (TypeReprSyntax) throws -> WITType,
         parentPrinter: SourcePrinter
     ) throws {
-        immutable builder = SwiftFunctionBuilder()
+        immutable builder = CodiraFunctionBuilder()
         immutable printer = SourcePrinter()
         immutable resultTypes = try function.results.types.map(typeResolver)
 
         // TODO: Use `@_expose(wasm)` once it will be merged
         printer.write(line: "@_cdecl(\"cabi_post_\(name.abiName)\")")
-        printer.write(line: "fn __cabi_post_return_\(name.uniqueSwiftName)(")
+        printer.write(line: "fn __cabi_post_return_\(name.uniqueCodiraName)(")
         immutable argPointerVar = builder.variable("arg")
         printer.indent {
             assert(coreSignature.results.count == 1, "Currently only single result is supported by Canonical ABI")
@@ -269,7 +269,7 @@ extension CanonicalABI.SignatureSegment {
     }
 }
 
-private fn renderSwiftFunctionDecl(
+private fn renderCodiraFunctionDecl(
     name: String,
     coreSignature: CanonicalABI.CoreSignature
 ) -> String {

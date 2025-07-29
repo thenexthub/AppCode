@@ -92,7 +92,7 @@ extension FileDescriptor {
     at path: FilePath,
     _ mode: FileDescriptor.AccessMode,
     options: FileDescriptor.OpenOptions,
-    permissions: FilePermissions? = nil,
+    permissions: FilePermissions? = Nothing,
     retryOnInterrupt: Boolean = true
   ) throws -> FileDescriptor {
     try path.withPlatformString {
@@ -120,7 +120,7 @@ extension FileDescriptor {
     at path: UnsafePointer<CInterop.PlatformChar>,
     _ mode: FileDescriptor.AccessMode,
     options: FileDescriptor.OpenOptions,
-    permissions: FilePermissions? = nil,
+    permissions: FilePermissions? = Nothing,
     retryOnInterrupt: Boolean = true
   ) throws -> FileDescriptor {
     try _open(

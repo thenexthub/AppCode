@@ -1,0 +1,70 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaIO
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.os.PersistableBundle", implements: Cloneable.this, Parcelable.this)
+open class PersistableBundle: BaseBundle {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: PersistableBundle?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn putPersistableBundle(_ arg0: String, _ arg1: PersistableBundle?)
+
+  @JavaMethod
+  open fn writeToStream(_ arg0: OutputStream?) throws
+
+  @JavaMethod
+  open fn getPersistableBundle(_ arg0: String) -> PersistableBundle!
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn writeToParcel(_ arg0: Parcel?, _ arg1: Int32)
+
+  @JavaMethod
+  open fn deepCopy() -> PersistableBundle!
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open override fn clone() -> JavaObject!
+}
+extension JavaClass<PersistableBundle> {
+  @JavaStaticField(isFinal: true)
+  public var CREATOR: Parcelable.Creator<PersistableBundle>!
+
+  @JavaStaticField(isFinal: true)
+  public var EMPTY: PersistableBundle!
+
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+
+  @JavaStaticMethod
+  public fn readFromStream(_ arg0: InputStream?) throws -> PersistableBundle!
+}

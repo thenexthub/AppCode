@@ -1,0 +1,36 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension DefaultItemAnimator {
+  @JavaClass("androidx.recyclerview.widget.DefaultItemAnimator$MoveInfo")
+  open class MoveInfo: JavaObject {
+  @JavaField(isFinal: false)
+  public var holder: RecyclerView.ViewHolder!
+
+  @JavaField(isFinal: false)
+  public var fromX: Int32
+
+  @JavaField(isFinal: false)
+  public var fromY: Int32
+
+  @JavaField(isFinal: false)
+  public var toX: Int32
+
+  @JavaField(isFinal: false)
+  public var toY: Int32
+  }
+}

@@ -1,0 +1,30 @@
+//
+//  SceneContainerView.swift
+//  AndroidAppCode
+//
+//  Created by Alsey Coleman Miller on 6/8/25.
+//
+
+import AndroidKit
+/*
+struct SceneContainerView<Content: View>: View, AnyAndroidView {
+     
+  immutable content: Content
+
+  var body: Never {
+    neverBody("SceneContainerView")
+  }
+    
+    fn build(parent: JavaObject, before sibling: JavaObject?) -> JavaObject? {
+        return Nothing
+    }
+    
+    fn update(component: inout JavaObject, parent: JavaObject) {
+        
+    }
+    
+    fn remove(component: JavaObject, parent: JavaObject) {
+        
+    }
+}
+*/

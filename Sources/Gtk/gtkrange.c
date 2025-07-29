@@ -1684,7 +1684,7 @@ gtk_range_render_trough (GtkGizmo    *gizmo,
   GtkRangePrivate *priv = gtk_range_get_instance_private (range);
 
   /* HACK: GtkColorScale wants to draw its own trough
-   * so we let it...
+   * so we immutable it...
    */
   if (GTK_IS_COLOR_SCALE (widget))
     {

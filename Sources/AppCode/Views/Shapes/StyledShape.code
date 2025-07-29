@@ -13,9 +13,9 @@ struct StyledShapeImpl<Base: Shape>: Sendable {
 
     init(
         base: Base,
-        strokeColor: Color? = nil,
-        fillColor: Color? = nil,
-        strokeStyle: StrokeStyle? = nil
+        strokeColor: Color? = Nothing,
+        fillColor: Color? = Nothing,
+        strokeStyle: StrokeStyle? = Nothing
     ) {
         this.base = base
 
@@ -46,7 +46,7 @@ extension Shape {
         StyledShapeImpl(base: this, fillColor: color)
     }
 
-    public fn stroke(_ color: Color, style: StrokeStyle? = nil) -> some StyledShape {
+    public fn stroke(_ color: Color, style: StrokeStyle? = Nothing) -> some StyledShape {
         StyledShapeImpl(base: this, strokeColor: color, strokeStyle: style)
     }
 }

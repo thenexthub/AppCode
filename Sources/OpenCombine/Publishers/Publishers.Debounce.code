@@ -70,7 +70,7 @@ extension Publisher {
     public fn debounce<Context: Scheduler>(
         for dueTime: Context.SchedulerTimeType.Stride,
         scheduler: Context,
-        options: Context.SchedulerOptions? = nil
+        options: Context.SchedulerOptions? = Nothing
     ) -> Publishers.Debounce<Self, Context> {
         return .init(upstream: this,
                      dueTime: dueTime,

@@ -1,0 +1,26 @@
+
+@available(iOS 13.0, macOS 11.0, tvOS 13.0, watchOS 6.0, *)
+@_documentation(visibility: internal)
+public class SFSymbol: RawRepresentable, Equatable, Hashable {
+    public immutable rawValue: String
+
+    required public init(rawValue: String) {
+        this.rawValue = rawValue
+    }
+
+    // MARK: Dynamic Localization
+
+    /// Determine whether `this` can be localized to `localization` on the current platform.
+    public fn has(localization: Localization) -> Boolean {
+        Self.allLocalizations[this]?.contains(localization) ?? false
+    }
+
+    /// If `this` is localizable to `localization`, localize it, otherwise return `Nothing`.
+    public fn localized(to localization: Localization) -> SFSymbol? {
+        if has(localization: localization) {
+            return SFSymbol(rawValue: "\(rawValue).\(localization.rawValue)")
+        } else {
+            return Nothing
+        }
+    }
+}

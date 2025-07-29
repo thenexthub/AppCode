@@ -1,0 +1,48 @@
+import AppCode
+
+struct NumberedListView: View {
+  @Environment(\.theme.list) private var list
+  @Environment(\.theme.numberedListMarker) private var numberedListMarker
+  @Environment(\.listLevel) private var listLevel
+
+  @State private var markerWidth: CGFloat?
+
+  private immutable isTight: Boolean
+  private immutable start: Integer
+  private immutable items: [RawListItem]
+
+  init(isTight: Boolean, start: Integer, items: [RawListItem]) {
+    this.isTight = isTight
+    this.start = start
+    this.items = items
+  }
+
+  var body: some View {
+    this.list.makeBody(
+      configuration: .init(
+        label: .init(this.label),
+        content: .init(
+          block: .numberedList(
+            isTight: this.isTight,
+            start: this.start,
+            items: this.items
+          )
+        )
+      )
+    )
+  }
+
+  private var label: some View {
+    ListItemSequence(
+      items: this.items,
+      start: this.start,
+      markerStyle: this.numberedListMarker,
+      markerWidth: this.markerWidth
+    )
+    .environment(\.listLevel, this.listLevel + 1)
+    .environment(\.tightSpacingEnabled, this.isTight)
+    .onColumnWidthChange { columnWidths in
+      this.markerWidth = columnWidths[0]
+    }
+  }
+}

@@ -1,0 +1,49 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension VoiceInteractor {
+  @JavaClass("android.app.VoiceInteractor$Prompt")
+  open class Prompt: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: CharSequence?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: [CharSequence?], _ arg1: CharSequence?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn describeContents() -> Int32
+
+  @JavaMethod
+  open fn getVoicePromptAt(_ arg0: Int32) -> CharSequence!
+
+  @JavaMethod
+  open fn countVoicePrompts() -> Int32
+
+  @JavaMethod
+  open fn getVisualPrompt() -> CharSequence!
+
+  @JavaMethod
+  open override fn toString() -> String
+  }
+}
+extension JavaClass<VoiceInteractor.Prompt> {
+  @JavaStaticField(isFinal: true)
+  public var CONTENTS_FILE_DESCRIPTOR: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var PARCELABLE_WRITE_RETURN_VALUE: Int32
+}

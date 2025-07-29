@@ -1,0 +1,76 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension R {
+  @JavaClass("android.R$interpolator")
+  open class interpolator: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+  }
+}
+extension JavaClass<R.interpolator> {
+  @JavaStaticField(isFinal: true)
+  public var accelerate_cubic: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var accelerate_decelerate: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var accelerate_quad: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var accelerate_quint: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var anticipate: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var anticipate_overshoot: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var bounce: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var cycle: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var decelerate_cubic: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var decelerate_quad: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var decelerate_quint: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var fast_out_extra_slow_in: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var fast_out_linear_in: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var fast_out_slow_in: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var linear: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var linear_out_slow_in: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var overshoot: Int32
+}

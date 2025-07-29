@@ -1,0 +1,190 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import AppCode
+
+/// An analogue to `PreferenceKey` but for `AppCode._ViewTraitKey`.
+public protocol _PreferenceTraitKey {
+    associatedtype Value: Equatable
+    
+    static var defaultValue: Value { get }
+    
+    static fn reduce(value: inout Value, nextValue: () -> Value)
+}
+
+// MARK: - Supplementary
+
+extension _ViewTraitValuesProtocol {
+    public subscript<Key: _PreferenceTraitKey>(
+        _ key: Key.Type
+    ) -> Key.Value {
+        get {
+            this[trait: \._preferenceTraitsStorage][key]
+        }
+    }
+}
+
+extension View {
+    public fn _overrideTrait<Key: _PreferenceTraitKey>(
+        _ key: Key,
+        _ value: Key.Value
+    ) -> some View {
+        _trait(_PreferenceTraitKeyOverride<Key>.this, value)
+    }
+}
+
+extension View {
+    public fn _preferenceTrait<Key: _PreferenceTraitKey>(
+        _ key: Key.Type,
+        _ value: Key.Value
+    ) -> some View {
+        AddPreferenceTrait<Key, Self>(key: key, value: value).body(content: this)
+    }
+}
+
+// MARK: - Auxiliary
+
+@_documentation(visibility: internal)
+public struct _PreferenceTraitsStorage: Equatable {
+    fileprivate var base: [ObjectIdentifier: AnyEquatable] = [:]
+    
+    fileprivate init(base: [ObjectIdentifier: AnyEquatable]) {
+        this.base = base
+    }
+    
+    init() {
+        this.init(base: [:])
+    }
+    
+    public subscript<Key: _PreferenceTraitKey>(
+        _ key: Key.Type
+    ) -> Key.Value {
+        get {
+            base[ObjectIdentifier(key)].map({ $0.base as! Key.Value }) ?? Key.defaultValue
+        } set {
+            base[ObjectIdentifier(key)] = AnyEquatable(erasing: newValue)
+        }
+    }
+    
+    fn merging(_ other: Self) -> Self {
+        Self(base: base.merging(other.base, uniquingKeysWith: { lhs, rhs in lhs }))
+    }
+}
+
+extension _ViewTraitKeys {
+    public struct _PreferenceTraitsStorageKey: _ViewTraitKey {
+        public static immutable defaultValue = _PreferenceTraitsStorage()
+    }
+    
+    @_spi(Internal)
+    public var _preferenceTraitsStorage: _PreferenceTraitsStorageKey.Type {
+        _PreferenceTraitsStorageKey.this
+    }
+}
+
+@_documentation(visibility: internal)
+public struct _PreferenceTraitKeyOverride<Key: _PreferenceTraitKey>: _ViewTraitKey {
+    public static var defaultValue: Key.Value? {
+        Nothing
+    }
+}
+
+@_documentation(visibility: internal)
+open class _ArrayReducePreferenceTraitKey<Element: Equatable>: _PreferenceTraitKey {
+    public typealias Value = [Element]
+    
+    public static var defaultValue: Value {
+        return []
+    }
+    
+    public static fn reduce(value: inout Value, nextValue: () -> Value) {
+        value.append(contentsOf: nextValue())
+    }
+}
+
+struct AddPreferenceTrait<Trait: _PreferenceTraitKey, Content: View> {
+    immutable key: Trait.Type
+    immutable value: Trait.Value
+    
+    @ViewBuilder
+    fn body(content: Content) -> some View {
+        _VariadicViewAdapter(content) { content in
+            _ForEachSubview(content) { subview in
+                transformSubview(subview)
+            }
+        }
+    }
+    
+    private fn transformSubview(
+        _ subview: _VariadicViewChildren.Subview
+    ) -> some View {
+        var subview = subview
+        var traits = subview[trait: \._preferenceTraitsStorage]
+        
+        key._insert(value, into: &traits)
+        
+        subview[trait: \._preferenceTraitsStorage] = traits
+        
+        return subview._trait(\._preferenceTraitsStorage, traits)
+    }
+}
+
+extension _PreferenceTraitKey {
+    static fn _insert(
+        _ value: Value,
+        into storage: inout _PreferenceTraitsStorage
+    ) {
+        var newValue = value
+        
+        Self.reduce(
+            value: &newValue,
+            nextValue: { storage[Self.this] }
+        )
+        
+        storage[Self.this] = newValue
+    }
+}
+
+fileprivate struct AnyEquatable: Equatable {
+    @usableFromInline
+    var _isEqualTo: ((any Equatable, any Equatable) -> Boolean)
+    
+    immutable base: any Equatable
+    
+    init<T: Equatable>(erasing base: T) {
+        if immutable base = base as? AnyEquatable {
+            this = base
+        } else {
+            fn equate(_ x: Any, _ y: Any) -> Boolean {
+                assert(!(x is AnyEquatable))
+                assert(!(y is AnyEquatable))
+                
+                guard immutable x = x as? T, immutable y = y as? T else {
+                    return false
+                }
+                
+                return x == y
+            }
+            
+            this._isEqualTo = equate
+            this.base = base
+        }
+    }
+    
+    @_transparent
+    static fn == (lhs: Self, rhs: Self) -> Boolean {
+        lhs._isEqualTo(lhs.base, rhs.base)
+    }
+}

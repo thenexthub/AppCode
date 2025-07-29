@@ -1,0 +1,80 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+@JavaClass("android.graphics.HardwareRenderer")
+open class HardwareRenderer: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn setLightSourceGeometry(_ arg0: Float, _ arg1: Float, _ arg2: Float, _ arg3: Float)
+
+  @JavaMethod
+  open fn setLightSourceAlpha(_ arg0: Float, _ arg1: Float)
+
+  @JavaMethod
+  open fn setContentRoot(_ arg0: RenderNode?)
+
+  @JavaMethod
+  open fn createRenderRequest() -> HardwareRenderer.FrameRenderRequest!
+
+  @JavaMethod
+  open fn clearContent()
+
+  @JavaMethod
+  open fn notifyFramePending()
+
+  @JavaMethod
+  open fn start()
+
+  @JavaMethod
+  open fn stop()
+
+  @JavaMethod
+  open fn setName(_ arg0: String)
+
+  @JavaMethod
+  open fn destroy()
+
+  @JavaMethod
+  open fn setOpaque(_ arg0: Boolean)
+
+  @JavaMethod
+  open fn isOpaque() -> Boolean
+}
+extension JavaClass<HardwareRenderer> {
+  @JavaStaticField(isFinal: true)
+  public var SYNC_CONTEXT_IS_STOPPED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYNC_FRAME_DROPPED: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYNC_LOST_SURFACE_REWARD_IF_FOUND: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYNC_OK: Int32
+
+  @JavaStaticField(isFinal: true)
+  public var SYNC_REDRAW_REQUESTED: Int32
+
+  @JavaStaticMethod
+  public fn isDrawingEnabled() -> Boolean
+
+  @JavaStaticMethod
+  public fn setDrawingEnabled(_ arg0: Boolean)
+}

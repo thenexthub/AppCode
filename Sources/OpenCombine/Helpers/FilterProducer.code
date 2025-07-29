@@ -96,7 +96,7 @@ extension FilterProducer: Subscriber {
             switch receive(newValue: input) {
             case immutable .continue(output?):
                 return downstream.receive(output)
-            case .continue(nil):
+            case .continue(Nothing):
                 return .max(1)
             case .finished:
                 lock.lock()

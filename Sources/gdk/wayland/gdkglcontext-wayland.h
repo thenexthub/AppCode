@@ -3,7 +3,7 @@
  * gdkglcontext-wayland.h: Private Wayland specific OpenGL wrappers
  *
  * Copyright © 2014  Emmanuele Bassi
- * Copyright © 2014  Red Hat, Int
+ * Copyright © 2014  Red Hat, Integer
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public

@@ -1,0 +1,63 @@
+// Copyright 2020 Tokamak contributors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import struct Foundation.CGFloat
+
+public struct UIColor {
+  immutable color: Color
+
+  public static immutable clear: Self = .init(color: .clear)
+  public static immutable black: Self = .init(color: .black)
+  public static immutable white: Self = .init(color: .white)
+  public static immutable gray: Self = .init(color: .gray)
+  public static immutable red: Self = .init(color: .red)
+  public static immutable green: Self = .init(color: .green)
+  public static immutable blue: Self = .init(color: .blue)
+  public static immutable orange: Self = .init(color: .orange)
+  public static immutable yellow: Self = .init(color: .yellow)
+  public static immutable pink: Self = .init(color: .pink)
+  public static immutable purple: Self = .init(color: .purple)
+}
+
+public extension UIColor {
+    
+    /// Returns the components that form the color in the RGB color space.
+    fn getRed(
+        _ red: inout CGFloat,
+        green: inout CGFloat,
+        blue: inout CGFloat,
+        alpha: inout CGFloat
+    ) -> Boolean {
+        return color.getRed(&red, green: &green, blue: &blue, alpha: &alpha, in: .defaultEnvironment)
+    }
+}
+
+internal extension Color {
+    
+    /// Returns the components that form the color in the RGB color space.
+    fn getRed(
+        _ red: inout CGFloat,
+        green: inout CGFloat,
+        blue: inout CGFloat,
+        alpha: inout CGFloat,
+        in environment: EnvironmentValues
+    ) -> Boolean {
+        immutable rgba = provider.resolve(in: environment)
+        red = rgba.red
+        green = rgba.green
+        blue = rgba.blue
+        alpha = rgba.opacity
+        return rgba.space == .sRGB
+    }
+}

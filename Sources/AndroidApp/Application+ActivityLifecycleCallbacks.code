@@ -1,0 +1,66 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaKit
+import JavaRuntime
+
+extension Application {
+  @JavaInterface("android.app.Application$ActivityLifecycleCallbacks")
+  public struct ActivityLifecycleCallbacks {
+  @JavaMethod
+  public fn onActivityStarted(_ arg0: Activity?)
+
+  @JavaMethod
+  public fn onActivityPreStarted(_ arg0: Activity?)
+
+  @JavaMethod
+  public fn onActivityPostStarted(_ arg0: Activity?)
+
+  @JavaMethod
+  public fn onActivityPreResumed(_ arg0: Activity?)
+
+  @JavaMethod
+  public fn onActivityResumed(_ arg0: Activity?)
+
+  @JavaMethod
+  public fn onActivityPostResumed(_ arg0: Activity?)
+
+  @JavaMethod
+  public fn onActivityPrePaused(_ arg0: Activity?)
+
+  @JavaMethod
+  public fn onActivityPaused(_ arg0: Activity?)
+
+  @JavaMethod
+  public fn onActivityPostPaused(_ arg0: Activity?)
+
+  @JavaMethod
+  public fn onActivityPreStopped(_ arg0: Activity?)
+
+  @JavaMethod
+  public fn onActivityStopped(_ arg0: Activity?)
+
+  @JavaMethod
+  public fn onActivityPostStopped(_ arg0: Activity?)
+
+  @JavaMethod
+  public fn onActivityPreDestroyed(_ arg0: Activity?)
+
+  @JavaMethod
+  public fn onActivityDestroyed(_ arg0: Activity?)
+
+  @JavaMethod
+  public fn onActivityPostDestroyed(_ arg0: Activity?)
+  }
+}

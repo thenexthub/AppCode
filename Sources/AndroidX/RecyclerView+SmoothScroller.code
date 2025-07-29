@@ -1,0 +1,77 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import AndroidGraphics
+import AndroidView
+import JavaKit
+import JavaRuntime
+
+extension RecyclerView {
+  @JavaClass("androidx.recyclerview.widget.RecyclerView$SmoothScroller")
+  open class SmoothScroller: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn getTargetPosition() -> Int32
+
+  @JavaMethod
+  open fn computeScrollVectorForPosition(_ arg0: Int32) -> PointF!
+
+  @JavaMethod
+  open fn getLayoutManager() -> RecyclerView.LayoutManager!
+
+  @JavaMethod
+  open fn onTargetFound(_ arg0: View?, _ arg1: RecyclerView.State?, _ arg2: RecyclerView.SmoothScroller.Action?)
+
+  @JavaMethod
+  open fn onSeekTargetStep(_ arg0: Int32, _ arg1: Int32, _ arg2: RecyclerView.State?, _ arg3: RecyclerView.SmoothScroller.Action?)
+
+  @JavaMethod
+  open fn onStop()
+
+  @JavaMethod
+  open fn findViewByPosition(_ arg0: Int32) -> View!
+
+  @JavaMethod
+  open fn getChildPosition(_ arg0: View?) -> Int32
+
+  @JavaMethod
+  open fn setTargetPosition(_ arg0: Int32)
+
+  @JavaMethod
+  open fn isPendingInitialRun() -> Boolean
+
+  @JavaMethod
+  open fn isRunning() -> Boolean
+
+  @JavaMethod
+  open fn instantScrollToPosition(_ arg0: Int32)
+
+  @JavaMethod
+  open fn onChildAttachedToWindow(_ arg0: View?)
+
+  @JavaMethod
+  open fn onStart()
+
+  @JavaMethod
+  open fn stop()
+
+  @JavaMethod
+  open fn normalize(_ arg0: PointF?)
+
+  @JavaMethod
+  open fn getChildCount() -> Int32
+  }
+}

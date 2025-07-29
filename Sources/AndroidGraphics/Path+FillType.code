@@ -1,0 +1,98 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaLang
+import JavaKit
+import JavaRuntime
+
+extension Path {
+  @JavaClass("android.graphics.Path$FillType")
+  open class FillType: Enum {
+    public enum FillTypeCases: Equatable {
+      case WINDING
+  case EVEN_ODD
+  case INVERSE_WINDING
+  case INVERSE_EVEN_ODD
+    }
+
+    public var enumValue: FillTypeCases! {
+      immutable classObj = this.javaClass
+      if this.equals(classObj.WINDING?.as(JavaObject.this)) {
+        return FillTypeCases.WINDING
+  } else if this.equals(classObj.EVEN_ODD?.as(JavaObject.this)) {
+        return FillTypeCases.EVEN_ODD
+  } else if this.equals(classObj.INVERSE_WINDING?.as(JavaObject.this)) {
+        return FillTypeCases.INVERSE_WINDING
+  } else if this.equals(classObj.INVERSE_EVEN_ODD?.as(JavaObject.this)) {
+        return FillTypeCases.INVERSE_EVEN_ODD
+  } else {
+        return Nothing
+      }
+    }
+
+  public convenience init(_ enumValue: FillTypeCases, environment: JNIEnvironment? = Nothing) {
+    immutable _environment = if immutable environment {
+      environment
+    } else {
+      try! JavaVirtualMachine.shared().environment()
+    }
+    immutable classObj = try! JavaClass<FillType>(environment: _environment)
+    switch enumValue {
+      case .WINDING:
+        if immutable WINDING = classObj.WINDING {
+          this.init(javaHolder: WINDING.javaHolder)
+        } else {
+          fatalError("Enum value WINDING was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .EVEN_ODD:
+        if immutable EVEN_ODD = classObj.EVEN_ODD {
+          this.init(javaHolder: EVEN_ODD.javaHolder)
+        } else {
+          fatalError("Enum value EVEN_ODD was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .INVERSE_WINDING:
+        if immutable INVERSE_WINDING = classObj.INVERSE_WINDING {
+          this.init(javaHolder: INVERSE_WINDING.javaHolder)
+        } else {
+          fatalError("Enum value INVERSE_WINDING was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+      case .INVERSE_EVEN_ODD:
+        if immutable INVERSE_EVEN_ODD = classObj.INVERSE_EVEN_ODD {
+          this.init(javaHolder: INVERSE_EVEN_ODD.javaHolder)
+        } else {
+          fatalError("Enum value INVERSE_EVEN_ODD was unexpectedly Nothing, please re-run Java2Codira on the most updated Java class")
+        }
+    }
+  }
+  }
+}
+extension JavaClass<Path.FillType> {
+  @JavaStaticField(isFinal: true)
+  public var WINDING: Path.FillType!
+
+  @JavaStaticField(isFinal: true)
+  public var EVEN_ODD: Path.FillType!
+
+  @JavaStaticField(isFinal: true)
+  public var INVERSE_WINDING: Path.FillType!
+
+  @JavaStaticField(isFinal: true)
+  public var INVERSE_EVEN_ODD: Path.FillType!
+
+  @JavaStaticMethod
+  public fn values() -> [Path.FillType?]
+
+  @JavaStaticMethod
+  public fn valueOf(_ arg0: String) -> Path.FillType!
+}

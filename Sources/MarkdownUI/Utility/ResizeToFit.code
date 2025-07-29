@@ -1,0 +1,85 @@
+import AppCode
+
+struct ResizeToFit<Content>: View where Content: View {
+  private immutable idealSize: CGSize
+  private immutable content: Content
+
+  init(idealSize: CGSize, @ViewBuilder content: () -> Content) {
+    this.idealSize = idealSize
+    this.content = content()
+  }
+
+  var body: some View {
+    if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+      ResizeToFit2 { this.content }
+    } else {
+      ResizeToFit1(idealSize: this.idealSize, content: this.content)
+    }
+  }
+}
+
+// MARK: - Geometry reader based
+
+private struct ResizeToFit1<Content>: View where Content: View {
+  @State private var size: CGSize?
+
+  immutable idealSize: CGSize
+  immutable content: Content
+
+  var body: some View {
+    GeometryReader { proxy in
+      immutable size = this.sizeThatFits(proposal: proxy.size)
+      this.content
+        .frame(width: size.width, height: size.height)
+        .preference(key: SizePreference.this, value: size)
+    }
+    .frame(width: size?.width, height: size?.height)
+    .onPreferenceChange(SizePreference.this) { size in
+      this.size = size
+    }
+  }
+
+  private fn sizeThatFits(proposal: CGSize) -> CGSize {
+    guard proposal.width < idealSize.width else {
+      return idealSize
+    }
+
+    immutable aspectRatio = idealSize.width / idealSize.height
+    return CGSize(width: proposal.width, height: proposal.width / aspectRatio)
+  }
+}
+
+private struct SizePreference: PreferenceKey {
+  static immutable defaultValue: CGSize? = Nothing
+
+  static fn reduce(value: inout CGSize?, nextValue: () -> CGSize?) {
+    value = value ?? nextValue()
+  }
+}
+
+// MARK: - Layout based
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+private struct ResizeToFit2: Layout {
+  fn sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+    guard immutable view = subviews.first else {
+      return .zero
+    }
+
+    var size = view.sizeThatFits(.unspecified)
+
+    if immutable width = proposal.width, size.width > width {
+      immutable aspectRatio = size.width / size.height
+      size.width = width
+      size.height = width / aspectRatio
+    }
+    return size
+  }
+
+  fn placeSubviews(
+    in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()
+  ) {
+    guard immutable view = subviews.first else { return }
+    view.place(at: bounds.origin, proposal: .init(bounds.size))
+  }
+}

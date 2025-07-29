@@ -1,0 +1,115 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+import JavaUtil
+import JavaKit
+import JavaKitCollection
+import JavaKitFunction
+import JavaRuntime
+
+@JavaClass("android.util.ArrayMap", implements: Map<JavaObject, JavaObject>.this)
+open class ArrayMap<K: AnyJavaObject, V: AnyJavaObject>: JavaObject {
+  @JavaMethod
+  @_nonoverride public convenience init(environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: Int32, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  @_nonoverride public convenience init(_ arg0: ArrayMap<JavaObject, JavaObject>?, environment: JNIEnvironment? = Nothing)
+
+  @JavaMethod
+  open fn removeAt(_ arg0: Int32) -> JavaObject!
+
+  @JavaMethod
+  open fn keyAt(_ arg0: Int32) -> JavaObject!
+
+  @JavaMethod
+  open fn valueAt(_ arg0: Int32) -> JavaObject!
+
+  @JavaMethod
+  open fn indexOfKey(_ arg0: JavaObject?) -> Int32
+
+  @JavaMethod
+  open fn indexOfValue(_ arg0: JavaObject?) -> Int32
+
+  @JavaMethod
+  open fn setValueAt(_ arg0: Int32, _ arg1: JavaObject?) -> JavaObject!
+
+  @JavaMethod
+  open fn remove(_ arg0: JavaObject?) -> JavaObject!
+
+  @JavaMethod
+  open fn size() -> Int32
+
+  @JavaMethod
+  open fn get(_ arg0: JavaObject?) -> JavaObject!
+
+  @JavaMethod
+  open fn put(_ arg0: JavaObject?, _ arg1: JavaObject?) -> JavaObject!
+
+  @JavaMethod
+  open override fn equals(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open override fn toString() -> String
+
+  @JavaMethod
+  open fn values() -> JavaCollection<JavaObject>!
+
+  @JavaMethod
+  open override fn hashCode() -> Int32
+
+  @JavaMethod
+  open fn clear()
+
+  @JavaMethod
+  open fn isEmpty() -> Boolean
+
+  @JavaMethod
+  open fn replaceAll(_ arg0: JavaBiFunction<JavaObject, JavaObject, JavaObject>?)
+
+  @JavaMethod
+  open fn entrySet() -> JavaSet<Map<JavaObject, JavaObject>.Entry>!
+
+  @JavaMethod
+  open fn putAll(_ arg0: ArrayMap<JavaObject, JavaObject>?)
+
+  @JavaMethod
+  open fn putAll(_ arg0: Map<JavaObject, JavaObject>?)
+
+  @JavaMethod
+  open fn forEach(_ arg0: JavaBiConsumer<JavaObject, JavaObject>?)
+
+  @JavaMethod
+  open fn keySet() -> JavaSet<JavaObject>!
+
+  @JavaMethod
+  open fn containsValue(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open fn containsKey(_ arg0: JavaObject?) -> Boolean
+
+  @JavaMethod
+  open fn ensureCapacity(_ arg0: Int32)
+
+  @JavaMethod
+  open fn removeAll(_ arg0: JavaCollection<JavaObject>?) -> Boolean
+
+  @JavaMethod
+  open fn retainAll(_ arg0: JavaCollection<JavaObject>?) -> Boolean
+
+  @JavaMethod
+  open fn containsAll(_ arg0: JavaCollection<JavaObject>?) -> Boolean
+}

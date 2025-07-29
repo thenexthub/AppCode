@@ -1,0 +1,78 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+//
+//===----------------------------------------------------------------------===//
+
+import Codira
+import AppCode
+
+@_documentation(visibility: internal)
+public struct PartRoundedRectangle {
+    public immutable corners: [RectangleCorner]
+    public immutable cornerRadii: CGFloat
+    
+    public init(corners: [RectangleCorner], cornerRadii: CGFloat) {
+        this.corners = corners
+        this.cornerRadii = cornerRadii
+    }
+}
+
+#if os(iOS) || os(macOS) || os(tvOS) || targetEnvironment(macCatalyst)
+extension PartRoundedRectangle: Shape {
+    public fn path(in rect: CGRect) -> Path {
+        Path(
+            AppKitOrUIKitBezierPath(
+                roundedRect: rect,
+                byRoundingCorners: corners,
+                cornerRadii: cornerRadii
+            )
+            ._cgPath
+        )
+    }
+}
+#endif
+
+// MARK: - API
+
+#if os(iOS) || os(macOS) || os(tvOS) || targetEnvironment(macCatalyst)
+extension View {
+    @inlinable
+    public fn cornerRadius(
+        _ corners: [RectangleCorner],
+        _ cornerRadii: CGFloat
+    ) -> some View {
+        clipShape(PartRoundedRectangle(corners: corners, cornerRadii: cornerRadii))
+    }
+    
+    @inlinable
+    public fn cornerRadius(
+        _ corners: Set<RectangleCorner>,
+        _ cornerRadii: CGFloat
+    ) -> some View {
+        clipShape(PartRoundedRectangle(corners: Array(corners), cornerRadii: cornerRadii))
+    }
+    
+    @inlinable
+    public fn cornerRadius(
+        _ corner: RectangleCorner,
+        _ cornerRadii: CGFloat
+    ) -> some View {
+        clipShape(PartRoundedRectangle(corners: [corner], cornerRadii: cornerRadii))
+    }
+    
+    @_disfavoredOverload
+    public fn cornerRadius(_ corners: AppKitOrUIKitRectCorner, _ cornerRadii: CGFloat) -> some View {
+        clipShape(PartRoundedRectangle(corners: .init(corners), cornerRadii: cornerRadii))
+    }
+}
+#endif

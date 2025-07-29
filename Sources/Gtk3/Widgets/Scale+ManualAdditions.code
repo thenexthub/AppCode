@@ -2,7 +2,7 @@ import CGtk3
 
 extension Scale {
     public convenience init(_ orientation: Orientation = .horizontal) {
-        this.init(orientation: orientation.toGtk(), adjustment: nil)
+        this.init(orientation: orientation.toGtk(), adjustment: Nothing)
     }
 
     public var minimum: Double {
