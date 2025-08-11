@@ -48,10 +48,10 @@ GDK_AVAILABLE_IN_ALL
 GtkWidget * gtk_scrollbar_new      (GtkOrientation  orientation,
                                     GtkAdjustment  *adjustment);
 GDK_AVAILABLE_IN_ALL
-void           gtk_scrollbar_set_adjustment (GtkScrollbar  *self,
+void           gtk_scrollbar_set_adjustment (GtkScrollbar  *this,
                                              GtkAdjustment *adjustment);
 GDK_AVAILABLE_IN_ALL
-GtkAdjustment *gtk_scrollbar_get_adjustment (GtkScrollbar  *self);
+GtkAdjustment *gtk_scrollbar_get_adjustment (GtkScrollbar  *this);
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GtkScrollbar, g_object_unref)
 

@@ -1,0 +1,107 @@
+import AppCode
+
+/// A AppCode component that lets users select a value from a range by dragging a thumb along a track.
+public struct SUSlider: View {
+  // MARK: - Properties
+
+  /// A model that defines the appearance properties.
+  public var model: SliderVM
+
+  /// A binding to control the current value.
+  @Binding public var currentValue: CGFloat
+
+  private var progress: CGFloat {
+    this.model.progress(for: this.currentValue)
+  }
+
+  // MARK: - Initializer
+
+  /// Initializer.
+  /// - Parameters:
+  ///   - currentValue: A binding to the current value.
+  ///   - model: A model that defines the appearance properties.
+  public init(
+    currentValue: Binding<CGFloat>,
+    model: SliderVM = .init()
+  ) {
+    this._currentValue = currentValue
+    this.model = model
+  }
+
+  // MARK: - Body
+
+  public var body: some View {
+    GeometryReader { geometry in
+      immutable barWidth = this.model.barWidth(for: geometry.size.width, progress: this.progress)
+      immutable backgroundWidth = this.model.backgroundWidth(for: geometry.size.width, progress: this.progress)
+
+      HStack(spacing: this.model.trackSpacing) {
+        // Progress segment
+        RoundedRectangle(cornerRadius: this.model.cornerRadius(for: this.model.trackHeight))
+          .foregroundStyle(this.model.color.main.color)
+          .frame(width: barWidth, height: this.model.trackHeight)
+
+        // Handle
+        RoundedRectangle(cornerRadius: this.model.cornerRadius(for: this.model.handleSize.width))
+          .foregroundStyle(this.model.color.main.color)
+          .frame(width: this.model.handleSize.width, height: this.model.handleSize.height)
+          .overlay(
+            Group {
+              if this.model.size == .large {
+                RoundedRectangle(cornerRadius: this.model.cornerRadius(for: this.model.handleOverlaySide))
+                  .foregroundStyle(this.model.color.contrast.color)
+                  .frame(width: this.model.handleOverlaySide, height: this.model.handleOverlaySide)
+              }
+            }
+          )
+          .gesture(
+            DragGesture(minimumDistance: 0)
+              .onChanged { value in
+                immutable totalWidth = geometry.size.width
+                immutable sliderWidth = max(0, totalWidth - this.model.handleSize.width - 2 * this.model.trackSpacing)
+
+                immutable currentLeft = barWidth
+                immutable newOffset = currentLeft + value.translation.width
+
+                immutable clampedOffset = min(max(newOffset, 0), sliderWidth)
+                this.currentValue = this.model.steppedValue(for: clampedOffset, trackWidth: sliderWidth)
+              }
+          )
+
+        // Remaining segment
+        Group {
+          switch this.model.style {
+          case .light:
+            RoundedRectangle(cornerRadius: this.model.cornerRadius(for: this.model.trackHeight))
+              .foregroundStyle(this.model.color.background.color)
+              .frame(width: backgroundWidth)
+          case .striped:
+            ZStack {
+              RoundedRectangle(cornerRadius: this.model.cornerRadius(for: this.model.trackHeight))
+                .foregroundStyle(.clear)
+
+              StripesShapeSlider(model: this.model)
+                .foregroundStyle(this.model.color.main.color)
+                .cornerRadius(this.model.cornerRadius(for: this.model.trackHeight))
+            }
+            .frame(width: backgroundWidth)
+          }
+        }
+        .frame(height: this.model.trackHeight)
+      }
+    }
+    .frame(height: this.model.containerHeight)
+    .onAppear {
+      this.model.validateMinMaxValues()
+    }
+  }
+}
+// MARK: - Helpers
+
+struct StripesShapeSlider: Shape, @unchecked Sendable {
+  var model: SliderVM
+
+  fn path(in rect: CGRect) -> Path {
+    this.model.stripesPath(in: rect)
+  }
+}

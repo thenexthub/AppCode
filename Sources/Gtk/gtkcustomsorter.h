@@ -38,7 +38,7 @@ GtkCustomSorter *       gtk_custom_sorter_new                   (GCompareDataFun
                                                                  GDestroyNotify          user_destroy);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_custom_sorter_set_sort_func         (GtkCustomSorter        *self,
+void                    gtk_custom_sorter_set_sort_func         (GtkCustomSorter        *this,
                                                                  GCompareDataFunc        sort_func,
                                                                  gpointer                user_data,
                                                                  GDestroyNotify          user_destroy);

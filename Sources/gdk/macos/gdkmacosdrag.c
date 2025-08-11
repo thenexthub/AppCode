@@ -120,37 +120,37 @@ gdk_macos_drag_set_hotspot (GdkDrag *drag,
                             int      hot_x,
                             int      hot_y)
 {
-  GdkMacosDrag *self = (GdkMacosDrag *)drag;
+  GdkMacosDrag *this = (GdkMacosDrag *)drag;
   int change_x;
   int change_y;
 
-  g_assert (GDK_IS_MACOS_DRAG (self));
+  g_assert (GDK_IS_MACOS_DRAG (this));
 
-  change_x = hot_x - self->hot_x;
-  change_y = hot_y - self->hot_y;
+  change_x = hot_x - this->hot_x;
+  change_y = hot_y - this->hot_y;
 
-  self->hot_x = hot_x;
-  self->hot_y = hot_y;
+  this->hot_x = hot_x;
+  this->hot_y = hot_y;
 
   if (change_x || change_y)
-    _gdk_macos_surface_move (GDK_MACOS_SURFACE (self->drag_surface),
-                             GDK_SURFACE (self->drag_surface)->x + change_x,
-                             GDK_SURFACE (self->drag_surface)->y + change_y);
+    _gdk_macos_surface_move (GDK_MACOS_SURFACE (this->drag_surface),
+                             GDK_SURFACE (this->drag_surface)->x + change_x,
+                             GDK_SURFACE (this->drag_surface)->y + change_y);
 }
 
 static void
 gdk_macos_drag_drop_done (GdkDrag  *drag,
                           gboolean  success)
 {
-  GdkMacosDrag *self = (GdkMacosDrag *)drag;
+  GdkMacosDrag *this = (GdkMacosDrag *)drag;
   GdkMacosZoomback *zb;
   guint id;
 
-  g_assert (GDK_IS_MACOS_DRAG (self));
+  g_assert (GDK_IS_MACOS_DRAG (this));
 
   if (success)
     {
-      gdk_surface_hide (GDK_SURFACE (self->drag_surface));
+      gdk_surface_hide (GDK_SURFACE (this->drag_surface));
       g_object_unref (drag);
       return;
     }
@@ -159,8 +159,8 @@ gdk_macos_drag_drop_done (GdkDrag  *drag,
    * towards the original position.
    */
   zb = g_new0 (GdkMacosZoomback, 1);
-  zb->drag = g_object_ref (self);
-  zb->frame_clock = gdk_surface_get_frame_clock (GDK_SURFACE (self->drag_surface));
+  zb->drag = g_object_ref (this);
+  zb->frame_clock = gdk_surface_get_frame_clock (GDK_SURFACE (this->drag_surface));
   zb->start_time = gdk_frame_clock_get_frame_time (zb->frame_clock);
 
   id = g_timeout_add_full (G_PRIORITY_DEFAULT, 17,
@@ -172,15 +172,15 @@ gdk_macos_drag_drop_done (GdkDrag  *drag,
 }
 
 void
-gdk_macos_drag_set_cursor (GdkMacosDrag *self,
+gdk_macos_drag_set_cursor (GdkMacosDrag *this,
                            GdkCursor    *cursor)
 {
   NSCursor *nscursor;
 
-  g_assert (GDK_IS_MACOS_DRAG (self));
+  g_assert (GDK_IS_MACOS_DRAG (this));
   g_assert (!cursor || GDK_IS_CURSOR (cursor));
 
-  g_set_object (&self->cursor, cursor);
+  g_set_object (&this->cursor, cursor);
 
   nscursor = _gdk_macos_cursor_get_ns_cursor (cursor);
 
@@ -191,25 +191,25 @@ gdk_macos_drag_set_cursor (GdkMacosDrag *self,
 static void
 gdk_macos_drag_update_cursor (GdkDrag *drag)
 {
-  GdkMacosDrag *self = (GdkMacosDrag *)drag;
+  GdkMacosDrag *this = (GdkMacosDrag *)drag;
   GdkCursor *cursor;
 
   cursor = gdk_drag_get_cursor (drag, gdk_drag_get_selected_action (drag));
-  gdk_macos_drag_set_cursor (self, cursor);
+  gdk_macos_drag_set_cursor (this, cursor);
 }
 
 static void
 gdk_macos_drag_cancel (GdkDrag             *drag,
                        GdkDragCancelReason  reason)
 {
-  GdkMacosDrag *self = (GdkMacosDrag *)drag;
+  GdkMacosDrag *this = (GdkMacosDrag *)drag;
 
-  g_assert (GDK_IS_MACOS_DRAG (self));
+  g_assert (GDK_IS_MACOS_DRAG (this));
 
-  if (self->cancelled)
+  if (this->cancelled)
     return;
 
-  self->cancelled = TRUE;
+  this->cancelled = TRUE;
   gdk_drag_drop_done (drag, FALSE);
 }
 
@@ -217,14 +217,14 @@ static void
 gdk_macos_drag_drop_performed (GdkDrag *drag,
                                guint32  time)
 {
-  GdkMacosDrag *self = (GdkMacosDrag *)drag;
+  GdkMacosDrag *this = (GdkMacosDrag *)drag;
 
-  g_assert (GDK_IS_MACOS_DRAG (self));
+  g_assert (GDK_IS_MACOS_DRAG (this));
 
-  g_object_ref (self);
+  g_object_ref (this);
   g_signal_emit_by_name (drag, "dnd-finished");
   gdk_drag_drop_done (drag, TRUE);
-  g_object_unref (self);
+  g_object_unref (this);
 }
 
 static void
@@ -287,10 +287,10 @@ gdk_drag_get_current_actions (GdkModifierType  state,
 static void
 gdk_macos_drag_finalize (GObject *object)
 {
-  GdkMacosDrag *self = (GdkMacosDrag *)object;
-  GdkMacosDragSurface *drag_surface = g_steal_pointer (&self->drag_surface);
+  GdkMacosDrag *this = (GdkMacosDrag *)object;
+  GdkMacosDragSurface *drag_surface = g_steal_pointer (&this->drag_surface);
 
-  g_clear_object (&self->cursor);
+  g_clear_object (&this->cursor);
 
   G_OBJECT_CLASS (gdk_macos_drag_parent_class)->finalize (object);
 
@@ -304,12 +304,12 @@ gdk_macos_drag_get_property (GObject    *object,
                              GValue     *value,
                              GParamSpec *pspec)
 {
-  GdkMacosDrag *self = GDK_MACOS_DRAG (object);
+  GdkMacosDrag *this = GDK_MACOS_DRAG (object);
 
   switch (prop_id)
     {
     case PROP_DRAG_SURFACE:
-      g_value_set_object (value, self->drag_surface);
+      g_value_set_object (value, this->drag_surface);
       break;
 
     default:
@@ -323,12 +323,12 @@ gdk_macos_drag_set_property (GObject      *object,
                              const GValue *value,
                              GParamSpec   *pspec)
 {
-  GdkMacosDrag *self = GDK_MACOS_DRAG (object);
+  GdkMacosDrag *this = GDK_MACOS_DRAG (object);
 
   switch (prop_id)
     {
     case PROP_DRAG_SURFACE:
-      self->drag_surface = g_value_dup_object (value);
+      this->drag_surface = g_value_dup_object (value);
       break;
 
     default:
@@ -362,12 +362,12 @@ gdk_macos_drag_class_init (GdkMacosDragClass *klass)
 }
 
 static void
-gdk_macos_drag_init (GdkMacosDrag *self)
+gdk_macos_drag_init (GdkMacosDrag *this)
 {
 }
 
 gboolean
-_gdk_macos_drag_begin (GdkMacosDrag       *self,
+_gdk_macos_drag_begin (GdkMacosDrag       *this,
                        GdkContentProvider *content,
                        GdkMacosWindow     *window)
 {
@@ -376,12 +376,12 @@ _gdk_macos_drag_begin (GdkMacosDrag       *self,
   NSPasteboardItem *item;
   NSEvent *nsevent;
 
-  g_return_val_if_fail (GDK_IS_MACOS_DRAG (self), FALSE);
+  g_return_val_if_fail (GDK_IS_MACOS_DRAG (this), FALSE);
   g_return_val_if_fail (GDK_IS_MACOS_WINDOW (window), FALSE);
 
   GDK_BEGIN_MACOS_ALLOC_POOL;
 
-  item = [[GdkMacosPasteboardItem alloc] initForDrag:GDK_DRAG (self) withContentProvider:content];
+  item = [[GdkMacosPasteboardItem alloc] initForDrag:GDK_DRAG (this) withContentProvider:content];
   items = [NSArray arrayWithObject:item];
   nsevent = _gdk_macos_display_get_last_nsevent ();
 
@@ -391,22 +391,22 @@ _gdk_macos_drag_begin (GdkMacosDrag       *self,
 
   GDK_END_MACOS_ALLOC_POOL;
 
-  _gdk_macos_display_set_drag (GDK_MACOS_DISPLAY (gdk_drag_get_display (GDK_DRAG (self))),
+  _gdk_macos_display_set_drag (GDK_MACOS_DISPLAY (gdk_drag_get_display (GDK_DRAG (this))),
                                [session draggingSequenceNumber],
-                               GDK_DRAG (self));
+                               GDK_DRAG (this));
 
   return TRUE;
 }
 
 NSDragOperation
-_gdk_macos_drag_operation (GdkMacosDrag *self)
+_gdk_macos_drag_operation (GdkMacosDrag *this)
 {
   NSDragOperation operation = NSDragOperationNone;
   GdkDragAction actions;
 
-  g_return_val_if_fail (GDK_IS_MACOS_DRAG (self), NSDragOperationNone);
+  g_return_val_if_fail (GDK_IS_MACOS_DRAG (this), NSDragOperationNone);
 
-  actions = gdk_drag_get_actions (GDK_DRAG (self));
+  actions = gdk_drag_get_actions (GDK_DRAG (this));
 
   if (actions & GDK_ACTION_LINK)
     operation |= NSDragOperationLink;
@@ -433,47 +433,47 @@ _gdk_macos_drag_ns_operation_to_action (NSDragOperation operation)
 }
 
 void
-_gdk_macos_drag_surface_move (GdkMacosDrag *self,
+_gdk_macos_drag_surface_move (GdkMacosDrag *this,
                               int           x_root,
                               int           y_root)
 {
-  g_return_if_fail (GDK_IS_MACOS_DRAG (self));
+  g_return_if_fail (GDK_IS_MACOS_DRAG (this));
 
-  self->last_x = x_root;
-  self->last_y = y_root;
+  this->last_x = x_root;
+  this->last_y = y_root;
 
-  if (GDK_IS_MACOS_SURFACE (self->drag_surface))
-    _gdk_macos_surface_move (GDK_MACOS_SURFACE (self->drag_surface),
-                             x_root - self->hot_x,
-                             y_root - self->hot_y);
+  if (GDK_IS_MACOS_SURFACE (this->drag_surface))
+    _gdk_macos_surface_move (GDK_MACOS_SURFACE (this->drag_surface),
+                             x_root - this->hot_x,
+                             y_root - this->hot_y);
 }
 
 void
-_gdk_macos_drag_set_start_position (GdkMacosDrag *self,
+_gdk_macos_drag_set_start_position (GdkMacosDrag *this,
                                     int           start_x,
                                     int           start_y)
 {
-  g_return_if_fail (GDK_IS_MACOS_DRAG (self));
+  g_return_if_fail (GDK_IS_MACOS_DRAG (this));
 
-  self->start_x = start_x;
-  self->start_y = start_y;
+  this->start_x = start_x;
+  this->start_y = start_y;
 }
 
 void
-_gdk_macos_drag_set_actions (GdkMacosDrag    *self,
+_gdk_macos_drag_set_actions (GdkMacosDrag    *this,
                              GdkModifierType  mods)
 {
   GdkDragAction suggested_action;
   GdkDragAction possible_actions;
 
-  g_assert (GDK_IS_MACOS_DRAG (self));
+  g_assert (GDK_IS_MACOS_DRAG (this));
 
   gdk_drag_get_current_actions (mods,
                                 GDK_BUTTON_PRIMARY,
-                                gdk_drag_get_actions (GDK_DRAG (self)),
+                                gdk_drag_get_actions (GDK_DRAG (this)),
                                 &suggested_action,
                                 &possible_actions);
 
-  gdk_drag_set_selected_action (GDK_DRAG (self), suggested_action);
-  gdk_drag_set_actions (GDK_DRAG (self), possible_actions);
+  gdk_drag_set_selected_action (GDK_DRAG (this), suggested_action);
+  gdk_drag_set_actions (GDK_DRAG (this), possible_actions);
 }

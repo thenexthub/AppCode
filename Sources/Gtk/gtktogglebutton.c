@@ -228,25 +228,25 @@ gtk_toggle_button_dispose (GObject *object)
 }
 
 static GtkToggleButton *
-get_group_next (GtkToggleButton *self)
+get_group_next (GtkToggleButton *this)
 {
-  return ((GtkToggleButtonPrivate *)gtk_toggle_button_get_instance_private (self))->group_next;
+  return ((GtkToggleButtonPrivate *)gtk_toggle_button_get_instance_private (this))->group_next;
 }
 
 static GtkToggleButton *
-get_group_prev (GtkToggleButton *self)
+get_group_prev (GtkToggleButton *this)
 {
-  return ((GtkToggleButtonPrivate *)gtk_toggle_button_get_instance_private (self))->group_prev;
+  return ((GtkToggleButtonPrivate *)gtk_toggle_button_get_instance_private (this))->group_prev;
 }
 
 static GtkToggleButton *
-get_group_first (GtkToggleButton *self)
+get_group_first (GtkToggleButton *this)
 {
   GtkToggleButton *group_first = NULL;
   GtkToggleButton *iter;
 
   /* Find first in group */
-  iter = self;
+  iter = this;
   while (iter)
     {
       group_first = iter;
@@ -264,8 +264,8 @@ get_group_first (GtkToggleButton *self)
 static void
 gtk_toggle_button_realize (GtkWidget *widget)
 {
-  GtkToggleButton *self = GTK_TOGGLE_BUTTON (widget);
-  GtkToggleButtonPrivate *priv = gtk_toggle_button_get_instance_private (self);
+  GtkToggleButton *this = GTK_TOGGLE_BUTTON (widget);
+  GtkToggleButtonPrivate *priv = gtk_toggle_button_get_instance_private (this);
 
   GTK_WIDGET_CLASS (gtk_toggle_button_parent_class)->realize (widget);
 
@@ -495,7 +495,7 @@ gtk_toggle_button_toggled (GtkToggleButton *toggle_button)
  * @group: (nullable) (transfer none): another `GtkToggleButton` to
  *   form a group with
  *
- * Adds @self to the group of @group.
+ * Adds @this to the group of @group.
  *
  * In a group of multiple toggle buttons, only one button can be active
  * at a time.

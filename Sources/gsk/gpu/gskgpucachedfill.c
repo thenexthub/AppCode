@@ -40,15 +40,15 @@ struct _GskGpuCachedFill
 static void
 gsk_gpu_cached_fill_free (GskGpuCached *cached)
 {
-  GskGpuCachedFill *self = (GskGpuCachedFill *) cached;
+  GskGpuCachedFill *this = (GskGpuCachedFill *) cached;
   GskGpuCachePrivate *priv = gsk_gpu_cache_get_private (cached->cache);
 
-  g_hash_table_remove (priv->fill_cache, self);
+  g_hash_table_remove (priv->fill_cache, this);
 
-  gsk_path_unref (self->path);
-  g_object_unref (self->image);
+  gsk_path_unref (this->path);
+  g_object_unref (this->image);
 
-  g_free (self);
+  g_free (this);
 }
 
 static gboolean
@@ -71,14 +71,14 @@ gsk_gpu_cached_fill_should_collect (GskGpuCached *cached,
 static guint
 gsk_gpu_cached_fill_hash (gconstpointer data)
 {
-  const GskGpuCachedFill *self = data;
+  const GskGpuCachedFill *this = data;
 
-  return GPOINTER_TO_UINT (self->path) ^
-         (self->fill_rule) << 28 ^
-         (((guint) (self->sx * 16)) << 16) ^
-         ((guint) (self->sy * 16) << 8) ^
-         (self->fx << 4) ^
-         self->fy;
+  return GPOINTER_TO_UINT (this->path) ^
+         (this->fill_rule) << 28 ^
+         (((guint) (this->sx * 16)) << 16) ^
+         ((guint) (this->sy * 16) << 8) ^
+         (this->fx << 4) ^
+         this->fy;
 }
 
 static gboolean
@@ -163,7 +163,7 @@ mod_subpixel (float  pos,
 }
 
 GskGpuImage *
-gsk_gpu_cached_fill_lookup (GskGpuCache           *self,
+gsk_gpu_cached_fill_lookup (GskGpuCache           *this,
                             GskGpuFrame           *frame,
                             const graphene_vec2_t *scale,
                             const graphene_rect_t *bounds,
@@ -171,7 +171,7 @@ gsk_gpu_cached_fill_lookup (GskGpuCache           *self,
                             GskFillRule            fill_rule,
                             graphene_rect_t       *out_rect)
 {
-  GskGpuCachePrivate *priv = gsk_gpu_cache_get_private (self);
+  GskGpuCachePrivate *priv = gsk_gpu_cache_get_private (this);
   float sx = graphene_vec2_get_x (scale);
   float sy = graphene_vec2_get_y (scale);
   float dx, dy;
@@ -218,7 +218,7 @@ gsk_gpu_cached_fill_lookup (GskGpuCache           *self,
   image_width = round (sx * viewport.size.width);
   image_height = round (sy * viewport.size.height);
 
-  image = gsk_gpu_cache_add_atlas_image (self,
+  image = gsk_gpu_cache_add_atlas_image (this,
                                          image_width + 2 * padding,
                                          image_height + 2 * padding,
                                          &atlas_x,
@@ -227,7 +227,7 @@ gsk_gpu_cached_fill_lookup (GskGpuCache           *self,
   if (image)
     {
       g_object_ref (image);
-      cache = gsk_gpu_cached_new_from_current_atlas (self, &GSK_GPU_CACHED_FILL_CLASS);
+      cache = gsk_gpu_cached_new_from_current_atlas (this, &GSK_GPU_CACHED_FILL_CLASS);
       cache->path = gsk_path_ref (path);
       cache->fill_rule = fill_rule;
       cache->sx = sx;
@@ -257,7 +257,7 @@ gsk_gpu_cached_fill_lookup (GskGpuCache           *self,
       image_width = ceil (sx * viewport.size.width);
       image_height = ceil (sy * viewport.size.height);
 
-      image = gsk_gpu_device_create_upload_image (gsk_gpu_cache_get_device (self),
+      image = gsk_gpu_device_create_upload_image (gsk_gpu_cache_get_device (this),
                                                   FALSE,
                                                   GDK_MEMORY_DEFAULT,
                                                   gsk_gpu_color_state_get_conversion (GDK_COLOR_STATE_SRGB),

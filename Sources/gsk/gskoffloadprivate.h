@@ -51,7 +51,7 @@ typedef struct
 GskOffload *        gsk_offload_new                      (GdkSurface       *surface,
                                                           GskRenderNode    *root,
                                                           cairo_region_t   *diff);
-void                gsk_offload_free                     (GskOffload       *self);
+void                gsk_offload_free                     (GskOffload       *this);
 
-GskOffloadInfo    * gsk_offload_get_subsurface_info      (GskOffload       *self,
+GskOffloadInfo    * gsk_offload_get_subsurface_info      (GskOffload       *this,
                                                           GdkSubsurface    *subsurface);

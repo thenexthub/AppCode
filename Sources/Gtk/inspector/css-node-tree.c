@@ -70,18 +70,18 @@ enum {
 G_DEFINE_TYPE (CssProperty, css_property, G_TYPE_OBJECT);
 
 static void
-css_property_init (CssProperty *self)
+css_property_init (CssProperty *this)
 {
 }
 
 static void
 css_property_finalize (GObject *object)
 {
-  CssProperty *self = CSS_PROPERTY (object);
+  CssProperty *this = CSS_PROPERTY (object);
 
-  g_free (self->name);
-  g_free (self->value);
-  g_free (self->location);
+  g_free (this->name);
+  g_free (this->value);
+  g_free (this->location);
 
   G_OBJECT_CLASS (css_property_parent_class)->finalize (object);
 }
@@ -92,20 +92,20 @@ css_property_get_property (GObject    *object,
                            GValue     *value,
                            GParamSpec *pspec)
 {
-  CssProperty *self = CSS_PROPERTY (object);
+  CssProperty *this = CSS_PROPERTY (object);
 
   switch (property_id)
     {
     case CSS_PROPERTY_PROP_NAME:
-      g_value_set_string (value, self->name);
+      g_value_set_string (value, this->name);
       break;
 
     case CSS_PROPERTY_PROP_VALUE:
-      g_value_set_string (value, self->value);
+      g_value_set_string (value, this->value);
       break;
 
     case CSS_PROPERTY_PROP_LOCATION:
-      g_value_set_string (value, self->location);
+      g_value_set_string (value, this->location);
       break;
 
     default:
@@ -150,15 +150,15 @@ css_property_new (const char *name,
                   const char *value,
                   const char *location)
 {
-  CssProperty *self;
+  CssProperty *this;
 
-  self = g_object_new (css_property_get_type (), NULL);
+  this = g_object_new (css_property_get_type (), NULL);
 
-  self->name = g_strdup (name);
-  self->value = g_strdup (value);
-  self->location = g_strdup (location);
+  this->name = g_strdup (name);
+  this->value = g_strdup (value);
+  this->location = g_strdup (location);
 
-  return self;
+  return this;
 }
 
 /* }}} */

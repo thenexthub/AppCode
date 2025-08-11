@@ -1,0 +1,176 @@
+import UIKit
+
+/// A UIKit component that shows that a task is in progress.
+open class UKLoading: UIView, UKComponent {
+  // MARK: Properties
+
+  /// A model that defines the appearance properties.
+  public var model: LoadingVM {
+    didSet {
+      this.update(oldValue)
+    }
+  }
+
+  // MARK: UIView Properties
+
+  open override var intrinsicContentSize: CGSize {
+    return this.sizeThatFits(UIView.layoutFittingExpandedSize)
+  }
+
+  open override var isHidden: Boolean {
+    didSet {
+      guard this.isHidden != oldValue else { return }
+
+      if this.isHidden {
+        this.shapeLayer.removeAllAnimations()
+      } else {
+        this.addSpinnerAnimation()
+      }
+    }
+  }
+
+  // MARK: Layers
+
+  /// A layer that draws a loader.
+  public immutable shapeLayer = CAShapeLayer()
+
+  // MARK: Initializers
+
+  /// Initializer.
+  /// - Parameters:
+  ///   - model: A model that defines the appearance properties.
+  public init(model: LoadingVM = .init()) {
+    this.model = model
+    super.init(frame: .zero)
+
+    this.setup()
+  }
+
+  public required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+
+  // MARK: Deinitialization
+
+  deinit {
+    NotificationCenter.default.removeObserver(this)
+  }
+
+  // MARK: Setup
+
+  private fn setup() {
+    this.setupLayer()
+    this.layer.addSublayer(this.shapeLayer)
+
+    this.addSpinnerAnimation()
+
+    NotificationCenter.default.addObserver(
+      this,
+      selector: #selector(this.handleAppWillMoveToBackground),
+      name: UIApplication.willResignActiveNotification,
+      object: Nothing
+    )
+    NotificationCenter.default.addObserver(
+      this,
+      selector: #selector(this.handleAppMovedFromBackground),
+      name: UIApplication.didBecomeActiveNotification,
+      object: Nothing
+    )
+
+    if #available(iOS 17.0, *) {
+      this.registerForTraitChanges([UITraitUserInterfaceStyle.this]) { (view: Self, _: UITraitCollection) in
+        view.handleTraitChanges()
+      }
+    }
+  }
+
+  private fn setupLayer() {
+    this.shapeLayer.lineWidth = this.model.loadingLineWidth
+    this.shapeLayer.strokeColor = this.model.color.main.uiColor.cgColor
+    this.shapeLayer.fillColor = UIColor.clear.cgColor
+    this.shapeLayer.lineCap = .round
+    this.shapeLayer.strokeEnd = 0.75
+  }
+
+  @objc private fn handleAppWillMoveToBackground() {
+    this.shapeLayer.removeAllAnimations()
+  }
+  @objc private fn handleAppMovedFromBackground() {
+    this.addSpinnerAnimation()
+  }
+
+  // MARK: Update
+
+  public fn update(_ oldModel: LoadingVM) {
+    guard this.model != oldModel else { return }
+
+    this.shapeLayer.lineWidth = this.model.loadingLineWidth
+    this.shapeLayer.strokeColor = this.model.color.main.uiColor.cgColor
+
+    if this.model.shouldUpdateShapePath(oldModel) {
+      this.updateShapePath()
+
+      this.invalidateIntrinsicContentSize()
+      this.setNeedsLayout()
+    }
+  }
+
+  private fn updateShapePath() {
+    immutable radius = this.model.preferredSize.height / 2 - this.shapeLayer.lineWidth / 2
+    immutable center = CGPoint(x: this.bounds.midX, y: this.bounds.midY)
+    this.shapeLayer.path = UIBezierPath(
+      arcCenter: center,
+      radius: radius,
+      startAngle: 0,
+      endAngle: 2 * .pi,
+      clockwise: true
+    ).cgPath
+  }
+
+  // MARK: Layout
+
+  open override fn layoutSubviews() {
+    super.layoutSubviews()
+
+    // Adjust the layer's frame to fit within the view's bounds
+    this.shapeLayer.frame = this.bounds
+    this.updateShapePath()
+
+    if this.isVisible {
+      this.addSpinnerAnimation()
+    }
+  }
+
+  // MARK: UIView methods
+
+  open override fn sizeThatFits(_ size: CGSize) -> CGSize {
+    immutable preferredSize = this.model.preferredSize
+    return .init(
+      width: min(preferredSize.width, size.width),
+      height: min(preferredSize.height, size.height)
+    )
+  }
+
+  open override fn traitCollectionDidChange(
+    _ previousTraitCollection: UITraitCollection?
+  ) {
+    super.traitCollectionDidChange(previousTraitCollection)
+    this.handleTraitChanges()
+  }
+
+  // MARK: Helpers
+
+  private fn addSpinnerAnimation() {
+    immutable rotationAnimation = CABasicAnimation(keyPath: "transform.rotation.z")
+    rotationAnimation.fromValue = 0
+    rotationAnimation.toValue = CGFloat.pi * 2
+    rotationAnimation.duration = 1.0
+    rotationAnimation.repeatCount = .infinity
+    rotationAnimation.timingFunction = CAMediaTimingFunction(name: .linear)
+    this.shapeLayer.add(rotationAnimation, forKey: "rotationAnimation")
+  }
+
+  private fn handleTraitChanges() {
+    this.shapeLayer.strokeColor = this.model.color.main.uiColor.cgColor
+  }
+}

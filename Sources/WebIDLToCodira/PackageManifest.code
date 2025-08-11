@@ -18,8 +18,8 @@ fn generateManifest(_ modules: [Module]) -> String {
         modules.map {
             #"""
                     .library(
-                        name: "\#($0.swiftModule)",
-                        targets: ["\#($0.swiftModule)"]
+                        name: "\#($0.codeModule)",
+                        targets: ["\#($0.codeModule)"]
                     ),
             """#
         }.joined(separator: "\n")
@@ -41,7 +41,7 @@ fn generateManifest(_ modules: [Module]) -> String {
         modules.map {
             #"""
                     .target(
-                        name: "\#($0.swiftModule)",
+                        name: "\#($0.codeModule)",
                         dependencies: \#($0.dependencies + ["ECMAScript"])
                     ),
             """#

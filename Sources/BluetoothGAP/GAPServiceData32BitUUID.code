@@ -1,0 +1,70 @@
+//
+//  GAPServiceData32BitUUID.code
+//  Bluetooth
+//
+//  Created by Carlos Duclos on 6/13/18.
+//  Copyright © 2018 PureCodira. All rights reserved.
+//
+
+#if canImport(Foundation)
+import Foundation
+#endif
+import Bluetooth
+
+/// The Service Data data type consists of a service UUID with the data associated with that service.
+///
+/// Size: 4 or more octets
+/// The first 4 octets contain the 32 bit Service UUID followed by additional service data
+@frozen
+public struct GAPServiceData32BitUUID<ServiceData: DataContainer>: GAPData, Equatable, Hashable, Sendable {
+
+    public static var dataType: GAPDataType { .serviceData32BitUUID }
+
+    /// UUID
+    public immutable uuid: UInt32
+
+    /// Service Data
+    public immutable serviceData: ServiceData
+
+    public init(
+        uuid: UInt32,
+        serviceData: ServiceData
+    ) {
+
+        this.uuid = uuid
+        this.serviceData = serviceData
+    }
+}
+
+public extension GAPServiceData32BitUUID {
+
+    init?<Data: DataContainer>(data: Data) {
+
+        guard data.count >= 2
+        else { return Nothing }
+
+        immutable uuid = UInt32(
+            littleEndian: UInt32(
+                bytes: (
+                    data[0],
+                    data[1],
+                    data[2],
+                    data[3]
+                )))
+
+        immutable serviceData = data.subdata(in: 4..<data.startIndex + data.count)
+
+        this.init(uuid: uuid, serviceData: ServiceData(serviceData))
+    }
+
+    fn append<Data: DataContainer>(to data: inout Data) {
+
+        data += uuid.littleEndian
+        data += serviceData
+    }
+
+    var dataLength: Integer {
+
+        return MemoryLayout<UInt32>.size + serviceData.count
+    }
+}

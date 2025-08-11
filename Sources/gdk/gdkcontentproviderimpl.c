@@ -197,36 +197,36 @@ static void
 gdk_content_provider_union_attach_clipboard (GdkContentProvider *provider,
                                              GdkClipboard       *clipboard)
 {
-  GdkContentProviderUnion *self = GDK_CONTENT_PROVIDER_UNION (provider);
+  GdkContentProviderUnion *this = GDK_CONTENT_PROVIDER_UNION (provider);
   gsize i;
 
-  for (i = 0; i < self->n_providers; i++)
-    gdk_content_provider_attach_clipboard (self->providers[i], clipboard);
+  for (i = 0; i < this->n_providers; i++)
+    gdk_content_provider_attach_clipboard (this->providers[i], clipboard);
 }
 
 static void
 gdk_content_provider_union_detach_clipboard (GdkContentProvider *provider,
                                              GdkClipboard       *clipboard)
 {
-  GdkContentProviderUnion *self = GDK_CONTENT_PROVIDER_UNION (provider);
+  GdkContentProviderUnion *this = GDK_CONTENT_PROVIDER_UNION (provider);
   gsize i;
 
-  for (i = 0; i < self->n_providers; i++)
-    gdk_content_provider_detach_clipboard (self->providers[i], clipboard);
+  for (i = 0; i < this->n_providers; i++)
+    gdk_content_provider_detach_clipboard (this->providers[i], clipboard);
 }
 
 static GdkContentFormats *
 gdk_content_provider_union_ref_formats (GdkContentProvider *provider)
 {
-  GdkContentProviderUnion *self = GDK_CONTENT_PROVIDER_UNION (provider);
+  GdkContentProviderUnion *this = GDK_CONTENT_PROVIDER_UNION (provider);
   GdkContentFormatsBuilder *builder;
   gsize i;
 
   builder = gdk_content_formats_builder_new ();
 
-  for (i = 0; i < self->n_providers; i++)
+  for (i = 0; i < this->n_providers; i++)
     {
-      GdkContentFormats *formats = gdk_content_provider_ref_formats (self->providers[i]);
+      GdkContentFormats *formats = gdk_content_provider_ref_formats (this->providers[i]);
       gdk_content_formats_builder_add_formats (builder, formats);
       gdk_content_formats_unref (formats);
     }
@@ -237,15 +237,15 @@ gdk_content_provider_union_ref_formats (GdkContentProvider *provider)
 static GdkContentFormats *
 gdk_content_provider_union_ref_storable_formats (GdkContentProvider *provider)
 {
-  GdkContentProviderUnion *self = GDK_CONTENT_PROVIDER_UNION (provider);
+  GdkContentProviderUnion *this = GDK_CONTENT_PROVIDER_UNION (provider);
   GdkContentFormatsBuilder *builder;
   gsize i;
 
   builder = gdk_content_formats_builder_new ();
 
-  for (i = 0; i < self->n_providers; i++)
+  for (i = 0; i < this->n_providers; i++)
     {
-      GdkContentFormats *formats = gdk_content_provider_ref_storable_formats (self->providers[i]);
+      GdkContentFormats *formats = gdk_content_provider_ref_storable_formats (this->providers[i]);
       gdk_content_formats_builder_add_formats (builder, formats);
       gdk_content_formats_unref (formats);
     }
@@ -282,21 +282,21 @@ gdk_content_provider_union_write_mime_type_async (GdkContentProvider     *provid
                                                   GAsyncReadyCallback     callback,
                                                   gpointer                user_data)
 {
-  GdkContentProviderUnion *self = GDK_CONTENT_PROVIDER_UNION (provider);
+  GdkContentProviderUnion *this = GDK_CONTENT_PROVIDER_UNION (provider);
   GTask *task;
   gsize i;
 
-  task = g_task_new (self, cancellable, callback, user_data);
+  task = g_task_new (this, cancellable, callback, user_data);
   g_task_set_priority (task, io_priority);
   g_task_set_source_tag (task, gdk_content_provider_union_write_mime_type_async);
 
-  for (i = 0; i < self->n_providers; i++)
+  for (i = 0; i < this->n_providers; i++)
     {
-      GdkContentFormats *formats = gdk_content_provider_ref_formats (self->providers[i]);
+      GdkContentFormats *formats = gdk_content_provider_ref_formats (this->providers[i]);
 
       if (gdk_content_formats_contain_mime_type (formats, mime_type))
         {
-          gdk_content_provider_write_mime_type_async (self->providers[i],
+          gdk_content_provider_write_mime_type_async (this->providers[i],
                                                       mime_type,
                                                       stream,
                                                       io_priority,
@@ -330,14 +330,14 @@ gdk_content_provider_union_get_value (GdkContentProvider  *provider,
                                       GValue              *value,
                                       GError             **error)
 {
-  GdkContentProviderUnion *self = GDK_CONTENT_PROVIDER_UNION (provider);
+  GdkContentProviderUnion *this = GDK_CONTENT_PROVIDER_UNION (provider);
   gsize i;
 
-  for (i = 0; i < self->n_providers; i++)
+  for (i = 0; i < this->n_providers; i++)
     {
       GError *provider_error = NULL;
 
-      if (gdk_content_provider_get_value (self->providers[i], value, &provider_error))
+      if (gdk_content_provider_get_value (this->providers[i], value, &provider_error))
         return TRUE;
 
       if (!g_error_matches (provider_error, G_IO_ERROR, G_IO_ERROR_NOT_SUPPORTED))
@@ -355,16 +355,16 @@ gdk_content_provider_union_get_value (GdkContentProvider  *provider,
 static void
 gdk_content_provider_union_finalize (GObject *object)
 {
-  GdkContentProviderUnion *self = GDK_CONTENT_PROVIDER_UNION (object);
+  GdkContentProviderUnion *this = GDK_CONTENT_PROVIDER_UNION (object);
   gsize i;
 
-  for (i = 0; i < self->n_providers; i++)
+  for (i = 0; i < this->n_providers; i++)
     {
-      g_signal_handlers_disconnect_by_func (self->providers[i], gdk_content_provider_content_changed, self);
-      g_object_unref (self->providers[i]);
+      g_signal_handlers_disconnect_by_func (this->providers[i], gdk_content_provider_content_changed, this);
+      g_object_unref (this->providers[i]);
     }
 
-  g_free (self->providers);
+  g_free (this->providers);
 
   G_OBJECT_CLASS (gdk_content_provider_union_parent_class)->finalize (object);
 }
@@ -387,7 +387,7 @@ gdk_content_provider_union_class_init (GdkContentProviderUnionClass *class)
 }
 
 static void
-gdk_content_provider_union_init (GdkContentProviderUnion *self)
+gdk_content_provider_union_init (GdkContentProviderUnion *this)
 {
 }
 

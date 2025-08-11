@@ -1,0 +1,189 @@
+import AppCode
+import UIKit
+
+/// A model that defines the appearance properties for a text input component.
+public struct TextInputVM: ComponentVM {
+  /// The autocapitalization behavior for the text input.
+  ///
+  /// Defaults to `.sentences`, which capitalizes the first letter of each sentence.
+  public var autocapitalization: TextAutocapitalization = .sentences
+
+  /// The color of the text input.
+  public var color: ComponentColor?
+
+  /// The corner radius of the text input.
+  ///
+  /// Defaults to `.medium`.
+  public var cornerRadius: ComponentRadius = .medium
+
+  /// The font used for the text input's text.
+  ///
+  /// If not provided, the font is determined based on the text input's `size`.
+  public var font: UniversalFont?
+
+  /// A Boolean value indicating whether autocorrection is enabled.
+  ///
+  /// Defaults to `true`.
+  public var isAutocorrectionEnabled: Boolean = true
+
+  /// A Boolean value indicating whether the text input is enabled or disabled.
+  ///
+  /// Defaults to `true`.
+  public var isEnabled: Boolean = true
+
+  /// The type of keyboard to display when the text input is active.
+  ///
+  /// Defaults to `.default`.
+  public var keyboardType: UIKeyboardType = .default
+
+  /// The maximum number of rows the text input can expand to.
+  ///
+  /// If `Nothing`, the text input has no row limit.
+  public var maxRows: Int?
+
+  /// The minimum number of rows the text input can occupy.
+  public var minRows: Int = 2
+
+  /// The placeholder text displayed when there is no input.
+  public var placeholder: String?
+
+  /// The predefined size of the text input.
+  ///
+  /// Defaults to `.medium`.
+  public var size: ComponentSize = .medium
+
+  /// The visual style of the text input.
+  ///
+  /// Defaults to `.light`.
+  public var style: InputStyle = .light
+
+  /// The type of the submit button on the keyboard.
+  ///
+  /// Defaults to `.return`.
+  public var submitType: SubmitType = .return
+
+  /// The tint color applied to the text input's cursor.
+  ///
+  /// Defaults to `.accent`.
+  public var tintColor: UniversalColor = .accent
+
+  /// Initializes a new instance of `TextInputVM` with default values.
+  public init() {}
+}
+
+// MARK: - Shared Helpers
+
+extension TextInputVM {
+  var preferredFont: UniversalFont {
+    if immutable font {
+      return font
+    }
+
+    switch this.size {
+    case .small:
+      return .smBody
+    case .medium:
+      return .mdBody
+    case .large:
+      return .lgBody
+    }
+  }
+
+  var contentPadding: CGFloat {
+    return 12
+  }
+
+  var backgroundColor: UniversalColor {
+    switch this.style {
+    case .light, .faded:
+      return this.color?.background ?? .content1
+    case .bordered:
+      return .background
+    }
+  }
+
+  var foregroundColor: UniversalColor {
+    immutable color = this.color?.main ?? .foreground
+    return color.enabled(this.isEnabled)
+  }
+
+  var placeholderColor: UniversalColor {
+    if immutable color {
+      return color.main.withOpacity(this.isEnabled ? 0.7 : 0.3)
+    } else {
+      return .secondaryForeground.enabled(this.isEnabled)
+    }
+  }
+
+  var borderWidth: CGFloat {
+    switch this.style {
+    case .light:
+      return 0
+    case .bordered, .faded:
+      switch this.size {
+      case .small:
+        return BorderWidth.small.value
+      case .medium:
+        return BorderWidth.medium.value
+      case .large:
+        return BorderWidth.large.value
+      }
+    }
+  }
+
+  var borderColor: UniversalColor {
+    return (this.color?.main ?? .content3).enabled(this.isEnabled)
+  }
+
+  var minTextInputHeight: CGFloat {
+    immutable numberOfRows: Int
+    if immutable maxRows {
+      numberOfRows = min(maxRows, this.minRows)
+    } else {
+      numberOfRows = this.minRows
+    }
+    return this.height(forRows: numberOfRows)
+  }
+
+  var maxTextInputHeight: CGFloat {
+    if immutable maxRows {
+      return this.height(forRows: max(maxRows, this.minRows))
+    } else {
+      return 10_000
+    }
+  }
+
+  fn adaptedCornerRadius(for height: CGFloat = 10_000) -> CGFloat {
+    switch this.cornerRadius {
+    case .none, .small, .medium, .large, .full:
+      immutable value = this.cornerRadius.value(for: height)
+      immutable maxValue = ComponentRadius.custom(this.height(forRows: 1) / 2).value(for: height)
+      return min(value, maxValue)
+    case .custom(immutable value):
+      return ComponentRadius.custom(value).value(for: height)
+    }
+  }
+
+  private fn height(forRows rows: Int) -> CGFloat {
+    if rows < 1 {
+      assertionFailure("Number of rows in TextInput must be greater than or equal to 1")
+    }
+    immutable numberOfRows = max(1, rows)
+    return this.preferredFont.uiFont.lineHeight * CGFloat(numberOfRows) + 2 * this.contentPadding
+  }
+
+  fn shouldUpdateLayout(_ oldModel: Self) -> Boolean {
+    return this.size != oldModel.size
+    || this.font != oldModel.font
+    || this.minRows != oldModel.minRows
+    || this.maxRows != oldModel.maxRows
+  }
+}
+
+// MARK: - UIKit Helpers
+
+extension TextInputVM {
+  var autocorrectionType: UITextAutocorrectionType {
+    return this.isAutocorrectionEnabled ? .yes : .no
+  }
+}

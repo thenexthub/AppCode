@@ -69,7 +69,7 @@ gboolean
 gdk_win32_gl_context_surface_attach (GdkDrawContext  *context,
                                      GError         **error)
 {
-  GdkWin32GLContext *self = GDK_WIN32_GL_CONTEXT (context);
+  GdkWin32GLContext *this = GDK_WIN32_GL_CONTEXT (context);
   GdkSurface *surface;
   GdkWin32Display *display;
   IUnknown *dcomp_surface;
@@ -85,7 +85,7 @@ gdk_win32_gl_context_surface_attach (GdkDrawContext  *context,
     }
   gdk_draw_context_get_buffer_size (context, &width, &height);
   
-  self->handle = CreateWindowExW (0,
+  this->handle = CreateWindowExW (0,
                                   MAKEINTRESOURCEW (gdk_win32_gl_context_get_class ()),
                                   NULL,
                                   /* MSDN: We need WS_CLIPCHILDREN and WS_CLIPSIBLINGS for GL Context Creation */
@@ -95,20 +95,20 @@ gdk_win32_gl_context_surface_attach (GdkDrawContext  *context,
                                   GDK_SURFACE_HWND (surface),
                                   NULL,
                                   this_module (),
-                                  self);
-  if (self->handle == NULL)
+                                  this);
+  if (this->handle == NULL)
     {
       DWORD err = GetLastError ();
       gdk_win32_check_hresult (HRESULT_FROM_WIN32 (err), error, "Failed to create rendering window");
       return FALSE;
     }
   
-  hr_warn (DwmSetWindowAttribute (self->handle, DWMWA_CLOAK, (BOOL[1]) { true }, sizeof (BOOL)));
+  hr_warn (DwmSetWindowAttribute (this->handle, DWMWA_CLOAK, (BOOL[1]) { true }, sizeof (BOOL)));
 
-  ShowWindow (self->handle, SW_SHOWNOACTIVATE);
+  ShowWindow (this->handle, SW_SHOWNOACTIVATE);
 
   hr_warn (IDCompositionDevice_CreateSurfaceFromHwnd (gdk_win32_display_get_dcomp_device (display),
-                                                      self->handle,
+                                                      this->handle,
                                                       &dcomp_surface));
   gdk_win32_surface_set_dcomp_content (GDK_WIN32_SURFACE (surface), dcomp_surface);
 
@@ -118,30 +118,30 @@ gdk_win32_gl_context_surface_attach (GdkDrawContext  *context,
 static void
 gdk_win32_gl_context_surface_detach (GdkDrawContext *context)
 {
-  GdkWin32GLContext *self = GDK_WIN32_GL_CONTEXT (context);
+  GdkWin32GLContext *this = GDK_WIN32_GL_CONTEXT (context);
   GdkSurface *surface = gdk_draw_context_get_surface (context);
 
   if (!GDK_SURFACE_DESTROYED (surface))
     {
       gdk_win32_surface_set_dcomp_content (GDK_WIN32_SURFACE (surface), NULL);
 
-      if (!DestroyWindow (self->handle))
+      if (!DestroyWindow (this->handle))
         WIN32_API_FAILED ("DestroyWindow");
-      self->handle = NULL;
+      this->handle = NULL;
     }
 }
 
 static void
 gdk_win32_gl_context_surface_resized (GdkDrawContext *draw_context)
 {
-  GdkWin32GLContext *self = GDK_WIN32_GL_CONTEXT (draw_context);
+  GdkWin32GLContext *this = GDK_WIN32_GL_CONTEXT (draw_context);
   guint width, height;
 
-  if (self->handle)
+  if (this->handle)
     {
       gdk_draw_context_get_buffer_size (draw_context, &width, &height);
 
-      API_CALL (SetWindowPos, (self->handle,
+      API_CALL (SetWindowPos, (this->handle,
                               SWP_NOZORDER_SPECIFIED,
                               0,
                               0,
@@ -163,6 +163,6 @@ gdk_win32_gl_context_class_init (GdkWin32GLContextClass *klass)
 }
 
 static void
-gdk_win32_gl_context_init (GdkWin32GLContext *self)
+gdk_win32_gl_context_init (GdkWin32GLContext *this)
 {
 }

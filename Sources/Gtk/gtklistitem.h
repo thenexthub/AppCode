@@ -32,44 +32,44 @@ GDK_AVAILABLE_IN_ALL
 GDK_DECLARE_INTERNAL_TYPE (GtkListItem, gtk_list_item, GTK, LIST_ITEM, GObject)
 
 GDK_AVAILABLE_IN_ALL
-gpointer        gtk_list_item_get_item                          (GtkListItem            *self);
+gpointer        gtk_list_item_get_item                          (GtkListItem            *this);
 GDK_AVAILABLE_IN_ALL
-guint           gtk_list_item_get_position                      (GtkListItem            *self) G_GNUC_PURE;
+guint           gtk_list_item_get_position                      (GtkListItem            *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_ALL
-gboolean        gtk_list_item_get_selected                      (GtkListItem            *self) G_GNUC_PURE;
+gboolean        gtk_list_item_get_selected                      (GtkListItem            *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_ALL
-gboolean        gtk_list_item_get_selectable                    (GtkListItem            *self) G_GNUC_PURE;
+gboolean        gtk_list_item_get_selectable                    (GtkListItem            *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_ALL
-void            gtk_list_item_set_selectable                    (GtkListItem            *self,
+void            gtk_list_item_set_selectable                    (GtkListItem            *this,
                                                                  gboolean                selectable);
 GDK_AVAILABLE_IN_ALL
-gboolean        gtk_list_item_get_activatable                   (GtkListItem            *self) G_GNUC_PURE;
+gboolean        gtk_list_item_get_activatable                   (GtkListItem            *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_ALL
-void            gtk_list_item_set_activatable                   (GtkListItem            *self,
+void            gtk_list_item_set_activatable                   (GtkListItem            *this,
                                                                  gboolean                activatable);
 GDK_AVAILABLE_IN_4_12
-gboolean        gtk_list_item_get_focusable                     (GtkListItem            *self) G_GNUC_PURE;
+gboolean        gtk_list_item_get_focusable                     (GtkListItem            *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_12
-void            gtk_list_item_set_focusable                     (GtkListItem            *self,
+void            gtk_list_item_set_focusable                     (GtkListItem            *this,
                                                                  gboolean                focusable);
 
 GDK_AVAILABLE_IN_ALL
-void            gtk_list_item_set_child                         (GtkListItem            *self,
+void            gtk_list_item_set_child                         (GtkListItem            *this,
                                                                  GtkWidget              *child);
 GDK_AVAILABLE_IN_ALL
-GtkWidget *     gtk_list_item_get_child                         (GtkListItem            *self);
+GtkWidget *     gtk_list_item_get_child                         (GtkListItem            *this);
 
 GDK_AVAILABLE_IN_4_12
-void            gtk_list_item_set_accessible_description        (GtkListItem            *self,
+void            gtk_list_item_set_accessible_description        (GtkListItem            *this,
                                                                  const char             *description);
 GDK_AVAILABLE_IN_4_12
-const char *    gtk_list_item_get_accessible_description        (GtkListItem            *self);
+const char *    gtk_list_item_get_accessible_description        (GtkListItem            *this);
 
 GDK_AVAILABLE_IN_4_12
-void            gtk_list_item_set_accessible_label              (GtkListItem            *self,
+void            gtk_list_item_set_accessible_label              (GtkListItem            *this,
                                                                  const char             *label);
 GDK_AVAILABLE_IN_4_12
-const char *    gtk_list_item_get_accessible_label              (GtkListItem            *self);
+const char *    gtk_list_item_get_accessible_label              (GtkListItem            *this);
 
 G_END_DECLS
 

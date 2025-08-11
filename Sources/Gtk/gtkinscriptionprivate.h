@@ -25,10 +25,10 @@
 
 G_BEGIN_DECLS
 
-PangoLayout *           gtk_inscription_get_layout              (GtkInscription *self);
+PangoLayout *           gtk_inscription_get_layout              (GtkInscription *this);
 
 void
-gtk_inscription_get_layout_location (GtkInscription *self,
+gtk_inscription_get_layout_location (GtkInscription *this,
                                      float          *x_out,
                                      float          *y_out);
 

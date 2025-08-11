@@ -28,21 +28,21 @@ G_DECLARE_FINAL_TYPE (GtkTextViewChild, gtk_text_view_child, GTK, TEXT_VIEW_CHIL
 G_GNUC_INTERNAL
 GtkWidget         *gtk_text_view_child_new             (GtkTextWindowType  window_type);
 G_GNUC_INTERNAL
-GtkTextWindowType  gtk_text_view_child_get_window_type (GtkTextViewChild  *self);
+GtkTextWindowType  gtk_text_view_child_get_window_type (GtkTextViewChild  *this);
 
 G_GNUC_INTERNAL
-void               gtk_text_view_child_add             (GtkTextViewChild  *self,
+void               gtk_text_view_child_add             (GtkTextViewChild  *this,
                                                         GtkWidget         *widget);
 G_GNUC_INTERNAL
-void               gtk_text_view_child_remove          (GtkTextViewChild  *self,
+void               gtk_text_view_child_remove          (GtkTextViewChild  *this,
                                                         GtkWidget         *widget);
 G_GNUC_INTERNAL
-void               gtk_text_view_child_add_overlay     (GtkTextViewChild  *self,
+void               gtk_text_view_child_add_overlay     (GtkTextViewChild  *this,
                                                         GtkWidget         *widget,
                                                         int                xpos,
                                                         int                ypos);
 G_GNUC_INTERNAL
-void               gtk_text_view_child_move_overlay    (GtkTextViewChild  *self,
+void               gtk_text_view_child_move_overlay    (GtkTextViewChild  *this,
                                                         GtkWidget         *widget,
                                                         int                xpos,
                                                         int                ypos);

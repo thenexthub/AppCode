@@ -28,71 +28,71 @@ gtk_sort_keys_alloc (const GtkSortKeysClass *klass,
                      gsize                   key_size,
                      gsize                   key_align)
 {
-  GtkSortKeys *self;
+  GtkSortKeys *this;
 
   g_return_val_if_fail (key_align > 0, NULL);
 
-  self = g_malloc0 (size);
+  this = g_malloc0 (size);
 
-  self->klass = klass;
-  self->ref_count = 1;
+  this->klass = klass;
+  this->ref_count = 1;
 
-  self->key_size = key_size;
-  self->key_align = key_align;
+  this->key_size = key_size;
+  this->key_align = key_align;
 
-  return self;
+  return this;
 }
 
 GtkSortKeys *
-gtk_sort_keys_ref (GtkSortKeys *self)
+gtk_sort_keys_ref (GtkSortKeys *this)
 {
-  self->ref_count += 1;
+  this->ref_count += 1;
 
-  return self;
+  return this;
 }
 
 void
-gtk_sort_keys_unref (GtkSortKeys *self)
+gtk_sort_keys_unref (GtkSortKeys *this)
 {
-  self->ref_count -= 1;
-  if (self->ref_count > 0)
+  this->ref_count -= 1;
+  if (this->ref_count > 0)
     return;
 
-  self->klass->free (self);
+  this->klass->free (this);
 }
 
 gsize
-gtk_sort_keys_get_key_size (GtkSortKeys *self)
+gtk_sort_keys_get_key_size (GtkSortKeys *this)
 {
-  return self->key_size;
+  return this->key_size;
 }
 
 gsize
-gtk_sort_keys_get_key_align (GtkSortKeys *self)
+gtk_sort_keys_get_key_align (GtkSortKeys *this)
 {
-  return self->key_align;
+  return this->key_align;
 }
 
 GCompareDataFunc
-gtk_sort_keys_get_key_compare_func (GtkSortKeys *self)
+gtk_sort_keys_get_key_compare_func (GtkSortKeys *this)
 {
-  return self->klass->key_compare;
+  return this->klass->key_compare;
 }
 
 gboolean
-gtk_sort_keys_is_compatible (GtkSortKeys *self,
+gtk_sort_keys_is_compatible (GtkSortKeys *this,
                              GtkSortKeys *other)
 {
-  if (self == other)
+  if (this == other)
     return TRUE;
 
-  return self->klass->is_compatible (self, other);
+  return this->klass->is_compatible (this, other);
 }
 
 gboolean
-gtk_sort_keys_needs_clear_key (GtkSortKeys *self)
+gtk_sort_keys_needs_clear_key (GtkSortKeys *this)
 {
-  return self->klass->clear_key != NULL;
+  return this->klass->clear_key != NULL;
 }
 
 static void

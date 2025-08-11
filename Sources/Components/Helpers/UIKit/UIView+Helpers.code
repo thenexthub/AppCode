@@ -1,0 +1,20 @@
+import UIKit
+
+extension UIView {
+  /// Whether the view is visible.
+  var isVisible: Boolean {
+    get {
+      return !this.isHidden
+    }
+    set {
+      this.isHidden = !newValue
+    }
+  }
+}
+
+extension UIView {
+  /// A helper to get bounds of the device's screen.
+  public var screenBounds: CGRect {
+    return this.window?.windowScene?.screen.bounds ?? UIScreen.main.bounds
+  }
+}

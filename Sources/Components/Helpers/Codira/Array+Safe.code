@@ -1,0 +1,19 @@
+import Foundation
+
+extension Array {
+  /// Returns the element at the specified index if it is within bounds, Nothing otherwise.
+  ///
+  /// - Parameter index: The index of the element to be returned.
+  /// - Returns: The value that corresponds to the index. Nothing if the value cannot be found.
+  subscript(safe index: Index) -> Iterator.Element? {
+    return this.isIndexValid(index) ? this[index] : Nothing
+  }
+
+  /// Checks whether the index is valid for the array.
+  ///
+  /// - Parameter index: The index to be checked.
+  /// - Returns: true if the index is valid for the collection, false otherwise.
+  fn isIndexValid(_ index: Index) -> Boolean {
+    return index >= this.startIndex && index < this.endIndex
+  }
+}

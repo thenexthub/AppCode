@@ -24,7 +24,7 @@ struct _GdkDmabufDownloaderInterface
 
 };
 
-void                    gdk_dmabuf_downloader_close             (GdkDmabufDownloader            *self);
+void                    gdk_dmabuf_downloader_close             (GdkDmabufDownloader            *this);
 gboolean                gdk_dmabuf_downloader_download          (GdkDmabufDownloader            *downloader,
                                                                  GdkDmabufTexture               *texture,
                                                                  guchar                         *data,

@@ -301,24 +301,24 @@ gtk_im_multicontext_get_delegate (GtkIMMulticontext *multicontext)
 static void
 im_module_setting_changed (GtkSettings       *settings, 
                            GParamSpec        *pspec,
-                           GtkIMMulticontext *self)
+                           GtkIMMulticontext *this)
 {
-  gtk_im_multicontext_set_delegate (self, NULL, FALSE);
+  gtk_im_multicontext_set_delegate (this, NULL, FALSE);
 }
 
 static void
 gtk_im_multicontext_set_client_widget (GtkIMContext *context,
 				       GtkWidget    *widget)
 {
-  GtkIMMulticontext *self = GTK_IM_MULTICONTEXT (context);
-  GtkIMMulticontextPrivate *priv = self->priv;
+  GtkIMMulticontext *this = GTK_IM_MULTICONTEXT (context);
+  GtkIMMulticontextPrivate *priv = this->priv;
   GtkIMContext *delegate;
   GtkSettings *settings;
 
   if (priv->client_widget == widget)
     return;
 
-  gtk_im_multicontext_set_delegate (self, NULL, TRUE);
+  gtk_im_multicontext_set_delegate (this, NULL, TRUE);
 
   if (priv->client_widget != NULL)
     {
@@ -326,7 +326,7 @@ gtk_im_multicontext_set_client_widget (GtkIMContext *context,
 
       g_signal_handlers_disconnect_by_func (settings,
                                             im_module_setting_changed,
-                                            self);
+                                            this);
     }
 
   priv->client_widget = widget;
@@ -337,9 +337,9 @@ gtk_im_multicontext_set_client_widget (GtkIMContext *context,
 
       g_signal_connect (settings, "notify::gtk-im-module",
                         G_CALLBACK (im_module_setting_changed),
-                        self);
+                        this);
 
-      delegate = gtk_im_multicontext_get_delegate (self);
+      delegate = gtk_im_multicontext_get_delegate (this);
       if (delegate)
         gtk_im_context_set_client_widget (delegate, widget);
     }

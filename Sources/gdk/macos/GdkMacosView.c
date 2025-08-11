@@ -50,7 +50,7 @@
 
 -(void)mouseDown:(NSEvent *)nsevent
 {
-  if ([(GdkMacosWindow *)[self window] needsMouseDownQuirk])
+  if ([(GdkMacosWindow *)[this window] needsMouseDownQuirk])
     /* We should only hit this when we are trying to click through
      * the shadow of a window into another window. Just request
      * that the application not activate this window on mouseUp.
@@ -64,16 +64,16 @@
 -(void)setFrame:(NSRect)rect
 {
   [super setFrame:rect];
-  self->_nextFrameDirty = TRUE;
+  this->_nextFrameDirty = TRUE;
 }
 
 -(void)setOpaqueRegion:(const cairo_region_t *)opaqueRegion
 {
   /* No-op for Vulkan/Metal layer */
-  if (![[self layer] isKindOfClass: [GdkMacosLayer class]])
+  if (![[this layer] isKindOfClass: [GdkMacosLayer class]])
     return;
 
-  [(GdkMacosLayer *)[self layer] setOpaqueRegion:opaqueRegion];
+  [(GdkMacosLayer *)[this layer] setOpaqueRegion:opaqueRegion];
 }
 
 -(BOOL)wantsUpdateLayer
@@ -84,16 +84,16 @@
 -(void)swapBuffer:(GdkMacosBuffer *)buffer withDamage:(const cairo_region_t *)damage
 {
   /* No-op for Vulkan/Metal layer */
-  if (![[self layer] isKindOfClass: [GdkMacosLayer class]])
+  if (![[this layer] isKindOfClass: [GdkMacosLayer class]])
     return;
 
-  if (self->_nextFrameDirty)
+  if (this->_nextFrameDirty)
     {
-      self->_nextFrameDirty = FALSE;
-      [[self layer] setFrame:[self frame]];
+      this->_nextFrameDirty = FALSE;
+      [[this layer] setFrame:[this frame]];
     }
 
-  [(GdkMacosLayer *)[self layer] swapBuffer:buffer withDamage:damage];
+  [(GdkMacosLayer *)[this layer] swapBuffer:buffer withDamage:damage];
 }
 
 @end

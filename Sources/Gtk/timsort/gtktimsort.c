@@ -60,32 +60,32 @@ compute_min_run (gsize n)
 }
 
 void
-gtk_tim_sort_init (GtkTimSort       *self,
+gtk_tim_sort_init (GtkTimSort       *this,
                    gpointer          base,
                    gsize             size,
                    gsize             element_size,
                    GCompareDataFunc  compare_func,
                    gpointer          data)
 {
-  self->element_size = element_size;
-  self->base = base;
-  self->size = size;
-  self->compare_func = compare_func;
-  self->data = data;
+  this->element_size = element_size;
+  this->base = base;
+  this->size = size;
+  this->compare_func = compare_func;
+  this->data = data;
 
-  self->min_gallop = MIN_GALLOP;
-  self->max_merge_size = G_MAXSIZE;
-  self->min_run = compute_min_run (size);
+  this->min_gallop = MIN_GALLOP;
+  this->max_merge_size = G_MAXSIZE;
+  this->min_run = compute_min_run (size);
 
-  self->tmp = NULL;
-  self->tmp_length = 0;
-  self->pending_runs = 0;
+  this->tmp = NULL;
+  this->tmp_length = 0;
+  this->pending_runs = 0;
 }
 
 void
-gtk_tim_sort_finish (GtkTimSort *self)
+gtk_tim_sort_finish (GtkTimSort *this)
 {
-  g_clear_pointer (&self->tmp, g_free);
+  g_clear_pointer (&this->tmp, g_free);
 }
 
 void
@@ -95,21 +95,21 @@ gtk_tim_sort (gpointer         base,
               GCompareDataFunc compare_func,
               gpointer         user_data)
 {
-  GtkTimSort self;
+  GtkTimSort this;
 
-  gtk_tim_sort_init (&self, base, size, element_size, compare_func, user_data);
+  gtk_tim_sort_init (&this, base, size, element_size, compare_func, user_data);
 
-  while (gtk_tim_sort_step (&self, NULL));
+  while (gtk_tim_sort_step (&this, NULL));
 
-  gtk_tim_sort_finish (&self);
+  gtk_tim_sort_finish (&this);
 }
 
 static inline int
-gtk_tim_sort_compare (GtkTimSort *self,
+gtk_tim_sort_compare (GtkTimSort *this,
                       gpointer    a,
                       gpointer    b)
 {
-  return self->compare_func (a, b, self->data);
+  return this->compare_func (a, b, this->data);
 }
 
 
@@ -120,20 +120,20 @@ gtk_tim_sort_compare (GtkTimSort *self,
  * @param runLen  the number of elements in the run
  */
 static void
-gtk_tim_sort_push_run (GtkTimSort *self,
+gtk_tim_sort_push_run (GtkTimSort *this,
                        void       *base,
                        gsize       len)
 {
-  g_assert (self->pending_runs < GTK_TIM_SORT_MAX_PENDING);
-  g_assert (len <= self->size);
+  g_assert (this->pending_runs < GTK_TIM_SORT_MAX_PENDING);
+  g_assert (len <= this->size);
 
-  self->run[self->pending_runs].base = base;
-  self->run[self->pending_runs].len = len;
-  self->pending_runs++;
+  this->run[this->pending_runs].base = base;
+  this->run[this->pending_runs].len = len;
+  this->pending_runs++;
 
   /* Advance to find next run */
-  self->base = ((char *) self->base) + len * self->element_size;
-  self->size -= len;
+  this->base = ((char *) this->base) + len * this->element_size;
+  this->size -= len;
 }
 
 /**
@@ -145,10 +145,10 @@ gtk_tim_sort_push_run (GtkTimSort *self,
  * @return tmp, whether or not it grew
  */
 static gpointer
-gtk_tim_sort_ensure_capacity (GtkTimSort *self,
+gtk_tim_sort_ensure_capacity (GtkTimSort *this,
                               gsize       min_capacity)
 {
-  if (self->tmp_length < min_capacity)
+  if (this->tmp_length < min_capacity)
     {
       /* Compute smallest power of 2 > min_capacity */
       gsize new_size = min_capacity;
@@ -165,12 +165,12 @@ gtk_tim_sort_ensure_capacity (GtkTimSort *self,
       if (new_size == 0) /* (overflow) Not bloody likely! */
         new_size = min_capacity;
 
-      g_free (self->tmp);
-      self->tmp_length = new_size;
-      self->tmp = g_malloc (self->tmp_length * self->element_size);
+      g_free (this->tmp);
+      this->tmp_length = new_size;
+      this->tmp = g_malloc (this->tmp_length * this->element_size);
   }
 
-  return self->tmp;
+  return this->tmp;
 }
 
 static void
@@ -187,7 +187,7 @@ gtk_tim_sort_set_change (GtkTimSortRun *out_change,
 
 /*<private>
  * gtk_tim_sort_get_runs:
- * @self: a GtkTimSort
+ * @this: a GtkTimSort
  * @runs: (out) (caller-allocates): Place to store the 0-terminated list of
  *     runs
  *
@@ -197,23 +197,23 @@ gtk_tim_sort_set_change (GtkTimSortRun *out_change,
  * This can be used with gtk_tim_sort_set_runs() when resuming a sort later.
  **/
 void
-gtk_tim_sort_get_runs (GtkTimSort *self,
+gtk_tim_sort_get_runs (GtkTimSort *this,
                        gsize       runs[GTK_TIM_SORT_MAX_PENDING + 1])
 {
   gsize i;
 
-  g_return_if_fail (self);
+  g_return_if_fail (this);
   g_return_if_fail (runs);
 
-  for (i = 0; i < self->pending_runs; i++)
-    runs[i] = self->run[i].len;
+  for (i = 0; i < this->pending_runs; i++)
+    runs[i] = this->run[i].len;
 
-  runs[self->pending_runs] = 0;
+  runs[this->pending_runs] = 0;
 }
 
 /*<private>
  * gtk_tim_sort_set_runs:
- * @self: a freshly initialized GtkTimSort
+ * @this: a freshly initialized GtkTimSort
  * @runs: (array length=zero-terminated): a 0-terminated list of runs
  *
  * Sets the list of runs. A run is a range of items that are already
@@ -223,21 +223,21 @@ gtk_tim_sort_get_runs (GtkTimSort *self,
  * Runs can only be set at the beginning of the sort operation.
  **/
 void
-gtk_tim_sort_set_runs (GtkTimSort *self,
+gtk_tim_sort_set_runs (GtkTimSort *this,
                        gsize      *runs)
 {
   gsize i;
 
-  g_return_if_fail (self);
-  g_return_if_fail (self->pending_runs == 0);
+  g_return_if_fail (this);
+  g_return_if_fail (this->pending_runs == 0);
 
   for (i = 0; runs[i] != 0; i++)
-    gtk_tim_sort_push_run (self, self->base, runs[i]);
+    gtk_tim_sort_push_run (this, this->base, runs[i]);
 }
 
 /*
  * gtk_tim_sort_set_max_merge_size:
- * @self: a GtkTimSort
+ * @this: a GtkTimSort
  * @max_merge_size: Maximum size of a merge step, 0 for unlimited
  *
  * Sets the maximum size of a merge step. Every time
@@ -259,19 +259,19 @@ gtk_tim_sort_set_runs (GtkTimSort *self,
  * By default, max_merge_size is set to unlimited.
  **/
 void
-gtk_tim_sort_set_max_merge_size (GtkTimSort *self,
+gtk_tim_sort_set_max_merge_size (GtkTimSort *this,
                                  gsize       max_merge_size)
 {
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
 
   if (max_merge_size == 0)
     max_merge_size = G_MAXSIZE;
-  self->max_merge_size = max_merge_size;
+  this->max_merge_size = max_merge_size;
 }
 
 /**
  * gtk_tim_sort_get_progress:
- * @self: a GtkTimSort
+ * @this: a GtkTimSort
  *
  * Does a progress estimate about sort progress, estimates relative
  * to the number of items to sort.
@@ -288,24 +288,24 @@ gtk_tim_sort_set_max_merge_size (GtkTimSort *self,
  * Returns: Rough guess of sort progress
  **/
 gsize
-gtk_tim_sort_get_progress (GtkTimSort *self)
+gtk_tim_sort_get_progress (GtkTimSort *this)
 {
 #define DEPTH 4
   gsize i;
   gsize last, progress;
 
-  g_return_val_if_fail (self != NULL, 0);
+  g_return_val_if_fail (this != NULL, 0);
 
-  if (self->pending_runs == 0)
+  if (this->pending_runs == 0)
     return 0;
 
-  last = self->run[0].len;
+  last = this->run[0].len;
   progress = 0;
 
-  for (i = 1; i < DEPTH + 1 && i < self->pending_runs; i++)
+  for (i = 1; i < DEPTH + 1 && i < this->pending_runs; i++)
     {
-      progress += (DEPTH + 1 - i) * MAX (last, self->run[i].len);
-      last = MIN (last, self->run[i].len);
+      progress += (DEPTH + 1 - i) * MAX (last, this->run[i].len);
+      last = MIN (last, this->run[i].len);
     }
   if (i < DEPTH + 1)
     progress += (DEPTH + 1 - i) * last;
@@ -326,12 +326,12 @@ gtk_tim_sort_get_progress (GtkTimSort *self)
 #endif
 
 #define NAME default
-#define WIDTH (self->element_size)
+#define WIDTH (this->element_size)
 #include "gtktimsort-impl.c"
 
 /*
  * gtk_tim_sort_step:
- * @self: a GtkTimSort
+ * @this: a GtkTimSort
  * @out_change: (optional): Return location for changed
  *     area. If a change did not cause any changes (for example,
  *     if an already sorted array gets sorted), out_change
@@ -348,26 +348,26 @@ gtk_tim_sort_get_progress (GtkTimSort *self)
  * Returns: %TRUE if an action was performed
  **/
 gboolean
-gtk_tim_sort_step (GtkTimSort    *self,
+gtk_tim_sort_step (GtkTimSort    *this,
                    GtkTimSortRun *out_change)
 {
   gboolean result;
 
-  g_assert (self);
+  g_assert (this);
 
-  switch (self->element_size)
+  switch (this->element_size)
   {
     case 4:
-      result = gtk_tim_sort_step_4 (self, out_change);
+      result = gtk_tim_sort_step_4 (this, out_change);
       break;
     case 8:
-      result = gtk_tim_sort_step_8 (self, out_change);
+      result = gtk_tim_sort_step_8 (this, out_change);
       break;
     case 16:
-      result = gtk_tim_sort_step_16 (self, out_change);
+      result = gtk_tim_sort_step_16 (this, out_change);
       break;
     default:
-      result = gtk_tim_sort_step_default (self, out_change);
+      result = gtk_tim_sort_step_default (this, out_change);
       break;
   }
 

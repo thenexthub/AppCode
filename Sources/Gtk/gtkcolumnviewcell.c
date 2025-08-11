@@ -69,10 +69,10 @@ static GParamSpec *properties[N_PROPS] = { NULL, };
 static void
 gtk_column_view_cell_dispose (GObject *object)
 {
-  GtkColumnViewCell *self = GTK_COLUMN_VIEW_CELL (object);
+  GtkColumnViewCell *this = GTK_COLUMN_VIEW_CELL (object);
 
-  g_assert (self->cell == NULL); /* would hold a reference */
-  g_clear_object (&self->child);
+  g_assert (this->cell == NULL); /* would hold a reference */
+  g_clear_object (&this->child);
 
   G_OBJECT_CLASS (gtk_column_view_cell_parent_class)->dispose (object);
 }
@@ -83,33 +83,33 @@ gtk_column_view_cell_get_property (GObject    *object,
                                    GValue     *value,
                                    GParamSpec *pspec)
 {
-  GtkColumnViewCell *self = GTK_COLUMN_VIEW_CELL (object);
+  GtkColumnViewCell *this = GTK_COLUMN_VIEW_CELL (object);
 
   switch (property_id)
     {
     case PROP_CHILD:
-      g_value_set_object (value, self->child);
+      g_value_set_object (value, this->child);
       break;
 
     case PROP_FOCUSABLE:
-      g_value_set_boolean (value, self->focusable);
+      g_value_set_boolean (value, this->focusable);
       break;
 
     case PROP_ITEM:
-      if (self->cell)
-        g_value_set_object (value, gtk_list_item_base_get_item (GTK_LIST_ITEM_BASE (self->cell)));
+      if (this->cell)
+        g_value_set_object (value, gtk_list_item_base_get_item (GTK_LIST_ITEM_BASE (this->cell)));
       break;
 
     case PROP_POSITION:
-      if (self->cell)
-        g_value_set_uint (value, gtk_list_item_base_get_position (GTK_LIST_ITEM_BASE (self->cell)));
+      if (this->cell)
+        g_value_set_uint (value, gtk_list_item_base_get_position (GTK_LIST_ITEM_BASE (this->cell)));
       else
         g_value_set_uint (value, GTK_INVALID_LIST_POSITION);
       break;
 
     case PROP_SELECTED:
-      if (self->cell)
-        g_value_set_boolean (value, gtk_list_item_base_get_selected (GTK_LIST_ITEM_BASE (self->cell)));
+      if (this->cell)
+        g_value_set_boolean (value, gtk_list_item_base_get_selected (GTK_LIST_ITEM_BASE (this->cell)));
       else
         g_value_set_boolean (value, FALSE);
       break;
@@ -126,16 +126,16 @@ gtk_column_view_cell_set_property (GObject      *object,
                             const GValue *value,
                             GParamSpec   *pspec)
 {
-  GtkColumnViewCell *self = GTK_COLUMN_VIEW_CELL (object);
+  GtkColumnViewCell *this = GTK_COLUMN_VIEW_CELL (object);
 
   switch (property_id)
     {
     case PROP_CHILD:
-      gtk_column_view_cell_set_child (self, g_value_get_object (value));
+      gtk_column_view_cell_set_child (this, g_value_get_object (value));
       break;
 
     case PROP_FOCUSABLE:
-      gtk_column_view_cell_set_focusable (self, g_value_get_boolean (value));
+      gtk_column_view_cell_set_focusable (this, g_value_get_boolean (value));
       break;
 
     default:
@@ -217,9 +217,9 @@ gtk_column_view_cell_class_init (GtkColumnViewCellClass *klass)
 }
 
 static void
-gtk_column_view_cell_init (GtkColumnViewCell *self)
+gtk_column_view_cell_init (GtkColumnViewCell *this)
 {
-  self->focusable = FALSE;
+  this->focusable = FALSE;
 }
 
 GtkColumnViewCell *
@@ -246,30 +246,30 @@ gtk_column_view_cell_do_notify (GtkColumnViewCell *column_view_cell,
 
 /**
  * gtk_column_view_cell_get_item:
- * @self: a `GtkColumnViewCell`
+ * @this: a `GtkColumnViewCell`
  *
- * Gets the model item that associated with @self.
+ * Gets the model item that associated with @this.
  *
- * If @self is unbound, this function returns %NULL.
+ * If @this is unbound, this function returns %NULL.
  *
  * Returns: (nullable) (transfer none) (type GObject): The item displayed
  *
  * Since: 4.12
  **/
 gpointer
-gtk_column_view_cell_get_item (GtkColumnViewCell *self)
+gtk_column_view_cell_get_item (GtkColumnViewCell *this)
 {
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_CELL (self), NULL);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_CELL (this), NULL);
 
-  if (self->cell == NULL)
+  if (this->cell == NULL)
     return NULL;
 
-  return gtk_list_item_base_get_item (GTK_LIST_ITEM_BASE (self->cell));
+  return gtk_list_item_base_get_item (GTK_LIST_ITEM_BASE (this->cell));
 }
 
 /**
  * gtk_column_view_cell_get_child:
- * @self: a `GtkColumnViewCell`
+ * @this: a `GtkColumnViewCell`
  *
  * Gets the child previously set via gtk_column_view_cell_set_child() or
  * %NULL if none was set.
@@ -279,16 +279,16 @@ gtk_column_view_cell_get_item (GtkColumnViewCell *self)
  * Since: 4.12
  */
 GtkWidget *
-gtk_column_view_cell_get_child (GtkColumnViewCell *self)
+gtk_column_view_cell_get_child (GtkColumnViewCell *this)
 {
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_CELL (self), NULL);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_CELL (this), NULL);
 
-  return self->child;
+  return this->child;
 }
 
 /**
  * gtk_column_view_cell_set_child:
- * @self: a `GtkColumnViewCell`
+ * @this: a `GtkColumnViewCell`
  * @child: (nullable): The list item's child or %NULL to unset
  *
  * Sets the child to be used for this listitem.
@@ -300,55 +300,55 @@ gtk_column_view_cell_get_child (GtkColumnViewCell *self)
  * Since: 4.12
  */
 void
-gtk_column_view_cell_set_child (GtkColumnViewCell *self,
+gtk_column_view_cell_set_child (GtkColumnViewCell *this,
                                 GtkWidget   *child)
 {
-  g_return_if_fail (GTK_IS_COLUMN_VIEW_CELL (self));
+  g_return_if_fail (GTK_IS_COLUMN_VIEW_CELL (this));
   g_return_if_fail (child == NULL || GTK_IS_WIDGET (child));
 
-  if (self->child == child)
+  if (this->child == child)
     return;
 
-  g_clear_object (&self->child);
+  g_clear_object (&this->child);
 
   if (child)
     {
       g_object_ref_sink (child);
-      self->child = child;
+      this->child = child;
     }
 
-  if (self->cell)
-    gtk_column_view_cell_widget_set_child (self->cell, child);
+  if (this->cell)
+    gtk_column_view_cell_widget_set_child (this->cell, child);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_CHILD]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_CHILD]);
 }
 
 /**
  * gtk_column_view_cell_get_position:
- * @self: a `GtkColumnViewCell`
+ * @this: a `GtkColumnViewCell`
  *
- * Gets the position in the model that @self currently displays.
+ * Gets the position in the model that @this currently displays.
  *
- * If @self is unbound, %GTK_INVALID_LIST_POSITION is returned.
+ * If @this is unbound, %GTK_INVALID_LIST_POSITION is returned.
  *
  * Returns: The position of this item
  *
  * Since: 4.12
  */
 guint
-gtk_column_view_cell_get_position (GtkColumnViewCell *self)
+gtk_column_view_cell_get_position (GtkColumnViewCell *this)
 {
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_CELL (self), GTK_INVALID_LIST_POSITION);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_CELL (this), GTK_INVALID_LIST_POSITION);
 
-  if (self->cell == NULL)
+  if (this->cell == NULL)
     return GTK_INVALID_LIST_POSITION;
 
-  return gtk_list_item_base_get_position (GTK_LIST_ITEM_BASE (self->cell));
+  return gtk_list_item_base_get_position (GTK_LIST_ITEM_BASE (this->cell));
 }
 
 /**
  * gtk_column_view_cell_get_selected:
- * @self: a `GtkColumnViewCell`
+ * @this: a `GtkColumnViewCell`
  *
  * Checks if the item is displayed as selected.
  *
@@ -360,19 +360,19 @@ gtk_column_view_cell_get_position (GtkColumnViewCell *self)
  * Since: 4.12
  */
 gboolean
-gtk_column_view_cell_get_selected (GtkColumnViewCell *self)
+gtk_column_view_cell_get_selected (GtkColumnViewCell *this)
 {
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_CELL (self), FALSE);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_CELL (this), FALSE);
 
-  if (self->cell == NULL)
+  if (this->cell == NULL)
     return FALSE;
 
-  return gtk_list_item_base_get_selected (GTK_LIST_ITEM_BASE (self->cell));
+  return gtk_list_item_base_get_selected (GTK_LIST_ITEM_BASE (this->cell));
 }
 
 /**
  * gtk_column_view_cell_get_focusable:
- * @self: a `GtkColumnViewCell`
+ * @this: a `GtkColumnViewCell`
  *
  * Checks if a list item has been set to be focusable via
  * gtk_column_view_cell_set_focusable().
@@ -382,19 +382,19 @@ gtk_column_view_cell_get_selected (GtkColumnViewCell *self)
  * Since: 4.12
  */
 gboolean
-gtk_column_view_cell_get_focusable (GtkColumnViewCell *self)
+gtk_column_view_cell_get_focusable (GtkColumnViewCell *this)
 {
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_CELL (self), FALSE);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_CELL (this), FALSE);
 
-  return self->focusable;
+  return this->focusable;
 }
 
 /**
  * gtk_column_view_cell_set_focusable:
- * @self: a `GtkColumnViewCell`
+ * @this: a `GtkColumnViewCell`
  * @focusable: if the item should be focusable
  *
- * Sets @self to be focusable.
+ * Sets @this to be focusable.
  *
  * If an item is focusable, it can be focused using the keyboard.
  * This works similar to [method@Gtk.Widget.set_focusable].
@@ -407,18 +407,18 @@ gtk_column_view_cell_get_focusable (GtkColumnViewCell *self)
  * Since: 4.12
  */
 void
-gtk_column_view_cell_set_focusable (GtkColumnViewCell *self,
+gtk_column_view_cell_set_focusable (GtkColumnViewCell *this,
                                     gboolean     focusable)
 {
-  g_return_if_fail (GTK_IS_COLUMN_VIEW_CELL (self));
+  g_return_if_fail (GTK_IS_COLUMN_VIEW_CELL (this));
 
-  if (self->focusable == focusable)
+  if (this->focusable == focusable)
     return;
 
-  self->focusable = focusable;
+  this->focusable = focusable;
 
-  if (self->cell)
-    gtk_widget_set_focusable (GTK_WIDGET (self->cell), focusable);
+  if (this->cell)
+    gtk_widget_set_focusable (GTK_WIDGET (this->cell), focusable);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_FOCUSABLE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_FOCUSABLE]);
 }

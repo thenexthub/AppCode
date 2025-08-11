@@ -54,13 +54,13 @@ G_DEFINE_TYPE (GtkInspectorControllers, gtk_inspector_controllers, GTK_TYPE_WIDG
 static void
 row_activated (GtkColumnView           *view,
                guint                    position,
-               GtkInspectorControllers *self)
+               GtkInspectorControllers *this)
 {
   GtkInspectorWindow *iw;
   GListModel *model;
   GObject *controller;
 
-  iw = GTK_INSPECTOR_WINDOW (gtk_widget_get_ancestor (GTK_WIDGET (self), GTK_TYPE_INSPECTOR_WINDOW));
+  iw = GTK_INSPECTOR_WINDOW (gtk_widget_get_ancestor (GTK_WIDGET (this), GTK_TYPE_INSPECTOR_WINDOW));
 
   model = G_LIST_MODEL (gtk_column_view_get_model (view));
   controller = g_list_model_get_item (model, position);
@@ -159,7 +159,7 @@ bind_limit (GtkSignalListItemFactory *factory,
 }
 
 static void
-gtk_inspector_controllers_init (GtkInspectorControllers *self)
+gtk_inspector_controllers_init (GtkInspectorControllers *this)
 {
   GtkWidget *sw;
   GtkListItemFactory *factory;
@@ -167,14 +167,14 @@ gtk_inspector_controllers_init (GtkInspectorControllers *self)
 
   sw = gtk_scrolled_window_new ();
 
-  self->view = gtk_column_view_new (NULL);
+  this->view = gtk_column_view_new (NULL);
 
   factory = gtk_signal_list_item_factory_new ();
   g_signal_connect (factory, "setup", G_CALLBACK (setup_row), NULL);
   g_signal_connect (factory, "bind", G_CALLBACK (bind_type), NULL);
 
   column = gtk_column_view_column_new ("Type", factory);
-  gtk_column_view_append_column (GTK_COLUMN_VIEW (self->view), column);
+  gtk_column_view_append_column (GTK_COLUMN_VIEW (this->view), column);
   g_object_unref (column);
 
   factory = gtk_signal_list_item_factory_new ();
@@ -183,7 +183,7 @@ gtk_inspector_controllers_init (GtkInspectorControllers *self)
 
   column = gtk_column_view_column_new ("Name", factory);
   gtk_column_view_column_set_expand (column, TRUE);
-  gtk_column_view_append_column (GTK_COLUMN_VIEW (self->view), column);
+  gtk_column_view_append_column (GTK_COLUMN_VIEW (this->view), column);
   g_object_unref (column);
 
   factory = gtk_signal_list_item_factory_new ();
@@ -191,7 +191,7 @@ gtk_inspector_controllers_init (GtkInspectorControllers *self)
   g_signal_connect (factory, "bind", G_CALLBACK (bind_phase), NULL);
 
   column = gtk_column_view_column_new ("Phase", factory);
-  gtk_column_view_append_column (GTK_COLUMN_VIEW (self->view), column);
+  gtk_column_view_append_column (GTK_COLUMN_VIEW (this->view), column);
   g_object_unref (column);
 
   factory = gtk_signal_list_item_factory_new ();
@@ -199,14 +199,14 @@ gtk_inspector_controllers_init (GtkInspectorControllers *self)
   g_signal_connect (factory, "bind", G_CALLBACK (bind_limit), NULL);
 
   column = gtk_column_view_column_new ("Limit", factory);
-  gtk_column_view_append_column (GTK_COLUMN_VIEW (self->view), column);
+  gtk_column_view_append_column (GTK_COLUMN_VIEW (this->view), column);
   g_object_unref (column);
 
-  g_signal_connect (self->view, "activate", G_CALLBACK (row_activated), self);
+  g_signal_connect (this->view, "activate", G_CALLBACK (row_activated), this);
 
-  gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (sw), self->view);
+  gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (sw), this->view);
 
-  gtk_widget_set_parent (sw, GTK_WIDGET (self));
+  gtk_widget_set_parent (sw, GTK_WIDGET (this));
 }
 
 static int
@@ -258,7 +258,7 @@ compare_controllers (gconstpointer _first,
 }
 
 void
-gtk_inspector_controllers_set_object (GtkInspectorControllers *self,
+gtk_inspector_controllers_set_object (GtkInspectorControllers *this,
                                       GObject                 *object)
 {
   GtkWidget *stack;
@@ -268,12 +268,12 @@ gtk_inspector_controllers_set_object (GtkInspectorControllers *self,
   GtkSorter *sorter;
   GtkNoSelection *no_selection;
 
-  stack = gtk_widget_get_parent (GTK_WIDGET (self));
-  page = gtk_stack_get_page (GTK_STACK (stack), GTK_WIDGET (self));
+  stack = gtk_widget_get_parent (GTK_WIDGET (this));
+  page = gtk_stack_get_page (GTK_STACK (stack), GTK_WIDGET (this));
 
   if (!GTK_IS_WIDGET (object))
     {
-      gtk_column_view_set_model (GTK_COLUMN_VIEW (self->view), NULL);
+      gtk_column_view_set_model (GTK_COLUMN_VIEW (this->view), NULL);
       g_object_set (page, "visible", FALSE, NULL);
       return;
     }
@@ -285,7 +285,7 @@ gtk_inspector_controllers_set_object (GtkInspectorControllers *self,
   sort_model = gtk_sort_list_model_new (model, sorter);
   no_selection = gtk_no_selection_new (G_LIST_MODEL (sort_model));
 
-  gtk_column_view_set_model (GTK_COLUMN_VIEW (self->view), GTK_SELECTION_MODEL (no_selection));
+  gtk_column_view_set_model (GTK_COLUMN_VIEW (this->view), GTK_SELECTION_MODEL (no_selection));
 
   g_object_unref (no_selection);
 }
@@ -293,9 +293,9 @@ gtk_inspector_controllers_set_object (GtkInspectorControllers *self,
 static void
 gtk_inspector_controllers_dispose (GObject *object)
 {
-  GtkInspectorControllers *self = GTK_INSPECTOR_CONTROLLERS (object);
+  GtkInspectorControllers *this = GTK_INSPECTOR_CONTROLLERS (object);
 
-  gtk_widget_unparent (gtk_widget_get_first_child (GTK_WIDGET (self)));
+  gtk_widget_unparent (gtk_widget_get_first_child (GTK_WIDGET (this)));
 
   G_OBJECT_CLASS (gtk_inspector_controllers_parent_class)->dispose (object);
 }

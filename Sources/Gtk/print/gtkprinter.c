@@ -1153,7 +1153,7 @@ gtk_printer_compare (GtkPrinter *a,
 typedef struct 
 {
   GList *backends;
-  GtkPrinterFunc func;
+  GtkPrinterFunc fn;
   gpointer data;
   GDestroyNotify destroy;
   GMainLoop *loop;
@@ -1196,7 +1196,7 @@ list_added_cb (GtkPrintBackend *backend,
 	       GtkPrinter      *printer, 
 	       PrinterList     *printer_list)
 {
-  if (printer_list->func (printer, printer_list->data))
+  if (printer_list->fn (printer, printer_list->data))
     {
       stop_enumeration (printer_list);
       return TRUE;
@@ -1294,18 +1294,18 @@ list_printers_init (PrinterList     *printer_list,
 
 /**
  * gtk_enumerate_printers:
- * @func: a function to call for each printer
- * @data: user data to pass to @func
+ * @fn: a function to call for each printer
+ * @data: user data to pass to @fn
  * @destroy: function to call if @data is no longer needed
  * @wait: if true, wait in a recursive mainloop until
  *    all printers are enumerated; otherwise return early
  *
  * Calls a function for all printers that are known to GTK.
  *
- * If @func returns true, the enumeration is stopped.
+ * If @fn returns true, the enumeration is stopped.
  */
 void
-gtk_enumerate_printers (GtkPrinterFunc func,
+gtk_enumerate_printers (GtkPrinterFunc fn,
 			gpointer       data,
 			GDestroyNotify destroy,
 			gboolean       wait)
@@ -1316,7 +1316,7 @@ gtk_enumerate_printers (GtkPrinterFunc func,
 
   printer_list = g_new0 (PrinterList, 1);
 
-  printer_list->func = func;
+  printer_list->fn = fn;
   printer_list->data = data;
   printer_list->destroy = destroy;
 

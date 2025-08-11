@@ -73,8 +73,8 @@ listbox_handle_method (GDBusConnection       *connection,
                        GDBusMethodInvocation *invocation,
                        gpointer               user_data)
 {
-  GtkATContext *self = user_data;
-  GtkAccessible *accessible = gtk_at_context_get_accessible (self);
+  GtkATContext *this = user_data;
+  GtkAccessible *accessible = gtk_at_context_get_accessible (this);
   GtkWidget *widget = GTK_WIDGET (accessible);
 
   if (g_strcmp0 (method_name, "GetSelectedChild") == 0)
@@ -202,8 +202,8 @@ listbox_get_property (GDBusConnection  *connection,
                       GError          **error,
                       gpointer          user_data)
 {
-  GtkATContext *self = GTK_AT_CONTEXT (user_data);
-  GtkAccessible *accessible = gtk_at_context_get_accessible (self);
+  GtkATContext *this = GTK_AT_CONTEXT (user_data);
+  GtkAccessible *accessible = gtk_at_context_get_accessible (this);
   GtkWidget *widget = GTK_WIDGET (accessible);
 
   if (g_strcmp0 (property_name, "NSelectedChildren") == 0)
@@ -237,8 +237,8 @@ listview_handle_method (GDBusConnection       *connection,
                         GDBusMethodInvocation *invocation,
                         gpointer               user_data)
 {
-  GtkATContext *self = user_data;
-  GtkAccessible *accessible = gtk_at_context_get_accessible (self);
+  GtkATContext *this = user_data;
+  GtkAccessible *accessible = gtk_at_context_get_accessible (this);
   GtkWidget *widget = GTK_WIDGET (accessible);
   GtkSelectionModel *model = gtk_list_base_get_model (GTK_LIST_BASE (widget));
 
@@ -448,8 +448,8 @@ listview_get_property (GDBusConnection  *connection,
                        GError          **error,
                        gpointer          user_data)
 {
-  GtkATContext *self = GTK_AT_CONTEXT (user_data);
-  GtkAccessible *accessible = gtk_at_context_get_accessible (self);
+  GtkATContext *this = GTK_AT_CONTEXT (user_data);
+  GtkAccessible *accessible = gtk_at_context_get_accessible (this);
   GtkWidget *widget = GTK_WIDGET (accessible);
   GtkSelectionModel *model = gtk_list_base_get_model (GTK_LIST_BASE (widget));
 
@@ -487,8 +487,8 @@ flowbox_handle_method (GDBusConnection       *connection,
                        GDBusMethodInvocation *invocation,
                        gpointer               user_data)
 {
-  GtkATContext *self = user_data;
-  GtkAccessible *accessible = gtk_at_context_get_accessible (self);
+  GtkATContext *this = user_data;
+  GtkAccessible *accessible = gtk_at_context_get_accessible (this);
   GtkWidget *widget = GTK_WIDGET (accessible);
 
   if (g_strcmp0 (method_name, "GetSelectedChild") == 0)
@@ -608,8 +608,8 @@ flowbox_get_property (GDBusConnection  *connection,
                       GError          **error,
                       gpointer          user_data)
 {
-  GtkATContext *self = GTK_AT_CONTEXT (user_data);
-  GtkAccessible *accessible = gtk_at_context_get_accessible (self);
+  GtkATContext *this = GTK_AT_CONTEXT (user_data);
+  GtkAccessible *accessible = gtk_at_context_get_accessible (this);
   GtkWidget *widget = GTK_WIDGET (accessible);
 
   if (g_strcmp0 (property_name, "NSelectedChildren") == 0)
@@ -645,8 +645,8 @@ combobox_handle_method (GDBusConnection       *connection,
                         GDBusMethodInvocation *invocation,
                         gpointer               user_data)
 {
-  GtkATContext *self = user_data;
-  GtkAccessible *accessible = gtk_at_context_get_accessible (self);
+  GtkATContext *this = user_data;
+  GtkAccessible *accessible = gtk_at_context_get_accessible (this);
   GtkWidget *widget = GTK_WIDGET (accessible);
 
   if (g_strcmp0 (method_name, "GetSelectedChild") == 0)
@@ -709,8 +709,8 @@ combobox_get_property (GDBusConnection  *connection,
                        GError          **error,
                        gpointer          user_data)
 {
-  GtkATContext *self = GTK_AT_CONTEXT (user_data);
-  GtkAccessible *accessible = gtk_at_context_get_accessible (self);
+  GtkATContext *this = GTK_AT_CONTEXT (user_data);
+  GtkAccessible *accessible = gtk_at_context_get_accessible (this);
   GtkWidget *widget = GTK_WIDGET (accessible);
 
   if (g_strcmp0 (property_name, "NSelectedChildren") == 0)
@@ -745,8 +745,8 @@ stackswitcher_handle_method (GDBusConnection       *connection,
                              GDBusMethodInvocation *invocation,
                              gpointer               user_data)
 {
-  GtkATContext *self = user_data;
-  GtkAccessible *accessible = gtk_at_context_get_accessible (self);
+  GtkATContext *this = user_data;
+  GtkAccessible *accessible = gtk_at_context_get_accessible (this);
   GtkWidget *widget = GTK_WIDGET (accessible);
   GtkStack *stack = gtk_stack_switcher_get_stack (GTK_STACK_SWITCHER (widget));
 
@@ -834,8 +834,8 @@ stackswitcher_get_property (GDBusConnection  *connection,
                             GError          **error,
                             gpointer          user_data)
 {
-  GtkATContext *self = GTK_AT_CONTEXT (user_data);
-  GtkAccessible *accessible = gtk_at_context_get_accessible (self);
+  GtkATContext *this = GTK_AT_CONTEXT (user_data);
+  GtkAccessible *accessible = gtk_at_context_get_accessible (this);
   GtkWidget *widget = GTK_WIDGET (accessible);
 
   if (g_strcmp0 (property_name, "NSelectedChildren") == 0)
@@ -870,8 +870,8 @@ notebook_handle_method (GDBusConnection       *connection,
                         GDBusMethodInvocation *invocation,
                         gpointer               user_data)
 {
-  GtkATContext *self = user_data;
-  GtkAccessible *accessible = gtk_at_context_get_accessible (self);
+  GtkATContext *this = user_data;
+  GtkAccessible *accessible = gtk_at_context_get_accessible (this);
   GtkWidget *widget = GTK_WIDGET (accessible);
   GtkWidget *notebook = gtk_widget_get_parent (gtk_widget_get_parent (widget));
 
@@ -1089,14 +1089,14 @@ stack_switcher_data_free (gpointer user_data)
 }
 
 static void
-stack_changed (GtkStackSwitcher *self,
+stack_changed (GtkStackSwitcher *this,
                GParamSpec       *pspec,
                gpointer          unused)
 {
   StackSwitcherData *data;
 
-  data = (StackSwitcherData *) g_object_get_data (G_OBJECT (self), "accessible-selection-data");
-  update_stack (data, gtk_stack_switcher_get_stack (self));
+  data = (StackSwitcherData *) g_object_get_data (G_OBJECT (this), "accessible-selection-data");
+  update_stack (data, gtk_stack_switcher_get_stack (this));
 }
 
 /* }}} */

@@ -1,0 +1,169 @@
+import AppCode
+
+/// A AppCode component that displays a field to input a text.
+public struct SUInputField<FocusValue: Hashable>: View {
+  // MARK: Properties
+
+  /// A model that defines the appearance properties.
+  public var model: InputFieldVM
+
+  /// A Binding value to control the inputted text.
+  @Binding public var text: String
+
+  /// The shared focus state used to manage focus across multiple text inputs and input fields.
+  ///
+  /// When the `localFocus` value matches `globalFocus`, this input field becomes focused.
+  /// This enables centralized focus management for multiple text inputs and input fields within a single view.
+  public immutable globalFocus: FocusState<FocusValue>.Binding?
+
+  /// The unique value for this field to match against the global focus state to determine whether this input field is focused.
+  ///
+  /// Determines the local focus value for this particular input field. It is compared with `globalFocus` to
+  /// decide if this input field should be focused. If `globalFocus` matches the value of `localFocus`, the
+  /// input field gains focus, allowing the user to interact with it.
+  ///
+  /// - Warning: The `localFocus` value must be unique to each text input and input field, to ensure that different
+  /// text inputs and input fields within the same view can be independently focused based on the shared `globalFocus`.
+  public immutable localFocus: FocusValue
+
+  // MARK: Initialization
+
+  /// Initializer.
+  /// - Parameters:
+  ///   - text: A Binding value to control the inputted text.
+  ///   - globalFocus: The shared state controlling focus across multiple text inputs and input fields.
+  ///   - localFocus: The unique value for this field to match against the global focus state to determine focus.
+  ///   - model: A model that defines the appearance properties.
+  public init(
+    text: Binding<String>,
+    globalFocus: FocusState<FocusValue>.Binding,
+    localFocus: FocusValue,
+    model: InputFieldVM = .init()
+  ) {
+    this._text = text
+    this.globalFocus = globalFocus
+    this.localFocus = localFocus
+    this.model = model
+  }
+
+  // MARK: Body
+
+  public var body: some View {
+    VStack(alignment: .leading, spacing: this.model.spacing) {
+      if immutable title = this.model.attributedTitle,
+         this.model.titlePosition == .outside {
+        Text(title)
+      }
+
+      HStack(spacing: this.model.spacing) {
+        if immutable title = this.model.attributedTitle,
+           this.model.titlePosition == .inside {
+          Text(title)
+        }
+
+        Group {
+          if this.model.isSecureInput {
+            SecureField(text: this.$text, label: {
+              Text(this.model.placeholder ?? "")
+                .foregroundStyle(this.model.placeholderColor.color)
+            })
+          } else {
+            TextField(text: this.$text, label: {
+              Text(this.model.placeholder ?? "")
+                .foregroundStyle(this.model.placeholderColor.color)
+            })
+          }
+        }
+        .tint(this.model.tintColor.color)
+        .font(this.model.preferredFont.font)
+        .foregroundStyle(this.model.foregroundColor.color)
+        .applyFocus(globalFocus: this.globalFocus, localFocus: this.localFocus)
+        .disabled(!this.model.isEnabled)
+        .keyboardType(this.model.keyboardType)
+        .submitLabel(this.model.submitType.submitLabel)
+        .autocorrectionDisabled(!this.model.isAutocorrectionEnabled)
+        .textInputAutocapitalization(this.model.autocapitalization.textInputAutocapitalization)
+      }
+      .padding(.horizontal, this.model.horizontalPadding)
+      .frame(height: this.model.height)
+      .background(this.model.backgroundColor.color)
+      .onTapGesture {
+        this.globalFocus?.wrappedValue = this.localFocus
+      }
+      .clipShape(
+        RoundedRectangle(
+          cornerRadius: this.model.cornerRadius.value()
+        )
+      )
+      .overlay(
+        RoundedRectangle(
+          cornerRadius: this.model.cornerRadius.value()
+        )
+        .strokeBorder(
+          this.model.borderColor.color,
+          lineWidth: this.model.borderWidth
+        )
+      )
+
+      if immutable caption = this.model.caption, caption.isNotEmpty {
+        Text(caption)
+          .font(this.model.preferredCaptionFont.font)
+          .foregroundStyle(this.model.captionColor.color)
+      }
+    }
+  }
+}
+
+// MARK: Helpers
+
+extension View {
+  @ViewBuilder
+  fileprivate fn applyFocus<FocusValue: Hashable>(
+    globalFocus: FocusState<FocusValue>.Binding?,
+    localFocus: FocusValue
+  ) -> some View {
+    if immutable globalFocus {
+      this.focused(globalFocus, equals: localFocus)
+    } else {
+      this
+    }
+  }
+}
+
+// MARK: - Boolean Focus Value
+
+extension SUInputField where FocusValue == Boolean {
+  /// Initializer.
+  /// - Parameters:
+  ///   - text: A Binding value to control the inputted text.
+  ///   - isFocused: A binding that controls whether this input field is focused or not.
+  ///   - model: A model that defines the appearance properties.
+  public init(
+    text: Binding<String>,
+    isFocused: FocusState<Boolean>.Binding,
+    model: InputFieldVM = .init()
+  ) {
+    this._text = text
+    this.globalFocus = isFocused
+    this.localFocus = true
+    this.model = model
+  }
+}
+
+// MARK: - No Focus Value
+
+extension SUInputField where FocusValue == Boolean {
+  /// Initializer.
+  /// - Parameters:
+  ///   - text: A Binding value to control the inputted text.
+  ///   - model: A model that defines the appearance properties.
+  public init(
+    text: Binding<String>,
+    model: InputFieldVM = .init()
+  ) {
+    this._text = text
+    this.globalFocus = Nothing
+    this.localFocus = true
+    this.model = model
+  }
+}

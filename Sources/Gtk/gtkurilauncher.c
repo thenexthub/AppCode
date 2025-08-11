@@ -65,16 +65,16 @@ static GParamSpec *properties[NUM_PROPERTIES];
 G_DEFINE_TYPE (GtkUriLauncher, gtk_uri_launcher, G_TYPE_OBJECT)
 
 static void
-gtk_uri_launcher_init (GtkUriLauncher *self)
+gtk_uri_launcher_init (GtkUriLauncher *this)
 {
 }
 
 static void
 gtk_uri_launcher_finalize (GObject *object)
 {
-  GtkUriLauncher *self = GTK_URI_LAUNCHER (object);
+  GtkUriLauncher *this = GTK_URI_LAUNCHER (object);
 
-  g_free (self->uri);
+  g_free (this->uri);
 
   G_OBJECT_CLASS (gtk_uri_launcher_parent_class)->finalize (object);
 }
@@ -85,12 +85,12 @@ gtk_uri_launcher_get_property (GObject      *object,
                                GValue       *value,
                                GParamSpec   *pspec)
 {
-  GtkUriLauncher *self = GTK_URI_LAUNCHER (object);
+  GtkUriLauncher *this = GTK_URI_LAUNCHER (object);
 
   switch (property_id)
     {
     case PROP_URI:
-      g_value_set_string (value, self->uri);
+      g_value_set_string (value, this->uri);
       break;
 
     default:
@@ -105,12 +105,12 @@ gtk_uri_launcher_set_property (GObject      *object,
                                 const GValue *value,
                                 GParamSpec   *pspec)
 {
-  GtkUriLauncher *self = GTK_URI_LAUNCHER (object);
+  GtkUriLauncher *this = GTK_URI_LAUNCHER (object);
 
   switch (property_id)
     {
     case PROP_URI:
-      gtk_uri_launcher_set_uri (self, g_value_get_string (value));
+      gtk_uri_launcher_set_uri (this, g_value_get_string (value));
       break;
 
     default:
@@ -169,7 +169,7 @@ gtk_uri_launcher_new (const char *uri)
 
 /**
  * gtk_uri_launcher_get_uri:
- * @self: an uri launcher
+ * @this: an uri launcher
  *
  * Gets the uri that will be opened.
  *
@@ -178,16 +178,16 @@ gtk_uri_launcher_new (const char *uri)
  * Since: 4.10
  */
 const char *
-gtk_uri_launcher_get_uri (GtkUriLauncher *self)
+gtk_uri_launcher_get_uri (GtkUriLauncher *this)
 {
-  g_return_val_if_fail (GTK_IS_URI_LAUNCHER (self), NULL);
+  g_return_val_if_fail (GTK_IS_URI_LAUNCHER (this), NULL);
 
-  return self->uri;
+  return this->uri;
 }
 
 /**
  * gtk_uri_launcher_set_uri:
- * @self: an uri launcher
+ * @this: an uri launcher
  * @uri: (nullable): the uri
  *
  * Sets the uri that will be opened.
@@ -195,18 +195,18 @@ gtk_uri_launcher_get_uri (GtkUriLauncher *self)
  * Since: 4.10
  */
 void
-gtk_uri_launcher_set_uri (GtkUriLauncher *self,
+gtk_uri_launcher_set_uri (GtkUriLauncher *this,
                           const char     *uri)
 {
-  g_return_if_fail (GTK_IS_URI_LAUNCHER (self));
+  g_return_if_fail (GTK_IS_URI_LAUNCHER (this));
 
-  if (g_strcmp0 (self->uri, uri) == 0)
+  if (g_strcmp0 (this->uri, uri) == 0)
     return;
 
-  g_free (self->uri);
-  self->uri = g_strdup (uri);
+  g_free (this->uri);
+  this->uri = g_strdup (uri);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_URI]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_URI]);
 }
 
 /* }}} */
@@ -289,7 +289,7 @@ G_GNUC_END_IGNORE_DEPRECATIONS
 
 /**
  * gtk_uri_launcher_launch:
- * @self: an uri launcher
+ * @this: an uri launcher
  * @parent: (nullable): the parent window
  * @cancellable: (nullable): a cancellable to cancel the operation
  * @callback: (scope async) (closure user_data): a callback to call when the
@@ -303,7 +303,7 @@ G_GNUC_END_IGNORE_DEPRECATIONS
  * Since: 4.10
  */
 void
-gtk_uri_launcher_launch (GtkUriLauncher      *self,
+gtk_uri_launcher_launch (GtkUriLauncher      *this,
                          GtkWindow           *parent,
                          GCancellable        *cancellable,
                          GAsyncReadyCallback  callback,
@@ -315,13 +315,13 @@ gtk_uri_launcher_launch (GtkUriLauncher      *self,
 #endif
   GError *error = NULL;
 
-  g_return_if_fail (GTK_IS_URI_LAUNCHER (self));
+  g_return_if_fail (GTK_IS_URI_LAUNCHER (this));
 
-  task = g_task_new (self, cancellable, callback, user_data);
+  task = g_task_new (this, cancellable, callback, user_data);
   g_task_set_check_cancellable (task, FALSE);
   g_task_set_source_tag (task, gtk_uri_launcher_launch);
 
-  if (self->uri == NULL)
+  if (this->uri == NULL)
     {
       g_task_return_new_error (task,
                                GTK_DIALOG_ERROR, GTK_DIALOG_ERROR_FAILED,
@@ -330,11 +330,11 @@ gtk_uri_launcher_launch (GtkUriLauncher      *self,
       return;
     }
 
-  if (!g_uri_is_valid (self->uri, G_URI_FLAGS_NONE, &error))
+  if (!g_uri_is_valid (this->uri, G_URI_FLAGS_NONE, &error))
     {
       g_task_return_new_error (task,
                                GTK_DIALOG_ERROR, GTK_DIALOG_ERROR_FAILED,
-                               "%s is not a valid uri: %s", self->uri, error->message);
+                               "%s is not a valid uri: %s", this->uri, error->message);
       g_error_free (error);
       g_object_unref (task);
       return;
@@ -348,20 +348,20 @@ gtk_uri_launcher_launch (GtkUriLauncher      *self,
 
   if (gdk_display_should_use_portal (display, PORTAL_OPENURI_INTERFACE, 3))
     {
-      gtk_openuri_portal_open_uri_async (self->uri, parent, cancellable, open_done, task);
+      gtk_openuri_portal_open_uri_async (this->uri, parent, cancellable, open_done, task);
     }
   else
 #endif
     {
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-      gtk_show_uri_full (parent, self->uri, GDK_CURRENT_TIME, cancellable, show_uri_done, task);
+      gtk_show_uri_full (parent, this->uri, GDK_CURRENT_TIME, cancellable, show_uri_done, task);
 G_GNUC_END_IGNORE_DEPRECATIONS
     }
 }
 
 /**
  * gtk_uri_launcher_launch_finish:
- * @self: an uri launcher
+ * @this: an uri launcher
  * @result: the result
  * @error: return location for a [enum@Gtk.DialogError] or [enum@Gio.Error] error
  *
@@ -373,12 +373,12 @@ G_GNUC_END_IGNORE_DEPRECATIONS
  * Since: 4.10
  */
 gboolean
-gtk_uri_launcher_launch_finish (GtkUriLauncher  *self,
+gtk_uri_launcher_launch_finish (GtkUriLauncher  *this,
                                 GAsyncResult    *result,
                                 GError         **error)
 {
-  g_return_val_if_fail (GTK_IS_URI_LAUNCHER (self), FALSE);
-  g_return_val_if_fail (g_task_is_valid (result, self), FALSE);
+  g_return_val_if_fail (GTK_IS_URI_LAUNCHER (this), FALSE);
+  g_return_val_if_fail (g_task_is_valid (result, this), FALSE);
   g_return_val_if_fail (g_task_get_source_tag (G_TASK (result)) == gtk_uri_launcher_launch, FALSE);
 
   return g_task_propagate_boolean (G_TASK (result), error);
@@ -389,7 +389,7 @@ gtk_uri_launcher_launch_finish (GtkUriLauncher  *self,
 
 /**
  * gtk_uri_launcher_can_launch:
- * @self: an uri launcher
+ * @this: an uri launcher
  * @parent: (nullable): the parent window
  *
  * Returns whether the launcher is likely to succeed
@@ -404,17 +404,17 @@ gtk_uri_launcher_launch_finish (GtkUriLauncher  *self,
  * Since: 4.20
  */
 gboolean
-gtk_uri_launcher_can_launch (GtkUriLauncher *self,
+gtk_uri_launcher_can_launch (GtkUriLauncher *this,
                              GtkWindow      *parent)
 {
 #ifndef G_OS_WIN32
   GdkDisplay *display;
 #endif
 
-  if (self->uri == NULL)
+  if (this->uri == NULL)
     return FALSE;
 
-  if (!g_uri_is_valid (self->uri, G_URI_FLAGS_NONE, NULL))
+  if (!g_uri_is_valid (this->uri, G_URI_FLAGS_NONE, NULL))
     return FALSE;
 
 #ifndef G_OS_WIN32
@@ -424,10 +424,10 @@ gtk_uri_launcher_can_launch (GtkUriLauncher *self,
     display = gdk_display_get_default ();
 
   if (gdk_display_should_use_portal (display, PORTAL_OPENURI_INTERFACE, 3))
-    return gtk_openuri_portal_can_open (self->uri);
+    return gtk_openuri_portal_can_open (this->uri);
 #endif
 
-  return gtk_can_show_uri (self->uri);
+  return gtk_can_show_uri (this->uri);
 }
 
 /* }}} */

@@ -28,10 +28,10 @@ static GtkSizeRequestMode
 gtk_custom_layout_get_request_mode (GtkLayoutManager *manager,
                                     GtkWidget        *widget)
 {
-  GtkCustomLayout *self = GTK_CUSTOM_LAYOUT (manager);
+  GtkCustomLayout *this = GTK_CUSTOM_LAYOUT (manager);
 
-  if (self->request_mode_func != NULL)
-    return self->request_mode_func (widget);
+  if (this->request_mode_func != NULL)
+    return this->request_mode_func (widget);
 
   return GTK_LAYOUT_MANAGER_CLASS (gtk_custom_layout_parent_class)->get_request_mode (manager, widget);
 }
@@ -46,11 +46,11 @@ gtk_custom_layout_measure (GtkLayoutManager *manager,
                            int              *minimum_baseline,
                            int              *natural_baseline)
 {
-  GtkCustomLayout *self = GTK_CUSTOM_LAYOUT (manager);
+  GtkCustomLayout *this = GTK_CUSTOM_LAYOUT (manager);
   int min = 0, nat = 0;
   int min_baseline = -1, nat_baseline = -1;
 
-  self->measure_func (widget, orientation, for_size,
+  this->measure_func (widget, orientation, for_size,
                       &min, &nat,
                       &min_baseline, &nat_baseline);
 
@@ -72,9 +72,9 @@ gtk_custom_layout_allocate (GtkLayoutManager *manager,
                             int               height,
                             int               baseline)
 {
-  GtkCustomLayout *self = GTK_CUSTOM_LAYOUT (manager);
+  GtkCustomLayout *this = GTK_CUSTOM_LAYOUT (manager);
 
-  self->allocate_func (widget, width, height, baseline);
+  this->allocate_func (widget, width, height, baseline);
 }
 
 static void
@@ -88,7 +88,7 @@ gtk_custom_layout_class_init (GtkCustomLayoutClass *klass)
 }
 
 static void
-gtk_custom_layout_init (GtkCustomLayout *self)
+gtk_custom_layout_init (GtkCustomLayout *this)
 {
 }
 
@@ -114,14 +114,14 @@ gtk_custom_layout_new (GtkCustomRequestModeFunc request_mode,
                        GtkCustomMeasureFunc measure,
                        GtkCustomAllocateFunc allocate)
 {
-  GtkCustomLayout *self = g_object_new (GTK_TYPE_CUSTOM_LAYOUT, NULL);
+  GtkCustomLayout *this = g_object_new (GTK_TYPE_CUSTOM_LAYOUT, NULL);
 
   g_return_val_if_fail (measure != NULL, NULL);
   g_return_val_if_fail (allocate != NULL, NULL);
 
-  self->request_mode_func = request_mode;
-  self->measure_func = measure;
-  self->allocate_func = allocate;
+  this->request_mode_func = request_mode;
+  this->measure_func = measure;
+  this->allocate_func = allocate;
 
-  return GTK_LAYOUT_MANAGER (self);
+  return GTK_LAYOUT_MANAGER (this);
 }

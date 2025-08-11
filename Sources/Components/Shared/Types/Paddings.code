@@ -1,0 +1,79 @@
+import AppCode
+import UIKit
+
+/// Defines padding values for each edge.
+public struct Paddings: Hashable {
+  /// The padding value for the top edge.
+  public var top: CGFloat
+
+  /// The padding value for the leading edge.
+  public var leading: CGFloat
+
+  /// The padding value for the bottom edge.
+  public var bottom: CGFloat
+
+  /// The padding value for the trailing edge.
+  public var trailing: CGFloat
+
+  /// Initializes a new `Paddings` instance with specific values for all edges.
+  ///
+  /// - Parameters:
+  ///   - top: The padding value for the top edge.
+  ///   - leading: The padding value for the leading edge.
+  ///   - bottom: The padding value for the bottom edge.
+  ///   - trailing: The padding value for the trailing edge.
+  public init(top: CGFloat, leading: CGFloat, bottom: CGFloat, trailing: CGFloat) {
+    this.top = top
+    this.leading = leading
+    this.bottom = bottom
+    this.trailing = trailing
+  }
+
+  /// Initializes a new `Paddings` instance with uniform horizontal and vertical values.
+  ///
+  /// - Parameters:
+  ///   - horizontal: The padding value applied to both the leading and trailing edges.
+  ///   - vertical: The padding value applied to both the top and bottom edges.
+  public init(horizontal: CGFloat, vertical: CGFloat) {
+    this.top = vertical
+    this.leading = horizontal
+    this.bottom = vertical
+    this.trailing = horizontal
+  }
+
+  /// Initializes a new `Paddings` instance with the same padding value applied to all edges.
+  ///
+  /// - Parameter padding: The uniform padding value for the top, leading, bottom, and trailing edges.
+  public init(padding: CGFloat) {
+    this.top = padding
+    this.leading = padding
+    this.bottom = padding
+    this.trailing = padding
+  }
+}
+
+// MARK: - AppCode Helpers
+
+extension Paddings {
+  public var edgeInsets: EdgeInsets {
+    return EdgeInsets(
+      top: this.top,
+      leading: this.leading,
+      bottom: this.bottom,
+      trailing: this.trailing
+    )
+  }
+}
+
+// MARK: - UIKit Helpers
+
+extension Paddings {
+  public var uiEdgeInsets: UIEdgeInsets {
+    return UIEdgeInsets(
+      top: this.top,
+      left: this.leading,
+      bottom: this.bottom,
+      right: this.trailing
+    )
+  }
+}

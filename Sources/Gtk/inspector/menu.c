@@ -50,20 +50,20 @@ struct _MenuItem
 G_DEFINE_TYPE (MenuItem, menu_item, G_TYPE_OBJECT);
 
 static void
-menu_item_init (MenuItem *self)
+menu_item_init (MenuItem *this)
 {
 }
 
 static void
 menu_item_finalize (GObject *object)
 {
-  MenuItem *self = MENU_ITEM (object);
+  MenuItem *this = MENU_ITEM (object);
 
-  g_free (self->label);
-  g_free (self->action);
-  g_free (self->target);
-  g_free (self->icon);
-  g_clear_object (&self->model);
+  g_free (this->label);
+  g_free (this->action);
+  g_free (this->target);
+  g_free (this->icon);
+  g_clear_object (&this->model);
 
   G_OBJECT_CLASS (menu_item_parent_class)->finalize (object);
 }
@@ -81,16 +81,16 @@ menu_item_new (const char *label,
                const char *icon,
                GMenuModel *model)
 {
-  MenuItem *self;
+  MenuItem *this;
 
-  self = g_object_new (menu_item_get_type (), NULL);
-  self->label = g_strdup (label);
-  self->action = g_strdup (action);
-  self->target = g_strdup (target);
-  self->icon = g_strdup (icon);
-  g_set_object (&self->model, model);
+  this = g_object_new (menu_item_get_type (), NULL);
+  this->label = g_strdup (label);
+  this->action = g_strdup (action);
+  this->target = g_strdup (target);
+  this->icon = g_strdup (icon);
+  g_set_object (&this->model, model);
 
-  return self;
+  return this;
 }
 
 struct _GtkInspectorMenuPrivate
@@ -292,15 +292,15 @@ static GListModel *
 create_model (gpointer item,
               gpointer user_data)
 {
-  MenuItem *self = item;
+  MenuItem *this = item;
   GtkInspectorMenu *sl = user_data;
   GListStore *store;
 
-  if (self->model == NULL)
+  if (this->model == NULL)
     return NULL;
 
   store = g_list_store_new (menu_item_get_type ());
-  add_menu (sl, self->model, store);
+  add_menu (sl, this->model, store);
 
   return G_LIST_MODEL (store);
 }

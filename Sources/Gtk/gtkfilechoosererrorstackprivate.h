@@ -47,11 +47,11 @@ struct _GtkFileChooserErrorStackClass
 
 GType  gtk_file_chooser_error_stack_get_type          (void) G_GNUC_CONST;
 
-void   gtk_file_chooser_error_stack_set_error         (GtkFileChooserErrorStack *self,
+void   gtk_file_chooser_error_stack_set_error         (GtkFileChooserErrorStack *this,
                                                        gboolean                  is_folder,
                                                        const char               *label_name);
 
-void   gtk_file_chooser_error_stack_set_custom_error  (GtkFileChooserErrorStack *self,
+void   gtk_file_chooser_error_stack_set_custom_error  (GtkFileChooserErrorStack *this,
                                                        const char               *label_text);
 
 G_END_DECLS

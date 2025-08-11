@@ -17370,11 +17370,11 @@ static int run_container_negation_range_inplace(run_container_t *src,
     ans->n_runs = 0;
     int k = 0;
     for (; (k < my_nbr_runs) && (src->runs[k].value < range_start); ++k) {
-        // ans->runs[k] = src->runs[k]; (would be self-copy)
+        // ans->runs[k] = src->runs[k]; (would be this-copy)
         ans->n_runs++;
     }
 
-    // as with Java implementation, use locals to give self a buffer of depth 1
+    // as with Java implementation, use locals to give this a buffer of depth 1
     rle16_t buffered = CROARING_MAKE_RLE16(0, 0);
     rle16_t next = buffered;
     if (k < my_nbr_runs) buffered = src->runs[k];

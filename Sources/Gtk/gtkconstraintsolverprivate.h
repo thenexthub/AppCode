@@ -96,12 +96,12 @@ void
 gtk_constraint_solver_end_edit (GtkConstraintSolver *solver);
 
 void
-gtk_constraint_solver_note_added_variable (GtkConstraintSolver *self,
+gtk_constraint_solver_note_added_variable (GtkConstraintSolver *this,
                                            GtkConstraintVariable *variable,
                                            GtkConstraintVariable *subject);
 
 void
-gtk_constraint_solver_note_removed_variable (GtkConstraintSolver *self,
+gtk_constraint_solver_note_removed_variable (GtkConstraintSolver *this,
                                              GtkConstraintVariable *variable,
                                              GtkConstraintVariable *subject);
 

@@ -30,11 +30,11 @@
 void
 _gdk_android_clipboard_on_clipboard_changed (JNIEnv *env, jobject this)
 {
-  GdkAndroidClipboard *self = (GdkAndroidClipboard *) (*env)->GetLongField (env, this,
+  GdkAndroidClipboard *this = (GdkAndroidClipboard *) (*env)->GetLongField (env, this,
                                                                             gdk_android_get_java_cache ()->clipboard_provider_change_listener.native_ptr);
-  g_return_if_fail (GDK_IS_ANDROID_CLIPBOARD (self));
+  g_return_if_fail (GDK_IS_ANDROID_CLIPBOARD (this));
 
-  gdk_android_clipboard_update_remote_formats (self);
+  gdk_android_clipboard_update_remote_formats (this);
 }
 
 typedef struct _GdkAndroidClipboardClass
@@ -47,22 +47,22 @@ G_DEFINE_TYPE (GdkAndroidClipboard, gdk_android_clipboard, GDK_TYPE_CLIPBOARD)
 static void
 gdk_android_clipboard_finalize (GObject *object)
 {
-  GdkAndroidClipboard *self = (GdkAndroidClipboard *) object;
+  GdkAndroidClipboard *this = (GdkAndroidClipboard *) object;
 
   JNIEnv *env = gdk_android_get_env ();
-  (*env)->SetLongField (env, self->listener,
+  (*env)->SetLongField (env, this->listener,
                         gdk_android_get_java_cache ()->clipboard_provider_change_listener.native_ptr,
                         0);
-  (*env)->CallVoidMethod (env, self->manager,
+  (*env)->CallVoidMethod (env, this->manager,
                           gdk_android_get_java_cache ()->a_clipboard_manager.remove_change_listener,
-                          self->listener);
-  (*env)->DeleteGlobalRef (env, self->listener);
-  (*env)->DeleteGlobalRef (env, self->manager);
+                          this->listener);
+  (*env)->DeleteGlobalRef (env, this->listener);
+  (*env)->DeleteGlobalRef (env, this->manager);
 
-  if (self->cancellable)
+  if (this->cancellable)
     {
-      g_cancellable_cancel (self->cancellable);
-      g_object_unref (self->cancellable);
+      g_cancellable_cancel (this->cancellable);
+      g_object_unref (this->cancellable);
     }
   G_OBJECT_CLASS (gdk_android_clipboard_parent_class)->finalize (object);
 }
@@ -201,16 +201,16 @@ typedef struct {
 } GdkAndroidClipboardWriteMgr;
 
 static void
-gdk_android_clipboard_write_mgr_free (GdkAndroidClipboardWriteMgr *self)
+gdk_android_clipboard_write_mgr_free (GdkAndroidClipboardWriteMgr *this)
 {
-  (*self->env)->DeleteGlobalRef (self->env, self->context);
-  if (self->uris)
-    g_object_unref (self->uris);
-  if (self->html)
-    g_object_unref (self->html);
-  if (self->text)
-    g_object_unref (self->text);
-  g_free (self);
+  (*this->env)->DeleteGlobalRef (this->env, this->context);
+  if (this->uris)
+    g_object_unref (this->uris);
+  if (this->html)
+    g_object_unref (this->html);
+  if (this->text)
+    g_object_unref (this->text);
+  g_free (this);
 }
 
 static void
@@ -411,7 +411,7 @@ gdk_android_clipboard_clipdata_from_provider_finish (GdkContentProvider *provide
 static void
 gdk_android_clipboard_from_provider_cb (GdkContentProvider  *provider,
                                         GAsyncResult        *res,
-                                        GdkAndroidClipboard *self)
+                                        GdkAndroidClipboard *this)
 {
   JNIEnv *env = gdk_android_get_env ();
   GError *err = NULL;
@@ -423,7 +423,7 @@ gdk_android_clipboard_from_provider_cb (GdkContentProvider  *provider,
       g_error_free (err);
       goto exit;
     }
-  (*env)->CallVoidMethod (env, self->manager,
+  (*env)->CallVoidMethod (env, this->manager,
                           gdk_android_get_java_cache ()->a_clipboard_manager.set_primary_clip,
                           clipdata);
   if (gdk_android_check_exception (&err))
@@ -433,27 +433,27 @@ gdk_android_clipboard_from_provider_cb (GdkContentProvider  *provider,
     }
 exit:
   (*env)->PopLocalFrame (env, NULL);
-  g_object_unref (self);
+  g_object_unref (this);
 }
 
 static void
-gdk_android_clipboard_send_to_remote (GdkAndroidClipboard *self,
+gdk_android_clipboard_send_to_remote (GdkAndroidClipboard *this,
                                       GdkContentFormats   *formats,
                                       GdkContentProvider  *content)
 {
-  if (self->cancellable)
+  if (this->cancellable)
     {
-      g_cancellable_cancel (self->cancellable);
-      g_object_unref (self->cancellable);
+      g_cancellable_cancel (this->cancellable);
+      g_object_unref (this->cancellable);
     }
-  self->cancellable = g_cancellable_new ();
+  this->cancellable = g_cancellable_new ();
 
   gdk_android_clipboard_clipdata_from_provider_async (content,
                                                       formats,
                                                       gdk_android_get_activity (),
-                                                      self->cancellable,
+                                                      this->cancellable,
                                                       (GAsyncReadyCallback)gdk_android_clipboard_from_provider_cb,
-                                                      g_object_ref (self));
+                                                      g_object_ref (this));
 }
 
 static gboolean
@@ -462,12 +462,12 @@ gdk_android_clipboard_claim (GdkClipboard       *clipboard,
                              gboolean            local,
                              GdkContentProvider *content)
 {
-  GdkAndroidClipboard *self = (GdkAndroidClipboard *) clipboard;
+  GdkAndroidClipboard *this = (GdkAndroidClipboard *) clipboard;
 
   gboolean ret = GDK_CLIPBOARD_CLASS (gdk_android_clipboard_parent_class)->claim (clipboard, formats, local, content);
 
   if (local)
-    gdk_android_clipboard_send_to_remote (self, formats, content);
+    gdk_android_clipboard_send_to_remote (this, formats, content);
 
   return ret;
 }
@@ -634,7 +634,7 @@ gdk_android_clipboard_read_async (GdkClipboard       *clipboard,
                                   GAsyncReadyCallback callback,
                                   gpointer            user_data)
 {
-  GdkAndroidClipboard *self = (GdkAndroidClipboard *) clipboard;
+  GdkAndroidClipboard *this = (GdkAndroidClipboard *) clipboard;
 
   GTask *task = g_task_new (clipboard, cancellable, callback, user_data);
   g_task_set_source_tag (task, gdk_android_clipboard_read_async);
@@ -643,7 +643,7 @@ gdk_android_clipboard_read_async (GdkClipboard       *clipboard,
   JNIEnv *env = gdk_android_get_env ();
   (*env)->PushLocalFrame (env, 1);
 
-  jobject clip = (*env)->CallObjectMethod (env, self->manager,
+  jobject clip = (*env)->CallObjectMethod (env, this->manager,
                                            gdk_android_get_java_cache ()->a_clipboard_manager.get_primary_clip);
   if (!clip)
     {
@@ -696,27 +696,27 @@ gdk_android_clipboard_class_init (GdkAndroidClipboardClass *klass)
 }
 
 static void
-gdk_android_clipboard_init (GdkAndroidClipboard *self)
+gdk_android_clipboard_init (GdkAndroidClipboard *this)
 {
-  self->cancellable = NULL;
+  this->cancellable = NULL;
 
   JNIEnv *env = gdk_android_get_env ();
   (*env)->PushLocalFrame (env, 2);
   jobject clipboard_mgr = (*env)->CallObjectMethod (env, gdk_android_get_activity (),
                                                     gdk_android_get_java_cache ()->a_context.get_system_service,
                                                     gdk_android_get_java_cache ()->a_context.clipboard_service);
-  self->manager = (*env)->NewGlobalRef (env, clipboard_mgr);
+  this->manager = (*env)->NewGlobalRef (env, clipboard_mgr);
 
   jobject listener = (*env)->NewObject (env, gdk_android_get_java_cache ()->clipboard_provider_change_listener.klass,
                                         gdk_android_get_java_cache ()->clipboard_provider_change_listener.constructor,
-                                        (jlong) self);
-  self->listener = (*env)->NewGlobalRef (env, listener);
-  (*env)->CallVoidMethod (env, self->manager,
+                                        (jlong) this);
+  this->listener = (*env)->NewGlobalRef (env, listener);
+  (*env)->CallVoidMethod (env, this->manager,
                           gdk_android_get_java_cache ()->a_clipboard_manager.add_change_listener,
-                          self->listener);
+                          this->listener);
   (*env)->PopLocalFrame (env, NULL);
 
-  gdk_android_clipboard_update_remote_formats (self);
+  gdk_android_clipboard_update_remote_formats (this);
 }
 
 GdkClipboard *
@@ -758,14 +758,14 @@ gdk_android_clipboard_description_to_formats (jobject clipdesc)
 }
 
 void
-gdk_android_clipboard_update_remote_formats (GdkAndroidClipboard *self)
+gdk_android_clipboard_update_remote_formats (GdkAndroidClipboard *this)
 {
   JNIEnv *env = gdk_android_get_env ();
   (*env)->PushLocalFrame (env, 1);
-  jobject desc = (*env)->CallObjectMethod (env, self->manager,
+  jobject desc = (*env)->CallObjectMethod (env, this->manager,
                                            gdk_android_get_java_cache ()->a_clipboard_manager.get_clip_desc);
   GdkContentFormats *formats = gdk_android_clipboard_description_to_formats(desc);
   (*env)->PopLocalFrame (env, NULL);
-  gdk_clipboard_claim_remote ((GdkClipboard *) self, formats);
+  gdk_clipboard_claim_remote ((GdkClipboard *) this, formats);
   gdk_content_formats_unref (formats);
 }

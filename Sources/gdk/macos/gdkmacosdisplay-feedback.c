@@ -31,11 +31,11 @@ gdk_macos_display_user_defaults_changed_cb (CFNotificationCenterRef  center,
                                             const void              *object,
                                             CFDictionaryRef          userInfo)
 {
-  GdkMacosDisplay *self = observer;
+  GdkMacosDisplay *this = observer;
 
-  g_assert (GDK_IS_MACOS_DISPLAY (self));
+  g_assert (GDK_IS_MACOS_DISPLAY (this));
 
-  _gdk_macos_display_reload_settings (self);
+  _gdk_macos_display_reload_settings (this);
 }
 
 static void
@@ -45,16 +45,16 @@ gdk_macos_display_monitors_changed_cb (CFNotificationCenterRef  center,
                                        const void              *object,
                                        CFDictionaryRef          userInfo)
 {
-  GdkMacosDisplay *self = observer;
+  GdkMacosDisplay *this = observer;
 
-  g_assert (GDK_IS_MACOS_DISPLAY (self));
+  g_assert (GDK_IS_MACOS_DISPLAY (this));
 
-  _gdk_macos_display_reload_monitors (self);
+  _gdk_macos_display_reload_monitors (this);
 
   /* Now we need to update all our surface positions since they
    * probably just changed origins.
    */
-  for (const GList *iter = _gdk_macos_display_get_surfaces (self);
+  for (const GList *iter = _gdk_macos_display_get_surfaces (this);
        iter != NULL;
        iter = iter->next)
     {
@@ -68,19 +68,19 @@ gdk_macos_display_monitors_changed_cb (CFNotificationCenterRef  center,
 
 
 void
-_gdk_macos_display_feedback_init (GdkMacosDisplay *self)
+_gdk_macos_display_feedback_init (GdkMacosDisplay *this)
 {
-  g_return_if_fail (GDK_IS_MACOS_DISPLAY (self));
+  g_return_if_fail (GDK_IS_MACOS_DISPLAY (this));
 
   CFNotificationCenterAddObserver (CFNotificationCenterGetLocalCenter (),
-                                   self,
+                                   this,
                                    gdk_macos_display_monitors_changed_cb,
                                    CFSTR ("NSApplicationDidChangeScreenParametersNotification"),
                                    NULL,
                                    CFNotificationSuspensionBehaviorDeliverImmediately);
 
   CFNotificationCenterAddObserver (CFNotificationCenterGetDistributedCenter (),
-                                   self,
+                                   this,
                                    gdk_macos_display_user_defaults_changed_cb,
                                    CFSTR ("NSUserDefaultsDidChangeNotification"),
                                    NULL,
@@ -88,17 +88,17 @@ _gdk_macos_display_feedback_init (GdkMacosDisplay *self)
 }
 
 void
-_gdk_macos_display_feedback_destroy (GdkMacosDisplay *self)
+_gdk_macos_display_feedback_destroy (GdkMacosDisplay *this)
 {
-  g_return_if_fail (GDK_IS_MACOS_DISPLAY (self));
+  g_return_if_fail (GDK_IS_MACOS_DISPLAY (this));
 
   CFNotificationCenterRemoveObserver (CFNotificationCenterGetDistributedCenter (),
-                                      self,
+                                      this,
                                       CFSTR ("NSApplicationDidChangeScreenParametersNotification"),
                                       NULL);
 
   CFNotificationCenterRemoveObserver (CFNotificationCenterGetDistributedCenter (),
-                                      self,
+                                      this,
                                       CFSTR ("NSUserDefaultsDidChangeNotification"),
                                       NULL);
 

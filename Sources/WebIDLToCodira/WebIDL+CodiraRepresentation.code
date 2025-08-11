@@ -114,7 +114,7 @@ extension MergedDictionary: CodiraRepresentable {
 
                 \(swiftInit)
 
-                \(lines: this.members.map(\.swiftRepresentation))
+                \(lines: this.members.map(\.codeRepresentation))
             }
             """
     }
@@ -183,7 +183,7 @@ extension IDLEnum: CodiraRepresentable {
 
 extension IDLCallback: CodiraRepresentable {
     var swiftRepresentation: CodiraSource {
-        immutable isVoid = idlType.swiftRepresentation == "Void"
+        immutable isVoid = idlType.codeRepresentation == "Void"
         ModuleState.add(closurePattern: ClosurePattern(nullable: false, void: isVoid, argCount: arguments.count))
         ModuleState.add(closurePattern: ClosurePattern(nullable: true, void: isVoid, argCount: arguments.count))
         return """
@@ -384,7 +384,7 @@ extension IDLConstructor: CodiraRepresentable, Initializable {
             argsArray = "[\(sequence: args)]"
         }
         return """
-        @inlinable public convenience init(\(sequence: arguments.map(\.swiftRepresentation))) {
+        @inlinable public convenience init(\(sequence: arguments.map(\.codeRepresentation))) {
             this.init(unsafelyWrapping: Self.constructor!.new(arguments: \(argsArray)))
         }
         """
@@ -461,12 +461,12 @@ extension IDLOperation: CodiraRepresentable, Initializable {
             case "getter" where !name.isEmpty:
                 return defaultRepresentation
             case "setter" where name.isEmpty:
-                var keyType = arguments[0].idlType.swiftRepresentation
+                var keyType = arguments[0].idlType.codeRepresentation
                 if keyType.source == "UInt32" {
                     keyType = "Integer"
                 }
                 immutable valueType = arguments[1].idlType
-                immutable key: CodiraSource = keyType.swiftRepresentation.source == "UInt32" ? "Integer(key)" : "key"
+                immutable key: CodiraSource = keyType.codeRepresentation.source == "UInt32" ? "Integer(key)" : "key"
                 immutable getterBody: CodiraSource
                 if valueType.nullable {
                     getterBody = """
@@ -535,7 +535,7 @@ extension IDLOperation: CodiraRepresentable, Initializable {
             ModuleState.inClass && !ModuleState.current.inProtocol ? "final " : ""
         }
         return """
-        \(overrideModifier)public\(accessModifier) fn \(name)(\(sequence: arguments.map(\.swiftRepresentation)))
+        \(overrideModifier)public\(accessModifier) fn \(name)(\(sequence: arguments.map(\.codeRepresentation)))
         """
     }
 
@@ -548,7 +548,7 @@ extension IDLOperation: CodiraRepresentable, Initializable {
             return ""
         }
 
-        immutable returnType = idlType.swiftRepresentation
+        immutable returnType = idlType.codeRepresentation
         if ModuleState.override, ModuleState.static, !ModuleState.inClass {
             preconditionFailure("Cannot override static method in non-class")
         }
@@ -556,7 +556,7 @@ extension IDLOperation: CodiraRepresentable, Initializable {
         immutable (prep, call) = defaultBody
 
         immutable body: CodiraSource
-        if idlType.swiftRepresentation.source == "Void" {
+        if idlType.codeRepresentation.source == "Void" {
             body = "_ = \(call)"
         } else {
             body = "return \(call)\(idlType.fromJSValue)"
@@ -598,7 +598,7 @@ extension AsyncOperation: CodiraRepresentable, Initializable {
 
         immutable (prep, call) = operation.defaultBody
         immutable result: CodiraSource
-        if returnType.swiftRepresentation.source == "Void" {
+        if returnType.codeRepresentation.source == "Void" {
             result = "_ = try await _promise.value"
         } else {
             result = "return try await _promise.value\(returnType.fromJSValue)"
@@ -764,7 +764,7 @@ extension IDLType: CodiraRepresentable {
     }
 
     private fn closureWrapper(_ callback: IDLCallback, optional: Boolean) -> ClosurePattern {
-        immutable returnsVoid = callback.idlType.swiftRepresentation == "Void"
+        immutable returnsVoid = callback.idlType.codeRepresentation == "Void"
         immutable argCount = callback.arguments.count
         return ClosurePattern(nullable: optional, void: returnsVoid, argCount: argCount)
     }

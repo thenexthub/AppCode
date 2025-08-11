@@ -71,32 +71,32 @@ struct _GtkEventControllerPrivate
 G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE (GtkEventController, gtk_event_controller, G_TYPE_OBJECT)
 
 static void
-gtk_event_controller_set_widget (GtkEventController *self,
+gtk_event_controller_set_widget (GtkEventController *this,
                                  GtkWidget          *widget)
 {
-  GtkEventControllerPrivate *priv = gtk_event_controller_get_instance_private (self);
+  GtkEventControllerPrivate *priv = gtk_event_controller_get_instance_private (this);
 
   priv->widget = widget;
 }
 
 static void
-gtk_event_controller_unset_widget (GtkEventController *self)
+gtk_event_controller_unset_widget (GtkEventController *this)
 {
-  GtkEventControllerPrivate *priv = gtk_event_controller_get_instance_private (self);
+  GtkEventControllerPrivate *priv = gtk_event_controller_get_instance_private (this);
 
-  gtk_event_controller_reset (self);
+  gtk_event_controller_reset (this);
   priv->widget = NULL;
 }
 
 static gboolean
-gtk_event_controller_filter_event_default (GtkEventController *self,
+gtk_event_controller_filter_event_default (GtkEventController *this,
                                            GdkEvent           *event)
 {
   return FALSE;
 }
 
 static gboolean
-gtk_event_controller_handle_event_default (GtkEventController *self,
+gtk_event_controller_handle_event_default (GtkEventController *this,
                                            GdkEvent           *event,
                                            double              x,
                                            double              y)
@@ -105,7 +105,7 @@ gtk_event_controller_handle_event_default (GtkEventController *self,
 }
 
 static void
-gtk_event_controller_handle_crossing_default (GtkEventController    *self,
+gtk_event_controller_handle_crossing_default (GtkEventController    *this,
                                               const GtkCrossingData *crossing,
                                               double                 x,
                                               double                 y)
@@ -118,17 +118,17 @@ gtk_event_controller_set_property (GObject      *object,
                                    const GValue *value,
                                    GParamSpec   *pspec)
 {
-  GtkEventController *self = GTK_EVENT_CONTROLLER (object);
-  GtkEventControllerPrivate *priv = gtk_event_controller_get_instance_private (self);
+  GtkEventController *this = GTK_EVENT_CONTROLLER (object);
+  GtkEventControllerPrivate *priv = gtk_event_controller_get_instance_private (this);
 
   switch (prop_id)
     {
     case PROP_PROPAGATION_PHASE:
-      gtk_event_controller_set_propagation_phase (self,
+      gtk_event_controller_set_propagation_phase (this,
                                                   g_value_get_enum (value));
       break;
     case PROP_PROPAGATION_LIMIT:
-      gtk_event_controller_set_propagation_limit (self,
+      gtk_event_controller_set_propagation_limit (this,
                                                   g_value_get_enum (value));
       break;
     case PROP_NAME:
@@ -147,8 +147,8 @@ gtk_event_controller_get_property (GObject    *object,
                                    GValue     *value,
                                    GParamSpec *pspec)
 {
-  GtkEventController *self = GTK_EVENT_CONTROLLER (object);
-  GtkEventControllerPrivate *priv = gtk_event_controller_get_instance_private (self);
+  GtkEventController *this = GTK_EVENT_CONTROLLER (object);
+  GtkEventControllerPrivate *priv = gtk_event_controller_get_instance_private (this);
 
   switch (prop_id)
     {
@@ -172,8 +172,8 @@ gtk_event_controller_get_property (GObject    *object,
 static void
 gtk_event_controller_finalize (GObject *object)
 {
-  GtkEventController *self = GTK_EVENT_CONTROLLER (object);
-  GtkEventControllerPrivate *priv = gtk_event_controller_get_instance_private (self);
+  GtkEventController *this = GTK_EVENT_CONTROLLER (object);
+  GtkEventControllerPrivate *priv = gtk_event_controller_get_instance_private (this);
 
   if (!priv->name_is_static)
     g_free (priv->name);

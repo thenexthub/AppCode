@@ -76,28 +76,28 @@ G_DEFINE_TYPE (GdkD3D12Texture, gdk_d3d12_texture, GDK_TYPE_TEXTURE)
 static void
 gdk_d3d12_texture_dispose (GObject *object)
 {
-  GdkD3D12Texture *self = GDK_D3D12_TEXTURE (object);
+  GdkD3D12Texture *this = GDK_D3D12_TEXTURE (object);
 
-  if (self->fence_handle)
+  if (this->fence_handle)
     {
-      if (G_UNLIKELY (!CloseHandle (self->fence_handle)))
+      if (G_UNLIKELY (!CloseHandle (this->fence_handle)))
         WIN32_API_FAILED ("CloseHandle (fence_handle)");
-      self->fence_handle = NULL;
+      this->fence_handle = NULL;
     }
-  if (self->resource_handle)
+  if (this->resource_handle)
     {
-      if (G_UNLIKELY (!CloseHandle (self->resource_handle)))
+      if (G_UNLIKELY (!CloseHandle (this->resource_handle)))
         WIN32_API_FAILED ("CloseHandle (resource_handle)");
-      self->resource_handle = NULL;
+      this->resource_handle = NULL;
     }
 
-  gdk_win32_com_clear (&self->fence);
-  gdk_win32_com_clear (&self->resource);
+  gdk_win32_com_clear (&this->fence);
+  gdk_win32_com_clear (&this->resource);
 
-    if (self->destroy)
+    if (this->destroy)
     {
-      self->destroy (self->data);
-      self->destroy = NULL;
+      this->destroy (this->data);
+      this->destroy = NULL;
     }
 
   G_OBJECT_CLASS (gdk_d3d12_texture_parent_class)->dispose (object);
@@ -122,7 +122,7 @@ gdk_d3d12_texture_download (GdkTexture            *texture,
                             const GdkMemoryLayout *layout,
                             GdkColorState         *color_state)
 {
-  GdkD3D12Texture *self = GDK_D3D12_TEXTURE (texture);
+  GdkD3D12Texture *this = GDK_D3D12_TEXTURE (texture);
   ID3D12Device *device;
   ID3D12CommandAllocator *allocator;
   ID3D12GraphicsCommandList *commands;
@@ -133,12 +133,12 @@ gdk_d3d12_texture_download (GdkTexture            *texture,
   void *buffer_data;
   gsize p, n_planes;
 
-  hr_warn (ID3D12Resource_GetDevice (self->resource,
+  hr_warn (ID3D12Resource_GetDevice (this->resource,
                                      &IID_ID3D12Device,
                                      (void **) &device));
 
   n_planes = gdk_memory_format_get_n_planes (texture->format);
-  gdk_d3d12_resource_get_layout (self->resource,
+  gdk_d3d12_resource_get_layout (this->resource,
                                  texture->format,
                                  &buffer_layout,
                                  footprints);
@@ -198,7 +198,7 @@ gdk_d3d12_texture_download (GdkTexture            *texture,
                                                    }),
                                                    0, 0, 0,
                                                    (&(D3D12_TEXTURE_COPY_LOCATION) {
-                                                       .pResource = self->resource,
+                                                       .pResource = this->resource,
                                                        .Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX,
                                                        .SubresourceIndex = p,
                                                    }),
@@ -206,8 +206,8 @@ gdk_d3d12_texture_download (GdkTexture            *texture,
     }
   hr_warn (ID3D12GraphicsCommandList_Close (commands));
 
-  if (self->fence)
-    ID3D12CommandQueue_Wait (queue, self->fence, self->fence_wait);
+  if (this->fence)
+    ID3D12CommandQueue_Wait (queue, this->fence, this->fence_wait);
 
   ID3D12CommandQueue_ExecuteCommandLists (queue, 1, (ID3D12CommandList **) &commands);
 
@@ -249,7 +249,7 @@ gdk_d3d12_texture_class_init (GdkD3D12TextureClass *klass)
 }
 
 static void
-gdk_d3d12_texture_init (GdkD3D12Texture *self)
+gdk_d3d12_texture_init (GdkD3D12Texture *this)
 {
 }
 
@@ -259,7 +259,7 @@ gdk_d3d12_texture_new_from_builder (GdkD3D12TextureBuilder *builder,
                                     gpointer                data,
                                     GError                **error)
 {
-  GdkD3D12Texture *self;
+  GdkD3D12Texture *this;
   GdkTexture *update_texture;
   GdkColorState *color_state;
   GdkMemoryFormat format;
@@ -295,20 +295,20 @@ gdk_d3d12_texture_new_from_builder (GdkD3D12TextureBuilder *builder,
   if (color_state == NULL)
     color_state = gdk_color_state_get_srgb ();
 
-  self = (GdkD3D12Texture *) g_object_new (GDK_TYPE_D3D12_TEXTURE,
+  this = (GdkD3D12Texture *) g_object_new (GDK_TYPE_D3D12_TEXTURE,
                                            "width", (int) desc.Width,
                                            "height", (int) desc.Height,
                                            "color-state", color_state,
                                            NULL);
 
-  GDK_TEXTURE (self)->format = format;
+  GDK_TEXTURE (this)->format = format;
   ID3D12Resource_AddRef (resource);
-  self->resource = resource;
+  this->resource = resource;
   if (fence)
     {
       ID3D12Fence_AddRef (fence);
-      self->fence = fence;
-      self->fence_wait = gdk_d3d12_texture_builder_get_fence_wait (builder);
+      this->fence = fence;
+      this->fence_wait = gdk_d3d12_texture_builder_get_fence_wait (builder);
     }
 
   GDK_DEBUG (D3D12,
@@ -318,8 +318,8 @@ gdk_d3d12_texture_new_from_builder (GdkD3D12TextureBuilder *builder,
 
   /* Set this only once we know that the texture will be created.
    * Otherwise dispose() will run the callback */
-  self->destroy = destroy;
-  self->data = data;
+  this->destroy = destroy;
+  this->data = data;
 
   update_texture = gdk_d3d12_texture_builder_get_update_texture (builder);
   if (update_texture)
@@ -331,11 +331,11 @@ gdk_d3d12_texture_new_from_builder (GdkD3D12TextureBuilder *builder,
                                              update_texture->width, update_texture->height };
           update_region = cairo_region_copy (update_region);
           cairo_region_intersect_rectangle (update_region, &tex_rect);
-          gdk_texture_set_diff (GDK_TEXTURE (self), update_texture, update_region);
+          gdk_texture_set_diff (GDK_TEXTURE (this), update_texture, update_region);
         }
     }
 
-  return GDK_TEXTURE (self);
+  return GDK_TEXTURE (this);
 
 #if 0
   g_set_error_literal (error, GDK_D3D12_ERROR, GDK_D3D12_ERROR_NOT_AVAILABLE,
@@ -345,45 +345,45 @@ gdk_d3d12_texture_new_from_builder (GdkD3D12TextureBuilder *builder,
 }
 
 ID3D12Resource *
-gdk_d3d12_texture_get_resource (GdkD3D12Texture *self)
+gdk_d3d12_texture_get_resource (GdkD3D12Texture *this)
 {
-  return self->resource;
+  return this->resource;
 }
 
 G_LOCK_DEFINE_STATIC(handle_creation);
 
 HANDLE
-gdk_d3d12_texture_get_resource_handle (GdkD3D12Texture *self)
+gdk_d3d12_texture_get_resource_handle (GdkD3D12Texture *this)
 {
   ID3D12Device *device = NULL;
   D3D12_HEAP_FLAGS heap_flags;
   HANDLE result;
   HRESULT hr;
 
-  result = g_atomic_pointer_get (&self->resource_handle);
+  result = g_atomic_pointer_get (&this->resource_handle);
   if (result)
     return result;
 
   G_LOCK (handle_creation);
 
-  result = g_atomic_pointer_get (&self->resource_handle);
+  result = g_atomic_pointer_get (&this->resource_handle);
   if (result)
     goto out;
 
-  if (FAILED (ID3D12Resource_GetHeapProperties (self->resource, NULL, &heap_flags)) ||
+  if (FAILED (ID3D12Resource_GetHeapProperties (this->resource, NULL, &heap_flags)) ||
       ((heap_flags & D3D12_HEAP_FLAG_SHARED) == 0))
     {
       GDK_DEBUG (D3D12, "Cannot export handle, heap is not shared");
       goto out;
     }
 
-  if (FAILED (ID3D12Resource_GetDevice (self->resource,
+  if (FAILED (ID3D12Resource_GetDevice (this->resource,
                                         &IID_ID3D12Device,
                                         (void **) &device)))
     goto out;
 
   hr = ID3D12Device_CreateSharedHandle (device,
-                                        (ID3D12DeviceChild *)self->resource,
+                                        (ID3D12DeviceChild *)this->resource,
                                         NULL,
                                         GENERIC_ALL,
                                         NULL,
@@ -395,7 +395,7 @@ gdk_d3d12_texture_get_resource_handle (GdkD3D12Texture *self)
       goto out;
     }
 
-  g_atomic_pointer_set (&self->resource_handle, result);
+  g_atomic_pointer_set (&this->resource_handle, result);
 
 out:
   gdk_win32_com_clear (&device);
@@ -405,38 +405,38 @@ out:
 }
 
 ID3D12Fence *
-gdk_d3d12_texture_get_fence (GdkD3D12Texture *self)
+gdk_d3d12_texture_get_fence (GdkD3D12Texture *this)
 {
-  return self->fence;
+  return this->fence;
 }
 
 HANDLE
-gdk_d3d12_texture_get_fence_handle (GdkD3D12Texture *self)
+gdk_d3d12_texture_get_fence_handle (GdkD3D12Texture *this)
 {
   ID3D12Device *device = NULL;
   HANDLE result;
   HRESULT hr;
 
-  if (self->fence == NULL)
+  if (this->fence == NULL)
     return NULL;
 
-  result = g_atomic_pointer_get (&self->fence_handle);
+  result = g_atomic_pointer_get (&this->fence_handle);
   if (result)
     return result;
 
   G_LOCK (handle_creation);
 
-  result = g_atomic_pointer_get (&self->fence_handle);
+  result = g_atomic_pointer_get (&this->fence_handle);
   if (result)
     goto out;
 
-  if (FAILED (ID3D12Fence_GetDevice (self->fence,
+  if (FAILED (ID3D12Fence_GetDevice (this->fence,
                                      &IID_ID3D12Device,
                                      (void **) &device)))
     goto out;
 
   hr = ID3D12Device_CreateSharedHandle (device,
-                                        (ID3D12DeviceChild *) self->fence,
+                                        (ID3D12DeviceChild *) this->fence,
                                         NULL,
                                         GENERIC_ALL,
                                         NULL,
@@ -448,7 +448,7 @@ gdk_d3d12_texture_get_fence_handle (GdkD3D12Texture *self)
       goto out;
     }
 
-  g_atomic_pointer_set (&self->fence_handle, result);
+  g_atomic_pointer_set (&this->fence_handle, result);
 
 out:
   gdk_win32_com_clear (&device);
@@ -458,14 +458,14 @@ out:
 }
 
 guint64
-gdk_d3d12_texture_get_fence_wait (GdkD3D12Texture *self)
+gdk_d3d12_texture_get_fence_wait (GdkD3D12Texture *this)
 {
-  return self->fence_wait;
+  return this->fence_wait;
 }
 
 /*
  * gdk_d3d12_texture_import_gl:
- * @self: texture to import into GL
+ * @this: texture to import into GL
  * @context: GL context to use for the import. The context
  *   must be the current context.
  * @out_mem_id: (out): out result for the memory object
@@ -483,12 +483,12 @@ gdk_d3d12_texture_get_fence_wait (GdkD3D12Texture *self)
  * Returns: The newly created texture or 0 on failure.
  */
 guint
-gdk_d3d12_texture_import_gl (GdkD3D12Texture *self,
+gdk_d3d12_texture_import_gl (GdkD3D12Texture *this,
                              GdkGLContext    *context,
                              guint           *out_mem_id,
                              guint           *out_semaphore_id)
 {
-  GdkTexture *texture = GDK_TEXTURE (self);
+  GdkTexture *texture = GDK_TEXTURE (this);
   GLuint tex_id, mem_id, sema_id;
   D3D12_RESOURCE_DESC desc;
   HANDLE handle, fence_handle;
@@ -522,13 +522,13 @@ gdk_d3d12_texture_import_gl (GdkD3D12Texture *self,
       return 0;
     }
 
-  handle = gdk_d3d12_texture_get_resource_handle (self);
+  handle = gdk_d3d12_texture_get_resource_handle (this);
   if (!handle)
     return 0;
 
   GDK_DEBUG (D3D12, "Attempting to import %ux%u texture",
              texture->width, texture->height);
-  ID3D12Resource_GetDesc (self->resource, &desc);
+  ID3D12Resource_GetDesc (this->resource, &desc);
 
   glCreateMemoryObjectsEXT (1, &mem_id);
   glImportMemoryWin32HandleEXT (mem_id,
@@ -546,7 +546,7 @@ gdk_d3d12_texture_import_gl (GdkD3D12Texture *self,
                         mem_id,
                         0);
 
-  fence_handle = gdk_d3d12_texture_get_resource_handle (self);
+  fence_handle = gdk_d3d12_texture_get_resource_handle (this);
   if (fence_handle)
     {
       glGenSemaphoresEXT (1, &sema_id);

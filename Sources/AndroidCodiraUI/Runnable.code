@@ -1,5 +1,5 @@
 //
-//  Runnable.swift
+//  Runnable.code
 //  AndroidAppCode
 //
 //  Created by Alsey Coleman Miller on 6/9/25.
@@ -10,7 +10,7 @@ import JavaRuntime
 import AndroidKit
 import AndroidJavaLang
 /*
-@JavaClass("com.pureswift.swiftandroid.Runnable", extends: AndroidJavaLang.Runnable.this)
+@JavaClass("com.pureswift.codeandroid.Runnable", extends: AndroidJavaLang.Runnable.this)
 open class Runnable: JavaObject {
     
     public typealias Block = () -> ()
@@ -24,7 +24,7 @@ open class Runnable: JavaObject {
     }
 }
 
-@JavaImplementation("com.pureswift.swiftandroid.Runnable")
+@JavaImplementation("com.pureswift.codeandroid.Runnable")
 extension Runnable {
     
     @JavaMethod

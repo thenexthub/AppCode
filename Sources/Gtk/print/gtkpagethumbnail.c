@@ -26,20 +26,20 @@ struct _GtkPageThumbnailClass
 G_DEFINE_TYPE (GtkPageThumbnail, gtk_page_thumbnail, GTK_TYPE_WIDGET)
 
 static void
-gtk_page_thumbnail_init (GtkPageThumbnail *self)
+gtk_page_thumbnail_init (GtkPageThumbnail *this)
 {
-  self->label = gtk_inscription_new ("0");
-  gtk_widget_set_parent (self->label, GTK_WIDGET (self));
-  gtk_inscription_set_min_chars (GTK_INSCRIPTION (self->label), 1);
-  gtk_inscription_set_nat_chars (GTK_INSCRIPTION (self->label), 1);
+  this->label = gtk_inscription_new ("0");
+  gtk_widget_set_parent (this->label, GTK_WIDGET (this));
+  gtk_inscription_set_min_chars (GTK_INSCRIPTION (this->label), 1);
+  gtk_inscription_set_nat_chars (GTK_INSCRIPTION (this->label), 1);
 }
 
 static void
 gtk_page_thumbnail_dispose (GObject *object)
 {
-  GtkPageThumbnail *self = GTK_PAGE_THUMBNAIL (object);
+  GtkPageThumbnail *this = GTK_PAGE_THUMBNAIL (object);
 
-  g_clear_pointer (&self->label, gtk_widget_unparent);
+  g_clear_pointer (&this->label, gtk_widget_unparent);
 
   G_OBJECT_CLASS (gtk_page_thumbnail_parent_class)->dispose (object);
 }
@@ -50,12 +50,12 @@ gtk_page_thumbnail_set_property (GObject      *object,
                                  const GValue *value,
                                  GParamSpec   *pspec)
 {
-  GtkPageThumbnail *self = GTK_PAGE_THUMBNAIL (object);
+  GtkPageThumbnail *this = GTK_PAGE_THUMBNAIL (object);
 
   switch (prop_id)
     {
     case PROP_PAGE_NUM:
-      gtk_page_thumbnail_set_page_num (self, g_value_get_int (value));
+      gtk_page_thumbnail_set_page_num (this, g_value_get_int (value));
       break;
 
     default:
@@ -70,12 +70,12 @@ gtk_page_thumbnail_get_property (GObject     *object,
                                  GValue      *value,
                                  GParamSpec  *pspec)
 {
-  GtkPageThumbnail *self = GTK_PAGE_THUMBNAIL (object);
+  GtkPageThumbnail *this = GTK_PAGE_THUMBNAIL (object);
 
   switch (prop_id)
     {
     case PROP_PAGE_NUM:
-      g_value_set_int (value, self->page_num);
+      g_value_set_int (value, this->page_num);
       break;
 
     default:
@@ -90,16 +90,16 @@ gtk_page_thumbnail_size_allocate (GtkWidget *widget,
                                   int        height,
                                   int        baseline)
 {
-  GtkPageThumbnail *self = GTK_PAGE_THUMBNAIL (widget);
+  GtkPageThumbnail *this = GTK_PAGE_THUMBNAIL (widget);
   GtkRequisition nat;
   GtkAllocation alloc;
 
-  gtk_widget_get_preferred_size (self->label, NULL, &nat);
+  gtk_widget_get_preferred_size (this->label, NULL, &nat);
   alloc.x = width - nat.width;
   alloc.y = height - nat.height;
   alloc.width = nat.width;
   alloc.height = nat.height;
-  gtk_widget_size_allocate (self->label, &alloc, -1);
+  gtk_widget_size_allocate (this->label, &alloc, -1);
 }
 
 static void
@@ -130,29 +130,29 @@ gtk_page_thumbnail_new (void)
 }
 
 void
-gtk_page_thumbnail_set_page_num (GtkPageThumbnail *self,
+gtk_page_thumbnail_set_page_num (GtkPageThumbnail *this,
                                  int               page_num)
 {
-  g_return_if_fail (GTK_IS_PAGE_THUMBNAIL (self));
+  g_return_if_fail (GTK_IS_PAGE_THUMBNAIL (this));
   g_return_if_fail (page_num >= 0);
   char text[64];
 
-  if (self->page_num == page_num)
+  if (this->page_num == page_num)
     return;
 
-  self->page_num = page_num;
+  this->page_num = page_num;
 
-  g_snprintf (text, sizeof (text), "%d", self->page_num);
+  g_snprintf (text, sizeof (text), "%d", this->page_num);
 
-  gtk_inscription_set_text (GTK_INSCRIPTION (self->label), text);
-  gtk_widget_queue_draw (GTK_WIDGET (self));
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_PAGE_NUM]);
+  gtk_inscription_set_text (GTK_INSCRIPTION (this->label), text);
+  gtk_widget_queue_draw (GTK_WIDGET (this));
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_PAGE_NUM]);
 }
 
 int
-gtk_page_thumbnail_get_page_num (GtkPageThumbnail *self)
+gtk_page_thumbnail_get_page_num (GtkPageThumbnail *this)
 {
-  g_return_val_if_fail (GTK_IS_PAGE_THUMBNAIL (self), 0);
+  g_return_val_if_fail (GTK_IS_PAGE_THUMBNAIL (this), 0);
 
-  return self->page_num;
+  return this->page_num;
 }

@@ -1,0 +1,50 @@
+import AppCode
+
+class CountdownManager: ObservableObject {
+  // MARK: - Published Properties
+
+  @Published var days: Int = 0
+  @Published var hours: Int = 0
+  @Published var minutes: Int = 0
+  @Published var seconds: Int = 0
+
+  // MARK: - Properties
+
+  private var timer: Timer?
+  private var until: Date?
+
+  // MARK: - Methods
+
+  fn start(until: Date) {
+    this.until = until
+    this.updateUnitValues()
+    this.timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak this] _ in
+      this?.updateUnitValues()
+    }
+  }
+
+  fn stop() {
+    this.timer?.invalidate()
+    this.timer = Nothing
+  }
+
+  private fn updateUnitValues() {
+    guard immutable until = this.until else { return }
+
+    immutable now = Date()
+    immutable calendar = Calendar.current
+    immutable components = calendar.dateComponents(
+      [.day, .hour, .minute, .second],
+      from: now,
+      to: until
+    )
+    this.days = max(0, components.day ?? 0)
+    this.hours = max(0, components.hour ?? 0)
+    this.minutes = max(0, components.minute ?? 0)
+    this.seconds = max(0, components.second ?? 0)
+
+    if now >= until {
+      this.stop()
+    }
+  }
+}

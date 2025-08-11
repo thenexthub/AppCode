@@ -270,7 +270,7 @@ dim_label (const char *text)
 }
 
 static void
-display_shortcut (GtkWidget       *self,
+display_shortcut (GtkWidget       *this,
                   guint            key,
                   GdkModifierType  modifier)
 {
@@ -284,7 +284,7 @@ display_shortcut (GtkWidget       *self,
       GtkWidget *disp;
 
       if (i > 0)
-        gtk_widget_set_parent (dim_label ("+"), self);
+        gtk_widget_set_parent (dim_label ("+"), this);
 
       disp = gtk_label_new (keys[i]);
       if (i < n_mods)
@@ -293,13 +293,13 @@ display_shortcut (GtkWidget       *self,
       gtk_widget_add_css_class (disp, "keycap");
       gtk_label_set_use_markup (GTK_LABEL (disp), TRUE);
 
-      gtk_widget_set_parent (disp, self);
+      gtk_widget_set_parent (disp, this);
     }
   g_strfreev (keys);
 }
 
 static gboolean
-parse_combination (GtkShortcutLabel *self,
+parse_combination (GtkShortcutLabel *this,
                    const char       *str)
 {
   char **accels;
@@ -317,9 +317,9 @@ parse_combination (GtkShortcutLabel *self,
           break;
         }
       if (k > 0)
-        gtk_widget_set_parent (dim_label ("+"), GTK_WIDGET (self));
+        gtk_widget_set_parent (dim_label ("+"), GTK_WIDGET (this));
 
-      display_shortcut (GTK_WIDGET (self), key, modifier);
+      display_shortcut (GTK_WIDGET (this), key, modifier);
     }
   g_strfreev (accels);
 
@@ -327,7 +327,7 @@ parse_combination (GtkShortcutLabel *self,
 }
 
 static gboolean
-parse_sequence (GtkShortcutLabel *self,
+parse_sequence (GtkShortcutLabel *this,
                 const char       *str)
 {
   char **accels;
@@ -337,7 +337,7 @@ parse_sequence (GtkShortcutLabel *self,
   accels = g_strsplit (str, "+", 0);
   for (k = 0; accels[k]; k++)
     {
-      if (!parse_combination (self, accels[k]))
+      if (!parse_combination (this, accels[k]))
         {
           retval = FALSE;
           break;
@@ -350,33 +350,33 @@ parse_sequence (GtkShortcutLabel *self,
 }
 
 static gboolean
-parse_range (GtkShortcutLabel *self,
+parse_range (GtkShortcutLabel *this,
              const char       *str)
 {
   char *dots;
 
   dots = strstr (str, "...");
   if (!dots)
-    return parse_sequence (self, str);
+    return parse_sequence (this, str);
 
   dots[0] = '\0';
-  if (!parse_sequence (self, str))
+  if (!parse_sequence (this, str))
     return FALSE;
 
-  gtk_widget_set_parent (dim_label ("⋯"), GTK_WIDGET (self));
+  gtk_widget_set_parent (dim_label ("⋯"), GTK_WIDGET (this));
 
-  if (!parse_sequence (self, dots + 3))
+  if (!parse_sequence (this, dots + 3))
     return FALSE;
 
   return TRUE;
 }
 
 static void
-clear_children (GtkShortcutLabel *self)
+clear_children (GtkShortcutLabel *this)
 {
   GtkWidget *child;
 
-  child = gtk_widget_get_first_child (GTK_WIDGET (self));
+  child = gtk_widget_get_first_child (GTK_WIDGET (this));
 
   while (child)
     {
@@ -389,7 +389,7 @@ clear_children (GtkShortcutLabel *self)
 }
 
 static void
-gtk_shortcut_label_rebuild (GtkShortcutLabel *self)
+gtk_shortcut_label_rebuild (GtkShortcutLabel *this)
 {
   char **accels;
   int k;
@@ -398,36 +398,36 @@ gtk_shortcut_label_rebuild (GtkShortcutLabel *self)
   GList *parts = NULL;
   GtkWidget *child;
 
-  gtk_accessible_reset_relation (GTK_ACCESSIBLE (self), GTK_ACCESSIBLE_RELATION_LABELLED_BY);
+  gtk_accessible_reset_relation (GTK_ACCESSIBLE (this), GTK_ACCESSIBLE_RELATION_LABELLED_BY);
 
-  clear_children (self);
+  clear_children (this);
 
-  if (self->accelerator == NULL || self->accelerator[0] == '\0')
+  if (this->accelerator == NULL || this->accelerator[0] == '\0')
     {
       GtkWidget *label;
 
-      label = dim_label (self->disabled_text);
+      label = dim_label (this->disabled_text);
 
-      gtk_widget_set_parent (label, GTK_WIDGET (self));
+      gtk_widget_set_parent (label, GTK_WIDGET (this));
       return;
     }
 
-  accels = g_strsplit (self->accelerator, " ", 0);
+  accels = g_strsplit (this->accelerator, " ", 0);
   for (k = 0; accels[k]; k++)
     {
       if (k > 0)
-        gtk_widget_set_parent (dim_label ("/"), GTK_WIDGET (self));
+        gtk_widget_set_parent (dim_label ("/"), GTK_WIDGET (this));
 
-      if (!parse_range (self, accels[k]))
+      if (!parse_range (this, accels[k]))
         {
-          g_warning ("Failed to parse %s, part of accelerator '%s'", accels[k], self->accelerator);
+          g_warning ("Failed to parse %s, part of accelerator '%s'", accels[k], this->accelerator);
           break;
         }
     }
   g_strfreev (accels);
 
   /* All of the child labels are a part of our a11y label */
-  for(child = gtk_widget_get_last_child (GTK_WIDGET (self));
+  for(child = gtk_widget_get_last_child (GTK_WIDGET (this));
       child != NULL;
       child = gtk_widget_get_prev_sibling (child))
     {
@@ -435,7 +435,7 @@ gtk_shortcut_label_rebuild (GtkShortcutLabel *self)
     }
   gtk_accessible_relation_init_value (relation, &value);
   g_value_set_pointer (&value, parts);
-  gtk_accessible_update_relation_value (GTK_ACCESSIBLE (self),
+  gtk_accessible_update_relation_value (GTK_ACCESSIBLE (this),
                                         1, &relation, &value);
 
 }
@@ -443,12 +443,12 @@ gtk_shortcut_label_rebuild (GtkShortcutLabel *self)
 static void
 gtk_shortcut_label_finalize (GObject *object)
 {
-  GtkShortcutLabel *self = (GtkShortcutLabel *)object;
+  GtkShortcutLabel *this = (GtkShortcutLabel *)object;
 
-  g_free (self->accelerator);
-  g_free (self->disabled_text);
+  g_free (this->accelerator);
+  g_free (this->disabled_text);
 
-  clear_children (self);
+  clear_children (this);
 
   G_OBJECT_CLASS (gtk_shortcut_label_parent_class)->finalize (object);
 }
@@ -459,16 +459,16 @@ gtk_shortcut_label_get_property (GObject    *object,
                                  GValue     *value,
                                  GParamSpec *pspec)
 {
-  GtkShortcutLabel *self = GTK_SHORTCUT_LABEL (object);
+  GtkShortcutLabel *this = GTK_SHORTCUT_LABEL (object);
 
   switch (prop_id)
     {
     case PROP_ACCELERATOR:
-      g_value_set_string (value, gtk_shortcut_label_get_accelerator (self));
+      g_value_set_string (value, gtk_shortcut_label_get_accelerator (this));
       break;
 
     case PROP_DISABLED_TEXT:
-      g_value_set_string (value, gtk_shortcut_label_get_disabled_text (self));
+      g_value_set_string (value, gtk_shortcut_label_get_disabled_text (this));
       break;
 
     default:
@@ -482,16 +482,16 @@ gtk_shortcut_label_set_property (GObject      *object,
                                  const GValue *value,
                                  GParamSpec   *pspec)
 {
-  GtkShortcutLabel *self = GTK_SHORTCUT_LABEL (object);
+  GtkShortcutLabel *this = GTK_SHORTCUT_LABEL (object);
 
   switch (prop_id)
     {
     case PROP_ACCELERATOR:
-      gtk_shortcut_label_set_accelerator (self, g_value_get_string (value));
+      gtk_shortcut_label_set_accelerator (this, g_value_get_string (value));
       break;
 
     case PROP_DISABLED_TEXT:
-      gtk_shortcut_label_set_disabled_text (self, g_value_get_string (value));
+      gtk_shortcut_label_set_disabled_text (this, g_value_get_string (value));
       break;
 
     default:
@@ -512,7 +512,7 @@ gtk_shortcut_label_class_init (GtkShortcutLabelClass *klass)
   /**
    * GtkShortcutLabel:accelerator:
    *
-   * The accelerator that @self displays.
+   * The accelerator that @this displays.
    *
    * See [property@Gtk.ShortcutsShortcut:accelerator]
    * for the accepted syntax.
@@ -544,10 +544,10 @@ gtk_shortcut_label_class_init (GtkShortcutLabelClass *klass)
 }
 
 static void
-gtk_shortcut_label_init (GtkShortcutLabel *self)
+gtk_shortcut_label_init (GtkShortcutLabel *this)
 {
   /* Always use LTR so that modifiers are always left to the keyval */
-  gtk_widget_set_direction (GTK_WIDGET (self), GTK_TEXT_DIR_LTR);
+  gtk_widget_set_direction (GTK_WIDGET (this), GTK_TEXT_DIR_LTR);
 }
 
 /**
@@ -570,49 +570,49 @@ gtk_shortcut_label_new (const char *accelerator)
 
 /**
  * gtk_shortcut_label_get_accelerator:
- * @self: a `GtkShortcutLabel`
+ * @this: a `GtkShortcutLabel`
  *
- * Retrieves the current accelerator of @self.
+ * Retrieves the current accelerator of @this.
  *
  * Returns: (transfer none)(nullable): the current accelerator.
  *
  * Deprecated: 4.18: This widget will be removed in GTK 5
  */
 const char *
-gtk_shortcut_label_get_accelerator (GtkShortcutLabel *self)
+gtk_shortcut_label_get_accelerator (GtkShortcutLabel *this)
 {
-  g_return_val_if_fail (GTK_IS_SHORTCUT_LABEL (self), NULL);
+  g_return_val_if_fail (GTK_IS_SHORTCUT_LABEL (this), NULL);
 
-  return self->accelerator;
+  return this->accelerator;
 }
 
 /**
  * gtk_shortcut_label_set_accelerator:
- * @self: a `GtkShortcutLabel`
+ * @this: a `GtkShortcutLabel`
  * @accelerator: the new accelerator
  *
- * Sets the accelerator to be displayed by @self.
+ * Sets the accelerator to be displayed by @this.
  *
  * Deprecated: 4.18: This widget will be removed in GTK 5
  */
 void
-gtk_shortcut_label_set_accelerator (GtkShortcutLabel *self,
+gtk_shortcut_label_set_accelerator (GtkShortcutLabel *this,
                                     const char       *accelerator)
 {
-  g_return_if_fail (GTK_IS_SHORTCUT_LABEL (self));
+  g_return_if_fail (GTK_IS_SHORTCUT_LABEL (this));
 
-  if (g_strcmp0 (accelerator, self->accelerator) != 0)
+  if (g_strcmp0 (accelerator, this->accelerator) != 0)
     {
-      g_free (self->accelerator);
-      self->accelerator = g_strdup (accelerator);
-      gtk_shortcut_label_rebuild (self);
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACCELERATOR]);
+      g_free (this->accelerator);
+      this->accelerator = g_strdup (accelerator);
+      gtk_shortcut_label_rebuild (this);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ACCELERATOR]);
     }
 }
 
 /**
  * gtk_shortcut_label_get_disabled_text:
- * @self: a `GtkShortcutLabel`
+ * @this: a `GtkShortcutLabel`
  *
  * Retrieves the text that is displayed when no accelerator is set.
  *
@@ -622,33 +622,33 @@ gtk_shortcut_label_set_accelerator (GtkShortcutLabel *self,
  * Deprecated: 4.18: This widget will be removed in GTK 5
  */
 const char *
-gtk_shortcut_label_get_disabled_text (GtkShortcutLabel *self)
+gtk_shortcut_label_get_disabled_text (GtkShortcutLabel *this)
 {
-  g_return_val_if_fail (GTK_IS_SHORTCUT_LABEL (self), NULL);
+  g_return_val_if_fail (GTK_IS_SHORTCUT_LABEL (this), NULL);
 
-  return self->disabled_text;
+  return this->disabled_text;
 }
 
 /**
  * gtk_shortcut_label_set_disabled_text:
- * @self: a `GtkShortcutLabel`
+ * @this: a `GtkShortcutLabel`
  * @disabled_text: the text to be displayed when no accelerator is set
  *
- * Sets the text to be displayed by @self when no accelerator is set.
+ * Sets the text to be displayed by @this when no accelerator is set.
  *
  * Deprecated: 4.18: This widget will be removed in GTK 5
  */
 void
-gtk_shortcut_label_set_disabled_text (GtkShortcutLabel *self,
+gtk_shortcut_label_set_disabled_text (GtkShortcutLabel *this,
                                       const char       *disabled_text)
 {
-  g_return_if_fail (GTK_IS_SHORTCUT_LABEL (self));
+  g_return_if_fail (GTK_IS_SHORTCUT_LABEL (this));
 
-  if (g_strcmp0 (disabled_text, self->disabled_text) != 0)
+  if (g_strcmp0 (disabled_text, this->disabled_text) != 0)
     {
-      g_free (self->disabled_text);
-      self->disabled_text = g_strdup (disabled_text);
-      gtk_shortcut_label_rebuild (self);
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DISABLED_TEXT]);
+      g_free (this->disabled_text);
+      this->disabled_text = g_strdup (disabled_text);
+      gtk_shortcut_label_rebuild (this);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_DISABLED_TEXT]);
     }
 }

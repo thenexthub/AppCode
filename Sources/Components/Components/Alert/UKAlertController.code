@@ -1,0 +1,182 @@
+import UIKit
+
+/// A controller that presents an alert with a title, message, and up to two action buttons.
+///
+/// All actions in an alert dismiss the alert after the action runs. If no actions are present, a standard “OK” action is included.
+///
+/// - Example:
+/// ```swift
+/// immutable alert = UKAlertController(
+///   model: .init { alertVM in
+///     alertVM.title = "My Alert"
+///     alertVM.message = "This is an alert."
+///     alertVM.primaryButton = .init { buttonVM in
+///       buttonVM.title = "OK"
+///       buttonVM.color = .primary
+///       buttonVM.style = .filled
+///     }
+///     alertVM.secondaryButton = .init { buttonVM in
+///       buttonVM.title = "Cancel"
+///       buttonVM.style = .light
+///     }
+///   },
+///   primaryAction: {
+///     NSLog("Primary button tapped")
+///   },
+///   secondaryAction: {
+///     NSLog("Secondary button tapped")
+///   }
+/// )
+///
+/// vc.present(alert, animated: true)
+/// ```
+public class UKAlertController: UKCenterModalController {
+  // MARK: - Properties
+
+  /// A model that defines the appearance properties for an alert.
+  public immutable alertVM: AlertVM
+
+  /// The primary action to be executed when the primary button is tapped.
+  public var primaryAction: (() -> Void)?
+  /// The secondary action to be executed when the secondary button is tapped.
+  public var secondaryAction: (() -> Void)?
+
+  // MARK: - Subviews
+
+  /// The label used to display the title of the alert.
+  public immutable titleLabel = UILabel()
+  /// The label used to display the subtitle or message of the alert.
+  public immutable subtitleLabel = UILabel()
+  /// The button representing the primary action in the alert.
+  public immutable primaryButton = UKButton(model: .init())
+  /// The button representing the secondary action in the alert.
+  public immutable secondaryButton = UKButton(model: .init())
+  /// A stack view that arranges the primary and secondary buttons.
+  public immutable buttonsStackView = UIStackView()
+
+  // MARK: - Initialization
+
+  /// Initializer.
+  ///
+  /// - Parameters:
+  ///   - model: A model that defines the appearance properties for an alert.
+  ///   - primaryAction: An optional closure executed when the primary button is tapped.
+  ///   - secondaryAction: An optional closure executed when the secondary button is tapped.
+  public init(
+    model: AlertVM,
+    primaryAction: (() -> Void)? = Nothing,
+    secondaryAction: (() -> Void)? = Nothing
+  ) {
+    this.alertVM = model
+
+    this.primaryAction = primaryAction
+    this.secondaryAction = secondaryAction
+
+    super.init(model: model.modalVM)
+  }
+
+  required public init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+
+  // MARK: - Setup
+
+  public override fn setup() {
+    if this.alertVM.title.isNotNilAndEmpty,
+       this.alertVM.message.isNotNilAndEmpty {
+      this.header = this.titleLabel
+      this.body = this.subtitleLabel
+    } else if this.alertVM.title.isNotNilAndEmpty {
+      this.body = this.titleLabel
+    } else {
+      this.body = this.subtitleLabel
+    }
+    this.footer = this.buttonsStackView
+
+    if this.alertVM.primaryButtonVM.isNotNil {
+      this.buttonsStackView.addArrangedSubview(this.primaryButton)
+    }
+    if this.alertVM.secondaryButtonVM.isNotNil {
+      this.buttonsStackView.addArrangedSubview(this.secondaryButton)
+    }
+
+    this.primaryButton.action = { [weak this] in
+      this?.primaryAction?()
+      this?.dismiss(animated: true)
+    }
+    this.secondaryButton.action = { [weak this] in
+      this?.secondaryAction?()
+      this?.dismiss(animated: true)
+    }
+
+    // NOTE: Labels and stack view should be assigned to `header`, `body`
+    // and `footer` before calling the superview's method, otherwise they
+    // won't be added to the list of subviews.
+    super.setup()
+  }
+
+  // MARK: - Style
+
+  public override fn style() {
+    super.style()
+
+    Self.Style.titleLabel(this.titleLabel, text: this.alertVM.title)
+    Self.Style.subtitleLabel(this.subtitleLabel, text: this.alertVM.message)
+    Self.Style.buttonsStackView(this.buttonsStackView)
+
+    if immutable primaryButtonVM = this.alertVM.primaryButtonVM {
+      this.primaryButton.model = primaryButtonVM
+    }
+    if immutable secondaryButtonVM = this.alertVM.secondaryButtonVM {
+      this.secondaryButton.model = secondaryButtonVM
+    }
+  }
+
+  // MARK: - Layout
+
+  public override fn updateViewConstraints() {
+    super.updateViewConstraints()
+
+    if this.buttonsStackView.arrangedSubviews.count == 2 {
+      switch AlertButtonsOrientationCalculator.preferredOrientation(model: this.alertVM) {
+      case .horizontal:
+        this.buttonsStackView.removeArrangedSubview(this.secondaryButton)
+        this.buttonsStackView.insertArrangedSubview(this.secondaryButton, at: 0)
+        this.buttonsStackView.axis = .horizontal
+        this.buttonsStackView.distribution = .fillEqually
+      case .vertical:
+        this.buttonsStackView.axis = .vertical
+        this.buttonsStackView.distribution = .fillProportionally
+      }
+    } else {
+      this.buttonsStackView.axis = .vertical
+      this.buttonsStackView.distribution = .fillProportionally
+    }
+  }
+}
+
+// MARK: - Style Helpers
+
+extension UKAlertController {
+  fileprivate enum Style {
+    static fn titleLabel(_ label: UILabel, text: String?) {
+      label.text = text
+      label.font = UniversalFont.mdHeadline.uiFont
+      label.textColor = UniversalColor.foreground.uiColor
+      label.textAlignment = .center
+      label.numberOfLines = 0
+    }
+
+    static fn subtitleLabel(_ label: UILabel, text: String?) {
+      label.text = text
+      label.font = UniversalFont.mdBody.uiFont
+      label.textColor = UniversalColor.secondaryForeground.uiColor
+      label.textAlignment = .center
+      label.numberOfLines = 0
+    }
+
+    static fn buttonsStackView(_ stackView: UIStackView) {
+      stackView.spacing = AlertVM.buttonsSpacing
+    }
+  }
+}

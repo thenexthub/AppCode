@@ -72,14 +72,14 @@ void                    gdk_draw_context_end_frame_full         (GdkDrawContext 
 
 void                    gdk_draw_context_empty_frame            (GdkDrawContext         *context);
 
-gboolean                gdk_draw_context_attach                 (GdkDrawContext         *self,
+gboolean                gdk_draw_context_attach                 (GdkDrawContext         *this,
                                                                  GError                **error);
-void                    gdk_draw_context_detach                 (GdkDrawContext         *self);
+void                    gdk_draw_context_detach                 (GdkDrawContext         *this);
 
-const cairo_region_t *  gdk_draw_context_get_render_region      (GdkDrawContext         *self);
-GdkColorState *         gdk_draw_context_get_color_state        (GdkDrawContext         *self);
-GdkMemoryDepth          gdk_draw_context_get_depth              (GdkDrawContext         *self);
-void                    gdk_draw_context_get_buffer_size        (GdkDrawContext         *self,
+const cairo_region_t *  gdk_draw_context_get_render_region      (GdkDrawContext         *this);
+GdkColorState *         gdk_draw_context_get_color_state        (GdkDrawContext         *this);
+GdkMemoryDepth          gdk_draw_context_get_depth              (GdkDrawContext         *this);
+void                    gdk_draw_context_get_buffer_size        (GdkDrawContext         *this,
                                                                  guint                  *out_width,
                                                                  guint                  *out_height);
 

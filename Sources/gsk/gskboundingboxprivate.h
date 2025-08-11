@@ -12,71 +12,71 @@ struct _GskBoundingBox {
 };
 
 static inline GskBoundingBox *
-gsk_bounding_box_init (GskBoundingBox         *self,
+gsk_bounding_box_init (GskBoundingBox         *this,
                        const graphene_point_t *a,
                        const graphene_point_t *b)
 {
-  self->min.x = MIN (a->x, b->x);
-  self->min.y = MIN (a->y, b->y);
-  self->max.x = MAX (a->x, b->x);
-  self->max.y = MAX (a->y, b->y);
-  return self;
+  this->min.x = MIN (a->x, b->x);
+  this->min.y = MIN (a->y, b->y);
+  this->max.x = MAX (a->x, b->x);
+  this->max.y = MAX (a->y, b->y);
+  return this;
 }
 
 static inline GskBoundingBox *
-gsk_bounding_box_init_copy (GskBoundingBox       *self,
+gsk_bounding_box_init_copy (GskBoundingBox       *this,
                             const GskBoundingBox *src)
 {
-  self->min = src->min;
-  self->max = src->max;
-  return self;
+  this->min = src->min;
+  this->max = src->max;
+  return this;
 }
 
 static inline GskBoundingBox *
-gsk_bounding_box_init_from_rect (GskBoundingBox        *self,
+gsk_bounding_box_init_from_rect (GskBoundingBox        *this,
                                  const graphene_rect_t *bounds)
 {
-  self->min = bounds->origin;
-  self->max.x = bounds->origin.x + bounds->size.width;
-  self->max.y = bounds->origin.y + bounds->size.height;
-  return self;
+  this->min = bounds->origin;
+  this->max.x = bounds->origin.x + bounds->size.width;
+  this->max.y = bounds->origin.y + bounds->size.height;
+  return this;
 }
 
 static inline void
-gsk_bounding_box_expand (GskBoundingBox         *self,
+gsk_bounding_box_expand (GskBoundingBox         *this,
                          const graphene_point_t *p)
 {
-  self->min.x = MIN (self->min.x, p->x);
-  self->min.y = MIN (self->min.y, p->y);
-  self->max.x = MAX (self->max.x, p->x);
-  self->max.y = MAX (self->max.y, p->y);
+  this->min.x = MIN (this->min.x, p->x);
+  this->min.y = MIN (this->min.y, p->y);
+  this->max.x = MAX (this->max.x, p->x);
+  this->max.y = MAX (this->max.y, p->y);
 }
 
 static inline graphene_rect_t *
-gsk_bounding_box_to_rect (const GskBoundingBox  *self,
+gsk_bounding_box_to_rect (const GskBoundingBox  *this,
                           graphene_rect_t       *rect)
 {
-  rect->origin = self->min;
-  rect->size.width = self->max.x - self->min.x;
-  rect->size.height = self->max.y - self->min.y;
+  rect->origin = this->min;
+  rect->size.width = this->max.x - this->min.x;
+  rect->size.height = this->max.y - this->min.y;
   return rect;
 }
 
 static inline gboolean
-gsk_bounding_box_contains_point (const GskBoundingBox   *self,
+gsk_bounding_box_contains_point (const GskBoundingBox   *this,
                                  const graphene_point_t *p)
 {
-  return self->min.x <= p->x && p->x <= self->max.x &&
-         self->min.y <= p->y && p->y <= self->max.y;
+  return this->min.x <= p->x && p->x <= this->max.x &&
+         this->min.y <= p->y && p->y <= this->max.y;
 }
 
 static inline gboolean
-gsk_bounding_box_contains_point_with_epsilon (const GskBoundingBox   *self,
+gsk_bounding_box_contains_point_with_epsilon (const GskBoundingBox   *this,
                                               const graphene_point_t *p,
                                               float                   epsilon)
 {
-  return self->min.x - epsilon <= p->x && p->x <= self->max.x + epsilon &&
-         self->min.y - epsilon <= p->y && p->y <= self->max.y + epsilon;
+  return this->min.x - epsilon <= p->x && p->x <= this->max.x + epsilon &&
+         this->min.y - epsilon <= p->y && p->y <= this->max.y + epsilon;
 }
 
 static inline gboolean

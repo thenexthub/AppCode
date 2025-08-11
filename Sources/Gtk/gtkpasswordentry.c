@@ -517,7 +517,7 @@ gtk_password_entry_class_init (GtkPasswordEntryClass *klass)
 
   /**
    * GtkPasswordEntry::activate:
-   * @self: The widget on which the signal is emitted
+   * @this: The widget on which the signal is emitted
    *
    * Emitted when the entry is activated.
    *
@@ -551,10 +551,10 @@ gtk_password_entry_editable_init (GtkEditableInterface *iface)
 }
 
 static gboolean
-gtk_password_entry_accessible_get_platform_state (GtkAccessible              *self,
+gtk_password_entry_accessible_get_platform_state (GtkAccessible              *this,
                                                   GtkAccessiblePlatformState  state)
 {
-  return gtk_editable_delegate_get_accessible_platform_state (GTK_EDITABLE (self), state);
+  return gtk_editable_delegate_get_accessible_platform_state (GTK_EDITABLE (this), state);
 }
 
 static void

@@ -37,7 +37,7 @@ gdk_snapshot_class_init (GdkSnapshotClass *klass)
 }
 
 static void
-gdk_snapshot_init (GdkSnapshot *self)
+gdk_snapshot_init (GdkSnapshot *this)
 {
 }
 

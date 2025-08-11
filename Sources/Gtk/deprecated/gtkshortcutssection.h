@@ -38,7 +38,7 @@ GDK_AVAILABLE_IN_ALL
 GType        gtk_shortcuts_section_get_type (void) G_GNUC_CONST;
 
 GDK_DEPRECATED_IN_4_18
-void gtk_shortcuts_section_add_group (GtkShortcutsSection *self,
+void gtk_shortcuts_section_add_group (GtkShortcutsSection *this,
                                       GtkShortcutsGroup   *group);
 
 G_END_DECLS

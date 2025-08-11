@@ -61,7 +61,7 @@ gtk_accessible_range_default_init (GtkAccessibleRangeInterface *iface)
 
 /*< private >
  * gtk_accessible_range_set_current_value:
- * @self: a `GtkAccessibleRange`
+ * @this: a `GtkAccessibleRange`
  *
  * Sets the current value of this `GtkAccessibleRange` to the given value
  *
@@ -72,11 +72,11 @@ gtk_accessible_range_default_init (GtkAccessibleRangeInterface *iface)
  * Returns: true if the call changed the value, and false otherwise
  */
 gboolean
-gtk_accessible_range_set_current_value (GtkAccessibleRange *self, double value)
+gtk_accessible_range_set_current_value (GtkAccessibleRange *this, double value)
 {
-  g_return_val_if_fail (GTK_IS_ACCESSIBLE_RANGE (self), FALSE);
+  g_return_val_if_fail (GTK_IS_ACCESSIBLE_RANGE (this), FALSE);
 
-  GtkAccessibleRangeInterface *iface = GTK_ACCESSIBLE_RANGE_GET_IFACE (self);
+  GtkAccessibleRangeInterface *iface = GTK_ACCESSIBLE_RANGE_GET_IFACE (this);
 
-  return iface->set_current_value (self, value);
+  return iface->set_current_value (this, value);
 }

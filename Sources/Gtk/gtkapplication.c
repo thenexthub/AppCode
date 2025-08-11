@@ -101,7 +101,7 @@
  * `win.show-help-overlay`.
  *
  * `GtkApplication` will also automatically set the application id as the
- * default window icon. Use [func@Gtk.Window.set_default_icon_name] or
+ * default window icon. Use [fn@Gtk.Window.set_default_icon_name] or
  * [property@Gtk.Window:icon-name] to override that behavior.
  *
  * ## A simple application
@@ -722,19 +722,19 @@ gtk_application_class_init (GtkApplicationClass *class)
  *
  * Creates a new application instance.
  *
- * When using `GtkApplication`, it is not necessary to call [func@Gtk.init]
+ * When using `GtkApplication`, it is not necessary to call [fn@Gtk.init]
  * manually. It is called as soon as the application gets registered as
  * the primary instance.
  *
- * Concretely, [func@Gtk.init] is called in the default handler for the
+ * Concretely, [fn@Gtk.init] is called in the default handler for the
  * `GApplication::startup` signal. Therefore, `GtkApplication` subclasses
  * should always chain up in their [vfunc@GIO.Application.startup] handler
  * before using any GTK API.
  *
- * Note that commandline arguments are not passed to [func@Gtk.init].
+ * Note that commandline arguments are not passed to [fn@Gtk.init].
  *
  * If `application_id` is not `NULL`, then it must be valid. See
- * [func@Gio.Application.id_is_valid].
+ * [fn@Gio.Application.id_is_valid].
  *
  * If no application ID is given then some features (most notably application
  * uniqueness) will be disabled.
@@ -1115,7 +1115,7 @@ gtk_application_list_action_descriptions (GtkApplication *application)
  * @detailed_action_name: a detailed action name, specifying an action
  *   and target to associate accelerators with
  * @accels: (array zero-terminated=1): a list of accelerators in the format
- *   understood by [func@Gtk.accelerator_parse]
+ *   understood by [fn@Gtk.accelerator_parse]
  *
  * Sets zero or more keyboard accelerators that will trigger the
  * given action.
@@ -1126,7 +1126,7 @@ gtk_application_list_action_descriptions (GtkApplication *application)
  * To remove all accelerators for an action, use an empty,
  * zero-terminated array for @accels.
  *
- * For the @detailed_action_name, see [func@Gio.Action.parse_detailed_name]
+ * For the @detailed_action_name, see [fn@Gio.Action.parse_detailed_name]
  * and [Gio.Action.print_detailed_name].
  */
 void
@@ -1180,7 +1180,7 @@ gtk_application_get_accels_for_action (GtkApplication *application,
 /**
  * gtk_application_get_actions_for_accel:
  * @application: a application
- * @accel: an accelerator that can be parsed by [func@Gtk.accelerator_parse]
+ * @accel: an accelerator that can be parsed by [fn@Gtk.accelerator_parse]
  *
  * Returns the list of actions (possibly empty) that the accelerator maps to.
  *
@@ -1198,7 +1198,7 @@ gtk_application_get_accels_for_action (GtkApplication *application,
  *
  * It is a programmer error to pass an invalid accelerator string.
  *
- * If you are unsure, check it with [func@Gtk.accelerator_parse] first.
+ * If you are unsure, check it with [fn@Gtk.accelerator_parse] first.
  *
  * Returns: (transfer full): actions for @accel
  */

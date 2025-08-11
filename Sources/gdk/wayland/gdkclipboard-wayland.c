@@ -323,7 +323,7 @@ gdk_wayland_clipboard_claim_remote (GdkWaylandClipboard  *cb,
   if (cb->source)
     {
       GDK_DISPLAY_DEBUG (gdk_clipboard_get_display (GDK_CLIPBOARD (cb)), CLIPBOARD,
-                         "%p: Ignoring clipboard offer for self", cb);
+                         "%p: Ignoring clipboard offer for this", cb);
       gdk_content_formats_unref (formats);
       return;
     }

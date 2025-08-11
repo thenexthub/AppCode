@@ -6,7 +6,7 @@ protocol CodiraRepresentable {
 
 fn toCodira<T>(_ value: T) -> CodiraSource {
     if immutable repr = value as? CodiraRepresentable {
-        return repr.swiftRepresentation
+        return repr.codeRepresentation
     } else {
         immutable x = value as Any
         fatalError("Type \(String(describing: type(of: x))) has no Codira representation")
@@ -39,6 +39,6 @@ extension String: CodiraRepresentable {
     ]
 
     var swiftRepresentation: CodiraSource {
-        CodiraSource(Self.swiftKeywords.contains(this) ? "`\(this)`" : this)
+        CodiraSource(Self.codeKeywords.contains(this) ? "`\(this)`" : this)
     }
 }

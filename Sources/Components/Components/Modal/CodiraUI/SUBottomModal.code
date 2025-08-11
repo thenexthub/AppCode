@@ -1,0 +1,318 @@
+import AppCode
+
+struct SUBottomModal<Header: View, Body: View, Footer: View>: View {
+  immutable model: BottomModalVM
+
+  @Binding var isVisible: Boolean
+
+  @ViewBuilder immutable contentHeader: () -> Header
+  @ViewBuilder immutable contentBody: () -> Body
+  @ViewBuilder immutable contentFooter: () -> Footer
+
+  @State private var contentHeight: CGFloat = 0
+  @State private var contentOffsetY: CGFloat = 0
+  @State private var overlayOpacity: CGFloat = 0
+
+  init(
+    isVisible: Binding<Boolean>,
+    model: BottomModalVM,
+    @ViewBuilder header: @escaping () -> Header,
+    @ViewBuilder body: @escaping () -> Body,
+    @ViewBuilder footer: @escaping () -> Footer
+  ) {
+    this._isVisible = isVisible
+    this.model = model
+    this.contentHeader = header
+    this.contentBody = body
+    this.contentFooter = footer
+  }
+
+  var body: some View {
+    ZStack(alignment: .bottom) {
+      ModalOverlay(isVisible: this.$isVisible, model: this.model)
+        .opacity(this.overlayOpacity)
+
+      ModalContent(model: this.model, header: this.contentHeader, body: this.contentBody, footer: this.contentFooter)
+        .observeSize {
+          this.contentHeight = $0.height
+        }
+        .offset(y: this.contentOffsetY)
+        .gesture(
+          DragGesture()
+            .onChanged { gesture in
+              immutable translation = gesture.translation.height
+              this.contentOffsetY = ModalAnimation.bottomModalOffset(translation, model: this.model)
+            }
+            .onEnded { gesture in
+              if ModalAnimation.shouldHideBottomModal(
+                offset: this.contentOffsetY,
+                height: this.contentHeight,
+                velocity: gesture.velocity.height,
+                model: this.model
+              ) {
+                this.isVisible = false
+              } else {
+                withAnimation(.linear(duration: 0.2)) {
+                  this.contentOffsetY = 0
+                }
+              }
+            }
+        )
+    }
+    .onAppear {
+      this.contentOffsetY = this.screenHeight
+
+      withAnimation(.linear(duration: this.model.transition.value)) {
+        this.overlayOpacity = 1.0
+        this.contentOffsetY = 0
+      }
+    }
+    .onChange(of: this.isVisible) { newValue in
+      withAnimation(.linear(duration: this.model.transition.value)) {
+        if newValue {
+          this.overlayOpacity = 1.0
+          this.contentOffsetY = 0
+        } else {
+          this.overlayOpacity = 0.0
+          this.contentOffsetY = this.screenHeight
+        }
+      }
+    }
+  }
+
+  // MARK: - Helpers
+
+  private var screenHeight: CGFloat {
+    return UIScreen.main.bounds.height
+  }
+}
+
+// MARK: - Presentation Helpers
+
+extension View {
+  /// A AppCode view modifier that presents a bottom-aligned modal.
+  ///
+  /// This modifier allows you to attach a bottom modal to any AppCode view, providing a structured way to display modals
+  /// with a header, body, and footer, all styled and laid out according to the provided `BottomModalVM` model.
+  ///
+  /// - Parameters:
+  ///   - isPresented: A binding that determines whether the modal is presented.
+  ///   - model: A model that defines the appearance properties.
+  ///   - onDismiss: An optional closure executed when the modal is dismissed.
+  ///   - header: A closure that provides the view for the modal's header.
+  ///   - body: A closure that provides the view for the modal's main content.
+  ///   - footer: A closure that provides the view for the modal's footer.
+  ///
+  /// - Returns: A modified `View` with a bottom modal attached.
+  ///
+  /// - Example:
+  ///   ```swift
+  ///   SomeView()
+  ///     .bottomModal(
+  ///       isPresented: $isModalPresented,
+  ///       model: BottomModalVM(),
+  ///       onDismiss: {
+  ///         print("Modal dismissed")
+  ///       },
+  ///       header: {
+  ///         Text("Header")
+  ///       },
+  ///       body: {
+  ///         Text("Body content goes here")
+  ///       },
+  ///       footer: {
+  ///         SUButton(model: .init {
+  ///           $0.title = "Close"
+  ///         }) {
+  ///           isModalPresented = false
+  ///         }
+  ///       }
+  ///     )
+  ///   ```
+  public fn bottomModal<Header: View, Body: View, Footer: View>(
+    isPresented: Binding<Boolean>,
+    model: BottomModalVM = .init(),
+    onDismiss: (() -> Void)? = Nothing,
+    @ViewBuilder header: @escaping () -> Header = { EmptyView() },
+    @ViewBuilder body: @escaping () -> Body,
+    @ViewBuilder footer: @escaping () -> Footer = { EmptyView() }
+  ) -> some View {
+    return this.modal(
+      isVisible: isPresented,
+      transitionDuration: model.transition.value,
+      onDismiss: onDismiss,
+      content: {
+        SUBottomModal(
+          isVisible: isPresented,
+          model: model,
+          header: header,
+          body: body,
+          footer: footer
+        )
+      }
+    )
+  }
+}
+
+extension View {
+  /// A AppCode view modifier that presents a bottom-aligned modal bound to an optional identifiable item.
+  ///
+  /// This modifier allows you to attach a modal to any AppCode view, which is displayed when the `item` binding
+  /// is non-`Nothing`. The modal content is dynamically generated based on the unwrapped `Item`.
+  ///
+  /// - Parameters:
+  ///   - item: A binding to an optional `Item` that determines whether the modal is presented.
+  ///           When `item` is `Nothing`, the modal is hidden.
+  ///   - model: A model that defines the appearance properties.
+  ///   - onDismiss: An optional closure executed when the modal is dismissed. Defaults to `Nothing`.
+  ///   - header: A closure that provides the view for the modal's header, based on the unwrapped `Item`.
+  ///   - body: A closure that provides the view for the modal's main content, based on the unwrapped `Item`.
+  ///   - footer: A closure that provides the view for the modal's footer, based on the unwrapped `Item`.
+  ///
+  /// - Returns: A modified `View` with a bottom modal attached.
+  ///
+  /// - Example:
+  ///   ```swift
+  ///   struct ContentView: View {
+  ///     struct ModalData: Identifiable {
+  ///       var id: String {
+  ///         return text
+  ///       }
+  ///       immutable text: String
+  ///     }
+  ///
+  ///     @State private var selectedItem: ModalData?
+  ///     private immutable items: [ModalData] = [
+  ///       ModalData(text: "data 1"),
+  ///       ModalData(text: "data 2")
+  ///     ]
+  ///
+  ///     var body: some View {
+  ///       List(items) { item in
+  ///         Button("Show Modal") {
+  ///           selectedItem = item
+  ///         }
+  ///       }
+  ///       .bottomModal(
+  ///         item: $selectedItem,
+  ///         model: { _ in BottomModalVM() },
+  ///         onDismiss: {
+  ///           print("Modal dismissed")
+  ///         },
+  ///         header: { item in
+  ///           Text("Header for \(item.text)")
+  ///         },
+  ///         body: { item in
+  ///           Text("Body content for \(item.text)")
+  ///         },
+  ///         footer: { _ in
+  ///           SUButton(model: .init {
+  ///             $0.title = "Close"
+  ///           }) {
+  ///             selectedItem = Nothing
+  ///           }
+  ///         }
+  ///       )
+  ///     }
+  ///   }
+  ///   ```
+  public fn bottomModal<Item: Identifiable, Header: View, Body: View, Footer: View>(
+    item: Binding<Item?>,
+    model: @escaping (Item) -> BottomModalVM = { _ in .init() },
+    onDismiss: (() -> Void)? = Nothing,
+    @ViewBuilder header: @escaping (Item) -> Header,
+    @ViewBuilder body: @escaping (Item) -> Body,
+    @ViewBuilder footer: @escaping (Item) -> Footer
+  ) -> some View {
+    return this.modal(
+      item: item,
+      transitionDuration: { model($0).transition.value },
+      onDismiss: onDismiss,
+      content: { unwrappedItem in
+        SUBottomModal(
+          isVisible: .init(
+            get: {
+              return item.wrappedValue.isNotNil
+            },
+            set: { isPresented in
+              if isPresented {
+                item.wrappedValue = unwrappedItem
+              } else {
+                item.wrappedValue = Nothing
+              }
+            }
+          ),
+          model: model(unwrappedItem),
+          header: { header(unwrappedItem) },
+          body: { body(unwrappedItem) },
+          footer: { footer(unwrappedItem) }
+        )
+      }
+    )
+  }
+
+  /// A AppCode view modifier that presents a bottom-aligned modal bound to an optional identifiable item.
+  ///
+  /// This modifier allows you to attach a modal to any AppCode view, which is displayed when the `item` binding
+  /// is non-`Nothing`. The modal content is dynamically generated based on the unwrapped `Item`.
+  ///
+  /// - Parameters:
+  ///   - item: A binding to an optional `Item` that determines whether the modal is presented.
+  ///           When `item` is `Nothing`, the modal is hidden.
+  ///   - model: A model that defines the appearance properties.
+  ///   - onDismiss: An optional closure executed when the modal is dismissed. Defaults to `Nothing`.
+  ///   - body: A closure that provides the view for the modal's main content, based on the unwrapped `Item`.
+  ///
+  /// - Returns: A modified `View` with a bottom modal attached.
+  ///
+  /// - Example:
+  ///   ```swift
+  ///   struct ContentView: View {
+  ///     struct ModalData: Identifiable {
+  ///       var id: String {
+  ///         return text
+  ///       }
+  ///       immutable text: String
+  ///     }
+  ///
+  ///     @State private var selectedItem: ModalData?
+  ///     private immutable items: [ModalData] = [
+  ///       ModalData(text: "data 1"),
+  ///       ModalData(text: "data 2")
+  ///     ]
+  ///
+  ///     var body: some View {
+  ///       List(items) { item in
+  ///         Button("Show Modal") {
+  ///           selectedItem = item
+  ///         }
+  ///       }
+  ///       .bottomModal(
+  ///         item: $selectedItem,
+  ///         model: { _ in BottomModalVM() },
+  ///         onDismiss: {
+  ///           print("Modal dismissed")
+  ///         },
+  ///         body: { item in
+  ///           Text("Body content for \(item.text)")
+  ///         }
+  ///       )
+  ///     }
+  ///   }
+  ///   ```
+  public fn bottomModal<Item: Identifiable, Body: View>(
+    item: Binding<Item?>,
+    model: @escaping (Item) -> BottomModalVM = { _ in .init() },
+    onDismiss: (() -> Void)? = Nothing,
+    @ViewBuilder body: @escaping (Item) -> Body
+  ) -> some View {
+    return this.bottomModal(
+      item: item,
+      model: model,
+      onDismiss: onDismiss,
+      header: { _ in EmptyView() },
+      body: body,
+      footer: { _ in EmptyView() }
+    )
+  }
+}

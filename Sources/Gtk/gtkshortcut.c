@@ -71,11 +71,11 @@ static GParamSpec *properties[N_PROPS] = { NULL, };
 static void
 gtk_shortcut_dispose (GObject *object)
 {
-  GtkShortcut *self = GTK_SHORTCUT (object);
+  GtkShortcut *this = GTK_SHORTCUT (object);
 
-  g_clear_object (&self->action);
-  g_clear_object (&self->trigger);
-  g_clear_pointer (&self->args, g_variant_unref);
+  g_clear_object (&this->action);
+  g_clear_object (&this->trigger);
+  g_clear_pointer (&this->args, g_variant_unref);
 
   G_OBJECT_CLASS (gtk_shortcut_parent_class)->dispose (object);
 }
@@ -86,20 +86,20 @@ gtk_shortcut_get_property (GObject    *object,
                            GValue     *value,
                            GParamSpec *pspec)
 {
-  GtkShortcut *self = GTK_SHORTCUT (object);
+  GtkShortcut *this = GTK_SHORTCUT (object);
 
   switch (property_id)
     {
     case PROP_ACTION:
-      g_value_set_object (value, self->action);
+      g_value_set_object (value, this->action);
       break;
 
     case PROP_ARGUMENTS:
-      g_value_set_variant (value, self->args);
+      g_value_set_variant (value, this->args);
       break;
 
     case PROP_TRIGGER:
-      g_value_set_object (value, self->trigger);
+      g_value_set_object (value, this->trigger);
       break;
 
     default:
@@ -114,20 +114,20 @@ gtk_shortcut_set_property (GObject      *object,
                            const GValue *value,
                            GParamSpec   *pspec)
 {
-  GtkShortcut *self = GTK_SHORTCUT (object);
+  GtkShortcut *this = GTK_SHORTCUT (object);
 
   switch (property_id)
     {
     case PROP_ACTION:
-      gtk_shortcut_set_action (self, g_value_dup_object (value));
+      gtk_shortcut_set_action (this, g_value_dup_object (value));
       break;
 
     case PROP_ARGUMENTS:
-      gtk_shortcut_set_arguments (self, g_value_get_variant (value));
+      gtk_shortcut_set_arguments (this, g_value_get_variant (value));
       break;
 
     case PROP_TRIGGER:
-      gtk_shortcut_set_trigger (self, g_value_dup_object (value));
+      gtk_shortcut_set_trigger (this, g_value_dup_object (value));
       break;
 
     default:
@@ -184,10 +184,10 @@ gtk_shortcut_class_init (GtkShortcutClass *klass)
 }
 
 static void
-gtk_shortcut_init (GtkShortcut *self)
+gtk_shortcut_init (GtkShortcut *this)
 {
-  self->action = g_object_ref (gtk_nothing_action_get ());
-  self->trigger = g_object_ref (gtk_never_trigger_get ());
+  this->action = g_object_ref (gtk_nothing_action_get ());
+  this->trigger = g_object_ref (gtk_never_trigger_get ());
 }
 
 /**
@@ -271,119 +271,119 @@ gtk_shortcut_new_with_arguments (GtkShortcutTrigger *trigger,
 
 /**
  * gtk_shortcut_get_action:
- * @self: a `GtkShortcut`
+ * @this: a `GtkShortcut`
  *
  * Gets the action that is activated by this shortcut.
  *
  * Returns: (transfer none) (nullable): the action
  */
 GtkShortcutAction *
-gtk_shortcut_get_action (GtkShortcut *self)
+gtk_shortcut_get_action (GtkShortcut *this)
 {
-  g_return_val_if_fail (GTK_IS_SHORTCUT (self), NULL);
+  g_return_val_if_fail (GTK_IS_SHORTCUT (this), NULL);
 
-  return self->action;
+  return this->action;
 }
 
 /**
  * gtk_shortcut_set_action:
- * @self: a `GtkShortcut`
+ * @this: a `GtkShortcut`
  * @action: (transfer full) (nullable): The new action.
  *   If the @action is %NULL, the nothing action will be used.
  *
- * Sets the new action for @self to be @action.
+ * Sets the new action for @this to be @action.
  */
 void
-gtk_shortcut_set_action (GtkShortcut *self,
+gtk_shortcut_set_action (GtkShortcut *this,
                          GtkShortcutAction *action)
 {
-  g_return_if_fail (GTK_IS_SHORTCUT (self));
+  g_return_if_fail (GTK_IS_SHORTCUT (this));
 
   if (action == NULL)
     action = g_object_ref (gtk_nothing_action_get ());
 
-  if (g_set_object (&self->action, action))
+  if (g_set_object (&this->action, action))
     {
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTION]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ACTION]);
       g_object_unref (action);
     }
 }
 
 /**
  * gtk_shortcut_get_trigger:
- * @self: a `GtkShortcut`
+ * @this: a `GtkShortcut`
  *
- * Gets the trigger used to trigger @self.
+ * Gets the trigger used to trigger @this.
  *
  * Returns: (transfer none) (nullable): the trigger used
  */
 GtkShortcutTrigger *
-gtk_shortcut_get_trigger (GtkShortcut *self)
+gtk_shortcut_get_trigger (GtkShortcut *this)
 {
-  g_return_val_if_fail (GTK_IS_SHORTCUT (self), NULL);
+  g_return_val_if_fail (GTK_IS_SHORTCUT (this), NULL);
 
-  return self->trigger;
+  return this->trigger;
 }
 
 /**
  * gtk_shortcut_set_trigger:
- * @self: a `GtkShortcut`
+ * @this: a `GtkShortcut`
  * @trigger: (transfer full) (nullable): The new trigger.
  *   If the @trigger is %NULL, the never trigger will be used.
  *
- * Sets the new trigger for @self to be @trigger.
+ * Sets the new trigger for @this to be @trigger.
  */
 void
-gtk_shortcut_set_trigger (GtkShortcut *self,
+gtk_shortcut_set_trigger (GtkShortcut *this,
                           GtkShortcutTrigger *trigger)
 {
-  g_return_if_fail (GTK_IS_SHORTCUT (self));
+  g_return_if_fail (GTK_IS_SHORTCUT (this));
 
   if (trigger == NULL)
     trigger = g_object_ref (gtk_never_trigger_get ());
 
-  if (g_set_object (&self->trigger, trigger))
+  if (g_set_object (&this->trigger, trigger))
     {
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_TRIGGER]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_TRIGGER]);
       g_object_unref (trigger);
     }
 }
 
 /**
  * gtk_shortcut_get_arguments:
- * @self: a `GtkShortcut`
+ * @this: a `GtkShortcut`
  *
  * Gets the arguments that are passed when activating the shortcut.
  *
  * Returns: (transfer none) (nullable): the arguments
  */
 GVariant *
-gtk_shortcut_get_arguments (GtkShortcut *self)
+gtk_shortcut_get_arguments (GtkShortcut *this)
 {
-  g_return_val_if_fail (GTK_IS_SHORTCUT (self), NULL);
+  g_return_val_if_fail (GTK_IS_SHORTCUT (this), NULL);
 
-  return self->args;
+  return this->args;
 }
 
 /**
  * gtk_shortcut_set_arguments:
- * @self: a `GtkShortcut`
- * @args: (nullable): arguments to pass when activating @self
+ * @this: a `GtkShortcut`
+ * @args: (nullable): arguments to pass when activating @this
  *
  * Sets the arguments to pass when activating the shortcut.
  */
 void
-gtk_shortcut_set_arguments (GtkShortcut *self,
+gtk_shortcut_set_arguments (GtkShortcut *this,
                             GVariant    *args)
 {
-  g_return_if_fail (GTK_IS_SHORTCUT (self));
+  g_return_if_fail (GTK_IS_SHORTCUT (this));
 
-  if (self->args == args)
+  if (this->args == args)
     return;
   
-  g_clear_pointer (&self->args, g_variant_unref);
+  g_clear_pointer (&this->args, g_variant_unref);
   if (args)
-    self->args = g_variant_ref_sink (args);
+    this->args = g_variant_ref_sink (args);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ARGUMENTS]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ARGUMENTS]);
 }

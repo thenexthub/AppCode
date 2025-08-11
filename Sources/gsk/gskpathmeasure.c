@@ -99,7 +99,7 @@ GskPathMeasure *
 gsk_path_measure_new_with_tolerance (GskPath *path,
                                      float    tolerance)
 {
-  GskPathMeasure *self;
+  GskPathMeasure *this;
   gsize i, n_contours;
 
   g_return_val_if_fail (path != NULL, NULL);
@@ -107,27 +107,27 @@ gsk_path_measure_new_with_tolerance (GskPath *path,
 
   n_contours = gsk_path_get_n_contours (path);
 
-  self = g_malloc0 (sizeof (GskPathMeasure) + n_contours * sizeof (GskContourMeasure));
+  this = g_malloc0 (sizeof (GskPathMeasure) + n_contours * sizeof (GskContourMeasure));
 
-  self->ref_count = 1;
-  self->path = gsk_path_ref (path);
-  self->tolerance = tolerance;
-  self->n_contours = n_contours;
+  this->ref_count = 1;
+  this->path = gsk_path_ref (path);
+  this->tolerance = tolerance;
+  this->n_contours = n_contours;
 
   for (i = 0; i < n_contours; i++)
     {
-      self->measures[i].contour_data = gsk_contour_init_measure (gsk_path_get_contour (path, i),
-                                                                 self->tolerance,
-                                                                 &self->measures[i].length);
-      self->length += self->measures[i].length;
+      this->measures[i].contour_data = gsk_contour_init_measure (gsk_path_get_contour (path, i),
+                                                                 this->tolerance,
+                                                                 &this->measures[i].length);
+      this->length += this->measures[i].length;
     }
 
-  return self;
+  return this;
 }
 
 /**
  * gsk_path_measure_ref:
- * @self: a path measure
+ * @this: a path measure
  *
  * Increases the reference count of a `GskPathMeasure` by one.
  *
@@ -136,18 +136,18 @@ gsk_path_measure_new_with_tolerance (GskPath *path,
  * Since: 4.14
  */
 GskPathMeasure *
-gsk_path_measure_ref (GskPathMeasure *self)
+gsk_path_measure_ref (GskPathMeasure *this)
 {
-  g_return_val_if_fail (self != NULL, NULL);
+  g_return_val_if_fail (this != NULL, NULL);
 
-  self->ref_count++;
+  this->ref_count++;
 
-  return self;
+  return this;
 }
 
 /**
  * gsk_path_measure_unref:
- * @self: a path measure
+ * @this: a path measure
  *
  * Decreases the reference count of a `GskPathMeasure` by one.
  *
@@ -156,92 +156,92 @@ gsk_path_measure_ref (GskPathMeasure *self)
  * Since: 4.14
  */
 void
-gsk_path_measure_unref (GskPathMeasure *self)
+gsk_path_measure_unref (GskPathMeasure *this)
 {
   gsize i;
 
-  g_return_if_fail (self != NULL);
-  g_return_if_fail (self->ref_count > 0);
+  g_return_if_fail (this != NULL);
+  g_return_if_fail (this->ref_count > 0);
 
-  self->ref_count--;
-  if (self->ref_count > 0)
+  this->ref_count--;
+  if (this->ref_count > 0)
     return;
 
-  for (i = 0; i < self->n_contours; i++)
+  for (i = 0; i < this->n_contours; i++)
     {
-      gsk_contour_free_measure (gsk_path_get_contour (self->path, i),
-                                self->measures[i].contour_data);
+      gsk_contour_free_measure (gsk_path_get_contour (this->path, i),
+                                this->measures[i].contour_data);
     }
 
-  gsk_path_unref (self->path);
-  g_free (self);
+  gsk_path_unref (this->path);
+  g_free (this);
 }
 
 /**
  * gsk_path_measure_get_path:
- * @self: a path measure
+ * @this: a path measure
  *
  * Returns the path that the measure was created for.
  *
- * Returns: (transfer none): the path of @self
+ * Returns: (transfer none): the path of @this
  *
  * Since: 4.14
  */
 GskPath *
-gsk_path_measure_get_path (GskPathMeasure *self)
+gsk_path_measure_get_path (GskPathMeasure *this)
 {
-  return self->path;
+  return this->path;
 }
 
 /**
  * gsk_path_measure_get_tolerance:
- * @self: a path measure
+ * @this: a path measure
  *
  * Returns the tolerance that the measure was created with.
  *
- * Returns: the tolerance of @self
+ * Returns: the tolerance of @this
  *
  * Since: 4.14
  */
 float
-gsk_path_measure_get_tolerance (GskPathMeasure *self)
+gsk_path_measure_get_tolerance (GskPathMeasure *this)
 {
-  return self->tolerance;
+  return this->tolerance;
 }
 
 /**
  * gsk_path_measure_get_length:
- * @self: a path measure
+ * @this: a path measure
  *
  * Gets the length of the path being measured.
  *
  * The length is cached, so this function does not do any work.
  *
- * Returns: the length of the path measured by @self
+ * Returns: the length of the path measured by @this
  *
  * Since: 4.14
  */
 float
-gsk_path_measure_get_length (GskPathMeasure *self)
+gsk_path_measure_get_length (GskPathMeasure *this)
 {
-  g_return_val_if_fail (self != NULL, 0);
+  g_return_val_if_fail (this != NULL, 0);
 
-  return self->length;
+  return this->length;
 }
 
 static float
-gsk_path_measure_clamp_distance (GskPathMeasure *self,
+gsk_path_measure_clamp_distance (GskPathMeasure *this,
                                  float           distance)
 {
   if (isnan (distance))
     return 0;
 
-  return CLAMP (distance, 0, self->length);
+  return CLAMP (distance, 0, this->length);
 }
 
 /**
  * gsk_path_measure_get_point:
- * @self: a path measure
+ * @this: a path measure
  * @distance: the distance
  * @result: (out caller-allocates): return location for the point
  *
@@ -254,36 +254,36 @@ gsk_path_measure_clamp_distance (GskPathMeasure *self,
  * Since: 4.14
  */
 gboolean
-gsk_path_measure_get_point (GskPathMeasure *self,
+gsk_path_measure_get_point (GskPathMeasure *this,
                             float           distance,
                             GskPathPoint   *result)
 {
   gsize i;
   const GskContour *contour;
 
-  g_return_val_if_fail (self != NULL, FALSE);
+  g_return_val_if_fail (this != NULL, FALSE);
   g_return_val_if_fail (result != NULL, FALSE);
 
-  if (self->n_contours == 0)
+  if (this->n_contours == 0)
     return FALSE;
 
-  distance = gsk_path_measure_clamp_distance (self, distance);
+  distance = gsk_path_measure_clamp_distance (this, distance);
 
-  for (i = 0; i < self->n_contours - 1; i++)
+  for (i = 0; i < this->n_contours - 1; i++)
     {
-      if (distance < self->measures[i].length)
+      if (distance < this->measures[i].length)
         break;
 
-      distance -= self->measures[i].length;
+      distance -= this->measures[i].length;
     }
 
-  g_assert (0 <= i && i < self->n_contours);
+  g_assert (0 <= i && i < this->n_contours);
 
-  distance = CLAMP (distance, 0, self->measures[i].length);
+  distance = CLAMP (distance, 0, this->measures[i].length);
 
-  contour = gsk_path_get_contour (self->path, i);
+  contour = gsk_path_get_contour (this->path, i);
 
-  gsk_contour_get_point (contour, self->measures[i].contour_data, distance, result);
+  gsk_contour_get_point (contour, this->measures[i].contour_data, distance, result);
 
   g_assert (0 <= result->t && result->t <= 1);
 

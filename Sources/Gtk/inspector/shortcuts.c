@@ -92,7 +92,7 @@ bind_action (GtkSignalListItemFactory *factory,
 }
 
 static void
-gtk_inspector_shortcuts_init (GtkInspectorShortcuts *self)
+gtk_inspector_shortcuts_init (GtkInspectorShortcuts *this)
 {
   GtkWidget *sw;
   GtkListItemFactory *factory;
@@ -100,14 +100,14 @@ gtk_inspector_shortcuts_init (GtkInspectorShortcuts *self)
 
   sw = gtk_scrolled_window_new ();
 
-  self->view = gtk_column_view_new (NULL);
+  this->view = gtk_column_view_new (NULL);
 
   factory = gtk_signal_list_item_factory_new ();
   g_signal_connect (factory, "setup", G_CALLBACK (setup_row), NULL);
   g_signal_connect (factory, "bind", G_CALLBACK (bind_trigger), NULL);
 
   column = gtk_column_view_column_new ("Trigger", factory);
-  gtk_column_view_append_column (GTK_COLUMN_VIEW (self->view), column);
+  gtk_column_view_append_column (GTK_COLUMN_VIEW (this->view), column);
   g_object_unref (column);
 
   factory = gtk_signal_list_item_factory_new ();
@@ -115,28 +115,28 @@ gtk_inspector_shortcuts_init (GtkInspectorShortcuts *self)
   g_signal_connect (factory, "bind", G_CALLBACK (bind_action), NULL);
 
   column = gtk_column_view_column_new ("Action", factory);
-  gtk_column_view_append_column (GTK_COLUMN_VIEW (self->view), column);
+  gtk_column_view_append_column (GTK_COLUMN_VIEW (this->view), column);
   g_object_unref (column);
 
-  gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (sw), self->view);
+  gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (sw), this->view);
 
-  gtk_widget_set_parent (sw, GTK_WIDGET (self));
+  gtk_widget_set_parent (sw, GTK_WIDGET (this));
 }
 
 void
-gtk_inspector_shortcuts_set_object (GtkInspectorShortcuts *self,
+gtk_inspector_shortcuts_set_object (GtkInspectorShortcuts *this,
                                     GObject               *object)
 {
   GtkWidget *stack;
   GtkStackPage *page;
   GtkNoSelection *no_selection;
 
-  stack = gtk_widget_get_parent (GTK_WIDGET (self));
-  page = gtk_stack_get_page (GTK_STACK (stack), GTK_WIDGET (self));
+  stack = gtk_widget_get_parent (GTK_WIDGET (this));
+  page = gtk_stack_get_page (GTK_STACK (stack), GTK_WIDGET (this));
 
   if (!GTK_IS_SHORTCUT_CONTROLLER (object))
     {
-      gtk_column_view_set_model (GTK_COLUMN_VIEW (self->view), NULL);
+      gtk_column_view_set_model (GTK_COLUMN_VIEW (this->view), NULL);
       g_object_set (page, "visible", FALSE, NULL);
       return;
     }
@@ -144,16 +144,16 @@ gtk_inspector_shortcuts_set_object (GtkInspectorShortcuts *self,
   g_object_set (page, "visible", TRUE, NULL);
 
   no_selection = gtk_no_selection_new (g_object_ref (G_LIST_MODEL (object)));
-  gtk_column_view_set_model (GTK_COLUMN_VIEW (self->view), GTK_SELECTION_MODEL (no_selection));
+  gtk_column_view_set_model (GTK_COLUMN_VIEW (this->view), GTK_SELECTION_MODEL (no_selection));
   g_object_unref (no_selection);
 }
 
 static void
 dispose (GObject *object)
 {
-  GtkInspectorShortcuts *self = GTK_INSPECTOR_SHORTCUTS (object);
+  GtkInspectorShortcuts *this = GTK_INSPECTOR_SHORTCUTS (object);
 
-  gtk_widget_unparent (gtk_widget_get_first_child (GTK_WIDGET (self)));
+  gtk_widget_unparent (gtk_widget_get_first_child (GTK_WIDGET (this)));
 
   G_OBJECT_CLASS (gtk_inspector_shortcuts_parent_class)->dispose (object);
 }

@@ -68,32 +68,32 @@ struct GdkArray
 
 /* no G_GNUC_UNUSED here, if you don't use an array type, remove it. */
 static inline void
-gdk_array(init) (GdkArray *self)
+gdk_array(init) (GdkArray *this)
 {
 #ifdef GDK_ARRAY_PREALLOC
-  self->start = self->preallocated;
-  self->end = self->start;
-  self->end_allocation = self->start + GDK_ARRAY_PREALLOC;
+  this->start = this->preallocated;
+  this->end = this->start;
+  this->end_allocation = this->start + GDK_ARRAY_PREALLOC;
 #ifdef GDK_ARRAY_NULL_TERMINATED
-  *self->start = *(_T_[1]) { 0 };
+  *this->start = *(_T_[1]) { 0 };
 #endif
 #else
-  self->start = NULL;
-  self->end = NULL;
-  self->end_allocation = NULL;
+  this->start = NULL;
+  this->end = NULL;
+  this->end_allocation = NULL;
 #endif
 }
 
 G_GNUC_UNUSED static inline gsize
-gdk_array(get_capacity) (const GdkArray *self)
+gdk_array(get_capacity) (const GdkArray *this)
 {
-  return self->end_allocation - self->start;
+  return this->end_allocation - this->start;
 }
 
 G_GNUC_UNUSED static inline gsize
-gdk_array(get_size) (const GdkArray *self)
+gdk_array(get_size) (const GdkArray *this)
 {
-  return self->end - self->start;
+  return this->end - this->start;
 }
 
 static inline void
@@ -113,20 +113,20 @@ gdk_array(free_elements) (_T_ *start,
 
 /* no G_GNUC_UNUSED here */
 static inline void
-gdk_array(clear) (GdkArray *self)
+gdk_array(clear) (GdkArray *this)
 {
-  gdk_array(free_elements) (self->start, self->end);
+  gdk_array(free_elements) (this->start, this->end);
 
 #ifdef GDK_ARRAY_PREALLOC
-  if (self->start != self->preallocated)
+  if (this->start != this->preallocated)
 #endif
-    g_free (self->start);
-  gdk_array(init) (self);
+    g_free (this->start);
+  gdk_array(init) (this);
 }
 
 /*
  * gdk_array_steal:
- * @self: the array
+ * @this: the array
  *
  * Steals all data in the array and clears the array.
  *
@@ -136,47 +136,47 @@ gdk_array(clear) (GdkArray *self)
  * Returns: The array's data
  **/
 G_GNUC_UNUSED static inline _T_ *
-gdk_array(steal) (GdkArray *self)
+gdk_array(steal) (GdkArray *this)
 {
   _T_ *result;
 
 #ifdef GDK_ARRAY_PREALLOC
-  if (self->start == self->preallocated)
+  if (this->start == this->preallocated)
     {
-      gsize size = GDK_ARRAY_REAL_SIZE (gdk_array(get_size) (self));
+      gsize size = GDK_ARRAY_REAL_SIZE (gdk_array(get_size) (this));
       result = g_new (_T_, size);
-      memcpy (result, self->preallocated, sizeof (_T_) * size);
+      memcpy (result, this->preallocated, sizeof (_T_) * size);
     }
   else
 #endif
-    result = self->start;
+    result = this->start;
 
-  gdk_array(init) (self);
+  gdk_array(init) (this);
 
   return result;
 }
 
 G_GNUC_UNUSED static inline _T_ *
-gdk_array(get_data) (const GdkArray *self)
+gdk_array(get_data) (const GdkArray *this)
 {
-  return self->start;
+  return this->start;
 }
 
 G_GNUC_UNUSED static inline _T_ *
-gdk_array(index) (const GdkArray *self,
+gdk_array(index) (const GdkArray *this,
                   gsize           pos)
 {
-  return self->start + pos;
+  return this->start + pos;
 }
 
 G_GNUC_UNUSED static inline gboolean
-gdk_array(is_empty) (const GdkArray *self)
+gdk_array(is_empty) (const GdkArray *this)
 {
-  return self->end == self->start;
+  return this->end == this->start;
 }
 
 G_GNUC_UNUSED static inline void
-gdk_array(reserve) (GdkArray *self,
+gdk_array(reserve) (GdkArray *this,
                     gsize      n)
 {
   gsize new_capacity, size, capacity;
@@ -184,41 +184,41 @@ gdk_array(reserve) (GdkArray *self,
   if (G_UNLIKELY (n > GDK_ARRAY_MAX_SIZE))
     g_error ("requesting array size of %zu, but maximum size is %zu", n, GDK_ARRAY_MAX_SIZE);
 
-  capacity = gdk_array(get_capacity) (self);
+  capacity = gdk_array(get_capacity) (this);
   if (n <= capacity)
      return;
 
-  size = gdk_array(get_size) (self);
+  size = gdk_array(get_size) (this);
   /* capacity * 2 can overflow, that's why we MAX() */
   new_capacity = MAX (GDK_ARRAY_REAL_SIZE (n), capacity * 2);
 
 #ifdef GDK_ARRAY_PREALLOC
-  if (self->start == self->preallocated)
+  if (this->start == this->preallocated)
     {
-      self->start = g_new (_T_, new_capacity);
-      memcpy (self->start, self->preallocated, sizeof (_T_) * GDK_ARRAY_REAL_SIZE (size));
+      this->start = g_new (_T_, new_capacity);
+      memcpy (this->start, this->preallocated, sizeof (_T_) * GDK_ARRAY_REAL_SIZE (size));
     }
   else
 #endif
 #ifdef GDK_ARRAY_NULL_TERMINATED
-  if (self->start == NULL)
+  if (this->start == NULL)
     {
-      self->start = g_new (_T_, new_capacity);
-      *self->start = *(_T_[1]) { 0 };
+      this->start = g_new (_T_, new_capacity);
+      *this->start = *(_T_[1]) { 0 };
     }
   else
 #endif
-    self->start = g_renew (_T_, self->start, new_capacity);
+    this->start = g_renew (_T_, this->start, new_capacity);
 
-  self->end = self->start + size;
-  self->end_allocation = self->start + new_capacity;
+  this->end = this->start + size;
+  this->end_allocation = this->start + new_capacity;
 #ifdef GDK_ARRAY_NULL_TERMINATED
-  self->end_allocation--;
+  this->end_allocation--;
 #endif
 }
 
 G_GNUC_UNUSED static inline void
-gdk_array(splice) (GdkArray *self,
+gdk_array(splice) (GdkArray *this,
                    gsize      pos,
                    gsize      removed,
                    gboolean   stolen,
@@ -232,59 +232,59 @@ gdk_array(splice) (GdkArray *self,
   gsize size;
   gsize remaining;
 
-  size = gdk_array(get_size) (self);
+  size = gdk_array(get_size) (this);
   g_assert (pos + removed <= size);
   remaining = size - pos - removed;
 
   if (!stolen)
-    gdk_array(free_elements) (gdk_array(index) (self, pos),
-                              gdk_array(index) (self, pos + removed));
+    gdk_array(free_elements) (gdk_array(index) (this, pos),
+                              gdk_array(index) (this, pos + removed));
 
-  gdk_array(reserve) (self, size - removed + added);
+  gdk_array(reserve) (this, size - removed + added);
 
   if (GDK_ARRAY_REAL_SIZE (remaining) && removed != added)
-    memmove (gdk_array(index) (self, pos + added),
-             gdk_array(index) (self, pos + removed),
+    memmove (gdk_array(index) (this, pos + added),
+             gdk_array(index) (this, pos + removed),
              GDK_ARRAY_REAL_SIZE (remaining) * sizeof (_T_));
 
   if (added)
     {
       if (additions)
-        memcpy (gdk_array(index) (self, pos),
+        memcpy (gdk_array(index) (this, pos),
                 additions,
                 added * sizeof (_T_));
 #ifndef GDK_ARRAY_NO_MEMSET
       else
-        memset (gdk_array(index) (self, pos), 0, added * sizeof (_T_));
+        memset (gdk_array(index) (this, pos), 0, added * sizeof (_T_));
 #endif
     }
 
 
   /* might overflow, but does the right thing */
-  self->end += added - removed;
+  this->end += added - removed;
 }
 
 G_GNUC_UNUSED static void
-gdk_array(set_size) (GdkArray *self,
+gdk_array(set_size) (GdkArray *this,
                      gsize     new_size)
 {
-  gsize old_size = gdk_array(get_size) (self);
+  gsize old_size = gdk_array(get_size) (this);
   if (new_size > old_size)
-    gdk_array(splice) (self, old_size, 0, FALSE, NULL, new_size - old_size);
+    gdk_array(splice) (this, old_size, 0, FALSE, NULL, new_size - old_size);
   else
-    gdk_array(splice) (self, new_size, old_size - new_size, FALSE, NULL, 0);
+    gdk_array(splice) (this, new_size, old_size - new_size, FALSE, NULL, 0);
 }
 
 G_GNUC_UNUSED static void
-gdk_array(append) (GdkArray *self,
+gdk_array(append) (GdkArray *this,
 #ifdef GDK_ARRAY_BY_VALUE
                    _T_       *value)
 #else
                    _T_        value)
 #endif
 {
-  gdk_array(splice) (self, 
-                     gdk_array(get_size) (self),
+  gdk_array(splice) (this, 
+                     gdk_array(get_size) (this),
                      0,
                      FALSE,
 #ifdef GDK_ARRAY_BY_VALUE
@@ -297,17 +297,17 @@ gdk_array(append) (GdkArray *self,
 
 #ifdef GDK_ARRAY_BY_VALUE
 G_GNUC_UNUSED static _T_ *
-gdk_array(get) (const GdkArray *self,
+gdk_array(get) (const GdkArray *this,
                 gsize           pos)
 {
-  return gdk_array(index) (self, pos);
+  return gdk_array(index) (this, pos);
 }
 #else
 G_GNUC_UNUSED static _T_
-gdk_array(get) (const GdkArray *self,
+gdk_array(get) (const GdkArray *this,
                 gsize           pos)
  {
-   return *gdk_array(index) (self, pos);
+   return *gdk_array(index) (this, pos);
  }
 #endif
 

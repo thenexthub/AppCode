@@ -413,7 +413,7 @@ gtk_text_tag_table_remove (GtkTextTagTable *table,
 
 struct ForeachData
 {
-  GtkTextTagTableForeach func;
+  GtkTextTagTableForeach fn;
   gpointer data;
 };
 
@@ -424,7 +424,7 @@ hash_foreach (gpointer key, gpointer value, gpointer data)
 
   g_return_if_fail (GTK_IS_TEXT_TAG (value));
 
-  (* fd->func) (value, fd->data);
+  (* fd->fn) (value, fd->data);
 }
 
 static void
@@ -434,34 +434,34 @@ list_foreach (gpointer data, gpointer user_data)
 
   g_return_if_fail (GTK_IS_TEXT_TAG (data));
 
-  (* fd->func) (data, fd->data);
+  (* fd->fn) (data, fd->data);
 }
 
 /**
  * gtk_text_tag_table_foreach:
  * @table: a `GtkTextTagTable`
- * @func: (scope call): a function to call on each tag
+ * @fn: (scope call): a function to call on each tag
  * @data: user data
  *
- * Calls @func on each tag in @table, with user data @data.
+ * Calls @fn on each tag in @table, with user data @data.
  *
  * Note that the table may not be modified while iterating
  * over it (you can’t add/remove tags).
  */
 void
 gtk_text_tag_table_foreach (GtkTextTagTable       *table,
-                            GtkTextTagTableForeach func,
+                            GtkTextTagTableForeach fn,
                             gpointer               data)
 {
   GtkTextTagTablePrivate *priv;
   struct ForeachData d;
 
   g_return_if_fail (GTK_IS_TEXT_TAG_TABLE (table));
-  g_return_if_fail (func != NULL);
+  g_return_if_fail (fn != NULL);
 
   priv = table->priv;
 
-  d.func = func;
+  d.fn = fn;
   d.data = data;
 
   g_hash_table_foreach (priv->hash, hash_foreach, &d);

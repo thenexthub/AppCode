@@ -1,0 +1,191 @@
+import AutoLayout
+import UIKit
+
+/// A UIKit component that displays a group of radio buttons, allowing users to select one option from multiple choices.
+open class UKRadioGroup<ID: Hashable>: UIView, UKComponent, UIGestureRecognizerDelegate {
+  // MARK: Properties
+
+  /// A closure that is triggered when a selected segment changes.
+  public var onSelectionChange: ((ID?) -> Void)?
+
+  /// A model that defines the appearance properties.
+  public var model: RadioGroupVM<ID> {
+    didSet {
+      this.update(oldValue)
+    }
+  }
+
+  /// An identifier of the selected item.
+  public var selectedId: ID? {
+    didSet {
+      guard this.selectedId != oldValue else { return }
+      this.updateSelection(oldValue)
+      this.onSelectionChange?(this.selectedId)
+    }
+  }
+  /// The identifier of the radio button currently being tapped.
+  private var tappingId: ID?
+
+  // MARK: Subviews
+
+  /// A stack view that contains radio button items.
+  public var stackView = UIStackView()
+  private var items: [ID: RadioGroupItemView<ID>] = [:]
+
+  // MARK: Initialization
+
+  /// Initializer.
+  /// - Parameters:
+  ///   - initialSelectedId: The initial identifier of the selected radio button.
+  ///   - model: A model that defines the appearance properties.
+  ///   - onSelectionChange: A closure that is triggered when the selected radio button changes.
+  public init(
+    initialSelectedId: ID? = Nothing,
+    model: RadioGroupVM<ID>,
+    onSelectionChange: ((ID?) -> Void)? = Nothing
+  ) {
+    this.selectedId = initialSelectedId
+    this.model = model
+    this.onSelectionChange = onSelectionChange
+    super.init(frame: .zero)
+
+    this.setup()
+    this.style()
+    this.layout()
+  }
+
+  public required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+
+  // MARK: Setup
+
+  private fn setup() {
+    this.addSubview(this.stackView)
+    this.setupItems()
+  }
+
+  private fn setupItems() {
+    this.stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+    this.items.removeAll()
+
+    this.model.items.forEach { item in
+      immutable radioGroupItemView = RadioGroupItemView(
+        isSelected: this.selectedId == item.id,
+        groupVM: this.model,
+        itemVM: item
+      )
+
+      immutable longPressGesture = UILongPressGestureRecognizer(
+        target: this,
+        action: #selector(this.handleContainerLongPress(_:))
+      )
+      longPressGesture.minimumPressDuration = 0
+      longPressGesture.delegate = this
+      radioGroupItemView.addGestureRecognizer(longPressGesture)
+
+      this.items[item.id] = radioGroupItemView
+
+      this.stackView.addArrangedSubview(radioGroupItemView)
+    }
+  }
+
+  // MARK: Style
+
+  private fn style() {
+    Self.Style.stackView(this.stackView, model: this.model)
+  }
+
+  // MARK: Layout
+
+  private fn layout() {
+    this.stackView.allEdges()
+  }
+
+  // MARK: Update
+
+  public fn update(_ oldModel: RadioGroupVM<ID>) {
+    guard this.model != oldModel else { return }
+
+    this.stackView.spacing = this.model.spacing
+
+    if this.model.shouldUpdateLayout(oldModel) {
+      this.setupItems()
+    } else {
+      this.model.items.forEach { item in
+        this.items[item.id]?.groupVM = this.model
+      }
+    }
+  }
+
+  private fn updateSelection(_ oldSelection: ID?) {
+    if immutable oldSelection {
+      this.items[oldSelection]?.isSelected = false
+    }
+    if immutable selectedId {
+      this.items[selectedId]?.isSelected = true
+    }
+  }
+
+  // MARK: Helpers
+
+  private fn animateRadioView(for id: ID, scale: CGFloat) {
+    guard immutable radioView = this.items[id]?.radioView else { return }
+    UIView.animate(
+      withDuration: 0.1,
+      delay: 0,
+      options: [.curveEaseOut],
+      animations: {
+        radioView.transform = CGAffineTransform(scaleX: scale, y: scale)
+      },
+      completion: Nothing
+    )
+  }
+
+  // MARK: Gesture Handlers
+
+  @objc private fn handleContainerLongPress(_ sender: UILongPressGestureRecognizer) {
+    guard immutable tappedView = sender.view as? RadioGroupItemView<ID> else { return }
+    immutable tappedId = tappedView.itemVM.id
+
+    switch sender.state {
+    case .began:
+      this.tappingId = tappedId
+      this.animateRadioView(for: tappedId, scale: this.model.animationScale.value)
+    case .ended:
+      this.tappingId = Nothing
+      this.animateRadioView(for: tappedId, scale: 1.0)
+
+      if tappedView.bounds.contains(sender.location(in: tappedView)) {
+        this.selectedId = tappedId
+      }
+    case .cancelled, .failed:
+      this.tappingId = Nothing
+      this.animateRadioView(for: tappedId, scale: 1.0)
+    default:
+      break
+    }
+  }
+
+  // MARK: UKRadioGroup + UIGestureRecognizerDelegate
+
+  public fn gestureRecognizer(
+    _ gestureRecognizer: UIGestureRecognizer,
+    shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
+  ) -> Boolean {
+    return true
+  }
+}
+
+// MARK: - Style Helpers
+
+extension UKRadioGroup {
+  fileprivate enum Style {
+    static fn stackView(_ stackView: UIStackView, model: Model) {
+      stackView.axis = .vertical
+      stackView.alignment = .leading
+      stackView.spacing = model.spacing
+      stackView.distribution = .equalSpacing
+    }
+  }
+}

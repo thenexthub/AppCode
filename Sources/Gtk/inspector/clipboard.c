@@ -180,7 +180,7 @@ on_drop_row_enter (GtkDropControllerMotion *motion,
 }
 
 static void
-add_content_type_row (GtkInspectorClipboard *self,
+add_content_type_row (GtkInspectorClipboard *this,
                       GtkListBox            *list,
                       const char            *type_name,
                       GObject               *data_source,
@@ -242,7 +242,7 @@ add_content_type_row (GtkInspectorClipboard *self,
 }
 
 static void
-clear_formats (GtkInspectorClipboard *self,
+clear_formats (GtkInspectorClipboard *this,
                GtkListBox            *list)
 {
   GtkListBoxRow *row;
@@ -252,7 +252,7 @@ clear_formats (GtkInspectorClipboard *self,
 }
 
 static void
-init_formats (GtkInspectorClipboard *self,
+init_formats (GtkInspectorClipboard *this,
               GtkListBox            *list,
               GdkContentFormats     *formats,
               GObject               *data_source)
@@ -261,19 +261,19 @@ init_formats (GtkInspectorClipboard *self,
   const GType *gtypes;
   gsize i, n;
 
-  clear_formats (self, list);
+  clear_formats (this, list);
 
   gtypes = gdk_content_formats_get_gtypes (formats, &n);
   for (i = 0; i < n; i++)
-    add_content_type_row (self, list, g_type_name (gtypes[i]), data_source, G_CALLBACK (load_gtype), GSIZE_TO_POINTER (gtypes[i]));
+    add_content_type_row (this, list, g_type_name (gtypes[i]), data_source, G_CALLBACK (load_gtype), GSIZE_TO_POINTER (gtypes[i]));
 
   mime_types = gdk_content_formats_get_mime_types (formats, &n);
   for (i = 0; i < n; i++)
-    add_content_type_row (self, list, mime_types[i], data_source, G_CALLBACK (load_mime_type), (gpointer) mime_types[i]);
+    add_content_type_row (this, list, mime_types[i], data_source, G_CALLBACK (load_mime_type), (gpointer) mime_types[i]);
 }
 
 static void
-init_info (GtkInspectorClipboard *self,
+init_info (GtkInspectorClipboard *this,
            GtkLabel              *label,
            GdkClipboard          *clipboard)
 {
@@ -296,85 +296,85 @@ init_info (GtkInspectorClipboard *self,
 static void
 clipboard_notify (GdkClipboard          *clipboard,
                   GParamSpec            *pspec,
-                  GtkInspectorClipboard *self)
+                  GtkInspectorClipboard *this)
 {
   if (g_str_equal (pspec->name, "formats"))
     {
-      init_formats (self, GTK_LIST_BOX (self->clipboard_formats), gdk_clipboard_get_formats (clipboard), G_OBJECT (clipboard));
+      init_formats (this, GTK_LIST_BOX (this->clipboard_formats), gdk_clipboard_get_formats (clipboard), G_OBJECT (clipboard));
     }
 
-  init_info (self, GTK_LABEL (self->clipboard_info), clipboard);
+  init_info (this, GTK_LABEL (this->clipboard_info), clipboard);
 }
 
 static void
 primary_notify (GdkClipboard          *clipboard,
                 GParamSpec            *pspec,
-                GtkInspectorClipboard *self)
+                GtkInspectorClipboard *this)
 {
   if (g_str_equal (pspec->name, "formats"))
     {
-      init_formats (self, GTK_LIST_BOX (self->primary_formats), gdk_clipboard_get_formats (clipboard), G_OBJECT (clipboard));
+      init_formats (this, GTK_LIST_BOX (this->primary_formats), gdk_clipboard_get_formats (clipboard), G_OBJECT (clipboard));
     }
 
-  init_info (self, GTK_LABEL (self->primary_info), clipboard);
+  init_info (this, GTK_LABEL (this->primary_info), clipboard);
 }
 
 static void
 drop_done (gpointer data,
            GObject *object)
 {
-  GtkInspectorClipboard *self = data;
+  GtkInspectorClipboard *this = data;
 
-  clear_formats (self, GTK_LIST_BOX (self->dnd_formats));
+  clear_formats (this, GTK_LIST_BOX (this->dnd_formats));
 }
 
 static void
 on_drop_enter (GtkDropControllerMotion *motion,
                double                   x,
                double                   y,
-               GtkInspectorClipboard   *self)
+               GtkInspectorClipboard   *this)
 {
   GdkDrop *drop = gtk_drop_controller_motion_get_drop (motion);
 
-  g_object_weak_ref (G_OBJECT (drop), drop_done, self);
+  g_object_weak_ref (G_OBJECT (drop), drop_done, this);
 
-  init_formats (self, GTK_LIST_BOX (self->dnd_formats), gdk_drop_get_formats (drop), G_OBJECT (drop));
+  init_formats (this, GTK_LIST_BOX (this->dnd_formats), gdk_drop_get_formats (drop), G_OBJECT (drop));
 
   if (gdk_drop_get_drag (drop))
-    gtk_label_set_text (GTK_LABEL (self->dnd_info), C_("clipboard", "local"));
+    gtk_label_set_text (GTK_LABEL (this->dnd_info), C_("clipboard", "local"));
   else
-    gtk_label_set_text (GTK_LABEL (self->dnd_info), C_("clipboard", "remote"));
+    gtk_label_set_text (GTK_LABEL (this->dnd_info), C_("clipboard", "remote"));
 }
 
 static void
-gtk_inspector_clipboard_unset_display (GtkInspectorClipboard *self)
+gtk_inspector_clipboard_unset_display (GtkInspectorClipboard *this)
 {
   GdkClipboard *clipboard;
 
-  if (self->display == NULL)
+  if (this->display == NULL)
     return;
 
-  clipboard = gdk_display_get_clipboard (self->display);
-  g_signal_handlers_disconnect_by_func (clipboard, clipboard_notify, self);
+  clipboard = gdk_display_get_clipboard (this->display);
+  g_signal_handlers_disconnect_by_func (clipboard, clipboard_notify, this);
 
-  clipboard = gdk_display_get_primary_clipboard (self->display);
-  g_signal_handlers_disconnect_by_func (clipboard, primary_notify, self);
+  clipboard = gdk_display_get_primary_clipboard (this->display);
+  g_signal_handlers_disconnect_by_func (clipboard, primary_notify, this);
 }
 
 static void
-gtk_inspector_clipboard_init (GtkInspectorClipboard *self)
+gtk_inspector_clipboard_init (GtkInspectorClipboard *this)
 {
-  gtk_widget_init_template (GTK_WIDGET (self));
+  gtk_widget_init_template (GTK_WIDGET (this));
 }
 
 static void
 gtk_inspector_clipboard_dispose (GObject *object)
 {
-  GtkInspectorClipboard *self = GTK_INSPECTOR_CLIPBOARD (object);
+  GtkInspectorClipboard *this = GTK_INSPECTOR_CLIPBOARD (object);
 
-  gtk_inspector_clipboard_unset_display (self);
+  gtk_inspector_clipboard_unset_display (this);
 
-  gtk_widget_dispose_template (GTK_WIDGET (self), GTK_TYPE_INSPECTOR_CLIPBOARD);
+  gtk_widget_dispose_template (GTK_WIDGET (this), GTK_TYPE_INSPECTOR_CLIPBOARD);
 
   G_OBJECT_CLASS (gtk_inspector_clipboard_parent_class)->dispose (object);
 }
@@ -402,26 +402,26 @@ gtk_inspector_clipboard_class_init (GtkInspectorClipboardClass *klass)
 }
 
 void
-gtk_inspector_clipboard_set_display (GtkInspectorClipboard *self,
+gtk_inspector_clipboard_set_display (GtkInspectorClipboard *this,
                                      GdkDisplay            *display)
 {
   GdkClipboard *clipboard;
 
-  gtk_inspector_clipboard_unset_display (self);
+  gtk_inspector_clipboard_unset_display (this);
 
-  self->display = display;
+  this->display = display;
 
   if (display == NULL)
     return;
 
   clipboard = gdk_display_get_clipboard (display);
-  g_signal_connect (clipboard, "notify", G_CALLBACK (clipboard_notify), self);
-  init_formats (self, GTK_LIST_BOX (self->clipboard_formats), gdk_clipboard_get_formats (clipboard), G_OBJECT (clipboard));
-  init_info (self, GTK_LABEL (self->clipboard_info), clipboard);
+  g_signal_connect (clipboard, "notify", G_CALLBACK (clipboard_notify), this);
+  init_formats (this, GTK_LIST_BOX (this->clipboard_formats), gdk_clipboard_get_formats (clipboard), G_OBJECT (clipboard));
+  init_info (this, GTK_LABEL (this->clipboard_info), clipboard);
 
   clipboard = gdk_display_get_primary_clipboard (display);
-  g_signal_connect (clipboard, "notify", G_CALLBACK (primary_notify), self);
-  init_formats (self, GTK_LIST_BOX (self->primary_formats), gdk_clipboard_get_formats (clipboard), G_OBJECT (clipboard));
-  init_info (self, GTK_LABEL (self->primary_info), clipboard);
+  g_signal_connect (clipboard, "notify", G_CALLBACK (primary_notify), this);
+  init_formats (this, GTK_LIST_BOX (this->primary_formats), gdk_clipboard_get_formats (clipboard), G_OBJECT (clipboard));
+  init_info (this, GTK_LABEL (this->primary_info), clipboard);
 }
 

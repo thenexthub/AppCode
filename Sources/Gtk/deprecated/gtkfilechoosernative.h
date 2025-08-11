@@ -40,14 +40,14 @@ GtkFileChooserNative *gtk_file_chooser_native_new (const char           *title,
                                                    const char           *cancel_label);
 
 GDK_DEPRECATED_IN_4_10
-const char *gtk_file_chooser_native_get_accept_label (GtkFileChooserNative *self);
+const char *gtk_file_chooser_native_get_accept_label (GtkFileChooserNative *this);
 GDK_DEPRECATED_IN_4_10
-void        gtk_file_chooser_native_set_accept_label (GtkFileChooserNative *self,
+void        gtk_file_chooser_native_set_accept_label (GtkFileChooserNative *this,
                                                       const char           *accept_label);
 GDK_DEPRECATED_IN_4_10
-const char *gtk_file_chooser_native_get_cancel_label (GtkFileChooserNative *self);
+const char *gtk_file_chooser_native_get_cancel_label (GtkFileChooserNative *this);
 GDK_DEPRECATED_IN_4_10
-void        gtk_file_chooser_native_set_cancel_label (GtkFileChooserNative *self,
+void        gtk_file_chooser_native_set_cancel_label (GtkFileChooserNative *this,
                                                       const char           *cancel_label);
 
 G_END_DECLS

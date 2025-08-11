@@ -96,7 +96,7 @@ struct _GtkCellLayoutIface
                                int                    column);
   void (* set_cell_data_func) (GtkCellLayout         *cell_layout,
                                GtkCellRenderer       *cell,
-                               GtkCellLayoutDataFunc  func,
+                               GtkCellLayoutDataFunc  fn,
                                gpointer               func_data,
                                GDestroyNotify         destroy);
   void (* clear_attributes)   (GtkCellLayout         *cell_layout,
@@ -135,7 +135,7 @@ void  gtk_cell_layout_add_attribute      (GtkCellLayout         *cell_layout,
 GDK_DEPRECATED_IN_4_10
 void  gtk_cell_layout_set_cell_data_func (GtkCellLayout         *cell_layout,
                                           GtkCellRenderer       *cell,
-                                          GtkCellLayoutDataFunc  func,
+                                          GtkCellLayoutDataFunc  fn,
                                           gpointer               func_data,
                                           GDestroyNotify         destroy);
 GDK_DEPRECATED_IN_4_10

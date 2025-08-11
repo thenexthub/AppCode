@@ -109,41 +109,41 @@ G_DEFINE_ABSTRACT_TYPE_WITH_CODE (GtkMediaStream, gtk_media_stream, G_TYPE_OBJEC
   g_critical ("Media stream of type '%s' does not implement GtkMediaStream::" # method, G_OBJECT_TYPE_NAME (obj))
 
 static gboolean
-gtk_media_stream_default_play (GtkMediaStream *self)
+gtk_media_stream_default_play (GtkMediaStream *this)
 {
-  GTK_MEDIA_STREAM_WARN_NOT_IMPLEMENTED_METHOD (self, play);
+  GTK_MEDIA_STREAM_WARN_NOT_IMPLEMENTED_METHOD (this, play);
 
   return FALSE;
 }
 
 static void
-gtk_media_stream_default_pause (GtkMediaStream *self)
+gtk_media_stream_default_pause (GtkMediaStream *this)
 {
-  GTK_MEDIA_STREAM_WARN_NOT_IMPLEMENTED_METHOD (self, pause);
+  GTK_MEDIA_STREAM_WARN_NOT_IMPLEMENTED_METHOD (this, pause);
 }
 
 static void
-gtk_media_stream_default_seek (GtkMediaStream *self,
+gtk_media_stream_default_seek (GtkMediaStream *this,
                                gint64          timestamp)
 {
-  gtk_media_stream_seek_failed (self);
+  gtk_media_stream_seek_failed (this);
 }
 
 static void
-gtk_media_stream_default_update_audio (GtkMediaStream *self,
+gtk_media_stream_default_update_audio (GtkMediaStream *this,
                                        gboolean        muted,
                                        double          volume)
 {
 }
 
 static void
-gtk_media_stream_default_realize (GtkMediaStream *self,
+gtk_media_stream_default_realize (GtkMediaStream *this,
                                   GdkSurface      *surface)
 {
 }
 
 static void
-gtk_media_stream_default_unrealize (GtkMediaStream *self,
+gtk_media_stream_default_unrealize (GtkMediaStream *this,
                                     GdkSurface      *surface)
 {
 }
@@ -155,24 +155,24 @@ gtk_media_stream_set_property (GObject      *object,
                                GParamSpec   *pspec)
 
 {
-  GtkMediaStream *self = GTK_MEDIA_STREAM (object);
+  GtkMediaStream *this = GTK_MEDIA_STREAM (object);
 
   switch (prop_id)
     {
     case PROP_PLAYING:
-      gtk_media_stream_set_playing (self, g_value_get_boolean (value));
+      gtk_media_stream_set_playing (this, g_value_get_boolean (value));
       break;
 
     case PROP_LOOP:
-      gtk_media_stream_set_loop (self, g_value_get_boolean (value));
+      gtk_media_stream_set_loop (this, g_value_get_boolean (value));
       break;
 
     case PROP_MUTED:
-      gtk_media_stream_set_muted (self, g_value_get_boolean (value));
+      gtk_media_stream_set_muted (this, g_value_get_boolean (value));
       break;
 
     case PROP_VOLUME:
-      gtk_media_stream_set_volume (self, g_value_get_double (value));
+      gtk_media_stream_set_volume (this, g_value_get_double (value));
       break;
 
     default:
@@ -187,8 +187,8 @@ gtk_media_stream_get_property (GObject    *object,
                                GValue     *value,
                                GParamSpec *pspec)
 {
-  GtkMediaStream *self = GTK_MEDIA_STREAM (object);
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStream *this = GTK_MEDIA_STREAM (object);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
   switch (prop_id)
     {
@@ -253,8 +253,8 @@ gtk_media_stream_get_property (GObject    *object,
 static void
 gtk_media_stream_dispose (GObject *object)
 {
-  GtkMediaStream *self = GTK_MEDIA_STREAM (object);
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStream *this = GTK_MEDIA_STREAM (object);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
   g_clear_error (&priv->error);
 
@@ -265,8 +265,8 @@ static void
 gtk_media_stream_finalize (GObject *object)
 {
 #if 0
-  GtkMediaStream *self = GTK_MEDIA_STREAM (object);
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStream *this = GTK_MEDIA_STREAM (object);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 #endif
 
   G_OBJECT_CLASS (gtk_media_stream_parent_class)->finalize (object);
@@ -425,16 +425,16 @@ gtk_media_stream_class_init (GtkMediaStreamClass *class)
 }
 
 static void
-gtk_media_stream_init (GtkMediaStream *self)
+gtk_media_stream_init (GtkMediaStream *this)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
   priv->volume = 1.0;
 }
 
 /**
  * gtk_media_stream_is_prepared: (get-property prepared)
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  *
  * Returns whether the stream has finished initializing.
  *
@@ -443,65 +443,65 @@ gtk_media_stream_init (GtkMediaStream *self)
  * Returns: %TRUE if the stream is prepared
  */
 gboolean
-gtk_media_stream_is_prepared (GtkMediaStream *self)
+gtk_media_stream_is_prepared (GtkMediaStream *this)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (self), FALSE);
+  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (this), FALSE);
 
   return priv->prepared;
 }
 
 /**
  * gtk_media_stream_has_audio:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  *
  * Returns whether the stream has audio.
  *
  * Returns: %TRUE if the stream has audio
  */
 gboolean
-gtk_media_stream_has_audio (GtkMediaStream *self)
+gtk_media_stream_has_audio (GtkMediaStream *this)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (self), FALSE);
+  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (this), FALSE);
 
   return priv->has_audio;
 }
 
 /**
  * gtk_media_stream_has_video:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  *
  * Returns whether the stream has video.
  *
  * Returns: %TRUE if the stream has video
  */
 gboolean
-gtk_media_stream_has_video (GtkMediaStream *self)
+gtk_media_stream_has_video (GtkMediaStream *this)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (self), FALSE);
+  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (this), FALSE);
 
   return priv->has_video;
 }
 
 /**
  * gtk_media_stream_play:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  *
  * Starts playing the stream.
  *
  * If the stream is in error or already playing, do nothing.
  */
 void
-gtk_media_stream_play (GtkMediaStream *self)
+gtk_media_stream_play (GtkMediaStream *this)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_MEDIA_STREAM (self));
+  g_return_if_fail (GTK_IS_MEDIA_STREAM (this));
 
   if (priv->error)
     return;
@@ -509,37 +509,37 @@ gtk_media_stream_play (GtkMediaStream *self)
   if (priv->playing)
     return;
 
-  if (GTK_MEDIA_STREAM_GET_CLASS (self)->play (self))
+  if (GTK_MEDIA_STREAM_GET_CLASS (this)->play (this))
     {
-      g_object_freeze_notify (G_OBJECT (self));
+      g_object_freeze_notify (G_OBJECT (this));
 
       priv->playing = TRUE;
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_PLAYING]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_PLAYING]);
 
       if (priv->ended)
         {
           priv->ended = FALSE;
-          g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ENDED]);
+          g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ENDED]);
         }
 
-      g_object_thaw_notify (G_OBJECT (self));
+      g_object_thaw_notify (G_OBJECT (this));
     }
 }
 
 /**
  * gtk_media_stream_pause:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  *
  * Pauses playback of the stream.
  *
  * If the stream is not playing, do nothing.
  */
 void
-gtk_media_stream_pause (GtkMediaStream *self)
+gtk_media_stream_pause (GtkMediaStream *this)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_MEDIA_STREAM (self));
+  g_return_if_fail (GTK_IS_MEDIA_STREAM (this));
 
   /* Don't check for error here because we call this function right
    * after setting the error to pause the stream */
@@ -547,88 +547,88 @@ gtk_media_stream_pause (GtkMediaStream *self)
   if (!priv->playing)
     return;
 
-  GTK_MEDIA_STREAM_GET_CLASS (self)->pause (self);
+  GTK_MEDIA_STREAM_GET_CLASS (this)->pause (this);
 
   priv->playing = FALSE;
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_PLAYING]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_PLAYING]);
 }
 
 /**
  * gtk_media_stream_get_playing:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  *
  * Return whether the stream is currently playing.
  *
  * Returns: %TRUE if the stream is playing
  */
 gboolean
-gtk_media_stream_get_playing (GtkMediaStream *self)
+gtk_media_stream_get_playing (GtkMediaStream *this)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (self), FALSE);
+  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (this), FALSE);
 
   return priv->playing;
 }
 
 /**
  * gtk_media_stream_set_playing:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  * @playing: whether to start or pause playback
  *
  * Starts or pauses playback of the stream.
  */
 void
-gtk_media_stream_set_playing (GtkMediaStream *self,
+gtk_media_stream_set_playing (GtkMediaStream *this,
                               gboolean        playing)
 {
-  g_return_if_fail (GTK_IS_MEDIA_STREAM (self));
+  g_return_if_fail (GTK_IS_MEDIA_STREAM (this));
 
   if (playing)
-    gtk_media_stream_play (self);
+    gtk_media_stream_play (this);
   else
-    gtk_media_stream_pause (self);
+    gtk_media_stream_pause (this);
 }
 
 /**
  * gtk_media_stream_get_ended:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  *
  * Returns whether the streams playback is finished.
  *
  * Returns: %TRUE if playback is finished
  */
 gboolean
-gtk_media_stream_get_ended (GtkMediaStream *self)
+gtk_media_stream_get_ended (GtkMediaStream *this)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (self), FALSE);
+  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (this), FALSE);
 
   return priv->ended;
 }
 
 /**
  * gtk_media_stream_get_timestamp:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  *
  * Returns the current presentation timestamp in microseconds.
  *
  * Returns: the timestamp in microseconds
  */
 gint64
-gtk_media_stream_get_timestamp (GtkMediaStream *self)
+gtk_media_stream_get_timestamp (GtkMediaStream *this)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (self), FALSE);
+  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (this), FALSE);
 
   return priv->timestamp;
 }
 
 /**
  * gtk_media_stream_get_duration:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  *
  * Gets the duration of the stream.
  *
@@ -637,18 +637,18 @@ gtk_media_stream_get_timestamp (GtkMediaStream *self)
  * Returns: the duration of the stream or 0 if not known.
  */
 gint64
-gtk_media_stream_get_duration (GtkMediaStream *self)
+gtk_media_stream_get_duration (GtkMediaStream *this)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (self), FALSE);
+  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (this), FALSE);
 
   return priv->duration;
 }
 
 /**
  * gtk_media_stream_is_seekable: (get-property seekable)
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  *
  * Checks if a stream may be seekable.
  *
@@ -663,36 +663,36 @@ gtk_media_stream_get_duration (GtkMediaStream *self)
  * Returns: %TRUE if the stream may support seeking
  */
 gboolean
-gtk_media_stream_is_seekable (GtkMediaStream *self)
+gtk_media_stream_is_seekable (GtkMediaStream *this)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (self), FALSE);
+  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (this), FALSE);
 
   return priv->seekable;
 }
 
 /**
  * gtk_media_stream_is_seeking: (get-property seeking)
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  *
  * Checks if there is currently a seek operation going on.
  *
  * Returns: %TRUE if a seek operation is ongoing.
  */
 gboolean
-gtk_media_stream_is_seeking (GtkMediaStream *self)
+gtk_media_stream_is_seeking (GtkMediaStream *this)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (self), FALSE);
+  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (this), FALSE);
 
   return priv->seeking;
 }
 
 /**
  * gtk_media_stream_get_error:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  *
  * If the stream is in an error state, returns the `GError`
  * explaining that state.
@@ -713,21 +713,21 @@ gtk_media_stream_is_seeking (GtkMediaStream *self)
  *   error state or the `GError` of the stream
  */
 const GError *
-gtk_media_stream_get_error (GtkMediaStream *self)
+gtk_media_stream_get_error (GtkMediaStream *this)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (self), FALSE);
+  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (this), FALSE);
 
   return priv->error;
 }
 
 /**
  * gtk_media_stream_seek:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  * @timestamp: timestamp to seek to.
  *
- * Start a seek operation on @self to @timestamp.
+ * Start a seek operation on @this to @timestamp.
  *
  * If @timestamp is out of range, it will be clamped.
  *
@@ -740,13 +740,13 @@ gtk_media_stream_get_error (GtkMediaStream *self)
  * any pending seek.
  */
 void
-gtk_media_stream_seek (GtkMediaStream *self,
+gtk_media_stream_seek (GtkMediaStream *this,
                        gint64          timestamp)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
   gboolean was_seeking;
 
-  g_return_if_fail (GTK_IS_MEDIA_STREAM (self));
+  g_return_if_fail (GTK_IS_MEDIA_STREAM (this));
   g_return_if_fail (timestamp >= 0);
 
   if (priv->error)
@@ -755,22 +755,22 @@ gtk_media_stream_seek (GtkMediaStream *self,
   if (!priv->seekable)
     return;
 
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
 
   was_seeking = priv->seeking;
   priv->seeking = TRUE;
 
-  GTK_MEDIA_STREAM_GET_CLASS (self)->seek (self, timestamp);
+  GTK_MEDIA_STREAM_GET_CLASS (this)->seek (this, timestamp);
 
   if (was_seeking != priv->seeking)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SEEKING]);
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SEEKING]);
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 }
 
 /**
  * gtk_media_stream_get_loop:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  *
  * Returns whether the stream is set to loop.
  *
@@ -779,18 +779,18 @@ gtk_media_stream_seek (GtkMediaStream *self,
  * Returns: %TRUE if the stream should loop
  */
 gboolean
-gtk_media_stream_get_loop (GtkMediaStream *self)
+gtk_media_stream_get_loop (GtkMediaStream *this)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (self), FALSE);
+  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (this), FALSE);
 
   return priv->loop;
 }
 
 /**
  * gtk_media_stream_set_loop:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  * @loop: %TRUE if the stream should loop
  *
  * Sets whether the stream should loop.
@@ -803,23 +803,23 @@ gtk_media_stream_get_loop (GtkMediaStream *self)
  * loop setting and just end.
  */
 void
-gtk_media_stream_set_loop (GtkMediaStream *self,
+gtk_media_stream_set_loop (GtkMediaStream *this,
                            gboolean        loop)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_MEDIA_STREAM (self));
+  g_return_if_fail (GTK_IS_MEDIA_STREAM (this));
 
   if (priv->loop == loop)
     return;
 
   priv->loop = loop;
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_LOOP]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_LOOP]);
 }
 
 /**
  * gtk_media_stream_get_muted:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  *
  * Returns whether the audio for the stream is muted.
  *
@@ -828,18 +828,18 @@ gtk_media_stream_set_loop (GtkMediaStream *self,
  * Returns: %TRUE if the stream is muted
  */
 gboolean
-gtk_media_stream_get_muted (GtkMediaStream *self)
+gtk_media_stream_get_muted (GtkMediaStream *this)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (self), FALSE);
+  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (this), FALSE);
 
   return priv->muted;
 }
 
 /**
  * gtk_media_stream_set_muted:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  * @muted: %TRUE if the stream should be muted
  *
  * Sets whether the audio stream should be muted.
@@ -852,26 +852,26 @@ gtk_media_stream_get_muted (GtkMediaStream *self)
  * still work but it will not have an audible effect.
  */
 void
-gtk_media_stream_set_muted (GtkMediaStream *self,
+gtk_media_stream_set_muted (GtkMediaStream *this,
                             gboolean        muted)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_MEDIA_STREAM (self));
+  g_return_if_fail (GTK_IS_MEDIA_STREAM (this));
 
   if (priv->muted == muted)
     return;
 
   priv->muted = muted;
 
-  GTK_MEDIA_STREAM_GET_CLASS (self)->update_audio (self, priv->muted, priv->volume);
+  GTK_MEDIA_STREAM_GET_CLASS (this)->update_audio (this, priv->muted, priv->volume);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_MUTED]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_MUTED]);
 }
 
 /**
  * gtk_media_stream_get_volume:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  *
  * Returns the volume of the audio for the stream.
  *
@@ -880,18 +880,18 @@ gtk_media_stream_set_muted (GtkMediaStream *self,
  * Returns: volume of the stream from 0.0 to 1.0
  */
 double
-gtk_media_stream_get_volume (GtkMediaStream *self)
+gtk_media_stream_get_volume (GtkMediaStream *this)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (self), FALSE);
+  g_return_val_if_fail (GTK_IS_MEDIA_STREAM (this), FALSE);
 
   return priv->volume;
 }
 
 /**
  * gtk_media_stream_set_volume:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  * @volume: New volume of the stream from 0.0 to 1.0
  *
  * Sets the volume of the audio stream.
@@ -907,12 +907,12 @@ gtk_media_stream_get_volume (GtkMediaStream *self)
  * When the stream is unmuted, the new volume setting will take effect.
  */
 void
-gtk_media_stream_set_volume (GtkMediaStream *self,
+gtk_media_stream_set_volume (GtkMediaStream *this,
                              double          volume)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_MEDIA_STREAM (self));
+  g_return_if_fail (GTK_IS_MEDIA_STREAM (this));
 
   volume = CLAMP (volume, 0.0, 1.0);
 
@@ -921,14 +921,14 @@ gtk_media_stream_set_volume (GtkMediaStream *self,
 
   priv->volume = volume;
 
-  GTK_MEDIA_STREAM_GET_CLASS (self)->update_audio (self, priv->muted, priv->volume);
+  GTK_MEDIA_STREAM_GET_CLASS (this)->update_audio (this, priv->muted, priv->volume);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_VOLUME]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_VOLUME]);
 }
 
 /**
  * gtk_media_stream_realize:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  * @surface: a `GdkSurface`
  *
  * Called by users to attach the media stream to a `GdkSurface` they manage.
@@ -949,21 +949,21 @@ gtk_media_stream_set_volume (GtkMediaStream *self,
  * It is not required to call this function to make a media stream work.
  */
 void
-gtk_media_stream_realize (GtkMediaStream *self,
+gtk_media_stream_realize (GtkMediaStream *this,
                           GdkSurface      *surface)
 {
-  g_return_if_fail (GTK_IS_MEDIA_STREAM (self));
+  g_return_if_fail (GTK_IS_MEDIA_STREAM (this));
   g_return_if_fail (GDK_IS_SURFACE (surface));
 
-  g_object_ref (self);
+  g_object_ref (this);
   g_object_ref (surface);
 
-  GTK_MEDIA_STREAM_GET_CLASS (self)->realize (self, surface);
+  GTK_MEDIA_STREAM_GET_CLASS (this)->realize (this, surface);
 }
 
 /**
  * gtk_media_stream_unrealize:
- * @self: a `GtkMediaStream` previously realized
+ * @this: a `GtkMediaStream` previously realized
  * @surface: the `GdkSurface` the stream was realized with
  *
  * Undoes a previous call to gtk_media_stream_realize().
@@ -972,21 +972,21 @@ gtk_media_stream_realize (GtkMediaStream *self,
  * allocated from @surface.
  */
 void
-gtk_media_stream_unrealize (GtkMediaStream *self,
+gtk_media_stream_unrealize (GtkMediaStream *this,
                             GdkSurface      *surface)
 {
-  g_return_if_fail (GTK_IS_MEDIA_STREAM (self));
+  g_return_if_fail (GTK_IS_MEDIA_STREAM (this));
   g_return_if_fail (GDK_IS_SURFACE (surface));
 
-  GTK_MEDIA_STREAM_GET_CLASS (self)->unrealize (self, surface);
+  GTK_MEDIA_STREAM_GET_CLASS (this)->unrealize (this, surface);
 
   g_object_unref (surface);
-  g_object_unref (self);
+  g_object_unref (this);
 }
 
 /**
  * gtk_media_stream_stream_prepared:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  * @has_audio: %TRUE if the stream should advertise audio support
  * @has_video: %TRUE if the stream should advertise video support
  * @seekable: %TRUE if the stream should advertise seekability
@@ -1006,49 +1006,49 @@ gtk_media_stream_unrealize (GtkMediaStream *self,
  * Since: 4.4
  */
 void
-gtk_media_stream_stream_prepared (GtkMediaStream *self,
+gtk_media_stream_stream_prepared (GtkMediaStream *this,
                                   gboolean        has_audio,
                                   gboolean        has_video,
                                   gboolean        seekable,
                                   gint64          duration)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_MEDIA_STREAM (self));
-  g_return_if_fail (!gtk_media_stream_is_prepared (self));
+  g_return_if_fail (GTK_IS_MEDIA_STREAM (this));
+  g_return_if_fail (!gtk_media_stream_is_prepared (this));
 
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
 
   if (priv->has_audio != has_audio)
     {
       priv->has_audio = has_audio;
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_HAS_AUDIO]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_HAS_AUDIO]);
     }
   if (priv->has_video != has_video)
     {
       priv->has_video = has_video;
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_HAS_VIDEO]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_HAS_VIDEO]);
     }
   if (priv->seekable != seekable)
     {
       priv->seekable = seekable;
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SEEKABLE]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SEEKABLE]);
     }
   if (priv->duration != duration)
     {
       priv->duration = duration;
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DURATION]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_DURATION]);
     }
 
   priv->prepared = TRUE;
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_PREPARED]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_PREPARED]);
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 }
 
 /**
  * gtk_media_stream_stream_unprepared:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  *
  * Resets a given media stream implementation.
  *
@@ -1059,62 +1059,62 @@ gtk_media_stream_stream_prepared (GtkMediaStream *self,
  * Since: 4.4
  */
 void
-gtk_media_stream_stream_unprepared (GtkMediaStream *self)
+gtk_media_stream_stream_unprepared (GtkMediaStream *this)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_MEDIA_STREAM (self));
-  g_return_if_fail (gtk_media_stream_is_prepared (self));
+  g_return_if_fail (GTK_IS_MEDIA_STREAM (this));
+  g_return_if_fail (gtk_media_stream_is_prepared (this));
 
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
 
-  gtk_media_stream_pause (self);
+  gtk_media_stream_pause (this);
 
   if (priv->has_audio)
     {
       priv->has_audio = FALSE;
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_HAS_AUDIO]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_HAS_AUDIO]);
     }
   if (priv->has_video)
     {
       priv->has_video = FALSE;
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_HAS_VIDEO]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_HAS_VIDEO]);
     }
   if (priv->seekable)
     {
       priv->seekable = FALSE;
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SEEKABLE]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SEEKABLE]);
     }
   if (priv->seeking)
     {
       priv->seeking = FALSE;
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SEEKING]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SEEKING]);
     }
   if (priv->duration != 0)
     {
       priv->duration = 0;
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DURATION]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_DURATION]);
     }
   if (priv->timestamp != 0)
     {
       priv->timestamp = 0;
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_TIMESTAMP]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_TIMESTAMP]);
     }
   if (priv->error)
     {
       g_clear_error (&priv->error);
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ERROR]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ERROR]);
     }
 
   priv->prepared = FALSE;
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_PREPARED]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_PREPARED]);
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 }
 
 /**
  * gtk_media_stream_prepared: (skip)
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  * @has_audio: %TRUE if the stream should advertise audio support
  * @has_video: %TRUE if the stream should advertise video support
  * @seekable: %TRUE if the stream should advertise seekability
@@ -1125,35 +1125,35 @@ gtk_media_stream_stream_unprepared (GtkMediaStream *self)
  * Deprecated: 4.4: Use [method@Gtk.MediaStream.stream_prepared] instead.
  */
 void
-gtk_media_stream_prepared (GtkMediaStream *self,
+gtk_media_stream_prepared (GtkMediaStream *this,
                            gboolean        has_audio,
                            gboolean        has_video,
                            gboolean        seekable,
                            gint64          duration)
 {
-  gtk_media_stream_stream_prepared (self, has_audio, has_video, seekable, duration);
+  gtk_media_stream_stream_prepared (this, has_audio, has_video, seekable, duration);
 }
 
 /**
  * gtk_media_stream_unprepared: (skip)
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  *
  * Same as gtk_media_stream_stream_unprepared().
  *
  * Deprecated: 4.4: Use [method@Gtk.MediaStream.stream_unprepared] instead.
  */
 void
-gtk_media_stream_unprepared (GtkMediaStream *self)
+gtk_media_stream_unprepared (GtkMediaStream *this)
 {
-  gtk_media_stream_stream_unprepared (self);
+  gtk_media_stream_stream_unprepared (this);
 }
 
 /**
  * gtk_media_stream_gerror:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  * @error: (transfer full): the `GError` to set
  *
- * Sets @self into an error state.
+ * Sets @this into an error state.
  *
  * This will pause the stream (you can check for an error
  * via [method@Gtk.MediaStream.get_error] in your
@@ -1167,12 +1167,12 @@ gtk_media_stream_unprepared (GtkMediaStream *self)
  * [method@Gtk.MediaStream.unprepared].
  */
 void
-gtk_media_stream_gerror (GtkMediaStream *self,
+gtk_media_stream_gerror (GtkMediaStream *this,
                          GError         *error)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_MEDIA_STREAM (self));
+  g_return_if_fail (GTK_IS_MEDIA_STREAM (this));
   g_return_if_fail (error != NULL);
 
   if (priv->error)
@@ -1181,41 +1181,41 @@ gtk_media_stream_gerror (GtkMediaStream *self,
       return;
     }
 
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
 
   priv->error = error;
 
-  gtk_media_stream_pause (self);
+  gtk_media_stream_pause (this);
 
   if (!priv->prepared)
     {
       priv->prepared = TRUE;
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_PREPARED]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_PREPARED]);
     }
   
   if (priv->seeking)
-    gtk_media_stream_seek_failed (self);
+    gtk_media_stream_seek_failed (this);
   
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ERROR]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ERROR]);
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 }
 
 /**
  * gtk_media_stream_error:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  * @domain: error domain
  * @code: error code
  * @format: printf()-style format for error message
  * @...: parameters for message format
  *
- * Sets @self into an error state using a printf()-style format string.
+ * Sets @this into an error state using a printf()-style format string.
  *
  * This is a utility function that calls [method@Gtk.MediaStream.gerror].
  * See that function for details.
  */
 void
-gtk_media_stream_error (GtkMediaStream *self,
+gtk_media_stream_error (GtkMediaStream *this,
                         GQuark          domain,
                         int             code,
                         const char     *format,
@@ -1224,7 +1224,7 @@ gtk_media_stream_error (GtkMediaStream *self,
   GError *error;
   va_list args;
 
-  g_return_if_fail (GTK_IS_MEDIA_STREAM (self));
+  g_return_if_fail (GTK_IS_MEDIA_STREAM (this));
   g_return_if_fail (domain != 0);
   g_return_if_fail (format != NULL);
 
@@ -1232,24 +1232,24 @@ gtk_media_stream_error (GtkMediaStream *self,
   error = g_error_new_valist (domain, code, format, args);
   va_end (args);
 
-  gtk_media_stream_gerror (self, error);
+  gtk_media_stream_gerror (this, error);
 }
 
 /**
  * gtk_media_stream_error_valist:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  * @domain: error domain
  * @code: error code
  * @format: printf()-style format for error message
  * @args: `va_list` of parameters for the message format
  *
- * Sets @self into an error state using a printf()-style format string.
+ * Sets @this into an error state using a printf()-style format string.
  *
  * This is a utility function that calls [method@Gtk.MediaStream.gerror].
  * See that function for details.
  */
 void
-gtk_media_stream_error_valist (GtkMediaStream *self,
+gtk_media_stream_error_valist (GtkMediaStream *this,
                                GQuark          domain,
                                int             code,
                                const char     *format,
@@ -1257,18 +1257,18 @@ gtk_media_stream_error_valist (GtkMediaStream *self,
 {
   GError *error;
 
-  g_return_if_fail (GTK_IS_MEDIA_STREAM (self));
+  g_return_if_fail (GTK_IS_MEDIA_STREAM (this));
   g_return_if_fail (domain != 0);
   g_return_if_fail (format != NULL);
 
   error = g_error_new_valist (domain, code, format, args);
 
-  gtk_media_stream_gerror (self, error);
+  gtk_media_stream_gerror (this, error);
 }
 
 /**
  * gtk_media_stream_update:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  * @timestamp: the new timestamp
  *
  * Media stream implementations should regularly call this
@@ -1280,15 +1280,15 @@ gtk_media_stream_error_valist (GtkMediaStream *self,
  * The media stream must be prepared when this function is called.
  */
 void
-gtk_media_stream_update (GtkMediaStream *self,
+gtk_media_stream_update (GtkMediaStream *this,
                          gint64          timestamp)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_MEDIA_STREAM (self));
-  g_return_if_fail (gtk_media_stream_is_prepared (self));
+  g_return_if_fail (GTK_IS_MEDIA_STREAM (this));
+  g_return_if_fail (gtk_media_stream_is_prepared (this));
 
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
 
   /* Timestamp before duration is important here.
    * This way the duration notify will be emitted first which will
@@ -1298,20 +1298,20 @@ gtk_media_stream_update (GtkMediaStream *self,
   if (priv->timestamp != timestamp)
     {
       priv->timestamp = timestamp;
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_TIMESTAMP]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_TIMESTAMP]);
     }
   if (priv->duration > 0 && timestamp > priv->duration)
     {
       priv->duration = priv->timestamp;
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DURATION]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_DURATION]);
     }
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 }
 
 /**
  * gtk_media_stream_stream_ended:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  *
  * Pauses the media stream and marks it as ended.
  *
@@ -1323,27 +1323,27 @@ gtk_media_stream_update (GtkMediaStream *self,
  * Since: 4.4
  */
 void
-gtk_media_stream_stream_ended (GtkMediaStream *self)
+gtk_media_stream_stream_ended (GtkMediaStream *this)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_MEDIA_STREAM (self));
-  g_return_if_fail (gtk_media_stream_is_prepared (self));
-  g_return_if_fail (!gtk_media_stream_get_ended (self));
+  g_return_if_fail (GTK_IS_MEDIA_STREAM (this));
+  g_return_if_fail (gtk_media_stream_is_prepared (this));
+  g_return_if_fail (!gtk_media_stream_get_ended (this));
 
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
 
-  gtk_media_stream_pause (self);
+  gtk_media_stream_pause (this);
 
   priv->ended = TRUE;
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ENDED]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ENDED]);
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 }
 
 /**
  * gtk_media_stream_ended: (skip)
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  *
  * Pauses the media stream and marks it as ended.
  *
@@ -1355,14 +1355,14 @@ gtk_media_stream_stream_ended (GtkMediaStream *self)
  * Deprecated: 4.4: Use [method@Gtk.MediaStream.stream_ended] instead
  */
 void
-gtk_media_stream_ended (GtkMediaStream *self)
+gtk_media_stream_ended (GtkMediaStream *this)
 {
-  gtk_media_stream_stream_ended (self);
+  gtk_media_stream_stream_ended (this);
 }
 
 /**
  * gtk_media_stream_seek_success:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  *
  * Ends a seek operation started via GtkMediaStream.seek() successfully.
  *
@@ -1373,30 +1373,30 @@ gtk_media_stream_ended (GtkMediaStream *self)
  * ending a seek.
  */
 void
-gtk_media_stream_seek_success (GtkMediaStream *self)
+gtk_media_stream_seek_success (GtkMediaStream *this)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_MEDIA_STREAM (self));
-  g_return_if_fail (gtk_media_stream_is_seeking (self));
+  g_return_if_fail (GTK_IS_MEDIA_STREAM (this));
+  g_return_if_fail (gtk_media_stream_is_seeking (this));
 
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
 
   priv->seeking = FALSE;
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SEEKING]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SEEKING]);
 
   if (priv->ended)
     {
       priv->ended = FALSE;
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ENDED]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ENDED]);
     }
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 }
 
 /**
  * gtk_media_stream_seek_failed:
- * @self: a `GtkMediaStream`
+ * @this: a `GtkMediaStream`
  *
  * Ends a seek operation started via GtkMediaStream.seek() as a failure.
  *
@@ -1407,14 +1407,14 @@ gtk_media_stream_seek_success (GtkMediaStream *self)
  * ending a seek.
  */
 void
-gtk_media_stream_seek_failed (GtkMediaStream *self)
+gtk_media_stream_seek_failed (GtkMediaStream *this)
 {
-  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (self);
+  GtkMediaStreamPrivate *priv = gtk_media_stream_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_MEDIA_STREAM (self));
-  g_return_if_fail (gtk_media_stream_is_seeking (self));
+  g_return_if_fail (GTK_IS_MEDIA_STREAM (this));
+  g_return_if_fail (gtk_media_stream_is_seeking (this));
 
   priv->seeking = FALSE;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SEEKING]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SEEKING]);
 }

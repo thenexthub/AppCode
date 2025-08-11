@@ -68,13 +68,13 @@ G_DEFINE_TYPE (GskVulkanFrame, gsk_vulkan_frame, GSK_TYPE_GPU_FRAME)
 static gboolean
 gsk_vulkan_frame_is_busy (GskGpuFrame *frame)
 {
-  GskVulkanFrame *self = GSK_VULKAN_FRAME (frame);
+  GskVulkanFrame *this = GSK_VULKAN_FRAME (frame);
   VkDevice device;
   VkResult res;
 
   device = gsk_vulkan_device_get_vk_device (GSK_VULKAN_DEVICE (gsk_gpu_frame_get_device (frame)));
 
-  res = vkGetFenceStatus (device, self->vk_fence);
+  res = vkGetFenceStatus (device, this->vk_fence);
   if (res == VK_NOT_READY)
     return TRUE;
 
@@ -85,14 +85,14 @@ gsk_vulkan_frame_is_busy (GskGpuFrame *frame)
 static void
 gsk_vulkan_frame_wait (GskGpuFrame *frame)
 {
-  GskVulkanFrame *self = GSK_VULKAN_FRAME (frame);
+  GskVulkanFrame *this = GSK_VULKAN_FRAME (frame);
   VkDevice vk_device;
 
   vk_device = gsk_vulkan_device_get_vk_device (GSK_VULKAN_DEVICE (gsk_gpu_frame_get_device (frame)));
 
   GSK_VK_CHECK (vkWaitForFences, vk_device,
                                  1,
-                                 &self->vk_fence,
+                                 &this->vk_fence,
                                  VK_FALSE,
                                  INT64_MAX);
 }
@@ -100,7 +100,7 @@ gsk_vulkan_frame_wait (GskGpuFrame *frame)
 static void
 gsk_vulkan_frame_setup (GskGpuFrame *frame)
 {
-  GskVulkanFrame *self = GSK_VULKAN_FRAME (frame);
+  GskVulkanFrame *this = GSK_VULKAN_FRAME (frame);
   GskVulkanDevice *device;
   VkDevice vk_device;
   VkCommandPool vk_command_pool;
@@ -116,27 +116,27 @@ gsk_vulkan_frame_setup (GskGpuFrame *frame)
                                               .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
                                               .commandBufferCount = 1,
                                           },
-                                          &self->vk_command_buffer);
+                                          &this->vk_command_buffer);
 
   GDK_VK_CHECK (vkCreateSemaphore, vk_device,
                                    &(VkSemaphoreCreateInfo) {
                                        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
                                    },
                                    NULL,
-                                   &self->vk_acquire_semaphore);
+                                   &this->vk_acquire_semaphore);
 
   GSK_VK_CHECK (vkCreateFence, vk_device,
                                &(VkFenceCreateInfo) {
                                    .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
                                },
                                NULL,
-                               &self->vk_fence);
+                               &this->vk_fence);
 }
 
 static void
 gsk_vulkan_frame_cleanup (GskGpuFrame *frame)
 {
-  GskVulkanFrame *self = GSK_VULKAN_FRAME (frame);
+  GskVulkanFrame *this = GSK_VULKAN_FRAME (frame);
   GskVulkanDevice *device;
   VkDevice vk_device;
 
@@ -145,15 +145,15 @@ gsk_vulkan_frame_cleanup (GskGpuFrame *frame)
 
   GSK_VK_CHECK (vkWaitForFences, vk_device,
                                  1,
-                                 &self->vk_fence,
+                                 &this->vk_fence,
                                  VK_TRUE,
                                  INT64_MAX);
 
   GSK_VK_CHECK (vkResetFences, vk_device,
                                1,
-                               &self->vk_fence);
+                               &this->vk_fence);
 
-  GSK_VK_CHECK (vkResetCommandBuffer, self->vk_command_buffer,
+  GSK_VK_CHECK (vkResetCommandBuffer, this->vk_command_buffer,
                                       0);
 
   GSK_GPU_FRAME_CLASS (gsk_vulkan_frame_parent_class)->cleanup (frame);
@@ -166,11 +166,11 @@ gsk_vulkan_frame_begin (GskGpuFrame           *frame,
                         const cairo_region_t  *region,
                         const graphene_rect_t *opaque)
 {
-  GskVulkanFrame *self = GSK_VULKAN_FRAME (frame);
+  GskVulkanFrame *this = GSK_VULKAN_FRAME (frame);
 
   gdk_draw_context_begin_frame_full (context,
                                      /* We pass a pointer here for 32bit architectures */
-                                     &self->vk_acquire_semaphore,
+                                     &this->vk_acquire_semaphore,
                                      depth,
                                      region,
                                      opaque);
@@ -180,22 +180,22 @@ static void
 gsk_vulkan_frame_end (GskGpuFrame    *frame,
                       GdkDrawContext *context)
 {
-  GskVulkanFrame *self = GSK_VULKAN_FRAME (frame);
+  GskVulkanFrame *this = GSK_VULKAN_FRAME (frame);
 
-  gdk_draw_context_end_frame_full (context, &self->vk_fence);
+  gdk_draw_context_end_frame_full (context, &this->vk_fence);
 }
 
 static void
 gsk_vulkan_frame_sync (GskGpuFrame *frame)
 {
-  GskVulkanFrame *self = GSK_VULKAN_FRAME (frame);
+  GskVulkanFrame *this = GSK_VULKAN_FRAME (frame);
   GskVulkanDevice *device;
 
   device = GSK_VULKAN_DEVICE (gsk_gpu_frame_get_device (frame));
 
   GSK_VK_CHECK (vkQueueSubmit, gsk_vulkan_device_get_vk_queue (device),
                                0, NULL,
-                               self->vk_fence);
+                               this->vk_fence);
 }
 
 static GskGpuImage *
@@ -305,7 +305,7 @@ gsk_vulkan_frame_create_storage_buffer (GskGpuFrame *frame,
 }
 
 static void
-gsk_vulkan_frame_write_texture_vertex_data (GskGpuFrame    *self,
+gsk_vulkan_frame_write_texture_vertex_data (GskGpuFrame    *this,
                                             guchar         *data,
                                             GskGpuImage   **images,
                                             GskGpuSampler  *samplers,
@@ -320,21 +320,21 @@ gsk_vulkan_frame_submit (GskGpuFrame       *frame,
                          GskGpuBuffer      *globals_buffer,
                          GskGpuOp          *op)
 {
-  GskVulkanFrame *self = GSK_VULKAN_FRAME (frame);
+  GskVulkanFrame *this = GSK_VULKAN_FRAME (frame);
   GskVulkanDevice *device;
   GskVulkanSemaphores semaphores;
   GskVulkanCommandState state = { 0, };
 
   device = GSK_VULKAN_DEVICE (gsk_gpu_frame_get_device (frame));
 
-  GSK_VK_CHECK (vkBeginCommandBuffer, self->vk_command_buffer,
+  GSK_VK_CHECK (vkBeginCommandBuffer, this->vk_command_buffer,
                                       &(VkCommandBufferBeginInfo) {
                                           .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
                                           .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
                                       });
 
   if (vertex_buffer)
-    vkCmdBindVertexBuffers (self->vk_command_buffer,
+    vkCmdBindVertexBuffers (this->vk_command_buffer,
                             0,
                             1,
                             (VkBuffer[1]) {
@@ -350,12 +350,12 @@ gsk_vulkan_frame_submit (GskGpuFrame       *frame,
   if (pass_type == GSK_RENDER_PASS_PRESENT)
     {
       gsk_vulkan_semaphores_add_wait (&semaphores,
-                                      self->vk_acquire_semaphore,
+                                      this->vk_acquire_semaphore,
                                       0,
                                       VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT);
     }
 
-  state.vk_command_buffer = self->vk_command_buffer;
+  state.vk_command_buffer = this->vk_command_buffer;
   state.vk_render_pass = VK_NULL_HANDLE;
   state.vk_format = VK_FORMAT_UNDEFINED;
   state.blend = GSK_GPU_BLEND_OVER; /* should we have a BLEND_NONE? */
@@ -366,14 +366,14 @@ gsk_vulkan_frame_submit (GskGpuFrame       *frame,
       op = gsk_gpu_op_vk_command (op, frame, &state);
     }
 
-  GSK_VK_CHECK (vkEndCommandBuffer, self->vk_command_buffer);
+  GSK_VK_CHECK (vkEndCommandBuffer, this->vk_command_buffer);
 
   GSK_VK_CHECK (vkQueueSubmit, gsk_vulkan_device_get_vk_queue (device),
                                1,
                                &(VkSubmitInfo) {
                                   .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
                                   .commandBufferCount = 1,
-                                  .pCommandBuffers = &self->vk_command_buffer,
+                                  .pCommandBuffers = &this->vk_command_buffer,
                                   .pWaitSemaphores = gsk_semaphores_get_data (&semaphores.wait_semaphores),
                                   .pWaitDstStageMask = gsk_pipeline_stages_get_data (&semaphores.wait_stages),
                                   .waitSemaphoreCount = gsk_semaphores_get_size (&semaphores.wait_semaphores),
@@ -396,23 +396,23 @@ gsk_vulkan_frame_submit (GskGpuFrame       *frame,
 static void
 gsk_vulkan_frame_finalize (GObject *object)
 {
-  GskVulkanFrame *self = GSK_VULKAN_FRAME (object);
+  GskVulkanFrame *this = GSK_VULKAN_FRAME (object);
   GskVulkanDevice *device;
   VkDevice vk_device;
   VkCommandPool vk_command_pool;
 
-  device = GSK_VULKAN_DEVICE (gsk_gpu_frame_get_device (GSK_GPU_FRAME (self)));
+  device = GSK_VULKAN_DEVICE (gsk_gpu_frame_get_device (GSK_GPU_FRAME (this)));
   vk_device = gsk_vulkan_device_get_vk_device (device);
   vk_command_pool = gsk_vulkan_device_get_vk_command_pool (device);
 
   vkFreeCommandBuffers (vk_device,
                         vk_command_pool,
-                        1, &self->vk_command_buffer);
+                        1, &this->vk_command_buffer);
   vkDestroySemaphore (vk_device,
-                      self->vk_acquire_semaphore,
+                      this->vk_acquire_semaphore,
                       NULL);
   vkDestroyFence (vk_device,
-                  self->vk_fence,
+                  this->vk_fence,
                   NULL);
 
   G_OBJECT_CLASS (gsk_vulkan_frame_parent_class)->finalize (object);
@@ -442,28 +442,28 @@ gsk_vulkan_frame_class_init (GskVulkanFrameClass *klass)
 }
 
 static void
-gsk_vulkan_frame_init (GskVulkanFrame *self)
+gsk_vulkan_frame_init (GskVulkanFrame *this)
 {
-  self->pool_n_sets = 4;
-  self->pool_n_images = 8;
-  self->pool_n_buffers = 8;
+  this->pool_n_sets = 4;
+  this->pool_n_images = 8;
+  this->pool_n_buffers = 8;
 }
 
 void
-gsk_vulkan_semaphores_add_wait (GskVulkanSemaphores  *self,
+gsk_vulkan_semaphores_add_wait (GskVulkanSemaphores  *this,
                                 VkSemaphore           semaphore,
                                 guint64               semaphore_wait,
                                 VkPipelineStageFlags  stage)
 {
-  gsk_semaphores_append (&self->wait_semaphores, semaphore);
-  gsk_semaphore_values_append (&self->wait_semaphore_values, semaphore_wait);
-  gsk_pipeline_stages_append (&self->wait_stages, stage);
+  gsk_semaphores_append (&this->wait_semaphores, semaphore);
+  gsk_semaphore_values_append (&this->wait_semaphore_values, semaphore_wait);
+  gsk_pipeline_stages_append (&this->wait_stages, stage);
 }
 
 void
-gsk_vulkan_semaphores_add_signal (GskVulkanSemaphores  *self,
+gsk_vulkan_semaphores_add_signal (GskVulkanSemaphores  *this,
                                   VkSemaphore           semaphore)
 {
-  gsk_semaphores_append (&self->signal_semaphores, semaphore);
+  gsk_semaphores_append (&this->signal_semaphores, semaphore);
 }
 

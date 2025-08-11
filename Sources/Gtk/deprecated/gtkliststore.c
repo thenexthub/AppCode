@@ -279,11 +279,11 @@ static void     gtk_list_store_set_sort_column_id    (GtkTreeSortable        *so
 						      GtkSortType             order);
 static void     gtk_list_store_set_sort_func         (GtkTreeSortable        *sortable,
 						      int                     sort_column_id,
-						      GtkTreeIterCompareFunc  func,
+						      GtkTreeIterCompareFunc  fn,
 						      gpointer                data,
 						      GDestroyNotify          destroy);
 static void     gtk_list_store_set_default_sort_func (GtkTreeSortable        *sortable,
-						      GtkTreeIterCompareFunc  func,
+						      GtkTreeIterCompareFunc  fn,
 						      gpointer                data,
 						      GDestroyNotify          destroy);
 static gboolean gtk_list_store_has_default_sort_func (GtkTreeSortable        *sortable);
@@ -979,7 +979,7 @@ static GtkTreeIterCompareFunc
 gtk_list_store_get_compare_func (GtkListStore *list_store)
 {
   GtkListStorePrivate *priv = list_store->priv;
-  GtkTreeIterCompareFunc func = NULL;
+  GtkTreeIterCompareFunc fn = NULL;
 
   if (GTK_LIST_STORE_IS_SORTED (list_store))
     {
@@ -989,16 +989,16 @@ gtk_list_store_get_compare_func (GtkListStore *list_store)
 	  header = _gtk_tree_data_list_get_header (priv->sort_list,
 						   priv->sort_column_id);
 	  g_return_val_if_fail (header != NULL, NULL);
-	  g_return_val_if_fail (header->func != NULL, NULL);
-	  func = header->func;
+	  g_return_val_if_fail (header->fn != NULL, NULL);
+	  fn = header->fn;
 	}
       else
 	{
-	  func = priv->default_sort_func;
+	  fn = priv->default_sort_func;
 	}
     }
 
-  return func;
+  return fn;
 }
 
 static void
@@ -1012,10 +1012,10 @@ gtk_list_store_set_vector_internal (GtkListStore *list_store,
 {
   GtkListStorePrivate *priv = list_store->priv;
   int i;
-  GtkTreeIterCompareFunc func = NULL;
+  GtkTreeIterCompareFunc fn = NULL;
 
-  func = gtk_list_store_get_compare_func (list_store);
-  if (func != _gtk_tree_data_list_compare_func)
+  fn = gtk_list_store_get_compare_func (list_store);
+  if (fn != _gtk_tree_data_list_compare_func)
     *maybe_need_sort = TRUE;
 
   for (i = 0; i < n_values; i++)
@@ -1026,7 +1026,7 @@ gtk_list_store_set_vector_internal (GtkListStore *list_store,
 					       &values[i],
 					       FALSE) || *emit_signal;
 
-      if (func == _gtk_tree_data_list_compare_func &&
+      if (fn == _gtk_tree_data_list_compare_func &&
 	  columns[i] == priv->sort_column_id)
 	*maybe_need_sort = TRUE;
     }
@@ -1041,12 +1041,12 @@ gtk_list_store_set_valist_internal (GtkListStore *list_store,
 {
   GtkListStorePrivate *priv = list_store->priv;
   int column;
-  GtkTreeIterCompareFunc func = NULL;
+  GtkTreeIterCompareFunc fn = NULL;
 
   column = va_arg (var_args, int);
 
-  func = gtk_list_store_get_compare_func (list_store);
-  if (func != _gtk_tree_data_list_compare_func)
+  fn = gtk_list_store_get_compare_func (list_store);
+  if (fn != _gtk_tree_data_list_compare_func)
     *maybe_need_sort = TRUE;
 
   while (column != -1)
@@ -1080,7 +1080,7 @@ gtk_list_store_set_valist_internal (GtkListStore *list_store,
 						    &value,
 						    FALSE) || *emit_signal;
 
-      if (func == _gtk_tree_data_list_compare_func &&
+      if (fn == _gtk_tree_data_list_compare_func &&
 	  column == priv->sort_column_id)
 	*maybe_need_sort = TRUE;
 
@@ -1963,7 +1963,7 @@ gtk_list_store_compare_func (GSequenceIter *a,
   GtkTreeIter iter_a;
   GtkTreeIter iter_b;
   int retval;
-  GtkTreeIterCompareFunc func;
+  GtkTreeIterCompareFunc fn;
   gpointer data;
 
   if (priv->sort_column_id != -1)
@@ -1973,15 +1973,15 @@ gtk_list_store_compare_func (GSequenceIter *a,
       header = _gtk_tree_data_list_get_header (priv->sort_list,
 					       priv->sort_column_id);
       g_return_val_if_fail (header != NULL, 0);
-      g_return_val_if_fail (header->func != NULL, 0);
+      g_return_val_if_fail (header->fn != NULL, 0);
 
-      func = header->func;
+      fn = header->fn;
       data = header->data;
     }
   else
     {
       g_return_val_if_fail (priv->default_sort_func != NULL, 0);
-      func = priv->default_sort_func;
+      fn = priv->default_sort_func;
       data = priv->default_sort_data;
     }
 
@@ -1993,7 +1993,7 @@ gtk_list_store_compare_func (GSequenceIter *a,
   g_assert (iter_is_valid (&iter_a, list_store));
   g_assert (iter_is_valid (&iter_b, list_store));
 
-  retval = (* func) (GTK_TREE_MODEL (list_store), &iter_a, &iter_b, data);
+  retval = (* fn) (GTK_TREE_MODEL (list_store), &iter_a, &iter_b, data);
 
   if (priv->order == GTK_SORT_DESCENDING)
     {
@@ -2129,7 +2129,7 @@ gtk_list_store_set_sort_column_id (GtkTreeSortable  *sortable,
 
 	  /* We want to make sure that we have a function */
 	  g_return_if_fail (header != NULL);
-	  g_return_if_fail (header->func != NULL);
+	  g_return_if_fail (header->fn != NULL);
 	}
       else
 	{
@@ -2149,7 +2149,7 @@ gtk_list_store_set_sort_column_id (GtkTreeSortable  *sortable,
 static void
 gtk_list_store_set_sort_func (GtkTreeSortable        *sortable,
 			      int                     sort_column_id,
-			      GtkTreeIterCompareFunc  func,
+			      GtkTreeIterCompareFunc  fn,
 			      gpointer                data,
 			      GDestroyNotify          destroy)
 {
@@ -2158,7 +2158,7 @@ gtk_list_store_set_sort_func (GtkTreeSortable        *sortable,
 
   priv->sort_list = _gtk_tree_data_list_set_header (priv->sort_list,
 							  sort_column_id,
-							  func, data, destroy);
+							  fn, data, destroy);
 
   if (priv->sort_column_id == sort_column_id)
     gtk_list_store_sort (list_store);
@@ -2166,7 +2166,7 @@ gtk_list_store_set_sort_func (GtkTreeSortable        *sortable,
 
 static void
 gtk_list_store_set_default_sort_func (GtkTreeSortable        *sortable,
-				      GtkTreeIterCompareFunc  func,
+				      GtkTreeIterCompareFunc  fn,
 				      gpointer                data,
 				      GDestroyNotify          destroy)
 {
@@ -2181,7 +2181,7 @@ gtk_list_store_set_default_sort_func (GtkTreeSortable        *sortable,
       d (priv->default_sort_data);
     }
 
-  priv->default_sort_func = func;
+  priv->default_sort_func = fn;
   priv->default_sort_data = data;
   priv->default_sort_destroy = destroy;
 

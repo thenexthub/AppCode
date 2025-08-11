@@ -39,16 +39,16 @@ static gboolean drop           (GtkDropTarget        *dest,
                                 const GValue         *value,
                                 double                x,
                                 double                y,
-                                GtkColorDialogButton *self);
+                                GtkColorDialogButton *this);
 static GdkContentProvider *
                   drag_prepare (GtkDragSource        *source,
                                 double                x,
                                 double                y,
-                                GtkColorDialogButton *self);
-static void     activated      (GtkColorDialogButton *self);
-static void     button_clicked (GtkColorDialogButton *self);
+                                GtkColorDialogButton *this);
+static void     activated      (GtkColorDialogButton *this);
+static void     button_clicked (GtkColorDialogButton *this);
 static void     update_button_sensitivity
-                               (GtkColorDialogButton *self);
+                               (GtkColorDialogButton *this);
 
 /**
  * GtkColorDialogButton:
@@ -113,62 +113,62 @@ static unsigned int color_dialog_button_signals[NUM_SIGNALS] = { 0 };
 G_DEFINE_TYPE (GtkColorDialogButton, gtk_color_dialog_button, GTK_TYPE_WIDGET)
 
 static void
-gtk_color_dialog_button_init (GtkColorDialogButton *self)
+gtk_color_dialog_button_init (GtkColorDialogButton *this)
 {
   PangoLayout *layout;
   PangoRectangle rect;
   GtkDragSource *source;
   GtkDropTarget *dest;
 
-  g_signal_connect_swapped (self, "activate", G_CALLBACK (activated), self);
+  g_signal_connect_swapped (this, "activate", G_CALLBACK (activated), this);
 
-  self->color = GDK_RGBA ("00000000");
+  this->color = GDK_RGBA ("00000000");
 
-  self->button = gtk_button_new ();
-  g_signal_connect_swapped (self->button, "clicked", G_CALLBACK (button_clicked), self);
-  gtk_widget_set_parent (self->button, GTK_WIDGET (self));
+  this->button = gtk_button_new ();
+  g_signal_connect_swapped (this->button, "clicked", G_CALLBACK (button_clicked), this);
+  gtk_widget_set_parent (this->button, GTK_WIDGET (this));
 
-  self->swatch = g_object_new (GTK_TYPE_COLOR_SWATCH,
+  this->swatch = g_object_new (GTK_TYPE_COLOR_SWATCH,
                                "accessible-role", GTK_ACCESSIBLE_ROLE_IMG,
                                "selectable", FALSE,
                                "has-menu", FALSE,
                                "can-drag", FALSE,
                                NULL);
-  gtk_widget_set_can_focus (self->swatch, FALSE);
-  gtk_widget_remove_css_class (self->swatch, "activatable");
+  gtk_widget_set_can_focus (this->swatch, FALSE);
+  gtk_widget_remove_css_class (this->swatch, "activatable");
 
-  layout = gtk_widget_create_pango_layout (GTK_WIDGET (self), "Black");
+  layout = gtk_widget_create_pango_layout (GTK_WIDGET (this), "Black");
   pango_layout_get_pixel_extents (layout, NULL, &rect);
   g_object_unref (layout);
 
-  gtk_widget_set_size_request (self->swatch, rect.width, rect.height);
+  gtk_widget_set_size_request (this->swatch, rect.width, rect.height);
 
-  gtk_button_set_child (GTK_BUTTON (self->button), self->swatch);
+  gtk_button_set_child (GTK_BUTTON (this->button), this->swatch);
 
   dest = gtk_drop_target_new (GDK_TYPE_RGBA, GDK_ACTION_COPY);
-  g_signal_connect (dest, "drop", G_CALLBACK (drop), self);
-  gtk_widget_add_controller (GTK_WIDGET (self->button), GTK_EVENT_CONTROLLER (dest));
+  g_signal_connect (dest, "drop", G_CALLBACK (drop), this);
+  gtk_widget_add_controller (GTK_WIDGET (this->button), GTK_EVENT_CONTROLLER (dest));
 
   source = gtk_drag_source_new ();
-  g_signal_connect (source, "prepare", G_CALLBACK (drag_prepare), self);
+  g_signal_connect (source, "prepare", G_CALLBACK (drag_prepare), this);
   gtk_event_controller_set_propagation_phase (GTK_EVENT_CONTROLLER (source),
                                               GTK_PHASE_CAPTURE);
-  gtk_widget_add_controller (self->button, GTK_EVENT_CONTROLLER (source));
-  gtk_widget_add_css_class (self->button, "color");
+  gtk_widget_add_controller (this->button, GTK_EVENT_CONTROLLER (source));
+  gtk_widget_add_css_class (this->button, "color");
 
-  gtk_color_dialog_button_set_rgba (self, &(GdkRGBA) { 0.75, 0.25, 0.25, 1.0 });
+  gtk_color_dialog_button_set_rgba (this, &(GdkRGBA) { 0.75, 0.25, 0.25, 1.0 });
 }
 
 static void
 gtk_color_dialog_button_unroot (GtkWidget *widget)
 {
-  GtkColorDialogButton *self = GTK_COLOR_DIALOG_BUTTON (widget);
+  GtkColorDialogButton *this = GTK_COLOR_DIALOG_BUTTON (widget);
 
-  if (self->cancellable)
+  if (this->cancellable)
     {
-      g_cancellable_cancel (self->cancellable);
-      g_clear_object (&self->cancellable);
-      update_button_sensitivity (self);
+      g_cancellable_cancel (this->cancellable);
+      g_clear_object (&this->cancellable);
+      update_button_sensitivity (this);
     }
 
   GTK_WIDGET_CLASS (gtk_color_dialog_button_parent_class)->unroot (widget);
@@ -180,16 +180,16 @@ gtk_color_dialog_button_set_property (GObject      *object,
                                       const GValue *value,
                                       GParamSpec   *pspec)
 {
-  GtkColorDialogButton *self = GTK_COLOR_DIALOG_BUTTON (object);
+  GtkColorDialogButton *this = GTK_COLOR_DIALOG_BUTTON (object);
 
   switch (param_id)
     {
     case PROP_DIALOG:
-      gtk_color_dialog_button_set_dialog (self, g_value_get_object (value));
+      gtk_color_dialog_button_set_dialog (this, g_value_get_object (value));
       break;
 
     case PROP_RGBA:
-      gtk_color_dialog_button_set_rgba (self, g_value_get_boxed (value));
+      gtk_color_dialog_button_set_rgba (this, g_value_get_boxed (value));
       break;
 
     default:
@@ -204,16 +204,16 @@ gtk_color_dialog_button_get_property (GObject      *object,
                                       GValue       *value,
                                       GParamSpec   *pspec)
 {
-  GtkColorDialogButton *self = GTK_COLOR_DIALOG_BUTTON (object);
+  GtkColorDialogButton *this = GTK_COLOR_DIALOG_BUTTON (object);
 
   switch (param_id)
     {
     case PROP_DIALOG:
-      g_value_set_object (value, self->dialog);
+      g_value_set_object (value, this->dialog);
       break;
 
     case PROP_RGBA:
-      g_value_set_boxed (value, &self->color);
+      g_value_set_boxed (value, &this->color);
       break;
 
     default:
@@ -225,9 +225,9 @@ gtk_color_dialog_button_get_property (GObject      *object,
 static void
 gtk_color_dialog_button_dispose (GObject *object)
 {
-  GtkColorDialogButton *self = GTK_COLOR_DIALOG_BUTTON (object);
+  GtkColorDialogButton *this = GTK_COLOR_DIALOG_BUTTON (object);
 
-  g_clear_pointer (&self->button, gtk_widget_unparent);
+  g_clear_pointer (&this->button, gtk_widget_unparent);
 
   G_OBJECT_CLASS (gtk_color_dialog_button_parent_class)->dispose (object);
 }
@@ -235,10 +235,10 @@ gtk_color_dialog_button_dispose (GObject *object)
 static void
 gtk_color_dialog_button_finalize (GObject *object)
 {
-  GtkColorDialogButton *self = GTK_COLOR_DIALOG_BUTTON (object);
+  GtkColorDialogButton *this = GTK_COLOR_DIALOG_BUTTON (object);
 
-  g_assert (self->cancellable == NULL);
-  g_clear_object (&self->dialog);
+  g_assert (this->cancellable == NULL);
+  g_clear_object (&this->dialog);
 
   G_OBJECT_CLASS (gtk_color_dialog_button_parent_class)->finalize (object);
 }
@@ -351,11 +351,11 @@ drop (GtkDropTarget        *dest,
       const GValue         *value,
       double                x,
       double                y,
-      GtkColorDialogButton *self)
+      GtkColorDialogButton *this)
 {
   GdkRGBA *color = g_value_get_boxed (value);
 
-  gtk_color_dialog_button_set_rgba (self, color);
+  gtk_color_dialog_button_set_rgba (this, color);
 
   return TRUE;
 }
@@ -364,21 +364,21 @@ static GdkContentProvider *
 drag_prepare (GtkDragSource        *source,
               double                x,
               double                y,
-              GtkColorDialogButton *self)
+              GtkColorDialogButton *this)
 {
   GdkRGBA color;
 
-  gtk_color_swatch_get_rgba (GTK_COLOR_SWATCH (self->swatch), &color);
+  gtk_color_swatch_get_rgba (GTK_COLOR_SWATCH (this->swatch), &color);
 
   return gdk_content_provider_new_typed (GDK_TYPE_RGBA, &color);
 }
 
 static void
-update_button_sensitivity (GtkColorDialogButton *self)
+update_button_sensitivity (GtkColorDialogButton *this)
 {
-  if (self->button)
-    gtk_widget_set_sensitive (self->button,
-                              self->dialog != NULL && self->cancellable == NULL);
+  if (this->button)
+    gtk_widget_set_sensitive (this->button,
+                              this->dialog != NULL && this->cancellable == NULL);
 }
 
 static void
@@ -387,42 +387,42 @@ color_chosen (GObject      *source,
               gpointer      data)
 {
   GtkColorDialog *dialog = GTK_COLOR_DIALOG (source);
-  GtkColorDialogButton *self = data;
+  GtkColorDialogButton *this = data;
   GdkRGBA *color;
 
   color = gtk_color_dialog_choose_rgba_finish (dialog, result, NULL);
   if (color)
     {
-      gtk_color_dialog_button_set_rgba (self, color);
+      gtk_color_dialog_button_set_rgba (this, color);
       gdk_rgba_free (color);
     }
 
-  g_clear_object (&self->cancellable);
-  update_button_sensitivity (self);
+  g_clear_object (&this->cancellable);
+  update_button_sensitivity (this);
 }
 
 static void
-activated (GtkColorDialogButton *self)
+activated (GtkColorDialogButton *this)
 {
-  gtk_widget_activate (self->button);
+  gtk_widget_activate (this->button);
 }
 
 static void
-button_clicked (GtkColorDialogButton *self)
+button_clicked (GtkColorDialogButton *this)
 {
-  GtkRoot *root = gtk_widget_get_root (GTK_WIDGET (self));
+  GtkRoot *root = gtk_widget_get_root (GTK_WIDGET (this));
   GtkWindow *parent = NULL;
 
-  g_assert (self->cancellable == NULL);
-  self->cancellable = g_cancellable_new ();
+  g_assert (this->cancellable == NULL);
+  this->cancellable = g_cancellable_new ();
 
-  update_button_sensitivity (self);
+  update_button_sensitivity (this);
 
   if (GTK_IS_WINDOW (root))
     parent = GTK_WINDOW (root);
 
-  gtk_color_dialog_choose_rgba (self->dialog, parent, &self->color,
-                                self->cancellable, color_chosen, self);
+  gtk_color_dialog_choose_rgba (this->dialog, parent, &this->color,
+                                this->cancellable, color_chosen, this);
 }
 
 /* }}} */
@@ -445,17 +445,17 @@ button_clicked (GtkColorDialogButton *self)
 GtkWidget *
 gtk_color_dialog_button_new (GtkColorDialog *dialog)
 {
-  GtkWidget *self;
+  GtkWidget *this;
 
   g_return_val_if_fail (dialog == NULL || GTK_IS_COLOR_DIALOG (dialog), NULL);
 
-  self = g_object_new (GTK_TYPE_COLOR_DIALOG_BUTTON,
+  this = g_object_new (GTK_TYPE_COLOR_DIALOG_BUTTON,
                        "dialog", dialog,
                        NULL);
 
   g_clear_object (&dialog);
 
-  return self;
+  return this;
 }
 
 /* }}} */
@@ -463,25 +463,25 @@ gtk_color_dialog_button_new (GtkColorDialog *dialog)
 
 /**
  * gtk_color_dialog_button_get_dialog:
- * @self: a `GtkColorDialogButton`
+ * @this: a `GtkColorDialogButton`
  *
- * Returns the `GtkColorDialog` of @self.
+ * Returns the `GtkColorDialog` of @this.
  *
  * Returns: (transfer none) (nullable): the `GtkColorDialog`
  *
  * Since: 4.10
  */
 GtkColorDialog *
-gtk_color_dialog_button_get_dialog (GtkColorDialogButton *self)
+gtk_color_dialog_button_get_dialog (GtkColorDialogButton *this)
 {
-  g_return_val_if_fail (GTK_IS_COLOR_DIALOG_BUTTON (self), NULL);
+  g_return_val_if_fail (GTK_IS_COLOR_DIALOG_BUTTON (this), NULL);
 
-  return self->dialog;
+  return this->dialog;
 }
 
 /**
  * gtk_color_dialog_button_set_dialog:
- * @self: a `GtkColorDialogButton`
+ * @this: a `GtkColorDialogButton`
  * @dialog: the new `GtkColorDialog`
  *
  * Sets a `GtkColorDialog` object to use for
@@ -491,23 +491,23 @@ gtk_color_dialog_button_get_dialog (GtkColorDialogButton *self)
  * Since: 4.10
  */
 void
-gtk_color_dialog_button_set_dialog (GtkColorDialogButton *self,
+gtk_color_dialog_button_set_dialog (GtkColorDialogButton *this,
                                     GtkColorDialog       *dialog)
 {
-  g_return_if_fail (GTK_IS_COLOR_DIALOG_BUTTON (self));
+  g_return_if_fail (GTK_IS_COLOR_DIALOG_BUTTON (this));
   g_return_if_fail (dialog == NULL || GTK_IS_COLOR_DIALOG (dialog));
 
-  if (!g_set_object (&self->dialog, dialog))
+  if (!g_set_object (&this->dialog, dialog))
     return;
 
-  update_button_sensitivity (self);
+  update_button_sensitivity (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DIALOG]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_DIALOG]);
 }
 
 /**
  * gtk_color_dialog_button_get_rgba:
- * @self: a `GtkColorDialogButton`
+ * @this: a `GtkColorDialogButton`
  *
  * Returns the color of the button.
  *
@@ -520,16 +520,16 @@ gtk_color_dialog_button_set_dialog (GtkColorDialogButton *self,
  * Since: 4.10
  */
 const GdkRGBA *
-gtk_color_dialog_button_get_rgba (GtkColorDialogButton *self)
+gtk_color_dialog_button_get_rgba (GtkColorDialogButton *this)
 {
-  g_return_val_if_fail (GTK_IS_COLOR_DIALOG_BUTTON (self), NULL);
+  g_return_val_if_fail (GTK_IS_COLOR_DIALOG_BUTTON (this), NULL);
 
-  return &self->color;
+  return &this->color;
 }
 
 /**
  * gtk_color_dialog_button_set_rgba:
- * @self: a `GtkColorDialogButton`
+ * @this: a `GtkColorDialogButton`
  * @color: the new color
  *
  * Sets the color of the button.
@@ -537,27 +537,27 @@ gtk_color_dialog_button_get_rgba (GtkColorDialogButton *self)
  * Since: 4.10
  */
 void
-gtk_color_dialog_button_set_rgba (GtkColorDialogButton *self,
+gtk_color_dialog_button_set_rgba (GtkColorDialogButton *this,
                                   const GdkRGBA        *color)
 {
   char *text;
 
-  g_return_if_fail (GTK_IS_COLOR_DIALOG_BUTTON (self));
+  g_return_if_fail (GTK_IS_COLOR_DIALOG_BUTTON (this));
   g_return_if_fail (color != NULL);
 
-  if (gdk_rgba_equal (&self->color, color))
+  if (gdk_rgba_equal (&this->color, color))
     return;
 
-  self->color = *color;
-  gtk_color_swatch_set_rgba (GTK_COLOR_SWATCH (self->swatch), color);
+  this->color = *color;
+  gtk_color_swatch_set_rgba (GTK_COLOR_SWATCH (this->swatch), color);
 
   text = accessible_color_name (color);
-  gtk_accessible_update_property (GTK_ACCESSIBLE (self->swatch),
+  gtk_accessible_update_property (GTK_ACCESSIBLE (this->swatch),
                                   GTK_ACCESSIBLE_PROPERTY_LABEL, text,
                                   -1);
   g_free (text);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_RGBA]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_RGBA]);
 }
 
 /* }}} */

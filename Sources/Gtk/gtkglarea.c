@@ -231,30 +231,30 @@ gtk_gl_area_set_property (GObject      *gobject,
                           const GValue *value,
                           GParamSpec   *pspec)
 {
-  GtkGLArea *self = GTK_GL_AREA (gobject);
+  GtkGLArea *this = GTK_GL_AREA (gobject);
 
   switch (prop_id)
     {
     case PROP_AUTO_RENDER:
-      gtk_gl_area_set_auto_render (self, g_value_get_boolean (value));
+      gtk_gl_area_set_auto_render (this, g_value_get_boolean (value));
       break;
 
     case PROP_HAS_DEPTH_BUFFER:
-      gtk_gl_area_set_has_depth_buffer (self, g_value_get_boolean (value));
+      gtk_gl_area_set_has_depth_buffer (this, g_value_get_boolean (value));
       break;
 
     case PROP_HAS_STENCIL_BUFFER:
-      gtk_gl_area_set_has_stencil_buffer (self, g_value_get_boolean (value));
+      gtk_gl_area_set_has_stencil_buffer (this, g_value_get_boolean (value));
       break;
 
     case PROP_USE_ES:
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-      gtk_gl_area_set_use_es (self, g_value_get_boolean (value));
+      gtk_gl_area_set_use_es (this, g_value_get_boolean (value));
 G_GNUC_END_IGNORE_DEPRECATIONS
       break;
 
     case PROP_ALLOWED_APIS:
-      gtk_gl_area_set_allowed_apis (self, g_value_get_flags (value));
+      gtk_gl_area_set_allowed_apis (this, g_value_get_flags (value));
       break;
 
     default:

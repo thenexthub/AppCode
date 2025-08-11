@@ -245,7 +245,7 @@ _gtk_file_chooser_entry_init (GtkFileChooserEntry *chooser_entry)
   /* see docs for gtk_entry_completion_set_text_column() */
   g_object_set (comp, "text-column", FULL_PATH_COLUMN, NULL);
 
-  /* Need a match func here or entry completion uses a wrong one.
+  /* Need a match fn here or entry completion uses a wrong one.
    * We do our own filtering after all. */
   gtk_entry_completion_set_match_func (comp,
                                        match_func,
@@ -560,19 +560,19 @@ model_items_changed_cb (GListModel          *model,
                         guint                position,
                         guint                removed,
                         guint                added,
-                        GtkFileChooserEntry *self)
+                        GtkFileChooserEntry *this)
 {
   if (removed > 0)
     {
       GtkTreeIter iter;
 
-      if (gtk_tree_model_iter_nth_child (GTK_TREE_MODEL (self->completion_store),
+      if (gtk_tree_model_iter_nth_child (GTK_TREE_MODEL (this->completion_store),
                                          &iter,
                                          NULL,
                                          position))
         {
           while (removed--)
-            gtk_tree_store_remove (self->completion_store, &iter);
+            gtk_tree_store_remove (this->completion_store, &iter);
         }
     }
 
@@ -590,9 +590,9 @@ model_items_changed_cb (GListModel          *model,
         suffix = G_DIR_SEPARATOR_S;
 
       display_name = g_strconcat (g_file_info_get_display_name (info), suffix, NULL);
-      full_path = g_strconcat (self->dir_part, display_name, NULL);
+      full_path = g_strconcat (this->dir_part, display_name, NULL);
 
-      gtk_tree_store_insert_with_values (self->completion_store,
+      gtk_tree_store_insert_with_values (this->completion_store,
                                          &iter, NULL,
                                          position,
                                          FILE_INFO_COLUMN, info,

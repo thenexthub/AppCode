@@ -142,7 +142,7 @@ gtk_layout_child_class_init (GtkLayoutChildClass *klass)
 }
 
 static void
-gtk_layout_child_init (GtkLayoutChild *self)
+gtk_layout_child_init (GtkLayoutChild *this)
 {
 }
 

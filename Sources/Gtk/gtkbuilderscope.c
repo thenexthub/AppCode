@@ -71,7 +71,7 @@
 G_DEFINE_INTERFACE (GtkBuilderScope, gtk_builder_scope, G_TYPE_OBJECT)
 
 static GType
-gtk_builder_scope_default_get_type_from_name (GtkBuilderScope *self,
+gtk_builder_scope_default_get_type_from_name (GtkBuilderScope *this,
                                               GtkBuilder      *builder,
                                               const char      *type_name)
 {
@@ -86,7 +86,7 @@ gtk_builder_scope_default_get_type_from_name (GtkBuilderScope *self,
 }
 
 static GType
-gtk_builder_scope_default_get_type_from_function (GtkBuilderScope *self,
+gtk_builder_scope_default_get_type_from_function (GtkBuilderScope *this,
                                                   GtkBuilder      *builder,
                                                   const char      *type_name)
 {
@@ -94,7 +94,7 @@ gtk_builder_scope_default_get_type_from_function (GtkBuilderScope *self,
 }
 
 static GClosure *
-gtk_builder_scope_default_create_closure (GtkBuilderScope        *self,
+gtk_builder_scope_default_create_closure (GtkBuilderScope        *this,
                                           GtkBuilder             *builder,
                                           const char             *function_name,
                                           GtkBuilderClosureFlags  flags,
@@ -105,7 +105,7 @@ gtk_builder_scope_default_create_closure (GtkBuilderScope        *self,
                GTK_BUILDER_ERROR,
                GTK_BUILDER_ERROR_INVALID_FUNCTION,
                "Creating closures is not supported by %s",
-               G_OBJECT_TYPE_NAME (self));
+               G_OBJECT_TYPE_NAME (this));
   return NULL;
 }
 
@@ -118,44 +118,44 @@ gtk_builder_scope_default_init (GtkBuilderScopeInterface *iface)
 }
 
 GType
-gtk_builder_scope_get_type_from_name (GtkBuilderScope *self,
+gtk_builder_scope_get_type_from_name (GtkBuilderScope *this,
                                       GtkBuilder      *builder,
                                       const char      *type_name)
 {
-  g_return_val_if_fail (GTK_IS_BUILDER_SCOPE (self), G_TYPE_INVALID);
+  g_return_val_if_fail (GTK_IS_BUILDER_SCOPE (this), G_TYPE_INVALID);
   g_return_val_if_fail (GTK_IS_BUILDER (builder), G_TYPE_INVALID);
   g_return_val_if_fail (type_name != NULL, G_TYPE_INVALID);
 
-  return GTK_BUILDER_SCOPE_GET_IFACE (self)->get_type_from_name (self, builder, type_name);
+  return GTK_BUILDER_SCOPE_GET_IFACE (this)->get_type_from_name (this, builder, type_name);
 }
 
 GType
-gtk_builder_scope_get_type_from_function (GtkBuilderScope *self,
+gtk_builder_scope_get_type_from_function (GtkBuilderScope *this,
                                           GtkBuilder      *builder,
                                           const char      *function_name)
 {
-  g_return_val_if_fail (GTK_IS_BUILDER_SCOPE (self), G_TYPE_INVALID);
+  g_return_val_if_fail (GTK_IS_BUILDER_SCOPE (this), G_TYPE_INVALID);
   g_return_val_if_fail (GTK_IS_BUILDER (builder), G_TYPE_INVALID);
   g_return_val_if_fail (function_name != NULL, G_TYPE_INVALID);
 
-  return GTK_BUILDER_SCOPE_GET_IFACE (self)->get_type_from_function (self, builder, function_name);
+  return GTK_BUILDER_SCOPE_GET_IFACE (this)->get_type_from_function (this, builder, function_name);
 }
 
 GClosure *
-gtk_builder_scope_create_closure (GtkBuilderScope        *self,
+gtk_builder_scope_create_closure (GtkBuilderScope        *this,
                                   GtkBuilder             *builder,
                                   const char             *function_name,
                                   GtkBuilderClosureFlags  flags,
                                   GObject                *object,
                                   GError                **error)
 {
-  g_return_val_if_fail (GTK_IS_BUILDER_SCOPE (self), NULL);
+  g_return_val_if_fail (GTK_IS_BUILDER_SCOPE (this), NULL);
   g_return_val_if_fail (GTK_IS_BUILDER (builder), NULL);
   g_return_val_if_fail (function_name != NULL, NULL);
   g_return_val_if_fail (object == NULL || G_IS_OBJECT (object), NULL);
   g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
-  return GTK_BUILDER_SCOPE_GET_IFACE (self)->create_closure (self, builder, function_name, flags, object, error);
+  return GTK_BUILDER_SCOPE_GET_IFACE (this)->create_closure (this, builder, function_name, flags, object, error);
 }
 
 /*** GTK_BUILDER_CSCOPE ***/
@@ -176,9 +176,9 @@ G_DEFINE_TYPE_WITH_CODE (GtkBuilderCScope, gtk_builder_cscope, G_TYPE_OBJECT,
                                                 gtk_builder_cscope_scope_init))
 
 static GModule *
-gtk_builder_cscope_get_module (GtkBuilderCScope *self)
+gtk_builder_cscope_get_module (GtkBuilderCScope *this)
 {
-  GtkBuilderCScopePrivate *priv = gtk_builder_cscope_get_instance_private (self);
+  GtkBuilderCScopePrivate *priv = gtk_builder_cscope_get_instance_private (this);
 
   if (priv->module == NULL)
     {
@@ -228,29 +228,29 @@ type_name_mangle (const char *name,
 }
 
 static GType
-gtk_builder_cscope_resolve_type_lazily (GtkBuilderCScope *self,
+gtk_builder_cscope_resolve_type_lazily (GtkBuilderCScope *this,
                                         const char       *name)
 {
   GModule *module;
-  GType (*func) (void);
+  GType (*fn) (void);
   char *symbol;
   GType gtype = G_TYPE_INVALID;
 
-  module = gtk_builder_cscope_get_module (self);
+  module = gtk_builder_cscope_get_module (this);
   if (!module)
     return G_TYPE_INVALID;
 
   symbol = type_name_mangle (name, TRUE);
 
-  if (g_module_symbol (module, symbol, (gpointer)&func))
-    gtype = func ();
+  if (g_module_symbol (module, symbol, (gpointer)&fn))
+    gtype = fn ();
 
   g_free (symbol);
 
   symbol = type_name_mangle (name, FALSE);
 
-  if (g_module_symbol (module, symbol, (gpointer)&func))
-    gtype = func ();
+  if (g_module_symbol (module, symbol, (gpointer)&fn))
+    gtype = fn ();
 
   g_free (symbol);
 
@@ -262,14 +262,14 @@ gtk_builder_cscope_get_type_from_name (GtkBuilderScope *scope,
                                        GtkBuilder      *builder,
                                        const char      *type_name)
 {
-  GtkBuilderCScope *self = GTK_BUILDER_CSCOPE (scope);
+  GtkBuilderCScope *this = GTK_BUILDER_CSCOPE (scope);
   GType type;
 
   type = g_type_from_name (type_name);
   if (type != G_TYPE_INVALID)
     return type;
 
-  type = gtk_builder_cscope_resolve_type_lazily (self, type_name);
+  type = gtk_builder_cscope_resolve_type_lazily (this, type_name);
   if (type != G_TYPE_INVALID)
     return type;
 
@@ -280,18 +280,18 @@ gtk_builder_cscope_get_type_from_name (GtkBuilderScope *scope,
 }
 
 static GCallback
-gtk_builder_cscope_get_callback (GtkBuilderCScope  *self,
+gtk_builder_cscope_get_callback (GtkBuilderCScope  *this,
                                  const char        *function_name,
                                  GError           **error)
 {
   GModule *module;
-  GCallback func;
+  GCallback fn;
 
-  func = gtk_builder_cscope_lookup_callback_symbol (self, function_name);
-  if (func)
-    return func;
+  fn = gtk_builder_cscope_lookup_callback_symbol (this, function_name);
+  if (fn)
+    return fn;
 
-  module = gtk_builder_cscope_get_module (self);
+  module = gtk_builder_cscope_get_module (this);
   if (module == NULL)
     {
       g_set_error (error,
@@ -302,7 +302,7 @@ gtk_builder_cscope_get_callback (GtkBuilderCScope  *self,
       return NULL;
     }
 
-  if (!g_module_symbol (module, function_name, (gpointer)&func))
+  if (!g_module_symbol (module, function_name, (gpointer)&fn))
     {
       g_set_error (error,
                    GTK_BUILDER_ERROR,
@@ -312,7 +312,7 @@ gtk_builder_cscope_get_callback (GtkBuilderCScope  *self,
       return NULL;
     }
 
-  return func;
+  return fn;
 }
 
 static GType
@@ -320,10 +320,10 @@ gtk_builder_cscope_get_type_from_function (GtkBuilderScope *scope,
                                            GtkBuilder      *builder,
                                            const char      *function_name)
 {
-  GtkBuilderCScope *self = GTK_BUILDER_CSCOPE (scope);
+  GtkBuilderCScope *this = GTK_BUILDER_CSCOPE (scope);
   GType (* type_func) (void); 
   
-  type_func = (GType (*) (void)) gtk_builder_cscope_get_callback (self, function_name, NULL);
+  type_func = (GType (*) (void)) gtk_builder_cscope_get_callback (this, function_name, NULL);
   if (!type_func)
     return G_TYPE_INVALID;
 
@@ -331,7 +331,7 @@ gtk_builder_cscope_get_type_from_function (GtkBuilderScope *scope,
 }
 
 static GClosure *
-gtk_builder_cscope_create_closure_for_funcptr (GtkBuilderCScope *self,
+gtk_builder_cscope_create_closure_for_funcptr (GtkBuilderCScope *this,
                                                GtkBuilder       *builder,
                                                GCallback         callback,
                                                gboolean          swapped,
@@ -368,17 +368,17 @@ gtk_builder_cscope_create_closure (GtkBuilderScope        *scope,
                                    GObject                *object,
                                    GError                **error)
 {
-  GtkBuilderCScope *self = GTK_BUILDER_CSCOPE (scope);
-  GCallback func;
+  GtkBuilderCScope *this = GTK_BUILDER_CSCOPE (scope);
+  GCallback fn;
   gboolean swapped;
 
   swapped = flags & GTK_BUILDER_CLOSURE_SWAPPED;
 
-  func = gtk_builder_cscope_get_callback (self, function_name, error);
-  if (!func)
+  fn = gtk_builder_cscope_get_callback (this, function_name, error);
+  if (!fn)
       return NULL;
 
-  return gtk_builder_cscope_create_closure_for_funcptr (self, builder, func, swapped, object);
+  return gtk_builder_cscope_create_closure_for_funcptr (this, builder, fn, swapped, object);
 }
 
 static void
@@ -392,8 +392,8 @@ gtk_builder_cscope_scope_init (GtkBuilderScopeInterface *iface)
 static void
 gtk_builder_cscope_finalize (GObject *object)
 {
-  GtkBuilderCScope *self = GTK_BUILDER_CSCOPE (object);
-  GtkBuilderCScopePrivate *priv = gtk_builder_cscope_get_instance_private (self);
+  GtkBuilderCScope *this = GTK_BUILDER_CSCOPE (object);
+  GtkBuilderCScopePrivate *priv = gtk_builder_cscope_get_instance_private (this);
 
   g_clear_pointer (&priv->callbacks, g_hash_table_destroy);
   g_clear_pointer (&priv->module, g_module_close);
@@ -410,7 +410,7 @@ gtk_builder_cscope_class_init (GtkBuilderCScopeClass *klass)
 }
 
 static void
-gtk_builder_cscope_init (GtkBuilderCScope *self)
+gtk_builder_cscope_init (GtkBuilderCScope *this)
 {
 }
 
@@ -445,7 +445,7 @@ gtk_builder_cscope_new (void)
 
 /**
  * gtk_builder_cscope_add_callback_symbol:
- * @self: a `GtkBuilderCScope`
+ * @this: a `GtkBuilderCScope`
  * @callback_name: The name of the callback, as expected in the XML
  * @callback_symbol: (scope async): The callback pointer
  *
@@ -459,13 +459,13 @@ gtk_builder_cscope_new (void)
  * namespace.
  */
 void
-gtk_builder_cscope_add_callback_symbol (GtkBuilderCScope *self,
+gtk_builder_cscope_add_callback_symbol (GtkBuilderCScope *this,
                                         const char       *callback_name,
                                         GCallback         callback_symbol)
 {
-  GtkBuilderCScopePrivate *priv = gtk_builder_cscope_get_instance_private (self);
+  GtkBuilderCScopePrivate *priv = gtk_builder_cscope_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_BUILDER_CSCOPE (self));
+  g_return_if_fail (GTK_IS_BUILDER_CSCOPE (this));
   g_return_if_fail (callback_name && callback_name[0]);
   g_return_if_fail (callback_symbol != NULL);
 
@@ -478,7 +478,7 @@ gtk_builder_cscope_add_callback_symbol (GtkBuilderCScope *self,
 
 /**
  * gtk_builder_cscope_add_callback_symbols: (skip)
- * @self: a `GtkBuilderCScope`
+ * @this: a `GtkBuilderCScope`
  * @first_callback_name: The name of the callback, as expected in the XML
  * @first_callback_symbol: (scope async): The callback pointer
  * @...: A list of callback name and callback symbol pairs terminated with %NULL
@@ -489,7 +489,7 @@ gtk_builder_cscope_add_callback_symbol (GtkBuilderCScope *self,
  * for each symbol.
  */
 void
-gtk_builder_cscope_add_callback_symbols (GtkBuilderCScope *self,
+gtk_builder_cscope_add_callback_symbols (GtkBuilderCScope *this,
                                          const char       *first_callback_name,
                                          GCallback         first_callback_symbol,
                                          ...)
@@ -498,7 +498,7 @@ gtk_builder_cscope_add_callback_symbols (GtkBuilderCScope *self,
   const char *callback_name;
   GCallback callback_symbol;
 
-  g_return_if_fail (GTK_IS_BUILDER_CSCOPE (self));
+  g_return_if_fail (GTK_IS_BUILDER_CSCOPE (this));
   g_return_if_fail (first_callback_name && first_callback_name[0]);
   g_return_if_fail (first_callback_symbol != NULL);
 
@@ -509,7 +509,7 @@ gtk_builder_cscope_add_callback_symbols (GtkBuilderCScope *self,
 
   do {
 
-    gtk_builder_cscope_add_callback_symbol (self, callback_name, callback_symbol);
+    gtk_builder_cscope_add_callback_symbol (this, callback_name, callback_symbol);
 
     callback_name = va_arg (var_args, const char *);
 
@@ -523,7 +523,7 @@ gtk_builder_cscope_add_callback_symbols (GtkBuilderCScope *self,
 
 /**
  * gtk_builder_cscope_lookup_callback_symbol: (skip)
- * @self: a `GtkBuilderCScope`
+ * @this: a `GtkBuilderCScope`
  * @callback_name: The name of the callback
  *
  * Fetches a symbol previously added with
@@ -533,12 +533,12 @@ gtk_builder_cscope_add_callback_symbols (GtkBuilderCScope *self,
  *   in @builder for @callback_name
  */
 GCallback
-gtk_builder_cscope_lookup_callback_symbol (GtkBuilderCScope *self,
+gtk_builder_cscope_lookup_callback_symbol (GtkBuilderCScope *this,
                                            const char       *callback_name)
 {
-  GtkBuilderCScopePrivate *priv = gtk_builder_cscope_get_instance_private (self);
+  GtkBuilderCScopePrivate *priv = gtk_builder_cscope_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_BUILDER_CSCOPE (self), NULL);
+  g_return_val_if_fail (GTK_IS_BUILDER_CSCOPE (this), NULL);
   g_return_val_if_fail (callback_name && callback_name[0], NULL);
 
   if (priv->callbacks == NULL)

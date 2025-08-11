@@ -35,24 +35,24 @@ struct _GtkCssVariableSet
 
 GtkCssVariableSet *  gtk_css_variable_set_new            (void);
 
-GtkCssVariableSet *  gtk_css_variable_set_ref            (GtkCssVariableSet   *self);
-void                 gtk_css_variable_set_unref          (GtkCssVariableSet   *self);
+GtkCssVariableSet *  gtk_css_variable_set_ref            (GtkCssVariableSet   *this);
+void                 gtk_css_variable_set_unref          (GtkCssVariableSet   *this);
 
-GtkCssVariableSet *  gtk_css_variable_set_copy           (GtkCssVariableSet   *self);
+GtkCssVariableSet *  gtk_css_variable_set_copy           (GtkCssVariableSet   *this);
 
-void                 gtk_css_variable_set_set_parent     (GtkCssVariableSet   *self,
+void                 gtk_css_variable_set_set_parent     (GtkCssVariableSet   *this,
                                                           GtkCssVariableSet   *parent);
 
-void                 gtk_css_variable_set_add            (GtkCssVariableSet   *self,
+void                 gtk_css_variable_set_add            (GtkCssVariableSet   *this,
                                                           int                  id,
                                                           GtkCssVariableValue *value);
-void                 gtk_css_variable_set_resolve_cycles (GtkCssVariableSet   *self);
+void                 gtk_css_variable_set_resolve_cycles (GtkCssVariableSet   *this);
 
-GtkCssVariableValue *gtk_css_variable_set_lookup         (GtkCssVariableSet   *self,
+GtkCssVariableValue *gtk_css_variable_set_lookup         (GtkCssVariableSet   *this,
                                                           int                  id,
                                                           GtkCssVariableSet  **source);
 
-GArray *             gtk_css_variable_set_list_ids       (GtkCssVariableSet   *self);
+GArray *             gtk_css_variable_set_list_ids       (GtkCssVariableSet   *this);
 
 gboolean             gtk_css_variable_set_equal          (GtkCssVariableSet   *set1,
                                                           GtkCssVariableSet   *set2);

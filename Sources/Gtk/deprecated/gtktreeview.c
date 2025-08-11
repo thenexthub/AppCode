@@ -8994,7 +8994,7 @@ gtk_tree_view_set_column_drag_info (GtkTreeView       *tree_view,
       if (gtk_tree_view_column_get_visible (cur_column) == FALSE)
 	continue;
 
-      /* If it's not the column moving and func tells us to skip over the column, we continue. */
+      /* If it's not the column moving and fn tells us to skip over the column, we continue. */
       if (left_column != column && cur_column != column &&
 	  priv->column_drop_func &&
 	  ! priv->column_drop_func (tree_view, column, left_column, cur_column, priv->column_drop_func_data))
@@ -9120,12 +9120,12 @@ gtk_tree_view_get_effective_header_height (GtkTreeView *tree_view)
 
 void
 _gtk_tree_view_get_row_separator_func (GtkTreeView                 *tree_view,
-				       GtkTreeViewRowSeparatorFunc *func,
+				       GtkTreeViewRowSeparatorFunc *fn,
 				       gpointer                    *data)
 {
   GtkTreeViewPrivate *priv = gtk_tree_view_get_instance_private (tree_view);
 
-  *func = priv->row_separator_func;
+  *fn = priv->row_separator_func;
   *data = priv->row_separator_data;
 }
 
@@ -10906,8 +10906,8 @@ gtk_tree_view_insert_column_with_attributes (GtkTreeView     *tree_view,
  * @position: Position to insert, -1 for append
  * @title: column title
  * @cell: cell renderer for column
- * @func: function to set attributes of cell renderer
- * @data: data for @func
+ * @fn: function to set attributes of cell renderer
+ * @data: data for @fn
  * @dnotify: destroy notifier for @data
  *
  * Convenience function that inserts a new column into the `GtkTreeView`
@@ -10926,7 +10926,7 @@ gtk_tree_view_insert_column_with_data_func  (GtkTreeView               *tree_vie
                                              int                        position,
                                              const char                *title,
                                              GtkCellRenderer           *cell,
-                                             GtkTreeCellDataFunc        func,
+                                             GtkTreeCellDataFunc        fn,
                                              gpointer                   data,
                                              GDestroyNotify             dnotify)
 {
@@ -10941,7 +10941,7 @@ gtk_tree_view_insert_column_with_data_func  (GtkTreeView               *tree_vie
 
   gtk_tree_view_column_set_title (column, title);
   gtk_tree_view_column_pack_start (column, cell, TRUE);
-  gtk_tree_view_column_set_cell_data_func (column, cell, func, data, dnotify);
+  gtk_tree_view_column_set_cell_data_func (column, cell, fn, data, dnotify);
 
   return gtk_tree_view_insert_column (tree_view, column, position);
 }
@@ -11135,17 +11135,17 @@ gtk_tree_view_get_expander_column (GtkTreeView *tree_view)
 /**
  * gtk_tree_view_set_column_drag_function:
  * @tree_view: A `GtkTreeView`.
- * @func: (nullable) (scope notified) (closure user_data) (destroy destroy): A function to determine which columns are reorderable
- * @user_data: User data to be passed to @func
+ * @fn: (nullable) (scope notified) (closure user_data) (destroy destroy): A function to determine which columns are reorderable
+ * @user_data: User data to be passed to @fn
  * @destroy: (nullable): Destroy notifier for @user_data
  *
  * Sets a user function for determining where a column may be dropped when
  * dragged.  This function is called on every column pair in turn at the
  * beginning of a column drag to determine where a drop can take place.  The
- * arguments passed to @func are: the @tree_view, the `GtkTreeViewColumn` being
+ * arguments passed to @fn are: the @tree_view, the `GtkTreeViewColumn` being
  * dragged, the two `GtkTreeViewColumn`s determining the drop spot, and
  * @user_data.  If either of the `GtkTreeViewColumn` arguments for the drop spot
- * are %NULL, then they indicate an edge.  If @func is set to be %NULL, then
+ * are %NULL, then they indicate an edge.  If @fn is set to be %NULL, then
  * @tree_view reverts to the default behavior of allowing all columns to be
  * dropped everywhere.
  *
@@ -11153,7 +11153,7 @@ gtk_tree_view_get_expander_column (GtkTreeView *tree_view)
  **/
 void
 gtk_tree_view_set_column_drag_function (GtkTreeView               *tree_view,
-					GtkTreeViewColumnDropFunc  func,
+					GtkTreeViewColumnDropFunc  fn,
 					gpointer                   user_data,
 					GDestroyNotify             destroy)
 {
@@ -11164,7 +11164,7 @@ gtk_tree_view_set_column_drag_function (GtkTreeView               *tree_view,
   if (priv->column_drop_func_data_destroy)
     priv->column_drop_func_data_destroy (priv->column_drop_func_data);
 
-  priv->column_drop_func = func;
+  priv->column_drop_func = fn;
   priv->column_drop_func_data = user_data;
   priv->column_drop_func_data_destroy = destroy;
 }
@@ -11763,7 +11763,7 @@ static void
 gtk_tree_view_map_expanded_rows_helper (GtkTreeView            *tree_view,
 					GtkTreeRBTree          *tree,
 					GtkTreePath            *path,
-					GtkTreeViewMappingFunc  func,
+					GtkTreeViewMappingFunc  fn,
 					gpointer                user_data)
 {
   GtkTreeRBNode *node;
@@ -11777,9 +11777,9 @@ gtk_tree_view_map_expanded_rows_helper (GtkTreeView            *tree_view,
     {
       if (node->children)
 	{
-	  (* func) (tree_view, path, user_data);
+	  (* fn) (tree_view, path, user_data);
 	  gtk_tree_path_down (path);
-	  gtk_tree_view_map_expanded_rows_helper (tree_view, node->children, path, func, user_data);
+	  gtk_tree_view_map_expanded_rows_helper (tree_view, node->children, path, fn, user_data);
 	  gtk_tree_path_up (path);
 	}
       gtk_tree_path_next (path);
@@ -11790,29 +11790,29 @@ gtk_tree_view_map_expanded_rows_helper (GtkTreeView            *tree_view,
 /**
  * gtk_tree_view_map_expanded_rows:
  * @tree_view: A `GtkTreeView`
- * @func: (scope call): A function to be called
+ * @fn: (scope call): A function to be called
  * @data: User data to be passed to the function.
  *
- * Calls @func on all expanded rows.
+ * Calls @fn on all expanded rows.
  *
  * Deprecated: 4.10: Use [class@Gtk.ListView] or [class@Gtk.ColumnView] instead
  **/
 void
 gtk_tree_view_map_expanded_rows (GtkTreeView            *tree_view,
-				 GtkTreeViewMappingFunc  func,
+				 GtkTreeViewMappingFunc  fn,
 				 gpointer                user_data)
 {
   GtkTreeViewPrivate *priv = gtk_tree_view_get_instance_private (tree_view);
   GtkTreePath *path;
 
   g_return_if_fail (GTK_IS_TREE_VIEW (tree_view));
-  g_return_if_fail (func != NULL);
+  g_return_if_fail (fn != NULL);
 
   path = gtk_tree_path_new_first ();
 
   gtk_tree_view_map_expanded_rows_helper (tree_view,
 					  priv->tree,
-					  path, func, user_data);
+					  path, fn, user_data);
 
   gtk_tree_path_free (path);
 }
@@ -14111,7 +14111,7 @@ gtk_tree_view_search_iter (GtkTreeModel     *model,
 		      if (path)
 			gtk_tree_path_free (path);
 
-		      /* we've run out of tree, done with this func */
+		      /* we've run out of tree, done with this fn */
 		      return FALSE;
 		    }
 
@@ -14496,8 +14496,8 @@ gtk_tree_view_get_row_separator_func (GtkTreeView *tree_view)
 /**
  * gtk_tree_view_set_row_separator_func:
  * @tree_view: a `GtkTreeView`
- * @func: (nullable): a `GtkTreeView`RowSeparatorFunc
- * @data: (nullable): user data to pass to @func
+ * @fn: (nullable): a `GtkTreeView`RowSeparatorFunc
+ * @data: (nullable): user data to pass to @fn
  * @destroy: (nullable): destroy notifier for @data
  *
  * Sets the row separator function, which is used to determine
@@ -14508,7 +14508,7 @@ gtk_tree_view_get_row_separator_func (GtkTreeView *tree_view)
  **/
 void
 gtk_tree_view_set_row_separator_func (GtkTreeView                 *tree_view,
-				      GtkTreeViewRowSeparatorFunc  func,
+				      GtkTreeViewRowSeparatorFunc  fn,
 				      gpointer                     data,
 				      GDestroyNotify               destroy)
 {
@@ -14519,7 +14519,7 @@ gtk_tree_view_set_row_separator_func (GtkTreeView                 *tree_view,
   if (priv->row_separator_destroy)
     priv->row_separator_destroy (priv->row_separator_data);
 
-  priv->row_separator_func = func;
+  priv->row_separator_func = fn;
   priv->row_separator_data = data;
   priv->row_separator_destroy = destroy;
 

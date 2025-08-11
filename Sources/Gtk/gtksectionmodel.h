@@ -50,21 +50,21 @@ struct _GtkSectionModelInterface
   GTypeInterface g_iface;
 
   /*< public >*/
-  void                  (* get_section)                         (GtkSectionModel      *self,
+  void                  (* get_section)                         (GtkSectionModel      *this,
                                                                  guint                 position,
                                                                  guint                *out_start,
                                                                  guint                *out_end);
 };
 
 GDK_AVAILABLE_IN_4_12
-void                    gtk_section_model_get_section           (GtkSectionModel      *self,
+void                    gtk_section_model_get_section           (GtkSectionModel      *this,
                                                                  guint                 position,
                                                                  guint                *out_start,
                                                                  guint                *out_end);
 
 /* for implementations only */
 GDK_AVAILABLE_IN_4_12
-void                    gtk_section_model_sections_changed      (GtkSectionModel      *self,
+void                    gtk_section_model_sections_changed      (GtkSectionModel      *this,
                                                                  guint                 position,
                                                                  guint                 n_items);
 

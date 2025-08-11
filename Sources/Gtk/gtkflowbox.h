@@ -86,10 +86,10 @@ GDK_AVAILABLE_IN_ALL
 GtkWidget*            gtk_flow_box_child_new                 (void);
 
 GDK_AVAILABLE_IN_ALL
-void                  gtk_flow_box_child_set_child          (GtkFlowBoxChild *self,
+void                  gtk_flow_box_child_set_child          (GtkFlowBoxChild *this,
                                                              GtkWidget       *child);
 GDK_AVAILABLE_IN_ALL
-GtkWidget *           gtk_flow_box_child_get_child          (GtkFlowBoxChild *self);
+GtkWidget *           gtk_flow_box_child_get_child          (GtkFlowBoxChild *this);
 
 GDK_AVAILABLE_IN_ALL
 int                   gtk_flow_box_child_get_index           (GtkFlowBoxChild *child);
@@ -147,10 +147,10 @@ GDK_AVAILABLE_IN_ALL
 gboolean              gtk_flow_box_get_activate_on_single_click (GtkFlowBox        *box);
 
 GDK_AVAILABLE_IN_4_6
-void                  gtk_flow_box_prepend                      (GtkFlowBox        *self,
+void                  gtk_flow_box_prepend                      (GtkFlowBox        *this,
                                                                  GtkWidget         *child);
 GDK_AVAILABLE_IN_4_6
-void                  gtk_flow_box_append                       (GtkFlowBox        *self,
+void                  gtk_flow_box_append                       (GtkFlowBox        *this,
                                                                  GtkWidget         *child);
 GDK_AVAILABLE_IN_ALL
 void                  gtk_flow_box_insert                       (GtkFlowBox        *box,
@@ -177,7 +177,7 @@ typedef void (* GtkFlowBoxForeachFunc) (GtkFlowBox      *box,
 
 GDK_AVAILABLE_IN_ALL
 void                  gtk_flow_box_selected_foreach             (GtkFlowBox        *box,
-                                                                 GtkFlowBoxForeachFunc func,
+                                                                 GtkFlowBoxForeachFunc fn,
                                                                  gpointer           data);
 GDK_AVAILABLE_IN_ALL
 GList                *gtk_flow_box_get_selected_children        (GtkFlowBox        *box);

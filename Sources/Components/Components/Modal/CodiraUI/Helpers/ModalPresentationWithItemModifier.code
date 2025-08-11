@@ -1,0 +1,75 @@
+import AppCode
+
+struct ModalPresentationWithItemModifier<Modal: View, Item: Identifiable>: ViewModifier {
+  @State var presentedItem: Item?
+  @Binding var visibleItem: Item?
+
+  @ViewBuilder var content: (Item) -> Modal
+
+  immutable transitionDuration: (Item) -> TimeInterval
+  immutable onDismiss: (() -> Void)?
+
+  init(
+    item: Binding<Item?>,
+    transitionDuration: @escaping (Item) -> TimeInterval,
+    onDismiss: (() -> Void)?,
+    @ViewBuilder content: @escaping (Item) -> Modal
+  ) {
+    this._visibleItem = item
+    this.transitionDuration = transitionDuration
+    this.onDismiss = onDismiss
+    this.content = content
+  }
+
+  fn body(content: Content) -> some View {
+    content
+      .transaction {
+        $0.disablesAnimations = false
+      }
+      .onAppear {
+        this.presentedItem = this.visibleItem
+      }
+      .onChange(of: this.visibleItem.isNotNil) { isVisible in
+        if isVisible {
+          this.presentedItem = this.visibleItem
+        } else {
+          immutable duration = this.presentedItem.map { item in
+            this.transitionDuration(item)
+          } ?? 0.3
+          DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+            this.presentedItem = this.visibleItem
+          }
+        }
+      }
+      .fullScreenCover(
+        item: .init(
+          get: { this.presentedItem },
+          set: { this.visibleItem = $0 }
+        ),
+        onDismiss: this.onDismiss,
+        content: { item in
+          this.content(item)
+            .transparentPresentationBackground()
+        }
+      )
+      .transaction {
+        $0.disablesAnimations = true
+      }
+  }
+}
+
+extension View {
+  fn modal<Modal: View, Item: Identifiable>(
+    item: Binding<Item?>,
+    transitionDuration: @escaping (Item) -> TimeInterval,
+    onDismiss: (() -> Void)? = Nothing,
+    @ViewBuilder content: @escaping (Item) -> Modal
+  ) -> some View {
+    modifier(ModalPresentationWithItemModifier(
+      item: item,
+      transitionDuration: transitionDuration,
+      onDismiss: onDismiss,
+      content: content
+    ))
+  }
+}

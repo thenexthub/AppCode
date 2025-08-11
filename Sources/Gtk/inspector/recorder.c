@@ -97,19 +97,19 @@ enum {
 G_DEFINE_TYPE (ObjectProperty, object_property, G_TYPE_OBJECT);
 
 static void
-object_property_init (ObjectProperty *self)
+object_property_init (ObjectProperty *this)
 {
 }
 
 static void
 object_property_finalize (GObject *object)
 {
-  ObjectProperty *self = OBJECT_PROPERTY (object);
+  ObjectProperty *this = OBJECT_PROPERTY (object);
 
-  g_free (self->name);
-  g_free (self->value);
-  g_clear_object (&self->texture);
-  g_clear_pointer (&self->node, gsk_render_node_unref);
+  g_free (this->name);
+  g_free (this->value);
+  g_clear_object (&this->texture);
+  g_clear_pointer (&this->node, gsk_render_node_unref);
 
   G_OBJECT_CLASS (object_property_parent_class)->finalize (object);
 }
@@ -120,20 +120,20 @@ object_property_get_property (GObject    *object,
                               GValue     *value,
                               GParamSpec *pspec)
 {
-  ObjectProperty *self = OBJECT_PROPERTY (object);
+  ObjectProperty *this = OBJECT_PROPERTY (object);
 
   switch (property_id)
     {
     case OBJECT_PROPERTY_PROP_NAME:
-      g_value_set_string (value, self->name);
+      g_value_set_string (value, this->name);
       break;
 
     case OBJECT_PROPERTY_PROP_VALUE:
-      g_value_set_string (value, self->value ? self->value : "");
+      g_value_set_string (value, this->value ? this->value : "");
       break;
 
     case OBJECT_PROPERTY_PROP_TEXTURE:
-      g_value_set_object (value, self->value);
+      g_value_set_object (value, this->value);
       break;
 
     default:
@@ -179,17 +179,17 @@ object_property_new (const char    *name,
                      GdkTexture    *texture,
                      GskRenderNode *node)
 {
-  ObjectProperty *self;
+  ObjectProperty *this;
 
-  self = g_object_new (object_property_get_type (), NULL);
+  this = g_object_new (object_property_get_type (), NULL);
 
-  self->name = g_strdup (name);
-  self->value = g_strdup (value);
-  g_set_object (&self->texture, texture);
+  this->name = g_strdup (name);
+  this->value = g_strdup (value);
+  g_set_object (&this->texture, texture);
   if (node)
-    self->node = gsk_render_node_ref (node);
+    this->node = gsk_render_node_ref (node);
 
-  return self;
+  return this;
 }
 
 /* }}} */

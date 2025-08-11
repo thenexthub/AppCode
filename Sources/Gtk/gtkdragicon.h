@@ -39,10 +39,10 @@ GDK_AVAILABLE_IN_ALL
 GtkWidget *     gtk_drag_icon_get_for_drag                      (GdkDrag                *drag);
 
 GDK_AVAILABLE_IN_ALL
-void            gtk_drag_icon_set_child                         (GtkDragIcon            *self,
+void            gtk_drag_icon_set_child                         (GtkDragIcon            *this,
                                                                  GtkWidget              *child);
 GDK_AVAILABLE_IN_ALL
-GtkWidget *     gtk_drag_icon_get_child                         (GtkDragIcon            *self);
+GtkWidget *     gtk_drag_icon_get_child                         (GtkDragIcon            *this);
 
 GDK_AVAILABLE_IN_ALL
 void            gtk_drag_icon_set_from_paintable (GdkDrag      *drag,

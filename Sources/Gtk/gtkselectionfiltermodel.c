@@ -63,29 +63,29 @@ gtk_selection_filter_model_get_item_type (GListModel *list)
 static guint
 gtk_selection_filter_model_get_n_items (GListModel *list)
 {
-  GtkSelectionFilterModel *self = GTK_SELECTION_FILTER_MODEL (list);
+  GtkSelectionFilterModel *this = GTK_SELECTION_FILTER_MODEL (list);
 
-  if (!self->selection)
+  if (!this->selection)
     return 0;
 
-  return gtk_bitset_get_size (self->selection);
+  return gtk_bitset_get_size (this->selection);
 }
 
 static gpointer
 gtk_selection_filter_model_get_item (GListModel *list,
                                      guint       position)
 {
-  GtkSelectionFilterModel *self = GTK_SELECTION_FILTER_MODEL (list);
+  GtkSelectionFilterModel *this = GTK_SELECTION_FILTER_MODEL (list);
 
-  if (!self->selection)
+  if (!this->selection)
     return NULL;
 
-  if (position >= gtk_bitset_get_size (self->selection))
+  if (position >= gtk_bitset_get_size (this->selection))
     return NULL;
 
-  position = gtk_bitset_get_nth (self->selection, position);
+  position = gtk_bitset_get_nth (this->selection, position);
 
-  return g_list_model_get_item (G_LIST_MODEL (self->model), position);
+  return g_list_model_get_item (G_LIST_MODEL (this->model), position);
 }
 
 static void
@@ -100,7 +100,7 @@ G_DEFINE_TYPE_WITH_CODE (GtkSelectionFilterModel, gtk_selection_filter_model, G_
                          G_IMPLEMENT_INTERFACE (G_TYPE_LIST_MODEL, gtk_selection_filter_model_list_model_init))
 
 static void
-selection_filter_model_items_changed (GtkSelectionFilterModel *self,
+selection_filter_model_items_changed (GtkSelectionFilterModel *this,
                                       guint                    position,
                                       guint                    removed,
                                       guint                    added)
@@ -110,26 +110,26 @@ selection_filter_model_items_changed (GtkSelectionFilterModel *self,
   guint sel_removed = 0;
   guint sel_added = 0;
 
-  selection = gtk_selection_model_get_selection (self->model);
+  selection = gtk_selection_model_get_selection (this->model);
 
   if (position > 0)
-    sel_position = gtk_bitset_get_size_in_range (self->selection, 0, position - 1);
+    sel_position = gtk_bitset_get_size_in_range (this->selection, 0, position - 1);
 
   if (removed > 0)
-    sel_removed = gtk_bitset_get_size_in_range (self->selection, position, position + removed - 1);
+    sel_removed = gtk_bitset_get_size_in_range (this->selection, position, position + removed - 1);
 
   if (added > 0)
     sel_added = gtk_bitset_get_size_in_range (selection, position, position + added - 1);
 
-  gtk_bitset_unref (self->selection);
-  self->selection = gtk_bitset_copy (selection);
+  gtk_bitset_unref (this->selection);
+  this->selection = gtk_bitset_copy (selection);
 
   gtk_bitset_unref (selection);
 
   if (sel_removed > 0 || sel_added > 0)
-    g_list_model_items_changed (G_LIST_MODEL (self), sel_position, sel_removed, sel_added);
+    g_list_model_items_changed (G_LIST_MODEL (this), sel_position, sel_removed, sel_added);
   if (sel_removed != sel_added)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 }
 
 static void
@@ -137,18 +137,18 @@ gtk_selection_filter_model_items_changed_cb (GListModel              *model,
                                              guint                    position,
                                              guint                    removed,
                                              guint                    added,
-                                             GtkSelectionFilterModel *self)
+                                             GtkSelectionFilterModel *this)
 {
-  selection_filter_model_items_changed (self, position, removed, added);
+  selection_filter_model_items_changed (this, position, removed, added);
 }
 
 static void
 gtk_selection_filter_model_selection_changed_cb (GListModel              *model,
                                                  guint                    position,
                                                  guint                    n_items,
-                                                 GtkSelectionFilterModel *self)
+                                                 GtkSelectionFilterModel *this)
 {
-  selection_filter_model_items_changed (self, position, n_items, n_items);
+  selection_filter_model_items_changed (this, position, n_items, n_items);
 }
 
 static void
@@ -157,12 +157,12 @@ gtk_selection_filter_model_set_property (GObject      *object,
                                          const GValue *value,
                                          GParamSpec   *pspec)
 {
-  GtkSelectionFilterModel *self = GTK_SELECTION_FILTER_MODEL (object);
+  GtkSelectionFilterModel *this = GTK_SELECTION_FILTER_MODEL (object);
 
   switch (prop_id)
     {
     case PROP_MODEL:
-      gtk_selection_filter_model_set_model (self, g_value_get_object (value));
+      gtk_selection_filter_model_set_model (this, g_value_get_object (value));
       break;
 
     default:
@@ -177,20 +177,20 @@ gtk_selection_filter_model_get_property (GObject     *object,
                                          GValue      *value,
                                          GParamSpec  *pspec)
 {
-  GtkSelectionFilterModel *self = GTK_SELECTION_FILTER_MODEL (object);
+  GtkSelectionFilterModel *this = GTK_SELECTION_FILTER_MODEL (object);
 
   switch (prop_id)
     {
     case PROP_ITEM_TYPE:
-      g_value_set_gtype (value, gtk_selection_filter_model_get_item_type (G_LIST_MODEL (self)));
+      g_value_set_gtype (value, gtk_selection_filter_model_get_item_type (G_LIST_MODEL (this)));
       break;
 
     case PROP_MODEL:
-      g_value_set_object (value, self->model);
+      g_value_set_object (value, this->model);
       break;
 
     case PROP_N_ITEMS:
-      g_value_set_uint (value, gtk_selection_filter_model_get_n_items (G_LIST_MODEL (self)));
+      g_value_set_uint (value, gtk_selection_filter_model_get_n_items (G_LIST_MODEL (this)));
       break;
 
     default:
@@ -200,24 +200,24 @@ gtk_selection_filter_model_get_property (GObject     *object,
 }
 
 static void
-gtk_selection_filter_model_clear_model (GtkSelectionFilterModel *self)
+gtk_selection_filter_model_clear_model (GtkSelectionFilterModel *this)
 {
-  if (self->model == NULL)
+  if (this->model == NULL)
     return;
 
-  g_signal_handlers_disconnect_by_func (self->model, gtk_selection_filter_model_items_changed_cb, self);
-  g_signal_handlers_disconnect_by_func (self->model, gtk_selection_filter_model_selection_changed_cb, self);
+  g_signal_handlers_disconnect_by_func (this->model, gtk_selection_filter_model_items_changed_cb, this);
+  g_signal_handlers_disconnect_by_func (this->model, gtk_selection_filter_model_selection_changed_cb, this);
 
-  g_clear_object (&self->model);
-  g_clear_pointer (&self->selection, gtk_bitset_unref);
+  g_clear_object (&this->model);
+  g_clear_pointer (&this->selection, gtk_bitset_unref);
 }
 
 static void
 gtk_selection_filter_model_dispose (GObject *object)
 {
-  GtkSelectionFilterModel *self = GTK_SELECTION_FILTER_MODEL (object);
+  GtkSelectionFilterModel *this = GTK_SELECTION_FILTER_MODEL (object);
 
-  gtk_selection_filter_model_clear_model (self);
+  gtk_selection_filter_model_clear_model (this);
 
   G_OBJECT_CLASS (gtk_selection_filter_model_parent_class)->dispose (object);
 }
@@ -269,7 +269,7 @@ gtk_selection_filter_model_class_init (GtkSelectionFilterModelClass *class)
 }
 
 static void
-gtk_selection_filter_model_init (GtkSelectionFilterModel *self)
+gtk_selection_filter_model_init (GtkSelectionFilterModel *this)
 {
 }
 
@@ -292,67 +292,67 @@ gtk_selection_filter_model_new (GtkSelectionModel *model)
 
 /**
  * gtk_selection_filter_model_set_model:
- * @self: a `GtkSelectionFilterModel`
+ * @this: a `GtkSelectionFilterModel`
  * @model: (nullable): The model to be filtered
  *
  * Sets the model to be filtered.
  *
  * Note that GTK makes no effort to ensure that @model conforms to
- * the item type of @self. It assumes that the caller knows what they
+ * the item type of @this. It assumes that the caller knows what they
  * are doing and have set up an appropriate filter to ensure that item
  * types match.
  **/
 void
-gtk_selection_filter_model_set_model (GtkSelectionFilterModel *self,
+gtk_selection_filter_model_set_model (GtkSelectionFilterModel *this,
                                       GtkSelectionModel       *model)
 {
   guint removed, added;
 
-  g_return_if_fail (GTK_IS_SELECTION_FILTER_MODEL (self));
+  g_return_if_fail (GTK_IS_SELECTION_FILTER_MODEL (this));
   g_return_if_fail (model == NULL || GTK_IS_SELECTION_MODEL (model));
 
-  if (self->model == model)
+  if (this->model == model)
     return;
 
-  removed = g_list_model_get_n_items (G_LIST_MODEL (self));
-  gtk_selection_filter_model_clear_model (self);
+  removed = g_list_model_get_n_items (G_LIST_MODEL (this));
+  gtk_selection_filter_model_clear_model (this);
 
   if (model)
     {
       GtkBitset *selection;
 
-      self->model = g_object_ref (model);
+      this->model = g_object_ref (model);
 
-      selection = gtk_selection_model_get_selection (self->model);
-      self->selection = gtk_bitset_copy (selection);
+      selection = gtk_selection_model_get_selection (this->model);
+      this->selection = gtk_bitset_copy (selection);
       gtk_bitset_unref (selection);
 
-      g_signal_connect (model, "items-changed", G_CALLBACK (gtk_selection_filter_model_items_changed_cb), self);
-      g_signal_connect (model, "selection-changed", G_CALLBACK (gtk_selection_filter_model_selection_changed_cb), self);
+      g_signal_connect (model, "items-changed", G_CALLBACK (gtk_selection_filter_model_items_changed_cb), this);
+      g_signal_connect (model, "selection-changed", G_CALLBACK (gtk_selection_filter_model_selection_changed_cb), this);
     }
 
-  added = g_list_model_get_n_items (G_LIST_MODEL (self));
+  added = g_list_model_get_n_items (G_LIST_MODEL (this));
 
   if (removed > 0 || added > 0)
-    g_list_model_items_changed (G_LIST_MODEL (self), 0, removed, added);
+    g_list_model_items_changed (G_LIST_MODEL (this), 0, removed, added);
   if (removed != added)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_MODEL]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_MODEL]);
 }
 
 /**
  * gtk_selection_filter_model_get_model:
- * @self: a `GtkSelectionFilterModel`
+ * @this: a `GtkSelectionFilterModel`
  *
  * Gets the model currently filtered or %NULL if none.
  *
  * Returns: (nullable) (transfer none): The model that gets filtered
  */
 GtkSelectionModel *
-gtk_selection_filter_model_get_model (GtkSelectionFilterModel *self)
+gtk_selection_filter_model_get_model (GtkSelectionFilterModel *this)
 {
-  g_return_val_if_fail (GTK_IS_SELECTION_FILTER_MODEL (self), NULL);
+  g_return_val_if_fail (GTK_IS_SELECTION_FILTER_MODEL (this), NULL);
 
-  return self->model;
+  return this->model;
 }

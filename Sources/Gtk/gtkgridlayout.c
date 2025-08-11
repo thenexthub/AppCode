@@ -90,24 +90,24 @@ gtk_grid_layout_child_set_property (GObject      *gobject,
                                     const GValue *value,
                                     GParamSpec   *pspec)
 {
-  GtkGridLayoutChild *self = GTK_GRID_LAYOUT_CHILD (gobject);
+  GtkGridLayoutChild *this = GTK_GRID_LAYOUT_CHILD (gobject);
 
   switch (prop_id)
     {
     case PROP_CHILD_COLUMN:
-      gtk_grid_layout_child_set_column (self, g_value_get_int (value));
+      gtk_grid_layout_child_set_column (this, g_value_get_int (value));
       break;
 
     case PROP_CHILD_ROW :
-      gtk_grid_layout_child_set_row (self, g_value_get_int (value));
+      gtk_grid_layout_child_set_row (this, g_value_get_int (value));
       break;
 
     case PROP_CHILD_COLUMN_SPAN:
-      gtk_grid_layout_child_set_column_span (self, g_value_get_int (value));
+      gtk_grid_layout_child_set_column_span (this, g_value_get_int (value));
       break;
 
     case PROP_CHILD_ROW_SPAN:
-      gtk_grid_layout_child_set_row_span (self, g_value_get_int (value));
+      gtk_grid_layout_child_set_row_span (this, g_value_get_int (value));
       break;
 
     default:
@@ -122,24 +122,24 @@ gtk_grid_layout_child_get_property (GObject    *gobject,
                                     GValue     *value,
                                     GParamSpec *pspec)
 {
-  GtkGridLayoutChild *self = GTK_GRID_LAYOUT_CHILD (gobject);
+  GtkGridLayoutChild *this = GTK_GRID_LAYOUT_CHILD (gobject);
 
   switch (prop_id)
     {
     case PROP_CHILD_COLUMN:
-      g_value_set_int (value, CHILD_COLUMN (self));
+      g_value_set_int (value, CHILD_COLUMN (this));
       break;
 
     case PROP_CHILD_ROW:
-      g_value_set_int (value, CHILD_ROW (self));
+      g_value_set_int (value, CHILD_ROW (this));
       break;
 
     case PROP_CHILD_COLUMN_SPAN:
-      g_value_set_int (value, CHILD_COL_SPAN (self));
+      g_value_set_int (value, CHILD_COL_SPAN (this));
       break;
 
     case PROP_CHILD_ROW_SPAN:
-      g_value_set_int (value, CHILD_ROW_SPAN (self));
+      g_value_set_int (value, CHILD_ROW_SPAN (this));
       break;
 
     default:
@@ -200,10 +200,10 @@ gtk_grid_layout_child_class_init (GtkGridLayoutChildClass *klass)
 }
 
 static void
-gtk_grid_layout_child_init (GtkGridLayoutChild *self)
+gtk_grid_layout_child_init (GtkGridLayoutChild *this)
 {
-  CHILD_ROW_SPAN (self) = 1;
-  CHILD_COL_SPAN (self) = 1;
+  CHILD_ROW_SPAN (this) = 1;
+  CHILD_COL_SPAN (this) = 1;
 }
 
 /**
@@ -447,16 +447,16 @@ static GParamSpec *layout_props[N_PROPERTIES];
 G_DEFINE_TYPE (GtkGridLayout, gtk_grid_layout, GTK_TYPE_LAYOUT_MANAGER)
 
 static inline GtkGridLayoutChild *
-get_grid_child (GtkGridLayout *self,
+get_grid_child (GtkGridLayout *this,
                 GtkWidget     *child)
 {
-  GtkLayoutManager *manager = GTK_LAYOUT_MANAGER (self);
+  GtkLayoutManager *manager = GTK_LAYOUT_MANAGER (this);
 
   return (GtkGridLayoutChild *) gtk_layout_manager_get_layout_child (manager, child);
 }
 
 static int
-get_spacing (GtkGridLayout  *self,
+get_spacing (GtkGridLayout  *this,
              GtkWidget      *widget,
              GtkOrientation  orientation)
 {
@@ -472,7 +472,7 @@ get_spacing (GtkGridLayout  *self,
   else
     css_spacing = _gtk_css_position_value_get_y (border_spacing, 100);
 
-  return css_spacing + self->linedata[orientation].spacing;
+  return css_spacing + this->linedata[orientation].spacing;
 }
 
 /* Calculates the min and max numbers for both orientations. */
@@ -705,13 +705,13 @@ static void
 grid_request_homogeneous (GridRequest    *request,
                           GtkOrientation  orientation)
 {
-  GtkGridLayout *self = request->layout;
+  GtkGridLayout *this = request->layout;
   GridLineData *linedata;
   GridLines *lines;
   int minimum, natural;
   int i;
 
-  linedata = &self->linedata[orientation];
+  linedata = &this->linedata[orientation];
   lines = &request->lines[orientation];
 
   if (!linedata->homogeneous)
@@ -746,7 +746,7 @@ grid_request_spanning (GridRequest    *request,
                        GtkOrientation  orientation,
                        gboolean        contextual)
 {
-  GtkGridLayout *self = request->layout;
+  GtkGridLayout *this = request->layout;
   GtkWidget *child;
   GridChildAttach *attach;
   GridLineData *linedata;
@@ -762,7 +762,7 @@ grid_request_spanning (GridRequest    *request,
   int line_extra;
   int i;
 
-  linedata = &self->linedata[orientation];
+  linedata = &this->linedata[orientation];
   lines = &request->lines[orientation];
   spacing = get_spacing (request->layout, request->widget, orientation);
 
@@ -999,7 +999,7 @@ grid_request_sum (GridRequest    *request,
                   int            *minimum_baseline,
                   int            *natural_baseline)
 {
-  GtkGridLayout *self = request->layout;
+  GtkGridLayout *this = request->layout;
   GridLines *lines;
   int i;
   int min, nat;
@@ -1016,7 +1016,7 @@ grid_request_sum (GridRequest    *request,
   for (i = 0; i < lines->max - lines->min; i++)
     {
       if (orientation == GTK_ORIENTATION_VERTICAL &&
-          lines->min + i == self->baseline_row &&
+          lines->min + i == this->baseline_row &&
           lines->lines[i].minimum_above != -1)
         {
           if (minimum_baseline)
@@ -1142,7 +1142,7 @@ grid_request_allocate (GridRequest    *request,
                        GtkOrientation  orientation,
                        int             total_size)
 {
-  GtkGridLayout *self = request->layout;
+  GtkGridLayout *this = request->layout;
   GridLineData *linedata;
   GridLines *lines;
   GridLine *line;
@@ -1157,18 +1157,18 @@ grid_request_allocate (GridRequest    *request,
   int split, split_pos;
   int spacing;
 
-  linedata = &self->linedata[orientation];
+  linedata = &this->linedata[orientation];
   lines = &request->lines[orientation];
   spacing = get_spacing (request->layout, request->widget, orientation);
 
   baseline = gtk_widget_get_baseline (request->widget);
 
   if (orientation == GTK_ORIENTATION_VERTICAL && baseline != -1 &&
-      self->baseline_row >= lines->min && self->baseline_row < lines->max &&
-      lines->lines[self->baseline_row - lines->min].minimum_above != -1)
+      this->baseline_row >= lines->min && this->baseline_row < lines->max &&
+      lines->lines[this->baseline_row - lines->min].minimum_above != -1)
     {
-      split = self->baseline_row;
-      split_pos = baseline - lines->lines[self->baseline_row - lines->min].minimum_above;
+      split = this->baseline_row;
+      split_pos = baseline - lines->lines[this->baseline_row - lines->min].minimum_above;
       grid_request_compute_expand (request, orientation, lines->min, split, &nonempty1, &expand1);
       grid_request_compute_expand (request, orientation, split, lines->max, &nonempty2, &expand2);
 
@@ -1286,7 +1286,7 @@ static void
 grid_request_position (GridRequest    *request,
                        GtkOrientation  orientation)
 {
-  GtkGridLayout *self = request->layout;
+  GtkGridLayout *this = request->layout;
   GridLines *lines;
   GridLine *line;
   int position, old_position;
@@ -1305,7 +1305,7 @@ grid_request_position (GridRequest    *request,
       line = &lines->lines[i];
 
       if (orientation == GTK_ORIENTATION_VERTICAL &&
-          i + lines->min == self->baseline_row &&
+          i + lines->min == this->baseline_row &&
           allocated_baseline != -1 &&
           lines->lines[i].minimum_above != -1)
         {
@@ -1326,7 +1326,7 @@ grid_request_position (GridRequest    *request,
           position += line->allocation + spacing;
 
           if (orientation == GTK_ORIENTATION_VERTICAL &&
-              i + lines->min == self->baseline_row &&
+              i + lines->min == this->baseline_row &&
               allocated_baseline != -1 &&
               lines->lines[i].minimum_above != -1)
             line->allocated_baseline = allocated_baseline - line->position;
@@ -1335,7 +1335,7 @@ grid_request_position (GridRequest    *request,
 }
 
 static void
-gtk_grid_layout_get_size (GtkGridLayout  *self,
+gtk_grid_layout_get_size (GtkGridLayout  *this,
                           GtkWidget      *widget,
                           GtkOrientation  orientation,
                           int            *minimum,
@@ -1358,7 +1358,7 @@ gtk_grid_layout_get_size (GtkGridLayout  *self,
   if (_gtk_widget_get_first_child (widget) == NULL)
     return;
 
-  request.layout = self;
+  request.layout = this;
   request.widget = widget;
   grid_request_count_lines (&request);
 
@@ -1373,7 +1373,7 @@ gtk_grid_layout_get_size (GtkGridLayout  *self,
 }
 
 static void
-gtk_grid_layout_get_size_for_size (GtkGridLayout  *self,
+gtk_grid_layout_get_size_for_size (GtkGridLayout  *this,
                                    GtkWidget      *widget,
                                    GtkOrientation  orientation,
                                    int             size,
@@ -1398,7 +1398,7 @@ gtk_grid_layout_get_size_for_size (GtkGridLayout  *self,
   if (_gtk_widget_get_first_child (widget) == NULL)
     return;
 
-  request.layout = self;
+  request.layout = this;
   request.widget = widget;
   grid_request_count_lines (&request);
 
@@ -1429,17 +1429,17 @@ gtk_grid_layout_measure (GtkLayoutManager *manager,
                          int              *minimum_baseline,
                          int              *natural_baseline)
 {
-  GtkGridLayout *self = GTK_GRID_LAYOUT (manager);
+  GtkGridLayout *this = GTK_GRID_LAYOUT (manager);
 
   if ((orientation == GTK_ORIENTATION_HORIZONTAL &&
        gtk_widget_get_request_mode (widget) == GTK_SIZE_REQUEST_WIDTH_FOR_HEIGHT) ||
       (orientation == GTK_ORIENTATION_VERTICAL &&
        gtk_widget_get_request_mode (widget) == GTK_SIZE_REQUEST_HEIGHT_FOR_WIDTH))
-    gtk_grid_layout_get_size_for_size (self, widget, orientation, for_size,
+    gtk_grid_layout_get_size_for_size (this, widget, orientation, for_size,
                                        minimum, natural,
                                        minimum_baseline, natural_baseline);
   else
-    gtk_grid_layout_get_size (self, widget, orientation,
+    gtk_grid_layout_get_size (this, widget, orientation,
                               minimum, natural,
                               minimum_baseline, natural_baseline);
 }
@@ -1520,7 +1520,7 @@ gtk_grid_layout_allocate (GtkLayoutManager *manager,
                           int               height,
                           int              baseline)
 {
-  GtkGridLayout *self = GTK_GRID_LAYOUT (manager);
+  GtkGridLayout *this = GTK_GRID_LAYOUT (manager);
   GridRequest request;
   GridLines *lines;
   GtkOrientation orientation;
@@ -1528,7 +1528,7 @@ gtk_grid_layout_allocate (GtkLayoutManager *manager,
   if (_gtk_widget_get_first_child (widget) == NULL)
     return;
 
-  request.layout = self;
+  request.layout = this;
   request.widget = widget;
 
   grid_request_count_lines (&request);
@@ -1562,28 +1562,28 @@ gtk_grid_layout_set_property (GObject      *gobject,
                               const GValue *value,
                               GParamSpec   *pspec)
 {
-  GtkGridLayout *self = GTK_GRID_LAYOUT (gobject);
+  GtkGridLayout *this = GTK_GRID_LAYOUT (gobject);
 
   switch (prop_id)
     {
     case PROP_ROW_SPACING:
-      gtk_grid_layout_set_row_spacing (self, g_value_get_int (value));
+      gtk_grid_layout_set_row_spacing (this, g_value_get_int (value));
       break;
 
     case PROP_COLUMN_SPACING:
-      gtk_grid_layout_set_column_spacing (self, g_value_get_int (value));
+      gtk_grid_layout_set_column_spacing (this, g_value_get_int (value));
       break;
 
     case PROP_ROW_HOMOGENEOUS:
-      gtk_grid_layout_set_row_homogeneous (self, g_value_get_boolean (value));
+      gtk_grid_layout_set_row_homogeneous (this, g_value_get_boolean (value));
       break;
 
     case PROP_COLUMN_HOMOGENEOUS:
-      gtk_grid_layout_set_column_homogeneous (self, g_value_get_boolean (value));
+      gtk_grid_layout_set_column_homogeneous (this, g_value_get_boolean (value));
       break;
 
     case PROP_BASELINE_ROW:
-      gtk_grid_layout_set_baseline_row (self, g_value_get_int (value));
+      gtk_grid_layout_set_baseline_row (this, g_value_get_int (value));
       break;
 
     default:
@@ -1598,28 +1598,28 @@ gtk_grid_layout_get_property (GObject    *gobject,
                               GValue     *value,
                               GParamSpec *pspec)
 {
-  GtkGridLayout *self = GTK_GRID_LAYOUT (gobject);
+  GtkGridLayout *this = GTK_GRID_LAYOUT (gobject);
 
   switch (prop_id)
     {
     case PROP_ROW_SPACING:
-      g_value_set_int (value, COLUMNS (self)->spacing);
+      g_value_set_int (value, COLUMNS (this)->spacing);
       break;
 
     case PROP_COLUMN_SPACING:
-      g_value_set_int (value, ROWS (self)->spacing);
+      g_value_set_int (value, ROWS (this)->spacing);
       break;
 
     case PROP_ROW_HOMOGENEOUS:
-      g_value_set_boolean (value, COLUMNS (self)->homogeneous);
+      g_value_set_boolean (value, COLUMNS (this)->homogeneous);
       break;
 
     case PROP_COLUMN_HOMOGENEOUS:
-      g_value_set_boolean (value, ROWS (self)->homogeneous);
+      g_value_set_boolean (value, ROWS (this)->homogeneous);
       break;
 
     case PROP_BASELINE_ROW:
-      g_value_set_int (value, self->baseline_row);
+      g_value_set_int (value, this->baseline_row);
       break;
 
     default:
@@ -1631,9 +1631,9 @@ gtk_grid_layout_get_property (GObject    *gobject,
 static void
 gtk_grid_layout_finalize (GObject *gobject)
 {
-  GtkGridLayout *self = GTK_GRID_LAYOUT (gobject);
+  GtkGridLayout *this = GTK_GRID_LAYOUT (gobject);
 
-  g_clear_pointer (&self->row_properties, g_array_unref);
+  g_clear_pointer (&this->row_properties, g_array_unref);
 
   G_OBJECT_CLASS (gtk_grid_layout_parent_class)->finalize (gobject);
 }
@@ -1707,7 +1707,7 @@ gtk_grid_layout_class_init (GtkGridLayoutClass *klass)
 }
 
 static void
-gtk_grid_layout_init (GtkGridLayout *self)
+gtk_grid_layout_init (GtkGridLayout *this)
 {
 }
 
@@ -1881,17 +1881,17 @@ gtk_grid_layout_get_column_spacing (GtkGridLayout *grid)
 }
 
 static GridRowProperties *
-find_row_properties (GtkGridLayout *self,
+find_row_properties (GtkGridLayout *this,
 		     int            row)
 {
   int i;
 
-  if (self->row_properties == NULL)
+  if (this->row_properties == NULL)
     return NULL;
 
-  for (i = 0; i < self->row_properties->len; i++)
+  for (i = 0; i < this->row_properties->len; i++)
     {
-      GridRowProperties *prop = &g_array_index (self->row_properties, GridRowProperties, i);
+      GridRowProperties *prop = &g_array_index (this->row_properties, GridRowProperties, i);
 
       if (prop->row == row)
         return prop;
@@ -1901,12 +1901,12 @@ find_row_properties (GtkGridLayout *self,
 }
 
 static GridRowProperties *
-get_row_properties_or_create (GtkGridLayout *self,
+get_row_properties_or_create (GtkGridLayout *this,
 			      int            row)
 {
   GridRowProperties *props;
 
-  props = find_row_properties (self, row);
+  props = find_row_properties (this, row);
   if (props != NULL)
     return props;
 
@@ -1914,23 +1914,23 @@ get_row_properties_or_create (GtkGridLayout *self,
    * find_row_properties() is used by getters, so we should not create
    * the array there.
    */
-  if (self->row_properties == NULL)
-    self->row_properties = g_array_new (FALSE, FALSE, sizeof (GridRowProperties));
+  if (this->row_properties == NULL)
+    this->row_properties = g_array_new (FALSE, FALSE, sizeof (GridRowProperties));
 
-  g_array_append_vals (self->row_properties, &grid_row_properties_default, 1);
-  props = &g_array_index (self->row_properties, GridRowProperties, self->row_properties->len - 1);
+  g_array_append_vals (this->row_properties, &grid_row_properties_default, 1);
+  props = &g_array_index (this->row_properties, GridRowProperties, this->row_properties->len - 1);
   props->row = row;
 
   return props;
 }
 
 static const GridRowProperties *
-get_row_properties_or_default (GtkGridLayout *self,
+get_row_properties_or_default (GtkGridLayout *this,
 			       int            row)
 {
   GridRowProperties *props;
 
-  props = find_row_properties (self, row);
+  props = find_row_properties (this, row);
   if (props != NULL)
     return props;
 

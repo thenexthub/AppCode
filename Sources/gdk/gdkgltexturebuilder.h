@@ -35,67 +35,67 @@ GDK_AVAILABLE_IN_4_12
 GdkGLTextureBuilder *   gdk_gl_texture_builder_new              (void);
 
 GDK_AVAILABLE_IN_4_12
-GdkGLContext *          gdk_gl_texture_builder_get_context      (GdkGLTextureBuilder    *self) G_GNUC_PURE;
+GdkGLContext *          gdk_gl_texture_builder_get_context      (GdkGLTextureBuilder    *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_12
-void                    gdk_gl_texture_builder_set_context      (GdkGLTextureBuilder    *self,
+void                    gdk_gl_texture_builder_set_context      (GdkGLTextureBuilder    *this,
                                                                  GdkGLContext           *context);
 
 GDK_AVAILABLE_IN_4_12
-guint                   gdk_gl_texture_builder_get_id           (GdkGLTextureBuilder    *self) G_GNUC_PURE;
+guint                   gdk_gl_texture_builder_get_id           (GdkGLTextureBuilder    *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_12
-void                    gdk_gl_texture_builder_set_id           (GdkGLTextureBuilder    *self,
+void                    gdk_gl_texture_builder_set_id           (GdkGLTextureBuilder    *this,
                                                                  guint                   id);
 
 GDK_AVAILABLE_IN_4_12
-int                     gdk_gl_texture_builder_get_width        (GdkGLTextureBuilder    *self) G_GNUC_PURE;
+int                     gdk_gl_texture_builder_get_width        (GdkGLTextureBuilder    *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_12
-void                    gdk_gl_texture_builder_set_width        (GdkGLTextureBuilder    *self,
+void                    gdk_gl_texture_builder_set_width        (GdkGLTextureBuilder    *this,
                                                                  int                     width);
 
 GDK_AVAILABLE_IN_4_12
-int                     gdk_gl_texture_builder_get_height       (GdkGLTextureBuilder    *self) G_GNUC_PURE;
+int                     gdk_gl_texture_builder_get_height       (GdkGLTextureBuilder    *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_12
-void                    gdk_gl_texture_builder_set_height       (GdkGLTextureBuilder    *self,
+void                    gdk_gl_texture_builder_set_height       (GdkGLTextureBuilder    *this,
                                                                  int                     height);
 
 GDK_AVAILABLE_IN_4_12
-GdkMemoryFormat         gdk_gl_texture_builder_get_format       (GdkGLTextureBuilder    *self) G_GNUC_PURE;
+GdkMemoryFormat         gdk_gl_texture_builder_get_format       (GdkGLTextureBuilder    *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_12
-void                    gdk_gl_texture_builder_set_format       (GdkGLTextureBuilder    *self,
+void                    gdk_gl_texture_builder_set_format       (GdkGLTextureBuilder    *this,
                                                                  GdkMemoryFormat         format);
 
 GDK_AVAILABLE_IN_4_12
-gboolean                gdk_gl_texture_builder_get_has_mipmap   (GdkGLTextureBuilder    *self) G_GNUC_PURE;
+gboolean                gdk_gl_texture_builder_get_has_mipmap   (GdkGLTextureBuilder    *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_12
-void                    gdk_gl_texture_builder_set_has_mipmap   (GdkGLTextureBuilder    *self,
+void                    gdk_gl_texture_builder_set_has_mipmap   (GdkGLTextureBuilder    *this,
                                                                  gboolean                has_mipmap);
 
 GDK_AVAILABLE_IN_4_12
-gpointer                gdk_gl_texture_builder_get_sync         (GdkGLTextureBuilder    *self) G_GNUC_PURE;
+gpointer                gdk_gl_texture_builder_get_sync         (GdkGLTextureBuilder    *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_12
-void                    gdk_gl_texture_builder_set_sync         (GdkGLTextureBuilder    *self,
+void                    gdk_gl_texture_builder_set_sync         (GdkGLTextureBuilder    *this,
                                                                  gpointer                sync);
 
 GDK_AVAILABLE_IN_4_16
-GdkColorState *         gdk_gl_texture_builder_get_color_state  (GdkGLTextureBuilder    *self);
+GdkColorState *         gdk_gl_texture_builder_get_color_state  (GdkGLTextureBuilder    *this);
 GDK_AVAILABLE_IN_4_16
-void                    gdk_gl_texture_builder_set_color_state  (GdkGLTextureBuilder    *self,
+void                    gdk_gl_texture_builder_set_color_state  (GdkGLTextureBuilder    *this,
                                                                  GdkColorState          *color_state);
 
 GDK_AVAILABLE_IN_4_12
-GdkTexture *            gdk_gl_texture_builder_get_update_texture (GdkGLTextureBuilder  *self) G_GNUC_PURE;
+GdkTexture *            gdk_gl_texture_builder_get_update_texture (GdkGLTextureBuilder  *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_12
-void                    gdk_gl_texture_builder_set_update_texture (GdkGLTextureBuilder  *self,
+void                    gdk_gl_texture_builder_set_update_texture (GdkGLTextureBuilder  *this,
                                                                  GdkTexture             *texture);
 
 GDK_AVAILABLE_IN_4_12
-cairo_region_t *        gdk_gl_texture_builder_get_update_region (GdkGLTextureBuilder   *self) G_GNUC_PURE;
+cairo_region_t *        gdk_gl_texture_builder_get_update_region (GdkGLTextureBuilder   *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_12
-void                    gdk_gl_texture_builder_set_update_region (GdkGLTextureBuilder   *self,
+void                    gdk_gl_texture_builder_set_update_region (GdkGLTextureBuilder   *this,
                                                                  cairo_region_t         *region);
 
 GDK_AVAILABLE_IN_4_12
-GdkTexture *            gdk_gl_texture_builder_build            (GdkGLTextureBuilder    *self,
+GdkTexture *            gdk_gl_texture_builder_build            (GdkGLTextureBuilder    *this,
                                                                  GDestroyNotify          destroy,
                                                                  gpointer                data);
 

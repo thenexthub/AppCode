@@ -1681,8 +1681,8 @@ gtk_tree_view_column_set_attributes (GtkTreeViewColumn *tree_column,
  * gtk_tree_view_column_set_cell_data_func:
  * @tree_column: A `GtkTreeViewColumn`
  * @cell_renderer: A `GtkCellRenderer`
- * @func: (nullable) (scope notified) (closure func_data) (destroy destroy): The `GtkTreeCellDataFunc` to use.
- * @func_data: The user data for @func.
+ * @fn: (nullable) (scope notified) (closure func_data) (destroy destroy): The `GtkTreeCellDataFunc` to use.
+ * @func_data: The user data for @fn.
  * @destroy: The destroy notification for @func_data
  *
  * Sets the `GtkTreeCellDataFunc` to use for the column.
@@ -1690,7 +1690,7 @@ gtk_tree_view_column_set_attributes (GtkTreeViewColumn *tree_column,
  * This
  * function is used instead of the standard attributes mapping for
  * setting the column value, and should set the value of @tree_column's
- * cell renderer as appropriate.  @func may be %NULL to remove an
+ * cell renderer as appropriate.  @fn may be %NULL to remove an
  * older one.
  *
  * Deprecated: 4.10: Use GtkColumnView instead
@@ -1698,13 +1698,13 @@ gtk_tree_view_column_set_attributes (GtkTreeViewColumn *tree_column,
 void
 gtk_tree_view_column_set_cell_data_func (GtkTreeViewColumn   *tree_column,
 					 GtkCellRenderer     *cell_renderer,
-					 GtkTreeCellDataFunc  func,
+					 GtkTreeCellDataFunc  fn,
 					 gpointer             func_data,
 					 GDestroyNotify       destroy)
 {
   gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (tree_column),
                                       cell_renderer,
-                                      (GtkCellLayoutDataFunc)func,
+                                      (GtkCellLayoutDataFunc)fn,
                                       func_data, destroy);
 }
 

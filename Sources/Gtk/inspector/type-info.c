@@ -73,7 +73,7 @@ add_row (GtkWidget  *box,
 }
 
 void
-gtk_inspector_type_popover_set_gtype (GtkInspectorTypePopover *self,
+gtk_inspector_type_popover_set_gtype (GtkInspectorTypePopover *this,
                                       GType                    gtype)
 {
   GtkInspectorTypePopoverPrivate *priv;
@@ -85,9 +85,9 @@ gtk_inspector_type_popover_set_gtype (GtkInspectorTypePopover *self,
   int i;
   GtkWidget *child;
 
-  g_return_if_fail (GTK_IS_INSPECTOR_TYPE_POPOVER (self));
+  g_return_if_fail (GTK_IS_INSPECTOR_TYPE_POPOVER (this));
 
-  priv = gtk_inspector_type_popover_get_instance_private (self);
+  priv = gtk_inspector_type_popover_get_instance_private (this);
 
   if (priv->type == gtype)
     return;
@@ -125,14 +125,14 @@ gtk_inspector_type_popover_set_gtype (GtkInspectorTypePopover *self,
 }
 
 static void
-gtk_inspector_type_popover_init (GtkInspectorTypePopover *self)
+gtk_inspector_type_popover_init (GtkInspectorTypePopover *this)
 {
   GtkInspectorTypePopoverPrivate *priv;
   GtkWidget *label;
 
-  gtk_widget_init_template (GTK_WIDGET (self));
+  gtk_widget_init_template (GTK_WIDGET (this));
 
-  priv = gtk_inspector_type_popover_get_instance_private (self);
+  priv = gtk_inspector_type_popover_get_instance_private (this);
 
   priv->type = G_TYPE_NONE;
 
@@ -163,8 +163,8 @@ gtk_inspector_type_popover_get_property (GObject    *object,
                                       GValue     *value,
                                       GParamSpec *pspec)
 {
-  GtkInspectorTypePopover *self = GTK_INSPECTOR_TYPE_POPOVER (object);
-  GtkInspectorTypePopoverPrivate *priv = gtk_inspector_type_popover_get_instance_private (self);
+  GtkInspectorTypePopover *this = GTK_INSPECTOR_TYPE_POPOVER (object);
+  GtkInspectorTypePopoverPrivate *priv = gtk_inspector_type_popover_get_instance_private (this);
 
   switch (param_id)
     {
@@ -184,12 +184,12 @@ gtk_inspector_type_popover_set_property (GObject      *object,
                                       const GValue *value,
                                       GParamSpec   *pspec)
 {
-  GtkInspectorTypePopover *self = GTK_INSPECTOR_TYPE_POPOVER (object);
+  GtkInspectorTypePopover *this = GTK_INSPECTOR_TYPE_POPOVER (object);
 
   switch (param_id)
     {
       case PROP_TYPE:
-        gtk_inspector_type_popover_set_gtype (self, g_value_get_gtype (value));
+        gtk_inspector_type_popover_set_gtype (this, g_value_get_gtype (value));
         break;
 
       default:

@@ -70,7 +70,7 @@ immutable content = MarkdownContent("You can try **CommonMark** [here](https://s
 
 // Later in the view layer
 var body: some View {
-  Markdown(self.model.content)
+  Markdown(this.model.content)
 }
 ```
 

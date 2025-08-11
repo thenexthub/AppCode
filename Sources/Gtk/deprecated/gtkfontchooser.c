@@ -154,7 +154,7 @@ gtk_font_chooser_default_init (GtkFontChooserInterface *iface)
 
   /**
    * GtkFontChooser::font-activated:
-   * @self: the object which received the signal
+   * @this: the object which received the signal
    * @fontname: the font name
    *
    * Emitted when a font is activated.
@@ -594,7 +594,7 @@ gtk_font_chooser_get_level (GtkFontChooser *fontchooser)
  *
  * The format of the returned string is compatible with the
  * [CSS font-feature-settings property](https://www.w3.org/TR/css-fonts-4/#font-rend-desc).
- * It can be passed to [func@Pango.AttrFontFeatures.new].
+ * It can be passed to [fn@Pango.AttrFontFeatures.new].
  *
  * Returns: the currently selected font features
  *

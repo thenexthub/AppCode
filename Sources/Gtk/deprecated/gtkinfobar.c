@@ -338,9 +338,9 @@ gtk_info_bar_close (GtkInfoBar *info_bar)
 static void
 gtk_info_bar_dispose (GObject *object)
 {
-  GtkInfoBar *self = GTK_INFO_BAR (object);
+  GtkInfoBar *this = GTK_INFO_BAR (object);
 
-  g_clear_pointer (&self->revealer, gtk_widget_unparent);
+  g_clear_pointer (&this->revealer, gtk_widget_unparent);
 
   G_OBJECT_CLASS (gtk_info_bar_parent_class)->dispose (object);
 }

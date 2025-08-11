@@ -86,61 +86,61 @@ GDK_AVAILABLE_IN_4_14
 GType                   gsk_path_get_type                       (void) G_GNUC_CONST;
 
 GDK_AVAILABLE_IN_4_14
-GskPath *               gsk_path_ref                            (GskPath                *self);
+GskPath *               gsk_path_ref                            (GskPath                *this);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_unref                          (GskPath                *self);
+void                    gsk_path_unref                          (GskPath                *this);
 
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_print                          (GskPath                *self,
+void                    gsk_path_print                          (GskPath                *this,
                                                                  GString                *string);
 GDK_AVAILABLE_IN_4_14
-char *                  gsk_path_to_string                      (GskPath                *self);
+char *                  gsk_path_to_string                      (GskPath                *this);
 
 GDK_AVAILABLE_IN_4_14
 GskPath *               gsk_path_parse                          (const char             *string);
 
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_to_cairo                       (GskPath                *self,
+void                    gsk_path_to_cairo                       (GskPath                *this,
                                                                  cairo_t                *cr);
 
 GDK_AVAILABLE_IN_4_14
-gboolean                gsk_path_is_empty                       (GskPath                *self);
+gboolean                gsk_path_is_empty                       (GskPath                *this);
 
 GDK_AVAILABLE_IN_4_14
-gboolean                gsk_path_is_closed                      (GskPath                *self);
+gboolean                gsk_path_is_closed                      (GskPath                *this);
 
 GDK_AVAILABLE_IN_4_14
-gboolean                gsk_path_get_bounds                     (GskPath                *self,
+gboolean                gsk_path_get_bounds                     (GskPath                *this,
                                                                  graphene_rect_t        *bounds) G_GNUC_WARN_UNUSED_RESULT;
 
 GDK_AVAILABLE_IN_4_14
-gboolean                gsk_path_get_stroke_bounds              (GskPath                *self,
+gboolean                gsk_path_get_stroke_bounds              (GskPath                *this,
                                                                  const GskStroke        *stroke,
                                                                  graphene_rect_t        *bounds);
 
 GDK_AVAILABLE_IN_4_14
-gboolean                gsk_path_in_fill                        (GskPath                *self,
+gboolean                gsk_path_in_fill                        (GskPath                *this,
                                                                  const graphene_point_t *point,
                                                                  GskFillRule             fill_rule);
 
 GDK_AVAILABLE_IN_4_14
-gboolean                gsk_path_get_start_point                (GskPath                *self,
+gboolean                gsk_path_get_start_point                (GskPath                *this,
                                                                  GskPathPoint           *result);
 GDK_AVAILABLE_IN_4_14
-gboolean                gsk_path_get_end_point                  (GskPath                *self,
+gboolean                gsk_path_get_end_point                  (GskPath                *this,
                                                                  GskPathPoint           *result);
 
 GDK_AVAILABLE_IN_4_14
-gboolean                gsk_path_get_closest_point              (GskPath                *self,
+gboolean                gsk_path_get_closest_point              (GskPath                *this,
                                                                  const graphene_point_t *point,
                                                                  float                   threshold,
                                                                  GskPathPoint           *result,
                                                                  float                  *distance);
 
 GDK_AVAILABLE_IN_4_14
-gboolean                gsk_path_foreach                        (GskPath                *self,
+gboolean                gsk_path_foreach                        (GskPath                *this,
                                                                  GskPathForeachFlags     flags,
-                                                                 GskPathForeachFunc      func,
+                                                                 GskPathForeachFunc      fn,
                                                                  gpointer                user_data);
 
 /**
@@ -191,7 +191,7 @@ typedef gboolean (* GskPathIntersectionFunc)                    (GskPath        
 GDK_AVAILABLE_IN_4_20
 gboolean                gsk_path_foreach_intersection           (GskPath                *path1,
                                                                  GskPath                *path2,
-                                                                 GskPathIntersectionFunc func,
+                                                                 GskPathIntersectionFunc fn,
                                                                  gpointer                user_data);
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GskPath, gsk_path_unref)

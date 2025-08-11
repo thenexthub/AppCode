@@ -63,6 +63,6 @@ struct _GdkAndroidToplevel
 };
 
 
-const GdkRGBA *gdk_android_toplevel_get_bars_color (GdkAndroidToplevel *self);
+const GdkRGBA *gdk_android_toplevel_get_bars_color (GdkAndroidToplevel *this);
 
 G_END_DECLS

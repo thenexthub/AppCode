@@ -24,10 +24,10 @@ struct _GskGpuBlitOp
 static void
 gsk_gpu_blit_op_finish (GskGpuOp *op)
 {
-  GskGpuBlitOp *self = (GskGpuBlitOp *) op;
+  GskGpuBlitOp *this = (GskGpuBlitOp *) op;
 
-  g_object_unref (self->src_image);
-  g_object_unref (self->dest_image);
+  g_object_unref (this->src_image);
+  g_object_unref (this->dest_image);
 }
 
 static void
@@ -36,10 +36,10 @@ gsk_gpu_blit_op_print (GskGpuOp    *op,
                        GString     *string,
                        guint        indent)
 {
-  GskGpuBlitOp *self = (GskGpuBlitOp *) op;
+  GskGpuBlitOp *this = (GskGpuBlitOp *) op;
 
   gsk_gpu_print_op (string, indent, "blit");
-  gsk_gpu_print_int_rect (string, &self->dest_rect);
+  gsk_gpu_print_int_rect (string, &this->dest_rect);
   gsk_gpu_print_newline (string);
 }
 
@@ -49,16 +49,16 @@ gsk_gpu_blit_op_vk_command (GskGpuOp              *op,
                             GskGpuFrame           *frame,
                             GskVulkanCommandState *state)
 {
-  GskGpuBlitOp *self = (GskGpuBlitOp *) op;
+  GskGpuBlitOp *this = (GskGpuBlitOp *) op;
   VkImageLayout src_layout, dest_layout;
   VkFilter filter;
 
-  src_layout = gsk_vulkan_image_get_vk_image_layout (GSK_VULKAN_IMAGE (self->src_image));
+  src_layout = gsk_vulkan_image_get_vk_image_layout (GSK_VULKAN_IMAGE (this->src_image));
   if (src_layout != VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR &&
       src_layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL &&
       src_layout != VK_IMAGE_LAYOUT_GENERAL)
     {
-      gsk_vulkan_image_transition (GSK_VULKAN_IMAGE (self->src_image),
+      gsk_vulkan_image_transition (GSK_VULKAN_IMAGE (this->src_image),
                                    state->semaphores,
                                    state->vk_command_buffer,
                                    VK_PIPELINE_STAGE_TRANSFER_BIT,
@@ -67,12 +67,12 @@ gsk_gpu_blit_op_vk_command (GskGpuOp              *op,
       src_layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
     }
 
-  dest_layout = gsk_vulkan_image_get_vk_image_layout (GSK_VULKAN_IMAGE (self->dest_image));
+  dest_layout = gsk_vulkan_image_get_vk_image_layout (GSK_VULKAN_IMAGE (this->dest_image));
   if (dest_layout != VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR &&
       dest_layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
       dest_layout != VK_IMAGE_LAYOUT_GENERAL)
     {
-      gsk_vulkan_image_transition (GSK_VULKAN_IMAGE (self->dest_image),
+      gsk_vulkan_image_transition (GSK_VULKAN_IMAGE (this->dest_image),
                                    state->semaphores,
                                    state->vk_command_buffer,
                                    VK_PIPELINE_STAGE_TRANSFER_BIT,
@@ -81,7 +81,7 @@ gsk_gpu_blit_op_vk_command (GskGpuOp              *op,
       dest_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
     }
   
-  switch (self->filter)
+  switch (this->filter)
     {
       default:
         g_assert_not_reached ();
@@ -95,9 +95,9 @@ gsk_gpu_blit_op_vk_command (GskGpuOp              *op,
     }
 
   vkCmdBlitImage (state->vk_command_buffer,
-                  gsk_vulkan_image_get_vk_image (GSK_VULKAN_IMAGE (self->src_image)),
+                  gsk_vulkan_image_get_vk_image (GSK_VULKAN_IMAGE (this->src_image)),
                   src_layout,
-                  gsk_vulkan_image_get_vk_image (GSK_VULKAN_IMAGE (self->dest_image)),
+                  gsk_vulkan_image_get_vk_image (GSK_VULKAN_IMAGE (this->dest_image)),
                   dest_layout,
                   1,
                   &(VkImageBlit) {
@@ -109,13 +109,13 @@ gsk_gpu_blit_op_vk_command (GskGpuOp              *op,
                       },
                       .srcOffsets = {
                           {
-                              .x = self->src_rect.x,
-                              .y = self->src_rect.y,
+                              .x = this->src_rect.x,
+                              .y = this->src_rect.y,
                               .z = 0,
                           },
                           {
-                              .x = self->src_rect.x + self->src_rect.width,
-                              .y = self->src_rect.y + self->src_rect.height,
+                              .x = this->src_rect.x + this->src_rect.width,
+                              .y = this->src_rect.y + this->src_rect.height,
                               .z = 1
                           }
                       },
@@ -127,13 +127,13 @@ gsk_gpu_blit_op_vk_command (GskGpuOp              *op,
                       },
                       .dstOffsets = {
                           {
-                              .x = self->dest_rect.x,
-                              .y = self->dest_rect.y,
+                              .x = this->dest_rect.x,
+                              .y = this->dest_rect.y,
                               .z = 0,
                           },
                           {
-                              .x = self->dest_rect.x + self->dest_rect.width,
-                              .y = self->dest_rect.y + self->dest_rect.height,
+                              .x = this->dest_rect.x + this->dest_rect.width,
+                              .y = this->dest_rect.y + this->dest_rect.height,
                               .z = 1,
                           }
                       },
@@ -149,13 +149,13 @@ gsk_gpu_blit_op_gl_command (GskGpuOp          *op,
                             GskGpuFrame       *frame,
                             GskGLCommandState *state)
 {
-  GskGpuBlitOp *self = (GskGpuBlitOp *) op;
+  GskGpuBlitOp *this = (GskGpuBlitOp *) op;
   GLenum filter;
 
-  gsk_gl_image_bind_framebuffer_target (GSK_GL_IMAGE (self->src_image), GL_READ_FRAMEBUFFER);
-  gsk_gl_image_bind_framebuffer_target (GSK_GL_IMAGE (self->dest_image), GL_DRAW_FRAMEBUFFER);
+  gsk_gl_image_bind_framebuffer_target (GSK_GL_IMAGE (this->src_image), GL_READ_FRAMEBUFFER);
+  gsk_gl_image_bind_framebuffer_target (GSK_GL_IMAGE (this->dest_image), GL_DRAW_FRAMEBUFFER);
 
-  switch (self->filter)
+  switch (this->filter)
     {
       default:
         g_assert_not_reached ();
@@ -169,16 +169,16 @@ gsk_gpu_blit_op_gl_command (GskGpuOp          *op,
     }
 
   glDisable (GL_SCISSOR_TEST);
-  glBlitFramebuffer (self->src_rect.x,
-                     self->src_rect.y,
-                     self->src_rect.x + self->src_rect.width,
-                     self->src_rect.y + self->src_rect.height,
-                     self->dest_rect.x,
-                     state->flip_y ? state->flip_y - self->dest_rect.y - self->dest_rect.height
-                            : self->dest_rect.y,
-                     self->dest_rect.x + self->dest_rect.width,
-                     state->flip_y ? state->flip_y - self->dest_rect.y
-                            : self->dest_rect.y + self->dest_rect.height,
+  glBlitFramebuffer (this->src_rect.x,
+                     this->src_rect.y,
+                     this->src_rect.x + this->src_rect.width,
+                     this->src_rect.y + this->src_rect.height,
+                     this->dest_rect.x,
+                     state->flip_y ? state->flip_y - this->dest_rect.y - this->dest_rect.height
+                            : this->dest_rect.y,
+                     this->dest_rect.x + this->dest_rect.width,
+                     state->flip_y ? state->flip_y - this->dest_rect.y
+                            : this->dest_rect.y + this->dest_rect.height,
                      GL_COLOR_BUFFER_BIT,
                      filter);
   glEnable (GL_SCISSOR_TEST);
@@ -205,17 +205,17 @@ gsk_gpu_blit_op (GskGpuFrame                 *frame,
                  const cairo_rectangle_int_t *dest_rect,
                  GskGpuBlitFilter             filter)
 {
-  GskGpuBlitOp *self;
+  GskGpuBlitOp *this;
 
   g_assert (gsk_gpu_image_get_flags (src_image) & GSK_GPU_IMAGE_BLIT);
   g_assert (filter != GSK_GPU_BLIT_LINEAR || (gsk_gpu_image_get_flags (src_image) & GSK_GPU_IMAGE_FILTERABLE) == GSK_GPU_IMAGE_FILTERABLE);
   g_assert ((gsk_gpu_image_get_flags (dest_image) & GSK_GPU_IMAGE_RENDERABLE) == GSK_GPU_IMAGE_RENDERABLE);
 
-  self = (GskGpuBlitOp *) gsk_gpu_op_alloc (frame, &GSK_GPU_BLIT_OP_CLASS);
+  this = (GskGpuBlitOp *) gsk_gpu_op_alloc (frame, &GSK_GPU_BLIT_OP_CLASS);
 
-  self->src_image = g_object_ref (src_image);
-  self->dest_image = g_object_ref (dest_image);
-  self->src_rect = *src_rect;
-  self->dest_rect = *dest_rect;
-  self->filter = filter;
+  this->src_image = g_object_ref (src_image);
+  this->dest_image = g_object_ref (dest_image);
+  this->src_rect = *src_rect;
+  this->dest_rect = *dest_rect;
+  this->filter = filter;
 }

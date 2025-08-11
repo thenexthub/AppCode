@@ -58,11 +58,11 @@ struct _GtkCountingBloomFilter
   guint8        buckets[GTK_COUNTING_BLOOM_FILTER_SIZE];
 };
 
-static inline void      gtk_counting_bloom_filter_add           (GtkCountingBloomFilter         *self,
+static inline void      gtk_counting_bloom_filter_add           (GtkCountingBloomFilter         *this,
                                                                  guint16                         hash);
-static inline void      gtk_counting_bloom_filter_remove        (GtkCountingBloomFilter         *self,
+static inline void      gtk_counting_bloom_filter_remove        (GtkCountingBloomFilter         *this,
                                                                  guint16                         hash);
-static inline gboolean  gtk_counting_bloom_filter_may_contain   (const GtkCountingBloomFilter   *self,
+static inline gboolean  gtk_counting_bloom_filter_may_contain   (const GtkCountingBloomFilter   *this,
                                                                  guint16                         hash);
 
 
@@ -81,7 +81,7 @@ static inline gboolean  gtk_counting_bloom_filter_may_contain   (const GtkCounti
 
 /*
  * gtk_counting_bloom_filter_add:
- * @self: a `GtkCountingBloomFilter`
+ * @this: a `GtkCountingBloomFilter`
  * @hash: a hash value to add to the filter
  *
  * Adds the hash value to the filter.
@@ -91,62 +91,62 @@ static inline gboolean  gtk_counting_bloom_filter_may_contain   (const GtkCounti
  * removed as many times.
  **/
 static inline void
-gtk_counting_bloom_filter_add (GtkCountingBloomFilter *self,
+gtk_counting_bloom_filter_add (GtkCountingBloomFilter *this,
                                guint16                 hash)
 {
   guint16 bucket = hash % GTK_COUNTING_BLOOM_FILTER_SIZE;
 
-  if (self->buckets[bucket] == 255)
+  if (this->buckets[bucket] == 255)
     return;
 
-  self->buckets[bucket]++;
+  this->buckets[bucket]++;
 }
 
 /*
  * gtk_counting_bloom_filter_remove:
- * @self: a `GtkCountingBloomFilter`
+ * @this: a `GtkCountingBloomFilter`
  * @hash: a hash value to remove from the filter
  *
  * Removes a hash value from the filter that has previously
  * been added via gtk_counting_bloom_filter_add().
  **/
 static inline void
-gtk_counting_bloom_filter_remove (GtkCountingBloomFilter *self,
+gtk_counting_bloom_filter_remove (GtkCountingBloomFilter *this,
                                   guint16                 hash)
 {
   guint16 bucket = hash % GTK_COUNTING_BLOOM_FILTER_SIZE;
 
-  if (self->buckets[bucket] == 255)
+  if (this->buckets[bucket] == 255)
     return;
 
-  g_assert (self->buckets[bucket] > 0);
+  g_assert (this->buckets[bucket] > 0);
 
-  self->buckets[bucket]--;
+  this->buckets[bucket]--;
 }
 
 /*
  * gtk_counting_bloom_filter_may_contain:
- * @self: a `GtkCountingBloomFilter`
+ * @this: a `GtkCountingBloomFilter`
  * @hash: the hash value to check
  *
- * Checks if @hash may be contained in @self.
+ * Checks if @hash may be contained in @this.
  *
  * A return value of %FALSE means that @hash is definitely not part
- * of @self.
+ * of @this.
  *
  * A return value of %TRUE means that @hash may or may not have been
- * added to @self. In that case a different method must be used to
+ * added to @this. In that case a different method must be used to
  * confirm that @hash is indeed part of the set.
  *
- * Returns: %FALSE if @hash is not part of @self.
+ * Returns: %FALSE if @hash is not part of @this.
  **/
 static inline gboolean
-gtk_counting_bloom_filter_may_contain (const GtkCountingBloomFilter *self,
+gtk_counting_bloom_filter_may_contain (const GtkCountingBloomFilter *this,
                                        guint16                       hash)
 {
   guint16 bucket = hash % GTK_COUNTING_BLOOM_FILTER_SIZE;
 
-  return self->buckets[bucket] != 0;
+  return this->buckets[bucket] != 0;
 }
 
 

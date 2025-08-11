@@ -68,8 +68,8 @@ editable_handle_method (GDBusConnection       *connection,
                         GDBusMethodInvocation *invocation,
                         gpointer               user_data)
 {
-  GtkATContext *self = user_data;
-  GtkAccessible *accessible = gtk_at_context_get_accessible (self);
+  GtkATContext *this = user_data;
+  GtkAccessible *accessible = gtk_at_context_get_accessible (this);
   GtkWidget *widget = GTK_WIDGET (accessible);
 
   if (g_strcmp0 (method_name, "SetTextContents") == 0)
@@ -215,8 +215,8 @@ text_view_handle_method (GDBusConnection       *connection,
                          GDBusMethodInvocation *invocation,
                          gpointer               user_data)
 {
-  GtkATContext *self = user_data;
-  GtkAccessible *accessible = gtk_at_context_get_accessible (self);
+  GtkATContext *this = user_data;
+  GtkAccessible *accessible = gtk_at_context_get_accessible (this);
   GtkWidget *widget = GTK_WIDGET (accessible);
 
   if (g_strcmp0 (method_name, "SetTextContents") == 0)

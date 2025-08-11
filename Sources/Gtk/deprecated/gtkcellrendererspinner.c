@@ -103,7 +103,7 @@ static void gtk_cell_renderer_spinner_set_property (GObject         *object,
                                                     guint            param_id,
                                                     const GValue    *value,
                                                     GParamSpec      *pspec);
-static void gtk_cell_renderer_spinner_get_size     (GtkCellRendererSpinner *self,
+static void gtk_cell_renderer_spinner_get_size     (GtkCellRendererSpinner *this,
                                                     GtkWidget              *widget,
                                                     const GdkRectangle     *cell_area,
                                                     int                    *x_offset,
@@ -322,7 +322,7 @@ gtk_cell_renderer_spinner_set_property (GObject      *object,
 }
 
 static void
-gtk_cell_renderer_spinner_get_size (GtkCellRendererSpinner *self,
+gtk_cell_renderer_spinner_get_size (GtkCellRendererSpinner *this,
                                     GtkWidget              *widget,
                                     const GdkRectangle     *cell_area,
                                     int                    *x_offset,
@@ -330,7 +330,7 @@ gtk_cell_renderer_spinner_get_size (GtkCellRendererSpinner *self,
                                     int                    *width,
                                     int                    *height)
 {
-  GtkCellRendererSpinnerPrivate *priv = gtk_cell_renderer_spinner_get_instance_private (self);
+  GtkCellRendererSpinnerPrivate *priv = gtk_cell_renderer_spinner_get_instance_private (this);
   double align;
   int w, h;
   int xpad, ypad;
@@ -339,9 +339,9 @@ gtk_cell_renderer_spinner_get_size (GtkCellRendererSpinner *self,
 
   rtl = gtk_widget_get_direction (widget) == GTK_TEXT_DIR_RTL;
 
-  gtk_cell_renderer_spinner_update_size (self, widget);
+  gtk_cell_renderer_spinner_update_size (this, widget);
 
-  g_object_get (self,
+  g_object_get (this,
                 "xpad", &xpad,
                 "ypad", &ypad,
                 "xalign", &xalign,
@@ -451,8 +451,8 @@ gtk_cell_renderer_spinner_snapshot (GtkCellRenderer      *cell,
                                     const GdkRectangle   *cell_area,
                                     GtkCellRendererState  flags)
 {
-  GtkCellRendererSpinner *self = GTK_CELL_RENDERER_SPINNER (cell);
-  GtkCellRendererSpinnerPrivate *priv = gtk_cell_renderer_spinner_get_instance_private (self);
+  GtkCellRendererSpinner *this = GTK_CELL_RENDERER_SPINNER (cell);
+  GtkCellRendererSpinnerPrivate *priv = gtk_cell_renderer_spinner_get_instance_private (this);
   GdkRectangle pix_rect;
   GdkRectangle draw_rect;
   int xpad, ypad;
@@ -461,13 +461,13 @@ gtk_cell_renderer_spinner_snapshot (GtkCellRenderer      *cell,
   if (!priv->active)
     return;
 
-  gtk_cell_renderer_spinner_get_size (self, widget, cell_area,
+  gtk_cell_renderer_spinner_get_size (this, widget, cell_area,
                                       &pix_rect.x,
                                       &pix_rect.y,
                                       &pix_rect.width,
                                       &pix_rect.height);
 
-  g_object_get (self,
+  g_object_get (this,
                 "xpad", &xpad,
                 "ypad", &ypad,
                 NULL);

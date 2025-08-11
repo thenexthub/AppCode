@@ -52,8 +52,8 @@ G_DEFINE_TYPE_WITH_CODE (GdkAndroidDragSurface, gdk_android_drag_surface, GDK_TY
 static void
 gdk_android_drag_surface_constructed (GObject *object)
 {
-  GdkAndroidDragSurface *self = (GdkAndroidDragSurface*)object;
-  GdkSurface *surface = (GdkSurface *) self;
+  GdkAndroidDragSurface *this = (GdkAndroidDragSurface*)object;
+  GdkSurface *surface = (GdkSurface *) this;
 
   GdkFrameClock *frame_clock = _gdk_frame_clock_idle_new ();
   gdk_surface_set_frame_clock (surface, frame_clock);
@@ -95,18 +95,18 @@ gdk_android_drag_surface_hide (GdkSurface *surface)
 static gdouble
 gdk_android_drag_surface_get_scale (GdkSurface *surface)
 {
-  GdkAndroidDragSurface *self = (GdkAndroidDragSurface *)surface;
-  return gdk_surface_get_scale (gdk_drag_get_surface ((GDK_DRAG (self->drag))));
+  GdkAndroidDragSurface *this = (GdkAndroidDragSurface *)surface;
+  return gdk_surface_get_scale (gdk_drag_get_surface ((GDK_DRAG (this->drag))));
 }
 
 static gboolean
 gdk_android_drag_surface_compute_size (GdkSurface *surface)
 {
-  GdkAndroidDragSurface *self = (GdkAndroidDragSurface *) surface;
-  if (surface->width != self->width || surface->height != self->height)
+  GdkAndroidDragSurface *this = (GdkAndroidDragSurface *) surface;
+  if (surface->width != this->width || surface->height != this->height)
     {
-      surface->width = self->width;
-      surface->height = self->height;
+      surface->width = this->width;
+      surface->height = this->height;
 
       g_debug ("New DragSurface bounds: %dx%d", surface->width, surface->height);
       _gdk_surface_update_size (surface);
@@ -138,25 +138,25 @@ gdk_android_drag_surface_class_init (GdkAndroidDragSurfaceClass *klass)
 }
 
 static void
-gdk_android_drag_surface_init (GdkAndroidDragSurface *self)
+gdk_android_drag_surface_init (GdkAndroidDragSurface *this)
 {
-  self->width = -1;
-  self->height = -1;
-  self->hot_x = 0;
-  self->hot_y = 0;
+  this->width = -1;
+  this->height = -1;
+  this->hot_x = 0;
+  this->hot_y = 0;
 }
 
 static gboolean
 gdk_android_drag_surface_present (GdkDragSurface *drag_surface,
                                   int width, int height)
 {
-  GdkAndroidDragSurface *self = (GdkAndroidDragSurface *)drag_surface;
-  self->width = width;
-  self->height = height;
+  GdkAndroidDragSurface *this = (GdkAndroidDragSurface *)drag_surface;
+  this->width = width;
+  this->height = height;
 
   g_debug("GdkAndroidDragSurface: presenting drag surface %dx%d", width, height);
 
-  gdk_surface_request_layout ((GdkSurface *)self);
+  gdk_surface_request_layout ((GdkSurface *)this);
   return TRUE;
 }
 
@@ -172,14 +172,14 @@ G_DEFINE_TYPE (GdkAndroidDrag, gdk_android_drag, GDK_TYPE_DRAG)
 static void
 gdk_android_drag_finalize (GObject *object)
 {
-  GdkAndroidDrag *self = (GdkAndroidDrag *)object;
-  GdkSurface *surface = (GdkSurface *)self->surface;
+  GdkAndroidDrag *this = (GdkAndroidDrag *)object;
+  GdkSurface *surface = (GdkSurface *)this->surface;
   G_OBJECT_CLASS (gdk_android_drag_parent_class)->finalize (object);
 
   // Destroy the surface after handlers finalize handlers of Object have been
   // called. GtkDragIcon expects the frame clock to still exist while it is
-  // beeing destroyed. As self has the DragIcon in data, we must destroy the
-  // surface only after the data of self has been destroyed.
+  // beeing destroyed. As this has the DragIcon in data, we must destroy the
+  // surface only after the data of this has been destroyed.
   if (!GDK_SURFACE_DESTROYED (surface))
     {
       gdk_surface_set_is_mapped (surface, FALSE);
@@ -191,19 +191,19 @@ gdk_android_drag_finalize (GObject *object)
 static void
 gdk_android_drag_constructed (GObject *object)
 {
-  GdkAndroidDrag *self = (GdkAndroidDrag *)object;
+  GdkAndroidDrag *this = (GdkAndroidDrag *)object;
   G_OBJECT_CLASS (gdk_android_drag_parent_class)->constructed (object);
-  self->surface = g_object_new (GDK_TYPE_ANDROID_DRAG_SURFACE,
-                                "display", gdk_drag_get_display ((GdkDrag *)self),
+  this->surface = g_object_new (GDK_TYPE_ANDROID_DRAG_SURFACE,
+                                "display", gdk_drag_get_display ((GdkDrag *)this),
                                 NULL);
-  self->surface->drag = self;
+  this->surface->drag = this;
 }
 
 static GdkSurface *
 gdk_android_drag_get_drag_surface (GdkDrag *drag)
 {
-  GdkAndroidDrag *self = (GdkAndroidDrag *)drag;
-  return (GdkSurface *)self->surface;
+  GdkAndroidDrag *this = (GdkAndroidDrag *)drag;
+  return (GdkSurface *)this->surface;
 }
 
 static void
@@ -211,10 +211,10 @@ gdk_android_drag_set_hotspot (GdkDrag *drag,
                               int      hot_x,
                               int      hot_y)
 {
-  GdkAndroidDrag *self = (GdkAndroidDrag *)drag;
-  self->surface->hot_x = hot_x;
-  self->surface->hot_y = hot_y;
-  gdk_surface_invalidate_rect ((GdkSurface *)self->surface, NULL);
+  GdkAndroidDrag *this = (GdkAndroidDrag *)drag;
+  this->surface->hot_x = hot_x;
+  this->surface->hot_y = hot_y;
+  gdk_surface_invalidate_rect ((GdkSurface *)this->surface, NULL);
 }
 
 static void
@@ -241,7 +241,7 @@ gdk_android_drag_class_init (GdkAndroidDragClass *klass)
 }
 
 static void
-gdk_android_drag_init (GdkAndroidDrag *self)
+gdk_android_drag_init (GdkAndroidDrag *this)
 {}
 
 
@@ -250,10 +250,10 @@ G_DEFINE_TYPE (GdkAndroidDrop, gdk_android_drop, GDK_TYPE_DROP)
 static void
 gdk_android_drop_finalize (GObject *object)
 {
-  GdkAndroidDrop *self = (GdkAndroidDrop *)object;
+  GdkAndroidDrop *this = (GdkAndroidDrop *)object;
   JNIEnv *env = gdk_android_get_env();
-  if (self->drop)
-    (*env)->DeleteGlobalRef (env, self->drop);
+  if (this->drop)
+    (*env)->DeleteGlobalRef (env, this->drop);
   G_OBJECT_CLASS (gdk_android_drop_parent_class)->finalize (object);
 }
 
@@ -262,16 +262,16 @@ gdk_android_drop_status (GdkDrop *drop,
                          GdkDragAction actions,
                          GdkDragAction preferred)
 {
-  GdkAndroidDrop *self = (GdkAndroidDrop *)drop;
-  self->possible_actions = actions;
+  GdkAndroidDrop *this = (GdkAndroidDrop *)drop;
+  this->possible_actions = actions;
 }
 
 static void
 gdk_android_drop_finish (GdkDrop *drop, GdkDragAction action)
 {
-  GdkAndroidDrop *self = (GdkAndroidDrop *)drop;
-  self->commited_action = action;
-  self->drop_finished = TRUE;
+  GdkAndroidDrop *this = (GdkAndroidDrop *)drop;
+  this->commited_action = action;
+  this->drop_finished = TRUE;
 }
 
 static void
@@ -282,7 +282,7 @@ gdk_android_drop_read_async (GdkDrop            *drop,
                              GAsyncReadyCallback callback,
                              gpointer            user_data)
 {
-  GdkAndroidDrop *self = (GdkAndroidDrop *)drop;
+  GdkAndroidDrop *this = (GdkAndroidDrop *)drop;
 
   GTask *task = g_task_new (drop, cancellable, callback, user_data);
   g_task_set_source_tag (task, gdk_android_drop_read_async);
@@ -291,7 +291,7 @@ gdk_android_drop_read_async (GdkDrop            *drop,
   JNIEnv *env = gdk_android_get_env ();
   (*env)->PushLocalFrame (env, 1);
 
-  jobject clipdata = (*env)->CallObjectMethod (env, self->drop,
+  jobject clipdata = (*env)->CallObjectMethod (env, this->drop,
                                                gdk_android_get_java_cache ()->a_drag_event.get_clip_data);
   if (!clipdata)
     {
@@ -332,11 +332,11 @@ gdk_android_drop_class_init (GdkAndroidDropClass *klass)
 }
 
 static void
-gdk_android_drop_init (GdkAndroidDrop *self)
+gdk_android_drop_init (GdkAndroidDrop *this)
 {
-  self->possible_actions = 0;
-  self->drop = NULL;
-  self->commited_action = 0;
+  this->possible_actions = 0;
+  this->drop = NULL;
+  this->commited_action = 0;
 }
 
 static void
@@ -353,12 +353,12 @@ gdk_android_dnd_surface_drag_clipdata_cb (GdkContentProvider *provider, GAsyncRe
       goto exit;
     }
 
-  GdkAndroidSurface *self = (GdkAndroidSurface *)gdk_drag_get_surface ((GdkDrag *)drag);
+  GdkAndroidSurface *this = (GdkAndroidSurface *)gdk_drag_get_surface ((GdkDrag *)drag);
 
   jobject empty = (*env)->NewObject(env,
                                     gdk_android_get_java_cache ()->clipboard_empty_drag_shadow.klass,
                                     gdk_android_get_java_cache ()->clipboard_empty_drag_shadow.constructor,
-                                    self->surface);
+                                    this->surface);
   jobject native_identifier = (*env)->NewObject(env,
                                                 gdk_android_get_java_cache ()->clipboard_native_drag_identifier.klass,
                                                 gdk_android_get_java_cache ()->clipboard_native_drag_identifier.constructor,
@@ -366,7 +366,7 @@ gdk_android_dnd_surface_drag_clipdata_cb (GdkContentProvider *provider, GAsyncRe
   jint drag_flags = 0;
   if (!(*env)->IsInstanceOf (env, clipdata, gdk_android_get_java_cache ()->clipboard_internal_clipdata.klass))
     drag_flags |= gdk_android_get_java_cache ()->a_view.drag_global;
-  (*env)->CallVoidMethod (env, self->surface,
+  (*env)->CallVoidMethod (env, this->surface,
                           gdk_android_get_java_cache ()->surface.start_dnd,
                           clipdata, empty,
                           native_identifier,
@@ -386,7 +386,7 @@ gdk_android_dnd_surface_drag_begin (GdkSurface         *surface,
                                     GdkDragAction       actions,
                                     double dx, double dy)
 {
-  GdkAndroidSurface *self = (GdkAndroidSurface *)surface;
+  GdkAndroidSurface *this = (GdkAndroidSurface *)surface;
   GdkAndroidDisplay *display = (GdkAndroidDisplay *) gdk_surface_get_display (surface);
 
   GdkContentFormats *formats = gdk_content_provider_ref_formats (content);
@@ -409,7 +409,7 @@ gdk_android_dnd_surface_drag_begin (GdkSurface         *surface,
 
   JNIEnv *env = gdk_android_get_env ();
   (*env)->PushLocalFrame(env, 1);
-  jobject context = (*env)->CallObjectMethod (env, self->surface,
+  jobject context = (*env)->CallObjectMethod (env, this->surface,
                                               gdk_android_get_java_cache ()->a_view.get_context);
   gdk_android_clipboard_clipdata_from_provider_async (content,
                                                       formats,
@@ -486,8 +486,8 @@ gboolean
 gdk_android_dnd_surface_handle_drop_event (GdkAndroidSurface *surface,
                                            jobject event)
 {
-  GdkAndroidDrop *self = (GdkAndroidDrop *)surface->active_drop;
-  GdkDrop *drop = (GdkDrop *)self;
+  GdkAndroidDrop *this = (GdkAndroidDrop *)surface->active_drop;
+  GdkDrop *drop = (GdkDrop *)this;
 
   GdkAndroidDisplay *display = (GdkAndroidDisplay *)gdk_surface_get_display ((GdkSurface *)surface);
   JNIEnv *env = gdk_android_get_env ();
@@ -497,8 +497,8 @@ gdk_android_dnd_surface_handle_drop_event (GdkAndroidSurface *surface,
 
   if (action == gdk_android_get_java_cache ()->a_drag_event.action_started)
     {
-      if (self)
-        g_object_unref (self);
+      if (this)
+        g_object_unref (this);
 
       (*env)->PushLocalFrame (env, 1);
       jobject clipdesc = (*env)->CallObjectMethod (env, event,
@@ -517,13 +517,13 @@ gdk_android_dnd_surface_handle_drop_event (GdkAndroidSurface *surface,
     }
   else if (action == gdk_android_get_java_cache ()->a_drag_event.action_entered)
     {
-      g_return_val_if_fail (GDK_IS_ANDROID_DROP (self), FALSE);
+      g_return_val_if_fail (GDK_IS_ANDROID_DROP (this), FALSE);
       gdk_drop_emit_enter_event (drop, TRUE, 0., 0., GDK_CURRENT_TIME);
-      return self->possible_actions != 0;
+      return this->possible_actions != 0;
     }
   else if (action == gdk_android_get_java_cache ()->a_drag_event.action_location)
     {
-      g_return_val_if_fail (GDK_IS_ANDROID_DROP (self), FALSE);
+      g_return_val_if_fail (GDK_IS_ANDROID_DROP (this), FALSE);
       jfloat x = (*env)->CallFloatMethod (env, event,
                                           gdk_android_get_java_cache()->a_drag_event.get_x);
       jfloat y = (*env)->CallFloatMethod (env, event,
@@ -533,11 +533,11 @@ gdk_android_dnd_surface_handle_drop_event (GdkAndroidSurface *surface,
                                   x / surface->cfg.scale,
                                   y / surface->cfg.scale,
                                   GDK_CURRENT_TIME);
-      return self->possible_actions != 0;
+      return this->possible_actions != 0;
     }
   else if (action == gdk_android_get_java_cache ()->a_drag_event.action_exited)
     {
-      g_return_val_if_fail (GDK_IS_ANDROID_DROP (self), FALSE);
+      g_return_val_if_fail (GDK_IS_ANDROID_DROP (this), FALSE);
       gdk_drop_emit_leave_event (drop, TRUE, GDK_CURRENT_TIME);
       return TRUE;
     }
@@ -562,29 +562,29 @@ gdk_android_dnd_surface_handle_drop_event (GdkAndroidSurface *surface,
     }
   else if (action == gdk_android_get_java_cache ()->a_drag_event.action_drop)
     {
-      g_return_val_if_fail (GDK_IS_ANDROID_DROP (self), FALSE);
+      g_return_val_if_fail (GDK_IS_ANDROID_DROP (this), FALSE);
 
-      if (self->drop)
-        (*env)->DeleteGlobalRef (env, self->drop);
-      self->drop = (*env)->NewGlobalRef (env, event);
+      if (this->drop)
+        (*env)->DeleteGlobalRef (env, this->drop);
+      this->drop = (*env)->NewGlobalRef (env, event);
       jfloat x = (*env)->CallFloatMethod (env, event,
                                           gdk_android_get_java_cache()->a_drag_event.get_x);
       jfloat y = (*env)->CallFloatMethod (env, event,
                                           gdk_android_get_java_cache()->a_drag_event.get_y);
-      if (self->possible_actions != 0)
+      if (this->possible_actions != 0)
         {
-          self->drop_finished = FALSE;
+          this->drop_finished = FALSE;
           gdk_drop_emit_drop_event (drop,
                                     TRUE,
                                     x / surface->cfg.scale,
                                     y / surface->cfg.scale,
                                     GDK_CURRENT_TIME);
-          while (!self->drop_finished)
+          while (!this->drop_finished)
             g_main_context_iteration (NULL, FALSE);
         }
       gdk_drop_emit_leave_event (drop, TRUE, GDK_CURRENT_TIME);
 
-      return self->commited_action != 0;
+      return this->commited_action != 0;
     }
   return FALSE;
 }

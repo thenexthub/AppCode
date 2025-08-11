@@ -442,20 +442,20 @@ gtk_places_view_get_property (GObject    *object,
                               GValue     *value,
                               GParamSpec *pspec)
 {
-  GtkPlacesView *self = GTK_PLACES_VIEW (object);
+  GtkPlacesView *this = GTK_PLACES_VIEW (object);
 
   switch (prop_id)
     {
     case PROP_LOADING:
-      g_value_set_boolean (value, gtk_places_view_get_loading (self));
+      g_value_set_boolean (value, gtk_places_view_get_loading (this));
       break;
 
     case PROP_OPEN_FLAGS:
-      g_value_set_flags (value, gtk_places_view_get_open_flags (self));
+      g_value_set_flags (value, gtk_places_view_get_open_flags (this));
       break;
 
     case PROP_FETCHING_NETWORKS:
-      g_value_set_boolean (value, gtk_places_view_get_fetching_networks (self));
+      g_value_set_boolean (value, gtk_places_view_get_fetching_networks (this));
       break;
 
     default:
@@ -469,12 +469,12 @@ gtk_places_view_set_property (GObject      *object,
                               const GValue *value,
                               GParamSpec   *pspec)
 {
-  GtkPlacesView *self = GTK_PLACES_VIEW (object);
+  GtkPlacesView *this = GTK_PLACES_VIEW (object);
 
   switch (prop_id)
     {
     case PROP_OPEN_FLAGS:
-      gtk_places_view_set_open_flags (self, g_value_get_flags (value));
+      gtk_places_view_set_open_flags (this, g_value_get_flags (value));
       break;
 
     default:
@@ -2362,24 +2362,24 @@ gtk_places_view_class_init (GtkPlacesViewClass *klass)
 }
 
 static void
-gtk_places_view_init (GtkPlacesView *self)
+gtk_places_view_init (GtkPlacesView *this)
 {
   GtkEventController *controller;
 
-  self->volume_monitor = g_volume_monitor_get ();
-  self->open_flags = GTK_PLACES_OPEN_NORMAL;
-  self->path_size_group = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
-  self->space_size_group = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
+  this->volume_monitor = g_volume_monitor_get ();
+  this->open_flags = GTK_PLACES_OPEN_NORMAL;
+  this->path_size_group = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
+  this->space_size_group = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 
-  gtk_widget_action_set_enabled (GTK_WIDGET (self), "location.open-tab", FALSE);
-  gtk_widget_action_set_enabled (GTK_WIDGET (self), "location.open-window", FALSE);
+  gtk_widget_action_set_enabled (GTK_WIDGET (this), "location.open-tab", FALSE);
+  gtk_widget_action_set_enabled (GTK_WIDGET (this), "location.open-window", FALSE);
 
-  gtk_widget_init_template (GTK_WIDGET (self));
+  gtk_widget_init_template (GTK_WIDGET (this));
 
-  gtk_widget_set_parent (self->server_adresses_popover, GTK_WIDGET (self));
+  gtk_widget_set_parent (this->server_adresses_popover, GTK_WIDGET (this));
   controller = gtk_event_controller_key_new ();
-  g_signal_connect (controller, "key-pressed", G_CALLBACK (on_key_press_event), self);
-  gtk_widget_add_controller (GTK_WIDGET (self), controller);
+  g_signal_connect (controller, "key-pressed", G_CALLBACK (on_key_press_event), this);
+  gtk_widget_add_controller (GTK_WIDGET (this), controller);
 
   /* We need an additional controller because GtkListBox only
    * activates rows for GDK_BUTTON_PRIMARY clicks
@@ -2388,10 +2388,10 @@ gtk_places_view_init (GtkPlacesView *self)
   gtk_event_controller_set_propagation_phase (controller, GTK_PHASE_BUBBLE);
   gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (controller), GDK_BUTTON_MIDDLE);
   g_signal_connect (controller, "released",
-                    G_CALLBACK (on_middle_click_row_event), self);
-  gtk_widget_add_controller (self->listbox, controller);
+                    G_CALLBACK (on_middle_click_row_event), this);
+  gtk_widget_add_controller (this->listbox, controller);
 
-  populate_available_protocols_grid (GTK_GRID (self->available_protocols_grid));
+  populate_available_protocols_grid (GTK_GRID (this->available_protocols_grid));
 }
 
 /*

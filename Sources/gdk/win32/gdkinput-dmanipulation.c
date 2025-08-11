@@ -78,25 +78,25 @@ static gboolean util_handler_free (gpointer);
 static STDMETHODIMP_ (ULONG)
 DManipEventHandler_AddRef (IDirectManipulationViewportEventHandler *self_)
 {
-  DManipEventHandler *self = (DManipEventHandler*) self_;
+  DManipEventHandler *this = (DManipEventHandler*) self_;
 
-  return (ULONG) InterlockedIncrement (&self->reference_count);
+  return (ULONG) InterlockedIncrement (&this->reference_count);
 }
 
 static STDMETHODIMP_ (ULONG)
 DManipEventHandler_Release (IDirectManipulationViewportEventHandler *self_)
 {
-  DManipEventHandler *self = (DManipEventHandler*) self_;
+  DManipEventHandler *this = (DManipEventHandler*) self_;
 
   /* NOTE: This may run from a worker thread */
 
-  LONG new_reference_count = InterlockedDecrement (&self->reference_count);
+  LONG new_reference_count = InterlockedDecrement (&this->reference_count);
 
   if (new_reference_count <= 0)
     {
       /* For safety, schedule the cleanup to be executed
        * on the main thread */
-      g_idle_add (util_handler_free, self);
+      g_idle_add (util_handler_free, this);
 
       return 0;
     }
@@ -109,17 +109,17 @@ DManipEventHandler_QueryInterface (IDirectManipulationViewportEventHandler *self
                                    REFIID riid,
                                    void **ppvObject)
 {
-  DManipEventHandler *self = (DManipEventHandler*) self_;
+  DManipEventHandler *this = (DManipEventHandler*) self_;
 
-  if G_UNLIKELY (!self || !ppvObject)
+  if G_UNLIKELY (!this || !ppvObject)
     return E_POINTER;
 
   *ppvObject = NULL;
 
   if (IsEqualGUID (riid, &IID_IUnknown))
-    *ppvObject = self;
+    *ppvObject = this;
   else if (IsEqualGUID (riid, &IID_IDirectManipulationViewportEventHandler))
-    *ppvObject = self;
+    *ppvObject = this;
 
   if (*ppvObject == NULL)
     return E_NOINTERFACE;
@@ -144,7 +144,7 @@ DManipEventHandler_OnContentUpdated (IDirectManipulationViewportEventHandler *se
                                      IDirectManipulationViewport *viewport,
                                      IDirectManipulationContent *content)
 {
-  DManipEventHandler *self = (DManipEventHandler*) self_;
+  DManipEventHandler *this = (DManipEventHandler*) self_;
   float transform[6] = {1., 0., 0., 1., 0., 0.};
   HRESULT hr;
 
@@ -153,7 +153,7 @@ DManipEventHandler_OnContentUpdated (IDirectManipulationViewportEventHandler *se
   if G_UNLIKELY (FAILED (hr))
     return E_FAIL;
 
-  switch (self->gesture)
+  switch (this->gesture)
     {
     case GESTURE_PAN:
       {
@@ -168,22 +168,22 @@ DManipEventHandler_OnContentUpdated (IDirectManipulationViewportEventHandler *se
         pan_x = transform[4];
         pan_y = transform[5];
 
-        surface_win32 = GDK_WIN32_SURFACE (self->surface);
+        surface_win32 = GDK_WIN32_SURFACE (this->surface);
         scale = surface_win32->surface_scale;
         state = util_get_modifier_state ();
         time = (uint32_t) GetMessageTime ();
 
-        event = gdk_scroll_event_new (self->surface,
-                                      self->device,
+        event = gdk_scroll_event_new (this->surface,
+                                      this->device,
                                       NULL, time, state,
-                                      (self->pan_x - pan_x) / scale,
-                                      (self->pan_y - pan_y) / scale,
+                                      (this->pan_x - pan_x) / scale,
+                                      (this->pan_y - pan_y) / scale,
                                       FALSE,
                                       GDK_SCROLL_UNIT_SURFACE);
         _gdk_win32_append_event (event);
 
-        self->pan_x = pan_x;
-        self->pan_y = pan_y;
+        this->pan_x = pan_x;
+        this->pan_y = pan_y;
       }
     break;
     case GESTURE_ZOOM:
@@ -193,7 +193,7 @@ DManipEventHandler_OnContentUpdated (IDirectManipulationViewportEventHandler *se
         POINT cursor = {0, 0};
         float scale;
         GdkEvent *event;
-        GdkDisplay *display = gdk_surface_get_display (self->surface);
+        GdkDisplay *display = gdk_surface_get_display (this->surface);
 
         scale = transform[0];
 
@@ -201,18 +201,18 @@ DManipEventHandler_OnContentUpdated (IDirectManipulationViewportEventHandler *se
         time = (uint32_t) GetMessageTime ();
         _gdk_win32_get_cursor_pos (display, &cursor);
 
-        ScreenToClient (GDK_SURFACE_HWND (self->surface), &cursor);
+        ScreenToClient (GDK_SURFACE_HWND (this->surface), &cursor);
 
-        if (!self->sequence)
-          self->sequence = util_get_next_sequence ();
+        if (!this->sequence)
+          this->sequence = util_get_next_sequence ();
 
-        event = gdk_touchpad_event_new_pinch (self->surface, self->sequence, self->device,
-                                              time, state, self->phase, cursor.x, cursor.y,
+        event = gdk_touchpad_event_new_pinch (this->surface, this->sequence, this->device,
+                                              time, state, this->phase, cursor.x, cursor.y,
                                               2, 0.0, 0.0, scale, 0.0);
         _gdk_win32_append_event (event);
 
-        self->scale = scale;
-        self->phase = GDK_TOUCHPAD_GESTURE_PHASE_UPDATE;
+        this->scale = scale;
+        this->phase = GDK_TOUCHPAD_GESTURE_PHASE_UPDATE;
       }
     break;
     default:
@@ -229,11 +229,11 @@ DManipEventHandler_OnViewportStatusChanged (IDirectManipulationViewportEventHand
                                             DIRECTMANIPULATION_STATUS current,
                                             DIRECTMANIPULATION_STATUS previous)
 {
-  DManipEventHandler *self = (DManipEventHandler*) self_;
+  DManipEventHandler *this = (DManipEventHandler*) self_;
 
   if (previous == DIRECTMANIPULATION_RUNNING)
     {
-      switch (self->gesture)
+      switch (this->gesture)
         {
         case GESTURE_PAN:
           {
@@ -244,7 +244,7 @@ DManipEventHandler_OnViewportStatusChanged (IDirectManipulationViewportEventHand
             state = util_get_modifier_state ();
             time = (uint32_t) GetMessageTime ();
 
-            event = gdk_scroll_event_new (self->surface, self->device,
+            event = gdk_scroll_event_new (this->surface, this->device,
                                           NULL, time, state,
                                           0.0, 0.0, TRUE,
                                           GDK_SCROLL_UNIT_SURFACE);
@@ -257,20 +257,20 @@ DManipEventHandler_OnViewportStatusChanged (IDirectManipulationViewportEventHand
             uint32_t time;
             POINT cursor = {0, 0};
             GdkEvent *event;
-            GdkDisplay *display = gdk_surface_get_display (self->surface);
+            GdkDisplay *display = gdk_surface_get_display (this->surface);
 
-            if (self->phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN)
+            if (this->phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN)
               break;
 
             state = util_get_modifier_state ();
             time = (uint32_t) GetMessageTime ();
             _gdk_win32_get_cursor_pos (display, &cursor);
 
-            ScreenToClient (GDK_SURFACE_HWND (self->surface), &cursor);
+            ScreenToClient (GDK_SURFACE_HWND (this->surface), &cursor);
 
-            event = gdk_touchpad_event_new_pinch (self->surface, self->sequence, self->device,
+            event = gdk_touchpad_event_new_pinch (this->surface, this->sequence, this->device,
                                                   time, state, GDK_TOUCHPAD_GESTURE_PHASE_END,
-                                                  cursor.x, cursor.y, 2, 0., 0., self->scale,
+                                                  cursor.x, cursor.y, 2, 0., 0., this->scale,
                                                   0.);
             _gdk_win32_append_event (event);
           }
@@ -280,7 +280,7 @@ DManipEventHandler_OnViewportStatusChanged (IDirectManipulationViewportEventHand
         break;
         }
 
-      dmanip_event_handler_running_state_clear (self);
+      dmanip_event_handler_running_state_clear (this);
       reset_viewport (viewport);
     }
 

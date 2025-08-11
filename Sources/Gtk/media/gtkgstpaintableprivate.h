@@ -30,11 +30,11 @@ G_DECLARE_FINAL_TYPE (GtkGstPaintable, gtk_gst_paintable, GTK, GST_PAINTABLE, GO
 
 GdkPaintable *  gtk_gst_paintable_new                   (void);
 
-void            gtk_gst_paintable_realize               (GtkGstPaintable        *self,
+void            gtk_gst_paintable_realize               (GtkGstPaintable        *this,
                                                          GdkSurface             *surface);
-void            gtk_gst_paintable_unrealize             (GtkGstPaintable        *self,
+void            gtk_gst_paintable_unrealize             (GtkGstPaintable        *this,
                                                          GdkSurface             *surface);
-void            gtk_gst_paintable_queue_set_texture     (GtkGstPaintable        *self,
+void            gtk_gst_paintable_queue_set_texture     (GtkGstPaintable        *this,
                                                          GdkTexture             *texture,
                                                          double                  pixel_aspect_ratio,
                                                          const graphene_rect_t  *viewport,

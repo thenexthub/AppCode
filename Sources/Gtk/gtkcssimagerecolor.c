@@ -317,7 +317,7 @@ gtk_css_image_recolor_parse_arg (GtkCssParser *parser,
                                  guint         arg,
                                  gpointer      data)
 {
-  GtkCssImageRecolor *self = data;
+  GtkCssImageRecolor *this = data;
 
   switch (arg)
   {
@@ -326,16 +326,16 @@ gtk_css_image_recolor_parse_arg (GtkCssParser *parser,
         char *url = gtk_css_parser_consume_url (parser);
         if (url == NULL)
           return 0;
-        self->file = gtk_css_parser_resolve_url (parser, url);
+        this->file = gtk_css_parser_resolve_url (parser, url);
         g_free (url);
-        if (self->file == NULL)
+        if (this->file == NULL)
           return 0;
         return 1;
       }
 
     case 1:
-      self->palette = gtk_css_palette_value_parse (parser);
-      if (self->palette == NULL)
+      this->palette = gtk_css_palette_value_parse (parser);
+      if (this->palette == NULL)
         return 0;
       return 1;
 

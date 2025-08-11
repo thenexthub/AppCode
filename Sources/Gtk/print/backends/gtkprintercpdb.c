@@ -52,7 +52,7 @@ gtk_printer_cpdb_class_init (GtkPrinterCpdbClass *klass)
 }
 
 static void
-gtk_printer_cpdb_init (GtkPrinterCpdb *self)
+gtk_printer_cpdb_init (GtkPrinterCpdb *this)
 {
 }
 

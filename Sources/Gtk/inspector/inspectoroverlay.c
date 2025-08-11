@@ -25,7 +25,7 @@
 G_DEFINE_ABSTRACT_TYPE (GtkInspectorOverlay, gtk_inspector_overlay, G_TYPE_OBJECT)
 
 static void
-gtk_inspector_overlay_default_snapshot (GtkInspectorOverlay *self,
+gtk_inspector_overlay_default_snapshot (GtkInspectorOverlay *this,
                                         GtkSnapshot         *snapshot,
                                         GskRenderNode       *node,
                                         GtkWidget           *widget)
@@ -33,7 +33,7 @@ gtk_inspector_overlay_default_snapshot (GtkInspectorOverlay *self,
 }
 
 static void
-gtk_inspector_overlay_default_queue_draw (GtkInspectorOverlay *self)
+gtk_inspector_overlay_default_queue_draw (GtkInspectorOverlay *this)
 {
 }
 
@@ -45,26 +45,26 @@ gtk_inspector_overlay_class_init (GtkInspectorOverlayClass *class)
 }
 
 static void
-gtk_inspector_overlay_init (GtkInspectorOverlay *self)
+gtk_inspector_overlay_init (GtkInspectorOverlay *this)
 {
 }
 
 void
-gtk_inspector_overlay_snapshot (GtkInspectorOverlay *self,
+gtk_inspector_overlay_snapshot (GtkInspectorOverlay *this,
                                 GtkSnapshot         *snapshot,
                                 GskRenderNode       *node,
                                 GtkWidget           *widget)
 {
-  gtk_snapshot_push_debug (snapshot, "%s %p", G_OBJECT_TYPE_NAME (self), self);
+  gtk_snapshot_push_debug (snapshot, "%s %p", G_OBJECT_TYPE_NAME (this), this);
 
-  GTK_INSPECTOR_OVERLAY_GET_CLASS (self)->snapshot (self, snapshot, node, widget);
+  GTK_INSPECTOR_OVERLAY_GET_CLASS (this)->snapshot (this, snapshot, node, widget);
 
   gtk_snapshot_pop (snapshot);
 }
 
 void
-gtk_inspector_overlay_queue_draw (GtkInspectorOverlay *self)
+gtk_inspector_overlay_queue_draw (GtkInspectorOverlay *this)
 {
-  GTK_INSPECTOR_OVERLAY_GET_CLASS (self)->queue_draw (self);
+  GTK_INSPECTOR_OVERLAY_GET_CLASS (this)->queue_draw (this);
 }
 

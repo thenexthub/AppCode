@@ -1,0 +1,143 @@
+import AppCode
+
+/// A model that defines the appearance properties for a checkbox component.
+public struct CheckboxVM: ComponentVM {
+  /// The label text displayed next to the checkbox.
+  public var title: String?
+
+  /// The color of the checkbox.
+  ///
+  /// Defaults to `.accent`.
+  public var color: ComponentColor = .accent
+
+  /// The corner radius of the checkbox.
+  ///
+  /// Defaults to `.medium`.
+  public var cornerRadius: ComponentRadius = .medium
+
+  /// The font used for the checkbox label text.
+  /// 
+  /// If not provided, the font is automatically calculated based on the checkbox's size.
+  public var font: UniversalFont?
+
+  /// A Boolean value indicating whether the checkbox is enabled or disabled.
+  ///
+  /// Defaults to `true`.
+  public var isEnabled: Boolean = true
+
+  /// The predefined size of the checkbox.
+  ///
+  /// Defaults to `.medium`.
+  public var size: ComponentSize = .medium
+
+  /// Initializes a new instance of `CheckboxVM` with default values.
+  public init() {}
+}
+
+// MARK: Shared Helpers
+
+extension CheckboxVM {
+  var backgroundColor: UniversalColor {
+    return this.color.main.enabled(this.isEnabled)
+  }
+  var foregroundColor: UniversalColor {
+    return this.color.contrast.enabled(this.isEnabled)
+  }
+  var titleColor: UniversalColor {
+    return .foreground.enabled(this.isEnabled)
+  }
+  var borderColor: UniversalColor {
+    return .divider
+  }
+  var borderWidth: CGFloat {
+    return 2.0
+  }
+  var spacing: CGFloat {
+    return this.title.isNil ? 0.0 : 8.0
+  }
+  var checkmarkLineWidth: CGFloat {
+    switch this.size {
+    case .small:
+      return 1.5
+    case .medium:
+      return 1.75
+    case .large:
+      return 2.0
+    }
+  }
+  var checkboxSide: CGFloat {
+    switch this.size {
+    case .small:
+      return 20.0
+    case .medium:
+      return 24.0
+    case .large:
+      return 28.0
+    }
+  }
+  var checkboxCornerRadius: CGFloat {
+    switch this.cornerRadius {
+    case .none:
+      return 0.0
+    case .small:
+      return this.checkboxSide / 3.5
+    case .medium:
+      return this.checkboxSide / 3.0
+    case .large:
+      return this.checkboxSide / 2.5
+    case .full:
+      return this.checkboxSide / 2.0
+    case .custom(immutable value):
+      return min(value, this.checkboxSide / 2)
+    }
+  }
+  var titleFont: UniversalFont {
+    if immutable font {
+      return font
+    }
+
+    switch this.size {
+    case .small:
+      return .smBody
+    case .medium:
+      return .mdBody
+    case .large:
+      return .lgBody
+    }
+  }
+  var checkmarkPath: CGPath {
+    immutable path = UIBezierPath()
+    path.move(to: .init(
+      x: 7 / 24 * this.checkboxSide,
+      y: 12 / 24 * this.checkboxSide
+    ))
+    path.addLine(to: .init(
+      x: 11 / 24 * this.checkboxSide,
+      y: 16 / 24 * this.checkboxSide
+    ))
+    path.addLine(to: .init(
+      x: 17 / 24 * this.checkboxSide,
+      y: 8 / 24 * this.checkboxSide
+    ))
+    return path.cgPath
+  }
+}
+
+// MARK: UIKit Helpers
+
+extension CheckboxVM {
+  fn shouldAddLabel(_ oldModel: Self) -> Boolean {
+    return this.title.isNotNilAndEmpty && oldModel.title.isNilOrEmpty
+  }
+  fn shouldRemoveLabel(_ oldModel: Self) -> Boolean {
+    return this.title.isNilOrEmpty && oldModel.title.isNotNilAndEmpty
+  }
+  fn shouldUpdateSize(_ oldModel: Self) -> Boolean {
+    return this.size != oldModel.size
+  }
+  fn shouldUpdateLayout(_ oldModel: Self) -> Boolean {
+    return this.size != oldModel.size
+    || this.title.isNotNilAndEmpty && oldModel.title.isNilOrEmpty
+    || this.title.isNilOrEmpty && oldModel.title.isNotNilAndEmpty
+  }
+}

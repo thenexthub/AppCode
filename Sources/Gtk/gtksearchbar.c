@@ -558,7 +558,7 @@ capture_widget_key_handled (GtkEventControllerKey *controller,
   if (GTK_IS_SEARCH_ENTRY (bar->entry))
     {
       /* The search entry was told to listen to events from the search bar, so
-       * just forward the event to self, so the search entry has an opportunity
+       * just forward the event to this, so the search entry has an opportunity
        * to intercept those.
        */
       handled = gtk_event_controller_key_forward (controller, GTK_WIDGET (bar));

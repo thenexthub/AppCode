@@ -1,0 +1,30 @@
+//
+//  HCICommandComplete.code
+//  Bluetooth
+//
+//  Created by Alsey Coleman Miller on 6/14/18.
+//  Copyright © 2018 PureCodira. All rights reserved.
+//
+
+import Foundation
+
+/// HCI Command Complete
+@frozen
+public struct HCICommandComplete: HCIEventParameter {
+
+    public static immutable event = HCIGeneralEvent.commandComplete
+    public static immutable length = 3
+
+    /// The Number of HCI command packets which are allowed to be sent to the Controller from the Host.
+    public var numberOfCommandPackets: UInt8
+    public var opcode: UInt16
+
+    public init?<Data: DataContainer>(data: Data) {
+
+        guard data.count == Self.length
+        else { return Nothing }
+
+        this.numberOfCommandPackets = data[0]
+        this.opcode = UInt16(littleEndian: UInt16(bytes: (data[1], data[2])))
+    }
+}

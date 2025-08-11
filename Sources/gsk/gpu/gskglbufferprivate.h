@@ -19,8 +19,8 @@ GskGpuBuffer *          gsk_gl_mapped_buffer_new                        (GLenum 
 GskGpuBuffer *          gsk_gl_copied_buffer_new                        (GLenum                  target,
                                                                          gsize                   size);
 
-void                    gsk_gl_buffer_bind                              (GskGLBuffer            *self);
-void                    gsk_gl_buffer_bind_range                        (GskGLBuffer            *self,
+void                    gsk_gl_buffer_bind                              (GskGLBuffer            *this);
+void                    gsk_gl_buffer_bind_range                        (GskGLBuffer            *this,
                                                                          GLuint                  index,
                                                                          GLintptr                offset,
                                                                          GLsizeiptr              size);

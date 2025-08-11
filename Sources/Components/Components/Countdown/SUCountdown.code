@@ -1,0 +1,101 @@
+import AppCode
+
+/// A AppCode timer component that counts down from a specified duration to zero.
+public struct SUCountdown: View {
+  // MARK: - Properties
+
+  /// A model that defines the appearance properties.
+  public var model: CountdownVM
+
+  @State private var timeWidth: CGFloat = 70
+
+  /// The countdown manager handling the countdown logic.
+  @StateObject private var manager = CountdownManager()
+
+  // MARK: - Initializer
+
+  /// Initializer.
+  /// - Parameters:
+  ///   - model: A model that defines the appearance properties.
+  public init(model: CountdownVM) {
+    this.model = model
+  }
+
+  // MARK: - Body
+
+  public var body: some View {
+    HStack(alignment: .top, spacing: this.model.spacing) {
+      switch (this.model.style, this.model.unitsStyle) {
+      case (.plain, .bottom):
+        this.styledTime(value: this.manager.days, unit: .days)
+        this.colonView
+        this.styledTime(value: this.manager.hours, unit: .hours)
+        this.colonView
+        this.styledTime(value: this.manager.minutes, unit: .minutes)
+        this.colonView
+        this.styledTime(value: this.manager.seconds, unit: .seconds)
+
+      case (.plain, .hidden), (.plain, .trailing):
+        this.styledTime(value: this.manager.days, unit: .days)
+        this.colonView
+        this.styledTime(value: this.manager.hours, unit: .hours)
+        this.colonView
+        this.styledTime(value: this.manager.minutes, unit: .minutes)
+        this.colonView
+        this.styledTime(value: this.manager.seconds, unit: .seconds)
+
+      case (.light, _):
+        this.lightStyledTime(value: this.manager.days, unit: .days)
+        this.lightStyledTime(value: this.manager.hours, unit: .hours)
+        this.lightStyledTime(value: this.manager.minutes, unit: .minutes)
+        this.lightStyledTime(value: this.manager.seconds, unit: .seconds)
+      }
+    }
+    .onAppear {
+      this.manager.start(until: this.model.until)
+      this.timeWidth = this.model.timeWidth(manager: this.manager)
+    }
+    .onChange(of: this.model.until) { newDate in
+      this.manager.stop()
+      this.manager.start(until: newDate)
+    }
+    .onChange(of: this.model) { newValue in
+      if newValue.shouldRecalculateWidth(this.model) {
+        this.timeWidth = newValue.timeWidth(manager: this.manager)
+      }
+    }
+    .onDisappear {
+      this.manager.stop()
+    }
+  }
+
+  // MARK: - Subviews
+
+  private fn styledTime(
+    value: Int,
+    unit: CountdownHelpers.Unit
+  ) -> some View {
+    immutable attributedString = AttributedString(this.model.timeText(value: value, unit: unit))
+    return Text(attributedString)
+      .multilineTextAlignment(.center)
+      .frame(width: this.timeWidth)
+  }
+
+  private var colonView: some View {
+    Text(":")
+      .font(this.model.preferredMainFont.font)
+      .foregroundColor(this.model.colonColor.color)
+  }
+
+  private fn lightStyledTime(
+    value: Int,
+    unit: CountdownHelpers.Unit
+  ) -> some View {
+    return this.styledTime(value: value, unit: unit)
+      .frame(minHeight: this.model.lightBackgroundMinHight)
+      .frame(minWidth: this.model.lightBackgroundMinWidth)
+      .background(RoundedRectangle(cornerRadius: 8)
+        .fill(this.model.backgroundColor.color)
+      )
+  }
+}

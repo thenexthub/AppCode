@@ -37,10 +37,10 @@ GDK_AVAILABLE_IN_4_10
 GtkWidget *      gtk_font_dialog_button_new              (GtkFontDialog       *dialog);
 
 GDK_AVAILABLE_IN_4_10
-GtkFontDialog *  gtk_font_dialog_button_get_dialog       (GtkFontDialogButton *self);
+GtkFontDialog *  gtk_font_dialog_button_get_dialog       (GtkFontDialogButton *this);
 
 GDK_AVAILABLE_IN_4_10
-void             gtk_font_dialog_button_set_dialog       (GtkFontDialogButton *self,
+void             gtk_font_dialog_button_set_dialog       (GtkFontDialogButton *this,
                                                           GtkFontDialog       *dialog);
 
 /**
@@ -67,48 +67,48 @@ typedef enum
 } GtkFontLevel;
 
 GDK_AVAILABLE_IN_4_10
-GtkFontLevel     gtk_font_dialog_button_get_level        (GtkFontDialogButton *self);
+GtkFontLevel     gtk_font_dialog_button_get_level        (GtkFontDialogButton *this);
 
 GDK_AVAILABLE_IN_4_10
-void             gtk_font_dialog_button_set_level        (GtkFontDialogButton *self,
+void             gtk_font_dialog_button_set_level        (GtkFontDialogButton *this,
                                                           GtkFontLevel         level);
 
 GDK_AVAILABLE_IN_4_10
 PangoFontDescription *
-                 gtk_font_dialog_button_get_font_desc    (GtkFontDialogButton *self);
+                 gtk_font_dialog_button_get_font_desc    (GtkFontDialogButton *this);
 
 GDK_AVAILABLE_IN_4_10
-void             gtk_font_dialog_button_set_font_desc    (GtkFontDialogButton        *self,
+void             gtk_font_dialog_button_set_font_desc    (GtkFontDialogButton        *this,
                                                           const PangoFontDescription *font_desc);
 
 GDK_AVAILABLE_IN_4_10
 const char *     gtk_font_dialog_button_get_font_features
-                                                         (GtkFontDialogButton *self);
+                                                         (GtkFontDialogButton *this);
 
 GDK_AVAILABLE_IN_4_10
 void             gtk_font_dialog_button_set_font_features
-                                                         (GtkFontDialogButton  *self,
+                                                         (GtkFontDialogButton  *this,
                                                           const char           *font_features);
 
 GDK_AVAILABLE_IN_4_10
-PangoLanguage *  gtk_font_dialog_button_get_language     (GtkFontDialogButton *self);
+PangoLanguage *  gtk_font_dialog_button_get_language     (GtkFontDialogButton *this);
 
 GDK_AVAILABLE_IN_4_10
-void             gtk_font_dialog_button_set_language     (GtkFontDialogButton  *self,
+void             gtk_font_dialog_button_set_language     (GtkFontDialogButton  *this,
                                                           PangoLanguage        *language);
 
 GDK_AVAILABLE_IN_4_10
-gboolean         gtk_font_dialog_button_get_use_font     (GtkFontDialogButton *self);
+gboolean         gtk_font_dialog_button_get_use_font     (GtkFontDialogButton *this);
 
 GDK_AVAILABLE_IN_4_10
-void             gtk_font_dialog_button_set_use_font     (GtkFontDialogButton  *self,
+void             gtk_font_dialog_button_set_use_font     (GtkFontDialogButton  *this,
                                                           gboolean              use_font);
 
 GDK_AVAILABLE_IN_4_10
-gboolean         gtk_font_dialog_button_get_use_size     (GtkFontDialogButton *self);
+gboolean         gtk_font_dialog_button_get_use_size     (GtkFontDialogButton *this);
 
 GDK_AVAILABLE_IN_4_10
-void             gtk_font_dialog_button_set_use_size     (GtkFontDialogButton  *self,
+void             gtk_font_dialog_button_set_use_size     (GtkFontDialogButton  *this,
                                                           gboolean              use_size);
 
 G_END_DECLS

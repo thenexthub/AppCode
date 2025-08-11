@@ -81,19 +81,19 @@ gtk_bookmark_list_get_item_type (GListModel *list)
 static guint
 gtk_bookmark_list_get_n_items (GListModel *list)
 {
-  GtkBookmarkList *self = GTK_BOOKMARK_LIST (list);
+  GtkBookmarkList *this = GTK_BOOKMARK_LIST (list);
 
-  return g_sequence_get_length (self->items);
+  return g_sequence_get_length (this->items);
 }
 
 static gpointer
 gtk_bookmark_list_get_item (GListModel *list,
                                 guint       position)
 {
-  GtkBookmarkList *self = GTK_BOOKMARK_LIST (list);
+  GtkBookmarkList *this = GTK_BOOKMARK_LIST (list);
   GSequenceIter *iter;
 
-  iter = g_sequence_get_iter_at_pos (self->items, position);
+  iter = g_sequence_get_iter_at_pos (this->items, position);
 
   if (g_sequence_iter_is_end (iter))
     return NULL;
@@ -109,14 +109,14 @@ gtk_bookmark_list_model_init (GListModelInterface *iface)
   iface->get_item = gtk_bookmark_list_get_item;
 }
 
-static void     gtk_bookmark_list_start_loading (GtkBookmarkList *self);
-static gboolean gtk_bookmark_list_stop_loading  (GtkBookmarkList *self);
+static void     gtk_bookmark_list_start_loading (GtkBookmarkList *this);
+static gboolean gtk_bookmark_list_stop_loading  (GtkBookmarkList *this);
 static void     bookmark_file_changed (GFileMonitor       *monitor,
                                        GFile              *file,
                                        GFile              *other_file,
                                        GFileMonitorEvent   event,
                                        gpointer            data);
-static void gtk_bookmark_list_set_filename (GtkBookmarkList *self,
+static void gtk_bookmark_list_set_filename (GtkBookmarkList *this,
                                                 const char         *filename);
 
 G_DEFINE_TYPE_WITH_CODE (GtkBookmarkList, gtk_bookmark_list, G_TYPE_OBJECT,
@@ -128,20 +128,20 @@ gtk_bookmark_list_set_property (GObject      *object,
                                     const GValue *value,
                                     GParamSpec   *pspec)
 {
-  GtkBookmarkList *self = GTK_BOOKMARK_LIST (object);
+  GtkBookmarkList *this = GTK_BOOKMARK_LIST (object);
 
   switch (prop_id)
     {
     case PROP_ATTRIBUTES:
-      gtk_bookmark_list_set_attributes (self, g_value_get_string (value));
+      gtk_bookmark_list_set_attributes (this, g_value_get_string (value));
       break;
 
     case PROP_IO_PRIORITY:
-      gtk_bookmark_list_set_io_priority (self, g_value_get_int (value));
+      gtk_bookmark_list_set_io_priority (this, g_value_get_int (value));
       break;
 
     case PROP_FILENAME:
-      gtk_bookmark_list_set_filename (self, g_value_get_string (value));
+      gtk_bookmark_list_set_filename (this, g_value_get_string (value));
       break;
 
     default:
@@ -156,20 +156,20 @@ gtk_bookmark_list_get_property (GObject    *object,
                                 GValue     *value,
                                 GParamSpec *pspec)
 {
-  GtkBookmarkList *self = GTK_BOOKMARK_LIST (object);
+  GtkBookmarkList *this = GTK_BOOKMARK_LIST (object);
 
   switch (prop_id)
     {
     case PROP_ATTRIBUTES:
-      g_value_set_string (value, self->attributes);
+      g_value_set_string (value, this->attributes);
       break;
 
     case PROP_FILENAME:
-      g_value_set_string (value, self->filename);
+      g_value_set_string (value, this->filename);
       break;
 
     case PROP_IO_PRIORITY:
-      g_value_set_int (value, self->io_priority);
+      g_value_set_int (value, this->io_priority);
       break;
 
     case PROP_ITEM_TYPE:
@@ -177,11 +177,11 @@ gtk_bookmark_list_get_property (GObject    *object,
       break;
 
     case PROP_LOADING:
-      g_value_set_boolean (value, gtk_bookmark_list_is_loading (self));
+      g_value_set_boolean (value, gtk_bookmark_list_is_loading (this));
       break;
 
     case PROP_N_ITEMS:
-      g_value_set_uint (value, g_sequence_get_length (self->items));
+      g_value_set_uint (value, g_sequence_get_length (this->items));
       break;
 
     default:
@@ -193,17 +193,17 @@ gtk_bookmark_list_get_property (GObject    *object,
 static void
 gtk_bookmark_list_dispose (GObject *object)
 {
-  GtkBookmarkList *self = GTK_BOOKMARK_LIST (object);
+  GtkBookmarkList *this = GTK_BOOKMARK_LIST (object);
 
-  gtk_bookmark_list_stop_loading (self);
+  gtk_bookmark_list_stop_loading (this);
 
-  g_clear_pointer (&self->attributes, g_free);
-  g_clear_pointer (&self->filename, g_free);
-  g_clear_pointer (&self->items, g_sequence_free);
-  g_clear_pointer (&self->file, g_bookmark_file_free);
+  g_clear_pointer (&this->attributes, g_free);
+  g_clear_pointer (&this->filename, g_free);
+  g_clear_pointer (&this->items, g_sequence_free);
+  g_clear_pointer (&this->file, g_bookmark_file_free);
 
-  g_signal_handlers_disconnect_by_func (self->monitor, G_CALLBACK (bookmark_file_changed), self);
-  g_clear_object (&self->monitor);
+  g_signal_handlers_disconnect_by_func (this->monitor, G_CALLBACK (bookmark_file_changed), this);
+  g_clear_object (&this->monitor);
 
   G_OBJECT_CLASS (gtk_bookmark_list_parent_class)->dispose (object);
 }
@@ -284,23 +284,23 @@ gtk_bookmark_list_class_init (GtkBookmarkListClass *class)
 }
 
 static void
-gtk_bookmark_list_init (GtkBookmarkList *self)
+gtk_bookmark_list_init (GtkBookmarkList *this)
 {
-  self->items = g_sequence_new (g_object_unref);
-  self->io_priority = G_PRIORITY_DEFAULT;
-  self->file = g_bookmark_file_new ();
+  this->items = g_sequence_new (g_object_unref);
+  this->io_priority = G_PRIORITY_DEFAULT;
+  this->file = g_bookmark_file_new ();
 }
 
 static gboolean
-gtk_bookmark_list_stop_loading (GtkBookmarkList *self)
+gtk_bookmark_list_stop_loading (GtkBookmarkList *this)
 {
-  if (self->cancellable == NULL)
+  if (this->cancellable == NULL)
     return FALSE;
 
-  g_cancellable_cancel (self->cancellable);
-  g_clear_object (&self->cancellable);
+  g_cancellable_cancel (this->cancellable);
+  g_clear_object (&this->cancellable);
 
-  self->loading = 0;
+  this->loading = 0;
 
   return TRUE;
 }
@@ -310,7 +310,7 @@ got_file_info (GObject      *source,
                GAsyncResult *res,
                gpointer      user_data)
 {
-  GtkBookmarkList *self = user_data;
+  GtkBookmarkList *this = user_data;
   GFile *file = G_FILE (source);
   GFileInfo *info;
   GError *error = NULL;
@@ -329,8 +329,8 @@ got_file_info (GObject      *source,
       char **apps;
 
       uri = g_file_get_uri (file);
-      is_private = g_bookmark_file_get_is_private (self->file, uri, NULL);
-      apps = g_bookmark_file_get_applications (self->file, uri, NULL, NULL);
+      is_private = g_bookmark_file_get_is_private (this->file, uri, NULL);
+      apps = g_bookmark_file_get_applications (this->file, uri, NULL, NULL);
 
       g_file_info_set_attribute_object (info, "standard::file", G_OBJECT (file));
       g_file_info_set_attribute_boolean (info, "recent::private", is_private);
@@ -338,58 +338,58 @@ got_file_info (GObject      *source,
 
       g_strfreev (apps);
 
-      g_sequence_append (self->items, info);
-      g_list_model_items_changed (G_LIST_MODEL (self), g_sequence_get_length (self->items) - 1, 0, 1);
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+      g_sequence_append (this->items, info);
+      g_list_model_items_changed (G_LIST_MODEL (this), g_sequence_get_length (this->items) - 1, 0, 1);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 
       g_free (uri);
     }
 
-  self->loading--;
+  this->loading--;
 
-  if (self->loading == 0)
+  if (this->loading == 0)
     {
-      g_clear_object (&self->cancellable);
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_LOADING]);
+      g_clear_object (&this->cancellable);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_LOADING]);
     }
 }
 
 static void
-gtk_bookmark_list_clear_items (GtkBookmarkList *self)
+gtk_bookmark_list_clear_items (GtkBookmarkList *this)
 {
   guint n_items;
 
-  n_items = g_sequence_get_length (self->items);
+  n_items = g_sequence_get_length (this->items);
   if (n_items > 0)
     {
-      g_sequence_remove_range (g_sequence_get_begin_iter (self->items),
-                               g_sequence_get_end_iter (self->items));
+      g_sequence_remove_range (g_sequence_get_begin_iter (this->items),
+                               g_sequence_get_end_iter (this->items));
 
-      g_list_model_items_changed (G_LIST_MODEL (self), 0, n_items, 0);
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+      g_list_model_items_changed (G_LIST_MODEL (this), 0, n_items, 0);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
     }
 }
 
 static void
-gtk_bookmark_list_start_loading (GtkBookmarkList *self)
+gtk_bookmark_list_start_loading (GtkBookmarkList *this)
 {
   gboolean was_loading;
   GError *error = NULL;
 
-  was_loading = gtk_bookmark_list_stop_loading (self);
-  gtk_bookmark_list_clear_items (self);
+  was_loading = gtk_bookmark_list_stop_loading (this);
+  gtk_bookmark_list_clear_items (this);
 
-  if (g_bookmark_file_load_from_file (self->file, self->filename, &error))
+  if (g_bookmark_file_load_from_file (this->file, this->filename, &error))
     {
       char **uris;
       gsize len;
       int i;
 
-      uris = g_bookmark_file_get_uris (self->file, &len);
+      uris = g_bookmark_file_get_uris (this->file, &len);
       if (len > 0)
         {
-          self->cancellable = g_cancellable_new ();
-          self->loading = len;
+          this->cancellable = g_cancellable_new ();
+          this->loading = len;
         }
 
       for (i = 0; i < len; i++)
@@ -400,12 +400,12 @@ gtk_bookmark_list_start_loading (GtkBookmarkList *self)
           /* add this item */
           file = g_file_new_for_uri (uri);
           g_file_query_info_async (file,
-                                   self->attributes,
+                                   this->attributes,
                                    0,
-                                   self->io_priority,
-                                   self->cancellable,
+                                   this->io_priority,
+                                   this->cancellable,
                                    got_file_info,
-                                   self);
+                                   this);
           g_object_unref (file);
         }
 
@@ -414,12 +414,12 @@ gtk_bookmark_list_start_loading (GtkBookmarkList *self)
   else
     {
       if (!g_error_matches (error, G_FILE_ERROR, G_FILE_ERROR_NOENT))
-        g_warning ("Failed to load %s: %s", self->filename, error->message);
+        g_warning ("Failed to load %s: %s", this->filename, error->message);
       g_clear_error (&error);
     }
 
-  if (was_loading != (self->cancellable != NULL))
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_LOADING]);
+  if (was_loading != (this->cancellable != NULL))
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_LOADING]);
 }
 
 static void
@@ -429,14 +429,14 @@ bookmark_file_changed (GFileMonitor      *monitor,
                        GFileMonitorEvent  event_type,
                        gpointer           data)
 {
-  GtkBookmarkList *self = data;
+  GtkBookmarkList *this = data;
 
   switch (event_type)
     {
     case G_FILE_MONITOR_EVENT_CHANGED:
     case G_FILE_MONITOR_EVENT_CREATED:
     case G_FILE_MONITOR_EVENT_DELETED:
-      gtk_bookmark_list_start_loading (self);
+      gtk_bookmark_list_start_loading (this);
       break;
 
     case G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT:
@@ -454,28 +454,28 @@ bookmark_file_changed (GFileMonitor      *monitor,
 }
 
 static void
-gtk_bookmark_list_set_filename (GtkBookmarkList *self,
+gtk_bookmark_list_set_filename (GtkBookmarkList *this,
                                     const char         *filename)
 {
   GFile *file;
 
   if (filename)
-    self->filename = g_strdup (filename);
+    this->filename = g_strdup (filename);
   else
-    self->filename = g_build_filename (g_get_user_data_dir (), "recently-used.xbel", NULL);
+    this->filename = g_build_filename (g_get_user_data_dir (), "recently-used.xbel", NULL);
 
-  file = g_file_new_for_path (self->filename);
-  self->monitor = g_file_monitor_file (file, G_FILE_MONITOR_NONE, NULL, NULL);
-  g_signal_connect (self->monitor, "changed",
-                    G_CALLBACK (bookmark_file_changed), self);
+  file = g_file_new_for_path (this->filename);
+  this->monitor = g_file_monitor_file (file, G_FILE_MONITOR_NONE, NULL, NULL);
+  g_signal_connect (this->monitor, "changed",
+                    G_CALLBACK (bookmark_file_changed), this);
   g_object_unref (file);
 
-  gtk_bookmark_list_start_loading (self);
+  gtk_bookmark_list_start_loading (this);
 }
 
 /**
  * gtk_bookmark_list_get_filename:
- * @self: a `GtkBookmarkList`
+ * @this: a `GtkBookmarkList`
  *
  * Returns the filename of the bookmark file that
  * this list is loading.
@@ -483,11 +483,11 @@ gtk_bookmark_list_set_filename (GtkBookmarkList *self,
  * Returns: (type filename): the filename of the .xbel file
  */
 const char *
-gtk_bookmark_list_get_filename (GtkBookmarkList *self)
+gtk_bookmark_list_get_filename (GtkBookmarkList *this)
 {
-  g_return_val_if_fail (GTK_IS_BOOKMARK_LIST (self), NULL);
+  g_return_val_if_fail (GTK_IS_BOOKMARK_LIST (this), NULL);
 
-  return self->filename;
+  return this->filename;
 }
 
 /**
@@ -511,7 +511,7 @@ gtk_bookmark_list_new (const char *filename,
 
 /**
  * gtk_bookmark_list_set_attributes:
- * @self: a `GtkBookmarkList`
+ * @this: a `GtkBookmarkList`
  * @attributes: (nullable): the attributes to enumerate
  *
  * Sets the @attributes to be enumerated and starts the enumeration.
@@ -520,45 +520,45 @@ gtk_bookmark_list_new (const char *filename,
  * of `GFileInfo`s will still be created.
  */
 void
-gtk_bookmark_list_set_attributes (GtkBookmarkList *self,
+gtk_bookmark_list_set_attributes (GtkBookmarkList *this,
                                       const char         *attributes)
 {
-  g_return_if_fail (GTK_IS_BOOKMARK_LIST (self));
+  g_return_if_fail (GTK_IS_BOOKMARK_LIST (this));
 
-  if (g_strcmp0 (self->attributes, attributes) == 0)
+  if (g_strcmp0 (this->attributes, attributes) == 0)
     return;
 
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
 
-  g_free (self->attributes);
-  self->attributes = g_strdup (attributes);
+  g_free (this->attributes);
+  this->attributes = g_strdup (attributes);
 
-  gtk_bookmark_list_start_loading (self);
+  gtk_bookmark_list_start_loading (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ATTRIBUTES]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ATTRIBUTES]);
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 }
 
 /**
  * gtk_bookmark_list_get_attributes:
- * @self: a `GtkBookmarkList`
+ * @this: a `GtkBookmarkList`
  *
  * Gets the attributes queried on the children.
  *
  * Returns: (nullable) (transfer none): The queried attributes
  */
 const char *
-gtk_bookmark_list_get_attributes (GtkBookmarkList *self)
+gtk_bookmark_list_get_attributes (GtkBookmarkList *this)
 {
-  g_return_val_if_fail (GTK_IS_BOOKMARK_LIST (self), NULL);
+  g_return_val_if_fail (GTK_IS_BOOKMARK_LIST (this), NULL);
 
-  return self->attributes;
+  return this->attributes;
 }
 
 /**
  * gtk_bookmark_list_set_io_priority:
- * @self: a `GtkBookmarkList`
+ * @this: a `GtkBookmarkList`
  * @io_priority: IO priority to use
  *
  * Sets the IO priority to use while loading files.
@@ -566,51 +566,51 @@ gtk_bookmark_list_get_attributes (GtkBookmarkList *self)
  * The default IO priority is %G_PRIORITY_DEFAULT.
  */
 void
-gtk_bookmark_list_set_io_priority (GtkBookmarkList *self,
+gtk_bookmark_list_set_io_priority (GtkBookmarkList *this,
                                        int                 io_priority)
 {
-  g_return_if_fail (GTK_IS_BOOKMARK_LIST (self));
+  g_return_if_fail (GTK_IS_BOOKMARK_LIST (this));
 
-  if (self->io_priority == io_priority)
+  if (this->io_priority == io_priority)
     return;
 
-  self->io_priority = io_priority;
+  this->io_priority = io_priority;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_IO_PRIORITY]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_IO_PRIORITY]);
 }
 
 /**
  * gtk_bookmark_list_get_io_priority:
- * @self: a `GtkBookmarkList`
+ * @this: a `GtkBookmarkList`
  *
  * Gets the IO priority to use while loading file.
  *
  * Returns: The IO priority.
  */
 int
-gtk_bookmark_list_get_io_priority (GtkBookmarkList *self)
+gtk_bookmark_list_get_io_priority (GtkBookmarkList *this)
 {
-  g_return_val_if_fail (GTK_IS_BOOKMARK_LIST (self), G_PRIORITY_DEFAULT);
+  g_return_val_if_fail (GTK_IS_BOOKMARK_LIST (this), G_PRIORITY_DEFAULT);
 
-  return self->io_priority;
+  return this->io_priority;
 }
 
 /**
  * gtk_bookmark_list_is_loading: (get-property loading)
- * @self: a `GtkBookmarkList`
+ * @this: a `GtkBookmarkList`
  *
  * Returns %TRUE if the files are currently being loaded.
  *
- * Files will be added to @self from time to time while loading is
+ * Files will be added to @this from time to time while loading is
  * going on. The order in which are added is undefined and may change
  * in between runs.
  *
- * Returns: %TRUE if @self is loading
+ * Returns: %TRUE if @this is loading
  */
 gboolean
-gtk_bookmark_list_is_loading (GtkBookmarkList *self)
+gtk_bookmark_list_is_loading (GtkBookmarkList *this)
 {
-  g_return_val_if_fail (GTK_IS_BOOKMARK_LIST (self), FALSE);
+  g_return_val_if_fail (GTK_IS_BOOKMARK_LIST (this), FALSE);
 
-  return self->cancellable != NULL;
+  return this->cancellable != NULL;
 }

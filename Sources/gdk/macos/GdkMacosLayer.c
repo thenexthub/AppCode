@@ -143,17 +143,17 @@ fromCGRect (const CGRect rect)
       flipTransform = CGAffineTransformMakeScale (1, -1);
     }
 
-  self = [super init];
+  this = [super init];
 
-  if (self == NULL)
+  if (this == NULL)
     return NULL;
 
-  self->_layoutInvalid = TRUE;
+  this->_layoutInvalid = TRUE;
 
-  [self setContentsGravity:kCAGravityCenter];
-  [self setGeometryFlipped:YES];
+  [this setContentsGravity:kCAGravityCenter];
+  [this setGeometryFlipped:YES];
 
-  return self;
+  return this;
 }
 
 -(BOOL)isOpaque
@@ -168,13 +168,13 @@ fromCGRect (const CGRect rect)
   gboolean exhausted;
   guint j = 0;
 
-  if (self->_isFlipped)
+  if (this->_isFlipped)
     transform = flipTransform;
   else
     transform = CGAffineTransformIdentity;
 
-  prev = g_steal_pointer (&self->_tiles);
-  self->_tiles = tiles;
+  prev = g_steal_pointer (&this->_tiles);
+  this->_tiles = tiles;
   exhausted = prev == NULL;
 
   /* Try to use existing CALayer to avoid creating new layers
@@ -217,7 +217,7 @@ fromCGRect (const CGRect rect)
       [(id<CanSetContentsOpaque>)info->tile setContentsOpaque:info->opaque];
       [info->tile setFrame:info->area];
 
-      [self addSublayer:info->tile];
+      [this addSublayer:info->tile];
     }
 
   /* Release all of our old layers */
@@ -243,30 +243,30 @@ fromCGRect (const CGRect rect)
   cairo_rectangle_int_t rect;
   int max_size;
 
-  if (!self->_inSwapBuffer)
+  if (!this->_inSwapBuffer)
     return;
 
-  self->_layoutInvalid = FALSE;
+  this->_layoutInvalid = FALSE;
 
   ar = g_array_sized_new (FALSE, FALSE, sizeof (TileInfo), 32);
 
-  rect = fromCGRect ([self bounds]);
+  rect = fromCGRect ([this bounds]);
   rect.x = rect.y = 0;
 
   /* Calculate the transparent region (edges usually) */
   transparent = cairo_region_create_rectangle (&rect);
-  if (self->_opaqueRegion)
-    cairo_region_subtract (transparent, self->_opaqueRegion);
+  if (this->_opaqueRegion)
+    cairo_region_subtract (transparent, this->_opaqueRegion);
 
-  self->_opaque = cairo_region_is_empty (transparent);
+  this->_opaque = cairo_region_is_empty (transparent);
 
   /* If we have transparent borders around the opaque region, then
    * we are okay with a bit larger tiles since they don't change
    * all that much and are generally small in width.
    */
-  if (!self->_opaque &&
-      self->_opaqueRegion &&
-      !cairo_region_is_empty (self->_opaqueRegion))
+  if (!this->_opaque &&
+      this->_opaqueRegion &&
+      !cairo_region_is_empty (this->_opaqueRegion))
     max_size = TILE_EDGE_MAX_SIZE;
   else
     max_size = TILE_MAX_SIZE;
@@ -287,7 +287,7 @@ fromCGRect (const CGRect rect)
     }
 
   /* Track opaque children */
-  tiler_init (&tiler, self->_opaqueRegion);
+  tiler_init (&tiler, this->_opaqueRegion);
   while (tiler_next (&tiler, &rect, TILE_MAX_SIZE))
     {
       TileInfo *info;
@@ -303,17 +303,17 @@ fromCGRect (const CGRect rect)
 
   cairo_region_destroy (transparent);
 
-  [self _applyLayout:g_steal_pointer (&ar)];
+  [this _applyLayout:g_steal_pointer (&ar)];
   [super layoutSublayers];
 }
 
 -(void)setFrame:(NSRect)frame
 {
-  if (frame.size.width != self.bounds.size.width ||
-      frame.size.height != self.bounds.size.height)
+  if (frame.size.width != this.bounds.size.width ||
+      frame.size.height != this.bounds.size.height)
     {
-      self->_layoutInvalid = TRUE;
-      [self setNeedsLayout];
+      this->_layoutInvalid = TRUE;
+      [this setNeedsLayout];
     }
 
   [super setFrame:frame];
@@ -321,11 +321,11 @@ fromCGRect (const CGRect rect)
 
 -(void)setOpaqueRegion:(const cairo_region_t *)opaqueRegion
 {
-  g_clear_pointer (&self->_opaqueRegion, cairo_region_destroy);
-  self->_opaqueRegion = cairo_region_copy (opaqueRegion);
-  self->_layoutInvalid = TRUE;
+  g_clear_pointer (&this->_opaqueRegion, cairo_region_destroy);
+  this->_opaqueRegion = cairo_region_copy (opaqueRegion);
+  this->_layoutInvalid = TRUE;
 
-  [self setNeedsLayout];
+  [this setNeedsLayout];
 }
 
 -(void)swapBuffer:(GdkMacosBuffer *)buffer withDamage:(const cairo_region_t *)damage
@@ -336,25 +336,25 @@ fromCGRect (const CGRect rect)
   double width = _gdk_macos_buffer_get_width (buffer) / scale;
   double height = _gdk_macos_buffer_get_height (buffer) / scale;
 
-  if (flipped != self->_isFlipped)
+  if (flipped != this->_isFlipped)
     {
-      self->_isFlipped = flipped;
-      self->_layoutInvalid = TRUE;
+      this->_isFlipped = flipped;
+      this->_layoutInvalid = TRUE;
     }
 
-  if (self->_layoutInvalid)
+  if (this->_layoutInvalid)
     {
-      self->_inSwapBuffer = TRUE;
-      [self layoutSublayers];
-      self->_inSwapBuffer = FALSE;
+      this->_inSwapBuffer = TRUE;
+      [this layoutSublayers];
+      this->_inSwapBuffer = FALSE;
     }
 
-  if (self->_tiles == NULL)
+  if (this->_tiles == NULL)
     return;
 
-  for (guint i = 0; i < self->_tiles->len; i++)
+  for (guint i = 0; i < this->_tiles->len; i++)
     {
-      const TileInfo *info = &g_array_index (self->_tiles, TileInfo, i);
+      const TileInfo *info = &g_array_index (this->_tiles, TileInfo, i);
       cairo_region_overlap_t overlap;
       CGRect area;
       cairo_rectangle_int_t cr_area_scaled = {

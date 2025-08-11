@@ -79,21 +79,21 @@ G_DEFINE_TYPE_WITH_CODE (GtkSeparator, gtk_separator, GTK_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (GTK_TYPE_ORIENTABLE, NULL))
 
 static void
-gtk_separator_set_orientation (GtkSeparator   *self,
+gtk_separator_set_orientation (GtkSeparator   *this,
                                GtkOrientation  orientation)
 {
-  if (self->orientation != orientation)
+  if (this->orientation != orientation)
     {
-      self->orientation = orientation;
+      this->orientation = orientation;
 
-      gtk_widget_update_orientation (GTK_WIDGET (self), orientation);
-      gtk_widget_queue_resize (GTK_WIDGET (self));
+      gtk_widget_update_orientation (GTK_WIDGET (this), orientation);
+      gtk_widget_queue_resize (GTK_WIDGET (this));
 
-      gtk_accessible_update_property (GTK_ACCESSIBLE (self),
+      gtk_accessible_update_property (GTK_ACCESSIBLE (this),
                                       GTK_ACCESSIBLE_PROPERTY_ORIENTATION, orientation,
                                       -1);
 
-      g_object_notify (G_OBJECT (self), "orientation");
+      g_object_notify (G_OBJECT (this), "orientation");
     }
 }
 

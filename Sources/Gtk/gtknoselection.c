@@ -66,24 +66,24 @@ gtk_no_selection_get_item_type (GListModel *list)
 static guint
 gtk_no_selection_get_n_items (GListModel *list)
 {
-  GtkNoSelection *self = GTK_NO_SELECTION (list);
+  GtkNoSelection *this = GTK_NO_SELECTION (list);
 
-  if (self->model == NULL)
+  if (this->model == NULL)
     return 0;
 
-  return g_list_model_get_n_items (self->model);
+  return g_list_model_get_n_items (this->model);
 }
 
 static gpointer
 gtk_no_selection_get_item (GListModel *list,
                            guint       position)
 {
-  GtkNoSelection *self = GTK_NO_SELECTION (list);
+  GtkNoSelection *this = GTK_NO_SELECTION (list);
 
-  if (self->model == NULL)
+  if (this->model == NULL)
     return NULL;
 
-  return g_list_model_get_item (self->model, position);
+  return g_list_model_get_item (this->model, position);
 }
 
 static void
@@ -100,9 +100,9 @@ gtk_no_selection_get_section (GtkSectionModel *model,
                               guint           *out_start,
                               guint           *out_end)
 {
-  GtkNoSelection *self = GTK_NO_SELECTION (model);
+  GtkNoSelection *this = GTK_NO_SELECTION (model);
 
-  gtk_list_model_get_section (self->model, position, out_start, out_end);
+  gtk_list_model_get_section (this->model, position, out_start, out_end);
 }
 
 static void
@@ -146,11 +146,11 @@ gtk_no_selection_items_changed_cb (GListModel     *model,
                                    guint           position,
                                    guint           removed,
                                    guint           added,
-                                   GtkNoSelection *self)
+                                   GtkNoSelection *this)
 {
-  g_list_model_items_changed (G_LIST_MODEL (self), position, removed, added);
+  g_list_model_items_changed (G_LIST_MODEL (this), position, removed, added);
   if (removed != added)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 }
 
 static void
@@ -159,24 +159,24 @@ gtk_no_selection_sections_changed_cb (GtkSectionModel *model,
                                       unsigned int     n_items,
                                       gpointer         user_data)
 {
-  GtkNoSelection *self = GTK_NO_SELECTION (user_data);
+  GtkNoSelection *this = GTK_NO_SELECTION (user_data);
 
-  gtk_section_model_sections_changed (GTK_SECTION_MODEL (self), position, n_items);
+  gtk_section_model_sections_changed (GTK_SECTION_MODEL (this), position, n_items);
 }
 
 static void
-gtk_no_selection_clear_model (GtkNoSelection *self)
+gtk_no_selection_clear_model (GtkNoSelection *this)
 {
-  if (self->model == NULL)
+  if (this->model == NULL)
     return;
 
-  g_signal_handlers_disconnect_by_func (self->model,
+  g_signal_handlers_disconnect_by_func (this->model,
                                         gtk_no_selection_items_changed_cb,
-                                        self);
-  g_signal_handlers_disconnect_by_func (self->model,
+                                        this);
+  g_signal_handlers_disconnect_by_func (this->model,
                                         gtk_no_selection_sections_changed_cb,
-                                        self);
-  g_clear_object (&self->model);
+                                        this);
+  g_clear_object (&this->model);
 }
 
 static void
@@ -186,12 +186,12 @@ gtk_no_selection_set_property (GObject      *object,
                                GParamSpec   *pspec)
 
 {
-  GtkNoSelection *self = GTK_NO_SELECTION (object);
+  GtkNoSelection *this = GTK_NO_SELECTION (object);
 
   switch (prop_id)
     {
     case PROP_MODEL:
-      gtk_no_selection_set_model (self, g_value_get_object (value));
+      gtk_no_selection_set_model (this, g_value_get_object (value));
       break;
 
     default:
@@ -206,20 +206,20 @@ gtk_no_selection_get_property (GObject    *object,
                                GValue     *value,
                                GParamSpec *pspec)
 {
-  GtkNoSelection *self = GTK_NO_SELECTION (object);
+  GtkNoSelection *this = GTK_NO_SELECTION (object);
 
   switch (prop_id)
     {
     case PROP_ITEM_TYPE:
-      g_value_set_gtype (value, gtk_no_selection_get_item_type (G_LIST_MODEL (self)));
+      g_value_set_gtype (value, gtk_no_selection_get_item_type (G_LIST_MODEL (this)));
       break;
 
     case PROP_MODEL:
-      g_value_set_object (value, self->model);
+      g_value_set_object (value, this->model);
       break;
 
     case PROP_N_ITEMS:
-      g_value_set_uint (value, gtk_no_selection_get_n_items (G_LIST_MODEL (self)));
+      g_value_set_uint (value, gtk_no_selection_get_n_items (G_LIST_MODEL (this)));
       break;
 
 
@@ -232,9 +232,9 @@ gtk_no_selection_get_property (GObject    *object,
 static void
 gtk_no_selection_dispose (GObject *object)
 {
-  GtkNoSelection *self = GTK_NO_SELECTION (object);
+  GtkNoSelection *this = GTK_NO_SELECTION (object);
 
-  gtk_no_selection_clear_model (self);
+  gtk_no_selection_clear_model (this);
 
   G_OBJECT_CLASS (gtk_no_selection_parent_class)->dispose (object);
 }
@@ -286,7 +286,7 @@ gtk_no_selection_class_init (GtkNoSelectionClass *klass)
 }
 
 static void
-gtk_no_selection_init (GtkNoSelection *self)
+gtk_no_selection_init (GtkNoSelection *this)
 {
 }
 
@@ -301,79 +301,79 @@ gtk_no_selection_init (GtkNoSelection *self)
 GtkNoSelection *
 gtk_no_selection_new (GListModel *model)
 {
-  GtkNoSelection *self;
+  GtkNoSelection *this;
 
   g_return_val_if_fail (model == NULL || G_IS_LIST_MODEL (model), NULL);
 
-  self = g_object_new (GTK_TYPE_NO_SELECTION,
+  this = g_object_new (GTK_TYPE_NO_SELECTION,
                        "model", model,
                        NULL);
 
   /* consume the reference */
   g_clear_object (&model);
 
-  return self;
+  return this;
 }
 
 /**
  * gtk_no_selection_get_model:
- * @self: a `GtkNoSelection`
+ * @this: a `GtkNoSelection`
  *
- * Gets the model that @self is wrapping.
+ * Gets the model that @this is wrapping.
  *
  * Returns: (transfer none) (nullable): The model being wrapped
  */
 GListModel *
-gtk_no_selection_get_model (GtkNoSelection *self)
+gtk_no_selection_get_model (GtkNoSelection *this)
 {
-  g_return_val_if_fail (GTK_IS_NO_SELECTION (self), NULL);
+  g_return_val_if_fail (GTK_IS_NO_SELECTION (this), NULL);
 
-  return self->model;
+  return this->model;
 }
 
 /**
  * gtk_no_selection_set_model:
- * @self: a `GtkNoSelection`
+ * @this: a `GtkNoSelection`
  * @model: (nullable): A `GListModel` to wrap
  *
- * Sets the model that @self should wrap.
+ * Sets the model that @this should wrap.
  *
  * If @model is %NULL, this model will be empty.
  */
 void
-gtk_no_selection_set_model (GtkNoSelection *self,
+gtk_no_selection_set_model (GtkNoSelection *this,
                             GListModel     *model)
 {
   guint n_items_before, n_items_after;
 
-  g_return_if_fail (GTK_IS_NO_SELECTION (self));
+  g_return_if_fail (GTK_IS_NO_SELECTION (this));
   g_return_if_fail (model == NULL || G_IS_LIST_MODEL (model));
 
-  if (self->model == model)
+  if (this->model == model)
     return;
 
-  n_items_before = self->model ? g_list_model_get_n_items (self->model) : 0;
-  gtk_no_selection_clear_model (self);
+  n_items_before = this->model ? g_list_model_get_n_items (this->model) : 0;
+  gtk_no_selection_clear_model (this);
 
   if (model)
     {
-      self->model = g_object_ref (model);
-      g_signal_connect (self->model, "items-changed",
-                        G_CALLBACK (gtk_no_selection_items_changed_cb), self);
-      if (GTK_IS_SECTION_MODEL (self->model))
-        g_signal_connect (self->model, "sections-changed",
-                          G_CALLBACK (gtk_no_selection_sections_changed_cb), self);
-      n_items_after = g_list_model_get_n_items (self->model);
+      this->model = g_object_ref (model);
+      g_signal_connect (this->model, "items-changed",
+                        G_CALLBACK (gtk_no_selection_items_changed_cb), this);
+      if (GTK_IS_SECTION_MODEL (this->model))
+        g_signal_connect (this->model, "sections-changed",
+                          G_CALLBACK (gtk_no_selection_sections_changed_cb), this);
+      n_items_after = g_list_model_get_n_items (this->model);
     }
   else
     n_items_after = 0;
 
-  g_list_model_items_changed (G_LIST_MODEL (self),
+  g_list_model_items_changed (G_LIST_MODEL (this),
                               0,
                               n_items_before,
                               n_items_after);
   if (n_items_before != n_items_after)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_MODEL]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_MODEL]);
 }

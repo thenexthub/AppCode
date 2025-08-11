@@ -378,7 +378,7 @@ void              gtk_tree_model_get_valist      (GtkTreeModel *tree_model,
 
 GDK_DEPRECATED_IN_4_10_FOR(GListModel)
 void              gtk_tree_model_foreach         (GtkTreeModel            *model,
-						  GtkTreeModelForeachFunc  func,
+						  GtkTreeModelForeachFunc  fn,
 						  gpointer                 user_data);
 
 /* Signals */

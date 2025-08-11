@@ -198,24 +198,24 @@ GdkDmabufFormats *
 gdk_dmabuf_formats_new (GdkDmabufFormat *formats,
                         gsize            n_formats)
 {
-  GdkDmabufFormats *self;
+  GdkDmabufFormats *this;
 
-  self = g_new0 (GdkDmabufFormats, 1);
+  this = g_new0 (GdkDmabufFormats, 1);
 
-  self->ref_count = 1;
-  self->n_formats = n_formats;
-  self->formats = g_new (GdkDmabufFormat, n_formats);
+  this->ref_count = 1;
+  this->n_formats = n_formats;
+  this->formats = g_new (GdkDmabufFormat, n_formats);
 
   if (n_formats != 0)
-    memcpy (self->formats, formats, n_formats * sizeof (GdkDmabufFormat));
+    memcpy (this->formats, formats, n_formats * sizeof (GdkDmabufFormat));
 
-  return self;
+  return this;
 }
 
 const GdkDmabufFormat *
-gdk_dmabuf_formats_peek_formats (GdkDmabufFormats *self)
+gdk_dmabuf_formats_peek_formats (GdkDmabufFormats *this)
 {
-  return self->formats;
+  return this->formats;
 }
 
 /**

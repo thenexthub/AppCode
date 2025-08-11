@@ -95,7 +95,7 @@ _gdk_macos_settings_load (GdkMacosSettings *settings)
 }
 
 gboolean
-_gdk_macos_display_get_setting (GdkMacosDisplay *self,
+_gdk_macos_display_get_setting (GdkMacosDisplay *this,
                                 const char      *setting,
                                 GValue          *value)
 {
@@ -103,7 +103,7 @@ _gdk_macos_display_get_setting (GdkMacosDisplay *self,
 
   gboolean ret = FALSE;
 
-  g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (self), FALSE);
+  g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (this), FALSE);
   g_return_val_if_fail (setting != NULL, FALSE);
   g_return_val_if_fail (value != NULL, FALSE);
 
@@ -161,34 +161,34 @@ _gdk_macos_display_get_setting (GdkMacosDisplay *self,
 }
 
 void
-_gdk_macos_display_reload_settings (GdkMacosDisplay *self)
+_gdk_macos_display_reload_settings (GdkMacosDisplay *this)
 {
   GdkMacosSettings old_settings;
 
-  g_return_if_fail (GDK_IS_MACOS_DISPLAY (self));
+  g_return_if_fail (GDK_IS_MACOS_DISPLAY (this));
 
   old_settings = current_settings;
   _gdk_macos_settings_load (&current_settings);
   current_settings_initialized = TRUE;
 
   if (old_settings.xft_dpi != current_settings.xft_dpi)
-    gdk_display_setting_changed (GDK_DISPLAY (self), "gtk-xft-dpi");
+    gdk_display_setting_changed (GDK_DISPLAY (this), "gtk-xft-dpi");
 
   if (old_settings.double_click_time != current_settings.double_click_time)
-    gdk_display_setting_changed (GDK_DISPLAY (self), "gtk-double-click-time");
+    gdk_display_setting_changed (GDK_DISPLAY (this), "gtk-double-click-time");
 
   if (old_settings.enable_animations != current_settings.enable_animations)
-    gdk_display_setting_changed (GDK_DISPLAY (self), "gtk-enable-animations");
+    gdk_display_setting_changed (GDK_DISPLAY (this), "gtk-enable-animations");
 
   if (old_settings.font_name != current_settings.font_name)
-    gdk_display_setting_changed (GDK_DISPLAY (self), "gtk-font-name");
+    gdk_display_setting_changed (GDK_DISPLAY (this), "gtk-font-name");
 
   if (old_settings.primary_button_warps_slider != current_settings.primary_button_warps_slider)
-    gdk_display_setting_changed (GDK_DISPLAY (self), "gtk-primary-button-warps-slider");
+    gdk_display_setting_changed (GDK_DISPLAY (this), "gtk-primary-button-warps-slider");
 
   if (old_settings.shell_shows_menubar != current_settings.shell_shows_menubar)
-    gdk_display_setting_changed (GDK_DISPLAY (self), "gtk-shell-shows-menubar");
+    gdk_display_setting_changed (GDK_DISPLAY (this), "gtk-shell-shows-menubar");
 
   if (old_settings.shell_shows_desktop != current_settings.shell_shows_desktop)
-    gdk_display_setting_changed (GDK_DISPLAY (self), "gtk-shell-shows-desktop");
+    gdk_display_setting_changed (GDK_DISPLAY (this), "gtk-shell-shows-desktop");
 }

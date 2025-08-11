@@ -41,11 +41,11 @@ GDK_AVAILABLE_IN_ALL
 GType      gtk_app_chooser_get_type         (void) G_GNUC_CONST;
 
 GDK_DEPRECATED_IN_4_10
-GAppInfo * gtk_app_chooser_get_app_info     (GtkAppChooser *self);
+GAppInfo * gtk_app_chooser_get_app_info     (GtkAppChooser *this);
 GDK_DEPRECATED_IN_4_10
-char *    gtk_app_chooser_get_content_type (GtkAppChooser *self);
+char *    gtk_app_chooser_get_content_type (GtkAppChooser *this);
 GDK_DEPRECATED_IN_4_10
-void       gtk_app_chooser_refresh          (GtkAppChooser *self);
+void       gtk_app_chooser_refresh          (GtkAppChooser *this);
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GtkAppChooser, g_object_unref)
 

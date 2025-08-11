@@ -64,7 +64,7 @@
  *
  * `GdkDisplayManager` is a singleton object.
  *
- * You can use [func@Gdk.DisplayManager.get] to obtain the `GdkDisplayManager`
+ * You can use [fn@Gdk.DisplayManager.get] to obtain the `GdkDisplayManager`
  * singleton, but that should be rarely necessary. Typically, initializing
  * GTK opens a display that you can work with without ever accessing the
  * `GdkDisplayManager`.
@@ -74,7 +74,7 @@
  * at runtime.
  *
  * In the rare case that you need to influence which of the backends
- * is being used, you can use [func@Gdk.set_allowed_backends]. Note
+ * is being used, you can use [fn@Gdk.set_allowed_backends]. Note
  * that you need to call this function before initializing GTK.
  *
  * ## Backend-specific code
@@ -244,7 +244,7 @@ static const char *allowed_backends;
  * You can also include a `*` in the list to try all remaining backends.
  *
  * This call must happen prior to functions that open a display, such
- * as [func@Gdk.Display.open], `gtk_init()`, or `gtk_init_check()`
+ * as [fn@Gdk.Display.open], `gtk_init()`, or `gtk_init_check()`
  * in order to take effect.
  */
 void
@@ -297,7 +297,7 @@ G_GNUC_END_IGNORE_DEPRECATIONS
  * supported GDK backends to use (in case GDK has been compiled
  * with multiple backends).
  *
- * Applications can use [func@set_allowed_backends] to limit what
+ * Applications can use [fn@set_allowed_backends] to limit what
  * backends will be used.
  *
  * Returns: (transfer none): The global `GdkDisplayManager` singleton

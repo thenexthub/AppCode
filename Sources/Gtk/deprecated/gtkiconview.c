@@ -4519,7 +4519,7 @@ gtk_icon_view_get_visible_range (GtkIconView  *icon_view,
 /**
  * gtk_icon_view_selected_foreach:
  * @icon_view: A `GtkIconView`.
- * @func: (scope call): The function to call for each selected icon.
+ * @fn: (scope call): The function to call for each selected icon.
  * @data: User data to pass to the function.
  *
  * Calls a function for each selected icon. Note that the model or
@@ -4529,7 +4529,7 @@ gtk_icon_view_get_visible_range (GtkIconView  *icon_view,
  **/
 void
 gtk_icon_view_selected_foreach (GtkIconView           *icon_view,
-				GtkIconViewForeachFunc func,
+				GtkIconViewForeachFunc fn,
 				gpointer               data)
 {
   GList *list;
@@ -4540,7 +4540,7 @@ gtk_icon_view_selected_foreach (GtkIconView           *icon_view,
       GtkTreePath *path = gtk_tree_path_new_from_indices (item->index, -1);
 
       if (item->selected)
-	(* func) (icon_view, path, data);
+	(* fn) (icon_view, path, data);
 
       gtk_tree_path_free (path);
     }

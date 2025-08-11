@@ -52,7 +52,7 @@ static guint signals[LAST_SIGNAL] = { 0, };
 G_DEFINE_TYPE (GtkTestATContext, gtk_test_at_context, GTK_TYPE_AT_CONTEXT)
 
 static void
-gtk_test_at_context_state_change (GtkATContext                *self,
+gtk_test_at_context_state_change (GtkATContext                *this,
                                   GtkAccessibleStateChange     changed_states,
                                   GtkAccessiblePropertyChange  changed_properties,
                                   GtkAccessibleRelationChange  changed_relations,
@@ -65,8 +65,8 @@ gtk_test_at_context_state_change (GtkATContext                *self,
       char *states_str = gtk_accessible_attribute_set_to_string (states);
       char *properties_str = gtk_accessible_attribute_set_to_string (properties);
       char *relations_str = gtk_accessible_attribute_set_to_string (relations);
-      GtkAccessibleRole role = gtk_at_context_get_accessible_role (self);
-      GtkAccessible *accessible = gtk_at_context_get_accessible (self);
+      GtkAccessibleRole role = gtk_at_context_get_accessible_role (this);
+      GtkAccessible *accessible = gtk_at_context_get_accessible (this);
       GEnumClass *class = g_type_class_ref (GTK_TYPE_ACCESSIBLE_ROLE);
       GEnumValue *value = g_enum_get_value (class, role);
 
@@ -89,14 +89,14 @@ gtk_test_at_context_state_change (GtkATContext                *self,
 }
 
 static void
-gtk_test_at_context_platform_change (GtkATContext                *self,
+gtk_test_at_context_platform_change (GtkATContext                *this,
                                      GtkAccessiblePlatformChange  changed_platform)
 {
   if (GTK_DEBUG_CHECK (A11Y))
     {
       GtkAccessible *accessible;
 
-      accessible = gtk_at_context_get_accessible (self);
+      accessible = gtk_at_context_get_accessible (this);
 
       g_print ("*** Accessible platform state changed for accessible “%s”:\n",
                G_OBJECT_TYPE_NAME (accessible));
@@ -113,34 +113,34 @@ gtk_test_at_context_platform_change (GtkATContext                *self,
 }
 
 static void
-gtk_test_at_context_update_caret_position (GtkATContext *self)
+gtk_test_at_context_update_caret_position (GtkATContext *this)
 {
-  GtkAccessible *accessible = gtk_at_context_get_accessible (self);
+  GtkAccessible *accessible = gtk_at_context_get_accessible (this);
   GtkAccessibleText *accessible_text = GTK_ACCESSIBLE_TEXT (accessible);
   unsigned int position;
 
   position = gtk_accessible_text_get_caret_position (accessible_text);
-  g_signal_emit (self, signals[UPDATE_CARET_POSITION], 0, position);
+  g_signal_emit (this, signals[UPDATE_CARET_POSITION], 0, position);
 }
 
 static void
-gtk_test_at_context_update_selection_bound (GtkATContext *self)
+gtk_test_at_context_update_selection_bound (GtkATContext *this)
 {
-  g_signal_emit (self, signals[UPDATE_SELECTION_BOUND], 0);
+  g_signal_emit (this, signals[UPDATE_SELECTION_BOUND], 0);
 }
 
 static void
-gtk_test_at_context_update_text_contents (GtkATContext                   *self,
+gtk_test_at_context_update_text_contents (GtkATContext                   *this,
                                           GtkAccessibleTextContentChange  change,
                                           unsigned int                    start,
                                           unsigned int                    end)
 {
-  GtkAccessible *accessible = gtk_at_context_get_accessible (self);
+  GtkAccessible *accessible = gtk_at_context_get_accessible (this);
   GtkAccessibleText *accessible_text = GTK_ACCESSIBLE_TEXT (accessible);
   GBytes *contents;
 
   contents = gtk_accessible_text_get_contents (accessible_text, start, end);
-  g_signal_emit (self, signals[UPDATE_TEXT_CONTENTS], 0, change, start, end, contents);
+  g_signal_emit (this, signals[UPDATE_TEXT_CONTENTS], 0, change, start, end, contents);
   g_bytes_unref (contents);
 }
 
@@ -189,7 +189,7 @@ gtk_test_at_context_class_init (GtkTestATContextClass *klass)
 }
 
 static void
-gtk_test_at_context_init (GtkTestATContext *self)
+gtk_test_at_context_init (GtkTestATContext *this)
 {
 }
 
@@ -486,7 +486,7 @@ out:
  * @domain: a domain
  * @file: a file name
  * @line: the line in @file
- * @func: a function name in @file
+ * @fn: a function name in @file
  * @expr: the expression being tested
  * @accessible: a `GtkAccessible`
  * @expected_role: the expected `GtkAccessibleRole`
@@ -498,7 +498,7 @@ void
 gtk_test_accessible_assertion_message_role (const char        *domain,
                                             const char        *file,
                                             int                line,
-                                            const char        *func,
+                                            const char        *fn,
                                             const char        *expr,
                                             GtkAccessible     *accessible,
                                             GtkAccessibleRole  expected_role,
@@ -511,7 +511,7 @@ gtk_test_accessible_assertion_message_role (const char        *domain,
                              role_name,
                              actual_role);
 
-  g_assertion_message (domain, file, line, func, s);
+  g_assertion_message (domain, file, line, fn, s);
 
   g_free (role_name);
   g_free (s);

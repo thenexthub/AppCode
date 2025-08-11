@@ -32,65 +32,65 @@
 #include "gdkmacosutils-private.h"
 
 static void
-_gdk_macos_toplevel_surface_fullscreen (GdkMacosToplevelSurface *self)
+_gdk_macos_toplevel_surface_fullscreen (GdkMacosToplevelSurface *this)
 {
   GdkMacosWindow *window;
 
-  g_assert (GDK_IS_MACOS_TOPLEVEL_SURFACE (self));
+  g_assert (GDK_IS_MACOS_TOPLEVEL_SURFACE (this));
 
-  window = (GdkMacosWindow *)_gdk_macos_surface_get_native (GDK_MACOS_SURFACE (self));
+  window = (GdkMacosWindow *)_gdk_macos_surface_get_native (GDK_MACOS_SURFACE (this));
 
   if (![window inFullscreenTransition] && ([window styleMask] & NSWindowStyleMaskFullScreen) == 0)
     [window toggleFullScreen:window];
 }
 
 static void
-_gdk_macos_toplevel_surface_unfullscreen (GdkMacosToplevelSurface *self)
+_gdk_macos_toplevel_surface_unfullscreen (GdkMacosToplevelSurface *this)
 {
   GdkMacosWindow *window;
 
-  g_assert (GDK_IS_MACOS_TOPLEVEL_SURFACE (self));
+  g_assert (GDK_IS_MACOS_TOPLEVEL_SURFACE (this));
 
-  window = (GdkMacosWindow *)_gdk_macos_surface_get_native (GDK_MACOS_SURFACE (self));
+  window = (GdkMacosWindow *)_gdk_macos_surface_get_native (GDK_MACOS_SURFACE (this));
 
   if (![window inFullscreenTransition] && ([window styleMask] & NSWindowStyleMaskFullScreen) != 0)
     [window toggleFullScreen:window];
 }
 
 static void
-_gdk_macos_toplevel_surface_maximize (GdkMacosToplevelSurface *self)
+_gdk_macos_toplevel_surface_maximize (GdkMacosToplevelSurface *this)
 {
   NSWindow *window;
 
-  g_assert (GDK_IS_MACOS_TOPLEVEL_SURFACE (self));
+  g_assert (GDK_IS_MACOS_TOPLEVEL_SURFACE (this));
 
-  window = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (self));
+  window = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (this));
 
   if (![window isZoomed])
     [window zoom:window];
 }
 
 static void
-_gdk_macos_toplevel_surface_unmaximize (GdkMacosToplevelSurface *self)
+_gdk_macos_toplevel_surface_unmaximize (GdkMacosToplevelSurface *this)
 {
   NSWindow *window;
 
-  g_assert (GDK_IS_MACOS_TOPLEVEL_SURFACE (self));
+  g_assert (GDK_IS_MACOS_TOPLEVEL_SURFACE (this));
 
-  window = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (self));
+  window = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (this));
 
   if ([window isZoomed])
     [window zoom:window];
 }
 
 static void
-_gdk_macos_toplevel_surface_unminimize (GdkMacosToplevelSurface *self)
+_gdk_macos_toplevel_surface_unminimize (GdkMacosToplevelSurface *this)
 {
   NSWindow *window;
 
-  g_assert (GDK_IS_MACOS_TOPLEVEL_SURFACE (self));
+  g_assert (GDK_IS_MACOS_TOPLEVEL_SURFACE (this));
 
-  window = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (self));
+  window = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (this));
 
   if ([window isMiniaturized])
     [window deminiaturize:window];
@@ -99,7 +99,7 @@ _gdk_macos_toplevel_surface_unminimize (GdkMacosToplevelSurface *self)
 static gboolean
 _gdk_macos_toplevel_surface_compute_size (GdkSurface *surface)
 {
-  GdkMacosToplevelSurface *self = (GdkMacosToplevelSurface *)surface;
+  GdkMacosToplevelSurface *this = (GdkMacosToplevelSurface *)surface;
   GdkMacosSurface *macos_surface = (GdkMacosSurface *)surface;
   GdkToplevelSize size;
   GdkDisplay *display;
@@ -108,7 +108,7 @@ _gdk_macos_toplevel_surface_compute_size (GdkSurface *surface)
   GdkGeometry geometry;
   GdkSurfaceHints mask;
 
-  g_assert (GDK_IS_MACOS_TOPLEVEL_SURFACE (self));
+  g_assert (GDK_IS_MACOS_TOPLEVEL_SURFACE (this));
 
   if (!GDK_MACOS_SURFACE (surface)->geometry_dirty)
     return FALSE;
@@ -138,8 +138,8 @@ _gdk_macos_toplevel_surface_compute_size (GdkSurface *surface)
   g_warn_if_fail (size.width > 0);
   g_warn_if_fail (size.height > 0);
 
-  if (self->layout != NULL &&
-      gdk_toplevel_layout_get_resizable (self->layout))
+  if (this->layout != NULL &&
+      gdk_toplevel_layout_get_resizable (this->layout))
     {
       geometry.min_width = size.min_width;
       geometry.min_height = size.min_height;
@@ -194,13 +194,13 @@ _gdk_macos_toplevel_surface_compute_size (GdkSurface *surface)
                               size.width, size.height,
                               &size.width, &size.height);
 
-  if ((size.width != self->last_computed_width ||
-       size.height != self->last_computed_height) &&
+  if ((size.width != this->last_computed_width ||
+       size.height != this->last_computed_height) &&
       (size.width != surface->width ||
        size.height != surface->height))
     {
-      self->last_computed_width = size.width;
-      self->last_computed_height = size.height;
+      this->last_computed_width = size.width;
+      this->last_computed_height = size.height;
 
       _gdk_macos_surface_resize (macos_surface, size.width, size.height);
     }
@@ -213,23 +213,23 @@ _gdk_macos_toplevel_surface_present (GdkToplevel       *toplevel,
                                      GdkToplevelLayout *layout)
 {
   GdkSurface *surface = GDK_SURFACE (toplevel);
-  GdkMacosToplevelSurface *self = (GdkMacosToplevelSurface *)toplevel;
-  NSWindow *nswindow = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (self));
+  GdkMacosToplevelSurface *this = (GdkMacosToplevelSurface *)toplevel;
+  NSWindow *nswindow = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (this));
   GdkDisplay *display = gdk_surface_get_display (surface);
   NSWindowStyleMask style_mask;
   gboolean maximize;
   gboolean fullscreen;
 
-  g_assert (GDK_IS_MACOS_TOPLEVEL_SURFACE (self));
+  g_assert (GDK_IS_MACOS_TOPLEVEL_SURFACE (this));
   g_assert (GDK_IS_MACOS_WINDOW (nswindow));
 
-  if (layout != self->layout)
+  if (layout != this->layout)
     {
-      g_clear_pointer (&self->layout, gdk_toplevel_layout_unref);
-      self->layout = gdk_toplevel_layout_copy (layout);
+      g_clear_pointer (&this->layout, gdk_toplevel_layout_unref);
+      this->layout = gdk_toplevel_layout_copy (layout);
     }
 
-  _gdk_macos_toplevel_surface_attach_to_parent (self);
+  _gdk_macos_toplevel_surface_attach_to_parent (this);
   _gdk_macos_toplevel_surface_compute_size (surface);
 
   /* Only set 'Resizable' mask to get native resize zones if the window is
@@ -252,9 +252,9 @@ _gdk_macos_toplevel_surface_present (GdkToplevel       *toplevel,
   if (gdk_toplevel_layout_get_maximized (layout, &maximize))
     {
       if (maximize)
-        _gdk_macos_toplevel_surface_maximize (self);
+        _gdk_macos_toplevel_surface_maximize (this);
       else
-        _gdk_macos_toplevel_surface_unmaximize (self);
+        _gdk_macos_toplevel_surface_unmaximize (this);
     }
 
   /* Fullscreen state */
@@ -270,55 +270,55 @@ _gdk_macos_toplevel_surface_present (GdkToplevel       *toplevel,
               int x = 0, y = 0;
 
               _gdk_macos_display_position_surface (GDK_MACOS_DISPLAY (display),
-                                                   GDK_MACOS_SURFACE (self),
+                                                   GDK_MACOS_SURFACE (this),
                                                    fullscreen_monitor,
                                                    &x, &y);
 
               GDK_DEBUG (MISC, "Moving toplevel \"%s\" to %d,%d",
-                         GDK_MACOS_SURFACE (self)->title ?
-                         GDK_MACOS_SURFACE (self)->title :
+                         GDK_MACOS_SURFACE (this)->title ?
+                         GDK_MACOS_SURFACE (this)->title :
                          "untitled",
                          x, y);
 
-              _gdk_macos_surface_move (GDK_MACOS_SURFACE (self), x, y);
+              _gdk_macos_surface_move (GDK_MACOS_SURFACE (this), x, y);
             }
 
-          _gdk_macos_toplevel_surface_fullscreen (self);
+          _gdk_macos_toplevel_surface_fullscreen (this);
         }
       else
-        _gdk_macos_toplevel_surface_unfullscreen (self);
+        _gdk_macos_toplevel_surface_unfullscreen (this);
     }
 
-  _gdk_macos_toplevel_surface_unminimize (self);
+  _gdk_macos_toplevel_surface_unminimize (this);
 
-  if (!GDK_MACOS_SURFACE (self)->did_initial_present)
+  if (!GDK_MACOS_SURFACE (this)->did_initial_present)
     {
       int x = 0, y = 0;
 
       _gdk_macos_display_position_surface (GDK_MACOS_DISPLAY (display),
-                                           GDK_MACOS_SURFACE (self),
+                                           GDK_MACOS_SURFACE (this),
                                            gdk_toplevel_layout_get_fullscreen_monitor (layout),
                                            &x, &y);
 
       GDK_DEBUG (MISC, "Placing new toplevel \"%s\" at %d,%d",
-                       GDK_MACOS_SURFACE (self)->title ?
-                       GDK_MACOS_SURFACE (self)->title :
+                       GDK_MACOS_SURFACE (this)->title ?
+                       GDK_MACOS_SURFACE (this)->title :
                        "untitled",
                        x, y);
 
-      _gdk_macos_surface_move (GDK_MACOS_SURFACE (self), x, y);
+      _gdk_macos_surface_move (GDK_MACOS_SURFACE (this), x, y);
     }
 
-  _gdk_macos_surface_show (GDK_MACOS_SURFACE (self));
+  _gdk_macos_surface_show (GDK_MACOS_SURFACE (this));
 
-  GDK_MACOS_SURFACE (self)->did_initial_present = TRUE;
+  GDK_MACOS_SURFACE (this)->did_initial_present = TRUE;
 }
 
 static gboolean
 _gdk_macos_toplevel_surface_minimize (GdkToplevel *toplevel)
 {
-  GdkMacosToplevelSurface *self = (GdkMacosToplevelSurface *)toplevel;
-  NSWindow *window = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (self));
+  GdkMacosToplevelSurface *this = (GdkMacosToplevelSurface *)toplevel;
+  NSWindow *window = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (this));
   [window miniaturize:window];
   return TRUE;
 }
@@ -326,8 +326,8 @@ _gdk_macos_toplevel_surface_minimize (GdkToplevel *toplevel)
 static gboolean
 _gdk_macos_toplevel_surface_lower (GdkToplevel *toplevel)
 {
-  GdkMacosToplevelSurface *self = (GdkMacosToplevelSurface *)toplevel;
-  NSWindow *window = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (self));
+  GdkMacosToplevelSurface *this = (GdkMacosToplevelSurface *)toplevel;
+  NSWindow *window = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (this));
   [window orderBack:window];
   return TRUE;
 }
@@ -336,13 +336,13 @@ static void
 _gdk_macos_toplevel_surface_focus (GdkToplevel *toplevel,
                                    guint32      timestamp)
 {
-  GdkMacosToplevelSurface *self = (GdkMacosToplevelSurface *)toplevel;
+  GdkMacosToplevelSurface *this = (GdkMacosToplevelSurface *)toplevel;
   NSWindow *nswindow;
 
-  if (GDK_SURFACE_DESTROYED (self))
+  if (GDK_SURFACE_DESTROYED (this))
     return;
 
-  nswindow = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (self));
+  nswindow = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (this));
   [nswindow makeKeyAndOrderFront:nswindow];
 }
 
@@ -414,31 +414,31 @@ enum {
 };
 
 static void
-_gdk_macos_toplevel_surface_set_transient_for (GdkMacosToplevelSurface *self,
+_gdk_macos_toplevel_surface_set_transient_for (GdkMacosToplevelSurface *this,
                                                GdkMacosSurface         *parent)
 {
-  g_assert (GDK_IS_MACOS_TOPLEVEL_SURFACE (self));
+  g_assert (GDK_IS_MACOS_TOPLEVEL_SURFACE (this));
   g_assert (!parent || GDK_IS_MACOS_SURFACE (parent));
 
-  _gdk_macos_toplevel_surface_detach_from_parent (self);
-  g_clear_object (&GDK_SURFACE (self)->transient_for);
+  _gdk_macos_toplevel_surface_detach_from_parent (this);
+  g_clear_object (&GDK_SURFACE (this)->transient_for);
 
-  if (g_set_object (&GDK_SURFACE (self)->transient_for, GDK_SURFACE (parent)))
-    _gdk_macos_toplevel_surface_attach_to_parent (self);
+  if (g_set_object (&GDK_SURFACE (this)->transient_for, GDK_SURFACE (parent)))
+    _gdk_macos_toplevel_surface_attach_to_parent (this);
 }
 
 static void
-_gdk_macos_toplevel_surface_set_decorated (GdkMacosToplevelSurface *self,
+_gdk_macos_toplevel_surface_set_decorated (GdkMacosToplevelSurface *this,
                                            gboolean                 decorated)
 {
-  g_assert (GDK_IS_MACOS_TOPLEVEL_SURFACE (self));
+  g_assert (GDK_IS_MACOS_TOPLEVEL_SURFACE (this));
 
   decorated = !!decorated;
 
-  if (decorated != self->decorated)
+  if (decorated != this->decorated)
     {
-      NSWindow *window = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (self));
-      self->decorated = decorated;
+      NSWindow *window = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (this));
+      this->decorated = decorated;
       [(GdkMacosWindow *)window setDecorated:(BOOL)decorated];
     }
 }
@@ -446,9 +446,9 @@ _gdk_macos_toplevel_surface_set_decorated (GdkMacosToplevelSurface *self,
 static void
 _gdk_macos_toplevel_surface_hide (GdkSurface *surface)
 {
-  GdkMacosToplevelSurface *self = (GdkMacosToplevelSurface *)surface;
+  GdkMacosToplevelSurface *this = (GdkMacosToplevelSurface *)surface;
 
-  _gdk_macos_toplevel_surface_detach_from_parent (self);
+  _gdk_macos_toplevel_surface_detach_from_parent (this);
 
   GDK_SURFACE_CLASS (_gdk_macos_toplevel_surface_parent_class)->hide (surface);
 }
@@ -463,10 +463,10 @@ static void
 _gdk_macos_toplevel_surface_destroy (GdkSurface *surface,
                                      gboolean    foreign_destroy)
 {
-  GdkMacosToplevelSurface *self = (GdkMacosToplevelSurface *)surface;
+  GdkMacosToplevelSurface *this = (GdkMacosToplevelSurface *)surface;
 
-  g_clear_object (&GDK_SURFACE (self)->transient_for);
-  g_clear_pointer (&self->layout, gdk_toplevel_layout_unref);
+  g_clear_object (&GDK_SURFACE (this)->transient_for);
+  g_clear_pointer (&this->layout, gdk_toplevel_layout_unref);
 
   GDK_SURFACE_CLASS (_gdk_macos_toplevel_surface_parent_class)->destroy (surface, foreign_destroy);
 }
@@ -602,8 +602,8 @@ _gdk_macos_toplevel_surface_constructed (GObject *object)
   GDK_BEGIN_MACOS_ALLOC_POOL;
 
   GdkMacosWindow *window;
-  GdkMacosToplevelSurface *self = GDK_MACOS_TOPLEVEL_SURFACE (object);
-  GdkSurface *surface = GDK_SURFACE (self);
+  GdkMacosToplevelSurface *this = GDK_MACOS_TOPLEVEL_SURFACE (object);
+  GdkSurface *surface = GDK_SURFACE (this);
   GdkMacosDisplay *display = GDK_MACOS_DISPLAY (gdk_surface_get_display (surface));
   GdkFrameClock *frame_clock;
   NSUInteger style_mask;
@@ -629,7 +629,7 @@ _gdk_macos_toplevel_surface_constructed (GObject *object)
                                                  defer:NO
                                                 screen:screen];
 
-  _gdk_macos_surface_set_native (GDK_MACOS_SURFACE (self), window);
+  _gdk_macos_surface_set_native (GDK_MACOS_SURFACE (this), window);
 
   [window setOpaque:NO];
 
@@ -670,17 +670,17 @@ _gdk_macos_toplevel_surface_class_init (GdkMacosToplevelSurfaceClass *klass)
 }
 
 static void
-_gdk_macos_toplevel_surface_init (GdkMacosToplevelSurface *self)
+_gdk_macos_toplevel_surface_init (GdkMacosToplevelSurface *this)
 {
-  self->decorated = TRUE;
+  this->decorated = TRUE;
 }
 
 void
-_gdk_macos_toplevel_surface_attach_to_parent (GdkMacosToplevelSurface *self)
+_gdk_macos_toplevel_surface_attach_to_parent (GdkMacosToplevelSurface *this)
 {
-  GdkSurface *surface = (GdkSurface *)self;
+  GdkSurface *surface = (GdkSurface *)this;
 
-  g_return_if_fail (GDK_IS_MACOS_TOPLEVEL_SURFACE (self));
+  g_return_if_fail (GDK_IS_MACOS_TOPLEVEL_SURFACE (this));
 
   if (GDK_SURFACE_DESTROYED (surface))
     return;
@@ -689,12 +689,12 @@ _gdk_macos_toplevel_surface_attach_to_parent (GdkMacosToplevelSurface *self)
       !GDK_SURFACE_DESTROYED (surface->transient_for))
     {
       NSWindow *parent = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (surface->transient_for));
-      NSWindow *window = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (self));
+      NSWindow *window = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (this));
       int x, y;
 
       [parent addChildWindow:window ordered:NSWindowAbove];
 
-      if (GDK_SURFACE (self)->modal_hint)
+      if (GDK_SURFACE (this)->modal_hint)
         [window setLevel:NSModalPanelWindowLevel];
 
       surface->x = 0;
@@ -710,11 +710,11 @@ _gdk_macos_toplevel_surface_attach_to_parent (GdkMacosToplevelSurface *self)
 }
 
 void
-_gdk_macos_toplevel_surface_detach_from_parent (GdkMacosToplevelSurface *self)
+_gdk_macos_toplevel_surface_detach_from_parent (GdkMacosToplevelSurface *this)
 {
-  GdkSurface *surface = (GdkSurface *)self;
+  GdkSurface *surface = (GdkSurface *)this;
 
-  g_return_if_fail (GDK_IS_MACOS_TOPLEVEL_SURFACE (self));
+  g_return_if_fail (GDK_IS_MACOS_TOPLEVEL_SURFACE (this));
 
   if (GDK_SURFACE_DESTROYED (surface))
     return;
@@ -723,7 +723,7 @@ _gdk_macos_toplevel_surface_detach_from_parent (GdkMacosToplevelSurface *self)
       !GDK_SURFACE_DESTROYED (surface->transient_for))
     {
       NSWindow *parent = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (surface->transient_for));
-      NSWindow *window = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (self));
+      NSWindow *window = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (this));
 
       [parent removeChildWindow:window];
       [window setLevel:NSNormalWindowLevel];

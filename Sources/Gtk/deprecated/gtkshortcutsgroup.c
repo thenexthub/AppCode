@@ -185,20 +185,20 @@ gtk_shortcuts_group_get_property (GObject    *object,
                                   GValue     *value,
                                   GParamSpec *pspec)
 {
-  GtkShortcutsGroup *self = GTK_SHORTCUTS_GROUP (object);
+  GtkShortcutsGroup *this = GTK_SHORTCUTS_GROUP (object);
 
   switch (prop_id)
     {
     case PROP_TITLE:
-      g_value_set_string (value, gtk_label_get_label (self->title));
+      g_value_set_string (value, gtk_label_get_label (this->title));
       break;
 
     case PROP_VIEW:
-      g_value_set_string (value, self->view);
+      g_value_set_string (value, this->view);
       break;
 
     case PROP_HEIGHT:
-      g_value_set_uint (value, gtk_shortcuts_group_get_height (self));
+      g_value_set_uint (value, gtk_shortcuts_group_get_height (this));
       break;
 
     default:
@@ -220,25 +220,25 @@ gtk_shortcuts_group_set_property (GObject      *object,
                                   const GValue *value,
                                   GParamSpec   *pspec)
 {
-  GtkShortcutsGroup *self = GTK_SHORTCUTS_GROUP (object);
+  GtkShortcutsGroup *this = GTK_SHORTCUTS_GROUP (object);
 
   switch (prop_id)
     {
     case PROP_TITLE:
-      gtk_label_set_label (self->title, g_value_get_string (value));
+      gtk_label_set_label (this->title, g_value_get_string (value));
       break;
 
     case PROP_VIEW:
-      g_free (self->view);
-      self->view = g_value_dup_string (value);
+      g_free (this->view);
+      this->view = g_value_dup_string (value);
       break;
 
     case PROP_ACCEL_SIZE_GROUP:
-      gtk_shortcuts_group_set_accel_size_group (self, GTK_SIZE_GROUP (g_value_get_object (value)));
+      gtk_shortcuts_group_set_accel_size_group (this, GTK_SIZE_GROUP (g_value_get_object (value)));
       break;
 
     case PROP_TITLE_SIZE_GROUP:
-      gtk_shortcuts_group_set_title_size_group (self, GTK_SIZE_GROUP (g_value_get_object (value)));
+      gtk_shortcuts_group_set_title_size_group (this, GTK_SIZE_GROUP (g_value_get_object (value)));
       break;
 
     default:
@@ -249,11 +249,11 @@ gtk_shortcuts_group_set_property (GObject      *object,
 static void
 gtk_shortcuts_group_finalize (GObject *object)
 {
-  GtkShortcutsGroup *self = GTK_SHORTCUTS_GROUP (object);
+  GtkShortcutsGroup *this = GTK_SHORTCUTS_GROUP (object);
 
-  g_free (self->view);
-  g_set_object (&self->accel_size_group, NULL);
-  g_set_object (&self->title_size_group, NULL);
+  g_free (this->view);
+  g_set_object (&this->accel_size_group, NULL);
+  g_set_object (&this->title_size_group, NULL);
 
   G_OBJECT_CLASS (gtk_shortcuts_group_parent_class)->finalize (object);
 }
@@ -261,9 +261,9 @@ gtk_shortcuts_group_finalize (GObject *object)
 static void
 gtk_shortcuts_group_dispose (GObject *object)
 {
-  GtkShortcutsGroup *self = GTK_SHORTCUTS_GROUP (object);
+  GtkShortcutsGroup *this = GTK_SHORTCUTS_GROUP (object);
 
-  g_clear_pointer ((GtkWidget **)&self->title, gtk_widget_unparent);
+  g_clear_pointer ((GtkWidget **)&this->title, gtk_widget_unparent);
 
   G_OBJECT_CLASS (gtk_shortcuts_group_parent_class)->dispose (object);
 }
@@ -359,16 +359,16 @@ gtk_shortcuts_group_class_init (GtkShortcutsGroupClass *klass)
 }
 
 static void
-gtk_shortcuts_group_init (GtkShortcutsGroup *self)
+gtk_shortcuts_group_init (GtkShortcutsGroup *this)
 {
   PangoAttrList *attrs;
 
-  gtk_orientable_set_orientation (GTK_ORIENTABLE (self), GTK_ORIENTATION_VERTICAL);
-  gtk_box_set_spacing (GTK_BOX (self), 10);
+  gtk_orientable_set_orientation (GTK_ORIENTABLE (this), GTK_ORIENTATION_VERTICAL);
+  gtk_box_set_spacing (GTK_BOX (this), 10);
 
   attrs = pango_attr_list_new ();
   pango_attr_list_insert (attrs, pango_attr_weight_new (PANGO_WEIGHT_BOLD));
-  self->title = g_object_new (GTK_TYPE_LABEL,
+  this->title = g_object_new (GTK_TYPE_LABEL,
                               "accessible-role", GTK_ACCESSIBLE_ROLE_CAPTION,
                               "attributes", attrs,
                               "visible", TRUE,
@@ -376,16 +376,16 @@ gtk_shortcuts_group_init (GtkShortcutsGroup *self)
                               NULL);
   pango_attr_list_unref (attrs);
 
-  gtk_box_append (GTK_BOX (self), GTK_WIDGET (self->title));
+  gtk_box_append (GTK_BOX (this), GTK_WIDGET (this->title));
 
-  gtk_accessible_update_relation (GTK_ACCESSIBLE (self),
-                                  GTK_ACCESSIBLE_RELATION_LABELLED_BY, self->title, NULL,
+  gtk_accessible_update_relation (GTK_ACCESSIBLE (this),
+                                  GTK_ACCESSIBLE_RELATION_LABELLED_BY, this->title, NULL,
                                   -1);
 }
 
 /**
  * gtk_shortcuts_group_add_shortcut:
- * @self: a `GtkShortcutsGroup`
+ * @this: a `GtkShortcutsGroup`
  * @shortcut: the `GtkShortcutsShortcut` to add
  *
  * Adds a shortcut to the shortcuts group.
@@ -399,15 +399,15 @@ gtk_shortcuts_group_init (GtkShortcutsGroup *self)
  * Deprecated: 4.18: This widget will be removed in GTK 5
  */
 void
-gtk_shortcuts_group_add_shortcut (GtkShortcutsGroup    *self,
+gtk_shortcuts_group_add_shortcut (GtkShortcutsGroup    *this,
                                   GtkShortcutsShortcut *shortcut)
 {
-  g_return_if_fail (GTK_IS_SHORTCUTS_GROUP (self));
+  g_return_if_fail (GTK_IS_SHORTCUTS_GROUP (this));
   g_return_if_fail (GTK_IS_SHORTCUTS_SHORTCUT (shortcut));
   g_return_if_fail (gtk_widget_get_parent (GTK_WIDGET (shortcut)) == NULL);
 
   GtkWidget *widget = GTK_WIDGET (shortcut);
-  gtk_box_append (GTK_BOX (self), widget);
-  gtk_shortcuts_group_apply_accel_size_group (self, widget);
-  gtk_shortcuts_group_apply_title_size_group (self, widget);
+  gtk_box_append (GTK_BOX (this), widget);
+  gtk_shortcuts_group_apply_accel_size_group (this, widget);
+  gtk_shortcuts_group_apply_title_size_group (this, widget);
 }

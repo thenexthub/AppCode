@@ -2330,7 +2330,7 @@ gtk_assistant_pages_get_property (GObject    *object,
                                   GValue     *value,
                                   GParamSpec *pspec)
 {
-  GtkAssistantPages *self = GTK_ASSISTANT_PAGES (object);
+  GtkAssistantPages *this = GTK_ASSISTANT_PAGES (object);
 
   switch (prop_id)
     {
@@ -2339,7 +2339,7 @@ gtk_assistant_pages_get_property (GObject    *object,
       break;
 
     case PAGES_PROP_N_ITEMS:
-      g_value_set_uint (value, gtk_assistant_pages_get_n_items (G_LIST_MODEL (self)));
+      g_value_set_uint (value, gtk_assistant_pages_get_n_items (G_LIST_MODEL (this)));
       break;
 
     default:

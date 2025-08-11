@@ -28,15 +28,15 @@ struct _GskGpuCachedGlyph
 static void
 gsk_gpu_cached_glyph_free (GskGpuCached *cached)
 {
-  GskGpuCachedGlyph *self = (GskGpuCachedGlyph *) cached;
+  GskGpuCachedGlyph *this = (GskGpuCachedGlyph *) cached;
   GskGpuCachePrivate *priv = gsk_gpu_cache_get_private (cached->cache);
 
-  g_hash_table_remove (priv->glyph_cache, self);
+  g_hash_table_remove (priv->glyph_cache, this);
 
-  g_object_unref (self->font);
-  g_object_unref (self->image);
+  g_object_unref (this->font);
+  g_object_unref (this->image);
 
-  g_free (self);
+  g_free (this);
 }
 
 static gboolean
@@ -148,7 +148,7 @@ draw_glyph_print (gpointer  data,
 }
 
 GskGpuImage *
-gsk_gpu_cached_glyph_lookup (GskGpuCache            *self,
+gsk_gpu_cached_glyph_lookup (GskGpuCache            *this,
                              GskGpuFrame            *frame,
                              PangoFont              *font,
                              PangoGlyph              glyph,
@@ -157,7 +157,7 @@ gsk_gpu_cached_glyph_lookup (GskGpuCache            *self,
                              graphene_rect_t        *out_bounds,
                              graphene_point_t       *out_origin)
 {
-  GskGpuCachePrivate *priv = gsk_gpu_cache_get_private (self);
+  GskGpuCachePrivate *priv = gsk_gpu_cache_get_private (this);
   GskGpuCachedGlyph lookup = {
     .font = font,
     .glyph = glyph,
@@ -194,7 +194,7 @@ gsk_gpu_cached_glyph_lookup (GskGpuCache            *self,
   rect.size.height = ceil ((ink_rect.y + ink_rect.height) * 1.0 / PANGO_SCALE + subpixel_y) - origin.y;
   padding = 1;
 
-  image = gsk_gpu_cache_add_atlas_image (self,
+  image = gsk_gpu_cache_add_atlas_image (this,
                                          rect.size.width + 2 * padding, rect.size.height + 2 * padding,
                                          &atlas_x, &atlas_y);
   if (image)
@@ -202,15 +202,15 @@ gsk_gpu_cached_glyph_lookup (GskGpuCache            *self,
       g_object_ref (image);
       rect.origin.x = atlas_x + padding;
       rect.origin.y = atlas_y + padding;
-      cache = gsk_gpu_cached_new_from_current_atlas (self, &GSK_GPU_CACHED_GLYPH_CLASS);
+      cache = gsk_gpu_cached_new_from_current_atlas (this, &GSK_GPU_CACHED_GLYPH_CLASS);
     }
   else
     {
-      image = gsk_gpu_device_create_upload_image (gsk_gpu_cache_get_device (self), FALSE, GDK_MEMORY_DEFAULT, FALSE, rect.size.width, rect.size.height),
+      image = gsk_gpu_device_create_upload_image (gsk_gpu_cache_get_device (this), FALSE, GDK_MEMORY_DEFAULT, FALSE, rect.size.width, rect.size.height),
       rect.origin.x = 0;
       rect.origin.y = 0;
       padding = 0;
-      cache = gsk_gpu_cached_new (self, &GSK_GPU_CACHED_GLYPH_CLASS);
+      cache = gsk_gpu_cached_new (this, &GSK_GPU_CACHED_GLYPH_CLASS);
     }
 
   cache->font = g_object_ref (font);

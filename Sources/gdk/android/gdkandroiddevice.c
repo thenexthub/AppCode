@@ -44,9 +44,9 @@ G_DEFINE_TYPE (GdkAndroidDevice, gdk_android_device, GDK_TYPE_DEVICE)
 static void
 gdk_android_device_finalize (GObject *object)
 {
-  GdkAndroidDevice *self = (GdkAndroidDevice *) object;
-  if (self->last)
-    g_object_remove_weak_pointer ((GObject *) self->last, (gpointer *) &self->last);
+  GdkAndroidDevice *this = (GdkAndroidDevice *) object;
+  if (this->last)
+    g_object_remove_weak_pointer ((GObject *) this->last, (gpointer *) &this->last);
   G_OBJECT_CLASS (gdk_android_device_parent_class)->finalize (object);
 }
 
@@ -145,15 +145,15 @@ gdk_android_device_surface_at_position (GdkDevice *device,
                                         double *win_x, double *win_y,
                                         GdkModifierType *mask)
 {
-  GdkAndroidDevice *self = (GdkAndroidDevice *) device;
+  GdkAndroidDevice *this = (GdkAndroidDevice *) device;
   // TODO: in what space are those values supposed to be?
   if (win_x)
-    *win_x = self->last_x;
+    *win_x = this->last_x;
   if (win_y)
-    *win_y = self->last_y;
+    *win_y = this->last_y;
   if (mask)
-    *mask = self->last_mods;
-  return (GdkSurface *) self->last;
+    *mask = this->last_mods;
+  return (GdkSurface *) this->last;
 }
 
 static void
@@ -172,37 +172,37 @@ gdk_android_device_class_init (GdkAndroidDeviceClass *klass)
 }
 
 static void
-gdk_android_device_init (GdkAndroidDevice *self)
+gdk_android_device_init (GdkAndroidDevice *this)
 {
 }
 
 void
-gdk_android_device_maybe_update_surface (GdkAndroidDevice  *self,
+gdk_android_device_maybe_update_surface (GdkAndroidDevice  *this,
                                          GdkAndroidSurface *new_surface,
                                          GdkModifierType    new_mods,
                                          guint32            timestamp,
                                          gfloat             x,
                                          gfloat             y)
 {
-  GdkModifierType old_mods = self->last_mods;
-  self->last_x = x;
-  self->last_y = y;
-  self->last_mods = new_mods;
-  if (self->last == new_surface || self->button_state != 0)
+  GdkModifierType old_mods = this->last_mods;
+  this->last_x = x;
+  this->last_y = y;
+  this->last_mods = new_mods;
+  if (this->last == new_surface || this->button_state != 0)
     return;
-  GdkDisplay *display = gdk_device_get_display ((GdkDevice *) self);
-  if (self->last)
+  GdkDisplay *display = gdk_device_get_display ((GdkDevice *) this);
+  if (this->last)
     {
-      GdkEvent *ev = gdk_crossing_event_new (GDK_LEAVE_NOTIFY, (GdkSurface *) self->last, (GdkDevice *) self,
+      GdkEvent *ev = gdk_crossing_event_new (GDK_LEAVE_NOTIFY, (GdkSurface *) this->last, (GdkDevice *) this,
                                              timestamp, old_mods,
-                                             self->last_x, self->last_y,
+                                             this->last_x, this->last_y,
                                              GDK_CROSSING_NORMAL, GDK_NOTIFY_UNKNOWN);
       gdk_android_seat_consume_event (display, ev);
-      g_object_remove_weak_pointer ((GObject *) self->last, (gpointer *) &self->last);
+      g_object_remove_weak_pointer ((GObject *) this->last, (gpointer *) &this->last);
     }
-  self->last = new_surface;
-  g_object_add_weak_pointer ((GObject *) self->last, (gpointer *) &self->last);
-  GdkEvent *ev = gdk_crossing_event_new (GDK_ENTER_NOTIFY, (GdkSurface *) new_surface, (GdkDevice *) self,
+  this->last = new_surface;
+  g_object_add_weak_pointer ((GObject *) this->last, (gpointer *) &this->last);
+  GdkEvent *ev = gdk_crossing_event_new (GDK_ENTER_NOTIFY, (GdkSurface *) new_surface, (GdkDevice *) this,
                                          timestamp, new_mods,
                                          x, y,
                                          GDK_CROSSING_NORMAL, GDK_NOTIFY_UNKNOWN);
@@ -210,21 +210,21 @@ gdk_android_device_maybe_update_surface (GdkAndroidDevice  *self,
 }
 
 void
-gdk_android_device_keyboard_maybe_update_surface_focus (GdkAndroidDevice  *self,
+gdk_android_device_keyboard_maybe_update_surface_focus (GdkAndroidDevice  *this,
                                                         GdkAndroidSurface *new_surface)
 {
-  g_return_if_fail (((GdkDevice *)self)->source == GDK_SOURCE_KEYBOARD);
-  if (self->last == new_surface)
+  g_return_if_fail (((GdkDevice *)this)->source == GDK_SOURCE_KEYBOARD);
+  if (this->last == new_surface)
     return;
-  GdkDisplay *display = gdk_device_get_display ((GdkDevice *) self);
-  if (self->last)
+  GdkDisplay *display = gdk_device_get_display ((GdkDevice *) this);
+  if (this->last)
     {
-      GdkEvent *ev = gdk_focus_event_new ((GdkSurface *)self->last, (GdkDevice *)self, FALSE);
+      GdkEvent *ev = gdk_focus_event_new ((GdkSurface *)this->last, (GdkDevice *)this, FALSE);
       gdk_android_seat_consume_event (display, ev);
-      g_object_remove_weak_pointer ((GObject *) self->last, (gpointer *) &self->last);
+      g_object_remove_weak_pointer ((GObject *) this->last, (gpointer *) &this->last);
     }
-  self->last = new_surface;
-  g_object_add_weak_pointer ((GObject *) self->last, (gpointer *) &self->last);
-  GdkEvent *ev = gdk_focus_event_new ((GdkSurface *)self->last, (GdkDevice *)self, TRUE);
+  this->last = new_surface;
+  g_object_add_weak_pointer ((GObject *) this->last, (gpointer *) &this->last);
+  GdkEvent *ev = gdk_focus_event_new ((GdkSurface *)this->last, (GdkDevice *)this, TRUE);
   gdk_android_seat_consume_event (display, ev);
 }

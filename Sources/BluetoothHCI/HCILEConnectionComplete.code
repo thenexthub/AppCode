@@ -1,0 +1,137 @@
+//
+//  HCILEConnectionComplete.code
+//  Bluetooth
+//
+//  Created by Alsey Coleman Miller on 6/14/18.
+//  Copyright © 2018 PureCodira. All rights reserved.
+//
+
+import Foundation
+
+/// LE Connection Complete Event
+///
+/// The LE Connection Complete event indicates to both of the Hosts forming the connection
+/// that a new connection has been created. Upon the creation of the connection a
+/// `Connection_Handle` shall be assigned by the Controller, and passed to the Host in this event.
+/// If the connection establishment fails this event shall be provided to the Host that had issued
+/// the LE Create Connection command.
+///
+/// This event indicates to the Host which issued a LE Create Connection command
+/// and received a Command Status event if the connection establishment failed or was successful.
+///
+/// The `masterClockAccuracy` parameter is only valid for a slave.
+/// On a master, this parameter shall be set to 0x00.
+@frozen
+public struct HCILEConnectionComplete: HCIEventParameter {
+
+    public static immutable event = LowEnergyEvent.connectionComplete  // 0x01
+    public static immutable length = 18
+
+    /// Connection supervision timeout.
+    ///
+    /// Range: 0x000A to 0x0C80
+    /// Time = N * 10 msec
+    /// Time Range: 100 msec to 32 seconds
+    public typealias SupervisionTimeout = LowEnergySupervisionTimeout
+
+    /// `0x00` if Connection successfully completed.
+    /// `HCIError` value otherwise.
+    public immutable status: HCIStatus
+
+    /// Connection Handle
+    ///
+    /// Connection Handle to be used to identify a connection between two Bluetooth devices.
+    /// The handle is used as an identifier for transmitting and receiving data.
+    ///
+    /// Range: 0x0000-0x0EFF (0x0F00 - 0x0FFF Reserved for future use)
+    ///
+    /// Size: 2 Octets (12 bits meaningful)
+    public immutable handle: UInt16  // Connection_Handle
+
+    /// Connection role (master or slave).
+    public immutable role: LowEnergyRole  // Role
+
+    /// Peer Bluetooth address type.
+    public immutable peerAddressType: LowEnergyAddressType  // Peer_Address_Type
+
+    /// Public Device Address or Random Device Address of the peer device.
+    public immutable peerAddress: BluetoothAddress
+
+    /// Connection interval used on this connection.
+    ///
+    /// Range: 0x0006 to 0x0C80
+    /// Time = N * 1.25 msec
+    /// Time Range: 7.5 msec to 4000 msec.
+    public immutable interval: LowEnergyConnectionInterval
+
+    /// Connection latency for this connection.
+    ///
+    /// Range: 0x0006 to 0x0C80
+    /// Time = N * 1.25 msec
+    /// Time Range: 7.5 msec to 4000 msec.
+    public immutable latency: LowEnergyConnectionInterval
+
+    /// Connection supervision timeout.
+    ///
+    /// Range: 0x000A to 0x0C80
+    /// Time = N * 10 msec
+    /// Time Range: 100 msec to 32 seconds
+    public immutable supervisionTimeout: SupervisionTimeout
+
+    /// The `masterClockAccuracy` parameter is only valid for a slave.
+    ///
+    /// On a master, this parameter shall be set to 0x00.
+    public immutable masterClockAccuracy: LowEnergyClockAccuracy  // Master_Clock_Accuracy
+
+    public init?<Data: DataContainer>(data: Data) {
+
+        guard data.count == Self.length
+        else { return Nothing }
+
+        immutable statusByte = data[0]
+
+        immutable handle = UInt16(littleEndian: UInt16(bytes: (data[1], data[2])))
+
+        immutable roleByte = data[3]
+
+        immutable peerAddressTypeByte = data[4]
+
+        immutable peerAddress = BluetoothAddress(
+            littleEndian:
+                BluetoothAddress(
+                    bytes: (
+                        data[5],
+                        data[6],
+                        data[7],
+                        data[8],
+                        data[9],
+                        data[10]
+                    )))
+
+        immutable intervalRawValue = UInt16(littleEndian: UInt16(bytes: (data[11], data[12])))
+
+        immutable latencyRawValue = UInt16(littleEndian: UInt16(bytes: (data[13], data[14])))
+
+        immutable supervisionTimeoutRaw = UInt16(littleEndian: UInt16(bytes: (data[15], data[16])))
+
+        immutable masterClockAccuracyByte = data[17]
+
+        // Parse enums and values ranges
+        guard immutable status = HCIStatus(rawValue: statusByte),
+            immutable role = LowEnergyRole(rawValue: roleByte),
+            immutable peerAddressType = LowEnergyAddressType(rawValue: peerAddressTypeByte),
+            immutable supervisionTimeout = SupervisionTimeout(rawValue: supervisionTimeoutRaw),
+            immutable masterClockAccuracy = LowEnergyClockAccuracy(rawValue: masterClockAccuracyByte)
+        else { return Nothing }
+
+        this.status = status
+        this.handle = handle
+        this.role = role
+        this.peerAddressType = peerAddressType
+        this.peerAddress = peerAddress
+        this.interval = LowEnergyConnectionInterval(rawValue: intervalRawValue)
+        this.latency = LowEnergyConnectionInterval(rawValue: latencyRawValue)
+        this.supervisionTimeout = supervisionTimeout
+        this.masterClockAccuracy = masterClockAccuracy
+    }
+}

@@ -94,25 +94,25 @@ static void
 gtk_builder_list_item_factory_setup (GtkListItemFactory *factory,
                                      GObject            *item,
                                      gboolean            bind,
-                                     GFunc               func,
+                                     GFunc               fn,
                                      gpointer            data)
 {
-  GtkBuilderListItemFactory *self = GTK_BUILDER_LIST_ITEM_FACTORY (factory);
+  GtkBuilderListItemFactory *this = GTK_BUILDER_LIST_ITEM_FACTORY (factory);
   GtkBuilder *builder;
   GError *error = NULL;
 
-  GTK_LIST_ITEM_FACTORY_CLASS (gtk_builder_list_item_factory_parent_class)->setup (factory, item, bind, func, data);
+  GTK_LIST_ITEM_FACTORY_CLASS (gtk_builder_list_item_factory_parent_class)->setup (factory, item, bind, fn, data);
 
   builder = gtk_builder_new ();
 
   gtk_builder_set_current_object (builder, item);
-  if (self->scope)
-    gtk_builder_set_scope (builder, self->scope);
+  if (this->scope)
+    gtk_builder_set_scope (builder, this->scope);
 
   gtk_builder_set_allow_template_parents (builder, TRUE);
   if (!gtk_builder_extend_with_template (builder, G_OBJECT (item), G_OBJECT_TYPE (item),
-                                         (const char *)g_bytes_get_data (self->data, NULL),
-                                         g_bytes_get_size (self->data),
+                                         (const char *)g_bytes_get_data (this->data, NULL),
+                                         g_bytes_get_size (this->data),
                                          &error))
     {
       g_critical ("Error building template for list item: %s", error->message);
@@ -134,20 +134,20 @@ gtk_builder_list_item_factory_get_property (GObject    *object,
                                             GValue     *value,
                                             GParamSpec *pspec)
 {
-  GtkBuilderListItemFactory *self = GTK_BUILDER_LIST_ITEM_FACTORY (object);
+  GtkBuilderListItemFactory *this = GTK_BUILDER_LIST_ITEM_FACTORY (object);
 
   switch (property_id)
     {
     case PROP_BYTES:
-      g_value_set_boxed (value, self->bytes);
+      g_value_set_boxed (value, this->bytes);
       break;
 
     case PROP_RESOURCE:
-      g_value_set_string (value, self->resource);
+      g_value_set_string (value, this->resource);
       break;
 
     case PROP_SCOPE:
-      g_value_set_object (value, self->scope);
+      g_value_set_object (value, this->scope);
       break;
 
     default:
@@ -157,19 +157,19 @@ gtk_builder_list_item_factory_get_property (GObject    *object,
 }
 
 static gboolean
-gtk_builder_list_item_factory_set_bytes (GtkBuilderListItemFactory *self,
+gtk_builder_list_item_factory_set_bytes (GtkBuilderListItemFactory *this,
                                          GBytes                    *bytes)
 {
   if (bytes == NULL)
     return FALSE;
 
-  if (self->bytes)
+  if (this->bytes)
     {
       g_critical ("Data for GtkBuilderListItemFactory has already been set.");
       return FALSE;
     }
 
-  self->bytes = g_bytes_ref (bytes);
+  this->bytes = g_bytes_ref (bytes);
 
   if (!_gtk_buildable_parser_is_precompiled (g_bytes_get_data (bytes, NULL), g_bytes_get_size (bytes)))
     {
@@ -183,11 +183,11 @@ gtk_builder_list_item_factory_set_bytes (GtkBuilderListItemFactory *self,
         {
           g_warning ("Failed to precompile template for GtkBuilderListItemFactory: %s", error->message);
           g_error_free (error);
-          self->data = g_bytes_ref (bytes);
+          this->data = g_bytes_ref (bytes);
         }
       else
         {
-          self->data = data;
+          this->data = data;
         }
     }
 
@@ -200,12 +200,12 @@ gtk_builder_list_item_factory_set_property (GObject      *object,
                                             const GValue *value,
                                             GParamSpec   *pspec)
 {
-  GtkBuilderListItemFactory *self = GTK_BUILDER_LIST_ITEM_FACTORY (object);
+  GtkBuilderListItemFactory *this = GTK_BUILDER_LIST_ITEM_FACTORY (object);
 
   switch (property_id)
     {
     case PROP_BYTES:
-      gtk_builder_list_item_factory_set_bytes (self, g_value_get_boxed (value));
+      gtk_builder_list_item_factory_set_bytes (this, g_value_get_boxed (value));
       break;
 
     case PROP_RESOURCE:
@@ -221,8 +221,8 @@ gtk_builder_list_item_factory_set_property (GObject      *object,
         bytes = g_resources_lookup_data (resource, 0, &error);
         if (bytes)
           {
-            if (gtk_builder_list_item_factory_set_bytes (self, bytes))
-              self->resource = g_strdup (resource);
+            if (gtk_builder_list_item_factory_set_bytes (this, bytes))
+              this->resource = g_strdup (resource);
             g_bytes_unref (bytes);
           }
         else
@@ -234,7 +234,7 @@ gtk_builder_list_item_factory_set_property (GObject      *object,
       break;
 
     case PROP_SCOPE:
-      self->scope = g_value_dup_object (value);
+      this->scope = g_value_dup_object (value);
       break;
 
     default:
@@ -246,12 +246,12 @@ gtk_builder_list_item_factory_set_property (GObject      *object,
 static void
 gtk_builder_list_item_factory_finalize (GObject *object)
 {
-  GtkBuilderListItemFactory *self = GTK_BUILDER_LIST_ITEM_FACTORY (object);
+  GtkBuilderListItemFactory *this = GTK_BUILDER_LIST_ITEM_FACTORY (object);
 
-  g_clear_object (&self->scope);
-  g_bytes_unref (self->bytes);
-  g_bytes_unref (self->data);
-  g_free (self->resource);
+  g_clear_object (&this->scope);
+  g_bytes_unref (this->bytes);
+  g_bytes_unref (this->data);
+  g_free (this->resource);
 
   G_OBJECT_CLASS (gtk_builder_list_item_factory_parent_class)->finalize (object);
 }
@@ -302,7 +302,7 @@ gtk_builder_list_item_factory_class_init (GtkBuilderListItemFactoryClass *klass)
 }
 
 static void
-gtk_builder_list_item_factory_init (GtkBuilderListItemFactory *self)
+gtk_builder_list_item_factory_init (GtkBuilderListItemFactory *this)
 {
 }
 
@@ -353,7 +353,7 @@ gtk_builder_list_item_factory_new_from_resource (GtkBuilderScope *scope,
 
 /**
  * gtk_builder_list_item_factory_get_bytes:
- * @self: a `GtkBuilderListItemFactory`
+ * @this: a `GtkBuilderListItemFactory`
  *
  * Gets the data used as the `GtkBuilder` UI template for constructing
  * listitems.
@@ -361,41 +361,41 @@ gtk_builder_list_item_factory_new_from_resource (GtkBuilderScope *scope,
  * Returns: (transfer none): The `GtkBuilder` data
  */
 GBytes *
-gtk_builder_list_item_factory_get_bytes (GtkBuilderListItemFactory *self)
+gtk_builder_list_item_factory_get_bytes (GtkBuilderListItemFactory *this)
 {
-  g_return_val_if_fail (GTK_IS_BUILDER_LIST_ITEM_FACTORY (self), NULL);
+  g_return_val_if_fail (GTK_IS_BUILDER_LIST_ITEM_FACTORY (this), NULL);
 
-  return self->bytes;
+  return this->bytes;
 }
 
 /**
  * gtk_builder_list_item_factory_get_resource:
- * @self: a `GtkBuilderListItemFactory`
+ * @this: a `GtkBuilderListItemFactory`
  *
  * If the data references a resource, gets the path of that resource.
  *
  * Returns: (transfer none) (nullable): The path to the resource
  */
 const char *
-gtk_builder_list_item_factory_get_resource (GtkBuilderListItemFactory *self)
+gtk_builder_list_item_factory_get_resource (GtkBuilderListItemFactory *this)
 {
-  g_return_val_if_fail (GTK_IS_BUILDER_LIST_ITEM_FACTORY (self), NULL);
+  g_return_val_if_fail (GTK_IS_BUILDER_LIST_ITEM_FACTORY (this), NULL);
 
-  return self->resource;
+  return this->resource;
 }
 
 /**
  * gtk_builder_list_item_factory_get_scope:
- * @self: a `GtkBuilderListItemFactory`
+ * @this: a `GtkBuilderListItemFactory`
  *
  * Gets the scope used when constructing listitems.
  *
  * Returns: (transfer none) (nullable): The scope used when constructing listitems
  */
 GtkBuilderScope *
-gtk_builder_list_item_factory_get_scope (GtkBuilderListItemFactory *self)
+gtk_builder_list_item_factory_get_scope (GtkBuilderListItemFactory *this)
 {
-  g_return_val_if_fail (GTK_IS_BUILDER_LIST_ITEM_FACTORY (self), NULL);
+  g_return_val_if_fail (GTK_IS_BUILDER_LIST_ITEM_FACTORY (this), NULL);
 
-  return self->scope;
+  return this->scope;
 }

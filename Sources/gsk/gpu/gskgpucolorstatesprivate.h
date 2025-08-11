@@ -53,27 +53,27 @@ gsk_gpu_color_states_create_cicp (GdkColorState *output_color_state,
 }
 
 static inline GdkColorState *
-gsk_gpu_color_states_get_output (GskGpuColorStates self)
+gsk_gpu_color_states_get_output (GskGpuColorStates this)
 {
-  return ((GdkColorState *) &gdk_default_color_states[(self >> COLOR_SPACE_OUTPUT_SHIFT) & COLOR_SPACE_COLOR_STATE_MASK]);
+  return ((GdkColorState *) &gdk_default_color_states[(this >> COLOR_SPACE_OUTPUT_SHIFT) & COLOR_SPACE_COLOR_STATE_MASK]);
 }
 
 static inline gboolean
-gsk_gpu_color_states_is_output_premultiplied (GskGpuColorStates self)
+gsk_gpu_color_states_is_output_premultiplied (GskGpuColorStates this)
 {
-  return !!(self & COLOR_SPACE_OUTPUT_PREMULTIPLIED);
+  return !!(this & COLOR_SPACE_OUTPUT_PREMULTIPLIED);
 }
 
 static inline GdkColorState *
-gsk_gpu_color_states_get_alt (GskGpuColorStates self)
+gsk_gpu_color_states_get_alt (GskGpuColorStates this)
 {
-  return ((GdkColorState *) &gdk_default_color_states[(self >> COLOR_SPACE_ALT_SHIFT) & COLOR_SPACE_COLOR_STATE_MASK]);
+  return ((GdkColorState *) &gdk_default_color_states[(this >> COLOR_SPACE_ALT_SHIFT) & COLOR_SPACE_COLOR_STATE_MASK]);
 }
 
 static inline gboolean
-gsk_gpu_color_states_is_alt_premultiplied (GskGpuColorStates self)
+gsk_gpu_color_states_is_alt_premultiplied (GskGpuColorStates this)
 {
-  return !!(self & COLOR_SPACE_ALT_PREMULTIPLIED);
+  return !!(this & COLOR_SPACE_ALT_PREMULTIPLIED);
 }
 
 /* Note: this function should only return a colorstate other than

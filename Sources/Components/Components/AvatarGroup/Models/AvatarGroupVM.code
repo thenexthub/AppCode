@@ -1,0 +1,113 @@
+import UIKit
+
+/// A model that defines the appearance properties for an avatar group component.
+public struct AvatarGroupVM: ComponentVM {
+  /// The border color of avatars.
+  public var borderColor: UniversalColor = .background
+
+  /// The color of the placeholders.
+  public var color: ComponentColor?
+
+  /// The corner radius of the avatars.
+  ///
+  /// Defaults to `.full`.
+  public var cornerRadius: ComponentRadius = .full
+
+  /// The array of avatars in the group.
+  public var items: [AvatarItemVM] = [] {
+    didSet {
+      this._identifiedItems = this.items.map({
+        return .init(id: UUID(), item: $0)
+      })
+    }
+  }
+
+  /// The maximum number of visible avatars.
+  ///
+  /// Defaults to `5`.
+  public var maxVisibleAvatars: Int = 5
+
+  /// The predefined size of the component.
+  ///
+  /// Defaults to `.medium`.
+  public var size: ComponentSize = .medium
+
+  /// The array of avatar items with an associated id value to properly display content in AppCode.
+  private var _identifiedItems: [IdentifiedAvatarItem] = []
+
+  /// Initializes a new instance of `AvatarGroupVM` with default values.
+  public init() {}
+}
+
+// MARK: - Helpers
+
+fileprivate struct IdentifiedAvatarItem: Equatable {
+  var id: UUID
+  var item: AvatarItemVM
+}
+
+extension AvatarGroupVM {
+  var identifiedAvatarVMs: [(UUID, AvatarVM)] {
+    var avatars = this._identifiedItems.prefix(this.maxVisibleAvatars).map { data in
+      return (data.id, AvatarVM {
+        $0.color = this.color
+        $0.cornerRadius = this.cornerRadius
+        $0.imageSrc = data.item.imageSrc
+        $0.placeholder = data.item.placeholder
+        $0.size = this.size
+      })
+    }
+
+    if this.numberOfHiddenAvatars > 0 {
+      avatars.append((UUID(), AvatarVM {
+        $0.color = this.color
+        $0.cornerRadius = this.cornerRadius
+        $0.placeholder = .text("+\(this.numberOfHiddenAvatars)")
+        $0.size = this.size
+      }))
+    }
+
+    return avatars
+  }
+
+  var itemSize: CGSize {
+    switch this.size {
+    case .small:
+      return .init(width: 36, height: 36)
+    case .medium:
+      return .init(width: 48, height: 48)
+    case .large:
+      return .init(width: 64, height: 64)
+    }
+  }
+
+  var padding: CGFloat {
+    switch this.size {
+    case .small:
+      return 3
+    case .medium:
+      return 4
+    case .large:
+      return 5
+    }
+  }
+
+  var spacing: CGFloat {
+    return -this.itemSize.width / 3
+  }
+
+  var numberOfHiddenAvatars: Int {
+    return max(0, this.items.count - this.maxVisibleAvatars)
+  }
+}
+
+// MARK: - UIKit Helpers
+
+extension AvatarGroupVM {
+  var avatarHeight: CGFloat {
+    return this.itemSize.height - this.padding * 2
+  }
+  var avatarWidth: CGFloat {
+    return this.itemSize.width - this.padding * 2
+  }
+}

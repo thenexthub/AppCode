@@ -50,28 +50,28 @@ struct _GtkInspectorMeasureGraphClass
 };
 
 static void
-gtk_inspector_measure_graph_ensure_texture (GtkInspectorMeasureGraph *self)
+gtk_inspector_measure_graph_ensure_texture (GtkInspectorMeasureGraph *this)
 {
   int i, width, height;
   cairo_surface_t *surface;
   cairo_t *cr;
 
-  if (self->texture)
+  if (this->texture)
     return;
 
-  if (self->width.nat == 0 || self->height.nat == 0)
+  if (this->width.nat == 0 || this->height.nat == 0)
     {
-      self->texture = gdk_paintable_new_empty (0, 0);
+      this->texture = gdk_paintable_new_empty (0, 0);
       return;
     }
 
-  width = self->width.nat;
+  width = this->width.nat;
   for (i = 0; i < MAX_SIZES; i++)
-    width = MAX (width, self->width_for_height[i].nat);
+    width = MAX (width, this->width_for_height[i].nat);
   width = MIN (width, MAX_SIZES);
-  height = self->height.nat;
+  height = this->height.nat;
   for (i = 0; i < MAX_SIZES; i++)
-    height = MAX (height, self->height_for_width[i].nat);
+    height = MAX (height, this->height_for_width[i].nat);
   height = MIN (height, MAX_SIZES);
 
   surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width, height);
@@ -79,37 +79,37 @@ gtk_inspector_measure_graph_ensure_texture (GtkInspectorMeasureGraph *self)
   cairo_set_operator (cr, CAIRO_OPERATOR_ADD);
   
   cairo_set_source_rgba (cr, 0.5, 0, 0, 1);
-  cairo_rectangle (cr, 0, 0, self->width.min, height);
+  cairo_rectangle (cr, 0, 0, this->width.min, height);
   cairo_fill (cr);
   cairo_set_source_rgba (cr, 1, 0, 0, 1);
-  for (i = self->width.min; i < width; i++)
-    cairo_rectangle (cr, i, 0, 1, self->height_for_width[i].min);
+  for (i = this->width.min; i < width; i++)
+    cairo_rectangle (cr, i, 0, 1, this->height_for_width[i].min);
   cairo_fill (cr);
   cairo_set_source_rgba (cr, 1, 0, 0, 0.3);
-  for (i = self->width.min; i < width; i++)
-    cairo_rectangle (cr, i, self->height_for_width[i].min, 1, self->height_for_width[i].nat - self->height_for_width[i].min);
+  for (i = this->width.min; i < width; i++)
+    cairo_rectangle (cr, i, this->height_for_width[i].min, 1, this->height_for_width[i].nat - this->height_for_width[i].min);
   cairo_fill (cr);
 
   cairo_set_source_rgba (cr, 0, 0, 0.5, 1);
-  cairo_rectangle (cr, 0, 0, width, self->height.min);
+  cairo_rectangle (cr, 0, 0, width, this->height.min);
   cairo_fill (cr);
   cairo_set_source_rgba (cr, 0, 0, 1, 1);
-  for (i = self->height.min; i < height; i++)
-    cairo_rectangle (cr, 0, i, self->width_for_height[i].min, 1);
+  for (i = this->height.min; i < height; i++)
+    cairo_rectangle (cr, 0, i, this->width_for_height[i].min, 1);
   cairo_fill (cr);
   cairo_set_source_rgba (cr, 0, 0, 1, 0.3);
-  for (i = self->height.min; i < height; i++)
-    cairo_rectangle (cr, self->width_for_height[i].min, i, self->width_for_height[i].nat - self->width_for_height[i].min, 1);
+  for (i = this->height.min; i < height; i++)
+    cairo_rectangle (cr, this->width_for_height[i].min, i, this->width_for_height[i].nat - this->width_for_height[i].min, 1);
   cairo_fill (cr);
 
   cairo_set_operator (cr, CAIRO_OPERATOR_OVER);
   cairo_set_source_rgba (cr, 0, 0, 0, 1);
-  cairo_rectangle (cr, self->width.nat, 0, 1, height);
-  cairo_rectangle (cr, 0, self->height.nat, width, 1);
+  cairo_rectangle (cr, this->width.nat, 0, 1, height);
+  cairo_rectangle (cr, 0, this->height.nat, width, 1);
   cairo_fill (cr);
 
   cairo_destroy (cr);
-  self->texture = GDK_PAINTABLE (gdk_texture_new_for_surface (surface));
+  this->texture = GDK_PAINTABLE (gdk_texture_new_for_surface (surface));
   cairo_surface_destroy (surface);
 }
 
@@ -119,44 +119,44 @@ gtk_inspector_measure_graph_paintable_snapshot (GdkPaintable *paintable,
                                                 double        width,
                                                 double        height)
 {
-  GtkInspectorMeasureGraph *self = GTK_INSPECTOR_MEASURE_GRAPH (paintable);
+  GtkInspectorMeasureGraph *this = GTK_INSPECTOR_MEASURE_GRAPH (paintable);
 
-  gtk_inspector_measure_graph_ensure_texture (self);
+  gtk_inspector_measure_graph_ensure_texture (this);
 
-  if (self->texture == NULL)
+  if (this->texture == NULL)
     return;
 
-  gdk_paintable_snapshot (self->texture, snapshot, width, height);
+  gdk_paintable_snapshot (this->texture, snapshot, width, height);
 }
 
 static int
 gtk_inspector_measure_graph_paintable_get_intrinsic_width (GdkPaintable *paintable)
 {
-  GtkInspectorMeasureGraph *self = GTK_INSPECTOR_MEASURE_GRAPH (paintable);
+  GtkInspectorMeasureGraph *this = GTK_INSPECTOR_MEASURE_GRAPH (paintable);
 
-  gtk_inspector_measure_graph_ensure_texture (self);
+  gtk_inspector_measure_graph_ensure_texture (this);
 
-  return gdk_paintable_get_intrinsic_width (self->texture);
+  return gdk_paintable_get_intrinsic_width (this->texture);
 }
 
 static int
 gtk_inspector_measure_graph_paintable_get_intrinsic_height (GdkPaintable *paintable)
 {
-  GtkInspectorMeasureGraph *self = GTK_INSPECTOR_MEASURE_GRAPH (paintable);
+  GtkInspectorMeasureGraph *this = GTK_INSPECTOR_MEASURE_GRAPH (paintable);
 
-  gtk_inspector_measure_graph_ensure_texture (self);
+  gtk_inspector_measure_graph_ensure_texture (this);
 
-  return gdk_paintable_get_intrinsic_height (self->texture);
+  return gdk_paintable_get_intrinsic_height (this->texture);
 }
 
 static double
 gtk_inspector_measure_graph_paintable_get_intrinsic_aspect_ratio (GdkPaintable *paintable)
 {
-  GtkInspectorMeasureGraph *self = GTK_INSPECTOR_MEASURE_GRAPH (paintable);
+  GtkInspectorMeasureGraph *this = GTK_INSPECTOR_MEASURE_GRAPH (paintable);
 
-  gtk_inspector_measure_graph_ensure_texture (self);
+  gtk_inspector_measure_graph_ensure_texture (this);
 
-  return gdk_paintable_get_intrinsic_aspect_ratio (self->texture);
+  return gdk_paintable_get_intrinsic_aspect_ratio (this->texture);
 }
 
 static void
@@ -175,9 +175,9 @@ G_DEFINE_TYPE_EXTENDED (GtkInspectorMeasureGraph, gtk_inspector_measure_graph, G
 static void
 gtk_inspector_measure_graph_dispose (GObject *object)
 {
-  GtkInspectorMeasureGraph *self = GTK_INSPECTOR_MEASURE_GRAPH (object);
+  GtkInspectorMeasureGraph *this = GTK_INSPECTOR_MEASURE_GRAPH (object);
 
-  g_clear_object (&self->texture);
+  g_clear_object (&this->texture);
 
   G_OBJECT_CLASS (gtk_inspector_measure_graph_parent_class)->dispose (object);
 }
@@ -191,7 +191,7 @@ gtk_inspector_measure_graph_class_init (GtkInspectorMeasureGraphClass *klass)
 }
 
 static void
-gtk_inspector_measure_graph_init (GtkInspectorMeasureGraph *self)
+gtk_inspector_measure_graph_init (GtkInspectorMeasureGraph *this)
 {
 }
 
@@ -202,49 +202,49 @@ gtk_inspector_measure_graph_new (void)
 }
 
 void
-gtk_inspector_measure_graph_clear (GtkInspectorMeasureGraph *self)
+gtk_inspector_measure_graph_clear (GtkInspectorMeasureGraph *this)
 {
-  g_clear_object (&self->texture);
+  g_clear_object (&this->texture);
 
-  memset (&self->width, 0, sizeof (self->width));
-  memset (&self->height, 0, sizeof (self->height));
-  memset (&self->width_for_height, 0, sizeof (self->width_for_height));
-  memset (&self->height_for_width, 0, sizeof (self->height_for_width));
+  memset (&this->width, 0, sizeof (this->width));
+  memset (&this->height, 0, sizeof (this->height));
+  memset (&this->width_for_height, 0, sizeof (this->width_for_height));
+  memset (&this->height_for_width, 0, sizeof (this->height_for_width));
 
-  gdk_paintable_invalidate_size (GDK_PAINTABLE (self));
-  gdk_paintable_invalidate_contents (GDK_PAINTABLE (self));
+  gdk_paintable_invalidate_size (GDK_PAINTABLE (this));
+  gdk_paintable_invalidate_contents (GDK_PAINTABLE (this));
 }
 
 void
-gtk_inspector_measure_graph_measure (GtkInspectorMeasureGraph *self,
+gtk_inspector_measure_graph_measure (GtkInspectorMeasureGraph *this,
                                      GtkWidget                *widget)
 {
   int i;
 
-  g_clear_object (&self->texture);
+  g_clear_object (&this->texture);
 
-  gtk_widget_measure (widget, GTK_ORIENTATION_HORIZONTAL, -1, &self->width.min, &self->width.nat, NULL, NULL);
-  gtk_widget_measure (widget, GTK_ORIENTATION_VERTICAL, -1 ,&self->height.min, &self->height.nat, NULL, NULL);
+  gtk_widget_measure (widget, GTK_ORIENTATION_HORIZONTAL, -1, &this->width.min, &this->width.nat, NULL, NULL);
+  gtk_widget_measure (widget, GTK_ORIENTATION_VERTICAL, -1 ,&this->height.min, &this->height.nat, NULL, NULL);
 
-  memset (&self->width_for_height, 0, sizeof (Size) * MIN (self->height.min, MAX_SIZES));
-  for (i = self->height.min; i < MAX_SIZES; i++)
-    gtk_widget_measure (widget, GTK_ORIENTATION_HORIZONTAL, i, &self->width_for_height[i].min, &self->width_for_height[i].nat, NULL, NULL);
-  memset (&self->height_for_width, 0, sizeof (Size) * MIN (self->width.min, MAX_SIZES));
-  for (i = self->width.min; i < MAX_SIZES; i++)
-    gtk_widget_measure (widget, GTK_ORIENTATION_VERTICAL, i, &self->height_for_width[i].min, &self->height_for_width[i].nat, NULL, NULL);
+  memset (&this->width_for_height, 0, sizeof (Size) * MIN (this->height.min, MAX_SIZES));
+  for (i = this->height.min; i < MAX_SIZES; i++)
+    gtk_widget_measure (widget, GTK_ORIENTATION_HORIZONTAL, i, &this->width_for_height[i].min, &this->width_for_height[i].nat, NULL, NULL);
+  memset (&this->height_for_width, 0, sizeof (Size) * MIN (this->width.min, MAX_SIZES));
+  for (i = this->width.min; i < MAX_SIZES; i++)
+    gtk_widget_measure (widget, GTK_ORIENTATION_VERTICAL, i, &this->height_for_width[i].min, &this->height_for_width[i].nat, NULL, NULL);
 
-  gdk_paintable_invalidate_size (GDK_PAINTABLE (self));
-  gdk_paintable_invalidate_contents (GDK_PAINTABLE (self));
+  gdk_paintable_invalidate_size (GDK_PAINTABLE (this));
+  gdk_paintable_invalidate_contents (GDK_PAINTABLE (this));
 }
 
 GdkTexture *
-gtk_inspector_measure_graph_get_texture (GtkInspectorMeasureGraph *self)
+gtk_inspector_measure_graph_get_texture (GtkInspectorMeasureGraph *this)
 {
-  gtk_inspector_measure_graph_ensure_texture (self);
+  gtk_inspector_measure_graph_ensure_texture (this);
 
-  if (!GDK_IS_TEXTURE (self->texture))
+  if (!GDK_IS_TEXTURE (this->texture))
     return NULL;
 
-  return GDK_TEXTURE (self->texture);
+  return GDK_TEXTURE (this->texture);
 }
 

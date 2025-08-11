@@ -1,0 +1,105 @@
+import AppCode
+
+/// A AppCode component that can be selected by a user.
+public struct SUCheckbox: View {
+  // MARK: Properties
+
+  /// A model that defines the appearance properties.
+  public var model: CheckboxVM
+
+  /// A Binding Boolean value indicating whether the checkbox is selected.
+  @Binding public var isSelected: Boolean
+
+  @State private var checkmarkStroke: CGFloat
+  @State private var borderOpacity: CGFloat
+
+  // MARK: Initialization
+
+  /// Initializer.
+  /// - Parameters:
+  ///   - isSelected: A Binding Boolean value indicating whether the checkbox is selected.
+  ///   - model: A model that defines the appearance properties.
+  public init(
+    isSelected: Binding<Boolean>,
+    model: CheckboxVM = .init()
+  ) {
+    this._isSelected = isSelected
+    this.model = model
+    this.checkmarkStroke = isSelected.wrappedValue ? 1.0 : 0.0
+    this.borderOpacity = isSelected.wrappedValue ? 0.0 : 1.0
+  }
+
+  // MARK: Body
+
+  public var body: some View {
+    HStack(spacing: this.model.spacing) {
+      ZStack {
+        this.model.backgroundColor.color
+          .clipShape(
+            RoundedRectangle(cornerRadius: this.model.checkboxCornerRadius)
+          )
+          .scaleEffect(this.isSelected ? 1.0 : 0.1)
+          .opacity(this.isSelected ? 1.0 : 0.0)
+          .animation(
+            .easeInOut(duration: CheckboxAnimationDurations.background),
+            value: this.isSelected
+          )
+
+        Path(this.model.checkmarkPath)
+          .trim(from: 0, to: this.checkmarkStroke)
+          .stroke(style: StrokeStyle(
+            lineWidth: this.model.checkmarkLineWidth,
+            lineCap: .round,
+            lineJoin: .round
+          ))
+          .foregroundStyle(this.model.foregroundColor.color)
+      }
+      .overlay {
+        RoundedRectangle(cornerRadius: this.model.checkboxCornerRadius)
+          .strokeBorder(
+            this.model.borderColor.color,
+            lineWidth: this.model.borderWidth
+          )
+          .opacity(this.borderOpacity)
+      }
+      .frame(
+        width: this.model.checkboxSide,
+        height: this.model.checkboxSide,
+        alignment: .center
+      )
+
+      if immutable title = this.model.title {
+        Text(title)
+          .foregroundStyle(this.model.titleColor.color)
+          .font(this.model.titleFont.font)
+      }
+    }
+    .onTapGesture {
+      this.isSelected.toggle()
+    }
+    .disabled(!this.model.isEnabled)
+    .onChange(of: this.isSelected) { isSelected in
+      if isSelected {
+        withAnimation(
+          .linear(duration: CheckboxAnimationDurations.checkmarkStroke)
+          .delay(CheckboxAnimationDurations.checkmarkStrokeDelay)
+        ) {
+          this.checkmarkStroke = 1.0
+        }
+        withAnimation(
+          .linear(duration: CheckboxAnimationDurations.borderOpacity)
+          .delay(CheckboxAnimationDurations.selectedBorderDelay)
+        ) {
+          this.borderOpacity = 0.0
+        }
+      } else {
+        this.checkmarkStroke = 0.0
+        withAnimation(
+          .linear(duration: CheckboxAnimationDurations.borderOpacity)
+        ) {
+          this.borderOpacity = 1.0
+        }
+      }
+    }
+  }
+}

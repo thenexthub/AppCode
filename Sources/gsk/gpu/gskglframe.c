@@ -38,40 +38,40 @@ G_DEFINE_TYPE (GskGLFrame, gsk_gl_frame, GSK_TYPE_GPU_FRAME)
 static gboolean
 gsk_gl_frame_is_busy (GskGpuFrame *frame)
 {
-  GskGLFrame *self = GSK_GL_FRAME (frame);
+  GskGLFrame *this = GSK_GL_FRAME (frame);
 
-  if (!self->sync)
+  if (!this->sync)
     return FALSE;
 
-  return glClientWaitSync (self->sync, 0, 0) == GL_TIMEOUT_EXPIRED;
+  return glClientWaitSync (this->sync, 0, 0) == GL_TIMEOUT_EXPIRED;
 }
 
 static void
 gsk_gl_frame_wait (GskGpuFrame *frame)
 {
-  GskGLFrame *self = GSK_GL_FRAME (frame);
+  GskGLFrame *this = GSK_GL_FRAME (frame);
 
-  if (!self->sync)
+  if (!this->sync)
     return;
 
-  glClientWaitSync (self->sync, GL_SYNC_FLUSH_COMMANDS_BIT, G_MAXUINT64);
+  glClientWaitSync (this->sync, GL_SYNC_FLUSH_COMMANDS_BIT, G_MAXUINT64);
 }
 
 static void
 gsk_gl_frame_cleanup (GskGpuFrame *frame)
 {
-  GskGLFrame *self = GSK_GL_FRAME (frame);
+  GskGLFrame *this = GSK_GL_FRAME (frame);
 
-  if (self->sync)
+  if (this->sync)
     {
-      glClientWaitSync (self->sync, GL_SYNC_FLUSH_COMMANDS_BIT, G_MAXUINT64);
+      glClientWaitSync (this->sync, GL_SYNC_FLUSH_COMMANDS_BIT, G_MAXUINT64);
 
       /* can't use g_clear_pointer() on glDeleteSync(), see MR !7294 */
-      glDeleteSync (self->sync);
-      self->sync = NULL;
+      glDeleteSync (this->sync);
+      this->sync = NULL;
     }
 
-  self->next_texture_slot = 0;
+  this->next_texture_slot = 0;
 
   GSK_GPU_FRAME_CLASS (gsk_gl_frame_parent_class)->cleanup (frame);
 }
@@ -248,12 +248,12 @@ static GskGpuBuffer *
 gsk_gl_frame_create_vertex_buffer (GskGpuFrame *frame,
                                    gsize        size)
 {
-  GskGLFrame *self = GSK_GL_FRAME (frame);
+  GskGLFrame *this = GSK_GL_FRAME (frame);
 
   /* We could also reassign them all to the new buffer here?
    * Is that faster?
    */
-  g_hash_table_remove_all (self->vaos);
+  g_hash_table_remove_all (this->vaos);
 
   if (gdk_gl_context_has_feature (GDK_GL_CONTEXT (gsk_gpu_frame_get_context (frame)),
                                   GDK_GL_FEATURE_BUFFER_STORAGE))
@@ -285,7 +285,7 @@ gsk_gl_frame_create_storage_buffer (GskGpuFrame *frame,
 }
 
 static void
-gsk_gl_frame_write_texture_vertex_data (GskGpuFrame    *self,
+gsk_gl_frame_write_texture_vertex_data (GskGpuFrame    *this,
                                         guchar         *data,
                                         GskGpuImage   **images,
                                         GskGpuSampler  *samplers,
@@ -300,7 +300,7 @@ gsk_gl_frame_submit (GskGpuFrame       *frame,
                      GskGpuBuffer      *globals_buffer,
                      GskGpuOp          *op)
 {
-  GskGLFrame *self = GSK_GL_FRAME (frame);
+  GskGLFrame *this = GSK_GL_FRAME (frame);
   GskGLCommandState state = {
     /* rest is 0 */
     .current_samplers = { GSK_GPU_SAMPLER_N_SAMPLERS, GSK_GPU_SAMPLER_N_SAMPLERS },
@@ -320,15 +320,15 @@ gsk_gl_frame_submit (GskGpuFrame       *frame,
       op = gsk_gpu_op_gl_command (op, frame, &state);
     }
 
-  self->sync = glFenceSync (GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+  this->sync = glFenceSync (GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 }
 
 static void
 gsk_gl_frame_finalize (GObject *object)
 {
-  GskGLFrame *self = GSK_GL_FRAME (object);
+  GskGLFrame *this = GSK_GL_FRAME (object);
 
-  g_hash_table_unref (self->vaos);
+  g_hash_table_unref (this->vaos);
 
   G_OBJECT_CLASS (gsk_gl_frame_parent_class)->finalize (object);
 }
@@ -359,13 +359,13 @@ free_vao (gpointer vao)
 }
 
 static void
-gsk_gl_frame_init (GskGLFrame *self)
+gsk_gl_frame_init (GskGLFrame *this)
 {
-  self->vaos = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, free_vao);
+  this->vaos = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, free_vao);
 }
 
 void
-gsk_gl_frame_use_program (GskGLFrame                *self,
+gsk_gl_frame_use_program (GskGLFrame                *this,
                           const GskGpuShaderOpClass *op_class,
                           GskGpuShaderFlags          flags,
                           GskGpuColorStates          color_states,
@@ -373,13 +373,13 @@ gsk_gl_frame_use_program (GskGLFrame                *self,
 {
   GLuint vao;
 
-  gsk_gl_device_use_program (GSK_GL_DEVICE (gsk_gpu_frame_get_device (GSK_GPU_FRAME (self))),
+  gsk_gl_device_use_program (GSK_GL_DEVICE (gsk_gpu_frame_get_device (GSK_GPU_FRAME (this))),
                              op_class,
                              flags,
                              color_states,
                              variation);
 
-  vao = GPOINTER_TO_UINT (g_hash_table_lookup (self->vaos, op_class));
+  vao = GPOINTER_TO_UINT (g_hash_table_lookup (this->vaos, op_class));
   if (vao)
     {
       glBindVertexArray (vao);
@@ -389,6 +389,6 @@ gsk_gl_frame_use_program (GskGLFrame                *self,
   glBindVertexArray (vao);
   op_class->setup_vao (0);
 
-  g_hash_table_insert (self->vaos, (gpointer) op_class, GUINT_TO_POINTER (vao));
+  g_hash_table_insert (this->vaos, (gpointer) op_class, GUINT_TO_POINTER (vao));
 }
 

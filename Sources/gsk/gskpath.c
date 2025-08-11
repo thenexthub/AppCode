@@ -112,25 +112,25 @@ gsk_path_new_from_contours (const GSList *contours)
 }
 
 const GskContour *
-gsk_path_get_contour (const GskPath *self,
+gsk_path_get_contour (const GskPath *this,
                       gsize          i)
 {
-  if (i < self->n_contours)
-    return self->contours[i];
+  if (i < this->n_contours)
+    return this->contours[i];
   else
     return NULL;
 }
 
 GskPathFlags
-gsk_path_get_flags (const GskPath *self)
+gsk_path_get_flags (const GskPath *this)
 {
-  return self->flags;
+  return this->flags;
 }
 
 gsize
-gsk_path_get_n_contours (const GskPath *self)
+gsk_path_get_n_contours (const GskPath *this)
 {
-  return self->n_contours;
+  return this->n_contours;
 }
 
 /* }}} */
@@ -138,7 +138,7 @@ gsk_path_get_n_contours (const GskPath *self)
 
 /**
  * gsk_path_ref:
- * @self: a path
+ * @this: a path
  *
  * Increases the reference count of a path by one.
  *
@@ -147,18 +147,18 @@ gsk_path_get_n_contours (const GskPath *self)
  * Since: 4.14
  */
 GskPath *
-gsk_path_ref (GskPath *self)
+gsk_path_ref (GskPath *this)
 {
-  g_return_val_if_fail (self != NULL, NULL);
+  g_return_val_if_fail (this != NULL, NULL);
 
-  self->ref_count++;
+  this->ref_count++;
 
-  return self;
+  return this;
 }
 
 /**
  * gsk_path_unref:
- * @self: a path
+ * @this: a path
  *
  * Decreases the reference count of a path by one.
  *
@@ -167,51 +167,51 @@ gsk_path_ref (GskPath *self)
  * Since: 4.14
  */
 void
-gsk_path_unref (GskPath *self)
+gsk_path_unref (GskPath *this)
 {
-  g_return_if_fail (self != NULL);
-  g_return_if_fail (self->ref_count > 0);
+  g_return_if_fail (this != NULL);
+  g_return_if_fail (this->ref_count > 0);
 
-  self->ref_count--;
-  if (self->ref_count > 0)
+  this->ref_count--;
+  if (this->ref_count > 0)
     return;
 
-  g_free (self);
+  g_free (this);
 }
 
 /**
  * gsk_path_print:
- * @self: a path
+ * @this: a path
  * @string: the string to print into
  *
  * Converts the path into a human-readable representation.
  *
  * The string is compatible with (a superset of)
  * [SVG path syntax](https://www.w3.org/TR/SVG11/paths.html#PathData),
- * see [func@Gsk.Path.parse] for a summary of the syntax.
+ * see [fn@Gsk.Path.parse] for a summary of the syntax.
  *
  * Since: 4.14
  */
 void
-gsk_path_print (GskPath *self,
+gsk_path_print (GskPath *this,
                 GString *string)
 {
   gsize i;
 
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
   g_return_if_fail (string != NULL);
 
-  for (i = 0; i < self->n_contours; i++)
+  for (i = 0; i < this->n_contours; i++)
     {
       if (i > 0)
         g_string_append_c (string, ' ');
-      gsk_contour_print (self->contours[i], string);
+      gsk_contour_print (this->contours[i], string);
     }
 }
 
 /**
  * gsk_path_to_string:
- * @self: a path
+ * @this: a path
  *
  * Converts the path into a human-readable string.
  *
@@ -221,20 +221,20 @@ gsk_path_print (GskPath *self,
  * This is a wrapper around [method@Gsk.Path.print], see that function
  * for details.
  *
- * Returns: a new string for @self
+ * Returns: a new string for @this
  *
  * Since: 4.14
  */
 char *
-gsk_path_to_string (GskPath *self)
+gsk_path_to_string (GskPath *this)
 {
   GString *string;
 
-  g_return_val_if_fail (self != NULL, NULL);
+  g_return_val_if_fail (this != NULL, NULL);
 
   string = g_string_new ("");
 
-  gsk_path_print (self, string);
+  gsk_path_print (this, string);
 
   return g_string_free (string, FALSE);
 }
@@ -276,7 +276,7 @@ gsk_path_to_cairo_add_op (GskPathOperation        op,
 
 /**
  * gsk_path_to_cairo:
- * @self: a path
+ * @this: a path
  * @cr: a cairo context
  *
  * Appends the path to a cairo context for drawing with Cairo.
@@ -290,13 +290,13 @@ gsk_path_to_cairo_add_op (GskPathOperation        op,
  * Since: 4.14
  */
 void
-gsk_path_to_cairo (GskPath *self,
+gsk_path_to_cairo (GskPath *this,
                    cairo_t *cr)
 {
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
   g_return_if_fail (cr != NULL);
 
-  gsk_path_foreach_with_tolerance (self,
+  gsk_path_foreach_with_tolerance (this,
                                    GSK_PATH_FOREACH_ALLOW_CUBIC,
                                    cairo_get_tolerance (cr),
                                    gsk_path_to_cairo_add_op,
@@ -305,7 +305,7 @@ gsk_path_to_cairo (GskPath *self,
 
 /**
  * gsk_path_is_empty:
- * @self: a path
+ * @this: a path
  *
  * Checks if the path is empty, i.e. contains no lines or curves.
  *
@@ -314,16 +314,16 @@ gsk_path_to_cairo (GskPath *self,
  * Since: 4.14
  */
 gboolean
-gsk_path_is_empty (GskPath *self)
+gsk_path_is_empty (GskPath *this)
 {
-  g_return_val_if_fail (self != NULL, FALSE);
+  g_return_val_if_fail (this != NULL, FALSE);
 
-  return self->n_contours == 0;
+  return this->n_contours == 0;
 }
 
 /**
  * gsk_path_is_closed:
- * @self: a path
+ * @this: a path
  *
  * Returns if the path represents a single closed contour.
  *
@@ -332,20 +332,20 @@ gsk_path_is_empty (GskPath *self)
  * Since: 4.14
  */
 gboolean
-gsk_path_is_closed (GskPath *self)
+gsk_path_is_closed (GskPath *this)
 {
-  g_return_val_if_fail (self != NULL, FALSE);
+  g_return_val_if_fail (this != NULL, FALSE);
 
   /* XXX: is the empty path closed? Currently it's not */
-  if (self->n_contours != 1)
+  if (this->n_contours != 1)
     return FALSE;
 
-  return gsk_contour_get_flags (self->contours[0]) & GSK_PATH_CLOSED ? TRUE : FALSE;
+  return gsk_contour_get_flags (this->contours[0]) & GSK_PATH_CLOSED ? TRUE : FALSE;
 }
 
 /**
  * gsk_path_get_bounds:
- * @self: a path
+ * @this: a path
  * @bounds: (out caller-allocates): return location for the bounds
  *
  * Computes the bounds of the given path.
@@ -369,27 +369,27 @@ gsk_path_is_closed (GskPath *self)
  * Since: 4.14
  */
 gboolean
-gsk_path_get_bounds (GskPath         *self,
+gsk_path_get_bounds (GskPath         *this,
                      graphene_rect_t *bounds)
 {
   GskBoundingBox b;
 
-  g_return_val_if_fail (self != NULL, FALSE);
+  g_return_val_if_fail (this != NULL, FALSE);
   g_return_val_if_fail (bounds != NULL, FALSE);
 
-  if (self->n_contours == 0)
+  if (this->n_contours == 0)
     {
       graphene_rect_init_from_rect (bounds, graphene_rect_zero ());
       return FALSE;
     }
 
-  gsk_contour_get_bounds (self->contours[0], &b);
+  gsk_contour_get_bounds (this->contours[0], &b);
 
-  for (gsize i = 1; i < self->n_contours; i++)
+  for (gsize i = 1; i < this->n_contours; i++)
     {
       GskBoundingBox tmp;
 
-      gsk_contour_get_bounds (self->contours[i], &tmp);
+      gsk_contour_get_bounds (this->contours[i], &tmp);
       gsk_bounding_box_union (&b, &tmp, &b);
     }
 
@@ -400,7 +400,7 @@ gsk_path_get_bounds (GskPath         *self,
 
 /**
  * gsk_path_get_stroke_bounds:
- * @self: a path
+ * @this: a path
  * @stroke: stroke parameters
  * @bounds: (out caller-allocates): the bounds to fill in
  *
@@ -418,28 +418,28 @@ gsk_path_get_bounds (GskPath         *self,
  * Since: 4.14
  */
 gboolean
-gsk_path_get_stroke_bounds (GskPath         *self,
+gsk_path_get_stroke_bounds (GskPath         *this,
                             const GskStroke *stroke,
                             graphene_rect_t *bounds)
 {
   GskBoundingBox b;
 
-  g_return_val_if_fail (self != NULL, FALSE);
+  g_return_val_if_fail (this != NULL, FALSE);
   g_return_val_if_fail (bounds != NULL, FALSE);
 
-  if (self->n_contours == 0)
+  if (this->n_contours == 0)
     {
       graphene_rect_init_from_rect (bounds, graphene_rect_zero ());
       return FALSE;
     }
 
-  gsk_contour_get_stroke_bounds (self->contours[0], stroke, &b);
+  gsk_contour_get_stroke_bounds (this->contours[0], stroke, &b);
 
-  for (gsize i = 1; i < self->n_contours; i++)
+  for (gsize i = 1; i < this->n_contours; i++)
     {
       GskBoundingBox tmp;
 
-      if (gsk_contour_get_stroke_bounds (self->contours[i], stroke, &tmp))
+      if (gsk_contour_get_stroke_bounds (this->contours[i], stroke, &tmp))
         gsk_bounding_box_union (&b, &tmp, &b);
     }
 
@@ -450,7 +450,7 @@ gsk_path_get_stroke_bounds (GskPath         *self,
 
 /**
  * gsk_path_in_fill:
- * @self: a path
+ * @this: a path
  * @point: the point to test
  * @fill_rule: the fill rule to follow
  *
@@ -464,14 +464,14 @@ gsk_path_get_stroke_bounds (GskPath         *self,
  * Since: 4.14
  */
 gboolean
-gsk_path_in_fill (GskPath                *self,
+gsk_path_in_fill (GskPath                *this,
                   const graphene_point_t *point,
                   GskFillRule             fill_rule)
 {
   int winding = 0;
 
-  for (int i = 0; i < self->n_contours; i++)
-    winding += gsk_contour_get_winding (self->contours[i], point);
+  for (int i = 0; i < this->n_contours; i++)
+    winding += gsk_contour_get_winding (this->contours[i], point);
 
   switch (fill_rule)
     {
@@ -486,7 +486,7 @@ gsk_path_in_fill (GskPath                *self,
 
 /**
  * gsk_path_get_start_point:
- * @self: a path
+ * @this: a path
  * @result: (out caller-allocates): return location for point
  *
  * Gets the start point of the path.
@@ -499,13 +499,13 @@ gsk_path_in_fill (GskPath                *self,
  * Since: 4.14
  */
 gboolean
-gsk_path_get_start_point (GskPath      *self,
+gsk_path_get_start_point (GskPath      *this,
                           GskPathPoint *result)
 {
-  g_return_val_if_fail (self != NULL, FALSE);
+  g_return_val_if_fail (this != NULL, FALSE);
   g_return_val_if_fail (result != NULL, FALSE);
 
-  if (self->n_contours == 0)
+  if (this->n_contours == 0)
     return FALSE;
 
   /* Conceptually, there is always a move at the
@@ -521,7 +521,7 @@ gsk_path_get_start_point (GskPath      *self,
 
 /**
  * gsk_path_get_end_point:
- * @self: a path
+ * @this: a path
  * @result: (out caller-allocates): return location for point
  *
  * Gets the end point of the path.
@@ -534,17 +534,17 @@ gsk_path_get_start_point (GskPath      *self,
  * Since: 4.14
  */
 gboolean
-gsk_path_get_end_point (GskPath      *self,
+gsk_path_get_end_point (GskPath      *this,
                         GskPathPoint *result)
 {
-  g_return_val_if_fail (self != NULL, FALSE);
+  g_return_val_if_fail (this != NULL, FALSE);
   g_return_val_if_fail (result != NULL, FALSE);
 
-  if (self->n_contours == 0)
+  if (this->n_contours == 0)
     return FALSE;
 
-  result->contour = self->n_contours - 1;
-  result->idx = gsk_contour_get_n_ops (self->contours[self->n_contours - 1]) - 1;
+  result->contour = this->n_contours - 1;
+  result->idx = gsk_contour_get_n_ops (this->contours[this->n_contours - 1]) - 1;
   result->t = 1;
 
   return TRUE;
@@ -552,7 +552,7 @@ gsk_path_get_end_point (GskPath      *self,
 
 /**
  * gsk_path_get_closest_point:
- * @self: a path
+ * @this: a path
  * @point: the point
  * @threshold: maximum allowed distance
  * @result: (out caller-allocates): return location for the closest point
@@ -564,12 +564,12 @@ gsk_path_get_end_point (GskPath      *self,
  * false is returned.
  *
  * Returns: true if @point was set to the closest point
- *   on @self, false if no point is closer than @threshold
+ *   on @this, false if no point is closer than @threshold
  *
  * Since: 4.14
  */
 gboolean
-gsk_path_get_closest_point (GskPath                *self,
+gsk_path_get_closest_point (GskPath                *this,
                             const graphene_point_t *point,
                             float                   threshold,
                             GskPathPoint           *result,
@@ -577,18 +577,18 @@ gsk_path_get_closest_point (GskPath                *self,
 {
   gboolean found;
 
-  g_return_val_if_fail (self != NULL, FALSE);
+  g_return_val_if_fail (this != NULL, FALSE);
   g_return_val_if_fail (point != NULL, FALSE);
   g_return_val_if_fail (threshold >= 0, FALSE);
   g_return_val_if_fail (result != NULL, FALSE);
 
   found = FALSE;
 
-  for (int i = 0; i < self->n_contours; i++)
+  for (int i = 0; i < this->n_contours; i++)
     {
       float dist;
 
-      if (gsk_contour_get_closest_point (self->contours[i], point, threshold, result, &dist))
+      if (gsk_contour_get_closest_point (this->contours[i], point, threshold, result, &dist))
         {
           found = TRUE;
           g_assert (0 <= result->t && result->t <= 1);
@@ -608,14 +608,14 @@ gsk_path_get_closest_point (GskPath                *self,
 
 /**
  * gsk_path_foreach:
- * @self: a path
+ * @this: a path
  * @flags: flags to pass to the foreach function
- * @func: (scope call) (closure user_data): the function to call for operations
- * @user_data: (nullable): user data passed to @func
+ * @fn: (scope call) (closure user_data): the function to call for operations
+ * @user_data: (nullable): user data passed to @fn
  *
- * Calls @func for every operation of the path.
+ * Calls @fn for every operation of the path.
  *
- * Note that this may only approximate @self, because paths can contain
+ * Note that this may only approximate @this, because paths can contain
  * optimizations for various specialized contours, and depending on the
  * @flags, the path may be decomposed into simpler curves than the ones
  * that it contained originally.
@@ -627,23 +627,23 @@ gsk_path_get_closest_point (GskPath                *self,
  * - When the @flags disallow certain operations, it provides
  *   an approximation of the path using just the allowed operations.
  *
- * Returns: false if @func returned false, true otherwise.
+ * Returns: false if @fn returned false, true otherwise.
  *
  * Since: 4.14
  */
 gboolean
-gsk_path_foreach (GskPath             *self,
+gsk_path_foreach (GskPath             *this,
                   GskPathForeachFlags  flags,
-                  GskPathForeachFunc   func,
+                  GskPathForeachFunc   fn,
                   gpointer             user_data)
 {
-  g_return_val_if_fail (self != NULL, FALSE);
-  g_return_val_if_fail (func, FALSE);
+  g_return_val_if_fail (this != NULL, FALSE);
+  g_return_val_if_fail (fn, FALSE);
 
-  return gsk_path_foreach_with_tolerance (self,
+  return gsk_path_foreach_with_tolerance (this,
                                           flags,
                                           GSK_PATH_TOLERANCE_DEFAULT,
-                                          func,
+                                          fn,
                                           user_data);
 }
 
@@ -652,7 +652,7 @@ struct _GskPathForeachTrampoline
 {
   GskPathForeachFlags flags;
   double tolerance;
-  GskPathForeachFunc func;
+  GskPathForeachFunc fn;
   gpointer user_data;
 };
 
@@ -666,7 +666,7 @@ gsk_path_foreach_trampoline_add_line (const graphene_point_t *from,
 {
   GskPathForeachTrampoline *trampoline = data;
 
-  return trampoline->func (GSK_PATH_LINE,
+  return trampoline->fn (GSK_PATH_LINE,
                            (graphene_point_t[2]) { *from, *to },
                            2,
                            0.f,
@@ -682,7 +682,7 @@ gsk_path_foreach_trampoline_add_curve (GskPathOperation        op,
 {
   GskPathForeachTrampoline *trampoline = data;
 
-  return trampoline->func (op, pts, n_pts, weight, trampoline->user_data);
+  return trampoline->fn (op, pts, n_pts, weight, trampoline->user_data);
 }
 
 static gboolean
@@ -706,17 +706,17 @@ gsk_path_foreach_trampoline (GskPathOperation        op,
     case GSK_PATH_MOVE:
     case GSK_PATH_CLOSE:
     case GSK_PATH_LINE:
-      return trampoline->func (op, pts, n_pts, weight, trampoline->user_data);
+      return trampoline->fn (op, pts, n_pts, weight, trampoline->user_data);
 
     case GSK_PATH_QUAD:
       {
         GskCurve curve;
 
         if (trampoline->flags & GSK_PATH_FOREACH_ALLOW_QUAD)
-          return trampoline->func (op, pts, n_pts, weight, trampoline->user_data);
+          return trampoline->fn (op, pts, n_pts, weight, trampoline->user_data);
         else if (trampoline->flags & GSK_PATH_FOREACH_ALLOW_CUBIC)
           {
-            return trampoline->func (GSK_PATH_CUBIC,
+            return trampoline->fn (GSK_PATH_CUBIC,
                                      (graphene_point_t[4]) {
                                        pts[0],
                                        GRAPHENE_POINT_INIT ((pts[0].x + 2 * pts[1].x) / 3,
@@ -742,7 +742,7 @@ gsk_path_foreach_trampoline (GskPathOperation        op,
         GskCurve curve;
 
         if (trampoline->flags & GSK_PATH_FOREACH_ALLOW_CUBIC)
-          return trampoline->func (op, pts, n_pts, weight, trampoline->user_data);
+          return trampoline->fn (op, pts, n_pts, weight, trampoline->user_data);
 
         gsk_curve_init (&curve, gsk_pathop_encode (GSK_PATH_CUBIC, aligned));
         if (trampoline->flags & (GSK_PATH_FOREACH_ALLOW_QUAD|GSK_PATH_FOREACH_ALLOW_CONIC))
@@ -763,7 +763,7 @@ gsk_path_foreach_trampoline (GskPathOperation        op,
         GskCurve curve;
 
         if (trampoline->flags & GSK_PATH_FOREACH_ALLOW_CONIC)
-          return trampoline->func (op, pts, n_pts, weight, trampoline->user_data);
+          return trampoline->fn (op, pts, n_pts, weight, trampoline->user_data);
 
         gsk_curve_init (&curve, gsk_pathop_encode (GSK_PATH_CONIC, (GskAlignedPoint[4]) { { pts[0] }, { pts[1] }, { { weight, 0.f } }, { pts[2] } } ));
         if (trampoline->flags & (GSK_PATH_FOREACH_ALLOW_QUAD|GSK_PATH_FOREACH_ALLOW_CUBIC))
@@ -790,10 +790,10 @@ gsk_path_foreach_trampoline (GskPathOperation        op,
                    GSK_PATH_FOREACH_ALLOW_CONIC)
 
 gboolean
-gsk_path_foreach_with_tolerance (GskPath             *self,
+gsk_path_foreach_with_tolerance (GskPath             *this,
                                  GskPathForeachFlags  flags,
                                  double               tolerance,
-                                 GskPathForeachFunc   func,
+                                 GskPathForeachFunc   fn,
                                  gpointer             user_data)
 {
   GskPathForeachTrampoline trampoline;
@@ -802,14 +802,14 @@ gsk_path_foreach_with_tolerance (GskPath             *self,
   /* If we need to massage the data, set up a trampoline here */
   if ((flags & ALLOW_ANY) != ALLOW_ANY)
     {
-      trampoline = (GskPathForeachTrampoline) { flags, tolerance, func, user_data };
-      func = gsk_path_foreach_trampoline;
+      trampoline = (GskPathForeachTrampoline) { flags, tolerance, fn, user_data };
+      fn = gsk_path_foreach_trampoline;
       user_data = &trampoline;
     }
 
-  for (i = 0; i < self->n_contours; i++)
+  for (i = 0; i < this->n_contours; i++)
     {
-      if (!gsk_contour_foreach (self->contours[i], func, user_data))
+      if (!gsk_contour_foreach (this->contours[i], fn, user_data))
         return FALSE;
     }
 

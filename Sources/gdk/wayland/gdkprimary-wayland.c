@@ -99,7 +99,7 @@ gdk_wayland_primary_claim_remote (GdkWaylandPrimary                     *cb,
 
   if (cb->source)
     {
-      GDK_DISPLAY_DEBUG (gdk_clipboard_get_display (GDK_CLIPBOARD (cb)), CLIPBOARD, "%p: Ignoring primary offer for self", cb);
+      GDK_DISPLAY_DEBUG (gdk_clipboard_get_display (GDK_CLIPBOARD (cb)), CLIPBOARD, "%p: Ignoring primary offer for this", cb);
       gdk_content_formats_unref (formats);
       g_clear_pointer (&offer, zwp_primary_selection_offer_v1_destroy);
       return;

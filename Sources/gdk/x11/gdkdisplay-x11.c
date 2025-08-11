@@ -207,9 +207,9 @@ G_DEFINE_TYPE_WITH_CODE (GdkX11Display, gdk_x11_display, GDK_TYPE_DISPLAY,
                                                 gdk_x11_display_event_translator_init))
 
 static void
-gdk_x11_display_init (GdkX11Display *self)
+gdk_x11_display_init (GdkX11Display *this)
 {
-  self->monitors = g_list_store_new (GDK_TYPE_MONITOR);
+  this->monitors = g_list_store_new (GDK_TYPE_MONITOR);
 }
 
 static void
@@ -1349,7 +1349,7 @@ set_sm_client_id (GdkDisplay  *display,
 }
 
 static void
-gdk_x11_display_query_default_visual (GdkX11Display  *self,
+gdk_x11_display_query_default_visual (GdkX11Display  *this,
                                       Visual        **out_visual,
                                       int            *out_depth)
 {
@@ -1357,9 +1357,9 @@ gdk_x11_display_query_default_visual (GdkX11Display  *self,
   int n_visuals;
   Display *dpy;
 
-  dpy = gdk_x11_display_get_xdisplay (GDK_DISPLAY (self));
+  dpy = gdk_x11_display_get_xdisplay (GDK_DISPLAY (this));
 
-  template.screen = self->screen->screen_num;
+  template.screen = this->screen->screen_num;
   template.depth = 32;
   template.red_mask  = 0xff0000;
   template.green_mask = 0x00ff00;
@@ -1378,36 +1378,36 @@ gdk_x11_display_query_default_visual (GdkX11Display  *self,
       return;
     }
 
-  *out_visual = DefaultVisual (dpy, self->screen->screen_num);
-  *out_depth = DefaultDepth (dpy, self->screen->screen_num);
+  *out_visual = DefaultVisual (dpy, this->screen->screen_num);
+  *out_depth = DefaultDepth (dpy, this->screen->screen_num);
 }
 
 static void
-gdk_x11_display_init_leader_surface (GdkX11Display *self)
+gdk_x11_display_init_leader_surface (GdkX11Display *this)
 {
-  GdkDisplay *display = GDK_DISPLAY (self);
+  GdkDisplay *display = GDK_DISPLAY (this);
   Display *xdisplay = gdk_x11_display_get_xdisplay (display);
 
-  self->window_colormap = XCreateColormap (xdisplay,
+  this->window_colormap = XCreateColormap (xdisplay,
                                            DefaultRootWindow (xdisplay),
-                                           self->window_visual,
+                                           this->window_visual,
                                            AllocNone);
-  gdk_display_set_rgba (display, self->window_depth == 32);
+  gdk_display_set_rgba (display, this->window_depth == 32);
 
   /* We need to initialize events after we have the screen
    * structures in places
    */
-  _gdk_x11_xsettings_init (GDK_X11_SCREEN (self->screen));
+  _gdk_x11_xsettings_init (GDK_X11_SCREEN (this->screen));
 
-  self->device_manager = _gdk_x11_device_manager_new (display);
+  this->device_manager = _gdk_x11_device_manager_new (display);
 
   gdk_event_init (display);
 
-  self->leader_gdk_surface = gdk_x11_drag_surface_new (display);
+  this->leader_gdk_surface = gdk_x11_drag_surface_new (display);
 
-  (_gdk_x11_surface_get_toplevel (self->leader_gdk_surface))->is_leader = TRUE;
-  self->leader_window = GDK_SURFACE_XID (self->leader_gdk_surface);
-  self->leader_window_title_set = FALSE;
+  (_gdk_x11_surface_get_toplevel (this->leader_gdk_surface))->is_leader = TRUE;
+  this->leader_window = GDK_SURFACE_XID (this->leader_gdk_surface);
+  this->leader_window_title_set = FALSE;
 }
 
 /**
@@ -2827,9 +2827,9 @@ gdk_x11_display_get_default_seat (GdkDisplay *display)
 static GListModel *
 gdk_x11_display_get_monitors (GdkDisplay *display)
 {
-  GdkX11Display *self = GDK_X11_DISPLAY (display);
+  GdkX11Display *this = GDK_X11_DISPLAY (display);
 
-  return G_LIST_MODEL (self->monitors);
+  return G_LIST_MODEL (this->monitors);
 }
 
 /**
@@ -2852,12 +2852,12 @@ gdk_x11_display_get_monitors (GdkDisplay *display)
 GdkMonitor *
 gdk_x11_display_get_primary_monitor (GdkDisplay *display)
 {
-  GdkX11Display *self = GDK_X11_DISPLAY (display);
+  GdkX11Display *this = GDK_X11_DISPLAY (display);
   GdkMonitor *monitor;
 
-  monitor = g_list_model_get_item (G_LIST_MODEL (self->monitors), self->primary_monitor);
+  monitor = g_list_model_get_item (G_LIST_MODEL (this->monitors), this->primary_monitor);
   if (monitor == NULL)
-    monitor = g_list_model_get_item (G_LIST_MODEL (self->monitors), 0);
+    monitor = g_list_model_get_item (G_LIST_MODEL (this->monitors), 0);
 
   /* because g_list_model_get_item() returns a ref */
   if (monitor)
@@ -2915,16 +2915,16 @@ gdk_boolean_handled_accumulator (GSignalInvocationHint *ihint,
 }
 
 static XVisualInfo *
-gdk_x11_display_get_visual_info_for_visual (GdkX11Display  *self,
+gdk_x11_display_get_visual_info_for_visual (GdkX11Display  *this,
                                             VisualID        visualid)
 {
   XVisualInfo template, *visinfo;
   int nvisuals;
 
-  template.screen = self->screen->screen_num;
+  template.screen = this->screen->screen_num;
   template.visualid = visualid;
 
-  visinfo = XGetVisualInfo (gdk_x11_display_get_xdisplay (GDK_DISPLAY (self)),
+  visinfo = XGetVisualInfo (gdk_x11_display_get_xdisplay (GDK_DISPLAY (this)),
                             VisualScreenMask | VisualIDMask,
                             &template,
                             &nvisuals);
@@ -2948,7 +2948,7 @@ gdk_x11_display_rate_egl_config (GdkDisplay *display,
                                  gpointer    egl_display,
                                  gpointer    config)
 {
-  GdkX11Display *self = GDK_X11_DISPLAY (display);
+  GdkX11Display *this = GDK_X11_DISPLAY (display);
   XVisualInfo *visinfo;
   guint distance;
   int visualid;
@@ -2956,7 +2956,7 @@ gdk_x11_display_rate_egl_config (GdkDisplay *display,
   if (!eglGetConfigAttrib (egl_display, config, EGL_NATIVE_VISUAL_ID, &visualid))
     return G_MAXUINT;
 
-  visinfo = gdk_x11_display_get_visual_info_for_visual (self, visualid);
+  visinfo = gdk_x11_display_get_visual_info_for_visual (this, visualid);
   if (visinfo == NULL)
     return G_MAXUINT;
 
@@ -2971,13 +2971,13 @@ gdk_x11_display_rate_egl_config (GdkDisplay *display,
 }
 
 static gboolean
-gdk_x11_display_init_gl_backend (GdkX11Display  *self,
+gdk_x11_display_init_gl_backend (GdkX11Display  *this,
                                  Visual        **out_visual,
                                  int            *out_depth,
                                  GError        **error)
 {
-  GdkDisplay *display = GDK_DISPLAY (self);
-  Display *dpy = gdk_x11_display_get_xdisplay (GDK_DISPLAY (self));
+  GdkDisplay *display = GDK_DISPLAY (this);
+  Display *dpy = gdk_x11_display_get_xdisplay (GDK_DISPLAY (this));
   EGLDisplay egl_display;
   XVisualInfo *visinfo;
   int visualid;
@@ -2997,7 +2997,7 @@ gdk_x11_display_init_gl_backend (GdkX11Display  *self,
     {
       g_clear_error (error);
 
-      if (gdk_x11_display_init_glx (self, out_visual, out_depth, error))
+      if (gdk_x11_display_init_glx (this, out_visual, out_depth, error))
         return TRUE;
       
       g_clear_error (error);
@@ -3013,14 +3013,14 @@ gdk_x11_display_init_gl_backend (GdkX11Display  *self,
       /* We guarantee this when rating configs */
       g_assert_not_reached ();
     }
-  visinfo = gdk_x11_display_get_visual_info_for_visual (self, visualid);
+  visinfo = gdk_x11_display_get_visual_info_for_visual (this, visualid);
   g_assert (visinfo);
   *out_visual = visinfo->visual;
   *out_depth = visinfo->depth;
 
   egl_display = gdk_display_get_egl_display (display);
 
-  self->egl_version = epoxy_egl_version (egl_display);
+  this->egl_version = epoxy_egl_version (egl_display);
 
   XFree (visinfo);
 
@@ -3031,17 +3031,17 @@ static GdkGLContext *
 gdk_x11_display_init_gl (GdkDisplay  *display,
                          GError     **error)
 {
-  GdkX11Display *self = GDK_X11_DISPLAY (display);
+  GdkX11Display *this = GDK_X11_DISPLAY (display);
 
-  if (!gdk_x11_display_init_gl_backend (self, &self->window_visual, &self->window_depth, error))
+  if (!gdk_x11_display_init_gl_backend (this, &this->window_visual, &this->window_depth, error))
     return NULL;
 
-  gdk_x11_display_init_leader_surface (self);
+  gdk_x11_display_init_leader_surface (this);
 
-  if (self->glx_config != NULL)
-    return g_object_new (GDK_TYPE_X11_GL_CONTEXT_GLX, "surface", self->leader_gdk_surface, NULL);
+  if (this->glx_config != NULL)
+    return g_object_new (GDK_TYPE_X11_GL_CONTEXT_GLX, "surface", this->leader_gdk_surface, NULL);
   else if (gdk_display_get_egl_display (display))
-    return g_object_new (GDK_TYPE_X11_GL_CONTEXT_EGL, "surface", self->leader_gdk_surface, NULL);
+    return g_object_new (GDK_TYPE_X11_GL_CONTEXT_EGL, "surface", this->leader_gdk_surface, NULL);
   else
     g_return_val_if_reached (NULL);
 }

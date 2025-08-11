@@ -38,10 +38,10 @@ GDK_AVAILABLE_IN_ALL
 GtkSelectionFilterModel * gtk_selection_filter_model_new          (GtkSelectionModel           *model);
 
 GDK_AVAILABLE_IN_ALL
-void                      gtk_selection_filter_model_set_model    (GtkSelectionFilterModel     *self,
+void                      gtk_selection_filter_model_set_model    (GtkSelectionFilterModel     *this,
                                                                    GtkSelectionModel           *model);
 GDK_AVAILABLE_IN_ALL
-GtkSelectionModel *       gtk_selection_filter_model_get_model    (GtkSelectionFilterModel     *self);
+GtkSelectionModel *       gtk_selection_filter_model_get_model    (GtkSelectionFilterModel     *this);
 
 G_END_DECLS
 

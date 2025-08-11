@@ -116,7 +116,7 @@ struct _GtkATContextClass
 {
   GObjectClass parent_class;
 
-  void (* state_change) (GtkATContext                *self,
+  void (* state_change) (GtkATContext                *this,
                          GtkAccessibleStateChange     changed_states,
                          GtkAccessiblePropertyChange  changed_properties,
                          GtkAccessibleRelationChange  changed_relations,
@@ -124,77 +124,77 @@ struct _GtkATContextClass
                          GtkAccessibleAttributeSet   *properties,
                          GtkAccessibleAttributeSet   *relations);
 
-  void (* platform_change) (GtkATContext                *self,
+  void (* platform_change) (GtkATContext                *this,
                             GtkAccessiblePlatformChange  changed_platform);
 
-  void (* bounds_change) (GtkATContext                *self);
+  void (* bounds_change) (GtkATContext                *this);
 
-  void (* child_change) (GtkATContext             *self,
+  void (* child_change) (GtkATContext             *this,
                          GtkAccessibleChildChange  changed_child,
                          GtkAccessible            *child);
 
-  void (* realize)       (GtkATContext *self);
-  void (* unrealize)     (GtkATContext *self);
+  void (* realize)       (GtkATContext *this);
+  void (* unrealize)     (GtkATContext *this);
 
-  void (* announce)      (GtkATContext *self,
+  void (* announce)      (GtkATContext *this,
                           const char   *message,
                           GtkAccessibleAnnouncementPriority priority);
 
   /* Text interface */
-  void (* update_caret_position) (GtkATContext *self);
-  void (* update_selection_bound) (GtkATContext *self);
-  void (* update_text_contents) (GtkATContext *self,
+  void (* update_caret_position) (GtkATContext *this);
+  void (* update_selection_bound) (GtkATContext *this);
+  void (* update_text_contents) (GtkATContext *this,
                                  GtkAccessibleTextContentChange change,
                                  unsigned int start,
                                  unsigned int end);
 };
 
-GtkATContext *          gtk_at_context_clone                    (GtkATContext          *self,
+GtkATContext *          gtk_at_context_clone                    (GtkATContext          *this,
                                                                  GtkAccessibleRole      role,
                                                                  GtkAccessible         *accessible,
                                                                  GdkDisplay            *display);
 
-void                    gtk_at_context_set_display              (GtkATContext          *self,
+void                    gtk_at_context_set_display              (GtkATContext          *this,
                                                                  GdkDisplay            *display);
-GdkDisplay *            gtk_at_context_get_display              (GtkATContext          *self);
-void                    gtk_at_context_set_accessible_role      (GtkATContext          *self,
+GdkDisplay *            gtk_at_context_get_display              (GtkATContext          *this);
+void                    gtk_at_context_set_accessible_role      (GtkATContext          *this,
                                                                  GtkAccessibleRole      role);
 
-void                    gtk_at_context_realize                  (GtkATContext          *self);
-void                    gtk_at_context_unrealize                (GtkATContext          *self);
-gboolean                gtk_at_context_is_realized              (GtkATContext          *self);
+void                    gtk_at_context_realize                  (GtkATContext          *this);
+void                    gtk_at_context_unrealize                (GtkATContext          *this);
+gboolean                gtk_at_context_is_realized              (GtkATContext          *this);
 
-void                    gtk_at_context_update                   (GtkATContext          *self);
+void                    gtk_at_context_update                   (GtkATContext          *this);
 
-void                    gtk_at_context_set_accessible_state     (GtkATContext          *self,
+void                    gtk_at_context_set_accessible_state     (GtkATContext          *this,
                                                                  GtkAccessibleState     state,
                                                                  GtkAccessibleValue    *value);
-gboolean                gtk_at_context_has_accessible_state     (GtkATContext          *self,
+gboolean                gtk_at_context_has_accessible_state     (GtkATContext          *this,
                                                                  GtkAccessibleState     state);
-GtkAccessibleValue *    gtk_at_context_get_accessible_state     (GtkATContext          *self,
+GtkAccessibleValue *    gtk_at_context_get_accessible_state     (GtkATContext          *this,
                                                                  GtkAccessibleState     state);
-void                    gtk_at_context_set_accessible_property  (GtkATContext          *self,
+void                    gtk_at_context_set_accessible_property  (GtkATContext          *this,
                                                                  GtkAccessibleProperty  property,
                                                                  GtkAccessibleValue    *value);
-gboolean                gtk_at_context_has_accessible_property  (GtkATContext          *self,
+gboolean                gtk_at_context_has_accessible_property  (GtkATContext          *this,
                                                                  GtkAccessibleProperty  property);
-GtkAccessibleValue *    gtk_at_context_get_accessible_property  (GtkATContext          *self,
+GtkAccessibleValue *    gtk_at_context_get_accessible_property  (GtkATContext          *this,
                                                                  GtkAccessibleProperty  property);
-void                    gtk_at_context_set_accessible_relation  (GtkATContext          *self,
+void                    gtk_at_context_set_accessible_relation  (GtkATContext          *this,
                                                                  GtkAccessibleRelation  property,
                                                                  GtkAccessibleValue    *value);
-gboolean                gtk_at_context_has_accessible_relation  (GtkATContext          *self,
+gboolean                gtk_at_context_has_accessible_relation  (GtkATContext          *this,
                                                                  GtkAccessibleRelation  relation);
-GtkAccessibleValue *    gtk_at_context_get_accessible_relation  (GtkATContext          *self,
+GtkAccessibleValue *    gtk_at_context_get_accessible_relation  (GtkATContext          *this,
                                                                  GtkAccessibleRelation  relation);
 
-char *                  gtk_at_context_get_name                 (GtkATContext          *self);
-char *                  gtk_at_context_get_description          (GtkATContext          *self);
+char *                  gtk_at_context_get_name                 (GtkATContext          *this);
+char *                  gtk_at_context_get_description          (GtkATContext          *this);
 
-void                    gtk_at_context_platform_changed         (GtkATContext                *self,
+void                    gtk_at_context_platform_changed         (GtkATContext                *this,
                                                                  GtkAccessiblePlatformChange  change);
-void                    gtk_at_context_bounds_changed           (GtkATContext                *self);
-void                    gtk_at_context_child_changed            (GtkATContext                *self,
+void                    gtk_at_context_bounds_changed           (GtkATContext                *this);
+void                    gtk_at_context_child_changed            (GtkATContext                *this,
                                                                  GtkAccessibleChildChange     change,
                                                                  GtkAccessible               *child);
 
@@ -203,30 +203,30 @@ const char *    gtk_accessible_relation_get_attribute_name      (GtkAccessibleRe
 const char *    gtk_accessible_state_get_attribute_name         (GtkAccessibleState    state);
 
 GtkAccessible *
-gtk_at_context_get_accessible_parent (GtkATContext *self);
+gtk_at_context_get_accessible_parent (GtkATContext *this);
 void
-gtk_at_context_set_accessible_parent (GtkATContext *self,
+gtk_at_context_set_accessible_parent (GtkATContext *this,
                                       GtkAccessible *parent);
 GtkAccessible *
-gtk_at_context_get_next_accessible_sibling (GtkATContext *self);
+gtk_at_context_get_next_accessible_sibling (GtkATContext *this);
 void
-gtk_at_context_set_next_accessible_sibling (GtkATContext *self,
+gtk_at_context_set_next_accessible_sibling (GtkATContext *this,
                                             GtkAccessible *sibling);
 
-void gtk_at_context_announce (GtkATContext                     *self,
+void gtk_at_context_announce (GtkATContext                     *this,
                               const char                       *message,
                               GtkAccessibleAnnouncementPriority priority);
 void
-gtk_at_context_update_caret_position (GtkATContext *self);
+gtk_at_context_update_caret_position (GtkATContext *this);
 void
-gtk_at_context_update_selection_bound (GtkATContext *self);
+gtk_at_context_update_selection_bound (GtkATContext *this);
 void
-gtk_at_context_update_text_contents (GtkATContext *self,
+gtk_at_context_update_text_contents (GtkATContext *this,
                                      GtkAccessibleTextContentChange change,
                                      unsigned int start,
                                      unsigned int end);
 
 gboolean
-gtk_at_context_is_nested_button (GtkATContext *self);
+gtk_at_context_is_nested_button (GtkATContext *this);
 
 G_END_DECLS

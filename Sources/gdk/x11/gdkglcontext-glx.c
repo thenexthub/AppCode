@@ -65,39 +65,39 @@ glxconfig_is_srgb (Display     *dpy,
 static GLXDrawable
 gdk_x11_surface_get_glx_drawable (GdkSurface *surface)
 {
-  GdkX11Surface *self = GDK_X11_SURFACE (surface);
-  GdkDisplay *display = gdk_surface_get_display (GDK_SURFACE (self));
+  GdkX11Surface *this = GDK_X11_SURFACE (surface);
+  GdkDisplay *display = gdk_surface_get_display (GDK_SURFACE (this));
   GdkX11Display *display_x11 = GDK_X11_DISPLAY (display);
   Display *dpy = gdk_x11_display_get_xdisplay (display);
 
-  if (self->glx_drawable)
-    return self->glx_drawable;
+  if (this->glx_drawable)
+    return this->glx_drawable;
 
-  self->glx_drawable = glXCreateWindow (gdk_x11_display_get_xdisplay (display),
+  this->glx_drawable = glXCreateWindow (gdk_x11_display_get_xdisplay (display),
                                         display_x11->glx_config,
                                         gdk_x11_surface_get_xid (surface),
                                         NULL);
 
   surface->is_srgb = glxconfig_is_srgb (dpy, display_x11->glx_config);
 
-  return self->glx_drawable;
+  return this->glx_drawable;
 }
 
 void
-gdk_x11_surface_destroy_glx_drawable (GdkX11Surface *self)
+gdk_x11_surface_destroy_glx_drawable (GdkX11Surface *this)
 {
   GdkGLContext *context;
 
-  if (self->glx_drawable == None)
+  if (this->glx_drawable == None)
     return;
 
-  context = gdk_gl_context_clear_current_if_surface (GDK_SURFACE (self));
+  context = gdk_gl_context_clear_current_if_surface (GDK_SURFACE (this));
   g_clear_object (&context);
 
-  glXDestroyWindow (gdk_x11_display_get_xdisplay (gdk_surface_get_display (GDK_SURFACE (self))),
-                    self->glx_drawable);
+  glXDestroyWindow (gdk_x11_display_get_xdisplay (gdk_surface_get_display (GDK_SURFACE (this))),
+                    this->glx_drawable);
 
-  self->glx_drawable = None;
+  this->glx_drawable = None;
 }
 
 static void
@@ -130,7 +130,7 @@ gdk_x11_gl_context_glx_end_frame (GdkDrawContext *draw_context,
                                   gpointer        context_data,
                                   cairo_region_t *painted)
 {
-  GdkX11GLContextGLX *self = GDK_X11_GL_CONTEXT_GLX (draw_context);
+  GdkX11GLContextGLX *this = GDK_X11_GL_CONTEXT_GLX (draw_context);
   GdkGLContext *context = GDK_GL_CONTEXT (draw_context);
   GdkSurface *surface = gdk_gl_context_get_surface (context);
   GdkX11Surface *x11_surface = GDK_X11_SURFACE (surface);
@@ -149,7 +149,7 @@ gdk_x11_gl_context_glx_end_frame (GdkDrawContext *draw_context,
                      "Flushing GLX buffers for drawable %lu (window: %lu), frame sync: %s",
                      (unsigned long) drawable,
                      (unsigned long) gdk_x11_surface_get_xid (surface),
-                     self->do_frame_sync ? "yes" : "no");
+                     this->do_frame_sync ? "yes" : "no");
 
   gdk_profiler_add_mark (GDK_PROFILER_CURRENT_TIME, 0, "x11", "swap buffers");
 
@@ -161,7 +161,7 @@ gdk_x11_gl_context_glx_end_frame (GdkDrawContext *draw_context,
    * GLX_SGI_swap_control, and we ask the driver to do the right
    * thing.
    */
-  if (self->do_frame_sync)
+  if (this->do_frame_sync)
     {
       guint32 end_frame_counter = 0;
       gboolean has_counter = display_x11->has_glx_video_sync;
@@ -170,7 +170,7 @@ gdk_x11_gl_context_glx_end_frame (GdkDrawContext *draw_context,
       if (display_x11->has_glx_video_sync)
         glXGetVideoSyncSGI (&end_frame_counter);
 
-      if (self->do_frame_sync && !display_x11->has_glx_sgi_swap_control && !display_x11->has_glx_swap_control)
+      if (this->do_frame_sync && !display_x11->has_glx_sgi_swap_control && !display_x11->has_glx_swap_control)
         {
           glFinish ();
 
@@ -187,11 +187,11 @@ gdk_x11_gl_context_glx_end_frame (GdkDrawContext *draw_context,
   gdk_x11_surface_pre_damage (surface);
 
 #ifdef HAVE_XDAMAGE
-  if (self->xdamage != 0 && _gdk_x11_surface_syncs_frames (surface))
+  if (this->xdamage != 0 && _gdk_x11_surface_syncs_frames (surface))
     {
-      g_assert (self->frame_fence == 0);
+      g_assert (this->frame_fence == 0);
 
-      self->frame_fence = glFenceSync (GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+      this->frame_fence = glFenceSync (GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
       /* We consider the frame still getting painted until the GL operation is
        * finished, and the window gets damage reported from the X server.
@@ -204,7 +204,7 @@ gdk_x11_gl_context_glx_end_frame (GdkDrawContext *draw_context,
 
   glXSwapBuffers (dpy, drawable);
 
-  if (self->do_frame_sync && display_x11->has_glx_video_sync)
+  if (this->do_frame_sync && display_x11->has_glx_video_sync)
     glXGetVideoSyncSGI (&x11_surface->glx_frame_counter);
 }
 
@@ -221,9 +221,9 @@ gdk_x11_gl_context_glx_clear_current (GdkGLContext *context)
 static gboolean
 gdk_x11_gl_context_glx_is_current (GdkGLContext *context)
 {
-  GdkX11GLContextGLX *self = GDK_X11_GL_CONTEXT_GLX (context);
+  GdkX11GLContextGLX *this = GDK_X11_GL_CONTEXT_GLX (context);
 
-  return self->glx_context == glXGetCurrentContext ();
+  return this->glx_context == glXGetCurrentContext ();
 }
 
 static gboolean
@@ -231,7 +231,7 @@ gdk_x11_gl_context_glx_make_current (GdkGLContext *context,
                                      gboolean      surfaceless)
 
 {
-  GdkX11GLContextGLX *self = GDK_X11_GL_CONTEXT_GLX (context);
+  GdkX11GLContextGLX *this = GDK_X11_GL_CONTEXT_GLX (context);
   GdkDisplay *display = gdk_gl_context_get_display (context);
   Display *dpy = gdk_x11_display_get_xdisplay (display);
   gboolean do_frame_sync = FALSE;
@@ -251,10 +251,10 @@ gdk_x11_gl_context_glx_make_current (GdkGLContext *context,
   /* Work around a glitch, see
    * https://gitlab.gnome.org/GNOME/gtk/-/merge_requests/5281
    */
-  if (glXGetCurrentContext () != self->glx_context)
+  if (glXGetCurrentContext () != this->glx_context)
     glXMakeContextCurrent (dpy, None, None, NULL);
 
-  if (!glXMakeContextCurrent (dpy, drawable, drawable, self->glx_context))
+  if (!glXMakeContextCurrent (dpy, drawable, drawable, this->glx_context))
     return FALSE;
 
   if (!surfaceless)
@@ -267,9 +267,9 @@ gdk_x11_gl_context_glx_make_current (GdkGLContext *context,
 
       if (GDK_X11_DISPLAY (display)->has_glx_swap_control)
         {
-          if (do_frame_sync != self->do_frame_sync)
+          if (do_frame_sync != this->do_frame_sync)
             {
-              self->do_frame_sync = do_frame_sync;
+              this->do_frame_sync = do_frame_sync;
 
               if (do_frame_sync)
                 glXSwapIntervalEXT (dpy, drawable, 1);
@@ -285,9 +285,9 @@ gdk_x11_gl_context_glx_make_current (GdkGLContext *context,
            * to the vblank. */
           do_frame_sync = ! gdk_display_is_composited (display);
 
-          if (do_frame_sync != self->do_frame_sync)
+          if (do_frame_sync != this->do_frame_sync)
             {
-              self->do_frame_sync = do_frame_sync;
+              this->do_frame_sync = do_frame_sync;
 
               if (do_frame_sync)
                 glXSwapIntervalSGI (1);
@@ -342,7 +342,7 @@ gdk_x11_gl_context_glx_get_damage (GdkGLContext *context)
 
 #ifdef HAVE_XDAMAGE
 static void
-bind_context_for_frame_fence (GdkX11GLContextGLX *self)
+bind_context_for_frame_fence (GdkX11GLContextGLX *this)
 {
   GdkX11GLContextGLX *current_context_glx;
   GLXContext current_glx_context = NULL;
@@ -379,7 +379,7 @@ bind_context_for_frame_fence (GdkX11GLContextGLX *self)
 
 out:
   if (needs_binding)
-    gdk_gl_context_make_current (GDK_GL_CONTEXT (self));
+    gdk_gl_context_make_current (GDK_GL_CONTEXT (this));
 }
 
 static void
@@ -752,9 +752,9 @@ gdk_x11_gl_context_glx_class_init (GdkX11GLContextGLXClass *klass)
 }
 
 static void
-gdk_x11_gl_context_glx_init (GdkX11GLContextGLX *self)
+gdk_x11_gl_context_glx_init (GdkX11GLContextGLX *this)
 {
-  self->do_frame_sync = TRUE;
+  this->do_frame_sync = TRUE;
 }
 
 static gboolean
@@ -770,12 +770,12 @@ visual_is_rgba (XVisualInfo *visinfo)
 #define MAX_GLX_ATTRS   30
 
 static gboolean
-gdk_x11_display_create_glx_config (GdkX11Display  *self,
+gdk_x11_display_create_glx_config (GdkX11Display  *this,
                                    Visual        **out_visual,
                                    int            *out_depth,
                                    GError        **error)
 {
-  GdkDisplay *display = GDK_DISPLAY (self);
+  GdkDisplay *display = GDK_DISPLAY (this);
   Display *dpy = gdk_x11_display_get_xdisplay (display);
   int attrs[MAX_GLX_ATTRS];
   GLXFBConfig *configs;
@@ -840,7 +840,7 @@ gdk_x11_display_create_glx_config (GdkX11Display  *self,
               best_features = WITH_MULTISAMPLING;
               *out_visual = visinfo->visual;
               *out_depth = visinfo->depth;
-              self->glx_config = configs[i];
+              this->glx_config = configs[i];
             }
           XFree (visinfo);
           continue;
@@ -855,7 +855,7 @@ gdk_x11_display_create_glx_config (GdkX11Display  *self,
               best_features = WITH_STENCIL_AND_DEPTH_BUFFER;
               *out_visual = visinfo->visual;
               *out_depth = visinfo->depth;
-              self->glx_config = configs[i];
+              this->glx_config = configs[i];
             }
           XFree (visinfo);
           continue;
@@ -869,7 +869,7 @@ gdk_x11_display_create_glx_config (GdkX11Display  *self,
               best_features = NO_ALPHA_VISUAL;
               *out_visual = visinfo->visual;
               *out_depth = visinfo->depth;
-              self->glx_config = configs[i];
+              this->glx_config = configs[i];
             }
           XFree (visinfo);
           continue;
@@ -883,7 +883,7 @@ gdk_x11_display_create_glx_config (GdkX11Display  *self,
               best_features = NO_SRGB;
               *out_visual = visinfo->visual;
               *out_depth = visinfo->depth;
-              self->glx_config = configs[i];
+              this->glx_config = configs[i];
             }
           XFree (visinfo);
           continue;
@@ -893,7 +893,7 @@ gdk_x11_display_create_glx_config (GdkX11Display  *self,
       best_features = PERFECT;
       *out_visual = visinfo->visual;
       *out_depth = visinfo->depth;
-      self->glx_config = configs[i];
+      this->glx_config = configs[i];
       XFree (visinfo);
       break;
     }

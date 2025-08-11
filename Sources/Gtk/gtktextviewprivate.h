@@ -32,7 +32,7 @@ GtkTextAttributes * gtk_text_view_get_default_attributes (GtkTextView *text_view
 
 GtkEventController *gtk_text_view_get_key_controller    (GtkTextView *text_view);
 
-GHashTable *    gtk_text_view_get_attributes_run        (GtkTextView *self,
+GHashTable *    gtk_text_view_get_attributes_run        (GtkTextView *this,
                                                          int          offset,
                                                          gboolean     include_defaults,
                                                          int         *start,

@@ -25,10 +25,10 @@
 void
 gsk_gpu_shader_op_finish (GskGpuOp *op)
 {
-  GskGpuShaderOp *self = (GskGpuShaderOp *) op;
+  GskGpuShaderOp *this = (GskGpuShaderOp *) op;
 
-  g_clear_object (&self->images[0]);
-  g_clear_object (&self->images[1]);
+  g_clear_object (&this->images[0]);
+  g_clear_object (&this->images[1]);
 }
 
 void
@@ -37,7 +37,7 @@ gsk_gpu_shader_op_print (GskGpuOp    *op,
                          GString     *string,
                          guint        indent)
 {
-  GskGpuShaderOp *self = (GskGpuShaderOp *) op;
+  GskGpuShaderOp *this = (GskGpuShaderOp *) op;
   const GskGpuShaderOpClass *shader_class = (const GskGpuShaderOpClass *) op->op_class;
   const char *shader_name;
   guchar *instance;
@@ -48,14 +48,14 @@ gsk_gpu_shader_op_print (GskGpuOp    *op,
   else
     shader_name = shader_class->shader_name;
 
-  instance = gsk_gpu_frame_get_vertex_data (frame, self->vertex_offset);
+  instance = gsk_gpu_frame_get_vertex_data (frame, this->vertex_offset);
 
-  for (i = 0; i < self->n_ops; i++)
+  for (i = 0; i < this->n_ops; i++)
     {
       gsk_gpu_print_op (string, indent, shader_name);
-      gsk_gpu_print_shader_flags (string, self->flags, i == 0);
-      gsk_gpu_print_color_states (string, self->color_states);
-      shader_class->print_instance (self,
+      gsk_gpu_print_shader_flags (string, this->flags, i == 0);
+      gsk_gpu_print_color_states (string, this->color_states);
+      shader_class->print_instance (this,
                                     instance + i * shader_class->vertex_size,
                                     string);
       gsk_gpu_print_newline (string);
@@ -69,7 +69,7 @@ gsk_gpu_shader_op_vk_command_n (GskGpuOp              *op,
                                 GskVulkanCommandState *state,
                                 gsize                  instance_scale)
 {
-  GskGpuShaderOp *self = (GskGpuShaderOp *) op;
+  GskGpuShaderOp *this = (GskGpuShaderOp *) op;
   GskGpuShaderOpClass *shader_op_class = (GskGpuShaderOpClass *) op->op_class;
   GskGpuOp *next;
   VkPipelineLayout vk_pipeline_layout;
@@ -80,31 +80,31 @@ gsk_gpu_shader_op_vk_command_n (GskGpuOp              *op,
   else
     max_ops_per_draw = 1;
 
-  n_ops = self->n_ops;
+  n_ops = this->n_ops;
   for (next = op->next; next; next = next->next)
     {
       GskGpuShaderOp *next_shader = (GskGpuShaderOp *) next;
   
       if (next->op_class != op->op_class ||
-          next_shader->flags != self->flags ||
-          next_shader->color_states != self->color_states ||
-          next_shader->variation != self->variation ||
-          next_shader->vertex_offset != self->vertex_offset + n_ops * shader_op_class->vertex_size ||
-          (shader_op_class->n_textures > 0 && (next_shader->images[0] != self->images[0] || next_shader->samplers[0] != self->samplers[0])) ||
-          (shader_op_class->n_textures > 1 && (next_shader->images[1] != self->images[1] || next_shader->samplers[1] != self->samplers[1])))
+          next_shader->flags != this->flags ||
+          next_shader->color_states != this->color_states ||
+          next_shader->variation != this->variation ||
+          next_shader->vertex_offset != this->vertex_offset + n_ops * shader_op_class->vertex_size ||
+          (shader_op_class->n_textures > 0 && (next_shader->images[0] != this->images[0] || next_shader->samplers[0] != this->samplers[0])) ||
+          (shader_op_class->n_textures > 1 && (next_shader->images[1] != this->images[1] || next_shader->samplers[1] != this->samplers[1])))
         break;
 
       n_ops += next_shader->n_ops;
     }
 
   vk_pipeline_layout = gsk_vulkan_device_get_vk_pipeline_layout (GSK_VULKAN_DEVICE (gsk_gpu_frame_get_device (frame)),
-                                                                 shader_op_class->n_textures > 0 ? gsk_vulkan_image_get_ycbcr (GSK_VULKAN_IMAGE (self->images[0])) : NULL,
-                                                                 shader_op_class->n_textures > 1 ? gsk_vulkan_image_get_ycbcr (GSK_VULKAN_IMAGE (self->images[1])) : NULL);
+                                                                 shader_op_class->n_textures > 0 ? gsk_vulkan_image_get_ycbcr (GSK_VULKAN_IMAGE (this->images[0])) : NULL,
+                                                                 shader_op_class->n_textures > 1 ? gsk_vulkan_image_get_ycbcr (GSK_VULKAN_IMAGE (this->images[1])) : NULL);
 
   for (i = 0; i < shader_op_class->n_textures; i++)
     {
-      if (state->current_images[i] != self->images[i] ||
-          state->current_samplers[i] != self->samplers[i])
+      if (state->current_images[i] != this->images[i] ||
+          state->current_samplers[i] != this->samplers[i])
         {
           vkCmdBindDescriptorSets (state->vk_command_buffer,
                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -112,12 +112,12 @@ gsk_gpu_shader_op_vk_command_n (GskGpuOp              *op,
                                    i,
                                    1,
                                    (VkDescriptorSet[1]) {
-                                       gsk_vulkan_image_get_vk_descriptor_set (GSK_VULKAN_IMAGE (self->images[i]), self->samplers[i]),
+                                       gsk_vulkan_image_get_vk_descriptor_set (GSK_VULKAN_IMAGE (this->images[i]), this->samplers[i]),
                                    },
                                    0,
                                    NULL);
-          state->current_images[i] = self->images[i];
-          state->current_samplers[i] = self->samplers[i];
+          state->current_images[i] = this->images[i];
+          state->current_samplers[i] = this->samplers[i];
         }
     }
                                
@@ -126,9 +126,9 @@ gsk_gpu_shader_op_vk_command_n (GskGpuOp              *op,
                      gsk_vulkan_device_get_vk_pipeline (GSK_VULKAN_DEVICE (gsk_gpu_frame_get_device (frame)),
                                                         vk_pipeline_layout,
                                                         shader_op_class,
-                                                        self->flags,
-                                                        self->color_states,
-                                                        self->variation,
+                                                        this->flags,
+                                                        this->color_states,
+                                                        this->variation,
                                                         state->blend,
                                                         state->vk_format,
                                                         state->vk_render_pass));
@@ -137,7 +137,7 @@ gsk_gpu_shader_op_vk_command_n (GskGpuOp              *op,
     {
       vkCmdDraw (state->vk_command_buffer,
                  6 * instance_scale, MIN (max_ops_per_draw, n_ops - i),
-                 0, self->vertex_offset / shader_op_class->vertex_size + i);
+                 0, this->vertex_offset / shader_op_class->vertex_size + i);
     }
  
   return next;
@@ -158,40 +158,40 @@ gsk_gpu_shader_op_gl_command_n (GskGpuOp          *op,
                                 GskGLCommandState *state,
                                 gsize              instance_scale)
 {
-  GskGpuShaderOp *self = (GskGpuShaderOp *) op;
+  GskGpuShaderOp *this = (GskGpuShaderOp *) op;
   GskGpuShaderOpClass *shader_op_class = (GskGpuShaderOpClass *) op->op_class;
   GskGpuOp *next;
   gsize i, j, n_ops, max_ops_per_draw;
 
   if (state->current_program.op_class != op->op_class ||
-      state->current_program.color_states != self->color_states ||
-      state->current_program.variation != self->variation ||
-      state->current_program.flags != self->flags)
+      state->current_program.color_states != this->color_states ||
+      state->current_program.variation != this->variation ||
+      state->current_program.flags != this->flags)
     {
       state->current_program.op_class = op->op_class;
-      state->current_program.flags = self->flags;
-      state->current_program.color_states = self->color_states;
-      state->current_program.variation = self->variation;
+      state->current_program.flags = this->flags;
+      state->current_program.color_states = this->color_states;
+      state->current_program.variation = this->variation;
       gsk_gl_frame_use_program (GSK_GL_FRAME (frame),
                                 shader_op_class,
-                                self->flags,
-                                self->color_states,
-                                self->variation);
+                                this->flags,
+                                this->color_states,
+                                this->variation);
     }
 
   for (i = 0; i < shader_op_class->n_textures; i++)
     {
-      if (state->current_images[i] != self->images[i])
+      if (state->current_images[i] != this->images[i])
         {
-          gsk_gl_image_bind_textures (GSK_GL_IMAGE (self->images[i]), GL_TEXTURE0 + 3 * i);
-          state->current_images[i] = self->images[i];
+          gsk_gl_image_bind_textures (GSK_GL_IMAGE (this->images[i]), GL_TEXTURE0 + 3 * i);
+          state->current_images[i] = this->images[i];
         }
-      if (state->current_samplers[i] != self->samplers[i])
+      if (state->current_samplers[i] != this->samplers[i])
         {
           for (j = 0; j < 3; j++)
             glBindSampler (3 * i + j, gsk_gl_device_get_sampler_id (GSK_GL_DEVICE (gsk_gpu_frame_get_device (frame)),
-                                                                    self->samplers[i]));
-          state->current_samplers[i] = self->samplers[i];
+                                                                    this->samplers[i]));
+          state->current_samplers[i] = this->samplers[i];
         }
     }
 
@@ -200,18 +200,18 @@ gsk_gpu_shader_op_gl_command_n (GskGpuOp          *op,
   else
     max_ops_per_draw = 1;
 
-  n_ops = self->n_ops;
+  n_ops = this->n_ops;
   for (next = op->next; next; next = next->next)
     {
       GskGpuShaderOp *next_shader = (GskGpuShaderOp *) next;
 
       if (next->op_class != op->op_class ||
-          next_shader->flags != self->flags ||
-          next_shader->color_states != self->color_states ||
-          next_shader->variation != self->variation ||
-          next_shader->vertex_offset != self->vertex_offset + n_ops * shader_op_class->vertex_size ||
-          (shader_op_class->n_textures > 0 && (next_shader->images[0] != self->images[0] || next_shader->samplers[0] != self->samplers[0])) ||
-          (shader_op_class->n_textures > 1 && (next_shader->images[1] != self->images[1] || next_shader->samplers[1] != self->samplers[1])))
+          next_shader->flags != this->flags ||
+          next_shader->color_states != this->color_states ||
+          next_shader->variation != this->variation ||
+          next_shader->vertex_offset != this->vertex_offset + n_ops * shader_op_class->vertex_size ||
+          (shader_op_class->n_textures > 0 && (next_shader->images[0] != this->images[0] || next_shader->samplers[0] != this->samplers[0])) ||
+          (shader_op_class->n_textures > 1 && (next_shader->images[1] != this->images[1] || next_shader->samplers[1] != this->samplers[1])))
         break;
 
       n_ops += next_shader->n_ops;
@@ -226,11 +226,11 @@ gsk_gpu_shader_op_gl_command_n (GskGpuOp          *op,
                                              0,
                                              6 * instance_scale,
                                              MIN (max_ops_per_draw, n_ops - i),
-                                             self->vertex_offset / shader_op_class->vertex_size + i);
+                                             this->vertex_offset / shader_op_class->vertex_size + i);
         }
       else
         {
-          shader_op_class->setup_vao (self->vertex_offset + i * shader_op_class->vertex_size);
+          shader_op_class->setup_vao (this->vertex_offset + i * shader_op_class->vertex_size);
 
           glDrawArraysInstanced (GL_TRIANGLES,
                                  0,
@@ -298,18 +298,18 @@ gsk_gpu_shader_op_alloc (GskGpuFrame               *frame,
     }
   else
     {
-      GskGpuShaderOp *self;
-      self = (GskGpuShaderOp *) gsk_gpu_op_alloc (frame, &op_class->parent_class);
+      GskGpuShaderOp *this;
+      this = (GskGpuShaderOp *) gsk_gpu_op_alloc (frame, &op_class->parent_class);
 
-      self->flags = flags;
-      self->color_states = color_states;
-      self->variation = variation;
-      self->vertex_offset = vertex_offset;
-      self->n_ops = 1;
+      this->flags = flags;
+      this->color_states = color_states;
+      this->variation = variation;
+      this->vertex_offset = vertex_offset;
+      this->n_ops = 1;
       for (i = 0; i < op_class->n_textures; i++)
         {
-          self->images[i] = g_object_ref (images[i]);
-          self->samplers[i] = samplers[i];
+          this->images[i] = g_object_ref (images[i]);
+          this->samplers[i] = samplers[i];
         }
     }
 

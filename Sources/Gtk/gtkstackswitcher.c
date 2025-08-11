@@ -110,7 +110,7 @@ gtk_stack_switcher_init (GtkStackSwitcher *switcher)
 static void
 on_button_toggled (GtkWidget        *button,
                    GParamSpec       *pspec,
-                   GtkStackSwitcher *self)
+                   GtkStackSwitcher *this)
 {
   gboolean active;
   guint index;
@@ -120,17 +120,17 @@ on_button_toggled (GtkWidget        *button,
 
   if (active)
     {
-      gtk_selection_model_select_item (self->pages, index, TRUE);
+      gtk_selection_model_select_item (this->pages, index, TRUE);
     }
   else
     {
-      gboolean selected = gtk_selection_model_is_selected (self->pages, index);
+      gboolean selected = gtk_selection_model_is_selected (this->pages, index);
       gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), selected);
     }
 }
 
 static void
-rebuild_child (GtkWidget   *self,
+rebuild_child (GtkWidget   *this,
                const char *icon_name,
                const char *title,
                gboolean     use_underline)
@@ -143,35 +143,35 @@ rebuild_child (GtkWidget   *self,
     {
       button_child = gtk_image_new_from_icon_name (icon_name);
       if (title != NULL)
-        gtk_widget_set_tooltip_text (GTK_WIDGET (self), title);
+        gtk_widget_set_tooltip_text (GTK_WIDGET (this), title);
 
-      gtk_widget_remove_css_class (self, "text-button");
-      gtk_widget_add_css_class (self, "image-button");
+      gtk_widget_remove_css_class (this, "text-button");
+      gtk_widget_add_css_class (this, "image-button");
     }
   else if (title != NULL)
     {
       button_child = gtk_label_new (title);
       gtk_label_set_use_underline (GTK_LABEL (button_child), use_underline);
 
-      gtk_widget_set_tooltip_text (GTK_WIDGET (self), NULL);
+      gtk_widget_set_tooltip_text (GTK_WIDGET (this), NULL);
 
-      gtk_widget_remove_css_class (self, "image-button");
-      gtk_widget_add_css_class (self, "text-button");
+      gtk_widget_remove_css_class (this, "image-button");
+      gtk_widget_add_css_class (this, "text-button");
     }
 
   if (button_child)
     {
       gtk_widget_set_halign (GTK_WIDGET (button_child), GTK_ALIGN_CENTER);
-      gtk_button_set_child (GTK_BUTTON (self), button_child);
+      gtk_button_set_child (GTK_BUTTON (this), button_child);
     }
 
-  gtk_accessible_update_property (GTK_ACCESSIBLE (self),
+  gtk_accessible_update_property (GTK_ACCESSIBLE (this),
                                   GTK_ACCESSIBLE_PROPERTY_LABEL, title,
                                   -1);
 }
 
 static void
-update_button (GtkStackSwitcher *self,
+update_button (GtkStackSwitcher *this,
                GtkStackPage     *page,
                GtkWidget        *button)
 {
@@ -205,12 +205,12 @@ update_button (GtkStackSwitcher *self,
 static void
 on_page_updated (GtkStackPage     *page,
                  GParamSpec       *pspec,
-                 GtkStackSwitcher *self)
+                 GtkStackSwitcher *this)
 {
   GtkWidget *button;
 
-  button = g_hash_table_lookup (self->buttons, page);
-  update_button (self, page, button);
+  button = g_hash_table_lookup (this->buttons, page);
+  update_button (this, page, button);
 }
 
 static gboolean
@@ -265,7 +265,7 @@ gtk_stack_switcher_drag_leave (GtkDropControllerMotion *motion,
 
 static void
 add_child (guint             position,
-           GtkStackSwitcher *self)
+           GtkStackSwitcher *this)
 {
   GtkWidget *button;
   gboolean selected;
@@ -284,13 +284,13 @@ add_child (guint             position,
   g_signal_connect (controller, "leave", G_CALLBACK (gtk_stack_switcher_drag_leave), NULL);
   gtk_widget_add_controller (button, controller);
 
-  page = g_list_model_get_item (G_LIST_MODEL (self->pages), position);
-  update_button (self, page, button);
+  page = g_list_model_get_item (G_LIST_MODEL (this->pages), position);
+  update_button (this, page, button);
 
-  gtk_widget_set_parent (button, GTK_WIDGET (self));
+  gtk_widget_set_parent (button, GTK_WIDGET (this));
 
   g_object_set_data (G_OBJECT (button), "child-index", GUINT_TO_POINTER (position));
-  selected = gtk_selection_model_is_selected (self->pages, position);
+  selected = gtk_selection_model_is_selected (this->pages, position);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), selected);
 
   gtk_accessible_update_state (GTK_ACCESSIBLE (button),
@@ -301,35 +301,35 @@ add_child (guint             position,
                                   GTK_ACCESSIBLE_RELATION_CONTROLS, page, NULL,
                                   -1);
 
-  g_signal_connect (button, "notify::active", G_CALLBACK (on_button_toggled), self);
-  g_signal_connect (page, "notify", G_CALLBACK (on_page_updated), self);
+  g_signal_connect (button, "notify::active", G_CALLBACK (on_button_toggled), this);
+  g_signal_connect (page, "notify", G_CALLBACK (on_page_updated), this);
 
-  g_hash_table_insert (self->buttons, g_object_ref (page), button);
+  g_hash_table_insert (this->buttons, g_object_ref (page), button);
 
   g_object_unref (page);
 }
 
 static void
-populate_switcher (GtkStackSwitcher *self)
+populate_switcher (GtkStackSwitcher *this)
 {
   guint i;
 
-  for (i = 0; i < g_list_model_get_n_items (G_LIST_MODEL (self->pages)); i++)
-    add_child (i, self);
+  for (i = 0; i < g_list_model_get_n_items (G_LIST_MODEL (this->pages)); i++)
+    add_child (i, this);
 }
 
 static void
-clear_switcher (GtkStackSwitcher *self)
+clear_switcher (GtkStackSwitcher *this)
 {
   GHashTableIter iter;
   GtkWidget *page;
   GtkWidget *button;
 
-  g_hash_table_iter_init (&iter, self->buttons);
+  g_hash_table_iter_init (&iter, this->buttons);
   while (g_hash_table_iter_next (&iter, (gpointer *)&page, (gpointer *)&button))
     {
       gtk_widget_unparent (button);
-      g_signal_handlers_disconnect_by_func (page, on_page_updated, self);
+      g_signal_handlers_disconnect_by_func (page, on_page_updated, this);
       g_hash_table_iter_remove (&iter);
     }
 }

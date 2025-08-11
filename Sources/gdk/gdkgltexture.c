@@ -55,40 +55,40 @@ struct _GdkGLTextureClass {
 G_DEFINE_TYPE (GdkGLTexture, gdk_gl_texture, GDK_TYPE_TEXTURE)
 
 static void
-drop_gl_resources (GdkGLTexture *self)
+drop_gl_resources (GdkGLTexture *this)
 {
-  if (self->destroy)
+  if (this->destroy)
     {
-      self->destroy (self->data);
-      self->destroy = NULL;
-      self->data = NULL;
+      this->destroy (this->data);
+      this->destroy = NULL;
+      this->data = NULL;
     }
 
-  g_clear_object (&self->context);
-  self->id = 0;
+  g_clear_object (&this->context);
+  this->id = 0;
 }
 
 static void
 gdk_gl_texture_dispose (GObject *object)
 {
-  GdkGLTexture *self = GDK_GL_TEXTURE (object);
+  GdkGLTexture *this = GDK_GL_TEXTURE (object);
 
-  drop_gl_resources (self);
+  drop_gl_resources (this);
 
-  g_clear_object (&self->saved);
+  g_clear_object (&this->saved);
 
   G_OBJECT_CLASS (gdk_gl_texture_parent_class)->dispose (object);
 }
 
-typedef void (* GLFunc) (GdkGLTexture *self,
+typedef void (* GLFunc) (GdkGLTexture *this,
                          GdkGLContext *context,
                          gpointer      data);
 
 typedef struct _InvokeData
 {
-  GdkGLTexture *self;
+  GdkGLTexture *this;
   volatile int spinlock;
-  GLFunc func;
+  GLFunc fn;
   gpointer data;
 } InvokeData;
 
@@ -98,7 +98,7 @@ gdk_gl_texture_invoke_callback (gpointer data)
   InvokeData *invoke = data;
   GdkGLContext *context, *previous;
 
-  context = gdk_display_get_gl_context (gdk_gl_context_get_display (invoke->self->context));
+  context = gdk_display_get_gl_context (gdk_gl_context_get_display (invoke->this->context));
 
   previous = gdk_gl_context_get_current ();
 
@@ -107,12 +107,12 @@ gdk_gl_texture_invoke_callback (gpointer data)
 
   gdk_gl_context_make_current (context);
 
-  if (invoke->self->sync && context != invoke->self->context)
-    glWaitSync (invoke->self->sync, 0, GL_TIMEOUT_IGNORED);
+  if (invoke->this->sync && context != invoke->this->context)
+    glWaitSync (invoke->this->sync, 0, GL_TIMEOUT_IGNORED);
 
-  glBindTexture (GL_TEXTURE_2D, invoke->self->id);
+  glBindTexture (GL_TEXTURE_2D, invoke->this->id);
 
-  invoke->func (invoke->self, context, invoke->data);
+  invoke->fn (invoke->this, context, invoke->data);
 
   g_atomic_int_set (&invoke->spinlock, 1);
 
@@ -130,11 +130,11 @@ gdk_gl_texture_invoke_callback (gpointer data)
 }
 
 static void
-gdk_gl_texture_run (GdkGLTexture *self,
-                    GLFunc        func,
+gdk_gl_texture_run (GdkGLTexture *this,
+                    GLFunc        fn,
                     gpointer      data)
 {
-  InvokeData invoke = { self, 0, func, data };
+  InvokeData invoke = { this, 0, fn, data };
 
   g_main_context_invoke (NULL, gdk_gl_texture_invoke_callback, &invoke);
 
@@ -151,15 +151,15 @@ struct _Download
 };
 
 static void
-gdk_gl_texture_do_download (GdkGLTexture *self,
+gdk_gl_texture_do_download (GdkGLTexture *this,
                             GdkGLContext *context,
                             gpointer      download_)
 {
-  GdkTexture *texture = GDK_TEXTURE (self);
+  GdkTexture *texture = GDK_TEXTURE (this);
   Download *download = download_;
 
   gdk_gl_context_download (context,
-                           gdk_gl_texture_get_id (self),
+                           gdk_gl_texture_get_id (this),
                            gdk_texture_get_format (texture),
                            gdk_texture_get_color_state (texture),
                            download->data,
@@ -173,12 +173,12 @@ gdk_gl_texture_download (GdkTexture            *texture,
                          const GdkMemoryLayout *layout,
                          GdkColorState         *color_state)
 {
-  GdkGLTexture *self = GDK_GL_TEXTURE (texture);
+  GdkGLTexture *this = GDK_GL_TEXTURE (texture);
   Download download;
 
-  if (self->saved)
+  if (this->saved)
     {
-      gdk_texture_do_download (self->saved, data, layout, color_state);
+      gdk_texture_do_download (this->saved, data, layout, color_state);
       return;
     }
 
@@ -186,7 +186,7 @@ gdk_gl_texture_download (GdkTexture            *texture,
   download.layout = *layout;
   download.color_state = color_state;
 
-  gdk_gl_texture_run (self, gdk_gl_texture_do_download, &download);
+  gdk_gl_texture_run (this, gdk_gl_texture_do_download, &download);
 }
 
 static void
@@ -201,37 +201,37 @@ gdk_gl_texture_class_init (GdkGLTextureClass *klass)
 }
 
 static void
-gdk_gl_texture_init (GdkGLTexture *self)
+gdk_gl_texture_init (GdkGLTexture *this)
 {
 }
 
 GdkGLContext *
-gdk_gl_texture_get_context (GdkGLTexture *self)
+gdk_gl_texture_get_context (GdkGLTexture *this)
 {
-  return self->context;
+  return this->context;
 }
 
 guint
-gdk_gl_texture_get_id (GdkGLTexture *self)
+gdk_gl_texture_get_id (GdkGLTexture *this)
 {
-  return self->id;
+  return this->id;
 }
 
 gboolean
-gdk_gl_texture_has_mipmap (GdkGLTexture *self)
+gdk_gl_texture_has_mipmap (GdkGLTexture *this)
 {
-  return self->has_mipmap;
+  return this->has_mipmap;
 }
 
 gpointer
-gdk_gl_texture_get_sync (GdkGLTexture *self)
+gdk_gl_texture_get_sync (GdkGLTexture *this)
 {
-  return self->sync;
+  return this->sync;
 }
 
 /**
  * gdk_gl_texture_release:
- * @self: a `GdkTexture` wrapping a GL texture
+ * @this: a `GdkTexture` wrapping a GL texture
  *
  * Releases the GL resources held by a `GdkGLTexture`.
  *
@@ -240,17 +240,17 @@ gdk_gl_texture_get_sync (GdkGLTexture *self)
  * function has been called.
  */
 void
-gdk_gl_texture_release (GdkGLTexture *self)
+gdk_gl_texture_release (GdkGLTexture *this)
 {
   GdkTexture *texture;
 
-  g_return_if_fail (GDK_IS_GL_TEXTURE (self));
-  g_return_if_fail (self->saved == NULL);
+  g_return_if_fail (GDK_IS_GL_TEXTURE (this));
+  g_return_if_fail (this->saved == NULL);
 
-  texture = GDK_TEXTURE (self);
-  self->saved = GDK_TEXTURE (gdk_memory_texture_from_texture (texture));
+  texture = GDK_TEXTURE (this);
+  this->saved = GDK_TEXTURE (gdk_memory_texture_from_texture (texture));
 
-  drop_gl_resources (self);
+  drop_gl_resources (this);
 }
 
 GdkTexture *
@@ -258,22 +258,22 @@ gdk_gl_texture_new_from_builder (GdkGLTextureBuilder *builder,
                                  GDestroyNotify       destroy,
                                  gpointer             data)
 {
-  GdkGLTexture *self;
+  GdkGLTexture *this;
   GdkTexture *update_texture;
 
-  self = g_object_new (GDK_TYPE_GL_TEXTURE,
+  this = g_object_new (GDK_TYPE_GL_TEXTURE,
                        "width", gdk_gl_texture_builder_get_width (builder),
                        "height", gdk_gl_texture_builder_get_height (builder),
                        "color-state", gdk_gl_texture_builder_get_color_state (builder),
                        NULL);
 
-  self->context = g_object_ref (gdk_gl_texture_builder_get_context (builder));
-  self->id = gdk_gl_texture_builder_get_id (builder);
-  GDK_TEXTURE (self)->format = gdk_gl_texture_builder_get_format (builder);
-  self->has_mipmap = gdk_gl_texture_builder_get_has_mipmap (builder);
-  self->sync = gdk_gl_texture_builder_get_sync (builder);
-  self->destroy = destroy;
-  self->data = data;
+  this->context = g_object_ref (gdk_gl_texture_builder_get_context (builder));
+  this->id = gdk_gl_texture_builder_get_id (builder);
+  GDK_TEXTURE (this)->format = gdk_gl_texture_builder_get_format (builder);
+  this->has_mipmap = gdk_gl_texture_builder_get_has_mipmap (builder);
+  this->sync = gdk_gl_texture_builder_get_sync (builder);
+  this->destroy = destroy;
+  this->data = data;
 
   update_texture = gdk_gl_texture_builder_get_update_texture (builder);
   if (update_texture)
@@ -287,17 +287,17 @@ gdk_gl_texture_new_from_builder (GdkGLTextureBuilder *builder,
                                               0, 0,
                                               update_texture->width, update_texture->height
                                             });
-          gdk_texture_set_diff (GDK_TEXTURE (self), update_texture, update_region);
+          gdk_texture_set_diff (GDK_TEXTURE (this), update_texture, update_region);
         }
     }
 
-  return GDK_TEXTURE (self);
+  return GDK_TEXTURE (this);
 }
 
 static void
-gdk_gl_texture_determine_format (GdkGLTexture *self)
+gdk_gl_texture_determine_format (GdkGLTexture *this)
 {
-  GdkTexture *texture = GDK_TEXTURE (self);
+  GdkTexture *texture = GDK_TEXTURE (this);
   GdkGLContext *context;
   GLint active_texture;
   GLint internal_format;
@@ -306,19 +306,19 @@ gdk_gl_texture_determine_format (GdkGLTexture *self)
   /* Abort if somebody else is GL-ing here... */
   context = gdk_gl_context_get_current ();
   if (context == NULL ||
-      !gdk_gl_context_is_shared (self->context, context) ||
+      !gdk_gl_context_is_shared (this->context, context) ||
       /* ... or glGetTexLevelParameter() isn't supported */
       !gdk_gl_context_check_version (context, NULL, "3.1"))
     {
       texture->format = GDK_MEMORY_DEFAULT;
-      self->has_mipmap = FALSE;
+      this->has_mipmap = FALSE;
       return;
     }
 
   /* We need to be careful about modifying the GL context, as this is not
    * expected during construction */
   glGetIntegerv (GL_TEXTURE_BINDING_2D, &active_texture);
-  glBindTexture (GL_TEXTURE_2D, self->id);
+  glBindTexture (GL_TEXTURE_2D, this->id);
 
   glGetTexLevelParameteriv (GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
 
@@ -411,7 +411,7 @@ gdk_gl_texture_determine_format (GdkGLTexture *self)
   glGetTexLevelParameteriv (GL_TEXTURE_2D, 1, GL_TEXTURE_WIDTH, &width);
   glGetTexLevelParameteriv (GL_TEXTURE_2D, 1, GL_TEXTURE_HEIGHT, &height);
 
-  self->has_mipmap = width == texture->width / 2 &&
+  this->has_mipmap = width == texture->width / 2 &&
                      height == texture->height / 2;
 
   /* restore previous state */
@@ -448,26 +448,26 @@ gdk_gl_texture_new (GdkGLContext   *context,
                     GDestroyNotify  destroy,
                     gpointer        data)
 {
-  GdkGLTexture *self;
+  GdkGLTexture *this;
 
   g_return_val_if_fail (GDK_IS_GL_CONTEXT (context), NULL);
   g_return_val_if_fail (id != 0, NULL);
   g_return_val_if_fail (width > 0, NULL);
   g_return_val_if_fail (height > 0, NULL);
 
-  self = g_object_new (GDK_TYPE_GL_TEXTURE,
+  this = g_object_new (GDK_TYPE_GL_TEXTURE,
                        "width", width,
                        "height", height,
                        "color-state", GDK_COLOR_STATE_SRGB,
                        NULL);
 
-  self->context = g_object_ref (context);
-  self->id = id;
-  self->destroy = destroy;
-  self->data = data;
+  this->context = g_object_ref (context);
+  this->id = id;
+  this->destroy = destroy;
+  this->data = data;
 
-  gdk_gl_texture_determine_format (self);
+  gdk_gl_texture_determine_format (this);
 
-  return GDK_TEXTURE (self);
+  return GDK_TEXTURE (this);
 }
 

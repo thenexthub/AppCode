@@ -23,7 +23,7 @@
 
 G_BEGIN_DECLS
 
-double gtk_adjustment_get_bounded_upper (GtkAdjustment *self);
+double gtk_adjustment_get_bounded_upper (GtkAdjustment *this);
 
 void gtk_adjustment_enable_animation (GtkAdjustment *adjustment,
                                       GdkFrameClock *clock,

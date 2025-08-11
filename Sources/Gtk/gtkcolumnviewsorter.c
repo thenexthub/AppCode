@@ -106,11 +106,11 @@ gtk_column_view_sorter_compare (GtkSorter *sorter,
                                 gpointer   item1,
                                 gpointer   item2)
 {
-  GtkColumnViewSorter *self = GTK_COLUMN_VIEW_SORTER (sorter);
+  GtkColumnViewSorter *this = GTK_COLUMN_VIEW_SORTER (sorter);
   GtkOrdering result = GTK_ORDERING_EQUAL;
   GSequenceIter *iter;
 
-  for (iter = g_sequence_get_begin_iter (self->sorters);
+  for (iter = g_sequence_get_begin_iter (this->sorters);
        !g_sequence_iter_is_end (iter);
        iter = g_sequence_iter_next (iter))
     {
@@ -130,11 +130,11 @@ gtk_column_view_sorter_compare (GtkSorter *sorter,
 static GtkSorterOrder
 gtk_column_view_sorter_get_order (GtkSorter *sorter)
 {
-  GtkColumnViewSorter *self = GTK_COLUMN_VIEW_SORTER (sorter);
+  GtkColumnViewSorter *this = GTK_COLUMN_VIEW_SORTER (sorter);
   GtkSorterOrder result = GTK_SORTER_ORDER_NONE;
   GSequenceIter *iter;
 
-  for (iter = g_sequence_get_begin_iter (self->sorters);
+  for (iter = g_sequence_get_begin_iter (this->sorters);
        !g_sequence_iter_is_end (iter);
        iter = g_sequence_iter_next (iter))
     {
@@ -161,7 +161,7 @@ gtk_column_view_sorter_get_order (GtkSorter *sorter)
 static void
 gtk_column_view_sorter_dispose (GObject *object)
 {
-  GtkColumnViewSorter *self = GTK_COLUMN_VIEW_SORTER (object);
+  GtkColumnViewSorter *this = GTK_COLUMN_VIEW_SORTER (object);
 
   /* The sorter is owned by the columview and is unreffed
    * after the columns, so the sequence must be empty at
@@ -170,8 +170,8 @@ gtk_column_view_sorter_dispose (GObject *object)
    * (the model might still have a ref), but that does
    * not change the fact that all columns will be gone.
    */
-  g_assert (g_sequence_is_empty (self->sorters));
-  g_clear_pointer (&self->sorters, g_sequence_free);
+  g_assert (g_sequence_is_empty (this->sorters));
+  g_clear_pointer (&this->sorters, g_sequence_free);
 
   G_OBJECT_CLASS (gtk_column_view_sorter_parent_class)->dispose (object);
 }
@@ -182,16 +182,16 @@ gtk_column_view_sorter_get_property (GObject    *object,
                                      GValue     *value,
                                      GParamSpec *pspec)
 {
-  GtkColumnViewSorter *self = GTK_COLUMN_VIEW_SORTER (object);
+  GtkColumnViewSorter *this = GTK_COLUMN_VIEW_SORTER (object);
 
   switch (prop_id)
     {
     case PROP_PRIMARY_SORT_COLUMN:
-      g_value_set_object (value, gtk_column_view_sorter_get_primary_sort_column (self));
+      g_value_set_object (value, gtk_column_view_sorter_get_primary_sort_column (this));
       break;
 
     case PROP_PRIMARY_SORT_ORDER:
-      g_value_set_enum (value, gtk_column_view_sorter_get_primary_sort_order (self));
+      g_value_set_enum (value, gtk_column_view_sorter_get_primary_sort_order (this));
       break;
 
     default:
@@ -248,9 +248,9 @@ gtk_column_view_sorter_class_init (GtkColumnViewSorterClass *class)
 }
 
 static void
-gtk_column_view_sorter_init (GtkColumnViewSorter *self)
+gtk_column_view_sorter_init (GtkColumnViewSorter *this)
 {
-  self->sorters = g_sequence_new (free_sorter);
+  this->sorters = g_sequence_new (free_sorter);
 }
 
 /* }}} */
@@ -269,12 +269,12 @@ gtk_column_view_sorter_changed_cb (GtkSorter *sorter, int change, gpointer data)
 }
 
 static gboolean
-remove_column (GtkColumnViewSorter *self,
+remove_column (GtkColumnViewSorter *this,
                GtkColumnViewColumn *column)
 {
   GSequenceIter *iter;
 
-  for (iter = g_sequence_get_begin_iter (self->sorters);
+  for (iter = g_sequence_get_begin_iter (this->sorters);
        !g_sequence_iter_is_end (iter);
        iter = g_sequence_iter_next (iter))
     {
@@ -291,21 +291,21 @@ remove_column (GtkColumnViewSorter *self,
 }
 
 gboolean
-gtk_column_view_sorter_add_column (GtkColumnViewSorter *self,
+gtk_column_view_sorter_add_column (GtkColumnViewSorter *this,
                                    GtkColumnViewColumn *column)
 {
   GSequenceIter *iter;
   GtkSorter *sorter;
   Sorter *s, *first;
 
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_SORTER (self), FALSE);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_SORTER (this), FALSE);
   g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (column), FALSE);
 
   sorter = gtk_column_view_column_get_sorter (column);
   if (sorter == NULL)
     return FALSE;
 
-  iter = g_sequence_get_begin_iter (self->sorters);
+  iter = g_sequence_get_begin_iter (this->sorters);
   if (!g_sequence_iter_is_end (iter))
     {
       first = g_sequence_get (iter);
@@ -318,12 +318,12 @@ gtk_column_view_sorter_add_column (GtkColumnViewSorter *self,
   else
     first = NULL;
 
-  remove_column (self, column);
+  remove_column (this, column);
 
   s = g_new (Sorter, 1);
   s->column = g_object_ref (column);
   s->sorter = g_object_ref (sorter);
-  s->changed_id = g_signal_connect (sorter, "changed", G_CALLBACK (gtk_column_view_sorter_changed_cb), self);
+  s->changed_id = g_signal_connect (sorter, "changed", G_CALLBACK (gtk_column_view_sorter_changed_cb), this);
   s->inverted = FALSE;
 
   g_sequence_insert_before (iter, s);
@@ -332,11 +332,11 @@ gtk_column_view_sorter_add_column (GtkColumnViewSorter *self,
   if (first)
     gtk_column_view_column_notify_sort (first->column);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_PRIMARY_SORT_COLUMN]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_PRIMARY_SORT_COLUMN]);
 out:
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_PRIMARY_SORT_ORDER]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_PRIMARY_SORT_ORDER]);
 
-  gtk_sorter_changed (GTK_SORTER (self), GTK_SORTER_CHANGE_DIFFERENT);
+  gtk_sorter_changed (GTK_SORTER (this), GTK_SORTER_CHANGE_DIFFERENT);
 
   gtk_column_view_column_notify_sort (column);
 
@@ -344,18 +344,18 @@ out:
 }
 
 gboolean
-gtk_column_view_sorter_remove_column (GtkColumnViewSorter *self,
+gtk_column_view_sorter_remove_column (GtkColumnViewSorter *this,
                                       GtkColumnViewColumn *column)
 {
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_SORTER (self), FALSE);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_SORTER (this), FALSE);
   g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (column), FALSE);
 
-  if (remove_column (self, column))
+  if (remove_column (this, column))
     {
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_PRIMARY_SORT_COLUMN]);
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_PRIMARY_SORT_ORDER]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_PRIMARY_SORT_COLUMN]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_PRIMARY_SORT_ORDER]);
 
-      gtk_sorter_changed (GTK_SORTER (self), GTK_SORTER_CHANGE_DIFFERENT);
+      gtk_sorter_changed (GTK_SORTER (this), GTK_SORTER_CHANGE_DIFFERENT);
       gtk_column_view_column_notify_sort (column);
       return TRUE;
     }
@@ -364,14 +364,14 @@ gtk_column_view_sorter_remove_column (GtkColumnViewSorter *self,
 }
 
 gboolean
-gtk_column_view_sorter_set_column (GtkColumnViewSorter *self,
+gtk_column_view_sorter_set_column (GtkColumnViewSorter *this,
                                    GtkColumnViewColumn *column,
                                    gboolean             inverted)
 {
   GtkSorter *sorter;
   Sorter *s;
 
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_SORTER (self), FALSE);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_SORTER (this), FALSE);
   g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (column), FALSE);
 
   sorter = gtk_column_view_column_get_sorter (column);
@@ -380,21 +380,21 @@ gtk_column_view_sorter_set_column (GtkColumnViewSorter *self,
 
   g_object_ref (column);
 
-  g_sequence_remove_range (g_sequence_get_begin_iter (self->sorters),
-                           g_sequence_get_end_iter (self->sorters));
+  g_sequence_remove_range (g_sequence_get_begin_iter (this->sorters),
+                           g_sequence_get_end_iter (this->sorters));
 
   s = g_new (Sorter, 1);
   s->column = g_object_ref (column);
   s->sorter = g_object_ref (sorter);
-  s->changed_id = g_signal_connect (sorter, "changed", G_CALLBACK (gtk_column_view_sorter_changed_cb), self);
+  s->changed_id = g_signal_connect (sorter, "changed", G_CALLBACK (gtk_column_view_sorter_changed_cb), this);
   s->inverted = inverted;
 
-  g_sequence_prepend (self->sorters, s);
+  g_sequence_prepend (this->sorters, s);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_PRIMARY_SORT_COLUMN]);
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_PRIMARY_SORT_ORDER]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_PRIMARY_SORT_COLUMN]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_PRIMARY_SORT_ORDER]);
 
-  gtk_sorter_changed (GTK_SORTER (self), GTK_SORTER_CHANGE_DIFFERENT);
+  gtk_sorter_changed (GTK_SORTER (this), GTK_SORTER_CHANGE_DIFFERENT);
 
   gtk_column_view_column_notify_sort (column);
 
@@ -404,28 +404,28 @@ gtk_column_view_sorter_set_column (GtkColumnViewSorter *self,
 }
 
 void
-gtk_column_view_sorter_clear (GtkColumnViewSorter *self)
+gtk_column_view_sorter_clear (GtkColumnViewSorter *this)
 {
   GSequenceIter *iter;
   Sorter *s;
   GtkColumnViewColumn *column;
 
-  g_return_if_fail (GTK_IS_COLUMN_VIEW_SORTER (self));
+  g_return_if_fail (GTK_IS_COLUMN_VIEW_SORTER (this));
 
-  if (g_sequence_is_empty (self->sorters))
+  if (g_sequence_is_empty (this->sorters))
     return;
 
-  iter = g_sequence_get_begin_iter (self->sorters);
+  iter = g_sequence_get_begin_iter (this->sorters);
   s = g_sequence_get (iter);
 
   column = g_object_ref (s->column);
 
-  g_sequence_remove_range (iter, g_sequence_get_end_iter (self->sorters));
+  g_sequence_remove_range (iter, g_sequence_get_end_iter (this->sorters));
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_PRIMARY_SORT_COLUMN]);
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_PRIMARY_SORT_ORDER]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_PRIMARY_SORT_COLUMN]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_PRIMARY_SORT_ORDER]);
 
-  gtk_sorter_changed (GTK_SORTER (self), GTK_SORTER_CHANGE_DIFFERENT);
+  gtk_sorter_changed (GTK_SORTER (this), GTK_SORTER_CHANGE_DIFFERENT);
 
   gtk_column_view_column_notify_sort (column);
 
@@ -433,18 +433,18 @@ gtk_column_view_sorter_clear (GtkColumnViewSorter *self)
 }
 
 GtkColumnViewColumn *
-gtk_column_view_sorter_get_sort_column (GtkColumnViewSorter *self,
+gtk_column_view_sorter_get_sort_column (GtkColumnViewSorter *this,
                                         gboolean            *inverted)
 {
   GSequenceIter *iter;
   Sorter *s;
 
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_SORTER (self), NULL);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_SORTER (this), NULL);
 
-  if (g_sequence_is_empty (self->sorters))
+  if (g_sequence_is_empty (this->sorters))
     return NULL;
 
-  iter = g_sequence_get_begin_iter (self->sorters);
+  iter = g_sequence_get_begin_iter (this->sorters);
   s = g_sequence_get (iter);
 
   *inverted = s->inverted;
@@ -457,7 +457,7 @@ gtk_column_view_sorter_get_sort_column (GtkColumnViewSorter *self,
 
 /**
  * gtk_column_view_sorter_get_primary_sort_column:
- * @self: a columnviewsorter
+ * @this: a columnviewsorter
  *
  * Returns the primary sort column.
  *
@@ -469,14 +469,14 @@ gtk_column_view_sorter_get_sort_column (GtkColumnViewSorter *self,
  * Since: 4.10
  */
 GtkColumnViewColumn *
-gtk_column_view_sorter_get_primary_sort_column (GtkColumnViewSorter *self)
+gtk_column_view_sorter_get_primary_sort_column (GtkColumnViewSorter *this)
 {
   GSequenceIter *iter;
   Sorter *s;
 
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_SORTER (self), NULL);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_SORTER (this), NULL);
 
-  iter = g_sequence_get_begin_iter (self->sorters);
+  iter = g_sequence_get_begin_iter (this->sorters);
   if (g_sequence_iter_is_end (iter))
     return NULL;
 
@@ -487,7 +487,7 @@ gtk_column_view_sorter_get_primary_sort_column (GtkColumnViewSorter *self)
 
 /**
  * gtk_column_view_sorter_get_primary_sort_order:
- * @self: a columnviewsorter
+ * @this: a columnviewsorter
  *
  * Returns the primary sort order.
  *
@@ -503,14 +503,14 @@ gtk_column_view_sorter_get_primary_sort_column (GtkColumnViewSorter *self)
  * Since: 4.10
  */
 GtkSortType
-gtk_column_view_sorter_get_primary_sort_order (GtkColumnViewSorter *self)
+gtk_column_view_sorter_get_primary_sort_order (GtkColumnViewSorter *this)
 {
   GSequenceIter *iter;
   Sorter *s;
 
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_SORTER (self), GTK_SORT_ASCENDING);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_SORTER (this), GTK_SORT_ASCENDING);
 
-  iter = g_sequence_get_begin_iter (self->sorters);
+  iter = g_sequence_get_begin_iter (this->sorters);
   if (g_sequence_iter_is_end (iter))
     return GTK_SORT_ASCENDING;
 
@@ -521,7 +521,7 @@ gtk_column_view_sorter_get_primary_sort_order (GtkColumnViewSorter *self)
 
 /**
  * gtk_column_view_sorter_get_n_sort_columns:
- * @self: a columnviewsorter
+ * @this: a columnviewsorter
  *
  * Returns the number of columns by which the sorter sorts.
  *
@@ -537,16 +537,16 @@ gtk_column_view_sorter_get_primary_sort_order (GtkColumnViewSorter *self)
  * Since: 4.10
  */
 guint
-gtk_column_view_sorter_get_n_sort_columns (GtkColumnViewSorter *self)
+gtk_column_view_sorter_get_n_sort_columns (GtkColumnViewSorter *this)
 {
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_SORTER (self), 0);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_SORTER (this), 0);
 
-  return (guint) g_sequence_get_length (self->sorters);
+  return (guint) g_sequence_get_length (this->sorters);
 }
 
 /**
  * gtk_column_view_sorter_get_nth_sort_column:
- * @self: a columnviewsorter
+ * @this: a columnviewsorter
  * @position: the position of the sort column to retrieve (0 for the
  *     primary sort column)
  * @sort_order: (out): return location for the sort order
@@ -561,16 +561,16 @@ gtk_column_view_sorter_get_n_sort_columns (GtkColumnViewSorter *self)
  * Since: 4.10
  */
 GtkColumnViewColumn *
-gtk_column_view_sorter_get_nth_sort_column (GtkColumnViewSorter *self,
+gtk_column_view_sorter_get_nth_sort_column (GtkColumnViewSorter *this,
                                             guint                position,
                                             GtkSortType         *sort_order)
 {
   GSequenceIter *iter;
   Sorter *s;
 
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_SORTER (self), NULL);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_SORTER (this), NULL);
 
-  iter = g_sequence_get_iter_at_pos (self->sorters, (int) position);
+  iter = g_sequence_get_iter_at_pos (this->sorters, (int) position);
 
   if (g_sequence_iter_is_end (iter))
     {

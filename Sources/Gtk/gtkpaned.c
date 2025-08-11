@@ -386,26 +386,26 @@ gtk_paned_get_request_mode (GtkWidget *widget)
 }
 
 static void
-gtk_paned_set_orientation (GtkPaned       *self,
+gtk_paned_set_orientation (GtkPaned       *this,
                            GtkOrientation  orientation)
 {
-  if (self->orientation != orientation)
+  if (this->orientation != orientation)
     {
       static const char *cursor_name[2] = {
         "col-resize",
         "row-resize",
       };
 
-      self->orientation = orientation;
+      this->orientation = orientation;
 
-      gtk_widget_update_orientation (GTK_WIDGET (self), self->orientation);
-      gtk_widget_set_cursor_from_name (self->handle_widget,
+      gtk_widget_update_orientation (GTK_WIDGET (this), this->orientation);
+      gtk_widget_set_cursor_from_name (this->handle_widget,
                                        cursor_name[orientation]);
-      gtk_gesture_pan_set_orientation (GTK_GESTURE_PAN (self->pan_gesture),
+      gtk_gesture_pan_set_orientation (GTK_GESTURE_PAN (this->pan_gesture),
                                        orientation);
 
-      gtk_widget_queue_resize (GTK_WIDGET (self));
-      g_object_notify (G_OBJECT (self), "orientation");
+      gtk_widget_queue_resize (GTK_WIDGET (this));
+      g_object_notify (G_OBJECT (this), "orientation");
     }
 }
 
@@ -819,36 +819,36 @@ gtk_paned_buildable_add_child (GtkBuildable *buildable,
                                GObject      *child,
                                const char   *type)
 {
-  GtkPaned *self = GTK_PANED (buildable);
+  GtkPaned *this = GTK_PANED (buildable);
 
   if (g_strcmp0 (type, "start") == 0)
     {
       gtk_buildable_child_deprecation_warning (buildable, builder, "start", "start-child");
-      gtk_paned_set_start_child (self, GTK_WIDGET (child));
-      gtk_paned_set_resize_start_child (self, FALSE);
-      gtk_paned_set_shrink_start_child (self, TRUE);
+      gtk_paned_set_start_child (this, GTK_WIDGET (child));
+      gtk_paned_set_resize_start_child (this, FALSE);
+      gtk_paned_set_shrink_start_child (this, TRUE);
     }
   else if (g_strcmp0 (type, "end") == 0)
     {
       gtk_buildable_child_deprecation_warning (buildable, builder, "end", "end-child");
-      gtk_paned_set_end_child (self, GTK_WIDGET (child));
-      gtk_paned_set_resize_end_child (self, TRUE);
-      gtk_paned_set_shrink_end_child (self, TRUE);
+      gtk_paned_set_end_child (this, GTK_WIDGET (child));
+      gtk_paned_set_resize_end_child (this, TRUE);
+      gtk_paned_set_shrink_end_child (this, TRUE);
     }
   else if (type == NULL && GTK_IS_WIDGET (child))
     {
       gtk_buildable_child_deprecation_warning (buildable, builder, NULL, "start-child or end-child");
-      if (self->start_child == NULL)
+      if (this->start_child == NULL)
         {
-          gtk_paned_set_start_child (self, GTK_WIDGET (child));
-          gtk_paned_set_resize_start_child (self, FALSE);
-          gtk_paned_set_shrink_start_child (self, TRUE);
+          gtk_paned_set_start_child (this, GTK_WIDGET (child));
+          gtk_paned_set_resize_start_child (this, FALSE);
+          gtk_paned_set_shrink_start_child (this, TRUE);
         }
-      else if (self->end_child == NULL)
+      else if (this->end_child == NULL)
         {
-          gtk_paned_set_end_child (self, GTK_WIDGET (child));
-          gtk_paned_set_resize_end_child (self, TRUE);
-          gtk_paned_set_shrink_end_child (self, TRUE);
+          gtk_paned_set_end_child (this, GTK_WIDGET (child));
+          gtk_paned_set_resize_end_child (this, TRUE);
+          gtk_paned_set_shrink_end_child (this, TRUE);
         }
       else
         g_warning ("GtkPaned only accepts two widgets as children");

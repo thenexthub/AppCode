@@ -25,7 +25,7 @@
 G_DEFINE_TYPE (GdkSubsurface, gdk_subsurface, G_TYPE_OBJECT)
 
 static void
-gdk_subsurface_init (GdkSubsurface *self)
+gdk_subsurface_init (GdkSubsurface *this)
 {
 }
 

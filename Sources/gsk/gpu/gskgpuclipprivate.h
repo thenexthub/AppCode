@@ -40,7 +40,7 @@ void                    gsk_gpu_clip_init_empty                         (GskGpuC
                                                                          const graphene_rect_t  *rect);
 void                    gsk_gpu_clip_init_contained                     (GskGpuClip          *clip,
                                                                          const graphene_rect_t  *rect);
-void                    gsk_gpu_clip_init_copy                          (GskGpuClip          *self,
+void                    gsk_gpu_clip_init_copy                          (GskGpuClip          *this,
                                                                          const GskGpuClip    *src);
 void                    gsk_gpu_clip_init_rect                          (GskGpuClip          *clip,
                                                                          const graphene_rect_t  *rect);
@@ -61,13 +61,13 @@ gboolean                gsk_gpu_clip_transform                          (GskGpuC
                                                                          GskTransform           *transform,
                                                                          const graphene_rect_t  *viewport) G_GNUC_WARN_UNUSED_RESULT;
 
-gboolean                gsk_gpu_clip_contains_rect                      (const GskGpuClip    *self,
+gboolean                gsk_gpu_clip_contains_rect                      (const GskGpuClip    *this,
                                                                          const graphene_point_t *offset,
                                                                          const graphene_rect_t  *rect) G_GNUC_WARN_UNUSED_RESULT;
-gboolean                gsk_gpu_clip_may_intersect_rect                 (const GskGpuClip    *self,
+gboolean                gsk_gpu_clip_may_intersect_rect                 (const GskGpuClip    *this,
                                                                          const graphene_point_t *offset,
                                                                          const graphene_rect_t  *rect) G_GNUC_WARN_UNUSED_RESULT;
-GskGpuShaderClip        gsk_gpu_clip_get_shader_clip                    (const GskGpuClip    *self,
+GskGpuShaderClip        gsk_gpu_clip_get_shader_clip                    (const GskGpuClip    *this,
                                                                          const graphene_point_t *offset,
                                                                          const graphene_rect_t  *rect);
 

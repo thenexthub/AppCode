@@ -752,12 +752,12 @@ gtk_notebook_root_content_write_mime_type_async (GdkContentProvider     *provide
                                                  GAsyncReadyCallback     callback,
                                                  gpointer                user_data)
 {
-  GtkNotebookRootContent *self = GTK_NOTEBOOK_ROOT_CONTENT (provider);
+  GtkNotebookRootContent *this = GTK_NOTEBOOK_ROOT_CONTENT (provider);
   GTask *task;
 
-  self->notebook->rootwindow_drop = TRUE;
+  this->notebook->rootwindow_drop = TRUE;
 
-  task = g_task_new (self, cancellable, callback, user_data);
+  task = g_task_new (this, cancellable, callback, user_data);
   g_task_set_priority (task, io_priority);
   g_task_set_source_tag (task, gtk_notebook_root_content_write_mime_type_async);
   g_task_return_boolean (task, TRUE);
@@ -775,9 +775,9 @@ gtk_notebook_root_content_write_mime_type_finish (GdkContentProvider *provider,
 static void
 gtk_notebook_root_content_finalize (GObject *object)
 {
-  GtkNotebookRootContent *self = GTK_NOTEBOOK_ROOT_CONTENT (object);
+  GtkNotebookRootContent *this = GTK_NOTEBOOK_ROOT_CONTENT (object);
 
-  g_object_unref (self->notebook);
+  g_object_unref (this->notebook);
 
   G_OBJECT_CLASS (gtk_notebook_root_content_parent_class)->finalize (object);
 }
@@ -796,7 +796,7 @@ gtk_notebook_root_content_class_init (GtkNotebookRootContentClass *class)
 }
 
 static void
-gtk_notebook_root_content_init (GtkNotebookRootContent *self)
+gtk_notebook_root_content_init (GtkNotebookRootContent *this)
 {
 }
 
@@ -3406,25 +3406,25 @@ gtk_notebook_switch_page_timeout (gpointer data)
 }
 
 static gboolean
-gtk_notebook_can_drag_from (GtkNotebook     *self,
+gtk_notebook_can_drag_from (GtkNotebook     *this,
                             GtkNotebook     *other,
                             GtkNotebookPage *page)
 {
-  /* always allow dragging inside self */
-  if (self == other)
+  /* always allow dragging inside this */
+  if (this == other)
     return TRUE;
 
   /* if the groups don't match, fail */
-  if (self->group == 0 ||
-      self->group != other->group)
+  if (this->group == 0 ||
+      this->group != other->group)
     return FALSE;
 
   /* Check that the dragged page is not a parent of the notebook
    * being dragged into */
-  if (GTK_WIDGET (self) == page->child ||
-      gtk_widget_is_ancestor (GTK_WIDGET (self), GTK_WIDGET (page->child)) ||
-      GTK_WIDGET (self) == page->tab_label ||
-      gtk_widget_is_ancestor (GTK_WIDGET (self), GTK_WIDGET (page->tab_label)))
+  if (GTK_WIDGET (this) == page->child ||
+      gtk_widget_is_ancestor (GTK_WIDGET (this), GTK_WIDGET (page->child)) ||
+      GTK_WIDGET (this) == page->tab_label ||
+      gtk_widget_is_ancestor (GTK_WIDGET (this), GTK_WIDGET (page->tab_label)))
     return FALSE;
 
   return TRUE;
@@ -3459,7 +3459,7 @@ gtk_notebook_drag_drop (GtkDropTarget *dest,
                         const GValue  *value,
                         double         x,
                         double         y,
-                        GtkNotebook   *self)
+                        GtkNotebook   *this)
 {
   GdkDrag *drag = gdk_drop_get_drag (gtk_drop_target_get_current_drop (dest));
   GtkNotebook *source;
@@ -3467,13 +3467,13 @@ gtk_notebook_drag_drop (GtkDropTarget *dest,
 
   source = drag ? g_object_get_data (G_OBJECT (drag), "gtk-notebook-drag-origin") : NULL;
 
-  if (!source || !gtk_notebook_can_drag_from (self, source, source->cur_page))
+  if (!source || !gtk_notebook_can_drag_from (this, source, source->cur_page))
     return FALSE;
 
-  self->mouse_x = x;
-  self->mouse_y = y;
+  this->mouse_x = x;
+  this->mouse_y = y;
 
-  do_detach_tab (source, self, page->child);
+  do_detach_tab (source, this, page->child);
 
   return TRUE;
 }

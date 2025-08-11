@@ -104,7 +104,7 @@ gtk_bin_layout_class_init (GtkBinLayoutClass *klass)
 }
 
 static void
-gtk_bin_layout_init (GtkBinLayout *self)
+gtk_bin_layout_init (GtkBinLayout *this)
 {
 }
 

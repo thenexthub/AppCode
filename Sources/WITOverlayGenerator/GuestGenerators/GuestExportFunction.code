@@ -152,7 +152,7 @@ struct GuestExportFunction {
         printer.write(line: "Prelude.initializeOnce()")
 
         var arguments = coreSignature.parameters.map {
-            StaticMetaOperand.variable($0.swiftLabelName)
+            StaticMetaOperand.variable($0.codeLabelName)
         }.makeIterator()
 
         for parameter in function.parameters {
@@ -275,17 +275,17 @@ private fn renderCodiraFunctionDecl(
 ) -> String {
     var result = "fn \(name)("
     result += coreSignature.parameters.map { param in
-        param.swiftLabelName + ": " + param.type.swiftType
+        param.codeLabelName + ": " + param.type.codeType
     }.joined(separator: ", ")
     result += ")"
     switch coreSignature.results.count {
     case 0: break
     case 1:
-        result += " -> " + coreSignature.results[0].type.swiftType
+        result += " -> " + coreSignature.results[0].type.codeType
     default:
         result += " -> ("
         result += coreSignature.results.map { result in
-            result.swiftLabelName + ": " + result.type.swiftType
+            result.codeLabelName + ": " + result.type.codeType
         }.joined(separator: ", ")
         result += ")"
     }

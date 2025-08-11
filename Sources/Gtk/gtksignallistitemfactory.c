@@ -78,13 +78,13 @@ struct _GtkSignalListItemFactoryClass
 {
   GtkListItemFactoryClass parent_class;
 
-  void                  (* setup)                               (GtkSignalListItemFactory *self,
+  void                  (* setup)                               (GtkSignalListItemFactory *this,
                                                                  GObject                  *list_item);
-  void                  (* teardown)                            (GtkSignalListItemFactory *self,
+  void                  (* teardown)                            (GtkSignalListItemFactory *this,
                                                                  GObject                  *list_item);
-  void                  (* bind)                                (GtkSignalListItemFactory *self,
+  void                  (* bind)                                (GtkSignalListItemFactory *this,
                                                                  GObject                  *list_item);
-  void                  (* unbind)                              (GtkSignalListItemFactory *self,
+  void                  (* unbind)                              (GtkSignalListItemFactory *this,
                                                                  GObject                  *list_item);
 };
 
@@ -104,12 +104,12 @@ static void
 gtk_signal_list_item_factory_setup (GtkListItemFactory *factory,
                                     GObject            *item,
                                     gboolean            bind,
-                                    GFunc               func,
+                                    GFunc               fn,
                                     gpointer            data)
 {
   g_signal_emit (factory, signals[SETUP], 0, item);
 
-  GTK_LIST_ITEM_FACTORY_CLASS (gtk_signal_list_item_factory_parent_class)->setup (factory, item, bind, func, data);
+  GTK_LIST_ITEM_FACTORY_CLASS (gtk_signal_list_item_factory_parent_class)->setup (factory, item, bind, fn, data);
 
   if (bind)
     g_signal_emit (factory, signals[BIND], 0, item);
@@ -120,13 +120,13 @@ gtk_signal_list_item_factory_update (GtkListItemFactory *factory,
                                      GObject            *item,
                                      gboolean            unbind,
                                      gboolean            bind,
-                                     GFunc               func,
+                                     GFunc               fn,
                                      gpointer            data)
 {
   if (unbind)
     g_signal_emit (factory, signals[UNBIND], 0, item);
 
-  GTK_LIST_ITEM_FACTORY_CLASS (gtk_signal_list_item_factory_parent_class)->update (factory, item, unbind, bind, func, data);
+  GTK_LIST_ITEM_FACTORY_CLASS (gtk_signal_list_item_factory_parent_class)->update (factory, item, unbind, bind, fn, data);
 
   if (bind)
     g_signal_emit (factory, signals[BIND], 0, item);
@@ -136,13 +136,13 @@ static void
 gtk_signal_list_item_factory_teardown (GtkListItemFactory *factory,
                                        GObject            *item,
                                        gboolean            unbind,
-                                       GFunc               func,
+                                       GFunc               fn,
                                        gpointer            data)
 {
   if (unbind)
     g_signal_emit (factory, signals[UNBIND], 0, item);
 
-  GTK_LIST_ITEM_FACTORY_CLASS (gtk_signal_list_item_factory_parent_class)->teardown (factory, item, unbind, func, data);
+  GTK_LIST_ITEM_FACTORY_CLASS (gtk_signal_list_item_factory_parent_class)->teardown (factory, item, unbind, fn, data);
 
   g_signal_emit (factory, signals[TEARDOWN], 0, item);
 }
@@ -158,7 +158,7 @@ gtk_signal_list_item_factory_class_init (GtkSignalListItemFactoryClass *klass)
 
   /**
    * GtkSignalListItemFactory::setup:
-   * @self: the list item factory
+   * @this: the list item factory
    * @object: the `GObject` to set up
    *
    * Emitted when a newly created listitem needs to be prepared for use.
@@ -186,7 +186,7 @@ gtk_signal_list_item_factory_class_init (GtkSignalListItemFactoryClass *klass)
 
   /**
    * GtkSignalListItemFactory::bind:
-   * @self: the list item factory
+   * @this: the list item factory
    * @object: The `GObject` to bind
    *
    * Emitted when an object has been bound to an item.
@@ -216,7 +216,7 @@ gtk_signal_list_item_factory_class_init (GtkSignalListItemFactoryClass *klass)
 
   /**
    * GtkSignalListItemFactory::unbind:
-   * @self: the list item factory
+   * @this: the list item factory
    * @object: The `GObject` to unbind
    *
    * Emitted when an object has been unbound from its item.
@@ -243,7 +243,7 @@ gtk_signal_list_item_factory_class_init (GtkSignalListItemFactoryClass *klass)
 
   /**
    * GtkSignalListItemFactory::teardown:
-   * @self: The `GtkSignalListItemFactory`
+   * @this: The `GtkSignalListItemFactory`
    * @object: The `GObject` to tear down
    *
    * Emitted when an object is about to be destroyed.
@@ -268,7 +268,7 @@ gtk_signal_list_item_factory_class_init (GtkSignalListItemFactoryClass *klass)
 }
 
 static void
-gtk_signal_list_item_factory_init (GtkSignalListItemFactory *self)
+gtk_signal_list_item_factory_init (GtkSignalListItemFactory *this)
 {
 }
 

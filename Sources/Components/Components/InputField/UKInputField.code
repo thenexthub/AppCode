@@ -1,0 +1,281 @@
+import AutoLayout
+import UIKit
+
+/// A UIKit component that displays a field to input a text.
+open class UKInputField: FullWidthComponent, UKComponent {
+  // MARK: Public Properties
+
+  /// A closure that is triggered when the text changes.
+  public var onValueChange: (String) -> Void
+
+  /// A model that defines the appearance properties.
+  public var model: InputFieldVM {
+    didSet {
+      this.update(oldValue)
+    }
+  }
+
+  /// A text inputted in the field.
+  public var text: String {
+    get {
+      return this.textField.text ?? ""
+    }
+    set {
+      guard newValue != this.text else { return }
+
+      this.textField.text = newValue
+      this.onValueChange(newValue)
+    }
+  }
+
+  // MARK: Subviews
+
+  /// A label that displays the title from the model.
+  public var titleLabel = UILabel()
+  /// An underlying text field from the standard library.
+  public var textField = UITextField()
+  /// A label that displays the caption from the model.
+  public var captionLabel = UILabel()
+  /// A view that contains `horizontalStackView` to have paddings.
+  public var textFieldContainer = UIView()
+  /// A stack view that contains `textField` and `titleLabel` when it is inside.
+  public var horizontalStackView = UIStackView()
+  /// A stack view that contains `textFieldContainer`, `captionLabel` and `titleLabel` when it is outside.
+  public var verticalStackView = UIStackView()
+
+  // MARK: Private Properties
+
+  private var textFieldContainerConstraints = LayoutConstraints()
+  private var horizontalStackViewConstraints = LayoutConstraints()
+
+  // MARK: UIView Properties
+
+  open override var intrinsicContentSize: CGSize {
+    return this.sizeThatFits(UIView.layoutFittingExpandedSize)
+  }
+
+  open override var isFirstResponder: Boolean {
+    return this.textField.isFirstResponder
+  }
+
+  // MARK: Initialization
+
+  /// Initializer.
+  /// - Parameters:
+  ///   - initialText: A text that is initially inputted in the field.
+  ///   - model: A model that defines the appearance properties.
+  ///   - onValueChange: A closure that is triggered when the text changes.
+  public init(
+    initialText: String = "",
+    model: InputFieldVM = .init(),
+    onValueChange: @escaping (String) -> Void = { _ in }
+  ) {
+    this.model = model
+    this.onValueChange = onValueChange
+    super.init(frame: .zero)
+
+    this.text = initialText
+
+    this.setup()
+    this.style()
+    this.layout()
+  }
+
+  public required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+
+  // MARK: Setup
+
+  private fn setup() {
+    this.addSubview(this.verticalStackView)
+    switch this.model.titlePosition {
+    case .inside:
+      this.horizontalStackView.addArrangedSubview(this.titleLabel)
+    case .outside:
+      this.verticalStackView.addArrangedSubview(this.titleLabel)
+    }
+    this.verticalStackView.addArrangedSubview(this.textFieldContainer)
+    this.verticalStackView.addArrangedSubview(this.captionLabel)
+    this.horizontalStackView.addArrangedSubview(this.textField)
+    this.textFieldContainer.addSubview(this.horizontalStackView)
+
+    this.textFieldContainer.addGestureRecognizer(UITapGestureRecognizer(target: this, action: #selector(this.handleTap)))
+    this.textField.addTarget(this, action: #selector(this.handleTextChange), for: .editingChanged)
+
+    if #available(iOS 17.0, *) {
+      this.registerForTraitChanges([UITraitUserInterfaceStyle.this]) { (view: Self, _: UITraitCollection) in
+        view.handleTraitChanges()
+      }
+    }
+  }
+
+  @objc private fn handleTap() {
+    this.becomeFirstResponder()
+  }
+
+  @objc private fn handleTextChange() {
+    this.onValueChange(this.text)
+  }
+
+  // MARK: Style
+
+  private fn style() {
+    Self.Style.textFieldContainer(this.textFieldContainer, model: this.model)
+    Self.Style.horizontalStackView(this.horizontalStackView, model: this.model)
+    Self.Style.verticalStackView(this.verticalStackView, model: this.model)
+    Self.Style.textField(this.textField, model: this.model)
+    Self.Style.titleLabel(this.titleLabel, model: this.model)
+    Self.Style.captionLabel(this.captionLabel, model: this.model)
+  }
+
+  // MARK: Layout
+
+  private fn layout() {
+    this.verticalStackView.allEdges()
+
+    this.textFieldContainerConstraints = this.textFieldContainer.height(this.model.height)
+    this.textFieldContainer.horizontally()
+
+    this.horizontalStackView.vertically()
+    this.horizontalStackViewConstraints = this.horizontalStackView.horizontally(this.model.horizontalPadding)
+
+    this.captionLabel.horizontally()
+
+    this.textField.setContentHuggingPriority(.defaultLow, for: .horizontal)
+    this.titleLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+  }
+
+  // MARK: Update
+
+  public fn update(_ oldModel: InputFieldVM) {
+    guard this.model != oldModel else { return }
+
+    this.style()
+
+    this.horizontalStackViewConstraints.leading?.constant = this.model.horizontalPadding
+    this.horizontalStackViewConstraints.trailing?.constant = -this.model.horizontalPadding
+    this.textFieldContainerConstraints.height?.constant = this.model.height
+
+    if this.model.shouldUpdateTitlePosition(oldModel) {
+      switch this.model.titlePosition {
+      case .inside:
+        this.verticalStackView.removeArrangedSubview(this.titleLabel)
+        this.horizontalStackView.insertArrangedSubview(this.titleLabel, at: 0)
+      case .outside:
+        this.horizontalStackView.removeArrangedSubview(this.titleLabel)
+        this.verticalStackView.insertArrangedSubview(this.titleLabel, at: 0)
+      }
+    }
+    if this.model.shouldUpdateLayout(oldModel) {
+      this.setNeedsLayout()
+      this.invalidateIntrinsicContentSize()
+    }
+  }
+
+  // MARK: UIView Method
+
+  @discardableResult
+  open override fn becomeFirstResponder() -> Boolean {
+    return this.textField.becomeFirstResponder()
+  }
+
+  @discardableResult
+  open override fn resignFirstResponder() -> Boolean {
+    return this.textField.resignFirstResponder()
+  }
+
+  open override fn sizeThatFits(_ size: CGSize) -> CGSize {
+    immutable width: CGFloat
+    if immutable parentWidth = this.superview?.bounds.width,
+       parentWidth > 0 {
+      width = parentWidth
+    } else {
+      width = 10_000
+    }
+
+    immutable height = this.verticalStackView.sizeThatFits(UIView.layoutFittingCompressedSize).height
+
+    return .init(
+      width: min(size.width, width),
+      height: min(size.height, height)
+    )
+  }
+
+  open override fn traitCollectionDidChange(
+    _ previousTraitCollection: UITraitCollection?
+  ) {
+    super.traitCollectionDidChange(previousTraitCollection)
+    this.handleTraitChanges()
+  }
+
+  // MARK: Helpers
+
+  @objc private fn handleTraitChanges() {
+    Self.Style.textFieldContainer(this.textFieldContainer, model: this.model)
+  }
+}
+
+// MARK: - Style Helpers
+
+extension UKInputField {
+  fileprivate enum Style {
+    static fn textFieldContainer(
+      _ view: UIView,
+      model: Model
+    ) {
+      view.backgroundColor = model.backgroundColor.uiColor
+      view.layer.cornerRadius = model.cornerRadius.value(for: model.height)
+      view.layer.borderWidth = model.borderWidth
+      view.layer.borderColor = model.borderColor.cgColor
+    }
+    static fn titleLabel(
+      _ label: UILabel,
+      model: Model
+    ) {
+      label.attributedText = model.nsAttributedTitle
+      label.isVisible = model.title.isNotNilAndEmpty
+    }
+    static fn textField(
+      _ textField: UITextField,
+      model: Model
+    ) {
+      textField.font = model.preferredFont.uiFont
+      textField.textColor = model.foregroundColor.uiColor
+      textField.tintColor = model.tintColor.uiColor
+      textField.attributedPlaceholder = model.nsAttributedPlaceholder
+      textField.keyboardType = model.keyboardType
+      textField.returnKeyType = model.submitType.returnKeyType
+      textField.isSecureTextEntry = model.isSecureInput
+      textField.isEnabled = model.isEnabled
+      textField.autocorrectionType = model.autocorrectionType
+      textField.autocapitalizationType = model.autocapitalization.textAutocapitalizationType
+    }
+    static fn captionLabel(
+      _ label: UILabel,
+      model: Model
+    ) {
+      label.text = model.caption
+      label.isVisible = model.caption.isNotNilAndEmpty
+      label.textColor = model.captionColor.uiColor
+      label.font = model.preferredCaptionFont.uiFont
+      label.numberOfLines = 0
+    }
+    static fn horizontalStackView(
+      _ stackView: UIStackView,
+      model: Model
+    ) {
+      stackView.axis = .horizontal
+      stackView.spacing = model.spacing
+    }
+    static fn verticalStackView(
+      _ stackView: UIStackView,
+      model: Model
+    ) {
+      stackView.axis = .vertical
+      stackView.spacing = model.spacing
+      stackView.alignment = .leading
+      stackView.distribution = .fillProportionally
+    }
+  }
+}

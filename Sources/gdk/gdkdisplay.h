@@ -69,10 +69,10 @@ GDK_AVAILABLE_IN_ALL
 gboolean    gdk_display_supports_input_shapes (GdkDisplay    *display);
 
 GDK_AVAILABLE_IN_4_4
-gboolean    gdk_display_prepare_gl         (GdkDisplay  *self,
+gboolean    gdk_display_prepare_gl         (GdkDisplay  *this,
                                             GError     **error);
 GDK_AVAILABLE_IN_4_6
-GdkGLContext *gdk_display_create_gl_context(GdkDisplay  *self,
+GdkGLContext *gdk_display_create_gl_context(GdkDisplay  *this,
                                             GError     **error);
 
 GDK_AVAILABLE_IN_ALL
@@ -99,7 +99,7 @@ GDK_AVAILABLE_IN_ALL
 GList   * gdk_display_list_seats       (GdkDisplay *display);
 
 GDK_AVAILABLE_IN_ALL
-GListModel * gdk_display_get_monitors          (GdkDisplay *self) G_GNUC_PURE;
+GListModel * gdk_display_get_monitors          (GdkDisplay *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_ALL
 GdkMonitor * gdk_display_get_monitor_at_surface (GdkDisplay *display,
                                                 GdkSurface  *surface);

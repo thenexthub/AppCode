@@ -41,7 +41,7 @@
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 
 typedef struct {
-  GtkFileChooserNative *self;
+  GtkFileChooserNative *this;
 
   GtkWidget *grab_widget;
 
@@ -77,7 +77,7 @@ filechooser_portal_data_clear (FilechooserPortalData *data)
       g_clear_object (&data->grab_widget);
     }
 
-  g_clear_object (&data->self);
+  g_clear_object (&data->this);
 
   if (data->exported_window)
     {
@@ -111,8 +111,8 @@ response_cb (GDBusConnection  *connection,
              GVariant         *parameters,
              gpointer          user_data)
 {
-  GtkFileChooserNative *self = user_data;
-  FilechooserPortalData *data = self->mode_data;
+  GtkFileChooserNative *this = user_data;
+  FilechooserPortalData *data = this->mode_data;
   guint32 portal_response;
   int gtk_response;
   const char **uris;
@@ -132,7 +132,7 @@ response_cb (GDBusConnection  *connection,
           const char *id;
           const char *selected;
           g_variant_get_child (choices, i, "(&s&s)", &id, &selected);
-          gtk_file_chooser_set_choice (GTK_FILE_CHOOSER (self), id, selected);
+          gtk_file_chooser_set_choice (GTK_FILE_CHOOSER (this), id, selected);
         }
       g_variant_unref (choices);
     }
@@ -155,7 +155,7 @@ response_cb (GDBusConnection  *connection,
       GListModel *filters;
       guint j, n;
 
-      filters = gtk_file_chooser_get_filters (GTK_FILE_CHOOSER (self));
+      filters = gtk_file_chooser_get_filters (GTK_FILE_CHOOSER (this));
       n = g_list_model_get_n_items (filters);
       for (j = 0; j < n; j++)
         {
@@ -168,17 +168,17 @@ response_cb (GDBusConnection  *connection,
           g_object_unref (f);
         }
       g_object_unref (filters);
-      gtk_file_chooser_set_filter (GTK_FILE_CHOOSER (self), filter_to_select);
+      gtk_file_chooser_set_filter (GTK_FILE_CHOOSER (this), filter_to_select);
       g_object_unref (filter_to_select);
 
       g_variant_unref (current_filter);
     }
 
-  g_slist_free_full (self->custom_files, g_object_unref);
-  self->custom_files = NULL;
+  g_slist_free_full (this->custom_files, g_object_unref);
+  this->custom_files = NULL;
   for (i = 0; uris[i]; i++)
-    self->custom_files = g_slist_prepend (self->custom_files, g_file_new_for_uri (uris[i]));
-  self->custom_files = g_slist_reverse (self->custom_files);
+    this->custom_files = g_slist_prepend (this->custom_files, g_file_new_for_uri (uris[i]));
+  this->custom_files = g_slist_reverse (this->custom_files);
 
   g_free (uris);
   g_variant_unref (response_data);
@@ -201,14 +201,14 @@ response_cb (GDBusConnection  *connection,
    * signal; filechooser_portal_data_free() will drop a reference on the
    * dialog as well
    */
-  g_object_ref (self);
+  g_object_ref (this);
 
   filechooser_portal_data_free (data);
-  self->mode_data = NULL;
+  this->mode_data = NULL;
 
-  _gtk_native_dialog_emit_response (GTK_NATIVE_DIALOG (self), gtk_response);
+  _gtk_native_dialog_emit_response (GTK_NATIVE_DIALOG (this), gtk_response);
 
-  g_object_unref (self);
+  g_object_unref (this);
 }
 
 static void
@@ -240,7 +240,7 @@ open_file_msg_cb (GObject      *source_object,
                   gpointer      user_data)
 {
   FilechooserPortalData *data = user_data;
-  GtkFileChooserNative *self = data->self;
+  GtkFileChooserNative *this = data->this;
   GDBusMessage *reply;
   GError *error = NULL;
   char *handle = NULL;
@@ -255,7 +255,7 @@ open_file_msg_cb (GObject      *source_object,
       if (!data->hidden)
         {
           filechooser_portal_data_free (data);
-          self->mode_data = NULL;
+          this->mode_data = NULL;
         }
 
       /* FIXME: Show an error dialog here ? */
@@ -269,7 +269,7 @@ open_file_msg_cb (GObject      *source_object,
     {
       /* The dialog was hidden before we got the handle, close it now */
       filechooser_portal_data_free (data);
-      self->mode_data = NULL;
+      this->mode_data = NULL;
     }
   else if (strcmp (handle, data->portal_handle) != 0)
     {
@@ -287,7 +287,7 @@ open_file_msg_cb (GObject      *source_object,
                                             NULL,
                                             G_DBUS_SIGNAL_FLAGS_NO_MATCH_RULE,
                                             response_cb,
-                                            self, NULL);
+                                            this, NULL);
     }
 
   g_object_unref (reply);
@@ -295,14 +295,14 @@ open_file_msg_cb (GObject      *source_object,
 }
 
 static GVariant *
-get_filters (GtkFileChooser *self)
+get_filters (GtkFileChooser *this)
 {
   GListModel *filters;
   guint n, i;
   GVariantBuilder builder;
 
   g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(sa(us))"));
-  filters = gtk_file_chooser_get_filters (self);
+  filters = gtk_file_chooser_get_filters (this);
   n = g_list_model_get_n_items (filters);
   for (i = 0; i < n; i++)
     {
@@ -336,13 +336,13 @@ gtk_file_chooser_native_choice_to_variant (GtkFileChooserNativeChoice *choice)
 }
 
 static GVariant *
-serialize_choices (GtkFileChooserNative *self)
+serialize_choices (GtkFileChooserNative *this)
 {
   GVariantBuilder builder;
   GSList *l;
 
   g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(ssa(ss)s)"));
-  for (l = self->choices; l; l = l->next)
+  for (l = this->choices; l; l = l->next)
     {
       GtkFileChooserNativeChoice *choice = l->data;
 
@@ -353,10 +353,10 @@ serialize_choices (GtkFileChooserNative *self)
 }
 
 static void
-show_portal_file_chooser (GtkFileChooserNative *self,
+show_portal_file_chooser (GtkFileChooserNative *this,
                           const char           *parent_window_str)
 {
-  FilechooserPortalData *data = self->mode_data;
+  FilechooserPortalData *data = this->mode_data;
   GDBusMessage *message;
   GVariantBuilder opt_builder;
   gboolean multiple;
@@ -379,10 +379,10 @@ show_portal_file_chooser (GtkFileChooserNative *self,
                                         NULL,
                                         G_DBUS_SIGNAL_FLAGS_NO_MATCH_RULE,
                                         response_cb,
-                                        self, NULL);
+                                        this, NULL);
 
-  multiple = gtk_file_chooser_get_select_multiple (GTK_FILE_CHOOSER (self));
-  directory = gtk_file_chooser_get_action (GTK_FILE_CHOOSER (self)) == GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER;
+  multiple = gtk_file_chooser_get_select_multiple (GTK_FILE_CHOOSER (this));
+  directory = gtk_file_chooser_get_action (GTK_FILE_CHOOSER (this)) == GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER;
   g_variant_builder_init (&opt_builder, G_VARIANT_TYPE_VARDICT);
 
   g_variant_builder_add (&opt_builder, "{sv}", "handle_token",
@@ -393,44 +393,44 @@ show_portal_file_chooser (GtkFileChooserNative *self,
                          g_variant_new_boolean (multiple));
   g_variant_builder_add (&opt_builder, "{sv}", "directory",
                          g_variant_new_boolean (directory));
-  if (self->accept_label)
+  if (this->accept_label)
     g_variant_builder_add (&opt_builder, "{sv}", "accept_label",
-                           g_variant_new_string (self->accept_label));
-  if (self->cancel_label)
+                           g_variant_new_string (this->accept_label));
+  if (this->cancel_label)
     g_variant_builder_add (&opt_builder, "{sv}", "cancel_label",
-                           g_variant_new_string (self->cancel_label));
+                           g_variant_new_string (this->cancel_label));
   g_variant_builder_add (&opt_builder, "{sv}", "modal",
                          g_variant_new_boolean (data->modal));
-  g_variant_builder_add (&opt_builder, "{sv}", "filters", get_filters (GTK_FILE_CHOOSER (self)));
-  if (self->current_filter)
+  g_variant_builder_add (&opt_builder, "{sv}", "filters", get_filters (GTK_FILE_CHOOSER (this)));
+  if (this->current_filter)
     g_variant_builder_add (&opt_builder, "{sv}", "current_filter",
-                           gtk_file_filter_to_gvariant (self->current_filter));
-  if (self->current_name)
+                           gtk_file_filter_to_gvariant (this->current_filter));
+  if (this->current_name)
     g_variant_builder_add (&opt_builder, "{sv}", "current_name",
-                           g_variant_new_string (GTK_FILE_CHOOSER_NATIVE (self)->current_name));
-  if (self->current_folder)
+                           g_variant_new_string (GTK_FILE_CHOOSER_NATIVE (this)->current_name));
+  if (this->current_folder)
     {
       char *path;
 
-      path = g_file_get_path (GTK_FILE_CHOOSER_NATIVE (self)->current_folder);
+      path = g_file_get_path (GTK_FILE_CHOOSER_NATIVE (this)->current_folder);
       g_variant_builder_add (&opt_builder, "{sv}", "current_folder",
                              g_variant_new_bytestring (path));
       g_free (path);
     }
-  if (self->current_file)
+  if (this->current_file)
     {
       const char *path;
 
-      path = g_file_peek_path (GTK_FILE_CHOOSER_NATIVE (self)->current_file);
+      path = g_file_peek_path (GTK_FILE_CHOOSER_NATIVE (this)->current_file);
       g_variant_builder_add (&opt_builder, "{sv}", "current_file",
                              g_variant_new_bytestring (path));
     }
 
-  if (self->choices)
+  if (this->choices)
     g_variant_builder_add (&opt_builder, "{sv}", "choices",
-                           serialize_choices (GTK_FILE_CHOOSER_NATIVE (self)));
+                           serialize_choices (GTK_FILE_CHOOSER_NATIVE (this)));
 
-  title = gtk_native_dialog_get_title (GTK_NATIVE_DIALOG (self));
+  title = gtk_native_dialog_get_title (GTK_NATIVE_DIALOG (this));
 
   g_dbus_message_set_body (message,
                            g_variant_new ("(ss@a{sv})",
@@ -455,8 +455,8 @@ window_handle_exported (GtkWindow  *window,
                         const char *handle_str,
                         gpointer    user_data)
 {
-  GtkFileChooserNative *self = user_data;
-  FilechooserPortalData *data = self->mode_data;
+  GtkFileChooserNative *this = user_data;
+  FilechooserPortalData *data = this->mode_data;
 
   if (data->modal)
     {
@@ -465,11 +465,11 @@ window_handle_exported (GtkWindow  *window,
     }
 
   data->exported_handle = g_strdup (handle_str);
-  show_portal_file_chooser (self, handle_str);
+  show_portal_file_chooser (this, handle_str);
 }
 
 gboolean
-gtk_file_chooser_native_portal_show (GtkFileChooserNative *self)
+gtk_file_chooser_native_portal_show (GtkFileChooserNative *this)
 {
   FilechooserPortalData *data;
   GtkWindow *transient_for;
@@ -477,7 +477,7 @@ gtk_file_chooser_native_portal_show (GtkFileChooserNative *self)
   const char *method_name;
   GdkDisplay *display;
 
-  transient_for = gtk_native_dialog_get_transient_for (GTK_NATIVE_DIALOG (self));
+  transient_for = gtk_native_dialog_get_transient_for (GTK_NATIVE_DIALOG (this));
 
   if (transient_for)
     display = gtk_widget_get_display (GTK_WIDGET (transient_for));
@@ -503,7 +503,7 @@ gtk_file_chooser_native_portal_show (GtkFileChooserNative *self)
       return TRUE;
     }
 
-  switch (gtk_file_chooser_get_action (GTK_FILE_CHOOSER (self)))
+  switch (gtk_file_chooser_get_action (GTK_FILE_CHOOSER (this)))
     {
     case GTK_FILE_CHOOSER_ACTION_OPEN:
       method_name = "OpenFile";
@@ -519,24 +519,24 @@ gtk_file_chooser_native_portal_show (GtkFileChooserNative *self)
     }
 
   data = g_new0 (FilechooserPortalData, 1);
-  data->self = g_object_ref (self);
+  data->this = g_object_ref (this);
   data->connection = connection;
 
   data->method_name = method_name;
 
-  if (gtk_native_dialog_get_modal (GTK_NATIVE_DIALOG (self)))
+  if (gtk_native_dialog_get_modal (GTK_NATIVE_DIALOG (this)))
     data->modal = TRUE;
 
-  self->mode_data = data;
+  this->mode_data = data;
 
   if (transient_for != NULL && gtk_widget_is_visible (GTK_WIDGET (transient_for)))
     {
       if (!gtk_window_export_handle (transient_for,
                                      window_handle_exported,
-                                     self))
+                                     this))
         {
           g_warning ("Failed to export handle, could not set transient for");
-          show_portal_file_chooser (self, NULL);
+          show_portal_file_chooser (this, NULL);
         }
       else
         {
@@ -545,16 +545,16 @@ gtk_file_chooser_native_portal_show (GtkFileChooserNative *self)
     }
   else
     {
-      show_portal_file_chooser (self, NULL);
+      show_portal_file_chooser (this, NULL);
     }
 
   return TRUE;
 }
 
 void
-gtk_file_chooser_native_portal_hide (GtkFileChooserNative *self)
+gtk_file_chooser_native_portal_hide (GtkFileChooserNative *this)
 {
-  FilechooserPortalData *data = self->mode_data;
+  FilechooserPortalData *data = this->mode_data;
 
   if (data == NULL)
     return;
@@ -568,5 +568,5 @@ gtk_file_chooser_native_portal_hide (GtkFileChooserNative *self)
    * operations that can still access it
    */
   filechooser_portal_data_clear (data);
-  self->mode_data = NULL;
+  this->mode_data = NULL;
 }

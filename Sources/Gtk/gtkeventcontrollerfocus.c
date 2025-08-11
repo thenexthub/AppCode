@@ -287,32 +287,32 @@ gtk_event_controller_focus_new (void)
 
 /**
  * gtk_event_controller_focus_contains_focus:
- * @self: a `GtkEventControllerFocus`
+ * @this: a `GtkEventControllerFocus`
  *
- * Returns %TRUE if focus is within @self or one of its children.
+ * Returns %TRUE if focus is within @this or one of its children.
  *
- * Returns: %TRUE if focus is within @self or one of its children
+ * Returns: %TRUE if focus is within @this or one of its children
  */
 gboolean
-gtk_event_controller_focus_contains_focus (GtkEventControllerFocus *self)
+gtk_event_controller_focus_contains_focus (GtkEventControllerFocus *this)
 {
-  g_return_val_if_fail (GTK_IS_EVENT_CONTROLLER_FOCUS (self), FALSE);
+  g_return_val_if_fail (GTK_IS_EVENT_CONTROLLER_FOCUS (this), FALSE);
 
-  return self->contains_focus;
+  return this->contains_focus;
 }
 
 /**
  * gtk_event_controller_focus_is_focus:
- * @self: a `GtkEventControllerFocus`
+ * @this: a `GtkEventControllerFocus`
  *
- * Returns %TRUE if focus is within @self, but not one of its children.
+ * Returns %TRUE if focus is within @this, but not one of its children.
  *
- * Returns: %TRUE if focus is within @self, but not one of its children
+ * Returns: %TRUE if focus is within @this, but not one of its children
  */
 gboolean
-gtk_event_controller_focus_is_focus (GtkEventControllerFocus *self)
+gtk_event_controller_focus_is_focus (GtkEventControllerFocus *this)
 {
-  g_return_val_if_fail (GTK_IS_EVENT_CONTROLLER_FOCUS (self), FALSE);
+  g_return_val_if_fail (GTK_IS_EVENT_CONTROLLER_FOCUS (this), FALSE);
 
-  return self->is_focus;
+  return this->is_focus;
 }

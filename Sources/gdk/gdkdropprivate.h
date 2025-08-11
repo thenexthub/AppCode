@@ -38,41 +38,41 @@ struct _GdkDrop {
 struct _GdkDropClass {
   GObjectClass parent_class;
 
-  void                  (* status)                              (GdkDrop                *self,
+  void                  (* status)                              (GdkDrop                *this,
                                                                  GdkDragAction           actions,
                                                                  GdkDragAction           preferred);
-  void                  (* finish)                              (GdkDrop                *self,
+  void                  (* finish)                              (GdkDrop                *this,
                                                                  GdkDragAction           action);
 
-  void                  (* read_async)                          (GdkDrop                *self,
+  void                  (* read_async)                          (GdkDrop                *this,
                                                                  GdkContentFormats      *formats,
                                                                  int                     io_priority,
                                                                  GCancellable           *cancellable,
                                                                  GAsyncReadyCallback     callback,
                                                                  gpointer                user_data);
-  GInputStream *        (* read_finish)                         (GdkDrop                *self,
+  GInputStream *        (* read_finish)                         (GdkDrop                *this,
                                                                  GAsyncResult           *result,
                                                                  const char            **out_mime_type,
                                                                  GError                **error);
 };
 
-void                    gdk_drop_set_actions                    (GdkDrop                *self,
+void                    gdk_drop_set_actions                    (GdkDrop                *this,
                                                                  GdkDragAction           actions);
 
-void                    gdk_drop_emit_enter_event               (GdkDrop                *self,
+void                    gdk_drop_emit_enter_event               (GdkDrop                *this,
                                                                  gboolean                dont_queue,
                                                                  double                  x,
                                                                  double                  y,
                                                                  guint32                 time);
-void                    gdk_drop_emit_motion_event              (GdkDrop                *self,
+void                    gdk_drop_emit_motion_event              (GdkDrop                *this,
                                                                  gboolean                dont_queue,
                                                                  double                  x,
                                                                  double                  y,
                                                                  guint32                 time);
-void                    gdk_drop_emit_leave_event               (GdkDrop                *self,
+void                    gdk_drop_emit_leave_event               (GdkDrop                *this,
                                                                  gboolean                dont_queue,
                                                                  guint32                 time);
-void                    gdk_drop_emit_drop_event                (GdkDrop                *self,
+void                    gdk_drop_emit_drop_event                (GdkDrop                *this,
                                                                  gboolean                dont_queue,
                                                                  double                  x,
                                                                  double                  y,

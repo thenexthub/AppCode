@@ -36,28 +36,28 @@ GDK_AVAILABLE_IN_4_10
 GtkColorDialog *gtk_color_dialog_new                    (void);
 
 GDK_AVAILABLE_IN_4_10
-const char *    gtk_color_dialog_get_title              (GtkColorDialog       *self);
+const char *    gtk_color_dialog_get_title              (GtkColorDialog       *this);
 
 GDK_AVAILABLE_IN_4_10
-void            gtk_color_dialog_set_title              (GtkColorDialog       *self,
+void            gtk_color_dialog_set_title              (GtkColorDialog       *this,
                                                          const char           *title);
 
 GDK_AVAILABLE_IN_4_10
-gboolean        gtk_color_dialog_get_modal              (GtkColorDialog       *self);
+gboolean        gtk_color_dialog_get_modal              (GtkColorDialog       *this);
 
 GDK_AVAILABLE_IN_4_10
-void            gtk_color_dialog_set_modal              (GtkColorDialog       *self,
+void            gtk_color_dialog_set_modal              (GtkColorDialog       *this,
                                                          gboolean              modal);
 
 GDK_AVAILABLE_IN_4_10
-gboolean        gtk_color_dialog_get_with_alpha         (GtkColorDialog       *self);
+gboolean        gtk_color_dialog_get_with_alpha         (GtkColorDialog       *this);
 
 GDK_AVAILABLE_IN_4_10
-void            gtk_color_dialog_set_with_alpha         (GtkColorDialog       *self,
+void            gtk_color_dialog_set_with_alpha         (GtkColorDialog       *this,
                                                          gboolean              with_alpha);
 
 GDK_AVAILABLE_IN_4_10
-void            gtk_color_dialog_choose_rgba            (GtkColorDialog       *self,
+void            gtk_color_dialog_choose_rgba            (GtkColorDialog       *this,
                                                          GtkWindow            *parent,
                                                          const GdkRGBA        *initial_color,
                                                          GCancellable         *cancellable,
@@ -65,7 +65,7 @@ void            gtk_color_dialog_choose_rgba            (GtkColorDialog       *s
                                                          gpointer              user_data);
 
 GDK_AVAILABLE_IN_4_10
-GdkRGBA *       gtk_color_dialog_choose_rgba_finish     (GtkColorDialog        *self,
+GdkRGBA *       gtk_color_dialog_choose_rgba_finish     (GtkColorDialog        *this,
                                                          GAsyncResult          *result,
                                                          GError               **error);
 

@@ -448,7 +448,7 @@ gtk_text_tag_class_init (GtkTextTagClass *klass)
    * If not set, an appropriate default will be used.
    *
    * Note that the initial value of this property depends
-   * on the current locale, see also [func@Gtk.get_default_language].
+   * on the current locale, see also [fn@Gtk.get_default_language].
    */
   g_object_class_install_property (object_class,
                                    PROP_LANGUAGE,

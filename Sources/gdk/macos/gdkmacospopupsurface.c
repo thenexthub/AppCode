@@ -43,7 +43,7 @@ struct _GdkMacosPopupSurfaceClass
 };
 
 static void
-gdk_macos_popup_surface_layout (GdkMacosPopupSurface *self,
+gdk_macos_popup_surface_layout (GdkMacosPopupSurface *this,
                                 int                   width,
                                 int                   height,
                                 GdkPopupLayout       *layout)
@@ -54,19 +54,19 @@ gdk_macos_popup_surface_layout (GdkMacosPopupSurface *self,
   int x, y;
   int shadow_left, shadow_right, shadow_top, shadow_bottom;
 
-  g_assert (GDK_IS_MACOS_POPUP_SURFACE (self));
+  g_assert (GDK_IS_MACOS_POPUP_SURFACE (this));
   g_assert (layout != NULL);
-  g_assert (GDK_SURFACE (self)->parent);
+  g_assert (GDK_SURFACE (this)->parent);
 
   gdk_popup_layout_ref (layout);
-  g_clear_pointer (&self->layout, gdk_popup_layout_unref);
-  self->layout = layout;
+  g_clear_pointer (&this->layout, gdk_popup_layout_unref);
+  this->layout = layout;
 
-  monitor = gdk_surface_get_layout_monitor (GDK_SURFACE (self),
-                                            self->layout,
+  monitor = gdk_surface_get_layout_monitor (GDK_SURFACE (this),
+                                            this->layout,
                                             gdk_macos_monitor_get_workarea);
   if (monitor == NULL)
-    monitor = _gdk_macos_surface_get_best_monitor (GDK_MACOS_SURFACE (self));
+    monitor = _gdk_macos_surface_get_best_monitor (GDK_MACOS_SURFACE (this));
   gdk_macos_monitor_get_workarea (monitor, &bounds);
 
   gdk_popup_layout_get_shadow_width (layout,
@@ -75,7 +75,7 @@ gdk_macos_popup_surface_layout (GdkMacosPopupSurface *self,
                                      &shadow_top,
                                      &shadow_bottom);
 
-  gdk_surface_layout_popup_helper (GDK_SURFACE (self),
+  gdk_surface_layout_popup_helper (GDK_SURFACE (this),
                                    width,
                                    height,
                                    shadow_left,
@@ -84,37 +84,37 @@ gdk_macos_popup_surface_layout (GdkMacosPopupSurface *self,
                                    shadow_bottom,
                                    monitor,
                                    &bounds,
-                                   self->layout,
+                                   this->layout,
                                    &final_rect);
 
-  gdk_surface_get_origin (GDK_SURFACE (self)->parent, &x, &y);
+  gdk_surface_get_origin (GDK_SURFACE (this)->parent, &x, &y);
 
-  GDK_SURFACE (self)->x = final_rect.x;
-  GDK_SURFACE (self)->y = final_rect.y;
+  GDK_SURFACE (this)->x = final_rect.x;
+  GDK_SURFACE (this)->y = final_rect.y;
 
   x += final_rect.x;
   y += final_rect.y;
 
-  if (final_rect.width != GDK_SURFACE (self)->width ||
-      final_rect.height != GDK_SURFACE (self)->height)
-    _gdk_macos_surface_move_resize (GDK_MACOS_SURFACE (self),
+  if (final_rect.width != GDK_SURFACE (this)->width ||
+      final_rect.height != GDK_SURFACE (this)->height)
+    _gdk_macos_surface_move_resize (GDK_MACOS_SURFACE (this),
                                     x,
                                     y,
                                     final_rect.width,
                                     final_rect.height);
-  else if (x != GDK_MACOS_SURFACE (self)->root_x ||
-           y != GDK_MACOS_SURFACE (self)->root_y)
-    _gdk_macos_surface_move (GDK_MACOS_SURFACE (self), x, y);
+  else if (x != GDK_MACOS_SURFACE (this)->root_x ||
+           y != GDK_MACOS_SURFACE (this)->root_y)
+    _gdk_macos_surface_move (GDK_MACOS_SURFACE (this), x, y);
   else
     return;
 
-  gdk_surface_invalidate_rect (GDK_SURFACE (self), NULL);
+  gdk_surface_invalidate_rect (GDK_SURFACE (this), NULL);
 }
 
 static void
-show_popup (GdkMacosPopupSurface *self)
+show_popup (GdkMacosPopupSurface *this)
 {
-  _gdk_macos_surface_show (GDK_MACOS_SURFACE (self));
+  _gdk_macos_surface_show (GDK_MACOS_SURFACE (this));
 }
 
 static void
@@ -131,25 +131,25 @@ gdk_macos_popup_surface_present (GdkPopup       *popup,
                                  int             height,
                                  GdkPopupLayout *layout)
 {
-  GdkMacosPopupSurface *self = (GdkMacosPopupSurface *)popup;
+  GdkMacosPopupSurface *this = (GdkMacosPopupSurface *)popup;
 
-  g_assert (GDK_IS_MACOS_POPUP_SURFACE (self));
+  g_assert (GDK_IS_MACOS_POPUP_SURFACE (this));
 
-  gdk_macos_popup_surface_layout (self, width, height, layout);
+  gdk_macos_popup_surface_layout (this, width, height, layout);
 
-  if (GDK_SURFACE_IS_MAPPED (GDK_SURFACE (self)))
+  if (GDK_SURFACE_IS_MAPPED (GDK_SURFACE (this)))
     return TRUE;
 
-  if (!self->attached && GDK_SURFACE (self)->parent != NULL)
-    _gdk_macos_popup_surface_attach_to_parent (self);
+  if (!this->attached && GDK_SURFACE (this)->parent != NULL)
+    _gdk_macos_popup_surface_attach_to_parent (this);
 
-  if (GDK_SURFACE (self)->autohide)
+  if (GDK_SURFACE (this)->autohide)
     {
       GdkDisplay *display = gdk_surface_get_display (GDK_SURFACE (popup));
       GdkSeat *seat = gdk_display_get_default_seat (display);
 
       gdk_seat_grab (seat,
-                     GDK_SURFACE (self),
+                     GDK_SURFACE (this),
                      GDK_SEAT_CAPABILITY_ALL,
                      TRUE,
                      NULL, NULL,
@@ -158,12 +158,12 @@ gdk_macos_popup_surface_present (GdkPopup       *popup,
     }
   else
     {
-      show_popup (GDK_MACOS_POPUP_SURFACE (self));
+      show_popup (GDK_MACOS_POPUP_SURFACE (this));
     }
 
-  GDK_MACOS_SURFACE (self)->did_initial_present = TRUE;
+  GDK_MACOS_SURFACE (this)->did_initial_present = TRUE;
 
-  return GDK_SURFACE_IS_MAPPED (GDK_SURFACE (self));
+  return GDK_SURFACE_IS_MAPPED (GDK_SURFACE (this));
 }
 
 static GdkGravity
@@ -211,12 +211,12 @@ enum {
 static void
 _gdk_macos_popup_surface_hide (GdkSurface *surface)
 {
-  GdkMacosPopupSurface *self = (GdkMacosPopupSurface *)surface;
+  GdkMacosPopupSurface *this = (GdkMacosPopupSurface *)surface;
 
-  g_assert (GDK_IS_MACOS_POPUP_SURFACE (self));
+  g_assert (GDK_IS_MACOS_POPUP_SURFACE (this));
 
-  if (self->attached)
-    _gdk_macos_popup_surface_detach_from_parent (self);
+  if (this->attached)
+    _gdk_macos_popup_surface_detach_from_parent (this);
 
   GDK_SURFACE_CLASS (_gdk_macos_popup_surface_parent_class)->hide (surface);
 }
@@ -224,14 +224,14 @@ _gdk_macos_popup_surface_hide (GdkSurface *surface)
 static void
 _gdk_macos_popup_surface_finalize (GObject *object)
 {
-  GdkMacosPopupSurface *self = (GdkMacosPopupSurface *)object;
-  GdkSurface *parent = GDK_SURFACE (self)->parent;
+  GdkMacosPopupSurface *this = (GdkMacosPopupSurface *)object;
+  GdkSurface *parent = GDK_SURFACE (this)->parent;
 
   if (parent != NULL)
-    parent->children = g_list_remove (parent->children, self);
+    parent->children = g_list_remove (parent->children, this);
 
-  g_clear_object (&GDK_SURFACE (self)->parent);
-  g_clear_pointer (&self->layout, gdk_popup_layout_unref);
+  g_clear_object (&GDK_SURFACE (this)->parent);
+  g_clear_pointer (&this->layout, gdk_popup_layout_unref);
 
   G_OBJECT_CLASS (_gdk_macos_popup_surface_parent_class)->finalize (object);
 }
@@ -290,9 +290,9 @@ _gdk_macos_popup_surface_constructed (GObject *object)
   GDK_BEGIN_MACOS_ALLOC_POOL;
 
   GdkMacosWindow *window;
-  GdkMacosPopupSurface *self = GDK_MACOS_POPUP_SURFACE (object);
-  GdkSurface *surface = GDK_SURFACE (self);
-  GdkMacosDisplay *display = GDK_MACOS_DISPLAY (gdk_surface_get_display (GDK_SURFACE (self)));
+  GdkMacosPopupSurface *this = GDK_MACOS_POPUP_SURFACE (object);
+  GdkSurface *surface = GDK_SURFACE (this);
+  GdkMacosDisplay *display = GDK_MACOS_DISPLAY (gdk_surface_get_display (GDK_SURFACE (this)));
   NSScreen *screen;
   NSUInteger style_mask;
   NSRect content_rect;
@@ -316,7 +316,7 @@ _gdk_macos_popup_surface_constructed (GObject *object)
                                                  defer:NO
                                                 screen:screen];
 
-  _gdk_macos_surface_set_native (GDK_MACOS_SURFACE (self), window);
+  _gdk_macos_surface_set_native (GDK_MACOS_SURFACE (this), window);
 
   [window setOpaque:NO];
   [window setBackgroundColor:[NSColor clearColor]];
@@ -348,16 +348,16 @@ _gdk_macos_popup_surface_class_init (GdkMacosPopupSurfaceClass *klass)
 }
 
 static void
-_gdk_macos_popup_surface_init (GdkMacosPopupSurface *self)
+_gdk_macos_popup_surface_init (GdkMacosPopupSurface *this)
 {
 }
 
 void
-_gdk_macos_popup_surface_attach_to_parent (GdkMacosPopupSurface *self)
+_gdk_macos_popup_surface_attach_to_parent (GdkMacosPopupSurface *this)
 {
-  GdkSurface *surface = (GdkSurface *)self;
+  GdkSurface *surface = (GdkSurface *)this;
 
-  g_return_if_fail (GDK_IS_MACOS_POPUP_SURFACE (self));
+  g_return_if_fail (GDK_IS_MACOS_POPUP_SURFACE (this));
 
   if (GDK_SURFACE_DESTROYED (surface))
     return;
@@ -365,22 +365,22 @@ _gdk_macos_popup_surface_attach_to_parent (GdkMacosPopupSurface *self)
   if (surface->parent != NULL && !GDK_SURFACE_DESTROYED (surface->parent))
     {
       NSWindow *parent = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (surface->parent));
-      NSWindow *window = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (self));
+      NSWindow *window = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (this));
 
       [parent addChildWindow:window ordered:NSWindowAbove];
 
-      self->attached = TRUE;
+      this->attached = TRUE;
 
       _gdk_macos_display_clear_sorting (GDK_MACOS_DISPLAY (surface->display));
     }
 }
 
 void
-_gdk_macos_popup_surface_detach_from_parent (GdkMacosPopupSurface *self)
+_gdk_macos_popup_surface_detach_from_parent (GdkMacosPopupSurface *this)
 {
-  GdkSurface *surface = (GdkSurface *)self;
+  GdkSurface *surface = (GdkSurface *)this;
 
-  g_return_if_fail (GDK_IS_MACOS_POPUP_SURFACE (self));
+  g_return_if_fail (GDK_IS_MACOS_POPUP_SURFACE (this));
 
   if (GDK_SURFACE_DESTROYED (surface))
     return;
@@ -388,26 +388,26 @@ _gdk_macos_popup_surface_detach_from_parent (GdkMacosPopupSurface *self)
   if (surface->parent != NULL && !GDK_SURFACE_DESTROYED (surface->parent))
     {
       NSWindow *parent = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (surface->parent));
-      NSWindow *window = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (self));
+      NSWindow *window = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (this));
 
       [parent removeChildWindow:window];
 
-      self->attached = FALSE;
+      this->attached = FALSE;
 
       _gdk_macos_display_clear_sorting (GDK_MACOS_DISPLAY (surface->display));
     }
 }
 
 void
-_gdk_macos_popup_surface_reposition (GdkMacosPopupSurface *self)
+_gdk_macos_popup_surface_reposition (GdkMacosPopupSurface *this)
 {
-  g_return_if_fail (GDK_IS_MACOS_POPUP_SURFACE (self));
+  g_return_if_fail (GDK_IS_MACOS_POPUP_SURFACE (this));
 
-  if (self->layout == NULL || GDK_SURFACE (self)->parent == NULL)
+  if (this->layout == NULL || GDK_SURFACE (this)->parent == NULL)
     return;
 
-  gdk_macos_popup_surface_layout (self,
-                                  GDK_SURFACE (self)->width,
-                                  GDK_SURFACE (self)->height,
-                                  self->layout);
+  gdk_macos_popup_surface_layout (this,
+                                  GDK_SURFACE (this)->width,
+                                  GDK_SURFACE (this)->height,
+                                  this->layout);
 }

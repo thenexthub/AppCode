@@ -29,17 +29,17 @@ G_DEFINE_TYPE_WITH_PRIVATE (GskGpuDevice, gsk_gpu_device, G_TYPE_OBJECT)
 
 /* Returns TRUE if everything was GC'ed */
 static gboolean
-gsk_gpu_device_gc (GskGpuDevice *self,
+gsk_gpu_device_gc (GskGpuDevice *this,
                    gint64        timestamp)
 {
-  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (self);
+  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (this);
   gint64 before G_GNUC_UNUSED = GDK_PROFILER_CURRENT_TIME;
   gboolean result;
 
   if (priv->cache == NULL)
     return TRUE;
 
-  gsk_gpu_device_make_current (self);
+  gsk_gpu_device_make_current (this);
 
   result = gsk_gpu_cache_gc (priv->cache,
                              priv->cache_timeout >= 0 ? priv->cache_timeout * G_TIME_SPAN_SECOND : -1,
@@ -55,8 +55,8 @@ gsk_gpu_device_gc (GskGpuDevice *self,
 static gboolean
 cache_gc_cb (gpointer data)
 {
-  GskGpuDevice *self = data;
-  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (self);
+  GskGpuDevice *this = data;
+  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (this);
   gint64 timestamp;
   gboolean result = G_SOURCE_CONTINUE;
 
@@ -65,23 +65,23 @@ cache_gc_cb (gpointer data)
 
   /* gc can collect the device if all windows are closed and only
    * the cache is keeping it alive */
-  g_object_ref (self);
+  g_object_ref (this);
 
-  if (gsk_gpu_device_gc (self, timestamp))
+  if (gsk_gpu_device_gc (this, timestamp))
     {
       priv->cache_gc_source = 0;
       result = G_SOURCE_REMOVE;
     }
 
-  g_object_unref (self);
+  g_object_unref (this);
 
   return result;
 }
 
 void
-gsk_gpu_device_maybe_gc (GskGpuDevice *self)
+gsk_gpu_device_maybe_gc (GskGpuDevice *this)
 {
-  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (self);
+  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (this);
   gsize dead_texture_pixels, dead_textures;
 
   if (priv->cache_timeout < 0)
@@ -97,24 +97,24 @@ gsk_gpu_device_maybe_gc (GskGpuDevice *self)
     {
       GSK_DEBUG (CACHE, "Pre-frame GC (%" G_GSIZE_FORMAT " dead textures, %" G_GSIZE_FORMAT " dead pixels)",
                  dead_textures, dead_texture_pixels);
-      gsk_gpu_device_gc (self, g_get_monotonic_time ());
+      gsk_gpu_device_gc (this, g_get_monotonic_time ());
     }
 }
 
 void
-gsk_gpu_device_queue_gc (GskGpuDevice *self)
+gsk_gpu_device_queue_gc (GskGpuDevice *this)
 {
-  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (self);
+  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (this);
 
   if (priv->cache_timeout > 0 && !priv->cache_gc_source)
-    priv->cache_gc_source = g_timeout_add_seconds (priv->cache_timeout, cache_gc_cb, self);
+    priv->cache_gc_source = g_timeout_add_seconds (priv->cache_timeout, cache_gc_cb, this);
 }
 
 static void
 gsk_gpu_device_dispose (GObject *object)
 {
-  GskGpuDevice *self = GSK_GPU_DEVICE (object);
-  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (self);
+  GskGpuDevice *this = GSK_GPU_DEVICE (object);
+  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (this);
 
   g_clear_handle_id (&priv->cache_gc_source, g_source_remove);
 
@@ -124,8 +124,8 @@ gsk_gpu_device_dispose (GObject *object)
 static void
 gsk_gpu_device_finalize (GObject *object)
 {
-  GskGpuDevice *self = GSK_GPU_DEVICE (object);
-  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (self);
+  GskGpuDevice *this = GSK_GPU_DEVICE (object);
+  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (this);
 
   g_object_unref (priv->display);
 
@@ -142,7 +142,7 @@ gsk_gpu_device_class_init (GskGpuDeviceClass *klass)
 }
 
 static void
-gsk_gpu_device_init (GskGpuDevice *self)
+gsk_gpu_device_init (GskGpuDevice *this)
 {
 }
 
@@ -153,13 +153,13 @@ round_up (gsize number, gsize divisor)
 }
 
 void
-gsk_gpu_device_setup (GskGpuDevice *self,
+gsk_gpu_device_setup (GskGpuDevice *this,
                       GdkDisplay   *display,
                       gsize         max_image_size,
                       gsize         tile_size,
                       gsize         globals_alignment)
 {
-  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (self);
+  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (this);
   const char *str;
 
   priv->display = g_object_ref (display);
@@ -197,29 +197,29 @@ gsk_gpu_device_setup (GskGpuDevice *self,
 }
 
 GdkDisplay *
-gsk_gpu_device_get_display (GskGpuDevice *self)
+gsk_gpu_device_get_display (GskGpuDevice *this)
 {
-  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (self);
+  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (this);
 
   return priv->display;
 }
 
 GskGpuCache *
-gsk_gpu_device_get_cache (GskGpuDevice *self)
+gsk_gpu_device_get_cache (GskGpuDevice *this)
 {
-  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (self);
+  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (this);
 
   if (G_LIKELY (priv->cache))
     return priv->cache;
 
-  priv->cache = gsk_gpu_cache_new (self);
+  priv->cache = gsk_gpu_cache_new (this);
 
   return priv->cache;
 }
 
 /*<private>
  * gsk_gpu_device_get_max_image_size:
- * @self: a device
+ * @this: a device
  *
  * Returns the max image size supported by this device.
  *
@@ -231,16 +231,16 @@ gsk_gpu_device_get_cache (GskGpuDevice *self)
  * Returns: The maximum size in pixels for creating a GskGpuImage
  **/
 gsize
-gsk_gpu_device_get_max_image_size (GskGpuDevice *self)
+gsk_gpu_device_get_max_image_size (GskGpuDevice *this)
 {
-  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (self);
+  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (this);
 
   return priv->max_image_size;
 }
 
 /*<private>
  * gsk_gpu_device_get_tile_size:
- * @self: a device
+ * @this: a device
  *
  * The suggested size for tiling images.
  *
@@ -252,16 +252,16 @@ gsk_gpu_device_get_max_image_size (GskGpuDevice *self)
  * Returns: The suggested size of tiles when tiling images.
  **/
 gsize
-gsk_gpu_device_get_tile_size (GskGpuDevice *self)
+gsk_gpu_device_get_tile_size (GskGpuDevice *this)
 {
-  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (self);
+  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (this);
 
   return priv->tile_size;
 }
 
 /*<private>
  * gsk_gpu_device_get_globals_aligned_size:
- * @self: a device
+ * @this: a device
  *
  * The required size for allocating arrays of globals.
  *
@@ -272,16 +272,16 @@ gsk_gpu_device_get_tile_size (GskGpuDevice *self)
  * Returns: The minimum aligned size for a GskGpuGlobalsInstance
  **/
 gsize
-gsk_gpu_device_get_globals_aligned_size (GskGpuDevice *self)
+gsk_gpu_device_get_globals_aligned_size (GskGpuDevice *this)
 {
-  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (self);
+  GskGpuDevicePrivate *priv = gsk_gpu_device_get_instance_private (this);
 
   return priv->globals_aligned_size;
 }
 
 /*<private>
  * gsk_gpu_device_create_offscreen_image:
- * @self: the device to create the offscreen in
+ * @this: the device to create the offscreen in
  * @with_mipmap: whether to allocate memory for mipmap levels
  * @format: the desired format
  * @is_srgb: if the format should be srgb
@@ -299,27 +299,27 @@ gsk_gpu_device_get_globals_aligned_size (GskGpuDevice *self)
  * Returns: (nullable): The created image or `NULL` on error.
  **/
 GskGpuImage *
-gsk_gpu_device_create_offscreen_image (GskGpuDevice    *self,
+gsk_gpu_device_create_offscreen_image (GskGpuDevice    *this,
                                        gboolean         with_mipmap,
                                        GdkMemoryFormat  format,
                                        gboolean         is_srgb,
                                        gsize            width,
                                        gsize            height)
 {
-  return GSK_GPU_DEVICE_GET_CLASS (self)->create_offscreen_image (self, with_mipmap, format, is_srgb, width, height);
+  return GSK_GPU_DEVICE_GET_CLASS (this)->create_offscreen_image (this, with_mipmap, format, is_srgb, width, height);
 }
 
 GskGpuImage *
-gsk_gpu_device_create_atlas_image (GskGpuDevice *self,
+gsk_gpu_device_create_atlas_image (GskGpuDevice *this,
                                    gsize         width,
                                    gsize         height)
 {
-  return GSK_GPU_DEVICE_GET_CLASS (self)->create_atlas_image (self, width, height);
+  return GSK_GPU_DEVICE_GET_CLASS (this)->create_atlas_image (this, width, height);
 }
 
 /*<private>
  * gsk_gpu_device_create_upload_image:
- * @self: the device to create the offscreen in
+ * @this: the device to create the offscreen in
  * @with_mipmap: whether to try to allocate memory for mipmap levels
  * @format: the desired format
  * @conv: the desired builtin conversion
@@ -337,29 +337,29 @@ gsk_gpu_device_create_atlas_image (GskGpuDevice *self,
  *   too large.
  **/
 GskGpuImage *
-gsk_gpu_device_create_upload_image (GskGpuDevice     *self,
+gsk_gpu_device_create_upload_image (GskGpuDevice     *this,
                                     gboolean          with_mipmap,
                                     GdkMemoryFormat   format,
                                     GskGpuConversion  conv,
                                     gsize             width,
                                     gsize             height)
 {
-  return GSK_GPU_DEVICE_GET_CLASS (self)->create_upload_image (self, with_mipmap, format, conv, width, height);
+  return GSK_GPU_DEVICE_GET_CLASS (this)->create_upload_image (this, with_mipmap, format, conv, width, height);
 }
 
 GskGpuImage *
-gsk_gpu_device_create_download_image (GskGpuDevice   *self,
+gsk_gpu_device_create_download_image (GskGpuDevice   *this,
                                       GdkMemoryDepth  depth,
                                       gsize           width,
                                       gsize           height)
 {
-  return GSK_GPU_DEVICE_GET_CLASS (self)->create_download_image (self, depth, width, height);
+  return GSK_GPU_DEVICE_GET_CLASS (this)->create_download_image (this, depth, width, height);
 }
 
 void
-gsk_gpu_device_make_current (GskGpuDevice *self)
+gsk_gpu_device_make_current (GskGpuDevice *this)
 {
-  GSK_GPU_DEVICE_GET_CLASS (self)->make_current (self);
+  GSK_GPU_DEVICE_GET_CLASS (this)->make_current (this);
 }
 
 /* }}} */

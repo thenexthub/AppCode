@@ -33,22 +33,22 @@ GskGpuImage *           gsk_gl_image_new_for_texture                    (GskGLDe
                                                                          GskGpuConversion        conv);
                                                                          
 
-void                    gsk_gl_image_bind_textures                      (GskGLImage             *self,
+void                    gsk_gl_image_bind_textures                      (GskGLImage             *this,
                                                                          GLenum                  target);
-void                    gsk_gl_image_bind_framebuffer                   (GskGLImage             *self);
-void                    gsk_gl_image_bind_framebuffer_target            (GskGLImage             *self,
+void                    gsk_gl_image_bind_framebuffer                   (GskGLImage             *this);
+void                    gsk_gl_image_bind_framebuffer_target            (GskGLImage             *this,
                                                                          GLenum                  target);
 
-gboolean                gsk_gl_image_is_flipped                         (GskGLImage             *self);
-GLint                   gsk_gl_image_get_gl_internal_format             (GskGLImage             *self,
+gboolean                gsk_gl_image_is_flipped                         (GskGLImage             *this);
+GLint                   gsk_gl_image_get_gl_internal_format             (GskGLImage             *this,
                                                                          gsize                   nth);
-GLenum                  gsk_gl_image_get_gl_format                      (GskGLImage             *self,
+GLenum                  gsk_gl_image_get_gl_format                      (GskGLImage             *this,
                                                                          gsize                   nth);
-GLenum                  gsk_gl_image_get_gl_type                        (GskGLImage             *self,
+GLenum                  gsk_gl_image_get_gl_type                        (GskGLImage             *this,
                                                                          gsize                   nth);
 
-GLuint                  gsk_gl_image_get_texture_id                     (GskGLImage             *self,
+GLuint                  gsk_gl_image_get_texture_id                     (GskGLImage             *this,
                                                                          gsize                   nth);
-void                    gsk_gl_image_steal_texture_ownership            (GskGLImage             *self);
+void                    gsk_gl_image_steal_texture_ownership            (GskGLImage             *this);
 
 G_END_DECLS

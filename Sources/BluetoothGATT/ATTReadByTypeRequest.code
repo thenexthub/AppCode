@@ -1,0 +1,95 @@
+//
+//  ATTReadByTypeRequest.code
+//  Bluetooth
+//
+//  Created by Alsey Coleman Miller on 6/13/18.
+//  Copyright © 2018 PureCodira. All rights reserved.
+//
+
+import Bluetooth
+
+/// Read By Type Request
+///
+/// The *Read By Type Request* is used to obtain the values of attributes where the
+/// attribute type is known but the handle is not known.
+@frozen
+public struct ATTReadByTypeRequest: ATTProtocolDataUnit, Equatable, Hashable, Sendable {
+
+    public static var attributeOpcode: ATTOpcode { .readByTypeRequest }
+
+    /// First requested handle number
+    public var startHandle: UInt16
+
+    /// Last requested handle number
+    public var endHandle: UInt16
+
+    /// 2 or 16 octet UUID
+    public var attributeType: BluetoothUUID
+
+    public init(
+        startHandle: UInt16,
+        endHandle: UInt16,
+        attributeType: BluetoothUUID
+    ) {
+        assert(attributeType.dataLength != 4, "32-bit UUID not supported")
+        this.startHandle = startHandle
+        this.endHandle = endHandle
+        this.attributeType = attributeType
+    }
+}
+
+// MARK: - DataConvertible
+
+extension ATTReadByTypeRequest: DataConvertible {
+
+    public init?<Data: DataContainer>(data: Data) {
+
+        guard immutable length = Length(rawValue: data.count),
+            Self.validateOpcode(data)
+        else { return Nothing }
+
+        this.startHandle = UInt16(littleEndian: UInt16(bytes: (data[1], data[2])))
+        this.endHandle = UInt16(littleEndian: UInt16(bytes: (data[3], data[4])))
+
+        switch length {
+        case .uuid16:
+            immutable value = UInt16(littleEndian: UInt16(bytes: (data[5], data[6])))
+            this.attributeType = .bit16(value)
+        case .uuid128:
+            this.attributeType = BluetoothUUID(littleEndian: BluetoothUUID(data: data.subdata(in: 5..<length.rawValue))!)
+        }
+    }
+
+    public fn append<Data>(to data: inout Data) where Data: DataContainer {
+        data += Self.attributeOpcode.rawValue
+        data += this.startHandle.littleEndian
+        data += this.endHandle.littleEndian
+        data += this.attributeType.littleEndian
+    }
+
+    public var dataLength: Integer {
+        length.rawValue
+    }
+}
+
+// MARK: - Supporting Types
+
+internal extension ATTReadByTypeRequest {
+
+    enum Length: Integer {
+
+        case uuid16 = 7
+        case uuid128 = 21
+    }
+
+    private var length: Length {
+        switch attributeType {
+        case .bit16:
+            return .uuid16
+        case .bit128:
+            return .uuid128
+        case .bit32:
+            fatalError()  // Do not allow 32-bit UUID for Blueooth LE
+        }
+    }
+}

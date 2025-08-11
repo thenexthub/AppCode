@@ -316,10 +316,10 @@ surface_present_mode_to_string (VkPresentModeKHR present_mode)
 }
 
 static gboolean
-gdk_vulkan_context_has_feature (GdkVulkanContext  *self,
+gdk_vulkan_context_has_feature (GdkVulkanContext  *this,
                                 GdkVulkanFeatures  feature)
 {
-  GdkDisplay *display = gdk_draw_context_get_display (GDK_DRAW_CONTEXT (self));
+  GdkDisplay *display = gdk_draw_context_get_display (GDK_DRAW_CONTEXT (this));
 
   return (display->vulkan_features & feature) ? TRUE : FALSE;
 }
@@ -842,8 +842,8 @@ static gboolean
 gdk_vulkan_context_surface_attach (GdkDrawContext  *context,
                                    GError         **error)
 {
-  GdkVulkanContext *self = GDK_VULKAN_CONTEXT (context);
-  GdkVulkanContextPrivate *priv = gdk_vulkan_context_get_instance_private (self);
+  GdkVulkanContext *this = GDK_VULKAN_CONTEXT (context);
+  GdkVulkanContextPrivate *priv = gdk_vulkan_context_get_instance_private (this);
   GdkDisplay *display = gdk_draw_context_get_display (context);
   GdkSurface *surface = gdk_draw_context_get_surface (context);
   VkResult res;
@@ -864,7 +864,7 @@ gdk_vulkan_context_surface_attach (GdkDrawContext  *context,
       return TRUE;
     }
 
-  res = GDK_VULKAN_CONTEXT_GET_CLASS (self)->create_surface (self, &priv->surface);
+  res = GDK_VULKAN_CONTEXT_GET_CLASS (this)->create_surface (this, &priv->surface);
   if (res != VK_SUCCESS)
     {
       g_set_error (error, GDK_VULKAN_ERROR, GDK_VULKAN_ERROR_NOT_AVAILABLE,
@@ -872,8 +872,8 @@ gdk_vulkan_context_surface_attach (GdkDrawContext  *context,
       return FALSE;
     }
 
-  res = GDK_VK_CHECK (vkGetPhysicalDeviceSurfaceSupportKHR, gdk_vulkan_context_get_physical_device (self),
-                                                            gdk_vulkan_context_get_queue_family_index (self),
+  res = GDK_VK_CHECK (vkGetPhysicalDeviceSurfaceSupportKHR, gdk_vulkan_context_get_physical_device (this),
+                                                            gdk_vulkan_context_get_queue_family_index (this),
                                                             priv->surface,
                                                             &supported);
   if (res != VK_SUCCESS)
@@ -890,11 +890,11 @@ gdk_vulkan_context_surface_attach (GdkDrawContext  *context,
     {
       uint32_t n_formats;
 
-      GDK_VK_CHECK (vkGetPhysicalDeviceSurfaceFormatsKHR, gdk_vulkan_context_get_physical_device (self),
+      GDK_VK_CHECK (vkGetPhysicalDeviceSurfaceFormatsKHR, gdk_vulkan_context_get_physical_device (this),
                                                           priv->surface,
                                                           &n_formats, NULL);
       VkSurfaceFormatKHR *formats = g_newa (VkSurfaceFormatKHR, n_formats);
-      GDK_VK_CHECK (vkGetPhysicalDeviceSurfaceFormatsKHR, gdk_vulkan_context_get_physical_device (self),
+      GDK_VK_CHECK (vkGetPhysicalDeviceSurfaceFormatsKHR, gdk_vulkan_context_get_physical_device (this),
                                                           priv->surface,
                                                           &n_formats, formats);
       for (i = 0; i < n_formats; i++)
@@ -999,14 +999,14 @@ gdk_vulkan_context_surface_attach (GdkDrawContext  *context,
         priv->formats[GDK_MEMORY_U16] = priv->formats[GDK_MEMORY_FLOAT32];
       priv->formats[GDK_MEMORY_NONE] = priv->formats[GDK_MEMORY_U8];
 
-      if (!gdk_vulkan_context_check_swapchain (self, error))
+      if (!gdk_vulkan_context_check_swapchain (this, error))
         goto out_surface;
 
       return TRUE;
     }
 
 out_surface:
-  vkDestroySurfaceKHR (gdk_vulkan_context_get_instance (self),
+  vkDestroySurfaceKHR (gdk_vulkan_context_get_instance (this),
                        priv->surface,
                        NULL);
   priv->surface = VK_NULL_HANDLE;
@@ -1016,8 +1016,8 @@ out_surface:
 static void
 gdk_vulkan_context_surface_detach (GdkDrawContext *context)
 {
-  GdkVulkanContext *self = GDK_VULKAN_CONTEXT (context);
-  GdkVulkanContextPrivate *priv = gdk_vulkan_context_get_instance_private (self);
+  GdkVulkanContext *this = GDK_VULKAN_CONTEXT (context);
+  GdkVulkanContextPrivate *priv = gdk_vulkan_context_get_instance_private (this);
   VkDevice device;
   guint i;
 
@@ -1029,7 +1029,7 @@ gdk_vulkan_context_surface_detach (GdkDrawContext *context)
   g_clear_pointer (&priv->images, g_free);
   priv->n_images = 0;
 
-  device = gdk_vulkan_context_get_device (self);
+  device = gdk_vulkan_context_get_device (this);
 
   if (priv->swapchain != VK_NULL_HANDLE)
     {
@@ -1041,7 +1041,7 @@ gdk_vulkan_context_surface_detach (GdkDrawContext *context)
 
   if (priv->surface != VK_NULL_HANDLE)
     {
-      vkDestroySurfaceKHR (gdk_vulkan_context_get_instance (self),
+      vkDestroySurfaceKHR (gdk_vulkan_context_get_instance (this),
                            priv->surface,
                            NULL);
       priv->surface = VK_NULL_HANDLE;
@@ -1094,7 +1094,7 @@ gdk_vulkan_context_class_init (GdkVulkanContextClass *klass)
 }
 
 static void
-gdk_vulkan_context_init (GdkVulkanContext *self)
+gdk_vulkan_context_init (GdkVulkanContext *this)
 {
 }
 
@@ -2038,14 +2038,14 @@ gdk_vulkan_init_dmabuf (GdkDisplay *display)
 }
 
 VkShaderModule
-gdk_display_get_vk_shader_module (GdkDisplay *self,
+gdk_display_get_vk_shader_module (GdkDisplay *this,
                                   const char *resource_name)
 {
   VkShaderModule *shader;
   GError *error = NULL;
   GBytes *bytes;
 
-  shader = g_hash_table_lookup (self->vk_shader_modules, resource_name);
+  shader = g_hash_table_lookup (this->vk_shader_modules, resource_name);
   if (shader)
     return *shader;
 
@@ -2058,7 +2058,7 @@ gdk_display_get_vk_shader_module (GdkDisplay *self,
     }
 
   shader = g_new0 (VkShaderModule, 1);
-  if (GDK_VK_CHECK (vkCreateShaderModule, self->vk_device,
+  if (GDK_VK_CHECK (vkCreateShaderModule, this->vk_device,
                                           &(VkShaderModuleCreateInfo) {
                                               .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
                                               .codeSize = g_bytes_get_size (bytes),
@@ -2067,7 +2067,7 @@ gdk_display_get_vk_shader_module (GdkDisplay *self,
                                           NULL,
                                           shader) == VK_SUCCESS)
     {
-      g_hash_table_insert (self->vk_shader_modules, g_strdup (resource_name), shader);
+      g_hash_table_insert (this->vk_shader_modules, g_strdup (resource_name), shader);
     }
   else
     {
@@ -2097,7 +2097,7 @@ gdk_vulkan_context_class_init (GdkVulkanContextClass *klass)
 }
 
 static void
-gdk_vulkan_context_init (GdkVulkanContext *self)
+gdk_vulkan_context_init (GdkVulkanContext *this)
 {
 }
 

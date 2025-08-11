@@ -36,47 +36,47 @@ GDK_AVAILABLE_IN_ALL
 GType                   gdk_drop_get_type               (void) G_GNUC_CONST;
 
 GDK_AVAILABLE_IN_ALL
-GdkDisplay *            gdk_drop_get_display            (GdkDrop                *self);
+GdkDisplay *            gdk_drop_get_display            (GdkDrop                *this);
 GDK_AVAILABLE_IN_ALL
-GdkDevice *             gdk_drop_get_device             (GdkDrop                *self);
+GdkDevice *             gdk_drop_get_device             (GdkDrop                *this);
 GDK_AVAILABLE_IN_ALL
-GdkSurface *            gdk_drop_get_surface            (GdkDrop                *self);
+GdkSurface *            gdk_drop_get_surface            (GdkDrop                *this);
 GDK_AVAILABLE_IN_ALL
-GdkContentFormats *     gdk_drop_get_formats            (GdkDrop                *self);
+GdkContentFormats *     gdk_drop_get_formats            (GdkDrop                *this);
 GDK_AVAILABLE_IN_ALL
-GdkDragAction           gdk_drop_get_actions            (GdkDrop                *self);
+GdkDragAction           gdk_drop_get_actions            (GdkDrop                *this);
 GDK_AVAILABLE_IN_ALL
-GdkDrag *               gdk_drop_get_drag               (GdkDrop                *self);
+GdkDrag *               gdk_drop_get_drag               (GdkDrop                *this);
 
 GDK_AVAILABLE_IN_ALL
-void                    gdk_drop_status                 (GdkDrop                *self,
+void                    gdk_drop_status                 (GdkDrop                *this,
                                                          GdkDragAction           actions,
                                                          GdkDragAction           preferred);
 GDK_AVAILABLE_IN_ALL
-void                    gdk_drop_finish                 (GdkDrop                *self,
+void                    gdk_drop_finish                 (GdkDrop                *this,
                                                          GdkDragAction           action);
 
 GDK_AVAILABLE_IN_ALL
-void                    gdk_drop_read_async             (GdkDrop                *self,
+void                    gdk_drop_read_async             (GdkDrop                *this,
                                                          const char            **mime_types,
                                                          int                     io_priority,
                                                          GCancellable           *cancellable,
                                                          GAsyncReadyCallback     callback,
                                                          gpointer                user_data);
 GDK_AVAILABLE_IN_ALL
-GInputStream *          gdk_drop_read_finish            (GdkDrop                *self,
+GInputStream *          gdk_drop_read_finish            (GdkDrop                *this,
                                                          GAsyncResult           *result,
                                                          const char            **out_mime_type,
                                                          GError                **error);
 GDK_AVAILABLE_IN_ALL
-void                    gdk_drop_read_value_async       (GdkDrop                *self,
+void                    gdk_drop_read_value_async       (GdkDrop                *this,
                                                          GType                   type,
                                                          int                     io_priority,
                                                          GCancellable           *cancellable,
                                                          GAsyncReadyCallback     callback,
                                                          gpointer                user_data);
 GDK_AVAILABLE_IN_ALL
-const GValue *          gdk_drop_read_value_finish      (GdkDrop                *self,
+const GValue *          gdk_drop_read_value_finish      (GdkDrop                *this,
                                                          GAsyncResult           *result,
                                                          GError                **error);
 

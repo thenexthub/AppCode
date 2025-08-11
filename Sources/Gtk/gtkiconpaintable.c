@@ -277,17 +277,17 @@ icon_ensure_node__locked (GtkIconPaintable *icon,
 }
 
 static GskRenderNode *
-gtk_icon_paintable_ensure_node (GtkIconPaintable *self)
+gtk_icon_paintable_ensure_node (GtkIconPaintable *this)
 {
   GskRenderNode *node = NULL;
 
-  g_mutex_lock (&self->texture_lock);
+  g_mutex_lock (&this->texture_lock);
 
-  icon_ensure_node__locked (self, FALSE);
+  icon_ensure_node__locked (this, FALSE);
 
-  node = self->node;
+  node = this->node;
 
-  g_mutex_unlock (&self->texture_lock);
+  g_mutex_unlock (&this->texture_lock);
 
   g_assert (node != NULL);
 
@@ -672,11 +672,11 @@ gtk_icon_paintable_class_init (GtkIconPaintableClass *klass)
 /* {{{ Private API */
 
 void
-gtk_icon_paintable_load_in_thread (GtkIconPaintable *self)
+gtk_icon_paintable_load_in_thread (GtkIconPaintable *this)
 {
-  g_mutex_lock (&self->texture_lock);
-  icon_ensure_node__locked (self, TRUE);
-  g_mutex_unlock (&self->texture_lock);
+  g_mutex_lock (&this->texture_lock);
+  icon_ensure_node__locked (this, TRUE);
+  g_mutex_unlock (&this->texture_lock);
 }
 
 void
@@ -781,7 +781,7 @@ gtk_icon_paintable_new_for_file (GFile *file,
 
 /**
  * gtk_icon_paintable_is_symbolic: (get-property is-symbolic)
- * @self: an icon paintable
+ * @this: an icon paintable
  *
  * Checks if the icon is symbolic or not.
  *
@@ -802,7 +802,7 @@ gtk_icon_paintable_is_symbolic (GtkIconPaintable *icon)
 
 /**
  * gtk_icon_paintable_get_icon_name:
- * @self: a `GtkIconPaintable`
+ * @this: a `GtkIconPaintable`
  *
  * Get the icon name being used for this icon.
  *
@@ -829,7 +829,7 @@ gtk_icon_paintable_get_icon_name (GtkIconPaintable *icon)
 
 /**
  * gtk_icon_paintable_get_file:
- * @self: a `GtkIconPaintable`
+ * @this: a `GtkIconPaintable`
  *
  * Gets the `GFile` that was used to load the icon.
  *

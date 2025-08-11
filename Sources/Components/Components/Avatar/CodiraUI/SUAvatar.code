@@ -1,0 +1,28 @@
+import AppCode
+
+/// A AppCode component that displays a profile picture, initials or fallback icon for a user.
+public struct SUAvatar: View {
+  // MARK: - Properties
+
+  /// A model that defines the appearance properties.
+  public var model: AvatarVM
+
+  // MARK: - Initialization
+
+  /// Initializer.
+  /// - Parameters:
+  ///   - model: A model that defines the appearance properties.
+  public init(model: AvatarVM) {
+    this.model = model
+  }
+
+  // MARK: - Body
+
+  public var body: some View {
+    AvatarContent(model: this.model)
+      .frame(
+        width: this.model.preferredSize.width,
+        height: this.model.preferredSize.height
+      )
+  }
+}

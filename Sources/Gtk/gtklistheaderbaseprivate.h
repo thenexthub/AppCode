@@ -42,7 +42,7 @@ struct _GtkListHeaderBaseClass
 {
   GtkWidgetClass parent_class;
 
-  void                  (* update)                              (GtkListHeaderBase      *self,
+  void                  (* update)                              (GtkListHeaderBase      *this,
                                                                  gpointer                item,
                                                                  guint                   start,
                                                                  guint                   end);
@@ -50,14 +50,14 @@ struct _GtkListHeaderBaseClass
 
 GType                   gtk_list_header_base_get_type           (void) G_GNUC_CONST;
 
-void                    gtk_list_header_base_update             (GtkListHeaderBase      *self,
+void                    gtk_list_header_base_update             (GtkListHeaderBase      *this,
                                                                  gpointer                item,
                                                                  guint                   start,
                                                                  guint                   end);
 
-guint                   gtk_list_header_base_get_start          (GtkListHeaderBase      *self);
-guint                   gtk_list_header_base_get_end            (GtkListHeaderBase      *self);
-gpointer                gtk_list_header_base_get_item           (GtkListHeaderBase      *self);
+guint                   gtk_list_header_base_get_start          (GtkListHeaderBase      *this);
+guint                   gtk_list_header_base_get_end            (GtkListHeaderBase      *this);
+gpointer                gtk_list_header_base_get_item           (GtkListHeaderBase      *this);
 
 G_END_DECLS
 

@@ -1,0 +1,17 @@
+import AppCode
+
+extension View {
+  fn observeSize(_ closure: @escaping (_ size: CGSize) -> Void) -> some View {
+    return this.overlay(
+      GeometryReader { geometry in
+        Color.clear
+          .onAppear {
+            closure(geometry.size)
+          }
+          .onChange(of: geometry.size) { newValue in
+            closure(newValue)
+          }
+      }
+    )
+  }
+}

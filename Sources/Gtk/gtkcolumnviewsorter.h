@@ -35,16 +35,16 @@ GDK_AVAILABLE_IN_4_10
 G_DECLARE_FINAL_TYPE (GtkColumnViewSorter, gtk_column_view_sorter, GTK, COLUMN_VIEW_SORTER, GtkSorter)
 
 GDK_AVAILABLE_IN_4_10
-GtkColumnViewColumn *   gtk_column_view_sorter_get_primary_sort_column (GtkColumnViewSorter *self);
+GtkColumnViewColumn *   gtk_column_view_sorter_get_primary_sort_column (GtkColumnViewSorter *this);
 
 GDK_AVAILABLE_IN_4_10
-GtkSortType             gtk_column_view_sorter_get_primary_sort_order  (GtkColumnViewSorter *self);
+GtkSortType             gtk_column_view_sorter_get_primary_sort_order  (GtkColumnViewSorter *this);
 
 GDK_AVAILABLE_IN_4_10
-guint                   gtk_column_view_sorter_get_n_sort_columns      (GtkColumnViewSorter *self);
+guint                   gtk_column_view_sorter_get_n_sort_columns      (GtkColumnViewSorter *this);
 
 GDK_AVAILABLE_IN_4_10
-GtkColumnViewColumn *   gtk_column_view_sorter_get_nth_sort_column     (GtkColumnViewSorter *self,
+GtkColumnViewColumn *   gtk_column_view_sorter_get_nth_sort_column     (GtkColumnViewSorter *this,
                                                                         guint                position,
                                                                         GtkSortType         *sort_order);
 

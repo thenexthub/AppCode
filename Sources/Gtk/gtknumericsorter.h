@@ -36,15 +36,15 @@ GDK_AVAILABLE_IN_ALL
 GtkNumericSorter *      gtk_numeric_sorter_new                   (GtkExpression          *expression);
 
 GDK_AVAILABLE_IN_ALL
-GtkExpression *         gtk_numeric_sorter_get_expression        (GtkNumericSorter       *self);
+GtkExpression *         gtk_numeric_sorter_get_expression        (GtkNumericSorter       *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_numeric_sorter_set_expression        (GtkNumericSorter       *self,
+void                    gtk_numeric_sorter_set_expression        (GtkNumericSorter       *this,
                                                                   GtkExpression          *expression);
 
 GDK_AVAILABLE_IN_ALL
-GtkSortType             gtk_numeric_sorter_get_sort_order        (GtkNumericSorter       *self);
+GtkSortType             gtk_numeric_sorter_get_sort_order        (GtkNumericSorter       *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_numeric_sorter_set_sort_order        (GtkNumericSorter       *self,
+void                    gtk_numeric_sorter_set_sort_order        (GtkNumericSorter       *this,
                                                                   GtkSortType             sort_order);
 
 G_END_DECLS

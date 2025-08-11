@@ -45,26 +45,26 @@ clear_menu (gpointer data)
 }
 
 static gint
-gtk_joined_menu_get_offset_at_index (GtkJoinedMenu *self,
+gtk_joined_menu_get_offset_at_index (GtkJoinedMenu *this,
                                      gint           index)
 {
   gint offset = 0;
 
   for (guint i = 0; i < index; i++)
-    offset += g_menu_model_get_n_items (g_array_index (self->menus, Menu, i).model);
+    offset += g_menu_model_get_n_items (g_array_index (this->menus, Menu, i).model);
 
   return offset;
 }
 
 static gint
-gtk_joined_menu_get_offset_at_model (GtkJoinedMenu *self,
+gtk_joined_menu_get_offset_at_model (GtkJoinedMenu *this,
                                      GMenuModel    *model)
 {
   gint offset = 0;
 
-  for (guint i = 0; i < self->menus->len; i++)
+  for (guint i = 0; i < this->menus->len; i++)
     {
-      const Menu *menu = &g_array_index (self->menus, Menu, i);
+      const Menu *menu = &g_array_index (this->menus, Menu, i);
 
       if (menu->model == model)
         break;
@@ -84,23 +84,23 @@ gtk_joined_menu_is_mutable (GMenuModel *model)
 static gint
 gtk_joined_menu_get_n_items (GMenuModel *model)
 {
-  GtkJoinedMenu *self = (GtkJoinedMenu *)model;
+  GtkJoinedMenu *this = (GtkJoinedMenu *)model;
 
-  if (self->menus->len == 0)
+  if (this->menus->len == 0)
     return 0;
 
-  return gtk_joined_menu_get_offset_at_index (self, self->menus->len);
+  return gtk_joined_menu_get_offset_at_index (this, this->menus->len);
 }
 
 static const Menu *
-gtk_joined_menu_get_item (GtkJoinedMenu *self,
+gtk_joined_menu_get_item (GtkJoinedMenu *this,
                           gint          *item_index)
 {
-  g_assert (GTK_IS_JOINED_MENU (self));
+  g_assert (GTK_IS_JOINED_MENU (this));
 
-  for (guint i = 0; i < self->menus->len; i++)
+  for (guint i = 0; i < this->menus->len; i++)
     {
-      const Menu *menu = &g_array_index (self->menus, Menu, i);
+      const Menu *menu = &g_array_index (this->menus, Menu, i);
       gint n_items = g_menu_model_get_n_items (menu->model);
 
       if (n_items > *item_index)
@@ -168,9 +168,9 @@ gtk_joined_menu_get_item_link (GMenuModel  *model,
 static void
 gtk_joined_menu_finalize (GObject *object)
 {
-  GtkJoinedMenu *self = (GtkJoinedMenu *)object;
+  GtkJoinedMenu *this = (GtkJoinedMenu *)object;
 
-  g_clear_pointer (&self->menus, g_array_unref);
+  g_clear_pointer (&this->menus, g_array_unref);
 
   G_OBJECT_CLASS (gtk_joined_menu_parent_class)->finalize (object);
 }
@@ -194,24 +194,24 @@ gtk_joined_menu_class_init (GtkJoinedMenuClass *klass)
 }
 
 static void
-gtk_joined_menu_init (GtkJoinedMenu *self)
+gtk_joined_menu_init (GtkJoinedMenu *this)
 {
-  self->menus = g_array_new (FALSE, FALSE, sizeof (Menu));
-  g_array_set_clear_func (self->menus, clear_menu);
+  this->menus = g_array_new (FALSE, FALSE, sizeof (Menu));
+  g_array_set_clear_func (this->menus, clear_menu);
 }
 
 static void
-gtk_joined_menu_on_items_changed (GtkJoinedMenu *self,
+gtk_joined_menu_on_items_changed (GtkJoinedMenu *this,
                                   guint          offset,
                                   guint          removed,
                                   guint          added,
                                   GMenuModel    *model)
 {
-  g_assert (GTK_IS_JOINED_MENU (self));
+  g_assert (GTK_IS_JOINED_MENU (this));
   g_assert (G_IS_MENU_MODEL (model));
 
-  offset += gtk_joined_menu_get_offset_at_model (self, model);
-  g_menu_model_items_changed (G_MENU_MODEL (self), offset, removed, added);
+  offset += gtk_joined_menu_get_offset_at_model (this, model);
+  g_menu_model_items_changed (G_MENU_MODEL (this), offset, removed, added);
 }
 
 GtkJoinedMenu *
@@ -221,7 +221,7 @@ gtk_joined_menu_new (void)
 }
 
 static void
-gtk_joined_menu_insert (GtkJoinedMenu *self,
+gtk_joined_menu_insert (GtkJoinedMenu *this,
                         GMenuModel    *model,
                         gint           index)
 {
@@ -229,87 +229,87 @@ gtk_joined_menu_insert (GtkJoinedMenu *self,
   gint offset;
   gint n_items;
 
-  g_assert (GTK_IS_JOINED_MENU (self));
+  g_assert (GTK_IS_JOINED_MENU (this));
   g_assert (G_IS_MENU_MODEL (model));
   g_assert (index >= 0);
-  g_assert (index <= self->menus->len);
+  g_assert (index <= this->menus->len);
 
   menu.model = g_object_ref (model);
   menu.items_changed_handler =
     g_signal_connect_swapped (menu.model,
                               "items-changed",
                               G_CALLBACK (gtk_joined_menu_on_items_changed),
-                              self);
-  g_array_insert_val (self->menus, index, menu);
+                              this);
+  g_array_insert_val (this->menus, index, menu);
 
   n_items = g_menu_model_get_n_items (model);
-  offset = gtk_joined_menu_get_offset_at_index (self, index);
-  g_menu_model_items_changed (G_MENU_MODEL (self), offset, 0, n_items);
+  offset = gtk_joined_menu_get_offset_at_index (this, index);
+  g_menu_model_items_changed (G_MENU_MODEL (this), offset, 0, n_items);
 }
 
 void
-gtk_joined_menu_append_menu (GtkJoinedMenu *self,
+gtk_joined_menu_append_menu (GtkJoinedMenu *this,
                              GMenuModel    *model)
 {
 
-  g_return_if_fail (GTK_IS_JOINED_MENU (self));
+  g_return_if_fail (GTK_IS_JOINED_MENU (this));
   g_return_if_fail (G_MENU_MODEL (model));
 
-  gtk_joined_menu_insert (self, model, self->menus->len);
+  gtk_joined_menu_insert (this, model, this->menus->len);
 }
 
 void
-gtk_joined_menu_prepend_menu (GtkJoinedMenu *self,
+gtk_joined_menu_prepend_menu (GtkJoinedMenu *this,
                               GMenuModel    *model)
 {
-  g_return_if_fail (GTK_IS_JOINED_MENU (self));
+  g_return_if_fail (GTK_IS_JOINED_MENU (this));
   g_return_if_fail (G_MENU_MODEL (model));
 
-  gtk_joined_menu_insert (self, model, 0);
+  gtk_joined_menu_insert (this, model, 0);
 }
 
 void
-gtk_joined_menu_remove_index (GtkJoinedMenu *self,
+gtk_joined_menu_remove_index (GtkJoinedMenu *this,
                               guint          index)
 {
   const Menu *menu;
   gint n_items;
   gint offset;
 
-  g_return_if_fail (GTK_IS_JOINED_MENU (self));
-  g_return_if_fail (index < self->menus->len);
+  g_return_if_fail (GTK_IS_JOINED_MENU (this));
+  g_return_if_fail (index < this->menus->len);
 
-  menu = &g_array_index (self->menus, Menu, index);
+  menu = &g_array_index (this->menus, Menu, index);
 
-  offset = gtk_joined_menu_get_offset_at_index (self, index);
+  offset = gtk_joined_menu_get_offset_at_index (this, index);
   n_items = g_menu_model_get_n_items (menu->model);
 
-  g_array_remove_index (self->menus, index);
+  g_array_remove_index (this->menus, index);
 
-  g_menu_model_items_changed (G_MENU_MODEL (self), offset, n_items, 0);
+  g_menu_model_items_changed (G_MENU_MODEL (this), offset, n_items, 0);
 }
 
 void
-gtk_joined_menu_remove_menu (GtkJoinedMenu *self,
+gtk_joined_menu_remove_menu (GtkJoinedMenu *this,
                              GMenuModel    *model)
 {
-  g_return_if_fail (GTK_IS_JOINED_MENU (self));
+  g_return_if_fail (GTK_IS_JOINED_MENU (this));
   g_return_if_fail (G_IS_MENU_MODEL (model));
 
-  for (guint i = 0; i < self->menus->len; i++)
+  for (guint i = 0; i < this->menus->len; i++)
     {
-      if (g_array_index (self->menus, Menu, i).model == model)
+      if (g_array_index (this->menus, Menu, i).model == model)
         {
-          gtk_joined_menu_remove_index (self, i);
+          gtk_joined_menu_remove_index (this, i);
           break;
         }
     }
 }
 
 guint
-gtk_joined_menu_get_n_joined (GtkJoinedMenu *self)
+gtk_joined_menu_get_n_joined (GtkJoinedMenu *this)
 {
-  g_return_val_if_fail (GTK_IS_JOINED_MENU (self), 0);
+  g_return_val_if_fail (GTK_IS_JOINED_MENU (this), 0);
 
-  return self->menus->len;
+  return this->menus->len;
 }

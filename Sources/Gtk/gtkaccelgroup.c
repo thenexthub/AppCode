@@ -237,9 +237,9 @@ is_keycode (const char *string)
  *
  * Parses a string representing an accelerator.
  *
- * This is similar to [func@Gtk.accelerator_parse] but handles keycodes as
+ * This is similar to [fn@Gtk.accelerator_parse] but handles keycodes as
  * well. This is only useful for system-level components, applications should
- * use [func@Gtk.accelerator_parse] instead.
+ * use [fn@Gtk.accelerator_parse] instead.
  *
  * If @accelerator_codes is given and the result stored in it is non-%NULL,
  * the result must be freed with g_free().
@@ -496,7 +496,7 @@ out:
  * The parser is fairly liberal and allows lower or upper case, and also
  * abbreviations such as “`<Ctl>`” and “`<Ctrl>`”.
  *
- * Key names are parsed using [func@Gdk.keyval_from_name]. For character keys
+ * Key names are parsed using [fn@Gdk.keyval_from_name]. For character keys
  * the name is not the symbol, but the lowercase name, e.g. one would use
  * “`<Ctrl>minus`” instead of “`<Ctrl>-`”.
  *
@@ -531,11 +531,11 @@ gtk_accelerator_parse (const char      *accelerator,
  * @accelerator_mods: accelerator modifier mask
  *
  * Converts an accelerator keyval and modifier mask
- * into a string that can be parsed by [func@Gtk.accelerator_parse_with_keycode].
+ * into a string that can be parsed by [fn@Gtk.accelerator_parse_with_keycode].
  *
- * This is similar to [func@Gtk.accelerator_name] but handling keycodes.
+ * This is similar to [fn@Gtk.accelerator_name] but handling keycodes.
  * This is only useful for system-level components, applications
- * should use [func@Gtk.accelerator_name] instead.
+ * should use [fn@Gtk.accelerator_name] instead.
  *
  * Returns: a newly allocated accelerator name.
  */
@@ -566,13 +566,13 @@ gtk_accelerator_name_with_keycode (GdkDisplay      *display,
  * @accelerator_mods: accelerator modifier mask
  *
  * Converts an accelerator keyval and modifier mask into a string
- * that can be parsed by [func@Gtk.accelerator_parse].
+ * that can be parsed by [fn@Gtk.accelerator_parse].
  *
  * For example, if you pass in `GDK_KEY_q` and `GDK_CONTROL_MASK`,
  * this function returns `<Control>q`.
  *
  * If you need to display accelerators in the user interface,
- * see [func@Gtk.accelerator_get_label].
+ * see [fn@Gtk.accelerator_get_label].
  *
  * Returns: (transfer full): a newly-allocated accelerator name
  */
@@ -651,9 +651,9 @@ gtk_accelerator_name (guint           accelerator_key,
  *
  * The string may be translated.
  *
- * This function is similar to [func@Gtk.accelerator_get_label],
+ * This function is similar to [fn@Gtk.accelerator_get_label],
  * but handling keycodes. This is only useful for system-level
- * components, applications should use [func@Gtk.accelerator_get_label]
+ * components, applications should use [fn@Gtk.accelerator_get_label]
  * instead.
  *
  * Returns: (transfer full): a newly-allocated string representing the accelerator

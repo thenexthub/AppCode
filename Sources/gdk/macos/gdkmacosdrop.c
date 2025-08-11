@@ -31,12 +31,12 @@ gdk_macos_drop_status (GdkDrop       *drop,
                        GdkDragAction  actions,
                        GdkDragAction  preferred)
 {
-  GdkMacosDrop *self = (GdkMacosDrop *)drop;
+  GdkMacosDrop *this = (GdkMacosDrop *)drop;
 
-  g_assert (GDK_IS_MACOS_DROP (self));
+  g_assert (GDK_IS_MACOS_DROP (this));
 
-  self->all_actions = actions;
-  self->preferred_action = preferred;
+  this->all_actions = actions;
+  this->preferred_action = preferred;
 }
 
 static void
@@ -77,12 +77,12 @@ gdk_macos_drop_finish (GdkDrop       *drop,
 static void
 gdk_macos_drop_finalize (GObject *object)
 {
-  GdkMacosDrop *self = (GdkMacosDrop *)object;
+  GdkMacosDrop *this = (GdkMacosDrop *)object;
 
-  if (self->pasteboard)
+  if (this->pasteboard)
     {
-      [self->pasteboard release];
-      self->pasteboard = NULL;
+      [this->pasteboard release];
+      this->pasteboard = NULL;
     }
 
   G_OBJECT_CLASS (gdk_macos_drop_parent_class)->finalize (object);
@@ -103,18 +103,18 @@ gdk_macos_drop_class_init (GdkMacosDropClass *klass)
 }
 
 static void
-gdk_macos_drop_init (GdkMacosDrop *self)
+gdk_macos_drop_init (GdkMacosDrop *this)
 {
 }
 
 void
-_gdk_macos_drop_update_actions (GdkMacosDrop       *self,
+_gdk_macos_drop_update_actions (GdkMacosDrop       *this,
                                 id<NSDraggingInfo>  info)
 {
   NSDragOperation op;
   GdkDragAction actions = 0;
 
-  g_assert (GDK_IS_MACOS_DROP (self));
+  g_assert (GDK_IS_MACOS_DROP (this));
 
   op = [info draggingSourceOperationMask];
 
@@ -127,7 +127,7 @@ _gdk_macos_drop_update_actions (GdkMacosDrop       *self,
   if (op & NSDragOperationMove)
     actions |= GDK_ACTION_MOVE;
 
-  gdk_drop_set_actions (GDK_DROP (self), actions);
+  gdk_drop_set_actions (GDK_DROP (this), actions);
 }
 
 GdkMacosDrop *
@@ -136,7 +136,7 @@ _gdk_macos_drop_new (GdkMacosSurface    *surface,
 {
   GdkDrag *drag = NULL;
   GdkContentFormats *content_formats;
-  GdkMacosDrop *self;
+  GdkMacosDrop *this;
   GdkDisplay *display;
   GdkDevice *device;
   GdkSeat *seat;
@@ -151,32 +151,32 @@ _gdk_macos_drop_new (GdkMacosSurface    *surface,
 
   content_formats = _gdk_macos_pasteboard_load_formats ([info draggingPasteboard]);
 
-  self = g_object_new (GDK_TYPE_MACOS_DROP,
+  this = g_object_new (GDK_TYPE_MACOS_DROP,
                        "device", device,
                        "drag", drag,
                        "formats", content_formats,
                        "surface", surface,
                        NULL);
 
-  self->pasteboard = [[info draggingPasteboard] retain];
+  this->pasteboard = [[info draggingPasteboard] retain];
 
-  _gdk_macos_drop_update_actions (self, info);
+  _gdk_macos_drop_update_actions (this, info);
 
   gdk_content_formats_unref (content_formats);
 
-  return g_steal_pointer (&self);
+  return g_steal_pointer (&this);
 }
 
 NSDragOperation
-_gdk_macos_drop_operation (GdkMacosDrop *self)
+_gdk_macos_drop_operation (GdkMacosDrop *this)
 {
-  if (self->preferred_action & GDK_ACTION_LINK)
+  if (this->preferred_action & GDK_ACTION_LINK)
     return NSDragOperationLink;
 
-  if (self->preferred_action & GDK_ACTION_MOVE)
+  if (this->preferred_action & GDK_ACTION_MOVE)
     return NSDragOperationMove;
 
-  if (self->preferred_action & GDK_ACTION_COPY)
+  if (this->preferred_action & GDK_ACTION_COPY)
     return NSDragOperationCopy;
   
   return NSDragOperationNone;

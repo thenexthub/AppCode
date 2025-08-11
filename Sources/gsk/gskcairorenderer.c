@@ -57,15 +57,15 @@ gsk_cairo_renderer_realize (GskRenderer  *renderer,
                             gboolean      attach,
                             GError      **error)
 {
-  GskCairoRenderer *self = GSK_CAIRO_RENDERER (renderer);
+  GskCairoRenderer *this = GSK_CAIRO_RENDERER (renderer);
 
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS
   if (surface)
-    self->cairo_context = gdk_surface_create_cairo_context (surface);
+    this->cairo_context = gdk_surface_create_cairo_context (surface);
 G_GNUC_END_IGNORE_DEPRECATIONS
-  if (attach && !gdk_draw_context_attach (GDK_DRAW_CONTEXT (self->cairo_context), error))
+  if (attach && !gdk_draw_context_attach (GDK_DRAW_CONTEXT (this->cairo_context), error))
     {
-      g_clear_object (&self->cairo_context);
+      g_clear_object (&this->cairo_context);
       return FALSE;
     }
 
@@ -75,13 +75,13 @@ G_GNUC_END_IGNORE_DEPRECATIONS
 static void
 gsk_cairo_renderer_unrealize (GskRenderer *renderer)
 {
-  GskCairoRenderer *self = GSK_CAIRO_RENDERER (renderer);
+  GskCairoRenderer *this = GSK_CAIRO_RENDERER (renderer);
 
-  if (self->cairo_context)
+  if (this->cairo_context)
     {
-      gdk_draw_context_detach (GDK_DRAW_CONTEXT (self->cairo_context));
+      gdk_draw_context_detach (GDK_DRAW_CONTEXT (this->cairo_context));
 
-      g_clear_object (&self->cairo_context);
+      g_clear_object (&this->cairo_context);
     }
 }
 
@@ -150,7 +150,7 @@ gsk_cairo_renderer_render (GskRenderer          *renderer,
                            GskRenderNode        *root,
                            const cairo_region_t *region)
 {
-  GskCairoRenderer *self = GSK_CAIRO_RENDERER (renderer);
+  GskCairoRenderer *this = GSK_CAIRO_RENDERER (renderer);
   graphene_rect_t opaque_tmp;
   const graphene_rect_t *opaque;
   cairo_t *cr;
@@ -159,13 +159,13 @@ gsk_cairo_renderer_render (GskRenderer          *renderer,
     opaque = &opaque_tmp;
   else
     opaque = NULL;
-  gdk_draw_context_begin_frame_full (GDK_DRAW_CONTEXT (self->cairo_context),
+  gdk_draw_context_begin_frame_full (GDK_DRAW_CONTEXT (this->cairo_context),
                                      NULL,
                                      GDK_MEMORY_U8,
                                      region,
                                      opaque);
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-  cr = gdk_cairo_context_cairo_create (self->cairo_context);
+  cr = gdk_cairo_context_cairo_create (this->cairo_context);
 G_GNUC_END_IGNORE_DEPRECATIONS
 
   g_return_if_fail (cr != NULL);
@@ -184,11 +184,11 @@ G_GNUC_END_IGNORE_DEPRECATIONS
       cairo_restore (cr);
     }
 
-  gsk_render_node_draw_with_color_state (root, cr, gdk_draw_context_get_color_state (GDK_DRAW_CONTEXT (self->cairo_context)));
+  gsk_render_node_draw_with_color_state (root, cr, gdk_draw_context_get_color_state (GDK_DRAW_CONTEXT (this->cairo_context)));
 
   cairo_destroy (cr);
 
-  gdk_draw_context_end_frame_full (GDK_DRAW_CONTEXT (self->cairo_context), NULL);
+  gdk_draw_context_end_frame_full (GDK_DRAW_CONTEXT (this->cairo_context), NULL);
 }
 
 static void
@@ -203,7 +203,7 @@ gsk_cairo_renderer_class_init (GskCairoRendererClass *klass)
 }
 
 static void
-gsk_cairo_renderer_init (GskCairoRenderer *self)
+gsk_cairo_renderer_init (GskCairoRenderer *this)
 {
 }
 

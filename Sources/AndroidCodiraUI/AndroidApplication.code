@@ -1,5 +1,5 @@
 //
-//  AndroidApplication.swift
+//  AndroidApplication.code
 //  AndroidAppCode
 //
 //  Created by Alsey Coleman Miller on 6/8/25.
@@ -8,13 +8,13 @@
 import AndroidKit
 import OpenCombineShim
 
-@JavaClass("com.pureswift.swiftandroid.Application")
+@JavaClass("com.pureswift.codeandroid.Application")
 open class Application: AndroidApp.Application {
     
     public internal(set) static var shared: Application!
 }
 
-@JavaImplementation("com.pureswift.swiftandroid.Application")
+@JavaImplementation("com.pureswift.codeandroid.Application")
 extension Application {
     
     @JavaMethod

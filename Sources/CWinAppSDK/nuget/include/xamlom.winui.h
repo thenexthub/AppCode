@@ -39,9 +39,9 @@
 
 #ifndef DECLSPEC_XFGVIRT
 #if defined(_CONTROL_FLOW_GUARD_XFG)
-#define DECLSPEC_XFGVIRT(base, func) __declspec(xfg_virtual(base, func))
+#define DECLSPEC_XFGVIRT(base, fn) __declspec(xfg_virtual(base, fn))
 #else
-#define DECLSPEC_XFGVIRT(base, func)
+#define DECLSPEC_XFGVIRT(base, fn)
 #endif
 #endif
 

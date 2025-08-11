@@ -93,15 +93,15 @@ G_DEFINE_TYPE (GtkAtSpiRoot, gtk_at_spi_root, G_TYPE_OBJECT)
 static void
 gtk_at_spi_root_finalize (GObject *gobject)
 {
-  GtkAtSpiRoot *self = GTK_AT_SPI_ROOT (gobject);
+  GtkAtSpiRoot *this = GTK_AT_SPI_ROOT (gobject);
 
-  g_clear_handle_id (&self->register_id, g_source_remove);
-  g_clear_pointer (&self->event_listeners, g_hash_table_unref);
+  g_clear_handle_id (&this->register_id, g_source_remove);
+  g_clear_pointer (&this->event_listeners, g_hash_table_unref);
 
-  g_free (self->bus_address);
-  g_free (self->base_path);
-  g_free (self->desktop_name);
-  g_free (self->desktop_path);
+  g_free (this->bus_address);
+  g_free (this->base_path);
+  g_free (this->desktop_name);
+  g_free (this->desktop_path);
 
   G_OBJECT_CLASS (gtk_at_spi_root_parent_class)->finalize (gobject);
 }
@@ -109,11 +109,11 @@ gtk_at_spi_root_finalize (GObject *gobject)
 static void
 gtk_at_spi_root_dispose (GObject *gobject)
 {
-  GtkAtSpiRoot *self = GTK_AT_SPI_ROOT (gobject);
+  GtkAtSpiRoot *this = GTK_AT_SPI_ROOT (gobject);
 
-  g_clear_object (&self->cache);
-  g_clear_object (&self->connection);
-  g_clear_pointer (&self->queued_contexts, g_list_free);
+  g_clear_object (&this->cache);
+  g_clear_object (&this->connection);
+  g_clear_pointer (&this->queued_contexts, g_list_free);
 
   G_OBJECT_CLASS (gtk_at_spi_root_parent_class)->dispose (gobject);
 }
@@ -124,12 +124,12 @@ gtk_at_spi_root_set_property (GObject      *gobject,
                               const GValue *value,
                               GParamSpec   *pspec)
 {
-  GtkAtSpiRoot *self = GTK_AT_SPI_ROOT (gobject);
+  GtkAtSpiRoot *this = GTK_AT_SPI_ROOT (gobject);
 
   switch (prop_id)
     {
     case PROP_BUS_ADDRESS:
-      self->bus_address = g_value_dup_string (value);
+      this->bus_address = g_value_dup_string (value);
       break;
 
     default:
@@ -143,12 +143,12 @@ gtk_at_spi_root_get_property (GObject    *gobject,
                               GValue     *value,
                               GParamSpec *pspec)
 {
-  GtkAtSpiRoot *self = GTK_AT_SPI_ROOT (gobject);
+  GtkAtSpiRoot *this = GTK_AT_SPI_ROOT (gobject);
 
   switch (prop_id)
     {
     case PROP_BUS_ADDRESS:
-      g_value_set_string (value, self->bus_address);
+      g_value_set_string (value, this->bus_address);
       break;
 
     default:
@@ -205,17 +205,17 @@ handle_application_get_property (GDBusConnection       *connection,
                                  GError               **error,
                                  gpointer               user_data)
 {
-  GtkAtSpiRoot *self = user_data;
+  GtkAtSpiRoot *this = user_data;
   GVariant *res = NULL;
 
   if (g_strcmp0 (property_name, "Id") == 0)
-    res = g_variant_new_int32 (self->application_id);
+    res = g_variant_new_int32 (this->application_id);
   else if (g_strcmp0 (property_name, "ToolkitName") == 0)
-    res = g_variant_new_string (self->toolkit_name);
+    res = g_variant_new_string (this->toolkit_name);
   else if (g_strcmp0 (property_name, "Version") == 0)
-    res = g_variant_new_string (self->version);
+    res = g_variant_new_string (this->version);
   else if (g_strcmp0 (property_name, "AtspiVersion") == 0)
-    res = g_variant_new_string (self->atspi_version);
+    res = g_variant_new_string (this->atspi_version);
   else
     g_set_error (error, G_IO_ERROR, G_IO_ERROR_NOT_SUPPORTED,
                  "Unknown property '%s'", property_name);
@@ -233,11 +233,11 @@ handle_application_set_property (GDBusConnection       *connection,
                                  GError               **error,
                                  gpointer               user_data)
 {
-  GtkAtSpiRoot *self = user_data;
+  GtkAtSpiRoot *this = user_data;
 
   if (g_strcmp0 (property_name, "Id") == 0)
     {
-      g_variant_get (value, "i", &(self->application_id));
+      g_variant_get (value, "i", &(this->application_id));
     }
   else
     {
@@ -259,7 +259,7 @@ handle_accessible_method (GDBusConnection       *connection,
                           GDBusMethodInvocation *invocation,
                           gpointer               user_data)
 {
-  GtkAtSpiRoot *self = user_data;
+  GtkAtSpiRoot *this = user_data;
 
   if (g_strcmp0 (method_name, "GetRole") == 0)
     g_dbus_method_invocation_return_value (invocation, g_variant_new ("(u)", ATSPI_ROLE_APPLICATION));
@@ -292,8 +292,8 @@ handle_accessible_method (GDBusConnection       *connection,
     {
       g_dbus_method_invocation_return_value (invocation,
                                              g_variant_new ("((so))",
-                                                            self->desktop_name,
-                                                            self->desktop_path));
+                                                            this->desktop_name,
+                                                            this->desktop_path));
     }
   else if (g_strcmp0 (method_name, "GetChildAtIndex") == 0)
     {
@@ -302,10 +302,10 @@ handle_accessible_method (GDBusConnection       *connection,
       g_variant_get (parameters, "(i)", &idx);
 
       GtkWidget *window = NULL;
-      guint n_toplevels = g_list_model_get_n_items (self->toplevels);
+      guint n_toplevels = g_list_model_get_n_items (this->toplevels);
       for (guint i = 0; i < n_toplevels; i++)
         {
-          window = g_list_model_get_item (self->toplevels, i);
+          window = g_list_model_get_item (this->toplevels, i);
 
           g_object_unref (window);
 
@@ -323,7 +323,7 @@ handle_accessible_method (GDBusConnection       *connection,
 
       GtkATContext *context = gtk_accessible_get_at_context (GTK_ACCESSIBLE (window));
 
-      const char *name = g_dbus_connection_get_unique_name (self->connection);
+      const char *name = g_dbus_connection_get_unique_name (this->connection);
       const char *path = gtk_at_spi_context_get_context_path (GTK_AT_SPI_CONTEXT (context));
 
       g_dbus_method_invocation_return_value (invocation, g_variant_new ("((so))", name, path));
@@ -334,10 +334,10 @@ handle_accessible_method (GDBusConnection       *connection,
     {
       GVariantBuilder builder = G_VARIANT_BUILDER_INIT (G_VARIANT_TYPE ("a(so)"));
 
-      guint n_toplevels = g_list_model_get_n_items (self->toplevels);
+      guint n_toplevels = g_list_model_get_n_items (this->toplevels);
       for (guint i = 0; i < n_toplevels; i++)
         {
-          GtkWidget *window = g_list_model_get_item (self->toplevels, i);
+          GtkWidget *window = g_list_model_get_item (this->toplevels, i);
 
           g_object_unref (window);
 
@@ -345,7 +345,7 @@ handle_accessible_method (GDBusConnection       *connection,
             continue;
 
           GtkATContext *context = gtk_accessible_get_at_context (GTK_ACCESSIBLE (window));
-          const char *name = g_dbus_connection_get_unique_name (self->connection);
+          const char *name = g_dbus_connection_get_unique_name (this->connection);
           const char *path = gtk_at_spi_context_get_context_path (GTK_AT_SPI_CONTEXT (context));
 
           g_variant_builder_add (&builder, "(so)", name, path);
@@ -384,7 +384,7 @@ handle_accessible_get_property (GDBusConnection       *connection,
                                 GError               **error,
                                 gpointer               user_data)
 {
-  GtkAtSpiRoot *self = user_data;
+  GtkAtSpiRoot *this = user_data;
   GVariant *res = NULL;
 
   if (g_strcmp0 (property_name, "Name") == 0)
@@ -406,12 +406,12 @@ handle_accessible_get_property (GDBusConnection       *connection,
     res = gtk_at_spi_null_ref ();
   else if (g_strcmp0 (property_name, "ChildCount") == 0)
     {
-      guint n_toplevels = g_list_model_get_n_items (self->toplevels);
+      guint n_toplevels = g_list_model_get_n_items (this->toplevels);
       int n_children = 0;
 
       for (guint i = 0; i < n_toplevels; i++)
         {
-          GtkWidget *window = g_list_model_get_item (self->toplevels, i);
+          GtkWidget *window = g_list_model_get_item (this->toplevels, i);
 
           if (gtk_widget_get_visible (window))
             n_children += 1;
@@ -441,7 +441,7 @@ static const GDBusInterfaceVTable root_accessible_vtable = {
 };
 
 void
-gtk_at_spi_root_child_changed (GtkAtSpiRoot             *self,
+gtk_at_spi_root_child_changed (GtkAtSpiRoot             *this,
                                GtkAccessibleChildChange  change,
                                GtkAccessible            *child)
 {
@@ -450,12 +450,12 @@ gtk_at_spi_root_child_changed (GtkAtSpiRoot             *self,
   GVariant *window_ref;
   GtkAccessibleChildState state;
 
-  if (!self->toplevels)
+  if (!this->toplevels)
     return;
 
-  for (i = 0, n = g_list_model_get_n_items (self->toplevels); i < n; i++)
+  for (i = 0, n = g_list_model_get_n_items (this->toplevels); i < n; i++)
     {
-      GtkAccessible *item = g_list_model_get_item (self->toplevels, i);
+      GtkAccessible *item = g_list_model_get_item (this->toplevels, i);
 
       g_object_unref (item);
 
@@ -493,8 +493,8 @@ gtk_at_spi_root_child_changed (GtkAtSpiRoot             *self,
       g_assert_not_reached ();
     }
 
-  gtk_at_spi_emit_children_changed (self->connection,
-                                    self->root_path,
+  gtk_at_spi_emit_children_changed (this->connection,
+                                    this->root_path,
                                     state,
                                     idx,
                                     window_ref);
@@ -509,7 +509,7 @@ on_event_listener_registered (GDBusConnection *connection,
                               GVariant *parameters,
                               gpointer user_data)
 {
-  GtkAtSpiRoot *self = user_data;
+  GtkAtSpiRoot *this = user_data;
 
   if (g_strcmp0 (object_path, ATSPI_REGISTRY_PATH) == 0 &&
       g_strcmp0 (interface_name, "org.a11y.atspi.Registry") == 0 &&
@@ -519,14 +519,14 @@ on_event_listener_registered (GDBusConnection *connection,
       const char *event_name = NULL;
       unsigned int *count;
 
-      if (self->event_listeners == NULL)
-        self->event_listeners = g_hash_table_new_full (g_str_hash, g_str_equal,
+      if (this->event_listeners == NULL)
+        this->event_listeners = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                        g_free,
                                                        g_free);
 
       g_variant_get (parameters, "(&s&sas)", &sender, &event_name, NULL);
 
-      count = g_hash_table_lookup (self->event_listeners, sender);
+      count = g_hash_table_lookup (this->event_listeners, sender);
       if (count == NULL)
         {
           GTK_DEBUG (A11Y, "Registering event listener (%s, %s) on the a11y bus",
@@ -534,7 +534,7 @@ on_event_listener_registered (GDBusConnection *connection,
                      event_name[0] != 0 ? event_name : "(none)");
           count = g_new (unsigned int, 1);
           *count = 1;
-          g_hash_table_insert (self->event_listeners, g_strdup (sender), count);
+          g_hash_table_insert (this->event_listeners, g_strdup (sender), count);
         }
       else if (*count == G_MAXUINT)
         {
@@ -557,7 +557,7 @@ on_event_listener_deregistered (GDBusConnection *connection,
                                 GVariant *parameters,
                                 gpointer user_data)
 {
-  GtkAtSpiRoot *self = user_data;
+  GtkAtSpiRoot *this = user_data;
 
   if (g_strcmp0 (object_path, ATSPI_REGISTRY_PATH) == 0 &&
       g_strcmp0 (interface_name, "org.a11y.atspi.Registry") == 0 &&
@@ -569,7 +569,7 @@ on_event_listener_deregistered (GDBusConnection *connection,
 
       g_variant_get (parameters, "(&s&s)", &sender, &event);
 
-      if (G_UNLIKELY (self->event_listeners == NULL))
+      if (G_UNLIKELY (this->event_listeners == NULL))
         {
           GTK_DEBUG (A11Y,
                      "Received org.a11y.atspi.Registry::EventListenerDeregistered for "
@@ -579,7 +579,7 @@ on_event_listener_deregistered (GDBusConnection *connection,
           return;
         }
 
-      count = g_hash_table_lookup (self->event_listeners, sender);
+      count = g_hash_table_lookup (this->event_listeners, sender);
       if (G_UNLIKELY (count == NULL))
         {
           GTK_DEBUG (A11Y,
@@ -596,7 +596,7 @@ on_event_listener_deregistered (GDBusConnection *connection,
       else
         {
           GTK_DEBUG (A11Y, "Deregistering event listener %s on the a11y bus", sender);
-          g_hash_table_remove (self->event_listeners, sender);
+          g_hash_table_remove (this->event_listeners, sender);
         }
     }
 }
@@ -675,13 +675,13 @@ on_registered_events_reply (GObject *gobject,
       return;
     }
 
-  GtkAtSpiRoot *self = data;
+  GtkAtSpiRoot *this = data;
   GVariant *listeners = g_variant_get_child_value (reply, 0);
   GVariantIter *iter;
   const char *sender, *event_name;
 
-  if (self->event_listeners == NULL)
-    self->event_listeners = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+  if (this->event_listeners == NULL)
+    this->event_listeners = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 
   g_variant_get (listeners, "a(ss)", &iter);
   while (g_variant_iter_loop (iter, "(&s&s)", &sender, &event_name))
@@ -692,12 +692,12 @@ on_registered_events_reply (GObject *gobject,
                  sender,
                  event_name[0] != 0 ? event_name : "(none)");
 
-      count = g_hash_table_lookup (self->event_listeners, sender);
+      count = g_hash_table_lookup (this->event_listeners, sender);
       if (count == NULL)
         {
           count = g_new (unsigned int, 1);
           *count = 1;
-          g_hash_table_insert (self->event_listeners, g_strdup (sender), count);
+          g_hash_table_insert (this->event_listeners, g_strdup (sender), count);
         }
       else if (*count == G_MAXUINT)
         {
@@ -723,12 +723,12 @@ on_registration_reply (GObject      *gobject,
                        gpointer      user_data)
 {
   RegistrationData *data = user_data;
-  GtkAtSpiRoot *self = data->root;
+  GtkAtSpiRoot *this = data->root;
 
   GError *error = NULL;
   GVariant *reply = g_dbus_connection_call_finish (G_DBUS_CONNECTION (gobject), result, &error);
 
-  self->register_id = 0;
+  this->register_id = 0;
 
   if (error != NULL)
     {
@@ -740,34 +740,34 @@ on_registration_reply (GObject      *gobject,
   if (reply != NULL)
     {
       g_variant_get (reply, "((so))",
-                     &self->desktop_name,
-                     &self->desktop_path);
+                     &this->desktop_name,
+                     &this->desktop_path);
       g_variant_unref (reply);
 
       GTK_DEBUG (A11Y, "Connected to the a11y registry at (%s, %s)",
-                       self->desktop_name,
-                       self->desktop_path);
+                       this->desktop_name,
+                       this->desktop_path);
     }
 
   /* Register the cache object */
-  self->cache = gtk_at_spi_cache_new (self->connection, ATSPI_CACHE_PATH, self);
+  this->cache = gtk_at_spi_cache_new (this->connection, ATSPI_CACHE_PATH, this);
 
   /* Drain the list of queued GtkAtSpiContexts, and add them to the cache */
-  if (self->queued_contexts != NULL)
+  if (this->queued_contexts != NULL)
     {
-      self->queued_contexts = g_list_reverse (self->queued_contexts);
-      for (GList *l = self->queued_contexts; l != NULL; l = l->next)
+      this->queued_contexts = g_list_reverse (this->queued_contexts);
+      for (GList *l = this->queued_contexts; l != NULL; l = l->next)
         {
           if (data->register_func != NULL)
-            data->register_func (self, l->data);
+            data->register_func (this, l->data);
 
-          gtk_at_spi_cache_add_context (self->cache, l->data);
+          gtk_at_spi_cache_add_context (this->cache, l->data);
         }
 
-      g_clear_pointer (&self->queued_contexts, g_list_free);
+      g_clear_pointer (&this->queued_contexts, g_list_free);
     }
 
-  self->toplevels = gtk_window_get_toplevels ();
+  this->toplevels = gtk_window_get_toplevels ();
 
   g_free (data);
 
@@ -781,12 +781,12 @@ on_registration_reply (GObject      *gobject,
       !check_flatpak_portal_version (7))
     {
       GTK_DEBUG (A11Y, "Sandboxed does not allow event listener registration");
-      self->can_use_event_listeners = false;
+      this->can_use_event_listeners = false;
       return;
     }
 
   /* Subscribe to notifications on the registered event listeners */
-  g_dbus_connection_signal_subscribe (self->connection,
+  g_dbus_connection_signal_subscribe (this->connection,
                                       "org.a11y.atspi.Registry",
                                       "org.a11y.atspi.Registry",
                                       "EventListenerRegistered",
@@ -794,9 +794,9 @@ on_registration_reply (GObject      *gobject,
                                       NULL,
                                       G_DBUS_SIGNAL_FLAGS_NONE,
                                       on_event_listener_registered,
-                                      self,
+                                      this,
                                       NULL);
-  g_dbus_connection_signal_subscribe (self->connection,
+  g_dbus_connection_signal_subscribe (this->connection,
                                       "org.a11y.atspi.Registry",
                                       "org.a11y.atspi.Registry",
                                       "EventListenerDeregistered",
@@ -804,7 +804,7 @@ on_registration_reply (GObject      *gobject,
                                       NULL,
                                       G_DBUS_SIGNAL_FLAGS_NONE,
                                       on_event_listener_deregistered,
-                                      self,
+                                      this,
                                       NULL);
 
   /* Get the list of ATs listening to events, in case they were started
@@ -812,7 +812,7 @@ on_registration_reply (GObject      *gobject,
    * as possible until we know something is listening on the accessibility
    * bus
    */
-  g_dbus_connection_call (self->connection,
+  g_dbus_connection_call (this->connection,
                           "org.a11y.atspi.Registry",
                           ATSPI_REGISTRY_PATH,
                           "org.a11y.atspi.Registry",
@@ -822,16 +822,16 @@ on_registration_reply (GObject      *gobject,
                           G_DBUS_CALL_FLAGS_NONE, -1,
                           NULL,
                           on_registered_events_reply,
-                          self);
+                          this);
 
-  self->can_use_event_listeners = true;
+  this->can_use_event_listeners = true;
 }
 
 static gboolean
 root_register (gpointer user_data)
 {
   RegistrationData *data = user_data;
-  GtkAtSpiRoot *self = data->root;
+  GtkAtSpiRoot *this = data->root;
   const char *unique_name;
 
   /* Register the root element; every application has a single root, so we only
@@ -851,38 +851,38 @@ root_register (gpointer user_data)
    *  4. the registration concludes when the Embed method returns us the desktop
    *     name and object path
    */
-  self->toolkit_name = "GTK";
-  self->version = PACKAGE_VERSION;
-  self->atspi_version = ATSPI_VERSION;
-  self->root_path = ATSPI_ROOT_PATH;
+  this->toolkit_name = "GTK";
+  this->version = PACKAGE_VERSION;
+  this->atspi_version = ATSPI_VERSION;
+  this->root_path = ATSPI_ROOT_PATH;
 
-  unique_name = g_dbus_connection_get_unique_name (self->connection);
+  unique_name = g_dbus_connection_get_unique_name (this->connection);
 
-  g_dbus_connection_register_object (self->connection,
-                                     self->root_path,
+  g_dbus_connection_register_object (this->connection,
+                                     this->root_path,
                                      (GDBusInterfaceInfo *) &atspi_application_interface,
                                      &root_application_vtable,
-                                     self,
+                                     this,
                                      NULL,
                                      NULL);
-  g_dbus_connection_register_object (self->connection,
-                                     self->root_path,
+  g_dbus_connection_register_object (this->connection,
+                                     this->root_path,
                                      (GDBusInterfaceInfo *) &atspi_accessible_interface,
                                      &root_accessible_vtable,
-                                     self,
+                                     this,
                                      NULL,
                                      NULL);
 
   GTK_DEBUG (A11Y, "Registering (%s, %s) on the a11y bus",
                    unique_name,
-                   self->root_path);
+                   this->root_path);
 
-  g_dbus_connection_call (self->connection,
+  g_dbus_connection_call (this->connection,
                           "org.a11y.atspi.Registry",
                           ATSPI_ROOT_PATH,
                           "org.a11y.atspi.Socket",
                           "Embed",
-                          g_variant_new ("((so))", unique_name, self->root_path),
+                          g_variant_new ("((so))", unique_name, this->root_path),
                           G_VARIANT_TYPE ("((so))"),
                           G_DBUS_CALL_FLAGS_NONE, -1,
                           NULL,
@@ -894,67 +894,67 @@ root_register (gpointer user_data)
 
 /*< private >
  * gtk_at_spi_root_queue_register:
- * @self: a `GtkAtSpiRoot`
+ * @this: a `GtkAtSpiRoot`
  * @context: the AtSpi context to register
- * @func: the function to call when the root has been registered
+ * @fn: the function to call when the root has been registered
  *
  * Queues the registration of the root object on the AT-SPI bus.
  */
 void
-gtk_at_spi_root_queue_register (GtkAtSpiRoot             *self,
+gtk_at_spi_root_queue_register (GtkAtSpiRoot             *this,
                                 GtkAtSpiContext          *context,
-                                GtkAtSpiRootRegisterFunc  func)
+                                GtkAtSpiRootRegisterFunc  fn)
 {
   /* The cache is available if the root has finished registering itself; if we
    * are still waiting for the registration to finish, add the context to a queue
    */
-  if (self->cache != NULL)
+  if (this->cache != NULL)
     {
-      if (func != NULL)
-        func (self, context);
+      if (fn != NULL)
+        fn (this, context);
 
-      gtk_at_spi_cache_add_context (self->cache, context);
+      gtk_at_spi_cache_add_context (this->cache, context);
       return;
     }
   else
     {
-      if (g_list_find (self->queued_contexts, context) == NULL)
-        self->queued_contexts = g_list_prepend (self->queued_contexts, context);
+      if (g_list_find (this->queued_contexts, context) == NULL)
+        this->queued_contexts = g_list_prepend (this->queued_contexts, context);
     }
 
   /* Ignore multiple registration requests while one is already in flight */
-  if (self->register_id != 0)
+  if (this->register_id != 0)
     return;
 
   RegistrationData *data = g_new (RegistrationData, 1);
-  data->root = self;
-  data->register_func = func;
+  data->root = this;
+  data->register_func = fn;
 
-  self->register_id = g_idle_add (root_register, data);
-  gdk_source_set_static_name_by_id (self->register_id, "[gtk] ATSPI root registration");
+  this->register_id = g_idle_add (root_register, data);
+  gdk_source_set_static_name_by_id (this->register_id, "[gtk] ATSPI root registration");
 }
 
 void
-gtk_at_spi_root_unregister (GtkAtSpiRoot    *self,
+gtk_at_spi_root_unregister (GtkAtSpiRoot    *this,
                             GtkAtSpiContext *context)
 {
-  if (self->queued_contexts != NULL)
-    self->queued_contexts = g_list_remove (self->queued_contexts, context);
+  if (this->queued_contexts != NULL)
+    this->queued_contexts = g_list_remove (this->queued_contexts, context);
 
-  if (self->cache != NULL)
-    gtk_at_spi_cache_remove_context (self->cache, context);
+  if (this->cache != NULL)
+    gtk_at_spi_cache_remove_context (this->cache, context);
 }
 
 static void
 gtk_at_spi_root_constructed (GObject *gobject)
 {
-  GtkAtSpiRoot *self = GTK_AT_SPI_ROOT (gobject);
+  GtkAtSpiRoot *this = GTK_AT_SPI_ROOT (gobject);
 
   GError *error = NULL;
 
   /* The accessibility bus is a fully managed bus */
-  self->connection =
-    g_dbus_connection_new_for_address_sync (self->bus_address,
+  this->connection =
+    g_dbus_connection_new_for_address_sync (this->bus_address,
                                             G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT |
                                             G_DBUS_CONNECTION_FLAGS_MESSAGE_BUS_CONNECTION,
                                             NULL, NULL,
@@ -963,7 +963,7 @@ gtk_at_spi_root_constructed (GObject *gobject)
   if (error != NULL)
     {
       g_critical ("Unable to connect to the accessibility bus at '%s': %s",
-                  self->bus_address,
+                  this->bus_address,
                   error->message);
       g_error_free (error);
       goto out;
@@ -980,10 +980,10 @@ gtk_at_spi_root_constructed (GObject *gobject)
       const char *app_path = g_application_get_dbus_object_path (application);
 
       /* No need to validate the path */
-      self->base_path = g_strconcat (app_path, "/a11y", NULL);
+      this->base_path = g_strconcat (app_path, "/a11y", NULL);
     }
 
-  if (self->base_path == NULL)
+  if (this->base_path == NULL)
     {
       const char *program_name = g_get_prgname ();
 
@@ -995,7 +995,7 @@ gtk_at_spi_root_constructed (GObject *gobject)
       else
         base_name = g_strdup (program_name);
 
-      self->base_path = g_strconcat ("/org/gtk/application/",
+      this->base_path = g_strconcat ("/org/gtk/application/",
                                      base_name,
                                      "/a11y",
                                      NULL);
@@ -1005,10 +1005,10 @@ gtk_at_spi_root_constructed (GObject *gobject)
       /* Turn potentially invalid program names into something that can be
        * used as a DBus path
        */
-      size_t len = strlen (self->base_path);
+      size_t len = strlen (this->base_path);
       for (size_t i = 0; i < len; i++)
         {
-          char c = self->base_path[i];
+          char c = this->base_path[i];
 
           if (c == '/')
             continue;
@@ -1019,7 +1019,7 @@ gtk_at_spi_root_constructed (GObject *gobject)
               (c == '_'))
             continue;
 
-          self->base_path[i] = '_';
+          this->base_path[i] = '_';
         }
     }
 
@@ -1049,7 +1049,7 @@ gtk_at_spi_root_class_init (GtkAtSpiRootClass *klass)
 }
 
 static void
-gtk_at_spi_root_init (GtkAtSpiRoot *self)
+gtk_at_spi_root_init (GtkAtSpiRoot *this)
 {
 }
 
@@ -1064,56 +1064,56 @@ gtk_at_spi_root_new (const char *bus_address)
 }
 
 GDBusConnection *
-gtk_at_spi_root_get_connection (GtkAtSpiRoot *self)
+gtk_at_spi_root_get_connection (GtkAtSpiRoot *this)
 {
-  g_return_val_if_fail (GTK_IS_AT_SPI_ROOT (self), NULL);
+  g_return_val_if_fail (GTK_IS_AT_SPI_ROOT (this), NULL);
 
-  return self->connection;
+  return this->connection;
 }
 
 GtkAtSpiCache *
-gtk_at_spi_root_get_cache (GtkAtSpiRoot *self)
+gtk_at_spi_root_get_cache (GtkAtSpiRoot *this)
 {
-  g_return_val_if_fail (GTK_IS_AT_SPI_ROOT (self), NULL);
+  g_return_val_if_fail (GTK_IS_AT_SPI_ROOT (this), NULL);
 
-  return self->cache;
+  return this->cache;
 }
 
 /*< private >
  * gtk_at_spi_root_to_ref:
- * @self: a `GtkAtSpiRoot`
+ * @this: a `GtkAtSpiRoot`
  *
  * Returns an ATSPI object reference for the `GtkAtSpiRoot` node.
  *
  * Returns: (transfer floating): a `GVariant` with the root reference
  */
 GVariant *
-gtk_at_spi_root_to_ref (GtkAtSpiRoot *self)
+gtk_at_spi_root_to_ref (GtkAtSpiRoot *this)
 {
-  g_return_val_if_fail (GTK_IS_AT_SPI_ROOT (self), NULL);
+  g_return_val_if_fail (GTK_IS_AT_SPI_ROOT (this), NULL);
 
   return g_variant_new ("(so)",
-                        g_dbus_connection_get_unique_name (self->connection),
-                        self->root_path);
+                        g_dbus_connection_get_unique_name (this->connection),
+                        this->root_path);
 }
 
 const char *
-gtk_at_spi_root_get_base_path (GtkAtSpiRoot *self)
+gtk_at_spi_root_get_base_path (GtkAtSpiRoot *this)
 {
-  g_return_val_if_fail (GTK_IS_AT_SPI_ROOT (self), NULL);
+  g_return_val_if_fail (GTK_IS_AT_SPI_ROOT (this), NULL);
 
-  return self->base_path;
+  return this->base_path;
 }
 
 gboolean
-gtk_at_spi_root_has_event_listeners (GtkAtSpiRoot *self)
+gtk_at_spi_root_has_event_listeners (GtkAtSpiRoot *this)
 {
-  g_return_val_if_fail (GTK_IS_AT_SPI_ROOT (self), FALSE);
+  g_return_val_if_fail (GTK_IS_AT_SPI_ROOT (this), FALSE);
 
   /* If we can't rely on event listeners, we default to being chatty */
-  if (!self->can_use_event_listeners)
+  if (!this->can_use_event_listeners)
     return TRUE;
 
-  return self->event_listeners != NULL &&
-    g_hash_table_size (self->event_listeners) != 0;
+  return this->event_listeners != NULL &&
+    g_hash_table_size (this->event_listeners) != 0;
 }

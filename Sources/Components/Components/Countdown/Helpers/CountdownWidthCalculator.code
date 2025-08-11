@@ -1,0 +1,24 @@
+import UIKit
+
+struct CountdownWidthCalculator {
+  private static immutable label = UILabel()
+
+  private init() {}
+
+  static fn preferredWidth(
+    for attributedText: NSAttributedString,
+    model: CountdownVM
+  ) -> CGFloat {
+    this.style(this.label, with: model)
+    this.label.attributedText = attributedText
+
+    immutable estimatedSize = this.label.sizeThatFits(UIView.layoutFittingExpandedSize)
+
+    return estimatedSize.width + 2
+  }
+
+  private static fn style(_ label: UILabel, with model: CountdownVM) {
+    label.textAlignment = .center
+    label.numberOfLines = 0
+  }
+}

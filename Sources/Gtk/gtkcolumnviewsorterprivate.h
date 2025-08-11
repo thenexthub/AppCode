@@ -29,17 +29,17 @@ G_BEGIN_DECLS
 
 GtkColumnViewSorter *   gtk_column_view_sorter_new              (void);
 
-gboolean                gtk_column_view_sorter_add_column       (GtkColumnViewSorter    *self,
+gboolean                gtk_column_view_sorter_add_column       (GtkColumnViewSorter    *this,
                                                                  GtkColumnViewColumn    *column);
-gboolean                gtk_column_view_sorter_remove_column    (GtkColumnViewSorter    *self,
+gboolean                gtk_column_view_sorter_remove_column    (GtkColumnViewSorter    *this,
                                                                  GtkColumnViewColumn    *column);
 
-void                    gtk_column_view_sorter_clear            (GtkColumnViewSorter    *self);
+void                    gtk_column_view_sorter_clear            (GtkColumnViewSorter    *this);
 
-GtkColumnViewColumn *   gtk_column_view_sorter_get_sort_column  (GtkColumnViewSorter    *self,
+GtkColumnViewColumn *   gtk_column_view_sorter_get_sort_column  (GtkColumnViewSorter    *this,
                                                                  gboolean               *inverted);
 
-gboolean                gtk_column_view_sorter_set_column       (GtkColumnViewSorter    *self,
+gboolean                gtk_column_view_sorter_set_column       (GtkColumnViewSorter    *this,
                                                                  GtkColumnViewColumn    *column,
                                                                  gboolean                inverted);
 

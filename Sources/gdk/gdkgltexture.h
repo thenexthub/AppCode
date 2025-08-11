@@ -48,7 +48,7 @@ GdkTexture *            gdk_gl_texture_new                     (GdkGLContext    
                                                                 gpointer         data);
 
 GDK_AVAILABLE_IN_ALL
-void                    gdk_gl_texture_release                 (GdkGLTexture    *self);
+void                    gdk_gl_texture_release                 (GdkGLTexture    *this);
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GdkGLTexture, g_object_unref)
 

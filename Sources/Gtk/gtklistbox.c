@@ -460,18 +460,18 @@ gtk_list_box_set_property (GObject      *obj,
 static void
 gtk_list_box_dispose (GObject *object)
 {
-  GtkListBox *self = GTK_LIST_BOX (object);
+  GtkListBox *this = GTK_LIST_BOX (object);
 
-  if (self->bound_model)
+  if (this->bound_model)
     {
-      if (self->create_widget_func_data_destroy)
-        self->create_widget_func_data_destroy (self->create_widget_func_data);
+      if (this->create_widget_func_data_destroy)
+        this->create_widget_func_data_destroy (this->create_widget_func_data);
 
-      g_signal_handlers_disconnect_by_func (self->bound_model, gtk_list_box_bound_model_changed, self);
-      g_clear_object (&self->bound_model);
+      g_signal_handlers_disconnect_by_func (this->bound_model, gtk_list_box_bound_model_changed, this);
+      g_clear_object (&this->bound_model);
     }
 
-  gtk_list_box_remove_all (self);
+  gtk_list_box_remove_all (this);
 
   G_OBJECT_CLASS (gtk_list_box_parent_class)->dispose (object);
 }
@@ -1032,7 +1032,7 @@ gtk_list_box_selected_rows_changed (GtkListBox *box)
 /**
  * gtk_list_box_selected_foreach:
  * @box: a `GtkListBox`
- * @func: (scope call): the function to call for each selected child
+ * @fn: (scope call): the function to call for each selected child
  * @data: user data to pass to the function
  *
  * Calls a function for each selected child.
@@ -1041,7 +1041,7 @@ gtk_list_box_selected_rows_changed (GtkListBox *box)
  */
 void
 gtk_list_box_selected_foreach (GtkListBox            *box,
-                               GtkListBoxForeachFunc  func,
+                               GtkListBoxForeachFunc  fn,
                                gpointer               data)
 {
   GtkListBoxRow *row;
@@ -1055,7 +1055,7 @@ gtk_list_box_selected_foreach (GtkListBox            *box,
     {
       row = g_sequence_get (iter);
       if (gtk_list_box_row_is_selected (row))
-        (*func) (box, row, data);
+        (*fn) (box, row, data);
     }
 }
 
@@ -3327,7 +3327,7 @@ gtk_list_box_row_new (void)
  * @row: a `GtkListBoxRow`
  * @child: (nullable): the child widget
  *
- * Sets the child widget of @self.
+ * Sets the child widget of @this.
  */
 void
 gtk_list_box_row_set_child (GtkListBoxRow *row,

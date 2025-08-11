@@ -399,11 +399,11 @@ static void         gtk_tree_model_sort_set_sort_column_id    (GtkTreeSortable  
 							       GtkSortType        order);
 static void         gtk_tree_model_sort_set_sort_func         (GtkTreeSortable        *sortable,
 							       int                     sort_column_id,
-							       GtkTreeIterCompareFunc  func,
+							       GtkTreeIterCompareFunc  fn,
 							       gpointer                data,
 							       GDestroyNotify          destroy);
 static void         gtk_tree_model_sort_set_default_sort_func (GtkTreeSortable        *sortable,
-							       GtkTreeIterCompareFunc  func,
+							       GtkTreeIterCompareFunc  fn,
 							       gpointer                data,
 							       GDestroyNotify          destroy);
 static gboolean     gtk_tree_model_sort_has_default_sort_func (GtkTreeSortable     *sortable);
@@ -672,9 +672,9 @@ fill_sort_data (SortData         *data,
 					       priv->sort_column_id);
 
       g_return_if_fail (header != NULL);
-      g_return_if_fail (header->func != NULL);
+      g_return_if_fail (header->fn != NULL);
 
-      data->sort_func = header->func;
+      data->sort_func = header->fn;
       data->sort_data = header->data;
     }
   else
@@ -1704,7 +1704,7 @@ gtk_tree_model_sort_set_sort_column_id (GtkTreeSortable *sortable,
 
           /* we want to make sure that we have a function */
           g_return_if_fail (header != NULL);
-          g_return_if_fail (header->func != NULL);
+          g_return_if_fail (header->fn != NULL);
         }
       else
         g_return_if_fail (priv->default_sort_func != NULL);
@@ -1721,7 +1721,7 @@ gtk_tree_model_sort_set_sort_column_id (GtkTreeSortable *sortable,
 static void
 gtk_tree_model_sort_set_sort_func (GtkTreeSortable        *sortable,
 				   int                     sort_column_id,
-				   GtkTreeIterCompareFunc  func,
+				   GtkTreeIterCompareFunc  fn,
 				   gpointer                data,
 				   GDestroyNotify          destroy)
 {
@@ -1730,7 +1730,7 @@ gtk_tree_model_sort_set_sort_func (GtkTreeSortable        *sortable,
 
   priv->sort_list = _gtk_tree_data_list_set_header (priv->sort_list,
 						    sort_column_id,
-						    func, data, destroy);
+						    fn, data, destroy);
 
   if (priv->sort_column_id == sort_column_id)
     gtk_tree_model_sort_sort (tree_model_sort);
@@ -1738,7 +1738,7 @@ gtk_tree_model_sort_set_sort_func (GtkTreeSortable        *sortable,
 
 static void
 gtk_tree_model_sort_set_default_sort_func (GtkTreeSortable        *sortable,
-					   GtkTreeIterCompareFunc  func,
+					   GtkTreeIterCompareFunc  fn,
 					   gpointer                data,
 					   GDestroyNotify          destroy)
 {
@@ -1753,7 +1753,7 @@ gtk_tree_model_sort_set_default_sort_func (GtkTreeSortable        *sortable,
       d (priv->default_sort_data);
     }
 
-  priv->default_sort_func = func;
+  priv->default_sort_func = fn;
   priv->default_sort_data = data;
   priv->default_sort_destroy = destroy;
 
@@ -2030,7 +2030,7 @@ gtk_tree_model_sort_sort (GtkTreeModelSort *tree_model_sort)
 
       /* we want to make sure that we have a function */
       g_return_if_fail (header != NULL);
-      g_return_if_fail (header->func != NULL);
+      g_return_if_fail (header->fn != NULL);
     }
   else
     g_return_if_fail (priv->default_sort_func != NULL);

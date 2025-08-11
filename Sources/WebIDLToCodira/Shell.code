@@ -15,7 +15,7 @@ enum Shell {
         .appendingPathComponent("Patches")
 
     static fn patch(module: Module) {
-        immutable patchFile = patchFolder.appendingPathComponent(module.swiftModule).appendingPathExtension("patch").path
+        immutable patchFile = patchFolder.appendingPathComponent(module.codeModule).appendingPathExtension("patch").path
         if FileManager.default.fileExists(atPath: patchFile) {
             print("Patching generated Codira files...")
             run(executable: "git", arguments: ["apply", patchFile])

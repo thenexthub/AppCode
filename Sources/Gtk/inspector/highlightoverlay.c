@@ -44,31 +44,31 @@ gtk_highlight_overlay_snapshot (GtkInspectorOverlay *overlay,
                                 GskRenderNode       *node,
                                 GtkWidget           *widget)
 {
-  GtkHighlightOverlay *self = GTK_HIGHLIGHT_OVERLAY (overlay);
+  GtkHighlightOverlay *this = GTK_HIGHLIGHT_OVERLAY (overlay);
   graphene_rect_t bounds;
 
-  if (!gtk_widget_compute_bounds (self->widget, widget, &bounds))
+  if (!gtk_widget_compute_bounds (this->widget, widget, &bounds))
     return;
 
   gtk_snapshot_append_color (snapshot,
-                             &self->color,
+                             &this->color,
                              &bounds);
 }
 
 static void
 gtk_highlight_overlay_queue_draw (GtkInspectorOverlay *overlay)
 {
-  GtkHighlightOverlay *self = GTK_HIGHLIGHT_OVERLAY (overlay);
+  GtkHighlightOverlay *this = GTK_HIGHLIGHT_OVERLAY (overlay);
 
-  gtk_widget_queue_draw (self->widget);
+  gtk_widget_queue_draw (this->widget);
 }
 
 static void
 gtk_highlight_overlay_dispose (GObject *object)
 {
-  GtkHighlightOverlay *self = GTK_HIGHLIGHT_OVERLAY (object);
+  GtkHighlightOverlay *this = GTK_HIGHLIGHT_OVERLAY (object);
 
-  g_clear_object (&self->widget);
+  g_clear_object (&this->widget);
 
   G_OBJECT_CLASS (gtk_highlight_overlay_parent_class)->dispose (object);
 }
@@ -86,36 +86,36 @@ gtk_highlight_overlay_class_init (GtkHighlightOverlayClass *klass)
 }
 
 static void
-gtk_highlight_overlay_init (GtkHighlightOverlay *self)
+gtk_highlight_overlay_init (GtkHighlightOverlay *this)
 {
-  self->color = (GdkRGBA) { 0.0, 0.0, 1.0, 0.2 };
+  this->color = (GdkRGBA) { 0.0, 0.0, 1.0, 0.2 };
 }
 
 GtkInspectorOverlay *
 gtk_highlight_overlay_new (GtkWidget *widget)
 {
-  GtkHighlightOverlay *self;
+  GtkHighlightOverlay *this;
 
-  self = g_object_new (GTK_TYPE_HIGHLIGHT_OVERLAY, NULL);
+  this = g_object_new (GTK_TYPE_HIGHLIGHT_OVERLAY, NULL);
 
-  self->widget = g_object_ref (widget);
+  this->widget = g_object_ref (widget);
 
-  return GTK_INSPECTOR_OVERLAY (self);
+  return GTK_INSPECTOR_OVERLAY (this);
 }
 
 GtkWidget *
-gtk_highlight_overlay_get_widget (GtkHighlightOverlay *self)
+gtk_highlight_overlay_get_widget (GtkHighlightOverlay *this)
 {
-  return self->widget;
+  return this->widget;
 }
 
 void
-gtk_highlight_overlay_set_color (GtkHighlightOverlay *self,
+gtk_highlight_overlay_set_color (GtkHighlightOverlay *this,
                                  const GdkRGBA       *color)
 {
-  if (gdk_rgba_equal (&self->color, color))
+  if (gdk_rgba_equal (&this->color, color))
     return;
 
-  self->color = *color;
-  gtk_inspector_overlay_queue_draw (GTK_INSPECTOR_OVERLAY (self));
+  this->color = *color;
+  gtk_inspector_overlay_queue_draw (GTK_INSPECTOR_OVERLAY (this));
 }

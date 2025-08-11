@@ -29,15 +29,15 @@ G_DECLARE_FINAL_TYPE (GtkCssCustomPropertyPool, gtk_css_custom_property_pool, GT
 
 GtkCssCustomPropertyPool *gtk_css_custom_property_pool_get      (void);
 
-int                       gtk_css_custom_property_pool_add      (GtkCssCustomPropertyPool *self,
+int                       gtk_css_custom_property_pool_add      (GtkCssCustomPropertyPool *this,
                                                                  const char               *str);
-int                       gtk_css_custom_property_pool_lookup   (GtkCssCustomPropertyPool *self,
+int                       gtk_css_custom_property_pool_lookup   (GtkCssCustomPropertyPool *this,
                                                                  const char               *str);
-const char *              gtk_css_custom_property_pool_get_name (GtkCssCustomPropertyPool *self,
+const char *              gtk_css_custom_property_pool_get_name (GtkCssCustomPropertyPool *this,
                                                                  int                       id);
-int                       gtk_css_custom_property_pool_ref      (GtkCssCustomPropertyPool *self,
+int                       gtk_css_custom_property_pool_ref      (GtkCssCustomPropertyPool *this,
                                                                  int                       id);
-void                      gtk_css_custom_property_pool_unref    (GtkCssCustomPropertyPool *self,
+void                      gtk_css_custom_property_pool_unref    (GtkCssCustomPropertyPool *this,
                                                                  int                       id);
 
 G_END_DECLS

@@ -63,7 +63,7 @@ extension StaticCanonicalLifting {
                 swiftTypeName,
                 arguments: [
                     (
-                        "rawValue", .call(discriminantType.swiftTypeName, arguments: [value])
+                        "rawValue", .call(discriminantType.codeTypeName, arguments: [value])
                     )
                 ]
             )

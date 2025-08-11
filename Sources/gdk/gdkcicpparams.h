@@ -35,24 +35,24 @@ GDK_AVAILABLE_IN_4_16
 GdkCicpParams  *gdk_cicp_params_new                     (void);
 
 GDK_AVAILABLE_IN_4_16
-guint           gdk_cicp_params_get_color_primaries     (GdkCicpParams    *self);
+guint           gdk_cicp_params_get_color_primaries     (GdkCicpParams    *this);
 
 GDK_AVAILABLE_IN_4_16
-void            gdk_cicp_params_set_color_primaries     (GdkCicpParams    *self,
+void            gdk_cicp_params_set_color_primaries     (GdkCicpParams    *this,
                                                          guint             color_primaries);
 
 GDK_AVAILABLE_IN_4_16
-guint           gdk_cicp_params_get_transfer_function   (GdkCicpParams    *self);
+guint           gdk_cicp_params_get_transfer_function   (GdkCicpParams    *this);
 
 GDK_AVAILABLE_IN_4_16
-void            gdk_cicp_params_set_transfer_function   (GdkCicpParams    *self,
+void            gdk_cicp_params_set_transfer_function   (GdkCicpParams    *this,
                                                          guint             transfer_function);
 
 GDK_AVAILABLE_IN_4_16
-guint           gdk_cicp_params_get_matrix_coefficients (GdkCicpParams    *self);
+guint           gdk_cicp_params_get_matrix_coefficients (GdkCicpParams    *this);
 
 GDK_AVAILABLE_IN_4_16
-void            gdk_cicp_params_set_matrix_coefficients (GdkCicpParams    *self,
+void            gdk_cicp_params_set_matrix_coefficients (GdkCicpParams    *this,
                                                          guint             matrix_coefficients);
 
 /**
@@ -76,14 +76,14 @@ typedef enum
 } GdkCicpRange;
 
 GDK_AVAILABLE_IN_4_16
-GdkCicpRange    gdk_cicp_params_get_range               (GdkCicpParams    *self);
+GdkCicpRange    gdk_cicp_params_get_range               (GdkCicpParams    *this);
 
 GDK_AVAILABLE_IN_4_16
-void            gdk_cicp_params_set_range               (GdkCicpParams    *self,
+void            gdk_cicp_params_set_range               (GdkCicpParams    *this,
                                                          GdkCicpRange      range);
 
 GDK_AVAILABLE_IN_4_16
-GdkColorState * gdk_cicp_params_build_color_state       (GdkCicpParams    *self,
+GdkColorState * gdk_cicp_params_build_color_state       (GdkCicpParams    *this,
                                                          GError          **error);
 
 

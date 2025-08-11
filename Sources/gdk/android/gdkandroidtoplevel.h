@@ -40,15 +40,15 @@ GType gdk_android_toplevel_get_type (void);
 
 GDK_AVAILABLE_IN_4_18
 jobject
-gdk_android_toplevel_get_activity (GdkAndroidToplevel *self);
+gdk_android_toplevel_get_activity (GdkAndroidToplevel *this);
 
 GDK_AVAILABLE_IN_4_18
 gboolean
-gdk_android_toplevel_launch_activity (GdkAndroidToplevel *self, jobject intent, GError **error);
+gdk_android_toplevel_launch_activity (GdkAndroidToplevel *this, jobject intent, GError **error);
 
 GDK_AVAILABLE_IN_4_18
-void gdk_android_toplevel_launch_activity_for_result_async (GdkAndroidToplevel *self, jobject intent, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data);
+void gdk_android_toplevel_launch_activity_for_result_async (GdkAndroidToplevel *this, jobject intent, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data);
 GDK_AVAILABLE_IN_4_18
-gboolean gdk_android_toplevel_launch_activity_for_result_finish (GdkAndroidToplevel *self, GAsyncResult *result, jint *response, jobject *data, GError **error);
+gboolean gdk_android_toplevel_launch_activity_for_result_finish (GdkAndroidToplevel *this, GAsyncResult *result, jint *response, jobject *data, GError **error);
 
 G_END_DECLS

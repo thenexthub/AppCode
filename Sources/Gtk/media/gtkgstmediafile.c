@@ -48,40 +48,40 @@ gtk_gst_media_file_paintable_snapshot (GdkPaintable *paintable,
                                        double        width,
                                        double        height)
 {
-  GtkGstMediaFile *self = GTK_GST_MEDIA_FILE (paintable);
+  GtkGstMediaFile *this = GTK_GST_MEDIA_FILE (paintable);
 
-  gdk_paintable_snapshot (self->paintable, snapshot, width, height);
+  gdk_paintable_snapshot (this->paintable, snapshot, width, height);
 }
 
 static GdkPaintable *
 gtk_gst_media_file_paintable_get_current_image (GdkPaintable *paintable)
 {
-  GtkGstMediaFile *self = GTK_GST_MEDIA_FILE (paintable);
+  GtkGstMediaFile *this = GTK_GST_MEDIA_FILE (paintable);
 
-  return gdk_paintable_get_current_image (self->paintable);
+  return gdk_paintable_get_current_image (this->paintable);
 }
 
 static int
 gtk_gst_media_file_paintable_get_intrinsic_width (GdkPaintable *paintable)
 {
-  GtkGstMediaFile *self = GTK_GST_MEDIA_FILE (paintable);
+  GtkGstMediaFile *this = GTK_GST_MEDIA_FILE (paintable);
 
-  return gdk_paintable_get_intrinsic_width (self->paintable);
+  return gdk_paintable_get_intrinsic_width (this->paintable);
 }
 
 static int
 gtk_gst_media_file_paintable_get_intrinsic_height (GdkPaintable *paintable)
 {
-  GtkGstMediaFile *self = GTK_GST_MEDIA_FILE (paintable);
+  GtkGstMediaFile *this = GTK_GST_MEDIA_FILE (paintable);
 
-  return gdk_paintable_get_intrinsic_height (self->paintable);
+  return gdk_paintable_get_intrinsic_height (this->paintable);
 }
 
 static double gtk_gst_media_file_paintable_get_intrinsic_aspect_ratio (GdkPaintable *paintable)
 {
-  GtkGstMediaFile *self = GTK_GST_MEDIA_FILE (paintable);
+  GtkGstMediaFile *this = GTK_GST_MEDIA_FILE (paintable);
 
-  return gdk_paintable_get_intrinsic_aspect_ratio (self->paintable);
+  return gdk_paintable_get_intrinsic_aspect_ratio (this->paintable);
 };
 
 static void
@@ -103,19 +103,19 @@ GTK_DEFINE_BUILTIN_MODULE_TYPE_WITH_CODE (GtkGstMediaFile, gtk_gst_media_file, G
                                                          20))
 
 static void
-gtk_gst_media_file_ensure_prepared (GtkGstMediaFile *self)
+gtk_gst_media_file_ensure_prepared (GtkGstMediaFile *this)
 {
   GstPlayMediaInfo *media_info;
 
-  if (gtk_media_stream_is_prepared (GTK_MEDIA_STREAM (self)))
+  if (gtk_media_stream_is_prepared (GTK_MEDIA_STREAM (this)))
     return;
 
-  media_info = gst_play_get_media_info (self->play);
+  media_info = gst_play_get_media_info (this->play);
   if (media_info)
     {
       GstClockTime duration = gst_play_media_info_get_duration (media_info);
 
-      gtk_media_stream_stream_prepared (GTK_MEDIA_STREAM (self),
+      gtk_media_stream_stream_prepared (GTK_MEDIA_STREAM (this),
                                         gst_play_media_info_get_number_of_audio_streams (media_info) > 0,
                                         gst_play_media_info_get_number_of_video_streams (media_info) > 0,
                                         gst_play_media_info_is_seekable (media_info),
@@ -130,7 +130,7 @@ gtk_gst_media_file_ensure_prepared (GtkGstMediaFile *self)
        *
        * Only for seeking we can't do a thing, because with 0 duration we can't seek anywhere.
        */
-      gtk_media_stream_stream_prepared (GTK_MEDIA_STREAM (self),
+      gtk_media_stream_stream_prepared (GTK_MEDIA_STREAM (this),
                                         TRUE,
                                         TRUE,
                                         FALSE,
@@ -141,17 +141,17 @@ gtk_gst_media_file_ensure_prepared (GtkGstMediaFile *self)
 static void
 gtk_gst_media_file_position_updated_cb (GstPlaySignalAdapter *adapter,
                                         GstClockTime          time,
-                                        GtkGstMediaFile      *self)
+                                        GtkGstMediaFile      *this)
 {
-  gtk_gst_media_file_ensure_prepared (self);
+  gtk_gst_media_file_ensure_prepared (this);
 
-  gtk_media_stream_update (GTK_MEDIA_STREAM (self), FROM_GST_TIME (time));
+  gtk_media_stream_update (GTK_MEDIA_STREAM (this), FROM_GST_TIME (time));
 }
 
 static void
 gtk_gst_media_file_media_info_updated_cb (GstPlaySignalAdapter *adapter,
                                           GstPlayMediaInfo     *media_info,
-                                          GtkGstMediaFile      *self)
+                                          GtkGstMediaFile      *this)
 {
   /* clock_time == 0: https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad/-/issues/1588
    * GstPlayer's first media-info-updated comes with 0 duration
@@ -162,90 +162,90 @@ gtk_gst_media_file_media_info_updated_cb (GstPlaySignalAdapter *adapter,
   if (clock_time == 0 || clock_time == -1)
     return;
 
-  gtk_gst_media_file_ensure_prepared (self);
+  gtk_gst_media_file_ensure_prepared (this);
 }
 
 static void
 gtk_gst_media_file_seek_done_cb (GstPlaySignalAdapter *adapter,
                                  GstClockTime          time,
-                                 GtkGstMediaFile      *self)
+                                 GtkGstMediaFile      *this)
 {
   /* if we're not seeking, we're doing the loop seek-back after EOS */
-  if (gtk_media_stream_is_seeking (GTK_MEDIA_STREAM (self)))
-    gtk_media_stream_seek_success (GTK_MEDIA_STREAM (self));
-  gtk_media_stream_update (GTK_MEDIA_STREAM (self), FROM_GST_TIME (time));
+  if (gtk_media_stream_is_seeking (GTK_MEDIA_STREAM (this)))
+    gtk_media_stream_seek_success (GTK_MEDIA_STREAM (this));
+  gtk_media_stream_update (GTK_MEDIA_STREAM (this), FROM_GST_TIME (time));
 }
 
 static void
 gtk_gst_media_file_error_cb (GstPlaySignalAdapter *adapter,
                              GError               *error,
-                             GtkGstMediaFile      *self)
+                             GtkGstMediaFile      *this)
 {
-  if (gtk_media_stream_get_error (GTK_MEDIA_STREAM (self)))
+  if (gtk_media_stream_get_error (GTK_MEDIA_STREAM (this)))
     return;
 
-  gtk_media_stream_gerror (GTK_MEDIA_STREAM (self),
+  gtk_media_stream_gerror (GTK_MEDIA_STREAM (this),
                            g_error_copy (error));
 }
 
 static void
 gtk_gst_media_file_end_of_stream_cb (GstPlaySignalAdapter *adapter,
-                                     GtkGstMediaFile      *self)
+                                     GtkGstMediaFile      *this)
 {
-  gtk_gst_media_file_ensure_prepared (self);
+  gtk_gst_media_file_ensure_prepared (this);
 
-  if (gtk_media_stream_get_ended (GTK_MEDIA_STREAM (self)))
+  if (gtk_media_stream_get_ended (GTK_MEDIA_STREAM (this)))
     return;
 
-  if (gtk_media_stream_get_loop (GTK_MEDIA_STREAM (self)))
+  if (gtk_media_stream_get_loop (GTK_MEDIA_STREAM (this)))
     {
-      gst_play_seek (self->play, 0);
+      gst_play_seek (this->play, 0);
       return;
     }
 
-  gtk_media_stream_stream_ended (GTK_MEDIA_STREAM (self));
+  gtk_media_stream_stream_ended (GTK_MEDIA_STREAM (this));
 }
 
 static void
-gtk_gst_media_file_destroy_play (GtkGstMediaFile *self)
+gtk_gst_media_file_destroy_play (GtkGstMediaFile *this)
 {
-  if (self->play == NULL)
+  if (this->play == NULL)
     return;
 
-  g_signal_handlers_disconnect_by_func (self->play_adapter, gtk_gst_media_file_media_info_updated_cb, self);
-  g_signal_handlers_disconnect_by_func (self->play_adapter, gtk_gst_media_file_position_updated_cb, self);
-  g_signal_handlers_disconnect_by_func (self->play_adapter, gtk_gst_media_file_end_of_stream_cb, self);
-  g_signal_handlers_disconnect_by_func (self->play_adapter, gtk_gst_media_file_seek_done_cb, self);
-  g_signal_handlers_disconnect_by_func (self->play_adapter, gtk_gst_media_file_error_cb, self);
-  g_object_unref (self->play_adapter);
-  g_object_unref (self->play);
-  self->play = NULL;
+  g_signal_handlers_disconnect_by_func (this->play_adapter, gtk_gst_media_file_media_info_updated_cb, this);
+  g_signal_handlers_disconnect_by_func (this->play_adapter, gtk_gst_media_file_position_updated_cb, this);
+  g_signal_handlers_disconnect_by_func (this->play_adapter, gtk_gst_media_file_end_of_stream_cb, this);
+  g_signal_handlers_disconnect_by_func (this->play_adapter, gtk_gst_media_file_seek_done_cb, this);
+  g_signal_handlers_disconnect_by_func (this->play_adapter, gtk_gst_media_file_error_cb, this);
+  g_object_unref (this->play_adapter);
+  g_object_unref (this->play);
+  this->play = NULL;
 }
 
 static void
 gtk_gst_media_file_create_play (GtkGstMediaFile *file)
 {
-  GtkGstMediaFile *self = GTK_GST_MEDIA_FILE (file);
+  GtkGstMediaFile *this = GTK_GST_MEDIA_FILE (file);
 
-  if (self->play != NULL)
+  if (this->play != NULL)
     return;
 
-  self->play = gst_play_new (GST_PLAY_VIDEO_RENDERER (g_object_ref (self->paintable)));
-  self->play_adapter = gst_play_signal_adapter_new (self->play);
-  g_signal_connect (self->play_adapter, "media-info-updated", G_CALLBACK (gtk_gst_media_file_media_info_updated_cb), self);
-  g_signal_connect (self->play_adapter, "position-updated", G_CALLBACK (gtk_gst_media_file_position_updated_cb), self);
-  g_signal_connect (self->play_adapter, "end-of-stream", G_CALLBACK (gtk_gst_media_file_end_of_stream_cb), self);
-  g_signal_connect (self->play_adapter, "seek-done", G_CALLBACK (gtk_gst_media_file_seek_done_cb), self);
-  g_signal_connect (self->play_adapter, "error", G_CALLBACK (gtk_gst_media_file_error_cb), self);
+  this->play = gst_play_new (GST_PLAY_VIDEO_RENDERER (g_object_ref (this->paintable)));
+  this->play_adapter = gst_play_signal_adapter_new (this->play);
+  g_signal_connect (this->play_adapter, "media-info-updated", G_CALLBACK (gtk_gst_media_file_media_info_updated_cb), this);
+  g_signal_connect (this->play_adapter, "position-updated", G_CALLBACK (gtk_gst_media_file_position_updated_cb), this);
+  g_signal_connect (this->play_adapter, "end-of-stream", G_CALLBACK (gtk_gst_media_file_end_of_stream_cb), this);
+  g_signal_connect (this->play_adapter, "seek-done", G_CALLBACK (gtk_gst_media_file_seek_done_cb), this);
+  g_signal_connect (this->play_adapter, "error", G_CALLBACK (gtk_gst_media_file_error_cb), this);
 }
 
 static void
 gtk_gst_media_file_open (GtkMediaFile *media_file)
 {
-  GtkGstMediaFile *self = GTK_GST_MEDIA_FILE (media_file);
+  GtkGstMediaFile *this = GTK_GST_MEDIA_FILE (media_file);
   GFile *file;
 
-  gtk_gst_media_file_create_play (self);
+  gtk_gst_media_file_create_play (this);
 
   file = gtk_media_file_get_file (media_file);
 
@@ -254,7 +254,7 @@ gtk_gst_media_file_open (GtkMediaFile *media_file)
       /* XXX: This is technically incorrect because GFile uris aren't real uris */
       char *uri = g_file_get_uri (file);
 
-      gst_play_set_uri (self->play, uri);
+      gst_play_set_uri (this->play, uri);
 
       g_free (uri);
     }
@@ -265,26 +265,26 @@ gtk_gst_media_file_open (GtkMediaFile *media_file)
       g_assert_not_reached ();
     }
 
-  gst_play_pause (self->play);
+  gst_play_pause (this->play);
 }
 
 static void
 gtk_gst_media_file_close (GtkMediaFile *file)
 {
-  GtkGstMediaFile *self = GTK_GST_MEDIA_FILE (file);
+  GtkGstMediaFile *this = GTK_GST_MEDIA_FILE (file);
 
-  gtk_gst_media_file_destroy_play (self);
+  gtk_gst_media_file_destroy_play (this);
 }
 
 static gboolean
 gtk_gst_media_file_play (GtkMediaStream *stream)
 {
-  GtkGstMediaFile *self = GTK_GST_MEDIA_FILE (stream);
+  GtkGstMediaFile *this = GTK_GST_MEDIA_FILE (stream);
 
-  if (self->play == NULL)
+  if (this->play == NULL)
     return FALSE;
 
-  gst_play_play (self->play);
+  gst_play_play (this->play);
 
   return TRUE;
 }
@@ -292,18 +292,18 @@ gtk_gst_media_file_play (GtkMediaStream *stream)
 static void
 gtk_gst_media_file_pause (GtkMediaStream *stream)
 {
-  GtkGstMediaFile *self = GTK_GST_MEDIA_FILE (stream);
+  GtkGstMediaFile *this = GTK_GST_MEDIA_FILE (stream);
 
-  gst_play_pause (self->play);
+  gst_play_pause (this->play);
 }
 
 static void
 gtk_gst_media_file_seek (GtkMediaStream *stream,
                          gint64          timestamp)
 {
-  GtkGstMediaFile *self = GTK_GST_MEDIA_FILE (stream);
+  GtkGstMediaFile *this = GTK_GST_MEDIA_FILE (stream);
 
-  gst_play_seek (self->play, TO_GST_TIME (timestamp));
+  gst_play_seek (this->play, TO_GST_TIME (timestamp));
 }
 
 static void
@@ -311,41 +311,41 @@ gtk_gst_media_file_update_audio (GtkMediaStream *stream,
                                  gboolean        muted,
                                  double          volume)
 {
-  GtkGstMediaFile *self = GTK_GST_MEDIA_FILE (stream);
+  GtkGstMediaFile *this = GTK_GST_MEDIA_FILE (stream);
 
-  gst_play_set_mute (self->play, muted);
-  gst_play_set_volume (self->play, volume * volume * volume);
+  gst_play_set_mute (this->play, muted);
+  gst_play_set_volume (this->play, volume * volume * volume);
 }
 
 static void
 gtk_gst_media_file_realize (GtkMediaStream *stream,
                             GdkSurface     *surface)
 {
-  GtkGstMediaFile *self = GTK_GST_MEDIA_FILE (stream);
+  GtkGstMediaFile *this = GTK_GST_MEDIA_FILE (stream);
 
-  gtk_gst_paintable_realize (GTK_GST_PAINTABLE (self->paintable), surface);
+  gtk_gst_paintable_realize (GTK_GST_PAINTABLE (this->paintable), surface);
 }
 
 static void
 gtk_gst_media_file_unrealize (GtkMediaStream *stream,
                               GdkSurface     *surface)
 {
-  GtkGstMediaFile *self = GTK_GST_MEDIA_FILE (stream);
+  GtkGstMediaFile *this = GTK_GST_MEDIA_FILE (stream);
 
-  gtk_gst_paintable_unrealize (GTK_GST_PAINTABLE (self->paintable), surface);
+  gtk_gst_paintable_unrealize (GTK_GST_PAINTABLE (this->paintable), surface);
 }
 
 static void
 gtk_gst_media_file_dispose (GObject *object)
 {
-  GtkGstMediaFile *self = GTK_GST_MEDIA_FILE (object);
+  GtkGstMediaFile *this = GTK_GST_MEDIA_FILE (object);
 
-  gtk_gst_media_file_destroy_play (self);
-  if (self->paintable)
+  gtk_gst_media_file_destroy_play (this);
+  if (this->paintable)
     {
-      g_signal_handlers_disconnect_by_func (self->paintable, gdk_paintable_invalidate_size, self);
-      g_signal_handlers_disconnect_by_func (self->paintable, gdk_paintable_invalidate_contents, self);
-      g_clear_object (&self->paintable);
+      g_signal_handlers_disconnect_by_func (this->paintable, gdk_paintable_invalidate_size, this);
+      g_signal_handlers_disconnect_by_func (this->paintable, gdk_paintable_invalidate_contents, this);
+      g_clear_object (&this->paintable);
     }
 
   G_OBJECT_CLASS (gtk_gst_media_file_parent_class)->dispose (object);
@@ -372,10 +372,10 @@ gtk_gst_media_file_class_init (GtkGstMediaFileClass *klass)
 }
 
 static void
-gtk_gst_media_file_init (GtkGstMediaFile *self)
+gtk_gst_media_file_init (GtkGstMediaFile *this)
 {
-  self->paintable = gtk_gst_paintable_new ();
-  g_signal_connect_swapped (self->paintable, "invalidate-size", G_CALLBACK (gdk_paintable_invalidate_size), self);
-  g_signal_connect_swapped (self->paintable, "invalidate-contents", G_CALLBACK (gdk_paintable_invalidate_contents), self);
+  this->paintable = gtk_gst_paintable_new ();
+  g_signal_connect_swapped (this->paintable, "invalidate-size", G_CALLBACK (gdk_paintable_invalidate_size), this);
+  g_signal_connect_swapped (this->paintable, "invalidate-contents", G_CALLBACK (gdk_paintable_invalidate_contents), this);
 }
 

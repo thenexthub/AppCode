@@ -86,44 +86,44 @@ static GParamSpec *gsk_renderer_properties[N_PROPS];
   g_critical ("Renderer of type '%s' does not implement GskRenderer::" # method, G_OBJECT_TYPE_NAME (obj))
 
 static gboolean
-gsk_renderer_real_realize (GskRenderer  *self,
+gsk_renderer_real_realize (GskRenderer  *this,
                            GdkDisplay   *display,
                            GdkSurface   *surface,
                            gboolean      attach,
                            GError      **error)
 {
-  GSK_RENDERER_WARN_NOT_IMPLEMENTED_METHOD (self, realize);
+  GSK_RENDERER_WARN_NOT_IMPLEMENTED_METHOD (this, realize);
   return FALSE;
 }
 
 static void
-gsk_renderer_real_unrealize (GskRenderer *self)
+gsk_renderer_real_unrealize (GskRenderer *this)
 {
-  GSK_RENDERER_WARN_NOT_IMPLEMENTED_METHOD (self, unrealize);
+  GSK_RENDERER_WARN_NOT_IMPLEMENTED_METHOD (this, unrealize);
 }
 
 static GdkTexture *
-gsk_renderer_real_render_texture (GskRenderer           *self,
+gsk_renderer_real_render_texture (GskRenderer           *this,
                                   GskRenderNode         *root,
                                   const graphene_rect_t *viewport)
 {
-  GSK_RENDERER_WARN_NOT_IMPLEMENTED_METHOD (self, render_texture);
+  GSK_RENDERER_WARN_NOT_IMPLEMENTED_METHOD (this, render_texture);
   return NULL;
 }
 
 static void
-gsk_renderer_real_render (GskRenderer          *self,
+gsk_renderer_real_render (GskRenderer          *this,
                           GskRenderNode        *root,
                           const cairo_region_t *region)
 {
-  GSK_RENDERER_WARN_NOT_IMPLEMENTED_METHOD (self, render);
+  GSK_RENDERER_WARN_NOT_IMPLEMENTED_METHOD (this, render);
 }
 
 static void
 gsk_renderer_dispose (GObject *gobject)
 {
-  GskRenderer *self = GSK_RENDERER (gobject);
-  G_GNUC_UNUSED GskRendererPrivate *priv = gsk_renderer_get_instance_private (self);
+  GskRenderer *this = GSK_RENDERER (gobject);
+  G_GNUC_UNUSED GskRendererPrivate *priv = gsk_renderer_get_instance_private (this);
 
   /* We can't just unrealize here because superclasses have already run dispose.
    * So we insist that unrealize must be called before unreffing. */
@@ -138,8 +138,8 @@ gsk_renderer_get_property (GObject    *gobject,
                            GValue     *value,
                            GParamSpec *pspec)
 {
-  GskRenderer *self = GSK_RENDERER (gobject);
-  GskRendererPrivate *priv = gsk_renderer_get_instance_private (self);
+  GskRenderer *this = GSK_RENDERER (gobject);
+  GskRendererPrivate *priv = gsk_renderer_get_instance_private (this);
 
   switch (prop_id)
     {
@@ -194,9 +194,9 @@ gsk_renderer_class_init (GskRendererClass *klass)
 }
 
 static void
-gsk_renderer_init (GskRenderer *self)
+gsk_renderer_init (GskRenderer *this)
 {
-  GskRendererPrivate *priv = gsk_renderer_get_instance_private (self);
+  GskRendererPrivate *priv = gsk_renderer_get_instance_private (this);
 
   priv->debug_flags = gsk_get_debug_flags ();
 }

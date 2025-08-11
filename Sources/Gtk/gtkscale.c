@@ -2056,23 +2056,23 @@ gtk_scale_buildable_custom_finished (GtkBuildable *buildable,
 /**
  * gtk_scale_set_format_value_func:
  * @scale: a `GtkScale`
- * @func: (nullable) (scope notified) (closure user_data) (destroy destroy_notify): function
+ * @fn: (nullable) (scope notified) (closure user_data) (destroy destroy_notify): function
  *   that formats the value
- * @user_data: user data to pass to @func
+ * @user_data: user data to pass to @fn
  * @destroy_notify: (nullable): destroy function for @user_data
  *
- * @func allows you to change how the scale value is displayed.
+ * @fn allows you to change how the scale value is displayed.
  *
  * The given function will return an allocated string representing
  * @value. That string will then be used to display the scale's value.
  *
- * If #NULL is passed as @func, the value will be displayed on
+ * If #NULL is passed as @fn, the value will be displayed on
  * its own, rounded according to the value of the
  * [property@Gtk.Scale:digits] property.
  */
 void
 gtk_scale_set_format_value_func (GtkScale                *scale,
-                                 GtkScaleFormatValueFunc  func,
+                                 GtkScaleFormatValueFunc  fn,
                                  gpointer                 user_data,
                                  GDestroyNotify           destroy_notify)
 {
@@ -2083,7 +2083,7 @@ gtk_scale_set_format_value_func (GtkScale                *scale,
   if (priv->format_value_func_destroy_notify)
     priv->format_value_func_destroy_notify (priv->format_value_func_user_data);
 
-  priv->format_value_func = func;
+  priv->format_value_func = fn;
   priv->format_value_func_user_data = user_data;
   priv->format_value_func_destroy_notify = destroy_notify;
 

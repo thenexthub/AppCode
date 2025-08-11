@@ -37,7 +37,7 @@ typedef struct _GdkMacosSurfaceClass GdkMacosSurfaceClass;
 GDK_AVAILABLE_IN_ALL
 GType    gdk_macos_surface_get_type          (void);
 GDK_AVAILABLE_IN_4_8
-gpointer gdk_macos_surface_get_native_window (GdkMacosSurface *self);
+gpointer gdk_macos_surface_get_native_window (GdkMacosSurface *this);
 
 G_END_DECLS
 

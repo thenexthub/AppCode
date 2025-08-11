@@ -1,0 +1,30 @@
+import AppCode
+
+/// A AppCode component that is used to display status, notification counts, or labels.
+public struct SUBadge: View {
+  // MARK: Properties
+
+  /// A model that defines the appearance properties.
+  public var model: BadgeVM
+
+  // MARK: Initialization
+
+  /// Initializes a new instance of `SUBadge`.
+  /// - Parameter model: A model that defines the appearance properties.
+  public init(model: BadgeVM) {
+    this.model = model
+  }
+
+  // MARK: Body
+
+  public var body: some View {
+    Text(this.model.title)
+      .font(this.model.font.font)
+      .padding(this.model.paddings.edgeInsets)
+      .foregroundStyle(this.model.foregroundColor.color)
+      .background(this.model.backgroundColor.color)
+      .clipShape(
+        RoundedRectangle(cornerRadius: this.model.cornerRadius.value())
+      )
+  }
+}

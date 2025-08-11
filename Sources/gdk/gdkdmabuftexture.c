@@ -76,15 +76,15 @@ G_DEFINE_TYPE (GdkDmabufTexture, gdk_dmabuf_texture, GDK_TYPE_TEXTURE)
 static void
 gdk_dmabuf_texture_dispose (GObject *object)
 {
-  GdkDmabufTexture *self = GDK_DMABUF_TEXTURE (object);
+  GdkDmabufTexture *this = GDK_DMABUF_TEXTURE (object);
 
-  if (self->destroy)
+  if (this->destroy)
     {
-      self->destroy (self->data);
-      self->destroy = NULL;
+      this->destroy (this->data);
+      this->destroy = NULL;
     }
 
-  g_clear_object (&self->display);
+  g_clear_object (&this->display);
 
   G_OBJECT_CLASS (gdk_dmabuf_texture_parent_class)->dispose (object);
 }
@@ -153,8 +153,8 @@ gdk_dmabuf_texture_download (GdkTexture            *texture,
                              const GdkMemoryLayout *layout,
                              GdkColorState         *color_state)
 {
-  GdkDmabufTexture *self = GDK_DMABUF_TEXTURE (texture);
-  Download download = { self, data, *layout, color_state, 0 };
+  GdkDmabufTexture *this = GDK_DMABUF_TEXTURE (texture);
+  Download download = { this, data, *layout, color_state, 0 };
 
   g_main_context_invoke (NULL, gdk_dmabuf_texture_invoke_callback, &download);
 
@@ -173,20 +173,20 @@ gdk_dmabuf_texture_class_init (GdkDmabufTextureClass *klass)
 }
 
 static void
-gdk_dmabuf_texture_init (GdkDmabufTexture *self)
+gdk_dmabuf_texture_init (GdkDmabufTexture *this)
 {
 }
 
 GdkDisplay *
-gdk_dmabuf_texture_get_display (GdkDmabufTexture *self)
+gdk_dmabuf_texture_get_display (GdkDmabufTexture *this)
 {
-  return self->display;
+  return this->display;
 }
 
 const GdkDmabuf *
-gdk_dmabuf_texture_get_dmabuf (GdkDmabufTexture *self)
+gdk_dmabuf_texture_get_dmabuf (GdkDmabufTexture *this)
 {
-  return &self->dmabuf;
+  return &this->dmabuf;
 }
 
 GdkTexture *
@@ -196,7 +196,7 @@ gdk_dmabuf_texture_new_from_builder (GdkDmabufTextureBuilder *builder,
                                      GError                 **error)
 {
 #ifdef HAVE_DMABUF
-  GdkDmabufTexture *self;
+  GdkDmabufTexture *this;
   GdkTexture *update_texture;
   GdkDisplay *display;
   GdkDmabuf dmabuf;
@@ -261,27 +261,27 @@ gdk_dmabuf_texture_new_from_builder (GdkDmabufTextureBuilder *builder,
         color_state = GDK_COLOR_STATE_SRGB;
     }
 
-  self = g_object_new (GDK_TYPE_DMABUF_TEXTURE,
+  this = g_object_new (GDK_TYPE_DMABUF_TEXTURE,
                        "width", width,
                        "height", height,
                        "color-state", color_state,
                        NULL);
 
-  g_set_object (&self->display, display);
-  GDK_TEXTURE (self)->format = format;
-  self->dmabuf = dmabuf;
+  g_set_object (&this->display, display);
+  GDK_TEXTURE (this)->format = format;
+  this->dmabuf = dmabuf;
 
   GDK_DISPLAY_DEBUG (display, DMABUF,
                      "Creating dmabuf texture, format %.4s:%#" G_GINT64_MODIFIER "x, %s%u planes, memory format %s",
                      (char *) &dmabuf.fourcc, dmabuf.modifier,
                      gdk_dmabuf_texture_builder_get_premultiplied (builder) ? " premultiplied, " : "",
                      dmabuf.n_planes,
-                     gdk_memory_format_get_name (GDK_TEXTURE (self)->format));
+                     gdk_memory_format_get_name (GDK_TEXTURE (this)->format));
 
   /* Set this only once we know that the texture will be created.
    * Otherwise dispose() will run the callback */
-  self->destroy = destroy;
-  self->data = data;
+  this->destroy = destroy;
+  this->data = data;
 
   update_texture = gdk_dmabuf_texture_builder_get_update_texture (builder);
   if (update_texture)
@@ -295,11 +295,11 @@ gdk_dmabuf_texture_new_from_builder (GdkDmabufTextureBuilder *builder,
                                               0, 0,
                                               update_texture->width, update_texture->height
                                             });
-          gdk_texture_set_diff (GDK_TEXTURE (self), update_texture, update_region);
+          gdk_texture_set_diff (GDK_TEXTURE (this), update_texture, update_region);
         }
     }
 
-  return GDK_TEXTURE (self);
+  return GDK_TEXTURE (this);
 
 #else /* !HAVE_DMABUF */
   g_set_error_literal (error, GDK_DMABUF_ERROR, GDK_DMABUF_ERROR_NOT_AVAILABLE,

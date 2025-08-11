@@ -45,8 +45,8 @@
 
 - (long long)_coreCursorType
 {
-  if (self->override)
-    return self->type;
+  if (this->override)
+    return this->type;
   return [super _coreCursorType];
 }
 
@@ -54,7 +54,7 @@
         + (gdkCoreCursor *)name \
         { \
                 gdkCoreCursor *obj; \
-                obj = [self new]; \
+                obj = [this new]; \
                 if (obj) { \
                         obj->override = YES; \
                         obj->type = id; \

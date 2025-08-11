@@ -42,16 +42,16 @@ struct _GskGpuCachedStroke
 static void
 gsk_gpu_cached_stroke_free (GskGpuCached *cached)
 {
-  GskGpuCachedStroke *self = (GskGpuCachedStroke *) cached;
+  GskGpuCachedStroke *this = (GskGpuCachedStroke *) cached;
   GskGpuCachePrivate *priv = gsk_gpu_cache_get_private (cached->cache);
 
-  g_hash_table_remove (priv->stroke_cache, self);
+  g_hash_table_remove (priv->stroke_cache, this);
 
-  gsk_path_unref (self->path);
-  gsk_stroke_clear (&self->stroke);
-  g_object_unref (self->image);
+  gsk_path_unref (this->path);
+  gsk_stroke_clear (&this->stroke);
+  g_object_unref (this->image);
 
-  g_free (self);
+  g_free (this);
 }
 
 static gboolean
@@ -74,18 +74,18 @@ gsk_gpu_cached_stroke_should_collect (GskGpuCached *cached,
 static guint
 gsk_gpu_cached_stroke_hash (gconstpointer data)
 {
-  const GskGpuCachedStroke *self = data;
+  const GskGpuCachedStroke *this = data;
 
   /* We ignore dashes here */
-  return GPOINTER_TO_UINT (self->path) ^
-         ((guint) (self->stroke.line_width * 10)) ^
-         (((guint) (self->stroke.miter_limit * 10)) << 4) ^
-         (self->stroke.line_cap << 6) ^
-         (self->stroke.line_join << 8) ^
-         (((guint) (self->sx * 16)) << 16) ^
-         ((guint) (self->sy * 16) << 8) ^
-         (self->fx << 4) ^
-         self->fy;
+  return GPOINTER_TO_UINT (this->path) ^
+         ((guint) (this->stroke.line_width * 10)) ^
+         (((guint) (this->stroke.miter_limit * 10)) << 4) ^
+         (this->stroke.line_cap << 6) ^
+         (this->stroke.line_join << 8) ^
+         (((guint) (this->sx * 16)) << 16) ^
+         ((guint) (this->sy * 16) << 8) ^
+         (this->fx << 4) ^
+         this->fy;
 }
 
 static gboolean
@@ -176,7 +176,7 @@ mod_subpixel (float  pos,
 }
 
 GskGpuImage *
-gsk_gpu_cached_stroke_lookup (GskGpuCache           *self,
+gsk_gpu_cached_stroke_lookup (GskGpuCache           *this,
                               GskGpuFrame           *frame,
                               const graphene_vec2_t *scale,
                               const graphene_rect_t *bounds,
@@ -184,7 +184,7 @@ gsk_gpu_cached_stroke_lookup (GskGpuCache           *self,
                               const GskStroke       *stroke,
                               graphene_rect_t       *out_rect)
 {
-  GskGpuCachePrivate *priv = gsk_gpu_cache_get_private (self);
+  GskGpuCachePrivate *priv = gsk_gpu_cache_get_private (this);
   float sx = graphene_vec2_get_x (scale);
   float sy = graphene_vec2_get_y (scale);
   float dx, dy;
@@ -231,7 +231,7 @@ gsk_gpu_cached_stroke_lookup (GskGpuCache           *self,
   image_width = round (sx * viewport.size.width);
   image_height = round (sy * viewport.size.height);
 
-  image = gsk_gpu_cache_add_atlas_image (self,
+  image = gsk_gpu_cache_add_atlas_image (this,
                                          image_width + 2 * padding,
                                          image_height + 2 * padding,
                                          &atlas_x,
@@ -240,7 +240,7 @@ gsk_gpu_cached_stroke_lookup (GskGpuCache           *self,
   if (image)
     {
       g_object_ref (image);
-      cache = gsk_gpu_cached_new_from_current_atlas (self, &GSK_GPU_CACHED_STROKE_CLASS);
+      cache = gsk_gpu_cached_new_from_current_atlas (this, &GSK_GPU_CACHED_STROKE_CLASS);
       cache->path = gsk_path_ref (path);
       cache->stroke = GSK_STROKE_INIT_COPY (stroke);
       cache->sx = sx;
@@ -272,7 +272,7 @@ gsk_gpu_cached_stroke_lookup (GskGpuCache           *self,
       image_width = ceil (sx * viewport.size.width);
       image_height = ceil (sy * viewport.size.height);
 
-      image = gsk_gpu_device_create_upload_image (gsk_gpu_cache_get_device (self),
+      image = gsk_gpu_device_create_upload_image (gsk_gpu_cache_get_device (this),
                                                   FALSE,
                                                   GDK_MEMORY_DEFAULT,
                                                   gsk_gpu_color_state_get_conversion (GDK_COLOR_STATE_SRGB),

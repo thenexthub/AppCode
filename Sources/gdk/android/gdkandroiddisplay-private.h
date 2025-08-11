@@ -55,10 +55,10 @@ GdkDisplay *_gdk_android_display_open (const char *display_name);
 GdkAndroidDisplay *gdk_android_display_get_display_instance (void);
 
 // ret transfers full
-GdkAndroidSurface *gdk_android_display_get_surface_from_identifier (GdkAndroidDisplay *self, glong identifier);
+GdkAndroidSurface *gdk_android_display_get_surface_from_identifier (GdkAndroidDisplay *this, glong identifier);
 // surface: transfers none
-void gdk_android_display_add_surface (GdkAndroidDisplay *self, GdkAndroidSurface *surface);
+void gdk_android_display_add_surface (GdkAndroidDisplay *this, GdkAndroidSurface *surface);
 
-void gdk_android_display_update_night_mode (GdkAndroidDisplay *self, jobject context);
+void gdk_android_display_update_night_mode (GdkAndroidDisplay *this, jobject context);
 
 G_END_DECLS

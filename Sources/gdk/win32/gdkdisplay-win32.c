@@ -423,7 +423,7 @@ gdk_win32_display_get_next_serial (GdkDisplay *display)
 }
 
 static gboolean
-gdk_win32_display_create_d3d_devices (GdkWin32Display    *self,
+gdk_win32_display_create_d3d_devices (GdkWin32Display    *this,
                                       DXGI_ADAPTER_FLAG   required,
                                       DXGI_ADAPTER_FLAG   disallowed,
                                       ID3D11Device      **d3d11_device,
@@ -448,7 +448,7 @@ gdk_win32_display_create_d3d_devices (GdkWin32Display    *self,
   /* This function records the first error in the error variable and then
      sets error = NULL to ignore future errors. */
 
-  for (i = 0; IDXGIFactory4_EnumAdapters1 (self->dxgi_factory, i, &adapter) != DXGI_ERROR_NOT_FOUND; i++)
+  for (i = 0; IDXGIFactory4_EnumAdapters1 (this->dxgi_factory, i, &adapter) != DXGI_ERROR_NOT_FOUND; i++)
     {
       DXGI_ADAPTER_DESC1 desc;
 
@@ -512,7 +512,7 @@ gdk_win32_display_create_d3d_devices (GdkWin32Display    *self,
 }
 
 static void
-gdk_win32_display_init_dcomp (GdkWin32Display *self)
+gdk_win32_display_init_dcomp (GdkWin32Display *this)
 {
   const GUID my_IID_IDCompositionDevice = { 0xC37EA93A,0xE7AA,0x450D,0xB1,0x6F,0x97,0x46,0xCB,0x04,0x07,0xF3 };
   IDXGIDevice *dxgi_device;
@@ -520,15 +520,15 @@ gdk_win32_display_init_dcomp (GdkWin32Display *self)
   if (!gdk_has_feature (GDK_FEATURE_DCOMP))
     return;
   
-  hr_warn (ID3D11Device_QueryInterface (self->d3d11_device, &IID_IDXGIDevice, (void **) &dxgi_device));
+  hr_warn (ID3D11Device_QueryInterface (this->d3d11_device, &IID_IDXGIDevice, (void **) &dxgi_device));
 
-  hr_warn (DCompositionCreateDevice (dxgi_device, &my_IID_IDCompositionDevice, (void **) &self->dcomp_device));
+  hr_warn (DCompositionCreateDevice (dxgi_device, &my_IID_IDCompositionDevice, (void **) &this->dcomp_device));
 
   gdk_win32_com_clear (&dxgi_device);
 }
 
 static gboolean
-gdk_win32_display_init_d3d (GdkWin32Display  *self,
+gdk_win32_display_init_d3d (GdkWin32Display  *this,
                             GError          **error)
 {
   GError *errors[6] = { NULL, };
@@ -536,16 +536,16 @@ gdk_win32_display_init_d3d (GdkWin32Display  *self,
   gboolean res;
   gsize i;
 
-  hr = CreateDXGIFactory1 (&IID_IDXGIFactory4, (void **) &self->dxgi_factory);
+  hr = CreateDXGIFactory1 (&IID_IDXGIFactory4, (void **) &this->dxgi_factory);
   if (!gdk_win32_check_hresult (hr, error, "Failed to create DXGI factory"))
     return FALSE;
 
-  res = gdk_win32_display_create_d3d_devices (self, 0, DXGI_ADAPTER_FLAG_SOFTWARE, &self->d3d11_device, &self->d3d12_device, &errors[0]) ||
-        gdk_win32_display_create_d3d_devices (self, 0, DXGI_ADAPTER_FLAG_SOFTWARE, &self->d3d11_device, NULL, &errors[1]) ||
-        gdk_win32_display_create_d3d_devices (self, 0, DXGI_ADAPTER_FLAG_SOFTWARE, NULL, &self->d3d12_device, &errors[2]) ||
-        gdk_win32_display_create_d3d_devices (self, DXGI_ADAPTER_FLAG_SOFTWARE, 0, &self->d3d11_device, &self->d3d12_device, &errors[3]) ||
-        gdk_win32_display_create_d3d_devices (self, DXGI_ADAPTER_FLAG_SOFTWARE, 0, &self->d3d11_device, NULL, &errors[4]) ||
-        gdk_win32_display_create_d3d_devices (self, DXGI_ADAPTER_FLAG_SOFTWARE, 0, NULL, &self->d3d12_device, &errors[5]);
+  res = gdk_win32_display_create_d3d_devices (this, 0, DXGI_ADAPTER_FLAG_SOFTWARE, &this->d3d11_device, &this->d3d12_device, &errors[0]) ||
+        gdk_win32_display_create_d3d_devices (this, 0, DXGI_ADAPTER_FLAG_SOFTWARE, &this->d3d11_device, NULL, &errors[1]) ||
+        gdk_win32_display_create_d3d_devices (this, 0, DXGI_ADAPTER_FLAG_SOFTWARE, NULL, &this->d3d12_device, &errors[2]) ||
+        gdk_win32_display_create_d3d_devices (this, DXGI_ADAPTER_FLAG_SOFTWARE, 0, &this->d3d11_device, &this->d3d12_device, &errors[3]) ||
+        gdk_win32_display_create_d3d_devices (this, DXGI_ADAPTER_FLAG_SOFTWARE, 0, &this->d3d11_device, NULL, &errors[4]) ||
+        gdk_win32_display_create_d3d_devices (this, DXGI_ADAPTER_FLAG_SOFTWARE, 0, NULL, &this->d3d12_device, &errors[5]);
 
   if (error && !res)
     {
@@ -570,7 +570,7 @@ gdk_win32_display_init_d3d (GdkWin32Display  *self,
 
 /*<private>
  * gdk_win32_display_get_dcomp_device:
- * @self: the display
+ * @this: the display
  *
  * Gets the Direct Composition device used to composite
  * the UI.
@@ -582,28 +582,28 @@ gdk_win32_display_init_d3d (GdkWin32Display  *self,
  * Returns: (nullable): the device
  */
 IDCompositionDevice *
-gdk_win32_display_get_dcomp_device (GdkWin32Display *self)
+gdk_win32_display_get_dcomp_device (GdkWin32Display *this)
 {
-  return self->dcomp_device;
+  return this->dcomp_device;
 }
 
 /*<private>
  * gdk_win32_display_get_dxgi_factory:
- * @self: the display
+ * @this: the display
  *
  * Gets the factory used to create rendering resources.
  *
  * Returns: the factory
  */
 IDXGIFactory4 *
-gdk_win32_display_get_dxgi_factory (GdkWin32Display *self)
+gdk_win32_display_get_dxgi_factory (GdkWin32Display *this)
 {
-  return self->dxgi_factory;
+  return this->dxgi_factory;
 }
 
 /*<private>
  * gdk_win32_display_get_d3d11_device:
- * @self: the display
+ * @this: the display
  *
  * Gets the D3D11 device used for rendering. It will be
  * created with the factory from
@@ -613,14 +613,14 @@ gdk_win32_display_get_dxgi_factory (GdkWin32Display *self)
  * Returns: the D3D11 device used for rendering
  */
 ID3D11Device *
-gdk_win32_display_get_d3d11_device (GdkWin32Display *self)
+gdk_win32_display_get_d3d11_device (GdkWin32Display *this)
 {
-  return self->d3d11_device;
+  return this->d3d11_device;
 }
 
 /*<private>
  * gdk_win32_display_get_d3d12_device:
- * @self: the display
+ * @this: the display
  *
  * Gets the D3D12 device used for rendering. It will be
  * created with the factory from
@@ -635,9 +635,9 @@ gdk_win32_display_get_d3d11_device (GdkWin32Display *self)
  * Returns: (nullable) the D3D12 device used for rendering
  */
 ID3D12Device *
-gdk_win32_display_get_d3d12_device (GdkWin32Display *self)
+gdk_win32_display_get_d3d12_device (GdkWin32Display *this)
 {
-  return self->d3d12_device;
+  return this->d3d12_device;
 }
 
 static LRESULT CALLBACK
@@ -895,16 +895,16 @@ gdk_win32_display_sync (GdkDisplay * display)
 static void
 gdk_win32_display_dispose (GObject *object)
 {
-  GdkWin32Display *self = GDK_WIN32_DISPLAY (object);
+  GdkWin32Display *this = GDK_WIN32_DISPLAY (object);
 
-  if (self->hwnd != NULL)
+  if (this->hwnd != NULL)
     {
-      DestroyWindow (self->hwnd);
-      self->hwnd = NULL;
+      DestroyWindow (this->hwnd);
+      this->hwnd = NULL;
     }
 
-  gdk_win32_com_clear (&self->d3d12_device);
-  gdk_win32_com_clear (&self->dxgi_factory);
+  gdk_win32_com_clear (&this->d3d12_device);
+  gdk_win32_com_clear (&this->dxgi_factory);
 
   G_OBJECT_CLASS (gdk_win32_display_parent_class)->dispose (object);
 }
@@ -1220,11 +1220,11 @@ gdk_win32_display_notify_startup_complete (GdkDisplay  *display,
 GdkMonitor *
 gdk_win32_display_get_primary_monitor (GdkDisplay *display)
 {
-  GdkWin32Display *self = GDK_WIN32_DISPLAY (display);
+  GdkWin32Display *this = GDK_WIN32_DISPLAY (display);
   GdkMonitor *result;
 
   /* We arrange for the first monitor in the array to also be the primary monitor */
-  result = g_list_model_get_item (self->monitors, 0);
+  result = g_list_model_get_item (this->monitors, 0);
   g_object_unref (result);
 
   return result;
@@ -1233,9 +1233,9 @@ gdk_win32_display_get_primary_monitor (GdkDisplay *display)
 static GListModel *
 gdk_win32_display_get_monitors (GdkDisplay *display)
 {
-  GdkWin32Display *self = GDK_WIN32_DISPLAY (display);
+  GdkWin32Display *this = GDK_WIN32_DISPLAY (display);
 
-  return self->monitors;
+  return this->monitors;
 }
 
 guint

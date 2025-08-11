@@ -37,17 +37,17 @@ GDK_AVAILABLE_IN_ALL
 GtkWidget   *gtk_shortcut_label_new             (const char       *accelerator);
 
 GDK_AVAILABLE_IN_ALL
-const char *gtk_shortcut_label_get_accelerator (GtkShortcutLabel *self);
+const char *gtk_shortcut_label_get_accelerator (GtkShortcutLabel *this);
 
 GDK_AVAILABLE_IN_ALL
-void         gtk_shortcut_label_set_accelerator (GtkShortcutLabel *self,
+void         gtk_shortcut_label_set_accelerator (GtkShortcutLabel *this,
                                                  const char       *accelerator);
 
 GDK_AVAILABLE_IN_ALL
-const char *gtk_shortcut_label_get_disabled_text (GtkShortcutLabel *self);
+const char *gtk_shortcut_label_get_disabled_text (GtkShortcutLabel *this);
 
 GDK_AVAILABLE_IN_ALL
-void         gtk_shortcut_label_set_disabled_text (GtkShortcutLabel *self,
+void         gtk_shortcut_label_set_disabled_text (GtkShortcutLabel *this,
                                                    const char       *disabled_text);
 
 G_END_DECLS

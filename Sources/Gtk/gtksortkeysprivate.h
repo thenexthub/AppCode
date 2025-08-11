@@ -35,17 +35,17 @@ struct _GtkSortKeys
 
 struct _GtkSortKeysClass
 {
-  void                  (* free)                                (GtkSortKeys            *self);
+  void                  (* free)                                (GtkSortKeys            *this);
 
   GCompareDataFunc key_compare;
 
-  gboolean              (* is_compatible)                       (GtkSortKeys            *self,
+  gboolean              (* is_compatible)                       (GtkSortKeys            *this,
                                                                  GtkSortKeys            *other);
 
-  void                  (* init_key)                            (GtkSortKeys            *self,
+  void                  (* init_key)                            (GtkSortKeys            *this,
                                                                  gpointer                item,
                                                                  gpointer                key_memory);
-  void                  (* clear_key)                           (GtkSortKeys            *self,
+  void                  (* clear_key)                           (GtkSortKeys            *this,
                                                                  gpointer                key_memory);
 };
 
@@ -55,41 +55,41 @@ GtkSortKeys *           gtk_sort_keys_alloc                     (const GtkSortKe
                                                                  gsize                   key_align);
 #define gtk_sort_keys_new(_name, _klass, _key_size, _key_align) \
     ((_name *) gtk_sort_keys_alloc ((_klass), sizeof (_name), (_key_size), (_key_align)))
-GtkSortKeys *           gtk_sort_keys_ref                       (GtkSortKeys            *self);
-void                    gtk_sort_keys_unref                     (GtkSortKeys            *self);
+GtkSortKeys *           gtk_sort_keys_ref                       (GtkSortKeys            *this);
+void                    gtk_sort_keys_unref                     (GtkSortKeys            *this);
 
 GtkSortKeys *           gtk_sort_keys_new_equal                 (void);
 
-gsize                   gtk_sort_keys_get_key_size              (GtkSortKeys            *self);
-gsize                   gtk_sort_keys_get_key_align             (GtkSortKeys            *self);
-GCompareDataFunc        gtk_sort_keys_get_key_compare_func      (GtkSortKeys            *self);
-gboolean                gtk_sort_keys_is_compatible             (GtkSortKeys            *self,
+gsize                   gtk_sort_keys_get_key_size              (GtkSortKeys            *this);
+gsize                   gtk_sort_keys_get_key_align             (GtkSortKeys            *this);
+GCompareDataFunc        gtk_sort_keys_get_key_compare_func      (GtkSortKeys            *this);
+gboolean                gtk_sort_keys_is_compatible             (GtkSortKeys            *this,
                                                                  GtkSortKeys            *other);
-gboolean                gtk_sort_keys_needs_clear_key           (GtkSortKeys            *self);
+gboolean                gtk_sort_keys_needs_clear_key           (GtkSortKeys            *this);
 
 #define GTK_SORT_KEYS_ALIGN(_size,_align) (((_size) + (_align) - 1) & ~((_align) - 1))
 static inline int
-gtk_sort_keys_compare (GtkSortKeys *self,
+gtk_sort_keys_compare (GtkSortKeys *this,
                        gconstpointer a,
                        gconstpointer b)
 {
-  return self->klass->key_compare (a, b, self);
+  return this->klass->key_compare (a, b, this);
 }
                        
 static inline void
-gtk_sort_keys_init_key (GtkSortKeys *self,
+gtk_sort_keys_init_key (GtkSortKeys *this,
                         gpointer       item,
                         gpointer       key_memory)
 {
-  self->klass->init_key (self, item, key_memory);
+  this->klass->init_key (this, item, key_memory);
 }
 
 static inline void
-gtk_sort_keys_clear_key (GtkSortKeys *self,
+gtk_sort_keys_clear_key (GtkSortKeys *this,
                          gpointer       key_memory)
 {
-  if (self->klass->clear_key)
-    self->klass->clear_key (self, key_memory);
+  if (this->klass->clear_key)
+    this->klass->clear_key (this, key_memory);
 }
 
 

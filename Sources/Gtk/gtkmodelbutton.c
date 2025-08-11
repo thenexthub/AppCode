@@ -250,40 +250,40 @@ static void
 gtk_model_button_set_action_name (GtkActionable *actionable,
                                   const char    *action_name)
 {
-  GtkModelButton *self = GTK_MODEL_BUTTON (actionable);
+  GtkModelButton *this = GTK_MODEL_BUTTON (actionable);
 
-  if (!self->action_helper)
-    self->action_helper = gtk_action_helper_new (actionable);
+  if (!this->action_helper)
+    this->action_helper = gtk_action_helper_new (actionable);
 
-  gtk_action_helper_set_action_name (self->action_helper, action_name);
+  gtk_action_helper_set_action_name (this->action_helper, action_name);
 }
 
 static void
 gtk_model_button_set_action_target_value (GtkActionable *actionable,
                                           GVariant      *action_target)
 {
-  GtkModelButton *self = GTK_MODEL_BUTTON (actionable);
+  GtkModelButton *this = GTK_MODEL_BUTTON (actionable);
 
-  if (!self->action_helper)
-    self->action_helper = gtk_action_helper_new (actionable);
+  if (!this->action_helper)
+    this->action_helper = gtk_action_helper_new (actionable);
 
-  gtk_action_helper_set_action_target_value (self->action_helper, action_target);
+  gtk_action_helper_set_action_target_value (this->action_helper, action_target);
 }
 
 static const char *
 gtk_model_button_get_action_name (GtkActionable *actionable)
 {
-  GtkModelButton *self = GTK_MODEL_BUTTON (actionable);
+  GtkModelButton *this = GTK_MODEL_BUTTON (actionable);
 
-  return gtk_action_helper_get_action_name (self->action_helper);
+  return gtk_action_helper_get_action_name (this->action_helper);
 }
 
 static GVariant *
 gtk_model_button_get_action_target_value (GtkActionable *actionable)
 {
-  GtkModelButton *self = GTK_MODEL_BUTTON (actionable);
+  GtkModelButton *this = GTK_MODEL_BUTTON (actionable);
 
-  return gtk_action_helper_get_action_target_value (self->action_helper);
+  return gtk_action_helper_get_action_target_value (this->action_helper);
 }
 
 static void
@@ -386,34 +386,34 @@ update_node_ordering (GtkModelButton *button)
 }
 
 static void
-update_end_indicator (GtkModelButton *self)
+update_end_indicator (GtkModelButton *this)
 {
-  const gboolean is_ltr = gtk_widget_get_direction (GTK_WIDGET (self)) == GTK_TEXT_DIR_LTR;
+  const gboolean is_ltr = gtk_widget_get_direction (GTK_WIDGET (this)) == GTK_TEXT_DIR_LTR;
 
-  if (!self->end_indicator)
+  if (!this->end_indicator)
     return;
 
   if (is_ltr)
     {
-      gtk_widget_add_css_class (self->end_indicator, "right");
-      gtk_widget_remove_css_class (self->end_indicator, "left");
+      gtk_widget_add_css_class (this->end_indicator, "right");
+      gtk_widget_remove_css_class (this->end_indicator, "left");
     }
   else
     {
-      gtk_widget_add_css_class (self->end_indicator, "left");
-      gtk_widget_remove_css_class (self->end_indicator, "right");
+      gtk_widget_add_css_class (this->end_indicator, "left");
+      gtk_widget_remove_css_class (this->end_indicator, "right");
     }
 }
 
 static GtkStateFlags
-get_start_indicator_state (GtkModelButton *self)
+get_start_indicator_state (GtkModelButton *this)
 {
-  GtkStateFlags state = gtk_widget_get_state_flags (GTK_WIDGET (self));
+  GtkStateFlags state = gtk_widget_get_state_flags (GTK_WIDGET (this));
 
-  if (self->role == GTK_BUTTON_ROLE_CHECK ||
-      self->role == GTK_BUTTON_ROLE_RADIO)
+  if (this->role == GTK_BUTTON_ROLE_CHECK ||
+      this->role == GTK_BUTTON_ROLE_RADIO)
     {
-      if (self->active)
+      if (this->active)
         state |= GTK_STATE_FLAG_CHECKED;
       else
         state &= ~GTK_STATE_FLAG_CHECKED;
@@ -423,39 +423,39 @@ get_start_indicator_state (GtkModelButton *self)
 }
 
 static void
-update_start_indicator (GtkModelButton *self)
+update_start_indicator (GtkModelButton *this)
 {
-  const gboolean is_ltr = gtk_widget_get_direction (GTK_WIDGET (self)) == GTK_TEXT_DIR_LTR;
+  const gboolean is_ltr = gtk_widget_get_direction (GTK_WIDGET (this)) == GTK_TEXT_DIR_LTR;
 
-  if (!self->start_indicator)
+  if (!this->start_indicator)
     return;
 
-  gtk_widget_set_state_flags (self->start_indicator, get_start_indicator_state (self), TRUE);
+  gtk_widget_set_state_flags (this->start_indicator, get_start_indicator_state (this), TRUE);
 
   if (is_ltr)
     {
-      gtk_widget_add_css_class (self->start_indicator, "left");
-      gtk_widget_remove_css_class (self->start_indicator, "right");
+      gtk_widget_add_css_class (this->start_indicator, "left");
+      gtk_widget_remove_css_class (this->start_indicator, "right");
     }
   else
     {
-      gtk_widget_add_css_class (self->start_indicator, "right");
-      gtk_widget_remove_css_class (self->start_indicator, "left");
+      gtk_widget_add_css_class (this->start_indicator, "right");
+      gtk_widget_remove_css_class (this->start_indicator, "left");
     }
 
 }
 
 static void
-gtk_model_button_update_state (GtkModelButton *self)
+gtk_model_button_update_state (GtkModelButton *this)
 {
   GtkStateFlags indicator_state;
 
-  update_start_indicator (self);
-  update_end_indicator (self);
+  update_start_indicator (this);
+  update_end_indicator (this);
 
-  indicator_state = get_start_indicator_state (self);
-  if (self->iconic)
-    gtk_widget_set_state_flags (GTK_WIDGET (self), indicator_state, TRUE);
+  indicator_state = get_start_indicator_state (this);
+  if (this->iconic)
+    gtk_widget_set_state_flags (GTK_WIDGET (this), indicator_state, TRUE);
 }
 
 static void
@@ -480,12 +480,12 @@ gtk_model_button_direction_changed (GtkWidget        *widget,
 }
 
 static void
-update_node_name (GtkModelButton *self)
+update_node_name (GtkModelButton *this)
 {
   const char *start_name;
   const char *end_name;
 
-  switch (self->role)
+  switch (this->role)
     {
     case GTK_BUTTON_ROLE_TITLE:
       start_name = "arrow";
@@ -493,7 +493,7 @@ update_node_name (GtkModelButton *self)
       break;
     case GTK_BUTTON_ROLE_NORMAL:
       start_name = NULL;
-      if (self->menu_name || self->popover)
+      if (this->menu_name || this->popover)
         end_name = "arrow";
       else
         end_name = NULL;
@@ -513,46 +513,46 @@ update_node_name (GtkModelButton *self)
       g_assert_not_reached ();
     }
 
-  if (self->iconic)
+  if (this->iconic)
     {
       start_name = NULL;
       end_name = NULL;
     }
 
-  if (start_name && !self->start_indicator)
+  if (start_name && !this->start_indicator)
     {
-      self->start_indicator = gtk_builtin_icon_new (start_name);
-      gtk_widget_set_halign (self->start_indicator, GTK_ALIGN_CENTER);
-      gtk_widget_set_valign (self->start_indicator, GTK_ALIGN_CENTER);
-      update_start_indicator (self);
+      this->start_indicator = gtk_builtin_icon_new (start_name);
+      gtk_widget_set_halign (this->start_indicator, GTK_ALIGN_CENTER);
+      gtk_widget_set_valign (this->start_indicator, GTK_ALIGN_CENTER);
+      update_start_indicator (this);
 
-      gtk_box_append (GTK_BOX (self->start_box), self->start_indicator);
+      gtk_box_append (GTK_BOX (this->start_box), this->start_indicator);
     }
   else if (start_name)
     {
-      gtk_css_node_set_name (gtk_widget_get_css_node (self->start_indicator), g_quark_from_static_string (start_name));
+      gtk_css_node_set_name (gtk_widget_get_css_node (this->start_indicator), g_quark_from_static_string (start_name));
     }
-  else if (self->start_indicator)
+  else if (this->start_indicator)
     {
-      gtk_box_remove (GTK_BOX (self->start_box), self->start_indicator);
-      self->start_indicator = NULL;
+      gtk_box_remove (GTK_BOX (this->start_box), this->start_indicator);
+      this->start_indicator = NULL;
     }
 
-  if (end_name && !self->end_indicator)
+  if (end_name && !this->end_indicator)
     {
-      self->end_indicator = gtk_builtin_icon_new (end_name);
-      gtk_widget_set_halign (self->end_indicator, GTK_ALIGN_CENTER);
-      gtk_widget_set_valign (self->end_indicator, GTK_ALIGN_CENTER);
-      gtk_widget_set_parent (self->end_indicator, GTK_WIDGET (self));
-      update_end_indicator (self);
+      this->end_indicator = gtk_builtin_icon_new (end_name);
+      gtk_widget_set_halign (this->end_indicator, GTK_ALIGN_CENTER);
+      gtk_widget_set_valign (this->end_indicator, GTK_ALIGN_CENTER);
+      gtk_widget_set_parent (this->end_indicator, GTK_WIDGET (this));
+      update_end_indicator (this);
     }
   else if (end_name)
     {
-      gtk_css_node_set_name (gtk_widget_get_css_node (self->end_indicator), g_quark_from_static_string (end_name));
+      gtk_css_node_set_name (gtk_widget_get_css_node (this->end_indicator), g_quark_from_static_string (end_name));
     }
   else
     {
-      g_clear_pointer (&self->end_indicator, gtk_widget_unparent);
+      g_clear_pointer (&this->end_indicator, gtk_widget_unparent);
     }
 }
 
@@ -610,99 +610,99 @@ update_accessible_properties (GtkModelButton *button)
 }
 
 static void
-gtk_model_button_set_role (GtkModelButton *self,
+gtk_model_button_set_role (GtkModelButton *this,
                            GtkButtonRole   role)
 {
-  if (role == self->role)
+  if (role == this->role)
     return;
 
-  self->role = role;
+  this->role = role;
 
   if (role == GTK_BUTTON_ROLE_TITLE)
     {
-      gtk_widget_add_css_class (GTK_WIDGET (self), "title");
-      gtk_widget_set_halign (self->label, GTK_ALIGN_CENTER);
+      gtk_widget_add_css_class (GTK_WIDGET (this), "title");
+      gtk_widget_set_halign (this->label, GTK_ALIGN_CENTER);
     }
   else
     {
-      gtk_widget_remove_css_class (GTK_WIDGET (self), "title");
-      gtk_widget_set_halign (self->label, GTK_ALIGN_START);
+      gtk_widget_remove_css_class (GTK_WIDGET (this), "title");
+      gtk_widget_set_halign (this->label, GTK_ALIGN_START);
     }
 
-  update_node_name (self);
-  gtk_model_button_update_state (self);
+  update_node_name (this);
+  gtk_model_button_update_state (this);
 
-  update_at_context (self);
-  update_accessible_properties (self);
+  update_at_context (this);
+  update_accessible_properties (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ROLE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ROLE]);
 }
 
 static void
-update_visibility (GtkModelButton *self)
+update_visibility (GtkModelButton *this)
 {
   gboolean has_icon;
   gboolean has_text;
 
-  has_icon = self->image && gtk_image_get_storage_type (GTK_IMAGE (self->image)) != GTK_IMAGE_EMPTY;
-  has_text = gtk_label_get_text (GTK_LABEL (self->label))[0] != '\0';
+  has_icon = this->image && gtk_image_get_storage_type (GTK_IMAGE (this->image)) != GTK_IMAGE_EMPTY;
+  has_text = gtk_label_get_text (GTK_LABEL (this->label))[0] != '\0';
 
-  gtk_widget_set_visible (self->label, has_text && (!self->iconic || !has_icon));
-  gtk_widget_set_hexpand (self->label,
-                          gtk_widget_get_visible (self->label) && !has_icon);
+  gtk_widget_set_visible (this->label, has_text && (!this->iconic || !has_icon));
+  gtk_widget_set_hexpand (this->label,
+                          gtk_widget_get_visible (this->label) && !has_icon);
 
-  if (self->accel_label)
-    gtk_widget_set_visible (self->accel_label, has_text && (!self->iconic || !has_icon));
+  if (this->accel_label)
+    gtk_widget_set_visible (this->accel_label, has_text && (!this->iconic || !has_icon));
 
-  if (self->image)
+  if (this->image)
     {
-      gtk_widget_set_visible (self->image, has_icon && (self->iconic || !has_text));
-      gtk_widget_set_hexpand (self->image,
-                              has_icon && (!has_text || !gtk_widget_get_visible (self->label)));
+      gtk_widget_set_visible (this->image, has_icon && (this->iconic || !has_text));
+      gtk_widget_set_hexpand (this->image,
+                              has_icon && (!has_text || !gtk_widget_get_visible (this->label)));
     }
 }
 
 static void
-update_tooltip (GtkModelButton *self)
+update_tooltip (GtkModelButton *this)
 {
-  if (self->iconic)
+  if (this->iconic)
     {
-      if (gtk_label_get_use_markup (GTK_LABEL (self->label)))
-        gtk_widget_set_tooltip_markup (GTK_WIDGET (self), gtk_label_get_text (GTK_LABEL (self->label)));
+      if (gtk_label_get_use_markup (GTK_LABEL (this->label)))
+        gtk_widget_set_tooltip_markup (GTK_WIDGET (this), gtk_label_get_text (GTK_LABEL (this->label)));
       else
-        gtk_widget_set_tooltip_text (GTK_WIDGET (self), gtk_label_get_text (GTK_LABEL (self->label)));
+        gtk_widget_set_tooltip_text (GTK_WIDGET (this), gtk_label_get_text (GTK_LABEL (this->label)));
     }
   else
     {
-      gtk_widget_set_tooltip_text (GTK_WIDGET (self), NULL);
+      gtk_widget_set_tooltip_text (GTK_WIDGET (this), NULL);
     }
 }
 
 static void
-gtk_model_button_set_icon (GtkModelButton *self,
+gtk_model_button_set_icon (GtkModelButton *this,
                            GIcon          *icon)
 {
-  if (!self->image && icon)
+  if (!this->image && icon)
     {
-      self->image = g_object_new (GTK_TYPE_IMAGE,
+      this->image = g_object_new (GTK_TYPE_IMAGE,
                                   "accessible-role", GTK_ACCESSIBLE_ROLE_PRESENTATION,
                                   "gicon", icon,
                                   NULL);
-      gtk_widget_insert_before (self->image, GTK_WIDGET (self), self->label);
+      gtk_widget_insert_before (this->image, GTK_WIDGET (this), this->label);
     }
-  else if (self->image && !icon)
+  else if (this->image && !icon)
     {
-      g_clear_pointer (&self->image, gtk_widget_unparent);
+      g_clear_pointer (&this->image, gtk_widget_unparent);
     }
   else if (icon)
     {
-      gtk_image_set_from_gicon (GTK_IMAGE (self->image), icon);
+      gtk_image_set_from_gicon (GTK_IMAGE (this->image), icon);
     }
 
-  update_visibility (self);
-  update_tooltip (self);
+  update_visibility (this);
+  update_tooltip (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ICON]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ICON]);
 }
 
 static void
@@ -769,20 +769,20 @@ gtk_model_button_set_menu_name (GtkModelButton *button,
 }
 
 static void
-gtk_model_button_set_iconic (GtkModelButton *self,
+gtk_model_button_set_iconic (GtkModelButton *this,
                              gboolean        iconic)
 {
-  GtkWidget *widget = GTK_WIDGET (self);
+  GtkWidget *widget = GTK_WIDGET (this);
   GtkCssNode *widget_node;
 
   iconic = !!iconic;
-  if (self->iconic == iconic)
+  if (this->iconic == iconic)
     return;
 
-  self->iconic = iconic;
+  this->iconic = iconic;
 
   widget_node = gtk_widget_get_css_node (widget);
-  gtk_widget_set_visible (self->start_box, !iconic);
+  gtk_widget_set_visible (this->start_box, !iconic);
   if (iconic)
     {
       gtk_css_node_set_name (widget_node, g_quark_from_static_string ("button"));
@@ -800,18 +800,18 @@ gtk_model_button_set_iconic (GtkModelButton *self,
 
   if (!iconic)
     {
-      if (self->start_indicator)
+      if (this->start_indicator)
         {
-          gtk_box_remove (GTK_BOX (self->start_box), self->start_indicator);
-          self->start_indicator = NULL;
+          gtk_box_remove (GTK_BOX (this->start_box), this->start_indicator);
+          this->start_indicator = NULL;
         }
-      g_clear_pointer (&self->end_indicator, gtk_widget_unparent);
+      g_clear_pointer (&this->end_indicator, gtk_widget_unparent);
     }
 
-  update_node_name (self);
-  update_visibility (self);
-  update_tooltip (self);
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ICONIC]);
+  update_node_name (this);
+  update_visibility (this);
+  update_tooltip (this);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ICONIC]);
 }
 
 static void
@@ -839,7 +839,7 @@ gtk_model_button_set_popover (GtkModelButton *button,
 }
 
 static void
-update_accel (GtkModelButton *self,
+update_accel (GtkModelButton *this,
               const char     *accel)
 {
   if (accel)
@@ -848,61 +848,61 @@ update_accel (GtkModelButton *self,
       GdkModifierType mods;
       char *str;
 
-      if (!self->accel_label)
+      if (!this->accel_label)
         {
-          self->accel_label = g_object_new (GTK_TYPE_LABEL,
+          this->accel_label = g_object_new (GTK_TYPE_LABEL,
                                             "accessible-role", GTK_ACCESSIBLE_ROLE_PRESENTATION,
                                             "css-name", "accelerator",
                                             NULL);
-          gtk_widget_insert_before (self->accel_label, GTK_WIDGET (self), NULL);
-          gtk_widget_set_hexpand (self->accel_label, TRUE),
-          gtk_widget_set_halign (self->accel_label, GTK_ALIGN_END);
+          gtk_widget_insert_before (this->accel_label, GTK_WIDGET (this), NULL);
+          gtk_widget_set_hexpand (this->accel_label, TRUE),
+          gtk_widget_set_halign (this->accel_label, GTK_ALIGN_END);
         }
 
       gtk_accelerator_parse (accel, &key, &mods);
       str = gtk_accelerator_get_label (key, mods);
-      gtk_label_set_label (GTK_LABEL (self->accel_label), str);
+      gtk_label_set_label (GTK_LABEL (this->accel_label), str);
       g_free (str);
 
-      if (GTK_IS_POPOVER (gtk_widget_get_native (GTK_WIDGET (self))))
+      if (GTK_IS_POPOVER (gtk_widget_get_native (GTK_WIDGET (this))))
         {
           GtkShortcutTrigger *trigger;
           GtkShortcutAction *action;
 
-          if (self->controller)
+          if (this->controller)
             {
-              while (g_list_model_get_n_items (G_LIST_MODEL (self->controller)) > 0)
+              while (g_list_model_get_n_items (G_LIST_MODEL (this->controller)) > 0)
                 {
-                  GtkShortcut *shortcut = g_list_model_get_item (G_LIST_MODEL (self->controller), 0);
-                  gtk_shortcut_controller_remove_shortcut (GTK_SHORTCUT_CONTROLLER (self->controller),
+                  GtkShortcut *shortcut = g_list_model_get_item (G_LIST_MODEL (this->controller), 0);
+                  gtk_shortcut_controller_remove_shortcut (GTK_SHORTCUT_CONTROLLER (this->controller),
                                                            shortcut);
                   g_object_unref (shortcut);
                 }
             }
           else
             {
-              self->controller = gtk_shortcut_controller_new ();
-              gtk_shortcut_controller_set_scope (GTK_SHORTCUT_CONTROLLER (self->controller), GTK_SHORTCUT_SCOPE_MANAGED);
-              gtk_widget_add_controller (GTK_WIDGET (self), self->controller);
+              this->controller = gtk_shortcut_controller_new ();
+              gtk_shortcut_controller_set_scope (GTK_SHORTCUT_CONTROLLER (this->controller), GTK_SHORTCUT_SCOPE_MANAGED);
+              gtk_widget_add_controller (GTK_WIDGET (this), this->controller);
             }
 
           trigger = gtk_keyval_trigger_new (key, mods);
           action = gtk_signal_action_new ("clicked");
-          gtk_shortcut_controller_add_shortcut (GTK_SHORTCUT_CONTROLLER (self->controller),
+          gtk_shortcut_controller_add_shortcut (GTK_SHORTCUT_CONTROLLER (this->controller),
                                                 gtk_shortcut_new (trigger, action));
         }
     }
   else
     {
-      g_clear_pointer (&self->accel_label, gtk_widget_unparent);
-      if (self->controller)
+      g_clear_pointer (&this->accel_label, gtk_widget_unparent);
+      if (this->controller)
         {
-          gtk_widget_remove_controller (GTK_WIDGET (self), GTK_EVENT_CONTROLLER (self->controller));
-          self->controller = NULL;
+          gtk_widget_remove_controller (GTK_WIDGET (this), GTK_EVENT_CONTROLLER (this->controller));
+          this->controller = NULL;
         }
     }
 
-  update_accessible_properties (self);
+  update_accessible_properties (this);
 }
 
 static void
@@ -923,56 +923,56 @@ gtk_model_button_get_property (GObject    *object,
                                GValue     *value,
                                GParamSpec *pspec)
 {
-  GtkModelButton *self = GTK_MODEL_BUTTON (object);
+  GtkModelButton *this = GTK_MODEL_BUTTON (object);
 
   switch (prop_id)
     {
     case PROP_ROLE:
-      g_value_set_enum (value, self->role);
+      g_value_set_enum (value, this->role);
       break;
 
     case PROP_ICON:
-      g_value_set_object (value, self->image ? gtk_image_get_gicon (GTK_IMAGE (self->image)) : NULL);
+      g_value_set_object (value, this->image ? gtk_image_get_gicon (GTK_IMAGE (this->image)) : NULL);
       break;
 
     case PROP_TEXT:
-      g_value_set_string (value, gtk_label_get_text (GTK_LABEL (self->label)));
+      g_value_set_string (value, gtk_label_get_text (GTK_LABEL (this->label)));
       break;
 
     case PROP_USE_MARKUP:
-      g_value_set_boolean (value, gtk_label_get_use_markup (GTK_LABEL (self->label)));
+      g_value_set_boolean (value, gtk_label_get_use_markup (GTK_LABEL (this->label)));
       break;
 
     case PROP_ACTIVE:
-      g_value_set_boolean (value, self->active);
+      g_value_set_boolean (value, this->active);
       break;
 
     case PROP_MENU_NAME:
-      g_value_set_string (value, self->menu_name);
+      g_value_set_string (value, this->menu_name);
       break;
 
     case PROP_POPOVER:
-      g_value_set_object (value, self->popover);
+      g_value_set_object (value, this->popover);
       break;
 
     case PROP_ICONIC:
-      g_value_set_boolean (value, self->iconic);
+      g_value_set_boolean (value, this->iconic);
       break;
 
     case PROP_ACCEL:
-      g_value_set_string (value, self->accel);
+      g_value_set_string (value, this->accel);
       break;
 
     case PROP_INDICATOR_SIZE_GROUP:
-      g_value_set_object (value, self->indicators);
+      g_value_set_object (value, this->indicators);
       break;
 
     case PROP_ACTION_NAME:
-      g_value_set_string (value, gtk_action_helper_get_action_name (self->action_helper));
+      g_value_set_string (value, gtk_action_helper_get_action_name (this->action_helper));
       break;
 
     case PROP_ACTION_TARGET:
-      g_value_set_variant (value, gtk_action_helper_get_action_target_value (self->action_helper));
+      g_value_set_variant (value, gtk_action_helper_get_action_target_value (this->action_helper));
       break;
 
     default:
@@ -1094,42 +1094,42 @@ switch_menu (GtkModelButton *button)
 }
 
 static void
-gtk_model_button_clicked (GtkModelButton *self)
+gtk_model_button_clicked (GtkModelButton *this)
 {
-  if (self->menu_name != NULL)
+  if (this->menu_name != NULL)
     {
-      switch_menu (self);
+      switch_menu (this);
     }
-  else if (self->popover != NULL)
+  else if (this->popover != NULL)
     {
       GtkPopoverMenu *menu;
       GtkWidget *submenu;
 
-      menu = (GtkPopoverMenu *)gtk_widget_get_ancestor (GTK_WIDGET (self), GTK_TYPE_POPOVER_MENU);
-      submenu = self->popover;
+      menu = (GtkPopoverMenu *)gtk_widget_get_ancestor (GTK_WIDGET (this), GTK_TYPE_POPOVER_MENU);
+      submenu = this->popover;
       gtk_popover_popup (GTK_POPOVER (submenu));
       gtk_popover_menu_set_open_submenu (menu, submenu);
       gtk_popover_menu_set_parent_menu (GTK_POPOVER_MENU (submenu), GTK_WIDGET (menu));
 
-      gtk_accessible_update_state (GTK_ACCESSIBLE (self),
+      gtk_accessible_update_state (GTK_ACCESSIBLE (this),
                                    GTK_ACCESSIBLE_STATE_EXPANDED, TRUE,
                                    -1);
     }
-  else if (!self->keep_open)
+  else if (!this->keep_open)
     {
       GtkWidget *popover;
 
-      popover = gtk_widget_get_ancestor (GTK_WIDGET (self), GTK_TYPE_POPOVER);
+      popover = gtk_widget_get_ancestor (GTK_WIDGET (this), GTK_TYPE_POPOVER);
       if (popover)
         gtk_popover_popdown (GTK_POPOVER (popover));
 
-      gtk_accessible_update_state (GTK_ACCESSIBLE (self),
+      gtk_accessible_update_state (GTK_ACCESSIBLE (this),
                                    GTK_ACCESSIBLE_STATE_EXPANDED, FALSE,
                                    -1);
     }
 
-  if (self->action_helper)
-    gtk_action_helper_activate (self->action_helper);
+  if (this->action_helper)
+    gtk_action_helper_activate (this->action_helper);
 }
 
 static gboolean
@@ -1137,11 +1137,11 @@ toggle_cb (GtkWidget *widget,
            GVariant  *args,
            gpointer   user_data)
 {
-  GtkModelButton *self = GTK_MODEL_BUTTON (widget);
+  GtkModelButton *this = GTK_MODEL_BUTTON (widget);
 
-  self->keep_open = self->role != GTK_BUTTON_ROLE_NORMAL;
+  this->keep_open = this->role != GTK_BUTTON_ROLE_NORMAL;
   g_signal_emit (widget, signals[SIGNAL_CLICKED], 0);
-  self->keep_open = FALSE;
+  this->keep_open = FALSE;
 
   return TRUE;
 }
@@ -1532,43 +1532,43 @@ gesture_unpaired_release (GtkGestureClick  *gesture,
 }
 
 static void
-gtk_model_button_init (GtkModelButton *self)
+gtk_model_button_init (GtkModelButton *this)
 {
   GtkEventController *controller;
   GtkGesture *gesture;
 
-  gtk_widget_set_focusable (GTK_WIDGET (self), TRUE);
+  gtk_widget_set_focusable (GTK_WIDGET (this), TRUE);
 
-  self->role = GTK_BUTTON_ROLE_NORMAL;
-  self->label = g_object_new (GTK_TYPE_LABEL, "accessible-role", GTK_ACCESSIBLE_ROLE_PRESENTATION, NULL);
-  gtk_widget_set_halign (self->label, GTK_ALIGN_START);
-  gtk_widget_set_parent (self->label, GTK_WIDGET (self));
+  this->role = GTK_BUTTON_ROLE_NORMAL;
+  this->label = g_object_new (GTK_TYPE_LABEL, "accessible-role", GTK_ACCESSIBLE_ROLE_PRESENTATION, NULL);
+  gtk_widget_set_halign (this->label, GTK_ALIGN_START);
+  gtk_widget_set_parent (this->label, GTK_WIDGET (this));
 
-  self->start_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_insert_after (self->start_box, GTK_WIDGET (self), NULL);
-  update_node_ordering (self);
+  this->start_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_insert_after (this->start_box, GTK_WIDGET (this), NULL);
+  update_node_ordering (this);
 
-  gtk_widget_add_css_class (GTK_WIDGET (self), "flat");
+  gtk_widget_add_css_class (GTK_WIDGET (this), "flat");
 
   controller = gtk_event_controller_motion_new ();
-  g_signal_connect (controller, "notify::contains-pointer", G_CALLBACK (pointer_cb), self);
-  g_signal_connect (controller, "motion", G_CALLBACK (motion_cb), self);
-  gtk_widget_add_controller (GTK_WIDGET (self), controller);
+  g_signal_connect (controller, "notify::contains-pointer", G_CALLBACK (pointer_cb), this);
+  g_signal_connect (controller, "motion", G_CALLBACK (motion_cb), this);
+  gtk_widget_add_controller (GTK_WIDGET (this), controller);
 
   controller = gtk_event_controller_focus_new ();
   gtk_event_controller_set_propagation_limit (controller, GTK_LIMIT_NONE);
   g_signal_connect (controller, "enter", G_CALLBACK (focus_in_cb), NULL);
-  gtk_widget_add_controller (GTK_WIDGET (self), controller);
+  gtk_widget_add_controller (GTK_WIDGET (this), controller);
 
   gesture = gtk_gesture_click_new ();
   gtk_gesture_single_set_touch_only (GTK_GESTURE_SINGLE (gesture), FALSE);
   gtk_gesture_single_set_exclusive (GTK_GESTURE_SINGLE (gesture), TRUE);
   gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (gesture), GDK_BUTTON_PRIMARY);
-  g_signal_connect (gesture, "pressed", G_CALLBACK (gesture_pressed), self);
-  g_signal_connect (gesture, "released", G_CALLBACK (gesture_released), self);
-  g_signal_connect (gesture, "unpaired-release", G_CALLBACK (gesture_unpaired_release), self);
+  g_signal_connect (gesture, "pressed", G_CALLBACK (gesture_pressed), this);
+  g_signal_connect (gesture, "released", G_CALLBACK (gesture_released), this);
+  g_signal_connect (gesture, "unpaired-release", G_CALLBACK (gesture_unpaired_release), this);
   gtk_event_controller_set_propagation_phase (GTK_EVENT_CONTROLLER (gesture), GTK_PHASE_CAPTURE);
-  gtk_widget_add_controller (GTK_WIDGET (self), GTK_EVENT_CONTROLLER (gesture));
+  gtk_widget_add_controller (GTK_WIDGET (this), GTK_EVENT_CONTROLLER (gesture));
 }
 
 /**

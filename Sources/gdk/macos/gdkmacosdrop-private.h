@@ -56,8 +56,8 @@ struct _GdkMacosDropClass
 GType             gdk_macos_drop_get_type       (void) G_GNUC_CONST;
 GdkMacosDrop    *_gdk_macos_drop_new            (GdkMacosSurface    *surface,
                                                  id<NSDraggingInfo>  info);
-NSDragOperation  _gdk_macos_drop_operation      (GdkMacosDrop       *self);
-void             _gdk_macos_drop_update_actions (GdkMacosDrop       *self,
+NSDragOperation  _gdk_macos_drop_operation      (GdkMacosDrop       *this);
+void             _gdk_macos_drop_update_actions (GdkMacosDrop       *this,
                                                  id<NSDraggingInfo>  info);
 
 G_END_DECLS

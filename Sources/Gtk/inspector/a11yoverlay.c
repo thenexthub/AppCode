@@ -338,7 +338,7 @@ center_over_within (graphene_rect_t       *rect,
 }
 
 static void
-recurse_child_widgets (GtkA11yOverlay *self,
+recurse_child_widgets (GtkA11yOverlay *this,
                        GtkWidget      *widget,
                        GtkSnapshot    *snapshot)
 {
@@ -350,7 +350,7 @@ recurse_child_widgets (GtkA11yOverlay *self,
   if (!gtk_widget_get_mapped (widget))
     return;
 
-  severity = check_widget_accessibility_errors (widget, self->context, &hint);
+  severity = check_widget_accessibility_errors (widget, this->context, &hint);
 
   if (severity != FIX_SEVERITY_GOOD)
     {
@@ -361,9 +361,9 @@ recurse_child_widgets (GtkA11yOverlay *self,
       height = gtk_widget_get_height (widget);
 
       if (severity == FIX_SEVERITY_ERROR)
-        color = self->error_color;
+        color = this->error_color;
       else
-        color = self->recommend_color;
+        color = this->recommend_color;
 
       gtk_snapshot_save (snapshot);
       gtk_snapshot_push_debug (snapshot, "Widget a11y debugging");
@@ -442,7 +442,7 @@ recurse_child_widgets (GtkA11yOverlay *self,
   /* Recurse into child widgets */
 
   role = gtk_accessible_get_accessible_role (GTK_ACCESSIBLE (widget));
-  g_array_append_val (self->context, role);
+  g_array_append_val (this->context, role);
 
   for (child = gtk_widget_get_first_child (widget);
        child != NULL;
@@ -451,12 +451,12 @@ recurse_child_widgets (GtkA11yOverlay *self,
       gtk_snapshot_save (snapshot);
       gtk_snapshot_transform (snapshot, child->priv->transform);
 
-      recurse_child_widgets (self, child, snapshot);
+      recurse_child_widgets (this, child, snapshot);
 
       gtk_snapshot_restore (snapshot);
     }
 
-  g_array_remove_index (self->context, self->context->len - 1);
+  g_array_remove_index (this->context, this->context->len - 1);
 }
 
 static void
@@ -465,21 +465,21 @@ gtk_a11y_overlay_snapshot (GtkInspectorOverlay *overlay,
                            GskRenderNode       *node,
                            GtkWidget           *widget)
 {
-  GtkA11yOverlay *self = GTK_A11Y_OVERLAY (overlay);
+  GtkA11yOverlay *this = GTK_A11Y_OVERLAY (overlay);
 
-  g_assert (self->context->len == 0);
+  g_assert (this->context->len == 0);
 
-  recurse_child_widgets (self, widget, snapshot);
+  recurse_child_widgets (this, widget, snapshot);
 
-  g_assert (self->context->len == 0);
+  g_assert (this->context->len == 0);
 }
 
 static void
 gtk_a11y_overlay_finalize (GObject *object)
 {
-  GtkA11yOverlay *self = GTK_A11Y_OVERLAY (object);
+  GtkA11yOverlay *this = GTK_A11Y_OVERLAY (object);
 
-  g_array_free (self->context, TRUE);
+  g_array_free (this->context, TRUE);
 
   G_OBJECT_CLASS (gtk_a11y_overlay_parent_class)->finalize (object);
 }
@@ -496,20 +496,20 @@ gtk_a11y_overlay_class_init (GtkA11yOverlayClass *klass)
 }
 
 static void
-gtk_a11y_overlay_init (GtkA11yOverlay *self)
+gtk_a11y_overlay_init (GtkA11yOverlay *this)
 {
-  self->recommend_color = (GdkRGBA) { 0.0, 0.5, 1.0, 0.2 };
-  self->error_color = (GdkRGBA) { 1.0, 0.0, 0.0, 0.2 };
+  this->recommend_color = (GdkRGBA) { 0.0, 0.5, 1.0, 0.2 };
+  this->error_color = (GdkRGBA) { 1.0, 0.0, 0.0, 0.2 };
 
-  self->context = g_array_new (FALSE, FALSE, sizeof (GtkAccessibleRole));
+  this->context = g_array_new (FALSE, FALSE, sizeof (GtkAccessibleRole));
 }
 
 GtkInspectorOverlay *
 gtk_a11y_overlay_new (void)
 {
-  GtkA11yOverlay *self;
+  GtkA11yOverlay *this;
 
-  self = g_object_new (GTK_TYPE_A11Y_OVERLAY, NULL);
+  this = g_object_new (GTK_TYPE_A11Y_OVERLAY, NULL);
 
-  return GTK_INSPECTOR_OVERLAY (self);
+  return GTK_INSPECTOR_OVERLAY (this);
 }

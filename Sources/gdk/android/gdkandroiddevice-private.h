@@ -40,7 +40,7 @@ struct _GdkAndroidDevice
   gfloat last_x, last_y;
 };
 
-void gdk_android_device_maybe_update_surface (GdkAndroidDevice *self, GdkAndroidSurface *new_surface, GdkModifierType new_mods, guint32 timestamp, gfloat x, gfloat y);
-void gdk_android_device_keyboard_maybe_update_surface_focus (GdkAndroidDevice *self, GdkAndroidSurface *new_surface);
+void gdk_android_device_maybe_update_surface (GdkAndroidDevice *this, GdkAndroidSurface *new_surface, GdkModifierType new_mods, guint32 timestamp, gfloat x, gfloat y);
+void gdk_android_device_keyboard_maybe_update_surface_focus (GdkAndroidDevice *this, GdkAndroidSurface *new_surface);
 
 G_END_DECLS

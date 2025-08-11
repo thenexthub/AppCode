@@ -303,7 +303,7 @@ gdk_content_formats_unref (GdkContentFormats *formats)
  * Prints the given @formats into a string for human consumption.
  *
  * The result of this function can later be parsed with
- * [func@Gdk.ContentFormats.parse].
+ * [fn@Gdk.ContentFormats.parse].
  */
 void
 gdk_content_formats_print (GdkContentFormats *formats,
@@ -334,7 +334,7 @@ gdk_content_formats_print (GdkContentFormats *formats,
  *
  * Prints the given @formats into a human-readable string.
  *
- * The resulting string can be parsed with [func@Gdk.ContentFormats.parse].
+ * The resulting string can be parsed with [fn@Gdk.ContentFormats.parse].
  *
  * This is a small wrapper around [method@Gdk.ContentFormats.print]
  * to help when debugging.

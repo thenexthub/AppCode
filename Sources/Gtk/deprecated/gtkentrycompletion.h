@@ -80,7 +80,7 @@ GtkTreeModel       *gtk_entry_completion_get_model              (GtkEntryComplet
 
 GDK_DEPRECATED_IN_4_10
 void                gtk_entry_completion_set_match_func         (GtkEntryCompletion          *completion,
-                                                                 GtkEntryCompletionMatchFunc  func,
+                                                                 GtkEntryCompletionMatchFunc  fn,
                                                                  gpointer                     func_data,
                                                                  GDestroyNotify               func_notify);
 GDK_DEPRECATED_IN_4_10

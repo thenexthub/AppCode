@@ -93,7 +93,7 @@ gdk_wayland_vulkan_context_class_init (GdkWaylandVulkanContextClass *klass)
 }
 
 static void
-gdk_wayland_vulkan_context_init (GdkWaylandVulkanContext *self)
+gdk_wayland_vulkan_context_init (GdkWaylandVulkanContext *this)
 {
 }
 

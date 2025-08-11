@@ -4,7 +4,7 @@
 
 G_BEGIN_DECLS
 
-void                    gtk_list_model_get_section              (GListModel           *self,
+void                    gtk_list_model_get_section              (GListModel           *this,
                                                                  guint                 position,
                                                                  guint                *out_start,
                                                                  guint                *out_end);

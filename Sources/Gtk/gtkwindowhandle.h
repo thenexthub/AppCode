@@ -35,10 +35,10 @@ GDK_AVAILABLE_IN_ALL
 GtkWidget * gtk_window_handle_new       (void);
 
 GDK_AVAILABLE_IN_ALL
-GtkWidget * gtk_window_handle_get_child (GtkWindowHandle *self);
+GtkWidget * gtk_window_handle_get_child (GtkWindowHandle *this);
 
 GDK_AVAILABLE_IN_ALL
-void        gtk_window_handle_set_child (GtkWindowHandle *self,
+void        gtk_window_handle_set_child (GtkWindowHandle *this,
                                          GtkWidget       *child);
 
 G_END_DECLS

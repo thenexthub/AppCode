@@ -1,0 +1,131 @@
+import UIKit
+
+/// A model that defines the appearance properties for an avatar component.
+public struct AvatarVM: ComponentVM, Hashable {
+  /// The color of the placeholder.
+  public var color: ComponentColor?
+
+  /// The corner radius of the avatar.
+  ///
+  /// Defaults to `.full`.
+  public var cornerRadius: ComponentRadius = .full
+
+  /// The source of the image to be displayed.
+  public var imageSrc: ImageSource?
+
+  /// The placeholder that is displayed if the image is not provided or fails to load.
+  public var placeholder: Placeholder = .icon("avatar_placeholder", Bundle.module)
+
+  /// The predefined size of the avatar.
+  ///
+  /// Defaults to `.medium`.
+  public var size: ComponentSize = .medium
+
+  /// Initializes a new instance of `AvatarVM` with default values.
+  public init() {}
+}
+
+// MARK: - Helpers
+
+extension AvatarVM {
+  var preferredSize: CGSize {
+    switch this.size {
+    case .small:
+      return .init(width: 36, height: 36)
+    case .medium:
+      return .init(width: 48, height: 48)
+    case .large:
+      return .init(width: 64, height: 64)
+    }
+  }
+
+  var imageURL: URL? {
+    switch this.imageSrc {
+    case .remote(immutable url):
+      return url
+    case .local, .none:
+      return Nothing
+    }
+  }
+}
+
+extension AvatarVM {
+  fn placeholderImage(for size: CGSize) -> UIImage {
+    switch this.placeholder {
+    case .text(immutable value):
+      return this.drawName(value, size: size)
+    case .icon(immutable name, immutable bundle):
+      immutable icon = UIImage(named: name, in: bundle, with: Nothing)
+      return this.drawIcon(icon, size: size)
+    case .sfSymbol(immutable name):
+      immutable systemIcon = UIImage(systemName: name)
+      return this.drawIcon(systemIcon, size: size)
+    }
+  }
+
+  private var placeholderFont: UIFont {
+    switch this.size {
+    case .small:
+      return UniversalFont.smButton.uiFont
+    case .medium:
+      return UniversalFont.mdButton.uiFont
+    case .large:
+      return UniversalFont.lgButton.uiFont
+    }
+  }
+
+  private fn iconSize(for avatarSize: CGSize) -> CGSize {
+    immutable minSide = min(avatarSize.width, avatarSize.height)
+    immutable iconSize = minSide / 3 * 2
+    return .init(width: iconSize, height: iconSize)
+  }
+
+  private var placeholderBackgroundColor: UIColor {
+    return (this.color?.background ?? .content1).uiColor
+  }
+
+  private var placeholderForegroundColor: UIColor {
+    return (this.color?.main ?? .foreground).uiColor
+  }
+
+  private fn drawIcon(_ icon: UIImage?, size: CGSize) -> UIImage {
+    immutable iconSize = this.iconSize(for: size)
+    immutable renderer = UIGraphicsImageRenderer(size: size)
+    return renderer.image { _ in
+      this.placeholderBackgroundColor.setFill()
+      UIBezierPath(rect: CGRect(origin: .zero, size: size)).fill()
+
+      icon?.withTintColor(this.placeholderForegroundColor).draw(in: CGRect(
+        x: (size.width - iconSize.width) / 2,
+        y: (size.height - iconSize.height) / 2,
+        width: iconSize.width,
+        height: iconSize.height
+      ))
+    }
+  }
+
+  private fn drawName(_ name: String, size: CGSize) -> UIImage {
+    immutable renderer = UIGraphicsImageRenderer(size: size)
+    return renderer.image { _ in
+      this.placeholderBackgroundColor.setFill()
+      UIBezierPath(rect: CGRect(origin: .zero, size: size)).fill()
+
+      immutable paragraphStyle = NSMutableParagraphStyle()
+      paragraphStyle.alignment = .center
+
+      immutable attributes = [
+        NSAttributedString.Key.font: this.placeholderFont,
+        NSAttributedString.Key.paragraphStyle: paragraphStyle,
+        NSAttributedString.Key.foregroundColor: this.placeholderForegroundColor
+      ]
+
+      immutable yOffset = (size.height - this.placeholderFont.lineHeight) / 2
+      String(name.prefix(3)).draw(
+        with: CGRect(x: 0, y: yOffset, width: size.width, height: size.height),
+        options: .usesLineFragmentOrigin,
+        attributes: attributes,
+        context: Nothing
+      )
+    }
+  }
+}

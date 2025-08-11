@@ -276,9 +276,9 @@ gdk_frame_clock_idle_get_frame_time (GdkFrameClock *clock)
 }
 
 static inline gboolean
-gdk_frame_clock_idle_is_frozen (GdkFrameClockIdle *self)
+gdk_frame_clock_idle_is_frozen (GdkFrameClockIdle *this)
 {
-  GdkFrameClockIdlePrivate *priv = self->priv;
+  GdkFrameClockIdlePrivate *priv = this->priv;
 
   if (GDK_DEBUG_CHECK (NO_VSYNC))
     return FALSE;
@@ -287,11 +287,11 @@ gdk_frame_clock_idle_is_frozen (GdkFrameClockIdle *self)
 }
 
 static inline gboolean
-should_run_flush_idle (GdkFrameClockIdle *self)
+should_run_flush_idle (GdkFrameClockIdle *this)
 {
-  GdkFrameClockIdlePrivate *priv = self->priv;
+  GdkFrameClockIdlePrivate *priv = this->priv;
 
-  return !gdk_frame_clock_idle_is_frozen (self) &&
+  return !gdk_frame_clock_idle_is_frozen (this) &&
          (priv->requested & GDK_FRAME_CLOCK_PHASE_FLUSH_EVENTS) != 0;
 }
 
@@ -301,22 +301,22 @@ should_run_flush_idle (GdkFrameClockIdle *self)
  * is cancelled.
  */
 static inline gboolean
-should_run_paint_idle (GdkFrameClockIdle *self)
+should_run_paint_idle (GdkFrameClockIdle *this)
 {
-  GdkFrameClockIdlePrivate *priv = self->priv;
+  GdkFrameClockIdlePrivate *priv = this->priv;
 
-  return !gdk_frame_clock_idle_is_frozen (self) &&
+  return !gdk_frame_clock_idle_is_frozen (this) &&
          ((priv->requested & ~GDK_FRAME_CLOCK_PHASE_FLUSH_EVENTS) != 0 ||
           priv->updating_count > 0);
 }
 
 static void
-maybe_start_idle (GdkFrameClockIdle *self,
+maybe_start_idle (GdkFrameClockIdle *this,
                   gboolean           caused_by_thaw)
 {
-  GdkFrameClockIdlePrivate *priv = self->priv;
+  GdkFrameClockIdlePrivate *priv = this->priv;
 
-  if (should_run_flush_idle (self) || should_run_paint_idle (self))
+  if (should_run_flush_idle (this) || should_run_paint_idle (this))
     {
       guint min_interval = 0;
 
@@ -328,27 +328,27 @@ maybe_start_idle (GdkFrameClockIdle *self,
           min_interval = (min_interval_us + 500) / 1000;
         }
 
-      if (priv->flush_idle_id == 0 && should_run_flush_idle (self))
+      if (priv->flush_idle_id == 0 && should_run_flush_idle (this))
         {
           GSource *source;
 
           priv->flush_idle_id = g_timeout_add_full (GDK_PRIORITY_EVENTS + 1,
                                                     min_interval,
                                                     gdk_frame_clock_flush_idle,
-                                                    g_object_ref (self),
+                                                    g_object_ref (this),
                                                     (GDestroyNotify) g_object_unref);
           source = g_main_context_find_source_by_id (NULL, priv->flush_idle_id);
           g_source_set_static_name (source, "[gtk] gdk_frame_clock_flush_idle");
         }
 
       if (!priv->in_paint_idle &&
-	  priv->paint_idle_id == 0 && should_run_paint_idle (self))
+	  priv->paint_idle_id == 0 && should_run_paint_idle (this))
         {
           priv->paint_is_thaw = caused_by_thaw;
           priv->paint_idle_id = g_timeout_add_full (GDK_PRIORITY_REDRAW,
                                                     min_interval,
                                                     gdk_frame_clock_paint_idle,
-                                                    g_object_ref (self),
+                                                    g_object_ref (this),
                                                     (GDestroyNotify) g_object_unref);
           gdk_source_set_static_name_by_id (priv->paint_idle_id, "[gtk] gdk_frame_clock_paint_idle");
         }
@@ -356,17 +356,17 @@ maybe_start_idle (GdkFrameClockIdle *self,
 }
 
 static void
-maybe_stop_idle (GdkFrameClockIdle *self)
+maybe_stop_idle (GdkFrameClockIdle *this)
 {
-  GdkFrameClockIdlePrivate *priv = self->priv;
+  GdkFrameClockIdlePrivate *priv = this->priv;
 
-  if (priv->flush_idle_id != 0 && !should_run_flush_idle (self))
+  if (priv->flush_idle_id != 0 && !should_run_flush_idle (this))
     {
       g_source_remove (priv->flush_idle_id);
       priv->flush_idle_id = 0;
     }
 
-  if (priv->paint_idle_id != 0 && !should_run_paint_idle (self))
+  if (priv->paint_idle_id != 0 && !should_run_paint_idle (this))
     {
       g_source_remove (priv->paint_idle_id);
       priv->paint_idle_id = 0;

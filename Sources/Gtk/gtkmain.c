@@ -248,7 +248,7 @@ static gboolean do_setlocale = TRUE;
 /**
  * gtk_disable_setlocale:
  *
- * Prevents [func@Gtk.init] and [func@Gtk.init_check] from calling `setlocale()`.
+ * Prevents [fn@Gtk.init] and [fn@Gtk.init_check] from calling `setlocale()`.
  *
  * You would want to use this function if you wanted to set the locale for
  * your program to something other than the user’s locale, or if you wanted
@@ -464,7 +464,7 @@ static gboolean
 _gtk_module_has_mixed_deps (GModule *module_to_check)
 {
   GModule *module;
-  gpointer func;
+  gpointer fn;
   gboolean result;
 
   if (!module_to_check)
@@ -472,9 +472,9 @@ _gtk_module_has_mixed_deps (GModule *module_to_check)
   else
     module = module_to_check;
 
-  if (g_module_symbol (module, "gtk_progress_get_type", &func))
+  if (g_module_symbol (module, "gtk_progress_get_type", &fn))
     result = TRUE;
-  else if (g_module_symbol (module, "gtk_misc_get_type", &func))
+  else if (g_module_symbol (module, "gtk_misc_get_type", &fn))
     result = TRUE;
   else
     result = FALSE;
@@ -606,7 +606,7 @@ do_post_parse_initialization (void)
  *
  * Initializes GTK.
  *
- * This function does the same work as [func@Gtk.init] with only a
+ * This function does the same work as [fn@Gtk.init] with only a
  * single change: It does not terminate the program if the windowing
  * system can’t be initialized. Instead it returns false on failure.
  *
@@ -657,7 +657,7 @@ gtk_init_check (void)
  * in your GUI applications.
  *
  * It will initialize everything needed to operate the toolkit. In particular,
- * it will open the default display (see [func@Gdk.Display.get_default]).
+ * it will open the default display (see [fn@Gdk.Display.get_default]).
  *
  * If you are using [class@Gtk.Application], you usually don't have to call this
  * function; the [vfunc@Gio.Application.startup] handler does it for you. Though,
@@ -666,7 +666,7 @@ gtk_init_check (void)
  *
  * This function will terminate your program if it was unable to initialize
  * the windowing system for some reason. If you want your program to fall back
- * to a textual interface, call [func@Gtk.init_check] instead.
+ * to a textual interface, call [fn@Gtk.init_check] instead.
  *
  * GTK calls `signal (SIGPIPE, SIG_IGN)` during initialization, to ignore
  * SIGPIPE signals, since these are almost never wanted in graphical
@@ -751,7 +751,7 @@ gtk_init_check_abi_check (int num_checks, size_t sizeof_GtkWindow, size_t sizeof
  *
  * Returns whether GTK has been initialized.
  *
- * See [func@Gtk.init].
+ * See [fn@Gtk.init].
  *
  * Returns: the initialization status
  */
@@ -774,8 +774,8 @@ gtk_is_initialized (void)
  * direction otherwise. `GTK_TEXT_DIR_NONE` will never be returned.
  *
  * GTK sets the default text direction according to the locale during
- * [func@Gtk.init], and you should normally use [method@Gtk.Widget.get_direction]
- * or [func@Gtk.Widget.get_default_direction] to obtain the current direction.
+ * [fn@Gtk.init], and you should normally use [method@Gtk.Widget.get_direction]
+ * or [fn@Gtk.Widget.get_default_direction] to obtain the current direction.
  *
  * This function is only needed rare cases when the locale is
  * changed after GTK has already been initialized. In this case,
@@ -843,7 +843,7 @@ gtk_get_locale_direction (void)
  * locale. It determines, for example, whether GTK uses
  * the right-to-left or left-to-right text direction.
  *
- * This function is equivalent to [func@Pango.Language.get_default].
+ * This function is equivalent to [fn@Pango.Language.get_default].
  * See that function for details.
  *
  * Returns: (transfer none): the default language

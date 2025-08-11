@@ -831,7 +831,7 @@ gdk_clipboard_read_value_internal (GdkClipboard        *clipboard,
  *
  * For local clipboard contents that are available in the given `GType`,
  * the value will be copied directly. Otherwise, GDK will try to use
- * [func@content_deserialize_async] to convert the clipboard's data.
+ * [fn@content_deserialize_async] to convert the clipboard's data.
  */
 void
 gdk_clipboard_read_value_async (GdkClipboard        *clipboard,
@@ -1236,7 +1236,7 @@ gdk_clipboard_set_content (GdkClipboard       *clipboard,
  *
  * Values should be passed the same way they are passed to other value
  * collecting APIs, such as [method@GObject.Object.set] or
- * [func@GObject.signal_emit].
+ * [fn@GObject.signal_emit].
  *
  * ```c
  * gdk_clipboard_set (clipboard, GTK_TYPE_STRING, "Hello World");

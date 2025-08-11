@@ -72,7 +72,7 @@ static VkResult
 gdk_win32_vulkan_context_create_surface (GdkVulkanContext *context,
                                          VkSurfaceKHR     *vk_surface)
 {
-  GdkWin32VulkanContext *self = GDK_WIN32_VULKAN_CONTEXT (context);
+  GdkWin32VulkanContext *this = GDK_WIN32_VULKAN_CONTEXT (context);
 
   return GDK_VK_CHECK (vkCreateWin32SurfaceKHR,
                        gdk_vulkan_context_get_instance (context),
@@ -80,7 +80,7 @@ gdk_win32_vulkan_context_create_surface (GdkVulkanContext *context,
                            .pNext = NULL,
                            .sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
                            .hinstance = this_module (),
-                           .hwnd = self->handle
+                           .hwnd = this->handle
                        }),
                        NULL,
                        vk_surface);
@@ -95,7 +95,7 @@ static gboolean
 gdk_win32_vulkan_context_surface_attach (GdkDrawContext  *context,
                                          GError         **error)
 {
-  GdkWin32VulkanContext *self = GDK_WIN32_VULKAN_CONTEXT (context);
+  GdkWin32VulkanContext *this = GDK_WIN32_VULKAN_CONTEXT (context);
   GdkDrawContext *draw_context = GDK_DRAW_CONTEXT (context);
   GdkSurface *surface;
   GdkWin32Display *display;
@@ -114,7 +114,7 @@ gdk_win32_vulkan_context_surface_attach (GdkDrawContext  *context,
   
   gdk_draw_context_get_buffer_size (draw_context, &width, &height);
   
-  self->handle = CreateWindowExW (0,
+  this->handle = CreateWindowExW (0,
                                   MAKEINTRESOURCEW (gdk_win32_vulkan_context_get_class ()),
                                   NULL,
                                   WS_POPUP,
@@ -123,28 +123,28 @@ gdk_win32_vulkan_context_surface_attach (GdkDrawContext  *context,
                                   GDK_SURFACE_HWND (surface),
                                   NULL,
                                   this_module (),
-                                  self);
-  if (self->handle == NULL)
+                                  this);
+  if (this->handle == NULL)
     {
       DWORD err = GetLastError ();
       gdk_win32_check_hresult (HRESULT_FROM_WIN32 (err), error, "Failed to create rendering window");
       return FALSE;
     }
   
-  hr_warn (DwmSetWindowAttribute (self->handle, DWMWA_CLOAK, (BOOL[1]) { true }, sizeof (BOOL)));
+  hr_warn (DwmSetWindowAttribute (this->handle, DWMWA_CLOAK, (BOOL[1]) { true }, sizeof (BOOL)));
 
   if (!GDK_DRAW_CONTEXT_CLASS (gdk_win32_vulkan_context_parent_class)->surface_attach (context, error))
     {
-      if (!DestroyWindow (self->handle))
+      if (!DestroyWindow (this->handle))
         WIN32_API_FAILED ("DestroyWindow");
-      self->handle = NULL;
+      this->handle = NULL;
       return FALSE;
     }
 
-  ShowWindow (self->handle, SW_SHOWNOACTIVATE);
+  ShowWindow (this->handle, SW_SHOWNOACTIVATE);
 
   hr_warn (IDCompositionDevice_CreateSurfaceFromHwnd (gdk_win32_display_get_dcomp_device (display),
-                                                      self->handle,
+                                                      this->handle,
                                                       &dcomp_surface));
   gdk_win32_surface_set_dcomp_content (GDK_WIN32_SURFACE (surface), dcomp_surface);
 
@@ -154,7 +154,7 @@ gdk_win32_vulkan_context_surface_attach (GdkDrawContext  *context,
 static void
 gdk_win32_vulkan_context_surface_detach (GdkDrawContext *context)
 {
-  GdkWin32VulkanContext *self = GDK_WIN32_VULKAN_CONTEXT (context);
+  GdkWin32VulkanContext *this = GDK_WIN32_VULKAN_CONTEXT (context);
   GdkSurface *surface = gdk_draw_context_get_surface (context);
 
   GDK_DRAW_CONTEXT_CLASS (gdk_win32_vulkan_context_parent_class)->surface_detach (context);
@@ -163,23 +163,23 @@ gdk_win32_vulkan_context_surface_detach (GdkDrawContext *context)
     {
       gdk_win32_surface_set_dcomp_content (GDK_WIN32_SURFACE (surface), NULL);
 
-      if (!DestroyWindow (self->handle))
+      if (!DestroyWindow (this->handle))
         WIN32_API_FAILED ("DestroyWindow");
-      self->handle = NULL;
+      this->handle = NULL;
     }
 }
 
 static void
 gdk_win32_vulkan_context_surface_resized (GdkDrawContext *draw_context)
 {
-  GdkWin32VulkanContext *self = GDK_WIN32_VULKAN_CONTEXT (draw_context);
+  GdkWin32VulkanContext *this = GDK_WIN32_VULKAN_CONTEXT (draw_context);
   guint width, height;
 
-  if (self->handle)
+  if (this->handle)
     {
       gdk_draw_context_get_buffer_size (draw_context, &width, &height);
 
-      API_CALL (SetWindowPos, (self->handle,
+      API_CALL (SetWindowPos, (this->handle,
                               SWP_NOZORDER_SPECIFIED,
                               0,
                               0,
@@ -205,7 +205,7 @@ gdk_win32_vulkan_context_class_init (GdkWin32VulkanContextClass *klass)
 }
 
 static void
-gdk_win32_vulkan_context_init (GdkWin32VulkanContext *self)
+gdk_win32_vulkan_context_init (GdkWin32VulkanContext *this)
 {
 }
 

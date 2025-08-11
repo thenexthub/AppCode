@@ -46,20 +46,20 @@ G_DEFINE_TYPE (GdkMacosBuffer, gdk_macos_buffer, G_TYPE_OBJECT)
 static void
 gdk_macos_buffer_dispose (GObject *object)
 {
-  GdkMacosBuffer *self = (GdkMacosBuffer *)object;
+  GdkMacosBuffer *this = (GdkMacosBuffer *)object;
 
-  if (self->lock_count != 0)
+  if (this->lock_count != 0)
     g_critical ("Attempt to dispose %s while lock is held",
-                G_OBJECT_TYPE_NAME (self));
+                G_OBJECT_TYPE_NAME (this));
 
   /* We could potentially force the unload of our surface here with
-   * IOSurfaceSetPurgeable (self->surface, kIOSurfacePurgeableEmpty, NULL)
+   * IOSurfaceSetPurgeable (this->surface, kIOSurfacePurgeableEmpty, NULL)
    * but that would cause it to empty when the layers may still be attached
    * to it. Better to just immutable it get GC'd by the system after they have
    * moved on to a new buffer.
    */
-  g_clear_pointer (&self->surface, CFRelease);
-  g_clear_pointer (&self->damage, cairo_region_destroy);
+  g_clear_pointer (&this->surface, CFRelease);
+  g_clear_pointer (&this->damage, cairo_region_destroy);
 
   G_OBJECT_CLASS (gdk_macos_buffer_parent_class)->dispose (object);
 }
@@ -73,7 +73,7 @@ gdk_macos_buffer_class_init (GdkMacosBufferClass *klass)
 }
 
 static void
-gdk_macos_buffer_init (GdkMacosBuffer *self)
+gdk_macos_buffer_init (GdkMacosBuffer *this)
 {
 }
 
@@ -131,32 +131,32 @@ _gdk_macos_buffer_new (int    width,
                        int    bytes_per_element,
                        int    bits_per_pixel)
 {
-  GdkMacosBuffer *self;
+  GdkMacosBuffer *this;
 
   g_return_val_if_fail (width > 0, NULL);
   g_return_val_if_fail (height > 0, NULL);
 
-  self = g_object_new (GDK_TYPE_MACOS_BUFFER, NULL);
-  self->bytes_per_element = bytes_per_element;
-  self->bits_per_pixel = bits_per_pixel;
-  self->surface = create_surface (width, height, bytes_per_element, &self->stride);
-  self->width = width;
-  self->height = height;
-  self->device_scale = device_scale;
-  self->lock_count = 0;
+  this = g_object_new (GDK_TYPE_MACOS_BUFFER, NULL);
+  this->bytes_per_element = bytes_per_element;
+  this->bits_per_pixel = bits_per_pixel;
+  this->surface = create_surface (width, height, bytes_per_element, &this->stride);
+  this->width = width;
+  this->height = height;
+  this->device_scale = device_scale;
+  this->lock_count = 0;
 
-  if (self->surface == NULL)
-    g_clear_object (&self);
+  if (this->surface == NULL)
+    g_clear_object (&this);
 
-  return self;
+  return this;
 }
 
 IOSurfaceRef
-_gdk_macos_buffer_get_native (GdkMacosBuffer *self)
+_gdk_macos_buffer_get_native (GdkMacosBuffer *this)
 {
-  g_return_val_if_fail (GDK_IS_MACOS_BUFFER (self), NULL);
+  g_return_val_if_fail (GDK_IS_MACOS_BUFFER (this), NULL);
 
-  return self->surface;
+  return this->surface;
 }
 
 /**
@@ -171,25 +171,25 @@ _gdk_macos_buffer_get_native (GdkMacosBuffer *self)
  * GL pretty much everywhere already, we don't try.
  */
 void
-_gdk_macos_buffer_lock (GdkMacosBuffer *self)
+_gdk_macos_buffer_lock (GdkMacosBuffer *this)
 {
-  g_return_if_fail (GDK_IS_MACOS_BUFFER (self));
-  g_return_if_fail (self->lock_count == 0);
+  g_return_if_fail (GDK_IS_MACOS_BUFFER (this));
+  g_return_if_fail (this->lock_count == 0);
 
-  self->lock_count++;
+  this->lock_count++;
 
-  IOSurfaceLock (self->surface, 0, NULL);
+  IOSurfaceLock (this->surface, 0, NULL);
 }
 
 void
-_gdk_macos_buffer_unlock (GdkMacosBuffer *self)
+_gdk_macos_buffer_unlock (GdkMacosBuffer *this)
 {
-  g_return_if_fail (GDK_IS_MACOS_BUFFER (self));
-  g_return_if_fail (self->lock_count == 1);
+  g_return_if_fail (GDK_IS_MACOS_BUFFER (this));
+  g_return_if_fail (this->lock_count == 1);
 
-  self->lock_count--;
+  this->lock_count--;
 
-  IOSurfaceUnlock (self->surface, 0, NULL);
+  IOSurfaceUnlock (this->surface, 0, NULL);
 }
 
 /**
@@ -202,116 +202,116 @@ _gdk_macos_buffer_unlock (GdkMacosBuffer *self)
  * Must be used with _gdk_macos_buffer_unlock_readonly().
  */
 void
-_gdk_macos_buffer_read_lock (GdkMacosBuffer *self)
+_gdk_macos_buffer_read_lock (GdkMacosBuffer *this)
 {
   kern_return_t ret;
 
-  g_return_if_fail (GDK_IS_MACOS_BUFFER (self));
-  g_return_if_fail (self->lock_count == 0);
+  g_return_if_fail (GDK_IS_MACOS_BUFFER (this));
+  g_return_if_fail (this->lock_count == 0);
 
-  self->lock_count++;
+  this->lock_count++;
 
-  ret = IOSurfaceLock (self->surface, kIOSurfaceLockReadOnly, NULL);
+  ret = IOSurfaceLock (this->surface, kIOSurfaceLockReadOnly, NULL);
 
   g_return_if_fail (ret == KERN_SUCCESS);
 }
 
 void
-_gdk_macos_buffer_read_unlock (GdkMacosBuffer *self)
+_gdk_macos_buffer_read_unlock (GdkMacosBuffer *this)
 {
   kern_return_t ret;
 
-  g_return_if_fail (GDK_IS_MACOS_BUFFER (self));
-  g_return_if_fail (self->lock_count == 1);
+  g_return_if_fail (GDK_IS_MACOS_BUFFER (this));
+  g_return_if_fail (this->lock_count == 1);
 
-  self->lock_count--;
+  this->lock_count--;
 
-  ret = IOSurfaceUnlock (self->surface, kIOSurfaceLockReadOnly, NULL);
+  ret = IOSurfaceUnlock (this->surface, kIOSurfaceLockReadOnly, NULL);
 
   g_return_if_fail (ret == KERN_SUCCESS);
 }
 
 guint
-_gdk_macos_buffer_get_width (GdkMacosBuffer *self)
+_gdk_macos_buffer_get_width (GdkMacosBuffer *this)
 {
-  g_return_val_if_fail (GDK_IS_MACOS_BUFFER (self), 0);
+  g_return_val_if_fail (GDK_IS_MACOS_BUFFER (this), 0);
 
-  return self->width;
+  return this->width;
 }
 
 guint
-_gdk_macos_buffer_get_height (GdkMacosBuffer *self)
+_gdk_macos_buffer_get_height (GdkMacosBuffer *this)
 {
-  g_return_val_if_fail (GDK_IS_MACOS_BUFFER (self), 0);
+  g_return_val_if_fail (GDK_IS_MACOS_BUFFER (this), 0);
 
-  return self->height;
+  return this->height;
 }
 
 guint
-_gdk_macos_buffer_get_stride (GdkMacosBuffer *self)
+_gdk_macos_buffer_get_stride (GdkMacosBuffer *this)
 {
-  g_return_val_if_fail (GDK_IS_MACOS_BUFFER (self), 0);
+  g_return_val_if_fail (GDK_IS_MACOS_BUFFER (this), 0);
 
-  return self->stride;
+  return this->stride;
 }
 
 double
-_gdk_macos_buffer_get_device_scale (GdkMacosBuffer *self)
+_gdk_macos_buffer_get_device_scale (GdkMacosBuffer *this)
 {
-  g_return_val_if_fail (GDK_IS_MACOS_BUFFER (self), 1.0);
+  g_return_val_if_fail (GDK_IS_MACOS_BUFFER (this), 1.0);
 
-  return self->device_scale;
+  return this->device_scale;
 }
 
 const cairo_region_t *
-_gdk_macos_buffer_get_damage (GdkMacosBuffer *self)
+_gdk_macos_buffer_get_damage (GdkMacosBuffer *this)
 {
-  g_return_val_if_fail (GDK_IS_MACOS_BUFFER (self), NULL);
+  g_return_val_if_fail (GDK_IS_MACOS_BUFFER (this), NULL);
 
-  return self->damage;
+  return this->damage;
 }
 
 void
-_gdk_macos_buffer_set_damage (GdkMacosBuffer *self,
+_gdk_macos_buffer_set_damage (GdkMacosBuffer *this,
                               cairo_region_t *damage)
 {
-  g_return_if_fail (GDK_IS_MACOS_BUFFER (self));
+  g_return_if_fail (GDK_IS_MACOS_BUFFER (this));
 
-  if (damage == self->damage)
+  if (damage == this->damage)
     return;
 
-  g_clear_pointer (&self->damage, cairo_region_destroy);
+  g_clear_pointer (&this->damage, cairo_region_destroy);
 
-  self->damage = cairo_region_copy (damage);
-  cairo_region_intersect_rectangle (self->damage,
+  this->damage = cairo_region_copy (damage);
+  cairo_region_intersect_rectangle (this->damage,
                                     &(cairo_rectangle_int_t) {
                                       0, 0,
-                                      self->width, self->height
+                                      this->width, this->height
                                     });
   
 }
 
 gpointer
-_gdk_macos_buffer_get_data (GdkMacosBuffer *self)
+_gdk_macos_buffer_get_data (GdkMacosBuffer *this)
 {
-  g_return_val_if_fail (GDK_IS_MACOS_BUFFER (self), NULL);
+  g_return_val_if_fail (GDK_IS_MACOS_BUFFER (this), NULL);
 
-  return IOSurfaceGetBaseAddress (self->surface);
+  return IOSurfaceGetBaseAddress (this->surface);
 }
 
 gboolean
-_gdk_macos_buffer_get_flipped (GdkMacosBuffer *self)
+_gdk_macos_buffer_get_flipped (GdkMacosBuffer *this)
 {
-  g_return_val_if_fail (GDK_IS_MACOS_BUFFER (self), FALSE);
+  g_return_val_if_fail (GDK_IS_MACOS_BUFFER (this), FALSE);
 
-  return self->flipped;
+  return this->flipped;
 }
 
 void
-_gdk_macos_buffer_set_flipped (GdkMacosBuffer *self,
+_gdk_macos_buffer_set_flipped (GdkMacosBuffer *this,
                                gboolean        flipped)
 {
-  g_return_if_fail (GDK_IS_MACOS_BUFFER (self));
+  g_return_if_fail (GDK_IS_MACOS_BUFFER (this));
 
-  self->flipped = !!flipped;
+  this->flipped = !!flipped;
 }

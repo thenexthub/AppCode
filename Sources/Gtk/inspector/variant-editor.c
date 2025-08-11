@@ -47,9 +47,9 @@ typedef struct
 static void
 variant_editor_changed_cb (GObject                   *obj,
                            GParamSpec                *pspec,
-                           GtkInspectorVariantEditor *self)
+                           GtkInspectorVariantEditor *this)
 {
-  self->callback (GTK_WIDGET (self), self->data);
+  this->callback (GTK_WIDGET (this), this->data);
 }
 
 G_DEFINE_TYPE (GtkInspectorVariantEditor, gtk_inspector_variant_editor, GTK_TYPE_WIDGET)
@@ -63,14 +63,14 @@ gtk_inspector_variant_editor_init (GtkInspectorVariantEditor *editor)
 static void
 dispose (GObject *object)
 {
-  GtkInspectorVariantEditor *self = GTK_INSPECTOR_VARIANT_EDITOR (object);
+  GtkInspectorVariantEditor *this = GTK_INSPECTOR_VARIANT_EDITOR (object);
 
-  if (self->editor)
+  if (this->editor)
    {
-      g_signal_handlers_disconnect_by_func (self->editor, variant_editor_changed_cb, self->data);
+      g_signal_handlers_disconnect_by_func (this->editor, variant_editor_changed_cb, this->data);
 
-      gtk_widget_unparent (self->editor);
-      self->editor = NULL;
+      gtk_widget_unparent (this->editor);
+      this->editor = NULL;
     }
 
   G_OBJECT_CLASS (gtk_inspector_variant_editor_parent_class)->dispose (object);
@@ -88,55 +88,55 @@ gtk_inspector_variant_editor_class_init (GtkInspectorVariantEditorClass *klass)
 }
 
 static void
-ensure_editor (GtkInspectorVariantEditor *self,
+ensure_editor (GtkInspectorVariantEditor *this,
                const GVariantType        *type)
 {
-  if (self->type &&
-      g_variant_type_equal (self->type, type))
+  if (this->type &&
+      g_variant_type_equal (this->type, type))
     return;
 
-  self->type = type;
+  this->type = type;
 
   if (g_variant_type_equal (type, G_VARIANT_TYPE_BOOLEAN))
     {
-      if (self->editor)
-        gtk_widget_unparent (self->editor);
+      if (this->editor)
+        gtk_widget_unparent (this->editor);
 
-      self->editor = gtk_check_button_new ();
-      g_signal_connect (self->editor, "notify::active",
-                        G_CALLBACK (variant_editor_changed_cb), self);
+      this->editor = gtk_check_button_new ();
+      g_signal_connect (this->editor, "notify::active",
+                        G_CALLBACK (variant_editor_changed_cb), this);
 
-      gtk_widget_set_parent (self->editor, GTK_WIDGET (self));
+      gtk_widget_set_parent (this->editor, GTK_WIDGET (this));
     }
   else if (g_variant_type_equal (type, G_VARIANT_TYPE_STRING))
     {
-      if (self->editor)
-        gtk_widget_unparent (self->editor);
+      if (this->editor)
+        gtk_widget_unparent (this->editor);
 
-      self->editor = gtk_entry_new ();
-      gtk_editable_set_width_chars (GTK_EDITABLE (self->editor), 10);
-      g_signal_connect (self->editor, "notify::text",
-                        G_CALLBACK (variant_editor_changed_cb), self);
+      this->editor = gtk_entry_new ();
+      gtk_editable_set_width_chars (GTK_EDITABLE (this->editor), 10);
+      g_signal_connect (this->editor, "notify::text",
+                        G_CALLBACK (variant_editor_changed_cb), this);
 
-      gtk_widget_set_parent (self->editor, GTK_WIDGET (self));
+      gtk_widget_set_parent (this->editor, GTK_WIDGET (this));
     }
-  else if (!GTK_IS_BOX (self->editor))
+  else if (!GTK_IS_BOX (this->editor))
     {
       GtkWidget *entry, *label;
 
-      if (self->editor)
-        gtk_widget_unparent (self->editor);
+      if (this->editor)
+        gtk_widget_unparent (this->editor);
 
-      self->editor = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 10);
+      this->editor = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 10);
       entry = gtk_entry_new ();
       gtk_editable_set_width_chars (GTK_EDITABLE (entry), 10);
-      gtk_box_append (GTK_BOX (self->editor), entry);
+      gtk_box_append (GTK_BOX (this->editor), entry);
       label = gtk_label_new (g_variant_type_peek_string (type));
-      gtk_box_append (GTK_BOX (self->editor), label);
+      gtk_box_append (GTK_BOX (this->editor), label);
       g_signal_connect (entry, "notify::text",
-                        G_CALLBACK (variant_editor_changed_cb), self);
+                        G_CALLBACK (variant_editor_changed_cb), this);
 
-      gtk_widget_set_parent (self->editor, GTK_WIDGET (self));
+      gtk_widget_set_parent (this->editor, GTK_WIDGET (this));
     }
 }
 
@@ -145,48 +145,48 @@ gtk_inspector_variant_editor_new (const GVariantType               *type,
                                   GtkInspectorVariantEditorChanged  callback,
                                   gpointer                          data)
 {
-  GtkInspectorVariantEditor *self;
+  GtkInspectorVariantEditor *this;
 
-  self = g_object_new (GTK_TYPE_INSPECTOR_VARIANT_EDITOR, NULL);
+  this = g_object_new (GTK_TYPE_INSPECTOR_VARIANT_EDITOR, NULL);
 
-  self->callback = callback;
-  self->data = data;
+  this->callback = callback;
+  this->data = data;
 
   if (type)
-    ensure_editor (self, type);
+    ensure_editor (this, type);
 
-  return GTK_WIDGET (self);
+  return GTK_WIDGET (this);
 }
 
 void
 gtk_inspector_variant_editor_set_type (GtkWidget          *editor,
                                        const GVariantType *type)
 {
-  GtkInspectorVariantEditor *self = GTK_INSPECTOR_VARIANT_EDITOR (editor);
+  GtkInspectorVariantEditor *this = GTK_INSPECTOR_VARIANT_EDITOR (editor);
 
-  ensure_editor (self, type);
+  ensure_editor (this, type);
 }
 
 void
 gtk_inspector_variant_editor_set_value (GtkWidget *editor,
                                         GVariant  *value)
 {
-  GtkInspectorVariantEditor *self = GTK_INSPECTOR_VARIANT_EDITOR (editor);
+  GtkInspectorVariantEditor *this = GTK_INSPECTOR_VARIANT_EDITOR (editor);
 
-  ensure_editor (self, g_variant_get_type (value));
+  ensure_editor (this, g_variant_get_type (value));
 
-  g_signal_handlers_block_by_func (self->editor, variant_editor_changed_cb, self);
+  g_signal_handlers_block_by_func (this->editor, variant_editor_changed_cb, this);
 
-  if (g_variant_type_equal (self->type, G_VARIANT_TYPE_BOOLEAN))
+  if (g_variant_type_equal (this->type, G_VARIANT_TYPE_BOOLEAN))
     {
-      GtkCheckButton *b = GTK_CHECK_BUTTON (self->editor);
+      GtkCheckButton *b = GTK_CHECK_BUTTON (this->editor);
 
       if (gtk_check_button_get_active (b) != g_variant_get_boolean (value))
         gtk_check_button_set_active (b, g_variant_get_boolean (value));
     }
-  else if (g_variant_type_equal (self->type, G_VARIANT_TYPE_STRING))
+  else if (g_variant_type_equal (this->type, G_VARIANT_TYPE_STRING))
     {
-      GtkEntry *entry = GTK_ENTRY (self->editor);
+      GtkEntry *entry = GTK_ENTRY (this->editor);
 
       gtk_editable_set_text (GTK_EDITABLE (entry),
                              g_variant_get_string (value, NULL));
@@ -196,33 +196,33 @@ gtk_inspector_variant_editor_set_value (GtkWidget *editor,
       GtkWidget *entry;
       char *text;
 
-      entry = gtk_widget_get_first_child (self->editor);
+      entry = gtk_widget_get_first_child (this->editor);
 
       text = g_variant_print (value, FALSE);
       gtk_editable_set_text (GTK_EDITABLE (entry), text);
       g_free (text);
     }
 
-  g_signal_handlers_unblock_by_func (self->editor, variant_editor_changed_cb, self);
+  g_signal_handlers_unblock_by_func (this->editor, variant_editor_changed_cb, this);
 }
 
 GVariant *
 gtk_inspector_variant_editor_get_value (GtkWidget *editor)
 {
-  GtkInspectorVariantEditor *self = GTK_INSPECTOR_VARIANT_EDITOR (editor);
+  GtkInspectorVariantEditor *this = GTK_INSPECTOR_VARIANT_EDITOR (editor);
   GVariant *value;
 
-  if (self->type == NULL)
+  if (this->type == NULL)
     return NULL;
 
-  if (g_variant_type_equal (self->type, G_VARIANT_TYPE_BOOLEAN))
+  if (g_variant_type_equal (this->type, G_VARIANT_TYPE_BOOLEAN))
     {
-      GtkCheckButton *b = GTK_CHECK_BUTTON (self->editor);
+      GtkCheckButton *b = GTK_CHECK_BUTTON (this->editor);
       value = g_variant_new_boolean (gtk_check_button_get_active (b));
     }
-  else if (g_variant_type_equal (self->type, G_VARIANT_TYPE_STRING))
+  else if (g_variant_type_equal (this->type, G_VARIANT_TYPE_STRING))
     {
-      GtkEntry *entry = GTK_ENTRY (self->editor);
+      GtkEntry *entry = GTK_ENTRY (this->editor);
       value = g_variant_new_string (gtk_editable_get_text (GTK_EDITABLE (entry)));
     }
   else
@@ -230,10 +230,10 @@ gtk_inspector_variant_editor_get_value (GtkWidget *editor)
       GtkWidget *entry;
       const char *text;
 
-      entry = gtk_widget_get_first_child (self->editor);
+      entry = gtk_widget_get_first_child (this->editor);
       text = gtk_editable_get_text (GTK_EDITABLE (entry));
 
-      value = g_variant_parse (self->type, text, NULL, NULL, NULL);
+      value = g_variant_parse (this->type, text, NULL, NULL, NULL);
     }
 
   return value;

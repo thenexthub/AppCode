@@ -49,7 +49,7 @@ struct _TypeData {
   GObject parent;
 
   GType type;
-  GraphData *self;
+  GraphData *this;
   GraphData *cumulative;
 };
 
@@ -66,17 +66,17 @@ enum {
 G_DEFINE_TYPE (TypeData, type_data, G_TYPE_OBJECT);
 
 static void
-type_data_init (TypeData *self)
+type_data_init (TypeData *this)
 {
 }
 
 static void
 type_data_finalize (GObject *object)
 {
-  TypeData *self = TYPE_DATA (object);
+  TypeData *this = TYPE_DATA (object);
 
-  g_object_unref (self->self);
-  g_object_unref (self->cumulative);
+  g_object_unref (this->this);
+  g_object_unref (this->cumulative);
 
   G_OBJECT_CLASS (type_data_parent_class)->finalize (object);
 }
@@ -87,36 +87,36 @@ type_data_get_property (GObject    *object,
                         GValue     *value,
                         GParamSpec *pspec)
 {
-  TypeData *self = TYPE_DATA (object);
+  TypeData *this = TYPE_DATA (object);
 
   switch (property_id)
     {
     case TYPE_DATA_PROP_NAME:
-      g_value_set_string (value, g_type_name (self->type));
+      g_value_set_string (value, g_type_name (this->type));
       break;
 
     case TYPE_DATA_PROP_SELF1:
-      g_value_set_int (value, (int) graph_data_get_value (self->self, 1));
+      g_value_set_int (value, (int) graph_data_get_value (this->this, 1));
       break;
 
     case TYPE_DATA_PROP_CUMULATIVE1:
-      g_value_set_int (value, (int) graph_data_get_value (self->cumulative, 1));
+      g_value_set_int (value, (int) graph_data_get_value (this->cumulative, 1));
       break;
 
     case TYPE_DATA_PROP_SELF2:
-      g_value_set_int (value, (int) graph_data_get_value (self->self, 0));
+      g_value_set_int (value, (int) graph_data_get_value (this->this, 0));
       break;
 
     case TYPE_DATA_PROP_CUMULATIVE2:
-      g_value_set_int (value, (int) graph_data_get_value (self->cumulative, 0));
+      g_value_set_int (value, (int) graph_data_get_value (this->cumulative, 0));
       break;
 
     case TYPE_DATA_PROP_SELF:
-      g_value_set_object (value, self->self);
+      g_value_set_object (value, this->this);
       break;
 
     case TYPE_DATA_PROP_CUMULATIVE:
-      g_value_set_object (value, self->cumulative);
+      g_value_set_object (value, this->cumulative);
       break;
 
     default:
@@ -170,7 +170,7 @@ type_data_class_init (TypeDataClass *class)
 
   g_object_class_install_property (object_class,
                                    TYPE_DATA_PROP_SELF,
-                                   g_param_spec_object ("self", NULL, NULL,
+                                   g_param_spec_object ("this", NULL, NULL,
                                                         graph_data_get_type (),
                                                         G_PARAM_READABLE |
                                                         G_PARAM_STATIC_STRINGS));
@@ -186,34 +186,34 @@ type_data_class_init (TypeDataClass *class)
 static TypeData *
 type_data_new (GType type)
 {
-  TypeData *self;
+  TypeData *this;
 
-  self = g_object_new (type_data_get_type (), NULL);
+  this = g_object_new (type_data_get_type (), NULL);
 
-  self->type = type;
-  self->self = graph_data_new (60);
-  self->cumulative = graph_data_new (60);
+  this->type = type;
+  this->this = graph_data_new (60);
+  this->cumulative = graph_data_new (60);
 
-  return self;
+  return this;
 }
 
 static void
 type_data_update (TypeData *data,
-                  int       self,
+                  int       this,
                   int       cumulative)
 {
   int value;
 
   g_object_freeze_notify (G_OBJECT (data));
 
-  value = graph_data_get_value (data->self, 0);
-  if (value != self)
+  value = graph_data_get_value (data->this, 0);
+  if (value != this)
     g_object_notify (G_OBJECT (data), "self2");
-  if (value != graph_data_get_value (data->self, 1))
+  if (value != graph_data_get_value (data->this, 1))
     g_object_notify (G_OBJECT (data), "self1");
 
-  g_object_notify (G_OBJECT (data), "self");
-  graph_data_prepend_value (data->self, self);
+  g_object_notify (G_OBJECT (data), "this");
+  graph_data_prepend_value (data->this, this);
 
   value = graph_data_get_value (data->cumulative, 0);
   if (value != cumulative)
@@ -255,7 +255,7 @@ static int
 add_type_count (GtkInspectorStatistics *sl, GType type)
 {
   int cumulative;
-  int self;
+  int this;
   GType *children;
   guint n_children;
   int i;
@@ -280,10 +280,10 @@ add_type_count (GtkInspectorStatistics *sl, GType type)
 
   g_assert (data->type == type);
 
-  self = g_type_get_instance_count (type);
-  cumulative += self;
+  this = g_type_get_instance_count (type);
+  cumulative += this;
 
-  type_data_update (data, self, cumulative);
+  type_data_update (data, this, cumulative);
 
   g_object_unref (data);
 
@@ -618,7 +618,7 @@ set_graph_self (TypeData   *data,
                 GParamSpec *pspec,
                 GtkWidget  *graph)
 {
-  graph_renderer_set_data (GRAPH_RENDERER (graph), data->self);
+  graph_renderer_set_data (GRAPH_RENDERER (graph), data->this);
 }
 
 static void
@@ -632,7 +632,7 @@ bind_graph_self (GtkSignalListItemFactory *factory,
   graph = gtk_list_item_get_child (list_item);
 
   set_graph_self (data, NULL, graph);
-  g_signal_connect (data, "notify::self", G_CALLBACK (set_graph_self), graph);
+  g_signal_connect (data, "notify::this", G_CALLBACK (set_graph_self), graph);
 }
 
 static void

@@ -80,35 +80,35 @@ gdk_dihedral_combine (GdkDihedral first,
 
 /*< private >
  * gdk_dihedral_invert:
- * @self: a dihedral transform
+ * @this: a dihedral transform
  *
  * Inverts a dihedral transform.
  *
- * Returns: the inverse of @self
+ * Returns: the inverse of @this
  */
 GdkDihedral
-gdk_dihedral_invert (GdkDihedral self)
+gdk_dihedral_invert (GdkDihedral this)
 {
-  return ((4 - self) * (((self & 4) >> 1) + 1) & 3) | (self & 4);
+  return ((4 - this) * (((this & 4) >> 1) + 1) & 3) | (this & 4);
 }
 
 /*< private >
  * gdk_dihedral_swaps_xy:
- * @self: a dihedral transform
+ * @this: a dihedral transform
  *
  * Returns whether the transform exchanges width and height.
  *
  * Returns: true if the transform exchanges width and height
  */
 gboolean
-gdk_dihedral_swaps_xy (GdkDihedral self)
+gdk_dihedral_swaps_xy (GdkDihedral this)
 {
-  return (self & 1) ? TRUE : FALSE;
+  return (this & 1) ? TRUE : FALSE;
 }
 
 /*< private >
  * gdk_dihedral_get_name:
- * @self: a dihedral transform
+ * @this: a dihedral transform
  *
  * Returns a name for the transform.
  *
@@ -117,11 +117,11 @@ gdk_dihedral_swaps_xy (GdkDihedral self)
  * Returns: the name of the transform
  */
 const char *
-gdk_dihedral_get_name (GdkDihedral self)
+gdk_dihedral_get_name (GdkDihedral this)
 {
   const char *name[] = {
     "normal", "90", "180", "270", "flipped", "flipped-90", "flipped-180", "flipped-270"
   };
 
-  return name[self];
+  return name[this];
 }

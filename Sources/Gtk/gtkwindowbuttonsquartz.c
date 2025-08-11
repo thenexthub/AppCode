@@ -120,7 +120,7 @@ native_window (GtkWidget *widget)
 }
 
 static void
-enable_window_controls (GtkWindowButtonsQuartz *self,
+enable_window_controls (GtkWindowButtonsQuartz *this,
                         gboolean                enabled)
 {
   gboolean is_sovereign_window;
@@ -130,11 +130,11 @@ enable_window_controls (GtkWindowButtonsQuartz *self,
   GtkWindow *window;
   GdkMacosWindow *nswindow;
 
-  root = gtk_widget_get_root (GTK_WIDGET (self));
+  root = gtk_widget_get_root (GTK_WIDGET (this));
   if (!root || !GTK_IS_WINDOW (root))
     return;
 
-  nswindow = native_window (GTK_WIDGET (self));
+  nswindow = native_window (GTK_WIDGET (this));
   if (!GDK_IS_MACOS_WINDOW (nswindow))
     return;
   
@@ -144,22 +144,22 @@ enable_window_controls (GtkWindowButtonsQuartz *self,
   resizable = gtk_window_get_resizable (window);
   deletable = gtk_window_get_deletable (window);
 
-  [[nswindow standardWindowButton:NSWindowCloseButton] setEnabled:enabled && self->close && deletable];
-  [[nswindow standardWindowButton:NSWindowMiniaturizeButton] setEnabled:enabled && self->minimize && is_sovereign_window];
-  [[nswindow standardWindowButton:NSWindowZoomButton] setEnabled:enabled && self->maximize && resizable && is_sovereign_window];
+  [[nswindow standardWindowButton:NSWindowCloseButton] setEnabled:enabled && this->close && deletable];
+  [[nswindow standardWindowButton:NSWindowMiniaturizeButton] setEnabled:enabled && this->minimize && is_sovereign_window];
+  [[nswindow standardWindowButton:NSWindowZoomButton] setEnabled:enabled && this->maximize && resizable && is_sovereign_window];
 }
 
 static void
-update_window_controls_from_decoration_layout (GtkWindowButtonsQuartz *self)
+update_window_controls_from_decoration_layout (GtkWindowButtonsQuartz *this)
 {
   char **tokens;
 
-  if (self->decoration_layout)
-    tokens = g_strsplit_set (self->decoration_layout, ",:", -1);
+  if (this->decoration_layout)
+    tokens = g_strsplit_set (this->decoration_layout, ",:", -1);
   else
     {
       char *layout_desc;
-      g_object_get (gtk_widget_get_settings (GTK_WIDGET (self)),
+      g_object_get (gtk_widget_get_settings (GTK_WIDGET (this)),
                     "gtk-decoration-layout", &layout_desc,
                     NULL);
       tokens = g_strsplit_set (layout_desc, ",:", -1);
@@ -167,21 +167,21 @@ update_window_controls_from_decoration_layout (GtkWindowButtonsQuartz *self)
       g_free (layout_desc);
     }
 
-  self->close = g_strv_contains ((const char * const *) tokens, "close");
-  self->minimize = g_strv_contains ((const char * const *) tokens, "minimize");
-  self->maximize = g_strv_contains ((const char * const *) tokens, "maximize");
+  this->close = g_strv_contains ((const char * const *) tokens, "close");
+  this->minimize = g_strv_contains ((const char * const *) tokens, "minimize");
+  this->maximize = g_strv_contains ((const char * const *) tokens, "maximize");
 
   g_strfreev (tokens);
 
-  enable_window_controls (self, TRUE);
+  enable_window_controls (this, TRUE);
 }
 
 static void
 gtk_window_buttons_quartz_finalize (GObject *object)
 {
-  GtkWindowButtonsQuartz *self = GTK_WINDOW_BUTTONS_QUARTZ (object);
+  GtkWindowButtonsQuartz *this = GTK_WINDOW_BUTTONS_QUARTZ (object);
 
-  g_clear_pointer (&self->decoration_layout, g_free);
+  g_clear_pointer (&this->decoration_layout, g_free);
 
   G_OBJECT_CLASS (gtk_window_buttons_quartz_parent_class)->finalize (object);
 }
@@ -192,12 +192,12 @@ gtk_window_buttons_quartz_get_property (GObject     *object,
                                         GValue      *value,
                                         GParamSpec  *pspec)
 {
-  GtkWindowButtonsQuartz *self = GTK_WINDOW_BUTTONS_QUARTZ (object);
+  GtkWindowButtonsQuartz *this = GTK_WINDOW_BUTTONS_QUARTZ (object);
 
   switch (prop_id)
     {
     case PROP_DECORATION_LAYOUT:
-      g_value_set_string (value, self->decoration_layout);
+      g_value_set_string (value, this->decoration_layout);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -211,15 +211,15 @@ gtk_window_buttons_quartz_set_property (GObject      *object,
                                         const GValue *value,
                                         GParamSpec   *pspec)
 {
-  GtkWindowButtonsQuartz *self = GTK_WINDOW_BUTTONS_QUARTZ (object);
+  GtkWindowButtonsQuartz *this = GTK_WINDOW_BUTTONS_QUARTZ (object);
 
   switch (prop_id)
     {
     case PROP_DECORATION_LAYOUT:
-      g_free (self->decoration_layout);
-      self->decoration_layout = g_strdup (g_value_get_string (value));
+      g_free (this->decoration_layout);
+      this->decoration_layout = g_strdup (g_value_get_string (value));
 
-      update_window_controls_from_decoration_layout (self);
+      update_window_controls_from_decoration_layout (this);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -230,14 +230,14 @@ gtk_window_buttons_quartz_set_property (GObject      *object,
 static void
 gtk_window_buttons_quartz_root (GtkWidget *widget)
 {
-  GtkWindowButtonsQuartz *self = GTK_WINDOW_BUTTONS_QUARTZ (widget);
+  GtkWindowButtonsQuartz *this = GTK_WINDOW_BUTTONS_QUARTZ (widget);
 
   GTK_WIDGET_CLASS (gtk_window_buttons_quartz_parent_class)->root (widget);
 
-  if (self->fullscreen_binding)
-    g_object_unref (self->fullscreen_binding);
+  if (this->fullscreen_binding)
+    g_object_unref (this->fullscreen_binding);
 
-  self->fullscreen_binding = g_object_bind_property (gtk_widget_get_root (widget),
+  this->fullscreen_binding = g_object_bind_property (gtk_widget_get_root (widget),
                                                      "fullscreened",
                                                      widget,
                                                      "visible",
@@ -247,12 +247,12 @@ gtk_window_buttons_quartz_root (GtkWidget *widget)
 static void
 gtk_window_buttons_quartz_unroot (GtkWidget *widget)
 {
-  GtkWindowButtonsQuartz *self = GTK_WINDOW_BUTTONS_QUARTZ (widget);
+  GtkWindowButtonsQuartz *this = GTK_WINDOW_BUTTONS_QUARTZ (widget);
 
-  if (self->fullscreen_binding)
+  if (this->fullscreen_binding)
     {
-      g_object_unref (self->fullscreen_binding);
-      self->fullscreen_binding = NULL;
+      g_object_unref (this->fullscreen_binding);
+      this->fullscreen_binding = NULL;
     }
 
   GTK_WIDGET_CLASS (gtk_window_buttons_quartz_parent_class)->unroot (widget);
@@ -261,7 +261,7 @@ gtk_window_buttons_quartz_unroot (GtkWidget *widget)
 static void
 gtk_window_buttons_quartz_realize (GtkWidget *widget)
 {
-  GtkWindowButtonsQuartz *self = GTK_WINDOW_BUTTONS_QUARTZ (widget);
+  GtkWindowButtonsQuartz *this = GTK_WINDOW_BUTTONS_QUARTZ (widget);
   GdkMacosWindow *window;
   NSRect bounds;
 
@@ -277,7 +277,7 @@ gtk_window_buttons_quartz_realize (GtkWidget *widget)
 
   [window setShowStandardWindowButtons:YES];
   
-  enable_window_controls (self, TRUE);
+  enable_window_controls (this, TRUE);
 
   window_controls_bounds (window, &bounds);
   gtk_widget_set_size_request (widget, bounds.origin.x + bounds.size.width, bounds.size.height);
@@ -339,12 +339,12 @@ static void
 gtk_window_buttons_quartz_state_flags_changed (GtkWidget* widget,
                                                GtkStateFlags previous_state_flags)
 {
-  GtkWindowButtonsQuartz *self = GTK_WINDOW_BUTTONS_QUARTZ (widget);
+  GtkWindowButtonsQuartz *this = GTK_WINDOW_BUTTONS_QUARTZ (widget);
 
   if (gtk_widget_get_state_flags (widget) & GTK_STATE_FLAG_INSENSITIVE)
-    enable_window_controls (self, FALSE);
+    enable_window_controls (this, FALSE);
   else
-    enable_window_controls (self, TRUE);
+    enable_window_controls (this, TRUE);
 
   GTK_WIDGET_CLASS (gtk_window_buttons_quartz_parent_class)->state_flags_changed (widget, previous_state_flags);
 }
@@ -388,11 +388,11 @@ gtk_window_buttons_quartz_class_init (GtkWindowButtonsQuartzClass *class)
 }
 
 static void
-gtk_window_buttons_quartz_init (GtkWindowButtonsQuartz *self)
+gtk_window_buttons_quartz_init (GtkWindowButtonsQuartz *this)
 {
-  self->close = TRUE;
-  self->minimize = TRUE;
-  self->maximize = TRUE;
-  self->decoration_layout = NULL;
-  self->fullscreen_binding = NULL;
+  this->close = TRUE;
+  this->minimize = TRUE;
+  this->maximize = TRUE;
+  this->decoration_layout = NULL;
+  this->fullscreen_binding = NULL;
 }

@@ -37,21 +37,21 @@ GdkMacosBuffer       *_gdk_macos_buffer_new              (int              width
                                                           double           device_scale,
                                                           int              bytes_per_element,
                                                           int              bits_per_pixel);
-IOSurfaceRef          _gdk_macos_buffer_get_native       (GdkMacosBuffer  *self);
-void                  _gdk_macos_buffer_lock             (GdkMacosBuffer  *self);
-void                  _gdk_macos_buffer_unlock           (GdkMacosBuffer  *self);
-void                  _gdk_macos_buffer_read_lock        (GdkMacosBuffer  *self);
-void                  _gdk_macos_buffer_read_unlock      (GdkMacosBuffer  *self);
-guint                 _gdk_macos_buffer_get_width        (GdkMacosBuffer  *self);
-guint                 _gdk_macos_buffer_get_height       (GdkMacosBuffer  *self);
-guint                 _gdk_macos_buffer_get_stride       (GdkMacosBuffer  *self);
-double                _gdk_macos_buffer_get_device_scale (GdkMacosBuffer  *self);
-const cairo_region_t *_gdk_macos_buffer_get_damage       (GdkMacosBuffer  *self);
-void                  _gdk_macos_buffer_set_damage       (GdkMacosBuffer  *self,
+IOSurfaceRef          _gdk_macos_buffer_get_native       (GdkMacosBuffer  *this);
+void                  _gdk_macos_buffer_lock             (GdkMacosBuffer  *this);
+void                  _gdk_macos_buffer_unlock           (GdkMacosBuffer  *this);
+void                  _gdk_macos_buffer_read_lock        (GdkMacosBuffer  *this);
+void                  _gdk_macos_buffer_read_unlock      (GdkMacosBuffer  *this);
+guint                 _gdk_macos_buffer_get_width        (GdkMacosBuffer  *this);
+guint                 _gdk_macos_buffer_get_height       (GdkMacosBuffer  *this);
+guint                 _gdk_macos_buffer_get_stride       (GdkMacosBuffer  *this);
+double                _gdk_macos_buffer_get_device_scale (GdkMacosBuffer  *this);
+const cairo_region_t *_gdk_macos_buffer_get_damage       (GdkMacosBuffer  *this);
+void                  _gdk_macos_buffer_set_damage       (GdkMacosBuffer  *this,
                                                           cairo_region_t  *damage);
-gpointer              _gdk_macos_buffer_get_data         (GdkMacosBuffer  *self);
-gboolean              _gdk_macos_buffer_get_flipped      (GdkMacosBuffer  *self);
-void                  _gdk_macos_buffer_set_flipped      (GdkMacosBuffer  *self,
+gpointer              _gdk_macos_buffer_get_data         (GdkMacosBuffer  *this);
+gboolean              _gdk_macos_buffer_get_flipped      (GdkMacosBuffer  *this);
+void                  _gdk_macos_buffer_set_flipped      (GdkMacosBuffer  *this,
                                                           gboolean         flipped);
 
 G_END_DECLS

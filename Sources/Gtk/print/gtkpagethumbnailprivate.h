@@ -6,7 +6,7 @@
 G_DECLARE_FINAL_TYPE (GtkPageThumbnail, gtk_page_thumbnail, GTK, PAGE_THUMBNAIL, GtkWidget)
 
 GtkPageThumbnail * gtk_page_thumbnail_new          (void);
-void               gtk_page_thumbnail_set_page_num (GtkPageThumbnail *self,
+void               gtk_page_thumbnail_set_page_num (GtkPageThumbnail *this,
                                                     int               page_num);
-int                gtk_page_thumbnail_get_page_num (GtkPageThumbnail *self);
+int                gtk_page_thumbnail_get_page_num (GtkPageThumbnail *this);
 

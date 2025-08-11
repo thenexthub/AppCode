@@ -94,14 +94,14 @@ void            gsk_render_node_draw_with_color_state   (GskRenderNode          
 void            gsk_render_node_draw_fallback           (GskRenderNode               *node,
                                                          cairo_t                     *cr);
 
-bool            gsk_border_node_get_uniform             (const GskRenderNode         *self) G_GNUC_PURE;
-bool            gsk_border_node_get_uniform_color       (const GskRenderNode         *self) G_GNUC_PURE;
+bool            gsk_border_node_get_uniform             (const GskRenderNode         *this) G_GNUC_PURE;
+bool            gsk_border_node_get_uniform_color       (const GskRenderNode         *this) G_GNUC_PURE;
 
-void            gsk_text_node_serialize_glyphs          (GskRenderNode               *self,
+void            gsk_text_node_serialize_glyphs          (GskRenderNode               *this,
                                                          GString                     *str);
 
 cairo_hint_style_t
-                gsk_text_node_get_font_hint_style       (const GskRenderNode         *self) G_GNUC_PURE;
+                gsk_text_node_get_font_hint_style       (const GskRenderNode         *this) G_GNUC_PURE;
 
 GskRenderNode ** gsk_container_node_get_children        (const GskRenderNode         *node,
                                                          guint                       *n_children);

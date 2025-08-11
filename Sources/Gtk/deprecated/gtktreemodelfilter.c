@@ -433,7 +433,7 @@ static GtkTreePath *gtk_tree_model_filter_remove_root                     (GtkTr
 
 static void         gtk_tree_model_filter_increment_stamp                 (GtkTreeModelFilter     *filter);
 
-static void         gtk_tree_model_filter_real_modify                     (GtkTreeModelFilter     *self,
+static void         gtk_tree_model_filter_real_modify                     (GtkTreeModelFilter     *this,
                                                                            GtkTreeModel           *child_model,
                                                                            GtkTreeIter            *iter,
                                                                            GValue                 *value,
@@ -1278,11 +1278,11 @@ gtk_tree_model_filter_real_visible (GtkTreeModelFilter *filter,
 }
 
 static gboolean
-gtk_tree_model_filter_visible (GtkTreeModelFilter *self,
+gtk_tree_model_filter_visible (GtkTreeModelFilter *this,
                                GtkTreeIter        *child_iter)
 {
-  return GTK_TREE_MODEL_FILTER_GET_CLASS (self)->visible (self,
-      self->priv->child_model, child_iter);
+  return GTK_TREE_MODEL_FILTER_GET_CLASS (this)->visible (this,
+      this->priv->child_model, child_iter);
 }
 
 static void
@@ -2935,7 +2935,7 @@ gtk_tree_model_filter_get_n_columns (GtkTreeModel *model)
   if (filter->priv->child_model == NULL)
     return 0;
 
-  /* so we can't set the modify func after this ... */
+  /* so we can't set the modify fn after this ... */
   filter->priv->modify_func_set = TRUE;
 
   if (filter->priv->modify_n_columns > 0)
@@ -2953,7 +2953,7 @@ gtk_tree_model_filter_get_column_type (GtkTreeModel *model,
   g_return_val_if_fail (GTK_IS_TREE_MODEL_FILTER (model), G_TYPE_INVALID);
   g_return_val_if_fail (filter->priv->child_model != NULL, G_TYPE_INVALID);
 
-  /* so we can't set the modify func after this ... */
+  /* so we can't set the modify fn after this ... */
   filter->priv->modify_func_set = TRUE;
 
   if (filter->priv->modify_types)
@@ -3146,26 +3146,26 @@ gtk_tree_model_filter_get_path (GtkTreeModel *model,
 }
 
 static void
-gtk_tree_model_filter_real_modify (GtkTreeModelFilter *self,
+gtk_tree_model_filter_real_modify (GtkTreeModelFilter *this,
                                    GtkTreeModel       *child_model,
                                    GtkTreeIter        *iter,
                                    GValue             *value,
                                    int                 column)
 {
-  if (self->priv->modify_func)
+  if (this->priv->modify_func)
     {
-      g_return_if_fail (column < self->priv->modify_n_columns);
+      g_return_if_fail (column < this->priv->modify_n_columns);
 
-      g_value_init (value, self->priv->modify_types[column]);
-      self->priv->modify_func (GTK_TREE_MODEL (self),
+      g_value_init (value, this->priv->modify_types[column]);
+      this->priv->modify_func (GTK_TREE_MODEL (this),
                                iter, value, column,
-                               self->priv->modify_data);
+                               this->priv->modify_data);
     }
   else
     {
       GtkTreeIter child_iter;
 
-      gtk_tree_model_filter_convert_iter_to_child_iter (GTK_TREE_MODEL_FILTER (self),
+      gtk_tree_model_filter_convert_iter_to_child_iter (GTK_TREE_MODEL_FILTER (this),
                                                         &child_iter, iter);
       gtk_tree_model_get_value (child_model, &child_iter, column, value);
     }
@@ -3809,11 +3809,11 @@ gtk_tree_model_filter_get_model (GtkTreeModelFilter *filter)
 /**
  * gtk_tree_model_filter_set_visible_func:
  * @filter: A `GtkTreeModelFilter`
- * @func: A `GtkTreeModelFilterVisibleFunc`, the visible function
+ * @fn: A `GtkTreeModelFilterVisibleFunc`, the visible function
  * @data: (nullable): User data to pass to the visible function
  * @destroy: (nullable): Destroy notifier of @data
  *
- * Sets the visible function used when filtering the @filter to be @func.
+ * Sets the visible function used when filtering the @filter to be @fn.
  * The function should return %TRUE if the given row should be visible and
  * %FALSE otherwise.
  *
@@ -3822,7 +3822,7 @@ gtk_tree_model_filter_get_model (GtkTreeModelFilter *filter)
  * gtk_tree_model_filter_refilter() to keep the visibility information
  * of the model up-to-date.
  *
- * Note that @func is called whenever a row is inserted, when it may still
+ * Note that @fn is called whenever a row is inserted, when it may still
  * be empty. The visible function should therefore take special care of empty
  * rows, like in the example below.
  *
@@ -3853,15 +3853,15 @@ gtk_tree_model_filter_get_model (GtkTreeModelFilter *filter)
  */
 void
 gtk_tree_model_filter_set_visible_func (GtkTreeModelFilter            *filter,
-                                        GtkTreeModelFilterVisibleFunc  func,
+                                        GtkTreeModelFilterVisibleFunc  fn,
                                         gpointer                       data,
                                         GDestroyNotify                 destroy)
 {
   g_return_if_fail (GTK_IS_TREE_MODEL_FILTER (filter));
-  g_return_if_fail (func != NULL);
+  g_return_if_fail (fn != NULL);
   g_return_if_fail (filter->priv->visible_method_set == FALSE);
 
-  filter->priv->visible_func = func;
+  filter->priv->visible_func = fn;
   filter->priv->visible_data = data;
   filter->priv->visible_destroy = destroy;
 
@@ -3873,13 +3873,13 @@ gtk_tree_model_filter_set_visible_func (GtkTreeModelFilter            *filter,
  * @filter: A `GtkTreeModelFilter`
  * @n_columns: The number of columns in the filter model.
  * @types: (array length=n_columns): The `GType`s of the columns.
- * @func: A `GtkTreeModelFilterModifyFunc`
+ * @fn: A `GtkTreeModelFilterModifyFunc`
  * @data: (nullable): User data to pass to the modify function
  * @destroy: (nullable): Destroy notifier of @data
  *
  * With the @n_columns and @types parameters, you give an array of column
  * types for this model (which will be exposed to the parent model/view).
- * The @func, @data and @destroy parameters are for specifying the modify
+ * The @fn, @data and @destroy parameters are for specifying the modify
  * function. The modify function will get called for each
  * data access, the goal of the modify function is to return the data which
  * should be displayed at the location specified using the parameters of the
@@ -3894,18 +3894,18 @@ void
 gtk_tree_model_filter_set_modify_func (GtkTreeModelFilter           *filter,
                                        int                           n_columns,
                                        GType                        *types,
-                                       GtkTreeModelFilterModifyFunc  func,
+                                       GtkTreeModelFilterModifyFunc  fn,
                                        gpointer                      data,
                                        GDestroyNotify                destroy)
 {
   g_return_if_fail (GTK_IS_TREE_MODEL_FILTER (filter));
-  g_return_if_fail (func != NULL);
+  g_return_if_fail (fn != NULL);
   g_return_if_fail (filter->priv->modify_func_set == FALSE);
 
   filter->priv->modify_n_columns = n_columns;
   filter->priv->modify_types = g_new0 (GType, n_columns);
   memcpy (filter->priv->modify_types, types, sizeof (GType) * n_columns);
-  filter->priv->modify_func = func;
+  filter->priv->modify_func = fn;
   filter->priv->modify_data = data;
   filter->priv->modify_destroy = destroy;
 

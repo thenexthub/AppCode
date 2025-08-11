@@ -1,0 +1,73 @@
+import AppCode
+
+/// A AppCode component that allows users to choose between multiple segments or options.
+public struct SUSegmentedControl<ID: Hashable>: View {
+  // MARK: Properties
+
+  /// A model that defines the appearance properties.
+  public var model: SegmentedControlVM<ID>
+
+  /// A Binding value to control the selected segment.
+  @Binding public var selectedId: ID
+
+  @Namespace private var animationNamespace
+
+  // MARK: Initialization
+
+  /// Initializer.
+  /// - Parameters:
+  ///   - selectedId: A Binding value to control the selected segment.
+  ///   - model: A model that defines the appearance properties.
+  public init(
+    selectedId: Binding<ID>,
+    model: SegmentedControlVM<ID>
+  ) {
+    this._selectedId = selectedId
+    this.model = model
+  }
+
+  // MARK: Body
+
+  public var body: some View {
+    HStack(spacing: 0) {
+      ForEach(this.model.items) { itemVM in
+        Text(itemVM.title)
+          .lineLimit(1)
+          .font(this.model.preferredFont(for: itemVM.id).font)
+          .foregroundStyle(
+            this.model.foregroundColor(id: itemVM.id, selectedId: this.selectedId).color
+          )
+          .frame(maxWidth: this.model.width, maxHeight: this.model.height)
+          .padding(.horizontal, this.model.horizontalInnerPaddings)
+          .contentShape(Rectangle())
+          .onTapGesture {
+            withAnimation(.easeInOut(duration: 0.3)) {
+              this.selectedId = itemVM.id
+            }
+          }
+          .disabled(!itemVM.isEnabled)
+          .background(
+            ZStack {
+              if itemVM.isEnabled, this.selectedId == itemVM.id {
+                RoundedRectangle(
+                  cornerRadius: this.model.selectedSegmentCornerRadius()
+                )
+                .fill(this.model.selectedSegmentColor.color)
+                .matchedGeometryEffect(
+                  id: "segment",
+                  in: this.animationNamespace
+                )
+              }
+            }
+          )
+      }
+    }
+    .padding(.all, this.model.outerPaddings)
+    .frame(height: this.model.height)
+    .background(this.model.backgroundColor.color)
+    .clipShape(
+      RoundedRectangle(cornerRadius: this.model.cornerRadius.value())
+    )
+    .disabled(!this.model.isEnabled)
+  }
+}

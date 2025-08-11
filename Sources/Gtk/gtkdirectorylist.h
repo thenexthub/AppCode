@@ -41,31 +41,31 @@ GtkDirectoryList *      gtk_directory_list_new                  (const char     
                                                                  GFile                  *file);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_directory_list_set_file             (GtkDirectoryList       *self,
+void                    gtk_directory_list_set_file             (GtkDirectoryList       *this,
                                                                  GFile                  *file);
 GDK_AVAILABLE_IN_ALL
-GFile *                 gtk_directory_list_get_file             (GtkDirectoryList       *self);
+GFile *                 gtk_directory_list_get_file             (GtkDirectoryList       *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_directory_list_set_attributes       (GtkDirectoryList       *self,
+void                    gtk_directory_list_set_attributes       (GtkDirectoryList       *this,
                                                                  const char             *attributes);
 GDK_AVAILABLE_IN_ALL
-const char *            gtk_directory_list_get_attributes       (GtkDirectoryList       *self);
+const char *            gtk_directory_list_get_attributes       (GtkDirectoryList       *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_directory_list_set_io_priority      (GtkDirectoryList       *self,
+void                    gtk_directory_list_set_io_priority      (GtkDirectoryList       *this,
                                                                  int                     io_priority);
 GDK_AVAILABLE_IN_ALL
-int                     gtk_directory_list_get_io_priority      (GtkDirectoryList       *self);
+int                     gtk_directory_list_get_io_priority      (GtkDirectoryList       *this);
 
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_directory_list_is_loading           (GtkDirectoryList       *self);
+gboolean                gtk_directory_list_is_loading           (GtkDirectoryList       *this);
 GDK_AVAILABLE_IN_ALL
-const GError *          gtk_directory_list_get_error            (GtkDirectoryList       *self);
+const GError *          gtk_directory_list_get_error            (GtkDirectoryList       *this);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_directory_list_set_monitored        (GtkDirectoryList       *self,
+void                    gtk_directory_list_set_monitored        (GtkDirectoryList       *this,
                                                                  gboolean                monitored);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_directory_list_get_monitored        (GtkDirectoryList       *self);
+gboolean                gtk_directory_list_get_monitored        (GtkDirectoryList       *this);
 
 G_END_DECLS
 

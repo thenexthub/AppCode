@@ -113,12 +113,12 @@ gtk_action_bar_set_property (GObject      *object,
                              const GValue *value,
                              GParamSpec   *pspec)
 {
-  GtkActionBar *self = GTK_ACTION_BAR (object);
+  GtkActionBar *this = GTK_ACTION_BAR (object);
 
   switch (prop_id)
     {
     case PROP_REVEALED:
-      gtk_action_bar_set_revealed (self, g_value_get_boolean (value));
+      gtk_action_bar_set_revealed (this, g_value_get_boolean (value));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -132,12 +132,12 @@ gtk_action_bar_get_property (GObject    *object,
                              GValue     *value,
                              GParamSpec *pspec)
 {
-  GtkActionBar *self = GTK_ACTION_BAR (object);
+  GtkActionBar *this = GTK_ACTION_BAR (object);
 
   switch (prop_id)
     {
     case PROP_REVEALED:
-      g_value_set_boolean (value, gtk_action_bar_get_revealed (self));
+      g_value_set_boolean (value, gtk_action_bar_get_revealed (this));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -148,13 +148,13 @@ gtk_action_bar_get_property (GObject    *object,
 static void
 gtk_action_bar_dispose (GObject *object)
 {
-  GtkActionBar *self = GTK_ACTION_BAR (object);
+  GtkActionBar *this = GTK_ACTION_BAR (object);
 
-  g_clear_pointer (&self->revealer, gtk_widget_unparent);
+  g_clear_pointer (&this->revealer, gtk_widget_unparent);
 
-  self->center_box = NULL;
-  self->start_box = NULL;
-  self->end_box = NULL;
+  this->center_box = NULL;
+  this->start_box = NULL;
+  this->end_box = NULL;
 
   G_OBJECT_CLASS (gtk_action_bar_parent_class)->dispose (object);
 }
@@ -191,27 +191,27 @@ gtk_action_bar_class_init (GtkActionBarClass *klass)
 }
 
 static void
-gtk_action_bar_init (GtkActionBar *self)
+gtk_action_bar_init (GtkActionBar *this)
 {
-  GtkWidget *widget = GTK_WIDGET (self);
+  GtkWidget *widget = GTK_WIDGET (this);
 
-  self->revealer = gtk_revealer_new ();
-  gtk_widget_set_parent (self->revealer, widget);
+  this->revealer = gtk_revealer_new ();
+  gtk_widget_set_parent (this->revealer, widget);
 
-  gtk_revealer_set_reveal_child (GTK_REVEALER (self->revealer), TRUE);
-  gtk_revealer_set_transition_type (GTK_REVEALER (self->revealer), GTK_REVEALER_TRANSITION_TYPE_SLIDE_UP);
+  gtk_revealer_set_reveal_child (GTK_REVEALER (this->revealer), TRUE);
+  gtk_revealer_set_transition_type (GTK_REVEALER (this->revealer), GTK_REVEALER_TRANSITION_TYPE_SLIDE_UP);
 
-  self->start_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-  self->end_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+  this->start_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+  this->end_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 
-  gtk_widget_add_css_class (self->start_box, "start");
-  gtk_widget_add_css_class (self->end_box, "end");
+  gtk_widget_add_css_class (this->start_box, "start");
+  gtk_widget_add_css_class (this->end_box, "end");
 
-  self->center_box = gtk_center_box_new ();
-  gtk_center_box_set_start_widget (GTK_CENTER_BOX (self->center_box), self->start_box);
-  gtk_center_box_set_end_widget (GTK_CENTER_BOX (self->center_box), self->end_box);
+  this->center_box = gtk_center_box_new ();
+  gtk_center_box_set_start_widget (GTK_CENTER_BOX (this->center_box), this->start_box);
+  gtk_center_box_set_end_widget (GTK_CENTER_BOX (this->center_box), this->end_box);
 
-  gtk_revealer_set_child (GTK_REVEALER (self->revealer), self->center_box);
+  gtk_revealer_set_child (GTK_REVEALER (this->revealer), this->center_box);
 }
 
 static GtkBuildableIface *parent_buildable_iface;
@@ -222,16 +222,16 @@ gtk_action_bar_buildable_add_child (GtkBuildable *buildable,
                                     GObject      *child,
                                     const char   *type)
 {
-  GtkActionBar *self = GTK_ACTION_BAR (buildable);
+  GtkActionBar *this = GTK_ACTION_BAR (buildable);
 
   if (g_strcmp0 (type, "start") == 0)
-    gtk_action_bar_pack_start (self, GTK_WIDGET (child));
+    gtk_action_bar_pack_start (this, GTK_WIDGET (child));
   else if (g_strcmp0 (type, "center") == 0)
-    gtk_action_bar_set_center_widget (self, GTK_WIDGET (child));
+    gtk_action_bar_set_center_widget (this, GTK_WIDGET (child));
   else if (g_strcmp0 (type, "end") == 0)
-    gtk_action_bar_pack_end (self, GTK_WIDGET (child));
+    gtk_action_bar_pack_end (this, GTK_WIDGET (child));
   else if (type == NULL && GTK_IS_WIDGET (child))
-    gtk_action_bar_pack_start (self, GTK_WIDGET (child));
+    gtk_action_bar_pack_start (this, GTK_WIDGET (child));
   else
     parent_buildable_iface->add_child (buildable, builder, child, type);
 }

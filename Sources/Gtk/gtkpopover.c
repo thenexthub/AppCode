@@ -2015,7 +2015,7 @@ gtk_popover_class_init (GtkPopoverClass *klass)
 
   /**
    * GtkPopover::closed:
-   * @self: the `GtkPopover` which received the signal
+   * @this: the `GtkPopover` which received the signal
    *
    * Emitted when the popover is closed.
    */
@@ -2031,7 +2031,7 @@ gtk_popover_class_init (GtkPopoverClass *klass)
 
   /**
    * GtkPopover::activate-default:
-   * @self: the `GtkPopover` which received the signal
+   * @this: the `GtkPopover` which received the signal
    *
    * Emitted whend the user activates the default widget.
    *

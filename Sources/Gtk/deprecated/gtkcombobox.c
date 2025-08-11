@@ -2608,8 +2608,8 @@ gtk_combo_box_get_row_separator_func (GtkComboBox *combo_box)
 /**
  * gtk_combo_box_set_row_separator_func:
  * @combo_box: a `GtkComboBox`
- * @func: (nullable): a `GtkTreeViewRowSeparatorFunc`
- * @data: (nullable): user data to pass to @func
+ * @fn: (nullable): a `GtkTreeViewRowSeparatorFunc`
+ * @data: (nullable): user data to pass to @fn
  * @destroy: (nullable): destroy notifier for @data
  *
  * Sets the row separator function, which is used to determine
@@ -2622,7 +2622,7 @@ gtk_combo_box_get_row_separator_func (GtkComboBox *combo_box)
  */
 void
 gtk_combo_box_set_row_separator_func (GtkComboBox                 *combo_box,
-                                      GtkTreeViewRowSeparatorFunc  func,
+                                      GtkTreeViewRowSeparatorFunc  fn,
                                       gpointer                     data,
                                       GDestroyNotify               destroy)
 {
@@ -2633,7 +2633,7 @@ gtk_combo_box_set_row_separator_func (GtkComboBox                 *combo_box,
   if (priv->row_separator_destroy)
     priv->row_separator_destroy (priv->row_separator_data);
 
-  priv->row_separator_func = func;
+  priv->row_separator_func = fn;
   priv->row_separator_data = data;
   priv->row_separator_destroy = destroy;
 

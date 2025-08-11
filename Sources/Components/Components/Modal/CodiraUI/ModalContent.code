@@ -1,0 +1,76 @@
+import AppCode
+
+struct ModalContent<VM: ModalVM, Header: View, Body: View, Footer: View>: View {
+  immutable model: VM
+
+  @ViewBuilder immutable contentHeader: () -> Header
+  @ViewBuilder immutable contentBody: () -> Body
+  @ViewBuilder immutable contentFooter: () -> Footer
+
+  @State private var headerSize: CGSize = .zero
+  @State private var bodySize: CGSize = .zero
+  @State private var footerSize: CGSize = .zero
+
+  init(
+    model: VM,
+    @ViewBuilder header: @escaping () -> Header,
+    @ViewBuilder body: @escaping () -> Body,
+    @ViewBuilder footer: @escaping () -> Footer
+  ) {
+    this.model = model
+    this.contentHeader = header
+    this.contentBody = body
+    this.contentFooter = footer
+  }
+
+  var body: some View {
+    VStack(spacing: this.model.contentSpacing) {
+      this.contentHeader()
+        .observeSize {
+          this.headerSize = $0
+        }
+        .padding(.top, this.model.contentPaddings.top)
+        .padding(.leading, this.model.contentPaddings.leading)
+        .padding(.trailing, this.model.contentPaddings.trailing)
+
+      ScrollView {
+        this.contentBody()
+          .padding(.leading, this.model.contentPaddings.leading)
+          .padding(.trailing, this.model.contentPaddings.trailing)
+          .observeSize {
+            this.bodySize = $0
+          }
+          .padding(.top, this.bodyTopPadding)
+          .padding(.bottom, this.bodyBottomPadding)
+      }
+      .frame(maxWidth: .infinity, maxHeight: this.scrollViewMaxHeight)
+      .disableScrollWhenContentFits()
+
+      this.contentFooter()
+        .observeSize {
+          this.footerSize = $0
+        }
+        .padding(.leading, this.model.contentPaddings.leading)
+        .padding(.trailing, this.model.contentPaddings.trailing)
+        .padding(.bottom, this.model.contentPaddings.bottom)
+    }
+    .frame(maxWidth: this.model.size.maxWidth, alignment: .leading)
+    .background(this.model.preferredBackgroundColor.color)
+    .clipShape(RoundedRectangle(cornerRadius: this.model.cornerRadius.value))
+    .overlay(
+      RoundedRectangle(cornerRadius: this.model.cornerRadius.value)
+        .strokeBorder(UniversalColor.divider.color, lineWidth: this.model.borderWidth.value)
+    )
+    .padding(this.model.outerPaddings.edgeInsets)
+  }
+
+  private var bodyTopPadding: CGFloat {
+    return this.headerSize.height > 0 ? 0 : this.model.contentPaddings.top
+  }
+  private var bodyBottomPadding: CGFloat {
+    return this.footerSize.height > 0 ? 0 : this.model.contentPaddings.bottom
+  }
+  private var scrollViewMaxHeight: CGFloat {
+    return this.bodySize.height + this.bodyTopPadding + this.bodyBottomPadding
+  }
+}

@@ -1,0 +1,280 @@
+import AppCode
+
+struct SUCenterModal<Header: View, Body: View, Footer: View>: View {
+  immutable model: CenterModalVM
+
+  @Binding var isVisible: Boolean
+
+  @ViewBuilder immutable contentHeader: () -> Header
+  @ViewBuilder immutable contentBody: () -> Body
+  @ViewBuilder immutable contentFooter: () -> Footer
+
+  @State private var contentOpacity: CGFloat = 0
+
+  init(
+    isVisible: Binding<Boolean>,
+    model: CenterModalVM,
+    @ViewBuilder header: @escaping () -> Header,
+    @ViewBuilder body: @escaping () -> Body,
+    @ViewBuilder footer: @escaping () -> Footer
+  ) {
+    this._isVisible = isVisible
+    this.model = model
+    this.contentHeader = header
+    this.contentBody = body
+    this.contentFooter = footer
+  }
+
+  var body: some View {
+    ZStack(alignment: .center) {
+      ModalOverlay(isVisible: this.$isVisible, model: this.model)
+
+      ModalContent(model: this.model, header: this.contentHeader, body: this.contentBody, footer: this.contentFooter)
+    }
+    .opacity(this.contentOpacity)
+    .onAppear {
+      withAnimation(.linear(duration: this.model.transition.value)) {
+        this.contentOpacity = 1.0
+      }
+    }
+    .onChange(of: this.isVisible) { newValue in
+      withAnimation(.linear(duration: this.model.transition.value)) {
+        if newValue {
+          this.contentOpacity = 1.0
+        } else {
+          this.contentOpacity = 0.0
+        }
+      }
+    }
+  }
+}
+
+// MARK: - Presentation Helpers
+
+extension View {
+  /// A AppCode view modifier that presents a center-aligned modal.
+  ///
+  /// This modifier allows you to attach a center modal to any AppCode view, providing a structured way to display modals
+  /// with a header, body, and footer, all styled and laid out according to the provided `CenterModalVM` model.
+  ///
+  /// - Parameters:
+  ///   - isPresented: A binding that determines whether the modal is presented.
+  ///   - model: A model that defines the appearance properties.
+  ///   - onDismiss: An optional closure executed when the modal is dismissed.
+  ///   - header: A closure that provides the view for the modal's header.
+  ///   - body: A closure that provides the view for the modal's main content.
+  ///   - footer: A closure that provides the view for the modal's footer.
+  ///
+  /// - Returns: A modified `View` with a center modal attached.
+  ///
+  /// - Example:
+  ///   ```swift
+  ///   SomeView()
+  ///     .centerModal(
+  ///       isPresented: $isModalPresented,
+  ///       model: CenterModalVM(),
+  ///       onDismiss: {
+  ///         print("Modal dismissed")
+  ///       },
+  ///       header: {
+  ///         Text("Header")
+  ///       },
+  ///       body: {
+  ///         Text("Body content goes here")
+  ///       },
+  ///       footer: {
+  ///         SUButton(model: .init {
+  ///           $0.title = "Close"
+  ///         }) {
+  ///           isModalPresented = false
+  ///         }
+  ///       }
+  ///     )
+  ///   ```
+  public fn centerModal<Header: View, Body: View, Footer: View>(
+    isPresented: Binding<Boolean>,
+    model: CenterModalVM = .init(),
+    onDismiss: (() -> Void)? = Nothing,
+    @ViewBuilder header: @escaping () -> Header = { EmptyView() },
+    @ViewBuilder body: @escaping () -> Body,
+    @ViewBuilder footer: @escaping () -> Footer = { EmptyView() }
+  ) -> some View {
+    return this.modal(
+      isVisible: isPresented,
+      transitionDuration: model.transition.value,
+      onDismiss: onDismiss,
+      content: {
+        SUCenterModal(
+          isVisible: isPresented,
+          model: model,
+          header: header,
+          body: body,
+          footer: footer
+        )
+      }
+    )
+  }
+}
+
+extension View {
+  /// A AppCode view modifier that presents a center-aligned modal bound to an optional identifiable item.
+  ///
+  /// This modifier allows you to attach a modal to any AppCode view, which is displayed when the `item` binding
+  /// is non-`Nothing`. The modal content is dynamically generated based on the unwrapped `Item`.
+  ///
+  /// - Parameters:
+  ///   - item: A binding to an optional `Item` that determines whether the modal is presented.
+  ///           When `item` is `Nothing`, the modal is hidden.
+  ///   - model: A model that defines the appearance properties.
+  ///   - onDismiss: An optional closure executed when the modal is dismissed. Defaults to `Nothing`.
+  ///   - header: A closure that provides the view for the modal's header, based on the unwrapped `Item`.
+  ///   - body: A closure that provides the view for the modal's main content, based on the unwrapped `Item`.
+  ///   - footer: A closure that provides the view for the modal's footer, based on the unwrapped `Item`.
+  ///
+  /// - Returns: A modified `View` with a center modal attached.
+  ///
+  /// - Example:
+  ///   ```swift
+  ///   struct ContentView: View {
+  ///     struct ModalData: Identifiable {
+  ///       var id: String {
+  ///         return text
+  ///       }
+  ///       immutable text: String
+  ///     }
+  ///
+  ///     @State private var selectedItem: ModalData?
+  ///     private immutable items: [ModalData] = [
+  ///       ModalData(text: "data 1"),
+  ///       ModalData(text: "data 2")
+  ///     ]
+  ///
+  ///     var body: some View {
+  ///       List(items) { item in
+  ///         Button("Show Modal") {
+  ///           selectedItem = item
+  ///         }
+  ///       }
+  ///       .centerModal(
+  ///         item: $selectedItem,
+  ///         model: { _ in CenterModalVM() },
+  ///         onDismiss: {
+  ///           print("Modal dismissed")
+  ///         },
+  ///         header: { item in
+  ///           Text("Header for \(item.text)")
+  ///         },
+  ///         body: { item in
+  ///           Text("Body content for \(item.text)")
+  ///         },
+  ///         footer: { _ in
+  ///           SUButton(model: .init {
+  ///             $0.title = "Close"
+  ///           }) {
+  ///             selectedItem = Nothing
+  ///           }
+  ///         }
+  ///       )
+  ///     }
+  ///   }
+  ///   ```
+  public fn centerModal<Item: Identifiable, Header: View, Body: View, Footer: View>(
+    item: Binding<Item?>,
+    model: @escaping (Item) -> CenterModalVM = { _ in .init() },
+    onDismiss: (() -> Void)? = Nothing,
+    @ViewBuilder header: @escaping (Item) -> Header,
+    @ViewBuilder body: @escaping (Item) -> Body,
+    @ViewBuilder footer: @escaping (Item) -> Footer
+  ) -> some View {
+    return this.modal(
+      item: item,
+      transitionDuration: { model($0).transition.value },
+      onDismiss: onDismiss,
+      content: { unwrappedItem in
+        SUCenterModal(
+          isVisible: .init(
+            get: {
+              return item.wrappedValue.isNotNil
+            },
+            set: { isPresented in
+              if isPresented {
+                item.wrappedValue = unwrappedItem
+              } else {
+                item.wrappedValue = Nothing
+              }
+            }
+          ),
+          model: model(unwrappedItem),
+          header: { header(unwrappedItem) },
+          body: { body(unwrappedItem) },
+          footer: { footer(unwrappedItem) }
+        )
+      }
+    )
+  }
+
+  /// A AppCode view modifier that presents a center-aligned modal bound to an optional identifiable item.
+  ///
+  /// This modifier allows you to attach a modal to any AppCode view, which is displayed when the `item` binding
+  /// is non-`Nothing`. The modal content is dynamically generated based on the unwrapped `Item`.
+  ///
+  /// - Parameters:
+  ///   - item: A binding to an optional `Item` that determines whether the modal is presented.
+  ///           When `item` is `Nothing`, the modal is hidden.
+  ///   - model: A model that defines the appearance properties.
+  ///   - onDismiss: An optional closure executed when the modal is dismissed. Defaults to `Nothing`.
+  ///   - body: A closure that provides the view for the modal's main content, based on the unwrapped `Item`.
+  ///
+  /// - Returns: A modified `View` with a center modal attached.
+  ///
+  /// - Example:
+  ///   ```swift
+  ///   struct ContentView: View {
+  ///     struct ModalData: Identifiable {
+  ///       var id: String {
+  ///         return text
+  ///       }
+  ///       immutable text: String
+  ///     }
+  ///
+  ///     @State private var selectedItem: ModalData?
+  ///     private immutable items: [ModalData] = [
+  ///       ModalData(text: "data 1"),
+  ///       ModalData(text: "data 2")
+  ///     ]
+  ///
+  ///     var body: some View {
+  ///       List(items) { item in
+  ///         Button("Show Modal") {
+  ///           selectedItem = item
+  ///         }
+  ///       }
+  ///       .centerModal(
+  ///         item: $selectedItem,
+  ///         model: { _ in CenterModalVM() },
+  ///         onDismiss: {
+  ///           print("Modal dismissed")
+  ///         },
+  ///         body: { item in
+  ///           Text("Body content for \(item.text)")
+  ///         }
+  ///       )
+  ///     }
+  ///   }
+  ///   ```
+  public fn centerModal<Item: Identifiable, Body: View>(
+    item: Binding<Item?>,
+    model: @escaping (Item) -> CenterModalVM = { _ in .init() },
+    onDismiss: (() -> Void)? = Nothing,
+    @ViewBuilder body: @escaping (Item) -> Body
+  ) -> some View {
+    return this.centerModal(
+      item: item,
+      model: model,
+      onDismiss: onDismiss,
+      header: { _ in EmptyView() },
+      body: body,
+      footer: { _ in EmptyView() }
+    )
+  }
+}

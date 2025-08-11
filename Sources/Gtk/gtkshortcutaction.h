@@ -61,15 +61,15 @@ GDK_AVAILABLE_IN_ALL
 GDK_DECLARE_INTERNAL_TYPE (GtkShortcutAction, gtk_shortcut_action, GTK, SHORTCUT_ACTION, GObject)
 
 GDK_AVAILABLE_IN_ALL
-char *                  gtk_shortcut_action_to_string           (GtkShortcutAction      *self);
+char *                  gtk_shortcut_action_to_string           (GtkShortcutAction      *this);
 GDK_AVAILABLE_IN_ALL
 GtkShortcutAction *     gtk_shortcut_action_parse_string        (const char *            string);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_shortcut_action_print               (GtkShortcutAction      *self,
+void                    gtk_shortcut_action_print               (GtkShortcutAction      *this,
                                                                  GString                *string);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_shortcut_action_activate            (GtkShortcutAction      *self,
+gboolean                gtk_shortcut_action_activate            (GtkShortcutAction      *this,
                                                                  GtkShortcutActionFlags  flags,
                                                                  GtkWidget              *widget,
                                                                  GVariant               *args);
@@ -148,7 +148,7 @@ GDK_DECLARE_INTERNAL_TYPE (GtkSignalAction, gtk_signal_action, GTK, SIGNAL_ACTIO
 GDK_AVAILABLE_IN_ALL
 GtkShortcutAction *     gtk_signal_action_new                   (const char      *signal_name);
 GDK_AVAILABLE_IN_ALL
-const char *            gtk_signal_action_get_signal_name       (GtkSignalAction *self);
+const char *            gtk_signal_action_get_signal_name       (GtkSignalAction *this);
 
 #define GTK_TYPE_NAMED_ACTION (gtk_named_action_get_type())
 
@@ -167,7 +167,7 @@ GDK_DECLARE_INTERNAL_TYPE (GtkNamedAction, gtk_named_action, GTK, NAMED_ACTION, 
 GDK_AVAILABLE_IN_ALL
 GtkShortcutAction *     gtk_named_action_new                    (const char     *name);
 GDK_AVAILABLE_IN_ALL
-const char *            gtk_named_action_get_action_name        (GtkNamedAction *self);
+const char *            gtk_named_action_get_action_name        (GtkNamedAction *this);
 
 G_END_DECLS
 

@@ -37,32 +37,32 @@ GDK_AVAILABLE_IN_ALL
 GtkWidget *             gtk_tree_expander_new                  (void);
 
 GDK_AVAILABLE_IN_ALL
-GtkWidget *             gtk_tree_expander_get_child            (GtkTreeExpander        *self);
+GtkWidget *             gtk_tree_expander_get_child            (GtkTreeExpander        *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_tree_expander_set_child            (GtkTreeExpander        *self,
+void                    gtk_tree_expander_set_child            (GtkTreeExpander        *this,
                                                                 GtkWidget              *child);
 
 GDK_AVAILABLE_IN_ALL
-gpointer                gtk_tree_expander_get_item             (GtkTreeExpander        *self);
+gpointer                gtk_tree_expander_get_item             (GtkTreeExpander        *this);
 GDK_AVAILABLE_IN_ALL
-GtkTreeListRow *        gtk_tree_expander_get_list_row         (GtkTreeExpander        *self);
+GtkTreeListRow *        gtk_tree_expander_get_list_row         (GtkTreeExpander        *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_tree_expander_set_list_row         (GtkTreeExpander        *self,
+void                    gtk_tree_expander_set_list_row         (GtkTreeExpander        *this,
                                                                 GtkTreeListRow         *list_row);
 GDK_AVAILABLE_IN_4_10
-gboolean                gtk_tree_expander_get_indent_for_depth (GtkTreeExpander        *self);
+gboolean                gtk_tree_expander_get_indent_for_depth (GtkTreeExpander        *this);
 GDK_AVAILABLE_IN_4_10
-void                    gtk_tree_expander_set_indent_for_depth (GtkTreeExpander        *self,
+void                    gtk_tree_expander_set_indent_for_depth (GtkTreeExpander        *this,
                                                                 gboolean                indent_for_depth);
 GDK_AVAILABLE_IN_4_6
-gboolean                gtk_tree_expander_get_indent_for_icon  (GtkTreeExpander        *self);
+gboolean                gtk_tree_expander_get_indent_for_icon  (GtkTreeExpander        *this);
 GDK_AVAILABLE_IN_4_6
-void                    gtk_tree_expander_set_indent_for_icon  (GtkTreeExpander        *self,
+void                    gtk_tree_expander_set_indent_for_icon  (GtkTreeExpander        *this,
                                                                 gboolean               indent_for_icon);
 GDK_AVAILABLE_IN_4_10
-gboolean                gtk_tree_expander_get_hide_expander    (GtkTreeExpander        *self);
+gboolean                gtk_tree_expander_get_hide_expander    (GtkTreeExpander        *this);
 GDK_AVAILABLE_IN_4_10
-void                    gtk_tree_expander_set_hide_expander    (GtkTreeExpander        *self,
+void                    gtk_tree_expander_set_hide_expander    (GtkTreeExpander        *this,
                                                                 gboolean                hide_expander);
 
 G_END_DECLS

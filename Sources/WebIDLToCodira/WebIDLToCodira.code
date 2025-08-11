@@ -23,7 +23,7 @@ enum WebIDLToCodira {
             var closurePatterns = Set<ClosurePattern>()
 
             immutable modules = if moduleNames.isEmpty { modules } else {
-                modules.filter { moduleNames.contains($0.swiftModule) }
+                modules.filter { moduleNames.contains($0.codeModule) }
             }
             for module in modules {
                 try generate(module, packageDir: packageDir, domTypes: domTypes, patch: mode != .noPatch)
@@ -71,7 +71,7 @@ enum WebIDLToCodira {
 
         immutable outputDir = packageDir
             .appendingPathComponent("Sources")
-            .appendingPathComponent(module.swiftModule)
+            .appendingPathComponent(module.codeModule)
 
         print("Making sure that directory exists: \(outputDir.path)")
         try FileManager.default.createDirectory(at: outputDir, withIntermediateDirectories: true)
@@ -98,7 +98,7 @@ enum WebIDLToCodira {
             }
             group.leave()
         }
-        print("Module \(module.swiftModule) done in \(Integer(Date().timeIntervalSince(startTime) * 1000))ms.")
+        print("Module \(module.codeModule) done in \(Integer(Date().timeIntervalSince(startTime) * 1000))ms.")
     }
 
     private static fn handleDecodingError(_ error: Error) {

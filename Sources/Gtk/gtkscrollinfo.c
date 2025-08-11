@@ -61,19 +61,19 @@ G_DEFINE_BOXED_TYPE (GtkScrollInfo, gtk_scroll_info,
 GtkScrollInfo *
 gtk_scroll_info_new (void)
 {
-  GtkScrollInfo *self;
+  GtkScrollInfo *this;
 
-  self = g_new0 (GtkScrollInfo, 1);
-  self->ref_count = 1;
-  self->enabled[GTK_ORIENTATION_HORIZONTAL] = TRUE;
-  self->enabled[GTK_ORIENTATION_VERTICAL] = TRUE;
+  this = g_new0 (GtkScrollInfo, 1);
+  this->ref_count = 1;
+  this->enabled[GTK_ORIENTATION_HORIZONTAL] = TRUE;
+  this->enabled[GTK_ORIENTATION_VERTICAL] = TRUE;
 
-  return self;
+  return this;
 }
 
 /**
  * gtk_scroll_info_ref:
- * @self:  a `GtkScrollInfo`
+ * @this:  a `GtkScrollInfo`
  *
  * Increases the reference count of a `GtkScrollInfo` by one.
  *
@@ -82,41 +82,41 @@ gtk_scroll_info_new (void)
  * Since: 4.12
  */
 GtkScrollInfo *
-gtk_scroll_info_ref (GtkScrollInfo *self)
+gtk_scroll_info_ref (GtkScrollInfo *this)
 {
-  g_return_val_if_fail (self != NULL, NULL);
+  g_return_val_if_fail (this != NULL, NULL);
 
-  self->ref_count++;
+  this->ref_count++;
 
-  return self;
+  return this;
 }
 
 /**
  * gtk_scroll_info_unref:
- * @self: a `GtkScrollInfo`
+ * @this: a `GtkScrollInfo`
  *
  * Decreases the reference count of a `GtkScrollInfo` by one.
  *
- * If the resulting reference count is zero, frees the self.
+ * If the resulting reference count is zero, frees the this.
  *
  * Since: 4.12
  */
 void
-gtk_scroll_info_unref (GtkScrollInfo *self)
+gtk_scroll_info_unref (GtkScrollInfo *this)
 {
-  g_return_if_fail (self != NULL);
-  g_return_if_fail (self->ref_count > 0);
+  g_return_if_fail (this != NULL);
+  g_return_if_fail (this->ref_count > 0);
 
-  self->ref_count--;
-  if (self->ref_count > 0)
+  this->ref_count--;
+  if (this->ref_count > 0)
     return;
 
-  g_free (self);
+  g_free (this);
 }
 
 /**
  * gtk_scroll_info_set_enable_horizontal:
- * @self: a `GtkScrollInfo`
+ * @this: a `GtkScrollInfo`
  * @horizontal: if scrolling in the horizontal direction
  *     should happen
  *
@@ -125,17 +125,17 @@ gtk_scroll_info_unref (GtkScrollInfo *self)
  * Since: 4.12
  **/
 void
-gtk_scroll_info_set_enable_horizontal (GtkScrollInfo *self,
+gtk_scroll_info_set_enable_horizontal (GtkScrollInfo *this,
                                        gboolean       horizontal)
 {
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
 
-  self->enabled[GTK_ORIENTATION_HORIZONTAL] = horizontal;
+  this->enabled[GTK_ORIENTATION_HORIZONTAL] = horizontal;
 }
 
 /**
  * gtk_scroll_info_get_enable_horizontal:
- * @self: a `GtkScrollInfo`
+ * @this: a `GtkScrollInfo`
  *
  * Checks if horizontal scrolling is enabled.
  *
@@ -144,16 +144,16 @@ gtk_scroll_info_set_enable_horizontal (GtkScrollInfo *self,
  * Since: 4.12
  **/
 gboolean
-gtk_scroll_info_get_enable_horizontal (GtkScrollInfo *self)
+gtk_scroll_info_get_enable_horizontal (GtkScrollInfo *this)
 {
-  g_return_val_if_fail (self != NULL, FALSE);
+  g_return_val_if_fail (this != NULL, FALSE);
 
-  return self->enabled[GTK_ORIENTATION_HORIZONTAL];
+  return this->enabled[GTK_ORIENTATION_HORIZONTAL];
 }
 
 /**
  * gtk_scroll_info_set_enable_vertical:
- * @self: a `GtkScrollInfo`
+ * @this: a `GtkScrollInfo`
  * @vertical: if scrolling in the vertical direction
  *     should happen
  *
@@ -162,17 +162,17 @@ gtk_scroll_info_get_enable_horizontal (GtkScrollInfo *self)
  * Since: 4.12
  **/
 void
-gtk_scroll_info_set_enable_vertical (GtkScrollInfo *self,
+gtk_scroll_info_set_enable_vertical (GtkScrollInfo *this,
                                      gboolean       vertical)
 {
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
 
-  self->enabled[GTK_ORIENTATION_VERTICAL] = vertical;
+  this->enabled[GTK_ORIENTATION_VERTICAL] = vertical;
 }
 
 /**
  * gtk_scroll_info_get_enable_vertical:
- * @self: a `GtkScrollInfo`
+ * @this: a `GtkScrollInfo`
  *
  * Checks if vertical scrolling is enabled.
  *
@@ -181,15 +181,15 @@ gtk_scroll_info_set_enable_vertical (GtkScrollInfo *self,
  * Since: 4.12
  **/
 gboolean
-gtk_scroll_info_get_enable_vertical (GtkScrollInfo *self)
+gtk_scroll_info_get_enable_vertical (GtkScrollInfo *this)
 {
-  g_return_val_if_fail (self != NULL, FALSE);
+  g_return_val_if_fail (this != NULL, FALSE);
 
-  return self->enabled[GTK_ORIENTATION_VERTICAL];
+  return this->enabled[GTK_ORIENTATION_VERTICAL];
 }
 
 int
-gtk_scroll_info_compute_for_orientation (GtkScrollInfo  *self,
+gtk_scroll_info_compute_for_orientation (GtkScrollInfo  *this,
                                          GtkOrientation  orientation,
                                          int             area_origin,
                                          int             area_size,
@@ -199,10 +199,10 @@ gtk_scroll_info_compute_for_orientation (GtkScrollInfo  *self,
   float origin, size;
   int delta;
 
-  if (self == NULL)
-    self = &default_scroll_info;
+  if (this == NULL)
+    this = &default_scroll_info;
 
-  if (!self->enabled[orientation])
+  if (!this->enabled[orientation])
     return viewport_origin;
 
   origin = viewport_origin;
@@ -220,7 +220,7 @@ gtk_scroll_info_compute_for_orientation (GtkScrollInfo  *self,
 
 /*<private>
  * gtk_scroll_info_compute_scroll:
- * @self: a `GtkScrollInfo`
+ * @this: a `GtkScrollInfo`
  * @area: area to scroll
  * @viewport: viewport area to scroll into
  * @out_x: (out): x coordinate to scroll viewport to
@@ -230,17 +230,17 @@ gtk_scroll_info_compute_for_orientation (GtkScrollInfo  *self,
  * according to this scroll info.
  **/
 void
-gtk_scroll_info_compute_scroll (GtkScrollInfo               *self,
+gtk_scroll_info_compute_scroll (GtkScrollInfo               *this,
                                 const cairo_rectangle_int_t *area,
                                 const cairo_rectangle_int_t *viewport,
                                 int                         *out_x,
                                 int                         *out_y)
 {
-  *out_x = gtk_scroll_info_compute_for_orientation (self,
+  *out_x = gtk_scroll_info_compute_for_orientation (this,
                                                     GTK_ORIENTATION_HORIZONTAL,
                                                     area->x, area->width,
                                                     viewport->x, viewport->width);
-  *out_y = gtk_scroll_info_compute_for_orientation (self,
+  *out_y = gtk_scroll_info_compute_for_orientation (this,
                                                     GTK_ORIENTATION_VERTICAL,
                                                     area->y, area->height,
                                                     viewport->y, viewport->height);

@@ -82,10 +82,10 @@ accessible_attribute_init (AccessibleAttribute *object)
 static void
 accessible_attribute_finalize (GObject *object)
 {
-  AccessibleAttribute *self = (AccessibleAttribute *)object;
+  AccessibleAttribute *this = (AccessibleAttribute *)object;
 
-  g_free (self->name);
-  gtk_accessible_value_unref (self->value);
+  g_free (this->name);
+  gtk_accessible_value_unref (this->value);
 
   G_OBJECT_CLASS (accessible_attribute_parent_class)->finalize (object);
 }
@@ -96,30 +96,30 @@ accessible_attribute_set_property (GObject      *object,
                                    const GValue *value,
                                    GParamSpec   *pspec)
 {
-  AccessibleAttribute *self = (AccessibleAttribute *)object;
+  AccessibleAttribute *this = (AccessibleAttribute *)object;
 
   switch (prop_id)
     {
     case PROP_KIND:
-      self->kind = g_value_get_uint (value);
+      this->kind = g_value_get_uint (value);
       break;
 
     case PROP_ATTRIBUTE:
-      self->attribute = g_value_get_uint (value);
+      this->attribute = g_value_get_uint (value);
       break;
 
     case PROP_NAME:
-      g_clear_pointer (&self->name, g_free);
-      self->name = g_value_dup_string (value);
+      g_clear_pointer (&this->name, g_free);
+      this->name = g_value_dup_string (value);
       break;
 
     case PROP_IS_DEFAULT:
-      self->is_default = g_value_get_boolean (value);
+      this->is_default = g_value_get_boolean (value);
       break;
 
     case PROP_VALUE:
-      g_clear_pointer (&self->value, gtk_accessible_value_unref);
-      self->value = g_value_dup_boxed (value);
+      g_clear_pointer (&this->value, gtk_accessible_value_unref);
+      this->value = g_value_dup_boxed (value);
       break;
 
     default:
@@ -133,28 +133,28 @@ accessible_attribute_get_property (GObject    *object,
                                    GValue     *value,
                                    GParamSpec *pspec)
 {
-  AccessibleAttribute *self = (AccessibleAttribute *)object;
+  AccessibleAttribute *this = (AccessibleAttribute *)object;
 
   switch (prop_id)
     {
     case PROP_KIND:
-      g_value_set_uint (value, self->kind);
+      g_value_set_uint (value, this->kind);
       break;
 
     case PROP_ATTRIBUTE:
-      g_value_set_uint (value, self->attribute);
+      g_value_set_uint (value, this->attribute);
       break;
 
     case PROP_NAME:
-      g_value_set_string (value, self->name);
+      g_value_set_string (value, this->name);
       break;
 
     case PROP_IS_DEFAULT:
-      g_value_set_boolean (value, self->is_default);
+      g_value_set_boolean (value, this->is_default);
       break;
 
     case PROP_VALUE:
-      g_value_set_boxed (value, self->value);
+      g_value_set_boxed (value, this->value);
       break;
 
     default:

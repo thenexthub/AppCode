@@ -47,10 +47,10 @@ gtk_popover_content_css_changed (GtkWidget         *widget,
 static void
 gtk_popover_content_finalize (GObject *object)
 {
-  GtkPopoverContent *self = GTK_POPOVER_CONTENT (object);
+  GtkPopoverContent *this = GTK_POPOVER_CONTENT (object);
   GtkWidget *widget;
 
-  widget = _gtk_widget_get_first_child (GTK_WIDGET (self));
+  widget = _gtk_widget_get_first_child (GTK_WIDGET (this));
   while (widget != NULL)
     {
       GtkWidget *next = _gtk_widget_get_next_sibling (widget);
@@ -80,7 +80,7 @@ gtk_popover_content_class_init (GtkPopoverContentClass *klass)
 }
 
 static void
-gtk_popover_content_init (GtkPopoverContent *self)
+gtk_popover_content_init (GtkPopoverContent *this)
 {
 }
 

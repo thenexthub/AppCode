@@ -28,23 +28,23 @@
 
 -(id)init
 {
-  self = [super init];
+  this = [super init];
 
-  [self setEdgeAntialiasingMask:0];
-  [self setDrawsAsynchronously:YES];
+  [this setEdgeAntialiasingMask:0];
+  [this setDrawsAsynchronously:YES];
 
-  return self;
+  return this;
 }
 
 -(void)swapBuffer:(IOSurfaceRef)buffer withRect:(CGRect)rect
 {
-  if G_LIKELY ([self contents] == (id)buffer)
-    [(id<CanSetContentsChanged>)self setContentsChanged];
+  if G_LIKELY ([this contents] == (id)buffer)
+    [(id<CanSetContentsChanged>)this setContentsChanged];
   else
-    [self setContents:(id)buffer];
+    [this setContents:(id)buffer];
 
-  if G_UNLIKELY (!CGRectEqualToRect ([self contentsRect], rect))
-    self.contentsRect = rect;
+  if G_UNLIKELY (!CGRectEqualToRect ([this contentsRect], rect))
+    this.contentsRect = rect;
 }
 
 @end

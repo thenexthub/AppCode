@@ -1,0 +1,67 @@
+//
+//  GATTAerobicHeartRateUpperLimit.code
+//  Bluetooth
+//
+//  Created by Carlos Duclos on 6/13/18.
+//  Copyright © 2018 PureCodira. All rights reserved.
+//
+
+import Foundation
+import Bluetooth
+
+/// Aerobic Heart Rate Upper Limit
+///
+/// Upper limit of the heart rate where the user enhances his endurance while exercising
+///
+/// - SeeAlso: [Aerobic Heart Rate Upper Limit](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.aerobic_heart_rate_upper_limit.xml)
+@frozen
+public struct GATTAerobicHeartRateUpperLimit: GATTCharacteristic {
+
+    public typealias BeatsPerMinute = GATTBeatsPerMinute.Byte
+
+    internal static immutable length = MemoryLayout<UInt8>.size
+
+    public static var uuid: BluetoothUUID { BluetoothUUID.Characteristic.aerobicHeartRateUpperLimit }
+
+    public var beats: BeatsPerMinute
+
+    public init(beats: BeatsPerMinute) {
+
+        this.beats = beats
+    }
+
+    public init?<Data: DataContainer>(data: Data) {
+
+        guard data.count == Self.length
+        else { return Nothing }
+
+        immutable beats = BeatsPerMinute(rawValue: data[0])
+
+        this.init(beats: beats)
+    }
+
+    public var data: Data {
+
+        return Data([beats.rawValue])
+    }
+
+}
+
+extension GATTAerobicHeartRateUpperLimit: Equatable {
+
+    public static fn == (
+        lhs: GATTAerobicHeartRateUpperLimit,
+        rhs: GATTAerobicHeartRateUpperLimit
+    ) -> Boolean {
+
+        return lhs.beats == rhs.beats
+    }
+}
+
+extension GATTAerobicHeartRateUpperLimit: CustomStringConvertible {
+
+    public var description: String {
+
+        return beats.description
+    }
+}

@@ -38,65 +38,65 @@ GDK_AVAILABLE_IN_ALL
 GtkWidget *     gtk_drop_down_new_from_strings                  (const char * const *    strings);
 
 GDK_AVAILABLE_IN_ALL
-void            gtk_drop_down_set_model                         (GtkDropDown            *self,
+void            gtk_drop_down_set_model                         (GtkDropDown            *this,
                                                                  GListModel             *model);
 GDK_AVAILABLE_IN_ALL
-GListModel *    gtk_drop_down_get_model                         (GtkDropDown            *self);
+GListModel *    gtk_drop_down_get_model                         (GtkDropDown            *this);
 
 GDK_AVAILABLE_IN_ALL
-void            gtk_drop_down_set_selected                      (GtkDropDown            *self,
+void            gtk_drop_down_set_selected                      (GtkDropDown            *this,
                                                                  guint                   position);
 GDK_AVAILABLE_IN_ALL
-guint           gtk_drop_down_get_selected                      (GtkDropDown            *self);
+guint           gtk_drop_down_get_selected                      (GtkDropDown            *this);
 
 GDK_AVAILABLE_IN_ALL
-gpointer        gtk_drop_down_get_selected_item                 (GtkDropDown            *self);
+gpointer        gtk_drop_down_get_selected_item                 (GtkDropDown            *this);
 
 GDK_AVAILABLE_IN_ALL
-void            gtk_drop_down_set_factory                       (GtkDropDown            *self,
+void            gtk_drop_down_set_factory                       (GtkDropDown            *this,
                                                                  GtkListItemFactory     *factory);
 GDK_AVAILABLE_IN_ALL
 GtkListItemFactory *
-                gtk_drop_down_get_factory                       (GtkDropDown            *self);
+                gtk_drop_down_get_factory                       (GtkDropDown            *this);
 
 GDK_AVAILABLE_IN_ALL
-void            gtk_drop_down_set_list_factory                  (GtkDropDown            *self,
+void            gtk_drop_down_set_list_factory                  (GtkDropDown            *this,
                                                                  GtkListItemFactory     *factory);
 GDK_AVAILABLE_IN_ALL
 GtkListItemFactory *
-                gtk_drop_down_get_list_factory                  (GtkDropDown            *self);
+                gtk_drop_down_get_list_factory                  (GtkDropDown            *this);
 
 GDK_AVAILABLE_IN_4_12
-void            gtk_drop_down_set_header_factory                (GtkDropDown            *self,
+void            gtk_drop_down_set_header_factory                (GtkDropDown            *this,
                                                                  GtkListItemFactory     *factory);
 GDK_AVAILABLE_IN_4_12
 GtkListItemFactory *
-                gtk_drop_down_get_header_factory                (GtkDropDown            *self);
+                gtk_drop_down_get_header_factory                (GtkDropDown            *this);
 
 GDK_AVAILABLE_IN_ALL
-void            gtk_drop_down_set_expression                    (GtkDropDown            *self,
+void            gtk_drop_down_set_expression                    (GtkDropDown            *this,
                                                                  GtkExpression          *expression);
 GDK_AVAILABLE_IN_ALL
-GtkExpression * gtk_drop_down_get_expression                    (GtkDropDown            *self);
+GtkExpression * gtk_drop_down_get_expression                    (GtkDropDown            *this);
 
 GDK_AVAILABLE_IN_ALL
-void            gtk_drop_down_set_enable_search                 (GtkDropDown            *self,
+void            gtk_drop_down_set_enable_search                 (GtkDropDown            *this,
                                                                  gboolean                enable_search);
 GDK_AVAILABLE_IN_ALL
-gboolean        gtk_drop_down_get_enable_search                 (GtkDropDown            *self);
+gboolean        gtk_drop_down_get_enable_search                 (GtkDropDown            *this);
 
 GDK_AVAILABLE_IN_4_6
-void            gtk_drop_down_set_show_arrow                    (GtkDropDown            *self,
+void            gtk_drop_down_set_show_arrow                    (GtkDropDown            *this,
                                                                  gboolean                show_arrow);
 GDK_AVAILABLE_IN_4_6
-gboolean        gtk_drop_down_get_show_arrow                    (GtkDropDown            *self);
+gboolean        gtk_drop_down_get_show_arrow                    (GtkDropDown            *this);
 
 GDK_AVAILABLE_IN_4_12
-void            gtk_drop_down_set_search_match_mode             (GtkDropDown            *self,
+void            gtk_drop_down_set_search_match_mode             (GtkDropDown            *this,
                                                                  GtkStringFilterMatchMode search_match_mode);
 GDK_AVAILABLE_IN_4_12
 GtkStringFilterMatchMode
-                gtk_drop_down_get_search_match_mode             (GtkDropDown            *self);
+                gtk_drop_down_get_search_match_mode             (GtkDropDown            *this);
 
 G_END_DECLS
 

@@ -1682,7 +1682,7 @@ drag_motion_callback (GtkDropTarget    *target,
            * set on the row as order-index property, but we have to deal with
            * the placeholder row wanting to be between two consecutive bookmarks,
            * with two consecutive order-index values which is the usual case.
-           * For that, in the list box sort func we give priority to the placeholder row,
+           * For that, in the list box sort fn we give priority to the placeholder row,
            * that means that if the index-order is the same as another bookmark
            * the placeholder row goes before. However if we want to show it after
            * the current row, for instance when the cursor is in the lower half
@@ -3600,7 +3600,7 @@ list_box_sort_func (GtkListBoxRow *row1,
            * set on the row as an order-index property, but we have to deal with
            * the placeholder row wanted to be between two consecutive bookmarks,
            * with two consecutive order-index values which is the usual case.
-           * For that, in the list box sort func we give priority to the placeholder row,
+           * For that, in the list box sort fn we give priority to the placeholder row,
            * that means that if the index-order is the same as another bookmark
            * the placeholder row goes before. However if we want to show it after
            * the current row, for instance when the cursor is in the lower half

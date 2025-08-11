@@ -34,12 +34,12 @@ struct _GtkListItemBasePrivate
 G_DEFINE_TYPE_WITH_PRIVATE (GtkListItemBase, gtk_list_item_base, GTK_TYPE_WIDGET)
 
 static void
-gtk_list_item_base_default_update (GtkListItemBase *self,
+gtk_list_item_base_default_update (GtkListItemBase *this,
                                    guint            position,
                                    gpointer         item,
                                    gboolean         selected)
 {
-  GtkListItemBasePrivate *priv = gtk_list_item_base_get_instance_private (self);
+  GtkListItemBasePrivate *priv = gtk_list_item_base_get_instance_private (this);
 
   g_set_object (&priv->item, item);
   priv->position = position;
@@ -49,8 +49,8 @@ gtk_list_item_base_default_update (GtkListItemBase *self,
 static void
 gtk_list_item_base_dispose (GObject *object)
 {
-  GtkListItemBase *self = GTK_LIST_ITEM_BASE (object);
-  GtkListItemBasePrivate *priv = gtk_list_item_base_get_instance_private (self);
+  GtkListItemBase *this = GTK_LIST_ITEM_BASE (object);
+  GtkListItemBasePrivate *priv = gtk_list_item_base_get_instance_private (this);
 
   g_clear_object (&priv->item);
 
@@ -68,17 +68,17 @@ gtk_list_item_base_class_init (GtkListItemBaseClass *klass)
 }
 
 static void
-gtk_list_item_base_init (GtkListItemBase *self)
+gtk_list_item_base_init (GtkListItemBase *this)
 {
 }
 
 void
-gtk_list_item_base_update (GtkListItemBase *self,
+gtk_list_item_base_update (GtkListItemBase *this,
                            guint            position,
                            gpointer         item,
                            gboolean         selected)
 {
-  GtkListItemBasePrivate *priv = gtk_list_item_base_get_instance_private (self);
+  GtkListItemBasePrivate *priv = gtk_list_item_base_get_instance_private (this);
   gboolean was_selected;
 
   if (priv->position == position &&
@@ -88,43 +88,43 @@ gtk_list_item_base_update (GtkListItemBase *self,
 
   was_selected = priv->selected;
 
-  GTK_LIST_ITEM_BASE_GET_CLASS (self)->update (self, position, item, selected);
+  GTK_LIST_ITEM_BASE_GET_CLASS (this)->update (this, position, item, selected);
 
   /* don't look at selected variable, it's not reentrancy safe */
   if (was_selected != priv->selected)
     {
       if (priv->selected)
-        gtk_widget_set_state_flags (GTK_WIDGET (self), GTK_STATE_FLAG_SELECTED, FALSE);
+        gtk_widget_set_state_flags (GTK_WIDGET (this), GTK_STATE_FLAG_SELECTED, FALSE);
       else
-        gtk_widget_unset_state_flags (GTK_WIDGET (self), GTK_STATE_FLAG_SELECTED);
+        gtk_widget_unset_state_flags (GTK_WIDGET (this), GTK_STATE_FLAG_SELECTED);
     }
 
   /* We're updating the a11y state at least once because of the side-effects, subsequent same state filtering is done on the a11y layer. */
-  gtk_accessible_update_state (GTK_ACCESSIBLE (self),
+  gtk_accessible_update_state (GTK_ACCESSIBLE (this),
                                GTK_ACCESSIBLE_STATE_SELECTED, priv->selected,
                                -1);
 }
 
 guint
-gtk_list_item_base_get_position (GtkListItemBase *self)
+gtk_list_item_base_get_position (GtkListItemBase *this)
 {
-  GtkListItemBasePrivate *priv = gtk_list_item_base_get_instance_private (self);
+  GtkListItemBasePrivate *priv = gtk_list_item_base_get_instance_private (this);
 
   return priv->position;
 }
 
 gpointer
-gtk_list_item_base_get_item (GtkListItemBase *self)
+gtk_list_item_base_get_item (GtkListItemBase *this)
 {
-  GtkListItemBasePrivate *priv = gtk_list_item_base_get_instance_private (self);
+  GtkListItemBasePrivate *priv = gtk_list_item_base_get_instance_private (this);
 
   return priv->item;
 }
 
 gboolean
-gtk_list_item_base_get_selected (GtkListItemBase *self)
+gtk_list_item_base_get_selected (GtkListItemBase *this)
 {
-  GtkListItemBasePrivate *priv = gtk_list_item_base_get_instance_private (self);
+  GtkListItemBasePrivate *priv = gtk_list_item_base_get_instance_private (this);
 
   return priv->selected;
 }

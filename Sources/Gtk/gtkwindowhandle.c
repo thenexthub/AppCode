@@ -82,18 +82,18 @@ G_DEFINE_TYPE_WITH_CODE (GtkWindowHandle, gtk_window_handle, GTK_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (GTK_TYPE_BUILDABLE, gtk_window_handle_buildable_iface_init))
 
 static void
-lower_window (GtkWindowHandle *self)
+lower_window (GtkWindowHandle *this)
 {
   GdkSurface *surface =
-    gtk_native_get_surface (gtk_widget_get_native (GTK_WIDGET (self)));
+    gtk_native_get_surface (gtk_widget_get_native (GTK_WIDGET (this)));
 
   gdk_toplevel_lower (GDK_TOPLEVEL (surface));
 }
 
 static GtkWindow *
-get_window (GtkWindowHandle *self)
+get_window (GtkWindowHandle *this)
 {
-  GtkRoot *root = gtk_widget_get_root (GTK_WIDGET (self));
+  GtkRoot *root = gtk_widget_get_root (GTK_WIDGET (this));
 
   if (GTK_IS_WINDOW (root))
     return GTK_WINDOW (root);
@@ -103,9 +103,9 @@ get_window (GtkWindowHandle *self)
 
 static void
 restore_window_clicked (GtkModelButton  *button,
-                        GtkWindowHandle *self)
+                        GtkWindowHandle *this)
 {
-  GtkWindow *window = get_window (self);
+  GtkWindow *window = get_window (this);
 
   if (!window)
     return;
@@ -116,9 +116,9 @@ restore_window_clicked (GtkModelButton  *button,
 
 static void
 minimize_window_clicked (GtkModelButton  *button,
-                         GtkWindowHandle *self)
+                         GtkWindowHandle *this)
 {
-  GtkWindow *window = get_window (self);
+  GtkWindow *window = get_window (this);
 
   if (!window)
     return;
@@ -132,9 +132,9 @@ minimize_window_clicked (GtkModelButton  *button,
 
 static void
 maximize_window_clicked (GtkModelButton  *button,
-                         GtkWindowHandle *self)
+                         GtkWindowHandle *this)
 {
-  GtkWindow *window = get_window (self);
+  GtkWindow *window = get_window (this);
 
   if (window)
     gtk_window_maximize (window);
@@ -142,9 +142,9 @@ maximize_window_clicked (GtkModelButton  *button,
 
 static void
 close_window_clicked (GtkModelButton  *button,
-                      GtkWindowHandle *self)
+                      GtkWindowHandle *this)
 {
-  GtkWindow *window = get_window (self);
+  GtkWindow *window = get_window (this);
 
   if (window)
     gtk_window_close (window);
@@ -152,13 +152,13 @@ close_window_clicked (GtkModelButton  *button,
 
 static void
 popup_menu_closed (GtkPopover      *popover,
-                   GtkWindowHandle *self)
+                   GtkWindowHandle *this)
 {
-  g_clear_pointer (&self->fallback_menu, gtk_widget_unparent);
+  g_clear_pointer (&this->fallback_menu, gtk_widget_unparent);
 }
 
 static void
-do_popup_fallback (GtkWindowHandle *self,
+do_popup_fallback (GtkWindowHandle *this,
                    GdkEvent        *event)
 {
   GdkRectangle rect = { 0, 0, 1, 1 };
@@ -168,9 +168,9 @@ do_popup_fallback (GtkWindowHandle *self,
   GtkWindow *window;
   gboolean maximized, resizable, deletable;
 
-  g_clear_pointer (&self->fallback_menu, gtk_widget_unparent);
+  g_clear_pointer (&this->fallback_menu, gtk_widget_unparent);
 
-  window = get_window (self);
+  window = get_window (this);
 
   if (window)
     {
@@ -185,11 +185,11 @@ do_popup_fallback (GtkWindowHandle *self,
       deletable = FALSE;
     }
 
-  self->fallback_menu = gtk_popover_menu_new ();
-  gtk_widget_set_parent (self->fallback_menu, GTK_WIDGET (self));
+  this->fallback_menu = gtk_popover_menu_new ();
+  gtk_widget_set_parent (this->fallback_menu, GTK_WIDGET (this));
 
-  gtk_popover_set_has_arrow (GTK_POPOVER (self->fallback_menu), FALSE);
-  gtk_widget_set_halign (self->fallback_menu, GTK_ALIGN_START);
+  gtk_popover_set_has_arrow (GTK_POPOVER (this->fallback_menu), FALSE);
+  gtk_widget_set_halign (this->fallback_menu, GTK_ALIGN_START);
 
 
   device = gdk_event_get_device (event);
@@ -206,13 +206,13 @@ do_popup_fallback (GtkWindowHandle *self,
       double nx, ny;
       graphene_point_t p;
 
-      native = gtk_widget_get_native (GTK_WIDGET (self));
+      native = gtk_widget_get_native (GTK_WIDGET (this));
       surface = gtk_native_get_surface (native);
       gdk_surface_get_device_position (surface, device, &px, &py, NULL);
       gtk_native_get_surface_transform (native, &nx, &ny);
 
-      if (!gtk_widget_compute_point (GTK_WIDGET (gtk_widget_get_native (GTK_WIDGET (self))),
-                                     GTK_WIDGET (self),
+      if (!gtk_widget_compute_point (GTK_WIDGET (gtk_widget_get_native (GTK_WIDGET (this))),
+                                     GTK_WIDGET (this),
                                      &GRAPHENE_POINT_INIT (px - nx, py - ny),
                                      &p))
         graphene_point_init (&p, 0, 0);
@@ -221,29 +221,29 @@ do_popup_fallback (GtkWindowHandle *self,
       rect.y = p.y;
     }
 
-  gtk_popover_set_pointing_to (GTK_POPOVER (self->fallback_menu), &rect);
+  gtk_popover_set_pointing_to (GTK_POPOVER (this->fallback_menu), &rect);
 
   box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-  gtk_popover_menu_add_submenu (GTK_POPOVER_MENU (self->fallback_menu), box, "main");
+  gtk_popover_menu_add_submenu (GTK_POPOVER_MENU (this->fallback_menu), box, "main");
 
   menuitem = gtk_model_button_new ();
   g_object_set (menuitem, "text", _("Restore"), NULL);
   gtk_widget_set_sensitive (menuitem, maximized && resizable);
   g_signal_connect (G_OBJECT (menuitem), "clicked",
-                    G_CALLBACK (restore_window_clicked), self);
+                    G_CALLBACK (restore_window_clicked), this);
   gtk_box_append (GTK_BOX (box), menuitem);
 
   menuitem = gtk_model_button_new ();
   g_object_set (menuitem, "text", _("Minimize"), NULL);
   g_signal_connect (G_OBJECT (menuitem), "clicked",
-                    G_CALLBACK (minimize_window_clicked), self);
+                    G_CALLBACK (minimize_window_clicked), this);
   gtk_box_append (GTK_BOX (box), menuitem);
 
   menuitem = gtk_model_button_new ();
   g_object_set (menuitem, "text", _("Maximize"), NULL);
   gtk_widget_set_sensitive (menuitem, resizable && !maximized);
   g_signal_connect (G_OBJECT (menuitem), "clicked",
-                    G_CALLBACK (maximize_window_clicked), self);
+                    G_CALLBACK (maximize_window_clicked), this);
   gtk_box_append (GTK_BOX (box), menuitem);
 
   menuitem = gtk_separator_new (GTK_ORIENTATION_HORIZONTAL);
@@ -253,20 +253,20 @@ do_popup_fallback (GtkWindowHandle *self,
   g_object_set (menuitem, "text", _("Close"), NULL);
   gtk_widget_set_sensitive (menuitem, deletable);
   g_signal_connect (G_OBJECT (menuitem), "clicked",
-                    G_CALLBACK (close_window_clicked), self);
+                    G_CALLBACK (close_window_clicked), this);
   gtk_box_append (GTK_BOX (box), menuitem);
 
-  g_signal_connect (self->fallback_menu, "closed",
-                    G_CALLBACK (popup_menu_closed), self);
-  gtk_popover_popup (GTK_POPOVER (self->fallback_menu));
+  g_signal_connect (this->fallback_menu, "closed",
+                    G_CALLBACK (popup_menu_closed), this);
+  gtk_popover_popup (GTK_POPOVER (this->fallback_menu));
 }
 
 static void
-do_popup (GtkWindowHandle *self,
+do_popup (GtkWindowHandle *this,
           GtkGestureClick *gesture)
 {
   GdkSurface *surface =
-    gtk_native_get_surface (gtk_widget_get_native (GTK_WIDGET (self)));
+    gtk_native_get_surface (gtk_widget_get_native (GTK_WIDGET (this)));
   GdkEventSequence *sequence;
   GdkEvent *event;
 
@@ -276,11 +276,11 @@ do_popup (GtkWindowHandle *self,
     return;
 
   if (!gdk_toplevel_show_window_menu (GDK_TOPLEVEL (surface), event))
-    do_popup_fallback (self, event);
+    do_popup_fallback (this, event);
 }
 
 static gboolean
-perform_titlebar_action_fallback (GtkWindowHandle    *self,
+perform_titlebar_action_fallback (GtkWindowHandle    *this,
                                   GtkGestureClick    *click_gesture,
                                   GdkTitlebarGesture  gesture)
 {
@@ -288,7 +288,7 @@ perform_titlebar_action_fallback (GtkWindowHandle    *self,
   char *action = NULL;
   gboolean retval = TRUE;
 
-  settings = gtk_widget_get_settings (GTK_WIDGET (self));
+  settings = gtk_widget_get_settings (GTK_WIDGET (this));
   switch (gesture)
     {
     case GDK_TITLEBAR_GESTURE_DOUBLE_CLICK:
@@ -310,17 +310,17 @@ perform_titlebar_action_fallback (GtkWindowHandle    *self,
     retval = FALSE;
     /* treat all maximization variants the same */
   else if (g_str_has_prefix (action, "toggle-maximize"))
-    gtk_widget_activate_action (GTK_WIDGET (self),
+    gtk_widget_activate_action (GTK_WIDGET (this),
                                 "window.toggle-maximized",
                                 NULL);
   else if (g_str_equal (action, "lower"))
-    lower_window (self);
+    lower_window (this);
   else if (g_str_equal (action, "minimize"))
-    gtk_widget_activate_action (GTK_WIDGET (self),
+    gtk_widget_activate_action (GTK_WIDGET (this),
                                 "window.minimize",
                                 NULL);
   else if (g_str_equal (action, "menu"))
-    do_popup (self, click_gesture);
+    do_popup (this, click_gesture);
   else
     {
       g_warning ("Unsupported titlebar action %s", action);
@@ -333,13 +333,13 @@ perform_titlebar_action_fallback (GtkWindowHandle    *self,
 }
 
 static gboolean
-perform_titlebar_action (GtkWindowHandle *self,
+perform_titlebar_action (GtkWindowHandle *this,
 			 GtkGestureClick *click_gesture,
                          guint            button,
                          int              n_press)
 {
   GdkSurface *surface =
-    gtk_native_get_surface (gtk_widget_get_native (GTK_WIDGET (self)));
+    gtk_native_get_surface (gtk_widget_get_native (GTK_WIDGET (this)));
   GdkTitlebarGesture gesture;
 
   switch (button)
@@ -363,7 +363,7 @@ perform_titlebar_action (GtkWindowHandle *self,
   if (gdk_toplevel_titlebar_gesture (GDK_TOPLEVEL (surface), gesture))
     return TRUE;
 
-  return perform_titlebar_action_fallback (self, click_gesture, gesture);
+  return perform_titlebar_action_fallback (this, click_gesture, gesture);
 }
 
 static void
@@ -371,21 +371,21 @@ click_gesture_pressed_cb (GtkGestureClick *gesture,
                           int              n_press,
                           double           x,
                           double           y,
-                          GtkWindowHandle *self)
+                          GtkWindowHandle *this)
 {
   GtkWidget *widget;
   guint button;
 
-  widget = GTK_WIDGET (self);
+  widget = GTK_WIDGET (this);
   button = gtk_gesture_single_get_current_button (GTK_GESTURE_SINGLE (gesture));
 
   if (n_press > 1)
-    gtk_gesture_set_state (self->drag_gesture, GTK_EVENT_SEQUENCE_DENIED);
+    gtk_gesture_set_state (this->drag_gesture, GTK_EVENT_SEQUENCE_DENIED);
 
   if (gdk_display_device_is_grabbed (gtk_widget_get_display (widget),
                                      gtk_gesture_get_device (GTK_GESTURE (gesture))))
     {
-      gtk_gesture_set_state (self->drag_gesture, GTK_EVENT_SEQUENCE_DENIED);
+      gtk_gesture_set_state (this->drag_gesture, GTK_EVENT_SEQUENCE_DENIED);
       return;
     }
 
@@ -394,23 +394,23 @@ click_gesture_pressed_cb (GtkGestureClick *gesture,
     case GDK_BUTTON_PRIMARY:
       if (n_press == 2)
         {
-          perform_titlebar_action (self, gesture, button, n_press);
+          perform_titlebar_action (this, gesture, button, n_press);
           gtk_gesture_set_state (GTK_GESTURE (gesture),
 				 GTK_EVENT_SEQUENCE_CLAIMED);
         }
       break;
 
     case GDK_BUTTON_SECONDARY:
-      if (perform_titlebar_action (self, gesture, button, n_press))
+      if (perform_titlebar_action (this, gesture, button, n_press))
         gtk_gesture_set_state (GTK_GESTURE (gesture),
 			       GTK_EVENT_SEQUENCE_CLAIMED);
 
       gtk_event_controller_reset (GTK_EVENT_CONTROLLER (gesture));
-      gtk_event_controller_reset (GTK_EVENT_CONTROLLER (self->drag_gesture));
+      gtk_event_controller_reset (GTK_EVENT_CONTROLLER (this->drag_gesture));
       break;
 
     case GDK_BUTTON_MIDDLE:
-      if (perform_titlebar_action (self, gesture, button, n_press))
+      if (perform_titlebar_action (this, gesture, button, n_press))
         gtk_gesture_set_state (GTK_GESTURE (gesture),
 			       GTK_EVENT_SEQUENCE_CLAIMED);
       break;
@@ -424,9 +424,9 @@ static void
 drag_gesture_update_cb (GtkGestureDrag  *gesture,
                         double           offset_x,
                         double           offset_y,
-                        GtkWindowHandle *self)
+                        GtkWindowHandle *this)
 {
-  if (gtk_drag_check_threshold_double (GTK_WIDGET (self), 0, 0, offset_x, offset_y))
+  if (gtk_drag_check_threshold_double (GTK_WIDGET (this), 0, 0, offset_x, offset_y))
     {
       double start_x, start_y;
       double native_x, native_y;
@@ -438,9 +438,9 @@ drag_gesture_update_cb (GtkGestureDrag  *gesture,
 
       gtk_gesture_drag_get_start_point (gesture, &start_x, &start_y);
 
-      native = gtk_widget_get_native (GTK_WIDGET (self));
+      native = gtk_widget_get_native (GTK_WIDGET (this));
 
-      if (!gtk_widget_compute_point (GTK_WIDGET (self),
+      if (!gtk_widget_compute_point (GTK_WIDGET (this),
                                      GTK_WIDGET (native),
                                      &GRAPHENE_POINT_INIT (start_x, start_y),
                                      &p))
@@ -462,16 +462,16 @@ drag_gesture_update_cb (GtkGestureDrag  *gesture,
                                  gtk_event_controller_get_current_event_time (GTK_EVENT_CONTROLLER (gesture)));
 
       gtk_event_controller_reset (GTK_EVENT_CONTROLLER (gesture));
-      gtk_event_controller_reset (GTK_EVENT_CONTROLLER (self->click_gesture));
+      gtk_event_controller_reset (GTK_EVENT_CONTROLLER (this->click_gesture));
     }
 }
 
 static void
 gtk_window_handle_unrealize (GtkWidget *widget)
 {
-  GtkWindowHandle *self = GTK_WINDOW_HANDLE (widget);
+  GtkWindowHandle *this = GTK_WINDOW_HANDLE (widget);
 
-  g_clear_pointer (&self->fallback_menu, gtk_widget_unparent);
+  g_clear_pointer (&this->fallback_menu, gtk_widget_unparent);
 
   GTK_WIDGET_CLASS (gtk_window_handle_parent_class)->unrealize (widget);
 }
@@ -479,9 +479,9 @@ gtk_window_handle_unrealize (GtkWidget *widget)
 static void
 gtk_window_handle_dispose (GObject *object)
 {
-  GtkWindowHandle *self = GTK_WINDOW_HANDLE (object);
+  GtkWindowHandle *this = GTK_WINDOW_HANDLE (object);
 
-  g_clear_pointer (&self->child, gtk_widget_unparent);
+  g_clear_pointer (&this->child, gtk_widget_unparent);
 
   G_OBJECT_CLASS (gtk_window_handle_parent_class)->dispose (object);
 }
@@ -492,12 +492,12 @@ gtk_window_handle_get_property (GObject    *object,
                                 GValue     *value,
                                 GParamSpec *pspec)
 {
-  GtkWindowHandle *self = GTK_WINDOW_HANDLE (object);
+  GtkWindowHandle *this = GTK_WINDOW_HANDLE (object);
 
   switch (prop_id)
     {
     case PROP_CHILD:
-      g_value_set_object (value, gtk_window_handle_get_child (self));
+      g_value_set_object (value, gtk_window_handle_get_child (this));
       break;
 
     default:
@@ -512,12 +512,12 @@ gtk_window_handle_set_property (GObject      *object,
                                 const GValue *value,
                                 GParamSpec   *pspec)
 {
-  GtkWindowHandle *self = GTK_WINDOW_HANDLE (object);
+  GtkWindowHandle *this = GTK_WINDOW_HANDLE (object);
 
   switch (prop_id)
     {
     case PROP_CHILD:
-      gtk_window_handle_set_child (self, g_value_get_object (value));
+      gtk_window_handle_set_child (this, g_value_get_object (value));
       break;
 
     default:
@@ -556,18 +556,18 @@ gtk_window_handle_class_init (GtkWindowHandleClass *klass)
 }
 
 static void
-gtk_window_handle_init (GtkWindowHandle *self)
+gtk_window_handle_init (GtkWindowHandle *this)
 {
-  self->click_gesture = gtk_gesture_click_new ();
-  gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (self->click_gesture), 0);
-  g_signal_connect (self->click_gesture, "pressed",
-                    G_CALLBACK (click_gesture_pressed_cb), self);
-  gtk_widget_add_controller (GTK_WIDGET (self), GTK_EVENT_CONTROLLER (self->click_gesture));
+  this->click_gesture = gtk_gesture_click_new ();
+  gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (this->click_gesture), 0);
+  g_signal_connect (this->click_gesture, "pressed",
+                    G_CALLBACK (click_gesture_pressed_cb), this);
+  gtk_widget_add_controller (GTK_WIDGET (this), GTK_EVENT_CONTROLLER (this->click_gesture));
 
-  self->drag_gesture = gtk_gesture_drag_new ();
-  g_signal_connect (self->drag_gesture, "drag-update",
-                    G_CALLBACK (drag_gesture_update_cb), self);
-  gtk_widget_add_controller (GTK_WIDGET (self), GTK_EVENT_CONTROLLER (self->drag_gesture));
+  this->drag_gesture = gtk_gesture_drag_new ();
+  g_signal_connect (this->drag_gesture, "drag-update",
+                    G_CALLBACK (drag_gesture_update_cb), this);
+  gtk_widget_add_controller (GTK_WIDGET (this), GTK_EVENT_CONTROLLER (this->drag_gesture));
 }
 
 static GtkBuildableIface *parent_buildable_iface;
@@ -612,43 +612,43 @@ gtk_window_handle_new (void)
 
 /**
  * gtk_window_handle_get_child:
- * @self: a `GtkWindowHandle`
+ * @this: a `GtkWindowHandle`
  *
- * Gets the child widget of @self.
+ * Gets the child widget of @this.
  *
- * Returns: (nullable) (transfer none): the child widget of @self
+ * Returns: (nullable) (transfer none): the child widget of @this
  */
 GtkWidget *
-gtk_window_handle_get_child (GtkWindowHandle *self)
+gtk_window_handle_get_child (GtkWindowHandle *this)
 {
-  g_return_val_if_fail (GTK_IS_WINDOW_HANDLE (self), NULL);
+  g_return_val_if_fail (GTK_IS_WINDOW_HANDLE (this), NULL);
 
-  return self->child;
+  return this->child;
 }
 
 /**
  * gtk_window_handle_set_child:
- * @self: a `GtkWindowHandle`
+ * @this: a `GtkWindowHandle`
  * @child: (nullable): the child widget
  *
- * Sets the child widget of @self.
+ * Sets the child widget of @this.
  */
 void
-gtk_window_handle_set_child (GtkWindowHandle *self,
+gtk_window_handle_set_child (GtkWindowHandle *this,
                              GtkWidget       *child)
 {
-  g_return_if_fail (GTK_IS_WINDOW_HANDLE (self));
-  g_return_if_fail (child == NULL || self->child == child || gtk_widget_get_parent (child) == NULL);
+  g_return_if_fail (GTK_IS_WINDOW_HANDLE (this));
+  g_return_if_fail (child == NULL || this->child == child || gtk_widget_get_parent (child) == NULL);
 
-  if (self->child == child)
+  if (this->child == child)
     return;
 
-  g_clear_pointer (&self->child, gtk_widget_unparent);
+  g_clear_pointer (&this->child, gtk_widget_unparent);
 
-  self->child = child;
+  this->child = child;
 
   if (child)
-    gtk_widget_set_parent (child, GTK_WIDGET (self));
+    gtk_widget_set_parent (child, GTK_WIDGET (this));
 
-  g_object_notify_by_pspec (G_OBJECT (self), props[PROP_CHILD]);
+  g_object_notify_by_pspec (G_OBJECT (this), props[PROP_CHILD]);
 }

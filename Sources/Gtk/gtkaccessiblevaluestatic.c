@@ -85,9 +85,9 @@ static void
 gtk_boolean_accessible_value_print (const GtkAccessibleValue *value,
                                     GString                  *buffer)
 {
-  const GtkBooleanAccessibleValue *self = (GtkBooleanAccessibleValue *) value;
+  const GtkBooleanAccessibleValue *this = (GtkBooleanAccessibleValue *) value;
 
-  g_string_append_printf (buffer, "%s", self->value ? "true" : "false");
+  g_string_append_printf (buffer, "%s", this->value ? "true" : "false");
 }
 
 static const GtkAccessibleValueClass GTK_BOOLEAN_ACCESSIBLE_VALUE = {
@@ -115,12 +115,12 @@ gtk_boolean_accessible_value_new (gboolean state)
 gboolean
 gtk_boolean_accessible_value_get (const GtkAccessibleValue *value)
 {
-  GtkBooleanAccessibleValue *self = (GtkBooleanAccessibleValue *) value;
+  GtkBooleanAccessibleValue *this = (GtkBooleanAccessibleValue *) value;
 
   g_return_val_if_fail (value != NULL, FALSE);
   g_return_val_if_fail (value->value_class == &GTK_BOOLEAN_ACCESSIBLE_VALUE, FALSE);
 
-  return self->value;
+  return this->value;
 }
 
 /* }}} */
@@ -147,9 +147,9 @@ static void
 gtk_tristate_accessible_value_print (const GtkAccessibleValue *value,
                                      GString                  *buffer)
 {
-  const GtkTristateAccessibleValue *self = (GtkTristateAccessibleValue *) value;
+  const GtkTristateAccessibleValue *this = (GtkTristateAccessibleValue *) value;
 
-  switch (self->value)
+  switch (this->value)
     {
     case GTK_ACCESSIBLE_TRISTATE_FALSE:
       g_string_append (buffer, "false");
@@ -205,9 +205,9 @@ gtk_tristate_accessible_value_get (const GtkAccessibleValue *value)
   g_return_val_if_fail (value->value_class == &GTK_TRISTATE_ACCESSIBLE_VALUE,
                         GTK_ACCESSIBLE_TRISTATE_FALSE);
 
-  GtkTristateAccessibleValue *self = (GtkTristateAccessibleValue *) value;
+  GtkTristateAccessibleValue *this = (GtkTristateAccessibleValue *) value;
 
-  return self->value;
+  return this->value;
 }
 
 /* }}} */
@@ -235,9 +235,9 @@ static void
 gtk_token_accessible_value_print (const GtkAccessibleValue *value,
                                   GString                  *buffer)
 {
-  const GtkTokenAccessibleValue *self = (GtkTokenAccessibleValue *) value;
+  const GtkTokenAccessibleValue *this = (GtkTokenAccessibleValue *) value;
 
-  g_string_append (buffer, self->token);
+  g_string_append (buffer, this->token);
 }
 
 static const GtkAccessibleValueClass GTK_INVALID_ACCESSIBLE_VALUE = {
@@ -276,13 +276,13 @@ gtk_invalid_accessible_value_new (GtkAccessibleInvalidState state)
 GtkAccessibleInvalidState
 gtk_invalid_accessible_value_get (const GtkAccessibleValue *value)
 {
-  GtkTokenAccessibleValue *self = (GtkTokenAccessibleValue *) value;
+  GtkTokenAccessibleValue *this = (GtkTokenAccessibleValue *) value;
 
   g_return_val_if_fail (value != NULL, GTK_ACCESSIBLE_INVALID_FALSE);
   g_return_val_if_fail (value->value_class == &GTK_INVALID_ACCESSIBLE_VALUE,
                         GTK_ACCESSIBLE_INVALID_FALSE);
 
-  return self->value;
+  return this->value;
 }
 
 GtkAccessibleValue *
@@ -340,13 +340,13 @@ gtk_autocomplete_accessible_value_new (GtkAccessibleAutocomplete value)
 GtkAccessibleAutocomplete
 gtk_autocomplete_accessible_value_get (const GtkAccessibleValue *value)
 {
-  GtkTokenAccessibleValue *self = (GtkTokenAccessibleValue *) value;
+  GtkTokenAccessibleValue *this = (GtkTokenAccessibleValue *) value;
 
   g_return_val_if_fail (value != NULL, GTK_ACCESSIBLE_AUTOCOMPLETE_NONE);
   g_return_val_if_fail (value->value_class == &GTK_AUTOCOMPLETE_ACCESSIBLE_VALUE,
                         GTK_ACCESSIBLE_AUTOCOMPLETE_NONE);
 
-  return self->value;
+  return this->value;
 }
 
 GtkAccessibleValue *
@@ -398,13 +398,13 @@ gtk_orientation_accessible_value_new (GtkOrientation value)
 GtkOrientation
 gtk_orientation_accessible_value_get (const GtkAccessibleValue *value)
 {
-  GtkTokenAccessibleValue *self = (GtkTokenAccessibleValue *) value;
+  GtkTokenAccessibleValue *this = (GtkTokenAccessibleValue *) value;
 
   g_return_val_if_fail (value != NULL, GTK_ACCESSIBLE_VALUE_UNDEFINED);
   g_return_val_if_fail (value->value_class == &GTK_ORIENTATION_ACCESSIBLE_VALUE,
                         GTK_ACCESSIBLE_VALUE_UNDEFINED);
 
-  return self->value;
+  return this->value;
 }
 
 GtkAccessibleValue *
@@ -462,13 +462,13 @@ gtk_sort_accessible_value_new (GtkAccessibleSort value)
 GtkAccessibleSort
 gtk_sort_accessible_value_get (const GtkAccessibleValue *value)
 {
-  GtkTokenAccessibleValue *self = (GtkTokenAccessibleValue *) value;
+  GtkTokenAccessibleValue *this = (GtkTokenAccessibleValue *) value;
 
   g_return_val_if_fail (value != NULL, GTK_ACCESSIBLE_SORT_NONE);
   g_return_val_if_fail (value->value_class == &GTK_SORT_ACCESSIBLE_VALUE,
                         GTK_ACCESSIBLE_SORT_NONE);
 
-  return self->value;
+  return this->value;
 }
 
 GtkAccessibleValue *

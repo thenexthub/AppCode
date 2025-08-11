@@ -110,15 +110,15 @@ static GtkIMContextWaylandGlobal *
 gtk_im_context_wayland_global_get (GdkDisplay *display);
 
 static GtkIMContextWaylandGlobal *
-gtk_im_context_wayland_get_global (GtkIMContextWayland *self)
+gtk_im_context_wayland_get_global (GtkIMContextWayland *this)
 {
   GtkIMContextWaylandGlobal *global;
 
-  if (self->widget == NULL)
+  if (this->widget == NULL)
     return NULL;
 
-  global = gtk_im_context_wayland_global_get (gtk_widget_get_display (self->widget));
-  if (global->current != GTK_IM_CONTEXT (self))
+  global = gtk_im_context_wayland_global_get (gtk_widget_get_display (this->widget));
+  if (global->current != GTK_IM_CONTEXT (this))
     return NULL;
   if (global->text_input == NULL)
     return NULL;
@@ -789,13 +789,13 @@ gtk_im_context_wayland_global_get (GdkDisplay *display)
 static void
 gtk_im_context_wayland_focus_in (GtkIMContext *context)
 {
-  GtkIMContextWayland *self = GTK_IM_CONTEXT_WAYLAND (context);
+  GtkIMContextWayland *this = GTK_IM_CONTEXT_WAYLAND (context);
   GtkIMContextWaylandGlobal *global;
 
-  if (self->widget == NULL)
+  if (this->widget == NULL)
     return;
 
-  global = gtk_im_context_wayland_global_get (gtk_widget_get_display (self->widget));
+  global = gtk_im_context_wayland_global_get (gtk_widget_get_display (this->widget));
   if (global->current == context)
     return;
 
@@ -804,21 +804,21 @@ gtk_im_context_wayland_focus_in (GtkIMContext *context)
     return;
 
   if (global->focused)
-    enable (self, global);
+    enable (this, global);
 }
 
 static void
 gtk_im_context_wayland_focus_out (GtkIMContext *context)
 {
-  GtkIMContextWayland *self = GTK_IM_CONTEXT_WAYLAND (context);
+  GtkIMContextWayland *this = GTK_IM_CONTEXT_WAYLAND (context);
   GtkIMContextWaylandGlobal *global;
 
-  global = gtk_im_context_wayland_get_global (self);
+  global = gtk_im_context_wayland_get_global (this);
   if (global == NULL)
     return;
 
   if (global->focused)
-    disable (self, global);
+    disable (this, global);
 
   global->current = NULL;
 }

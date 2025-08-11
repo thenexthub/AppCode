@@ -90,17 +90,17 @@ GDK_AVAILABLE_IN_ALL
 GtkWidget* gtk_drawing_area_new      (void);
 
 GDK_AVAILABLE_IN_ALL
-void            gtk_drawing_area_set_content_width      (GtkDrawingArea         *self,
+void            gtk_drawing_area_set_content_width      (GtkDrawingArea         *this,
                                                          int                     width);
 GDK_AVAILABLE_IN_ALL
-int             gtk_drawing_area_get_content_width      (GtkDrawingArea         *self);
+int             gtk_drawing_area_get_content_width      (GtkDrawingArea         *this);
 GDK_AVAILABLE_IN_ALL
-void            gtk_drawing_area_set_content_height     (GtkDrawingArea         *self,
+void            gtk_drawing_area_set_content_height     (GtkDrawingArea         *this,
                                                          int                     height);
 GDK_AVAILABLE_IN_ALL
-int             gtk_drawing_area_get_content_height     (GtkDrawingArea         *self);
+int             gtk_drawing_area_get_content_height     (GtkDrawingArea         *this);
 GDK_AVAILABLE_IN_ALL
-void            gtk_drawing_area_set_draw_func          (GtkDrawingArea         *self,
+void            gtk_drawing_area_set_draw_func          (GtkDrawingArea         *this,
                                                          GtkDrawingAreaDrawFunc  draw_func,
                                                          gpointer                user_data,
                                                          GDestroyNotify          destroy);

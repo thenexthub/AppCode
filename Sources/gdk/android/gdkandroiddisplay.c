@@ -65,26 +65,26 @@ static GParamSpec *obj_properties[N_PROPERTIES] = { 0, };
 static void
 gdk_android_display_finalize (GObject *object)
 {
-  GdkAndroidDisplay *self = (GdkAndroidDisplay *) object;
-  GdkDisplay *display = (GdkDisplay *) self;
+  GdkAndroidDisplay *this = (GdkAndroidDisplay *) object;
+  GdkDisplay *display = (GdkDisplay *) this;
 
   g_clear_object (&display->clipboard);
 
-  if (g_hash_table_size (self->surfaces))
+  if (g_hash_table_size (this->surfaces))
     g_warning ("Gdk.AndroidDisplay was finalized with active surfaces. This is not supposed to happen!");
-  g_hash_table_unref (self->surfaces);
-  g_object_unref (self->monitors);
-  g_object_unref (self->seat);
-  g_object_unref (self->keymap);
+  g_hash_table_unref (this->surfaces);
+  g_object_unref (this->monitors);
+  g_object_unref (this->seat);
+  g_object_unref (this->keymap);
 
-  if (g_hash_table_size (self->drags) > 0)
+  if (g_hash_table_size (this->drags) > 0)
     // This is something that *shouldn't* be happening theoretically, but due
     // bad API design from Android, I could imagine that this could actually
     // occur.
     g_info ("Gdk.AndroidDisplay was finalized with active drags");
-  g_hash_table_unref (self->drags);
+  g_hash_table_unref (this->drags);
 
-  g_mutex_clear (&self->surface_lock);
+  g_mutex_clear (&this->surface_lock);
 
   G_OBJECT_CLASS (gdk_android_display_parent_class)->finalize (object);
 }
@@ -92,11 +92,11 @@ gdk_android_display_finalize (GObject *object)
 static void
 gdk_android_display_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
-  GdkAndroidDisplay *self = (GdkAndroidDisplay *) object;
+  GdkAndroidDisplay *this = (GdkAndroidDisplay *) object;
   switch (prop_id)
     {
     case PROP_NIGHT_MODE:
-      g_value_set_enum (value, gdk_android_display_get_night_mode (self));
+      g_value_set_enum (value, gdk_android_display_get_night_mode (this));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -158,22 +158,22 @@ gdk_android_display_notify_startup_complete (GdkDisplay *display, const char *st
 static GdkKeymap *
 gdk_android_display_get_keymap (GdkDisplay *display)
 {
-  GdkAndroidDisplay *self = (GdkAndroidDisplay *) display;
-  return self->keymap;
+  GdkAndroidDisplay *this = (GdkAndroidDisplay *) display;
+  return this->keymap;
 }
 
 static GdkSeat *
 gdk_android_display_get_default_seat (GdkDisplay *display)
 {
-  GdkAndroidDisplay *self = (GdkAndroidDisplay *) display;
-  return (GdkSeat *) self->seat;
+  GdkAndroidDisplay *this = (GdkAndroidDisplay *) display;
+  return (GdkSeat *) this->seat;
 }
 
 static GListModel *
 gdk_android_display_get_monitors (GdkDisplay *display)
 {
-  GdkAndroidDisplay *self = GDK_ANDROID_DISPLAY (display);
-  return G_LIST_MODEL (self->monitors);
+  GdkAndroidDisplay *this = GDK_ANDROID_DISPLAY (display);
+  return G_LIST_MODEL (this->monitors);
 }
 
 static gboolean
@@ -181,10 +181,10 @@ gdk_android_display_get_setting (GdkDisplay *display,
                                  const char *name,
                                  GValue     *value)
 {
-  GdkAndroidDisplay *self = (GdkAndroidDisplay *) display;
+  GdkAndroidDisplay *this = (GdkAndroidDisplay *) display;
   if (g_strcmp0 (name, "gtk-application-prefer-dark-theme") == 0)
     {
-      g_value_set_boolean (value, self->night_mode == GDK_ANDROID_DISPLAY_NIGHT_YES);
+      g_value_set_boolean (value, this->night_mode == GDK_ANDROID_DISPLAY_NIGHT_YES);
       return TRUE;
     }
   else if (g_strcmp0 (name, "gtk-decoration-layout") == 0)
@@ -244,20 +244,20 @@ gdk_android_display_class_init (GdkAndroidDisplayClass *klass)
 }
 
 static void
-gdk_android_display_init (GdkAndroidDisplay *self)
+gdk_android_display_init (GdkAndroidDisplay *this)
 {
-  g_mutex_init (&self->surface_lock);
+  g_mutex_init (&this->surface_lock);
 
-  GdkDisplay *display = (GdkDisplay *) self;
+  GdkDisplay *display = (GdkDisplay *) this;
   display->clipboard = gdk_android_clipboard_new (display);
 
-  self->monitors = g_list_store_new (GDK_TYPE_ANDROID_MONITOR);
-  self->surfaces = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, g_object_unref);
-  self->seat = gdk_android_seat_new ((GdkDisplay *) self);
-  gdk_display_add_seat (display, (GdkSeat *) self->seat);
-  self->keymap = g_object_new (GDK_TYPE_ANDROID_KEYMAP, NULL);
+  this->monitors = g_list_store_new (GDK_TYPE_ANDROID_MONITOR);
+  this->surfaces = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, g_object_unref);
+  this->seat = gdk_android_seat_new ((GdkDisplay *) this);
+  gdk_display_add_seat (display, (GdkSeat *) this->seat);
+  this->keymap = g_object_new (GDK_TYPE_ANDROID_KEYMAP, NULL);
 
-  self->drags = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, g_object_unref);
+  this->drags = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, g_object_unref);
 
   gdk_display_set_composited (display, TRUE);
   gdk_display_set_input_shapes (display, TRUE);
@@ -291,7 +291,7 @@ _gdk_android_display_open (const char *display_name)
 
 /**
  * gdk_android_display_get_env: (skip)
- * @self: (transfer none): the display
+ * @this: (transfer none): the display
  *
  * Get the thread-local pointer to the JNI function table that is needed
  * to interact with the Java virtual machine.
@@ -301,7 +301,7 @@ _gdk_android_display_open (const char *display_name)
  * Since: 4.18
  */
 JNIEnv *
-gdk_android_display_get_env (GdkDisplay *self)
+gdk_android_display_get_env (GdkDisplay *this)
 {
   return gdk_android_get_env ();
 }
@@ -313,27 +313,27 @@ gdk_android_display_get_display_instance (void)
 }
 
 GdkAndroidSurface *
-gdk_android_display_get_surface_from_identifier (GdkAndroidDisplay *self, glong identifier)
+gdk_android_display_get_surface_from_identifier (GdkAndroidDisplay *this, glong identifier)
 {
-  g_mutex_lock (&self->surface_lock);
-  GdkAndroidSurface *ret = g_hash_table_lookup (self->surfaces, (gpointer) identifier);
+  g_mutex_lock (&this->surface_lock);
+  GdkAndroidSurface *ret = g_hash_table_lookup (this->surfaces, (gpointer) identifier);
   if (ret)
     g_object_ref (ret);
-  g_mutex_unlock (&self->surface_lock);
+  g_mutex_unlock (&this->surface_lock);
   return ret;
 }
 
 void
-gdk_android_display_add_surface (GdkAndroidDisplay *self, GdkAndroidSurface *surface)
+gdk_android_display_add_surface (GdkAndroidDisplay *this, GdkAndroidSurface *surface)
 {
-  g_mutex_lock (&self->surface_lock);
-  g_hash_table_insert (self->surfaces, surface, g_object_ref (surface));
-  g_mutex_unlock (&self->surface_lock);
+  g_mutex_lock (&this->surface_lock);
+  g_hash_table_insert (this->surfaces, surface, g_object_ref (surface));
+  g_mutex_unlock (&this->surface_lock);
 }
 
 /**
  * gdk_android_display_get_night_mode: (get-property night-mode)
- * @self: (transfer none): the display
+ * @this: (transfer none): the display
  *
  * Get the night mode setting of the Android UI configuration.
  *
@@ -342,14 +342,14 @@ gdk_android_display_add_surface (GdkAndroidDisplay *self, GdkAndroidSurface *sur
  * Since: 4.18
  */
 GdkAndroidDisplayNightMode
-gdk_android_display_get_night_mode (GdkAndroidDisplay *self)
+gdk_android_display_get_night_mode (GdkAndroidDisplay *this)
 {
-  g_return_val_if_fail (GDK_IS_ANDROID_DISPLAY (self), GDK_ANDROID_DISPLAY_NIGHT_UNDEFINED);
-  return self->night_mode;
+  g_return_val_if_fail (GDK_IS_ANDROID_DISPLAY (this), GDK_ANDROID_DISPLAY_NIGHT_UNDEFINED);
+  return this->night_mode;
 }
 
 void
-gdk_android_display_update_night_mode (GdkAndroidDisplay *self, jobject context)
+gdk_android_display_update_night_mode (GdkAndroidDisplay *this, jobject context)
 {
   JNIEnv *env = gdk_android_get_env ();
   (*env)->PushLocalFrame (env, 5);
@@ -364,10 +364,10 @@ gdk_android_display_update_night_mode (GdkAndroidDisplay *self, jobject context)
   else if (ui & gdk_android_get_java_cache ()->a_configuration.ui_night_no)
     night_mode = GDK_ANDROID_DISPLAY_NIGHT_NO;
 
-  if (self->night_mode == night_mode)
+  if (this->night_mode == night_mode)
     return;
-  self->night_mode = night_mode;
+  this->night_mode = night_mode;
   g_debug ("night mode changed");
-  gdk_display_setting_changed ((GdkDisplay *) self, "gtk-application-prefer-dark-theme");
-  g_object_notify_by_pspec ((GObject *) self, obj_properties[PROP_NIGHT_MODE]);
+  gdk_display_setting_changed ((GdkDisplay *) this, "gtk-application-prefer-dark-theme");
+  g_object_notify_by_pspec ((GObject *) this, obj_properties[PROP_NIGHT_MODE]);
 }

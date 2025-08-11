@@ -52,18 +52,18 @@ gtk_font_filter_set_property (GObject         *object,
                               const GValue    *value,
                               GParamSpec      *pspec)
 {
-  GtkFontFilter *self = GTK_FONT_FILTER (object);
+  GtkFontFilter *this = GTK_FONT_FILTER (object);
 
   switch (prop_id)
     {
     case PROP_PANGO_CONTEXT:
-      _gtk_font_filter_set_pango_context (self, g_value_get_object (value));
+      _gtk_font_filter_set_pango_context (this, g_value_get_object (value));
       break;
     case PROP_MONOSPACE:
-      _gtk_font_filter_set_monospace (self, g_value_get_boolean (value));
+      _gtk_font_filter_set_monospace (this, g_value_get_boolean (value));
       break;
     case PROP_LANGUAGE:
-      _gtk_font_filter_set_language (self, g_value_get_boxed (value));
+      _gtk_font_filter_set_language (this, g_value_get_boxed (value));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -77,18 +77,18 @@ gtk_font_filter_get_property (GObject         *object,
                               GValue          *value,
                               GParamSpec      *pspec)
 {
-  GtkFontFilter *self = GTK_FONT_FILTER (object);
+  GtkFontFilter *this = GTK_FONT_FILTER (object);
 
   switch (prop_id)
     {
     case PROP_PANGO_CONTEXT:
-      g_value_set_object (value, self->pango_context);
+      g_value_set_object (value, this->pango_context);
       break;
     case PROP_MONOSPACE:
-      g_value_set_boolean (value, _gtk_font_filter_get_monospace (self));
+      g_value_set_boolean (value, _gtk_font_filter_get_monospace (this));
       break;
     case PROP_LANGUAGE:
-      g_value_set_boxed (value, _gtk_font_filter_get_language (self));
+      g_value_set_boxed (value, _gtk_font_filter_get_language (this));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -100,7 +100,7 @@ static gboolean
 gtk_font_filter_match (GtkFilter *filter,
                        gpointer   item)
 {
-  GtkFontFilter *self = GTK_FONT_FILTER (filter);
+  GtkFontFilter *this = GTK_FONT_FILTER (filter);
   PangoFontFamily *family;
   PangoFontFace *face;
 
@@ -115,11 +115,11 @@ gtk_font_filter_match (GtkFilter *filter,
       family = pango_font_face_get_family (face);
     }
 
-  if (self->monospace &&
+  if (this->monospace &&
       !pango_font_family_is_monospace (family))
     return FALSE;
 
-  if (self->language)
+  if (this->language)
     {
       PangoFontDescription *desc;
       PangoFont *font;
@@ -129,14 +129,14 @@ gtk_font_filter_match (GtkFilter *filter,
       desc = pango_font_face_describe (face);
       pango_font_description_set_size (desc, 20);
 
-      font = pango_context_load_font (self->pango_context, desc);
+      font = pango_context_load_font (this->pango_context, desc);
 
       langs = pango_font_get_languages (font);
       if (langs)
         {
           for (int i = 0; langs[i]; i++)
             {
-              if (langs[i] == self->language)
+              if (langs[i] == this->language)
                 {
                   ret = TRUE;
                   break;
@@ -156,9 +156,9 @@ gtk_font_filter_match (GtkFilter *filter,
 static GtkFilterMatch
 gtk_font_filter_get_strictness (GtkFilter *filter)
 {
-  GtkFontFilter *self = GTK_FONT_FILTER (filter);
+  GtkFontFilter *this = GTK_FONT_FILTER (filter);
 
-  if (!self->monospace && self->language == NULL)
+  if (!this->monospace && this->language == NULL)
     return GTK_FILTER_MATCH_ALL;
 
   return GTK_FILTER_MATCH_SOME;
@@ -193,76 +193,76 @@ gtk_font_filter_class_init (GtkFontFilterClass *klass)
 }
 
 static void
-gtk_font_filter_init (GtkFontFilter *self)
+gtk_font_filter_init (GtkFontFilter *this)
 {
 }
 
 void
-_gtk_font_filter_set_pango_context (GtkFontFilter *self,
+_gtk_font_filter_set_pango_context (GtkFontFilter *this,
                                     PangoContext  *context)
 {
-  g_return_if_fail (GTK_IS_FONT_FILTER (self));
+  g_return_if_fail (GTK_IS_FONT_FILTER (this));
   g_return_if_fail (PANGO_IS_CONTEXT (context));
 
-  if (self->pango_context == context)
+  if (this->pango_context == context)
     return;
 
-  self->pango_context = context;
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_PANGO_CONTEXT]);
+  this->pango_context = context;
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_PANGO_CONTEXT]);
 }
 
 gboolean
-_gtk_font_filter_get_monospace (GtkFontFilter *self)
+_gtk_font_filter_get_monospace (GtkFontFilter *this)
 {
-  g_return_val_if_fail (GTK_IS_FONT_FILTER (self), FALSE);
+  g_return_val_if_fail (GTK_IS_FONT_FILTER (this), FALSE);
 
-  return self->monospace;
+  return this->monospace;
 }
 
 void
-_gtk_font_filter_set_monospace (GtkFontFilter *self,
+_gtk_font_filter_set_monospace (GtkFontFilter *this,
                                 gboolean       monospace)
 {
-  g_return_if_fail (GTK_IS_FONT_FILTER (self));
+  g_return_if_fail (GTK_IS_FONT_FILTER (this));
 
-  if (self->monospace == monospace)
+  if (this->monospace == monospace)
     return;
 
-  self->monospace = monospace;
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_MONOSPACE]);
-  gtk_filter_changed (GTK_FILTER (self),
+  this->monospace = monospace;
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_MONOSPACE]);
+  gtk_filter_changed (GTK_FILTER (this),
                       monospace ? GTK_FILTER_CHANGE_MORE_STRICT
                                 : GTK_FILTER_CHANGE_LESS_STRICT);
 }
 
 PangoLanguage *
-_gtk_font_filter_get_language (GtkFontFilter *self)
+_gtk_font_filter_get_language (GtkFontFilter *this)
 {
-  g_return_val_if_fail (GTK_IS_FONT_FILTER (self), NULL);
+  g_return_val_if_fail (GTK_IS_FONT_FILTER (this), NULL);
 
-  return self->language;
+  return this->language;
 }
 
 void
-_gtk_font_filter_set_language (GtkFontFilter *self,
+_gtk_font_filter_set_language (GtkFontFilter *this,
                                PangoLanguage *lang)
 {
   GtkFilterChange filter_change = GTK_FILTER_CHANGE_DIFFERENT;
 
-  g_return_if_fail (GTK_IS_FONT_FILTER (self));
+  g_return_if_fail (GTK_IS_FONT_FILTER (this));
 
-  if (self->language == lang)
+  if (this->language == lang)
     return;
 
-  if (lang == NULL || self->language == NULL)
+  if (lang == NULL || this->language == NULL)
     {
       filter_change = (lang != NULL) ? GTK_FILTER_CHANGE_MORE_STRICT
                                      : GTK_FILTER_CHANGE_LESS_STRICT;
     }
 
-  self->language = lang;
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_LANGUAGE]);
-  gtk_filter_changed (GTK_FILTER (self), filter_change);
+  this->language = lang;
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_LANGUAGE]);
+  gtk_filter_changed (GTK_FILTER (this), filter_change);
 }
 
 GtkFilter *

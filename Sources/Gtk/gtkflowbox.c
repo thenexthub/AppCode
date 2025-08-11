@@ -353,8 +353,8 @@ static gboolean
 gtk_flow_box_child_focus (GtkWidget        *widget,
                           GtkDirectionType  direction)
 {
-  GtkFlowBoxChild *self = GTK_FLOW_BOX_CHILD (widget);
-  GtkFlowBoxChildPrivate *priv = CHILD_PRIV (self);
+  GtkFlowBoxChild *this = GTK_FLOW_BOX_CHILD (widget);
+  GtkFlowBoxChildPrivate *priv = CHILD_PRIV (this);
   GtkWidget *child = priv->child;
   gboolean had_focus = FALSE;
 
@@ -433,8 +433,8 @@ gtk_flow_box_child_activate (GtkFlowBoxChild *child)
 static void
 gtk_flow_box_child_dispose (GObject *object)
 {
-  GtkFlowBoxChild *self = GTK_FLOW_BOX_CHILD (object);
-  GtkFlowBoxChildPrivate *priv = CHILD_PRIV (self);
+  GtkFlowBoxChild *this = GTK_FLOW_BOX_CHILD (object);
+  GtkFlowBoxChildPrivate *priv = CHILD_PRIV (this);
 
   g_clear_pointer (&priv->child, gtk_widget_unparent);
 
@@ -447,12 +447,12 @@ gtk_flow_box_child_get_property (GObject    *object,
                                  GValue     *value,
                                  GParamSpec *pspec)
 {
-  GtkFlowBoxChild *self = GTK_FLOW_BOX_CHILD (object);
+  GtkFlowBoxChild *this = GTK_FLOW_BOX_CHILD (object);
 
   switch (prop_id)
     {
     case PROP_CHILD:
-      g_value_set_object (value, gtk_flow_box_child_get_child (self));
+      g_value_set_object (value, gtk_flow_box_child_get_child (this));
       break;
 
     default:
@@ -467,12 +467,12 @@ gtk_flow_box_child_set_property (GObject      *object,
                                  const GValue *value,
                                  GParamSpec   *pspec)
 {
-  GtkFlowBoxChild *self = GTK_FLOW_BOX_CHILD (object);
+  GtkFlowBoxChild *this = GTK_FLOW_BOX_CHILD (object);
 
   switch (prop_id)
     {
     case PROP_CHILD:
-      gtk_flow_box_child_set_child (self, g_value_get_object (value));
+      gtk_flow_box_child_set_child (this, g_value_get_object (value));
       break;
 
     default:
@@ -486,8 +486,8 @@ gtk_flow_box_child_compute_expand (GtkWidget *widget,
                                    gboolean  *hexpand,
                                    gboolean  *vexpand)
 {
-  GtkFlowBoxChild *self = GTK_FLOW_BOX_CHILD (widget);
-  GtkFlowBoxChildPrivate *priv = CHILD_PRIV (self);
+  GtkFlowBoxChild *this = GTK_FLOW_BOX_CHILD (widget);
+  GtkFlowBoxChildPrivate *priv = CHILD_PRIV (this);
 
   if (priv->child)
     {
@@ -596,18 +596,18 @@ gtk_flow_box_child_new (void)
 
 /**
  * gtk_flow_box_child_set_child:
- * @self: a `GtkFlowBoxChild`
+ * @this: a `GtkFlowBoxChild`
  * @child: (nullable): the child widget
  *
- * Sets the child widget of @self.
+ * Sets the child widget of @this.
  */
 void
-gtk_flow_box_child_set_child (GtkFlowBoxChild *self,
+gtk_flow_box_child_set_child (GtkFlowBoxChild *this,
                               GtkWidget       *child)
 {
-  GtkFlowBoxChildPrivate *priv = CHILD_PRIV (self);
+  GtkFlowBoxChildPrivate *priv = CHILD_PRIV (this);
 
-  g_return_if_fail (GTK_IS_FLOW_BOX_CHILD (self));
+  g_return_if_fail (GTK_IS_FLOW_BOX_CHILD (this));
   g_return_if_fail (child == NULL || priv->child == child || gtk_widget_get_parent (child) == NULL);
 
   if (priv->child == child)
@@ -617,22 +617,22 @@ gtk_flow_box_child_set_child (GtkFlowBoxChild *self,
 
   priv->child = child;
   if (child)
-    gtk_widget_set_parent (child, GTK_WIDGET (self));
-  g_object_notify (G_OBJECT (self), "child");
+    gtk_widget_set_parent (child, GTK_WIDGET (this));
+  g_object_notify (G_OBJECT (this), "child");
 }
 
 /**
  * gtk_flow_box_child_get_child:
- * @self: a `GtkFlowBoxChild`
+ * @this: a `GtkFlowBoxChild`
  *
- * Gets the child widget of @self.
+ * Gets the child widget of @this.
  *
- * Returns: (nullable) (transfer none): the child widget of @self
+ * Returns: (nullable) (transfer none): the child widget of @this
  */
 GtkWidget *
-gtk_flow_box_child_get_child (GtkFlowBoxChild *self)
+gtk_flow_box_child_get_child (GtkFlowBoxChild *this)
 {
-  GtkFlowBoxChildPrivate *priv = CHILD_PRIV (self);
+  GtkFlowBoxChildPrivate *priv = CHILD_PRIV (this);
 
   return priv->child;
 }
@@ -4151,10 +4151,10 @@ gtk_flow_box_insert_widget (GtkFlowBox    *box,
 
 /**
  * gtk_flow_box_prepend:
- * @self: a `GtkFlowBox
+ * @this: a `GtkFlowBox
  * @child: the `GtkWidget` to add
  *
- * Adds @child to the start of @self.
+ * Adds @child to the start of @this.
  *
  * If a sort function is set, the widget will
  * actually be inserted at the calculated position.
@@ -4164,21 +4164,21 @@ gtk_flow_box_insert_widget (GtkFlowBox    *box,
  * Since: 4.6
  */
 void
-gtk_flow_box_prepend (GtkFlowBox *self,
+gtk_flow_box_prepend (GtkFlowBox *this,
                       GtkWidget  *child)
 {
-  g_return_if_fail (GTK_IS_FLOW_BOX (self));
+  g_return_if_fail (GTK_IS_FLOW_BOX (this));
   g_return_if_fail (GTK_IS_WIDGET (child));
 
-  gtk_flow_box_insert (self, child, 0);
+  gtk_flow_box_insert (this, child, 0);
 }
 
 /**
  * gtk_flow_box_append:
- * @self: a `GtkFlowBox
+ * @this: a `GtkFlowBox
  * @child: the `GtkWidget` to add
  *
- * Adds @child to the end of @self.
+ * Adds @child to the end of @this.
  *
  * If a sort function is set, the widget will
  * actually be inserted at the calculated position.
@@ -4188,13 +4188,13 @@ gtk_flow_box_prepend (GtkFlowBox *self,
  * Since: 4.6
  */
 void
-gtk_flow_box_append (GtkFlowBox *self,
+gtk_flow_box_append (GtkFlowBox *this,
                      GtkWidget  *child)
 {
-  g_return_if_fail (GTK_IS_FLOW_BOX (self));
+  g_return_if_fail (GTK_IS_FLOW_BOX (this));
   g_return_if_fail (GTK_IS_WIDGET (child));
 
-  gtk_flow_box_insert (self, child, -1);
+  gtk_flow_box_insert (this, child, -1);
 }
 
 /**
@@ -4832,7 +4832,7 @@ gtk_flow_box_unselect_all (GtkFlowBox *box)
 /**
  * gtk_flow_box_selected_foreach:
  * @box: a `GtkFlowBox`
- * @func: (scope call): the function to call for each selected child
+ * @fn: (scope call): the function to call for each selected child
  * @data: user data to pass to the function
  *
  * Calls a function for each selected child.
@@ -4842,7 +4842,7 @@ gtk_flow_box_unselect_all (GtkFlowBox *box)
  */
 void
 gtk_flow_box_selected_foreach (GtkFlowBox            *box,
-                               GtkFlowBoxForeachFunc  func,
+                               GtkFlowBoxForeachFunc  fn,
                                gpointer               data)
 {
   GtkFlowBoxChild *child;
@@ -4856,7 +4856,7 @@ gtk_flow_box_selected_foreach (GtkFlowBox            *box,
     {
       child = g_sequence_get (iter);
       if (CHILD_PRIV (child)->selected)
-        (*func) (box, child, data);
+        (*fn) (box, child, data);
     }
 }
 

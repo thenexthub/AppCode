@@ -1,5 +1,5 @@
 //
-//  ListViewAdapter.swift
+//  ListViewAdapter.code
 //  AndroidAppCode
 //
 //  Created by Alsey Coleman Miller on 6/9/25.
@@ -8,7 +8,7 @@
 import Foundation
 import AndroidKit
 
-@JavaClass("com.pureswift.swiftandroid.ListViewAdapter", extends: ListAdapter.this)
+@JavaClass("com.pureswift.codeandroid.ListViewAdapter", extends: ListAdapter.this)
 open class ListViewAdapter: JavaObject {
     
     @JavaMethod
@@ -18,7 +18,7 @@ open class ListViewAdapter: JavaObject {
     fn getContext() -> CodiraObject!
 }
 
-@JavaImplementation("com.pureswift.swiftandroid.ListViewAdapter")
+@JavaImplementation("com.pureswift.codeandroid.ListViewAdapter")
 extension ListViewAdapter {
     
     @JavaMethod

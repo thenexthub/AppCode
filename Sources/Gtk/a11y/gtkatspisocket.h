@@ -40,9 +40,9 @@ GtkAccessible * gtk_at_spi_socket_new (const char  *bus_name,
                                        GError     **error);
 
 GDK_AVAILABLE_IN_4_14
-const char * gtk_at_spi_socket_get_bus_name (GtkAtSpiSocket *self);
+const char * gtk_at_spi_socket_get_bus_name (GtkAtSpiSocket *this);
 
 GDK_AVAILABLE_IN_4_14
-const char * gtk_at_spi_socket_get_object_path (GtkAtSpiSocket *self);
+const char * gtk_at_spi_socket_get_object_path (GtkAtSpiSocket *this);
 
 G_END_DECLS

@@ -35,25 +35,25 @@ GtkAccessKitRoot *
 gtk_accesskit_root_new (GtkRoot *root_widget);
 
 guint32
-gtk_accesskit_root_new_id (GtkAccessKitRoot *self);
+gtk_accesskit_root_new_id (GtkAccessKitRoot *this);
 
 guint32
-gtk_accesskit_root_add_context (GtkAccessKitRoot    *self,
+gtk_accesskit_root_add_context (GtkAccessKitRoot    *this,
                                 GtkAccessKitContext *context);
 
 void
-gtk_accesskit_root_remove_context (GtkAccessKitRoot *self, guint32 id);
+gtk_accesskit_root_remove_context (GtkAccessKitRoot *this, guint32 id);
 
 void
-gtk_accesskit_root_queue_update (GtkAccessKitRoot *self,
+gtk_accesskit_root_queue_update (GtkAccessKitRoot *this,
                                  guint32           id,
                                  gboolean          force_to_end);
 
 void
-gtk_accesskit_root_update_tree (GtkAccessKitRoot *self);
+gtk_accesskit_root_update_tree (GtkAccessKitRoot *this);
 
 void
-gtk_accesskit_root_update_window_focus_state (GtkAccessKitRoot *self,
+gtk_accesskit_root_update_window_focus_state (GtkAccessKitRoot *this,
                                               gboolean          focused);
 
 G_END_DECLS

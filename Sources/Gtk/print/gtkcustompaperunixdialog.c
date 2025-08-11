@@ -257,9 +257,9 @@ custom_paper_dialog_response_cb (GtkDialog *dialog,
                                  int        response,
                                  gpointer   user_data)
 {
-  GtkCustomPaperUnixDialog *self = GTK_CUSTOM_PAPER_UNIX_DIALOG (dialog);
+  GtkCustomPaperUnixDialog *this = GTK_CUSTOM_PAPER_UNIX_DIALOG (dialog);
 
-  gtk_print_save_custom_papers (self->custom_paper_list);
+  gtk_print_save_custom_papers (this->custom_paper_list);
 }
 
 static gboolean

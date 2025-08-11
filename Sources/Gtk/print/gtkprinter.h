@@ -155,7 +155,7 @@ typedef gboolean (*GtkPrinterFunc) (GtkPrinter *printer,
 				    gpointer    data);
 
 GDK_AVAILABLE_IN_ALL
-void                     gtk_enumerate_printers        (GtkPrinterFunc   func,
+void                     gtk_enumerate_printers        (GtkPrinterFunc   fn,
 							gpointer         data,
 							GDestroyNotify   destroy,
 							gboolean         wait);

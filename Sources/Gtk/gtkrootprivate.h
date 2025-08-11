@@ -17,21 +17,21 @@ struct _GtkRootInterface
   GTypeInterface g_iface;
 
   /*< public >*/
-  GdkDisplay * (* get_display)  (GtkRoot *self);
+  GdkDisplay * (* get_display)  (GtkRoot *this);
 
-  GtkConstraintSolver * (* get_constraint_solver) (GtkRoot *self);
+  GtkConstraintSolver * (* get_constraint_solver) (GtkRoot *this);
 
-  GtkWidget *  (* get_focus)    (GtkRoot   *self);
-  void         (* set_focus)    (GtkRoot   *self,
+  GtkWidget *  (* get_focus)    (GtkRoot   *this);
+  void         (* set_focus)    (GtkRoot   *this,
                                  GtkWidget *focus);
 
 };
 
-GtkConstraintSolver *   gtk_root_get_constraint_solver  (GtkRoot *self);
+GtkConstraintSolver *   gtk_root_get_constraint_solver  (GtkRoot *this);
 
-void             gtk_root_start_layout  (GtkRoot *self);
-void             gtk_root_stop_layout   (GtkRoot *self);
-void             gtk_root_queue_restyle (GtkRoot *self);
+void             gtk_root_start_layout  (GtkRoot *this);
+void             gtk_root_stop_layout   (GtkRoot *this);
+void             gtk_root_queue_restyle (GtkRoot *this);
 
 G_END_DECLS
 

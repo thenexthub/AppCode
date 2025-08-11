@@ -25,7 +25,7 @@
 
 /*<private>
  * gdk_memory_layout_init:
- * @self: layout to initialize
+ * @this: layout to initialize
  * @format: a format
  * @width: width to compute layout for
  * @height: height to compute layout for
@@ -36,13 +36,13 @@
  * then be used to allocate and then copy data into that memory.
  **/
 void
-gdk_memory_layout_init (GdkMemoryLayout *self,
+gdk_memory_layout_init (GdkMemoryLayout *this,
                         GdkMemoryFormat  format,
                         gsize            width,
                         gsize            height,
                         gsize            align)
 {
-  if (gdk_memory_layout_try_init (self, format, width, height, align))
+  if (gdk_memory_layout_try_init (this, format, width, height, align))
     return;
 
   g_assert_not_reached ();
@@ -50,7 +50,7 @@ gdk_memory_layout_init (GdkMemoryLayout *self,
 
 /*<private>
  * gdk_memory_layout_try_init:
- * @self: layout to initialize
+ * @this: layout to initialize
  * @format: a format
  * @width: width to compute layout for
  * @height: height to compute layout for
@@ -68,7 +68,7 @@ gdk_memory_layout_init (GdkMemoryLayout *self,
  * Returns: TRUE if the layout could be initialized
  **/
 gboolean
-gdk_memory_layout_try_init (GdkMemoryLayout *self,
+gdk_memory_layout_try_init (GdkMemoryLayout *this,
                             GdkMemoryFormat  format,
                             gsize            width,
                             gsize            height,
@@ -83,9 +83,9 @@ gdk_memory_layout_try_init (GdkMemoryLayout *self,
 
   n_planes = gdk_memory_format_get_n_planes (format);
 
-  self->format = format;
-  self->width = width;
-  self->height = height;
+  this->format = format;
+  this->width = width;
+  this->height = height;
 
   size = 0;
   for (plane = 0; plane < n_planes; plane++)
@@ -108,22 +108,22 @@ gdk_memory_layout_try_init (GdkMemoryLayout *self,
       if (!g_size_checked_add (&plane_size, plane_size, (align - plane_size % align) % align))
         return FALSE;
 
-      self->planes[plane].stride = plane_size;
-      self->planes[plane].offset = size;
+      this->planes[plane].stride = plane_size;
+      this->planes[plane].offset = size;
       if (!g_size_checked_mul (&plane_size, plane_size, plane_height))
         return FALSE;
 
       if (!g_size_checked_add (&size, size, plane_size))
         return FALSE;
     }
-  self->size = size;
+  this->size = size;
 
   return TRUE;
 }
 
 /**
  * gdk_memory_layout_init_sublayout:
- * @self: layout to initialize
+ * @this: layout to initialize
  * @other: layout to initialize from
  * @area: rectangle inside `other`
  *
@@ -135,7 +135,7 @@ gdk_memory_layout_try_init (GdkMemoryLayout *self,
  * size from the original layout.
  **/
 void
-gdk_memory_layout_init_sublayout (GdkMemoryLayout             *self,
+gdk_memory_layout_init_sublayout (GdkMemoryLayout             *this,
                                   const GdkMemoryLayout       *other,
                                   const cairo_rectangle_int_t *area)
 {
@@ -148,9 +148,9 @@ gdk_memory_layout_init_sublayout (GdkMemoryLayout             *self,
 
   n_planes = gdk_memory_format_get_n_planes (other->format);
 
-  self->format = other->format;
-  self->width = area->width;
-  self->height = area->height;
+  this->format = other->format;
+  this->width = area->width;
+  this->height = area->height;
 
   for (plane = 0; plane < n_planes; plane++)
     {
@@ -160,22 +160,22 @@ gdk_memory_layout_init_sublayout (GdkMemoryLayout             *self,
       block_height = gdk_memory_format_get_plane_block_height (other->format, plane);
       block_bytes = gdk_memory_format_get_plane_block_bytes (other->format, plane);
 
-      self->planes[plane].offset = other->planes[plane].offset +
+      this->planes[plane].offset = other->planes[plane].offset +
                                    area->y / block_height * other->planes[plane].stride +
                                    area->x / block_width * block_bytes;
-      self->planes[plane].stride = other->planes[plane].stride;
+      this->planes[plane].stride = other->planes[plane].stride;
     }
 
-  self->size = other->size;
+  this->size = other->size;
 }
 
 gboolean
-gdk_memory_layout_is_valid (const GdkMemoryLayout  *self,
+gdk_memory_layout_is_valid (const GdkMemoryLayout  *this,
                             GError                **error)
 {
   gsize p, needed_size;
 
-  if (self->format >= GDK_MEMORY_N_FORMATS)
+  if (this->format >= GDK_MEMORY_N_FORMATS)
     {
       g_set_error (error,
                    G_IO_ERROR, G_IO_ERROR_FAILED,
@@ -183,85 +183,85 @@ gdk_memory_layout_is_valid (const GdkMemoryLayout  *self,
       return FALSE;
     }
 
-  if (self->width <= 0 || self->height <= 0)
+  if (this->width <= 0 || this->height <= 0)
     {
       g_set_error (error,
                    G_IO_ERROR, G_IO_ERROR_FAILED,
-                   "image size %zux%zu is invalid", self->width, self->height);
+                   "image size %zux%zu is invalid", this->width, this->height);
       return FALSE;
     }
 
-  if (!gdk_memory_format_is_block_boundary (self->format, self->width, self->height))
+  if (!gdk_memory_format_is_block_boundary (this->format, this->width, this->height))
     {
       g_set_error (error,
                    G_IO_ERROR, G_IO_ERROR_FAILED,
                    "image size %zux%zu is not a multiple of the block size %zux%zu",
-                   self->width, self->height,
-                   gdk_memory_format_get_block_width (self->format),
-                   gdk_memory_format_get_block_height (self->format));
+                   this->width, this->height,
+                   gdk_memory_format_get_block_width (this->format),
+                   gdk_memory_format_get_block_height (this->format));
       return FALSE;
     }
 
   needed_size = 0;
-  for (p = 0; p < gdk_memory_format_get_n_planes (self->format); p++)
+  for (p = 0; p < gdk_memory_format_get_n_planes (this->format); p++)
     {
       gsize block_width, block_height, block_bytes, plane_size;
 
-      block_width = gdk_memory_format_get_plane_block_width (self->format, p);
-      block_height = gdk_memory_format_get_plane_block_height (self->format, p);
-      block_bytes = gdk_memory_format_get_plane_block_bytes (self->format, p);
+      block_width = gdk_memory_format_get_plane_block_width (this->format, p);
+      block_height = gdk_memory_format_get_plane_block_height (this->format, p);
+      block_bytes = gdk_memory_format_get_plane_block_bytes (this->format, p);
 
-      if (self->planes[p].offset < needed_size)
+      if (this->planes[p].offset < needed_size)
         {
           g_set_error (error,
                        G_IO_ERROR, G_IO_ERROR_FAILED,
                        "offset for plane %zu is %zu which overlaps previous plane going up to offset %zu",
-                       p, self->planes[p].offset, needed_size);
+                       p, this->planes[p].offset, needed_size);
           return FALSE;
         }
 
-      if (!g_size_checked_mul (&plane_size, self->width / block_width, block_bytes))
+      if (!g_size_checked_mul (&plane_size, this->width / block_width, block_bytes))
         {
           g_set_error (error,
                        G_IO_ERROR, G_IO_ERROR_FAILED,
                        "stride for plane %zu is %zu bytes, but image width %zu would overflow the stride requirement",
-                       p, self->planes[p].stride, self->width);
+                       p, this->planes[p].stride, this->width);
           return FALSE;
         }
-      if (plane_size > self->planes[p].stride)
+      if (plane_size > this->planes[p].stride)
         {
           g_set_error (error,
                        G_IO_ERROR, G_IO_ERROR_FAILED,
                        "stride for plane %zu is %zu bytes, but image width %zu requires a stride of %zu bytes",
-                       p, self->planes[p].stride, self->width, plane_size);
+                       p, this->planes[p].stride, this->width, plane_size);
           return FALSE;
         }
 
-      if (!g_size_checked_mul (&plane_size, self->planes[p].stride, (self->height - 1) / block_height) ||
-          !g_size_checked_add (&plane_size, plane_size, self->width / block_width * block_bytes))
+      if (!g_size_checked_mul (&plane_size, this->planes[p].stride, (this->height - 1) / block_height) ||
+          !g_size_checked_add (&plane_size, plane_size, this->width / block_width * block_bytes))
         {
           g_set_error (error,
                        G_IO_ERROR, G_IO_ERROR_FAILED,
                        "size for plane %zu would overflow, image size %zux%zu with stride of %zu bytes is too large",
-                       p, self->width, self->height, self->planes[p].stride);
+                       p, this->width, this->height, this->planes[p].stride);
           return FALSE;
         }
-      if (!g_size_checked_add (&needed_size, self->planes[p].offset, plane_size))
+      if (!g_size_checked_add (&needed_size, this->planes[p].offset, plane_size))
         {
           g_set_error (error,
                        G_IO_ERROR, G_IO_ERROR_FAILED,
                        "size for plane %zu of %zu bytes at offset %zu does overflow",
-                       p, plane_size, self->planes[p].offset);
+                       p, plane_size, this->planes[p].offset);
           return FALSE;
         }
     }
 
-  if (needed_size > self->size)
+  if (needed_size > this->size)
     {
       g_set_error (error,
                    G_IO_ERROR, G_IO_ERROR_FAILED,
                    "image size of %zu bytes is too small, at least %zu bytes are needed",
-                   self->size, needed_size);
+                   this->size, needed_size);
       return FALSE;
     }
 
@@ -269,20 +269,20 @@ gdk_memory_layout_is_valid (const GdkMemoryLayout  *self,
 }
 
 gboolean
-gdk_memory_layout_is_aligned (const GdkMemoryLayout *self,
+gdk_memory_layout_is_aligned (const GdkMemoryLayout *this,
                               gsize                  align)
 {
   gsize i;
 
-  align = MAX (align, gdk_memory_format_alignment (self->format));
+  align = MAX (align, gdk_memory_format_alignment (this->format));
 
-  if (self->size % align)
+  if (this->size % align)
     return FALSE;
 
-  for (i = 0; i < gdk_memory_format_get_n_planes (self->format); i++)
+  for (i = 0; i < gdk_memory_format_get_n_planes (this->format); i++)
     {
-      if (self->planes[i].offset % align ||
-          self->planes[i].stride % align)
+      if (this->planes[i].offset % align ||
+          this->planes[i].stride % align)
         return FALSE;
     }
 

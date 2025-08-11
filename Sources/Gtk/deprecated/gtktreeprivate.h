@@ -66,7 +66,7 @@ void         _gtk_tree_view_column_autosize           (GtkTreeView       *tree_v
 						       GtkTreeViewColumn *column);
 
 void         _gtk_tree_view_get_row_separator_func    (GtkTreeView                 *tree_view,
-						       GtkTreeViewRowSeparatorFunc *func,
+						       GtkTreeViewRowSeparatorFunc *fn,
 						       gpointer                    *data);
 GtkTreePath *_gtk_tree_view_get_anchor_path           (GtkTreeView                 *tree_view);
 void         _gtk_tree_view_set_anchor_path           (GtkTreeView                 *tree_view,

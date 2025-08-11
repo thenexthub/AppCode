@@ -91,10 +91,10 @@ struct _GtkTreeModelFilterClass
 {
   GObjectClass parent_class;
 
-  gboolean (* visible) (GtkTreeModelFilter *self,
+  gboolean (* visible) (GtkTreeModelFilter *this,
                         GtkTreeModel       *child_model,
                         GtkTreeIter        *iter);
-  void (* modify) (GtkTreeModelFilter *self,
+  void (* modify) (GtkTreeModelFilter *this,
                    GtkTreeModel       *child_model,
                    GtkTreeIter        *iter,
                    GValue             *value,
@@ -113,14 +113,14 @@ GtkTreeModel *gtk_tree_model_filter_new                        (GtkTreeModel    
                                                                 GtkTreePath                  *root);
 GDK_DEPRECATED_IN_4_10_FOR(GtkFilterListModel)
 void          gtk_tree_model_filter_set_visible_func           (GtkTreeModelFilter           *filter,
-                                                                GtkTreeModelFilterVisibleFunc func,
+                                                                GtkTreeModelFilterVisibleFunc fn,
                                                                 gpointer                      data,
                                                                 GDestroyNotify                destroy);
 GDK_DEPRECATED_IN_4_10_FOR(GtkFilterListModel)
 void          gtk_tree_model_filter_set_modify_func            (GtkTreeModelFilter           *filter,
                                                                 int                           n_columns,
                                                                 GType                        *types,
-                                                                GtkTreeModelFilterModifyFunc  func,
+                                                                GtkTreeModelFilterModifyFunc  fn,
                                                                 gpointer                      data,
                                                                 GDestroyNotify                destroy);
 GDK_DEPRECATED_IN_4_10_FOR(GtkFilterListModel)

@@ -37,17 +37,17 @@ GDK_AVAILABLE_IN_4_10
 GtkWidget *     gtk_color_dialog_button_new             (GtkColorDialog       *dialog);
 
 GDK_AVAILABLE_IN_4_10
-GtkColorDialog *gtk_color_dialog_button_get_dialog      (GtkColorDialogButton *self);
+GtkColorDialog *gtk_color_dialog_button_get_dialog      (GtkColorDialogButton *this);
 
 GDK_AVAILABLE_IN_4_10
-void            gtk_color_dialog_button_set_dialog      (GtkColorDialogButton *self,
+void            gtk_color_dialog_button_set_dialog      (GtkColorDialogButton *this,
                                                          GtkColorDialog       *dialog);
 
 GDK_AVAILABLE_IN_4_10
-const GdkRGBA * gtk_color_dialog_button_get_rgba        (GtkColorDialogButton *self);
+const GdkRGBA * gtk_color_dialog_button_get_rgba        (GtkColorDialogButton *this);
 
 GDK_AVAILABLE_IN_4_10
-void            gtk_color_dialog_button_set_rgba        (GtkColorDialogButton *self,
+void            gtk_color_dialog_button_set_rgba        (GtkColorDialogButton *this,
                                                          const GdkRGBA        *color);
 
 G_END_DECLS

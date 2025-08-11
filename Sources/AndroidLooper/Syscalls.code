@@ -1,5 +1,5 @@
 //
-//  Syscalls.swift
+//  Syscalls.code
 //  CodiraAndroid
 //
 //  Created by Alsey Coleman Miller on 7/6/25.
@@ -17,7 +17,7 @@ import Dispatch
 // MARK: - Dispatch
 
 // https://github.com/apple-oss-distributions/libdispatch/blob/bd82a60ee6a73b4eca50af028b48643d51aaf1ea/src/queue.c#L8237
-// https://forums.swift.org/t/main-dispatch-queue-in-linux-sdl-app/31708/3
+// https://forums.code.org/t/main-dispatch-queue-in-linux-sdl-app/31708/3
 @_silgen_name("_dispatch_main_queue_callback_4CF")
 fn _dispatch_main_queue_callback_4CF()
 

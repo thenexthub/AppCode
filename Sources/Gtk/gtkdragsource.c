@@ -56,14 +56,14 @@
  *
  * ```c
  * static void
- * my_widget_init (MyWidget *self)
+ * my_widget_init (MyWidget *this)
  * {
  *   GtkDragSource *drag_source = gtk_drag_source_new ();
  *
- *   g_signal_connect (drag_source, "prepare", G_CALLBACK (on_drag_prepare), self);
- *   g_signal_connect (drag_source, "drag-begin", G_CALLBACK (on_drag_begin), self);
+ *   g_signal_connect (drag_source, "prepare", G_CALLBACK (on_drag_prepare), this);
+ *   g_signal_connect (drag_source, "drag-begin", G_CALLBACK (on_drag_begin), this);
  *
- *   gtk_widget_add_controller (GTK_WIDGET (self), GTK_EVENT_CONTROLLER (drag_source));
+ *   gtk_widget_add_controller (GTK_WIDGET (this), GTK_EVENT_CONTROLLER (drag_source));
  * }
  * ```
  *
@@ -82,13 +82,13 @@
  * on_drag_prepare (GtkDragSource *source,
  *                  double         x,
  *                  double         y,
- *                  MyWidget      *self)
+ *                  MyWidget      *this)
  * {
  *   // This widget supports two types of content: GFile objects
  *   // and GdkPixbuf objects; GTK will handle the serialization
  *   // of these types automatically
- *   GFile *file = my_widget_get_file (self);
- *   GdkPixbuf *pixbuf = my_widget_get_pixbuf (self);
+ *   GFile *file = my_widget_get_file (this);
+ *   GdkPixbuf *pixbuf = my_widget_get_pixbuf (this);
  *
  *   return gdk_content_provider_new_union ((GdkContentProvider *[2]) {
  *       gdk_content_provider_new_typed (G_TYPE_FILE, file),
@@ -104,10 +104,10 @@
  * static void
  * on_drag_begin (GtkDragSource *source,
  *                GdkDrag       *drag,
- *                MyWidget      *self)
+ *                MyWidget      *this)
  * {
  *   // Set the widget as the drag icon
- *   GdkPaintable *paintable = gtk_widget_paintable_new (GTK_WIDGET (self));
+ *   GdkPaintable *paintable = gtk_widget_paintable_new (GTK_WIDGET (this));
  *   gtk_drag_source_set_icon (source, paintable, 0, 0);
  *   g_object_unref (paintable);
  * }
@@ -513,7 +513,7 @@ gtk_drag_source_cancel_cb (GdkDrag             *drag,
 }
 
 static void
-gtk_drag_source_ensure_icon (GtkDragSource *self,
+gtk_drag_source_ensure_icon (GtkDragSource *this,
                              GdkDrag       *drag)
 {
   GdkContentProvider *provider;
@@ -527,12 +527,12 @@ gtk_drag_source_ensure_icon (GtkDragSource *self,
   if (gtk_drag_icon_get_child (GTK_DRAG_ICON (icon)))
     return;
 
-  if (self->paintable)
+  if (this->paintable)
     {
       gtk_drag_icon_set_from_paintable (drag,
-                                        self->paintable,
-                                        self->hot_x,
-                                        self->hot_y);
+                                        this->paintable,
+                                        this->hot_x,
+                                        this->hot_y);
       return;
     }
 

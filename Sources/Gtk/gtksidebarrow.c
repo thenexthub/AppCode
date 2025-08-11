@@ -87,13 +87,13 @@ static GParamSpec *properties [LAST_PROP];
 #ifdef HAVE_CLOUDPROVIDERS
 
 static void
-cloud_row_update (GtkSidebarRow *self)
+cloud_row_update (GtkSidebarRow *this)
 {
   CloudProvidersAccount *account;
   GIcon *end_icon;
   int provider_status;
 
-  account = CLOUD_PROVIDERS_ACCOUNT (self->cloud_provider_account);
+  account = CLOUD_PROVIDERS_ACCOUNT (this->cloud_provider_account);
   provider_status = cloud_providers_account_get_status (account);
   switch (provider_status)
     {
@@ -113,13 +113,13 @@ cloud_row_update (GtkSidebarRow *self)
         return;
     }
 
-  g_object_set (self,
+  g_object_set (this,
                 "label", cloud_providers_account_get_name (account),
                 NULL);
-  g_object_set (self,
+  g_object_set (this,
                 "tooltip", cloud_providers_account_get_status_details (account),
                 NULL);
-  g_object_set (self,
+  g_object_set (this,
                 "end-icon", end_icon,
                 NULL);
 
@@ -135,68 +135,68 @@ gtk_sidebar_row_get_property (GObject    *object,
                               GValue     *value,
                               GParamSpec *pspec)
 {
-  GtkSidebarRow *self = GTK_SIDEBAR_ROW (object);
+  GtkSidebarRow *this = GTK_SIDEBAR_ROW (object);
 
   switch (prop_id)
     {
     case PROP_SIDEBAR:
-      g_value_set_object (value, self->sidebar);
+      g_value_set_object (value, this->sidebar);
       break;
 
     case PROP_START_ICON:
-      g_value_set_object (value, self->start_icon);
+      g_value_set_object (value, this->start_icon);
       break;
 
     case PROP_END_ICON:
-      g_value_set_object (value, self->end_icon);
+      g_value_set_object (value, this->end_icon);
       break;
 
     case PROP_LABEL:
-      g_value_set_string (value, self->label);
+      g_value_set_string (value, this->label);
       break;
 
     case PROP_TOOLTIP:
-      g_value_set_string (value, self->tooltip);
+      g_value_set_string (value, this->tooltip);
       break;
 
     case PROP_EJECTABLE:
-      g_value_set_boolean (value, self->ejectable);
+      g_value_set_boolean (value, this->ejectable);
       break;
 
     case PROP_ORDER_INDEX:
-      g_value_set_int (value, self->order_index);
+      g_value_set_int (value, this->order_index);
       break;
 
     case PROP_SECTION_TYPE:
-      g_value_set_enum (value, self->section_type);
+      g_value_set_enum (value, this->section_type);
       break;
 
     case PROP_PLACE_TYPE:
-      g_value_set_enum (value, self->place_type);
+      g_value_set_enum (value, this->place_type);
       break;
 
     case PROP_URI:
-      g_value_set_string (value, self->uri);
+      g_value_set_string (value, this->uri);
       break;
 
     case PROP_DRIVE:
-      g_value_set_object (value, self->drive);
+      g_value_set_object (value, this->drive);
       break;
 
     case PROP_VOLUME:
-      g_value_set_object (value, self->volume);
+      g_value_set_object (value, this->volume);
       break;
 
     case PROP_MOUNT:
-      g_value_set_object (value, self->mount);
+      g_value_set_object (value, this->mount);
       break;
 
     case PROP_CLOUD_PROVIDER_ACCOUNT:
-      g_value_set_object (value, self->cloud_provider_account);
+      g_value_set_object (value, this->cloud_provider_account);
       break;
 
     case PROP_PLACEHOLDER:
-      g_value_set_boolean (value, self->placeholder);
+      g_value_set_boolean (value, this->placeholder);
       break;
 
     default:
@@ -210,137 +210,137 @@ gtk_sidebar_row_set_property (GObject      *object,
                               const GValue *value,
                               GParamSpec   *pspec)
 {
-  GtkSidebarRow *self = GTK_SIDEBAR_ROW (object);
+  GtkSidebarRow *this = GTK_SIDEBAR_ROW (object);
 
   switch (prop_id)
     {
     case PROP_SIDEBAR:
-      self->sidebar = g_value_get_object (value);
+      this->sidebar = g_value_get_object (value);
       break;
 
     case PROP_START_ICON:
       {
-        g_clear_object (&self->start_icon);
+        g_clear_object (&this->start_icon);
         object = g_value_get_object (value);
         if (object != NULL)
           {
-            self->start_icon = G_ICON (g_object_ref (object));
-            gtk_image_set_from_gicon (GTK_IMAGE (self->start_icon_widget), self->start_icon);
+            this->start_icon = G_ICON (g_object_ref (object));
+            gtk_image_set_from_gicon (GTK_IMAGE (this->start_icon_widget), this->start_icon);
           }
         else
           {
-            gtk_image_clear (GTK_IMAGE (self->start_icon_widget));
+            gtk_image_clear (GTK_IMAGE (this->start_icon_widget));
           }
         break;
       }
 
     case PROP_END_ICON:
       {
-        g_clear_object (&self->end_icon);
+        g_clear_object (&this->end_icon);
         object = g_value_get_object (value);
         if (object != NULL)
           {
-            self->end_icon = G_ICON (g_object_ref (object));
-            gtk_image_set_from_gicon (GTK_IMAGE (self->end_icon_widget), self->end_icon);
+            this->end_icon = G_ICON (g_object_ref (object));
+            gtk_image_set_from_gicon (GTK_IMAGE (this->end_icon_widget), this->end_icon);
           }
         else
           {
-            gtk_image_clear (GTK_IMAGE (self->end_icon_widget));
+            gtk_image_clear (GTK_IMAGE (this->end_icon_widget));
           }
-          gtk_widget_set_visible (self->end_icon_widget, object != NULL);
+          gtk_widget_set_visible (this->end_icon_widget, object != NULL);
         break;
       }
 
     case PROP_LABEL:
-      g_free (self->label);
-      self->label = g_strdup (g_value_get_string (value));
-      gtk_label_set_text (GTK_LABEL (self->label_widget), self->label);
+      g_free (this->label);
+      this->label = g_strdup (g_value_get_string (value));
+      gtk_label_set_text (GTK_LABEL (this->label_widget), this->label);
       break;
 
     case PROP_TOOLTIP:
-      g_free (self->tooltip);
-      self->tooltip = g_strdup (g_value_get_string (value));
-      gtk_widget_set_tooltip_text (GTK_WIDGET (self), self->tooltip);
+      g_free (this->tooltip);
+      this->tooltip = g_strdup (g_value_get_string (value));
+      gtk_widget_set_tooltip_text (GTK_WIDGET (this), this->tooltip);
       break;
 
     case PROP_EJECTABLE:
-      self->ejectable = g_value_get_boolean (value);
-      gtk_widget_set_visible (self->eject_button, self->ejectable);
+      this->ejectable = g_value_get_boolean (value);
+      gtk_widget_set_visible (this->eject_button, this->ejectable);
       break;
 
     case PROP_ORDER_INDEX:
-      self->order_index = g_value_get_int (value);
+      this->order_index = g_value_get_int (value);
       break;
 
     case PROP_SECTION_TYPE:
-      self->section_type = g_value_get_enum (value);
+      this->section_type = g_value_get_enum (value);
       break;
 
     case PROP_PLACE_TYPE:
-      self->place_type = g_value_get_enum (value);
+      this->place_type = g_value_get_enum (value);
       break;
 
     case PROP_URI:
-      g_free (self->uri);
-      self->uri = g_strdup (g_value_get_string (value));
+      g_free (this->uri);
+      this->uri = g_strdup (g_value_get_string (value));
       break;
 
     case PROP_DRIVE:
-      g_set_object (&self->drive, g_value_get_object (value));
+      g_set_object (&this->drive, g_value_get_object (value));
       break;
 
     case PROP_VOLUME:
-      g_set_object (&self->volume, g_value_get_object (value));
+      g_set_object (&this->volume, g_value_get_object (value));
       break;
 
     case PROP_MOUNT:
-      g_set_object (&self->mount, g_value_get_object (value));
+      g_set_object (&this->mount, g_value_get_object (value));
       break;
 
     case PROP_CLOUD_PROVIDER_ACCOUNT:
 #ifdef HAVE_CLOUDPROVIDERS
-      if (self->cloud_provider_account != NULL)
-        g_signal_handlers_disconnect_by_data (self->cloud_provider_account, self);
+      if (this->cloud_provider_account != NULL)
+        g_signal_handlers_disconnect_by_data (this->cloud_provider_account, this);
 
-      self->cloud_provider_account = g_value_dup_object (value);
+      this->cloud_provider_account = g_value_dup_object (value);
 
-      if (self->cloud_provider_account != NULL)
+      if (this->cloud_provider_account != NULL)
         {
-          g_signal_connect_swapped (self->cloud_provider_account, "notify::name",
-                                    G_CALLBACK (cloud_row_update), self);
-          g_signal_connect_swapped (self->cloud_provider_account, "notify::status",
-                                    G_CALLBACK (cloud_row_update), self);
-          g_signal_connect_swapped (self->cloud_provider_account, "notify::status-details",
-                                    G_CALLBACK (cloud_row_update), self);
+          g_signal_connect_swapped (this->cloud_provider_account, "notify::name",
+                                    G_CALLBACK (cloud_row_update), this);
+          g_signal_connect_swapped (this->cloud_provider_account, "notify::status",
+                                    G_CALLBACK (cloud_row_update), this);
+          g_signal_connect_swapped (this->cloud_provider_account, "notify::status-details",
+                                    G_CALLBACK (cloud_row_update), this);
         }
 #endif
       break;
 
     case PROP_PLACEHOLDER:
       {
-        self->placeholder = g_value_get_boolean (value);
-        if (self->placeholder)
+        this->placeholder = g_value_get_boolean (value);
+        if (this->placeholder)
           {
-            g_clear_object (&self->start_icon);
-            g_clear_object (&self->end_icon);
-            g_free (self->label);
-            self->label = NULL;
-            g_free (self->tooltip);
-            self->tooltip = NULL;
-            gtk_widget_set_tooltip_text (GTK_WIDGET (self), NULL);
-            self->ejectable = FALSE;
-            self->section_type = GTK_PLACES_SECTION_BOOKMARKS;
-            self->place_type = GTK_PLACES_BOOKMARK_PLACEHOLDER;
-            g_free (self->uri);
-            self->uri = NULL;
-            g_clear_object (&self->drive);
-            g_clear_object (&self->volume);
-            g_clear_object (&self->mount);
-            g_clear_object (&self->cloud_provider_account);
+            g_clear_object (&this->start_icon);
+            g_clear_object (&this->end_icon);
+            g_free (this->label);
+            this->label = NULL;
+            g_free (this->tooltip);
+            this->tooltip = NULL;
+            gtk_widget_set_tooltip_text (GTK_WIDGET (this), NULL);
+            this->ejectable = FALSE;
+            this->section_type = GTK_PLACES_SECTION_BOOKMARKS;
+            this->place_type = GTK_PLACES_BOOKMARK_PLACEHOLDER;
+            g_free (this->uri);
+            this->uri = NULL;
+            g_clear_object (&this->drive);
+            g_clear_object (&this->volume);
+            g_clear_object (&this->mount);
+            g_clear_object (&this->cloud_provider_account);
 
-            gtk_list_box_row_set_child (GTK_LIST_BOX_ROW (self), NULL);
+            gtk_list_box_row_set_child (GTK_LIST_BOX_ROW (this), NULL);
 
-            gtk_widget_add_css_class (GTK_WIDGET (self), "sidebar-placeholder-row");
+            gtk_widget_add_css_class (GTK_WIDGET (this), "sidebar-placeholder-row");
           }
 
         break;
@@ -352,107 +352,107 @@ gtk_sidebar_row_set_property (GObject      *object,
 }
 
 static void
-on_child_revealed (GObject    *self,
+on_child_revealed (GObject    *this,
                    GParamSpec *pspec,
                    gpointer    user_data)
 {
  /* We need to hide the actual widget because if not the GtkListBoxRow will
   * still allocate the paddings, even if the revealer is not revealed, and
   * therefore the row will be still somewhat visible. */
-  if (!gtk_revealer_get_reveal_child (GTK_REVEALER (self)))
+  if (!gtk_revealer_get_reveal_child (GTK_REVEALER (this)))
     gtk_widget_set_visible (GTK_WIDGET (GTK_SIDEBAR_ROW (user_data)), FALSE);
 }
 
 void
-gtk_sidebar_row_reveal (GtkSidebarRow *self)
+gtk_sidebar_row_reveal (GtkSidebarRow *this)
 {
-  gtk_widget_set_visible (GTK_WIDGET (self), TRUE);
-  gtk_revealer_set_reveal_child (GTK_REVEALER (self->revealer), TRUE);
+  gtk_widget_set_visible (GTK_WIDGET (this), TRUE);
+  gtk_revealer_set_reveal_child (GTK_REVEALER (this->revealer), TRUE);
 }
 
 void
-gtk_sidebar_row_hide (GtkSidebarRow *self,
+gtk_sidebar_row_hide (GtkSidebarRow *this,
                       gboolean       immediate)
 {
   guint transition_duration;
 
-  transition_duration = gtk_revealer_get_transition_duration (GTK_REVEALER (self->revealer));
+  transition_duration = gtk_revealer_get_transition_duration (GTK_REVEALER (this->revealer));
   if (immediate)
-      gtk_revealer_set_transition_duration (GTK_REVEALER (self->revealer), 0);
+      gtk_revealer_set_transition_duration (GTK_REVEALER (this->revealer), 0);
 
-  gtk_revealer_set_reveal_child (GTK_REVEALER (self->revealer), FALSE);
+  gtk_revealer_set_reveal_child (GTK_REVEALER (this->revealer), FALSE);
 
-  gtk_revealer_set_transition_duration (GTK_REVEALER (self->revealer), transition_duration);
+  gtk_revealer_set_transition_duration (GTK_REVEALER (this->revealer), transition_duration);
 }
 
 void
-gtk_sidebar_row_set_start_icon (GtkSidebarRow *self,
+gtk_sidebar_row_set_start_icon (GtkSidebarRow *this,
                                 GIcon         *icon)
 {
-  g_return_if_fail (GTK_IS_SIDEBAR_ROW (self));
+  g_return_if_fail (GTK_IS_SIDEBAR_ROW (this));
 
-  if (self->start_icon != icon)
+  if (this->start_icon != icon)
     {
-      g_set_object (&self->start_icon, icon);
-      if (self->start_icon != NULL)
-        gtk_image_set_from_gicon (GTK_IMAGE (self->start_icon_widget), self->start_icon);
+      g_set_object (&this->start_icon, icon);
+      if (this->start_icon != NULL)
+        gtk_image_set_from_gicon (GTK_IMAGE (this->start_icon_widget), this->start_icon);
       else
-        gtk_image_clear (GTK_IMAGE (self->start_icon_widget));
+        gtk_image_clear (GTK_IMAGE (this->start_icon_widget));
 
-      g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_START_ICON]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties [PROP_START_ICON]);
     }
 }
 
 void
-gtk_sidebar_row_set_end_icon (GtkSidebarRow *self,
+gtk_sidebar_row_set_end_icon (GtkSidebarRow *this,
                               GIcon         *icon)
 {
-  g_return_if_fail (GTK_IS_SIDEBAR_ROW (self));
+  g_return_if_fail (GTK_IS_SIDEBAR_ROW (this));
 
-  if (self->end_icon != icon)
+  if (this->end_icon != icon)
     {
-      g_set_object (&self->end_icon, icon);
-      if (self->end_icon != NULL)
-        gtk_image_set_from_gicon (GTK_IMAGE (self->end_icon_widget), self->end_icon);
+      g_set_object (&this->end_icon, icon);
+      if (this->end_icon != NULL)
+        gtk_image_set_from_gicon (GTK_IMAGE (this->end_icon_widget), this->end_icon);
       else
-        if (self->end_icon_widget != NULL)
-          gtk_image_clear (GTK_IMAGE (self->end_icon_widget));
+        if (this->end_icon_widget != NULL)
+          gtk_image_clear (GTK_IMAGE (this->end_icon_widget));
 
-      g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_END_ICON]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties [PROP_END_ICON]);
     }
 }
 
 static void
 gtk_sidebar_row_finalize (GObject *object)
 {
-  GtkSidebarRow *self = GTK_SIDEBAR_ROW (object);
+  GtkSidebarRow *this = GTK_SIDEBAR_ROW (object);
 
-  g_clear_object (&self->start_icon);
-  g_clear_object (&self->end_icon);
-  g_free (self->label);
-  self->label = NULL;
-  g_free (self->tooltip);
-  self->tooltip = NULL;
-  g_free (self->uri);
-  self->uri = NULL;
-  g_clear_object (&self->drive);
-  g_clear_object (&self->volume);
-  g_clear_object (&self->mount);
+  g_clear_object (&this->start_icon);
+  g_clear_object (&this->end_icon);
+  g_free (this->label);
+  this->label = NULL;
+  g_free (this->tooltip);
+  this->tooltip = NULL;
+  g_free (this->uri);
+  this->uri = NULL;
+  g_clear_object (&this->drive);
+  g_clear_object (&this->volume);
+  g_clear_object (&this->mount);
 #ifdef HAVE_CLOUDPROVIDERS
-  if (self->cloud_provider_account != NULL)
-    g_signal_handlers_disconnect_by_data (self->cloud_provider_account, self);
-  g_clear_object (&self->cloud_provider_account);
+  if (this->cloud_provider_account != NULL)
+    g_signal_handlers_disconnect_by_data (this->cloud_provider_account, this);
+  g_clear_object (&this->cloud_provider_account);
 #endif
 
   G_OBJECT_CLASS (gtk_sidebar_row_parent_class)->finalize (object);
 }
 
 static void
-gtk_sidebar_row_init (GtkSidebarRow *self)
+gtk_sidebar_row_init (GtkSidebarRow *this)
 {
-  gtk_widget_init_template (GTK_WIDGET (self));
+  gtk_widget_init_template (GTK_WIDGET (this));
 
-  gtk_widget_set_focus_on_click (GTK_WIDGET (self), FALSE);
+  gtk_widget_set_focus_on_click (GTK_WIDGET (this), FALSE);
 }
 
 static void
@@ -582,30 +582,30 @@ gtk_sidebar_row_class_init (GtkSidebarRowClass *klass)
 }
 
 GtkSidebarRow*
-gtk_sidebar_row_clone (GtkSidebarRow *self)
+gtk_sidebar_row_clone (GtkSidebarRow *this)
 {
  return g_object_new (GTK_TYPE_SIDEBAR_ROW,
-                      "sidebar", self->sidebar,
-                      "start-icon", self->start_icon,
-                      "end-icon", self->end_icon,
-                      "label", self->label,
-                      "tooltip", self->tooltip,
-                      "ejectable", self->ejectable,
-                      "order-index", self->order_index,
-                      "section-type", self->section_type,
-                      "place-type", self->place_type,
-                      "uri", self->uri,
-                      "drive", self->drive,
-                      "volume", self->volume,
-                      "mount", self->mount,
-                      "cloud-provider-account", self->cloud_provider_account,
+                      "sidebar", this->sidebar,
+                      "start-icon", this->start_icon,
+                      "end-icon", this->end_icon,
+                      "label", this->label,
+                      "tooltip", this->tooltip,
+                      "ejectable", this->ejectable,
+                      "order-index", this->order_index,
+                      "section-type", this->section_type,
+                      "place-type", this->place_type,
+                      "uri", this->uri,
+                      "drive", this->drive,
+                      "volume", this->volume,
+                      "mount", this->mount,
+                      "cloud-provider-account", this->cloud_provider_account,
                       NULL);
 }
 
 GtkWidget*
-gtk_sidebar_row_get_eject_button (GtkSidebarRow *self)
+gtk_sidebar_row_get_eject_button (GtkSidebarRow *this)
 {
-  return self->eject_button;
+  return this->eject_button;
 }
 
 void

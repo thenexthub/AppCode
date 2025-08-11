@@ -42,16 +42,16 @@ typedef struct _GskRealPathPoint GskRealPathPoint;
 
 GskPath *               gsk_path_new_from_contours              (const GSList           *contours);
 
-gsize                   gsk_path_get_n_contours                 (const GskPath          *self);
-const GskContour *      gsk_path_get_contour                    (const GskPath          *self,
+gsize                   gsk_path_get_n_contours                 (const GskPath          *this);
+const GskContour *      gsk_path_get_contour                    (const GskPath          *this,
                                                                  gsize                   i);
 
-GskPathFlags            gsk_path_get_flags                      (const GskPath          *self);
+GskPathFlags            gsk_path_get_flags                      (const GskPath          *this);
 
-gboolean                gsk_path_foreach_with_tolerance         (GskPath                *self,
+gboolean                gsk_path_foreach_with_tolerance         (GskPath                *this,
                                                                  GskPathForeachFlags     flags,
                                                                  double                  tolerance,
-                                                                 GskPathForeachFunc      func,
+                                                                 GskPathForeachFunc      fn,
                                                                  gpointer                user_data);
 
 

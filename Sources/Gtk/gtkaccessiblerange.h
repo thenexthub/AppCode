@@ -24,7 +24,7 @@ struct _GtkAccessibleRangeInterface
 
   /**
    * GtkAccessibleRangeInterface::set_current_value:
-   * @self: a `GtkAccessibleRange`
+   * @this: a `GtkAccessibleRange`
    * @value: the value to set
    *
    * Sets the current value of the accessible range.
@@ -36,7 +36,7 @@ struct _GtkAccessibleRangeInterface
    *
    * Since: 4.10
    */
-  gboolean (* set_current_value) (GtkAccessibleRange *self,
+  gboolean (* set_current_value) (GtkAccessibleRange *this,
                                   double              value);
 };
 

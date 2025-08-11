@@ -446,7 +446,7 @@ gtk_css_image_radial_parse_first_arg (GtkCssImageRadial *radial,
 
 typedef struct
 {
-  GtkCssImageRadial *self;
+  GtkCssImageRadial *this;
   GArray *stop_array;
 } ParseData;
 
@@ -456,12 +456,12 @@ gtk_css_image_radial_parse_arg (GtkCssParser *parser,
                                 gpointer      user_data)
 {
   ParseData *parse_data = user_data;
-  GtkCssImageRadial *self = parse_data->self;
+  GtkCssImageRadial *this = parse_data->this;
 
   if (arg == 0)
-    return gtk_css_image_radial_parse_first_arg (self, parser, parse_data->stop_array);
+    return gtk_css_image_radial_parse_first_arg (this, parser, parse_data->stop_array);
   else
-    return gtk_css_image_radial_parse_color_stop (self, parser, parse_data->stop_array);
+    return gtk_css_image_radial_parse_color_stop (this, parser, parse_data->stop_array);
 
 }
 
@@ -469,21 +469,21 @@ static gboolean
 gtk_css_image_radial_parse (GtkCssImage  *image,
                             GtkCssParser *parser)
 {
-  GtkCssImageRadial *self = GTK_CSS_IMAGE_RADIAL (image);
+  GtkCssImageRadial *this = GTK_CSS_IMAGE_RADIAL (image);
   ParseData parse_data;
   gboolean success;
 
   if (gtk_css_parser_has_function (parser, "repeating-radial-gradient"))
-    self->repeating = TRUE;
+    this->repeating = TRUE;
   else if (gtk_css_parser_has_function (parser, "radial-gradient"))
-    self->repeating = FALSE;
+    this->repeating = FALSE;
   else
     {
       gtk_css_parser_error_syntax (parser, "Not a radial gradient");
       return FALSE;
     }
 
-  parse_data.self = self;
+  parse_data.this = this;
   parse_data.stop_array = g_array_new (TRUE, FALSE, sizeof (GtkCssImageRadialColorStop));
 
   success = gtk_css_parser_consume_function (parser, 3, G_MAXUINT, gtk_css_image_radial_parse_arg, &parse_data);
@@ -494,8 +494,8 @@ gtk_css_image_radial_parse (GtkCssImage  *image,
     }
   else
     {
-      self->n_stops = parse_data.stop_array->len;
-      self->color_stops = (GtkCssImageRadialColorStop *)g_array_free (parse_data.stop_array, FALSE);
+      this->n_stops = parse_data.stop_array->len;
+      this->color_stops = (GtkCssImageRadialColorStop *)g_array_free (parse_data.stop_array, FALSE);
     }
 
   return success;

@@ -65,7 +65,7 @@ static GParamSpec *props[LAST_PROP] = { NULL, };
 G_DEFINE_TYPE (GtkCenterLayout, gtk_center_layout, GTK_TYPE_LAYOUT_MANAGER)
 
 static int
-get_spacing (GtkCenterLayout *self,
+get_spacing (GtkCenterLayout *this,
              GtkCssNode      *node)
 {
   GtkCssStyle *style = gtk_css_node_get_style (node);
@@ -73,7 +73,7 @@ get_spacing (GtkCenterLayout *self,
   int css_spacing;
 
   border_spacing = style->size->border_spacing;
-  if (self->orientation == GTK_ORIENTATION_HORIZONTAL)
+  if (this->orientation == GTK_ORIENTATION_HORIZONTAL)
     css_spacing = _gtk_css_position_value_get_x (border_spacing, 100);
   else
     css_spacing = _gtk_css_position_value_get_y (border_spacing, 100);
@@ -85,17 +85,17 @@ static GtkSizeRequestMode
 gtk_center_layout_get_request_mode (GtkLayoutManager *layout_manager,
                                     GtkWidget        *widget)
 {
-  GtkCenterLayout *self = GTK_CENTER_LAYOUT (layout_manager);
+  GtkCenterLayout *this = GTK_CENTER_LAYOUT (layout_manager);
   int count[3] = { 0, 0, 0 };
 
-  if (self->start_widget)
-    count[gtk_widget_get_request_mode (self->start_widget)]++;
+  if (this->start_widget)
+    count[gtk_widget_get_request_mode (this->start_widget)]++;
 
-  if (self->center_widget)
-    count[gtk_widget_get_request_mode (self->center_widget)]++;
+  if (this->center_widget)
+    count[gtk_widget_get_request_mode (this->center_widget)]++;
 
-  if (self->end_widget)
-    count[gtk_widget_get_request_mode (self->end_widget)]++;
+  if (this->end_widget)
+    count[gtk_widget_get_request_mode (this->end_widget)]++;
 
   if (!count[GTK_SIZE_REQUEST_HEIGHT_FOR_WIDTH] &&
       !count[GTK_SIZE_REQUEST_WIDTH_FOR_HEIGHT])
@@ -107,7 +107,7 @@ gtk_center_layout_get_request_mode (GtkLayoutManager *layout_manager,
 }
 
 static void
-gtk_center_layout_distribute (GtkCenterLayout  *self,
+gtk_center_layout_distribute (GtkCenterLayout  *this,
                               int               for_size,
                               int               size,
                               int               spacing,
@@ -126,7 +126,7 @@ gtk_center_layout_distribute (GtkCenterLayout  *self,
   /* Usable space is really less... */
   for (i = 0; i < 3; i++)
     {
-      if (self->children[i])
+      if (this->children[i])
         needed_spacing += spacing;
     }
   needed_spacing -= spacing;
@@ -137,42 +137,42 @@ gtk_center_layout_distribute (GtkCenterLayout  *self,
 
   for (i = 0; i < 3; i ++)
     {
-      if (self->children[i])
-        gtk_widget_measure (self->children[i], self->orientation, for_size,
+      if (this->children[i])
+        gtk_widget_measure (this->children[i], this->orientation, for_size,
                             &sizes[i].minimum_size, &sizes[i].natural_size,
                             NULL, NULL);
     }
 
-  if (self->center_widget)
+  if (this->center_widget)
     {
       int natural_size;
 
       avail = size - needed_spacing - (sizes[0].minimum_size + sizes[2].minimum_size);
 
-      if (self->shrink_center_last)
+      if (this->shrink_center_last)
         natural_size = sizes[1].natural_size;
       else
         natural_size = CLAMP (size - needed_spacing - (sizes[0].natural_size + sizes[2].natural_size), sizes[1].minimum_size, sizes[1].natural_size);
 
       center_size = CLAMP (avail, sizes[1].minimum_size, natural_size);
-      center_expand = gtk_widget_compute_expand (self->center_widget, self->orientation);
+      center_expand = gtk_widget_compute_expand (this->center_widget, this->orientation);
     }
 
-  if (self->start_widget)
+  if (this->start_widget)
     {
       avail = size - needed_spacing - (center_size + sizes[2].minimum_size);
       start_size = CLAMP (avail, sizes[0].minimum_size, sizes[0].natural_size);
-      start_expand = gtk_widget_compute_expand (self->start_widget, self->orientation);
+      start_expand = gtk_widget_compute_expand (this->start_widget, this->orientation);
     }
 
-   if (self->end_widget)
+   if (this->end_widget)
     {
       avail = size - needed_spacing - (center_size + sizes[0].minimum_size);
       end_size = CLAMP (avail, sizes[2].minimum_size, sizes[2].natural_size);
-      end_expand = gtk_widget_compute_expand (self->end_widget, self->orientation);
+      end_expand = gtk_widget_compute_expand (this->end_widget, this->orientation);
     }
 
-  if (self->center_widget)
+  if (this->center_widget)
     {
       int center_pos;
 
@@ -219,7 +219,7 @@ gtk_center_layout_distribute (GtkCenterLayout  *self,
 }
 
 static void
-gtk_center_layout_measure_orientation (GtkCenterLayout *self,
+gtk_center_layout_measure_orientation (GtkCenterLayout *this,
                                        GtkWidget       *widget,
                                        GtkOrientation   orientation,
                                        int              for_size,
@@ -234,11 +234,11 @@ gtk_center_layout_measure_orientation (GtkCenterLayout *self,
   int spacing;
   int i;
 
-  spacing = get_spacing (self, gtk_widget_get_css_node (widget));
+  spacing = get_spacing (this, gtk_widget_get_css_node (widget));
 
   for (i = 0; i < 3; i ++)
     {
-      GtkWidget *child = self->children[i];
+      GtkWidget *child = this->children[i];
 
       if (child)
         {
@@ -268,7 +268,7 @@ gtk_center_layout_measure_orientation (GtkCenterLayout *self,
 }
 
 static void
-gtk_center_layout_measure_opposite (GtkCenterLayout *self,
+gtk_center_layout_measure_opposite (GtkCenterLayout *this,
                                     GtkOrientation   orientation,
                                     int              for_size,
                                     int             *minimum,
@@ -286,12 +286,12 @@ gtk_center_layout_measure_opposite (GtkCenterLayout *self,
   gboolean align_baseline = FALSE;
   int i;
 
-  child[0] = self->start_widget;
-  child[1] = self->center_widget;
-  child[2] = self->end_widget;
+  child[0] = this->start_widget;
+  child[1] = this->center_widget;
+  child[2] = this->end_widget;
 
   if (for_size >= 0)
-    gtk_center_layout_distribute (self, -1, for_size, 0, sizes);
+    gtk_center_layout_distribute (this, -1, for_size, 0, sizes);
 
   above_min = below_min = above_nat = below_nat = -1;
   total_min = total_nat = 0;
@@ -335,7 +335,7 @@ gtk_center_layout_measure_opposite (GtkCenterLayout *self,
           total_nat = MAX (total_nat, above_nat + below_nat);
         }
 
-      switch (self->baseline_pos)
+      switch (this->baseline_pos)
         {
         case GTK_BASELINE_POSITION_TOP:
           min_baseline = above_min;
@@ -375,13 +375,13 @@ gtk_center_layout_measure (GtkLayoutManager *layout_manager,
                            int              *minimum_baseline,
                            int              *natural_baseline)
 {
-  GtkCenterLayout *self = GTK_CENTER_LAYOUT (layout_manager);
+  GtkCenterLayout *this = GTK_CENTER_LAYOUT (layout_manager);
 
-  if (self->orientation == orientation)
-    gtk_center_layout_measure_orientation (self, widget, orientation, for_size,
+  if (this->orientation == orientation)
+    gtk_center_layout_measure_orientation (this, widget, orientation, for_size,
                                            minimum, natural, minimum_baseline, natural_baseline);
   else
-    gtk_center_layout_measure_opposite (self, orientation, for_size,
+    gtk_center_layout_measure_opposite (this, orientation, for_size,
                                         minimum, natural, minimum_baseline, natural_baseline);
 }
 
@@ -392,7 +392,7 @@ gtk_center_layout_allocate (GtkLayoutManager *layout_manager,
                             int               height,
                             int               baseline)
 {
-  GtkCenterLayout *self = GTK_CENTER_LAYOUT (layout_manager);
+  GtkCenterLayout *this = GTK_CENTER_LAYOUT (layout_manager);
   GtkWidget *child[3];
   int child_size[3];
   int child_pos[3];
@@ -402,9 +402,9 @@ gtk_center_layout_allocate (GtkLayoutManager *layout_manager,
   int i;
   int spacing;
 
-  spacing = get_spacing (self, gtk_widget_get_css_node (widget));
+  spacing = get_spacing (this, gtk_widget_get_css_node (widget));
 
-  if (self->orientation == GTK_ORIENTATION_HORIZONTAL)
+  if (this->orientation == GTK_ORIENTATION_HORIZONTAL)
     {
       size = width;
       for_size = height;
@@ -418,29 +418,29 @@ gtk_center_layout_allocate (GtkLayoutManager *layout_manager,
 
   /* Allocate child sizes */
 
-  gtk_center_layout_distribute (self, for_size, size, spacing, sizes);
+  gtk_center_layout_distribute (this, for_size, size, spacing, sizes);
 
-  child[1] = self->center_widget;
+  child[1] = this->center_widget;
   child_size[1] = sizes[1].minimum_size;
 
-  if (self->orientation == GTK_ORIENTATION_HORIZONTAL &&
+  if (this->orientation == GTK_ORIENTATION_HORIZONTAL &&
       gtk_widget_get_direction (widget) == GTK_TEXT_DIR_RTL)
     {
-      child[0] = self->end_widget;
-      child[2] = self->start_widget;
+      child[0] = this->end_widget;
+      child[2] = this->start_widget;
       child_size[0] = sizes[2].minimum_size;
       child_size[2] = sizes[0].minimum_size;
     }
   else
     {
-      child[0] = self->start_widget;
-      child[2] = self->end_widget;
+      child[0] = this->start_widget;
+      child[2] = this->end_widget;
       child_size[0] = sizes[0].minimum_size;
       child_size[2] = sizes[2].minimum_size;
     }
 
   /* Determine baseline */
-  if (self->orientation == GTK_ORIENTATION_HORIZONTAL &&
+  if (this->orientation == GTK_ORIENTATION_HORIZONTAL &&
       baseline == -1)
     {
       int min_above, nat_above;
@@ -483,7 +483,7 @@ gtk_center_layout_allocate (GtkLayoutManager *layout_manager,
           /* TODO: This is purely based on the minimum baseline.
            * When things fit we should use the natural one
            */
-          switch (self->baseline_pos)
+          switch (this->baseline_pos)
             {
             default:
             case GTK_BASELINE_POSITION_TOP:
@@ -521,7 +521,7 @@ gtk_center_layout_allocate (GtkLayoutManager *layout_manager,
       if (child[i] == NULL)
         continue;
 
-      if (self->orientation == GTK_ORIENTATION_HORIZONTAL)
+      if (this->orientation == GTK_ORIENTATION_HORIZONTAL)
         {
           child_allocation.x = child_pos[i];
           child_allocation.y = 0;
@@ -546,12 +546,12 @@ gtk_center_layout_set_property (GObject      *object,
                                 const GValue *value,
                                 GParamSpec   *pspec)
 {
-  GtkCenterLayout *self = GTK_CENTER_LAYOUT (object);
+  GtkCenterLayout *this = GTK_CENTER_LAYOUT (object);
 
   switch (prop_id)
     {
     case PROP_SHRINK_CENTER_LAST:
-      gtk_center_layout_set_shrink_center_last (self, g_value_get_boolean (value));
+      gtk_center_layout_set_shrink_center_last (this, g_value_get_boolean (value));
       break;
 
     default:
@@ -566,12 +566,12 @@ gtk_center_layout_get_property (GObject    *object,
                                 GValue     *value,
                                 GParamSpec *pspec)
 {
-  GtkCenterLayout *self = GTK_CENTER_LAYOUT (object);
+  GtkCenterLayout *this = GTK_CENTER_LAYOUT (object);
 
   switch (prop_id)
     {
     case PROP_SHRINK_CENTER_LAST:
-      g_value_set_boolean (value, self->shrink_center_last);
+      g_value_set_boolean (value, this->shrink_center_last);
       break;
 
     default:
@@ -583,11 +583,11 @@ gtk_center_layout_get_property (GObject    *object,
 static void
 gtk_center_layout_dispose (GObject *object)
 {
-  GtkCenterLayout *self = GTK_CENTER_LAYOUT (object);
+  GtkCenterLayout *this = GTK_CENTER_LAYOUT (object);
 
-  g_clear_object (&self->start_widget);
-  g_clear_object (&self->center_widget);
-  g_clear_object (&self->end_widget);
+  g_clear_object (&this->start_widget);
+  g_clear_object (&this->center_widget);
+  g_clear_object (&this->end_widget);
 
   G_OBJECT_CLASS (gtk_center_layout_parent_class)->dispose (object);
 }
@@ -629,11 +629,11 @@ gtk_center_layout_class_init (GtkCenterLayoutClass *klass)
 }
 
 static void
-gtk_center_layout_init (GtkCenterLayout *self)
+gtk_center_layout_init (GtkCenterLayout *this)
 {
-  self->orientation = GTK_ORIENTATION_HORIZONTAL;
-  self->baseline_pos = GTK_BASELINE_POSITION_CENTER;
-  self->shrink_center_last = TRUE;
+  this->orientation = GTK_ORIENTATION_HORIZONTAL;
+  this->baseline_pos = GTK_BASELINE_POSITION_CENTER;
+  this->shrink_center_last = TRUE;
 }
 
 /**
@@ -651,187 +651,187 @@ gtk_center_layout_new (void)
 
 /**
  * gtk_center_layout_set_orientation:
- * @self: a `GtkCenterLayout`
+ * @this: a `GtkCenterLayout`
  * @orientation: the new orientation
  *
- * Sets the orientation of @self.
+ * Sets the orientation of @this.
  */
 void
-gtk_center_layout_set_orientation (GtkCenterLayout *self,
+gtk_center_layout_set_orientation (GtkCenterLayout *this,
                                    GtkOrientation   orientation)
 {
-  g_return_if_fail (GTK_IS_CENTER_LAYOUT (self));
+  g_return_if_fail (GTK_IS_CENTER_LAYOUT (this));
 
-  if (orientation != self->orientation)
+  if (orientation != this->orientation)
     {
-      self->orientation = orientation;
-      gtk_layout_manager_layout_changed (GTK_LAYOUT_MANAGER (self));
+      this->orientation = orientation;
+      gtk_layout_manager_layout_changed (GTK_LAYOUT_MANAGER (this));
     }
 }
 
 /**
  * gtk_center_layout_get_orientation:
- * @self: a `GtkCenterLayout`
+ * @this: a `GtkCenterLayout`
  *
  * Gets the current orienration of the layout manager.
  *
- * Returns: The current orientation of @self
+ * Returns: The current orientation of @this
  */
 GtkOrientation
-gtk_center_layout_get_orientation (GtkCenterLayout *self)
+gtk_center_layout_get_orientation (GtkCenterLayout *this)
 {
-  g_return_val_if_fail (GTK_IS_CENTER_LAYOUT (self), GTK_ORIENTATION_HORIZONTAL);
+  g_return_val_if_fail (GTK_IS_CENTER_LAYOUT (this), GTK_ORIENTATION_HORIZONTAL);
 
-  return self->orientation;
+  return this->orientation;
 }
 
 /**
  * gtk_center_layout_set_baseline_position:
- * @self: a `GtkCenterLayout`
+ * @this: a `GtkCenterLayout`
  * @baseline_position: the new baseline position
  *
- * Sets the new baseline position of @self
+ * Sets the new baseline position of @this
  */
 void
-gtk_center_layout_set_baseline_position (GtkCenterLayout     *self,
+gtk_center_layout_set_baseline_position (GtkCenterLayout     *this,
                                          GtkBaselinePosition  baseline_position)
 {
-  g_return_if_fail (GTK_IS_CENTER_LAYOUT (self));
+  g_return_if_fail (GTK_IS_CENTER_LAYOUT (this));
 
-  if (baseline_position != self->baseline_pos)
+  if (baseline_position != this->baseline_pos)
     {
-      self->baseline_pos = baseline_position;
-      gtk_layout_manager_layout_changed (GTK_LAYOUT_MANAGER (self));
+      this->baseline_pos = baseline_position;
+      gtk_layout_manager_layout_changed (GTK_LAYOUT_MANAGER (this));
     }
 }
 
 /**
  * gtk_center_layout_get_baseline_position:
- * @self: a `GtkCenterLayout`
+ * @this: a `GtkCenterLayout`
  *
  * Returns the baseline position of the layout.
  *
- * Returns: The current baseline position of @self.
+ * Returns: The current baseline position of @this.
  */
 GtkBaselinePosition
-gtk_center_layout_get_baseline_position (GtkCenterLayout *self)
+gtk_center_layout_get_baseline_position (GtkCenterLayout *this)
 {
-  g_return_val_if_fail (GTK_IS_CENTER_LAYOUT (self), GTK_BASELINE_POSITION_TOP);
+  g_return_val_if_fail (GTK_IS_CENTER_LAYOUT (this), GTK_BASELINE_POSITION_TOP);
 
-  return self->baseline_pos;
+  return this->baseline_pos;
 }
 
 /**
  * gtk_center_layout_set_start_widget:
- * @self: a `GtkCenterLayout`
+ * @this: a `GtkCenterLayout`
  * @widget: (nullable): the new start widget
  *
- * Sets the new start widget of @self.
+ * Sets the new start widget of @this.
  *
  * To remove the existing start widget, pass %NULL.
  */
 void
-gtk_center_layout_set_start_widget (GtkCenterLayout *self,
+gtk_center_layout_set_start_widget (GtkCenterLayout *this,
                                     GtkWidget       *widget)
 {
-  g_return_if_fail (GTK_IS_CENTER_LAYOUT (self));
+  g_return_if_fail (GTK_IS_CENTER_LAYOUT (this));
   g_return_if_fail (widget == NULL || GTK_IS_WIDGET (widget));
 
-  if (g_set_object (&self->start_widget, widget))
-    gtk_layout_manager_layout_changed (GTK_LAYOUT_MANAGER (self));
+  if (g_set_object (&this->start_widget, widget))
+    gtk_layout_manager_layout_changed (GTK_LAYOUT_MANAGER (this));
 }
 
 /**
  * gtk_center_layout_get_start_widget:
- * @self: a `GtkCenterLayout`
+ * @this: a `GtkCenterLayout`
  *
  * Returns the start widget of the layout.
  *
- * Returns: (nullable) (transfer none): The current start widget of @self
+ * Returns: (nullable) (transfer none): The current start widget of @this
  */
 GtkWidget *
-gtk_center_layout_get_start_widget (GtkCenterLayout *self)
+gtk_center_layout_get_start_widget (GtkCenterLayout *this)
 {
-  g_return_val_if_fail (GTK_IS_CENTER_LAYOUT (self), NULL);
+  g_return_val_if_fail (GTK_IS_CENTER_LAYOUT (this), NULL);
 
-  return self->start_widget;
+  return this->start_widget;
 }
 
 /**
  * gtk_center_layout_set_center_widget:
- * @self: a `GtkCenterLayout`
+ * @this: a `GtkCenterLayout`
  * @widget: (nullable): the new center widget
  *
- * Sets the new center widget of @self.
+ * Sets the new center widget of @this.
  *
  * To remove the existing center widget, pass %NULL.
  */
 void
-gtk_center_layout_set_center_widget (GtkCenterLayout *self,
+gtk_center_layout_set_center_widget (GtkCenterLayout *this,
                                      GtkWidget       *widget)
 {
-  g_return_if_fail (GTK_IS_CENTER_LAYOUT (self));
+  g_return_if_fail (GTK_IS_CENTER_LAYOUT (this));
   g_return_if_fail (widget == NULL || GTK_IS_WIDGET (widget));
 
-  if (g_set_object (&self->center_widget, widget))
-    gtk_layout_manager_layout_changed (GTK_LAYOUT_MANAGER (self));
+  if (g_set_object (&this->center_widget, widget))
+    gtk_layout_manager_layout_changed (GTK_LAYOUT_MANAGER (this));
 }
 
 /**
  * gtk_center_layout_get_center_widget:
- * @self: a `GtkCenterLayout`
+ * @this: a `GtkCenterLayout`
  *
  * Returns the center widget of the layout.
  *
- * Returns: (nullable) (transfer none): the current center widget of @self
+ * Returns: (nullable) (transfer none): the current center widget of @this
  */
 GtkWidget *
-gtk_center_layout_get_center_widget (GtkCenterLayout *self)
+gtk_center_layout_get_center_widget (GtkCenterLayout *this)
 {
-  g_return_val_if_fail (GTK_IS_CENTER_LAYOUT (self), NULL);
+  g_return_val_if_fail (GTK_IS_CENTER_LAYOUT (this), NULL);
 
-  return self->center_widget;
+  return this->center_widget;
 }
 
 /**
  * gtk_center_layout_set_end_widget:
- * @self: a `GtkCenterLayout`
+ * @this: a `GtkCenterLayout`
  * @widget: (nullable): the new end widget
  *
- * Sets the new end widget of @self.
+ * Sets the new end widget of @this.
  *
  * To remove the existing center widget, pass %NULL.
  */
 void
-gtk_center_layout_set_end_widget (GtkCenterLayout *self,
+gtk_center_layout_set_end_widget (GtkCenterLayout *this,
                                   GtkWidget       *widget)
 {
-  g_return_if_fail (GTK_IS_CENTER_LAYOUT (self));
+  g_return_if_fail (GTK_IS_CENTER_LAYOUT (this));
   g_return_if_fail (widget == NULL || GTK_IS_WIDGET (widget));
 
-  if (g_set_object (&self->end_widget, widget))
-    gtk_layout_manager_layout_changed (GTK_LAYOUT_MANAGER (self));
+  if (g_set_object (&this->end_widget, widget))
+    gtk_layout_manager_layout_changed (GTK_LAYOUT_MANAGER (this));
 }
 
 /**
  * gtk_center_layout_get_end_widget:
- * @self: a `GtkCenterLayout`
+ * @this: a `GtkCenterLayout`
  *
  * Returns the end widget of the layout.
  *
- * Returns: (nullable) (transfer none): the current end widget of @self
+ * Returns: (nullable) (transfer none): the current end widget of @this
  */
 GtkWidget *
-gtk_center_layout_get_end_widget (GtkCenterLayout *self)
+gtk_center_layout_get_end_widget (GtkCenterLayout *this)
 {
-  g_return_val_if_fail (GTK_IS_CENTER_LAYOUT (self), NULL);
+  g_return_val_if_fail (GTK_IS_CENTER_LAYOUT (this), NULL);
 
-  return self->end_widget;
+  return this->end_widget;
 }
 
 /**
  * gtk_center_layout_set_shrink_center_last:
- * @self: a `GtkCenterLayout`
+ * @this: a `GtkCenterLayout`
  * @shrink_center_last: whether to shrink the center widget after others
  *
  * Sets whether to shrink the center widget after other children.
@@ -846,37 +846,37 @@ gtk_center_layout_get_end_widget (GtkCenterLayout *self)
  * Since: 4.12
  */
 void
-gtk_center_layout_set_shrink_center_last (GtkCenterLayout *self,
+gtk_center_layout_set_shrink_center_last (GtkCenterLayout *this,
                                           gboolean         shrink_center_last)
 {
-  g_return_if_fail (GTK_IS_CENTER_LAYOUT (self));
+  g_return_if_fail (GTK_IS_CENTER_LAYOUT (this));
 
   shrink_center_last = !!shrink_center_last;
 
-  if (shrink_center_last == self->shrink_center_last)
+  if (shrink_center_last == this->shrink_center_last)
     return;
 
-  self->shrink_center_last = shrink_center_last;
+  this->shrink_center_last = shrink_center_last;
 
-  gtk_layout_manager_layout_changed (GTK_LAYOUT_MANAGER (self));
+  gtk_layout_manager_layout_changed (GTK_LAYOUT_MANAGER (this));
 
-  g_object_notify_by_pspec (G_OBJECT (self), props[PROP_SHRINK_CENTER_LAST]);
+  g_object_notify_by_pspec (G_OBJECT (this), props[PROP_SHRINK_CENTER_LAST]);
 }
 
 /**
  * gtk_center_layout_get_shrink_center_last:
- * @self: a `GtkCenterLayout`
+ * @this: a `GtkCenterLayout`
  *
- * Gets whether @self shrinks the center widget after other children.
+ * Gets whether @this shrinks the center widget after other children.
  *
  * Returns: whether to shrink the center widget after others
  *
  * Since: 4.12
  */
 gboolean
-gtk_center_layout_get_shrink_center_last (GtkCenterLayout *self)
+gtk_center_layout_get_shrink_center_last (GtkCenterLayout *this)
 {
-  g_return_val_if_fail (GTK_IS_CENTER_LAYOUT (self), FALSE);
+  g_return_val_if_fail (GTK_IS_CENTER_LAYOUT (this), FALSE);
 
-  return self->shrink_center_last;
+  return this->shrink_center_last;
 }

@@ -26,7 +26,7 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE (GtkInspectorTypePopover, gtk_inspector_type_popover,
                       GTK, INSPECTOR_TYPE_POPOVER, GtkPopover)
 
-void gtk_inspector_type_popover_set_gtype (GtkInspectorTypePopover *self,
+void gtk_inspector_type_popover_set_gtype (GtkInspectorTypePopover *this,
                                            GType                    gtype);
 
 G_END_DECLS

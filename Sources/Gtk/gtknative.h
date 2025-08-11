@@ -34,22 +34,22 @@ GDK_AVAILABLE_IN_ALL
 G_DECLARE_INTERFACE (GtkNative, gtk_native, GTK, NATIVE, GtkWidget)
 
 GDK_AVAILABLE_IN_ALL
-void        gtk_native_realize         (GtkNative *self);
+void        gtk_native_realize         (GtkNative *this);
 
 GDK_AVAILABLE_IN_ALL
-void        gtk_native_unrealize       (GtkNative *self);
+void        gtk_native_unrealize       (GtkNative *this);
 
 GDK_AVAILABLE_IN_ALL
 GtkNative * gtk_native_get_for_surface (GdkSurface *surface);
 
 GDK_AVAILABLE_IN_ALL
-GdkSurface *gtk_native_get_surface     (GtkNative *self);
+GdkSurface *gtk_native_get_surface     (GtkNative *this);
 
 GDK_AVAILABLE_IN_ALL
-GskRenderer *gtk_native_get_renderer   (GtkNative *self);
+GskRenderer *gtk_native_get_renderer   (GtkNative *this);
 
 GDK_AVAILABLE_IN_ALL
-void         gtk_native_get_surface_transform (GtkNative *self,
+void         gtk_native_get_surface_transform (GtkNative *this,
                                                double    *x,
                                                double    *y);
 

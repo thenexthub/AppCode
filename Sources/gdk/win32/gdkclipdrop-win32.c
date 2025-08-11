@@ -1367,42 +1367,42 @@ failed:
 static gpointer
 _gdk_win32_clipboard_thread_main (gpointer data)
 {
-  GdkWin32Clipdrop *self = data;
-  GAsyncQueue *queue = self->clipboard_open_thread_queue;
-  GAsyncQueue *render_queue = self->clipboard_render_queue;
+  GdkWin32Clipdrop *this = data;
+  GAsyncQueue *queue = this->clipboard_open_thread_queue;
+  GAsyncQueue *render_queue = this->clipboard_render_queue;
   guint message_source_id;
   GMainLoop *loop;
   
-  g_assert (self->clipboard_thread_items == NULL);
-  g_assert (self->clipboard_main_context != NULL);
+  g_assert (this->clipboard_thread_items == NULL);
+  g_assert (this->clipboard_main_context != NULL);
 
-  g_main_context_push_thread_default (self->clipboard_main_context);
-  message_source_id = gdk_win32_message_source_add (self->clipboard_main_context);
+  g_main_context_push_thread_default (this->clipboard_main_context);
+  message_source_id = gdk_win32_message_source_add (this->clipboard_main_context);
 
-  self->clipboard_thread_items = g_new0 (GdkWin32ClipboardThread, 1);
-  CLIPDROP_CB_THREAD_MEMBER (self, input_queue) = queue;
-  CLIPDROP_CB_THREAD_MEMBER (self, render_queue) = render_queue;
-  CLIPDROP_CB_THREAD_MEMBER (self, clipboard_opened_for) = INVALID_HANDLE_VALUE;
+  this->clipboard_thread_items = g_new0 (GdkWin32ClipboardThread, 1);
+  CLIPDROP_CB_THREAD_MEMBER (this, input_queue) = queue;
+  CLIPDROP_CB_THREAD_MEMBER (this, render_queue) = render_queue;
+  CLIPDROP_CB_THREAD_MEMBER (this, clipboard_opened_for) = INVALID_HANDLE_VALUE;
 
-  if (!register_clipboard_notification (self))
+  if (!register_clipboard_notification (this))
     {
       g_async_queue_unref (queue);
-      g_clear_pointer (&self->clipboard_thread_items, g_free);
+      g_clear_pointer (&this->clipboard_thread_items, g_free);
 
       return NULL;
     }
 
-  loop = g_main_loop_new (self->clipboard_main_context, TRUE);
+  loop = g_main_loop_new (this->clipboard_main_context, TRUE);
   g_main_loop_run (loop);
   g_main_loop_unref (loop);
 
   /* Just in case, as this should only happen when we shut down */
-  DestroyWindow (CLIPDROP_CB_THREAD_MEMBER (self, clipboard_hwnd));
-  CloseHandle (CLIPDROP_CB_THREAD_MEMBER (self, clipboard_hwnd));
-  g_clear_pointer (&self->clipboard_thread_items, g_free);
+  DestroyWindow (CLIPDROP_CB_THREAD_MEMBER (this, clipboard_hwnd));
+  CloseHandle (CLIPDROP_CB_THREAD_MEMBER (this, clipboard_hwnd));
+  g_clear_pointer (&this->clipboard_thread_items, g_free);
 
   g_source_remove (message_source_id);
-  g_main_context_pop_thread_default (self->clipboard_main_context);
+  g_main_context_pop_thread_default (this->clipboard_main_context);
 
   return NULL;
 }
@@ -2696,15 +2696,15 @@ _gdk_win32_add_contentformat_to_pairs (GdkWin32Clipdrop *clip_drop,
 }
 
 static void
-gdk_win32_clipdrop_run_in_clipboard_thread (GdkWin32Clipdrop                 *self,
+gdk_win32_clipdrop_run_in_clipboard_thread (GdkWin32Clipdrop                 *this,
                                             GdkWin32ClipboardThreadQueueItem *item)
 {
   gboolean was_empty;
   
-  g_async_queue_lock (self->clipboard_open_thread_queue);
-  was_empty = g_async_queue_length_unlocked (self->clipboard_open_thread_queue) == 0;
-  g_async_queue_push_unlocked (self->clipboard_open_thread_queue, item);
-  g_async_queue_unlock (self->clipboard_open_thread_queue);
+  g_async_queue_lock (this->clipboard_open_thread_queue);
+  was_empty = g_async_queue_length_unlocked (this->clipboard_open_thread_queue) == 0;
+  g_async_queue_push_unlocked (this->clipboard_open_thread_queue, item);
+  g_async_queue_unlock (this->clipboard_open_thread_queue);
 
   if (was_empty)
     {
@@ -2712,8 +2712,8 @@ gdk_win32_clipdrop_run_in_clipboard_thread (GdkWin32Clipdrop                 *se
 
       source = g_idle_source_new ();
       g_source_set_priority (source, G_PRIORITY_DEFAULT);
-      g_source_set_callback (source, process_clipboard_queue, self, NULL);
-      g_source_attach (source, self->clipboard_main_context);
+      g_source_set_callback (source, process_clipboard_queue, this, NULL);
+      g_source_attach (source, this->clipboard_main_context);
       g_source_unref (source);
     }
 }

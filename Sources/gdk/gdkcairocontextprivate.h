@@ -43,7 +43,7 @@ struct _GdkCairoContextClass
 {
   GdkDrawContextClass parent_class;
 
-  cairo_t *     (* cairo_create)                (GdkCairoContext        *self);
+  cairo_t *     (* cairo_create)                (GdkCairoContext        *this);
 };
 
 G_END_DECLS

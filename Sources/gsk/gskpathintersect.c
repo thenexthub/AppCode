@@ -39,7 +39,7 @@ typedef struct
 {
   GskPath *path1;
   GskPath *path2;
-  GskPathIntersectionFunc func;
+  GskPathIntersectionFunc fn;
   gpointer data;
 
   gsize contour1;
@@ -211,7 +211,7 @@ intersect_curve2 (GskPathOperation        op,
   }
 #endif
 
-  /* Cubic curves may have self-intersections */
+  /* Cubic curves may have this-intersections */
   if (pd->path1 == pd->path2 &&
       pd->contour1 == pd->contour2 &&
       pd->idx1 == pd->idx2)
@@ -236,7 +236,7 @@ intersect_curve2 (GskPathOperation        op,
       is.kind = kind[i];
 
       /* Skip the shared point between two adjacent curves,
-       * when we're looking for self-intersections
+       * when we're looking for this-intersections
        */
       if (is.kind == GSK_PATH_INTERSECTION_NORMAL &&
           pd->path1 == pd->path2 &&
@@ -682,7 +682,7 @@ contour_foreach_intersection (const GskContour  *contour1,
       if (is->kind != GSK_PATH_INTERSECTION_NONE)
         {
 
-          if (!pd->func (pd->path1, &is->point1, pd->path2, &is->point2, is->kind, pd->data))
+          if (!pd->fn (pd->path1, &is->point1, pd->path2, &is->point2, is->kind, pd->data))
             return FALSE;
         }
     }
@@ -697,16 +697,16 @@ contour_foreach_intersection (const GskContour  *contour1,
  * gsk_path_foreach_intersection:
  * @path1: the first path
  * @path2: (nullable): the second path
- * @func: (scope call) (closure user_data): the function to call for intersections
- * @user_data: (nullable): user data passed to @func
+ * @fn: (scope call) (closure user_data): the function to call for intersections
+ * @user_data: (nullable): user data passed to @fn
  *
  * Finds intersections between two paths.
  *
  * This function finds intersections between @path1 and @path2,
- * and calls @func for each of them, in increasing order for @path1.
+ * and calls @fn for each of them, in increasing order for @path1.
  *
  * If @path2 is not provided or equal to @path1, the function finds
- * non-trivial self-intersections of @path1.
+ * non-trivial this-intersections of @path1.
  *
  * When segments of the paths coincide, the callback is called once
  * for the start of the segment, with @GSK_PATH_INTERSECTION_START, and
@@ -714,22 +714,22 @@ contour_foreach_intersection (const GskContour  *contour1,
  * Note that other intersections may occur between the start and end
  * of such a segment.
  *
- * If @func returns `FALSE`, the iteration is stopped.
+ * If @fn returns `FALSE`, the iteration is stopped.
  *
- * Returns: `FALSE` if @func returned FALSE`, `TRUE` otherwise.
+ * Returns: `FALSE` if @fn returned FALSE`, `TRUE` otherwise.
  *
  * Since: 4.20
  */
 gboolean
 gsk_path_foreach_intersection (GskPath                 *path1,
                                GskPath                 *path2,
-                               GskPathIntersectionFunc  func,
+                               GskPathIntersectionFunc  fn,
                                gpointer                 data)
 {
   PathIntersectData pd = {
     .path1 = path1,
     .path2 = path2 ? path2 : path1,
-    .func = func,
+    .fn = fn,
     .data = data,
   };
   gboolean ret;

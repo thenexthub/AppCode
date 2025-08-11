@@ -82,55 +82,55 @@ gtk_widget_paintable_paintable_snapshot (GdkPaintable *paintable,
                                          double        width,
                                          double        height)
 {
-  GtkWidgetPaintable *self = GTK_WIDGET_PAINTABLE (paintable);
+  GtkWidgetPaintable *this = GTK_WIDGET_PAINTABLE (paintable);
 
-  if (self->snapshot_count > 4)
+  if (this->snapshot_count > 4)
     return;
-  else if (self->snapshot_count > 0)
+  else if (this->snapshot_count > 0)
     {
       graphene_rect_t bounds;
 
       gtk_snapshot_push_clip (snapshot,
                               &GRAPHENE_RECT_INIT(0, 0, width, height));
 
-      if (gtk_widget_compute_bounds (self->widget, self->widget, &bounds))
+      if (gtk_widget_compute_bounds (this->widget, this->widget, &bounds))
         {
           gtk_snapshot_scale (snapshot, width / bounds.size.width, height / bounds.size.height);
           gtk_snapshot_translate (snapshot, &bounds.origin);
         }
 
-      gtk_widget_snapshot (self->widget, snapshot);
+      gtk_widget_snapshot (this->widget, snapshot);
 
       gtk_snapshot_pop (snapshot);
     }
   else
     {
-      gdk_paintable_snapshot (self->current_image, snapshot, width, height);
+      gdk_paintable_snapshot (this->current_image, snapshot, width, height);
     }
 }
 
 static GdkPaintable *
 gtk_widget_paintable_paintable_get_current_image (GdkPaintable *paintable)
 {
-  GtkWidgetPaintable *self = GTK_WIDGET_PAINTABLE (paintable);
+  GtkWidgetPaintable *this = GTK_WIDGET_PAINTABLE (paintable);
 
-  return g_object_ref (self->current_image);
+  return g_object_ref (this->current_image);
 }
 
 static int
 gtk_widget_paintable_paintable_get_intrinsic_width (GdkPaintable *paintable)
 {
-  GtkWidgetPaintable *self = GTK_WIDGET_PAINTABLE (paintable);
+  GtkWidgetPaintable *this = GTK_WIDGET_PAINTABLE (paintable);
 
-  return gdk_paintable_get_intrinsic_width (self->current_image);
+  return gdk_paintable_get_intrinsic_width (this->current_image);
 }
 
 static int
 gtk_widget_paintable_paintable_get_intrinsic_height (GdkPaintable *paintable)
 {
-  GtkWidgetPaintable *self = GTK_WIDGET_PAINTABLE (paintable);
+  GtkWidgetPaintable *this = GTK_WIDGET_PAINTABLE (paintable);
 
-  return gdk_paintable_get_intrinsic_height (self->current_image);
+  return gdk_paintable_get_intrinsic_height (this->current_image);
 }
 
 static void
@@ -153,12 +153,12 @@ gtk_widget_paintable_set_property (GObject      *object,
                                    GParamSpec   *pspec)
 
 {
-  GtkWidgetPaintable *self = GTK_WIDGET_PAINTABLE (object);
+  GtkWidgetPaintable *this = GTK_WIDGET_PAINTABLE (object);
 
   switch (prop_id)
     {
     case PROP_WIDGET:
-      gtk_widget_paintable_set_widget (self, g_value_get_object (value));
+      gtk_widget_paintable_set_widget (this, g_value_get_object (value));
       break;
 
     default:
@@ -173,12 +173,12 @@ gtk_widget_paintable_get_property (GObject    *object,
                                    GValue     *value,
                                    GParamSpec *pspec)
 {
-  GtkWidgetPaintable *self = GTK_WIDGET_PAINTABLE (object);
+  GtkWidgetPaintable *this = GTK_WIDGET_PAINTABLE (object);
 
   switch (prop_id)
     {
     case PROP_WIDGET:
-      g_value_set_object (value, self->widget);
+      g_value_set_object (value, this->widget);
       break;
 
     default:
@@ -188,30 +188,30 @@ gtk_widget_paintable_get_property (GObject    *object,
 }
 
 static void
-gtk_widget_paintable_unset_widget (GtkWidgetPaintable *self)
+gtk_widget_paintable_unset_widget (GtkWidgetPaintable *this)
 {
-  if (self->widget == NULL)
+  if (this->widget == NULL)
     return;
 
-  self->widget->priv->paintables = g_slist_remove (self->widget->priv->paintables,
-                                                   self);
+  this->widget->priv->paintables = g_slist_remove (this->widget->priv->paintables,
+                                                   this);
 
-  self->widget = NULL;
+  this->widget = NULL;
 
-  g_clear_object (&self->pending_image);
-  if (self->pending_update_cb)
+  g_clear_object (&this->pending_image);
+  if (this->pending_update_cb)
     {
-      g_source_remove (self->pending_update_cb);
-      self->pending_update_cb = 0;
+      g_source_remove (this->pending_update_cb);
+      this->pending_update_cb = 0;
     }
 }
 
 static void
 gtk_widget_paintable_dispose (GObject *object)
 {
-  GtkWidgetPaintable *self = GTK_WIDGET_PAINTABLE (object);
+  GtkWidgetPaintable *this = GTK_WIDGET_PAINTABLE (object);
 
-  gtk_widget_paintable_unset_widget (self);
+  gtk_widget_paintable_unset_widget (this);
 
   G_OBJECT_CLASS (gtk_widget_paintable_parent_class)->dispose (object);
 }
@@ -219,9 +219,9 @@ gtk_widget_paintable_dispose (GObject *object)
 static void
 gtk_widget_paintable_finalize (GObject *object)
 {
-  GtkWidgetPaintable *self = GTK_WIDGET_PAINTABLE (object);
+  GtkWidgetPaintable *this = GTK_WIDGET_PAINTABLE (object);
 
-  g_object_unref (self->current_image);
+  g_object_unref (this->current_image);
 
   G_OBJECT_CLASS (gtk_widget_paintable_parent_class)->finalize (object);
 }
@@ -250,9 +250,9 @@ gtk_widget_paintable_class_init (GtkWidgetPaintableClass *klass)
 }
 
 static void
-gtk_widget_paintable_init (GtkWidgetPaintable *self)
+gtk_widget_paintable_init (GtkWidgetPaintable *this)
 {
-  self->current_image = gdk_paintable_new_empty (0, 0);
+  this->current_image = gdk_paintable_new_empty (0, 0);
 }
 
 /**
@@ -274,131 +274,131 @@ gtk_widget_paintable_new (GtkWidget *widget)
 }
 
 static GdkPaintable *
-gtk_widget_paintable_snapshot_widget (GtkWidgetPaintable *self)
+gtk_widget_paintable_snapshot_widget (GtkWidgetPaintable *this)
 {
   graphene_rect_t bounds;
 
-  if (self->widget == NULL)
+  if (this->widget == NULL)
     return gdk_paintable_new_empty (0, 0);
 
-  if (!gtk_widget_compute_bounds (self->widget, self->widget, &bounds))
+  if (!gtk_widget_compute_bounds (this->widget, this->widget, &bounds))
     return gdk_paintable_new_empty (0, 0);
 
-  if (self->widget->priv->render_node == NULL)
+  if (this->widget->priv->render_node == NULL)
     return gdk_paintable_new_empty (bounds.size.width, bounds.size.height);
   
-  return gtk_render_node_paintable_new (self->widget->priv->render_node, &bounds);
+  return gtk_render_node_paintable_new (this->widget->priv->render_node, &bounds);
 }
 
 /**
  * gtk_widget_paintable_get_widget:
- * @self: a `GtkWidgetPaintable`
+ * @this: a `GtkWidgetPaintable`
  *
  * Returns the widget that is observed or %NULL if none.
  *
  * Returns: (transfer none) (nullable): the observed widget.
  */
 GtkWidget *
-gtk_widget_paintable_get_widget (GtkWidgetPaintable *self)
+gtk_widget_paintable_get_widget (GtkWidgetPaintable *this)
 {
-  g_return_val_if_fail (GTK_IS_WIDGET_PAINTABLE (self), NULL);
+  g_return_val_if_fail (GTK_IS_WIDGET_PAINTABLE (this), NULL);
 
-  return self->widget;
+  return this->widget;
 }
 
 /**
  * gtk_widget_paintable_set_widget:
- * @self: a `GtkWidgetPaintable`
+ * @this: a `GtkWidgetPaintable`
  * @widget: (nullable): the widget to observe
  *
  * Sets the widget that should be observed.
  */
 void
-gtk_widget_paintable_set_widget (GtkWidgetPaintable *self,
+gtk_widget_paintable_set_widget (GtkWidgetPaintable *this,
                                  GtkWidget          *widget)
 {
 
-  g_return_if_fail (GTK_IS_WIDGET_PAINTABLE (self));
+  g_return_if_fail (GTK_IS_WIDGET_PAINTABLE (this));
   g_return_if_fail (widget == NULL || GTK_IS_WIDGET (widget));
 
-  if (self->widget == widget)
+  if (this->widget == widget)
     return;
 
-  gtk_widget_paintable_unset_widget (self);
+  gtk_widget_paintable_unset_widget (this);
 
   /* We do not ref the widget to not cause ref cycles when a widget
    * is told to observe itself or one of its parent.
    */
-  self->widget = widget;
+  this->widget = widget;
 
   if (widget)
-    widget->priv->paintables = g_slist_prepend (widget->priv->paintables, self);
+    widget->priv->paintables = g_slist_prepend (widget->priv->paintables, this);
 
-  g_object_unref (self->current_image);
-  self->current_image = gtk_widget_paintable_snapshot_widget (self);
+  g_object_unref (this->current_image);
+  this->current_image = gtk_widget_paintable_snapshot_widget (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_WIDGET]);
-  gdk_paintable_invalidate_size (GDK_PAINTABLE (self));
-  gdk_paintable_invalidate_contents (GDK_PAINTABLE (self));
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_WIDGET]);
+  gdk_paintable_invalidate_size (GDK_PAINTABLE (this));
+  gdk_paintable_invalidate_contents (GDK_PAINTABLE (this));
 }
 
 static gboolean
 gtk_widget_paintable_update_func (gpointer data)
 {
-  GtkWidgetPaintable *self = data;
+  GtkWidgetPaintable *this = data;
   GdkPaintable *old_image;
 
-  if (self->current_image != self->pending_image)
+  if (this->current_image != this->pending_image)
     {
-      old_image = self->current_image;
-      self->current_image = self->pending_image;
-      self->pending_image = NULL;
-      self->pending_update_cb = 0;
+      old_image = this->current_image;
+      this->current_image = this->pending_image;
+      this->pending_image = NULL;
+      this->pending_update_cb = 0;
 
-      if (gdk_paintable_get_intrinsic_width (self->current_image) != gdk_paintable_get_intrinsic_width (old_image) ||
-          gdk_paintable_get_intrinsic_height (self->current_image) != gdk_paintable_get_intrinsic_height (old_image))
-        gdk_paintable_invalidate_size (GDK_PAINTABLE (self));
+      if (gdk_paintable_get_intrinsic_width (this->current_image) != gdk_paintable_get_intrinsic_width (old_image) ||
+          gdk_paintable_get_intrinsic_height (this->current_image) != gdk_paintable_get_intrinsic_height (old_image))
+        gdk_paintable_invalidate_size (GDK_PAINTABLE (this));
 
       g_object_unref (old_image);
 
-      gdk_paintable_invalidate_contents (GDK_PAINTABLE (self));
+      gdk_paintable_invalidate_contents (GDK_PAINTABLE (this));
     }
   else
     {
-      g_clear_object (&self->pending_image);
-      self->pending_update_cb = 0;
+      g_clear_object (&this->pending_image);
+      this->pending_update_cb = 0;
     }
 
   return G_SOURCE_REMOVE;
 }
 
 void
-gtk_widget_paintable_update_image (GtkWidgetPaintable *self)
+gtk_widget_paintable_update_image (GtkWidgetPaintable *this)
 {
   GdkPaintable *pending_image;
 
-  if (self->pending_update_cb == 0)
+  if (this->pending_update_cb == 0)
     {
-      self->pending_update_cb = g_idle_add_full (G_PRIORITY_HIGH,
+      this->pending_update_cb = g_idle_add_full (G_PRIORITY_HIGH,
                                                  gtk_widget_paintable_update_func,
-                                                 self,
+                                                 this,
                                                  NULL);
-      gdk_source_set_static_name_by_id (self->pending_update_cb, "[gtk] gtk_widget_paintable_update_func");
+      gdk_source_set_static_name_by_id (this->pending_update_cb, "[gtk] gtk_widget_paintable_update_func");
     }
 
-  pending_image = gtk_widget_paintable_snapshot_widget (self);
-  g_set_object (&self->pending_image, pending_image);
+  pending_image = gtk_widget_paintable_snapshot_widget (this);
+  g_set_object (&this->pending_image, pending_image);
   g_object_unref (pending_image);
 }
 
 void
-gtk_widget_paintable_push_snapshot_count (GtkWidgetPaintable *self)
+gtk_widget_paintable_push_snapshot_count (GtkWidgetPaintable *this)
 {
-  self->snapshot_count++;
+  this->snapshot_count++;
 }
 
 void
-gtk_widget_paintable_pop_snapshot_count (GtkWidgetPaintable *self)
+gtk_widget_paintable_pop_snapshot_count (GtkWidgetPaintable *this)
 {
-  self->snapshot_count--;
+  this->snapshot_count--;
 }

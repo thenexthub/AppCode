@@ -67,10 +67,10 @@ void            gdk_dihedral_get_mat2                           (GdkDihedral    
 
 GdkDihedral     gdk_dihedral_combine                            (GdkDihedral            first,
                                                                  GdkDihedral            second);
-GdkDihedral     gdk_dihedral_invert                             (GdkDihedral            self);
-gboolean        gdk_dihedral_swaps_xy                           (GdkDihedral            self);
+GdkDihedral     gdk_dihedral_invert                             (GdkDihedral            this);
+gboolean        gdk_dihedral_swaps_xy                           (GdkDihedral            this);
 
-const char *    gdk_dihedral_get_name                           (GdkDihedral            self);
+const char *    gdk_dihedral_get_name                           (GdkDihedral            this);
 
 G_END_DECLS
 

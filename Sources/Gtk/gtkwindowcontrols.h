@@ -35,27 +35,27 @@ GDK_AVAILABLE_IN_ALL
 GtkWidget *  gtk_window_controls_new                   (GtkPackType        side);
 
 GDK_AVAILABLE_IN_ALL
-GtkPackType  gtk_window_controls_get_side              (GtkWindowControls *self);
+GtkPackType  gtk_window_controls_get_side              (GtkWindowControls *this);
 
 GDK_AVAILABLE_IN_ALL
-void         gtk_window_controls_set_side              (GtkWindowControls *self,
+void         gtk_window_controls_set_side              (GtkWindowControls *this,
                                                         GtkPackType        side);
 
 GDK_AVAILABLE_IN_ALL
-const char * gtk_window_controls_get_decoration_layout (GtkWindowControls *self);
+const char * gtk_window_controls_get_decoration_layout (GtkWindowControls *this);
 
 GDK_AVAILABLE_IN_ALL
-void         gtk_window_controls_set_decoration_layout (GtkWindowControls *self,
+void         gtk_window_controls_set_decoration_layout (GtkWindowControls *this,
                                                         const char        *layout);
 
 GDK_AVAILABLE_IN_4_18
-gboolean     gtk_window_controls_get_use_native_controls (GtkWindowControls *self);
+gboolean     gtk_window_controls_get_use_native_controls (GtkWindowControls *this);
 
 GDK_AVAILABLE_IN_4_18
-void         gtk_window_controls_set_use_native_controls (GtkWindowControls *self,
+void         gtk_window_controls_set_use_native_controls (GtkWindowControls *this,
                                                           gboolean           setting);
 
 GDK_AVAILABLE_IN_ALL
-gboolean     gtk_window_controls_get_empty             (GtkWindowControls *self);
+gboolean     gtk_window_controls_get_empty             (GtkWindowControls *this);
 
 G_END_DECLS

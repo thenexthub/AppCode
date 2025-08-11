@@ -27,19 +27,19 @@ gtk_css_variable_value_new (GBytes                       *bytes,
                             GtkCssVariableValueReference *references,
                             gsize                         n_references)
 {
-  GtkCssVariableValue *self = g_new0 (GtkCssVariableValue, 1);
+  GtkCssVariableValue *this = g_new0 (GtkCssVariableValue, 1);
 
-  self->ref_count = 1;
+  this->ref_count = 1;
 
-  self->bytes = g_bytes_ref (bytes);
-  self->offset = offset;
-  self->end_offset = end_offset;
-  self->length = length;
+  this->bytes = g_bytes_ref (bytes);
+  this->offset = offset;
+  this->end_offset = end_offset;
+  this->length = length;
 
-  self->references = references;
-  self->n_references = n_references;
+  this->references = references;
+  this->n_references = n_references;
 
-  return self;
+  return this;
 }
 
 GtkCssVariableValue *
@@ -47,54 +47,54 @@ gtk_css_variable_value_new_initial (GBytes *bytes,
                                     gsize   offset,
                                     gsize   end_offset)
 {
-  GtkCssVariableValue *self = gtk_css_variable_value_new (bytes, offset, end_offset, 1, NULL, 0);
+  GtkCssVariableValue *this = gtk_css_variable_value_new (bytes, offset, end_offset, 1, NULL, 0);
 
-  self->is_invalid = TRUE;
+  this->is_invalid = TRUE;
 
-  return self;
+  return this;
 }
 
 GtkCssVariableValue *
-gtk_css_variable_value_ref (GtkCssVariableValue *self)
+gtk_css_variable_value_ref (GtkCssVariableValue *this)
 {
-  self->ref_count++;
+  this->ref_count++;
 
-  return self;
+  return this;
 }
 
 void
-gtk_css_variable_value_unref (GtkCssVariableValue *self)
+gtk_css_variable_value_unref (GtkCssVariableValue *this)
 {
   gsize i;
 
-  self->ref_count--;
-  if (self->ref_count > 0)
+  this->ref_count--;
+  if (this->ref_count > 0)
     return;
 
-  g_bytes_unref (self->bytes);
+  g_bytes_unref (this->bytes);
 
-  for (i = 0; i < self->n_references; i++)
+  for (i = 0; i < this->n_references; i++)
     {
-      GtkCssVariableValueReference *ref = &self->references[i];
+      GtkCssVariableValueReference *ref = &this->references[i];
 
       g_free (ref->name);
       if (ref->fallback)
         gtk_css_variable_value_unref (ref->fallback);
     }
 
-  if (self->section)
-    gtk_css_section_unref (self->section);
+  if (this->section)
+    gtk_css_section_unref (this->section);
 
-  g_free (self->references);
-  g_free (self);
+  g_free (this->references);
+  g_free (this);
 }
 
 void
-gtk_css_variable_value_print (GtkCssVariableValue *self,
+gtk_css_variable_value_print (GtkCssVariableValue *this,
                               GString             *string)
 {
-  gsize len = self->end_offset - self->offset;
-  gconstpointer data = g_bytes_get_region (self->bytes, 1, self->offset, len);
+  gsize len = this->end_offset - this->offset;
+  gconstpointer data = g_bytes_get_region (this->bytes, 1, this->offset, len);
 
   g_assert (data != NULL);
 
@@ -102,10 +102,10 @@ gtk_css_variable_value_print (GtkCssVariableValue *self,
 }
 
 char *
-gtk_css_variable_value_to_string (GtkCssVariableValue *self)
+gtk_css_variable_value_to_string (GtkCssVariableValue *this)
 {
   GString *string = g_string_new (NULL);
-  gtk_css_variable_value_print (self, string);
+  gtk_css_variable_value_print (this, string);
   return g_string_free (string, FALSE);
 }
 
@@ -145,14 +145,14 @@ gtk_css_variable_value_transition  (GtkCssVariableValue *start,
 }
 
 void
-gtk_css_variable_value_set_section (GtkCssVariableValue *self,
+gtk_css_variable_value_set_section (GtkCssVariableValue *this,
                                     GtkCssSection       *section)
 {
-  self->section = gtk_css_section_ref (section);
+  this->section = gtk_css_section_ref (section);
 }
 
 void
-gtk_css_variable_value_taint (GtkCssVariableValue *self)
+gtk_css_variable_value_taint (GtkCssVariableValue *this)
 {
-  self->is_animation_tainted = TRUE;
+  this->is_animation_tainted = TRUE;
 }

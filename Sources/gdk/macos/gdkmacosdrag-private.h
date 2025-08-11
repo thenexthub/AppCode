@@ -61,21 +61,21 @@ struct _GdkMacosDragClass
 };
 
 GType            gdk_macos_drag_get_type           (void) G_GNUC_CONST;
-gboolean        _gdk_macos_drag_begin              (GdkMacosDrag       *self,
+gboolean        _gdk_macos_drag_begin              (GdkMacosDrag       *this,
                                                     GdkContentProvider *content,
                                                     GdkMacosWindow     *window);
-NSDragOperation _gdk_macos_drag_operation          (GdkMacosDrag       *self);
+NSDragOperation _gdk_macos_drag_operation          (GdkMacosDrag       *this);
 GdkDragAction   _gdk_macos_drag_ns_operation_to_action
                                                    (NSDragOperation operation);
-void            _gdk_macos_drag_surface_move       (GdkMacosDrag   *self,
+void            _gdk_macos_drag_surface_move       (GdkMacosDrag   *this,
                                                     int             x_root,
                                                     int             y_root);
-void            _gdk_macos_drag_set_start_position (GdkMacosDrag   *self,
+void            _gdk_macos_drag_set_start_position (GdkMacosDrag   *this,
                                                     int             start_x,
                                                     int             start_y);
-void            _gdk_macos_drag_set_actions        (GdkMacosDrag   *self,
+void            _gdk_macos_drag_set_actions        (GdkMacosDrag   *this,
                                                     GdkModifierType mods);
-void            gdk_macos_drag_set_cursor          (GdkMacosDrag   *self,
+void            gdk_macos_drag_set_cursor          (GdkMacosDrag   *this,
                                                     GdkCursor      *cursor);
 
 

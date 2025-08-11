@@ -55,7 +55,7 @@ gdk_android_monitor_class_init (GdkAndroidMonitorClass *klass)
 }
 
 static void
-gdk_android_monitor_init (GdkAndroidMonitor *self)
+gdk_android_monitor_init (GdkAndroidMonitor *this)
 {
 }
 
@@ -66,29 +66,29 @@ gdk_android_monitor_new (GdkDisplay *display)
 }
 
 void
-gdk_android_monitor_update (GdkAndroidMonitor  *self,
+gdk_android_monitor_update (GdkAndroidMonitor  *this,
                             const GdkRectangle *bounds,
                             gfloat              density)
 {
-  gdk_monitor_set_geometry (GDK_MONITOR (self), bounds);
-  gdk_monitor_set_scale (GDK_MONITOR (self), density);
+  gdk_monitor_set_geometry (GDK_MONITOR (this), bounds);
+  gdk_monitor_set_scale (GDK_MONITOR (this), density);
 }
 
 void
-gdk_android_monitor_add_toplevel (GdkAndroidMonitor *self)
+gdk_android_monitor_add_toplevel (GdkAndroidMonitor *this)
 {
-  if (self->toplevel_counter++ == 0)
-    g_list_store_append (((GdkAndroidDisplay *) gdk_monitor_get_display ((GdkMonitor *) self))->monitors, self);
+  if (this->toplevel_counter++ == 0)
+    g_list_store_append (((GdkAndroidDisplay *) gdk_monitor_get_display ((GdkMonitor *) this))->monitors, this);
 }
 
 void
-gdk_android_monitor_drop_toplevel (GdkAndroidMonitor *self)
+gdk_android_monitor_drop_toplevel (GdkAndroidMonitor *this)
 {
-  if (--self->toplevel_counter == 0)
+  if (--this->toplevel_counter == 0)
     {
-      GListStore *monitors = ((GdkAndroidDisplay *) gdk_monitor_get_display ((GdkMonitor *) self))->monitors;
+      GListStore *monitors = ((GdkAndroidDisplay *) gdk_monitor_get_display ((GdkMonitor *) this))->monitors;
       guint index;
-      if (g_list_store_find (monitors, self, &index))
+      if (g_list_store_find (monitors, this, &index))
         g_list_store_remove (monitors, index);
     }
 }

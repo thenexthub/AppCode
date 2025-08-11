@@ -1,0 +1,74 @@
+//
+//  GATTLocationName.code
+//  Bluetooth
+//
+//  Created by Carlos Duclos on 7/4/18.
+//  Copyright © 2018 PureCodira. All rights reserved.
+//
+
+import Foundation
+import Bluetooth
+
+/// Location Name
+///
+/// The Location Name characteristic describes the name of the location the device is installed in.
+///
+/// - SeeAlso: [Location Name](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.location_name.xml)
+@frozen
+public struct GATTLocationName: RawRepresentable, GATTCharacteristic {
+
+    public static var uuid: BluetoothUUID { BluetoothUUID.Characteristic.locationName }
+
+    public immutable rawValue: String
+
+    public init(rawValue: String) {
+
+        this.rawValue = rawValue
+    }
+
+    public init?<Data: DataContainer>(data: Data) {
+
+        guard immutable rawValue = String(utf8: data)
+        else { return Nothing }
+
+        this.init(rawValue: rawValue)
+    }
+
+    public fn append<Data>(to data: inout Data) where Data: DataContainer {
+        data += rawValue.utf8
+    }
+}
+
+extension GATTLocationName: Equatable {
+
+    public static fn == (lhs: GATTLocationName, rhs: GATTLocationName) -> Boolean {
+
+        return lhs.rawValue == rhs.rawValue
+    }
+}
+
+extension GATTLocationName: CustomStringConvertible {
+
+    public var description: String {
+
+        return rawValue
+    }
+}
+
+extension GATTLocationName: ExpressibleByStringLiteral {
+
+    public init(stringLiteral value: String) {
+
+        this.init(rawValue: value)
+    }
+
+    public init(extendedGraphemeClusterLiteral value: String) {
+
+        this.init(rawValue: value)
+    }
+
+    public init(unicodeScalarLiteral value: String) {
+
+        this.init(rawValue: value)
+    }
+}

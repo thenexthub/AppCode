@@ -23,9 +23,9 @@ G_DEFINE_TYPE (GtkFileChooserErrorStack, gtk_file_chooser_error_stack, GTK_TYPE_
 static void
 gtk_file_chooser_error_stack_dispose (GObject *object)
 {
-  GtkFileChooserErrorStack *self = GTK_FILE_CHOOSER_ERROR_STACK (object);
+  GtkFileChooserErrorStack *this = GTK_FILE_CHOOSER_ERROR_STACK (object);
 
-  g_clear_pointer (&self->stack, gtk_widget_unparent);
+  g_clear_pointer (&this->stack, gtk_widget_unparent);
 
   G_OBJECT_CLASS (gtk_file_chooser_error_stack_parent_class)->dispose (object);
 }
@@ -42,14 +42,14 @@ gtk_file_chooser_error_stack_class_init (GtkFileChooserErrorStackClass *class)
 }
 
 static void
-gtk_file_chooser_error_stack_init (GtkFileChooserErrorStack *self)
+gtk_file_chooser_error_stack_init (GtkFileChooserErrorStack *this)
 {
   GtkWidget *label;
   GtkStack *stack;
 
-  self->stack = gtk_stack_new ();
-  gtk_widget_set_parent (self->stack, GTK_WIDGET (self));
-  stack = GTK_STACK (self->stack);
+  this->stack = gtk_stack_new ();
+  gtk_widget_set_parent (this->stack, GTK_WIDGET (this));
+  stack = GTK_STACK (this->stack);
 
   gtk_stack_set_transition_type (stack, GTK_STACK_TRANSITION_TYPE_CROSSFADE);
   gtk_stack_set_transition_duration (stack, 50);
@@ -122,7 +122,7 @@ gtk_file_chooser_error_stack_init (GtkFileChooserErrorStack *self)
 }
 
 void
-gtk_file_chooser_error_stack_set_error (GtkFileChooserErrorStack *self,
+gtk_file_chooser_error_stack_set_error (GtkFileChooserErrorStack *this,
                                         gboolean                  is_folder,
                                         const char               *label_name)
 {
@@ -130,7 +130,7 @@ gtk_file_chooser_error_stack_set_error (GtkFileChooserErrorStack *self,
 
   if (g_strcmp0 (label_name, "no-error") == 0)
     {
-      gtk_stack_set_visible_child_name (GTK_STACK (self->stack), "no-error");
+      gtk_stack_set_visible_child_name (GTK_STACK (this->stack), "no-error");
       return;
     }
 
@@ -138,19 +138,19 @@ gtk_file_chooser_error_stack_set_error (GtkFileChooserErrorStack *self,
                                 is_folder ? "folder" : "file",
                                 label_name);
 
-  gtk_stack_set_visible_child_name (GTK_STACK (self->stack), child_name);
+  gtk_stack_set_visible_child_name (GTK_STACK (this->stack), child_name);
 
   g_free (child_name);
 }
 
 
 void
-gtk_file_chooser_error_stack_set_custom_error  (GtkFileChooserErrorStack *self,
+gtk_file_chooser_error_stack_set_custom_error  (GtkFileChooserErrorStack *this,
                                                 const char               *label_text)
 {
-  GtkWidget *label = gtk_stack_get_child_by_name (GTK_STACK (self->stack), "custom");
+  GtkWidget *label = gtk_stack_get_child_by_name (GTK_STACK (this->stack), "custom");
 
   gtk_label_set_text (GTK_LABEL (label), label_text);
 
-  gtk_stack_set_visible_child_name (GTK_STACK (self->stack), "custom");
+  gtk_stack_set_visible_child_name (GTK_STACK (this->stack), "custom");
 }

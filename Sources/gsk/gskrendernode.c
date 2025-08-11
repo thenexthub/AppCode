@@ -17,7 +17,7 @@
  */
 
 /**
- * GskRenderNode: (ref-func gsk_render_node_ref) (unref-func gsk_render_node_unref) (set-value-func gsk_value_set_render_node) (get-value-func gsk_value_get_render_node)
+ * GskRenderNode: (ref-fn gsk_render_node_ref) (unref-fn gsk_render_node_unref) (set-value-fn gsk_value_set_render_node) (get-value-fn gsk_value_get_render_node)
  *
  * The basic block in a scene graph to be rendered using [class@Gsk.Renderer].
  *
@@ -140,9 +140,9 @@ value_render_node_lcopy_value (const GValue *value,
 }
 
 static void
-gsk_render_node_finalize (GskRenderNode *self)
+gsk_render_node_finalize (GskRenderNode *this)
 {
-  g_type_free_instance ((GTypeInstance *) self);
+  g_type_free_instance ((GTypeInstance *) this);
 }
 
 static gboolean
@@ -178,10 +178,10 @@ gsk_render_node_class_init (GskRenderNodeClass *klass)
 }
 
 static void
-gsk_render_node_init (GskRenderNode *self)
+gsk_render_node_init (GskRenderNode *this)
 {
-  g_atomic_ref_count_init (&self->ref_count);
-  self->preferred_depth = GDK_N_DEPTHS; /* illegal value */
+  g_atomic_ref_count_init (&this->ref_count);
+  this->preferred_depth = GDK_N_DEPTHS; /* illegal value */
 }
 
 GType
@@ -603,7 +603,7 @@ gsk_render_node_diff (GskRenderNode  *node1,
 
 /**
  * gsk_render_node_get_opaque_rect:
- * @self: a render node
+ * @this: a render node
  * @out_opaque: (out): return location for the opaque rect
  *
  * Gets an opaque rectangle inside the node that GTK can determine to
@@ -621,19 +621,19 @@ gsk_render_node_diff (GskRenderNode  *node1,
  * Since: 4.16
  **/
 gboolean
-gsk_render_node_get_opaque_rect (GskRenderNode   *self,
+gsk_render_node_get_opaque_rect (GskRenderNode   *this,
                                  graphene_rect_t *out_opaque)
 {
-  g_return_val_if_fail (GSK_IS_RENDER_NODE (self), FALSE);
+  g_return_val_if_fail (GSK_IS_RENDER_NODE (this), FALSE);
   g_return_val_if_fail (out_opaque != NULL, FALSE);
 
-  if (self->fully_opaque)
+  if (this->fully_opaque)
     {
-      *out_opaque = self->bounds;
+      *out_opaque = this->bounds;
       return TRUE;
     }
 
-  return GSK_RENDER_NODE_GET_CLASS (self)->get_opaque_rect (self, out_opaque);
+  return GSK_RENDER_NODE_GET_CLASS (this)->get_opaque_rect (this, out_opaque);
 }
 
 /**
@@ -643,7 +643,7 @@ gsk_render_node_get_opaque_rect (GskRenderNode   *self,
  * @error: return location for an error
  *
  * This function is equivalent to calling [method@Gsk.RenderNode.serialize]
- * followed by [func@GLib.file_set_contents].
+ * followed by [fn@GLib.file_set_contents].
  *
  * See those two functions for details on the arguments.
  *

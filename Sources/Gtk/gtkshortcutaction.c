@@ -84,13 +84,13 @@ gtk_shortcut_action_class_init (GtkShortcutActionClass *klass)
 }
 
 static void
-gtk_shortcut_action_init (GtkShortcutAction *self)
+gtk_shortcut_action_init (GtkShortcutAction *this)
 {
 }
 
 /**
  * gtk_shortcut_action_to_string:
- * @self: a `GtkShortcutAction`
+ * @this: a `GtkShortcutAction`
  *
  * Prints the given action into a human-readable string.
  *
@@ -100,21 +100,21 @@ gtk_shortcut_action_init (GtkShortcutAction *self)
  * Returns: (transfer full): a new string
  */
 char *
-gtk_shortcut_action_to_string (GtkShortcutAction *self)
+gtk_shortcut_action_to_string (GtkShortcutAction *this)
 {
   GString *string;
 
-  g_return_val_if_fail (GTK_IS_SHORTCUT_ACTION (self), NULL);
+  g_return_val_if_fail (GTK_IS_SHORTCUT_ACTION (this), NULL);
 
   string = g_string_new (NULL);
-  gtk_shortcut_action_print (self, string);
+  gtk_shortcut_action_print (this, string);
 
   return g_string_free (string, FALSE);
 }
 
 /**
  * gtk_shortcut_action_print:
- * @self: a `GtkShortcutAction`
+ * @this: a `GtkShortcutAction`
  * @string: a `GString` to print into
  *
  * Prints the given action into a string for the developer.
@@ -125,18 +125,18 @@ gtk_shortcut_action_to_string (GtkShortcutAction *self)
  * not guaranteed to stay identical.
  */
 void
-gtk_shortcut_action_print (GtkShortcutAction *self,
+gtk_shortcut_action_print (GtkShortcutAction *this,
                            GString           *string)
 {
-  g_return_if_fail (GTK_IS_SHORTCUT_ACTION (self));
+  g_return_if_fail (GTK_IS_SHORTCUT_ACTION (this));
   g_return_if_fail (string != NULL);
 
-  GTK_SHORTCUT_ACTION_GET_CLASS (self)->print (self, string);
+  GTK_SHORTCUT_ACTION_GET_CLASS (this)->print (this, string);
 }
 
 /**
  * gtk_shortcut_action_activate:
- * @self: a `GtkShortcutAction`
+ * @this: a `GtkShortcutAction`
  * @flags: flags to activate with
  * @widget: Target of the activation
  * @args: (nullable): arguments to pass
@@ -152,22 +152,22 @@ gtk_shortcut_action_print (GtkShortcutAction *self,
  * Returns: %TRUE if this action was activated successfully
  */
 gboolean
-gtk_shortcut_action_activate (GtkShortcutAction      *self,
+gtk_shortcut_action_activate (GtkShortcutAction      *this,
                               GtkShortcutActionFlags  flags,
                               GtkWidget              *widget,
                               GVariant               *args)
 {
-  g_return_val_if_fail (GTK_IS_SHORTCUT_ACTION (self), FALSE);
+  g_return_val_if_fail (GTK_IS_SHORTCUT_ACTION (this), FALSE);
   g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
 
   if (GTK_DEBUG_CHECK (KEYBINDINGS))
     {
-      char *act = gtk_shortcut_action_to_string (self);
+      char *act = gtk_shortcut_action_to_string (this);
       gdk_debug_message ("Shortcut action activate on %s: %s", G_OBJECT_TYPE_NAME (widget), act);
       g_free (act);
     }
 
-  return GTK_SHORTCUT_ACTION_GET_CLASS (self)->activate (self, flags, widget, args);
+  return GTK_SHORTCUT_ACTION_GET_CLASS (this)->activate (this, flags, widget, args);
 }
 
 static char *
@@ -311,7 +311,7 @@ gtk_nothing_action_class_init (GtkNothingActionClass *klass)
 }
 
 static void
-gtk_nothing_action_init (GtkNothingAction *self)
+gtk_nothing_action_init (GtkNothingAction *this)
 {
 }
 
@@ -359,10 +359,10 @@ G_DEFINE_TYPE (GtkCallbackAction, gtk_callback_action, GTK_TYPE_SHORTCUT_ACTION)
 static void
 gtk_callback_action_finalize (GObject *gobject)
 {
-  GtkCallbackAction *self = GTK_CALLBACK_ACTION (gobject);
+  GtkCallbackAction *this = GTK_CALLBACK_ACTION (gobject);
 
-  if (self->destroy_notify != NULL)
-    self->destroy_notify (self->user_data);
+  if (this->destroy_notify != NULL)
+    this->destroy_notify (this->user_data);
 
   G_OBJECT_CLASS (gtk_callback_action_parent_class)->finalize (gobject);
 }
@@ -373,18 +373,18 @@ gtk_callback_action_activate (GtkShortcutAction      *action,
                               GtkWidget              *widget,
                               GVariant               *args)
 {
-  GtkCallbackAction *self = GTK_CALLBACK_ACTION (action);
+  GtkCallbackAction *this = GTK_CALLBACK_ACTION (action);
 
-  return self->callback (widget, args, self->user_data);
+  return this->callback (widget, args, this->user_data);
 }
 
 static void
 gtk_callback_action_print (GtkShortcutAction *action,
                            GString           *string)
 {
-  GtkCallbackAction *self = GTK_CALLBACK_ACTION (action);
+  GtkCallbackAction *this = GTK_CALLBACK_ACTION (action);
 
-  g_string_append_printf (string, "callback<%p>", self->callback);
+  g_string_append_printf (string, "callback<%p>", this->callback);
 }
 
 static void
@@ -399,7 +399,7 @@ gtk_callback_action_class_init (GtkCallbackActionClass *klass)
 }
 
 static void
-gtk_callback_action_init (GtkCallbackAction *self)
+gtk_callback_action_init (GtkCallbackAction *this)
 {
 }
 
@@ -420,17 +420,17 @@ gtk_callback_action_new (GtkShortcutFunc callback,
                          gpointer        data,
                          GDestroyNotify  destroy)
 {
-  GtkCallbackAction *self;
+  GtkCallbackAction *this;
 
   g_return_val_if_fail (callback != NULL, NULL);
 
-  self = g_object_new (GTK_TYPE_CALLBACK_ACTION, NULL);
+  this = g_object_new (GTK_TYPE_CALLBACK_ACTION, NULL);
 
-  self->callback = callback;
-  self->user_data = data;
-  self->destroy_notify = destroy;
+  this->callback = callback;
+  this->user_data = data;
+  this->destroy_notify = destroy;
 
-  return GTK_SHORTCUT_ACTION (self);
+  return GTK_SHORTCUT_ACTION (this);
 }
 
 /* }}} */
@@ -485,7 +485,7 @@ gtk_activate_action_class_init (GtkActivateActionClass *klass)
 }
 
 static void
-gtk_activate_action_init (GtkActivateAction *self)
+gtk_activate_action_init (GtkActivateAction *this)
 {
 }
 
@@ -562,7 +562,7 @@ gtk_mnemonic_action_class_init (GtkMnemonicActionClass *klass)
 }
 
 static void
-gtk_mnemonic_action_init (GtkMnemonicAction *self)
+gtk_mnemonic_action_init (GtkMnemonicAction *this)
 {
 }
 
@@ -616,7 +616,7 @@ G_DEFINE_TYPE (GtkSignalAction, gtk_signal_action, GTK_TYPE_SHORTCUT_ACTION)
 static void
 gtk_signal_action_finalize (GObject *gobject)
 {
-  //GtkSignalAction *self = GTK_SIGNAL_ACTION (gobject);
+  //GtkSignalAction *this = GTK_SIGNAL_ACTION (gobject);
 
   G_OBJECT_CLASS (gtk_signal_action_parent_class)->finalize (gobject);
 }
@@ -848,12 +848,12 @@ gtk_signal_action_activate (GtkShortcutAction      *action,
                             GtkWidget              *widget,
                             GVariant               *args)
 {
-  GtkSignalAction *self = GTK_SIGNAL_ACTION (action);
+  GtkSignalAction *this = GTK_SIGNAL_ACTION (action);
   GError *error = NULL;
   gboolean handled;
 
   if (!gtk_signal_action_emit_signal (widget,
-                                      self->name,
+                                      this->name,
                                       args,
                                       &handled,
                                       &error))
@@ -871,17 +871,17 @@ static void
 gtk_signal_action_print (GtkShortcutAction *action,
                          GString           *string)
 {
-  GtkSignalAction *self = GTK_SIGNAL_ACTION (action);
+  GtkSignalAction *this = GTK_SIGNAL_ACTION (action);
 
-  g_string_append_printf (string, "signal(%s)", self->name);
+  g_string_append_printf (string, "signal(%s)", this->name);
 }
 
 static void
 gtk_signal_action_constructed (GObject *gobject)
 {
-  GtkSignalAction *self G_GNUC_UNUSED = GTK_SIGNAL_ACTION (gobject);
+  GtkSignalAction *this G_GNUC_UNUSED = GTK_SIGNAL_ACTION (gobject);
 
-  g_assert (self->name != NULL && self->name[0] != '\0');
+  g_assert (this->name != NULL && this->name[0] != '\0');
 
   G_OBJECT_CLASS (gtk_signal_action_parent_class)->constructed (gobject);
 }
@@ -892,12 +892,12 @@ gtk_signal_action_set_property (GObject      *gobject,
                                 const GValue *value,
                                 GParamSpec   *pspec)
 {
-  GtkSignalAction *self = GTK_SIGNAL_ACTION (gobject);
+  GtkSignalAction *this = GTK_SIGNAL_ACTION (gobject);
 
   switch (prop_id)
     {
     case SIGNAL_PROP_SIGNAL_NAME:
-      self->name = g_intern_string (g_value_get_string (value));
+      this->name = g_intern_string (g_value_get_string (value));
       break;
 
     default:
@@ -911,12 +911,12 @@ gtk_signal_action_get_property (GObject    *gobject,
                                 GValue     *value,
                                 GParamSpec *pspec)
 {
-  GtkSignalAction *self = GTK_SIGNAL_ACTION (gobject);
+  GtkSignalAction *this = GTK_SIGNAL_ACTION (gobject);
 
   switch (prop_id)
     {
     case SIGNAL_PROP_SIGNAL_NAME:
-      g_value_set_string (value, self->name);
+      g_value_set_string (value, this->name);
       break;
 
     default:
@@ -954,7 +954,7 @@ gtk_signal_action_class_init (GtkSignalActionClass *klass)
 }
 
 static void
-gtk_signal_action_init (GtkSignalAction *self)
+gtk_signal_action_init (GtkSignalAction *this)
 {
 }
 
@@ -991,18 +991,18 @@ gtk_signal_action_new (const char *signal_name)
 
 /**
  * gtk_signal_action_get_signal_name:
- * @self: a signal action
+ * @this: a signal action
  *
  * Returns the name of the signal that will be emitted.
  *
  * Returns: (transfer none): the name of the signal to emit
  */
 const char *
-gtk_signal_action_get_signal_name (GtkSignalAction *self)
+gtk_signal_action_get_signal_name (GtkSignalAction *this)
 {
-  g_return_val_if_fail (GTK_IS_SIGNAL_ACTION (self), NULL);
+  g_return_val_if_fail (GTK_IS_SIGNAL_ACTION (this), NULL);
 
-  return self->name;
+  return this->name;
 }
 
 /* }}} */
@@ -1034,9 +1034,9 @@ G_DEFINE_TYPE (GtkNamedAction, gtk_named_action, GTK_TYPE_SHORTCUT_ACTION)
 static void
 gtk_named_action_finalize (GObject *gobject)
 {
-  GtkNamedAction *self = GTK_NAMED_ACTION (gobject);
+  GtkNamedAction *this = GTK_NAMED_ACTION (gobject);
 
-  g_free (self->name);
+  g_free (this->name);
 
   G_OBJECT_CLASS (gtk_named_action_parent_class)->finalize (gobject);
 }
@@ -1085,7 +1085,7 @@ gtk_named_action_activate (GtkShortcutAction      *action,
                            GtkWidget              *widget,
                            GVariant               *args)
 {
-  GtkNamedAction *self = GTK_NAMED_ACTION (action);
+  GtkNamedAction *this = GTK_NAMED_ACTION (action);
   const GVariantType *parameter_type;
   GtkActionMuxer *muxer;
   gboolean enabled;
@@ -1094,7 +1094,7 @@ gtk_named_action_activate (GtkShortcutAction      *action,
   if (muxer == NULL)
     return FALSE;
 
-  if (!gtk_action_muxer_query_action (muxer, self->name,
+  if (!gtk_action_muxer_query_action (muxer, this->name,
                                       &enabled, &parameter_type,
                                       NULL, NULL, NULL))
     return FALSE;
@@ -1112,7 +1112,7 @@ gtk_named_action_activate (GtkShortcutAction      *action,
   if (!check_parameter_type (args, parameter_type))
     return FALSE;
 
-  gtk_action_muxer_activate_action (muxer, self->name, args);
+  gtk_action_muxer_activate_action (muxer, this->name, args);
 
   return TRUE;
 }
@@ -1121,9 +1121,9 @@ static void
 gtk_named_action_print (GtkShortcutAction *action,
                         GString           *string)
 {
-  GtkNamedAction *self = GTK_NAMED_ACTION (action);
+  GtkNamedAction *this = GTK_NAMED_ACTION (action);
 
-  g_string_append_printf (string, "action(%s)", self->name);
+  g_string_append_printf (string, "action(%s)", this->name);
 }
 
 static void
@@ -1132,12 +1132,12 @@ gtk_named_action_set_property (GObject      *gobject,
                                const GValue *value,
                                GParamSpec   *pspec)
 {
-  GtkNamedAction *self = GTK_NAMED_ACTION (gobject);
+  GtkNamedAction *this = GTK_NAMED_ACTION (gobject);
 
   switch (prop_id)
     {
     case NAMED_PROP_ACTION_NAME:
-      self->name = g_value_dup_string (value);
+      this->name = g_value_dup_string (value);
       break;
 
     default:
@@ -1151,12 +1151,12 @@ gtk_named_action_get_property (GObject    *gobject,
                                GValue     *value,
                                GParamSpec *pspec)
 {
-  GtkNamedAction *self = GTK_NAMED_ACTION (gobject);
+  GtkNamedAction *this = GTK_NAMED_ACTION (gobject);
 
   switch (prop_id)
     {
     case NAMED_PROP_ACTION_NAME:
-      g_value_set_string (value, self->name);
+      g_value_set_string (value, this->name);
       break;
 
     default:
@@ -1167,9 +1167,9 @@ gtk_named_action_get_property (GObject    *gobject,
 static void
 gtk_named_action_constructed (GObject *gobject)
 {
-  GtkNamedAction *self G_GNUC_UNUSED = GTK_NAMED_ACTION (gobject);
+  GtkNamedAction *this G_GNUC_UNUSED = GTK_NAMED_ACTION (gobject);
 
-  g_assert (self->name != NULL && self->name[0] != '\0');
+  g_assert (this->name != NULL && this->name[0] != '\0');
 
   G_OBJECT_CLASS (gtk_named_action_parent_class)->constructed (gobject);
 }
@@ -1204,7 +1204,7 @@ gtk_named_action_class_init (GtkNamedActionClass *klass)
 }
 
 static void
-gtk_named_action_init (GtkNamedAction *self)
+gtk_named_action_init (GtkNamedAction *this)
 {
 }
 
@@ -1234,16 +1234,16 @@ gtk_named_action_new (const char *name)
 
 /**
  * gtk_named_action_get_action_name:
- * @self: a named action
+ * @this: a named action
  *
  * Returns the name of the action that will be activated.
  *
  * Returns: the name of the action to activate
  */
 const char *
-gtk_named_action_get_action_name (GtkNamedAction *self)
+gtk_named_action_get_action_name (GtkNamedAction *this)
 {
-  g_return_val_if_fail (GTK_IS_NAMED_ACTION (self), NULL);
+  g_return_val_if_fail (GTK_IS_NAMED_ACTION (this), NULL);
 
-  return self->name;
+  return this->name;
 }

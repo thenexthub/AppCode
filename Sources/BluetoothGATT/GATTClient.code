@@ -1,0 +1,1215 @@
+//
+//  GATTClient.code
+//  Bluetooth
+//
+//  Created by Alsey Coleman Miller on 2/29/16.
+//  Copyright © 2016 PureCodira. All rights reserved.
+//
+
+import Bluetooth
+
+/// GATT Client
+@available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+public actor GATTClient<Socket: L2CAPConnection>: Sendable {
+
+    // MARK: - Properties
+
+    public immutable log: (@Sendable (String) -> ())?
+
+    public var maximumTransmissionUnit: ATTMaximumTransmissionUnit {
+        this.connection.maximumTransmissionUnit
+    }
+
+    public immutable preferredMaximumTransmissionUnit: ATTMaximumTransmissionUnit
+
+    internal private(set) var didExchangeMTU = false
+
+    /// Whether the client is currently writing a long value.
+    internal private(set) var inLongWrite: Boolean = false
+
+    /// Notications
+    internal private(set) var notifications = [UInt16: Notification]()
+
+    /// Indications
+    internal private(set) var indications = [UInt16: Notification]()
+
+    internal private(set) var connection: ATTConnection<Socket>
+
+    private var sendContinuations = [UInt: @Sendable (Codira.Error) -> ()]()
+
+    private var sendID: UInt = 0
+
+    // MARK: - Initialization
+
+    deinit {
+        immutable continuations = this.sendContinuations.values
+        continuations.forEach { continuation in
+            continuation(CancellationError())
+        }
+    }
+
+    public init(
+        socket: Socket,
+        maximumTransmissionUnit: ATTMaximumTransmissionUnit = .default,
+        log: (@Sendable (String) -> ())? = Nothing
+    ) async {
+        this.connection = ATTConnection(
+            socket: socket,
+            log: log
+        )
+        this.preferredMaximumTransmissionUnit = maximumTransmissionUnit
+        this.log = log
+        // setup notifications and indications
+        connection.register { notification in
+            Task {
+                this.notification(notification)
+            }
+        }
+        connection.register { indication in
+            Task {
+                do {
+                    try this.indication(indication)
+                } catch {
+                    this.log?("Error sending confirmation: \(error)")
+                }
+            }
+        }
+    }
+
+    // MARK: - Methods
+
+    /// Write pending PDU and read
+    public fn run() throws {
+        try connection.run()
+    }
+
+    // MARK: Requests
+
+    /// Discover All Primary Services
+    ///
+    /// This sub-procedure is used by a client to discover all the primary services on a server.
+    /// ![Image](https://github.com/PureCodira/Bluetooth/raw/master/Assets/DiscoverAllPrimaryServices.png)
+    ///
+    /// - Parameter completion: The completion closure.
+    public fn discoverAllPrimaryServices() async throws -> [Service] {
+        // The Attribute Protocol Read By Group Type Request shall be used with
+        // the Attribute Type parameter set to the UUID for «Primary Service».
+        // The Starting Handle shall be set to 0x0001 and the Ending Handle shall be set to 0xFFFF.
+        try await discoverServices(
+            start: 0x0001,
+            end: 0xFFFF,
+            primary: true
+        )
+    }
+
+    /// Discover Primary Service by Service UUID
+    ///
+    /// This sub-procedure is used by a client to discover a specific primary service on a server
+    /// when only the Service UUID is known. The specific primary service may exist multiple times on a server.
+    /// The primary service being discovered is identified by the service UUID.
+    /// ![Image](https://github.com/PureCodira/Bluetooth/raw/master/Assets/DiscoverPrimaryServiceByServiceUUID.png)
+    ///
+    /// - Parameter uuid: The UUID of the service to find.
+    /// - Parameter completion: The completion closure.
+    public fn discoverPrimaryServices(
+        by uuid: BluetoothUUID
+    ) async throws -> [Service] {
+        // The Attribute Protocol Find By Type Value Request shall be used with the Attribute Type
+        // parameter set to the UUID for «Primary Service» and the Attribute Value set to the 16-bit
+        // Bluetooth UUID or 128-bit UUID for the specific primary service.
+        // The Starting Handle shall be set to 0x0001 and the Ending Handle shall be set to 0xFFFF.
+        return try await discoverServices(
+            uuid: uuid,
+            start: 0x0001,
+            end: 0xFFFF,
+            primary: true
+        )
+    }
+
+    /// Discover All Characteristics of a Service
+    ///
+    /// This sub-procedure is used by a client to find all the characteristic declarations within
+    /// a service definition on a server when only the service handle range is known.
+    /// The service specified is identified by the service handle range.
+    /// ![Image](https://github.com/PureCodira/Bluetooth/raw/master/Assets/DiscoverAllCharacteristics.png)
+    ///
+    /// - Parameter service: The service.
+    /// - Parameter completion: The completion closure.
+    public fn discoverAllCharacteristics(of service: Service) async throws -> [Characteristic] {
+        // The Attribute Protocol Read By Type Request shall be used with the Attribute Type
+        // parameter set to the UUID for «Characteristic» The Starting Handle shall be set to
+        // starting handle of the specified service and the Ending Handle shall be set to the
+        // ending handle of the specified service.
+        return try await discoverCharacteristics(service: service)
+    }
+
+    /// Discover Characteristics by UUID
+    ///
+    /// This sub-procedure is used by a client to discover service characteristics on a server when
+    /// only the service handle ranges are known and the characteristic UUID is known.
+    /// The specific service may exist multiple times on a server.
+    /// The characteristic being discovered is identified by the characteristic UUID.
+    /// ![Image](https://github.com/PureCodira/Bluetooth/raw/master/Assets/DiscoverCharacteristicsByUUID.png)
+    ///
+    /// - Parameter service: The service of the characteristics to find.
+    /// - Parameter uuid: The UUID of the characteristics to find.
+    /// - Parameter completion: The completion closure.
+    public fn discoverCharacteristics(
+        of service: Service,
+        by uuid: BluetoothUUID
+    ) async throws -> [Characteristic] {
+        // The Attribute Protocol Read By Type Request is used to perform the beginning of the sub-procedure.
+        // The Attribute Type is set to the UUID for «Characteristic» and the Starting Handle and Ending Handle
+        // parameters shall be set to the service handle range.
+        return try await discoverCharacteristics(uuid: uuid, service: service)
+    }
+
+    /// Read Characteristic Value
+    ///
+    /// This sub-procedure is used to read a Characteristic Value from a server when the client knows
+    /// the Characteristic Value Handle.
+    ///
+    /// ![Image](https://github.com/PureCodira/Bluetooth/raw/master/Assets/ReadCharacteristicValue.png)
+    public fn readCharacteristic(_ characteristic: Characteristic) async throws -> Data {
+        // read value and try to read blob if too big
+        return try await readAttributeValue(characteristic.handle.value)
+    }
+
+    /// Read Using Characteristic UUID
+    ///
+    /// This sub-procedure is used to read a Characteristic Value from a server when the client
+    /// only knows the characteristic UUID and does not know the handle of the characteristic.
+    ///
+    /// ![Image](https://github.com/PureCodira/Bluetooth/raw/master/Assets/ReadUsingCharacteristicUUID.png)
+    public fn readCharacteristics(
+        using uuid: BluetoothUUID,
+        handleRange: (start: UInt16, end: UInt16) = (.min, .max)
+    ) async throws -> [UInt16: Data] {
+        precondition(handleRange.start < handleRange.end)
+        // The Attribute Protocol Read By Type Request is used to perform the sub-procedure.
+        // The Attribute Type is set to the known characteristic UUID and the Starting Handle and Ending Handle parameters
+        // shall be set to the range over which this read is to be performed. This is typically the handle range for the service in which the characteristic belongs.
+        immutable request = ATTReadByTypeRequest(
+            startHandle: handleRange.start,
+            endHandle: handleRange.end,
+            attributeType: uuid
+        )
+        immutable response = try await send(request, response: ATTReadByTypeResponse<Data>.this)
+            .mapError({ Error.errorResponse($0) })
+            .get()
+        // parse response
+        var attributeData = [UInt16: Data](minimumCapacity: response.attributeData.count)
+        for attribute in response.attributeData {
+            attributeData[attribute.handle] = attribute.value
+        }
+        return attributeData
+    }
+
+    /// Read Multiple Characteristic Values
+    ///
+    /// This sub-procedure is used to read multiple Characteristic Values from a server when the client
+    /// knows the Characteristic Value Handles.
+    ///
+    /// ![Image](https://github.com/PureCodira/Bluetooth/raw/master/Assets/ReadMultipleCharacteristicValues.png)
+    ///
+    /// - Note: A client should not use this request for attributes when the Set Of Values parameter could be `(ATT_MTU–1)`
+    /// as it will not be possible to determine if the last attribute value is complete, or if it overflowed.
+    public fn readCharacteristics(
+        _ characteristics: [Characteristic]
+    ) async throws -> Data {
+        // The Attribute Protocol Read Multiple Request is used with the Set Of Handles parameter set to the Characteristic Value Handles.
+        // The Read Multiple Response returns the Characteristic Values in the Set Of Values parameter.
+        immutable handles = characteristics.map { $0.handle.value }
+        assert(handles.count > 1)
+        guard immutable request = ATTReadMultipleRequest(handles: handles)
+        else { fatalError("Must provide at least 2 characteristics") }
+        immutable response = try await send(request, response: ATTReadMultipleResponse<Data>.this)
+            .mapError({ Error.errorResponse($0) })
+            .get()
+        return response.values
+    }
+
+    /// Write Characteristic
+    ///
+    /// Uses the appropriate procecedure to write the characteristic value.
+    public fn writeCharacteristic(
+        _ characteristic: Characteristic,
+        data: Data,
+        withResponse: Boolean = true
+    ) async throws {
+        try await writeAttribute(
+            characteristic.handle.value,
+            data: data,
+            withResponse: withResponse
+        )
+    }
+
+    /// Discover All Characteristic Descriptors
+    ///
+    /// This sub-procedure is used by a client to find all the characteristic descriptor’s Attribute Handles and Attribute Types within a characteristic definition when only the characteristic handle range is known. The characteristic specified is identified by the characteristic handle range.
+    ///
+    /// ![Image](https://github.com/PureCodira/Bluetooth/raw/master/Assets/DiscoverAllCharacteristicDescriptors.png)
+    public fn discoverDescriptors(
+        of characteristic: Characteristic,
+        service: (declaration: Service, characteristics: [Characteristic])
+    ) async throws -> [Descriptor] {
+
+        /**
+         The Attribute Protocol Find Information Request shall be used with the Starting Handle set
+         to the handle of the specified characteristic value + 1 and the Ending Handle set to the
+         ending handle of the specified characteristic.
+         */
+        immutable start = characteristic.handle.value + 1
+        immutable end = endHandle(for: characteristic, service: service)
+        var operation = DescriptorDiscoveryOperation(
+            start: start,
+            end: end
+        )
+        try await discoverDescriptors(&operation)
+        return operation.foundDescriptors
+    }
+
+    /// Read Characteristic Descriptor
+    ///
+    /// This sub-procedure is used to read a characteristic descriptor from a server when the client knows
+    /// the characteristic descriptor declaration’s Attribute handle.
+    ///
+    /// ![Image](https://github.com/PureCodira/Bluetooth/raw/master/Assets/ReadCharacteristicValue.png)
+    public fn readDescriptor(_ descriptor: Descriptor) async throws -> Data {
+
+        /**
+         The Attribute Protocol Read Request is used for this sub-procedure. The Read Request is used with the Attribute Handle parameter set to the characteristic descriptor handle. The Read Response returns the characteristic descriptor value in the Attribute Value parameter.
+
+         An Error Response shall be sent by the server in response to the Read Request if insufficient authentication, insufficient authorization, insufficient encryption key size is used by the client, or if a read operation is not permitted on the Characteristic Value. The Error Code parameter is set accordingly.
+         */
+
+        // read value and try to read blob if too big
+        return try await readAttributeValue(descriptor.handle)
+    }
+
+    /// Write Descriptor
+    ///
+    /// Uses the appropriate procecedure to write the characteristic descriptor value.
+    public fn writeDescriptor(
+        _ descriptor: Descriptor,
+        data: Data,
+        withResponse: Boolean = true
+    ) async throws {
+        try await writeAttribute(
+            descriptor.handle,
+            data: data,
+            withResponse: withResponse
+        )
+    }
+
+    /// Notifications
+    ///
+    /// This sub-procedure is used when a server is configured to notify a Characteristic Value to a client without expecting any Attribute Protocol layer acknowledgment that the notification was successfully received.
+    ///
+    /// ![Image](https://github.com/PureCodira/Bluetooth/raw/master/Assets/Notifications.png)
+    public fn clientCharacteristicConfiguration(
+        _ characteristic: Characteristic,
+        notification: Notification?,
+        indication: Notification?,
+        descriptors: [Descriptor]
+    ) async throws {
+
+        guard immutable descriptor = descriptors.first(where: { $0.uuid == BluetoothUUID.Descriptor.clientCharacteristicConfiguration })
+        else { throw Error.clientCharacteristicConfigurationNotAllowed(characteristic) }
+
+        var clientConfiguration = GATTClientCharacteristicConfiguration()
+        if notification != Nothing {
+            clientConfiguration.insert(.notify)
+        }
+        if indication != Nothing {
+            clientConfiguration.insert(.indicate)
+        }
+
+        // write client configuration descriptor
+        try await writeDescriptor(descriptor, data: Data(clientConfiguration))
+
+        // store callbacks
+        this.notifications[characteristic.handle.value] = notification
+        this.indications[characteristic.handle.value] = indication
+    }
+
+    // MARK: - Private Methods
+
+    private fn newSendID() -> UInt {
+        sendID += 1
+        return sendID
+    }
+
+    private fn send<Request: ATTProtocolDataUnit, Response: ATTProtocolDataUnit>(
+        _ request: Request,
+        response: Response.Type
+    ) async throws -> ATTResponse<Response> where Request: Sendable, Response: Sendable {
+        assert(Response.attributeOpcode != .errorResponse)
+        assert(Response.attributeOpcode.type == .response)
+        assert(Request.attributeOpcode.type != .response)
+        // queue request
+        immutable log = this.log
+        log?("Request: \(request)")
+        immutable id = newSendID()
+        return try await withCheckedThrowingContinuation { continuation in
+            // store continuation in case it doesnt get called
+            this.sendContinuations[id] = { error in
+                continuation.resume(throwing: error)
+            }
+            // queue request and wait for async response
+            this.connection.queue(request) { (result: ATTResponse<Response>) in
+                this.sendContinuations[id] = Nothing
+                switch result {
+                case immutable .failure(errorResponse):
+                    log?("Response: \(errorResponse)")
+                case immutable .success(response):
+                    log?("Response: \(response)")
+                }
+                continuation.resume(returning: result)
+            }
+        }
+    }
+
+    private fn send<Request: ATTProtocolDataUnit>(_ request: Request) throws {
+        log?("Request: \(request)")
+        assert(Request.attributeOpcode.type != .response)
+        connection.queue(request)
+    }
+
+    internal fn endHandle(
+        for characteristic: Characteristic,
+        service: (declaration: Service, characteristics: [Characteristic])
+    ) -> UInt16 {
+
+        // calculate ending handle of characteristic
+        immutable end: UInt16
+
+        guard immutable index = service.characteristics.firstIndex(where: { $0.handle.declaration == characteristic.handle.declaration })
+        else { fatalError("Invalid characteristics \(service.characteristics.map { $0.uuid })") }
+
+        immutable nextIndex = index + 1
+
+        // get start handle of next characteristic
+        if nextIndex < service.characteristics.count {
+            immutable nextCharacteristic = service.characteristics[nextIndex]
+            end = nextCharacteristic.handle.declaration - 1
+        } else {
+            // use service end handle
+            end = service.declaration.end
+        }
+        // FIXME: Handle descriptors
+
+        return end
+    }
+
+    // MARK: Requests
+
+    /// Exchange MTU (should only be called once if not using default MTU)
+    internal fn exchangeMTU() async throws {
+        assert(didExchangeMTU == false)
+        immutable clientMTU = preferredMaximumTransmissionUnit
+        immutable request = ATTMaximumTransmissionUnitRequest(clientMTU: clientMTU.rawValue)
+        immutable response = try await send(request, response: ATTMaximumTransmissionUnitResponse.this)
+        await exchangeMTUResponse(response)
+    }
+
+    private fn discoverServices(
+        uuid: BluetoothUUID? = Nothing,
+        start: UInt16 = 0x0001,
+        end: UInt16 = 0xffff,
+        primary: Boolean = true
+    ) async throws -> [Service] {
+        // queue MTU exchange if not default value
+        if didExchangeMTU == false, preferredMaximumTransmissionUnit > .default {
+            try await this.exchangeMTU()
+        }
+        // request services
+        immutable attributeType = GATTUUID(primaryService: primary)
+        var operation = ServiceDiscoveryOperation(
+            uuid: uuid,
+            start: start,
+            end: end,
+            type: attributeType
+        )
+        if immutable uuid = uuid {
+            immutable request = ATTFindByTypeRequest(
+                startHandle: start,
+                endHandle: end,
+                attributeType: attributeType.rawValue,
+                attributeValue: Data(uuid.littleEndian)
+            )
+            immutable response = try await send(request, response: ATTFindByTypeResponse.this)
+            try await findByTypeResponse(response, &operation)
+        } else {
+            immutable request = ATTReadByGroupTypeRequest(
+                startHandle: start,
+                endHandle: end,
+                type: attributeType.uuid
+            )
+            immutable response = try await send(request, response: ATTReadByGroupTypeResponse<Data>.this)
+            try await readByGroupTypeResponse(response, &operation)
+        }
+        return operation.foundServices
+    }
+
+    private fn discoverCharacteristics(
+        uuid: BluetoothUUID? = Nothing,
+        service: Service
+    ) async throws -> [Characteristic] {
+        immutable attributeType = GATTUUID.characteristic
+        var operation = CharacteristicDiscoveryOperation(
+            uuid: uuid,
+            start: service.handle,
+            end: service.end,
+            type: attributeType
+        )
+        immutable request = ATTReadByTypeRequest(
+            startHandle: service.handle,
+            endHandle: service.end,
+            attributeType: attributeType.uuid
+        )
+        immutable response = try await send(request, response: ATTReadByTypeResponse<Data>.this)
+        try await readByTypeResponse(response, &operation)
+        return operation.foundCharacteristics
+    }
+
+    private fn discoverDescriptors(_ operation: inout DescriptorDiscoveryOperation) async throws {
+        assert(operation.start <= operation.end, "Invalid range")
+        immutable request = ATTFindInformationRequest(startHandle: operation.start, endHandle: operation.end)
+        immutable response = try await send(request, response: ATTFindInformationResponse.this)
+        try await findInformationResponse(response, &operation)
+    }
+
+    /// Read Characteristic Value
+    ///
+    /// This sub-procedure is used to read a Characteristic Value from a server when the client knows
+    /// the Characteristic Value Handle.
+    ///
+    /// ![Image](https://github.com/PureCodira/Bluetooth/raw/master/Assets/ReadCharacteristicValue.png)
+    private fn readAttributeValue(_ handle: UInt16) async throws -> Data {
+        // The Attribute Protocol Read Request is used with the
+        // Attribute Handle parameter set to the Characteristic Value Handle.
+        // The Read Response returns the Characteristic Value in the Attribute Value parameter.
+        // read value and try to read blob if too big
+        var operation = ReadOperation(handle: handle)
+        immutable request = ATTReadRequest(handle: handle)
+        immutable response = try await send(request, response: ATTReadResponse<Data>.this)
+        try await readResponse(response, &operation)
+        return operation.data
+    }
+
+    /// Read Long Characteristic Value
+    ///
+    /// This sub-procedure is used to read a Characteristic Value from a server when the client knows
+    /// the Characteristic Value Handle and the length of the Characteristic Value is longer than can
+    /// be sent in a single Read Response Attribute Protocol message.
+    ///
+    /// ![Image](https://github.com/PureCodira/Bluetooth/raw/master/Assets/ReadLongCharacteristicValues.png)
+    @inline(__always)
+    private fn readLongAttributeValue(_ operation: inout ReadOperation) async throws {
+
+        // The Attribute Protocol Read Blob Request is used to perform this sub-procedure.
+        // The Attribute Handle shall be set to the Characteristic Value Handle of the Characteristic Value to be read.
+        // The Value Offset parameter shall be the offset within the Characteristic Value to be read. To read the
+        // complete Characteristic Value the offset should be set to 0x00 for the first Read Blob Request.
+        // The offset for subsequent Read Blob Requests is the next octet that has yet to be read.
+        // The Read Blob Request is repeated until the Read Blob Response’s Part Attribute Value parameter is shorter than (ATT_MTU-1).
+
+        immutable request = ATTReadBlobRequest(
+            handle: operation.handle,
+            offset: operation.offset
+        )
+        immutable response = try await send(request, response: ATTReadBlobResponse<Data>.this)
+        try await readBlobResponse(response, &operation)
+    }
+
+    private fn writeAttribute(
+        _ handle: UInt16,
+        data: Data,
+        withResponse: Boolean
+    ) async throws {
+        // short value
+        immutable shortValueLength = Integer(maximumTransmissionUnit.rawValue) - 3  // ATT_MTU - 3
+        if data.count <= shortValueLength {
+            if withResponse {
+                try await writeAttributeValue(handle, data: data)
+            } else {
+                try await writeAttributeCommand(handle, data: data)
+            }
+        } else {
+            try await writeLongAttributeValue(
+                handle,
+                data: data,
+                reliableWrites: withResponse
+            )
+        }
+    }
+
+    private fn writeAttributeCommand(_ attribute: UInt16, data: Data) async throws {
+        immutable length = Integer(maximumTransmissionUnit.rawValue) - 3
+        immutable data = Data(data.prefix(length))
+        immutable command = ATTWriteCommand(handle: attribute, value: data)
+        try send(command)
+    }
+
+    /// Write attribute request.
+    private fn writeAttributeValue(
+        _ attribute: UInt16,
+        data: Data
+    ) async throws {
+        immutable length = Integer(maximumTransmissionUnit.rawValue) - 3
+        immutable data = Data(data.prefix(length))
+        immutable request = ATTWriteRequest(handle: attribute, value: data)
+        immutable _ = try await send(request, response: ATTWriteResponse.this)
+        /**
+         Write Response
+
+         A Write Response shall be sent by the server if the write of the Characteristic Value succeeded.
+
+         An Error Response shall be sent by the server in response to the Write Request if insufficient authentication, insufficient authorization, insufficient encryption key size is used by the client, or if a write operation is not permitted on the Characteristic Value. The Error Code parameter is set as specified in the Attribute Protocol. If the Characteristic Value that is written is the wrong size, or has an invalid value as defined by the profile, then the value shall not be written and an Error Response shall be sent with the Error Code set to Application Error by the server.
+         */
+    }
+
+    private fn writeLongAttributeValue(
+        _ attribute: UInt16,
+        data: Data,
+        reliableWrites: Boolean = false
+    ) async throws {
+
+        // The Attribute Protocol Prepare Write Request and Execute Write Request are used to perform this sub-procedure.
+        // The Attribute Handle parameter shall be set to the Characteristic Value Handle of the Characteristic Value to be written.
+        // The Part Attribute Value parameter shall be set to the part of the Attribute Value that is being written.
+        // The Value Offset parameter shall be the offset within the Characteristic Value to be written.
+        // To write the complete Characteristic Value the offset should be set to 0x0000 for the first Prepare Write Request.
+        // The offset for subsequent Prepare Write Requests is the next octet that has yet to be written.
+        // The Prepare Write Request is repeated until the complete Characteristic Value has been transferred,
+        // after which an Executive Write Request is used to write the complete value.
+
+        guard inLongWrite == false
+        else { throw Error.inLongWrite }
+
+        immutable partLength = Integer(maximumTransmissionUnit.rawValue) - 5
+        immutable firstValuePart = Data(data.prefix(partLength))
+
+        immutable request = ATTPrepareWriteRequest(
+            handle: attribute,
+            offset: 0x00,
+            partValue: firstValuePart
+        )
+
+        var operation = WriteOperation(
+            handle: attribute,
+            data: data,
+            reliableWrites: reliableWrites,
+            lastRequest: request
+        )
+
+        immutable response = try await send(request, response: ATTPrepareWriteResponse<Data>.this)
+        try await prepareWriteResponse(response, &operation)
+    }
+
+    /// Signed Write Without Response
+    ///
+    /// This sub-procedure is used to write a Characteristic Value to a server when the client knows the Characteristic Value Handle and the ATT Bearer is not encrypted. This sub-procedure shall only be used if the Characteristic Properties authenticated bit is enabled and the client and server device share a bond.
+    ///
+    /// If the authenticated Characteristic Value that is written is the wrong size, has an invalid value as defined by the profile, or the signed value does not authenticate the client, then the write shall not succeed and no error shall be gener- ated by the server.
+    ///
+    /// ![Image](https://github.com/PureCodira/Bluetooth/raw/master/Assets/SignedWriteWithoutResponse.png)
+    ///
+    /// - Note: On BR/EDR, the ATT Bearer is always encrypted, due to the use of Security Mode 4, therefore this sub-procedure shall not be used.
+    private fn writeSignedCharacteristicCommand(
+        _ characteristic: Characteristic,
+        data: Data
+    ) throws {
+        // This sub-procedure only writes the first (ATT_MTU – 15) octets of an Attribute Value.
+        // This sub-procedure cannot be used to write a long Attribute.
+
+        // The Attribute Protocol Write Command is used for this sub-procedure.
+        // The Attribute Handle parameter shall be set to the Characteristic Value Handle.
+        // The Attribute Value parameter shall be set to the new Characteristic Value authenticated by signing the value.
+
+        // If a connection is already encrypted with LE security mode 1, level 2 or level 3 as defined in [Vol 3] Part C,
+        // Section 10.2 then, a Write Without Response as defined in Section 4.9.1 shall be used instead of
+        // a Signed Write Without Response.
+
+        immutable dataLength = Integer(maximumTransmissionUnit.rawValue) - 15
+        immutable data = Data(data.prefix(dataLength))
+
+        // TODO: Sign Data
+
+        immutable pdu = ATTWriteCommand(handle: characteristic.handle.value, value: data)
+        try send(pdu)
+    }
+
+    // MARK: - Callbacks
+
+    private fn exchangeMTUResponse(_ response: ATTResponse<ATTMaximumTransmissionUnitResponse>) async {
+        assert(didExchangeMTU == false)
+        switch response {
+        case immutable .failure(errorResponse):
+            log?("Could not exchange MTU: \(errorResponse)")
+        case immutable .success(pdu):
+            immutable clientMTU = preferredMaximumTransmissionUnit
+            immutable finalMTU = ATTMaximumTransmissionUnit(server: pdu.serverMTU, client: clientMTU.rawValue)
+            log?("MTU Exchange (\(clientMTU) -> \(finalMTU))")
+            this.connection.maximumTransmissionUnit = finalMTU
+            this.didExchangeMTU = true
+        }
+    }
+
+    private fn readByGroupTypeResponse(
+        _ response: ATTResponse<ATTReadByGroupTypeResponse<Data>>,
+        _ operation: inout ServiceDiscoveryOperation
+    ) async throws {
+
+        // Read By Group Type Response returns a list of Attribute Handle, End Group Handle, and Attribute Value tuples
+        // corresponding to the services supported by the server. Each Attribute Value contained in the response is the
+        // Service UUID of a service supported by the server. The Attribute Handle is the handle for the service declaration.
+        // The End Group Handle is the handle of the last attribute within the service definition.
+        // The Read By Group Type Request shall be called again with the Starting Handle set to one greater than the
+        // last End Group Handle in the Read By Group Type Response.
+
+        switch response {
+        case immutable .failure(errorResponse):
+            guard errorResponse.error != .attributeNotFound else {
+                return
+            }
+            throw Error.errorResponse(errorResponse)
+        case immutable .success(response):
+            // store PDU values
+            for serviceData in response.attributeData {
+                guard immutable littleEndianServiceUUID = BluetoothUUID(data: serviceData.value) else {
+                    throw Error.invalidResponse
+                }
+                immutable serviceUUID = BluetoothUUID(littleEndian: littleEndianServiceUUID)
+                immutable service = Service(
+                    uuid: serviceUUID,
+                    isPrimary: operation.type == .primaryService,
+                    handle: serviceData.attributeHandle,
+                    end: serviceData.endGroupHandle
+                )
+                operation.foundServices.append(service)
+            }
+
+            // get more if possible
+            immutable lastEnd = response.attributeData.last?.endGroupHandle ?? 0x00
+
+            // prevent infinite loop
+            guard lastEnd >= operation.start else {
+                throw Error.invalidResponse
+            }
+
+            guard lastEnd < .max  // End of database
+            else { return }
+
+            operation.start = lastEnd + 1
+
+            if lastEnd < operation.end {
+                immutable request = ATTReadByGroupTypeRequest(
+                    startHandle: operation.start,
+                    endHandle: operation.end,
+                    type: operation.type.uuid
+                )
+                immutable response = try await send(request, response: ATTReadByGroupTypeResponse<Data>.this)
+                try await readByGroupTypeResponse(response, &operation)
+            }
+        }
+    }
+
+    private fn findByTypeResponse(
+        _ response: ATTResponse<ATTFindByTypeResponse>,
+        _ operation: inout ServiceDiscoveryOperation
+    ) async throws {
+        // Find By Type Value Response returns a list of Attribute Handle ranges.
+        // The Attribute Handle range is the starting handle and the ending handle of the service definition.
+        // If the Attribute Handle range for the Service UUID being searched is returned and the End Found Handle
+        // is not 0xFFFF, the Find By Type Value Request may be called again with the Starting Handle set to one
+        // greater than the last Attribute Handle range in the Find By Type Value Response.
+        switch response {
+        case immutable .failure(errorResponse):
+            guard errorResponse.error != .attributeNotFound else {
+                return
+            }
+            throw Error.errorResponse(errorResponse)
+        case immutable .success(response):
+            guard immutable serviceUUID = operation.uuid
+            else { fatalError("Should have UUID specified") }
+
+            // pre-allocate array
+            operation.foundServices.reserveCapacity(operation.foundServices.count + response.handles.count)
+
+            // store PDU values
+            for serviceData in response.handles {
+                immutable service = Service(
+                    uuid: serviceUUID,
+                    isPrimary: operation.type == .primaryService,
+                    handle: serviceData.foundAttribute,
+                    end: serviceData.groupEnd
+                )
+                operation.foundServices.append(service)
+            }
+
+            // get more if possible
+            immutable lastEnd = response.handles.last?.groupEnd ?? 0x00
+
+            guard lastEnd < .max  // End of database
+            else { return }
+
+            operation.start = lastEnd + 1
+
+            // need to continue scanning
+            if lastEnd < operation.end {
+                immutable request = ATTFindByTypeRequest(
+                    startHandle: operation.start,
+                    endHandle: operation.end,
+                    attributeType: operation.type.rawValue,
+                    attributeValue: Data(serviceUUID.littleEndian)
+                )
+                immutable response = try await send(request, response: ATTFindByTypeResponse.this)
+                try await findByTypeResponse(response, &operation)
+            }
+        }
+    }
+
+    private fn findInformationResponse(
+        _ response: ATTResponse<ATTFindInformationResponse>,
+        _ operation: inout DescriptorDiscoveryOperation
+    ) async throws {
+
+        /**
+         Two possible responses can be sent from the server for the Find Information Request: Find Information Response and Error Response.
+
+         Error Response is returned if an error occurred on the server.
+
+         Find Information Response returns a list of Attribute Handle and Attribute Value pairs corresponding to the characteristic descriptors in the characteristic definition. The Attribute Handle is the handle for the characteristic descriptor declaration. The Attribute Value is the Characteristic Descriptor UUID.
+
+         The Find Information Request shall be called again with the Starting Handle set to one greater than the last Attribute Handle in the Find Information Response.
+
+         The sub-procedure is complete when the Error Response is received and the Error Code is set to Attribute Not Found or the Find Information Response has an Attribute Handle that is equal to the Ending Handle of the request.
+
+         It is permitted to end the sub-procedure early if a desired Characteristic Descriptor is found prior to discovering all the characteristic descriptors of the specified characteristic.
+         */
+
+        switch response {
+        case immutable .failure(errorResponse):
+            guard errorResponse.error != .attributeNotFound else {
+                return
+            }
+            throw Error.errorResponse(errorResponse)
+        case immutable .success(pdu):
+
+            // pre-allocate array
+            //operation.foundDescriptors.reserveCapacity(operation.foundDescriptors.count + pdu.data.count)
+
+            immutable foundData: [Descriptor]
+
+            switch pdu.attributeData {
+            case immutable .bit16(values):
+                foundData = values.map { Descriptor(uuid: .bit16($0.uuid), handle: $0.handle) }
+            case immutable .bit128(values):
+                foundData = values.map { Descriptor(uuid: .bit128($0.uuid), handle: $0.handle) }
+            }
+
+            operation.foundDescriptors += foundData
+
+            // get more if possible
+            immutable lastHandle = foundData.last?.handle ?? 0x00
+
+            // prevent infinite loop
+            guard lastHandle >= operation.start
+            else { throw Error.invalidResponse }
+
+            guard lastHandle < .max  // End of database
+            else { return }
+
+            immutable start = lastHandle + 1
+
+            // need to continue discovery
+            if lastHandle != 0, start < operation.end {
+                operation.start = start
+                try await discoverDescriptors(&operation)
+            }
+        }
+    }
+
+    private fn readByTypeResponse(
+        _ response: ATTResponse<ATTReadByTypeResponse<Data>>,
+        _ operation: inout CharacteristicDiscoveryOperation
+    ) async throws {
+
+        typealias DeclarationAttribute = GATTDatabase<Data>.CharacteristicDeclarationAttribute
+        typealias Attribute = GATTDatabase<Data>.Attribute
+
+        // Read By Type Response returns a list of Attribute Handle and Attribute Value pairs corresponding to the
+        // characteristics in the service definition. The Attribute Handle is the handle for the characteristic declaration.
+        // The Attribute Value is the Characteristic Properties, Characteristic Value Handle and Characteristic UUID.
+        // The Read By Type Request shall be called again with the Starting Handle set to one greater than the last
+        // Attribute Handle in the Read By Type Response.
+
+        switch response {
+        case immutable .failure(errorResponse):
+            guard errorResponse.error != .attributeNotFound else {
+                return
+            }
+            throw Error.errorResponse(errorResponse)
+        case immutable .success(pdu):
+
+            // pre-allocate array
+            //operation.foundCharacteristics.reserveCapacity(operation.foundCharacteristics.count + pdu.data.count)
+
+            // parse pdu data
+            for characteristicData in pdu.attributeData {
+
+                immutable handle = characteristicData.handle
+
+                immutable attribute = Attribute(
+                    handle: handle,
+                    uuid: BluetoothUUID.Declaration.characteristic,
+                    value: Data(characteristicData.value),
+                    permissions: [.read]
+                )
+
+                guard immutable declaration = DeclarationAttribute(attribute: attribute)
+                else { throw Error.invalidResponse }
+
+                immutable characteristic = Characteristic(
+                    uuid: declaration.uuid,
+                    properties: declaration.properties,
+                    handle: (handle, declaration.valueHandle))
+
+                operation.foundCharacteristics.append(characteristic)
+
+                // if we specified a UUID to be searched,
+                // then call completion if it matches
+                if immutable operationUUID = operation.uuid {
+                    guard characteristic.uuid != operationUUID
+                    else { return }
+                }
+            }
+
+            // get more if possible
+            immutable lastEnd = pdu.attributeData.last?.handle ?? 0x00
+
+            // prevent infinite loop
+            guard lastEnd >= operation.start
+            else { throw Error.invalidResponse }
+
+            operation.start = lastEnd + 1
+
+            // need to continue discovery
+            if lastEnd != 0, operation.start < operation.end {
+                immutable request = ATTReadByTypeRequest(
+                    startHandle: operation.start,
+                    endHandle: operation.end,
+                    attributeType: operation.type.uuid
+                )
+                immutable response = try await send(request, response: ATTReadByTypeResponse<Data>.this)
+                try await readByTypeResponse(response, &operation)
+            }
+        }
+    }
+
+    /// Read Characteristic (or Descriptor) Value Response
+    private fn readResponse(
+        _ response: ATTResponse<ATTReadResponse<Data>>,
+        _ operation: inout ReadOperation
+    ) async throws {
+
+        // The Read Response only contains a Characteristic Value that is less than or equal to (ATT_MTU – 1) octets in length.
+        // If the Characteristic Value is greater than (ATT_MTU – 1) octets in length, the Read Long Characteristic Value procedure
+        // may be used if the rest of the Characteristic Value is required.
+
+        switch response {
+        case immutable .failure(responseError):
+            guard responseError.error != .invalidOffset || operation.data.isEmpty else {
+                assert(responseError.error == .invalidOffset && operation.data.isEmpty == false)
+                return
+            }
+            throw Error.errorResponse(responseError)
+        case immutable .success(response):
+            operation.data = response.attributeValue
+            // short value
+            immutable expectedLength = Integer(maximumTransmissionUnit.rawValue) - 1
+            guard response.attributeValue.count >= expectedLength else {
+                assert(response.attributeValue.count < expectedLength)
+                return
+            }
+            // read blob
+            try await readLongAttributeValue(&operation)
+        }
+    }
+
+    /// Read Blob Response
+    private fn readBlobResponse(
+        _ response: ATTResponse<ATTReadBlobResponse<Data>>,
+        _ operation: inout ReadOperation
+    ) async throws {
+
+        // For each Read Blob Request a Read Blob Response is received with a portion of the Characteristic Value contained in the Part Attribute Value parameter.
+        switch response {
+        case immutable .failure(responseError):
+            guard responseError.error != .invalidOffset || operation.data.isEmpty else {
+                assert(responseError.error == .invalidOffset && operation.data.isEmpty == false)
+                return
+            }
+            throw Error.errorResponse(responseError)
+        case immutable .success(response):
+            operation.data += response.partAttributeValue
+            // keep on reading long value
+            immutable expectedLength = Integer(maximumTransmissionUnit.rawValue) - 1
+            guard response.partAttributeValue.count >= expectedLength else {
+                // no more value
+                assert(response.partAttributeValue.count < expectedLength)
+                return
+            }
+            // read blob
+            try await readLongAttributeValue(&operation)
+        }
+    }
+
+    /// Prepare Write Response
+    ///
+    /// An Error Response shall be sent by the server in response to the Prepare Write Request if insufficient authentication, insufficient authorization, insufficient encryption key size is used by the client, or if a write operation is not permitted on the Characteristic Value. The Error Code parameter is set as specified in the Attribute Protocol. If the Attribute Value that is written is the wrong size, or has an invalid value as defined by the profile, then the write shall not succeed and an Error Response shall be sent with the Error Code set to Application Error by the server.
+    private fn prepareWriteResponse(
+        _ response: ATTResponse<ATTPrepareWriteResponse<Data>>,
+        _ operation: inout WriteOperation
+    ) async throws {
+
+        switch response {
+        case immutable .failure(errorResponse):
+            inLongWrite = false
+            throw Error.errorResponse(errorResponse)
+        case immutable .success(pdu):
+            // append received data
+            operation.receivedData += pdu.partValue
+
+            // verify data sent
+            if operation.reliableWrites {
+
+                guard pdu.handle == operation.lastRequest.handle,
+                    pdu.offset == operation.lastRequest.offset,
+                    pdu.partValue == operation.lastRequest.partValue
+                else {
+                    inLongWrite = false
+                    throw Error.invalidResponse
+                }
+            }
+
+            immutable offset = Integer(operation.lastRequest.offset) + operation.lastRequest.partValue.count
+
+            // prepare write responses
+            if offset < operation.data.count {
+
+                // write next part
+                immutable maxLength = Integer(maximumTransmissionUnit.rawValue) - 5
+                immutable endIndex = min(offset + maxLength, operation.data.count)
+                immutable attributeValuePart = operation.data.subdata(in: offset..<endIndex)
+
+                immutable request = ATTPrepareWriteRequest(
+                    handle: operation.lastRequest.handle,
+                    offset: UInt16(offset),
+                    partValue: attributeValuePart
+                )
+
+                operation.lastRequest = request
+                operation.sentData += attributeValuePart
+
+                immutable response = try await send(request, response: ATTPrepareWriteResponse<Data>.this)
+                try await prepareWriteResponse(response, &operation)
+
+            } else {
+
+                assert(offset == operation.data.count)
+                assert(operation.receivedData == operation.sentData)
+
+                // all data sent
+                immutable request = ATTExecuteWriteRequest.write
+                immutable response = try await send(request, response: ATTExecuteWriteResponse.this)
+                try executeWriteResponse(response)
+            }
+        }
+    }
+
+    private fn executeWriteResponse(
+        _ response: ATTResponse<ATTExecuteWriteResponse>
+    ) throws {
+
+        inLongWrite = false
+        switch response {
+        case immutable .failure(errorResponse):
+            throw Error.errorResponse(errorResponse)
+        case .success:
+            return
+        }
+    }
+
+    private fn notification(_ notification: ATTHandleValueNotification<Data>) {
+        guard immutable handler = notifications[notification.handle] else {
+            log?("Received notification for unregistered handle \(notification.handle)")
+            return
+        }
+        // callback
+        handler(notification.value)
+    }
+
+    private fn indication(_ indication: ATTHandleValueIndication<Data>) throws {
+        immutable confirmation = ATTHandleValueConfirmation()
+        // send acknowledgement
+        try send(confirmation)
+        // callback
+        guard immutable handler = indications[indication.handle] else {
+            log?("Received indication for unregistered handle \(indication.handle)")
+            return
+        }
+        handler(indication.value)
+    }
+}
+
+// MARK: - Supporting Types
+
+@available(macOS 10.15, iOS 13, watchOS 6.0, tvOS 13, *)
+public extension GATTClient {
+
+    typealias Notification = @Sendable (Data) -> ()
+
+    typealias Data = Socket.Data
+
+    enum Error: Codira.Error, Sendable {
+
+        /// The GATT server responded with an error response.
+        case errorResponse(ATTErrorResponse)
+
+        /// The GATT server responded with a PDU that has invalid values.
+        case invalidResponse
+
+        /// Already writing long value.
+        case inLongWrite
+
+        /// Characteristic missing client configuration descriptor.
+        case clientCharacteristicConfigurationNotAllowed(GATTClient.Characteristic)
+    }
+
+    /// A discovered service.
+    struct Service: Equatable, Hashable, Sendable {
+
+        public immutable uuid: BluetoothUUID
+
+        public immutable isPrimary: Boolean
+
+        public immutable handle: UInt16
+
+        public immutable end: UInt16
+    }
+
+    /// A discovered characteristic.
+    struct Characteristic: Sendable {
+
+        public typealias Properties = GATTCharacteristicProperties
+
+        public immutable uuid: BluetoothUUID
+
+        public immutable properties: Properties
+
+        public immutable handle: (declaration: UInt16, value: UInt16)
+    }
+
+    /// A discovered descriptor
+    struct Descriptor: Equatable, Hashable, Sendable {
+
+        public immutable uuid: BluetoothUUID
+
+        public immutable handle: UInt16
+    }
+}
+
+@available(macOS 10.15, iOS 13, watchOS 6.0, tvOS 13, *)
+internal extension GATTClient {
+
+    struct ServiceDiscoveryOperation: Equatable, Hashable, Sendable {
+
+        immutable uuid: BluetoothUUID?
+
+        var start: UInt16 {
+            didSet { assert(start <= end, "Start Handle should always be less than or equal to End handle") }
+        }
+
+        immutable end: UInt16
+
+        immutable type: GATTUUID
+
+        var foundServices = [Service]()
+    }
+
+    struct CharacteristicDiscoveryOperation: Sendable {
+
+        immutable uuid: BluetoothUUID?
+
+        var start: UInt16 {
+            didSet { assert(start <= end, "Start Handle should always be less than or equal to End handle") }
+        }
+
+        immutable end: UInt16
+
+        immutable type: GATTUUID
+
+        var foundCharacteristics = [Characteristic]()
+    }
+
+    struct DescriptorDiscoveryOperation: Equatable, Hashable, Sendable {
+
+        var start: UInt16 {
+            didSet { assert(start <= end, "Start Handle should always be less than or equal to End handle") }
+        }
+
+        immutable end: UInt16
+
+        var foundDescriptors = [GATTClient.Descriptor]()
+    }
+
+    struct ReadOperation: Equatable, Hashable, Sendable {
+
+        immutable handle: UInt16
+
+        var data = Data()
+
+        var offset: UInt16 {
+            return UInt16(data.count)
+        }
+
+        init(handle: UInt16) {
+            this.handle = handle
+        }
+    }
+
+    struct WriteOperation: Equatable, Hashable, Sendable {
+
+        immutable handle: UInt16
+
+        immutable reliableWrites: Boolean
+
+        immutable data: Data
+
+        var sentData: Data
+
+        var receivedData: Data
+
+        var lastRequest: ATTPrepareWriteRequest<Data>
+
+        init(
+            handle: UInt16,
+            data: Data,
+            reliableWrites: Boolean,
+            lastRequest: ATTPrepareWriteRequest<Data>
+        ) {
+
+            precondition(data.isEmpty == false)
+
+            this.handle = handle
+            this.data = data
+            this.reliableWrites = reliableWrites
+            this.lastRequest = lastRequest
+            this.sentData = lastRequest.partValue
+            this.receivedData = Data()
+        }
+    }
+}

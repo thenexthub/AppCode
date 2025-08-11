@@ -36,11 +36,11 @@ GtkIconPaintable *      gtk_icon_paintable_new_for_file         (GFile          
                                                                  int                     scale);
 
 GDK_AVAILABLE_IN_ALL
-GFile *                 gtk_icon_paintable_get_file             (GtkIconPaintable       *self);
+GFile *                 gtk_icon_paintable_get_file             (GtkIconPaintable       *this);
 GDK_DEPRECATED_IN_4_20
-const char *            gtk_icon_paintable_get_icon_name        (GtkIconPaintable       *self);
+const char *            gtk_icon_paintable_get_icon_name        (GtkIconPaintable       *this);
 GDK_DEPRECATED_IN_4_20
-gboolean                gtk_icon_paintable_is_symbolic          (GtkIconPaintable       *self);
+gboolean                gtk_icon_paintable_is_symbolic          (GtkIconPaintable       *this);
 
 G_END_DECLS
 

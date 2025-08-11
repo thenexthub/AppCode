@@ -35,23 +35,23 @@ GDK_AVAILABLE_IN_ALL
 GType                   gsk_transform_get_type                  (void) G_GNUC_CONST;
 
 GDK_AVAILABLE_IN_ALL
-GskTransform *          gsk_transform_ref                       (GskTransform                   *self);
+GskTransform *          gsk_transform_ref                       (GskTransform                   *this);
 GDK_AVAILABLE_IN_ALL
-void                    gsk_transform_unref                     (GskTransform                   *self);
+void                    gsk_transform_unref                     (GskTransform                   *this);
 
 GDK_AVAILABLE_IN_ALL
-void                    gsk_transform_print                     (GskTransform                   *self,
+void                    gsk_transform_print                     (GskTransform                   *this,
                                                                  GString                        *string);
 GDK_AVAILABLE_IN_ALL
-char *                  gsk_transform_to_string                 (GskTransform                   *self);
+char *                  gsk_transform_to_string                 (GskTransform                   *this);
 GDK_AVAILABLE_IN_ALL
 gboolean                gsk_transform_parse                     (const char                     *string,
                                                                  GskTransform                  **out_transform);
 GDK_AVAILABLE_IN_ALL
-void                    gsk_transform_to_matrix                 (GskTransform                   *self,
+void                    gsk_transform_to_matrix                 (GskTransform                   *this,
                                                                  graphene_matrix_t              *out_matrix);
 GDK_AVAILABLE_IN_ALL
-void                    gsk_transform_to_2d                     (GskTransform                   *self,
+void                    gsk_transform_to_2d                     (GskTransform                   *this,
                                                                  float                          *out_xx,
                                                                  float                          *out_yx,
                                                                  float                          *out_xy,
@@ -59,7 +59,7 @@ void                    gsk_transform_to_2d                     (GskTransform   
                                                                  float                          *out_dx,
                                                                  float                          *out_dy);
 GDK_AVAILABLE_IN_4_6
-void                    gsk_transform_to_2d_components          (GskTransform                   *self,
+void                    gsk_transform_to_2d_components          (GskTransform                   *this,
                                                                  float                          *out_skew_x,
                                                                  float                          *out_skew_y,
                                                                  float                          *out_scale_x,
@@ -68,18 +68,18 @@ void                    gsk_transform_to_2d_components          (GskTransform   
                                                                  float                          *out_dx,
                                                                  float                          *out_dy);
 GDK_AVAILABLE_IN_ALL
-void                    gsk_transform_to_affine                 (GskTransform                   *self,
+void                    gsk_transform_to_affine                 (GskTransform                   *this,
                                                                  float                          *out_scale_x,
                                                                  float                          *out_scale_y,
                                                                  float                          *out_dx,
                                                                  float                          *out_dy);
 GDK_AVAILABLE_IN_ALL
-void                    gsk_transform_to_translate              (GskTransform                   *self,
+void                    gsk_transform_to_translate              (GskTransform                   *this,
                                                                  float                          *out_dx,
                                                                  float                          *out_dy);
 
 GDK_AVAILABLE_IN_ALL
-GskTransformCategory    gsk_transform_get_category              (GskTransform                   *self) G_GNUC_PURE;
+GskTransformCategory    gsk_transform_get_category              (GskTransform                   *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_ALL
 gboolean                gsk_transform_equal                     (GskTransform                   *first,
                                                                  GskTransform                   *second) G_GNUC_PURE;
@@ -90,7 +90,7 @@ GDK_AVAILABLE_IN_ALL
 GskTransform *          gsk_transform_transform                 (GskTransform                   *next,
                                                                  GskTransform                   *other) G_GNUC_WARN_UNUSED_RESULT;
 GDK_AVAILABLE_IN_ALL
-GskTransform *          gsk_transform_invert                    (GskTransform                   *self) G_GNUC_WARN_UNUSED_RESULT;
+GskTransform *          gsk_transform_invert                    (GskTransform                   *this) G_GNUC_WARN_UNUSED_RESULT;
 GDK_AVAILABLE_IN_ALL
 GskTransform *          gsk_transform_matrix                    (GskTransform                   *next,
                                                                  const graphene_matrix_t        *matrix) G_GNUC_WARN_UNUSED_RESULT;
@@ -125,11 +125,11 @@ GskTransform *          gsk_transform_perspective               (GskTransform   
                                                                  float                           depth) G_GNUC_WARN_UNUSED_RESULT;
 
 GDK_AVAILABLE_IN_ALL
-void                    gsk_transform_transform_bounds          (GskTransform                   *self,
+void                    gsk_transform_transform_bounds          (GskTransform                   *this,
                                                                  const graphene_rect_t          *rect,
                                                                  graphene_rect_t                *out_rect);
 GDK_AVAILABLE_IN_ALL
-void                    gsk_transform_transform_point           (GskTransform                   *self,
+void                    gsk_transform_transform_point           (GskTransform                   *this,
                                                                  const graphene_point_t          *point,
                                                                  graphene_point_t                *out_point);
 

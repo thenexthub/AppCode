@@ -69,36 +69,36 @@ G_STATIC_ASSERT (G_STRUCT_OFFSET (GdkColor, a) == G_STRUCT_OFFSET (GdkColor, val
   .values = { (r), (g), (b), (a) } \
 }
 
-void              gdk_color_init                (GdkColor               *self,
+void              gdk_color_init                (GdkColor               *this,
                                                  GdkColorState          *color_state,
                                                  const float             values[4]);
-void              gdk_color_init_copy           (GdkColor               *self,
+void              gdk_color_init_copy           (GdkColor               *this,
                                                  const GdkColor         *color);
-void              gdk_color_init_from_rgba      (GdkColor               *self,
+void              gdk_color_init_from_rgba      (GdkColor               *this,
                                                  const GdkRGBA          *rgba);
-void              gdk_color_finish              (GdkColor               *self);
+void              gdk_color_finish              (GdkColor               *this);
 
-gboolean          gdk_color_equal               (const GdkColor         *self,
+gboolean          gdk_color_equal               (const GdkColor         *this,
                                                  const GdkColor         *other);
-gboolean          gdk_color_is_clear            (const GdkColor         *self);
-gboolean          gdk_color_is_opaque           (const GdkColor         *self);
+gboolean          gdk_color_is_clear            (const GdkColor         *this);
+gboolean          gdk_color_is_opaque           (const GdkColor         *this);
 
-void              gdk_color_convert             (GdkColor               *self,
+void              gdk_color_convert             (GdkColor               *this,
                                                  GdkColorState          *color_state,
                                                  const GdkColor         *other);
 
-void              gdk_color_to_float            (const GdkColor         *self,
+void              gdk_color_to_float            (const GdkColor         *this,
                                                  GdkColorState          *target,
                                                  float                   values[4]);
 
-void              gdk_color_from_rgba           (GdkColor               *self,
+void              gdk_color_from_rgba           (GdkColor               *this,
                                                  GdkColorState          *color_state,
                                                  const GdkRGBA          *rgba);
 
-void              gdk_color_print               (const GdkColor         *self,
+void              gdk_color_print               (const GdkColor         *this,
                                                  GString                *string);
 
-char *            gdk_color_to_string           (const GdkColor         *self);
+char *            gdk_color_to_string           (const GdkColor         *this);
 
 #include "gdkcolorimpl.h"
 

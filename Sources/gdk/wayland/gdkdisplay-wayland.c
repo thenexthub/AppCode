@@ -1020,9 +1020,9 @@ _gdk_wayland_display_get_keymap (GdkDisplay *display)
 static GListModel *
 gdk_wayland_display_get_monitors (GdkDisplay *display)
 {
-  GdkWaylandDisplay *self = GDK_WAYLAND_DISPLAY (display);
+  GdkWaylandDisplay *this = GDK_WAYLAND_DISPLAY (display);
 
-  return G_LIST_MODEL (self->monitors);
+  return G_LIST_MODEL (this->monitors);
 }
 
 static GdkMonitor *

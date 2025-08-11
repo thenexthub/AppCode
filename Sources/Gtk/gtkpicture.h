@@ -49,47 +49,47 @@ GDK_AVAILABLE_IN_ALL
 GtkWidget*      gtk_picture_new_for_resource            (const char             *resource_path);
 
 GDK_AVAILABLE_IN_ALL
-void            gtk_picture_set_paintable               (GtkPicture             *self,
+void            gtk_picture_set_paintable               (GtkPicture             *this,
                                                          GdkPaintable           *paintable);
 GDK_AVAILABLE_IN_ALL
-GdkPaintable *  gtk_picture_get_paintable               (GtkPicture             *self);
+GdkPaintable *  gtk_picture_get_paintable               (GtkPicture             *this);
 GDK_AVAILABLE_IN_ALL
-void            gtk_picture_set_file                    (GtkPicture             *self,
+void            gtk_picture_set_file                    (GtkPicture             *this,
                                                          GFile                  *file);
 GDK_AVAILABLE_IN_ALL
-GFile *         gtk_picture_get_file                    (GtkPicture             *self);
+GFile *         gtk_picture_get_file                    (GtkPicture             *this);
 GDK_AVAILABLE_IN_ALL
-void            gtk_picture_set_filename                (GtkPicture             *self,
+void            gtk_picture_set_filename                (GtkPicture             *this,
                                                          const char             *filename);
 GDK_AVAILABLE_IN_ALL
-void            gtk_picture_set_resource                (GtkPicture             *self,
+void            gtk_picture_set_resource                (GtkPicture             *this,
                                                          const char             *resource_path);
 GDK_DEPRECATED_IN_4_12_FOR(gtk_picture_set_paintable)
-void            gtk_picture_set_pixbuf                  (GtkPicture             *self,
+void            gtk_picture_set_pixbuf                  (GtkPicture             *this,
                                                          GdkPixbuf              *pixbuf);
 
 GDK_DEPRECATED_IN_4_8_FOR(gtk_picture_set_content_fit)
-void            gtk_picture_set_keep_aspect_ratio       (GtkPicture             *self,
+void            gtk_picture_set_keep_aspect_ratio       (GtkPicture             *this,
                                                          gboolean                keep_aspect_ratio);
 GDK_DEPRECATED_IN_4_8_FOR(gtk_picture_get_content_fit)
-gboolean        gtk_picture_get_keep_aspect_ratio       (GtkPicture             *self);
+gboolean        gtk_picture_get_keep_aspect_ratio       (GtkPicture             *this);
 GDK_AVAILABLE_IN_ALL
-void            gtk_picture_set_can_shrink              (GtkPicture             *self,
+void            gtk_picture_set_can_shrink              (GtkPicture             *this,
                                                          gboolean                can_shrink);
 GDK_AVAILABLE_IN_ALL
-gboolean        gtk_picture_get_can_shrink              (GtkPicture             *self);
+gboolean        gtk_picture_get_can_shrink              (GtkPicture             *this);
 
 GDK_AVAILABLE_IN_4_8
-void            gtk_picture_set_content_fit             (GtkPicture             *self,
+void            gtk_picture_set_content_fit             (GtkPicture             *this,
                                                          GtkContentFit           content_fit);
 GDK_AVAILABLE_IN_4_8
-GtkContentFit   gtk_picture_get_content_fit             (GtkPicture             *self);
+GtkContentFit   gtk_picture_get_content_fit             (GtkPicture             *this);
 
 GDK_AVAILABLE_IN_ALL
-void            gtk_picture_set_alternative_text        (GtkPicture             *self,
+void            gtk_picture_set_alternative_text        (GtkPicture             *this,
                                                          const char             *alternative_text);
 GDK_AVAILABLE_IN_ALL
-const char *    gtk_picture_get_alternative_text        (GtkPicture             *self);
+const char *    gtk_picture_get_alternative_text        (GtkPicture             *this);
 
 
 G_END_DECLS

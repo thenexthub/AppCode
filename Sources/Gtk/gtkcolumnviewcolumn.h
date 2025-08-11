@@ -46,61 +46,61 @@ GtkColumnViewColumn *   gtk_column_view_column_new                      (const c
                                                                          GtkListItemFactory     *factory);
 
 GDK_AVAILABLE_IN_ALL
-GtkColumnView *         gtk_column_view_column_get_column_view          (GtkColumnViewColumn    *self);
+GtkColumnView *         gtk_column_view_column_get_column_view          (GtkColumnViewColumn    *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_column_view_column_set_factory              (GtkColumnViewColumn    *self,
+void                    gtk_column_view_column_set_factory              (GtkColumnViewColumn    *this,
                                                                          GtkListItemFactory     *factory);
 GDK_AVAILABLE_IN_ALL
-GtkListItemFactory *    gtk_column_view_column_get_factory              (GtkColumnViewColumn    *self);
+GtkListItemFactory *    gtk_column_view_column_get_factory              (GtkColumnViewColumn    *this);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_column_view_column_set_title                (GtkColumnViewColumn    *self,
+void                    gtk_column_view_column_set_title                (GtkColumnViewColumn    *this,
                                                                          const char             *title);
 GDK_AVAILABLE_IN_ALL
-const char *            gtk_column_view_column_get_title                (GtkColumnViewColumn    *self);
+const char *            gtk_column_view_column_get_title                (GtkColumnViewColumn    *this);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_column_view_column_set_sorter               (GtkColumnViewColumn    *self,
+void                    gtk_column_view_column_set_sorter               (GtkColumnViewColumn    *this,
                                                                          GtkSorter              *sorter);
 GDK_AVAILABLE_IN_ALL
-GtkSorter *             gtk_column_view_column_get_sorter               (GtkColumnViewColumn    *self);
+GtkSorter *             gtk_column_view_column_get_sorter               (GtkColumnViewColumn    *this);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_column_view_column_set_visible              (GtkColumnViewColumn    *self,
+void                    gtk_column_view_column_set_visible              (GtkColumnViewColumn    *this,
                                                                          gboolean                visible);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_column_view_column_get_visible              (GtkColumnViewColumn    *self);
+gboolean                gtk_column_view_column_get_visible              (GtkColumnViewColumn    *this);
 
 GDK_AVAILABLE_IN_ALL
 
-void                    gtk_column_view_column_set_header_menu          (GtkColumnViewColumn    *self,
+void                    gtk_column_view_column_set_header_menu          (GtkColumnViewColumn    *this,
                                                                          GMenuModel             *menu);
 GDK_AVAILABLE_IN_ALL
-GMenuModel *            gtk_column_view_column_get_header_menu          (GtkColumnViewColumn    *self);
+GMenuModel *            gtk_column_view_column_get_header_menu          (GtkColumnViewColumn    *this);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_column_view_column_set_fixed_width          (GtkColumnViewColumn    *self,
+void                    gtk_column_view_column_set_fixed_width          (GtkColumnViewColumn    *this,
                                                                          int                     fixed_width);
 GDK_AVAILABLE_IN_ALL
-int                     gtk_column_view_column_get_fixed_width          (GtkColumnViewColumn    *self);
+int                     gtk_column_view_column_get_fixed_width          (GtkColumnViewColumn    *this);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_column_view_column_set_resizable            (GtkColumnViewColumn    *self,
+void                    gtk_column_view_column_set_resizable            (GtkColumnViewColumn    *this,
                                                                          gboolean                resizable);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_column_view_column_get_resizable            (GtkColumnViewColumn    *self);
+gboolean                gtk_column_view_column_get_resizable            (GtkColumnViewColumn    *this);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_column_view_column_set_expand               (GtkColumnViewColumn    *self,
+void                    gtk_column_view_column_set_expand               (GtkColumnViewColumn    *this,
                                                                          gboolean                expand);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_column_view_column_get_expand               (GtkColumnViewColumn    *self);
+gboolean                gtk_column_view_column_get_expand               (GtkColumnViewColumn    *this);
 
 GDK_AVAILABLE_IN_4_10
-void                    gtk_column_view_column_set_id                   (GtkColumnViewColumn    *self,
+void                    gtk_column_view_column_set_id                   (GtkColumnViewColumn    *this,
                                                                          const char             *id);
 GDK_AVAILABLE_IN_4_10
-const char *            gtk_column_view_column_get_id                   (GtkColumnViewColumn    *self);
+const char *            gtk_column_view_column_get_id                   (GtkColumnViewColumn    *this);
 
 G_END_DECLS
 

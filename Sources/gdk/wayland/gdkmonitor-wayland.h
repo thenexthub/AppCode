@@ -48,5 +48,5 @@ GdkMonitor *gdk_wayland_display_get_monitor (GdkWaylandDisplay *display,
 void gdk_wayland_display_add_output      (GdkWaylandDisplay *display_wayland,
                                           guint32            id,
                                           struct wl_output  *output);
-void gdk_wayland_display_remove_output   (GdkWaylandDisplay *self,
+void gdk_wayland_display_remove_output   (GdkWaylandDisplay *this,
                                           guint32            id);

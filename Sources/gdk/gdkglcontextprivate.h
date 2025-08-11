@@ -93,10 +93,10 @@ struct _GdkGLContextClass
   gboolean              (* is_current)                          (GdkGLContext          *context);
   cairo_region_t *      (* get_damage)                          (GdkGLContext          *context);
 
-  gboolean              (* is_shared)                           (GdkGLContext          *self,
+  gboolean              (* is_shared)                           (GdkGLContext          *this,
                                                                  GdkGLContext          *other);
 
-  guint                 (* get_default_framebuffer)             (GdkGLContext          *self);
+  guint                 (* get_default_framebuffer)             (GdkGLContext          *this);
 };
 
 typedef struct {
@@ -130,23 +130,23 @@ GdkGLContext *          gdk_gl_context_new                      (GdkDisplay     
                                                                  GdkSurface             *surface,
                                                                  gboolean                surface_attached);
 
-gboolean                gdk_gl_context_is_api_allowed           (GdkGLContext           *self,
+gboolean                gdk_gl_context_is_api_allowed           (GdkGLContext           *this,
                                                                  GdkGLAPI                api,
                                                                  GError                **error);
 void                    gdk_gl_context_set_version              (GdkGLContext           *context,
                                                                  const GdkGLVersion     *version);
 void                    gdk_gl_context_set_is_legacy            (GdkGLContext           *context,
                                                                  gboolean                is_legacy);
-gboolean                gdk_gl_context_check_gl_version         (GdkGLContext           *self,
+gboolean                gdk_gl_context_check_gl_version         (GdkGLContext           *this,
                                                                  const GdkGLVersion     *gl_version,
                                                                  const GdkGLVersion     *gles_version);
 
 static inline gboolean
-gdk_gl_context_check_version (GdkGLContext *self,
+gdk_gl_context_check_version (GdkGLContext *this,
                               const char   *gl_version,
                               const char   *gles_version)
 {
-  return gdk_gl_context_check_gl_version (self,
+  return gdk_gl_context_check_gl_version (this,
                                           gl_version ? &GDK_GL_VERSION_STRING (gl_version) : NULL,
                                           gles_version ? &GDK_GL_VERSION_STRING (gles_version) : NULL);
 }
@@ -157,7 +157,7 @@ void                    gdk_gl_context_get_matching_version     (GdkGLContext   
                                                                  GdkGLVersion           *out_version);
 
 #ifdef HAVE_EGL
-void                    gdk_gl_context_set_egl_native_window    (GdkGLContext           *self,
+void                    gdk_gl_context_set_egl_native_window    (GdkGLContext           *this,
                                                                  gpointer                native_window);
 #endif
 
@@ -177,18 +177,18 @@ void                    gdk_gl_context_label_object_printf      (GdkGLContext   
                                                                  const char      *format,
                                                                 ...)  G_GNUC_PRINTF (4, 5);
 
-const char *            gdk_gl_context_get_glsl_version_string  (GdkGLContext    *self);
+const char *            gdk_gl_context_get_glsl_version_string  (GdkGLContext    *this);
 
-GdkGLMemoryFlags        gdk_gl_context_get_format_flags         (GdkGLContext    *self,
+GdkGLMemoryFlags        gdk_gl_context_get_format_flags         (GdkGLContext    *this,
                                                                  GdkMemoryFormat  format) G_GNUC_PURE;
-gboolean                gdk_gl_context_has_feature              (GdkGLContext    *self,
+gboolean                gdk_gl_context_has_feature              (GdkGLContext    *this,
                                                                  GdkGLFeatures    feature) G_GNUC_PURE;
 
 gboolean                gdk_gl_context_use_es_bgra              (GdkGLContext    *context);
 
-gboolean                gdk_gl_context_has_vertex_arrays        (GdkGLContext    *self) G_GNUC_PURE;
+gboolean                gdk_gl_context_has_vertex_arrays        (GdkGLContext    *this) G_GNUC_PURE;
 
-void                    gdk_gl_context_download                 (GdkGLContext    *self,
+void                    gdk_gl_context_download                 (GdkGLContext    *this,
                                                                  GLuint           tex_id,
                                                                  GdkMemoryFormat  tex_format,
                                                                  GdkColorState   *tex_color_state,
@@ -196,7 +196,7 @@ void                    gdk_gl_context_download                 (GdkGLContext   
                                                                  const GdkMemoryLayout *dest_layout,
                                                                  GdkColorState   *dest_color_state);
 
-gboolean                gdk_gl_context_export_dmabuf            (GdkGLContext    *self,
+gboolean                gdk_gl_context_export_dmabuf            (GdkGLContext    *this,
                                                                  unsigned int     texture_id,
                                                                  GdkDmabuf       *dmabuf);
 

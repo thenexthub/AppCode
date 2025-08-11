@@ -64,53 +64,53 @@ static GParamSpec *properties[N_PROPS] = { NULL, };
 static guint signals[LAST_SIGNAL];
 
 static void
-gtk_data_viewer_ensure_loaded (GtkDataViewer *self)
+gtk_data_viewer_ensure_loaded (GtkDataViewer *this)
 {
   gboolean started_loading;
 
-  if (self->loading != NOT_LOADED)
+  if (this->loading != NOT_LOADED)
     return;
 
-  self->loading = LOADING_EXTERNALLY;
-  self->cancellable = g_cancellable_new ();
-  g_signal_emit (self, signals[LOAD], 0, self->cancellable, &started_loading);
+  this->loading = LOADING_EXTERNALLY;
+  this->cancellable = g_cancellable_new ();
+  g_signal_emit (this, signals[LOAD], 0, this->cancellable, &started_loading);
 
   if (!started_loading)
     {
-      self->loading = LOADING_FAILED; /* avoid notify::is_loading */
-      gtk_data_viewer_load_error (self, g_error_new (G_IO_ERROR, G_IO_ERROR_FAILED, "Nothing to load"));
+      this->loading = LOADING_FAILED; /* avoid notify::is_loading */
+      gtk_data_viewer_load_error (this, g_error_new (G_IO_ERROR, G_IO_ERROR_FAILED, "Nothing to load"));
     }
 
-  g_assert (self->loading != NOT_LOADED);
+  g_assert (this->loading != NOT_LOADED);
 
-  if (gtk_data_viewer_is_loading (self))
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_LOADING]);
+  if (gtk_data_viewer_is_loading (this))
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_LOADING]);
 }
 
 static void
 gtk_data_viewer_realize (GtkWidget *widget)
 {
-  GtkDataViewer *self = GTK_DATA_VIEWER (widget);
+  GtkDataViewer *this = GTK_DATA_VIEWER (widget);
 
   GTK_WIDGET_CLASS (gtk_data_viewer_parent_class)->realize (widget);
 
-  gtk_data_viewer_ensure_loaded (self);
+  gtk_data_viewer_ensure_loaded (this);
 }
 
 static void
 gtk_data_viewer_unrealize (GtkWidget *widget)
 {
-  GtkDataViewer *self = GTK_DATA_VIEWER (widget);
+  GtkDataViewer *this = GTK_DATA_VIEWER (widget);
 
   GTK_WIDGET_CLASS (gtk_data_viewer_parent_class)->unrealize (widget);
 
-  gtk_data_viewer_reset (self);
+  gtk_data_viewer_reset (this);
 }
 
 static void
 gtk_data_viewer_dispose (GObject *object)
 {
-  //GtkDataViewer *self = GTK_DATA_VIEWER (object);
+  //GtkDataViewer *this = GTK_DATA_VIEWER (object);
 
   G_OBJECT_CLASS (gtk_data_viewer_parent_class)->dispose (object);
 }
@@ -121,12 +121,12 @@ gtk_data_viewer_get_property (GObject    *object,
                               GValue     *value,
                               GParamSpec *pspec)
 {
-  GtkDataViewer *self = GTK_DATA_VIEWER (object);
+  GtkDataViewer *this = GTK_DATA_VIEWER (object);
 
   switch (property_id)
     {
     case PROP_LOADING:
-      g_value_set_boolean (value, gtk_data_viewer_is_loading (self));
+      g_value_set_boolean (value, gtk_data_viewer_is_loading (this));
       break;
 
     default:
@@ -141,7 +141,7 @@ gtk_data_viewer_set_property (GObject      *object,
                               const GValue *value,
                               GParamSpec   *pspec)
 {
-  //GtkDataViewer *self = GTK_DATA_VIEWER (object);
+  //GtkDataViewer *this = GTK_DATA_VIEWER (object);
 
   switch (property_id)
     {
@@ -186,7 +186,7 @@ gtk_data_viewer_class_init (GtkDataViewerClass *klass)
 }
 
 static void
-gtk_data_viewer_init (GtkDataViewer *self)
+gtk_data_viewer_init (GtkDataViewer *this)
 {
 }
 
@@ -197,101 +197,101 @@ gtk_data_viewer_new (void)
 }
 
 gboolean
-gtk_data_viewer_is_loading (GtkDataViewer *self)
+gtk_data_viewer_is_loading (GtkDataViewer *this)
 {
-  g_return_val_if_fail (GTK_IS_DATA_VIEWER (self), FALSE);
+  g_return_val_if_fail (GTK_IS_DATA_VIEWER (this), FALSE);
 
-  return self->loading == LOADING_EXTERNALLY ||
-         self->loading == LOADING_INTERNALLY;
+  return this->loading == LOADING_EXTERNALLY ||
+         this->loading == LOADING_INTERNALLY;
 }
 
 void
-gtk_data_viewer_reset (GtkDataViewer *self)
+gtk_data_viewer_reset (GtkDataViewer *this)
 {
   gboolean was_loading;
 
-  g_return_if_fail (GTK_IS_DATA_VIEWER (self));
+  g_return_if_fail (GTK_IS_DATA_VIEWER (this));
 
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
 
-  was_loading = gtk_data_viewer_is_loading (self);
+  was_loading = gtk_data_viewer_is_loading (this);
 
-  g_clear_pointer (&self->contents, gtk_widget_unparent);
-  g_clear_error (&self->error);
-  g_cancellable_cancel (self->cancellable);
-  g_clear_object (&self->cancellable);
+  g_clear_pointer (&this->contents, gtk_widget_unparent);
+  g_clear_error (&this->error);
+  g_cancellable_cancel (this->cancellable);
+  g_clear_object (&this->cancellable);
 
-  self->loading = NOT_LOADED;
+  this->loading = NOT_LOADED;
 
-  if (gtk_widget_get_realized (GTK_WIDGET (self)))
-    gtk_data_viewer_ensure_loaded (self);
+  if (gtk_widget_get_realized (GTK_WIDGET (this)))
+    gtk_data_viewer_ensure_loaded (this);
 
-  if (was_loading != gtk_data_viewer_is_loading (self))
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_LOADING]);
+  if (was_loading != gtk_data_viewer_is_loading (this))
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_LOADING]);
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 }
 
 void
-gtk_data_viewer_load_value (GtkDataViewer *self,
+gtk_data_viewer_load_value (GtkDataViewer *this,
                             const GValue  *value)
 {
   gboolean was_loading;
 
-  g_return_if_fail (GTK_IS_DATA_VIEWER (self));
+  g_return_if_fail (GTK_IS_DATA_VIEWER (this));
 
-  was_loading = gtk_data_viewer_is_loading (self);
-  self->loading = LOADING_DONE;
+  was_loading = gtk_data_viewer_is_loading (this);
+  this->loading = LOADING_DONE;
 
-  g_clear_pointer (&self->contents, gtk_widget_unparent);
-  g_cancellable_cancel (self->cancellable);
-  g_clear_object (&self->cancellable);
+  g_clear_pointer (&this->contents, gtk_widget_unparent);
+  g_cancellable_cancel (this->cancellable);
+  g_clear_object (&this->cancellable);
 
   if (g_type_is_a (G_VALUE_TYPE (value), G_TYPE_STRING))
     {
-      self->contents = gtk_label_new (g_value_get_string (value));
-      gtk_label_set_wrap (GTK_LABEL (self->contents), TRUE);
-      gtk_widget_set_parent (self->contents, GTK_WIDGET (self));
+      this->contents = gtk_label_new (g_value_get_string (value));
+      gtk_label_set_wrap (GTK_LABEL (this->contents), TRUE);
+      gtk_widget_set_parent (this->contents, GTK_WIDGET (this));
     }
   else if (g_type_is_a (G_VALUE_TYPE (value), GDK_TYPE_PAINTABLE))
     {
-      self->contents = gtk_picture_new_for_paintable (g_value_get_object (value));
-      gtk_widget_set_size_request (self->contents, 256, 256);
-      gtk_widget_set_parent (self->contents, GTK_WIDGET (self));
+      this->contents = gtk_picture_new_for_paintable (g_value_get_object (value));
+      gtk_widget_set_size_request (this->contents, 256, 256);
+      gtk_widget_set_parent (this->contents, GTK_WIDGET (this));
     }
   else if (g_type_is_a (G_VALUE_TYPE (value), GDK_TYPE_PIXBUF))
     {
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-      self->contents = gtk_picture_new_for_pixbuf (g_value_get_object (value));
+      this->contents = gtk_picture_new_for_pixbuf (g_value_get_object (value));
 G_GNUC_END_IGNORE_DEPRECATIONS
-      gtk_widget_set_size_request (self->contents, 256, 256);
-      gtk_widget_set_parent (self->contents, GTK_WIDGET (self));
+      gtk_widget_set_size_request (this->contents, 256, 256);
+      gtk_widget_set_parent (this->contents, GTK_WIDGET (this));
     }
   else if (g_type_is_a (G_VALUE_TYPE (value), GDK_TYPE_RGBA))
     {
       const GdkRGBA *color = g_value_get_boxed (value);
 
-      self->contents = gtk_color_swatch_new ();
-      gtk_color_swatch_set_rgba (GTK_COLOR_SWATCH (self->contents), color);
-      gtk_widget_set_size_request (self->contents, 48, 32);
-      gtk_widget_set_halign (self->contents, GTK_ALIGN_CENTER);
-      gtk_widget_set_parent (self->contents, GTK_WIDGET (self));
+      this->contents = gtk_color_swatch_new ();
+      gtk_color_swatch_set_rgba (GTK_COLOR_SWATCH (this->contents), color);
+      gtk_widget_set_size_request (this->contents, 48, 32);
+      gtk_widget_set_halign (this->contents, GTK_ALIGN_CENTER);
+      gtk_widget_set_parent (this->contents, GTK_WIDGET (this));
     }
   else if (g_type_is_a (G_VALUE_TYPE (value), G_TYPE_FILE))
     {
       GFile *file = g_value_get_object (value);
 
-      self->contents = gtk_label_new (g_file_peek_path (file));
-      gtk_label_set_ellipsize (GTK_LABEL (self->contents), PANGO_ELLIPSIZE_START);
-      gtk_widget_set_halign (self->contents, GTK_ALIGN_CENTER);
-      gtk_widget_set_parent (self->contents, GTK_WIDGET (self));
+      this->contents = gtk_label_new (g_file_peek_path (file));
+      gtk_label_set_ellipsize (GTK_LABEL (this->contents), PANGO_ELLIPSIZE_START);
+      gtk_widget_set_halign (this->contents, GTK_ALIGN_CENTER);
+      gtk_widget_set_parent (this->contents, GTK_WIDGET (this));
     }
   else if (g_type_is_a (G_VALUE_TYPE (value), GDK_TYPE_FILE_LIST))
     {
       GList *l;
 
-      self->contents = gtk_box_new (GTK_ORIENTATION_VERTICAL, 10);
-      gtk_widget_set_parent (self->contents, GTK_WIDGET (self));
+      this->contents = gtk_box_new (GTK_ORIENTATION_VERTICAL, 10);
+      gtk_widget_set_parent (this->contents, GTK_WIDGET (this));
 
       for (l = g_value_get_boxed (value); l; l = l->next)
         {
@@ -299,19 +299,19 @@ G_GNUC_END_IGNORE_DEPRECATIONS
           GtkWidget *label = gtk_label_new (g_file_peek_path (file));
           gtk_label_set_ellipsize (GTK_LABEL (label), PANGO_ELLIPSIZE_START);
           gtk_widget_set_halign (label, GTK_ALIGN_CENTER);
-          gtk_box_append (GTK_BOX (self->contents), label);
+          gtk_box_append (GTK_BOX (this->contents), label);
         }
     }
   else
     {
-      gtk_data_viewer_load_error (self,
+      gtk_data_viewer_load_error (this,
                                   g_error_new (G_IO_ERROR,
                                                G_IO_ERROR_FAILED,
                                                "Cannot display objects of type \"%s\"", G_VALUE_TYPE_NAME (value)));
     }
 
   if (was_loading)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_LOADING]);
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_LOADING]);
 }
 
 static void
@@ -319,28 +319,28 @@ gtk_data_viewer_load_stream_done (GObject      *source,
                                   GAsyncResult *res,
                                   gpointer      data)
 {
-  GtkDataViewer *self = data;
+  GtkDataViewer *this = data;
   GError *error = NULL;
   GValue value = G_VALUE_INIT;
 
   if (!gdk_content_deserialize_finish (res, &value, &error))
     {
       if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
-        gtk_data_viewer_load_error (self, error);
+        gtk_data_viewer_load_error (this, error);
       else
         g_clear_error (&error);
 
-      g_object_unref (self);
+      g_object_unref (this);
       return;
     }
 
-  gtk_data_viewer_load_value (self, &value);
-  g_object_unref (self);
+  gtk_data_viewer_load_value (this, &value);
+  g_object_unref (this);
   g_value_unset (&value);
 }
 
 void
-gtk_data_viewer_load_stream (GtkDataViewer *self,
+gtk_data_viewer_load_stream (GtkDataViewer *this,
                              GInputStream  *stream,
                              const char    *mime_type)
 {
@@ -348,14 +348,14 @@ gtk_data_viewer_load_stream (GtkDataViewer *self,
   const GType *gtypes;
   gboolean was_loading;
 
-  g_return_if_fail (GTK_IS_DATA_VIEWER (self));
+  g_return_if_fail (GTK_IS_DATA_VIEWER (this));
   g_return_if_fail (G_IS_INPUT_STREAM (stream));
   g_return_if_fail (mime_type != NULL);
 
-  was_loading = gtk_data_viewer_is_loading (self);
-  self->loading = LOADING_INTERNALLY;
-  if (self->cancellable == NULL)
-    self->cancellable = g_cancellable_new ();
+  was_loading = gtk_data_viewer_is_loading (this);
+  this->loading = LOADING_INTERNALLY;
+  if (this->cancellable == NULL)
+    this->cancellable = g_cancellable_new ();
 
   formats = gdk_content_formats_new (&mime_type, 1);
   formats = gdk_content_formats_union_deserialize_gtypes (formats);
@@ -366,16 +366,16 @@ gtk_data_viewer_load_stream (GtkDataViewer *self,
                                      mime_type,
                                      gtypes[0],
                                      G_PRIORITY_DEFAULT,
-                                     self->cancellable,
+                                     this->cancellable,
                                      gtk_data_viewer_load_stream_done,
-                                     g_object_ref (self));
+                                     g_object_ref (this));
 
       if (!was_loading)
-        g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_LOADING]);
+        g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_LOADING]);
     }
   else
     {
-      gtk_data_viewer_load_error (self,
+      gtk_data_viewer_load_error (this,
                                   g_error_new (G_IO_ERROR, G_IO_ERROR_FAILED,
                                                "Cannot display data of type \"%s\"", mime_type));
     }
@@ -384,29 +384,29 @@ gtk_data_viewer_load_stream (GtkDataViewer *self,
 }
 
 void
-gtk_data_viewer_load_error (GtkDataViewer *self,
+gtk_data_viewer_load_error (GtkDataViewer *this,
                             GError        *error)
 {
   gboolean was_loading;
 
-  g_return_if_fail (GTK_IS_DATA_VIEWER (self));
+  g_return_if_fail (GTK_IS_DATA_VIEWER (this));
 
-  was_loading = gtk_data_viewer_is_loading (self);
-  self->loading = LOADING_FAILED;
+  was_loading = gtk_data_viewer_is_loading (this);
+  this->loading = LOADING_FAILED;
 
-  g_clear_pointer (&self->contents, gtk_widget_unparent);
-  g_clear_error (&self->error);
-  g_cancellable_cancel (self->cancellable);
-  g_clear_object (&self->cancellable);
+  g_clear_pointer (&this->contents, gtk_widget_unparent);
+  g_clear_error (&this->error);
+  g_cancellable_cancel (this->cancellable);
+  g_clear_object (&this->cancellable);
 
-  self->error = error;
-  self->contents = gtk_label_new (error->message);
-  gtk_widget_add_css_class (self->contents, "error");
-  gtk_widget_set_halign (self->contents, GTK_ALIGN_CENTER);
-  gtk_widget_set_valign (self->contents, GTK_ALIGN_CENTER);
-  gtk_widget_set_parent (self->contents, GTK_WIDGET (self));
+  this->error = error;
+  this->contents = gtk_label_new (error->message);
+  gtk_widget_add_css_class (this->contents, "error");
+  gtk_widget_set_halign (this->contents, GTK_ALIGN_CENTER);
+  gtk_widget_set_valign (this->contents, GTK_ALIGN_CENTER);
+  gtk_widget_set_parent (this->contents, GTK_WIDGET (this));
 
   if (was_loading)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_LOADING]);
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_LOADING]);
 }
 

@@ -42,7 +42,7 @@ struct _GtkListItemBaseClass
 {
   GtkWidgetClass parent_class;
 
-  void                  (* update)                              (GtkListItemBase        *self,
+  void                  (* update)                              (GtkListItemBase        *this,
                                                                  guint                   position,
                                                                  gpointer                item,
                                                                  gboolean                selected);
@@ -50,14 +50,14 @@ struct _GtkListItemBaseClass
 
 GType                   gtk_list_item_base_get_type             (void) G_GNUC_CONST;
 
-void                    gtk_list_item_base_update               (GtkListItemBase        *self,
+void                    gtk_list_item_base_update               (GtkListItemBase        *this,
                                                                  guint                   position,
                                                                  gpointer                item,
                                                                  gboolean                selected);
 
-guint                   gtk_list_item_base_get_position         (GtkListItemBase        *self);
-gpointer                gtk_list_item_base_get_item             (GtkListItemBase        *self);
-gboolean                gtk_list_item_base_get_selected         (GtkListItemBase        *self);
+guint                   gtk_list_item_base_get_position         (GtkListItemBase        *this);
+gpointer                gtk_list_item_base_get_item             (GtkListItemBase        *this);
+gboolean                gtk_list_item_base_get_selected         (GtkListItemBase        *this);
 
 G_END_DECLS
 

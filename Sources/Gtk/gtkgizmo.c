@@ -14,10 +14,10 @@ gtk_gizmo_measure (GtkWidget      *widget,
                    int            *minimum_baseline,
                    int            *natural_baseline)
 {
-  GtkGizmo *self = GTK_GIZMO (widget);
+  GtkGizmo *this = GTK_GIZMO (widget);
 
-  if (self->measure_func)
-    self->measure_func (self, orientation, for_size,
+  if (this->measure_func)
+    this->measure_func (this, orientation, for_size,
                         minimum, natural,
                         minimum_baseline, natural_baseline);
 }
@@ -28,20 +28,20 @@ gtk_gizmo_size_allocate (GtkWidget *widget,
                          int        height,
                          int        baseline)
 {
-  GtkGizmo *self = GTK_GIZMO (widget);
+  GtkGizmo *this = GTK_GIZMO (widget);
 
-  if (self->allocate_func)
-    self->allocate_func (self, width, height, baseline);
+  if (this->allocate_func)
+    this->allocate_func (this, width, height, baseline);
 }
 
 static void
 gtk_gizmo_snapshot (GtkWidget   *widget,
                     GtkSnapshot *snapshot)
 {
-  GtkGizmo *self = GTK_GIZMO (widget);
+  GtkGizmo *this = GTK_GIZMO (widget);
 
-  if (self->snapshot_func)
-    self->snapshot_func (self, snapshot);
+  if (this->snapshot_func)
+    this->snapshot_func (this, snapshot);
   else
     GTK_WIDGET_CLASS (gtk_gizmo_parent_class)->snapshot (widget, snapshot);
 }
@@ -51,10 +51,10 @@ gtk_gizmo_contains (GtkWidget *widget,
                     double     x,
                     double     y)
 {
-  GtkGizmo *self = GTK_GIZMO (widget);
+  GtkGizmo *this = GTK_GIZMO (widget);
 
-  if (self->contains_func)
-    return self->contains_func (self, x, y);
+  if (this->contains_func)
+    return this->contains_func (this, x, y);
   else
     return GTK_WIDGET_CLASS (gtk_gizmo_parent_class)->contains (widget, x, y);
 }
@@ -63,10 +63,10 @@ static gboolean
 gtk_gizmo_focus (GtkWidget        *widget,
                  GtkDirectionType  direction)
 {
-  GtkGizmo *self = GTK_GIZMO (widget);
+  GtkGizmo *this = GTK_GIZMO (widget);
 
-  if (self->focus_func)
-    return self->focus_func (self, direction);
+  if (this->focus_func)
+    return this->focus_func (this, direction);
 
   return FALSE;
 }
@@ -74,10 +74,10 @@ gtk_gizmo_focus (GtkWidget        *widget,
 static gboolean
 gtk_gizmo_grab_focus (GtkWidget *widget)
 {
-  GtkGizmo *self = GTK_GIZMO (widget);
+  GtkGizmo *this = GTK_GIZMO (widget);
 
-  if (self->grab_focus_func)
-    return self->grab_focus_func (self);
+  if (this->grab_focus_func)
+    return this->grab_focus_func (this);
 
   return FALSE;
 }
@@ -85,10 +85,10 @@ gtk_gizmo_grab_focus (GtkWidget *widget)
 static void
 gtk_gizmo_finalize (GObject *object)
 {
-  GtkGizmo *self = GTK_GIZMO (object);
+  GtkGizmo *this = GTK_GIZMO (object);
   GtkWidget *widget;
 
-  widget = _gtk_widget_get_first_child (GTK_WIDGET (self));
+  widget = _gtk_widget_get_first_child (GTK_WIDGET (this));
   while (widget != NULL)
     {
       GtkWidget *next = _gtk_widget_get_next_sibling (widget);
@@ -118,7 +118,7 @@ gtk_gizmo_class_init (GtkGizmoClass *klass)
 }
 
 static void
-gtk_gizmo_init (GtkGizmo *self)
+gtk_gizmo_init (GtkGizmo *this)
 {
 }
 

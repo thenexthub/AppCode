@@ -24,37 +24,37 @@
 #include "gtk/gtkcolumnviewcellwidgetprivate.h"
 
 
-void                    gtk_column_view_column_set_column_view          (GtkColumnViewColumn    *self,
+void                    gtk_column_view_column_set_column_view          (GtkColumnViewColumn    *this,
                                                                          GtkColumnView          *view);
 
-void                    gtk_column_view_column_set_position             (GtkColumnViewColumn    *self,
+void                    gtk_column_view_column_set_position             (GtkColumnViewColumn    *this,
                                                                          guint                   position);
 
-void                    gtk_column_view_column_add_cell                 (GtkColumnViewColumn    *self,
+void                    gtk_column_view_column_add_cell                 (GtkColumnViewColumn    *this,
                                                                          GtkColumnViewCellWidget      *cell);
-void                    gtk_column_view_column_remove_cell              (GtkColumnViewColumn    *self,
+void                    gtk_column_view_column_remove_cell              (GtkColumnViewColumn    *this,
                                                                          GtkColumnViewCellWidget      *cell);
-GtkColumnViewCellWidget *     gtk_column_view_column_get_first_cell           (GtkColumnViewColumn    *self);
-GtkWidget *             gtk_column_view_column_get_header               (GtkColumnViewColumn    *self);
+GtkColumnViewCellWidget *     gtk_column_view_column_get_first_cell           (GtkColumnViewColumn    *this);
+GtkWidget *             gtk_column_view_column_get_header               (GtkColumnViewColumn    *this);
 
-void                    gtk_column_view_column_update_factory           (GtkColumnViewColumn    *self,
+void                    gtk_column_view_column_update_factory           (GtkColumnViewColumn    *this,
                                                                          gboolean                inert);
-void                    gtk_column_view_column_queue_resize             (GtkColumnViewColumn    *self);
-void                    gtk_column_view_column_measure                  (GtkColumnViewColumn    *self,
+void                    gtk_column_view_column_queue_resize             (GtkColumnViewColumn    *this);
+void                    gtk_column_view_column_measure                  (GtkColumnViewColumn    *this,
                                                                          int                    *minimum,
                                                                          int                    *natural);
-void                    gtk_column_view_column_allocate                 (GtkColumnViewColumn    *self,
+void                    gtk_column_view_column_allocate                 (GtkColumnViewColumn    *this,
                                                                          int                     offset,
                                                                          int                     size);
-void                    gtk_column_view_column_get_allocation           (GtkColumnViewColumn    *self,
+void                    gtk_column_view_column_get_allocation           (GtkColumnViewColumn    *this,
                                                                          int                    *offset,
                                                                          int                    *size);
 
-void                    gtk_column_view_column_notify_sort              (GtkColumnViewColumn    *self);
+void                    gtk_column_view_column_notify_sort              (GtkColumnViewColumn    *this);
 
-void                    gtk_column_view_column_set_header_position      (GtkColumnViewColumn    *self,
+void                    gtk_column_view_column_set_header_position      (GtkColumnViewColumn    *this,
                                                                          int                     offset);
-void                    gtk_column_view_column_get_header_allocation    (GtkColumnViewColumn    *self,
+void                    gtk_column_view_column_get_header_allocation    (GtkColumnViewColumn    *this,
                                                                          int                    *offset,
                                                                          int                    *size);
 

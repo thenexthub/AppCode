@@ -28,7 +28,7 @@ G_DECLARE_FINAL_TYPE (GraphRenderer, graph_renderer, GRAPH, RENDERER, GtkWidget)
 
 GraphRenderer *graph_renderer_new      (void);
 
-void           graph_renderer_set_data (GraphRenderer *self,
+void           graph_renderer_set_data (GraphRenderer *this,
                                         GraphData     *data);
 
 G_END_DECLS

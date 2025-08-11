@@ -44,8 +44,8 @@ static inline void      gsk_vulkan_free                                 (GskVulk
                                                                          GskVulkanAllocation            *alloc);
 
 static inline GskVulkanAllocator *
-                        gsk_vulkan_allocator_ref                        (GskVulkanAllocator             *self);
-static inline void      gsk_vulkan_allocator_unref                      (GskVulkanAllocator             *self);
+                        gsk_vulkan_allocator_ref                        (GskVulkanAllocator             *this);
+static inline void      gsk_vulkan_allocator_unref                      (GskVulkanAllocator             *this);
 
 GskVulkanAllocator *    gsk_vulkan_direct_allocator_new                 (VkDevice                        device,
                                                                          uint32_t                        vk_type_index,
@@ -72,20 +72,20 @@ gsk_vulkan_free (GskVulkanAllocator  *allocator,
 }
 
 static inline GskVulkanAllocator *
-gsk_vulkan_allocator_ref (GskVulkanAllocator *self)
+gsk_vulkan_allocator_ref (GskVulkanAllocator *this)
 {
-  self->ref_count++;
-  return self;
+  this->ref_count++;
+  return this;
 }
 
 static inline void
-gsk_vulkan_allocator_unref (GskVulkanAllocator *self)
+gsk_vulkan_allocator_unref (GskVulkanAllocator *this)
 {
-  self->ref_count--;
-  if (self->ref_count > 0)
+  this->ref_count--;
+  if (this->ref_count > 0)
     return;
 
-  self->free_allocator (self);
+  this->free_allocator (this);
 }
 
 G_END_DECLS

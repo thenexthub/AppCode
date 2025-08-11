@@ -24,7 +24,7 @@
 #include "roaring/roaring.c"
 
 /**
- * GtkBitset: (ref-func gtk_bitset_ref) (unref-func gtk_bitset_unref)
+ * GtkBitset: (ref-fn gtk_bitset_ref) (unref-fn gtk_bitset_unref)
  *
  * A set of unsigned integers.
  *
@@ -56,140 +56,140 @@ G_DEFINE_BOXED_TYPE (GtkBitset, gtk_bitset,
 
 /**
  * gtk_bitset_ref:
- * @self: (not nullable): a `GtkBitset`
+ * @this: (not nullable): a `GtkBitset`
  *
  * Acquires a reference on the given `GtkBitset`.
  *
  * Returns: (transfer none): the `GtkBitset` with an additional reference
  */
 GtkBitset *
-gtk_bitset_ref (GtkBitset *self)
+gtk_bitset_ref (GtkBitset *this)
 {
-  g_return_val_if_fail (self != NULL, NULL);
+  g_return_val_if_fail (this != NULL, NULL);
 
-  self->ref_count += 1;
+  this->ref_count += 1;
 
-  return self;
+  return this;
 }
 
 /**
  * gtk_bitset_unref:
- * @self: (not nullable) (transfer full): a `GtkBitset`
+ * @this: (not nullable) (transfer full): a `GtkBitset`
  *
  * Releases a reference on the given `GtkBitset`.
  *
- * If the reference was the last, the resources associated to the @self are
+ * If the reference was the last, the resources associated to the @this are
  * freed.
  */
 void
-gtk_bitset_unref (GtkBitset *self)
+gtk_bitset_unref (GtkBitset *this)
 {
-  g_return_if_fail (self != NULL);
-  g_return_if_fail (self->ref_count > 0);
+  g_return_if_fail (this != NULL);
+  g_return_if_fail (this->ref_count > 0);
 
-  self->ref_count -= 1;
-  if (self->ref_count > 0)
+  this->ref_count -= 1;
+  if (this->ref_count > 0)
     return;
 
-  ra_clear (&self->roaring.high_low_container);
-  g_free (self);
+  ra_clear (&this->roaring.high_low_container);
+  g_free (this);
 }
 
 /**
  * gtk_bitset_contains:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  * @value: the value to check
  *
- * Checks if the given @value has been added to @self
+ * Checks if the given @value has been added to @this
  *
- * Returns: %TRUE if @self contains @value
+ * Returns: %TRUE if @this contains @value
  **/
 gboolean
-gtk_bitset_contains (const GtkBitset *self,
+gtk_bitset_contains (const GtkBitset *this,
                      guint            value)
 {
-  g_return_val_if_fail (self != NULL, FALSE);
+  g_return_val_if_fail (this != NULL, FALSE);
 
-  return roaring_bitmap_contains (&self->roaring, value);
+  return roaring_bitmap_contains (&this->roaring, value);
 }
 
 /**
  * gtk_bitset_is_empty:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  *
  * Check if no value is contained in bitset.
  *
- * Returns: %TRUE if @self is empty
+ * Returns: %TRUE if @this is empty
  **/
 gboolean
-gtk_bitset_is_empty (const GtkBitset *self)
+gtk_bitset_is_empty (const GtkBitset *this)
 {
-  g_return_val_if_fail (self != NULL, TRUE);
+  g_return_val_if_fail (this != NULL, TRUE);
 
-  return roaring_bitmap_is_empty (&self->roaring);
+  return roaring_bitmap_is_empty (&this->roaring);
 }
 
 /**
  * gtk_bitset_equals:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  * @other: another `GtkBitset`
  *
- * Returns %TRUE if @self and @other contain the same values.
+ * Returns %TRUE if @this and @other contain the same values.
  *
- * Returns: %TRUE if @self and @other contain the same values
+ * Returns: %TRUE if @this and @other contain the same values
  **/
 gboolean
-gtk_bitset_equals (const GtkBitset *self,
+gtk_bitset_equals (const GtkBitset *this,
                    const GtkBitset *other)
 {
-  g_return_val_if_fail (self != NULL, other == NULL);
+  g_return_val_if_fail (this != NULL, other == NULL);
   g_return_val_if_fail (other != NULL, FALSE);
 
-  if (self == other)
+  if (this == other)
     return TRUE;
 
-  return roaring_bitmap_equals (&self->roaring, &other->roaring);
+  return roaring_bitmap_equals (&this->roaring, &other->roaring);
 }
 
 /**
  * gtk_bitset_get_minimum:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  *
- * Returns the smallest value in @self.
+ * Returns the smallest value in @this.
  *
- * If @self is empty, `G_MAXUINT` is returned.
+ * If @this is empty, `G_MAXUINT` is returned.
  *
- * Returns: The smallest value in @self
+ * Returns: The smallest value in @this
  **/
 guint
-gtk_bitset_get_minimum (const GtkBitset *self)
+gtk_bitset_get_minimum (const GtkBitset *this)
 {
-  g_return_val_if_fail (self != NULL, G_MAXUINT);
+  g_return_val_if_fail (this != NULL, G_MAXUINT);
 
-  return roaring_bitmap_minimum (&self->roaring);
+  return roaring_bitmap_minimum (&this->roaring);
 }
 
 /**
  * gtk_bitset_get_maximum:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  *
- * Returns the largest value in @self.
+ * Returns the largest value in @this.
  *
- * If @self is empty, 0 is returned.
+ * If @this is empty, 0 is returned.
  *
- * Returns: The largest value in @self
+ * Returns: The largest value in @this
  **/
 guint
-gtk_bitset_get_maximum (const GtkBitset *self)
+gtk_bitset_get_maximum (const GtkBitset *this)
 {
-  g_return_val_if_fail (self != NULL, 0);
+  g_return_val_if_fail (this != NULL, 0);
 
-  return roaring_bitmap_maximum (&self->roaring);
+  return roaring_bitmap_maximum (&this->roaring);
 }
 
 /**
  * gtk_bitset_get_size:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  *
  * Gets the number of values that were added to the set.
  *
@@ -203,16 +203,16 @@ gtk_bitset_get_maximum (const GtkBitset *self)
  * Returns: The number of values in the set.
  */
 guint64
-gtk_bitset_get_size (const GtkBitset *self)
+gtk_bitset_get_size (const GtkBitset *this)
 {
-  g_return_val_if_fail (self != NULL, 0);
+  g_return_val_if_fail (this != NULL, 0);
 
-  return roaring_bitmap_get_cardinality (&self->roaring);
+  return roaring_bitmap_get_cardinality (&this->roaring);
 }
 
 /**
  * gtk_bitset_get_size_in_range:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  * @first: the first element to include
  * @last: the last element to include
  *
@@ -226,34 +226,34 @@ gtk_bitset_get_size (const GtkBitset *self)
  * Returns: The number of values in the set from @first to @last.
  */
 guint64
-gtk_bitset_get_size_in_range (const GtkBitset *self,
+gtk_bitset_get_size_in_range (const GtkBitset *this,
                               guint            first,
                               guint            last)
 {
-  g_return_val_if_fail (self != NULL, 0);
+  g_return_val_if_fail (this != NULL, 0);
   g_return_val_if_fail (last >= first, 0);
 
-  return roaring_bitmap_range_cardinality (&self->roaring, first, ((uint64_t) last) + 1);
+  return roaring_bitmap_range_cardinality (&this->roaring, first, ((uint64_t) last) + 1);
 }
 
 /**
  * gtk_bitset_get_nth:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  * @nth: index of the item to get
  *
- * Returns the value of the @nth item in self.
+ * Returns the value of the @nth item in this.
  *
- * If @nth is >= the size of @self, 0 is returned.
+ * If @nth is >= the size of @this, 0 is returned.
  *
- * Returns: the value of the @nth item in @self
+ * Returns: the value of the @nth item in @this
  */
 guint
-gtk_bitset_get_nth (const GtkBitset *self,
+gtk_bitset_get_nth (const GtkBitset *this,
                     guint            nth)
 {
   uint32_t result;
 
-  if (!roaring_bitmap_select (&self->roaring, nth, &result))
+  if (!roaring_bitmap_select (&this->roaring, nth, &result))
     return 0;
 
   return result;
@@ -269,15 +269,15 @@ gtk_bitset_get_nth (const GtkBitset *self,
 GtkBitset *
 gtk_bitset_new_empty (void)
 {
-  GtkBitset *self;
+  GtkBitset *this;
 
-  self = g_new0 (GtkBitset, 1);
+  this = g_new0 (GtkBitset, 1);
 
-  self->ref_count = 1;
+  this->ref_count = 1;
 
-  ra_init (&self->roaring.high_low_container);
+  ra_init (&this->roaring.high_low_container);
 
-  return self;
+  return this;
 }
 
 /**
@@ -293,106 +293,106 @@ GtkBitset *
 gtk_bitset_new_range (guint start,
                       guint n_items)
 {
-  GtkBitset *self;
+  GtkBitset *this;
 
-  self = gtk_bitset_new_empty ();
+  this = gtk_bitset_new_empty ();
 
-  gtk_bitset_add_range (self, start, n_items);
+  gtk_bitset_add_range (this, start, n_items);
 
-  return self;
+  return this;
 }
 
 /**
  * gtk_bitset_copy:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  *
- * Creates a copy of @self.
+ * Creates a copy of @this.
  *
  * Returns: (transfer full): A new bitset that contains the same
- *   values as @self
+ *   values as @this
  */
 GtkBitset *
-gtk_bitset_copy (const GtkBitset *self)
+gtk_bitset_copy (const GtkBitset *this)
 {
   GtkBitset *copy;
 
-  g_return_val_if_fail (self != NULL, NULL);
+  g_return_val_if_fail (this != NULL, NULL);
 
   copy = gtk_bitset_new_empty ();
 
-  if (!gtk_bitset_is_empty (self))
-    roaring_bitmap_overwrite (&copy->roaring, &self->roaring);
+  if (!gtk_bitset_is_empty (this))
+    roaring_bitmap_overwrite (&copy->roaring, &this->roaring);
 
   return copy;
 }
 
 /**
  * gtk_bitset_remove_all:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  *
  * Removes all values from the bitset so that it is empty again.
  */
 void
-gtk_bitset_remove_all (GtkBitset *self)
+gtk_bitset_remove_all (GtkBitset *this)
 {
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
 
-  roaring_bitmap_clear (&self->roaring);
+  roaring_bitmap_clear (&this->roaring);
 }
 
 /**
  * gtk_bitset_add:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  * @value: value to add
  *
- * Adds @value to @self if it wasn't part of it before.
+ * Adds @value to @this if it wasn't part of it before.
  *
- * Returns: %TRUE if @value was not part of @self and @self
+ * Returns: %TRUE if @value was not part of @this and @this
  *   was changed
  */
 gboolean
-gtk_bitset_add (GtkBitset *self,
+gtk_bitset_add (GtkBitset *this,
                 guint      value)
 {
-  g_return_val_if_fail (self != NULL, FALSE);
+  g_return_val_if_fail (this != NULL, FALSE);
 
-  return roaring_bitmap_add_checked (&self->roaring, value);
+  return roaring_bitmap_add_checked (&this->roaring, value);
 }
 
 /**
  * gtk_bitset_remove:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  * @value: value to remove
  *
- * Removes @value from @self if it was part of it before.
+ * Removes @value from @this if it was part of it before.
  *
- * Returns: %TRUE if @value was part of @self and @self
+ * Returns: %TRUE if @value was part of @this and @this
  *   was changed
  */
 gboolean
-gtk_bitset_remove (GtkBitset *self,
+gtk_bitset_remove (GtkBitset *this,
                    guint      value)
 {
-  g_return_val_if_fail (self != NULL, FALSE);
+  g_return_val_if_fail (this != NULL, FALSE);
 
-  return roaring_bitmap_remove_checked (&self->roaring, value);
+  return roaring_bitmap_remove_checked (&this->roaring, value);
 }
 
 /**
  * gtk_bitset_add_range:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  * @start: first value to add
  * @n_items: number of consecutive values to add
  *
  * Adds all values from @start (inclusive) to @start + @n_items
- * (exclusive) in @self.
+ * (exclusive) in @this.
  */
 void
-gtk_bitset_add_range (GtkBitset *self,
+gtk_bitset_add_range (GtkBitset *this,
                       guint      start,
                       guint      n_items)
 {
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
 
   if (n_items == 0)
     return;
@@ -400,24 +400,24 @@ gtk_bitset_add_range (GtkBitset *self,
   /* overflow check, the == 0 is to allow add_range(G_MAXUINT, 1); */
   g_return_if_fail (start + n_items == 0 || start + n_items > start);
 
-  roaring_bitmap_add_range_closed (&self->roaring, start, start + n_items - 1);
+  roaring_bitmap_add_range_closed (&this->roaring, start, start + n_items - 1);
 }
 
 /**
  * gtk_bitset_remove_range:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  * @start: first value to remove
  * @n_items: number of consecutive values to remove
  *
  * Removes all values from @start (inclusive) to @start + @n_items (exclusive)
- * in @self.
+ * in @this.
  */
 void
-gtk_bitset_remove_range (GtkBitset *self,
+gtk_bitset_remove_range (GtkBitset *this,
                          guint      start,
                          guint      n_items)
 {
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
 
   if (n_items == 0)
     return;
@@ -425,12 +425,12 @@ gtk_bitset_remove_range (GtkBitset *self,
   /* overflow check, the == 0 is to allow add_range(G_MAXUINT, 1); */
   g_return_if_fail (start + n_items == 0 || start + n_items > start);
 
-  roaring_bitmap_remove_range_closed (&self->roaring, start, start + n_items - 1);
+  roaring_bitmap_remove_range_closed (&this->roaring, start, start + n_items - 1);
 }
 
 /**
  * gtk_bitset_add_range_closed:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  * @first: first value to add
  * @last: last value to add
  *
@@ -438,19 +438,19 @@ gtk_bitset_remove_range (GtkBitset *self,
  * values in between. @first must be smaller than @last.
  */
 void
-gtk_bitset_add_range_closed (GtkBitset *self,
+gtk_bitset_add_range_closed (GtkBitset *this,
                              guint      first,
                              guint      last)
 {
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
   g_return_if_fail (first <= last);
 
-  roaring_bitmap_add_range_closed (&self->roaring, first, last);
+  roaring_bitmap_add_range_closed (&this->roaring, first, last);
 }
 
 /**
  * gtk_bitset_remove_range_closed:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  * @first: first value to remove
  * @last: last value to remove
  *
@@ -458,19 +458,19 @@ gtk_bitset_add_range_closed (GtkBitset *self,
  * values in between. @first must be smaller than @last.
  */
 void
-gtk_bitset_remove_range_closed (GtkBitset *self,
+gtk_bitset_remove_range_closed (GtkBitset *this,
                                 guint      first,
                                 guint      last)
 {
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
   g_return_if_fail (first <= last);
 
-  roaring_bitmap_remove_range_closed (&self->roaring, first, last);
+  roaring_bitmap_remove_range_closed (&this->roaring, first, last);
 }
 
 /**
  * gtk_bitset_add_rectangle:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  * @start: first value to add
  * @width: width of the rectangle
  * @height: height of the rectangle
@@ -480,7 +480,7 @@ gtk_bitset_remove_range_closed (GtkBitset *self,
  * and inside that grid, adds a rectangle with the given @width and @height.
  */
 void
-gtk_bitset_add_rectangle (GtkBitset *self,
+gtk_bitset_add_rectangle (GtkBitset *this,
                           guint      start,
                           guint      width,
                           guint      height,
@@ -488,7 +488,7 @@ gtk_bitset_add_rectangle (GtkBitset *self,
 {
   guint i;
 
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
   g_return_if_fail ((start % stride) + width <= stride);
   g_return_if_fail (G_MAXUINT - start >= height * stride);
 
@@ -496,12 +496,12 @@ gtk_bitset_add_rectangle (GtkBitset *self,
     return;
 
   for (i = 0; i < height; i++)
-    gtk_bitset_add_range (self, i * stride + start, width);
+    gtk_bitset_add_range (this, i * stride + start, width);
 }
 
 /**
  * gtk_bitset_remove_rectangle:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  * @start: first value to remove
  * @width: width of the rectangle
  * @height: height of the rectangle
@@ -511,7 +511,7 @@ gtk_bitset_add_rectangle (GtkBitset *self,
  * and inside that grid, removes a rectangle with the given @width and @height.
  */
 void
-gtk_bitset_remove_rectangle (GtkBitset *self,
+gtk_bitset_remove_rectangle (GtkBitset *this,
                              guint      start,
                              guint      width,
                              guint      height,
@@ -519,7 +519,7 @@ gtk_bitset_remove_rectangle (GtkBitset *self,
 {
   guint i;
 
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
   g_return_if_fail (width <= stride);
   g_return_if_fail (G_MAXUINT - start >= height * stride);
 
@@ -527,162 +527,162 @@ gtk_bitset_remove_rectangle (GtkBitset *self,
     return;
 
   for (i = 0; i < height; i++)
-    gtk_bitset_remove_range (self, i * stride + start, width);
+    gtk_bitset_remove_range (this, i * stride + start, width);
 }
 
 /**
  * gtk_bitset_union:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  * @other: the `GtkBitset` to union with
  *
- * Sets @self to be the union of @self and @other.
+ * Sets @this to be the union of @this and @other.
  *
- * That is, add all values from @other into @self that weren't part of it.
+ * That is, add all values from @other into @this that weren't part of it.
  *
- * It is allowed for @self and @other to be the same bitset. Nothing will
+ * It is allowed for @this and @other to be the same bitset. Nothing will
  * happen in that case.
  */
 void
-gtk_bitset_union (GtkBitset       *self,
+gtk_bitset_union (GtkBitset       *this,
                   const GtkBitset *other)
 {
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
   g_return_if_fail (other != NULL);
 
-  if (self == other)
+  if (this == other)
     return;
 
-  roaring_bitmap_or_inplace (&self->roaring, &other->roaring);
+  roaring_bitmap_or_inplace (&this->roaring, &other->roaring);
 }
 
 /**
  * gtk_bitset_intersect:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  * @other: the `GtkBitset` to intersect with
  *
- * Sets @self to be the intersection of @self and @other.
+ * Sets @this to be the intersection of @this and @other.
  *
- * In other words, remove all values from @self that are not part of @other.
+ * In other words, remove all values from @this that are not part of @other.
  *
- * It is allowed for @self and @other to be the same bitset. Nothing will
+ * It is allowed for @this and @other to be the same bitset. Nothing will
  * happen in that case.
  */
 void
-gtk_bitset_intersect (GtkBitset       *self,
+gtk_bitset_intersect (GtkBitset       *this,
                       const GtkBitset *other)
 {
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
   g_return_if_fail (other != NULL);
 
-  if (self == other)
+  if (this == other)
     return;
 
-  roaring_bitmap_and_inplace (&self->roaring, &other->roaring);
+  roaring_bitmap_and_inplace (&this->roaring, &other->roaring);
 }
 
 /**
  * gtk_bitset_subtract:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  * @other: the `GtkBitset` to subtract
  *
- * Sets @self to be the subtraction of @other from @self.
+ * Sets @this to be the subtraction of @other from @this.
  *
- * In other words, remove all values from @self that are part of @other.
+ * In other words, remove all values from @this that are part of @other.
  *
- * It is allowed for @self and @other to be the same bitset. The bitset
+ * It is allowed for @this and @other to be the same bitset. The bitset
  * will be emptied in that case.
  */
 void
-gtk_bitset_subtract (GtkBitset       *self,
+gtk_bitset_subtract (GtkBitset       *this,
                      const GtkBitset *other)
 {
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
   g_return_if_fail (other != NULL);
 
-  if (self == other)
+  if (this == other)
     {
-      roaring_bitmap_clear (&self->roaring);
+      roaring_bitmap_clear (&this->roaring);
       return;
     }
 
-  roaring_bitmap_andnot_inplace (&self->roaring, &other->roaring);
+  roaring_bitmap_andnot_inplace (&this->roaring, &other->roaring);
 }
 
 /**
  * gtk_bitset_difference:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  * @other: the `GtkBitset` to compute the difference from
  *
- * Sets @self to be the symmetric difference of @self and @other.
+ * Sets @this to be the symmetric difference of @this and @other.
  *
- * The symmetric difference is set @self to contain all values that
- * were either contained in @self or in @other, but not in both.
+ * The symmetric difference is set @this to contain all values that
+ * were either contained in @this or in @other, but not in both.
  * This operation is also called an XOR.
  *
- * It is allowed for @self and @other to be the same bitset. The bitset
+ * It is allowed for @this and @other to be the same bitset. The bitset
  * will be emptied in that case.
  */
 void
-gtk_bitset_difference (GtkBitset       *self,
+gtk_bitset_difference (GtkBitset       *this,
                        const GtkBitset *other)
 {
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
   g_return_if_fail (other != NULL);
 
-  if (self == other)
+  if (this == other)
     {
-      roaring_bitmap_clear (&self->roaring);
+      roaring_bitmap_clear (&this->roaring);
       return;
     }
 
-  roaring_bitmap_xor_inplace (&self->roaring, &other->roaring);
+  roaring_bitmap_xor_inplace (&this->roaring, &other->roaring);
 }
 
 /**
  * gtk_bitset_shift_left:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  * @amount: amount to shift all values to the left
  *
- * Shifts all values in @self to the left by @amount.
+ * Shifts all values in @this to the left by @amount.
  *
  * Values smaller than @amount are discarded.
  */
 void
-gtk_bitset_shift_left (GtkBitset *self,
+gtk_bitset_shift_left (GtkBitset *this,
                        guint      amount)
 {
   roaring_bitmap_t *other;
 
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
 
-  other = roaring_bitmap_add_offset (&self->roaring, - (int64_t) amount);
-  roaring_bitmap_overwrite (&self->roaring, other);
+  other = roaring_bitmap_add_offset (&this->roaring, - (int64_t) amount);
+  roaring_bitmap_overwrite (&this->roaring, other);
   roaring_bitmap_free (other);
 }
 
 /**
  * gtk_bitset_shift_right:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  * @amount: amount to shift all values to the right
  *
- * Shifts all values in @self to the right by @amount.
+ * Shifts all values in @this to the right by @amount.
  *
  * Values that end up too large to be held in a #guint are discarded.
  */
 void
-gtk_bitset_shift_right (GtkBitset *self,
+gtk_bitset_shift_right (GtkBitset *this,
                         guint      amount)
 {
   roaring_bitmap_t *other;
 
-  other = roaring_bitmap_add_offset (&self->roaring, (int64_t) amount);
-  roaring_bitmap_overwrite (&self->roaring, other);
+  other = roaring_bitmap_add_offset (&this->roaring, (int64_t) amount);
+  roaring_bitmap_overwrite (&this->roaring, other);
   roaring_bitmap_free (other);
 }
 
 /**
  * gtk_bitset_splice:
- * @self: a `GtkBitset`
+ * @this: a `GtkBitset`
  * @position: position at which to slice
  * @removed: number of values to remove
  * @added: number of values to add
@@ -699,29 +699,29 @@ gtk_bitset_shift_right (GtkBitset *self,
  * up space that can then be filled.
  */
 void
-gtk_bitset_splice (GtkBitset *self,
+gtk_bitset_splice (GtkBitset *this,
                    guint      position,
                    guint      removed,
                    guint      added)
 {
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
   /* overflow */
   g_return_if_fail (position + removed >= position);
   g_return_if_fail (position + added >= position);
 
-  gtk_bitset_remove_range (self, position, removed);
+  gtk_bitset_remove_range (this, position, removed);
 
   if (removed != added)
     {
-      GtkBitset *shift = gtk_bitset_copy (self);
+      GtkBitset *shift = gtk_bitset_copy (this);
 
       gtk_bitset_remove_range (shift, 0, position);
-      gtk_bitset_remove_range_closed (self, position, G_MAXUINT);
+      gtk_bitset_remove_range_closed (this, position, G_MAXUINT);
       if (added > removed)
         gtk_bitset_shift_right (shift, added - removed);
       else
         gtk_bitset_shift_left (shift, removed - added);
-      gtk_bitset_union (self, shift);
+      gtk_bitset_union (this, shift);
       gtk_bitset_unref (shift);
     }
 }

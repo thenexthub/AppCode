@@ -62,7 +62,7 @@ GtkTextTag      *gtk_text_tag_table_lookup   (GtkTextTagTable        *table,
                                               const char             *name);
 GDK_AVAILABLE_IN_ALL
 void             gtk_text_tag_table_foreach  (GtkTextTagTable        *table,
-                                              GtkTextTagTableForeach  func,
+                                              GtkTextTagTableForeach  fn,
                                               gpointer                data);
 GDK_AVAILABLE_IN_ALL
 int              gtk_text_tag_table_get_size (GtkTextTagTable        *table);

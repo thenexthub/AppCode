@@ -55,12 +55,12 @@ enum {
 static guint signals[LAST_SIGNAL] = { 0 };
 
 static void
-gtk_section_model_default_get_section (GtkSectionModel *self,
+gtk_section_model_default_get_section (GtkSectionModel *this,
                                        guint            position,
                                        guint           *out_start,
                                        guint           *out_end)
 {
-  guint n_items = g_list_model_get_n_items (G_LIST_MODEL (self));
+  guint n_items = g_list_model_get_n_items (G_LIST_MODEL (this));
 
   if (position >= n_items)
     {
@@ -112,7 +112,7 @@ gtk_section_model_default_init (GtkSectionModelInterface *iface)
 
 /**
  * gtk_section_model_get_section:
- * @self: a `GtkSectionModel`
+ * @this: a `GtkSectionModel`
  * @position: the position of the item to query
  * @out_start: (out): the position of the first item in the section
  * @out_end: (out): the position of the first item not part of the section
@@ -127,19 +127,19 @@ gtk_section_model_default_init (GtkSectionModelInterface *iface)
  * Since: 4.12
  */
 void
-gtk_section_model_get_section (GtkSectionModel *self,
+gtk_section_model_get_section (GtkSectionModel *this,
                                guint            position,
                                guint           *out_start,
                                guint           *out_end)
 {
   GtkSectionModelInterface *iface;
 
-  g_return_if_fail (GTK_IS_SECTION_MODEL (self));
+  g_return_if_fail (GTK_IS_SECTION_MODEL (this));
   g_return_if_fail (out_start != NULL);
   g_return_if_fail (out_end != NULL);
 
-  iface = GTK_SECTION_MODEL_GET_IFACE (self);
-  iface->get_section (self, position, out_start, out_end);
+  iface = GTK_SECTION_MODEL_GET_IFACE (this);
+  iface->get_section (this, position, out_start, out_end);
 
   g_warn_if_fail (*out_start < *out_end);
 }
@@ -149,7 +149,7 @@ gtk_section_model_get_section (GtkSectionModel *self,
  * a single section).
  **/
 void
-gtk_list_model_get_section (GListModel *self,
+gtk_list_model_get_section (GListModel *this,
                             guint       position,
                             guint      *out_start,
                             guint      *out_end)
@@ -157,18 +157,18 @@ gtk_list_model_get_section (GListModel *self,
   g_return_if_fail (out_start != NULL);
   g_return_if_fail (out_end != NULL);
 
-  if (self == NULL)
+  if (this == NULL)
     {
       *out_start = 0;
       *out_end = G_MAXUINT;
       return;
     }
 
-  g_return_if_fail (G_IS_LIST_MODEL (self));
+  g_return_if_fail (G_IS_LIST_MODEL (this));
 
-  if (!GTK_IS_SECTION_MODEL (self))
+  if (!GTK_IS_SECTION_MODEL (this))
     {
-      guint n_items = g_list_model_get_n_items (self);
+      guint n_items = g_list_model_get_n_items (this);
 
       if (position < n_items)
         {
@@ -184,12 +184,12 @@ gtk_list_model_get_section (GListModel *self,
       return;
     }
 
-  gtk_section_model_get_section (GTK_SECTION_MODEL (self), position, out_start, out_end);
+  gtk_section_model_get_section (GTK_SECTION_MODEL (this), position, out_start, out_end);
 }
 
 /**
  * gtk_section_model_sections_changed:
- * @self: a `GtkSectionModel`
+ * @this: a `GtkSectionModel`
  * @position: the first changed item
  * @n_items: the number of changed items
  *
@@ -212,13 +212,13 @@ gtk_list_model_get_section (GListModel *self,
  * Since: 4.12
  */
 void
-gtk_section_model_sections_changed (GtkSectionModel *self,
+gtk_section_model_sections_changed (GtkSectionModel *this,
                                     guint            position,
                                     guint            n_items)
 {
-  g_return_if_fail (GTK_IS_SECTION_MODEL (self));
+  g_return_if_fail (GTK_IS_SECTION_MODEL (this));
   g_return_if_fail (n_items > 0);
-  g_return_if_fail (position + n_items <= g_list_model_get_n_items (G_LIST_MODEL (self)));
+  g_return_if_fail (position + n_items <= g_list_model_get_n_items (G_LIST_MODEL (this)));
 
-  g_signal_emit (self, signals[SECTIONS_CHANGED], 0, position, n_items);
+  g_signal_emit (this, signals[SECTIONS_CHANGED], 0, position, n_items);
 }

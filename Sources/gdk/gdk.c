@@ -102,7 +102,7 @@ typedef struct _GdkThreadsDispatch GdkThreadsDispatch;
 
 struct _GdkThreadsDispatch
 {
-  GSourceFunc func;
+  GSourceFunc fn;
   gpointer data;
   GDestroyNotify destroy;
 };

@@ -75,6 +75,6 @@ typedef struct _GdkAndroidDrop {
 GdkDrag *gdk_android_dnd_surface_drag_begin (GdkSurface *surface, GdkDevice *device, GdkContentProvider *content, GdkDragAction actions, double dx, double dy);
 void gdk_android_dnd_handle_drag_start_fail (GdkAndroidDisplay *display, jobject native_identifier);
 
-gboolean gdk_android_dnd_surface_handle_drop_event (GdkAndroidSurface *self, jobject event);
+gboolean gdk_android_dnd_surface_handle_drop_event (GdkAndroidSurface *this, jobject event);
 
 G_END_DECLS

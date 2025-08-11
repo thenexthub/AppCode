@@ -30,20 +30,20 @@ gsk_vulkan_direct_allocator_alloc (GskVulkanAllocator  *allocator,
                                    VkDeviceSize         alignment,
                                    GskVulkanAllocation *alloc)
 {
-  GskVulkanDirectAllocator *self = (GskVulkanDirectAllocator *) allocator;
+  GskVulkanDirectAllocator *this = (GskVulkanDirectAllocator *) allocator;
 
-  GSK_VK_CHECK (vkAllocateMemory, self->device,
+  GSK_VK_CHECK (vkAllocateMemory, this->device,
                                   &(VkMemoryAllocateInfo) {
                                       .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
                                       .allocationSize = size,
-                                      .memoryTypeIndex = self->vk_memory_type_index
+                                      .memoryTypeIndex = this->vk_memory_type_index
                                   },
                                   NULL,
                                   &alloc->vk_memory);
 
-  if ((self->vk_memory_type.propertyFlags & GSK_VULKAN_MEMORY_MAPPABLE) == GSK_VULKAN_MEMORY_MAPPABLE)
+  if ((this->vk_memory_type.propertyFlags & GSK_VULKAN_MEMORY_MAPPABLE) == GSK_VULKAN_MEMORY_MAPPABLE)
     {
-        GSK_VK_CHECK (vkMapMemory, self->device,
+        GSK_VK_CHECK (vkMapMemory, this->device,
                                    alloc->vk_memory,
                                    0,
                                    size,
@@ -57,19 +57,19 @@ gsk_vulkan_direct_allocator_alloc (GskVulkanAllocator  *allocator,
 
   alloc->offset = 0;
   alloc->size = size;
-  alloc->memory_flags = self->vk_memory_type.propertyFlags;
+  alloc->memory_flags = this->vk_memory_type.propertyFlags;
 }
 
 static void
 gsk_vulkan_direct_allocator_free (GskVulkanAllocator  *allocator,
                                   GskVulkanAllocation *alloc)
 {
-  GskVulkanDirectAllocator *self = (GskVulkanDirectAllocator *) allocator;
+  GskVulkanDirectAllocator *this = (GskVulkanDirectAllocator *) allocator;
 
   if (alloc->map)
-    vkUnmapMemory (self->device, alloc->vk_memory);
+    vkUnmapMemory (this->device, alloc->vk_memory);
 
-  vkFreeMemory (self->device,
+  vkFreeMemory (this->device,
                 alloc->vk_memory,
                 NULL);
 }
@@ -79,18 +79,18 @@ gsk_vulkan_direct_allocator_new (VkDevice            device,
                                  uint32_t            vk_type_index,
                                  const VkMemoryType *vk_type)
 {
-  GskVulkanDirectAllocator *self;
+  GskVulkanDirectAllocator *this;
 
-  self = g_new0 (GskVulkanDirectAllocator, 1);
-  self->allocator_class.ref_count = 1;
-  self->allocator_class.free_allocator = gsk_vulkan_direct_allocator_free_allocator;
-  self->allocator_class.alloc = gsk_vulkan_direct_allocator_alloc;
-  self->allocator_class.free = gsk_vulkan_direct_allocator_free;
-  self->device = device;
-  self->vk_memory_type_index = vk_type_index;
-  self->vk_memory_type = *vk_type;
+  this = g_new0 (GskVulkanDirectAllocator, 1);
+  this->allocator_class.ref_count = 1;
+  this->allocator_class.free_allocator = gsk_vulkan_direct_allocator_free_allocator;
+  this->allocator_class.alloc = gsk_vulkan_direct_allocator_alloc;
+  this->allocator_class.free = gsk_vulkan_direct_allocator_free;
+  this->device = device;
+  this->vk_memory_type_index = vk_type_index;
+  this->vk_memory_type = *vk_type;
 
-  return (GskVulkanAllocator *) self;
+  return (GskVulkanAllocator *) this;
 }
 
 /* }}} */
@@ -123,20 +123,20 @@ struct _GskVulkanBuddyAllocator
 static void
 gsk_vulkan_buddy_allocator_free_allocator (GskVulkanAllocator *allocator)
 {
-  GskVulkanBuddyAllocator *self = (GskVulkanBuddyAllocator *) allocator;
+  GskVulkanBuddyAllocator *this = (GskVulkanBuddyAllocator *) allocator;
   gsize i;
 
-  if (self->cache.vk_memory)
-    gsk_vulkan_free (self->allocator, &self->cache);
+  if (this->cache.vk_memory)
+    gsk_vulkan_free (this->allocator, &this->cache);
 
   for (i = 0; i < N_SUBDIVISIONS; i++)
     {
-      gsk_vulkan_allocation_list_clear (&self->free_lists[i]);
+      gsk_vulkan_allocation_list_clear (&this->free_lists[i]);
     }
 
-  gsk_vulkan_allocator_unref (self->allocator);
+  gsk_vulkan_allocator_unref (this->allocator);
 
-  g_free (self);
+  g_free (this);
 }
 
 /* must not be 0:
@@ -154,52 +154,52 @@ gsk_vulkan_buddy_allocator_alloc (GskVulkanAllocator  *allocator,
                                   VkDeviceSize         align,
                                   GskVulkanAllocation *alloc)
 {
-  GskVulkanBuddyAllocator *self = (GskVulkanBuddyAllocator *) allocator;
+  GskVulkanBuddyAllocator *this = (GskVulkanBuddyAllocator *) allocator;
   gsize slot;
   int i;
 
   size = MAX (size, align);
 
   slot = find_slot (size);
-  if (slot >= self->block_size_slot)
+  if (slot >= this->block_size_slot)
     {
-      gsk_vulkan_alloc (self->allocator, size, align, alloc);
+      gsk_vulkan_alloc (this->allocator, size, align, alloc);
       return;
     }
 
-  slot = MIN (self->block_size_slot - slot, N_SUBDIVISIONS) - 1;
+  slot = MIN (this->block_size_slot - slot, N_SUBDIVISIONS) - 1;
   for (i = slot; i >= 0; i--)
     {
-      if (gsk_vulkan_allocation_list_get_size (&self->free_lists[i]) > 0)
+      if (gsk_vulkan_allocation_list_get_size (&this->free_lists[i]) > 0)
         break;
     }
   if (i < 0)
     {
-      if (self->cache.vk_memory)
+      if (this->cache.vk_memory)
         {
-          *alloc = self->cache;
-          self->cache.vk_memory = VK_NULL_HANDLE;
+          *alloc = this->cache;
+          this->cache.vk_memory = VK_NULL_HANDLE;
         }
       else
         {
           /* We force alignment to our size, so that we can use offset
            * to find the buddy allocation.
            */
-          gsk_vulkan_alloc (self->allocator, 1 << self->block_size_slot, 1 << self->block_size_slot, alloc);
+          gsk_vulkan_alloc (this->allocator, 1 << this->block_size_slot, 1 << this->block_size_slot, alloc);
         }
     }
   else
     {
-      gsize n = gsk_vulkan_allocation_list_get_size (&self->free_lists[i]);
-      *alloc = *gsk_vulkan_allocation_list_get (&self->free_lists[i], n - 1);
-      gsk_vulkan_allocation_list_set_size (&self->free_lists[i], n - 1);
+      gsize n = gsk_vulkan_allocation_list_get_size (&this->free_lists[i]);
+      *alloc = *gsk_vulkan_allocation_list_get (&this->free_lists[i], n - 1);
+      gsk_vulkan_allocation_list_set_size (&this->free_lists[i], n - 1);
     }
 
   while (i != slot)
     {
       i++;
       alloc->size >>= 1;
-      gsk_vulkan_allocation_list_append (&self->free_lists[i], alloc);
+      gsk_vulkan_allocation_list_append (&this->free_lists[i], alloc);
       alloc->offset += alloc->size;
       if (alloc->map)
         alloc->map += alloc->size;
@@ -212,38 +212,38 @@ static void
 gsk_vulkan_buddy_allocator_free (GskVulkanAllocator  *allocator,
                                  GskVulkanAllocation *alloc)
 {
-  GskVulkanBuddyAllocator *self = (GskVulkanBuddyAllocator *) allocator;
+  GskVulkanBuddyAllocator *this = (GskVulkanBuddyAllocator *) allocator;
   gsize slot, i, n;
 
   slot = find_slot (alloc->size);
-  if (slot >= self->block_size_slot)
+  if (slot >= this->block_size_slot)
     {
-      gsk_vulkan_free (self->allocator, alloc);
+      gsk_vulkan_free (this->allocator, alloc);
       return;
     }
 
-  slot = MIN (self->block_size_slot - slot, N_SUBDIVISIONS) - 1;
+  slot = MIN (this->block_size_slot - slot, N_SUBDIVISIONS) - 1;
 restart:
-  n = gsk_vulkan_allocation_list_get_size (&self->free_lists[slot]);
+  n = gsk_vulkan_allocation_list_get_size (&this->free_lists[slot]);
   for (i = 0; i < n; i++)
     {
-      GskVulkanAllocation *maybe_buddy = gsk_vulkan_allocation_list_index (&self->free_lists[slot], i);
+      GskVulkanAllocation *maybe_buddy = gsk_vulkan_allocation_list_index (&this->free_lists[slot], i);
       if (maybe_buddy->vk_memory == alloc->vk_memory &&
           maybe_buddy->offset == (alloc->offset ^ alloc->size))
         {
           if (i < n - 1)
-            *maybe_buddy = *gsk_vulkan_allocation_list_get (&self->free_lists[slot], n - 1);
-          gsk_vulkan_allocation_list_set_size (&self->free_lists[slot], n - 1);
+            *maybe_buddy = *gsk_vulkan_allocation_list_get (&this->free_lists[slot], n - 1);
+          gsk_vulkan_allocation_list_set_size (&this->free_lists[slot], n - 1);
           if (alloc->map && alloc->offset & alloc->size)
             alloc->map -= alloc->size;
           alloc->offset &= ~alloc->size;
           alloc->size <<= 1;
           if (slot == 0)
             {
-              if (self->cache.vk_memory == VK_NULL_HANDLE)
-                self->cache = *alloc;
+              if (this->cache.vk_memory == VK_NULL_HANDLE)
+                this->cache = *alloc;
               else
-                gsk_vulkan_free (self->allocator, alloc);
+                gsk_vulkan_free (this->allocator, alloc);
               return;
             }
           else
@@ -254,30 +254,30 @@ restart:
             }
         }
     }
-  gsk_vulkan_allocation_list_append (&self->free_lists[slot], alloc);
+  gsk_vulkan_allocation_list_append (&this->free_lists[slot], alloc);
 }
 
 GskVulkanAllocator *
 gsk_vulkan_buddy_allocator_new (GskVulkanAllocator *allocator,
                                 gsize               block_size)
 {
-  GskVulkanBuddyAllocator *self;
+  GskVulkanBuddyAllocator *this;
   gsize i;
 
-  self = g_new0 (GskVulkanBuddyAllocator, 1);
-  self->allocator_class.ref_count = 1;
-  self->allocator_class.free_allocator = gsk_vulkan_buddy_allocator_free_allocator;
-  self->allocator_class.alloc = gsk_vulkan_buddy_allocator_alloc;
-  self->allocator_class.free = gsk_vulkan_buddy_allocator_free;
-  self->allocator = allocator;
-  self->block_size_slot = find_slot (block_size);
+  this = g_new0 (GskVulkanBuddyAllocator, 1);
+  this->allocator_class.ref_count = 1;
+  this->allocator_class.free_allocator = gsk_vulkan_buddy_allocator_free_allocator;
+  this->allocator_class.alloc = gsk_vulkan_buddy_allocator_alloc;
+  this->allocator_class.free = gsk_vulkan_buddy_allocator_free;
+  this->allocator = allocator;
+  this->block_size_slot = find_slot (block_size);
 
   for (i = 0; i < N_SUBDIVISIONS; i++)
     {
-      gsk_vulkan_allocation_list_init (&self->free_lists[i]);
+      gsk_vulkan_allocation_list_init (&this->free_lists[i]);
     }
 
-  return (GskVulkanAllocator *) self;
+  return (GskVulkanAllocator *) this;
 }
 
 /* }}} */
@@ -300,29 +300,29 @@ struct _GskVulkanStatsAllocator
 };
 
 static void
-gsk_vulkan_stats_allocator_dump_stats (GskVulkanStatsAllocator *self,
+gsk_vulkan_stats_allocator_dump_stats (GskVulkanStatsAllocator *this,
                                        const char              *reason)
 {
   g_printerr ("%s\n", reason);
-  g_printerr ("  %zu bytes requested in %zu allocations\n", self->n_bytes_requested, self->n_alloc);
-  g_printerr ("  %zu bytes allocated (%.2f%% overhead)\n", self->n_bytes_allocated,
-              (self->n_bytes_allocated - self->n_bytes_requested) * 100. / self->n_bytes_requested);
-  g_printerr ("  %zu bytes freed in %zu frees\n", self->n_bytes_freed , self->n_free);
+  g_printerr ("  %zu bytes requested in %zu allocations\n", this->n_bytes_requested, this->n_alloc);
+  g_printerr ("  %zu bytes allocated (%.2f%% overhead)\n", this->n_bytes_allocated,
+              (this->n_bytes_allocated - this->n_bytes_requested) * 100. / this->n_bytes_requested);
+  g_printerr ("  %zu bytes freed in %zu frees\n", this->n_bytes_freed , this->n_free);
   g_printerr ("  %zu bytes remaining in %zu allocations\n",
-              self->n_bytes_allocated - self->n_bytes_freed, self->n_alloc - self->n_free);
+              this->n_bytes_allocated - this->n_bytes_freed, this->n_alloc - this->n_free);
 }
 
 static void
 gsk_vulkan_stats_allocator_free_allocator (GskVulkanAllocator *allocator)
 {
-  GskVulkanStatsAllocator *self = (GskVulkanStatsAllocator *) allocator;
+  GskVulkanStatsAllocator *this = (GskVulkanStatsAllocator *) allocator;
 
-  g_assert (self->n_alloc == self->n_free);
-  g_assert (self->n_bytes_allocated == self->n_bytes_freed);
+  g_assert (this->n_alloc == this->n_free);
+  g_assert (this->n_bytes_allocated == this->n_bytes_freed);
 
-  gsk_vulkan_allocator_unref (self->allocator);
+  gsk_vulkan_allocator_unref (this->allocator);
 
-  g_free (self);
+  g_free (this);
 }
 
 static void
@@ -331,44 +331,44 @@ gsk_vulkan_stats_allocator_alloc (GskVulkanAllocator  *allocator,
                                   VkDeviceSize         align,
                                   GskVulkanAllocation *alloc)
 {
-  GskVulkanStatsAllocator *self = (GskVulkanStatsAllocator *) allocator;
+  GskVulkanStatsAllocator *this = (GskVulkanStatsAllocator *) allocator;
 
-  gsk_vulkan_alloc (self->allocator, size, align, alloc);
+  gsk_vulkan_alloc (this->allocator, size, align, alloc);
 
-  self->n_alloc++;
-  self->n_bytes_requested += size;
-  self->n_bytes_allocated += alloc->size;
+  this->n_alloc++;
+  this->n_bytes_requested += size;
+  this->n_bytes_allocated += alloc->size;
 
-  gsk_vulkan_stats_allocator_dump_stats (self, "alloc()");
+  gsk_vulkan_stats_allocator_dump_stats (this, "alloc()");
 }
 
 static void
 gsk_vulkan_stats_allocator_free (GskVulkanAllocator  *allocator,
                                  GskVulkanAllocation *alloc)
 {
-  GskVulkanStatsAllocator *self = (GskVulkanStatsAllocator *) allocator;
+  GskVulkanStatsAllocator *this = (GskVulkanStatsAllocator *) allocator;
 
-  self->n_free++;
-  self->n_bytes_freed += alloc->size;
+  this->n_free++;
+  this->n_bytes_freed += alloc->size;
 
-  gsk_vulkan_free (self->allocator, alloc);
+  gsk_vulkan_free (this->allocator, alloc);
 
-  gsk_vulkan_stats_allocator_dump_stats (self, "free()");
+  gsk_vulkan_stats_allocator_dump_stats (this, "free()");
 }
 
 GskVulkanAllocator *
 gsk_vulkan_stats_allocator_new (GskVulkanAllocator *allocator)
 {
-  GskVulkanStatsAllocator *self;
+  GskVulkanStatsAllocator *this;
 
-  self = g_new0 (GskVulkanStatsAllocator, 1);
-  self->allocator_class.ref_count = 1;
-  self->allocator_class.free_allocator = gsk_vulkan_stats_allocator_free_allocator;
-  self->allocator_class.alloc = gsk_vulkan_stats_allocator_alloc;
-  self->allocator_class.free = gsk_vulkan_stats_allocator_free;
-  self->allocator = allocator;
+  this = g_new0 (GskVulkanStatsAllocator, 1);
+  this->allocator_class.ref_count = 1;
+  this->allocator_class.free_allocator = gsk_vulkan_stats_allocator_free_allocator;
+  this->allocator_class.alloc = gsk_vulkan_stats_allocator_alloc;
+  this->allocator_class.free = gsk_vulkan_stats_allocator_free;
+  this->allocator = allocator;
 
-  return (GskVulkanAllocator *) self;
+  return (GskVulkanAllocator *) this;
 }
 
 /* }}} */
@@ -406,12 +406,12 @@ static void
 gsk_vulkan_external_allocator_free (GskVulkanAllocator  *allocator,
                                     GskVulkanAllocation *alloc)
 {
-  GskVulkanExteralAllocator *self = (GskVulkanExteralAllocator *) allocator;
+  GskVulkanExteralAllocator *this = (GskVulkanExteralAllocator *) allocator;
 
   g_assert (alloc->map == NULL);
 
   if (alloc->vk_memory)
-    vkFreeMemory (self->device,
+    vkFreeMemory (this->device,
                   alloc->vk_memory,
                   NULL);
 }
@@ -423,16 +423,16 @@ gsk_vulkan_external_allocator_free (GskVulkanAllocator  *allocator,
 GskVulkanAllocator *
 gsk_vulkan_external_allocator_new (VkDevice device)
 {
-  GskVulkanExteralAllocator *self;
+  GskVulkanExteralAllocator *this;
 
-  self = g_new0 (GskVulkanExteralAllocator, 1);
-  self->allocator_class.ref_count = 1;
-  self->allocator_class.free_allocator = gsk_vulkan_external_allocator_free_allocator;
-  self->allocator_class.alloc = gsk_vulkan_external_allocator_alloc;
-  self->allocator_class.free = gsk_vulkan_external_allocator_free;
-  self->device = device;
+  this = g_new0 (GskVulkanExteralAllocator, 1);
+  this->allocator_class.ref_count = 1;
+  this->allocator_class.free_allocator = gsk_vulkan_external_allocator_free_allocator;
+  this->allocator_class.alloc = gsk_vulkan_external_allocator_alloc;
+  this->allocator_class.free = gsk_vulkan_external_allocator_free;
+  this->device = device;
 
-  return (GskVulkanAllocator *) self;
+  return (GskVulkanAllocator *) this;
 }
 
 /* }}} */

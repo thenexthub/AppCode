@@ -32,10 +32,10 @@ GDK_AVAILABLE_IN_4_16
 GType           gdk_color_state_get_type                (void) G_GNUC_CONST;
 
 GDK_AVAILABLE_IN_4_16
-GdkColorState * gdk_color_state_ref                     (GdkColorState  *self);
+GdkColorState * gdk_color_state_ref                     (GdkColorState  *this);
 
 GDK_AVAILABLE_IN_4_16
-void            gdk_color_state_unref                   (GdkColorState  *self);
+void            gdk_color_state_unref                   (GdkColorState  *this);
 
 GDK_AVAILABLE_IN_4_16
 GdkColorState * gdk_color_state_get_srgb                (void);
@@ -56,15 +56,15 @@ GDK_AVAILABLE_IN_4_16
 GdkColorState * gdk_color_state_get_oklch               (void);
 
 GDK_AVAILABLE_IN_4_16
-gboolean        gdk_color_state_equal                   (GdkColorState  *self,
+gboolean        gdk_color_state_equal                   (GdkColorState  *this,
                                                          GdkColorState  *other);
 
 GDK_AVAILABLE_IN_4_20
-gboolean        gdk_color_state_equivalent              (GdkColorState  *self,
+gboolean        gdk_color_state_equivalent              (GdkColorState  *this,
                                                          GdkColorState  *other);
 
 GDK_AVAILABLE_IN_4_16
-GdkCicpParams  *gdk_color_state_create_cicp_params      (GdkColorState  *self);
+GdkCicpParams  *gdk_color_state_create_cicp_params      (GdkColorState  *this);
 
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GdkColorState, gdk_color_state_unref)

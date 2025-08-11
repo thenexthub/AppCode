@@ -56,7 +56,7 @@ static void gtk_cell_renderer_toggle_set_property  (GObject                    *
 						    guint                       param_id,
 						    const GValue               *value,
 						    GParamSpec                 *pspec);
-static void gtk_cell_renderer_toggle_get_size   (GtkCellRendererToggle      *self,
+static void gtk_cell_renderer_toggle_get_size   (GtkCellRendererToggle      *this,
 						 GtkWidget                  *widget,
 						 const GdkRectangle         *cell_area,
 						 int                        *x_offset,
@@ -374,7 +374,7 @@ calc_indicator_size (GtkStyleContext *context)
 }
 
 static void
-gtk_cell_renderer_toggle_get_size (GtkCellRendererToggle *self,
+gtk_cell_renderer_toggle_get_size (GtkCellRendererToggle *this,
 				   GtkWidget             *widget,
 				   const GdkRectangle    *cell_area,
 				   int                   *x_offset,
@@ -382,7 +382,7 @@ gtk_cell_renderer_toggle_get_size (GtkCellRendererToggle *self,
 				   int                   *width,
 				   int                   *height)
 {
-  GtkCellRenderer *cell = GTK_CELL_RENDERER (self);
+  GtkCellRenderer *cell = GTK_CELL_RENDERER (this);
   int calc_width;
   int calc_height;
   int xpad, ypad;
@@ -391,7 +391,7 @@ gtk_cell_renderer_toggle_get_size (GtkCellRendererToggle *self,
 
   gtk_cell_renderer_get_padding (cell, &xpad, &ypad);
 
-  context = gtk_cell_renderer_toggle_save_context (self, widget);
+  context = gtk_cell_renderer_toggle_save_context (this, widget);
   gtk_style_context_get_padding (context, &padding);
   gtk_style_context_get_border (context, &border);
 
@@ -399,7 +399,7 @@ gtk_cell_renderer_toggle_get_size (GtkCellRendererToggle *self,
   calc_width += xpad * 2 + padding.left + padding.right + border.left + border.right;
   calc_height += ypad * 2 + padding.top + padding.bottom + border.top + border.bottom;
 
-  gtk_cell_renderer_toggle_restore_context (self, context);
+  gtk_cell_renderer_toggle_restore_context (this, context);
 
   if (width)
     *width = calc_width;

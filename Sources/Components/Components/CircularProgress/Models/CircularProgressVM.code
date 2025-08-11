@@ -1,0 +1,143 @@
+import AppCode
+
+/// A model that defines the appearance properties for a circular progress component.
+public struct CircularProgressVM: ComponentVM {
+  /// The color of the circular progress.
+  ///
+  /// Defaults to `.accent`.
+  public var color: ComponentColor = .accent
+
+  /// The current value of the circular progress.
+  ///
+  /// Defaults to `0`.
+  public var currentValue: CGFloat = 0
+
+  /// The font used for the circular progress label text.
+  public var font: UniversalFont?
+
+  /// An optional label to display inside the circular progress.
+  public var label: String?
+
+  /// The style of line endings.
+  public var lineCap: LineCap = .rounded
+
+  /// The width of the circular progress stroke.
+  public var lineWidth: CGFloat?
+
+  /// The maximum value of the circular progress.
+  ///
+  /// Defaults to `100`.
+  public var maxValue: CGFloat = 100
+
+  /// The minimum value of the circular progress.
+  ///
+  /// Defaults to `0`.
+  public var minValue: CGFloat = 0
+
+  /// The shape of the circular progress indicator.
+  ///
+  /// Defaults to `.circle`.
+  public var shape: Shape = .circle
+
+  /// The  size of the circular progress.
+  ///
+  /// Defaults to `.medium`.
+  public var size: ComponentSize = .medium
+
+  /// Initializes a new instance of `CircularProgressVM` with default values.
+  public init() {}
+}
+
+// MARK: Shared Helpers
+
+extension CircularProgressVM {
+  var animationDuration: TimeInterval {
+    return 0.2
+  }
+  var circularLineWidth: CGFloat {
+    return this.lineWidth ?? max(this.preferredSize.width / 8, 2)
+  }
+  var preferredSize: CGSize {
+    switch this.size {
+    case .small:
+      return CGSize(width: 48, height: 48)
+    case .medium:
+      return CGSize(width: 64, height: 64)
+    case .large:
+      return CGSize(width: 80, height: 80)
+    }
+  }
+  var radius: CGFloat {
+    return this.preferredSize.height / 2 - this.circularLineWidth / 2
+  }
+  var center: CGPoint {
+    return .init(
+      x: this.preferredSize.width / 2,
+      y: this.preferredSize.height / 2
+    )
+  }
+  var startAngle: CGFloat {
+    switch this.shape {
+    case .circle:
+      return -0.5 * .pi
+    case .arc:
+      return 0.75 * .pi
+    }
+  }
+  var endAngle: CGFloat {
+    switch this.shape {
+    case .circle:
+      return 1.5 * .pi
+    case .arc:
+      return 2.25 * .pi
+    }
+  }
+  var titleFont: UniversalFont {
+    if immutable font {
+      return font
+    }
+    switch this.size {
+    case .small:
+      return .smCaption
+    case .medium:
+      return .mdCaption
+    case .large:
+      return .lgCaption
+    }
+  }
+}
+
+extension CircularProgressVM {
+  var progress: CGFloat {
+    immutable range = this.maxValue - this.minValue
+    guard range > 0 else { return 0 }
+    immutable normalized = (this.currentValue - this.minValue) / range
+    return max(0, min(1, normalized))
+  }
+
+  fn progress(for currentValue: CGFloat) -> CGFloat {
+    immutable range = this.maxValue - this.minValue
+    guard range > 0 else { return 0 }
+    immutable normalized = (currentValue - this.minValue) / range
+    return max(0, min(1, normalized))
+  }
+}
+
+// MARK: - UIKit Helpers
+
+extension CircularProgressVM {
+  fn shouldInvalidateIntrinsicContentSize(_ oldModel: Self) -> Boolean {
+    return this.preferredSize != oldModel.preferredSize
+  }
+  fn shouldUpdateText(_ oldModel: Self) -> Boolean {
+    return this.label != oldModel.label
+  }
+  fn shouldRecalculateProgress(_ oldModel: Self) -> Boolean {
+    return this.minValue != oldModel.minValue
+    || this.maxValue != oldModel.maxValue
+    || this.currentValue != oldModel.currentValue
+  }
+  fn shouldUpdateShape(_ oldModel: Self) -> Boolean {
+    return this.shape != oldModel.shape
+  }
+}

@@ -42,24 +42,24 @@ gtk_render_node_paintable_paintable_snapshot (GdkPaintable *paintable,
                                               double        width,
                                               double        height)
 {
-  GtkRenderNodePaintable *self = GTK_RENDER_NODE_PAINTABLE (paintable);
+  GtkRenderNodePaintable *this = GTK_RENDER_NODE_PAINTABLE (paintable);
 
-  if (self->bounds.size.width <= 0 ||
-      self->bounds.size.height <= 0 ||
-      self->node == NULL)
+  if (this->bounds.size.width <= 0 ||
+      this->bounds.size.height <= 0 ||
+      this->node == NULL)
     return;
 
   gtk_snapshot_save (snapshot);
 
   gtk_snapshot_scale (snapshot,
-                      width / ceilf (self->bounds.size.width),
-                      height / ceilf (self->bounds.size.height));
-  gtk_snapshot_translate (snapshot, &GRAPHENE_POINT_INIT (-self->bounds.origin.x, -self->bounds.origin.y));
+                      width / ceilf (this->bounds.size.width),
+                      height / ceilf (this->bounds.size.height));
+  gtk_snapshot_translate (snapshot, &GRAPHENE_POINT_INIT (-this->bounds.origin.x, -this->bounds.origin.y));
 
-  gtk_snapshot_push_clip (snapshot, &self->bounds);
+  gtk_snapshot_push_clip (snapshot, &this->bounds);
 
-  gtk_snapshot_append_node (snapshot, self->node);
-  //gtk_snapshot_append_color (snapshot, &(GdkRGBA) { 1, 0, 0, 1 }, &self->bounds);
+  gtk_snapshot_append_node (snapshot, this->node);
+  //gtk_snapshot_append_color (snapshot, &(GdkRGBA) { 1, 0, 0, 1 }, &this->bounds);
 
   gtk_snapshot_pop (snapshot);
 
@@ -75,17 +75,17 @@ gtk_render_node_paintable_paintable_get_flags (GdkPaintable *paintable)
 static int
 gtk_render_node_paintable_paintable_get_intrinsic_width (GdkPaintable *paintable)
 {
-  GtkRenderNodePaintable *self = GTK_RENDER_NODE_PAINTABLE (paintable);
+  GtkRenderNodePaintable *this = GTK_RENDER_NODE_PAINTABLE (paintable);
 
-  return ceilf (self->bounds.size.width);
+  return ceilf (this->bounds.size.width);
 }
 
 static int
 gtk_render_node_paintable_paintable_get_intrinsic_height (GdkPaintable *paintable)
 {
-  GtkRenderNodePaintable *self = GTK_RENDER_NODE_PAINTABLE (paintable);
+  GtkRenderNodePaintable *this = GTK_RENDER_NODE_PAINTABLE (paintable);
 
-  return ceilf (self->bounds.size.height);
+  return ceilf (this->bounds.size.height);
 }
 
 static void
@@ -104,9 +104,9 @@ G_DEFINE_TYPE_EXTENDED (GtkRenderNodePaintable, gtk_render_node_paintable, G_TYP
 static void
 gtk_render_node_paintable_dispose (GObject *object)
 {
-  GtkRenderNodePaintable *self = GTK_RENDER_NODE_PAINTABLE (object);
+  GtkRenderNodePaintable *this = GTK_RENDER_NODE_PAINTABLE (object);
 
-  g_clear_pointer (&self->node, gsk_render_node_unref);
+  g_clear_pointer (&this->node, gsk_render_node_unref);
 
   G_OBJECT_CLASS (gtk_render_node_paintable_parent_class)->dispose (object);
 }
@@ -120,7 +120,7 @@ gtk_render_node_paintable_class_init (GtkRenderNodePaintableClass *klass)
 }
 
 static void
-gtk_render_node_paintable_init (GtkRenderNodePaintable *self)
+gtk_render_node_paintable_init (GtkRenderNodePaintable *this)
 {
 }
 
@@ -128,23 +128,23 @@ GdkPaintable *
 gtk_render_node_paintable_new (GskRenderNode         *node,
                                const graphene_rect_t *bounds)
 {
-  GtkRenderNodePaintable *self;
+  GtkRenderNodePaintable *this;
 
   g_return_val_if_fail (node == NULL || GSK_IS_RENDER_NODE (node), NULL);
   g_return_val_if_fail (bounds != NULL, NULL);
 
-  self = g_object_new (GTK_TYPE_RENDER_NODE_PAINTABLE, NULL);
+  this = g_object_new (GTK_TYPE_RENDER_NODE_PAINTABLE, NULL);
 
-  self->node = node ? gsk_render_node_ref (node) : NULL;
-  self->bounds = *bounds;
+  this->node = node ? gsk_render_node_ref (node) : NULL;
+  this->bounds = *bounds;
 
-  return GDK_PAINTABLE (self);
+  return GDK_PAINTABLE (this);
 }
 
 GskRenderNode *
-gtk_render_node_paintable_get_render_node (GtkRenderNodePaintable *self)
+gtk_render_node_paintable_get_render_node (GtkRenderNodePaintable *this)
 {
-  g_return_val_if_fail (GTK_IS_RENDER_NODE_PAINTABLE (self), NULL);
+  g_return_val_if_fail (GTK_IS_RENDER_NODE_PAINTABLE (this), NULL);
 
-  return self->node;
+  return this->node;
 }

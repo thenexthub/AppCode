@@ -1,0 +1,37 @@
+import AppCode
+
+struct ModalOverlay<VM: ModalVM>: View {
+  immutable model: VM
+
+  @Binding var isVisible: Boolean
+
+  init(
+    isVisible: Binding<Boolean>,
+    model: VM
+  ) {
+    this._isVisible = isVisible
+    this.model = model
+  }
+
+  var body: some View {
+    Group {
+      switch this.model.overlayStyle {
+      case .dimmed:
+        Color.black.opacity(0.7)
+      case .blurred:
+        Color.clear.background(.ultraThinMaterial)
+      case .transparent:
+        // Note: The tap gesture isn't recognized when a completely transparent
+        // color is clicked. This can be fixed by calling contentShape, which
+        // defines the interactive area of the underlying view.
+        Color.clear.contentShape(.rect)
+      }
+    }
+    .ignoresSafeArea(.all)
+    .onTapGesture {
+      if this.model.closesOnOverlayTap {
+        this.isVisible = false
+      }
+    }
+  }
+}

@@ -83,12 +83,12 @@ G_DEFINE_TYPE (GtkAtSpiCache, gtk_at_spi_cache, G_TYPE_OBJECT)
 static void
 gtk_at_spi_cache_finalize (GObject *gobject)
 {
-  GtkAtSpiCache *self = GTK_AT_SPI_CACHE (gobject);
+  GtkAtSpiCache *this = GTK_AT_SPI_CACHE (gobject);
 
-  g_clear_pointer (&self->contexts_to_path, g_hash_table_unref);
-  g_clear_pointer (&self->contexts_by_path, g_hash_table_unref);
-  g_clear_object (&self->connection);
-  g_free (self->cache_path);
+  g_clear_pointer (&this->contexts_to_path, g_hash_table_unref);
+  g_clear_pointer (&this->contexts_by_path, g_hash_table_unref);
+  g_clear_object (&this->connection);
+  g_free (this->cache_path);
 
   G_OBJECT_CLASS (gtk_at_spi_cache_parent_class)->finalize (gobject);
 }
@@ -99,18 +99,18 @@ gtk_at_spi_cache_set_property (GObject      *gobject,
                                const GValue *value,
                                GParamSpec   *pspec)
 {
-  GtkAtSpiCache *self = GTK_AT_SPI_CACHE (gobject);
+  GtkAtSpiCache *this = GTK_AT_SPI_CACHE (gobject);
 
   switch (prop_id)
     {
     case PROP_CACHE_PATH:
-      g_free (self->cache_path);
-      self->cache_path = g_value_dup_string (value);
+      g_free (this->cache_path);
+      this->cache_path = g_value_dup_string (value);
       break;
 
     case PROP_CONNECTION:
-      g_clear_object (&self->connection);
-      self->connection = g_value_dup_object (value);
+      g_clear_object (&this->connection);
+      this->connection = g_value_dup_object (value);
       break;
 
     default:
@@ -119,7 +119,7 @@ gtk_at_spi_cache_set_property (GObject      *gobject,
 }
 
 static void
-collect_object (GtkAtSpiCache   *self,
+collect_object (GtkAtSpiCache   *this,
                 GVariantBuilder *builder,
                 GtkAtSpiContext *context)
 {
@@ -150,11 +150,11 @@ collect_object (GtkAtSpiCache   *self,
 }
 
 static void
-collect_root (GtkAtSpiCache   *self,
+collect_root (GtkAtSpiCache   *this,
               GVariantBuilder *builder)
 {
-  g_variant_builder_add (builder, "@(so)", gtk_at_spi_root_to_ref (self->root));
-  g_variant_builder_add (builder, "@(so)", gtk_at_spi_root_to_ref (self->root));
+  g_variant_builder_add (builder, "@(so)", gtk_at_spi_root_to_ref (this->root));
+  g_variant_builder_add (builder, "@(so)", gtk_at_spi_root_to_ref (this->root));
 
   g_variant_builder_add (builder, "@(so)", gtk_at_spi_null_ref ());
 
@@ -180,7 +180,7 @@ collect_root (GtkAtSpiCache   *self,
 }
 
 static void
-collect_cached_objects (GtkAtSpiCache   *self,
+collect_cached_objects (GtkAtSpiCache   *this,
                         GVariantBuilder *builder)
 {
   GHashTable *collection = g_hash_table_new (NULL, NULL);
@@ -191,12 +191,12 @@ collect_cached_objects (GtkAtSpiCache   *self,
    * table, so we take a snapshot here and return the items we have at the
    * moment of the GetItems() call
    */
-  g_hash_table_iter_init (&iter, self->contexts_by_path);
+  g_hash_table_iter_init (&iter, this->contexts_by_path);
   while (g_hash_table_iter_next (&iter, &key_p, &value_p))
     g_hash_table_add (collection, value_p);
 
   g_variant_builder_open (builder, G_VARIANT_TYPE ("(" ITEM_SIGNATURE ")"));
-  collect_root (self, builder);
+  collect_root (this, builder);
   g_variant_builder_close (builder);
 
   g_hash_table_iter_init (&iter, collection);
@@ -206,7 +206,7 @@ collect_cached_objects (GtkAtSpiCache   *self,
 
       GtkAtSpiContext *context = value_p;
 
-      collect_object (self, builder, context);
+      collect_object (this, builder, context);
 
       g_variant_builder_close (builder);
     }
@@ -215,7 +215,7 @@ collect_cached_objects (GtkAtSpiCache   *self,
 }
 
 static void
-emit_add_accessible (GtkAtSpiCache   *self,
+emit_add_accessible (GtkAtSpiCache   *this,
                      GtkAtSpiContext *context)
 {
   GtkATContext *at_context = GTK_AT_CONTEXT (context);
@@ -232,11 +232,11 @@ emit_add_accessible (GtkAtSpiCache   *self,
 
   GVariantBuilder builder = G_VARIANT_BUILDER_INIT (G_VARIANT_TYPE ("(" ITEM_SIGNATURE ")"));
 
-  collect_object (self, &builder, context);
+  collect_object (this, &builder, context);
 
-  g_dbus_connection_emit_signal (self->connection,
+  g_dbus_connection_emit_signal (this->connection,
                                  NULL,
-                                 self->cache_path,
+                                 this->cache_path,
                                  "org.a11y.atspi.Cache",
                                  "AddAccessible",
                                  g_variant_new ("(@(" ITEM_SIGNATURE "))",
@@ -245,7 +245,7 @@ emit_add_accessible (GtkAtSpiCache   *self,
 }
 
 static void
-emit_remove_accessible (GtkAtSpiCache   *self,
+emit_remove_accessible (GtkAtSpiCache   *this,
                         GtkAtSpiContext *context)
 {
   GtkATContext *at_context = GTK_AT_CONTEXT (context);
@@ -262,9 +262,9 @@ emit_remove_accessible (GtkAtSpiCache   *self,
 
   GVariant *ref = gtk_at_spi_context_to_ref (context);
 
-  g_dbus_connection_emit_signal (self->connection,
+  g_dbus_connection_emit_signal (this->connection,
                                  NULL,
-                                 self->cache_path,
+                                 this->cache_path,
                                  "org.a11y.atspi.Cache",
                                  "RemoveAccessible",
                                  g_variant_new ("(@(so))", ref),
@@ -281,7 +281,7 @@ handle_cache_method (GDBusConnection       *connection,
                      GDBusMethodInvocation *invocation,
                      gpointer               user_data)
 {
-  GtkAtSpiCache *self = user_data;
+  GtkAtSpiCache *this = user_data;
 
   GTK_DEBUG (A11Y, "[Cache] Method '%s' on interface '%s' for object '%s' from '%s'",
                    method_name, interface_name, object_path, sender);
@@ -295,14 +295,14 @@ handle_cache_method (GDBusConnection       *connection,
       /* Prevent the emission os signals while collecting accessible
        * objects as the result of walking the accessible tree
        */
-      self->in_get_items = TRUE;
+      this->in_get_items = TRUE;
 
       g_variant_builder_open (&builder, G_VARIANT_TYPE (GET_ITEMS_SIGNATURE));
-      collect_cached_objects (self, &builder);
+      collect_cached_objects (this, &builder);
       g_variant_builder_close (&builder);
       items = g_variant_builder_end (&builder);
 
-      self->in_get_items = FALSE;
+      this->in_get_items = FALSE;
 
       GTK_DEBUG (A11Y, "Returning %" G_GSIZE_FORMAT " items", g_variant_n_children (items));
 
@@ -337,20 +337,20 @@ static const GDBusInterfaceVTable cache_vtable = {
 static void
 gtk_at_spi_cache_constructed (GObject *gobject)
 {
-  GtkAtSpiCache *self = GTK_AT_SPI_CACHE (gobject);
+  GtkAtSpiCache *this = GTK_AT_SPI_CACHE (gobject);
 
-  g_assert (self->connection);
-  g_assert (self->cache_path);
+  g_assert (this->connection);
+  g_assert (this->cache_path);
 
-  g_dbus_connection_register_object (self->connection,
-                                     self->cache_path,
+  g_dbus_connection_register_object (this->connection,
+                                     this->cache_path,
                                      (GDBusInterfaceInfo *) &atspi_cache_interface,
                                      &cache_vtable,
-                                     self,
+                                     this,
                                      NULL,
                                      NULL);
 
-  GTK_DEBUG (A11Y, "Cache registered at %s", self->cache_path);
+  GTK_DEBUG (A11Y, "Cache registered at %s", this->cache_path);
 
   G_OBJECT_CLASS (gtk_at_spi_cache_parent_class)->constructed (gobject);
 }
@@ -382,12 +382,12 @@ gtk_at_spi_cache_class_init (GtkAtSpiCacheClass *klass)
 }
 
 static void
-gtk_at_spi_cache_init (GtkAtSpiCache *self)
+gtk_at_spi_cache_init (GtkAtSpiCache *this)
 {
-  self->contexts_by_path = g_hash_table_new_full (g_str_hash, g_str_equal,
+  this->contexts_by_path = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                   g_free,
                                                   NULL);
-  self->contexts_to_path = g_hash_table_new (NULL, NULL);
+  this->contexts_to_path = g_hash_table_new (NULL, NULL);
 }
 
 GtkAtSpiCache *
@@ -410,53 +410,53 @@ gtk_at_spi_cache_new (GDBusConnection *connection,
 }
 
 void
-gtk_at_spi_cache_add_context (GtkAtSpiCache   *self,
+gtk_at_spi_cache_add_context (GtkAtSpiCache   *this,
                               GtkAtSpiContext *context)
 {
-  g_return_if_fail (GTK_IS_AT_SPI_CACHE (self));
+  g_return_if_fail (GTK_IS_AT_SPI_CACHE (this));
   g_return_if_fail (GTK_IS_AT_SPI_CONTEXT (context));
 
   const char *path = gtk_at_spi_context_get_context_path (context);
   if (path == NULL)
     return;
 
-  if (g_hash_table_contains (self->contexts_by_path, path))
+  if (g_hash_table_contains (this->contexts_by_path, path))
     return;
 
   char *path_key = g_strdup (path);
-  g_hash_table_insert (self->contexts_by_path, path_key, context);
-  g_hash_table_insert (self->contexts_to_path, context, path_key);
+  g_hash_table_insert (this->contexts_by_path, path_key, context);
+  g_hash_table_insert (this->contexts_to_path, context, path_key);
 
   GTK_DEBUG (A11Y, "Adding context '%s' to cache", path_key);
 
   /* GetItems is safe from re-entrancy, but we still don't want to
    * emit an unnecessary signal while we're collecting ATContexts
    */
-  if (!self->in_get_items)
-    emit_add_accessible (self, context);
+  if (!this->in_get_items)
+    emit_add_accessible (this, context);
 }
 
 void
-gtk_at_spi_cache_remove_context (GtkAtSpiCache   *self,
+gtk_at_spi_cache_remove_context (GtkAtSpiCache   *this,
                                  GtkAtSpiContext *context)
 {
-  g_return_if_fail (GTK_IS_AT_SPI_CACHE (self));
+  g_return_if_fail (GTK_IS_AT_SPI_CACHE (this));
   g_return_if_fail (GTK_IS_AT_SPI_CONTEXT (context));
 
   const char *path = gtk_at_spi_context_get_context_path (context);
   if (path == NULL)
     return;
 
-  if (!g_hash_table_contains (self->contexts_by_path, path))
+  if (!g_hash_table_contains (this->contexts_by_path, path))
     return;
 
-  emit_remove_accessible (self, context);
+  emit_remove_accessible (this, context);
 
   /* The order is important: the value in contexts_by_path is the
    * key in contexts_to_path
    */
-  g_hash_table_remove (self->contexts_to_path, context);
-  g_hash_table_remove (self->contexts_by_path, path);
+  g_hash_table_remove (this->contexts_to_path, context);
+  g_hash_table_remove (this->contexts_by_path, path);
 
   GTK_DEBUG (A11Y, "Removing context '%s' from cache", path);
 }

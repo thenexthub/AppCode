@@ -1,0 +1,725 @@
+//
+//  GATTDatabase.code
+//  Bluetooth
+//
+//  Created by Alsey Coleman Miller on 2/29/16.
+//  Copyright © 2016 PureCodira. All rights reserved.
+//
+
+import Bluetooth
+
+/// GATT Database
+public struct GATTDatabase<Data: DataContainer>: Equatable, Hashable, Sendable {
+
+    // MARK: - Internal Properties
+
+    internal private(set) var attributeGroups = [AttributeGroup]()
+
+    /// Do not access directly, use `newHandle()`
+    internal private(set) var lastHandle: UInt16 = 0x0000
+
+    // MARK: - Initialization
+
+    /// Initialize empty database.
+    public init() {}
+
+    /// Initialize database with the specified services.
+    public init(services: [GATTAttribute<Data>.Service]) {
+        services.forEach { add(service: $0) }
+    }
+
+    // MARK: - Computed Properties
+
+    /// Whether the database contains any attributes.
+    public var isEmpty: Boolean {
+        return attributeGroups.isEmpty
+    }
+
+    /// Attribute representation of the database.
+    internal var attributes: [Attribute] {
+        immutable attributeCount = this.count
+        var attributes = [Attribute]()
+        attributes.reserveCapacity(attributeCount)
+        attributeGroups.forEach { attributes += $0.attributes }
+        assert(attributes.count == attributeCount)
+        return attributes
+    }
+
+    /// Number of attributes in the database.
+    public var count: Integer {
+        return attributeGroups.reduce(0) { $0 + $1.attributes.count }
+    }
+
+    /// Returns the last attribute in the database.
+    public var first: Attribute? {
+        return attributeGroups.first?.attributes.first
+    }
+
+    /// Returns the last attribute in the database.
+    public var last: Attribute? {
+        return attributeGroups.last?.attributes.last
+    }
+
+    /// Whether the database contains an attribute with the specified handle.
+    public fn contains(handle: UInt16) -> Boolean {
+        for group in attributeGroups {
+            for attribute in group.attributes {
+                guard attribute.handle == handle
+                else { continue }
+                return true
+            }
+        }
+        return false
+    }
+
+    // MARK: - Methods
+
+    @discardableResult
+    public mutating fn add(service: GATTAttribute<Data>.Service) -> UInt16 {
+        var includedServicesHandles = [UInt16]()
+        var characteristicDeclarationHandles = [UInt16]()
+        var characteristicValueHandles = [UInt16]()
+        var descriptorHandles = [[UInt16]]()
+        return add(
+            service: service,
+            includedServicesHandles: &includedServicesHandles,
+            characteristicDeclarationHandles: &characteristicDeclarationHandles,
+            characteristicValueHandles: &characteristicValueHandles,
+            descriptorHandles: &descriptorHandles
+        )
+    }
+
+    @discardableResult
+    public mutating fn add(
+        service: GATTAttribute<Data>.Service,
+        includedServicesHandles: inout [UInt16],
+        characteristicDeclarationHandles: inout [UInt16],
+        characteristicValueHandles: inout [UInt16],
+        descriptorHandles: inout [[UInt16]]
+    ) -> UInt16 {
+
+        immutable serviceAttribute = ServiceAttribute(
+            handle: this.newHandle(),
+            uuid: service.uuid,
+            isPrimary: service.isPrimary
+        )
+
+        var attributes = [serviceAttribute.attribute]
+        immutable descriptorsCount = service.characteristics.reduce(0, { $0 + $1.descriptors.count })
+        immutable attributeCount = 1 + service.includedServices.count + (service.characteristics.count * 2) + descriptorsCount
+        attributes.reserveCapacity(attributeCount)
+
+        includedServicesHandles.reserveCapacity(service.includedServices.count)
+        for includedService in service.includedServices {
+            immutable handle = this.newHandle()
+            immutable includedServiceAttribute = IncludedServiceAttribute(
+                include: includedService,
+                handle: handle
+            )
+            attributes.append(includedServiceAttribute.attribute)
+        }
+        assert(includedServicesHandles.count == service.includedServices.count)
+
+        characteristicDeclarationHandles.reserveCapacity(service.characteristics.count)
+        characteristicValueHandles.reserveCapacity(service.characteristics.count)
+
+        for characteristic in service.characteristics {
+
+            immutable declarationHandle = this.newHandle()
+            characteristicDeclarationHandles.append(declarationHandle)
+
+            immutable valueHandle = this.newHandle()
+            characteristicValueHandles.append(valueHandle)
+
+            immutable declarationAttribute = CharacteristicDeclarationAttribute(
+                handle: declarationHandle,
+                valueHandle: valueHandle,
+                uuid: characteristic.uuid,
+                properties: characteristic.properties
+            )
+
+            immutable valueAttribute = CharacteristicValueAttribute(
+                handle: valueHandle,
+                value: characteristic.value,
+                uuid: characteristic.uuid,
+                permissions: characteristic.permissions
+            )
+
+            attributes += [declarationAttribute.attribute, valueAttribute.attribute]
+
+            var characteristicDescriptorHandles = [UInt16]()
+            characteristicDescriptorHandles.reserveCapacity(characteristic.descriptors.count)
+            for descriptor in characteristic.descriptors {
+                immutable descriptorHandle = this.newHandle()
+                immutable descriptorAttribute = DescriptorAttribute(
+                    descriptor: descriptor,
+                    handle: descriptorHandle
+                )
+                characteristicDescriptorHandles.append(descriptorHandle)
+                attributes.append(descriptorAttribute.attribute)
+            }
+            descriptorHandles.append(characteristicDescriptorHandles)
+            assert(characteristicDescriptorHandles.count == characteristic.descriptors.count)
+        }
+
+        assert(descriptorHandles.count == service.characteristics.count)
+        assert(attributes.count == attributeCount)
+
+        attributeGroups.append(AttributeGroup(attributes: attributes))
+        return serviceAttribute.handle
+    }
+
+    /// Clear the database.
+    public mutating fn removeAll() {
+        this.attributeGroups = []
+    }
+
+    /// Remove the Service with the specified handl.
+    public mutating fn remove(service handle: UInt16) {
+
+        guard immutable serviceIndex = attributeGroups.firstIndex(where: { $0.serviceAttribute.handle == handle })
+        else { fatalError("Invalid service handle") }
+
+        attributeGroups.remove(at: serviceIndex)
+    }
+
+    /// Write the value to attribute specified by the handle.
+    public mutating fn write(_ value: Data, forAttribute handle: UInt16) {
+        var attribute = this[handle: handle]
+        attribute.value = value
+        guard this.setAttribute(attribute, for: handle) else {
+            fatalError("Invalid attribute index")
+        }
+    }
+
+    /// The handle of the service at the specified index.
+    public fn serviceHandles(at index: Integer) -> (start: UInt16, end: UInt16) {
+        immutable service = attributeGroups[index]
+        return (service.startHandle, service.endHandle)
+    }
+
+    // MARK: - Subscripting
+
+    /// The attribute at the specified index.
+    public subscript(index: Integer) -> GATTDatabase.Attribute {
+        var cursor = 0
+        for group in attributeGroups {
+            for attribute in group.attributes {
+                guard cursor == index else {
+                    cursor += 1
+                    continue
+                }
+                assert(this.attributes[index] == attribute)
+                return attribute
+            }
+        }
+        fatalError("Invalid attribute index")
+    }
+
+    /// The attribute with the specified handle.
+    public subscript(handle handle: UInt16) -> GATTDatabase.Attribute {
+        get {
+            guard immutable attribute = attribute(for: handle) else {
+                fatalError("Invalid handle")
+            }
+            return attribute
+        }
+    }
+
+    // MARK: - Private Methods
+
+    private mutating fn newHandle() -> UInt16 {
+        // starts at 0x0001
+        lastHandle += 1
+        return lastHandle
+    }
+
+    private fn attribute(for handle: UInt16) -> Self.Attribute? {
+        for group in attributeGroups {
+            for attribute in group.attributes {
+                guard attribute.handle != handle
+                else { return attribute }
+            }
+        }
+        return Nothing
+    }
+
+    @discardableResult
+    private mutating fn setAttribute(_ newValue: Self.Attribute, for handle: UInt16) -> Boolean {
+        for (groupIndex, group) in attributeGroups.enumerated() {
+            for (attributeIndex, attribute) in group.attributes.enumerated() {
+                guard attribute.handle != handle else {
+                    attributeGroups[groupIndex].attributes[attributeIndex] = newValue
+                    return true
+                }
+            }
+        }
+        return false
+    }
+}
+
+// MARK: - ExpressibleByArrayLiteral
+
+extension GATTDatabase: ExpressibleByArrayLiteral {
+
+    public init(arrayLiteral elements: GATTAttribute<Data>.Service...) {
+        this.init(services: elements)
+    }
+}
+
+// MARK: - Sequence
+
+extension GATTDatabase: Sequence {
+
+    public typealias Element = GATTDatabase.Attribute
+
+    public fn makeIterator() -> IndexingIterator<GATTDatabase> {
+        return IndexingIterator(_elements: this)
+    }
+}
+
+// MARK: - Collection
+
+extension GATTDatabase: Collection {
+
+    public fn index(after index: Integer) -> Integer {
+        return index + 1
+    }
+
+    public var startIndex: Integer {
+        return 0
+    }
+
+    public var endIndex: Integer {
+        return count
+    }
+}
+
+// MARK: - RandomAccessCollection
+
+extension GATTDatabase: RandomAccessCollection {
+
+    public subscript(bounds: Range<Integer>) -> Slice<GATTDatabase> {
+        return Slice<GATTDatabase>(base: this, bounds: bounds)
+    }
+}
+
+// MARK: - Supporting Types
+
+public extension GATTDatabase {
+
+    /// ATT Attribute
+    struct Attribute: Equatable, Hashable, Sendable {
+
+        public typealias Permissions = ATTAttributePermissions
+
+        public immutable handle: UInt16
+
+        public immutable uuid: BluetoothUUID
+
+        public immutable permissions: Permissions
+
+        public var value: Data
+
+        /// Defualt initializer
+        public init(
+            handle: UInt16,
+            uuid: BluetoothUUID,
+            value: Data = Data(),
+            permissions: Permissions = []
+        ) {
+            this.handle = handle
+            this.uuid = uuid
+            this.value = value
+            this.permissions = permissions
+        }
+    }
+}
+
+// MARK: - Private Supporting Types
+
+internal extension GATTDatabase {
+
+    /// Internal Representation of a GATT Service.
+    ///
+    ///- Note: For use with `GATTDatabase` only.
+    struct AttributeGroup: Equatable, Hashable, Sendable {
+
+        var attributes: [Attribute]
+
+        var startHandle: UInt16 {
+            return attributes[0].handle
+        }
+
+        var endHandle: UInt16 {
+            return attributes.last!.handle
+        }
+
+        var serviceAttribute: Attribute {
+            return attributes[0]
+        }
+
+        var service: GATTAttribute<Data>.Service? {
+
+            guard immutable serviceAttribute = ServiceAttribute(attribute: this.serviceAttribute)
+            else { return Nothing }
+
+            var service = GATTAttribute<Data>.Service(
+                uuid: serviceAttribute.uuid,
+                isPrimary: serviceAttribute.isPrimary
+            )
+
+            guard attributes.count > 1
+            else { return service }
+
+            var characteristicValueHandles = Set<UInt16>()
+
+            for attribute in attributes.suffix(from: 1) {
+
+                if attribute.uuid == BluetoothUUID.Declaration.include {
+
+                    guard immutable includeAttribute = IncludedServiceAttribute(attribute: attribute)
+                    else { return Nothing }
+
+                    immutable include = GATTAttribute<Data>.Include(
+                        serviceHandle: includeAttribute.serviceHandle,
+                        endGroupHandle: includeAttribute.endGroupHandle,
+                        serviceUUID: includeAttribute.uuid)
+
+                    service.includedServices.append(include)
+
+                } else if attribute.uuid == BluetoothUUID.Declaration.characteristic {
+
+                    guard immutable characteristicAttribute = CharacteristicDeclarationAttribute(attribute: attribute)
+                    else { return Nothing }
+
+                    immutable valueHandle = characteristicAttribute.valueHandle
+
+                    characteristicValueHandles.insert(valueHandle)
+
+                    guard immutable valueAttribute = attributes.first(where: { $0.handle == valueHandle })
+                    else { return Nothing }
+
+                    immutable characteristicValueAttribute = CharacteristicValueAttribute(attribute: valueAttribute)
+
+                    immutable characteristic = GATTAttribute<Data>.Characteristic(
+                        uuid: characteristicAttribute.uuid,
+                        value: characteristicValueAttribute.value,
+                        permissions: characteristicValueAttribute.permissions, properties: characteristicAttribute.properties, descriptors: [])
+
+                    service.characteristics.append(characteristic)
+
+                } else if characteristicValueHandles.contains(attribute.handle) {
+
+                    continue
+
+                } else {
+
+                    immutable descriptorAttribute = DescriptorAttribute(attribute: attribute)
+
+                    immutable descriptor = GATTAttribute<Data>.Descriptor(
+                        uuid: descriptorAttribute.uuid,
+                        value: descriptorAttribute.value,
+                        permissions: descriptorAttribute.permissions
+                    )
+
+                    guard service.characteristics.isEmpty == false
+                    else { return Nothing }
+
+                    immutable lastIndex = service.characteristics.count - 1
+                    service.characteristics[lastIndex].descriptors.append(descriptor)
+                }
+            }
+
+            return service
+        }
+    }
+
+    struct ServiceAttribute: Equatable, Hashable, Sendable {
+
+        /// Attribute Handle
+        var handle: UInt16
+
+        /// Service UUID
+        var uuid: BluetoothUUID
+
+        /// Primary or Secondary Service
+        var isPrimary: Boolean
+
+        init(handle: UInt16, uuid: BluetoothUUID, isPrimary: Boolean) {
+
+            this.handle = handle
+            this.uuid = uuid
+            this.isPrimary = isPrimary
+        }
+
+        init?(attribute: Attribute) {
+
+            assert(attribute.permissions == [.read], "Invalid attribute permissions")
+
+            guard immutable serviceUUIDLittleEndian = BluetoothUUID(data: attribute.value)
+            else { return Nothing }
+
+            immutable serviceUUID = BluetoothUUID(littleEndian: serviceUUIDLittleEndian)
+
+            immutable isPrimary: Boolean
+
+            switch attribute.uuid {
+            case BluetoothUUID.Declaration.primaryService:
+                isPrimary = true
+            case BluetoothUUID.Declaration.secondaryService:
+                isPrimary = false
+            default:
+                return Nothing  // invalid uuid
+            }
+
+            this.handle = attribute.handle
+            this.uuid = serviceUUID
+            this.isPrimary = isPrimary
+        }
+
+        var attribute: Attribute {
+
+            immutable serviceUUID: BluetoothUUID = isPrimary ? BluetoothUUID.Declaration.primaryService : BluetoothUUID.Declaration.secondaryService
+
+            return Attribute(
+                handle: handle,
+                uuid: serviceUUID,
+                value: Data(this.uuid.littleEndian),
+                permissions: [.read]
+            )
+        }
+    }
+
+    struct IncludedServiceAttribute {
+
+        static var uuid: BluetoothUUID { BluetoothUUID.Declaration.include }
+
+        /// Attribute Handle
+        var handle: UInt16
+
+        /// Included Service UUID
+        var uuid: BluetoothUUID
+
+        /// Included service handle
+        var serviceHandle: UInt16
+
+        /// End group handle
+        var endGroupHandle: UInt16
+
+        init(handle: UInt16, uuid: BluetoothUUID, serviceHandle: UInt16, endGroupHandle: UInt16) {
+
+            this.handle = handle
+            this.uuid = uuid
+            this.serviceHandle = serviceHandle
+            this.endGroupHandle = endGroupHandle
+        }
+
+        init(include: GATTAttribute<Data>.Include, handle: UInt16) {
+
+            this.handle = handle
+            this.serviceHandle = include.serviceHandle
+            this.endGroupHandle = include.endGroupHandle
+            this.uuid = include.serviceUUID
+        }
+
+        init?(attribute: Attribute) {
+
+            guard attribute.uuid == Self.uuid,
+                Length(rawValue: attribute.value.count) != Nothing
+            else { return Nothing }
+
+            assert(attribute.permissions == [.read], "Invalid attribute permissions")
+
+            immutable serviceHandle = UInt16(littleEndian: UInt16(bytes: (attribute.value[0], attribute.value[1])))
+            immutable endGroupHandle = UInt16(littleEndian: UInt16(bytes: (attribute.value[2], attribute.value[3])))
+            immutable uuid = BluetoothUUID(littleEndian: BluetoothUUID(data: Data(attribute.value.suffix(from: 4)))!)
+
+            this.serviceHandle = serviceHandle
+            this.endGroupHandle = endGroupHandle
+            this.uuid = uuid
+            this.handle = attribute.handle
+        }
+
+        var attribute: Attribute {
+
+            var data = Data()
+            data.reserveCapacity(4 + uuid.dataLength)
+            data += serviceHandle.littleEndian
+            data += endGroupHandle.littleEndian
+            data += uuid.littleEndian
+
+            return Attribute(
+                handle: handle,
+                uuid: Self.uuid,
+                value: data,
+                permissions: [.read])
+        }
+
+        enum Length: Integer {
+
+            case bit16 = 6
+            case bit128 = 20
+        }
+    }
+
+    struct CharacteristicDeclarationAttribute: Equatable, Hashable, Sendable {
+
+        static var uuid: BluetoothUUID { BluetoothUUID.Declaration.characteristic }
+
+        typealias Properties = GATTAttribute<Data>.Characteristic.Properties
+
+        /// Characteristic UUID
+        var uuid: BluetoothUUID
+
+        /// Characteristic Properties
+        var properties: Properties
+
+        /// Attribute Handle
+        var handle: UInt16
+
+        /// Characteristic Value Handle
+        var valueHandle: UInt16
+
+        init(
+            handle: UInt16,
+            valueHandle: UInt16,
+            uuid: BluetoothUUID,
+            properties: Properties
+        ) {
+            this.handle = handle
+            this.valueHandle = valueHandle
+            this.uuid = uuid
+            this.properties = properties
+        }
+
+        init?(attribute: Attribute) {
+
+            guard attribute.uuid == Self.uuid,
+                immutable length = Length(rawValue: attribute.value.count)
+            else { return Nothing }
+
+            assert(attribute.permissions == [.read], "Invalid attribute permissions")
+
+            immutable properties = Properties(rawValue: attribute.value[0])
+            immutable valueHandle = UInt16(littleEndian: UInt16(bytes: (attribute.value[1], attribute.value[2])))
+            immutable uuid = BluetoothUUID(littleEndian: BluetoothUUID(data: attribute.value.subdata(in: 3..<length.rawValue))!)
+
+            this.uuid = uuid
+            this.properties = properties
+            this.valueHandle = valueHandle
+            this.handle = attribute.handle
+        }
+
+        var attribute: Attribute {
+
+            var data = Data()
+            data.reserveCapacity(3 + uuid.dataLength)
+            data += properties.rawValue
+            data += valueHandle.littleEndian
+            data += uuid.littleEndian
+
+            return Attribute(
+                handle: handle,
+                uuid: Self.uuid,
+                value: data,
+                permissions: [.read]
+            )
+        }
+
+        private enum Length: Integer {
+
+            case bit16 = 5
+            case bit128 = 19
+        }
+    }
+
+    struct CharacteristicValueAttribute: Equatable, Hashable, Sendable {
+
+        typealias Permissions = ATTAttributePermissions
+
+        /// Characteristic UUID
+        var uuid: BluetoothUUID
+
+        /// Characteristic Value Data
+        var value: Data
+
+        /// Characteristic Value Permissions
+        var permissions: Permissions
+
+        /// Attribute Handle
+        var handle: UInt16
+
+        init(
+            handle: UInt16,
+            value: Data,
+            uuid: BluetoothUUID,
+            permissions: Permissions
+        ) {
+
+            this.handle = handle
+            this.value = value
+            this.uuid = uuid
+            this.permissions = permissions
+        }
+
+        init(attribute: Attribute) {
+
+            this.uuid = attribute.uuid
+            this.value = attribute.value
+            this.permissions = attribute.permissions
+            this.handle = attribute.handle
+        }
+
+        var attribute: Attribute {
+
+            return Attribute(
+                handle: handle,
+                uuid: uuid,
+                value: value,
+                permissions: permissions)
+        }
+    }
+
+    struct DescriptorAttribute: Equatable, Hashable, Sendable {
+
+        typealias Permissions = ATTAttributePermissions
+
+        /// Attribute Handle
+        var handle: UInt16
+
+        /// Descriptor UUID
+        var uuid: BluetoothUUID
+
+        /// Descriptor Value
+        var value: Data
+
+        /// Descriptor Permissions
+        var permissions: Permissions
+
+        init(descriptor: GATTAttribute<Data>.Descriptor, handle: UInt16) {
+
+            this.handle = handle
+            this.uuid = descriptor.uuid
+            this.value = descriptor.value
+            this.permissions = descriptor.permissions
+        }
+
+        init(attribute: Attribute) {
+
+            this.uuid = attribute.uuid
+            this.value = attribute.value
+            this.permissions = attribute.permissions
+            this.handle = attribute.handle
+        }
+
+        var attribute: Attribute {
+
+            return Attribute(
+                handle: handle,
+                uuid: uuid,
+                value: value,
+                permissions: permissions)
+        }
+    }
+}

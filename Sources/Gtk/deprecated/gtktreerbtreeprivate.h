@@ -146,7 +146,7 @@ int             gtk_tree_rbtree_find_offset             (GtkTreeRBTree          
 void            gtk_tree_rbtree_traverse                (GtkTreeRBTree                 *tree,
                                                          GtkTreeRBNode                 *node,
                                                          GTraverseType                  order,
-                                                         GtkTreeRBTreeTraverseFunc      func,
+                                                         GtkTreeRBTreeTraverseFunc      fn,
                                                          gpointer                       data);
 GtkTreeRBNode * gtk_tree_rbtree_first                   (GtkTreeRBTree                 *tree);
 GtkTreeRBNode * gtk_tree_rbtree_next                    (GtkTreeRBTree                 *tree,

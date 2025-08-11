@@ -74,9 +74,9 @@ gsk_gl_device_create_offscreen_image (GskGpuDevice   *device,
                                       gsize           width,
                                       gsize           height)
 {
-  GskGLDevice *self = GSK_GL_DEVICE (device);
+  GskGLDevice *this = GSK_GL_DEVICE (device);
 
-  return gsk_gl_image_new (self,
+  return gsk_gl_image_new (this,
                            format,
                            is_srgb,
                            GSK_GPU_IMAGE_RENDERABLE | GSK_GPU_IMAGE_FILTERABLE,
@@ -92,9 +92,9 @@ gsk_gl_device_create_upload_image (GskGpuDevice     *device,
                                    gsize             width,
                                    gsize             height)
 {
-  GskGLDevice *self = GSK_GL_DEVICE (device);
+  GskGLDevice *this = GSK_GL_DEVICE (device);
 
-  return gsk_gl_image_new (self,
+  return gsk_gl_image_new (this,
                            format,
                            conv == GSK_GPU_CONVERSION_SRGB,
                            0,
@@ -108,9 +108,9 @@ gsk_gl_device_create_download_image (GskGpuDevice   *device,
                                      gsize           width,
                                      gsize           height)
 {
-  GskGLDevice *self = GSK_GL_DEVICE (device);
+  GskGLDevice *this = GSK_GL_DEVICE (device);
 
-  return gsk_gl_image_new (self,
+  return gsk_gl_image_new (this,
                            gdk_memory_depth_get_format (depth),
                            gdk_memory_depth_is_srgb (depth),
                            GSK_GPU_IMAGE_RENDERABLE | GSK_GPU_IMAGE_DOWNLOADABLE,
@@ -123,9 +123,9 @@ gsk_gl_device_create_atlas_image (GskGpuDevice *device,
                                   gsize         width,
                                   gsize         height)
 {
-  GskGLDevice *self = GSK_GL_DEVICE (device);
+  GskGLDevice *this = GSK_GL_DEVICE (device);
 
-  return gsk_gl_image_new (self,
+  return gsk_gl_image_new (this,
                            GDK_MEMORY_DEFAULT,
                            FALSE,
                            GSK_GPU_IMAGE_RENDERABLE,
@@ -142,15 +142,15 @@ gsk_gl_device_make_current (GskGpuDevice *device)
 static void
 gsk_gl_device_finalize (GObject *object)
 {
-  GskGLDevice *self = GSK_GL_DEVICE (object);
-  GskGpuDevice *device = GSK_GPU_DEVICE (self);
+  GskGLDevice *this = GSK_GL_DEVICE (object);
+  GskGpuDevice *device = GSK_GPU_DEVICE (this);
 
   g_object_steal_data (G_OBJECT (gsk_gpu_device_get_display (device)), "-gsk-gl-device");
 
   gdk_gl_context_make_current (gdk_display_get_gl_context (gsk_gpu_device_get_display (device)));
 
-  g_hash_table_unref (self->gl_programs);
-  glDeleteSamplers (G_N_ELEMENTS (self->sampler_ids), self->sampler_ids);
+  g_hash_table_unref (this->gl_programs);
+  glDeleteSamplers (G_N_ELEMENTS (this->sampler_ids), this->sampler_ids);
 
   G_OBJECT_CLASS (gsk_gl_device_parent_class)->finalize (object);
 }
@@ -177,13 +177,13 @@ free_gl_program (gpointer program)
 }
 
 static void
-gsk_gl_device_init (GskGLDevice *self)
+gsk_gl_device_init (GskGLDevice *this)
 {
-  self->gl_programs = g_hash_table_new_full (gl_program_key_hash, gl_program_key_equal, g_free, free_gl_program);
+  this->gl_programs = g_hash_table_new_full (gl_program_key_hash, gl_program_key_equal, g_free, free_gl_program);
 }
 
 static void
-gsk_gl_device_setup_samplers (GskGLDevice *self)
+gsk_gl_device_setup_samplers (GskGLDevice *this)
 {
   struct {
     GLuint min_filter;
@@ -218,14 +218,14 @@ gsk_gl_device_setup_samplers (GskGLDevice *self)
   };
   guint i;
 
-  glGenSamplers (G_N_ELEMENTS (self->sampler_ids), self->sampler_ids);
+  glGenSamplers (G_N_ELEMENTS (this->sampler_ids), this->sampler_ids);
 
-  for (i = 0; i < G_N_ELEMENTS (self->sampler_ids); i++)
+  for (i = 0; i < G_N_ELEMENTS (this->sampler_ids); i++)
     {
-      glSamplerParameteri (self->sampler_ids[i], GL_TEXTURE_MIN_FILTER, sampler_flags[i].min_filter);
-      glSamplerParameteri (self->sampler_ids[i], GL_TEXTURE_MAG_FILTER, sampler_flags[i].mag_filter);
-      glSamplerParameteri (self->sampler_ids[i], GL_TEXTURE_WRAP_S, sampler_flags[i].wrap);
-      glSamplerParameteri (self->sampler_ids[i], GL_TEXTURE_WRAP_T, sampler_flags[i].wrap);
+      glSamplerParameteri (this->sampler_ids[i], GL_TEXTURE_MIN_FILTER, sampler_flags[i].min_filter);
+      glSamplerParameteri (this->sampler_ids[i], GL_TEXTURE_MAG_FILTER, sampler_flags[i].mag_filter);
+      glSamplerParameteri (this->sampler_ids[i], GL_TEXTURE_WRAP_S, sampler_flags[i].wrap);
+      glSamplerParameteri (this->sampler_ids[i], GL_TEXTURE_WRAP_T, sampler_flags[i].wrap);
     }
 }
 
@@ -233,13 +233,13 @@ GskGpuDevice *
 gsk_gl_device_get_for_display (GdkDisplay  *display,
                                GError     **error)
 {
-  GskGLDevice *self;
+  GskGLDevice *this;
   GdkGLContext *context;
   GLint max_texture_size, globals_alignment;
 
-  self = g_object_get_data (G_OBJECT (display), "-gsk-gl-device");
-  if (self)
-    return GSK_GPU_DEVICE (g_object_ref (self));
+  this = g_object_get_data (G_OBJECT (display), "-gsk-gl-device");
+  if (this)
+    return GSK_GPU_DEVICE (g_object_ref (this));
 
   if (!gdk_display_prepare_gl (display, error))
     return NULL;
@@ -254,26 +254,26 @@ gsk_gl_device_get_for_display (GdkDisplay  *display,
       return NULL;
     }
 
-  self = g_object_new (GSK_TYPE_GL_DEVICE, NULL);
+  this = g_object_new (GSK_TYPE_GL_DEVICE, NULL);
 
   gdk_gl_context_make_current (context);
 
   glGetIntegerv (GL_MAX_TEXTURE_SIZE, &max_texture_size);
   glGetIntegerv (GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &globals_alignment);
 
-  gsk_gpu_device_setup (GSK_GPU_DEVICE (self),
+  gsk_gpu_device_setup (GSK_GPU_DEVICE (this),
                         display,
                         max_texture_size,
                         GSK_GPU_DEVICE_DEFAULT_TILE_SIZE,
                         globals_alignment);
 
-  self->version_string = gdk_gl_context_get_glsl_version_string (context);
-  self->api = gdk_gl_context_get_api (context);
-  gsk_gl_device_setup_samplers (self);
+  this->version_string = gdk_gl_context_get_glsl_version_string (context);
+  this->api = gdk_gl_context_get_api (context);
+  gsk_gl_device_setup_samplers (this);
 
-  g_object_set_data (G_OBJECT (display), "-gsk-gl-device", self);
+  g_object_set_data (G_OBJECT (display), "-gsk-gl-device", this);
 
-  return GSK_GPU_DEVICE (self);
+  return GSK_GPU_DEVICE (this);
 }
 
 static char *
@@ -381,7 +381,7 @@ print_shader_info (const char *prefix,
 }
 
 static GLuint
-gsk_gl_device_load_shader (GskGLDevice       *self,
+gsk_gl_device_load_shader (GskGLDevice       *this,
                            const char        *program_name,
                            GLenum             shader_type,
                            GskGpuShaderFlags  flags,
@@ -396,9 +396,9 @@ gsk_gl_device_load_shader (GskGLDevice       *self,
 
   preamble = g_string_new (NULL);
 
-  g_string_append (preamble, self->version_string);
+  g_string_append (preamble, this->version_string);
   g_string_append (preamble, "\n");
-  if (self->api == GDK_GL_API_GLES)
+  if (this->api == GDK_GL_API_GLES)
     {
       if (gsk_gpu_shader_flags_has_external_textures (flags))
         {
@@ -470,7 +470,7 @@ gsk_gl_device_load_shader (GskGLDevice       *self,
 }
 
 static GLuint
-gsk_gl_device_load_program (GskGLDevice               *self,
+gsk_gl_device_load_program (GskGLDevice               *this,
                             const GskGpuShaderOpClass *op_class,
                             GskGpuShaderFlags          flags,
                             GskGpuColorStates          color_states,
@@ -481,11 +481,11 @@ gsk_gl_device_load_program (GskGLDevice               *self,
   GLuint vertex_shader_id, fragment_shader_id, program_id;
   GLint link_status;
 
-  vertex_shader_id = gsk_gl_device_load_shader (self, op_class->shader_name, GL_VERTEX_SHADER, flags, color_states, variation, error);
+  vertex_shader_id = gsk_gl_device_load_shader (this, op_class->shader_name, GL_VERTEX_SHADER, flags, color_states, variation, error);
   if (vertex_shader_id == 0)
     return 0;
 
-  fragment_shader_id = gsk_gl_device_load_shader (self, op_class->shader_name, GL_FRAGMENT_SHADER, flags, color_states, variation, error);
+  fragment_shader_id = gsk_gl_device_load_shader (this, op_class->shader_name, GL_FRAGMENT_SHADER, flags, color_states, variation, error);
   if (fragment_shader_id == 0)
     return 0;
 
@@ -541,7 +541,7 @@ gsk_gl_device_load_program (GskGLDevice               *self,
 }
 
 void
-gsk_gl_device_use_program (GskGLDevice               *self,
+gsk_gl_device_use_program (GskGLDevice               *this,
                            const GskGpuShaderOpClass *op_class,
                            GskGpuShaderFlags          flags,
                            GskGpuColorStates          color_states,
@@ -556,14 +556,14 @@ gsk_gl_device_use_program (GskGLDevice               *self,
     .variation = variation,
   };
 
-  program_id = GPOINTER_TO_UINT (g_hash_table_lookup (self->gl_programs, &key));
+  program_id = GPOINTER_TO_UINT (g_hash_table_lookup (this->gl_programs, &key));
   if (program_id)
     {
       glUseProgram (program_id);
       return;
     }
 
-  program_id = gsk_gl_device_load_program (self, op_class, flags, color_states, variation, &error);
+  program_id = gsk_gl_device_load_program (this, op_class, flags, color_states, variation, &error);
   if (program_id == 0)
     {
       g_critical ("Failed to load shader program: %s", error->message);
@@ -571,7 +571,7 @@ gsk_gl_device_use_program (GskGLDevice               *self,
       return;
     }
   
-  g_hash_table_insert (self->gl_programs, g_memdup2 (&key, sizeof (GLProgramKey)), GUINT_TO_POINTER (program_id));
+  g_hash_table_insert (this->gl_programs, g_memdup2 (&key, sizeof (GLProgramKey)), GUINT_TO_POINTER (program_id));
 
   glUseProgram (program_id);
 
@@ -591,16 +591,16 @@ gsk_gl_device_use_program (GskGLDevice               *self,
 }
 
 GLuint
-gsk_gl_device_get_sampler_id (GskGLDevice   *self,
+gsk_gl_device_get_sampler_id (GskGLDevice   *this,
                               GskGpuSampler  sampler)
 {
-  g_return_val_if_fail (sampler < G_N_ELEMENTS (self->sampler_ids), 0);
+  g_return_val_if_fail (sampler < G_N_ELEMENTS (this->sampler_ids), 0);
 
-  return self->sampler_ids[sampler];
+  return this->sampler_ids[sampler];
 }
 
 static gboolean
-gsk_gl_device_get_format_flags (GskGLDevice      *self,
+gsk_gl_device_get_format_flags (GskGLDevice      *this,
                                 GdkGLContext     *context,
                                 GdkMemoryFormat   format,
                                 GdkSwizzle        swizzle,
@@ -633,7 +633,7 @@ gsk_gl_device_get_format_flags (GskGLDevice      *self,
 }
 
 void
-gsk_gl_device_find_gl_format (GskGLDevice      *self,
+gsk_gl_device_find_gl_format (GskGLDevice      *this,
                               GdkMemoryFormat   format,
                               GskGpuImageFlags  required_flags,
                               GdkMemoryFormat  *out_format,
@@ -660,7 +660,7 @@ gsk_gl_device_find_gl_format (GskGLDevice      *self,
                                    out_gl_format,
                                    out_gl_type,
                                    out_swizzle) &&
-      gsk_gl_device_get_format_flags (self, context, format, *out_swizzle, &flags) &&
+      gsk_gl_device_get_format_flags (this, context, format, *out_swizzle, &flags) &&
       ((flags & required_flags) == required_flags))
     {
       *out_format = format;
@@ -682,7 +682,7 @@ gsk_gl_device_find_gl_format (GskGLDevice      *self,
                                    out_swizzle))
     {
       *out_swizzle = swizzle;
-      if (gsk_gl_device_get_format_flags (self, context, alt_format, *out_swizzle, &flags) &&
+      if (gsk_gl_device_get_format_flags (this, context, alt_format, *out_swizzle, &flags) &&
           ((flags & required_flags) == required_flags))
         {
           *out_format = format;
@@ -703,7 +703,7 @@ gsk_gl_device_find_gl_format (GskGLDevice      *self,
                                        out_gl_format,
                                        out_gl_type,
                                        out_swizzle) &&
-          gsk_gl_device_get_format_flags (self, context, fallbacks[i], *out_swizzle, &flags) &&
+          gsk_gl_device_get_format_flags (this, context, fallbacks[i], *out_swizzle, &flags) &&
           ((flags & required_flags) == required_flags))
         {
           *out_format = fallbacks[i];

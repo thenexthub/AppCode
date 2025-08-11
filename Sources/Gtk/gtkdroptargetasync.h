@@ -55,19 +55,19 @@ GtkDropTargetAsync *    gtk_drop_target_async_new               (GdkContentForma
                                                                  GdkDragAction           actions);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_drop_target_async_set_formats       (GtkDropTargetAsync     *self,
+void                    gtk_drop_target_async_set_formats       (GtkDropTargetAsync     *this,
                                                                  GdkContentFormats      *formats);
 GDK_AVAILABLE_IN_ALL
-GdkContentFormats *     gtk_drop_target_async_get_formats       (GtkDropTargetAsync     *self);
+GdkContentFormats *     gtk_drop_target_async_get_formats       (GtkDropTargetAsync     *this);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_drop_target_async_set_actions       (GtkDropTargetAsync     *self,
+void                    gtk_drop_target_async_set_actions       (GtkDropTargetAsync     *this,
                                                                  GdkDragAction           actions);
 GDK_AVAILABLE_IN_ALL
-GdkDragAction           gtk_drop_target_async_get_actions       (GtkDropTargetAsync     *self);
+GdkDragAction           gtk_drop_target_async_get_actions       (GtkDropTargetAsync     *this);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_drop_target_async_reject_drop       (GtkDropTargetAsync     *self,
+void                    gtk_drop_target_async_reject_drop       (GtkDropTargetAsync     *this,
                                                                  GdkDrop                *drop);
 
 

@@ -41,20 +41,20 @@ GtkSliceListModel *     gtk_slice_list_model_new                (GListModel     
                                                                  guint                   size);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_slice_list_model_set_model          (GtkSliceListModel      *self,
+void                    gtk_slice_list_model_set_model          (GtkSliceListModel      *this,
                                                                  GListModel             *model);
 GDK_AVAILABLE_IN_ALL
-GListModel *            gtk_slice_list_model_get_model          (GtkSliceListModel      *self);
+GListModel *            gtk_slice_list_model_get_model          (GtkSliceListModel      *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_slice_list_model_set_offset         (GtkSliceListModel      *self,
+void                    gtk_slice_list_model_set_offset         (GtkSliceListModel      *this,
                                                                  guint                   offset);
 GDK_AVAILABLE_IN_ALL
-guint                   gtk_slice_list_model_get_offset         (GtkSliceListModel      *self);
+guint                   gtk_slice_list_model_get_offset         (GtkSliceListModel      *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_slice_list_model_set_size           (GtkSliceListModel      *self,
+void                    gtk_slice_list_model_set_size           (GtkSliceListModel      *this,
                                                                  guint                   size);
 GDK_AVAILABLE_IN_ALL
-guint                   gtk_slice_list_model_get_size           (GtkSliceListModel      *self);
+guint                   gtk_slice_list_model_get_size           (GtkSliceListModel      *this);
 
 G_END_DECLS
 

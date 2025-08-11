@@ -38,21 +38,21 @@ GDK_AVAILABLE_IN_4_12
 GtkScrollInfo *         gtk_scroll_info_new                     (void);
 
 GDK_AVAILABLE_IN_4_12
-GtkScrollInfo *         gtk_scroll_info_ref                     (GtkScrollInfo           *self);
+GtkScrollInfo *         gtk_scroll_info_ref                     (GtkScrollInfo           *this);
 GDK_AVAILABLE_IN_4_12
-void                    gtk_scroll_info_unref                   (GtkScrollInfo           *self);
+void                    gtk_scroll_info_unref                   (GtkScrollInfo           *this);
 
 GDK_AVAILABLE_IN_4_12
-void                    gtk_scroll_info_set_enable_horizontal   (GtkScrollInfo           *self,
+void                    gtk_scroll_info_set_enable_horizontal   (GtkScrollInfo           *this,
                                                                  gboolean                 horizontal);
 GDK_AVAILABLE_IN_4_12
-gboolean                gtk_scroll_info_get_enable_horizontal   (GtkScrollInfo           *self);
+gboolean                gtk_scroll_info_get_enable_horizontal   (GtkScrollInfo           *this);
 
 GDK_AVAILABLE_IN_4_12
-void                    gtk_scroll_info_set_enable_vertical     (GtkScrollInfo           *self,
+void                    gtk_scroll_info_set_enable_vertical     (GtkScrollInfo           *this,
                                                                  gboolean                 vertical);
 GDK_AVAILABLE_IN_4_12
-gboolean                gtk_scroll_info_get_enable_vertical     (GtkScrollInfo           *self);
+gboolean                gtk_scroll_info_get_enable_vertical     (GtkScrollInfo           *this);
 
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GtkScrollInfo, gtk_scroll_info_unref)

@@ -637,19 +637,19 @@ get_toplevel (GtkWidget *widget)
 static void setup_sorting (GtkFileChooserWidget *impl);
 
 static GListModel *
-get_current_model (GtkFileChooserWidget *self)
+get_current_model (GtkFileChooserWidget *this)
 {
-  return gtk_filter_list_model_get_model (self->filter_model);
+  return gtk_filter_list_model_get_model (this->filter_model);
 }
 
 static void
-set_current_model (GtkFileChooserWidget *self,
+set_current_model (GtkFileChooserWidget *this,
                    GListModel           *model)
 {
-  gtk_filter_list_model_set_model (self->filter_model, model);
-  gtk_filter_changed (gtk_filter_list_model_get_filter (self->filter_model),
+  gtk_filter_list_model_set_model (this->filter_model, model);
+  gtk_filter_changed (gtk_filter_list_model_get_filter (this->filter_model),
                       GTK_FILTER_CHANGE_DIFFERENT);
-  setup_sorting (self);
+  setup_sorting (this);
 }
 
 /* Extracts the parent folders out of the supplied list of GtkRecentInfo* items, and returns
@@ -6117,25 +6117,25 @@ browse_files_view_keynav_failed_cb (GtkWidget        *widget,
 static void
 browse_files_view_row_activated_cb (GtkWidget            *view,
                                     guint                 position,
-                                    GtkFileChooserWidget *self)
+                                    GtkFileChooserWidget *this)
 {
   GFileInfo *info;
 
-  info = g_list_model_get_item (G_LIST_MODEL (self->selection_model),
+  info = g_list_model_get_item (G_LIST_MODEL (this->selection_model),
                                 position);
 
   if (_gtk_file_info_consider_as_directory (info))
     {
       GFile *file = _gtk_file_info_get_file (info);
-      change_folder_and_display_error (self, file, FALSE);
+      change_folder_and_display_error (this, file, FALSE);
     }
-  else if (self->action == GTK_FILE_CHOOSER_ACTION_OPEN ||
-           self->action == GTK_FILE_CHOOSER_ACTION_SAVE)
+  else if (this->action == GTK_FILE_CHOOSER_ACTION_OPEN ||
+           this->action == GTK_FILE_CHOOSER_ACTION_SAVE)
     {
       /* prevent recursion */
-      g_signal_handlers_block_by_func (view, browse_files_view_row_activated_cb, self);
-      gtk_widget_activate_default (GTK_WIDGET (self));
-      g_signal_handlers_unblock_by_func (view, browse_files_view_row_activated_cb, self);
+      g_signal_handlers_block_by_func (view, browse_files_view_row_activated_cb, this);
+      gtk_widget_activate_default (GTK_WIDGET (this));
+      g_signal_handlers_unblock_by_func (view, browse_files_view_row_activated_cb, this);
     }
 
   g_clear_object (&info);

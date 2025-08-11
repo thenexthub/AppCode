@@ -31,18 +31,18 @@ struct _GtkInspectorOverlayClass
 {
   GObjectClass parent_class;
 
-  void                  (* snapshot)                            (GtkInspectorOverlay    *self,
+  void                  (* snapshot)                            (GtkInspectorOverlay    *this,
                                                                  GtkSnapshot            *snapshot,
                                                                  GskRenderNode          *node,
                                                                  GtkWidget              *widget);
-  void                  (* queue_draw)                          (GtkInspectorOverlay    *self);
+  void                  (* queue_draw)                          (GtkInspectorOverlay    *this);
 };
 
-void                    gtk_inspector_overlay_snapshot          (GtkInspectorOverlay    *self,
+void                    gtk_inspector_overlay_snapshot          (GtkInspectorOverlay    *this,
                                                                  GtkSnapshot            *snapshot,
                                                                  GskRenderNode          *node,
                                                                  GtkWidget              *widget);
-void                    gtk_inspector_overlay_queue_draw        (GtkInspectorOverlay    *self);
+void                    gtk_inspector_overlay_queue_draw        (GtkInspectorOverlay    *this);
 
 G_END_DECLS
 

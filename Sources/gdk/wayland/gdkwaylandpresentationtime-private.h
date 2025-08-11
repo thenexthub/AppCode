@@ -9,10 +9,10 @@ G_BEGIN_DECLS
 typedef struct _GdkWaylandPresentationTime GdkWaylandPresentationTime;
 
 GdkWaylandPresentationTime *gdk_wayland_presentation_time_new   (GdkWaylandDisplay          *display);
-void                        gdk_wayland_presentation_time_track (GdkWaylandPresentationTime *self,
+void                        gdk_wayland_presentation_time_track (GdkWaylandPresentationTime *this,
                                                                  GdkFrameClock              *frame_clock,
                                                                  struct wl_surface          *surface,
                                                                  gint64                      frame_number);
-void                        gdk_wayland_presentation_time_free  (GdkWaylandPresentationTime *self);
+void                        gdk_wayland_presentation_time_free  (GdkWaylandPresentationTime *this);
 
 G_END_DECLS

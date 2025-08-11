@@ -37,50 +37,50 @@ GskStroke *             gsk_stroke_new                          (float          
 GDK_AVAILABLE_IN_4_14
 GskStroke *             gsk_stroke_copy                         (const GskStroke        *other);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_stroke_free                         (GskStroke              *self);
+void                    gsk_stroke_free                         (GskStroke              *this);
 
 GDK_AVAILABLE_IN_4_14
 gboolean                gsk_stroke_equal                        (gconstpointer           stroke1,
                                                                  gconstpointer           stroke2);
 
 GDK_AVAILABLE_IN_4_14
-void                    gsk_stroke_set_line_width               (GskStroke              *self,
+void                    gsk_stroke_set_line_width               (GskStroke              *this,
                                                                  float                   line_width);
 GDK_AVAILABLE_IN_4_14
-float                   gsk_stroke_get_line_width               (const GskStroke        *self);
+float                   gsk_stroke_get_line_width               (const GskStroke        *this);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_stroke_set_line_cap                 (GskStroke              *self,
+void                    gsk_stroke_set_line_cap                 (GskStroke              *this,
                                                                  GskLineCap              line_cap);
 GDK_AVAILABLE_IN_4_14
-GskLineCap              gsk_stroke_get_line_cap                 (const GskStroke        *self);
+GskLineCap              gsk_stroke_get_line_cap                 (const GskStroke        *this);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_stroke_set_line_join                (GskStroke              *self,
+void                    gsk_stroke_set_line_join                (GskStroke              *this,
                                                                  GskLineJoin             line_join);
 GDK_AVAILABLE_IN_4_14
-GskLineJoin             gsk_stroke_get_line_join                (const GskStroke        *self);
+GskLineJoin             gsk_stroke_get_line_join                (const GskStroke        *this);
 
 GDK_AVAILABLE_IN_4_14
-void                    gsk_stroke_set_miter_limit              (GskStroke              *self,
+void                    gsk_stroke_set_miter_limit              (GskStroke              *this,
                                                                  float                   limit);
 GDK_AVAILABLE_IN_4_14
-float                   gsk_stroke_get_miter_limit              (const GskStroke        *self);
+float                   gsk_stroke_get_miter_limit              (const GskStroke        *this);
 
 GDK_AVAILABLE_IN_4_14
-void                    gsk_stroke_set_dash                     (GskStroke              *self,
+void                    gsk_stroke_set_dash                     (GskStroke              *this,
                                                                  const float            *dash,
                                                                  gsize                   n_dash);
 GDK_AVAILABLE_IN_4_14
-const float *           gsk_stroke_get_dash                     (const GskStroke        *self,
+const float *           gsk_stroke_get_dash                     (const GskStroke        *this,
                                                                  gsize                  *n_dash);
 
 GDK_AVAILABLE_IN_4_14
-void                    gsk_stroke_set_dash_offset              (GskStroke              *self,
+void                    gsk_stroke_set_dash_offset              (GskStroke              *this,
                                                                  float                   offset);
 GDK_AVAILABLE_IN_4_14
-float                   gsk_stroke_get_dash_offset              (const GskStroke        *self);
+float                   gsk_stroke_get_dash_offset              (const GskStroke        *this);
 
 GDK_AVAILABLE_IN_4_14
-void                    gsk_stroke_to_cairo                     (const GskStroke        *self,
+void                    gsk_stroke_to_cairo                     (const GskStroke        *this,
                                                                  cairo_t                *cr);
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GskStroke, gsk_stroke_free)

@@ -209,7 +209,7 @@ gtk_actionable_set_action_target (GtkActionable *actionable,
  * actionable widget.
  *
  * @detailed_action_name is a string in the format accepted by
- * [func@Gio.Action.parse_detailed_name].
+ * [fn@Gio.Action.parse_detailed_name].
  */
 void
 gtk_actionable_set_detailed_action_name (GtkActionable *actionable,

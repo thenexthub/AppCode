@@ -54,42 +54,42 @@ G_DEFINE_TYPE_EXTENDED (GskGpuRenderer, gsk_gpu_renderer, GSK_TYPE_RENDERER, 0,
                                                gsk_gpu_renderer_dmabuf_downloader_init))
 
 static void
-gsk_gpu_renderer_make_current (GskGpuRenderer *self)
+gsk_gpu_renderer_make_current (GskGpuRenderer *this)
 {
-  GSK_GPU_RENDERER_GET_CLASS (self)->make_current (self);
+  GSK_GPU_RENDERER_GET_CLASS (this)->make_current (this);
 }
 
 static gpointer
-gsk_gpu_renderer_save_current (GskGpuRenderer *self)
+gsk_gpu_renderer_save_current (GskGpuRenderer *this)
 {
-  return GSK_GPU_RENDERER_GET_CLASS (self)->save_current (self);
+  return GSK_GPU_RENDERER_GET_CLASS (this)->save_current (this);
 }
 
 static void
-gsk_gpu_renderer_restore_current (GskGpuRenderer *self,
+gsk_gpu_renderer_restore_current (GskGpuRenderer *this,
                                   gpointer        current)
 {
-  GSK_GPU_RENDERER_GET_CLASS (self)->restore_current (self, current);
+  GSK_GPU_RENDERER_GET_CLASS (this)->restore_current (this, current);
 }
 
 static GskGpuFrame *
-gsk_gpu_renderer_create_frame (GskGpuRenderer *self)
+gsk_gpu_renderer_create_frame (GskGpuRenderer *this)
 {
-  GskGpuRendererPrivate *priv = gsk_gpu_renderer_get_instance_private (self);
-  GskGpuRendererClass *klass = GSK_GPU_RENDERER_GET_CLASS (self);
+  GskGpuRendererPrivate *priv = gsk_gpu_renderer_get_instance_private (this);
+  GskGpuRendererClass *klass = GSK_GPU_RENDERER_GET_CLASS (this);
   GskGpuFrame *result;
 
   result = g_object_new (klass->frame_type, NULL);
 
-  gsk_gpu_frame_setup (result, self, priv->device, priv->optimizations);
+  gsk_gpu_frame_setup (result, this, priv->device, priv->optimizations);
 
   return result;
 }
 
 static GskGpuFrame *
-gsk_gpu_renderer_get_frame (GskGpuRenderer *self)
+gsk_gpu_renderer_get_frame (GskGpuRenderer *this)
 {
-  GskGpuRendererPrivate *priv = gsk_gpu_renderer_get_instance_private (self);
+  GskGpuRendererPrivate *priv = gsk_gpu_renderer_get_instance_private (this);
   GskGpuFrame *earliest_frame = NULL;
   gint64 earliest_time = G_MAXINT64;
   guint i;
@@ -100,7 +100,7 @@ gsk_gpu_renderer_get_frame (GskGpuRenderer *self)
 
       if (priv->frames[i] == NULL)
         {
-          priv->frames[i] = gsk_gpu_renderer_create_frame (self);
+          priv->frames[i] = gsk_gpu_renderer_create_frame (this);
           return priv->frames[i];
         }
 
@@ -135,16 +135,16 @@ gsk_gpu_renderer_dmabuf_downloader_download (GdkDmabufDownloader   *downloader,
                                              const GdkMemoryLayout *layout,
                                              GdkColorState         *color_state)
 {
-  GskGpuRenderer *self = GSK_GPU_RENDERER (downloader);
+  GskGpuRenderer *this = GSK_GPU_RENDERER (downloader);
   GskGpuFrame *frame;
   gpointer previous;
   gboolean retval = FALSE;
 
-  previous = gsk_gpu_renderer_save_current (self);
+  previous = gsk_gpu_renderer_save_current (this);
 
-  gsk_gpu_renderer_make_current (self);
+  gsk_gpu_renderer_make_current (this);
 
-  frame = gsk_gpu_renderer_get_frame (self);
+  frame = gsk_gpu_renderer_get_frame (this);
 
   if (gsk_gpu_frame_download_texture (frame,
                                       g_get_monotonic_time (),
@@ -166,7 +166,7 @@ gsk_gpu_renderer_dmabuf_downloader_download (GdkDmabufDownloader   *downloader,
       gsk_gpu_frame_wait (frame);
     }
 
-  gsk_gpu_renderer_restore_current (self, previous);
+  gsk_gpu_renderer_restore_current (this, previous);
 
   return retval;
 }
@@ -185,16 +185,16 @@ gsk_gpu_renderer_realize (GskRenderer  *renderer,
                           gboolean      attach,
                           GError      **error)
 {
-  GskGpuRenderer *self = GSK_GPU_RENDERER (renderer);
-  GskGpuRendererPrivate *priv = gsk_gpu_renderer_get_instance_private (self);
+  GskGpuRenderer *this = GSK_GPU_RENDERER (renderer);
+  GskGpuRendererPrivate *priv = gsk_gpu_renderer_get_instance_private (this);
   GskGpuOptimizations context_optimizations;
   G_GNUC_UNUSED gint64 start_time = GDK_PROFILER_CURRENT_TIME;
 
-  priv->device = GSK_GPU_RENDERER_GET_CLASS (self)->get_device (display, error);
+  priv->device = GSK_GPU_RENDERER_GET_CLASS (this)->get_device (display, error);
   if (priv->device == NULL)
     return FALSE;
 
-  priv->context = GSK_GPU_RENDERER_GET_CLASS (self)->create_context (self, display, surface, &context_optimizations, error);
+  priv->context = GSK_GPU_RENDERER_GET_CLASS (this)->create_context (this, display, surface, &context_optimizations, error);
   if (priv->context == NULL)
     {
       g_clear_object (&priv->device);
@@ -217,11 +217,11 @@ gsk_gpu_renderer_realize (GskRenderer  *renderer,
 static void
 gsk_gpu_renderer_unrealize (GskRenderer *renderer)
 {
-  GskGpuRenderer *self = GSK_GPU_RENDERER (renderer);
-  GskGpuRendererPrivate *priv = gsk_gpu_renderer_get_instance_private (self);
+  GskGpuRenderer *this = GSK_GPU_RENDERER (renderer);
+  GskGpuRendererPrivate *priv = gsk_gpu_renderer_get_instance_private (this);
   gsize i;
 
-  gsk_gpu_renderer_make_current (self);
+  gsk_gpu_renderer_make_current (this);
 
   for (i = 0; i < G_N_ELEMENTS (priv->frames); i++)
     {
@@ -239,11 +239,11 @@ gsk_gpu_renderer_unrealize (GskRenderer *renderer)
 }
 
 static GdkTexture *
-gsk_gpu_renderer_fallback_render_texture (GskGpuRenderer        *self,
+gsk_gpu_renderer_fallback_render_texture (GskGpuRenderer        *this,
                                           GskRenderNode         *root,
                                           const graphene_rect_t *rounded_viewport)
 {
-  GskGpuRendererPrivate *priv = gsk_gpu_renderer_get_instance_private (self);
+  GskGpuRendererPrivate *priv = gsk_gpu_renderer_get_instance_private (this);
   GskGpuImage *image;
   gsize width, height, max_size, image_width, image_height;
   gsize x, y;
@@ -317,7 +317,7 @@ gsk_gpu_renderer_fallback_render_texture (GskGpuRenderer        *self,
                                                            0, 0,
                                                            tile_width, tile_height
                                                        });
-          frame = gsk_gpu_renderer_get_frame (self);
+          frame = gsk_gpu_renderer_get_frame (this);
           gsk_gpu_frame_render (frame,
                                 g_get_monotonic_time (),
                                 image,
@@ -348,7 +348,7 @@ gsk_gpu_renderer_fallback_render_texture (GskGpuRenderer        *self,
 
           /* Let's GC like a madman, we draw oversized stuff and don't want to OOM */
           gsk_gpu_device_maybe_gc (priv->device);
-          gsk_gpu_renderer_make_current (self);
+          gsk_gpu_renderer_make_current (this);
         }
     }
 
@@ -363,8 +363,8 @@ gsk_gpu_renderer_render_texture (GskRenderer           *renderer,
                                  GskRenderNode         *root,
                                  const graphene_rect_t *viewport)
 {
-  GskGpuRenderer *self = GSK_GPU_RENDERER (renderer);
-  GskGpuRendererPrivate *priv = gsk_gpu_renderer_get_instance_private (self);
+  GskGpuRenderer *this = GSK_GPU_RENDERER (renderer);
+  GskGpuRendererPrivate *priv = gsk_gpu_renderer_get_instance_private (this);
   GskGpuFrame *frame;
   GskGpuImage *image;
   GdkTexture *texture;
@@ -374,7 +374,7 @@ gsk_gpu_renderer_render_texture (GskRenderer           *renderer,
 
   gsk_gpu_device_maybe_gc (priv->device);
 
-  gsk_gpu_renderer_make_current (self);
+  gsk_gpu_renderer_make_current (this);
 
   rounded_viewport = GRAPHENE_RECT_INIT (viewport->origin.x,
                                          viewport->origin.y,
@@ -386,14 +386,14 @@ gsk_gpu_renderer_render_texture (GskRenderer           *renderer,
                                                 rounded_viewport.size.height);
 
   if (image == NULL)
-    return gsk_gpu_renderer_fallback_render_texture (self, root, &rounded_viewport);
+    return gsk_gpu_renderer_fallback_render_texture (this, root, &rounded_viewport);
 
   if (gsk_gpu_image_get_conversion (image) == GSK_GPU_CONVERSION_SRGB)
     color_state = GDK_COLOR_STATE_SRGB_LINEAR;
   else
     color_state = GDK_COLOR_STATE_SRGB;
 
-  frame = gsk_gpu_renderer_get_frame (self);
+  frame = gsk_gpu_renderer_get_frame (this);
 
   clip_region = cairo_region_create_rectangle (&(cairo_rectangle_int_t) {
                                                    0, 0,
@@ -428,8 +428,8 @@ gsk_gpu_renderer_render (GskRenderer          *renderer,
                          GskRenderNode        *root,
                          const cairo_region_t *region)
 {
-  GskGpuRenderer *self = GSK_GPU_RENDERER (renderer);
-  GskGpuRendererPrivate *priv = gsk_gpu_renderer_get_instance_private (self);
+  GskGpuRenderer *this = GSK_GPU_RENDERER (renderer);
+  GskGpuRendererPrivate *priv = gsk_gpu_renderer_get_instance_private (this);
   GskGpuFrame *frame;
   GskGpuImage *backbuffer;
   cairo_region_t *render_region;
@@ -446,10 +446,10 @@ gsk_gpu_renderer_render (GskRenderer          *renderer,
 
   gsk_gpu_device_maybe_gc (priv->device);
 
-  gsk_gpu_renderer_make_current (self);
+  gsk_gpu_renderer_make_current (this);
 
   depth = gsk_render_node_get_preferred_depth (root);
-  frame = gsk_gpu_renderer_get_frame (self);
+  frame = gsk_gpu_renderer_get_frame (this);
   scale = gdk_surface_get_scale (gdk_draw_context_get_surface (priv->context));
 
   if (gsk_render_node_get_opaque_rect (root, &opaque_tmp))
@@ -458,7 +458,7 @@ gsk_gpu_renderer_render (GskRenderer          *renderer,
     opaque = NULL;
   gsk_gpu_frame_begin (frame, priv->context, depth, region, opaque);
 
-  backbuffer = GSK_GPU_RENDERER_GET_CLASS (self)->get_backbuffer (self);
+  backbuffer = GSK_GPU_RENDERER_GET_CLASS (this)->get_backbuffer (this);
 
   render_region = cairo_region_copy (gdk_draw_context_get_render_region (priv->context));
 
@@ -505,25 +505,25 @@ gsk_gpu_renderer_class_init (GskGpuRendererClass *klass)
 }
 
 static void
-gsk_gpu_renderer_init (GskGpuRenderer *self)
+gsk_gpu_renderer_init (GskGpuRenderer *this)
 {
-  GskGpuRendererPrivate *priv = gsk_gpu_renderer_get_instance_private (self);
+  GskGpuRendererPrivate *priv = gsk_gpu_renderer_get_instance_private (this);
 
-  priv->optimizations = GSK_GPU_RENDERER_GET_CLASS (self)->optimizations;
+  priv->optimizations = GSK_GPU_RENDERER_GET_CLASS (this)->optimizations;
 }
 
 GdkDrawContext *
-gsk_gpu_renderer_get_context (GskGpuRenderer *self)
+gsk_gpu_renderer_get_context (GskGpuRenderer *this)
 {
-  GskGpuRendererPrivate *priv = gsk_gpu_renderer_get_instance_private (self);
+  GskGpuRendererPrivate *priv = gsk_gpu_renderer_get_instance_private (this);
 
   return priv->context;
 }
 
 GskGpuDevice *
-gsk_gpu_renderer_get_device (GskGpuRenderer *self)
+gsk_gpu_renderer_get_device (GskGpuRenderer *this)
 {
-  GskGpuRendererPrivate *priv = gsk_gpu_renderer_get_instance_private (self);
+  GskGpuRendererPrivate *priv = gsk_gpu_renderer_get_instance_private (this);
 
   return priv->device;
 }

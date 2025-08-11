@@ -441,7 +441,7 @@ gtk_text_line_display_cache_invalidate_cursors (GtkTextLineDisplayCache *cache,
 
 /*
  * gtk_text_line_display_cache_invalidate_line:
- * @self: a GtkTextLineDisplayCache
+ * @this: a GtkTextLineDisplayCache
  * @line: a GtkTextLine
  *
  * Removes a cached display for @line.

@@ -40,20 +40,20 @@ GskPathMeasure *        gsk_path_measure_new_with_tolerance     (GskPath        
                                                                  float                   tolerance);
 
 GDK_AVAILABLE_IN_4_14
-GskPathMeasure *        gsk_path_measure_ref                    (GskPathMeasure         *self);
+GskPathMeasure *        gsk_path_measure_ref                    (GskPathMeasure         *this);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_measure_unref                  (GskPathMeasure         *self);
+void                    gsk_path_measure_unref                  (GskPathMeasure         *this);
 
 GDK_AVAILABLE_IN_4_14
-GskPath *               gsk_path_measure_get_path               (GskPathMeasure         *self) G_GNUC_PURE;
+GskPath *               gsk_path_measure_get_path               (GskPathMeasure         *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_14
-float                   gsk_path_measure_get_tolerance          (GskPathMeasure         *self) G_GNUC_PURE;
+float                   gsk_path_measure_get_tolerance          (GskPathMeasure         *this) G_GNUC_PURE;
 
 GDK_AVAILABLE_IN_4_14
-float                   gsk_path_measure_get_length             (GskPathMeasure         *self);
+float                   gsk_path_measure_get_length             (GskPathMeasure         *this);
 
 GDK_AVAILABLE_IN_4_14
-gboolean                gsk_path_measure_get_point              (GskPathMeasure         *self,
+gboolean                gsk_path_measure_get_point              (GskPathMeasure         *this,
                                                                  float                   distance,
                                                                  GskPathPoint           *result);
 

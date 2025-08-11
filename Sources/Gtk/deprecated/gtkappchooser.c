@@ -82,23 +82,23 @@ gtk_app_chooser_default_init (GtkAppChooserIface *iface)
 
 /**
  * gtk_app_chooser_get_content_type:
- * @self: a `GtkAppChooser`
+ * @this: a `GtkAppChooser`
  *
  * Returns the content type for which the `GtkAppChooser`
  * shows applications.
  *
- * Returns: the content type of @self. Free with g_free()
+ * Returns: the content type of @this. Free with g_free()
  *
  * Deprecated: 4.10: This widget will be removed in GTK 5
  */
 char *
-gtk_app_chooser_get_content_type (GtkAppChooser *self)
+gtk_app_chooser_get_content_type (GtkAppChooser *this)
 {
   char *retval = NULL;
 
-  g_return_val_if_fail (GTK_IS_APP_CHOOSER (self), NULL);
+  g_return_val_if_fail (GTK_IS_APP_CHOOSER (this), NULL);
 
-  g_object_get (self,
+  g_object_get (this,
                 "content-type", &retval,
                 NULL);
 
@@ -107,7 +107,7 @@ gtk_app_chooser_get_content_type (GtkAppChooser *self)
 
 /**
  * gtk_app_chooser_get_app_info:
- * @self: a `GtkAppChooser`
+ * @this: a `GtkAppChooser`
  *
  * Returns the currently selected application.
  *
@@ -117,21 +117,21 @@ gtk_app_chooser_get_content_type (GtkAppChooser *self)
  * Deprecated: 4.10: This widget will be removed in GTK 5
  */
 GAppInfo *
-gtk_app_chooser_get_app_info (GtkAppChooser *self)
+gtk_app_chooser_get_app_info (GtkAppChooser *this)
 {
-  return GTK_APP_CHOOSER_GET_IFACE (self)->get_app_info (self);
+  return GTK_APP_CHOOSER_GET_IFACE (this)->get_app_info (this);
 }
 
 /**
  * gtk_app_chooser_refresh:
- * @self: a `GtkAppChooser`
+ * @this: a `GtkAppChooser`
  *
  * Reloads the list of applications.
  *
  * Deprecated: 4.10: This widget will be removed in GTK 5
  */
 void
-gtk_app_chooser_refresh (GtkAppChooser *self)
+gtk_app_chooser_refresh (GtkAppChooser *this)
 {
-  GTK_APP_CHOOSER_GET_IFACE (self)->refresh (self);
+  GTK_APP_CHOOSER_GET_IFACE (this)->refresh (this);
 }

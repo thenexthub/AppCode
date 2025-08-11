@@ -485,68 +485,68 @@ action_chain (Action   *action,
 }
 
 static void
-gtk_text_history_do_change_state (GtkTextHistory *self,
+gtk_text_history_do_change_state (GtkTextHistory *this,
                                   gboolean        is_modified,
                                   gboolean        can_undo,
                                   gboolean        can_redo)
 {
-  g_assert (GTK_IS_TEXT_HISTORY (self));
+  g_assert (GTK_IS_TEXT_HISTORY (this));
 
-  self->funcs.change_state (self->funcs_data, is_modified, can_undo, can_redo);
+  this->funcs.change_state (this->funcs_data, is_modified, can_undo, can_redo);
 }
 
 static void
-gtk_text_history_do_insert (GtkTextHistory *self,
+gtk_text_history_do_insert (GtkTextHistory *this,
                             guint           begin,
                             guint           end,
                             const char     *text,
                             guint           len)
 {
-  g_assert (GTK_IS_TEXT_HISTORY (self));
+  g_assert (GTK_IS_TEXT_HISTORY (this));
   g_assert (text != NULL);
 
   uint_order (&begin, &end);
 
-  self->funcs.insert (self->funcs_data, begin, end, text, len);
+  this->funcs.insert (this->funcs_data, begin, end, text, len);
 }
 
 static void
-gtk_text_history_do_delete (GtkTextHistory *self,
+gtk_text_history_do_delete (GtkTextHistory *this,
                             guint           begin,
                             guint           end,
                             const char     *expected_text,
                             guint           len)
 {
-  g_assert (GTK_IS_TEXT_HISTORY (self));
+  g_assert (GTK_IS_TEXT_HISTORY (this));
 
   uint_order (&begin, &end);
 
-  self->funcs.delete (self->funcs_data, begin, end, expected_text, len);
+  this->funcs.delete (this->funcs_data, begin, end, expected_text, len);
 }
 
 static void
-gtk_text_history_do_select (GtkTextHistory *self,
+gtk_text_history_do_select (GtkTextHistory *this,
                             guint           selection_insert,
                             guint           selection_bound)
 {
-  g_assert (GTK_IS_TEXT_HISTORY (self));
+  g_assert (GTK_IS_TEXT_HISTORY (this));
 
-  self->funcs.select (self->funcs_data, selection_insert, selection_bound);
+  this->funcs.select (this->funcs_data, selection_insert, selection_bound);
 }
 
 static void
-gtk_text_history_truncate_one (GtkTextHistory *self)
+gtk_text_history_truncate_one (GtkTextHistory *this)
 {
-  if (self->undo_queue.length > 0)
+  if (this->undo_queue.length > 0)
     {
-      Action *action = g_queue_peek_head (&self->undo_queue);
-      g_queue_unlink (&self->undo_queue, &action->link);
+      Action *action = g_queue_peek_head (&this->undo_queue);
+      g_queue_unlink (&this->undo_queue, &action->link);
       action_free (action);
     }
-  else if (self->redo_queue.length > 0)
+  else if (this->redo_queue.length > 0)
     {
-      Action *action = g_queue_peek_tail (&self->redo_queue);
-      g_queue_unlink (&self->redo_queue, &action->link);
+      Action *action = g_queue_peek_tail (&this->redo_queue);
+      g_queue_unlink (&this->redo_queue, &action->link);
       action_free (action);
     }
   else
@@ -556,24 +556,24 @@ gtk_text_history_truncate_one (GtkTextHistory *self)
 }
 
 static void
-gtk_text_history_truncate (GtkTextHistory *self)
+gtk_text_history_truncate (GtkTextHistory *this)
 {
-  g_assert (GTK_IS_TEXT_HISTORY (self));
+  g_assert (GTK_IS_TEXT_HISTORY (this));
 
-  if (self->max_undo_levels == 0)
+  if (this->max_undo_levels == 0)
     return;
 
-  while (self->undo_queue.length + self->redo_queue.length > self->max_undo_levels)
-    gtk_text_history_truncate_one (self);
+  while (this->undo_queue.length + this->redo_queue.length > this->max_undo_levels)
+    gtk_text_history_truncate_one (this);
 }
 
 static void
 gtk_text_history_finalize (GObject *object)
 {
-  GtkTextHistory *self = (GtkTextHistory *)object;
+  GtkTextHistory *this = (GtkTextHistory *)object;
 
-  clear_action_queue (&self->undo_queue);
-  clear_action_queue (&self->redo_queue);
+  clear_action_queue (&this->undo_queue);
+  clear_action_queue (&this->redo_queue);
 
   G_OBJECT_CLASS (gtk_text_history_parent_class)->finalize (object);
 }
@@ -587,11 +587,11 @@ gtk_text_history_class_init (GtkTextHistoryClass *klass)
 }
 
 static void
-gtk_text_history_init (GtkTextHistory *self)
+gtk_text_history_init (GtkTextHistory *this)
 {
-  self->enabled = TRUE;
-  self->selection.insert = -1;
-  self->selection.bound = -1;
+  this->enabled = TRUE;
+  this->selection.insert = -1;
+  this->selection.bound = -1;
 }
 
 static gboolean
@@ -621,95 +621,95 @@ has_actionable (const GQueue *queue)
 }
 
 static void
-gtk_text_history_update_state (GtkTextHistory *self)
+gtk_text_history_update_state (GtkTextHistory *this)
 {
-  g_assert (GTK_IS_TEXT_HISTORY (self));
+  g_assert (GTK_IS_TEXT_HISTORY (this));
 
-  if (self->irreversible || self->in_user)
+  if (this->irreversible || this->in_user)
     {
-      self->can_undo = FALSE;
-      self->can_redo = FALSE;
+      this->can_undo = FALSE;
+      this->can_redo = FALSE;
     }
   else
     {
-      self->can_undo = has_actionable (&self->undo_queue);
-      self->can_redo = has_actionable (&self->redo_queue);
+      this->can_undo = has_actionable (&this->undo_queue);
+      this->can_redo = has_actionable (&this->redo_queue);
     }
 
-  gtk_text_history_do_change_state (self, self->is_modified, self->can_undo, self->can_redo);
+  gtk_text_history_do_change_state (this, this->is_modified, this->can_undo, this->can_redo);
 }
 
 static void
-gtk_text_history_push (GtkTextHistory *self,
+gtk_text_history_push (GtkTextHistory *this,
                        Action         *action)
 {
   Action *peek;
   gboolean in_user_action;
 
-  g_assert (GTK_IS_TEXT_HISTORY (self));
-  g_assert (self->enabled);
+  g_assert (GTK_IS_TEXT_HISTORY (this));
+  g_assert (this->enabled);
   g_assert (action != NULL);
 
-  while (self->redo_queue.length > 0)
+  while (this->redo_queue.length > 0)
     {
-      peek = g_queue_peek_head (&self->redo_queue);
-      g_queue_unlink (&self->redo_queue, &peek->link);
+      peek = g_queue_peek_head (&this->redo_queue);
+      g_queue_unlink (&this->redo_queue, &peek->link);
       action_free (peek);
     }
 
-  peek = g_queue_peek_tail (&self->undo_queue);
-  in_user_action = self->in_user > 0;
+  peek = g_queue_peek_tail (&this->undo_queue);
+  in_user_action = this->in_user > 0;
 
   if (peek == NULL || !action_chain (peek, action, in_user_action))
-    g_queue_push_tail_link (&self->undo_queue, &action->link);
+    g_queue_push_tail_link (&this->undo_queue, &action->link);
 
-  gtk_text_history_truncate (self);
-  gtk_text_history_update_state (self);
+  gtk_text_history_truncate (this);
+  gtk_text_history_update_state (this);
 }
 
 GtkTextHistory *
 gtk_text_history_new (const GtkTextHistoryFuncs *funcs,
                       gpointer                   funcs_data)
 {
-  GtkTextHistory *self;
+  GtkTextHistory *this;
 
   g_return_val_if_fail (funcs != NULL, NULL);
 
-  self = g_object_new (GTK_TYPE_TEXT_HISTORY, NULL);
-  self->funcs = *funcs;
-  self->funcs_data = funcs_data;
+  this = g_object_new (GTK_TYPE_TEXT_HISTORY, NULL);
+  this->funcs = *funcs;
+  this->funcs_data = funcs_data;
 
-  return g_steal_pointer (&self);
+  return g_steal_pointer (&this);
 }
 
 gboolean
-gtk_text_history_get_can_undo (GtkTextHistory *self)
+gtk_text_history_get_can_undo (GtkTextHistory *this)
 {
-  g_return_val_if_fail (GTK_IS_TEXT_HISTORY (self), FALSE);
+  g_return_val_if_fail (GTK_IS_TEXT_HISTORY (this), FALSE);
 
-  return self->can_undo;
+  return this->can_undo;
 }
 
 gboolean
-gtk_text_history_get_can_redo (GtkTextHistory *self)
+gtk_text_history_get_can_redo (GtkTextHistory *this)
 {
-  g_return_val_if_fail (GTK_IS_TEXT_HISTORY (self), FALSE);
+  g_return_val_if_fail (GTK_IS_TEXT_HISTORY (this), FALSE);
 
-  return self->can_redo;
+  return this->can_redo;
 }
 
 static void
-gtk_text_history_apply (GtkTextHistory *self,
+gtk_text_history_apply (GtkTextHistory *this,
                         Action         *action,
                         Action         *peek)
 {
-  g_assert (GTK_IS_TEXT_HISTORY (self));
+  g_assert (GTK_IS_TEXT_HISTORY (this));
   g_assert (action != NULL);
 
   switch (action->kind)
     {
     case ACTION_KIND_INSERT:
-      gtk_text_history_do_insert (self,
+      gtk_text_history_do_insert (this,
                                   action->u.insert.begin,
                                   action->u.insert.end,
                                   istring_str (&action->u.insert.istr),
@@ -720,11 +720,11 @@ gtk_text_history_apply (GtkTextHistory *self,
        * the cursor were we think it was.
        */
       if (peek != NULL && peek->kind == ACTION_KIND_DELETE_SELECTION)
-        gtk_text_history_do_select (self,
+        gtk_text_history_do_select (this,
                                     peek->u.delete.begin,
                                     peek->u.delete.end);
       else
-        gtk_text_history_do_select (self,
+        gtk_text_history_do_select (this,
                                     action->u.insert.end,
                                     action->u.insert.end);
 
@@ -734,12 +734,12 @@ gtk_text_history_apply (GtkTextHistory *self,
     case ACTION_KIND_DELETE_KEY:
     case ACTION_KIND_DELETE_PROGRAMMATIC:
     case ACTION_KIND_DELETE_SELECTION:
-      gtk_text_history_do_delete (self,
+      gtk_text_history_do_delete (this,
                                   action->u.delete.begin,
                                   action->u.delete.end,
                                   istring_str (&action->u.delete.istr),
                                   action->u.delete.istr.n_bytes);
-      gtk_text_history_do_select (self,
+      gtk_text_history_do_select (this,
                                   action->u.delete.begin,
                                   action->u.delete.begin);
       break;
@@ -748,7 +748,7 @@ gtk_text_history_apply (GtkTextHistory *self,
       const GList *actions = action->u.group.actions.head;
 
       for (const GList *iter = actions; iter; iter = iter->next)
-        gtk_text_history_apply (self, iter->data, NULL);
+        gtk_text_history_apply (this, iter->data, NULL);
 
       break;
     }
@@ -761,25 +761,25 @@ gtk_text_history_apply (GtkTextHistory *self,
     }
 
   if (action->is_modified_set)
-    self->is_modified = action->is_modified;
+    this->is_modified = action->is_modified;
 }
 
 static void
-gtk_text_history_reverse (GtkTextHistory *self,
+gtk_text_history_reverse (GtkTextHistory *this,
                           Action         *action)
 {
-  g_assert (GTK_IS_TEXT_HISTORY (self));
+  g_assert (GTK_IS_TEXT_HISTORY (this));
   g_assert (action != NULL);
 
   switch (action->kind)
     {
     case ACTION_KIND_INSERT:
-      gtk_text_history_do_delete (self,
+      gtk_text_history_do_delete (this,
                                   action->u.insert.begin,
                                   action->u.insert.end,
                                   istring_str (&action->u.insert.istr),
                                   action->u.insert.istr.n_bytes);
-      gtk_text_history_do_select (self,
+      gtk_text_history_do_select (this,
                                   action->u.insert.begin,
                                   action->u.insert.begin);
       break;
@@ -788,18 +788,18 @@ gtk_text_history_reverse (GtkTextHistory *self,
     case ACTION_KIND_DELETE_KEY:
     case ACTION_KIND_DELETE_PROGRAMMATIC:
     case ACTION_KIND_DELETE_SELECTION:
-      gtk_text_history_do_insert (self,
+      gtk_text_history_do_insert (this,
                                   action->u.delete.begin,
                                   action->u.delete.end,
                                   istring_str (&action->u.delete.istr),
                                   action->u.delete.istr.n_bytes);
       if (action->u.delete.selection.insert != -1 &&
           action->u.delete.selection.bound != -1)
-        gtk_text_history_do_select (self,
+        gtk_text_history_do_select (this,
                                     action->u.delete.selection.insert,
                                     action->u.delete.selection.bound);
       else if (action->u.delete.selection.insert != -1)
-        gtk_text_history_do_select (self,
+        gtk_text_history_do_select (this,
                                     action->u.delete.selection.insert,
                                     action->u.delete.selection.insert);
       break;
@@ -808,7 +808,7 @@ gtk_text_history_reverse (GtkTextHistory *self,
       const GList *actions = action->u.group.actions.tail;
 
       for (const GList *iter = actions; iter; iter = iter->prev)
-        gtk_text_history_reverse (self, iter->data);
+        gtk_text_history_reverse (this, iter->data);
 
       break;
     }
@@ -821,7 +821,7 @@ gtk_text_history_reverse (GtkTextHistory *self,
     }
 
   if (action->is_modified_set)
-    self->is_modified = !action->is_modified;
+    this->is_modified = !action->is_modified;
 }
 
 static void
@@ -839,131 +839,131 @@ move_barrier (GQueue   *from_queue,
 }
 
 void
-gtk_text_history_undo (GtkTextHistory *self)
+gtk_text_history_undo (GtkTextHistory *this)
 {
-  g_return_if_fail (GTK_IS_TEXT_HISTORY (self));
+  g_return_if_fail (GTK_IS_TEXT_HISTORY (this));
 
-  return_if_not_enabled (self);
-  return_if_applying (self);
-  return_if_irreversible (self);
+  return_if_not_enabled (this);
+  return_if_applying (this);
+  return_if_irreversible (this);
 
 #if 0
   {
-    char *str = gtk_text_history_printf (self);
+    char *str = gtk_text_history_printf (this);
     g_print ("%s\n", str);
     g_free (str);
   }
 #endif
 
-  if (gtk_text_history_get_can_undo (self))
+  if (gtk_text_history_get_can_undo (this))
     {
       Action *action;
 
-      self->applying = TRUE;
+      this->applying = TRUE;
 
-      action = g_queue_peek_tail (&self->undo_queue);
+      action = g_queue_peek_tail (&this->undo_queue);
 
       if (action->kind == ACTION_KIND_BARRIER)
         {
-          move_barrier (&self->undo_queue, action, &self->redo_queue, TRUE);
-          action = g_queue_peek_tail (&self->undo_queue);
+          move_barrier (&this->undo_queue, action, &this->redo_queue, TRUE);
+          action = g_queue_peek_tail (&this->undo_queue);
         }
 
-      g_queue_unlink (&self->undo_queue, &action->link);
-      g_queue_push_head_link (&self->redo_queue, &action->link);
-      gtk_text_history_reverse (self, action);
-      gtk_text_history_update_state (self);
+      g_queue_unlink (&this->undo_queue, &action->link);
+      g_queue_push_head_link (&this->redo_queue, &action->link);
+      gtk_text_history_reverse (this, action);
+      gtk_text_history_update_state (this);
 
-      self->applying = FALSE;
+      this->applying = FALSE;
     }
 }
 
 void
-gtk_text_history_redo (GtkTextHistory *self)
+gtk_text_history_redo (GtkTextHistory *this)
 {
-  g_return_if_fail (GTK_IS_TEXT_HISTORY (self));
+  g_return_if_fail (GTK_IS_TEXT_HISTORY (this));
 
-  return_if_not_enabled (self);
-  return_if_applying (self);
-  return_if_irreversible (self);
+  return_if_not_enabled (this);
+  return_if_applying (this);
+  return_if_irreversible (this);
 
-  if (gtk_text_history_get_can_redo (self))
+  if (gtk_text_history_get_can_redo (this))
     {
       Action *action;
       Action *peek;
 
-      self->applying = TRUE;
+      this->applying = TRUE;
 
-      action = g_queue_peek_head (&self->redo_queue);
+      action = g_queue_peek_head (&this->redo_queue);
 
       if (action->kind == ACTION_KIND_BARRIER)
         {
-          move_barrier (&self->redo_queue, action, &self->undo_queue, FALSE);
-          action = g_queue_peek_head (&self->redo_queue);
+          move_barrier (&this->redo_queue, action, &this->undo_queue, FALSE);
+          action = g_queue_peek_head (&this->redo_queue);
         }
 
-      g_queue_unlink (&self->redo_queue, &action->link);
-      g_queue_push_tail_link (&self->undo_queue, &action->link);
+      g_queue_unlink (&this->redo_queue, &action->link);
+      g_queue_push_tail_link (&this->undo_queue, &action->link);
 
-      peek = g_queue_peek_head (&self->redo_queue);
+      peek = g_queue_peek_head (&this->redo_queue);
 
-      gtk_text_history_apply (self, action, peek);
-      gtk_text_history_update_state (self);
+      gtk_text_history_apply (this, action, peek);
+      gtk_text_history_update_state (this);
 
-      self->applying = FALSE;
+      this->applying = FALSE;
     }
 }
 
 void
-gtk_text_history_begin_user_action (GtkTextHistory *self)
+gtk_text_history_begin_user_action (GtkTextHistory *this)
 {
   Action *group;
 
-  g_return_if_fail (GTK_IS_TEXT_HISTORY (self));
+  g_return_if_fail (GTK_IS_TEXT_HISTORY (this));
 
-  return_if_not_enabled (self);
-  return_if_applying (self);
-  return_if_irreversible (self);
+  return_if_not_enabled (this);
+  return_if_applying (this);
+  return_if_irreversible (this);
 
-  self->in_user++;
+  this->in_user++;
 
-  group = g_queue_peek_tail (&self->undo_queue);
+  group = g_queue_peek_tail (&this->undo_queue);
 
   if (group == NULL || group->kind != ACTION_KIND_GROUP)
     {
       group = action_new (ACTION_KIND_GROUP);
-      gtk_text_history_push (self, group);
+      gtk_text_history_push (this, group);
     }
 
   group->u.group.depth++;
 
-  gtk_text_history_update_state (self);
+  gtk_text_history_update_state (this);
 }
 
 void
-gtk_text_history_end_user_action (GtkTextHistory *self)
+gtk_text_history_end_user_action (GtkTextHistory *this)
 {
   Action *peek;
 
-  g_return_if_fail (GTK_IS_TEXT_HISTORY (self));
+  g_return_if_fail (GTK_IS_TEXT_HISTORY (this));
 
-  return_if_not_enabled (self);
-  return_if_applying (self);
-  return_if_irreversible (self);
+  return_if_not_enabled (this);
+  return_if_applying (this);
+  return_if_irreversible (this);
 
-  clear_action_queue (&self->redo_queue);
+  clear_action_queue (&this->redo_queue);
 
-  peek = g_queue_peek_tail (&self->undo_queue);
+  peek = g_queue_peek_tail (&this->undo_queue);
 
   if (peek->kind != ACTION_KIND_GROUP)
     {
       g_warning ("miss-matched %s end_user_action. Expected group, got %d",
-                 G_OBJECT_TYPE_NAME (self),
+                 G_OBJECT_TYPE_NAME (this),
                  peek->kind);
       return;
     }
 
-  self->in_user--;
+  this->in_user--;
   peek->u.group.depth--;
 
   /* Unless this is the last user action, short-circuit */
@@ -973,7 +973,7 @@ gtk_text_history_end_user_action (GtkTextHistory *self)
   /* Unlikely, but if the group is empty, just remove it */
   if (action_group_is_empty (peek))
     {
-      g_queue_unlink (&self->undo_queue, &peek->link);
+      g_queue_unlink (&this->undo_queue, &peek->link);
       action_free (peek);
       goto update_state;
     }
@@ -990,10 +990,10 @@ gtk_text_history_end_user_action (GtkTextHistory *self)
       replaced->is_modified_set = peek->is_modified_set;
 
       g_queue_unlink (&peek->u.group.actions, link_);
-      g_queue_unlink (&self->undo_queue, &peek->link);
+      g_queue_unlink (&this->undo_queue, &peek->link);
       action_free (peek);
 
-      gtk_text_history_push (self, replaced);
+      gtk_text_history_push (this, replaced);
 
       goto update_state;
     }
@@ -1001,62 +1001,62 @@ gtk_text_history_end_user_action (GtkTextHistory *self)
   /* Now insert a barrier action so we don't allow
    * joining items to this node in the future.
    */
-  gtk_text_history_push (self, action_new (ACTION_KIND_BARRIER));
+  gtk_text_history_push (this, action_new (ACTION_KIND_BARRIER));
 
 update_state:
-  gtk_text_history_update_state (self);
+  gtk_text_history_update_state (this);
 }
 
 void
-gtk_text_history_begin_irreversible_action (GtkTextHistory *self)
+gtk_text_history_begin_irreversible_action (GtkTextHistory *this)
 {
-  g_return_if_fail (GTK_IS_TEXT_HISTORY (self));
+  g_return_if_fail (GTK_IS_TEXT_HISTORY (this));
 
-  return_if_not_enabled (self);
-  return_if_applying (self);
+  return_if_not_enabled (this);
+  return_if_applying (this);
 
-  if (self->in_user)
+  if (this->in_user)
     {
       g_warning ("Cannot begin irreversible action while in user action");
       return;
     }
 
-  self->irreversible++;
+  this->irreversible++;
 
-  clear_action_queue (&self->undo_queue);
-  clear_action_queue (&self->redo_queue);
+  clear_action_queue (&this->undo_queue);
+  clear_action_queue (&this->redo_queue);
 
-  gtk_text_history_update_state (self);
+  gtk_text_history_update_state (this);
 }
 
 void
-gtk_text_history_end_irreversible_action (GtkTextHistory *self)
+gtk_text_history_end_irreversible_action (GtkTextHistory *this)
 {
-  g_return_if_fail (GTK_IS_TEXT_HISTORY (self));
+  g_return_if_fail (GTK_IS_TEXT_HISTORY (this));
 
-  return_if_not_enabled (self);
-  return_if_applying (self);
+  return_if_not_enabled (this);
+  return_if_applying (this);
 
-  if (self->in_user)
+  if (this->in_user)
     {
       g_warning ("Cannot end irreversible action while in user action");
       return;
     }
 
-  self->irreversible--;
+  this->irreversible--;
 
-  clear_action_queue (&self->undo_queue);
-  clear_action_queue (&self->redo_queue);
+  clear_action_queue (&this->undo_queue);
+  clear_action_queue (&this->redo_queue);
 
-  gtk_text_history_update_state (self);
+  gtk_text_history_update_state (this);
 }
 
 static void
-gtk_text_history_clear_modified (GtkTextHistory *self)
+gtk_text_history_clear_modified (GtkTextHistory *this)
 {
   const GList *iter;
 
-  for (iter = self->undo_queue.head; iter; iter = iter->next)
+  for (iter = this->undo_queue.head; iter; iter = iter->next)
     {
       Action *action = iter->data;
 
@@ -1064,7 +1064,7 @@ gtk_text_history_clear_modified (GtkTextHistory *self)
       action->is_modified_set = FALSE;
     }
 
-  for (iter = self->redo_queue.head; iter; iter = iter->next)
+  for (iter = this->redo_queue.head; iter; iter = iter->next)
     {
       Action *action = iter->data;
 
@@ -1074,20 +1074,20 @@ gtk_text_history_clear_modified (GtkTextHistory *self)
 }
 
 void
-gtk_text_history_modified_changed (GtkTextHistory *self,
+gtk_text_history_modified_changed (GtkTextHistory *this,
                                    gboolean        modified)
 {
   Action *peek;
 
-  g_return_if_fail (GTK_IS_TEXT_HISTORY (self));
+  g_return_if_fail (GTK_IS_TEXT_HISTORY (this));
 
-  return_if_not_enabled (self);
-  return_if_applying (self);
+  return_if_not_enabled (this);
+  return_if_applying (this);
 
   /* If we have a new save point, clear all previous modified states. */
-  gtk_text_history_clear_modified (self);
+  gtk_text_history_clear_modified (this);
 
-  if ((peek = g_queue_peek_tail (&self->undo_queue)))
+  if ((peek = g_queue_peek_tail (&this->undo_queue)))
     {
       if (peek->kind == ACTION_KIND_BARRIER)
         {
@@ -1099,7 +1099,7 @@ gtk_text_history_modified_changed (GtkTextHistory *self,
       peek->is_modified_set = TRUE;
     }
 
-  if ((peek = g_queue_peek_head (&self->redo_queue)))
+  if ((peek = g_queue_peek_head (&this->redo_queue)))
     {
       if (peek->kind == ACTION_KIND_BARRIER)
         {
@@ -1112,30 +1112,30 @@ gtk_text_history_modified_changed (GtkTextHistory *self,
       peek->is_modified_set = TRUE;
     }
 
-  self->is_modified = !!modified;
-  self->is_modified_set = TRUE;
+  this->is_modified = !!modified;
+  this->is_modified_set = TRUE;
 
-  if (!self->irreversible)
-    gtk_text_history_update_state (self);
+  if (!this->irreversible)
+    gtk_text_history_update_state (this);
 }
 
 void
-gtk_text_history_selection_changed (GtkTextHistory *self,
+gtk_text_history_selection_changed (GtkTextHistory *this,
                                     int             selection_insert,
                                     int             selection_bound)
 {
-  g_return_if_fail (GTK_IS_TEXT_HISTORY (self));
+  g_return_if_fail (GTK_IS_TEXT_HISTORY (this));
 
-  return_if_not_enabled (self);
-  return_if_applying (self);
-  return_if_irreversible (self);
+  return_if_not_enabled (this);
+  return_if_applying (this);
+  return_if_irreversible (this);
 
-  self->selection.insert = CLAMP (selection_insert, -1, G_MAXINT);
-  self->selection.bound = CLAMP (selection_bound, -1, G_MAXINT);
+  this->selection.insert = CLAMP (selection_insert, -1, G_MAXINT);
+  this->selection.bound = CLAMP (selection_bound, -1, G_MAXINT);
 }
 
 void
-gtk_text_history_text_inserted (GtkTextHistory *self,
+gtk_text_history_text_inserted (GtkTextHistory *this,
                                 guint           position,
                                 const char     *text,
                                 int             len)
@@ -1143,11 +1143,11 @@ gtk_text_history_text_inserted (GtkTextHistory *self,
   Action *action;
   guint n_chars;
 
-  g_return_if_fail (GTK_IS_TEXT_HISTORY (self));
+  g_return_if_fail (GTK_IS_TEXT_HISTORY (this));
 
-  return_if_not_enabled (self);
-  return_if_applying (self);
-  return_if_irreversible (self);
+  return_if_not_enabled (this);
+  return_if_applying (this);
+  return_if_irreversible (this);
 
   if (len < 0)
     len = strlen (text);
@@ -1158,11 +1158,11 @@ gtk_text_history_text_inserted (GtkTextHistory *self,
   action->u.insert.end = position + n_chars;
   istring_set (&action->u.insert.istr, text, len, n_chars);
 
-  gtk_text_history_push (self, action);
+  gtk_text_history_push (this, action);
 }
 
 void
-gtk_text_history_text_deleted (GtkTextHistory *self,
+gtk_text_history_text_deleted (GtkTextHistory *this,
                                guint           begin,
                                guint           end,
                                const char     *text,
@@ -1171,20 +1171,20 @@ gtk_text_history_text_deleted (GtkTextHistory *self,
   Action *action;
   ActionKind kind;
 
-  g_return_if_fail (GTK_IS_TEXT_HISTORY (self));
+  g_return_if_fail (GTK_IS_TEXT_HISTORY (this));
 
-  return_if_not_enabled (self);
-  return_if_applying (self);
-  return_if_irreversible (self);
+  return_if_not_enabled (this);
+  return_if_applying (this);
+  return_if_irreversible (this);
 
   if (len < 0)
     len = strlen (text);
 
-  if (self->selection.insert == -1 && self->selection.bound == -1)
+  if (this->selection.insert == -1 && this->selection.bound == -1)
     kind = ACTION_KIND_DELETE_PROGRAMMATIC;
-  else if (self->selection.insert == end && self->selection.bound == -1)
+  else if (this->selection.insert == end && this->selection.bound == -1)
     kind = ACTION_KIND_DELETE_BACKSPACE;
-  else if (self->selection.insert == begin && self->selection.bound == -1)
+  else if (this->selection.insert == begin && this->selection.bound == -1)
     kind = ACTION_KIND_DELETE_KEY;
   else
     kind = ACTION_KIND_DELETE_SELECTION;
@@ -1192,62 +1192,62 @@ gtk_text_history_text_deleted (GtkTextHistory *self,
   action = action_new (kind);
   action->u.delete.begin = begin;
   action->u.delete.end = end;
-  action->u.delete.selection.insert = self->selection.insert;
-  action->u.delete.selection.bound = self->selection.bound;
+  action->u.delete.selection.insert = this->selection.insert;
+  action->u.delete.selection.bound = this->selection.bound;
   istring_set (&action->u.delete.istr, text, len, MAX (end, begin) - MIN (end, begin));
 
-  gtk_text_history_push (self, action);
+  gtk_text_history_push (this, action);
 }
 
 gboolean
-gtk_text_history_get_enabled (GtkTextHistory *self)
+gtk_text_history_get_enabled (GtkTextHistory *this)
 {
-  g_return_val_if_fail (GTK_IS_TEXT_HISTORY (self), FALSE);
+  g_return_val_if_fail (GTK_IS_TEXT_HISTORY (this), FALSE);
 
-  return self->enabled;
+  return this->enabled;
 }
 
 void
-gtk_text_history_set_enabled (GtkTextHistory *self,
+gtk_text_history_set_enabled (GtkTextHistory *this,
                               gboolean        enabled)
 {
-  g_return_if_fail (GTK_IS_TEXT_HISTORY (self));
+  g_return_if_fail (GTK_IS_TEXT_HISTORY (this));
 
   enabled = !!enabled;
 
-  if (self->enabled != enabled)
+  if (this->enabled != enabled)
     {
-      self->enabled = enabled;
+      this->enabled = enabled;
 
-      if (!self->enabled)
+      if (!this->enabled)
         {
-          self->irreversible = 0;
-          self->in_user = 0;
-          clear_action_queue (&self->undo_queue);
-          clear_action_queue (&self->redo_queue);
+          this->irreversible = 0;
+          this->in_user = 0;
+          clear_action_queue (&this->undo_queue);
+          clear_action_queue (&this->redo_queue);
         }
 
-      gtk_text_history_update_state (self);
+      gtk_text_history_update_state (this);
     }
 }
 
 guint
-gtk_text_history_get_max_undo_levels (GtkTextHistory *self)
+gtk_text_history_get_max_undo_levels (GtkTextHistory *this)
 {
-  g_return_val_if_fail (GTK_IS_TEXT_HISTORY (self), 0);
+  g_return_val_if_fail (GTK_IS_TEXT_HISTORY (this), 0);
 
-  return self->max_undo_levels;
+  return this->max_undo_levels;
 }
 
 void
-gtk_text_history_set_max_undo_levels (GtkTextHistory *self,
+gtk_text_history_set_max_undo_levels (GtkTextHistory *this,
                                       guint           max_undo_levels)
 {
-  g_return_if_fail (GTK_IS_TEXT_HISTORY (self));
+  g_return_if_fail (GTK_IS_TEXT_HISTORY (this));
 
-  if (self->max_undo_levels != max_undo_levels)
+  if (this->max_undo_levels != max_undo_levels)
     {
-      self->max_undo_levels = max_undo_levels;
-      gtk_text_history_truncate (self);
+      this->max_undo_levels = max_undo_levels;
+      gtk_text_history_truncate (this);
     }
 }

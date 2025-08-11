@@ -112,11 +112,11 @@ static void
 gdk_macos_device_ungrab (GdkDevice *device,
                          guint32    time_)
 {
-  GdkMacosDevice *self = (GdkMacosDevice *)device;
+  GdkMacosDevice *this = (GdkMacosDevice *)device;
   GdkDeviceGrabInfo *grab;
   GdkDisplay *display;
 
-  g_assert (GDK_IS_MACOS_DEVICE (self));
+  g_assert (GDK_IS_MACOS_DEVICE (this));
 
   display = gdk_device_get_display (device);
   grab = _gdk_display_get_last_device_grab (display, device);
@@ -180,8 +180,8 @@ gdk_macos_device_class_init (GdkMacosDeviceClass *klass)
 }
 
 static void
-gdk_macos_device_init (GdkMacosDevice *self)
+gdk_macos_device_init (GdkMacosDevice *this)
 {
-  _gdk_device_add_axis (GDK_DEVICE (self), GDK_AXIS_X, 0, 0, 1);
-  _gdk_device_add_axis (GDK_DEVICE (self), GDK_AXIS_Y, 0, 0, 1);
+  _gdk_device_add_axis (GDK_DEVICE (this), GDK_AXIS_X, 0, 0, 1);
+  _gdk_device_add_axis (GDK_DEVICE (this), GDK_AXIS_Y, 0, 0, 1);
 }

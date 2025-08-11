@@ -45,7 +45,7 @@
  * used to determine the minimal size for the layout margins.
  *
  * To obtain a `GtkPageSetup` use [ctor@Gtk.PageSetup.new] to get the defaults,
- * or use [func@Gtk.print_run_page_setup_dialog] to show the page setup dialog
+ * or use [fn@Gtk.print_run_page_setup_dialog] to show the page setup dialog
  * and receive the resulting page setup.
  *
  * ## A page setup dialog

@@ -49,38 +49,38 @@ GtkDropTarget *         gtk_drop_target_new              (GType                 
                                                           GdkDragAction          actions);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_drop_target_set_gtypes       (GtkDropTarget         *self,
+void                    gtk_drop_target_set_gtypes       (GtkDropTarget         *this,
                                                           GType                 *types,
                                                           gsize                  n_types);
 GDK_AVAILABLE_IN_ALL
-const GType *           gtk_drop_target_get_gtypes       (GtkDropTarget         *self,
+const GType *           gtk_drop_target_get_gtypes       (GtkDropTarget         *this,
                                                           gsize                 *n_types);
 GDK_AVAILABLE_IN_ALL
-GdkContentFormats *     gtk_drop_target_get_formats      (GtkDropTarget         *self);
+GdkContentFormats *     gtk_drop_target_get_formats      (GtkDropTarget         *this);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_drop_target_set_actions      (GtkDropTarget         *self,
+void                    gtk_drop_target_set_actions      (GtkDropTarget         *this,
                                                           GdkDragAction          actions);
 GDK_AVAILABLE_IN_ALL
-GdkDragAction           gtk_drop_target_get_actions      (GtkDropTarget         *self);
+GdkDragAction           gtk_drop_target_get_actions      (GtkDropTarget         *this);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_drop_target_set_preload      (GtkDropTarget         *self,
+void                    gtk_drop_target_set_preload      (GtkDropTarget         *this,
                                                           gboolean               preload);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_drop_target_get_preload      (GtkDropTarget         *self);
+gboolean                gtk_drop_target_get_preload      (GtkDropTarget         *this);
 
 GDK_DEPRECATED_IN_4_4_FOR(gtk_drop_target_get_current_drop)
-GdkDrop *               gtk_drop_target_get_drop         (GtkDropTarget         *self);
+GdkDrop *               gtk_drop_target_get_drop         (GtkDropTarget         *this);
 
 GDK_AVAILABLE_IN_4_4
-GdkDrop *               gtk_drop_target_get_current_drop (GtkDropTarget         *self);
+GdkDrop *               gtk_drop_target_get_current_drop (GtkDropTarget         *this);
 
 GDK_AVAILABLE_IN_ALL
-const GValue *          gtk_drop_target_get_value        (GtkDropTarget         *self);
+const GValue *          gtk_drop_target_get_value        (GtkDropTarget         *this);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_drop_target_reject           (GtkDropTarget         *self);
+void                    gtk_drop_target_reject           (GtkDropTarget         *this);
 
 
 G_END_DECLS

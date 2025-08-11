@@ -1573,7 +1573,7 @@ gtk_calendar_new (void)
 
 /**
  * gtk_calendar_select_day:
- * @self: a `GtkCalendar`.
+ * @this: a `GtkCalendar`.
  * @date: (transfer none): a `GDateTime` representing the day to select
  *
  * Switches to @date's year and month and select its day.
@@ -1708,7 +1708,7 @@ gtk_calendar_unmark_day (GtkCalendar *calendar,
 
 /**
  * gtk_calendar_set_date:
- * @self: a `GtkCalendar`.
+ * @this: a `GtkCalendar`.
  * @date: (transfer none): a `GDateTime` representing the day to select
  *
  * Switches to @date's year and month and selects its day.
@@ -1716,18 +1716,18 @@ gtk_calendar_unmark_day (GtkCalendar *calendar,
  * Since: 4.20
  */
 void
-gtk_calendar_set_date (GtkCalendar *self,
+gtk_calendar_set_date (GtkCalendar *this,
                        GDateTime   *date)
 {
-  g_return_if_fail (GTK_IS_CALENDAR (self));
+  g_return_if_fail (GTK_IS_CALENDAR (this));
   g_return_if_fail (date != NULL);
 
-  calendar_select_day_internal (self, date, TRUE);
+  calendar_select_day_internal (this, date, TRUE);
 }
 
 /**
  * gtk_calendar_get_date:
- * @self: a `GtkCalendar`
+ * @this: a `GtkCalendar`
  *
  * Returns a `GDateTime` representing the shown
  * year, month and the selected day.
@@ -1737,44 +1737,44 @@ gtk_calendar_set_date (GtkCalendar *self,
  * Returns: (transfer full): the `GDateTime` representing the selected date
  */
 GDateTime *
-gtk_calendar_get_date (GtkCalendar *self)
+gtk_calendar_get_date (GtkCalendar *this)
 {
-  g_return_val_if_fail (GTK_IS_CALENDAR (self), NULL);
+  g_return_val_if_fail (GTK_IS_CALENDAR (this), NULL);
 
-  return g_date_time_ref (self->date);
+  return g_date_time_ref (this->date);
 }
 
 /**
  * gtk_calendar_set_show_week_numbers:
- * @self: a `GtkCalendar`
+ * @this: a `GtkCalendar`
  * @value: whether to show week numbers alongside the days
  *
  * Sets whether week numbers are shown in the calendar.
  */
 void
-gtk_calendar_set_show_week_numbers (GtkCalendar *self,
+gtk_calendar_set_show_week_numbers (GtkCalendar *this,
                                     gboolean     value)
 {
   int i;
 
-  g_return_if_fail (GTK_IS_CALENDAR (self));
+  g_return_if_fail (GTK_IS_CALENDAR (this));
 
-  if (self->show_week_numbers == value)
+  if (this->show_week_numbers == value)
     return;
 
-  self->show_week_numbers = value;
+  this->show_week_numbers = value;
 
   for (i = 0; i < 6; i ++)
-    gtk_widget_set_visible (self->week_number_labels[i], value);
+    gtk_widget_set_visible (this->week_number_labels[i], value);
 
-  g_object_notify (G_OBJECT (self), "show-week-numbers");
+  g_object_notify (G_OBJECT (this), "show-week-numbers");
 }
 
 /**
  * gtk_calendar_get_show_week_numbers:
- * @self: a `GtkCalendar`
+ * @this: a `GtkCalendar`
  *
- * Returns whether @self is showing week numbers right
+ * Returns whether @this is showing week numbers right
  * now.
  *
  * This is the value of the [property@Gtk.Calendar:show-week-numbers]
@@ -1783,16 +1783,16 @@ gtk_calendar_set_show_week_numbers (GtkCalendar *self,
  * Return: Whether the calendar is showing week numbers.
  */
 gboolean
-gtk_calendar_get_show_week_numbers (GtkCalendar *self)
+gtk_calendar_get_show_week_numbers (GtkCalendar *this)
 {
-  g_return_val_if_fail (GTK_IS_CALENDAR (self), FALSE);
+  g_return_val_if_fail (GTK_IS_CALENDAR (this), FALSE);
 
-  return self->show_week_numbers;
+  return this->show_week_numbers;
 }
 
 /**
  * gtk_calendar_set_show_heading:
- * @self: a `GtkCalendar`
+ * @this: a `GtkCalendar`
  * @value: Whether to show the heading in the calendar
  *
  * Sets whether the calendar should show a heading.
@@ -1801,26 +1801,26 @@ gtk_calendar_get_show_week_numbers (GtkCalendar *self)
  * buttons for changing both.
  */
 void
-gtk_calendar_set_show_heading (GtkCalendar *self,
+gtk_calendar_set_show_heading (GtkCalendar *this,
                                gboolean     value)
 {
-  g_return_if_fail (GTK_IS_CALENDAR (self));
+  g_return_if_fail (GTK_IS_CALENDAR (this));
 
-  if (self->show_heading == value)
+  if (this->show_heading == value)
     return;
 
-  self->show_heading = value;
+  this->show_heading = value;
 
-  gtk_widget_set_visible (self->header_box, value);
+  gtk_widget_set_visible (this->header_box, value);
 
-  g_object_notify (G_OBJECT (self), "show-heading");
+  g_object_notify (G_OBJECT (this), "show-heading");
 }
 
 /**
  * gtk_calendar_get_show_heading:
- * @self: a `GtkCalendar`
+ * @this: a `GtkCalendar`
  *
- * Returns whether @self is currently showing the heading.
+ * Returns whether @this is currently showing the heading.
  *
  * This is the value of the [property@Gtk.Calendar:show-heading]
  * property.
@@ -1828,44 +1828,44 @@ gtk_calendar_set_show_heading (GtkCalendar *self,
  * Return: Whether the calendar is showing a heading.
  */
 gboolean
-gtk_calendar_get_show_heading (GtkCalendar *self)
+gtk_calendar_get_show_heading (GtkCalendar *this)
 {
-  g_return_val_if_fail (GTK_IS_CALENDAR (self), FALSE);
+  g_return_val_if_fail (GTK_IS_CALENDAR (this), FALSE);
 
-  return self->show_heading;
+  return this->show_heading;
 }
 
 /**
  * gtk_calendar_set_show_day_names:
- * @self: a `GtkCalendar`
+ * @this: a `GtkCalendar`
  * @value: Whether to show day names above the day numbers
  *
  * Sets whether the calendar shows day names.
  */
 void
-gtk_calendar_set_show_day_names (GtkCalendar *self,
+gtk_calendar_set_show_day_names (GtkCalendar *this,
                                  gboolean     value)
 {
   int i;
 
-  g_return_if_fail (GTK_IS_CALENDAR (self));
+  g_return_if_fail (GTK_IS_CALENDAR (this));
 
-  if (self->show_day_names == value)
+  if (this->show_day_names == value)
     return;
 
-  self->show_day_names = value;
+  this->show_day_names = value;
 
   for (i = 0; i < 7; i ++)
-    gtk_widget_set_visible (self->day_name_labels[i], value);
+    gtk_widget_set_visible (this->day_name_labels[i], value);
 
-  g_object_notify (G_OBJECT (self), "show-day-names");
+  g_object_notify (G_OBJECT (this), "show-day-names");
 }
 
 /**
  * gtk_calendar_get_show_day_names:
- * @self: a `GtkCalendar`
+ * @this: a `GtkCalendar`
  *
- * Returns whether @self is currently showing the names
+ * Returns whether @this is currently showing the names
  * of the week days.
  *
  * This is the value of the [property@Gtk.Calendar:show-day-names]
@@ -1874,16 +1874,16 @@ gtk_calendar_set_show_day_names (GtkCalendar *self,
  * Returns: Whether the calendar shows day names.
  */
 gboolean
-gtk_calendar_get_show_day_names (GtkCalendar *self)
+gtk_calendar_get_show_day_names (GtkCalendar *this)
 {
-  g_return_val_if_fail (GTK_IS_CALENDAR (self), FALSE);
+  g_return_val_if_fail (GTK_IS_CALENDAR (this), FALSE);
 
-  return self->show_day_names;
+  return this->show_day_names;
 }
 
 /**
  * gtk_calendar_set_day:
- * @self: a `GtkCalendar`
+ * @this: a `GtkCalendar`
  * @day: The desired day for the selected date (as a number between 1 and 31).
  *
  * Sets the day for the selected date.
@@ -1894,32 +1894,32 @@ gtk_calendar_get_show_day_names (GtkCalendar *self)
  * Since: 4.14
  */
 void
-gtk_calendar_set_day (GtkCalendar *self,
+gtk_calendar_set_day (GtkCalendar *this,
                       int          day)
 {
   GDateTime *date;
 
-  g_return_if_fail (GTK_IS_CALENDAR (self));
+  g_return_if_fail (GTK_IS_CALENDAR (this));
   g_return_if_fail (day >= 1 && day <= 31);
 
-  if (day == g_date_time_get_day_of_month (self->date))
+  if (day == g_date_time_get_day_of_month (this->date))
     return;
 
-  date = g_date_time_new_local (g_date_time_get_year (self->date),
-                                g_date_time_get_month (self->date),
+  date = g_date_time_new_local (g_date_time_get_year (this->date),
+                                g_date_time_get_month (this->date),
                                 day,
                                 0, 0, 0.0);
   g_return_if_fail (date != NULL);
 
-  calendar_select_day_internal (self, date, TRUE);
+  calendar_select_day_internal (this, date, TRUE);
   g_date_time_unref (date);
 
-  g_object_notify (G_OBJECT (self), "day");
+  g_object_notify (G_OBJECT (this), "day");
 }
 
 /**
  * gtk_calendar_get_day:
- * @self: a `GtkCalendar`
+ * @this: a `GtkCalendar`
  *
  * Gets the day of the selected date.
  *
@@ -1928,16 +1928,16 @@ gtk_calendar_set_day (GtkCalendar *self,
  * Since: 4.14
  */
 int
-gtk_calendar_get_day (GtkCalendar *self)
+gtk_calendar_get_day (GtkCalendar *this)
 {
-  g_return_val_if_fail (GTK_IS_CALENDAR (self), -1);
+  g_return_val_if_fail (GTK_IS_CALENDAR (this), -1);
 
-  return g_date_time_get_day_of_month (self->date);
+  return g_date_time_get_day_of_month (this->date);
 }
 
 /**
  * gtk_calendar_set_month:
- * @self: a `GtkCalendar`
+ * @this: a `GtkCalendar`
  * @month: The desired month for the selected date (as a number between 0 and 11).
  *
  * Sets the month for the selected date.
@@ -1948,32 +1948,32 @@ gtk_calendar_get_day (GtkCalendar *self)
  * Since: 4.14
  */
 void
-gtk_calendar_set_month (GtkCalendar *self,
+gtk_calendar_set_month (GtkCalendar *this,
                         int          month)
 {
   GDateTime *date;
 
-  g_return_if_fail (GTK_IS_CALENDAR (self));
+  g_return_if_fail (GTK_IS_CALENDAR (this));
   g_return_if_fail (month >= 0 && month <= 11);
 
-  if (month == g_date_time_get_month (self->date) - 1)
+  if (month == g_date_time_get_month (this->date) - 1)
     return;
 
-  date = g_date_time_new_local (g_date_time_get_year (self->date),
+  date = g_date_time_new_local (g_date_time_get_year (this->date),
                                 month + 1,
-                                g_date_time_get_day_of_month (self->date),
+                                g_date_time_get_day_of_month (this->date),
                                 0, 0, 0.0);
   g_return_if_fail (date != NULL);
 
-  calendar_select_day_internal (self, date, TRUE);
+  calendar_select_day_internal (this, date, TRUE);
   g_date_time_unref (date);
 
-  g_object_notify (G_OBJECT (self), "month");
+  g_object_notify (G_OBJECT (this), "month");
 }
 
 /**
  * gtk_calendar_get_month:
- * @self: a `GtkCalendar`
+ * @this: a `GtkCalendar`
  *
  * Gets the month of the selected date.
  *
@@ -1982,16 +1982,16 @@ gtk_calendar_set_month (GtkCalendar *self,
  * Since: 4.14
  */
 int
-gtk_calendar_get_month (GtkCalendar *self)
+gtk_calendar_get_month (GtkCalendar *this)
 {
-  g_return_val_if_fail (GTK_IS_CALENDAR (self), -1);
+  g_return_val_if_fail (GTK_IS_CALENDAR (this), -1);
 
-  return g_date_time_get_month (self->date) - 1;
+  return g_date_time_get_month (this->date) - 1;
 }
 
 /**
  * gtk_calendar_set_year:
- * @self: a `GtkCalendar`
+ * @this: a `GtkCalendar`
  * @year: The desired year for the selected date (within [struct@GLib.DateTime]
  *   limits, i.e. from 0001 to 9999).
  *
@@ -2003,32 +2003,32 @@ gtk_calendar_get_month (GtkCalendar *self)
  * Since: 4.14
  */
 void
-gtk_calendar_set_year (GtkCalendar *self,
+gtk_calendar_set_year (GtkCalendar *this,
                        int          year)
 {
   GDateTime *date;
 
-  g_return_if_fail (GTK_IS_CALENDAR (self));
+  g_return_if_fail (GTK_IS_CALENDAR (this));
   g_return_if_fail (year >= 1 && year <= 9999);
 
-  if (year == g_date_time_get_year (self->date))
+  if (year == g_date_time_get_year (this->date))
     return;
 
   date = g_date_time_new_local (year,
-                                g_date_time_get_month (self->date),
-                                g_date_time_get_day_of_month (self->date),
+                                g_date_time_get_month (this->date),
+                                g_date_time_get_day_of_month (this->date),
                                 0, 0, 0.0);
   g_return_if_fail (date != NULL);
 
-  calendar_select_day_internal (self, date, TRUE);
+  calendar_select_day_internal (this, date, TRUE);
   g_date_time_unref (date);
 
-  g_object_notify (G_OBJECT (self), "year");
+  g_object_notify (G_OBJECT (this), "year");
 }
 
 /**
  * gtk_calendar_get_year:
- * @self: a `GtkCalendar`
+ * @this: a `GtkCalendar`
  *
  * Gets the year of the selected date.
  *
@@ -2037,9 +2037,9 @@ gtk_calendar_set_year (GtkCalendar *self,
  * Since: 4.14
  */
 int
-gtk_calendar_get_year (GtkCalendar *self)
+gtk_calendar_get_year (GtkCalendar *this)
 {
-  g_return_val_if_fail (GTK_IS_CALENDAR (self), -1);
+  g_return_val_if_fail (GTK_IS_CALENDAR (this), -1);
 
-  return g_date_time_get_year (self->date);
+  return g_date_time_get_year (this->date);
 }

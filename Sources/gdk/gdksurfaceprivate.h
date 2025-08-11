@@ -262,9 +262,9 @@ void       gdk_surface_invalidate_region  (GdkSurface            *surface,
                                            const cairo_region_t  *region);
 void       _gdk_surface_clear_update_area (GdkSurface            *surface);
 void       _gdk_surface_update_size       (GdkSurface            *surface);
-void       gdk_surface_set_opaque_rect    (GdkSurface            *self,
+void       gdk_surface_set_opaque_rect    (GdkSurface            *this,
                                            const graphene_rect_t *rect);
-gboolean   gdk_surface_is_opaque          (GdkSurface            *self);
+gboolean   gdk_surface_is_opaque          (GdkSurface            *this);
 
 GdkGLContext * gdk_surface_get_paint_gl_context (GdkSurface *surface,
                                                  GError   **error);
@@ -302,11 +302,11 @@ void gdk_surface_get_geometry (GdkSurface *surface,
 
 void                    gdk_surface_set_frame_clock             (GdkSurface             *surface,
                                                                  GdkFrameClock          *clock);
-gboolean                gdk_surface_get_gl_is_srgb              (GdkSurface             *self);
+gboolean                gdk_surface_get_gl_is_srgb              (GdkSurface             *this);
 
-void                    gdk_surface_set_widget                  (GdkSurface             *self,
+void                    gdk_surface_set_widget                  (GdkSurface             *this,
                                                                  gpointer                widget);
-gpointer                gdk_surface_get_widget                  (GdkSurface             *self);
+gpointer                gdk_surface_get_widget                  (GdkSurface             *this);
 
 void                    gdk_surface_freeze_updates              (GdkSurface             *surface);
 void                    gdk_surface_thaw_updates                (GdkSurface             *surface);
@@ -354,8 +354,8 @@ GdkSubsurface * gdk_surface_get_subsurface     (GdkSurface          *surface,
 GdkColorState *         gdk_surface_get_color_state                     (GdkSurface             *surface);
 void                    gdk_surface_set_color_state                     (GdkSurface             *surface,
                                                                          GdkColorState          *color_state);
-void                    gdk_surface_set_attached_context                (GdkSurface             *self,
+void                    gdk_surface_set_attached_context                (GdkSurface             *this,
                                                                          GdkDrawContext         *context);
-GdkDrawContext *        gdk_surface_get_attached_context                (GdkSurface             *self);
+GdkDrawContext *        gdk_surface_get_attached_context                (GdkSurface             *this);
 
 G_END_DECLS

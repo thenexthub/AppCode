@@ -34,13 +34,13 @@ GDK_AVAILABLE_IN_ALL
 G_DECLARE_INTERFACE (GtkRoot, gtk_root, GTK, ROOT, GtkWidget)
 
 GDK_AVAILABLE_IN_ALL
-GdkDisplay * gtk_root_get_display (GtkRoot *self);
+GdkDisplay * gtk_root_get_display (GtkRoot *this);
 
 GDK_AVAILABLE_IN_ALL
-void        gtk_root_set_focus (GtkRoot   *self,
+void        gtk_root_set_focus (GtkRoot   *this,
                                 GtkWidget *focus);
 GDK_AVAILABLE_IN_ALL
-GtkWidget * gtk_root_get_focus (GtkRoot   *self);
+GtkWidget * gtk_root_get_focus (GtkRoot   *this);
 
 G_END_DECLS
 

@@ -38,11 +38,11 @@ GDK_AVAILABLE_IN_4_14
 GtkWidget *       gtk_graphics_offload_new          (GtkWidget                 *child);
 
 GDK_AVAILABLE_IN_4_14
-void              gtk_graphics_offload_set_child    (GtkGraphicsOffload        *self,
+void              gtk_graphics_offload_set_child    (GtkGraphicsOffload        *this,
                                                      GtkWidget                 *child);
 
 GDK_AVAILABLE_IN_4_14
-GtkWidget *       gtk_graphics_offload_get_child    (GtkGraphicsOffload        *self);
+GtkWidget *       gtk_graphics_offload_get_child    (GtkGraphicsOffload        *this);
 
 /**
  * GtkGraphicsOffloadEnabled:
@@ -60,18 +60,18 @@ typedef enum
 } GtkGraphicsOffloadEnabled;
 
 GDK_AVAILABLE_IN_4_14
-void             gtk_graphics_offload_set_enabled (GtkGraphicsOffload        *self,
+void             gtk_graphics_offload_set_enabled (GtkGraphicsOffload        *this,
                                                    GtkGraphicsOffloadEnabled  enabled);
 
 GDK_AVAILABLE_IN_4_14
 GtkGraphicsOffloadEnabled
-                 gtk_graphics_offload_get_enabled  (GtkGraphicsOffload        *self);
+                 gtk_graphics_offload_get_enabled  (GtkGraphicsOffload        *this);
 
 GDK_AVAILABLE_IN_4_16
-void             gtk_graphics_offload_set_black_background (GtkGraphicsOffload *self,
+void             gtk_graphics_offload_set_black_background (GtkGraphicsOffload *this,
                                                             gboolean            value);
 
 GDK_AVAILABLE_IN_4_16
-gboolean         gtk_graphics_offload_get_black_background (GtkGraphicsOffload *self);
+gboolean         gtk_graphics_offload_get_black_background (GtkGraphicsOffload *this);
 
 G_END_DECLS

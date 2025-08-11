@@ -34,9 +34,9 @@ GType            _gdk_macos_popup_surface_get_type           (void);
 GdkMacosSurface *_gdk_macos_popup_surface_new                (GdkMacosDisplay      *display,
                                                               GdkSurface           *parent,
                                                               GdkFrameClock        *frame_clock);
-void             _gdk_macos_popup_surface_attach_to_parent   (GdkMacosPopupSurface *self);
-void             _gdk_macos_popup_surface_detach_from_parent (GdkMacosPopupSurface *self);
-void             _gdk_macos_popup_surface_reposition         (GdkMacosPopupSurface *self);
+void             _gdk_macos_popup_surface_attach_to_parent   (GdkMacosPopupSurface *this);
+void             _gdk_macos_popup_surface_detach_from_parent (GdkMacosPopupSurface *this);
+void             _gdk_macos_popup_surface_reposition         (GdkMacosPopupSurface *this);
 
 G_END_DECLS
 

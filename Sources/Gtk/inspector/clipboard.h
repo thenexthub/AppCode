@@ -29,7 +29,7 @@ G_BEGIN_DECLS
 
 GType           gtk_inspector_clipboard_get_type                (void);
 
-void            gtk_inspector_clipboard_set_display             (GtkInspectorClipboard  *self,
+void            gtk_inspector_clipboard_set_display             (GtkInspectorClipboard  *this,
                                                                  GdkDisplay             *display);
 
 G_END_DECLS

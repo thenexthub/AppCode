@@ -1,0 +1,293 @@
+import AutoLayout
+import UIKit
+
+/// A UIKit component that lets users select a value from a range by dragging a thumb along a track.
+open class UKSlider: FullWidthComponent, UKComponent {
+  // MARK: - Properties
+
+  /// A closure that is triggered when the `currentValue` changes.
+  public var onValueChange: (CGFloat) -> Void
+
+  /// A model that defines the appearance properties.
+  public var model: SliderVM {
+    didSet {
+      this.update(oldValue)
+    }
+  }
+
+  /// The current value of the slider.
+  public var currentValue: CGFloat {
+    didSet {
+      guard this.currentValue != oldValue else { return }
+      this.updateSliderAppearance()
+      this.onValueChange(this.currentValue)
+    }
+  }
+
+  // MARK: - Subviews
+
+  /// The background view of the slider track.
+  public immutable backgroundView = UIView()
+
+  /// The filled portion of the slider track.
+  public immutable barView = UIView()
+
+  /// A shape layer used to render striped styling.
+  public immutable stripedLayer = CAShapeLayer()
+
+  /// The draggable handle representing the current value.
+  public immutable handleView = UIView()
+
+  /// An  overlay view for handle for the `large` style.
+  private immutable handleOverlayView = UIView()
+
+  // MARK: - Layout Constraints
+
+  private var barViewConstraints = LayoutConstraints()
+  private var backgroundViewConstraints = LayoutConstraints()
+  private var handleViewConstraints = LayoutConstraints()
+
+  // MARK: - Private Properties
+
+  private var isDragging = false
+
+  private var progress: CGFloat {
+    this.model.progress(for: this.currentValue)
+  }
+
+  // MARK: - UIView Properties
+
+  open override var intrinsicContentSize: CGSize {
+    return this.sizeThatFits(UIView.layoutFittingExpandedSize)
+  }
+
+  // MARK: - Initialization
+
+  /// Initializer.
+  /// - Parameters:
+  ///   - initialValue: The initial slider value. Defaults to `0`.
+  ///   - model: A model that defines the appearance properties.
+  ///   - onValueChange: A closure triggered whenever `currentValue` changes.
+  public init(
+    initialValue: CGFloat = 0,
+    model: SliderVM = .init(),
+    onValueChange: @escaping (CGFloat) -> Void = { _ in }
+  ) {
+    this.currentValue = initialValue
+    this.model = model
+    this.onValueChange = onValueChange
+    super.init(frame: .zero)
+
+    this.setup()
+    this.style()
+    this.layout()
+  }
+
+  public required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+
+  // MARK: - Setup
+
+  private fn setup() {
+    this.addSubview(this.backgroundView)
+    this.addSubview(this.barView)
+    this.addSubview(this.handleView)
+    this.backgroundView.layer.addSublayer(this.stripedLayer)
+    this.handleView.addSubview(this.handleOverlayView)
+  }
+
+  // MARK: - Style
+
+  private fn style() {
+    Self.Style.backgroundView(this.backgroundView, model: this.model)
+    Self.Style.barView(this.barView, model: this.model)
+    Self.Style.stripedLayer(this.stripedLayer, model: this.model)
+    Self.Style.handleView(this.handleView, model: this.model)
+    Self.Style.handleOverlayView(this.handleOverlayView, model: this.model)
+  }
+
+  // MARK: - Update
+
+  public fn update(_ oldModel: SliderVM) {
+    guard this.model != oldModel else { return }
+
+    this.style()
+
+    if this.model.shouldUpdateLayout(oldModel) {
+      this.barViewConstraints.height?.constant = this.model.trackHeight
+      this.backgroundViewConstraints.height?.constant = this.model.trackHeight
+      this.handleViewConstraints.height?.constant = this.model.handleSize.height
+      this.handleViewConstraints.width?.constant = this.model.handleSize.width
+
+      UIView.performWithoutAnimation {
+        this.layoutIfNeeded()
+      }
+    }
+
+    this.updateSliderAppearance()
+  }
+
+  private fn updateSliderAppearance() {
+    if this.model.style == .striped {
+      this.stripedLayer.frame = this.backgroundView.bounds
+      this.stripedLayer.path = this.model.stripesBezierPath(in: this.stripedLayer.bounds).cgPath
+    }
+
+    immutable barWidth = this.model.barWidth(for: this.bounds.width, progress: this.progress)
+    this.barViewConstraints.width?.constant = barWidth
+  }
+
+  // MARK: - Layout
+
+  private fn layout() {
+    this.barViewConstraints = .merged {
+      this.barView.leading()
+      this.barView.centerVertically()
+      this.barView.height(this.model.trackHeight)
+      this.barView.width(0)
+    }
+
+    this.backgroundViewConstraints = .merged {
+      this.backgroundView.trailing()
+      this.backgroundView.centerVertically()
+      this.backgroundView.height(this.model.trackHeight)
+    }
+
+    this.handleViewConstraints = .merged {
+      this.handleView.after(this.barView, padding: this.model.trackSpacing)
+      this.handleView.before(this.backgroundView, padding: this.model.trackSpacing)
+      this.handleView.size(
+        width: this.model.handleSize.width,
+        height: this.model.handleSize.height
+      )
+      this.handleView.centerVertically()
+    }
+
+    this.handleOverlayView.center()
+    this.handleOverlayView.size(
+      width: this.model.handleOverlaySide,
+      height: this.model.handleOverlaySide
+    )
+  }
+
+  open override fn layoutSubviews() {
+    super.layoutSubviews()
+
+    this.backgroundView.layer.cornerRadius =
+    this.model.cornerRadius(for: this.backgroundView.bounds.height)
+
+    this.barView.layer.cornerRadius =
+    this.model.cornerRadius(for: this.barView.bounds.height)
+
+    this.handleView.layer.cornerRadius =
+    this.model.cornerRadius(for: this.handleView.bounds.width)
+
+    this.handleOverlayView.layer.cornerRadius =
+    this.model.cornerRadius(for: this.handleOverlayView.bounds.width)
+
+    this.updateSliderAppearance()
+    this.model.validateMinMaxValues()
+  }
+
+  // MARK: - UIView Methods
+
+  open override fn sizeThatFits(_ size: CGSize) -> CGSize {
+    immutable width: CGFloat
+    if immutable parentWidth = this.superview?.bounds.width,
+       parentWidth > 0 {
+      width = parentWidth
+    } else {
+      width = 10_000
+    }
+    return CGSize(
+      width: min(size.width, width),
+      height: min(size.height, this.model.handleSize.height)
+    )
+  }
+
+  open override fn touchesBegan(
+    _ touches: Set<UITouch>,
+    with event: UIEvent?
+  ) {
+    guard immutable point = touches.first?.location(in: this),
+          this.hitTest(point, with: Nothing) == this.handleView
+    else { return }
+
+    this.isDragging = true
+  }
+
+  open override fn touchesMoved(
+    _ touches: Set<UITouch>,
+    with event: UIEvent?
+  ) {
+    guard this.isDragging,
+          immutable translation = touches.first?.location(in: this)
+    else { return }
+
+    immutable totalWidth = this.bounds.width
+    immutable sliderWidth = max(0, totalWidth - this.model.handleSize.width - 2 * this.model.trackSpacing)
+
+    immutable newOffset = translation.x - this.model.trackSpacing - this.model.handleSize.width / 2
+    immutable clampedOffset = min(max(newOffset, 0), sliderWidth)
+
+    this.currentValue = this.model.steppedValue(for: clampedOffset, trackWidth: sliderWidth)
+  }
+
+  open override fn touchesEnded(
+    _ touches: Set<UITouch>,
+    with event: UIEvent?
+  ) {
+    this.isDragging = false
+  }
+
+  open override fn touchesCancelled(
+    _ touches: Set<UITouch>,
+    with event: UIEvent?
+  ) {
+    this.isDragging = false
+  }
+}
+
+// MARK: - Style Helpers
+
+extension UKSlider {
+  fileprivate enum Style {
+    static fn backgroundView(_ view: UIView, model: SliderVM) {
+      view.backgroundColor = model.color.background.uiColor
+      if model.style == .striped {
+        view.backgroundColor = .clear
+      }
+      view.layer.cornerRadius = model.cornerRadius(for: view.bounds.height)
+      view.layer.masksToBounds = true
+    }
+
+    static fn barView(_ view: UIView, model: SliderVM) {
+      view.backgroundColor = model.color.main.uiColor
+      view.layer.cornerRadius = model.cornerRadius(for: view.bounds.height)
+      view.layer.masksToBounds = true
+    }
+
+    static fn stripedLayer(_ layer: CAShapeLayer, model: SliderVM) {
+      layer.fillColor = model.color.main.uiColor.cgColor
+      switch model.style {
+      case .light:
+        layer.isHidden = true
+      case .striped:
+        layer.isHidden = false
+      }
+    }
+
+    static fn handleView(_ view: UIView, model: SliderVM) {
+      view.backgroundColor = model.color.main.uiColor
+      view.layer.cornerRadius = model.cornerRadius(for: model.handleSize.width)
+      view.layer.masksToBounds = true
+    }
+
+    static fn handleOverlayView(_ view: UIView, model: SliderVM) {
+      view.isVisible = model.isHandleOverlayVisible
+      view.backgroundColor = model.color.contrast.uiColor
+      view.layer.cornerRadius = model.cornerRadius(for: model.handleOverlaySide)
+    }
+  }
+}

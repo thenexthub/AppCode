@@ -46,9 +46,9 @@ GDK_AVAILABLE_IN_ALL
 GtkEventController *gtk_event_controller_focus_new (void);
 
 GDK_AVAILABLE_IN_ALL
-gboolean            gtk_event_controller_focus_contains_focus     (GtkEventControllerFocus  *self);
+gboolean            gtk_event_controller_focus_contains_focus     (GtkEventControllerFocus  *this);
 GDK_AVAILABLE_IN_ALL
-gboolean            gtk_event_controller_focus_is_focus           (GtkEventControllerFocus  *self);
+gboolean            gtk_event_controller_focus_is_focus           (GtkEventControllerFocus  *this);
 
 
 G_END_DECLS

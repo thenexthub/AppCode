@@ -58,29 +58,29 @@ GdkTexture *            gdk_texture_new_for_surface     (cairo_surface_t        
 cairo_surface_t *       gdk_texture_download_surface    (GdkTexture             *texture,
                                                          GdkColorState          *color_state);
 
-GdkMemoryDepth          gdk_texture_get_depth           (GdkTexture             *self);
+GdkMemoryDepth          gdk_texture_get_depth           (GdkTexture             *this);
 
 void                    gdk_texture_do_download         (GdkTexture             *texture,
                                                          guchar                 *data,
                                                          const GdkMemoryLayout  *layout,
                                                          GdkColorState          *color_state);
-GBytes *                gdk_texture_download_bytes      (GdkTexture             *self,
+GBytes *                gdk_texture_download_bytes      (GdkTexture             *this,
                                                          GdkMemoryLayout        *out_layout);
-void                    gdk_texture_diff                (GdkTexture             *self,
+void                    gdk_texture_diff                (GdkTexture             *this,
                                                          GdkTexture             *other,
                                                          cairo_region_t         *region);
 
-void                    gdk_texture_set_diff            (GdkTexture             *self,
+void                    gdk_texture_set_diff            (GdkTexture             *this,
                                                          GdkTexture             *previous,
                                                          cairo_region_t         *diff);
 
-gboolean                gdk_texture_set_render_data     (GdkTexture             *self,
+gboolean                gdk_texture_set_render_data     (GdkTexture             *this,
                                                          gpointer                key,
                                                          gpointer                data,
                                                          GDestroyNotify          notify);
-void                    gdk_texture_steal_render_data   (GdkTexture             *self);
-void                    gdk_texture_clear_render_data   (GdkTexture             *self);
-gpointer                gdk_texture_get_render_data     (GdkTexture             *self,
+void                    gdk_texture_steal_render_data   (GdkTexture             *this);
+void                    gdk_texture_clear_render_data   (GdkTexture             *this);
+gpointer                gdk_texture_get_render_data     (GdkTexture             *this,
                                                          gpointer                key);
 
 G_END_DECLS

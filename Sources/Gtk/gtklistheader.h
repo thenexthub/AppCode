@@ -32,19 +32,19 @@ GDK_AVAILABLE_IN_4_12
 GDK_DECLARE_INTERNAL_TYPE (GtkListHeader, gtk_list_header, GTK, LIST_HEADER, GObject)
 
 GDK_AVAILABLE_IN_4_12
-gpointer        gtk_list_header_get_item                        (GtkListHeader          *self);
+gpointer        gtk_list_header_get_item                        (GtkListHeader          *this);
 GDK_AVAILABLE_IN_4_12
-guint           gtk_list_header_get_start                       (GtkListHeader          *self) G_GNUC_PURE;
+guint           gtk_list_header_get_start                       (GtkListHeader          *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_12
-guint           gtk_list_header_get_end                         (GtkListHeader          *self) G_GNUC_PURE;
+guint           gtk_list_header_get_end                         (GtkListHeader          *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_12
-guint           gtk_list_header_get_n_items                     (GtkListHeader          *self) G_GNUC_PURE;
+guint           gtk_list_header_get_n_items                     (GtkListHeader          *this) G_GNUC_PURE;
 
 GDK_AVAILABLE_IN_4_12
-void            gtk_list_header_set_child                       (GtkListHeader          *self,
+void            gtk_list_header_set_child                       (GtkListHeader          *this,
                                                                  GtkWidget              *child);
 GDK_AVAILABLE_IN_4_12
-GtkWidget *     gtk_list_header_get_child                       (GtkListHeader          *self);
+GtkWidget *     gtk_list_header_get_child                       (GtkListHeader          *this);
 
 G_END_DECLS
 

@@ -45,10 +45,10 @@ for filename in in_files:
       # print line
       match = re.search(r'\bg[dst]k_[a-zA-Z0-9_]*_get_type\b', line)
       if match:
-        func = match.group(0)
-        if not func in funcs:
-          funcs.append(func)
-          if debug: print ('Found ', func)
+        fn = match.group(0)
+        if not fn in funcs:
+          funcs.append(fn)
+          if debug: print ('Found ', fn)
 
 file_output = ['G_GNUC_BEGIN_IGNORE_DEPRECATIONS']
 

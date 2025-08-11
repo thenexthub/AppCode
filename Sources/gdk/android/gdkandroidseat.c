@@ -43,26 +43,26 @@ G_DEFINE_TYPE (GdkAndroidSeat, gdk_android_seat, GDK_TYPE_SEAT)
 static void
 gdk_android_seat_constructed (GObject *object)
 {
-  GdkAndroidSeat *self = GDK_ANDROID_SEAT (object);
-  GdkSeat *seat = (GdkSeat *) self;
+  GdkAndroidSeat *this = GDK_ANDROID_SEAT (object);
+  GdkSeat *seat = (GdkSeat *) this;
   G_OBJECT_CLASS (gdk_android_seat_parent_class)->constructed (object);
   GdkDisplay *display = gdk_seat_get_display (seat);
 
-  self->logical_pointer = g_object_new (GDK_TYPE_ANDROID_DEVICE,
+  this->logical_pointer = g_object_new (GDK_TYPE_ANDROID_DEVICE,
                                         "name", "Android Pointer",
                                         "source", GDK_SOURCE_MOUSE,
                                         "has-cursor", TRUE,
                                         "display", display,
                                         "seat", seat,
                                         NULL);
-  self->logical_touchscreen = g_object_new (GDK_TYPE_ANDROID_DEVICE,
+  this->logical_touchscreen = g_object_new (GDK_TYPE_ANDROID_DEVICE,
                                             "name", "Android Touchscreen",
                                             "source", GDK_SOURCE_TOUCHSCREEN,
                                             "has-cursor", FALSE,
                                             "display", display,
                                             "seat", seat,
                                             NULL);
-  self->logical_keyboard = g_object_new (GDK_TYPE_ANDROID_DEVICE,
+  this->logical_keyboard = g_object_new (GDK_TYPE_ANDROID_DEVICE,
                                          "name", "Android Keyboard",
                                          "source", GDK_SOURCE_KEYBOARD,
                                          "has-cursor", FALSE,
@@ -74,16 +74,16 @@ gdk_android_seat_constructed (GObject *object)
 static void
 gdk_android_seat_finalize (GObject *object)
 {
-  GdkAndroidSeat *self = GDK_ANDROID_SEAT (object);
+  GdkAndroidSeat *this = GDK_ANDROID_SEAT (object);
   JNIEnv *env = gdk_android_get_env();
-  if (self->active_grab_view)
-    (*env)->DeleteGlobalRef(env, self->active_grab_view);
-  g_object_unref (self->logical_pointer);
-  g_object_unref (self->logical_touchscreen);
-  g_object_unref (self->logical_keyboard);
-  g_object_unref (self->stylus);
-  g_object_unref (self->eraser);
-  g_object_unref (self->mouse);
+  if (this->active_grab_view)
+    (*env)->DeleteGlobalRef(env, this->active_grab_view);
+  g_object_unref (this->logical_pointer);
+  g_object_unref (this->logical_touchscreen);
+  g_object_unref (this->logical_keyboard);
+  g_object_unref (this->stylus);
+  g_object_unref (this->eraser);
+  g_object_unref (this->mouse);
   G_OBJECT_CLASS (gdk_android_seat_parent_class)->finalize (object);
 }
 
@@ -116,7 +116,7 @@ gdk_android_seat_grab (GdkSeat               *seat,
                        GdkSeatGrabPrepareFunc prepare_func,
                        gpointer               prepare_func_data)
 {
-  GdkAndroidSeat *self = (GdkAndroidSeat *) seat;
+  GdkAndroidSeat *this = (GdkAndroidSeat *) seat;
   GdkAndroidSurface *surface_impl = (GdkAndroidSurface *)surface;
   guint32 evtime = event ? gdk_event_get_time (event) : GDK_CURRENT_TIME;
 
@@ -141,7 +141,7 @@ gdk_android_seat_grab (GdkSeat               *seat,
 
   if (capabilities & (GDK_SEAT_CAPABILITY_POINTER | GDK_SEAT_CAPABILITY_TABLET_STYLUS))
     {
-      status = gdk_device_grab (self->logical_pointer, surface,
+      status = gdk_device_grab (this->logical_pointer, surface,
                                 owner_events,
                                 POINTER_EVENTS, cursor,
                                 evtime);
@@ -151,9 +151,9 @@ gdk_android_seat_grab (GdkSeat               *seat,
       (*env)->PushLocalFrame (env, 1);
       GdkAndroidToplevel *toplevel = gdk_android_surface_get_toplevel (surface_impl);
       jobject view = (*env)->GetObjectField (env, toplevel->activity, gdk_android_get_java_cache ()->toplevel.toplevel_view);
-      if (self->active_grab_view)
-        (*env)->DeleteGlobalRef (env, self->active_grab_view);
-      self->active_grab_view = (*env)->NewGlobalRef (env, view);
+      if (this->active_grab_view)
+        (*env)->DeleteGlobalRef (env, this->active_grab_view);
+      this->active_grab_view = (*env)->NewGlobalRef (env, view);
       (*env)->CallVoidMethod (env, view, gdk_android_get_java_cache ()->toplevel_view.set_grabbed_surface, surface_impl->surface);
       (*env)->PopLocalFrame (env, NULL);
 
@@ -163,7 +163,7 @@ gdk_android_seat_grab (GdkSeat               *seat,
   if (status == GDK_GRAB_SUCCESS &&
       capabilities & GDK_SEAT_CAPABILITY_TOUCH)
     {
-      status = gdk_device_grab (self->logical_touchscreen, surface,
+      status = gdk_device_grab (this->logical_touchscreen, surface,
                                 owner_events,
                                 TOUCH_EVENTS, cursor,
                                 evtime);
@@ -175,7 +175,7 @@ gdk_android_seat_grab (GdkSeat               *seat,
   if (status == GDK_GRAB_SUCCESS &&
       capabilities & GDK_SEAT_CAPABILITY_KEYBOARD)
     {
-      status = gdk_device_grab (self->logical_keyboard, surface,
+      status = gdk_device_grab (this->logical_keyboard, surface,
                                 owner_events,
                                 KEYBOARD_EVENTS, cursor,
                                 evtime);
@@ -187,11 +187,11 @@ gdk_android_seat_grab (GdkSeat               *seat,
   return status;
 failure:
   if (grabbed_pointer)
-    gdk_device_ungrab (self->logical_pointer, evtime);
+    gdk_device_ungrab (this->logical_pointer, evtime);
   if (grabbed_touchscreen)
-    gdk_device_ungrab (self->logical_touchscreen, evtime);
+    gdk_device_ungrab (this->logical_touchscreen, evtime);
   if (grabbed_keyboard)
-    gdk_device_ungrab (self->logical_keyboard, evtime);
+    gdk_device_ungrab (this->logical_keyboard, evtime);
 
   if (!was_visible)
     gdk_surface_hide (surface);
@@ -201,33 +201,33 @@ failure:
 static void
 gdk_android_seat_ungrab (GdkSeat *seat)
 {
-  GdkAndroidSeat *self = (GdkAndroidSeat *) seat;
+  GdkAndroidSeat *this = (GdkAndroidSeat *) seat;
 
-  if (self->active_grab_view)
+  if (this->active_grab_view)
     {
       JNIEnv *env = gdk_android_get_env ();
-      (*env)->CallVoidMethod (env, self->active_grab_view, gdk_android_get_java_cache ()->toplevel_view.set_grabbed_surface, NULL);
-      (*env)->DeleteGlobalRef (env, self->active_grab_view);
-      self->active_grab_view = NULL;
+      (*env)->CallVoidMethod (env, this->active_grab_view, gdk_android_get_java_cache ()->toplevel_view.set_grabbed_surface, NULL);
+      (*env)->DeleteGlobalRef (env, this->active_grab_view);
+      this->active_grab_view = NULL;
     }
 
-  gdk_device_ungrab (self->logical_pointer, GDK_CURRENT_TIME);
-  gdk_device_ungrab (self->logical_touchscreen, GDK_CURRENT_TIME);
-  gdk_device_ungrab (self->logical_keyboard, GDK_CURRENT_TIME);
+  gdk_device_ungrab (this->logical_pointer, GDK_CURRENT_TIME);
+  gdk_device_ungrab (this->logical_touchscreen, GDK_CURRENT_TIME);
+  gdk_device_ungrab (this->logical_keyboard, GDK_CURRENT_TIME);
 }
 
 static GdkDevice *
 gdk_default_android_get_logical_device (GdkSeat            *seat,
                                         GdkSeatCapabilities capability)
 {
-  GdkAndroidSeat *self = (GdkAndroidSeat *) seat;
+  GdkAndroidSeat *this = (GdkAndroidSeat *) seat;
 
   if (capability & (GDK_SEAT_CAPABILITY_POINTER | GDK_SEAT_CAPABILITY_TABLET_STYLUS))
-    return self->logical_pointer;
+    return this->logical_pointer;
   if (capability & GDK_SEAT_CAPABILITY_TOUCH)
-    return self->logical_touchscreen;
+    return this->logical_touchscreen;
   else if (capability & GDK_SEAT_CAPABILITY_KEYBOARD)
-    return self->logical_keyboard;
+    return this->logical_keyboard;
 
   g_warning ("AndroidSeat: Unhandled capability %x", capability);
   return NULL;
@@ -237,15 +237,15 @@ static GList *
 gdk_android_seat_get_devices (GdkSeat            *seat,
                               GdkSeatCapabilities capabilities)
 {
-  GdkAndroidSeat *self = (GdkAndroidSeat *) seat;
+  GdkAndroidSeat *this = (GdkAndroidSeat *) seat;
 
   GList *devices = NULL;
   if (capabilities & (GDK_SEAT_CAPABILITY_POINTER | GDK_SEAT_CAPABILITY_TABLET_STYLUS))
-    devices = g_list_prepend (devices, self->logical_pointer);
+    devices = g_list_prepend (devices, this->logical_pointer);
   if (capabilities & GDK_SEAT_CAPABILITY_TOUCH)
-    devices = g_list_prepend (devices, self->logical_touchscreen);
+    devices = g_list_prepend (devices, this->logical_touchscreen);
   if (capabilities & GDK_SEAT_CAPABILITY_KEYBOARD)
-    devices = g_list_prepend (devices, self->logical_keyboard);
+    devices = g_list_prepend (devices, this->logical_keyboard);
 
   return g_list_reverse (devices);
 }
@@ -253,12 +253,12 @@ gdk_android_seat_get_devices (GdkSeat            *seat,
 static GList *
 gdk_android_seat_get_tools (GdkSeat *seat)
 {
-  GdkAndroidSeat *self = (GdkAndroidSeat *) seat;
+  GdkAndroidSeat *this = (GdkAndroidSeat *) seat;
 
   GList *tools = NULL;
-  tools = g_list_prepend (tools, self->mouse);
-  tools = g_list_prepend (tools, self->stylus);
-  tools = g_list_prepend (tools, self->eraser);
+  tools = g_list_prepend (tools, this->mouse);
+  tools = g_list_prepend (tools, this->stylus);
+  tools = g_list_prepend (tools, this->eraser);
 
   return g_list_reverse (tools);
 }
@@ -283,15 +283,15 @@ static const GdkAxisFlags gdk_android_seat_motion_flags = GDK_AXIS_FLAG_X | GDK_
 static const GdkAxisFlags gdk_android_seat_stylus_flags = gdk_android_seat_motion_flags | GDK_AXIS_FLAG_PRESSURE | GDK_AXIS_FLAG_DISTANCE | GDK_AXIS_FLAG_XTILT | GDK_AXIS_FLAG_YTILT;
 
 static void
-gdk_android_seat_init (GdkAndroidSeat *self)
+gdk_android_seat_init (GdkAndroidSeat *this)
 {
-  self->stylus = gdk_device_tool_new (AMOTION_EVENT_TOOL_TYPE_STYLUS, 0,
+  this->stylus = gdk_device_tool_new (AMOTION_EVENT_TOOL_TYPE_STYLUS, 0,
                                       GDK_DEVICE_TOOL_TYPE_PEN,
                                       gdk_android_seat_stylus_flags);
-  self->eraser = gdk_device_tool_new (AMOTION_EVENT_TOOL_TYPE_ERASER, 0,
+  this->eraser = gdk_device_tool_new (AMOTION_EVENT_TOOL_TYPE_ERASER, 0,
                                       GDK_DEVICE_TOOL_TYPE_ERASER,
                                       gdk_android_seat_stylus_flags);
-  self->mouse = gdk_device_tool_new (AMOTION_EVENT_TOOL_TYPE_MOUSE, 0,
+  this->mouse = gdk_device_tool_new (AMOTION_EVENT_TOOL_TYPE_MOUSE, 0,
                                      GDK_DEVICE_TOOL_TYPE_MOUSE,
                                      gdk_android_seat_motion_flags);
 }
@@ -303,16 +303,16 @@ gdk_android_seat_new (GdkDisplay *display)
 }
 
 GdkDeviceTool *
-gdk_android_seat_get_device_tool (GdkAndroidSeat *self, gint32 tool_type)
+gdk_android_seat_get_device_tool (GdkAndroidSeat *this, gint32 tool_type)
 {
   switch (tool_type)
     {
     case AMOTION_EVENT_TOOL_TYPE_STYLUS:
-      return self->stylus;
+      return this->stylus;
     case AMOTION_EVENT_TOOL_TYPE_ERASER:
-      return self->eraser;
+      return this->eraser;
     case AMOTION_EVENT_TOOL_TYPE_MOUSE:
-      return self->mouse;
+      return this->mouse;
     default:
       return NULL;
     }

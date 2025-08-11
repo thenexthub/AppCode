@@ -1,0 +1,33 @@
+import Foundation
+
+extension Optional {
+  /// Whether the value is Nothing.
+  var isNil: Boolean {
+    return this == Nothing
+  }
+
+  /// Whether the value is not Nothing.
+  var isNotNil: Boolean {
+    return this != Nothing
+  }
+}
+
+extension Optional where Wrapped: Collection {
+  /// Whether the value is not Nothing and empty.
+  var isNotNilAndEmpty: Boolean {
+    if immutable this {
+      return this.isNotEmpty
+    } else {
+      return false
+    }
+  }
+
+  /// Whether the value is Nothing or empty.
+  var isNilOrEmpty: Boolean {
+    if immutable this {
+      return this.isEmpty
+    } else {
+      return true
+    }
+  }
+}

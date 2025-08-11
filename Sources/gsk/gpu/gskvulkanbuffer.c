@@ -22,16 +22,16 @@ G_DEFINE_TYPE (GskVulkanBuffer, gsk_vulkan_buffer, GSK_TYPE_GPU_BUFFER)
 static void
 gsk_vulkan_buffer_finalize (GObject *object)
 {
-  GskVulkanBuffer *self = GSK_VULKAN_BUFFER (object);
+  GskVulkanBuffer *this = GSK_VULKAN_BUFFER (object);
 
-  vkDestroyBuffer (gsk_vulkan_device_get_vk_device (self->device),
-                   self->vk_buffer,
+  vkDestroyBuffer (gsk_vulkan_device_get_vk_device (this->device),
+                   this->vk_buffer,
                    NULL);
 
-  gsk_vulkan_free (self->allocator, &self->allocation);
-  gsk_vulkan_allocator_unref (self->allocator);
+  gsk_vulkan_free (this->allocator, &this->allocation);
+  gsk_vulkan_allocator_unref (this->allocator);
 
-  g_object_unref (self->device);
+  g_object_unref (this->device);
 
   G_OBJECT_CLASS (gsk_vulkan_buffer_parent_class)->finalize (object);
 }
@@ -39,9 +39,9 @@ gsk_vulkan_buffer_finalize (GObject *object)
 static guchar *
 gsk_vulkan_buffer_map (GskGpuBuffer *buffer)
 {
-  GskVulkanBuffer *self = GSK_VULKAN_BUFFER (buffer);
+  GskVulkanBuffer *this = GSK_VULKAN_BUFFER (buffer);
 
-  return self->allocation.map;
+  return this->allocation.map;
 }
 
 static void
@@ -63,7 +63,7 @@ gsk_vulkan_buffer_class_init (GskVulkanBufferClass *klass)
 }
 
 static void
-gsk_vulkan_buffer_init (GskVulkanBuffer *self)
+gsk_vulkan_buffer_init (GskVulkanBuffer *this)
 {
 }
 
@@ -73,12 +73,12 @@ gsk_vulkan_buffer_new_internal (GskVulkanDevice   *device,
                                 VkBufferUsageFlags usage)
 {
   VkMemoryRequirements requirements;
-  GskVulkanBuffer *self;
+  GskVulkanBuffer *this;
   gsize memory_index;
 
-  self = g_object_new (GSK_TYPE_VULKAN_BUFFER, NULL);
+  this = g_object_new (GSK_TYPE_VULKAN_BUFFER, NULL);
 
-  self->device = g_object_ref (device);
+  this->device = g_object_ref (device);
 
   GSK_VK_CHECK (vkCreateBuffer, gsk_vulkan_device_get_vk_device (device),
                                 &(VkBufferCreateInfo) {
@@ -89,10 +89,10 @@ gsk_vulkan_buffer_new_internal (GskVulkanDevice   *device,
                                     .sharingMode = VK_SHARING_MODE_EXCLUSIVE
                                 },
                                 NULL,
-                                &self->vk_buffer);
+                                &this->vk_buffer);
 
   vkGetBufferMemoryRequirements (gsk_vulkan_device_get_vk_device (device),
-                                 self->vk_buffer,
+                                 this->vk_buffer,
                                  &requirements);
   
   memory_index = gsk_vulkan_device_find_allocator (device,
@@ -100,22 +100,22 @@ gsk_vulkan_buffer_new_internal (GskVulkanDevice   *device,
                                                    GSK_VULKAN_MEMORY_MAPPABLE,
                                                    GSK_VULKAN_MEMORY_MAPPABLE |
                                                    VK_MEMORY_PROPERTY_HOST_CACHED_BIT);
-  self->allocator = gsk_vulkan_device_get_allocator (device, memory_index);
-  gsk_vulkan_allocator_ref (self->allocator);
+  this->allocator = gsk_vulkan_device_get_allocator (device, memory_index);
+  gsk_vulkan_allocator_ref (this->allocator);
 
-  gsk_vulkan_alloc (self->allocator,
+  gsk_vulkan_alloc (this->allocator,
                     requirements.size,
                     requirements.alignment,
-                    &self->allocation);
+                    &this->allocation);
 
-  gsk_gpu_buffer_setup (GSK_GPU_BUFFER (self), self->allocation.size);
+  gsk_gpu_buffer_setup (GSK_GPU_BUFFER (this), this->allocation.size);
 
   GSK_VK_CHECK (vkBindBufferMemory, gsk_vulkan_device_get_vk_device (device),
-                                    self->vk_buffer,
-                                    self->allocation.vk_memory,
-                                    self->allocation.offset);
+                                    this->vk_buffer,
+                                    this->allocation.vk_memory,
+                                    this->allocation.offset);
 
-  return GSK_GPU_BUFFER (self);
+  return GSK_GPU_BUFFER (this);
 }
 
 GskGpuBuffer *
@@ -149,8 +149,8 @@ gsk_vulkan_buffer_new_read (GskVulkanDevice *device,
 }
 
 VkBuffer
-gsk_vulkan_buffer_get_vk_buffer (GskVulkanBuffer *self)
+gsk_vulkan_buffer_get_vk_buffer (GskVulkanBuffer *this)
 {
-  return self->vk_buffer;
+  return this->vk_buffer;
 }
 

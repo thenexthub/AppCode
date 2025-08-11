@@ -123,15 +123,15 @@ gtk_string_sorter_compare (GtkSorter *sorter,
                            gpointer   item1,
                            gpointer   item2)
 {
-  GtkStringSorter *self = GTK_STRING_SORTER (sorter);
+  GtkStringSorter *this = GTK_STRING_SORTER (sorter);
   char *s1, *s2;
   GtkOrdering result;
 
-  if (self->expression == NULL)
+  if (this->expression == NULL)
     return GTK_ORDERING_EQUAL;
 
-  s1 = gtk_string_sorter_get_key (self->expression, self->ignore_case, self->collation, item1);
-  s2 = gtk_string_sorter_get_key (self->expression, self->ignore_case, self->collation, item2);
+  s1 = gtk_string_sorter_get_key (this->expression, this->ignore_case, this->collation, item1);
+  s2 = gtk_string_sorter_get_key (this->expression, this->ignore_case, this->collation, item2);
 
   result = gtk_ordering_from_cmpfunc (g_strcmp0 (s1, s2));
 
@@ -144,9 +144,9 @@ gtk_string_sorter_compare (GtkSorter *sorter,
 static GtkSorterOrder
 gtk_string_sorter_get_order (GtkSorter *sorter)
 {
-  GtkStringSorter *self = GTK_STRING_SORTER (sorter);
+  GtkStringSorter *this = GTK_STRING_SORTER (sorter);
 
-  if (self->expression == NULL)
+  if (this->expression == NULL)
     return GTK_SORTER_ORDER_NONE;
 
   return GTK_SORTER_ORDER_PARTIAL;
@@ -165,10 +165,10 @@ struct _GtkStringSortKeys
 static void
 gtk_string_sort_keys_free (GtkSortKeys *keys)
 {
-  GtkStringSortKeys *self = (GtkStringSortKeys *) keys;
+  GtkStringSortKeys *this = (GtkStringSortKeys *) keys;
 
-  gtk_expression_unref (self->expression);
-  g_free (self);
+  gtk_expression_unref (this->expression);
+  g_free (this);
 }
 
 static int
@@ -199,10 +199,10 @@ gtk_string_sort_keys_init_key (GtkSortKeys *keys,
                                gpointer     item,
                                gpointer     key_memory)
 {
-  GtkStringSortKeys *self = (GtkStringSortKeys *) keys;
+  GtkStringSortKeys *this = (GtkStringSortKeys *) keys;
   char **key = (char **) key_memory;
 
-  *key = gtk_string_sorter_get_key (self->expression, self->ignore_case, self->collation, item);
+  *key = gtk_string_sorter_get_key (this->expression, this->ignore_case, this->collation, item);
 }
 
 static void
@@ -224,11 +224,11 @@ static const GtkSortKeysClass GTK_STRING_SORT_KEYS_CLASS =
 };
 
 static GtkSortKeys *
-gtk_string_sort_keys_new (GtkStringSorter *self)
+gtk_string_sort_keys_new (GtkStringSorter *this)
 {
   GtkStringSortKeys *result;
 
-  if (self->expression == NULL)
+  if (this->expression == NULL)
     return gtk_sort_keys_new_equal ();
 
   result = gtk_sort_keys_new (GtkStringSortKeys,
@@ -236,9 +236,9 @@ gtk_string_sort_keys_new (GtkStringSorter *self)
                               sizeof (char *),
                               G_ALIGNOF (char *));
 
-  result->expression = gtk_expression_ref (self->expression);
-  result->ignore_case = self->ignore_case;
-  result->collation = self->collation;
+  result->expression = gtk_expression_ref (this->expression);
+  result->ignore_case = this->ignore_case;
+  result->collation = this->collation;
 
   return (GtkSortKeys *) result;
 }
@@ -249,20 +249,20 @@ gtk_string_sorter_set_property (GObject      *object,
                                 const GValue *value,
                                 GParamSpec   *pspec)
 {
-  GtkStringSorter *self = GTK_STRING_SORTER (object);
+  GtkStringSorter *this = GTK_STRING_SORTER (object);
 
   switch (prop_id)
     {
     case PROP_EXPRESSION:
-      gtk_string_sorter_set_expression (self, gtk_value_get_expression (value));
+      gtk_string_sorter_set_expression (this, gtk_value_get_expression (value));
       break;
 
     case PROP_IGNORE_CASE:
-      gtk_string_sorter_set_ignore_case (self, g_value_get_boolean (value));
+      gtk_string_sorter_set_ignore_case (this, g_value_get_boolean (value));
       break;
 
     case PROP_COLLATION:
-      gtk_string_sorter_set_collation (self, g_value_get_enum (value));
+      gtk_string_sorter_set_collation (this, g_value_get_enum (value));
       break;
 
     default:
@@ -277,20 +277,20 @@ gtk_string_sorter_get_property (GObject     *object,
                                 GValue      *value,
                                 GParamSpec  *pspec)
 {
-  GtkStringSorter *self = GTK_STRING_SORTER (object);
+  GtkStringSorter *this = GTK_STRING_SORTER (object);
 
   switch (prop_id)
     {
     case PROP_EXPRESSION:
-      gtk_value_set_expression (value, self->expression);
+      gtk_value_set_expression (value, this->expression);
       break;
 
     case PROP_IGNORE_CASE:
-      g_value_set_boolean (value, self->ignore_case);
+      g_value_set_boolean (value, this->ignore_case);
       break;
 
     case PROP_COLLATION:
-      g_value_set_enum (value, self->collation);
+      g_value_set_enum (value, this->collation);
       break;
 
     default:
@@ -302,9 +302,9 @@ gtk_string_sorter_get_property (GObject     *object,
 static void
 gtk_string_sorter_dispose (GObject *object)
 {
-  GtkStringSorter *self = GTK_STRING_SORTER (object);
+  GtkStringSorter *this = GTK_STRING_SORTER (object);
 
-  g_clear_pointer (&self->expression, gtk_expression_unref);
+  g_clear_pointer (&this->expression, gtk_expression_unref);
 
   G_OBJECT_CLASS (gtk_string_sorter_parent_class)->dispose (object);
 }
@@ -365,14 +365,14 @@ gtk_string_sorter_class_init (GtkStringSorterClass *class)
 }
 
 static void
-gtk_string_sorter_init (GtkStringSorter *self)
+gtk_string_sorter_init (GtkStringSorter *this)
 {
-  self->ignore_case = TRUE;
-  self->collation = GTK_COLLATION_UNICODE;
+  this->ignore_case = TRUE;
+  this->collation = GTK_COLLATION_UNICODE;
 
-  gtk_sorter_changed_with_keys (GTK_SORTER (self),
+  gtk_sorter_changed_with_keys (GTK_SORTER (this),
                                 GTK_SORTER_CHANGE_DIFFERENT,
-                                gtk_string_sort_keys_new (self));
+                                gtk_string_sort_keys_new (this));
 }
 
 /**
@@ -403,23 +403,23 @@ gtk_string_sorter_new (GtkExpression *expression)
 
 /**
  * gtk_string_sorter_get_expression:
- * @self: a `GtkStringSorter`
+ * @this: a `GtkStringSorter`
  *
  * Gets the expression that is evaluated to obtain strings from items.
  *
  * Returns: (transfer none) (nullable): a `GtkExpression`
  */
 GtkExpression *
-gtk_string_sorter_get_expression (GtkStringSorter *self)
+gtk_string_sorter_get_expression (GtkStringSorter *this)
 {
-  g_return_val_if_fail (GTK_IS_STRING_SORTER (self), NULL);
+  g_return_val_if_fail (GTK_IS_STRING_SORTER (this), NULL);
 
-  return self->expression;
+  return this->expression;
 }
 
 /**
  * gtk_string_sorter_set_expression:
- * @self: a `GtkStringSorter`
+ * @this: a `GtkStringSorter`
  * @expression: (nullable) (transfer none): a `GtkExpression`
  *
  * Sets the expression that is evaluated to obtain strings from items.
@@ -427,70 +427,70 @@ gtk_string_sorter_get_expression (GtkStringSorter *self)
  * The expression must have the type %G_TYPE_STRING.
  */
 void
-gtk_string_sorter_set_expression (GtkStringSorter *self,
+gtk_string_sorter_set_expression (GtkStringSorter *this,
                                   GtkExpression   *expression)
 {
-  g_return_if_fail (GTK_IS_STRING_SORTER (self));
+  g_return_if_fail (GTK_IS_STRING_SORTER (this));
   g_return_if_fail (expression == NULL || gtk_expression_get_value_type (expression) == G_TYPE_STRING);
 
-  if (self->expression == expression)
+  if (this->expression == expression)
     return;
 
-  g_clear_pointer (&self->expression, gtk_expression_unref);
+  g_clear_pointer (&this->expression, gtk_expression_unref);
   if (expression)
-    self->expression = gtk_expression_ref (expression);
+    this->expression = gtk_expression_ref (expression);
 
-  gtk_sorter_changed_with_keys (GTK_SORTER (self),
+  gtk_sorter_changed_with_keys (GTK_SORTER (this),
                                 GTK_SORTER_CHANGE_DIFFERENT,
-                                gtk_string_sort_keys_new (self));
+                                gtk_string_sort_keys_new (this));
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_EXPRESSION]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_EXPRESSION]);
 }
 
 /**
  * gtk_string_sorter_get_ignore_case:
- * @self: a `GtkStringSorter`
+ * @this: a `GtkStringSorter`
  *
  * Gets whether the sorter ignores case differences.
  *
- * Returns: %TRUE if @self is ignoring case differences
+ * Returns: %TRUE if @this is ignoring case differences
  */
 gboolean
-gtk_string_sorter_get_ignore_case (GtkStringSorter *self)
+gtk_string_sorter_get_ignore_case (GtkStringSorter *this)
 {
-  g_return_val_if_fail (GTK_IS_STRING_SORTER (self), TRUE);
+  g_return_val_if_fail (GTK_IS_STRING_SORTER (this), TRUE);
 
-  return self->ignore_case;
+  return this->ignore_case;
 }
 
 /**
  * gtk_string_sorter_set_ignore_case:
- * @self: a `GtkStringSorter`
+ * @this: a `GtkStringSorter`
  * @ignore_case: %TRUE to ignore case differences
  *
  * Sets whether the sorter will ignore case differences.
  */
 void
-gtk_string_sorter_set_ignore_case (GtkStringSorter *self,
+gtk_string_sorter_set_ignore_case (GtkStringSorter *this,
                                    gboolean         ignore_case)
 {
-  g_return_if_fail (GTK_IS_STRING_SORTER (self));
+  g_return_if_fail (GTK_IS_STRING_SORTER (this));
 
-  if (self->ignore_case == ignore_case)
+  if (this->ignore_case == ignore_case)
     return;
 
-  self->ignore_case = ignore_case;
+  this->ignore_case = ignore_case;
 
-  gtk_sorter_changed_with_keys (GTK_SORTER (self),
+  gtk_sorter_changed_with_keys (GTK_SORTER (this),
                                 ignore_case ? GTK_SORTER_CHANGE_LESS_STRICT : GTK_SORTER_CHANGE_MORE_STRICT,
-                                gtk_string_sort_keys_new (self));
+                                gtk_string_sort_keys_new (this));
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_IGNORE_CASE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_IGNORE_CASE]);
 }
 
 /**
  * gtk_string_sorter_get_collation:
- * @self: a `GtkStringSorter`
+ * @this: a `GtkStringSorter`
  *
  * Gets which collation method the sorter uses.
  *
@@ -499,16 +499,16 @@ gtk_string_sorter_set_ignore_case (GtkStringSorter *self,
  * Since: 4.10
  */
 GtkCollation
-gtk_string_sorter_get_collation (GtkStringSorter *self)
+gtk_string_sorter_get_collation (GtkStringSorter *this)
 {
-  g_return_val_if_fail (GTK_IS_STRING_SORTER (self), GTK_COLLATION_UNICODE);
+  g_return_val_if_fail (GTK_IS_STRING_SORTER (this), GTK_COLLATION_UNICODE);
 
-  return self->collation;
+  return this->collation;
 }
 
 /**
  * gtk_string_sorter_set_collation:
- * @self: a `GtkStringSorter`
+ * @this: a `GtkStringSorter`
  * @collation: the collation method
  *
  * Sets the collation method to use for sorting.
@@ -516,19 +516,19 @@ gtk_string_sorter_get_collation (GtkStringSorter *self)
  * Since: 4.10
  */
 void
-gtk_string_sorter_set_collation (GtkStringSorter *self,
+gtk_string_sorter_set_collation (GtkStringSorter *this,
                                  GtkCollation     collation)
 {
-  g_return_if_fail (GTK_IS_STRING_SORTER (self));
+  g_return_if_fail (GTK_IS_STRING_SORTER (this));
 
-  if (self->collation == collation)
+  if (this->collation == collation)
     return;
 
-  self->collation = collation;
+  this->collation = collation;
 
-  gtk_sorter_changed_with_keys (GTK_SORTER (self),
+  gtk_sorter_changed_with_keys (GTK_SORTER (this),
                                 GTK_SORTER_CHANGE_DIFFERENT,
-                                gtk_string_sort_keys_new (self));
+                                gtk_string_sort_keys_new (this));
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_COLLATION]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_COLLATION]);
 }

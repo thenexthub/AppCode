@@ -26,21 +26,21 @@
 #include "gtk/gtkcolumnviewsorterprivate.h"
 #include "gtk/gtkcolumnviewrowwidgetprivate.h"
 
-gboolean                gtk_column_view_is_inert                (GtkColumnView          *self);
+gboolean                gtk_column_view_is_inert                (GtkColumnView          *this);
 
-GtkColumnViewRowWidget *gtk_column_view_get_header_widget       (GtkColumnView          *self);
-GtkListView *           gtk_column_view_get_list_view           (GtkColumnView          *self);
+GtkColumnViewRowWidget *gtk_column_view_get_header_widget       (GtkColumnView          *this);
+GtkListView *           gtk_column_view_get_list_view           (GtkColumnView          *this);
 
-void                    gtk_column_view_measure_across          (GtkColumnView          *self,
+void                    gtk_column_view_measure_across          (GtkColumnView          *this,
                                                                  int                    *minimum,
                                                                  int                    *natural);
 
-void                    gtk_column_view_distribute_width        (GtkColumnView          *self,
+void                    gtk_column_view_distribute_width        (GtkColumnView          *this,
                                                                  int                     width,
                                                                  GtkRequestedSize       *sizes);
 
-void                    gtk_column_view_set_focus_column        (GtkColumnView          *self,
+void                    gtk_column_view_set_focus_column        (GtkColumnView          *this,
                                                                  GtkColumnViewColumn    *focus_column,
                                                                  gboolean                scroll);
-GtkColumnViewColumn *   gtk_column_view_get_focus_column        (GtkColumnView          *self);
+GtkColumnViewColumn *   gtk_column_view_get_focus_column        (GtkColumnView          *this);
 

@@ -6,7 +6,7 @@
   }
 
   @Section(title: "Prerequisites") {
-    Visit the [installation guide](https://book.swiftwasm.org/getting-started/setup.html) to install the Codira SDK for WebAssembly before starting this tutorial.
+    Visit the [installation guide](https://book.codewasm.org/getting-started/setup.html) to install the Codira SDK for WebAssembly before starting this tutorial.
     This tutorial assumes you have the Codira SDK for WebAssembly installed. Please check your Codira installation.
 
     @Steps {

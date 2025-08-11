@@ -130,7 +130,7 @@ gdk_macos_vulkan_context_class_init (GdkMacosVulkanContextClass *klass)
 }
 
 static void
-gdk_macos_vulkan_context_init (GdkMacosVulkanContext *self)
+gdk_macos_vulkan_context_init (GdkMacosVulkanContext *this)
 {
 }
 

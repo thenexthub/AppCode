@@ -226,7 +226,7 @@ static gboolean
 gtk_css_image_fallback_parse (GtkCssImage  *image,
                               GtkCssParser *parser)
 {
-  GtkCssImageFallback *self = GTK_CSS_IMAGE_FALLBACK (image);
+  GtkCssImageFallback *this = GTK_CSS_IMAGE_FALLBACK (image);
   ParseData data = { NULL, NULL };
 
   if (!gtk_css_parser_has_function (parser, "image"))
@@ -243,16 +243,16 @@ gtk_css_image_fallback_parse (GtkCssImage  *image,
       return FALSE;
     }
 
-  self->color = data.color;
+  this->color = data.color;
   if (data.images)
     {
-      self->n_images = data.images->len;
-      self->images = (GtkCssImage **) g_ptr_array_free (data.images, FALSE);
+      this->n_images = data.images->len;
+      this->images = (GtkCssImage **) g_ptr_array_free (data.images, FALSE);
     }
   else
     {
-      self->n_images = 0;
-      self->images = NULL;
+      this->n_images = 0;
+      this->images = NULL;
     }
 
   return TRUE;

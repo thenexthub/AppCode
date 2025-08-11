@@ -28,14 +28,14 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE (GtkJoinedMenu, gtk_joined_menu, GTK, JOINED_MENU, GMenuModel)
 
 GtkJoinedMenu *gtk_joined_menu_new          (void);
-guint          gtk_joined_menu_get_n_joined (GtkJoinedMenu *self);
-void           gtk_joined_menu_append_menu  (GtkJoinedMenu *self,
+guint          gtk_joined_menu_get_n_joined (GtkJoinedMenu *this);
+void           gtk_joined_menu_append_menu  (GtkJoinedMenu *this,
                                              GMenuModel    *model);
-void           gtk_joined_menu_prepend_menu (GtkJoinedMenu *self,
+void           gtk_joined_menu_prepend_menu (GtkJoinedMenu *this,
                                              GMenuModel    *model);
-void           gtk_joined_menu_remove_menu  (GtkJoinedMenu *self,
+void           gtk_joined_menu_remove_menu  (GtkJoinedMenu *this,
                                              GMenuModel    *model);
-void           gtk_joined_menu_remove_index (GtkJoinedMenu *self,
+void           gtk_joined_menu_remove_index (GtkJoinedMenu *this,
                                              guint          index);
 
 G_END_DECLS

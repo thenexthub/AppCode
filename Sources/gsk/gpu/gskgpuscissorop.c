@@ -25,10 +25,10 @@ gsk_gpu_scissor_op_print (GskGpuOp    *op,
                           GString     *string,
                           guint        indent)
 {
-  GskGpuScissorOp *self = (GskGpuScissorOp *) op;
+  GskGpuScissorOp *this = (GskGpuScissorOp *) op;
 
   gsk_gpu_print_op (string, indent, "scissor");
-  gsk_gpu_print_int_rect (string, &self->rect);
+  gsk_gpu_print_int_rect (string, &this->rect);
   gsk_gpu_print_newline (string);
 }
 
@@ -38,14 +38,14 @@ gsk_gpu_scissor_op_vk_command (GskGpuOp              *op,
                                GskGpuFrame           *frame,
                                GskVulkanCommandState *state)
 {
-  GskGpuScissorOp *self = (GskGpuScissorOp *) op;
+  GskGpuScissorOp *this = (GskGpuScissorOp *) op;
 
   vkCmdSetScissor (state->vk_command_buffer,
                    0,
                    1,
                    &(VkRect2D) {
-                     { self->rect.x, self->rect.y },
-                     { self->rect.width, self->rect.height },
+                     { this->rect.x, this->rect.y },
+                     { this->rect.width, this->rect.height },
                    });
 
   return op->next;
@@ -57,12 +57,12 @@ gsk_gpu_scissor_op_gl_command (GskGpuOp          *op,
                                GskGpuFrame       *frame,
                                GskGLCommandState *state)
 {
-  GskGpuScissorOp *self = (GskGpuScissorOp *) op;
+  GskGpuScissorOp *this = (GskGpuScissorOp *) op;
 
   if (state->flip_y)
-    glScissor (self->rect.x, state->flip_y - self->rect.y - self->rect.height, self->rect.width, self->rect.height);
+    glScissor (this->rect.x, state->flip_y - this->rect.y - this->rect.height, this->rect.width, this->rect.height);
   else
-    glScissor (self->rect.x, self->rect.y, self->rect.width, self->rect.height);
+    glScissor (this->rect.x, this->rect.y, this->rect.width, this->rect.height);
 
   return op->next;
 }
@@ -82,9 +82,9 @@ void
 gsk_gpu_scissor_op (GskGpuFrame                 *frame,
                     const cairo_rectangle_int_t *rect)
 {
-  GskGpuScissorOp *self;
+  GskGpuScissorOp *this;
 
-  self = (GskGpuScissorOp *) gsk_gpu_op_alloc (frame, &GSK_GPU_SCISSOR_OP_CLASS);
+  this = (GskGpuScissorOp *) gsk_gpu_op_alloc (frame, &GSK_GPU_SCISSOR_OP_CLASS);
 
-  self->rect = *rect;
+  this->rect = *rect;
 }

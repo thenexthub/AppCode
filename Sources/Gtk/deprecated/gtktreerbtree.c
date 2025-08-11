@@ -1388,51 +1388,51 @@ gtk_tree_rbtree_get_depth (GtkTreeRBTree *tree)
 static void
 gtk_tree_rbtree_traverse_pre_order (GtkTreeRBTree            *tree,
                                     GtkTreeRBNode            *node,
-                                    GtkTreeRBTreeTraverseFunc func,
+                                    GtkTreeRBTreeTraverseFunc fn,
                                     gpointer                  data)
 {
   if (gtk_tree_rbtree_is_nil (node))
     return;
 
-  (*func)(tree, node, data);
-  gtk_tree_rbtree_traverse_pre_order (tree, node->left, func, data);
-  gtk_tree_rbtree_traverse_pre_order (tree, node->right, func, data);
+  (*fn)(tree, node, data);
+  gtk_tree_rbtree_traverse_pre_order (tree, node->left, fn, data);
+  gtk_tree_rbtree_traverse_pre_order (tree, node->right, fn, data);
 }
 
 static void
 gtk_tree_rbtree_traverse_post_order (GtkTreeRBTree            *tree,
                                      GtkTreeRBNode            *node,
-                                     GtkTreeRBTreeTraverseFunc func,
+                                     GtkTreeRBTreeTraverseFunc fn,
                                      gpointer                  data)
 {
   if (gtk_tree_rbtree_is_nil (node))
     return;
 
-  gtk_tree_rbtree_traverse_post_order (tree, node->left, func, data);
-  gtk_tree_rbtree_traverse_post_order (tree, node->right, func, data);
-  (*func)(tree, node, data);
+  gtk_tree_rbtree_traverse_post_order (tree, node->left, fn, data);
+  gtk_tree_rbtree_traverse_post_order (tree, node->right, fn, data);
+  (*fn)(tree, node, data);
 }
 
 void
 gtk_tree_rbtree_traverse (GtkTreeRBTree            *tree,
                           GtkTreeRBNode            *node,
                           GTraverseType             order,
-                          GtkTreeRBTreeTraverseFunc func,
+                          GtkTreeRBTreeTraverseFunc fn,
                           gpointer                  data)
 {
   g_return_if_fail (tree != NULL);
   g_return_if_fail (node != NULL);
-  g_return_if_fail (func != NULL);
+  g_return_if_fail (fn != NULL);
   g_return_if_fail (order <= G_LEVEL_ORDER);
 
   switch (order)
     {
     case G_PRE_ORDER:
-      gtk_tree_rbtree_traverse_pre_order (tree, node, func, data);
+      gtk_tree_rbtree_traverse_pre_order (tree, node, fn, data);
       break;
 
     case G_POST_ORDER:
-      gtk_tree_rbtree_traverse_post_order (tree, node, func, data);
+      gtk_tree_rbtree_traverse_post_order (tree, node, fn, data);
       break;
 
     case G_IN_ORDER:

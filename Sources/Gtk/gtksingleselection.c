@@ -75,24 +75,24 @@ gtk_single_selection_get_item_type (GListModel *list)
 static guint
 gtk_single_selection_get_n_items (GListModel *list)
 {
-  GtkSingleSelection *self = GTK_SINGLE_SELECTION (list);
+  GtkSingleSelection *this = GTK_SINGLE_SELECTION (list);
 
-  if (self->model == NULL)
+  if (this->model == NULL)
     return 0;
 
-  return g_list_model_get_n_items (self->model);
+  return g_list_model_get_n_items (this->model);
 }
 
 static gpointer
 gtk_single_selection_get_item (GListModel *list,
                                guint       position)
 {
-  GtkSingleSelection *self = GTK_SINGLE_SELECTION (list);
+  GtkSingleSelection *this = GTK_SINGLE_SELECTION (list);
 
-  if (self->model == NULL)
+  if (this->model == NULL)
     return NULL;
 
-  return g_list_model_get_item (self->model, position);
+  return g_list_model_get_item (this->model, position);
 }
 
 static void
@@ -109,9 +109,9 @@ gtk_single_selection_get_section (GtkSectionModel *model,
                                   guint           *out_start,
                                   guint           *out_end)
 {
-  GtkSingleSelection *self = GTK_SINGLE_SELECTION (model);
+  GtkSingleSelection *this = GTK_SINGLE_SELECTION (model);
 
-  gtk_list_model_get_section (self->model, position, out_start, out_end);
+  gtk_list_model_get_section (this->model, position, out_start, out_end);
 }
 
 static void
@@ -124,9 +124,9 @@ static gboolean
 gtk_single_selection_is_selected (GtkSelectionModel *model,
                                   guint              position)
 {
-  GtkSingleSelection *self = GTK_SINGLE_SELECTION (model);
+  GtkSingleSelection *this = GTK_SINGLE_SELECTION (model);
 
-  return self->selected == position;
+  return this->selected == position;
 }
 
 static GtkBitset *
@@ -134,12 +134,12 @@ gtk_single_selection_get_selection_in_range (GtkSelectionModel *model,
                                              guint              position,
                                              guint              n_items)
 {
-  GtkSingleSelection *self = GTK_SINGLE_SELECTION (model);
+  GtkSingleSelection *this = GTK_SINGLE_SELECTION (model);
   GtkBitset *result;
 
   result = gtk_bitset_new_empty ();
-  if (self->selected != GTK_INVALID_LIST_POSITION)
-    gtk_bitset_add (result, self->selected);
+  if (this->selected != GTK_INVALID_LIST_POSITION)
+    gtk_bitset_add (result, this->selected);
 
   return result;
 }
@@ -149,10 +149,10 @@ gtk_single_selection_select_item (GtkSelectionModel *model,
                                   guint              position,
                                   gboolean           exclusive)
 {
-  GtkSingleSelection *self = GTK_SINGLE_SELECTION (model);
+  GtkSingleSelection *this = GTK_SINGLE_SELECTION (model);
 
   /* XXX: Should we check that position < n_items here? */
-  gtk_single_selection_set_selected (self, position);
+  gtk_single_selection_set_selected (this, position);
 
   return TRUE;
 }
@@ -161,13 +161,13 @@ static gboolean
 gtk_single_selection_unselect_item (GtkSelectionModel *model,
                                     guint              position)
 {
-  GtkSingleSelection *self = GTK_SINGLE_SELECTION (model);
+  GtkSingleSelection *this = GTK_SINGLE_SELECTION (model);
 
-  if (!self->can_unselect || self->autoselect)
+  if (!this->can_unselect || this->autoselect)
     return FALSE;
 
-  if (self->selected == position)
-    gtk_single_selection_set_selected (self, GTK_INVALID_LIST_POSITION);
+  if (this->selected == position)
+    gtk_single_selection_set_selected (this, GTK_INVALID_LIST_POSITION);
 
   return TRUE;
 }
@@ -175,9 +175,9 @@ gtk_single_selection_unselect_item (GtkSelectionModel *model,
 static gboolean
 gtk_single_selection_unselect_all (GtkSelectionModel *model)
 {
-  GtkSingleSelection *self = GTK_SINGLE_SELECTION (model);
+  GtkSingleSelection *this = GTK_SINGLE_SELECTION (model);
 
-  return gtk_single_selection_unselect_item (model, self->selected);
+  return gtk_single_selection_unselect_item (model, this->selected);
 }
 
 static void
@@ -203,31 +203,31 @@ gtk_single_selection_items_changed_cb (GListModel         *model,
                                        guint               position,
                                        guint               removed,
                                        guint               added,
-                                       GtkSingleSelection *self)
+                                       GtkSingleSelection *this)
 {
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
 
-  if (self->selected_item == NULL)
+  if (this->selected_item == NULL)
     {
-      if (self->autoselect)
+      if (this->autoselect)
         {
-          self->selected_item = g_list_model_get_item (self->model, 0);
-          if (self->selected_item)
+          this->selected_item = g_list_model_get_item (this->model, 0);
+          if (this->selected_item)
             {
-              self->selected = 0;
-              g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SELECTED]);
-              g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SELECTED_ITEM]);
+              this->selected = 0;
+              g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SELECTED]);
+              g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SELECTED_ITEM]);
             }
         }
     }
-  else if (self->selected < position)
+  else if (this->selected < position)
     {
       /* unchanged */
     }
-  else if (self->selected >= position + removed)
+  else if (this->selected >= position + removed)
     {
-      self->selected += added - removed;
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SELECTED]);
+      this->selected += added - removed;
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SELECTED]);
     }
   else
     {
@@ -236,13 +236,13 @@ gtk_single_selection_items_changed_cb (GListModel         *model,
       for (i = 0; i < added; i++)
         {
           gpointer item = g_list_model_get_item (model, position + i);
-          if (item == self->selected_item)
+          if (item == this->selected_item)
             {
               /* the item moved */
-              if (self->selected != position + i)
+              if (this->selected != position + i)
                 {
-                  self->selected = position + i;
-                  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SELECTED]);
+                  this->selected = position + i;
+                  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SELECTED]);
                 }
 
               g_object_unref (item);
@@ -252,21 +252,21 @@ gtk_single_selection_items_changed_cb (GListModel         *model,
         }
       if (i == added)
         {
-          guint old_selected = self->selected;
+          guint old_selected = this->selected;
 
           /* the item really was deleted */
-          g_clear_object (&self->selected_item);
-          if (self->autoselect)
+          g_clear_object (&this->selected_item);
+          if (this->autoselect)
             {
-              self->selected = position + (self->selected - position) * added / removed;
-              self->selected_item = g_list_model_get_item (self->model, self->selected);
-              if (self->selected_item == NULL)
+              this->selected = position + (this->selected - position) * added / removed;
+              this->selected_item = g_list_model_get_item (this->model, this->selected);
+              if (this->selected_item == NULL)
                 {
                   if (position > 0)
                     {
-                      self->selected = position - 1;
-                      self->selected_item = g_list_model_get_item (self->model, self->selected);
-                      g_assert (self->selected_item);
+                      this->selected = position - 1;
+                      this->selected_item = g_list_model_get_item (this->model, this->selected);
+                      g_assert (this->selected_item);
                       /* We pretend the newly selected item was part of the original model change.
                        * This way we get around inconsistent state (no item selected) during
                        * the items-changed emission. */
@@ -275,11 +275,11 @@ gtk_single_selection_items_changed_cb (GListModel         *model,
                       added++;
                     }
                   else
-                    self->selected = GTK_INVALID_LIST_POSITION;
+                    this->selected = GTK_INVALID_LIST_POSITION;
                 }
               else
                 {
-                  if (self->selected == position + added)
+                  if (this->selected == position + added)
                     {
                       /* We pretend the newly selected item was part of the original model change.
                        * This way we get around inconsistent state (no item selected) during
@@ -291,21 +291,21 @@ gtk_single_selection_items_changed_cb (GListModel         *model,
             }
           else
             {
-              g_clear_object (&self->selected_item);
-              self->selected = GTK_INVALID_LIST_POSITION;
+              g_clear_object (&this->selected_item);
+              this->selected = GTK_INVALID_LIST_POSITION;
             }
-          if (old_selected != self->selected)
-            g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SELECTED]);
+          if (old_selected != this->selected)
+            g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SELECTED]);
           /* the item was deleted above, so this is guaranteed to be new, even if the position didn't change */
-          g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SELECTED_ITEM]);
+          g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SELECTED_ITEM]);
         }
     }
 
-  g_list_model_items_changed (G_LIST_MODEL (self), position, removed, added);
+  g_list_model_items_changed (G_LIST_MODEL (this), position, removed, added);
   if (removed != added)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 }
 
 static void
@@ -314,24 +314,24 @@ gtk_single_selection_sections_changed_cb (GtkSectionModel *model,
                                           unsigned int     n_items,
                                           gpointer         user_data)
 {
-  GtkSingleSelection *self = GTK_SINGLE_SELECTION (user_data);
+  GtkSingleSelection *this = GTK_SINGLE_SELECTION (user_data);
 
-  gtk_section_model_sections_changed (GTK_SECTION_MODEL (self), position, n_items);
+  gtk_section_model_sections_changed (GTK_SECTION_MODEL (this), position, n_items);
 }
 
 static void
-gtk_single_selection_clear_model (GtkSingleSelection *self)
+gtk_single_selection_clear_model (GtkSingleSelection *this)
 {
-  if (self->model == NULL)
+  if (this->model == NULL)
     return;
 
-  g_signal_handlers_disconnect_by_func (self->model,
+  g_signal_handlers_disconnect_by_func (this->model,
                                         gtk_single_selection_items_changed_cb,
-                                        self);
-  g_signal_handlers_disconnect_by_func (self->model,
+                                        this);
+  g_signal_handlers_disconnect_by_func (this->model,
                                         gtk_single_selection_sections_changed_cb,
-                                        self);
-  g_clear_object (&self->model);
+                                        this);
+  g_clear_object (&this->model);
 }
 
 static void
@@ -341,24 +341,24 @@ gtk_single_selection_set_property (GObject      *object,
                                    GParamSpec   *pspec)
 
 {
-  GtkSingleSelection *self = GTK_SINGLE_SELECTION (object);
+  GtkSingleSelection *this = GTK_SINGLE_SELECTION (object);
 
   switch (prop_id)
     {
     case PROP_AUTOSELECT:
-      gtk_single_selection_set_autoselect (self, g_value_get_boolean (value));
+      gtk_single_selection_set_autoselect (this, g_value_get_boolean (value));
       break;
 
     case PROP_CAN_UNSELECT:
-      gtk_single_selection_set_can_unselect (self, g_value_get_boolean (value));
+      gtk_single_selection_set_can_unselect (this, g_value_get_boolean (value));
       break;
 
     case PROP_MODEL:
-      gtk_single_selection_set_model (self, g_value_get_object (value));
+      gtk_single_selection_set_model (this, g_value_get_object (value));
       break;
 
     case PROP_SELECTED:
-      gtk_single_selection_set_selected (self, g_value_get_uint (value));
+      gtk_single_selection_set_selected (this, g_value_get_uint (value));
       break;
 
     default:
@@ -373,36 +373,36 @@ gtk_single_selection_get_property (GObject    *object,
                                    GValue     *value,
                                    GParamSpec *pspec)
 {
-  GtkSingleSelection *self = GTK_SINGLE_SELECTION (object);
+  GtkSingleSelection *this = GTK_SINGLE_SELECTION (object);
 
   switch (prop_id)
     {
     case PROP_AUTOSELECT:
-      g_value_set_boolean (value, self->autoselect);
+      g_value_set_boolean (value, this->autoselect);
       break;
 
     case PROP_CAN_UNSELECT:
-      g_value_set_boolean (value, self->can_unselect);
+      g_value_set_boolean (value, this->can_unselect);
       break;
 
     case PROP_ITEM_TYPE:
-      g_value_set_gtype (value, gtk_single_selection_get_item_type (G_LIST_MODEL (self)));
+      g_value_set_gtype (value, gtk_single_selection_get_item_type (G_LIST_MODEL (this)));
       break;
 
     case PROP_MODEL:
-      g_value_set_object (value, self->model);
+      g_value_set_object (value, this->model);
       break;
 
     case PROP_N_ITEMS:
-      g_value_set_uint (value, gtk_single_selection_get_n_items (G_LIST_MODEL (self)));
+      g_value_set_uint (value, gtk_single_selection_get_n_items (G_LIST_MODEL (this)));
       break;
 
     case PROP_SELECTED:
-      g_value_set_uint (value, self->selected);
+      g_value_set_uint (value, this->selected);
       break;
 
     case PROP_SELECTED_ITEM:
-      g_value_set_object (value, self->selected_item);
+      g_value_set_object (value, this->selected_item);
       break;
 
     default:
@@ -414,12 +414,12 @@ gtk_single_selection_get_property (GObject    *object,
 static void
 gtk_single_selection_dispose (GObject *object)
 {
-  GtkSingleSelection *self = GTK_SINGLE_SELECTION (object);
+  GtkSingleSelection *this = GTK_SINGLE_SELECTION (object);
 
-  gtk_single_selection_clear_model (self);
+  gtk_single_selection_clear_model (this);
 
-  self->selected = GTK_INVALID_LIST_POSITION;
-  g_clear_object (&self->selected_item);
+  this->selected = GTK_INVALID_LIST_POSITION;
+  g_clear_object (&this->selected_item);
 
   G_OBJECT_CLASS (gtk_single_selection_parent_class)->dispose (object);
 }
@@ -511,10 +511,10 @@ gtk_single_selection_class_init (GtkSingleSelectionClass *klass)
 }
 
 static void
-gtk_single_selection_init (GtkSingleSelection *self)
+gtk_single_selection_init (GtkSingleSelection *this)
 {
-  self->selected = GTK_INVALID_LIST_POSITION;
-  self->autoselect = TRUE;
+  this->selected = GTK_INVALID_LIST_POSITION;
+  this->autoselect = TRUE;
 }
 
 /**
@@ -528,101 +528,101 @@ gtk_single_selection_init (GtkSingleSelection *self)
 GtkSingleSelection *
 gtk_single_selection_new (GListModel *model)
 {
-  GtkSingleSelection *self;
+  GtkSingleSelection *this;
 
   g_return_val_if_fail (model == NULL || G_IS_LIST_MODEL (model), NULL);
 
-  self = g_object_new (GTK_TYPE_SINGLE_SELECTION,
+  this = g_object_new (GTK_TYPE_SINGLE_SELECTION,
                        "model", model,
                        NULL);
 
   /* consume the reference */
   g_clear_object (&model);
 
-  return self;
+  return this;
 }
 
 /**
  * gtk_single_selection_get_model:
- * @self: a `GtkSingleSelection`
+ * @this: a `GtkSingleSelection`
  *
- * Gets the model that @self is wrapping.
+ * Gets the model that @this is wrapping.
  *
  * Returns: (transfer none) (nullable): The model being wrapped
  */
 GListModel *
-gtk_single_selection_get_model (GtkSingleSelection *self)
+gtk_single_selection_get_model (GtkSingleSelection *this)
 {
-  g_return_val_if_fail (GTK_IS_SINGLE_SELECTION (self), NULL);
+  g_return_val_if_fail (GTK_IS_SINGLE_SELECTION (this), NULL);
 
-  return self->model;
+  return this->model;
 }
 
 /**
  * gtk_single_selection_set_model:
- * @self: a `GtkSingleSelection`
+ * @this: a `GtkSingleSelection`
  * @model: (nullable): A `GListModel` to wrap
  *
- * Sets the model that @self should wrap.
+ * Sets the model that @this should wrap.
  *
- * If @model is %NULL, @self will be empty.
+ * If @model is %NULL, @this will be empty.
  */
 void
-gtk_single_selection_set_model (GtkSingleSelection *self,
+gtk_single_selection_set_model (GtkSingleSelection *this,
                                 GListModel         *model)
 {
   guint n_items_before;
 
-  g_return_if_fail (GTK_IS_SINGLE_SELECTION (self));
+  g_return_if_fail (GTK_IS_SINGLE_SELECTION (this));
   g_return_if_fail (model == NULL || G_IS_LIST_MODEL (model));
 
-  if (self->model == model)
+  if (this->model == model)
     return;
 
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
 
-  n_items_before = self->model ? g_list_model_get_n_items (self->model) : 0;
-  gtk_single_selection_clear_model (self);
+  n_items_before = this->model ? g_list_model_get_n_items (this->model) : 0;
+  gtk_single_selection_clear_model (this);
 
   if (model)
     {
-      self->model = g_object_ref (model);
-      g_signal_connect (self->model, "items-changed",
-                        G_CALLBACK (gtk_single_selection_items_changed_cb), self);
-      if (GTK_IS_SECTION_MODEL (self->model))
-        g_signal_connect (self->model, "sections-changed",
-                          G_CALLBACK (gtk_single_selection_sections_changed_cb), self);
-      gtk_single_selection_items_changed_cb (self->model,
+      this->model = g_object_ref (model);
+      g_signal_connect (this->model, "items-changed",
+                        G_CALLBACK (gtk_single_selection_items_changed_cb), this);
+      if (GTK_IS_SECTION_MODEL (this->model))
+        g_signal_connect (this->model, "sections-changed",
+                          G_CALLBACK (gtk_single_selection_sections_changed_cb), this);
+      gtk_single_selection_items_changed_cb (this->model,
                                              0,
                                              n_items_before,
                                              g_list_model_get_n_items (model),
-                                             self);
+                                             this);
     }
   else
     {
-      if (self->selected != GTK_INVALID_LIST_POSITION)
+      if (this->selected != GTK_INVALID_LIST_POSITION)
         {
-          self->selected = GTK_INVALID_LIST_POSITION;
-          g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SELECTED]);
+          this->selected = GTK_INVALID_LIST_POSITION;
+          g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SELECTED]);
         }
-      if (self->selected_item)
+      if (this->selected_item)
         {
-          g_clear_object (&self->selected_item);
-          g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SELECTED_ITEM]);
+          g_clear_object (&this->selected_item);
+          g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SELECTED_ITEM]);
         }
-      g_list_model_items_changed (G_LIST_MODEL (self), 0, n_items_before, 0);
+      g_list_model_items_changed (G_LIST_MODEL (this), 0, n_items_before, 0);
       if (n_items_before)
-        g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+        g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
     }
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_MODEL]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_MODEL]);
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 }
 
 /**
  * gtk_single_selection_get_selected:
- * @self: a `GtkSingleSelection`
+ * @this: a `GtkSingleSelection`
  *
  * Gets the position of the selected item.
  *
@@ -631,16 +631,16 @@ gtk_single_selection_set_model (GtkSingleSelection *self,
  * Returns: The position of the selected item
  */
 guint
-gtk_single_selection_get_selected (GtkSingleSelection *self)
+gtk_single_selection_get_selected (GtkSingleSelection *this)
 {
-  g_return_val_if_fail (GTK_IS_SINGLE_SELECTION (self), GTK_INVALID_LIST_POSITION);
+  g_return_val_if_fail (GTK_IS_SINGLE_SELECTION (this), GTK_INVALID_LIST_POSITION);
 
-  return self->selected;
+  return this->selected;
 }
 
 /**
  * gtk_single_selection_set_selected:
- * @self: a `GtkSingleSelection`
+ * @this: a `GtkSingleSelection`
  * @position: the item to select or %GTK_INVALID_LIST_POSITION
  *
  * Selects the item at the given position.
@@ -654,52 +654,52 @@ gtk_single_selection_get_selected (GtkSingleSelection *self)
  * is set to %FALSE.
  */
 void
-gtk_single_selection_set_selected (GtkSingleSelection *self,
+gtk_single_selection_set_selected (GtkSingleSelection *this,
                                    guint               position)
 {
   gpointer new_selected = NULL;
   guint old_position;
 
-  g_return_if_fail (GTK_IS_SINGLE_SELECTION (self));
+  g_return_if_fail (GTK_IS_SINGLE_SELECTION (this));
 
-  if (self->selected == position)
+  if (this->selected == position)
     return;
 
-  if (self->model)
-    new_selected = g_list_model_get_item (self->model, position);
+  if (this->model)
+    new_selected = g_list_model_get_item (this->model, position);
 
   if (new_selected == NULL)
     {
-      if (!self->can_unselect || self->autoselect)
+      if (!this->can_unselect || this->autoselect)
         return;
 
       position = GTK_INVALID_LIST_POSITION;
     }
 
-  if (self->selected == position)
+  if (this->selected == position)
     return;
 
-  old_position = self->selected;
-  self->selected = position;
-  g_clear_object (&self->selected_item);
-  self->selected_item = new_selected;
+  old_position = this->selected;
+  this->selected = position;
+  g_clear_object (&this->selected_item);
+  this->selected_item = new_selected;
 
   if (old_position == GTK_INVALID_LIST_POSITION)
-    gtk_selection_model_selection_changed (GTK_SELECTION_MODEL (self), position, 1);
+    gtk_selection_model_selection_changed (GTK_SELECTION_MODEL (this), position, 1);
   else if (position == GTK_INVALID_LIST_POSITION)
-    gtk_selection_model_selection_changed (GTK_SELECTION_MODEL (self), old_position, 1);
+    gtk_selection_model_selection_changed (GTK_SELECTION_MODEL (this), old_position, 1);
   else if (position < old_position)
-    gtk_selection_model_selection_changed (GTK_SELECTION_MODEL (self), position, old_position - position + 1);
+    gtk_selection_model_selection_changed (GTK_SELECTION_MODEL (this), position, old_position - position + 1);
   else
-    gtk_selection_model_selection_changed (GTK_SELECTION_MODEL (self), old_position, position - old_position + 1);
+    gtk_selection_model_selection_changed (GTK_SELECTION_MODEL (this), old_position, position - old_position + 1);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SELECTED]);
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SELECTED_ITEM]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SELECTED]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SELECTED_ITEM]);
 }
 
 /**
  * gtk_single_selection_get_selected_item:
- * @self: a `GtkSingleSelection`
+ * @this: a `GtkSingleSelection`
  *
  * Gets the selected item.
  *
@@ -708,16 +708,16 @@ gtk_single_selection_set_selected (GtkSingleSelection *self,
  * Returns: (transfer none) (type GObject) (nullable): The selected item
  */
 gpointer
-gtk_single_selection_get_selected_item (GtkSingleSelection *self)
+gtk_single_selection_get_selected_item (GtkSingleSelection *this)
 {
-  g_return_val_if_fail (GTK_IS_SINGLE_SELECTION (self), NULL);
+  g_return_val_if_fail (GTK_IS_SINGLE_SELECTION (this), NULL);
 
-  return self->selected_item;
+  return this->selected_item;
 }
 
 /**
  * gtk_single_selection_get_autoselect:
- * @self: a `GtkSingleSelection`
+ * @this: a `GtkSingleSelection`
  *
  * Checks if autoselect has been enabled or disabled via
  * gtk_single_selection_set_autoselect().
@@ -725,48 +725,48 @@ gtk_single_selection_get_selected_item (GtkSingleSelection *self)
  * Returns: %TRUE if autoselect is enabled
  **/
 gboolean
-gtk_single_selection_get_autoselect (GtkSingleSelection *self)
+gtk_single_selection_get_autoselect (GtkSingleSelection *this)
 {
-  g_return_val_if_fail (GTK_IS_SINGLE_SELECTION (self), TRUE);
+  g_return_val_if_fail (GTK_IS_SINGLE_SELECTION (this), TRUE);
 
-  return self->autoselect;
+  return this->autoselect;
 }
 
 /**
  * gtk_single_selection_set_autoselect:
- * @self: a `GtkSingleSelection`
+ * @this: a `GtkSingleSelection`
  * @autoselect: %TRUE to always select an item
  *
  * Enables or disables autoselect.
  *
- * If @autoselect is %TRUE, @self will enforce that an item is always
+ * If @autoselect is %TRUE, @this will enforce that an item is always
  * selected. It will select a new item when the currently selected
  * item is deleted and it will disallow unselecting the current item.
  */
 void
-gtk_single_selection_set_autoselect (GtkSingleSelection *self,
+gtk_single_selection_set_autoselect (GtkSingleSelection *this,
                                      gboolean            autoselect)
 {
-  g_return_if_fail (GTK_IS_SINGLE_SELECTION (self));
+  g_return_if_fail (GTK_IS_SINGLE_SELECTION (this));
 
-  if (self->autoselect == autoselect)
+  if (this->autoselect == autoselect)
     return;
 
-  self->autoselect = autoselect;
+  this->autoselect = autoselect;
 
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
   
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_AUTOSELECT]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_AUTOSELECT]);
 
-  if (self->autoselect && !self->selected_item)
-    gtk_single_selection_set_selected (self, 0);
+  if (this->autoselect && !this->selected_item)
+    gtk_single_selection_set_selected (this, 0);
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 }
 
 /**
  * gtk_single_selection_get_can_unselect:
- * @self: a `GtkSingleSelection`
+ * @this: a `GtkSingleSelection`
  *
  * If %TRUE, gtk_selection_model_unselect_item() is supported and allows
  * unselecting the selected item.
@@ -774,16 +774,16 @@ gtk_single_selection_set_autoselect (GtkSingleSelection *self,
  * Returns: %TRUE to support unselecting
  */
 gboolean
-gtk_single_selection_get_can_unselect (GtkSingleSelection *self)
+gtk_single_selection_get_can_unselect (GtkSingleSelection *this)
 {
-  g_return_val_if_fail (GTK_IS_SINGLE_SELECTION (self), FALSE);
+  g_return_val_if_fail (GTK_IS_SINGLE_SELECTION (this), FALSE);
 
-  return self->can_unselect;
+  return this->can_unselect;
 }
 
 /**
  * gtk_single_selection_set_can_unselect:
- * @self: a `GtkSingleSelection`
+ * @this: a `GtkSingleSelection`
  * @can_unselect: %TRUE to allow unselecting
  *
  * If %TRUE, unselecting the current item via
@@ -794,15 +794,15 @@ gtk_single_selection_get_can_unselect (GtkSingleSelection *self)
  * to set both at the same time.
  */
 void
-gtk_single_selection_set_can_unselect (GtkSingleSelection *self,
+gtk_single_selection_set_can_unselect (GtkSingleSelection *this,
                                        gboolean            can_unselect)
 {
-  g_return_if_fail (GTK_IS_SINGLE_SELECTION (self));
+  g_return_if_fail (GTK_IS_SINGLE_SELECTION (this));
 
-  if (self->can_unselect == can_unselect)
+  if (this->can_unselect == can_unselect)
     return;
 
-  self->can_unselect = can_unselect;
+  this->can_unselect = can_unselect;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_CAN_UNSELECT]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_CAN_UNSELECT]);
 }

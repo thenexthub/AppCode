@@ -36,7 +36,7 @@ Follow these steps to add AppCodeX to an app:
 
 Follow these steps to add AppCodeX to another Codira package:
 
-1. In Xcode, open your `Package.swift` file.
+1. In Xcode, open your `Package.code` file.
 2. Add a `.package` dependency to `dependencies`, like this:
 
 ```swift

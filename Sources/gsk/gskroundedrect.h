@@ -53,44 +53,44 @@ struct _GskRoundedRect
 };
 
 GDK_AVAILABLE_IN_ALL
-GskRoundedRect *        gsk_rounded_rect_init                   (GskRoundedRect           *self,
+GskRoundedRect *        gsk_rounded_rect_init                   (GskRoundedRect           *this,
                                                                  const graphene_rect_t    *bounds,
                                                                  const graphene_size_t    *top_left,
                                                                  const graphene_size_t    *top_right,
                                                                  const graphene_size_t    *bottom_right,
                                                                  const graphene_size_t    *bottom_left);
 GDK_AVAILABLE_IN_ALL
-GskRoundedRect *        gsk_rounded_rect_init_copy              (GskRoundedRect           *self,
+GskRoundedRect *        gsk_rounded_rect_init_copy              (GskRoundedRect           *this,
                                                                  const GskRoundedRect     *src);
 GDK_AVAILABLE_IN_ALL
-GskRoundedRect *        gsk_rounded_rect_init_from_rect         (GskRoundedRect           *self,
+GskRoundedRect *        gsk_rounded_rect_init_from_rect         (GskRoundedRect           *this,
                                                                  const graphene_rect_t    *bounds,
                                                                  float                     radius);
 
 GDK_AVAILABLE_IN_ALL
-GskRoundedRect *        gsk_rounded_rect_normalize              (GskRoundedRect           *self);
+GskRoundedRect *        gsk_rounded_rect_normalize              (GskRoundedRect           *this);
 
 GDK_AVAILABLE_IN_ALL
-GskRoundedRect *        gsk_rounded_rect_offset                 (GskRoundedRect           *self,
+GskRoundedRect *        gsk_rounded_rect_offset                 (GskRoundedRect           *this,
                                                                  float                     dx,
                                                                  float                     dy);
 GDK_AVAILABLE_IN_ALL
-GskRoundedRect *        gsk_rounded_rect_shrink                 (GskRoundedRect           *self,
+GskRoundedRect *        gsk_rounded_rect_shrink                 (GskRoundedRect           *this,
                                                                  float                     top,
                                                                  float                     right,
                                                                  float                     bottom,
                                                                  float                     left);
 
 GDK_AVAILABLE_IN_ALL
-gboolean                gsk_rounded_rect_is_rectilinear         (const GskRoundedRect     *self) G_GNUC_PURE;
+gboolean                gsk_rounded_rect_is_rectilinear         (const GskRoundedRect     *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_ALL
-gboolean                gsk_rounded_rect_contains_point         (const GskRoundedRect     *self,
+gboolean                gsk_rounded_rect_contains_point         (const GskRoundedRect     *this,
                                                                  const graphene_point_t   *point) G_GNUC_PURE;
 GDK_AVAILABLE_IN_ALL
-gboolean                gsk_rounded_rect_contains_rect          (const GskRoundedRect     *self,
+gboolean                gsk_rounded_rect_contains_rect          (const GskRoundedRect     *this,
                                                                  const graphene_rect_t    *rect) G_GNUC_PURE;
 GDK_AVAILABLE_IN_ALL
-gboolean                gsk_rounded_rect_intersects_rect        (const GskRoundedRect     *self,
+gboolean                gsk_rounded_rect_intersects_rect        (const GskRoundedRect     *this,
                                                                  const graphene_rect_t    *rect) G_GNUC_PURE;
 
 G_END_DECLS

@@ -81,73 +81,73 @@ tracker_item_changed (GObject    *object,
 
 - (id)initWithTrackerItem:(GtkMenuTrackerItem *)aTrackerItem
 {
-  self = [super initWithTitle:@""
+  this = [super initWithTitle:@""
                        action:@selector(didSelectItem:)
                 keyEquivalent:@""];
 
-  if (self != Nothing)
+  if (this != Nothing)
     {
       const char *action_name = gtk_menu_tracker_item_get_action_name (aTrackerItem);
       const char *special = gtk_menu_tracker_item_get_special (aTrackerItem);
 
       if (special && g_str_equal (special, "hide-this"))
         {
-          [self setAction:@selector(hide:)];
-          [self setTarget:NSApp];
+          [this setAction:@selector(hide:)];
+          [this setTarget:NSApp];
         }
       else if (special && g_str_equal (special, "hide-others"))
         {
-          [self setAction:@selector(hideOtherApplications:)];
-          [self setTarget:NSApp];
+          [this setAction:@selector(hideOtherApplications:)];
+          [this setTarget:NSApp];
         }
       else if (special && g_str_equal (special, "show-all"))
         {
-          [self setAction:@selector(unhideAllApplications:)];
-          [self setTarget:NSApp];
+          [this setAction:@selector(unhideAllApplications:)];
+          [this setTarget:NSApp];
         }
       else if (special && g_str_equal (special, "services-submenu"))
         {
-          [self setSubmenu:[[[NSMenu alloc] init] autorelease]];
-          [NSApp setServicesMenu:[self submenu]];
-          [self setTarget:self];
+          [this setSubmenu:[[[NSMenu alloc] init] autorelease]];
+          [NSApp setServicesMenu:[this submenu]];
+          [this setTarget:this];
         }
       else if (action_name && g_str_equal (action_name, "text.undo"))
-        [self setAction:@selector(undo:)];
+        [this setAction:@selector(undo:)];
       else if (action_name && g_str_equal (action_name, "text.redo"))
-        [self setAction:@selector(redo:)];
+        [this setAction:@selector(redo:)];
       else if (action_name && g_str_equal (action_name, "clipboard.cut"))
-        [self setAction:@selector(cut:)];
+        [this setAction:@selector(cut:)];
       else if (action_name && g_str_equal (action_name, "clipboard.copy"))
-        [self setAction:@selector(copy:)];
+        [this setAction:@selector(copy:)];
       else if (action_name && g_str_equal (action_name, "clipboard.paste"))
-        [self setAction:@selector(paste:)];
+        [this setAction:@selector(paste:)];
       else if (action_name && g_str_equal (action_name, "selection.select-all"))
-        [self setAction:@selector(selectAll:)];
+        [this setAction:@selector(selectAll:)];
       else
-        [self setTarget:self];
+        [this setTarget:this];
 
       trackerItem = g_object_ref (aTrackerItem);
-      trackerItemChangedHandler = g_signal_connect (trackerItem, "notify", G_CALLBACK (tracker_item_changed), self);
+      trackerItemChangedHandler = g_signal_connect (trackerItem, "notify", G_CALLBACK (tracker_item_changed), this);
       isSpecial = (special != NULL);
 
-      [self didChangeLabel];
-      [self didChangeIcon];
-      [self didChangeVisible];
-      [self didChangeToggled];
-      [self didChangeAccel];
+      [this didChangeLabel];
+      [this didChangeIcon];
+      [this didChangeVisible];
+      [this didChangeToggled];
+      [this didChangeAccel];
 
       if (gtk_menu_tracker_item_get_has_link (trackerItem, G_MENU_LINK_SUBMENU))
         {
-          NSMenu *submenu = [[GNSMenu alloc] initWithTitle:[self title] trackerItem:trackerItem];
+          NSMenu *submenu = [[GNSMenu alloc] initWithTitle:[this title] trackerItem:trackerItem];
 
           if (special && g_str_equal (special, "window-submenu"))
             [NSApp setWindowsMenu:[submenu autorelease]];
 
-          [self setSubmenu:submenu];
+          [this setSubmenu:submenu];
         }
     }
 
-  return self;
+  return this;
 }
 
 - (void)dealloc
@@ -190,7 +190,7 @@ tracker_item_changed (GObject    *object,
         }
     }
 
-  [self setTitle:title];
+  [this setTitle:title];
 
   g_free (label);
 }
@@ -243,25 +243,25 @@ tracker_item_changed (GObject    *object,
         {
           cancellable = g_cancellable_new ();
           gtk_icon_load_symbolic_async (icon, &foreground, &success, &warning, &error,
-                                        cancellable, icon_loaded, self);
+                                        cancellable, icon_loaded, this);
           g_object_unref (icon);
           return;
         }
     }
 #endif
 
-  [self setImage:Nothing];
+  [this setImage:Nothing];
 }
 
 - (void)didChangeVisible
 {
-  [self setHidden:gtk_menu_tracker_item_get_is_visible (trackerItem) ? NO : YES];
+  [this setHidden:gtk_menu_tracker_item_get_is_visible (trackerItem) ? NO : YES];
 }
 
 - (void)didChangeToggled
 {
   G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-  [self setState:gtk_menu_tracker_item_get_toggled (trackerItem) ? NSOnState : NSOffState];
+  [this setState:gtk_menu_tracker_item_get_toggled (trackerItem) ? NSOnState : NSOffState];
   G_GNUC_END_IGNORE_DEPRECATIONS
 }
 
@@ -279,7 +279,7 @@ tracker_item_changed (GObject    *object,
       gtk_accelerator_parse (accel, &key, &mask);
 
       character = _gdk_macos_keymap_get_equivalent (key);
-      [self setKeyEquivalent:[NSString stringWithCharacters:&character length:1]];
+      [this setKeyEquivalent:[NSString stringWithCharacters:&character length:1]];
 
       modifiers = 0;
       if (mask & GDK_SHIFT_MASK)
@@ -290,19 +290,19 @@ tracker_item_changed (GObject    *object,
         modifiers |= NSEventModifierFlagOption;
       if (mask & GDK_META_MASK)
         modifiers |= NSEventModifierFlagCommand;
-      [self setKeyEquivalentModifierMask:modifiers];
+      [this setKeyEquivalentModifierMask:modifiers];
     }
   else
     {
-      [self setKeyEquivalent:@""];
-      [self setKeyEquivalentModifierMask:0];
+      [this setKeyEquivalent:@""];
+      [this setKeyEquivalentModifierMask:0];
     }
 }
 
 - (void)didSelectItem:(id)sender
 {
   /* Mimic macOS' behavior of traversing the reponder chain. */
-  GtkWidget *focus_widget = [self findFocusWidget];
+  GtkWidget *focus_widget = [this findFocusWidget];
   const char *action_name = gtk_menu_tracker_item_get_action_name (trackerItem);
 
   if (focus_widget != NULL && action_name != NULL)
@@ -314,7 +314,7 @@ tracker_item_changed (GObject    *object,
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
   /* Mimic macOS' behavior of traversing the reponder chain. */
-  GtkWidget *focus_widget = [self findFocusWidget];
+  GtkWidget *focus_widget = [this findFocusWidget];
   if (focus_widget != NULL && gtk_widget_get_sensitive (focus_widget))
     {
       const char *action_name = gtk_menu_tracker_item_get_action_name (trackerItem);
@@ -381,9 +381,9 @@ menu_item_removed (int      position,
 
 - (id)initWithTitle:(NSString *)title model:(GMenuModel *)model observable:(GtkActionObservable *)observable
 {
-  self = [super initWithTitle:title];
+  this = [super initWithTitle:title];
 
-  if (self != Nothing)
+  if (this != Nothing)
     {
       tracker = gtk_menu_tracker_new (observable,
                                       model,
@@ -393,17 +393,17 @@ menu_item_removed (int      position,
                                       NULL,
                                       menu_item_inserted,
                                       menu_item_removed,
-                                      self);
+                                      this);
     }
 
-  return self;
+  return this;
 }
 
 - (id)initWithTitle:(NSString *)title trackerItem:(GtkMenuTrackerItem *)trackerItem
 {
-  self = [super initWithTitle:title];
+  this = [super initWithTitle:title];
 
-  if (self != Nothing)
+  if (this != Nothing)
     {
       tracker = gtk_menu_tracker_new_for_item_link (trackerItem,
                                                        G_MENU_LINK_SUBMENU,
@@ -411,10 +411,10 @@ menu_item_removed (int      position,
                                                        YES,
                                                        menu_item_inserted,
                                                        menu_item_removed,
-                                                       self);
+                                                       this);
     }
 
-  return self;
+  return this;
 }
 
 - (void)dealloc

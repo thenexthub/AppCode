@@ -80,21 +80,21 @@ overlay_free (Overlay *overlay)
 }
 
 static void
-gtk_text_view_child_remove_overlay (GtkTextViewChild *self,
+gtk_text_view_child_remove_overlay (GtkTextViewChild *this,
                                     Overlay          *overlay)
 {
-  g_queue_unlink (&self->overlays, &overlay->link);
+  g_queue_unlink (&this->overlays, &overlay->link);
   gtk_widget_unparent (overlay->widget);
   overlay_free (overlay);
 }
 
 static Overlay *
-gtk_text_view_child_get_overlay (GtkTextViewChild *self,
+gtk_text_view_child_get_overlay (GtkTextViewChild *this,
                                  GtkWidget        *widget)
 {
   GList *iter;
 
-  for (iter = self->overlays.head; iter; iter = iter->next)
+  for (iter = this->overlays.head; iter; iter = iter->next)
     {
       Overlay *overlay = iter->data;
 
@@ -106,37 +106,37 @@ gtk_text_view_child_get_overlay (GtkTextViewChild *self,
 }
 
 void
-gtk_text_view_child_add (GtkTextViewChild *self,
+gtk_text_view_child_add (GtkTextViewChild *this,
                          GtkWidget        *widget)
 {
-  if (self->child != NULL)
+  if (this->child != NULL)
     {
       g_warning ("%s allows a single child and already contains a %s",
-                 G_OBJECT_TYPE_NAME (self),
+                 G_OBJECT_TYPE_NAME (this),
                  G_OBJECT_TYPE_NAME (widget));
       return;
     }
 
-  self->child = g_object_ref (widget);
-  gtk_widget_set_parent (widget, GTK_WIDGET (self));
+  this->child = g_object_ref (widget);
+  gtk_widget_set_parent (widget, GTK_WIDGET (this));
 }
 
 void
-gtk_text_view_child_remove (GtkTextViewChild *self,
+gtk_text_view_child_remove (GtkTextViewChild *this,
                             GtkWidget        *widget)
 {
-  if (widget == self->child)
+  if (widget == this->child)
     {
-      self->child = NULL;
+      this->child = NULL;
       gtk_widget_unparent (widget);
       g_object_unref (widget);
     }
   else
     {
-      Overlay *overlay = gtk_text_view_child_get_overlay (self, widget);
+      Overlay *overlay = gtk_text_view_child_get_overlay (this, widget);
 
       if (overlay != NULL)
-        gtk_text_view_child_remove_overlay (self, overlay);
+        gtk_text_view_child_remove_overlay (this, overlay);
     }
 }
 
@@ -149,13 +149,13 @@ gtk_text_view_child_measure (GtkWidget      *widget,
                              int            *min_baseline,
                              int            *nat_baseline)
 {
-  GtkTextViewChild *self = GTK_TEXT_VIEW_CHILD (widget);
+  GtkTextViewChild *this = GTK_TEXT_VIEW_CHILD (widget);
   const GList *iter;
   int real_min_size = 0;
   int real_nat_size = 0;
 
-  if (self->child != NULL)
-    gtk_widget_measure (self->child,
+  if (this->child != NULL)
+    gtk_widget_measure (this->child,
                         orientation,
                         for_size,
                         &real_min_size,
@@ -163,7 +163,7 @@ gtk_text_view_child_measure (GtkWidget      *widget,
                         NULL,
                         NULL);
 
-  for (iter = self->overlays.head; iter; iter = iter->next)
+  for (iter = this->overlays.head; iter; iter = iter->next)
     {
       Overlay *overlay = iter->data;
       int child_min_size = 0;
@@ -203,24 +203,24 @@ gtk_text_view_child_size_allocate (GtkWidget *widget,
                                    int        height,
                                    int        baseline)
 {
-  GtkTextViewChild *self = GTK_TEXT_VIEW_CHILD (widget);
+  GtkTextViewChild *this = GTK_TEXT_VIEW_CHILD (widget);
   GtkRequisition min_req;
   GdkRectangle rect;
   const GList *iter;
 
   GTK_WIDGET_CLASS (gtk_text_view_child_parent_class)->size_allocate (widget, width, height, baseline);
 
-  if (self->child != NULL)
+  if (this->child != NULL)
     {
       rect.x = 0;
       rect.y = 0;
       rect.width = width;
       rect.height = height;
 
-      gtk_widget_size_allocate (self->child, &rect, baseline);
+      gtk_widget_size_allocate (this->child, &rect, baseline);
     }
 
-  for (iter = self->overlays.head; iter; iter = iter->next)
+  for (iter = this->overlays.head; iter; iter = iter->next)
     {
       Overlay *overlay = iter->data;
 
@@ -229,17 +229,17 @@ gtk_text_view_child_size_allocate (GtkWidget *widget,
       rect.width = min_req.width;
       rect.height = min_req.height;
 
-      if (self->window_type == GTK_TEXT_WINDOW_TEXT ||
-          self->window_type == GTK_TEXT_WINDOW_TOP ||
-          self->window_type == GTK_TEXT_WINDOW_BOTTOM)
-        rect.x = overlay->x - self->xoffset;
+      if (this->window_type == GTK_TEXT_WINDOW_TEXT ||
+          this->window_type == GTK_TEXT_WINDOW_TOP ||
+          this->window_type == GTK_TEXT_WINDOW_BOTTOM)
+        rect.x = overlay->x - this->xoffset;
       else
         rect.x = overlay->x;
 
-      if (self->window_type == GTK_TEXT_WINDOW_TEXT ||
-          self->window_type == GTK_TEXT_WINDOW_RIGHT ||
-          self->window_type == GTK_TEXT_WINDOW_LEFT)
-        rect.y = overlay->y - self->yoffset;
+      if (this->window_type == GTK_TEXT_WINDOW_TEXT ||
+          this->window_type == GTK_TEXT_WINDOW_RIGHT ||
+          this->window_type == GTK_TEXT_WINDOW_LEFT)
+        rect.y = overlay->y - this->yoffset;
       else
         rect.y = overlay->y;
 
@@ -251,13 +251,13 @@ static void
 gtk_text_view_child_snapshot (GtkWidget   *widget,
                               GtkSnapshot *snapshot)
 {
-  GtkTextViewChild *self = GTK_TEXT_VIEW_CHILD (widget);
+  GtkTextViewChild *this = GTK_TEXT_VIEW_CHILD (widget);
   const GList *iter;
 
-  if (self->child)
-    gtk_widget_snapshot_child (widget, self->child, snapshot);
+  if (this->child)
+    gtk_widget_snapshot_child (widget, this->child, snapshot);
 
-  for (iter = self->overlays.head; iter; iter = iter->next)
+  for (iter = this->overlays.head; iter; iter = iter->next)
     {
       Overlay *overlay = iter->data;
 
@@ -268,14 +268,14 @@ gtk_text_view_child_snapshot (GtkWidget   *widget,
 static void
 gtk_text_view_child_constructed (GObject *object)
 {
-  GtkTextViewChild *self = GTK_TEXT_VIEW_CHILD (object);
+  GtkTextViewChild *this = GTK_TEXT_VIEW_CHILD (object);
   GtkCssNode *css_node;
 
   G_OBJECT_CLASS (gtk_text_view_child_parent_class)->constructed (object);
 
-  css_node = gtk_widget_get_css_node (GTK_WIDGET (self));
+  css_node = gtk_widget_get_css_node (GTK_WIDGET (this));
 
-  switch (self->window_type)
+  switch (this->window_type)
     {
     case GTK_TEXT_WINDOW_LEFT:
       gtk_css_node_set_name (css_node, g_quark_from_static_string ("border"));
@@ -313,12 +313,12 @@ gtk_text_view_child_get_property (GObject    *object,
                                   GValue     *value,
                                   GParamSpec *pspec)
 {
-  GtkTextViewChild *self = GTK_TEXT_VIEW_CHILD (object);
+  GtkTextViewChild *this = GTK_TEXT_VIEW_CHILD (object);
 
   switch (prop_id)
     {
     case PROP_WINDOW_TYPE:
-      g_value_set_enum (value, self->window_type);
+      g_value_set_enum (value, this->window_type);
       break;
 
     default:
@@ -332,12 +332,12 @@ gtk_text_view_child_set_property (GObject      *object,
                                   const GValue *value,
                                   GParamSpec   *pspec)
 {
-  GtkTextViewChild *self = GTK_TEXT_VIEW_CHILD (object);
+  GtkTextViewChild *this = GTK_TEXT_VIEW_CHILD (object);
 
   switch (prop_id)
     {
     case PROP_WINDOW_TYPE:
-      self->window_type = g_value_get_enum (value);
+      this->window_type = g_value_get_enum (value);
       break;
 
     default:
@@ -348,11 +348,11 @@ gtk_text_view_child_set_property (GObject      *object,
 static void
 gtk_text_view_child_dispose (GObject *object)
 {
-  GtkTextViewChild *self = GTK_TEXT_VIEW_CHILD (object);
+  GtkTextViewChild *this = GTK_TEXT_VIEW_CHILD (object);
   GtkWidget *child;
 
-  while ((child = gtk_widget_get_first_child (GTK_WIDGET (self))))
-    gtk_text_view_child_remove (self, child);
+  while ((child = gtk_widget_get_first_child (GTK_WIDGET (this))))
+    gtk_text_view_child_remove (this, child);
 
   G_OBJECT_CLASS (gtk_text_view_child_parent_class)->dispose (object);
 }
@@ -388,11 +388,11 @@ gtk_text_view_child_class_init (GtkTextViewChildClass *klass)
 }
 
 static void
-gtk_text_view_child_init (GtkTextViewChild *self)
+gtk_text_view_child_init (GtkTextViewChild *this)
 {
-  self->window_type = GTK_TEXT_WINDOW_TEXT;
+  this->window_type = GTK_TEXT_WINDOW_TEXT;
 
-  gtk_widget_set_overflow (GTK_WIDGET (self), GTK_OVERFLOW_HIDDEN);
+  gtk_widget_set_overflow (GTK_WIDGET (this), GTK_OVERFLOW_HIDDEN);
 }
 
 GtkWidget *
@@ -411,84 +411,84 @@ gtk_text_view_child_new (GtkTextWindowType window_type)
 }
 
 void
-gtk_text_view_child_add_overlay (GtkTextViewChild *self,
+gtk_text_view_child_add_overlay (GtkTextViewChild *this,
                                  GtkWidget        *widget,
                                  int               xpos,
                                  int               ypos)
 {
   Overlay *overlay;
 
-  g_return_if_fail (GTK_IS_TEXT_VIEW_CHILD (self));
+  g_return_if_fail (GTK_IS_TEXT_VIEW_CHILD (this));
   g_return_if_fail (GTK_IS_WIDGET (widget));
 
   overlay = overlay_new (widget, xpos, ypos);
-  g_queue_push_tail (&self->overlays, &overlay->link);
-  gtk_widget_set_parent (widget, GTK_WIDGET (self));
+  g_queue_push_tail (&this->overlays, &overlay->link);
+  gtk_widget_set_parent (widget, GTK_WIDGET (this));
 }
 
 void
-gtk_text_view_child_move_overlay (GtkTextViewChild *self,
+gtk_text_view_child_move_overlay (GtkTextViewChild *this,
                                   GtkWidget        *widget,
                                   int               xpos,
                                   int               ypos)
 {
   Overlay *overlay;
 
-  g_return_if_fail (GTK_IS_TEXT_VIEW_CHILD (self));
+  g_return_if_fail (GTK_IS_TEXT_VIEW_CHILD (this));
   g_return_if_fail (GTK_IS_WIDGET (widget));
 
-  overlay = gtk_text_view_child_get_overlay (self, widget);
+  overlay = gtk_text_view_child_get_overlay (this, widget);
 
   if (overlay != NULL)
     {
       overlay->x = xpos;
       overlay->y = ypos;
 
-      if (gtk_widget_get_visible (GTK_WIDGET (self)) &&
+      if (gtk_widget_get_visible (GTK_WIDGET (this)) &&
           gtk_widget_get_visible (widget))
-        gtk_widget_queue_allocate (GTK_WIDGET (self));
+        gtk_widget_queue_allocate (GTK_WIDGET (this));
     }
 }
 
 GtkTextWindowType
-gtk_text_view_child_get_window_type (GtkTextViewChild *self)
+gtk_text_view_child_get_window_type (GtkTextViewChild *this)
 {
-  g_return_val_if_fail (GTK_IS_TEXT_VIEW_CHILD (self), 0);
+  g_return_val_if_fail (GTK_IS_TEXT_VIEW_CHILD (this), 0);
 
-  return self->window_type;
+  return this->window_type;
 }
 
 void
-gtk_text_view_child_set_offset (GtkTextViewChild *self,
+gtk_text_view_child_set_offset (GtkTextViewChild *this,
                                 int               xoffset,
                                 int               yoffset)
 {
   gboolean changed = FALSE;
 
-  g_return_if_fail (GTK_IS_TEXT_VIEW_CHILD (self));
+  g_return_if_fail (GTK_IS_TEXT_VIEW_CHILD (this));
 
-  if (self->window_type == GTK_TEXT_WINDOW_TEXT ||
-      self->window_type == GTK_TEXT_WINDOW_TOP ||
-      self->window_type == GTK_TEXT_WINDOW_BOTTOM)
+  if (this->window_type == GTK_TEXT_WINDOW_TEXT ||
+      this->window_type == GTK_TEXT_WINDOW_TOP ||
+      this->window_type == GTK_TEXT_WINDOW_BOTTOM)
     {
-      if (self->xoffset != xoffset)
+      if (this->xoffset != xoffset)
         {
-          self->xoffset = xoffset;
+          this->xoffset = xoffset;
           changed = TRUE;
         }
     }
 
-  if (self->window_type == GTK_TEXT_WINDOW_TEXT ||
-      self->window_type == GTK_TEXT_WINDOW_LEFT ||
-      self->window_type == GTK_TEXT_WINDOW_RIGHT)
+  if (this->window_type == GTK_TEXT_WINDOW_TEXT ||
+      this->window_type == GTK_TEXT_WINDOW_LEFT ||
+      this->window_type == GTK_TEXT_WINDOW_RIGHT)
     {
-      if (self->yoffset != yoffset)
+      if (this->yoffset != yoffset)
         {
-          self->yoffset = yoffset;
+          this->yoffset = yoffset;
           changed = TRUE;
         }
     }
 
   if (changed)
-    gtk_widget_queue_allocate (GTK_WIDGET (self));
+    gtk_widget_queue_allocate (GTK_WIDGET (this));
 }

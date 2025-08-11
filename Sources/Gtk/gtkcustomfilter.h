@@ -50,7 +50,7 @@ GtkCustomFilter *       gtk_custom_filter_new                   (GtkCustomFilter
                                                                  GDestroyNotify          user_destroy);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_custom_filter_set_filter_func       (GtkCustomFilter        *self,
+void                    gtk_custom_filter_set_filter_func       (GtkCustomFilter        *this,
                                                                  GtkCustomFilterFunc     match_func,
                                                                  gpointer                user_data,
                                                                  GDestroyNotify          user_destroy);

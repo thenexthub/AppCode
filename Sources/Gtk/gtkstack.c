@@ -267,7 +267,7 @@ gtk_stack_page_accessible_get_at_context (GtkAccessible *accessible)
 }
 
 static gboolean
-gtk_stack_page_accessible_get_platform_state (GtkAccessible              *self,
+gtk_stack_page_accessible_get_platform_state (GtkAccessible              *this,
                                               GtkAccessiblePlatformState  state)
 {
   return FALSE;
@@ -474,12 +474,12 @@ gtk_stack_page_set_property (GObject      *object,
 static void
 gtk_stack_page_constructed (GObject *gobject)
 {
-  GtkStackPage *self = GTK_STACK_PAGE (gobject);
+  GtkStackPage *this = GTK_STACK_PAGE (gobject);
 
-  if (G_UNLIKELY (self->widget == NULL))
+  if (G_UNLIKELY (this->widget == NULL))
     g_error ("GtkStackPage '%s' [%p] is missing a child widget",
-             self->name != NULL ? self->name : "<unnamed>",
-             self);
+             this->name != NULL ? this->name : "<unnamed>",
+             this);
 
   G_OBJECT_CLASS (gtk_stack_page_parent_class)->constructed (gobject);
 }
@@ -694,7 +694,7 @@ gtk_stack_pages_get_property (GObject    *object,
                               GValue     *value,
                               GParamSpec *pspec)
 {
-  GtkStackPages *self = GTK_STACK_PAGES (object);
+  GtkStackPages *this = GTK_STACK_PAGES (object);
 
   switch (prop_id)
     {
@@ -703,7 +703,7 @@ gtk_stack_pages_get_property (GObject    *object,
       break;
 
     case PAGES_PROP_N_ITEMS:
-      g_value_set_uint (value, gtk_stack_pages_get_n_items (G_LIST_MODEL (self)));
+      g_value_set_uint (value, gtk_stack_pages_get_n_items (G_LIST_MODEL (this)));
       break;
 
     default:
@@ -1875,16 +1875,16 @@ gtk_stack_get_child_by_name (GtkStack    *stack,
 
 /**
  * gtk_stack_page_get_child:
- * @self: a `GtkStackPage`
+ * @this: a `GtkStackPage`
  *
- * Returns the stack child to which @self belongs.
+ * Returns the stack child to which @this belongs.
  *
- * Returns: (transfer none): the child to which @self belongs
+ * Returns: (transfer none): the child to which @this belongs
  */
 GtkWidget *
-gtk_stack_page_get_child (GtkStackPage *self)
+gtk_stack_page_get_child (GtkStackPage *this)
 {
-  return self->widget;
+  return this->widget;
 }
 
 /**
@@ -2952,7 +2952,7 @@ gtk_stack_get_pages (GtkStack *stack)
 
 /**
  * gtk_stack_page_get_visible:
- * @self: a `GtkStackPage`
+ * @this: a `GtkStackPage`
  *
  * Returns whether @page is visible in its `GtkStack`.
  *
@@ -2962,42 +2962,42 @@ gtk_stack_get_pages (GtkStack *stack)
  * Returns: %TRUE if @page is visible
  */
 gboolean
-gtk_stack_page_get_visible (GtkStackPage *self)
+gtk_stack_page_get_visible (GtkStackPage *this)
 {
-  g_return_val_if_fail (GTK_IS_STACK_PAGE (self), FALSE);
+  g_return_val_if_fail (GTK_IS_STACK_PAGE (this), FALSE);
 
-  return self->visible;
+  return this->visible;
 }
 
 /**
  * gtk_stack_page_set_visible:
- * @self: a `GtkStackPage`
+ * @this: a `GtkStackPage`
  * @visible: The new property value
  *
  * Sets whether @page is visible in its `GtkStack`.
  */
 void
-gtk_stack_page_set_visible (GtkStackPage *self,
+gtk_stack_page_set_visible (GtkStackPage *this,
                             gboolean      visible)
 {
-  g_return_if_fail (GTK_IS_STACK_PAGE (self));
+  g_return_if_fail (GTK_IS_STACK_PAGE (this));
 
   visible = !!visible;
 
-  if (visible == self->visible)
+  if (visible == this->visible)
     return;
 
-  self->visible = visible;
+  this->visible = visible;
 
-  if (self->widget && gtk_widget_get_parent (self->widget))
-    update_child_visible (GTK_STACK (gtk_widget_get_parent (self->widget)), self);
+  if (this->widget && gtk_widget_get_parent (this->widget))
+    update_child_visible (GTK_STACK (gtk_widget_get_parent (this->widget)), this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), stack_page_props[CHILD_PROP_VISIBLE]);
+  g_object_notify_by_pspec (G_OBJECT (this), stack_page_props[CHILD_PROP_VISIBLE]);
 }
 
 /**
  * gtk_stack_page_get_needs_attention:
- * @self: a `GtkStackPage`
+ * @this: a `GtkStackPage`
  *
  * Returns whether the page is marked as “needs attention”.
  *
@@ -3005,111 +3005,111 @@ gtk_stack_page_set_visible (GtkStackPage *self,
  *   property.
  */
 gboolean
-gtk_stack_page_get_needs_attention (GtkStackPage *self)
+gtk_stack_page_get_needs_attention (GtkStackPage *this)
 {
-  return self->needs_attention;
+  return this->needs_attention;
 }
 
 /**
  * gtk_stack_page_set_needs_attention:
- * @self: a `GtkStackPage`
+ * @this: a `GtkStackPage`
  * @setting: the new value to set
  *
  * Sets whether the page is marked as “needs attention”.
  */
 void
-gtk_stack_page_set_needs_attention (GtkStackPage *self,
+gtk_stack_page_set_needs_attention (GtkStackPage *this,
                                     gboolean      setting)
 {
   setting = !!setting;
 
-  if (setting == self->needs_attention)
+  if (setting == this->needs_attention)
     return;
 
-  self->needs_attention = setting;
-  g_object_notify_by_pspec (G_OBJECT (self), stack_page_props[CHILD_PROP_NEEDS_ATTENTION]);
+  this->needs_attention = setting;
+  g_object_notify_by_pspec (G_OBJECT (this), stack_page_props[CHILD_PROP_NEEDS_ATTENTION]);
 }
 
 /**
  * gtk_stack_page_get_use_underline:
- * @self: a `GtkStackPage`
+ * @this: a `GtkStackPage`
  *
  * Gets whether underlines in the page title indicate mnemonics.
  *
  * Returns: The value of the [property@Gtk.StackPage:use-underline] property
  */
 gboolean
-gtk_stack_page_get_use_underline (GtkStackPage *self)
+gtk_stack_page_get_use_underline (GtkStackPage *this)
 {
-  return self->use_underline;
+  return this->use_underline;
 }
 
 /**
  * gtk_stack_page_set_use_underline:
- * @self: a `GtkStackPage`
+ * @this: a `GtkStackPage`
  * @setting: the new value to set
  *
  * Sets whether underlines in the page title indicate mnemonics.
  */
 void
-gtk_stack_page_set_use_underline (GtkStackPage *self,
+gtk_stack_page_set_use_underline (GtkStackPage *this,
                                   gboolean      setting)
 {
   setting = !!setting;
 
-  if (setting == self->use_underline)
+  if (setting == this->use_underline)
     return;
 
-  self->use_underline = setting;
-  g_object_notify_by_pspec (G_OBJECT (self), stack_page_props[CHILD_PROP_USE_UNDERLINE]);
+  this->use_underline = setting;
+  g_object_notify_by_pspec (G_OBJECT (this), stack_page_props[CHILD_PROP_USE_UNDERLINE]);
 }
 
 
 /**
  * gtk_stack_page_get_name:
- * @self: a `GtkStackPage`
+ * @this: a `GtkStackPage`
  *
  * Returns the name of the page.
  *
  * Returns: (nullable): The value of the [property@Gtk.StackPage:name] property
  */
 const char *
-gtk_stack_page_get_name (GtkStackPage *self)
+gtk_stack_page_get_name (GtkStackPage *this)
 {
-  g_return_val_if_fail (GTK_IS_STACK_PAGE (self), NULL);
+  g_return_val_if_fail (GTK_IS_STACK_PAGE (this), NULL);
 
-  return self->name;
+  return this->name;
 }
 
 /**
  * gtk_stack_page_set_name:
- * @self: a `GtkStackPage`
+ * @this: a `GtkStackPage`
  * @setting: (transfer none): the new value to set
  *
  * Sets the name of the page.
  */
 void
-gtk_stack_page_set_name (GtkStackPage *self,
+gtk_stack_page_set_name (GtkStackPage *this,
                          const char   *setting)
 {
   GtkStack *stack = NULL;
   GtkStackPrivate *priv = NULL;
 
-  g_return_if_fail (GTK_IS_STACK_PAGE (self));
+  g_return_if_fail (GTK_IS_STACK_PAGE (this));
 
-  if (self->widget &&
-      gtk_widget_get_parent (self->widget) &&
-      GTK_IS_STACK (gtk_widget_get_parent (self->widget)))
+  if (this->widget &&
+      gtk_widget_get_parent (this->widget) &&
+      GTK_IS_STACK (gtk_widget_get_parent (this->widget)))
     {
       guint idx;
 
-      stack = GTK_STACK (gtk_widget_get_parent (self->widget));
+      stack = GTK_STACK (gtk_widget_get_parent (this->widget));
       priv = gtk_stack_get_instance_private (stack);
 
       for (idx = 0; idx < priv->children->len; idx++)
         {
           GtkStackPage *info2 = g_ptr_array_index (priv->children, idx);
-          if (self == info2)
+          if (this == info2)
             continue;
 
           if (g_strcmp0 (info2->name, setting) == 0)
@@ -3120,92 +3120,92 @@ gtk_stack_page_set_name (GtkStackPage *self,
         }
     }
 
-  if (setting == self->name)
+  if (setting == this->name)
     return;
 
-  g_free (self->name);
-  self->name = g_strdup (setting);
-  g_object_notify_by_pspec (G_OBJECT (self), stack_page_props[CHILD_PROP_NAME]);
+  g_free (this->name);
+  this->name = g_strdup (setting);
+  g_object_notify_by_pspec (G_OBJECT (this), stack_page_props[CHILD_PROP_NAME]);
 
-  if (priv && priv->visible_child == self)
+  if (priv && priv->visible_child == this)
     g_object_notify_by_pspec (G_OBJECT (stack),
                               stack_props[PROP_VISIBLE_CHILD_NAME]);
 }
 
 /**
  * gtk_stack_page_get_title:
- * @self: a `GtkStackPage`
+ * @this: a `GtkStackPage`
  *
  * Gets the page title.
  *
  * Returns: (nullable): The value of the [property@Gtk.StackPage:title] property
  */
 const char *
-gtk_stack_page_get_title (GtkStackPage *self)
+gtk_stack_page_get_title (GtkStackPage *this)
 {
-  g_return_val_if_fail (GTK_IS_STACK_PAGE (self), NULL);
+  g_return_val_if_fail (GTK_IS_STACK_PAGE (this), NULL);
 
-  return self->title;
+  return this->title;
 }
 
 /**
  * gtk_stack_page_set_title:
- * @self: a `GtkStackPage`
+ * @this: a `GtkStackPage`
  * @setting: (transfer none): the new value to set
  *
  * Sets the page title.
  */
 void
-gtk_stack_page_set_title (GtkStackPage *self,
+gtk_stack_page_set_title (GtkStackPage *this,
                           const char   *setting)
 {
-  g_return_if_fail (GTK_IS_STACK_PAGE (self));
+  g_return_if_fail (GTK_IS_STACK_PAGE (this));
 
-  if (setting == self->title)
+  if (setting == this->title)
     return;
 
-  g_free (self->title);
-  self->title = g_strdup (setting);
-  g_object_notify_by_pspec (G_OBJECT (self), stack_page_props[CHILD_PROP_TITLE]);
+  g_free (this->title);
+  this->title = g_strdup (setting);
+  g_object_notify_by_pspec (G_OBJECT (this), stack_page_props[CHILD_PROP_TITLE]);
 
-  gtk_accessible_update_property (GTK_ACCESSIBLE (self),
-                                  GTK_ACCESSIBLE_PROPERTY_LABEL, self->title,
+  gtk_accessible_update_property (GTK_ACCESSIBLE (this),
+                                  GTK_ACCESSIBLE_PROPERTY_LABEL, this->title,
                                   -1);
 }
 
 /**
  * gtk_stack_page_get_icon_name:
- * @self: a `GtkStackPage`
+ * @this: a `GtkStackPage`
  *
  * Returns the icon name of the page.
  *
  * Returns: (nullable): The value of the [property@Gtk.StackPage:icon-name] property
  */
 const char *
-gtk_stack_page_get_icon_name (GtkStackPage *self)
+gtk_stack_page_get_icon_name (GtkStackPage *this)
 {
-  g_return_val_if_fail (GTK_IS_STACK_PAGE (self), NULL);
+  g_return_val_if_fail (GTK_IS_STACK_PAGE (this), NULL);
 
-  return self->icon_name;
+  return this->icon_name;
 }
 
 /**
  * gtk_stack_page_set_icon_name:
- * @self: a `GtkStackPage`
+ * @this: a `GtkStackPage`
  * @setting: (transfer none): the new value to set
  *
  * Sets the icon name of the page.
  */
 void
-gtk_stack_page_set_icon_name (GtkStackPage *self,
+gtk_stack_page_set_icon_name (GtkStackPage *this,
                               const char   *setting)
 {
-  g_return_if_fail (GTK_IS_STACK_PAGE (self));
+  g_return_if_fail (GTK_IS_STACK_PAGE (this));
 
-  if (setting == self->icon_name)
+  if (setting == this->icon_name)
     return;
 
-  g_free (self->icon_name);
-  self->icon_name = g_strdup (setting);
-  g_object_notify_by_pspec (G_OBJECT (self), stack_page_props[CHILD_PROP_ICON_NAME]);
+  g_free (this->icon_name);
+  this->icon_name = g_strdup (setting);
+  g_object_notify_by_pspec (G_OBJECT (this), stack_page_props[CHILD_PROP_ICON_NAME]);
 }

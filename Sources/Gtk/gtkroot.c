@@ -51,26 +51,26 @@ G_DEFINE_INTERFACE_WITH_CODE (GtkRoot, gtk_root, GTK_TYPE_WIDGET,
                               g_type_interface_add_prerequisite (g_define_type_id, GTK_TYPE_NATIVE))
 
 static GdkDisplay *
-gtk_root_default_get_display (GtkRoot *self)
+gtk_root_default_get_display (GtkRoot *this)
 {
   return gdk_display_get_default ();
 }
 
 
 static GtkConstraintSolver *
-gtk_root_default_get_constraint_solver (GtkRoot *self)
+gtk_root_default_get_constraint_solver (GtkRoot *this)
 {
   return NULL;
 }
 
 static GtkWidget *
-gtk_root_default_get_focus (GtkRoot *self)
+gtk_root_default_get_focus (GtkRoot *this)
 {
   return NULL;
 }
 
 static void
-gtk_root_default_set_focus (GtkRoot   *self,
+gtk_root_default_set_focus (GtkRoot   *this,
                             GtkWidget *focus)
 {
 }
@@ -86,37 +86,37 @@ gtk_root_default_init (GtkRootInterface *iface)
 
 /**
  * gtk_root_get_display:
- * @self: a `GtkRoot`
+ * @this: a `GtkRoot`
  *
  * Returns the display that this `GtkRoot` is on.
  *
  * Returns: (transfer none): the display of @root
  */
 GdkDisplay *
-gtk_root_get_display (GtkRoot *self)
+gtk_root_get_display (GtkRoot *this)
 {
   GtkRootInterface *iface;
 
-  g_return_val_if_fail (GTK_IS_ROOT (self), NULL);
+  g_return_val_if_fail (GTK_IS_ROOT (this), NULL);
 
-  iface = GTK_ROOT_GET_IFACE (self);
-  return iface->get_display (self);
+  iface = GTK_ROOT_GET_IFACE (this);
+  return iface->get_display (this);
 }
 
 GtkConstraintSolver *
-gtk_root_get_constraint_solver (GtkRoot *self)
+gtk_root_get_constraint_solver (GtkRoot *this)
 {
   GtkRootInterface *iface;
 
-  g_return_val_if_fail (GTK_IS_ROOT (self), NULL);
+  g_return_val_if_fail (GTK_IS_ROOT (this), NULL);
 
-  iface = GTK_ROOT_GET_IFACE (self);
-  return iface->get_constraint_solver (self);
+  iface = GTK_ROOT_GET_IFACE (this);
+  return iface->get_constraint_solver (this);
 }
 
 /**
  * gtk_root_set_focus:
- * @self: a `GtkRoot`
+ * @this: a `GtkRoot`
  * @focus: (nullable): widget to be the new focus widget, or %NULL
  *    to unset the focus widget
  *
@@ -130,18 +130,18 @@ gtk_root_get_constraint_solver (GtkRoot *self)
  * this function.
  */
 void
-gtk_root_set_focus (GtkRoot   *self,
+gtk_root_set_focus (GtkRoot   *this,
                     GtkWidget *focus)
 {
-  g_return_if_fail (GTK_IS_ROOT (self));
+  g_return_if_fail (GTK_IS_ROOT (this));
   g_return_if_fail (focus == NULL || GTK_IS_WIDGET (focus));
 
-  GTK_ROOT_GET_IFACE (self)->set_focus (self, focus);
+  GTK_ROOT_GET_IFACE (this)->set_focus (this, focus);
 }
 
 /**
  * gtk_root_get_focus:
- * @self: a `GtkRoot`
+ * @this: a `GtkRoot`
  *
  * Retrieves the current focused widget within the root.
  *
@@ -153,26 +153,26 @@ gtk_root_set_focus (GtkRoot   *self,
  * Returns: (nullable) (transfer none): the currently focused widget
  */
 GtkWidget *
-gtk_root_get_focus (GtkRoot *self)
+gtk_root_get_focus (GtkRoot *this)
 {
-  g_return_val_if_fail (GTK_IS_ROOT (self), NULL);
+  g_return_val_if_fail (GTK_IS_ROOT (this), NULL);
 
-  return GTK_ROOT_GET_IFACE (self)->get_focus (self);
+  return GTK_ROOT_GET_IFACE (this)->get_focus (this);
 }
 
 void
-gtk_root_start_layout (GtkRoot *self)
+gtk_root_start_layout (GtkRoot *this)
 {
-  gtk_native_queue_relayout (GTK_NATIVE (self));
+  gtk_native_queue_relayout (GTK_NATIVE (this));
 }
 
 void
-gtk_root_stop_layout (GtkRoot *self)
+gtk_root_stop_layout (GtkRoot *this)
 {
 }
 
 void
-gtk_root_queue_restyle (GtkRoot *self)
+gtk_root_queue_restyle (GtkRoot *this)
 {
-  gtk_root_start_layout (self);
+  gtk_root_start_layout (this);
 }

@@ -34,23 +34,23 @@ struct _GdkFractionalScale
 #define GDK_FRACTIONAL_SCALE_INIT_INT(scale) GDK_FRACTIONAL_SCALE_INIT (scale * GDK_FRACTIONAL_SCALE_FACTOR)
 
 static inline int
-gdk_fractional_scale_to_int (const GdkFractionalScale *self)
+gdk_fractional_scale_to_int (const GdkFractionalScale *this)
 {
   /* ceil() */
-  return (self->scale + GDK_FRACTIONAL_SCALE_FACTOR - 1) / GDK_FRACTIONAL_SCALE_FACTOR;
+  return (this->scale + GDK_FRACTIONAL_SCALE_FACTOR - 1) / GDK_FRACTIONAL_SCALE_FACTOR;
 }
 
 static inline double
-gdk_fractional_scale_to_double (const GdkFractionalScale *self)
+gdk_fractional_scale_to_double (const GdkFractionalScale *this)
 {
-  return (double) self->scale / GDK_FRACTIONAL_SCALE_FACTOR;
+  return (double) this->scale / GDK_FRACTIONAL_SCALE_FACTOR;
 }
 
 static inline int
-gdk_fractional_scale_scale (const GdkFractionalScale *self,
+gdk_fractional_scale_scale (const GdkFractionalScale *this,
                             int                       value)
 {
-  return (value * self->scale + GDK_FRACTIONAL_SCALE_FACTOR / 2) / GDK_FRACTIONAL_SCALE_FACTOR;
+  return (value * this->scale + GDK_FRACTIONAL_SCALE_FACTOR / 2) / GDK_FRACTIONAL_SCALE_FACTOR;
 }
 
 static inline gboolean

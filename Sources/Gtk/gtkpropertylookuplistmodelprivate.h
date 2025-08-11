@@ -39,9 +39,9 @@ GType                           gtk_property_lookup_list_model_get_type         
 GtkPropertyLookupListModel *    gtk_property_lookup_list_model_new              (GType                           item_type,
                                                                                  const char                     *property_name);
 
-void                            gtk_property_lookup_list_model_set_object       (GtkPropertyLookupListModel     *self,
+void                            gtk_property_lookup_list_model_set_object       (GtkPropertyLookupListModel     *this,
                                                                                  gpointer                        object);
-gpointer                        gtk_property_lookup_list_model_get_object       (GtkPropertyLookupListModel     *self);
+gpointer                        gtk_property_lookup_list_model_get_object       (GtkPropertyLookupListModel     *this);
 
 
 G_END_DECLS

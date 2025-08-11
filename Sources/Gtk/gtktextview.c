@@ -816,9 +816,9 @@ static void
 gtk_text_view_drop_scroll_motion (GtkDropControllerMotion *motion,
                                   double                   x,
                                   double                   y,
-                                  GtkTextView             *self)
+                                  GtkTextView             *this)
 {
-  GtkTextViewPrivate *priv = self->priv;
+  GtkTextViewPrivate *priv = this->priv;
   GdkRectangle target_rect;
 
   target_rect = priv->text_window->allocation;
@@ -841,16 +841,16 @@ gtk_text_view_drop_scroll_motion (GtkDropControllerMotion *motion,
 
   if (!priv->scroll_timeout)
   {
-    priv->scroll_timeout = g_timeout_add (100, gtk_text_view_drop_motion_scroll_timeout, self);
+    priv->scroll_timeout = g_timeout_add (100, gtk_text_view_drop_motion_scroll_timeout, this);
     gdk_source_set_static_name_by_id (priv->scroll_timeout, "[gtk] gtk_text_view_drop_motion_scroll_timeout");
   }
 }
 
 static void
 gtk_text_view_drop_scroll_leave (GtkDropControllerMotion *motion,
-                                 GtkTextView             *self)
+                                 GtkTextView             *this)
 {
-  GtkTextViewPrivate *priv = self->priv;
+  GtkTextViewPrivate *priv = this->priv;
 
   priv->dnd_x = priv->dnd_y = -1;
   g_clear_handle_id (&priv->scroll_timeout, g_source_remove);
@@ -891,13 +891,13 @@ gtk_text_view_notify (GObject    *object,
 static void
 selection_style_changed_cb (GtkCssNode        *node,
                             GtkCssStyleChange *change,
-                            GtkTextView       *self)
+                            GtkTextView       *this)
 {
   if (gtk_css_style_change_affects (change, GTK_CSS_AFFECTS_REDRAW))
     {
-      GtkTextViewPrivate *priv = self->priv;
+      GtkTextViewPrivate *priv = this->priv;
       priv->selection_style_changed = TRUE;
-      gtk_widget_queue_draw (GTK_WIDGET (self));
+      gtk_widget_queue_draw (GTK_WIDGET (this));
     }
 }
 
@@ -6397,17 +6397,17 @@ static gboolean blink_cb (GtkWidget     *widget,
 
 
 static void
-add_blink_timeout (GtkTextView *self,
+add_blink_timeout (GtkTextView *this,
                    gboolean     delay)
 {
-  GtkTextViewPrivate *priv = self->priv;
+  GtkTextViewPrivate *priv = this->priv;
   BlinkData *data;
   int blink_time;
 
   priv->blink_start_time = g_get_monotonic_time ();
   priv->cursor_alpha = 1.0;
 
-  blink_time = get_cursor_time (self);
+  blink_time = get_cursor_time (this);
 
   data = g_new (BlinkData, 1);
   data->start = priv->blink_start_time;
@@ -6415,20 +6415,20 @@ add_blink_timeout (GtkTextView *self,
     data->start += blink_time * 1000 / 2;
   data->end = data->start + blink_time * 1000;
 
-  priv->blink_tick = gtk_widget_add_tick_callback (GTK_WIDGET (self),
+  priv->blink_tick = gtk_widget_add_tick_callback (GTK_WIDGET (this),
                                                    blink_cb,
                                                    data,
                                                    g_free);
 }
 
 static void
-remove_blink_timeout (GtkTextView *self)
+remove_blink_timeout (GtkTextView *this)
 {
-  GtkTextViewPrivate *priv = self->priv;
+  GtkTextViewPrivate *priv = this->priv;
 
   if (priv->blink_tick)
     {
-      gtk_widget_remove_tick_callback (GTK_WIDGET (self), priv->blink_tick);
+      gtk_widget_remove_tick_callback (GTK_WIDGET (this), priv->blink_tick);
       priv->blink_tick = 0;
     }
 }
@@ -8433,48 +8433,48 @@ gtk_text_view_im_context_filter_keypress (GtkTextView *text_view,
 
 static void
 dnd_finished_cb (GdkDrag     *drag,
-                 GtkTextView *self)
+                 GtkTextView *this)
 {
-  GtkTextBuffer *buffer = self->priv->buffer;
+  GtkTextBuffer *buffer = this->priv->buffer;
 
-  if (self->priv->dnd_drag_begin_mark)
+  if (this->priv->dnd_drag_begin_mark)
     {
       if (gdk_drag_get_selected_action (drag) == GDK_ACTION_MOVE)
         {
             {
               GtkTextIter begin, end;
 
-              gtk_text_buffer_get_iter_at_mark (buffer, &begin, self->priv->dnd_drag_begin_mark);
-              gtk_text_buffer_get_iter_at_mark (buffer, &end, self->priv->dnd_drag_end_mark);
+              gtk_text_buffer_get_iter_at_mark (buffer, &begin, this->priv->dnd_drag_begin_mark);
+              gtk_text_buffer_get_iter_at_mark (buffer, &end, this->priv->dnd_drag_end_mark);
               gtk_text_buffer_delete (buffer, &begin, &end);
             }
         }
 
-      gtk_text_buffer_delete_mark (buffer, self->priv->dnd_drag_begin_mark);
-      gtk_text_buffer_delete_mark (buffer, self->priv->dnd_drag_end_mark);
-      self->priv->dnd_drag_begin_mark = NULL;
-      self->priv->dnd_drag_end_mark = NULL;
+      gtk_text_buffer_delete_mark (buffer, this->priv->dnd_drag_begin_mark);
+      gtk_text_buffer_delete_mark (buffer, this->priv->dnd_drag_end_mark);
+      this->priv->dnd_drag_begin_mark = NULL;
+      this->priv->dnd_drag_end_mark = NULL;
     }
 
-  self->priv->drag = NULL;
+  this->priv->drag = NULL;
 }
 
 static void
 dnd_cancel_cb (GdkDrag *drag,
                GdkDragCancelReason reason,
-               GtkTextView *self)
+               GtkTextView *this)
 {
-  GtkTextBuffer *buffer = self->priv->buffer;
+  GtkTextBuffer *buffer = this->priv->buffer;
 
-  if (self->priv->dnd_drag_begin_mark)
+  if (this->priv->dnd_drag_begin_mark)
     {
-      gtk_text_buffer_delete_mark (buffer, self->priv->dnd_drag_begin_mark);
-      gtk_text_buffer_delete_mark (buffer, self->priv->dnd_drag_end_mark);
-      self->priv->dnd_drag_begin_mark = NULL;
-      self->priv->dnd_drag_end_mark = NULL;
+      gtk_text_buffer_delete_mark (buffer, this->priv->dnd_drag_begin_mark);
+      gtk_text_buffer_delete_mark (buffer, this->priv->dnd_drag_end_mark);
+      this->priv->dnd_drag_begin_mark = NULL;
+      this->priv->dnd_drag_end_mark = NULL;
     }
 
-  self->priv->drag = NULL;
+  this->priv->drag = NULL;
 }
 
 static void
@@ -8941,9 +8941,9 @@ gtk_text_view_commit_text (GtkTextView   *text_view,
 
 static void
 gtk_text_view_preedit_start_handler (GtkIMContext *context,
-                                     GtkTextView  *self)
+                                     GtkTextView  *this)
 {
-  gtk_text_buffer_delete_selection (self->priv->buffer, TRUE, self->priv->editable);
+  gtk_text_buffer_delete_selection (this->priv->buffer, TRUE, this->priv->editable);
 }
 
 static void
@@ -9252,9 +9252,9 @@ gtk_text_view_activate_clipboard_cut (GtkWidget  *widget,
                                       const char *action_name,
                                       GVariant   *parameter)
 {
-  GtkTextView *self = GTK_TEXT_VIEW (widget);
-  g_signal_emit_by_name (self, "cut-clipboard");
-  hide_selection_bubble (self);
+  GtkTextView *this = GTK_TEXT_VIEW (widget);
+  g_signal_emit_by_name (this, "cut-clipboard");
+  hide_selection_bubble (this);
 }
 
 static void
@@ -9262,9 +9262,9 @@ gtk_text_view_activate_clipboard_copy (GtkWidget  *widget,
                                        const char *action_name,
                                        GVariant   *parameter)
 {
-  GtkTextView *self = GTK_TEXT_VIEW (widget);
-  g_signal_emit_by_name (self, "copy-clipboard");
-  hide_selection_bubble (self);
+  GtkTextView *this = GTK_TEXT_VIEW (widget);
+  g_signal_emit_by_name (this, "copy-clipboard");
+  hide_selection_bubble (this);
 }
 
 static void
@@ -9272,9 +9272,9 @@ gtk_text_view_activate_clipboard_paste (GtkWidget  *widget,
                                         const char *action_name,
                                         GVariant   *parameter)
 {
-  GtkTextView *self = GTK_TEXT_VIEW (widget);
-  g_signal_emit_by_name (self, "paste-clipboard");
-  hide_selection_bubble (self);
+  GtkTextView *this = GTK_TEXT_VIEW (widget);
+  g_signal_emit_by_name (this, "paste-clipboard");
+  hide_selection_bubble (this);
 }
 
 static void
@@ -10468,11 +10468,11 @@ gtk_text_view_get_monospace (GtkTextView *text_view)
 static void
 emoji_picked (GtkEmojiChooser *chooser,
               const char      *text,
-              GtkTextView     *self)
+              GtkTextView     *this)
 {
   GtkTextBuffer *buffer;
 
-  buffer = get_buffer (self);
+  buffer = get_buffer (this);
 
   gtk_text_buffer_begin_user_action (buffer);
   gtk_text_buffer_delete_selection (buffer, TRUE, TRUE);
@@ -10704,11 +10704,11 @@ quantize_value (GtkAdjustment *adjustment,
 /* {{{ GtkAccessibleText implementation */
 
 static GBytes *
-gtk_text_view_accessible_text_get_contents (GtkAccessibleText *self,
+gtk_text_view_accessible_text_get_contents (GtkAccessibleText *this,
                                             unsigned int       start,
                                             unsigned int       end)
 {
-  GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (self));
+  GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (this));
   GtkTextIter start_iter, end_iter;
   char *string;
 
@@ -10721,13 +10721,13 @@ gtk_text_view_accessible_text_get_contents (GtkAccessibleText *self,
 }
 
 static GBytes *
-gtk_text_view_accessible_text_get_contents_at (GtkAccessibleText            *self,
+gtk_text_view_accessible_text_get_contents_at (GtkAccessibleText            *this,
                                                unsigned int                  offset,
                                                GtkAccessibleTextGranularity  granularity,
                                                unsigned int                 *start,
                                                unsigned int                 *end)
 {
-  GtkTextViewPrivate *priv = GTK_TEXT_VIEW (self)->priv;
+  GtkTextViewPrivate *priv = GTK_TEXT_VIEW (this)->priv;
   GtkTextLayout *text_layout = priv->layout;
   GtkTextBuffer *text_buffer;
   GtkTextIter iter;
@@ -10754,9 +10754,9 @@ gtk_text_view_accessible_text_get_contents_at (GtkAccessibleText            *sel
 }
 
 static unsigned int
-gtk_text_view_accessible_text_get_caret_position (GtkAccessibleText *self)
+gtk_text_view_accessible_text_get_caret_position (GtkAccessibleText *this)
 {
-  GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (self));
+  GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (this));
   GtkTextMark *insert;
   GtkTextIter iter;
 
@@ -10767,11 +10767,11 @@ gtk_text_view_accessible_text_get_caret_position (GtkAccessibleText *self)
 }
 
 static gboolean
-gtk_text_view_accessible_text_get_selection (GtkAccessibleText       *self,
+gtk_text_view_accessible_text_get_selection (GtkAccessibleText       *this,
                                              gsize                   *n_ranges,
                                              GtkAccessibleTextRange **ranges)
 {
-  GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (self));
+  GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (this));
   GtkTextIter start_iter, end_iter;
   int start, end;
 
@@ -10794,14 +10794,14 @@ gtk_text_view_accessible_text_get_selection (GtkAccessibleText       *self,
 }
 
 static gboolean
-gtk_text_view_accessible_text_get_attributes (GtkAccessibleText        *self,
+gtk_text_view_accessible_text_get_attributes (GtkAccessibleText        *this,
                                               unsigned int              offset,
                                               gsize                    *n_ranges,
                                               GtkAccessibleTextRange  **ranges,
                                               char                   ***attribute_names,
                                               char                   ***attribute_values)
 {
-  GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (self));
+  GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (this));
   GHashTable *attrs = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
   GHashTableIter iter;
   gpointer key, value;
@@ -10931,7 +10931,7 @@ gtk_text_view_add_default_attributes (GtkTextView *view,
 
 /*< private >
  * gtk_text_view_get_attributes_run:
- * @self: a text view
+ * @this: a text view
  * @offset: the offset, in characters
  * @include_defaults: whether the default attributes should be included
  * @start: (out): the beginning of the run, in characters
@@ -10946,17 +10946,17 @@ gtk_text_view_add_default_attributes (GtkTextView *view,
  *   text attributes
  */
 GHashTable *
-gtk_text_view_get_attributes_run (GtkTextView *self,
+gtk_text_view_get_attributes_run (GtkTextView *this,
                                   int          offset,
                                   gboolean     include_defaults,
                                   int         *start,
                                   int         *end)
 {
-  GtkTextBuffer *buffer = gtk_text_view_get_buffer (self);
+  GtkTextBuffer *buffer = gtk_text_view_get_buffer (this);
   GHashTable *attrs = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 
   if (include_defaults)
-    gtk_text_view_add_default_attributes (self, attrs);
+    gtk_text_view_add_default_attributes (this, attrs);
 
   gtk_text_buffer_add_run_attributes (buffer, offset, attrs, start, end);
 
@@ -10964,7 +10964,7 @@ gtk_text_view_get_attributes_run (GtkTextView *self,
 }
 
 static void
-gtk_text_view_accessible_text_get_default_attributes (GtkAccessibleText   *self,
+gtk_text_view_accessible_text_get_default_attributes (GtkAccessibleText   *this,
                                                       char              ***attribute_names,
                                                       char              ***attribute_values)
 {
@@ -10973,7 +10973,7 @@ gtk_text_view_accessible_text_get_default_attributes (GtkAccessibleText   *self,
   gpointer key, value;
   guint n_attrs, i;
 
-  gtk_text_view_add_default_attributes (GTK_TEXT_VIEW (self), attrs);
+  gtk_text_view_add_default_attributes (GTK_TEXT_VIEW (this), attrs);
 
   n_attrs = g_hash_table_size (attrs);
   if (n_attrs == 0)
@@ -11004,7 +11004,7 @@ gtk_text_view_accessible_text_get_default_attributes (GtkAccessibleText   *self,
 }
 
 static gboolean
-gtk_text_view_accessible_text_get_extents (GtkAccessibleText *self,
+gtk_text_view_accessible_text_get_extents (GtkAccessibleText *this,
                                            unsigned int       start,
                                            unsigned int       end,
                                            graphene_rect_t   *extents)
@@ -11014,20 +11014,20 @@ gtk_text_view_accessible_text_get_extents (GtkAccessibleText *self,
   cairo_region_t *region;
   GdkRectangle rect;
 
-  buffer = get_buffer (GTK_TEXT_VIEW (self));
+  buffer = get_buffer (GTK_TEXT_VIEW (this));
   gtk_text_buffer_get_iter_at_offset (buffer, &start_iter, start);
   gtk_text_buffer_get_iter_at_offset (buffer, &end_iter, end);
 
   region = cairo_region_create ();
   do
     {
-      gtk_text_view_get_iter_location (GTK_TEXT_VIEW (self), &start_iter, &rect);
+      gtk_text_view_get_iter_location (GTK_TEXT_VIEW (this), &start_iter, &rect);
       cairo_region_union_rectangle (region, &rect);
 
       gtk_text_iter_forward_to_line_end (&start_iter);
       gtk_text_iter_order (&start_iter, &end_iter);
 
-      gtk_text_view_get_iter_location (GTK_TEXT_VIEW (self), &end_iter, &rect);
+      gtk_text_view_get_iter_location (GTK_TEXT_VIEW (this), &end_iter, &rect);
       cairo_region_union_rectangle (region, &rect);
 
       gtk_text_iter_forward_line (&start_iter);
@@ -11037,11 +11037,11 @@ gtk_text_view_accessible_text_get_extents (GtkAccessibleText *self,
   cairo_region_get_extents (region, &rect);
   cairo_region_destroy (region);
 
-  gtk_text_view_buffer_to_window_coords (GTK_TEXT_VIEW (self),
+  gtk_text_view_buffer_to_window_coords (GTK_TEXT_VIEW (this),
                                          GTK_TEXT_WINDOW_TEXT,
                                          rect.x, rect.y,
                                          &rect.x, &rect.y);
-  _text_window_to_widget_coords (GTK_TEXT_VIEW (self), &rect.x, &rect.y);
+  _text_window_to_widget_coords (GTK_TEXT_VIEW (this), &rect.x, &rect.y);
 
   extents->origin.x = rect.x;
   extents->origin.y = rect.y;
@@ -11052,11 +11052,11 @@ gtk_text_view_accessible_text_get_extents (GtkAccessibleText *self,
 }
 
 static gboolean
-gtk_text_view_accessible_text_get_offset (GtkAccessibleText      *self,
+gtk_text_view_accessible_text_get_offset (GtkAccessibleText      *this,
                                           const graphene_point_t *point,
                                           unsigned int           *offset)
 {
-  GtkTextView *text_view = GTK_TEXT_VIEW (self);
+  GtkTextView *text_view = GTK_TEXT_VIEW (this);
   int x, y;
   GtkTextIter iter;
 

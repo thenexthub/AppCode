@@ -40,17 +40,17 @@ struct _GtkSidebarRowClass
 GType      gtk_sidebar_row_get_type   (void) G_GNUC_CONST;
 
 GtkSidebarRow *gtk_sidebar_row_new    (void);
-GtkSidebarRow *gtk_sidebar_row_clone  (GtkSidebarRow *self);
+GtkSidebarRow *gtk_sidebar_row_clone  (GtkSidebarRow *this);
 
 /* Use these methods instead of gtk_widget_hide/show to use an animation */
-void           gtk_sidebar_row_hide   (GtkSidebarRow *self,
+void           gtk_sidebar_row_hide   (GtkSidebarRow *this,
                                        gboolean       immediate);
-void           gtk_sidebar_row_reveal (GtkSidebarRow *self);
+void           gtk_sidebar_row_reveal (GtkSidebarRow *this);
 
-GtkWidget     *gtk_sidebar_row_get_eject_button (GtkSidebarRow *self);
-void           gtk_sidebar_row_set_start_icon   (GtkSidebarRow *self,
+GtkWidget     *gtk_sidebar_row_get_eject_button (GtkSidebarRow *this);
+void           gtk_sidebar_row_set_start_icon   (GtkSidebarRow *this,
                                                  GIcon         *icon);
-void           gtk_sidebar_row_set_end_icon     (GtkSidebarRow *self,
+void           gtk_sidebar_row_set_end_icon     (GtkSidebarRow *this,
                                                  GIcon         *icon);
 void           gtk_sidebar_row_set_busy         (GtkSidebarRow *row,
                                                  gboolean       is_busy);

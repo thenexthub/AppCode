@@ -44,20 +44,20 @@ gtk_custom_sorter_compare (GtkSorter *sorter,
                            gpointer   item1,
                            gpointer   item2)
 {
-  GtkCustomSorter *self = GTK_CUSTOM_SORTER (sorter);
+  GtkCustomSorter *this = GTK_CUSTOM_SORTER (sorter);
 
-  if (!self->sort_func)
+  if (!this->sort_func)
     return GTK_ORDERING_EQUAL;
 
-  return gtk_ordering_from_cmpfunc (self->sort_func (item1, item2, self->user_data));
+  return gtk_ordering_from_cmpfunc (this->sort_func (item1, item2, this->user_data));
 }
 
 static GtkSorterOrder
 gtk_custom_sorter_get_order (GtkSorter *sorter)
 {
-  GtkCustomSorter *self = GTK_CUSTOM_SORTER (sorter);
+  GtkCustomSorter *this = GTK_CUSTOM_SORTER (sorter);
 
-  if (!self->sort_func)
+  if (!this->sort_func)
     return GTK_SORTER_ORDER_NONE;
 
   return GTK_SORTER_ORDER_PARTIAL;
@@ -66,14 +66,14 @@ gtk_custom_sorter_get_order (GtkSorter *sorter)
 static void
 gtk_custom_sorter_dispose (GObject *object)
 {
-  GtkCustomSorter *self = GTK_CUSTOM_SORTER (object);
+  GtkCustomSorter *this = GTK_CUSTOM_SORTER (object);
 
-  if (self->user_destroy)
-    self->user_destroy (self->user_data);
+  if (this->user_destroy)
+    this->user_destroy (this->user_data);
 
-  self->sort_func = NULL;
-  self->user_destroy = NULL;
-  self->user_data = NULL;
+  this->sort_func = NULL;
+  this->user_destroy = NULL;
+  this->user_data = NULL;
 
   G_OBJECT_CLASS (gtk_custom_sorter_parent_class)->dispose (object);
 }
@@ -91,7 +91,7 @@ gtk_custom_sorter_class_init (GtkCustomSorterClass *class)
 }
 
 static void
-gtk_custom_sorter_init (GtkCustomSorter *self)
+gtk_custom_sorter_init (GtkCustomSorter *this)
 {
 }
 
@@ -124,7 +124,7 @@ gtk_custom_sorter_new (GCompareDataFunc sort_func,
 
 /**
  * gtk_custom_sorter_set_sort_func:
- * @self: a `GtkCustomSorter`
+ * @this: a `GtkCustomSorter`
  * @sort_func: (nullable): function to sort items
  * @user_data: (nullable): user data to pass to @match_func
  * @user_destroy: destroy notify for @user_data
@@ -133,27 +133,27 @@ gtk_custom_sorter_new (GCompareDataFunc sort_func,
  *
  * If @sort_func is %NULL, all items are considered equal.
  *
- * If the sort func changes its sorting behavior,
+ * If the sort fn changes its sorting behavior,
  * gtk_sorter_changed() needs to be called.
  *
  * If a previous function was set, its @user_destroy will be
  * called now.
  */
 void
-gtk_custom_sorter_set_sort_func (GtkCustomSorter  *self,
+gtk_custom_sorter_set_sort_func (GtkCustomSorter  *this,
                                  GCompareDataFunc  sort_func,
                                  gpointer          user_data,
                                  GDestroyNotify    user_destroy)
 {
-  g_return_if_fail (GTK_IS_CUSTOM_SORTER (self));
+  g_return_if_fail (GTK_IS_CUSTOM_SORTER (this));
   g_return_if_fail (sort_func || (user_data == NULL && !user_destroy));
 
-  if (self->user_destroy)
-    self->user_destroy (self->user_data);
+  if (this->user_destroy)
+    this->user_destroy (this->user_data);
 
-  self->sort_func = sort_func;
-  self->user_data = user_data;
-  self->user_destroy = user_destroy;
+  this->sort_func = sort_func;
+  this->user_data = user_data;
+  this->user_destroy = user_destroy;
 
-  gtk_sorter_changed (GTK_SORTER (self), GTK_SORTER_CHANGE_DIFFERENT);
+  gtk_sorter_changed (GTK_SORTER (this), GTK_SORTER_CHANGE_DIFFERENT);
 }

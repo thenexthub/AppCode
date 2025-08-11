@@ -36,21 +36,21 @@ GDK_AVAILABLE_IN_ALL
 GtkStringSorter *       gtk_string_sorter_new                   (GtkExpression          *expression);
 
 GDK_AVAILABLE_IN_ALL
-GtkExpression *         gtk_string_sorter_get_expression        (GtkStringSorter        *self);
+GtkExpression *         gtk_string_sorter_get_expression        (GtkStringSorter        *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_string_sorter_set_expression        (GtkStringSorter        *self,
+void                    gtk_string_sorter_set_expression        (GtkStringSorter        *this,
                                                                  GtkExpression          *expression);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_string_sorter_get_ignore_case       (GtkStringSorter        *self);
+gboolean                gtk_string_sorter_get_ignore_case       (GtkStringSorter        *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_string_sorter_set_ignore_case       (GtkStringSorter        *self,
+void                    gtk_string_sorter_set_ignore_case       (GtkStringSorter        *this,
                                                                  gboolean                ignore_case);
 
 /**
  * GtkCollation:
  * @GTK_COLLATION_NONE: Don't do any collation
- * @GTK_COLLATION_UNICODE: Use [func@GLib.utf8_collate_key]
- * @GTK_COLLATION_FILENAME: Use [func@GLib.utf8_collate_key_for_filename]
+ * @GTK_COLLATION_UNICODE: Use [fn@GLib.utf8_collate_key]
+ * @GTK_COLLATION_FILENAME: Use [fn@GLib.utf8_collate_key_for_filename]
  *
  * Describes how a [class@Gtk.StringSorter] turns strings into sort keys to
  * compare them.
@@ -68,11 +68,11 @@ typedef enum
 } GtkCollation;
 
 GDK_AVAILABLE_IN_4_10
-void                    gtk_string_sorter_set_collation         (GtkStringSorter        *self,
+void                    gtk_string_sorter_set_collation         (GtkStringSorter        *this,
                                                                  GtkCollation            collation);
 
 GDK_AVAILABLE_IN_4_10
-GtkCollation            gtk_string_sorter_get_collation         (GtkStringSorter        *self);
+GtkCollation            gtk_string_sorter_get_collation         (GtkStringSorter        *this);
 
 G_END_DECLS
 

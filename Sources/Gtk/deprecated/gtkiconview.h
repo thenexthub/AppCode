@@ -168,7 +168,7 @@ gboolean       gtk_icon_view_get_activate_on_single_click (GtkIconView  *icon_vi
 
 GDK_DEPRECATED_IN_4_10_FOR(GtkGridView)
 void           gtk_icon_view_selected_foreach   (GtkIconView            *icon_view,
-                                                 GtkIconViewForeachFunc  func,
+                                                 GtkIconViewForeachFunc  fn,
                                                  gpointer                data);
 GDK_DEPRECATED_IN_4_10_FOR(GtkGridView)
 void           gtk_icon_view_set_selection_mode (GtkIconView            *icon_view,

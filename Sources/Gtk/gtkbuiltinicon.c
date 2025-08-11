@@ -98,7 +98,7 @@ gtk_builtin_icon_class_init (GtkBuiltinIconClass *klass)
 }
 
 static void
-gtk_builtin_icon_init (GtkBuiltinIcon *self)
+gtk_builtin_icon_init (GtkBuiltinIcon *this)
 {
 }
 
@@ -111,9 +111,9 @@ gtk_builtin_icon_new (const char *css_name)
 }
 
 void
-gtk_builtin_icon_set_css_name (GtkBuiltinIcon *self,
+gtk_builtin_icon_set_css_name (GtkBuiltinIcon *this,
                                const char     *css_name)
 {
-  gtk_css_node_set_name (gtk_widget_get_css_node (GTK_WIDGET (self)),
+  gtk_css_node_set_name (gtk_widget_get_css_node (GTK_WIDGET (this)),
                          g_quark_from_string (css_name));
 }

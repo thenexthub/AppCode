@@ -38,14 +38,14 @@ GType                           gtk_column_view_cell_widget_get_type           (
 GtkWidget *                     gtk_column_view_cell_widget_new                (GtkColumnViewColumn             *column,
                                                                                 gboolean                         inert);
 
-void                            gtk_column_view_cell_widget_set_child          (GtkColumnViewCellWidget         *self,
+void                            gtk_column_view_cell_widget_set_child          (GtkColumnViewCellWidget         *this,
                                                                                 GtkWidget                       *child);
 
-void                            gtk_column_view_cell_widget_remove             (GtkColumnViewCellWidget         *self);
+void                            gtk_column_view_cell_widget_remove             (GtkColumnViewCellWidget         *this);
 
-GtkColumnViewCellWidget *       gtk_column_view_cell_widget_get_next           (GtkColumnViewCellWidget         *self);
-GtkColumnViewCellWidget *       gtk_column_view_cell_widget_get_prev           (GtkColumnViewCellWidget         *self);
-GtkColumnViewColumn *           gtk_column_view_cell_widget_get_column         (GtkColumnViewCellWidget         *self);
-void                            gtk_column_view_cell_widget_unset_column       (GtkColumnViewCellWidget         *self);
+GtkColumnViewCellWidget *       gtk_column_view_cell_widget_get_next           (GtkColumnViewCellWidget         *this);
+GtkColumnViewCellWidget *       gtk_column_view_cell_widget_get_prev           (GtkColumnViewCellWidget         *this);
+GtkColumnViewColumn *           gtk_column_view_cell_widget_get_column         (GtkColumnViewCellWidget         *this);
+void                            gtk_column_view_cell_widget_unset_column       (GtkColumnViewCellWidget         *this);
 
 G_END_DECLS

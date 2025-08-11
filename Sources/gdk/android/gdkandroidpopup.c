@@ -34,8 +34,8 @@ gdk_android_popup_present (GdkPopup       *popup,
                            int             height,
                            GdkPopupLayout *layout)
 {
-  GdkAndroidPopup *self = (GdkAndroidPopup *) popup;
-  GdkAndroidSurface *surface_impl = (GdkAndroidSurface *) self;
+  GdkAndroidPopup *this = (GdkAndroidPopup *) popup;
+  GdkAndroidSurface *surface_impl = (GdkAndroidSurface *) this;
 
   GdkAndroidToplevel *parent = gdk_android_surface_get_toplevel (surface_impl);
   GdkAndroidSurface *parent_impl = (GdkAndroidSurface *) parent;
@@ -45,8 +45,8 @@ gdk_android_popup_present (GdkPopup       *popup,
   surface_impl->visible = TRUE;
 
   gdk_popup_layout_ref (layout);
-  g_clear_pointer (&self->layout, gdk_popup_layout_unref);
-  self->layout = layout;
+  g_clear_pointer (&this->layout, gdk_popup_layout_unref);
+  this->layout = layout;
 
   gint shadow_left, shadow_right, shadow_top, shadow_bottom;
   gdk_popup_layout_get_shadow_width (layout,
@@ -61,8 +61,8 @@ gdk_android_popup_present (GdkPopup       *popup,
   bounds.width = parent_surface->width;
   bounds.height = parent_surface->height;
 
-  memset (&self->popup_bounds, 0, sizeof (GdkRectangle));
-  gdk_surface_layout_popup_helper (GDK_SURFACE (self),
+  memset (&this->popup_bounds, 0, sizeof (GdkRectangle));
+  gdk_surface_layout_popup_helper (GDK_SURFACE (this),
                                    width,
                                    height,
                                    shadow_left,
@@ -71,26 +71,26 @@ gdk_android_popup_present (GdkPopup       *popup,
                                    shadow_bottom,
                                    NULL,
                                    &bounds,
-                                   self->layout,
-                                   &self->popup_bounds);
+                                   this->layout,
+                                   &this->popup_bounds);
   JNIEnv *env = gdk_android_get_env ();
   if (!surface_impl->surface)
     {
       jobject view = (*env)->GetObjectField (env, parent->activity, gdk_android_get_java_cache ()->toplevel.toplevel_view);
-      (*env)->CallVoidMethod (env, view, gdk_android_get_java_cache ()->toplevel_view.push_popup, (jlong) self,
-                              (jint) (self->popup_bounds.x * parent_impl->cfg.scale),
-                              (jint) (self->popup_bounds.y * parent_impl->cfg.scale),
-                              (jint) ceilf (self->popup_bounds.width * parent_impl->cfg.scale),
-                              (jint) ceilf (self->popup_bounds.height * parent_impl->cfg.scale));
+      (*env)->CallVoidMethod (env, view, gdk_android_get_java_cache ()->toplevel_view.push_popup, (jlong) this,
+                              (jint) (this->popup_bounds.x * parent_impl->cfg.scale),
+                              (jint) (this->popup_bounds.y * parent_impl->cfg.scale),
+                              (jint) ceilf (this->popup_bounds.width * parent_impl->cfg.scale),
+                              (jint) ceilf (this->popup_bounds.height * parent_impl->cfg.scale));
       (*env)->DeleteLocalRef (env, view);
     }
   else
     {
       (*env)->CallVoidMethod (env, surface_impl->surface, gdk_android_get_java_cache ()->surface.reposition,
-                              (jint) (self->popup_bounds.x * parent_impl->cfg.scale),
-                              (jint) (self->popup_bounds.y * parent_impl->cfg.scale),
-                              (jint) ceilf (self->popup_bounds.width * parent_impl->cfg.scale),
-                              (jint) ceilf (self->popup_bounds.height * parent_impl->cfg.scale));
+                              (jint) (this->popup_bounds.x * parent_impl->cfg.scale),
+                              (jint) (this->popup_bounds.y * parent_impl->cfg.scale),
+                              (jint) ceilf (this->popup_bounds.width * parent_impl->cfg.scale),
+                              (jint) ceilf (this->popup_bounds.height * parent_impl->cfg.scale));
       (*env)->CallVoidMethod(env, surface_impl->surface, gdk_android_get_java_cache ()->surface.set_visibility, TRUE);
     }
 
@@ -149,14 +149,14 @@ enum
 static void
 gdk_android_popup_finalize (GObject *object)
 {
-  GdkAndroidPopup *self = (GdkAndroidPopup *) object;
-  GdkSurface *parent = ((GdkSurface *) self)->parent;
+  GdkAndroidPopup *this = (GdkAndroidPopup *) object;
+  GdkSurface *parent = ((GdkSurface *) this)->parent;
 
   if (parent != NULL)
-    parent->children = g_list_remove (parent->children, self);
+    parent->children = g_list_remove (parent->children, this);
 
-  g_clear_object (&GDK_SURFACE (self)->parent);
-  g_clear_pointer (&self->layout, gdk_popup_layout_unref);
+  g_clear_object (&GDK_SURFACE (this)->parent);
+  g_clear_pointer (&this->layout, gdk_popup_layout_unref);
 
   G_OBJECT_CLASS (gdk_android_popup_parent_class)->finalize (object);
 }
@@ -220,15 +220,15 @@ gdk_android_popup_constructed (GObject *object)
 static void
 gdk_android_popup_reposition (GdkAndroidSurface *surface_impl)
 {
-  GdkAndroidPopup *self = (GdkAndroidPopup *) surface_impl;
-  GdkSurface *surface = (GdkSurface *) self;
+  GdkAndroidPopup *this = (GdkAndroidPopup *) surface_impl;
+  GdkSurface *surface = (GdkSurface *) this;
 
-  if (self->layout == NULL || surface->parent == NULL || !surface_impl->visible)
+  if (this->layout == NULL || surface->parent == NULL || !surface_impl->visible)
     return;
 
-  gdk_android_popup_present ((GdkPopup *) self,
+  gdk_android_popup_present ((GdkPopup *) this,
                              surface->width, surface->height,
-                             self->layout);
+                             this->layout);
 }
 
 static void
@@ -248,5 +248,5 @@ gdk_android_popup_class_init (GdkAndroidPopupClass *klass)
 }
 
 static void
-gdk_android_popup_init (GdkAndroidPopup *self)
+gdk_android_popup_init (GdkAndroidPopup *this)
 {}

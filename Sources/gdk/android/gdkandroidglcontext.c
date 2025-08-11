@@ -149,7 +149,7 @@ gdk_android_gl_context_class_init (GdkAndroidGLContextClass *class)
 }
 
 static void
-gdk_android_gl_context_init (GdkAndroidGLContext *self)
+gdk_android_gl_context_init (GdkAndroidGLContext *this)
 {}
 
 /**

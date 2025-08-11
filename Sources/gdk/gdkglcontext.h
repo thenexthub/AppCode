@@ -53,7 +53,7 @@ void                    gdk_gl_context_get_version              (GdkGLContext  *
 GDK_AVAILABLE_IN_ALL
 gboolean                gdk_gl_context_is_legacy                (GdkGLContext  *context);
 GDK_AVAILABLE_IN_4_4
-gboolean                gdk_gl_context_is_shared                (GdkGLContext  *self,
+gboolean                gdk_gl_context_is_shared                (GdkGLContext  *this,
                                                                  GdkGLContext  *other);
 
 GDK_AVAILABLE_IN_ALL
@@ -75,12 +75,12 @@ void                    gdk_gl_context_set_forward_compatible   (GdkGLContext  *
 GDK_AVAILABLE_IN_ALL
 gboolean                gdk_gl_context_get_forward_compatible   (GdkGLContext  *context);
 GDK_AVAILABLE_IN_4_6
-void                    gdk_gl_context_set_allowed_apis         (GdkGLContext  *self,
+void                    gdk_gl_context_set_allowed_apis         (GdkGLContext  *this,
                                                                  GdkGLAPI       apis);
 GDK_AVAILABLE_IN_4_6
-GdkGLAPI                gdk_gl_context_get_allowed_apis         (GdkGLContext  *self);
+GdkGLAPI                gdk_gl_context_get_allowed_apis         (GdkGLContext  *this);
 GDK_AVAILABLE_IN_4_6
-GdkGLAPI                gdk_gl_context_get_api                  (GdkGLContext  *self);
+GdkGLAPI                gdk_gl_context_get_api                  (GdkGLContext  *this);
 GDK_DEPRECATED_IN_4_6_FOR(gdk_gl_context_set_allowed_apis)
 void                    gdk_gl_context_set_use_es               (GdkGLContext  *context,
                                                                  int            use_es);

@@ -168,7 +168,7 @@ _gdk_x11_surface_get_toplevel (GdkSurface *surface)
 
 /*
  * gdk_x11_surface_update_size:
- * @self: a `GdkX11Surface`
+ * @this: a `GdkX11Surface`
  * @width: the new width of the surface
  * @height: the new height of the surface
  * @scale: the new scale of the surface
@@ -180,29 +180,29 @@ _gdk_x11_surface_get_toplevel (GdkSurface *surface)
  *   where necessary
  */
 static gboolean
-gdk_x11_surface_update_size (GdkX11Surface *self,
+gdk_x11_surface_update_size (GdkX11Surface *this,
                              int            width,
                              int            height,
                              int            scale)
 {
-  GdkSurface *surface = GDK_SURFACE (self);
+  GdkSurface *surface = GDK_SURFACE (this);
 
   if (surface->width == width &&
       surface->height == height &&
-      self->surface_scale == scale)
+      this->surface_scale == scale)
     return FALSE;
 
   surface->width = width;
   surface->height = height;
-  self->surface_scale = scale;
+  this->surface_scale = scale;
 
   _gdk_surface_update_size (surface);
 
-  if (self->cairo_surface)
+  if (this->cairo_surface)
     {
-      cairo_xlib_surface_set_size (self->cairo_surface,
-                                   self->unscaled_width, self->unscaled_height);
-      cairo_surface_set_device_scale (self->cairo_surface, scale, scale);
+      cairo_xlib_surface_set_size (this->cairo_surface,
+                                   this->unscaled_width, this->unscaled_height);
+      cairo_surface_set_device_scale (this->cairo_surface, scale, scale);
     }
 
   gdk_surface_invalidate_rect (surface, NULL);
@@ -1064,18 +1064,18 @@ static void gdk_x11_surface_set_title (GdkSurface *surface,
 static void
 gdk_x11_surface_constructed (GObject *object)
 {
-  GdkX11Surface *self = GDK_X11_SURFACE (object);
-  GdkSurface *surface = GDK_SURFACE (self);
+  GdkX11Surface *this = GDK_X11_SURFACE (object);
+  GdkSurface *surface = GDK_SURFACE (this);
   GdkDisplay *display = gdk_surface_get_display (surface);
   GdkX11Display *display_x11 = GDK_X11_DISPLAY (display);
   XClassHint *class_hint;
 
-  g_assert (self->xid);
+  g_assert (this->xid);
 
   g_object_ref (surface);
-  _gdk_x11_display_add_window (display, &self->xid, surface);
+  _gdk_x11_display_add_window (display, &this->xid, surface);
 
-  self->surface_scale = display_x11->screen->surface_scale;
+  this->surface_scale = display_x11->screen->surface_scale;
 
   gdk_x11_surface_set_title (surface, get_default_title ());
 
@@ -1085,7 +1085,7 @@ gdk_x11_surface_constructed (GObject *object)
     class_hint->res_class = (char *) display_x11->program_class;
   else
     class_hint->res_class = class_hint->res_name;
-  XSetClassHint (GDK_DISPLAY_XDISPLAY (display), self->xid, class_hint);
+  XSetClassHint (GDK_DISPLAY_XDISPLAY (display), this->xid, class_hint);
   XFree (class_hint);
 
   setup_toplevel_window (surface);
@@ -4906,14 +4906,14 @@ gdk_gravity_to_x11 (GdkGravity gravity)
 }
 
 static void
-gdk_x11_surface_create_window (GdkX11Surface        *self,
+gdk_x11_surface_create_window (GdkX11Surface        *this,
                                XSetWindowAttributes *xattributes,
                                long                  xattributes_mask)
 {
-  GdkDisplay *display = gdk_surface_get_display (GDK_SURFACE (self));
+  GdkDisplay *display = gdk_surface_get_display (GDK_SURFACE (this));
   GdkX11Display *display_x11 = GDK_X11_DISPLAY (display);
 
-  g_assert (self->xid == 0);
+  g_assert (this->xid == 0);
 
   xattributes->background_pixmap = None;
   xattributes_mask |= CWBackPixmap;
@@ -4928,13 +4928,13 @@ gdk_x11_surface_create_window (GdkX11Surface        *self,
                                           display_x11->screen->screen_num);
   xattributes_mask |= CWBorderPixel;
 
-  xattributes->bit_gravity = gdk_gravity_to_x11 (self->gravity);
+  xattributes->bit_gravity = gdk_gravity_to_x11 (this->gravity);
   xattributes_mask |= CWBitGravity;
 
   xattributes->colormap = gdk_x11_display_get_window_colormap (display_x11);
   xattributes_mask |= CWColormap;
 
-  self->xid = XCreateWindow (GDK_DISPLAY_XDISPLAY (display),
+  this->xid = XCreateWindow (GDK_DISPLAY_XDISPLAY (display),
                              display_x11->screen->xroot_window,
                              0, 0, 1, 1,
                              0,
@@ -5094,17 +5094,17 @@ gdk_x11_popup_iface_init (GdkPopupInterface *iface)
 }
 
 static void
-update_gravity (GdkX11Surface *self)
+update_gravity (GdkX11Surface *this)
 {
-  GdkDisplay *display = gdk_surface_get_display (GDK_SURFACE (self));
+  GdkDisplay *display = gdk_surface_get_display (GDK_SURFACE (this));
   XSetWindowAttributes xattributes;
   long xattributes_mask = 0;
 
-  xattributes.bit_gravity = gdk_gravity_to_x11 (self->gravity);
+  xattributes.bit_gravity = gdk_gravity_to_x11 (this->gravity);
   xattributes_mask |= CWBitGravity;
 
   XChangeWindowAttributes (GDK_DISPLAY_XDISPLAY (display),
-                           self->xid,
+                           this->xid,
                            xattributes_mask,
                            &xattributes);
 }

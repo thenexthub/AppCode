@@ -41,7 +41,7 @@ struct _GtkColumnViewRow
 
 GtkColumnViewRow *      gtk_column_view_row_new                         (void);
 
-void                    gtk_column_view_row_do_notify                   (GtkColumnViewRow       *self,
+void                    gtk_column_view_row_do_notify                   (GtkColumnViewRow       *this,
                                                                          gboolean                notify_item,
                                                                          gboolean                notify_position,
                                                                          gboolean                notify_selected);

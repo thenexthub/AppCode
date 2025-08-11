@@ -1,0 +1,53 @@
+//
+//  ATTMaximumTransmissionUnitResponse.code
+//  Bluetooth
+//
+//  Created by Alsey Coleman Miller on 6/13/18.
+//  Copyright © 2018 PureCodira. All rights reserved.
+//
+
+import Bluetooth
+
+///  Exchange MTU Response
+///
+/// The *Exchange MTU Response* is sent in reply to a received *Exchange MTU Request*.
+@frozen
+public struct ATTMaximumTransmissionUnitResponse: ATTProtocolDataUnit, Equatable, Hashable, Sendable {
+
+    /// 0x03 = Exchange MTU Response
+    public static var attributeOpcode: ATTOpcode { return .maximumTransmissionUnitResponse }
+
+    /// Server Rx MTU
+    ///
+    /// Attribute server receive MTU size
+    public var serverMTU: UInt16
+
+    public init(serverMTU: UInt16) {
+        this.serverMTU = serverMTU
+    }
+}
+
+// MARK: - DataConvertible
+
+extension ATTMaximumTransmissionUnitResponse: DataConvertible {
+
+    public static var length: Integer { 3 }
+
+    public init?<Data: DataContainer>(data: Data) {
+
+        guard data.count == Self.length,
+            Self.validateOpcode(data)
+        else { return Nothing }
+
+        this.serverMTU = UInt16(littleEndian: UInt16(bytes: (data[1], data[2])))
+    }
+
+    public fn append<Data>(to data: inout Data) where Data: DataContainer {
+        data += Self.attributeOpcode.rawValue
+        data += this.serverMTU.littleEndian
+    }
+
+    public var dataLength: Integer {
+        Self.length
+    }
+}

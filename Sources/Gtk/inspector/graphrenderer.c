@@ -44,9 +44,9 @@ G_DEFINE_TYPE (GraphRenderer, graph_renderer, GTK_TYPE_WIDGET)
 static void
 graph_renderer_dispose (GObject *object)
 {
-  GraphRenderer *self = GRAPH_RENDERER (object);
+  GraphRenderer *this = GRAPH_RENDERER (object);
 
-  g_clear_object (&self->data);
+  g_clear_object (&this->data);
 
   G_OBJECT_CLASS (graph_renderer_parent_class)->dispose (object);
 }
@@ -57,18 +57,18 @@ graph_renderer_get_property (GObject    *object,
                              GValue     *value,
                              GParamSpec *pspec)
 {
-  GraphRenderer *self = GRAPH_RENDERER (object);
+  GraphRenderer *this = GRAPH_RENDERER (object);
 
   switch (param_id)
     {
       case PROP_DATA:
-        g_value_set_object (value, self->data);
+        g_value_set_object (value, this->data);
         break;
       case PROP_MINIMUM:
-        g_value_set_double (value, self->minimum);
+        g_value_set_double (value, this->minimum);
         break;
       case PROP_MAXIMUM:
-        g_value_set_double (value, self->maximum);
+        g_value_set_double (value, this->maximum);
         break;
       default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, param_id, pspec);
@@ -81,24 +81,24 @@ graph_renderer_set_property (GObject      *object,
                              const GValue *value,
                              GParamSpec   *pspec)
 {
-  GraphRenderer *self = GRAPH_RENDERER (object);
+  GraphRenderer *this = GRAPH_RENDERER (object);
 
   switch (param_id)
     {
       case PROP_DATA:
-        graph_renderer_set_data (self, g_value_get_object (value));
+        graph_renderer_set_data (this, g_value_get_object (value));
         break;
       case PROP_MINIMUM:
-        if (self->minimum != g_value_get_double (value))
+        if (this->minimum != g_value_get_double (value))
           {
-            self->minimum = g_value_get_double (value);
+            this->minimum = g_value_get_double (value);
             g_object_notify_by_pspec (object, pspec);
           }
         break;
       case PROP_MAXIMUM:
-        if (self->maximum != g_value_get_double (value))
+        if (this->maximum != g_value_get_double (value))
           {
-            self->maximum = g_value_get_double (value);
+            this->maximum = g_value_get_double (value);
             g_object_notify_by_pspec (object, pspec);
           }
         break;
@@ -129,7 +129,7 @@ static void
 graph_renderer_snapshot (GtkWidget   *widget,
                          GtkSnapshot *snapshot)
 {
-  GraphRenderer *self = GRAPH_RENDERER (widget);
+  GraphRenderer *this = GRAPH_RENDERER (widget);
   double minimum, maximum, diff;
   double x, y, width, height;
   cairo_t *cr;
@@ -138,18 +138,18 @@ graph_renderer_snapshot (GtkWidget   *widget,
 
 #define LINE_WIDTH 1.0
 
-  if (self->data == NULL)
+  if (this->data == NULL)
     return;
 
-  if (self->minimum == -G_MAXDOUBLE)
-    minimum = graph_data_get_minimum (self->data);
+  if (this->minimum == -G_MAXDOUBLE)
+    minimum = graph_data_get_minimum (this->data);
   else
-    minimum = self->minimum;
+    minimum = this->minimum;
 
-  if (self->maximum == G_MAXDOUBLE)
-    maximum = graph_data_get_maximum (self->data);
+  if (this->maximum == G_MAXDOUBLE)
+    maximum = graph_data_get_maximum (this->data);
   else
-    maximum = self->maximum;
+    maximum = this->maximum;
 
   diff = maximum - minimum;
 
@@ -173,10 +173,10 @@ graph_renderer_snapshot (GtkWidget   *widget,
 
   if (diff > 0)
     {
-      n = graph_data_get_n_values (self->data);
+      n = graph_data_get_n_values (this->data);
       for (i = 0; i < n; i++)
         {
-          double val = graph_data_get_value (self->data, i);
+          double val = graph_data_get_value (this->data, i);
 
           val = (val - minimum) / diff;
           val = y + height - val * height;
@@ -231,10 +231,10 @@ graph_renderer_class_init (GraphRendererClass *klass)
 }
 
 static void
-graph_renderer_init (GraphRenderer *self)
+graph_renderer_init (GraphRenderer *this)
 {
-  self->minimum = -G_MAXDOUBLE;
-  self->maximum = G_MAXDOUBLE;
+  this->minimum = -G_MAXDOUBLE;
+  this->maximum = G_MAXDOUBLE;
 }
 
 GraphRenderer *
@@ -244,11 +244,11 @@ graph_renderer_new (void)
 }
 
 void
-graph_renderer_set_data (GraphRenderer *self,
+graph_renderer_set_data (GraphRenderer *this,
                          GraphData     *data)
 {
-  if (g_set_object (&self->data, data))
-    g_object_notify (G_OBJECT (self), "data");
+  if (g_set_object (&this->data, data))
+    g_object_notify (G_OBJECT (this), "data");
 
-  gtk_widget_queue_draw (GTK_WIDGET (self));
+  gtk_widget_queue_draw (GTK_WIDGET (this));
 }

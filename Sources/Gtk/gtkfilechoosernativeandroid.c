@@ -37,7 +37,7 @@ typedef struct {
 } GtkFileChooserNativeAndroidData;
 
 static void
-gtk_file_chooser_native_android_result (GdkAndroidToplevel *toplevel, GAsyncResult *res, GtkFileChooserNative *self)
+gtk_file_chooser_native_android_result (GdkAndroidToplevel *toplevel, GAsyncResult *res, GtkFileChooserNative *this)
 {
   JNIEnv *env = gdk_android_get_env();
   (*env)->PushLocalFrame (env, 2);
@@ -48,7 +48,7 @@ gtk_file_chooser_native_android_result (GdkAndroidToplevel *toplevel, GAsyncResu
   if (!gdk_android_toplevel_launch_activity_for_result_finish (toplevel, res, &ret, &result, &err) ||
       ret != gdk_android_get_java_cache ()->a_activity.result_ok)
     {
-      _gtk_native_dialog_emit_response (GTK_NATIVE_DIALOG (self), GTK_RESPONSE_CANCEL);
+      _gtk_native_dialog_emit_response (GTK_NATIVE_DIALOG (this), GTK_RESPONSE_CANCEL);
       if (err)
         g_error_free (err);
       goto exit;
@@ -59,7 +59,7 @@ gtk_file_chooser_native_android_result (GdkAndroidToplevel *toplevel, GAsyncResu
   if (data)
     {
       GFile *file = gdk_android_content_file_from_uri (data);
-      self->custom_files = g_slist_prepend (self->custom_files, file);
+      this->custom_files = g_slist_prepend (this->custom_files, file);
     }
   else
     {
@@ -77,7 +77,7 @@ gtk_file_chooser_native_android_result (GdkAndroidToplevel *toplevel, GAsyncResu
           if (uri)
             {
               GFile *file = gdk_android_content_file_from_uri (uri);
-              self->custom_files = g_slist_prepend (self->custom_files, file);
+              this->custom_files = g_slist_prepend (this->custom_files, file);
             }
           else
             g_warning ("A file returned from document picker did not have a document attached");
@@ -86,22 +86,22 @@ gtk_file_chooser_native_android_result (GdkAndroidToplevel *toplevel, GAsyncResu
         }
     }
 
-  self->custom_files = g_slist_reverse (self->custom_files);
-  _gtk_native_dialog_emit_response (GTK_NATIVE_DIALOG (self), GTK_RESPONSE_ACCEPT);
+  this->custom_files = g_slist_reverse (this->custom_files);
+  _gtk_native_dialog_emit_response (GTK_NATIVE_DIALOG (this), GTK_RESPONSE_ACCEPT);
 exit:
   (*env)->PopLocalFrame (env, NULL);
 
-  g_object_unref (((GtkFileChooserNativeAndroidData *)self->mode_data)->cancellable);
-  g_clear_pointer (&self->mode_data, g_free);
-  g_object_unref (self);
+  g_object_unref (((GtkFileChooserNativeAndroidData *)this->mode_data)->cancellable);
+  g_clear_pointer (&this->mode_data, g_free);
+  g_object_unref (this);
 }
 
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 
 gboolean
-gtk_file_chooser_native_android_show (GtkFileChooserNative *self)
+gtk_file_chooser_native_android_show (GtkFileChooserNative *this)
 {
-  GtkWindow *transient_for = gtk_native_dialog_get_transient_for (GTK_NATIVE_DIALOG (self));
+  GtkWindow *transient_for = gtk_native_dialog_get_transient_for (GTK_NATIVE_DIALOG (this));
   if (!transient_for)
     {
       g_critical ("Android filepicker needs to be a transient dialog!");
@@ -114,7 +114,7 @@ gtk_file_chooser_native_android_show (GtkFileChooserNative *self)
   JNIEnv *env = gdk_android_get_env ();
   (*env)->PushLocalFrame (env, 8);
 
-  GtkFileChooserAction action = gtk_file_chooser_get_action ((GtkFileChooser *)self);
+  GtkFileChooserAction action = gtk_file_chooser_get_action ((GtkFileChooser *)this);
   jstring jaction;
   switch (action)
     {
@@ -137,11 +137,11 @@ gtk_file_chooser_native_android_show (GtkFileChooserNative *self)
   (*env)->CallObjectMethod (env, intent,
                             gdk_android_get_java_cache ()->a_intent.put_extra_bool,
                             gdk_android_get_java_cache ()->a_intent.extra_allow_multiple,
-                            gtk_file_chooser_get_select_multiple ((GtkFileChooser *)self->dialog));
+                            gtk_file_chooser_get_select_multiple ((GtkFileChooser *)this->dialog));
 
   if (action != GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER)
     {
-      GListModel *filters = gtk_file_chooser_get_filters ((GtkFileChooser *)self);
+      GListModel *filters = gtk_file_chooser_get_filters ((GtkFileChooser *)this);
       guint n_filters = g_list_model_get_n_items (filters);
       if (n_filters > 0)
         {
@@ -186,8 +186,8 @@ gtk_file_chooser_native_android_show (GtkFileChooserNative *self)
                                                          intent,
                                                          data->cancellable,
                                                          (GAsyncReadyCallback)gtk_file_chooser_native_android_result,
-                                                         g_object_ref (self));
-  self->mode_data = data;
+                                                         g_object_ref (this));
+  this->mode_data = data;
 
   (*env)->PopLocalFrame (env, NULL);
   return TRUE;
@@ -196,9 +196,9 @@ gtk_file_chooser_native_android_show (GtkFileChooserNative *self)
 G_GNUC_END_IGNORE_DEPRECATIONS
 
 void
-gtk_file_chooser_native_android_hide (GtkFileChooserNative *self)
+gtk_file_chooser_native_android_hide (GtkFileChooserNative *this)
 {
-  GtkFileChooserNativeAndroidData *data = self->mode_data;
+  GtkFileChooserNativeAndroidData *data = this->mode_data;
 
   /* This is always set while dialog visible */
   g_assert (data != NULL);

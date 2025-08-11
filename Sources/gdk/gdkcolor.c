@@ -45,7 +45,7 @@
 
 /*< private >
  * gdk_color_init:
- * @self: the `GdkColor` struct to initialize
+ * @this: the `GdkColor` struct to initialize
  * @color_state: the color state
  * @values: the values
  *
@@ -57,16 +57,16 @@
  * when the `GdkColor` is no longer needed.
  */
 void
-(gdk_color_init) (GdkColor      *self,
+(gdk_color_init) (GdkColor      *this,
                   GdkColorState *color_state,
                   const float    values[4])
 {
-  _gdk_color_init (self, color_state, values);
+  _gdk_color_init (this, color_state, values);
 }
 
 /*< private >
  * gdk_color_init_copy:
- * @self: the `GdkColor` struct to initialize
+ * @this: the `GdkColor` struct to initialize
  * @color: the `GdkColor` to copy
  *
  * Initializes the `GdkColor` by copying the contents
@@ -77,15 +77,15 @@ void
  * when the `GdkColor` is no longer needed.
  */
 void
-(gdk_color_init_copy) (GdkColor      *self,
+(gdk_color_init_copy) (GdkColor      *this,
                        const GdkColor *color)
 {
-  _gdk_color_init_copy (self, color);
+  _gdk_color_init_copy (this, color);
 }
 
 /*< private >
  * gdk_color_init_from_rgba:
- * @self: the `GdkColor` struct to initialize
+ * @this: the `GdkColor` struct to initialize
  * @rgba: the `GdkRGBA` to copy
  *
  * Initializes the `GdkColor` by copying the contents
@@ -99,79 +99,79 @@ void
  * when the `GdkColor` is no longer needed.
  */
 void
-(gdk_color_init_from_rgba) (GdkColor       *self,
+(gdk_color_init_from_rgba) (GdkColor       *this,
                             const GdkRGBA  *rgba)
 {
-  _gdk_color_init_from_rgba (self, rgba);
+  _gdk_color_init_from_rgba (this, rgba);
 }
 
 /*< private >
- * @self: a `GdkColor`
+ * @this: a `GdkColor`
  *
- * Drop the reference on the color state of @self.
+ * Drop the reference on the color state of @this.
  *
- * After this, @self is empty and can be initialized again
+ * After this, @this is empty and can be initialized again
  * with [function@Gdk.Color.init] and its variants.
  */
 void
-(gdk_color_finish) (GdkColor *self)
+(gdk_color_finish) (GdkColor *this)
 {
-  _gdk_color_finish (self);
+  _gdk_color_finish (this);
 }
 
 /*< private >
  * gdk_color_equal:
- * @self: a `GdkColor`
+ * @this: a `GdkColor`
  * @other: another `GdkColor`
  *
  * Compares two `GdkColor` structs for equality.
  *
- * Returns: `TRUE` if @self and @other are equal
+ * Returns: `TRUE` if @this and @other are equal
  */
 gboolean
-(gdk_color_equal) (const GdkColor *self,
+(gdk_color_equal) (const GdkColor *this,
                    const GdkColor *other)
 {
-  return _gdk_color_equal (self, other);
+  return _gdk_color_equal (this, other);
 }
 
 /*< private >
  * gdk_color_is_clear:
- * @self: a `GdkColor`
+ * @this: a `GdkColor`
  *
- * Returns whether @self is fully transparent.
+ * Returns whether @this is fully transparent.
  *
- * Returns: `TRUE` if @self is transparent
+ * Returns: `TRUE` if @this is transparent
  */
 gboolean
-(gdk_color_is_clear) (const GdkColor *self)
+(gdk_color_is_clear) (const GdkColor *this)
 {
-  return _gdk_color_is_clear (self);
+  return _gdk_color_is_clear (this);
 }
 
 /*< private >
  * gdk_color_is_opaque:
- * @self: a `GdkColor`
+ * @this: a `GdkColor`
  *
- * Returns whether @self is fully opaque.
+ * Returns whether @this is fully opaque.
  *
- * Returns: `TRUE` if @self if opaque
+ * Returns: `TRUE` if @this if opaque
  */
 gboolean
-(gdk_color_is_opaque) (const GdkColor *self)
+(gdk_color_is_opaque) (const GdkColor *this)
 {
-  return _gdk_color_is_opaque (self);
+  return _gdk_color_is_opaque (this);
 }
 
 /*< private >
  * gdk_color_convert:
- * @self: the `GdkColor` to store the result in
+ * @this: the `GdkColor` to store the result in
  * @color_state: the target color start
  * @other: the `GdkColor` to convert
  *
  * Converts a given `GdkColor` to another color state.
  *
- * After the conversion, @self will represent the same
+ * After the conversion, @this will represent the same
  * color as @other in @color_state, to the degree possible.
  *
  * Different color states have different gamuts of colors
@@ -180,16 +180,16 @@ gboolean
  * result.
  */
 void
-(gdk_color_convert) (GdkColor        *self,
+(gdk_color_convert) (GdkColor        *this,
                      GdkColorState   *color_state,
                      const GdkColor  *other)
 {
-  gdk_color_convert (self, color_state, other);
+  gdk_color_convert (this, color_state, other);
 }
 
 /*< private >
  * gdk_color_to_float:
- * @self: a `GdkColor`
+ * @this: a `GdkColor`
  * @target: the color state to convert to
  * @values: the location to store the result in
  *
@@ -197,23 +197,23 @@ void
  * and stores the result in a `float[4]`.
  */
 void
-(gdk_color_to_float) (const GdkColor *self,
+(gdk_color_to_float) (const GdkColor *this,
                       GdkColorState  *target,
                       float           values[4])
 {
-  gdk_color_to_float (self, target, values);
+  gdk_color_to_float (this, target, values);
 }
 
 /*< private >
  * gdk_color_from_rgba:
- * @self: the `GdkColor` to store the result in
+ * @this: the `GdkColor` to store the result in
  * @color_state: the target color state
  * @rgba: the `GdkRGBA` to convert
  *
  * Converts a given `GdkRGBA` to the target @color_state.
  */
 void
-gdk_color_from_rgba (GdkColor        *self,
+gdk_color_from_rgba (GdkColor        *this,
                      GdkColorState   *color_state,
                      const GdkRGBA   *rgba)
 {
@@ -225,16 +225,16 @@ gdk_color_from_rgba (GdkColor        *self,
     .a = rgba->alpha
   };
 
-  gdk_color_convert (self, color_state, &tmp);
+  gdk_color_convert (this, color_state, &tmp);
   gdk_color_finish (&tmp);
 }
 
 /*< private >
  * gdk_color_print:
- * @self: the `GdkColor` to print
+ * @this: the `GdkColor` to print
  * @string: the string to print to
  *
- * Appends a representation of @self to @string.
+ * Appends a representation of @this to @string.
  *
  * The representation is inspired by CSS3 colors,
  * but not 100% identical, and looks like this:
@@ -247,29 +247,29 @@ gdk_color_from_rgba (GdkColor        *self,
  * The alpha may be omitted if it is 1.
  */
 void
-gdk_color_print (const GdkColor *self,
+gdk_color_print (const GdkColor *this,
                  GString        *string)
 {
-  if (gdk_color_state_equal (self->color_state, GDK_COLOR_STATE_SRGB))
+  if (gdk_color_state_equal (this->color_state, GDK_COLOR_STATE_SRGB))
     {
-      gdk_rgba_print ((const GdkRGBA *) self->values, string);
+      gdk_rgba_print ((const GdkRGBA *) this->values, string);
     }
   else
     {
       g_string_append_printf (string, "color(%s %g %g %g",
-                              gdk_color_state_get_name (self->color_state),
-                              self->r, self->g, self->b);
-      if (self->a < 1)
-        g_string_append_printf (string, " / %g", self->a);
+                              gdk_color_state_get_name (this->color_state),
+                              this->r, this->g, this->b);
+      if (this->a < 1)
+        g_string_append_printf (string, " / %g", this->a);
       g_string_append_c (string, ')');
     }
 }
 
 /*< private >
  * gdk_color_print:
- * @self: the `GdkColor` to print
+ * @this: the `GdkColor` to print
  *
- * Create a string representation of @self.
+ * Create a string representation of @this.
  *
  * See [method@Gdk.Color.print] for details about
  * the format.
@@ -277,10 +277,10 @@ gdk_color_print (const GdkColor *self,
  * Returns: (transfer full): a newly-allocated string
  */
 char *
-gdk_color_to_string (const GdkColor *self)
+gdk_color_to_string (const GdkColor *this)
 {
   GString *string = g_string_new ("");
-  gdk_color_print (self, string);
+  gdk_color_print (this, string);
   return g_string_free (string, FALSE);
 }
 

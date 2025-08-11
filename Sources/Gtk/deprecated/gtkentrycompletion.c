@@ -949,11 +949,11 @@ gtk_entry_completion_get_model (GtkEntryCompletion *completion)
 /**
  * gtk_entry_completion_set_match_func:
  * @completion: a `GtkEntryCompletion`
- * @func: the `GtkEntryCompletion`MatchFunc to use
- * @func_data: user data for @func
+ * @fn: the `GtkEntryCompletion`MatchFunc to use
+ * @func_data: user data for @fn
  * @func_notify: destroy notify for @func_data.
  *
- * Sets the match function for @completion to be @func.
+ * Sets the match function for @completion to be @fn.
  *
  * The match function is used to determine if a row should or
  * should not be in the completion list.
@@ -962,7 +962,7 @@ gtk_entry_completion_get_model (GtkEntryCompletion *completion)
  */
 void
 gtk_entry_completion_set_match_func (GtkEntryCompletion          *completion,
-                                     GtkEntryCompletionMatchFunc  func,
+                                     GtkEntryCompletionMatchFunc  fn,
                                      gpointer                     func_data,
                                      GDestroyNotify               func_notify)
 {
@@ -971,7 +971,7 @@ gtk_entry_completion_set_match_func (GtkEntryCompletion          *completion,
   if (completion->match_notify)
     (* completion->match_notify) (completion->match_data);
 
-  completion->match_func = func;
+  completion->match_func = fn;
   completion->match_data = func_data;
   completion->match_notify = func_notify;
 }

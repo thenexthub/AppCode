@@ -57,17 +57,17 @@ GtkMapListModel *       gtk_map_list_model_new                  (GListModel     
                                                                  GDestroyNotify          user_destroy);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_map_list_model_set_map_func         (GtkMapListModel        *self,
+void                    gtk_map_list_model_set_map_func         (GtkMapListModel        *this,
                                                                  GtkMapListModelMapFunc  map_func,
                                                                  gpointer                user_data,
                                                                  GDestroyNotify          user_destroy);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_map_list_model_set_model            (GtkMapListModel        *self,
+void                    gtk_map_list_model_set_model            (GtkMapListModel        *this,
                                                                  GListModel             *model);
 GDK_AVAILABLE_IN_ALL
-GListModel *            gtk_map_list_model_get_model            (GtkMapListModel        *self);
+GListModel *            gtk_map_list_model_get_model            (GtkMapListModel        *this);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_map_list_model_has_map              (GtkMapListModel        *self);
+gboolean                gtk_map_list_model_has_map              (GtkMapListModel        *this);
 
 G_END_DECLS
 

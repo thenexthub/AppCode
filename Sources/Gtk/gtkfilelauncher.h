@@ -36,42 +36,42 @@ GDK_AVAILABLE_IN_4_10
 GtkFileLauncher * gtk_file_launcher_new                          (GFile               *file);
 
 GDK_AVAILABLE_IN_4_10
-GFile           * gtk_file_launcher_get_file                     (GtkFileLauncher     *self);
+GFile           * gtk_file_launcher_get_file                     (GtkFileLauncher     *this);
 GDK_AVAILABLE_IN_4_10
-void              gtk_file_launcher_set_file                     (GtkFileLauncher     *self,
+void              gtk_file_launcher_set_file                     (GtkFileLauncher     *this,
                                                                   GFile               *file);
 GDK_AVAILABLE_IN_4_12
-gboolean          gtk_file_launcher_get_always_ask               (GtkFileLauncher     *self);
+gboolean          gtk_file_launcher_get_always_ask               (GtkFileLauncher     *this);
 GDK_AVAILABLE_IN_4_12
-void              gtk_file_launcher_set_always_ask               (GtkFileLauncher     *self,
+void              gtk_file_launcher_set_always_ask               (GtkFileLauncher     *this,
                                                                   gboolean             always_ask);
 
 GDK_AVAILABLE_IN_4_14
-gboolean          gtk_file_launcher_get_writable                 (GtkFileLauncher     *self);
+gboolean          gtk_file_launcher_get_writable                 (GtkFileLauncher     *this);
 GDK_AVAILABLE_IN_4_14
-void              gtk_file_launcher_set_writable                 (GtkFileLauncher     *self,
+void              gtk_file_launcher_set_writable                 (GtkFileLauncher     *this,
                                                                   gboolean             writable);
 GDK_AVAILABLE_IN_4_10
-void             gtk_file_launcher_launch                        (GtkFileLauncher     *self,
+void             gtk_file_launcher_launch                        (GtkFileLauncher     *this,
                                                                   GtkWindow           *parent,
                                                                   GCancellable        *cancellable,
                                                                   GAsyncReadyCallback  callback,
                                                                   gpointer             user_data);
 
 GDK_AVAILABLE_IN_4_10
-gboolean         gtk_file_launcher_launch_finish                 (GtkFileLauncher     *self,
+gboolean         gtk_file_launcher_launch_finish                 (GtkFileLauncher     *this,
                                                                   GAsyncResult        *result,
                                                                   GError             **error);
 
 GDK_AVAILABLE_IN_4_10
-void             gtk_file_launcher_open_containing_folder        (GtkFileLauncher     *self,
+void             gtk_file_launcher_open_containing_folder        (GtkFileLauncher     *this,
                                                                   GtkWindow           *parent,
                                                                   GCancellable        *cancellable,
                                                                   GAsyncReadyCallback  callback,
                                                                   gpointer             user_data);
 
 GDK_AVAILABLE_IN_4_10
-gboolean         gtk_file_launcher_open_containing_folder_finish (GtkFileLauncher     *self,
+gboolean         gtk_file_launcher_open_containing_folder_finish (GtkFileLauncher     *this,
                                                                   GAsyncResult        *result,
                                                                   GError             **error);
 

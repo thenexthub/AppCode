@@ -37,61 +37,61 @@ GtkAlertDialog *gtk_alert_dialog_new               (const char           *format
                                                     ...) G_GNUC_PRINTF (1, 2);
 
 GDK_AVAILABLE_IN_4_10
-gboolean        gtk_alert_dialog_get_modal          (GtkAlertDialog      *self);
+gboolean        gtk_alert_dialog_get_modal          (GtkAlertDialog      *this);
 
 GDK_AVAILABLE_IN_4_10
-void            gtk_alert_dialog_set_modal          (GtkAlertDialog      *self,
+void            gtk_alert_dialog_set_modal          (GtkAlertDialog      *this,
                                                      gboolean             modal);
 
 GDK_AVAILABLE_IN_4_10
-const char *    gtk_alert_dialog_get_message        (GtkAlertDialog      *self);
+const char *    gtk_alert_dialog_get_message        (GtkAlertDialog      *this);
 
 GDK_AVAILABLE_IN_4_10
-void            gtk_alert_dialog_set_message        (GtkAlertDialog      *self,
+void            gtk_alert_dialog_set_message        (GtkAlertDialog      *this,
                                                      const char          *message);
 
 GDK_AVAILABLE_IN_4_10
-const char *    gtk_alert_dialog_get_detail         (GtkAlertDialog      *self);
+const char *    gtk_alert_dialog_get_detail         (GtkAlertDialog      *this);
 
 GDK_AVAILABLE_IN_4_10
-void            gtk_alert_dialog_set_detail         (GtkAlertDialog      *self,
+void            gtk_alert_dialog_set_detail         (GtkAlertDialog      *this,
                                                      const char          *detail);
 
 GDK_AVAILABLE_IN_4_10
 const char * const *
-                gtk_alert_dialog_get_buttons        (GtkAlertDialog      *self);
+                gtk_alert_dialog_get_buttons        (GtkAlertDialog      *this);
 
 GDK_AVAILABLE_IN_4_10
-void            gtk_alert_dialog_set_buttons        (GtkAlertDialog      *self,
+void            gtk_alert_dialog_set_buttons        (GtkAlertDialog      *this,
                                                      const char * const  *labels);
 
 GDK_AVAILABLE_IN_4_10
-int             gtk_alert_dialog_get_cancel_button  (GtkAlertDialog      *self);
+int             gtk_alert_dialog_get_cancel_button  (GtkAlertDialog      *this);
 
 GDK_AVAILABLE_IN_4_10
-void            gtk_alert_dialog_set_cancel_button  (GtkAlertDialog      *self,
+void            gtk_alert_dialog_set_cancel_button  (GtkAlertDialog      *this,
                                                      int                  button);
 GDK_AVAILABLE_IN_4_10
-int             gtk_alert_dialog_get_default_button (GtkAlertDialog      *self);
+int             gtk_alert_dialog_get_default_button (GtkAlertDialog      *this);
 
 GDK_AVAILABLE_IN_4_10
-void            gtk_alert_dialog_set_default_button (GtkAlertDialog      *self,
+void            gtk_alert_dialog_set_default_button (GtkAlertDialog      *this,
                                                      int                  button);
 
 GDK_AVAILABLE_IN_4_10
-void            gtk_alert_dialog_choose             (GtkAlertDialog      *self,
+void            gtk_alert_dialog_choose             (GtkAlertDialog      *this,
                                                      GtkWindow           *parent,
                                                      GCancellable        *cancellable,
                                                      GAsyncReadyCallback  callback,
                                                      gpointer             user_data);
 
 GDK_AVAILABLE_IN_4_10
-int             gtk_alert_dialog_choose_finish      (GtkAlertDialog      *self,
+int             gtk_alert_dialog_choose_finish      (GtkAlertDialog      *this,
                                                      GAsyncResult        *result,
                                                      GError             **error);
 
 GDK_AVAILABLE_IN_4_10
-void            gtk_alert_dialog_show               (GtkAlertDialog      *self,
+void            gtk_alert_dialog_show               (GtkAlertDialog      *this,
                                                      GtkWindow           *parent);
 
 G_END_DECLS

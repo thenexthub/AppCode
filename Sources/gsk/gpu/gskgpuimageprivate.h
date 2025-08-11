@@ -24,32 +24,32 @@ struct _GskGpuImageClass
 {
   GObjectClass parent_class;
 
-  void                  (* get_projection_matrix)                       (GskGpuImage            *self,
+  void                  (* get_projection_matrix)                       (GskGpuImage            *this,
                                                                          graphene_matrix_t      *out_projection);
 };
 
 GType                   gsk_gpu_image_get_type                          (void) G_GNUC_CONST;
 
-void                    gsk_gpu_image_setup                             (GskGpuImage            *self,
+void                    gsk_gpu_image_setup                             (GskGpuImage            *this,
                                                                          GskGpuImageFlags        flags,
                                                                          GskGpuConversion        conversion,
                                                                          GdkShaderOp             shader_op,
                                                                          GdkMemoryFormat         format,
                                                                          gsize                   width,
                                                                          gsize                   height);
-void                    gsk_gpu_image_toggle_ref_texture                (GskGpuImage            *self,
+void                    gsk_gpu_image_toggle_ref_texture                (GskGpuImage            *this,
                                                                          GdkTexture             *texture);
 
-GdkMemoryFormat         gsk_gpu_image_get_format                        (GskGpuImage            *self);
-gsize                   gsk_gpu_image_get_width                         (GskGpuImage            *self);
-gsize                   gsk_gpu_image_get_height                        (GskGpuImage            *self);
-GskGpuImageFlags        gsk_gpu_image_get_flags                         (GskGpuImage            *self);
-void                    gsk_gpu_image_set_flags                         (GskGpuImage            *self,
+GdkMemoryFormat         gsk_gpu_image_get_format                        (GskGpuImage            *this);
+gsize                   gsk_gpu_image_get_width                         (GskGpuImage            *this);
+gsize                   gsk_gpu_image_get_height                        (GskGpuImage            *this);
+GskGpuImageFlags        gsk_gpu_image_get_flags                         (GskGpuImage            *this);
+void                    gsk_gpu_image_set_flags                         (GskGpuImage            *this,
                                                                          GskGpuImageFlags        flags);
-GskGpuConversion        gsk_gpu_image_get_conversion                    (GskGpuImage            *self);
-GdkShaderOp             gsk_gpu_image_get_shader_op                     (GskGpuImage            *self);
+GskGpuConversion        gsk_gpu_image_get_conversion                    (GskGpuImage            *this);
+GdkShaderOp             gsk_gpu_image_get_shader_op                     (GskGpuImage            *this);
 
-void                    gsk_gpu_image_get_projection_matrix             (GskGpuImage            *self,
+void                    gsk_gpu_image_get_projection_matrix             (GskGpuImage            *this,
                                                                          graphene_matrix_t      *out_projection);
 
 

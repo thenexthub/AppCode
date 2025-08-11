@@ -90,7 +90,7 @@ struct _GskTransform
 gboolean                gsk_transform_parser_parse              (GtkCssParser           *parser,
                                                                  GskTransform          **out_transform);
 
-void                    gsk_transform_to_dihedral               (GskTransform           *self,
+void                    gsk_transform_to_dihedral               (GskTransform           *this,
                                                                  GdkDihedral            *out_dihedral,
                                                                  float                  *out_scale_x,
                                                                  float                  *out_scale_y,

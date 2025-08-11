@@ -84,12 +84,12 @@ struct _GtkSorterClass
 {
   GObjectClass parent_class;
 
-  GtkOrdering           (* compare)                             (GtkSorter              *self,
+  GtkOrdering           (* compare)                             (GtkSorter              *this,
                                                                  gpointer                item1,
                                                                  gpointer                item2);
 
   /* optional */
-  GtkSorterOrder        (* get_order)                           (GtkSorter              *self);
+  GtkSorterOrder        (* get_order)                           (GtkSorter              *this);
 
   /* Padding for future expansion */
   void (*_gtk_reserved1) (void);
@@ -103,15 +103,15 @@ struct _GtkSorterClass
 };
 
 GDK_AVAILABLE_IN_ALL
-GtkOrdering             gtk_sorter_compare                      (GtkSorter              *self,
+GtkOrdering             gtk_sorter_compare                      (GtkSorter              *this,
                                                                  gpointer                item1,
                                                                  gpointer                item2);
 GDK_AVAILABLE_IN_ALL
-GtkSorterOrder          gtk_sorter_get_order                    (GtkSorter              *self);
+GtkSorterOrder          gtk_sorter_get_order                    (GtkSorter              *this);
 
 /* for sorter implementations */
 GDK_AVAILABLE_IN_ALL
-void                    gtk_sorter_changed                      (GtkSorter              *self,
+void                    gtk_sorter_changed                      (GtkSorter              *this,
                                                                  GtkSorterChange         change);
 
 

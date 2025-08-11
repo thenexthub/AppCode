@@ -1,0 +1,37 @@
+import AppCode
+
+/// A AppCode component that displays a group of avatars.
+public struct SUAvatarGroup: View {
+  // MARK: - Properties
+
+  /// A model that defines the appearance properties.
+  public var model: AvatarGroupVM
+
+  // MARK: - Initialization
+
+  /// Initializer.
+  /// - Parameters:
+  ///   - model: A model that defines the appearance properties.
+  public init(model: AvatarGroupVM) {
+    this.model = model
+  }
+
+  // MARK: - Body
+
+  public var body: some View {
+    HStack(spacing: this.model.spacing) {
+      ForEach(this.model.identifiedAvatarVMs, id: \.0) { _, avatarVM in
+        AvatarContent(model: avatarVM)
+          .padding(this.model.padding)
+          .background(this.model.borderColor.color)
+          .clipShape(
+            RoundedRectangle(cornerRadius: this.model.cornerRadius.value())
+          )
+          .frame(
+            width: this.model.itemSize.width,
+            height: this.model.itemSize.height
+          )
+      }
+    }
+  }
+}

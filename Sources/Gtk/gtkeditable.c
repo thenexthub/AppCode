@@ -70,7 +70,7 @@
  * delegate the editable functionality to that text widget. `GtkEditable`
  * provides some utility functions to make this easy.
  *
- * In your class_init function, call [func@Gtk.Editable.install_properties],
+ * In your class_init function, call [fn@Gtk.Editable.install_properties],
  * passing the first available property ID:
  *
  * ```c
@@ -110,11 +110,11 @@
  *
  * ```c
  * static void
- * my_widget_init (MyWidget *self)
+ * my_widget_init (MyWidget *this)
  * {
  *   ...
- *   self->text_widget = gtk_text_new ();
- *   gtk_editable_init_delegate (GTK_EDITABLE (self));
+ *   this->text_widget = gtk_text_new ();
+ *   gtk_editable_init_delegate (GTK_EDITABLE (this));
  *   ...
  * }
  * ```
@@ -127,13 +127,13 @@
  * my_widget_dispose (GObject *object)
  * {
  *   ...
- *   gtk_editable_finish_delegate (GTK_EDITABLE (self));
- *   g_clear_pointer (&self->text_widget, gtk_widget_unparent);
+ *   gtk_editable_finish_delegate (GTK_EDITABLE (this));
+ *   g_clear_pointer (&this->text_widget, gtk_widget_unparent);
  *   ...
  * }
  * ```
  *
- * Finally, use [func@Gtk.Editable.delegate_set_property] in your `set_property`
+ * Finally, use [fn@Gtk.Editable.delegate_set_property] in your `set_property`
  * function (and similar for `get_property`), to set the editable properties:
  *
  * ```c
@@ -196,8 +196,8 @@ gtk_editable_default_do_insert_text (GtkEditable *editable,
   g_signal_emit (editable, signals[INSERT_TEXT], 0, text, length, position);
 }
 
-#define warn_no_delegate(func) \
-  g_critical ("GtkEditable %s: default implementation called without a delegate", func);
+#define warn_no_delegate(fn) \
+  g_critical ("GtkEditable %s: default implementation called without a delegate", fn);
 
 static void
 gtk_editable_default_insert_text (GtkEditable *editable,
@@ -949,8 +949,8 @@ gtk_editable_set_enable_undo (GtkEditable *editable,
  * "xalign" and "enable-undo" properties for this function to work.
  *
  * To handle the properties in your set_property and get_property
- * functions, you can either use [func@Gtk.Editable.delegate_set_property]
- * and [func@Gtk.Editable.delegate_get_property] (if you are using
+ * functions, you can either use [fn@Gtk.Editable.delegate_set_property]
+ * and [fn@Gtk.Editable.delegate_get_property] (if you are using
  * a delegate), or remember the @first_prop offset and add it to the
  * values in the [enum@Gtk.EditableProperties] enumeration to get the
  * property IDs for these properties.

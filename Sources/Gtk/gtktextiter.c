@@ -1526,7 +1526,7 @@ gtk_text_iter_get_attributes (const GtkTextIter  *iter,
  * Returns the language in effect at @iter.
  *
  * If no tags affecting language apply to @iter, the return
- * value is identical to that of [func@Gtk.get_default_language].
+ * value is identical to that of [fn@Gtk.get_default_language].
  *
  * Returns: (transfer full): language in effect at @iter
  */
@@ -3104,7 +3104,7 @@ inside_sentence_func (const PangoLogAttr *attrs,
 
 static gboolean
 test_log_attrs (const GtkTextIter *iter,
-                TestLogAttrFunc    func)
+                TestLogAttrFunc    fn)
 {
   int char_len;
   const PangoLogAttr *attrs;
@@ -3119,12 +3119,12 @@ test_log_attrs (const GtkTextIter *iter,
 
   g_assert (offset <= char_len);
 
-  return (* func) (attrs, offset, 0, char_len);
+  return (* fn) (attrs, offset, 0, char_len);
 }
 
 static gboolean
 find_line_log_attrs (const GtkTextIter *iter,
-                     FindLogAttrFunc    func,
+                     FindLogAttrFunc    fn,
                      int               *found_offset,
                      gboolean           already_moved_initially)
 {
@@ -3139,7 +3139,7 @@ find_line_log_attrs (const GtkTextIter *iter,
 
   offset = gtk_text_iter_get_line_offset (iter);
 
-  return (* func) (attrs,
+  return (* fn) (attrs,
                    offset,
                    char_len,
                    found_offset,
@@ -3148,7 +3148,7 @@ find_line_log_attrs (const GtkTextIter *iter,
 
 static gboolean
 find_by_log_attrs (GtkTextIter     *arg_iter,
-                   FindLogAttrFunc  func,
+                   FindLogAttrFunc  fn,
                    gboolean         forward)
 {
   GtkTextIter iter;
@@ -3163,7 +3163,7 @@ find_by_log_attrs (GtkTextIter     *arg_iter,
       int offset = 0;
       gboolean found;
 
-      found = find_line_log_attrs (&iter, func, &offset, already_moved_initially);
+      found = find_line_log_attrs (&iter, fn, &offset, already_moved_initially);
 
       if (found)
         {
@@ -3209,7 +3209,7 @@ find_by_log_attrs (GtkTextIter     *arg_iter,
 
 static gboolean
 find_visible_by_log_attrs (GtkTextIter     *iter,
-                           FindLogAttrFunc  func,
+                           FindLogAttrFunc  fn,
                            gboolean         forward)
 {
   GtkTextIter pos;
@@ -3222,7 +3222,7 @@ find_visible_by_log_attrs (GtkTextIter     *iter,
     {
       GtkTextIter pos_before = pos;
 
-      find_by_log_attrs (&pos, func, forward);
+      find_by_log_attrs (&pos, fn, forward);
 
       if (gtk_text_iter_equal (&pos_before, &pos))
         break;
@@ -3693,7 +3693,7 @@ is_cursor_pos_func (const PangoLogAttr *attrs,
  * the letter then a "combining mark" that causes the accent to be
  * rendered; so the cursor can’t go between those two characters.
  *
- * See also the [struct@Pango.LogAttr] struct and the [func@Pango.break]
+ * See also the [struct@Pango.LogAttr] struct and the [fn@Pango.break]
  * function.
  *
  * Returns: %TRUE if we moved and the new position is dereferenceable
@@ -3837,7 +3837,7 @@ gtk_text_iter_backward_visible_cursor_positions (GtkTextIter *iter,
  * Determine if @iter is at a cursor position.
  *
  * See [method@Gtk.TextIter.forward_cursor_position] or
- * [struct@Pango.LogAttr] or [func@Pango.break] for details
+ * [struct@Pango.LogAttr] or [fn@Pango.break] for details
  * on what a cursor position is.
  *
  * Returns: %TRUE if the cursor can be placed at @iter

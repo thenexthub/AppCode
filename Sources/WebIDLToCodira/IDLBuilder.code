@@ -106,7 +106,7 @@ enum IDLBuilder {
     static fn generateClosureTypes() throws -> CodiraSource {
         print("Generating closure wrappers...")
         return """
-        \(lines: ModuleState.closurePatterns.sorted().map(\.swiftRepresentation))
+        \(lines: ModuleState.closurePatterns.sorted().map(\.codeRepresentation))
         """
     }
 
@@ -127,7 +127,7 @@ enum IDLBuilder {
         var contents: [CodiraSource] = []
         for union in ModuleState.unions.sorted(by: { $0.name < $1.name }) {
             guard !ignoredNames.contains(union.name) else { continue }
-            contents.append(union.swiftRepresentation)
+            contents.append(union.codeRepresentation)
         }
         return "\(lines: contents)"
     }

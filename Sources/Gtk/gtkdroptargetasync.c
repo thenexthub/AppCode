@@ -88,19 +88,19 @@ struct _GtkDropTargetAsyncClass
 {
   GtkEventControllerClass parent_class;
 
-  gboolean              (* accept)                              (GtkDropTargetAsync     *self,
+  gboolean              (* accept)                              (GtkDropTargetAsync     *this,
                                                                  GdkDrop                *drop);
-  GdkDragAction         (* drag_enter)                          (GtkDropTargetAsync     *self,
+  GdkDragAction         (* drag_enter)                          (GtkDropTargetAsync     *this,
                                                                  GdkDrop                *drop,
                                                                  double                  x,
                                                                  double                  y);
-  GdkDragAction         (* drag_motion)                         (GtkDropTargetAsync     *self,
+  GdkDragAction         (* drag_motion)                         (GtkDropTargetAsync     *this,
                                                                  GdkDrop                *drop,
                                                                  double                  x,
                                                                  double                  y);
-  void                  (* drag_leave)                          (GtkDropTargetAsync     *self,
+  void                  (* drag_leave)                          (GtkDropTargetAsync     *this,
                                                                  GdkDrop                *drop);
-  gboolean              (* drop)                                (GtkDropTargetAsync     *self,
+  gboolean              (* drop)                                (GtkDropTargetAsync     *this,
                                                                  GdkDrop                *drop,
                                                                  double                  x,
                                                                  double                  y);
@@ -129,16 +129,16 @@ static guint signals[NUM_SIGNALS];
 G_DEFINE_TYPE (GtkDropTargetAsync, gtk_drop_target_async, GTK_TYPE_EVENT_CONTROLLER);
 
 static gboolean
-gtk_drop_target_async_accept (GtkDropTargetAsync *self,
+gtk_drop_target_async_accept (GtkDropTargetAsync *this,
                               GdkDrop            *drop)
 {
-  if ((gdk_drop_get_actions (drop) & self->actions) == GDK_ACTION_NONE)
+  if ((gdk_drop_get_actions (drop) & this->actions) == GDK_ACTION_NONE)
     return FALSE;
 
-  if (self->formats == NULL)
+  if (this->formats == NULL)
     return TRUE;
 
-  return gdk_content_formats_match (self->formats, gdk_drop_get_formats (drop));
+  return gdk_content_formats_match (this->formats, gdk_drop_get_formats (drop));
 }
 
 static GdkDragAction
@@ -157,25 +157,25 @@ make_action_unique (GdkDragAction actions)
 }
 
 static GdkDragAction
-gtk_drop_target_async_drag_enter (GtkDropTargetAsync *self,
+gtk_drop_target_async_drag_enter (GtkDropTargetAsync *this,
                                   GdkDrop            *drop,
                                   double              x,
                                   double              y)
 {
-  return make_action_unique (self->actions & gdk_drop_get_actions (drop));
+  return make_action_unique (this->actions & gdk_drop_get_actions (drop));
 }
 
 static GdkDragAction
-gtk_drop_target_async_drag_motion (GtkDropTargetAsync *self,
+gtk_drop_target_async_drag_motion (GtkDropTargetAsync *this,
                                    GdkDrop            *drop,
                                    double              x,
                                    double              y)
 {
-  return make_action_unique (self->actions & gdk_drop_get_actions (drop));
+  return make_action_unique (this->actions & gdk_drop_get_actions (drop));
 }
 
 static gboolean
-gtk_drop_target_async_drop (GtkDropTargetAsync  *self,
+gtk_drop_target_async_drop (GtkDropTargetAsync  *this,
                             GdkDrop             *drop,
                             double               x,
                             double               y)
@@ -207,7 +207,7 @@ gtk_drop_target_async_handle_event (GtkEventController *controller,
                                     double              x,
                                     double              y)
 {
-  GtkDropTargetAsync *self = GTK_DROP_TARGET_ASYNC (controller);
+  GtkDropTargetAsync *this = GTK_DROP_TARGET_ASYNC (controller);
   GdkDrop *drop;
 
   switch ((int) gdk_event_get_event_type (event))
@@ -219,13 +219,13 @@ gtk_drop_target_async_handle_event (GtkEventController *controller,
 
         drop = gdk_dnd_event_get_drop (event);
         /* sanity check */
-        g_return_val_if_fail (self->drop == drop, FALSE);
-        if (self->rejected)
+        g_return_val_if_fail (this->drop == drop, FALSE);
+        if (this->rejected)
           return FALSE;
 
-        g_signal_emit (self, signals[DRAG_MOTION], 0, drop, x, y, &preferred_action);
+        g_signal_emit (this, signals[DRAG_MOTION], 0, drop, x, y, &preferred_action);
         if (preferred_action &&
-            gtk_drop_status (self->drop, self->actions, preferred_action))
+            gtk_drop_status (this->drop, this->actions, preferred_action))
           {
             gtk_widget_set_state_flags (widget, GTK_STATE_FLAG_DROP_ACTIVE, FALSE);
           }
@@ -242,11 +242,11 @@ gtk_drop_target_async_handle_event (GtkEventController *controller,
 
         drop = gdk_dnd_event_get_drop (event);
         /* sanity check */
-        g_return_val_if_fail (self->drop == drop, FALSE);
-        if (self->rejected)
+        g_return_val_if_fail (this->drop == drop, FALSE);
+        if (this->rejected)
           return FALSE;
 
-        g_signal_emit (self, signals[DROP], 0, self->drop, x, y, &handled);
+        g_signal_emit (this, signals[DROP], 0, this->drop, x, y, &handled);
         return handled;
       }
 
@@ -261,33 +261,33 @@ gtk_drop_target_async_handle_crossing (GtkEventController    *controller,
                                        double                 x,
                                        double                 y)
 {
-  GtkDropTargetAsync *self = GTK_DROP_TARGET_ASYNC (controller);
+  GtkDropTargetAsync *this = GTK_DROP_TARGET_ASYNC (controller);
   GtkWidget *widget = gtk_event_controller_get_widget (controller);
 
   if (crossing->type != GTK_CROSSING_DROP)
     return;
 
   /* sanity check */
-  g_warn_if_fail (self->drop == NULL || self->drop == crossing->drop);
+  g_warn_if_fail (this->drop == NULL || this->drop == crossing->drop);
 
   if (crossing->direction == GTK_CROSSING_IN)
     {
       gboolean accept = FALSE;
       GdkDragAction preferred_action;
 
-      if (self->drop != NULL)
+      if (this->drop != NULL)
         return;
 
-      self->drop = g_object_ref (crossing->drop);
+      this->drop = g_object_ref (crossing->drop);
 
-      g_signal_emit (self, signals[ACCEPT], 0, self->drop, &accept);
-      self->rejected = !accept;
-      if (self->rejected)
+      g_signal_emit (this, signals[ACCEPT], 0, this->drop, &accept);
+      this->rejected = !accept;
+      if (this->rejected)
         return;
 
-      g_signal_emit (self, signals[DRAG_ENTER], 0, self->drop, x, y, &preferred_action);
+      g_signal_emit (this, signals[DRAG_ENTER], 0, this->drop, x, y, &preferred_action);
       if (preferred_action &&
-          gtk_drop_status (self->drop, self->actions, preferred_action))
+          gtk_drop_status (this->drop, this->actions, preferred_action))
         {
           gtk_widget_set_state_flags (widget, GTK_STATE_FLAG_DROP_ACTIVE, FALSE);
         }
@@ -298,8 +298,8 @@ gtk_drop_target_async_handle_crossing (GtkEventController    *controller,
           crossing->new_target == widget)
         return;
 
-      g_signal_emit (self, signals[DRAG_LEAVE], 0, self->drop);
-      g_clear_object (&self->drop);
+      g_signal_emit (this, signals[DRAG_LEAVE], 0, this->drop);
+      g_clear_object (&this->drop);
       gtk_widget_unset_state_flags (widget, GTK_STATE_FLAG_DROP_ACTIVE);
     }
 }
@@ -307,9 +307,9 @@ gtk_drop_target_async_handle_crossing (GtkEventController    *controller,
 static void
 gtk_drop_target_async_finalize (GObject *object)
 {
-  GtkDropTargetAsync *self = GTK_DROP_TARGET_ASYNC (object);
+  GtkDropTargetAsync *this = GTK_DROP_TARGET_ASYNC (object);
 
-  g_clear_pointer (&self->formats, gdk_content_formats_unref);
+  g_clear_pointer (&this->formats, gdk_content_formats_unref);
 
   G_OBJECT_CLASS (gtk_drop_target_async_parent_class)->finalize (object);
 }
@@ -320,16 +320,16 @@ gtk_drop_target_async_set_property (GObject      *object,
                                     const GValue *value,
                                     GParamSpec   *pspec)
 {
-  GtkDropTargetAsync *self = GTK_DROP_TARGET_ASYNC (object);
+  GtkDropTargetAsync *this = GTK_DROP_TARGET_ASYNC (object);
 
   switch (prop_id)
     {
     case PROP_ACTIONS:
-      gtk_drop_target_async_set_actions (self, g_value_get_flags (value));
+      gtk_drop_target_async_set_actions (this, g_value_get_flags (value));
       break;
 
     case PROP_FORMATS:
-      gtk_drop_target_async_set_formats (self, g_value_get_boxed (value));
+      gtk_drop_target_async_set_formats (this, g_value_get_boxed (value));
       break;
 
     default:
@@ -343,16 +343,16 @@ gtk_drop_target_async_get_property (GObject    *object,
                                     GValue     *value,
                                     GParamSpec *pspec)
 {
-  GtkDropTargetAsync *self = GTK_DROP_TARGET_ASYNC (object);
+  GtkDropTargetAsync *this = GTK_DROP_TARGET_ASYNC (object);
 
   switch (prop_id)
     {
     case PROP_ACTIONS:
-      g_value_set_flags (value, gtk_drop_target_async_get_actions (self));
+      g_value_set_flags (value, gtk_drop_target_async_get_actions (this));
       break;
 
     case PROP_FORMATS:
-      g_value_set_boxed (value, gtk_drop_target_async_get_formats (self));
+      g_value_set_boxed (value, gtk_drop_target_async_get_formats (this));
       break;
 
     default:
@@ -403,7 +403,7 @@ gtk_drop_target_async_class_init (GtkDropTargetAsyncClass *class)
 
  /**
    * GtkDropTargetAsync::accept:
-   * @self: the `GtkDropTargetAsync`
+   * @this: the `GtkDropTargetAsync`
    * @drop: the `GdkDrop`
    *
    * Emitted on the drop site when a drop operation is about to begin.
@@ -439,7 +439,7 @@ gtk_drop_target_async_class_init (GtkDropTargetAsyncClass *class)
 
   /**
    * GtkDropTargetAsync::drag-enter:
-   * @self: the `GtkDropTargetAsync`
+   * @this: the `GtkDropTargetAsync`
    * @drop: the `GdkDrop`
    * @x: the x coordinate of the current pointer position
    * @y: the y coordinate of the current pointer position
@@ -465,7 +465,7 @@ gtk_drop_target_async_class_init (GtkDropTargetAsyncClass *class)
 
   /**
    * GtkDropTargetAsync::drag-motion:
-   * @self: the `GtkDropTargetAsync`
+   * @this: the `GtkDropTargetAsync`
    * @drop: the `GdkDrop`
    * @x: the x coordinate of the current pointer position
    * @y: the y coordinate of the current pointer position
@@ -489,7 +489,7 @@ gtk_drop_target_async_class_init (GtkDropTargetAsyncClass *class)
 
   /**
    * GtkDropTargetAsync::drag-leave:
-   * @self: the `GtkDropTargetAsync`
+   * @this: the `GtkDropTargetAsync`
    * @drop: the `GdkDrop`
    *
    * Emitted on the drop site when the pointer leaves the widget.
@@ -509,7 +509,7 @@ gtk_drop_target_async_class_init (GtkDropTargetAsyncClass *class)
 
   /**
    * GtkDropTargetAsync::drop:
-   * @self: the `GtkDropTargetAsync`
+   * @this: the `GtkDropTargetAsync`
    * @drop: the `GdkDrop`
    * @x: the x coordinate of the current pointer position
    * @y: the y coordinate of the current pointer position
@@ -546,7 +546,7 @@ gtk_drop_target_async_class_init (GtkDropTargetAsyncClass *class)
 }
 
 static void
-gtk_drop_target_async_init (GtkDropTargetAsync *self)
+gtk_drop_target_async_init (GtkDropTargetAsync *this)
 {
 }
 
@@ -577,34 +577,34 @@ gtk_drop_target_async_new (GdkContentFormats *formats,
 
 /**
  * gtk_drop_target_async_set_formats:
- * @self: a `GtkDropTargetAsync`
+ * @this: a `GtkDropTargetAsync`
  * @formats: (nullable): the supported data formats or %NULL for any format
  *
  * Sets the data formats that this drop target will accept.
  */
 void
-gtk_drop_target_async_set_formats (GtkDropTargetAsync *self,
+gtk_drop_target_async_set_formats (GtkDropTargetAsync *this,
                                    GdkContentFormats  *formats)
 {
-  g_return_if_fail (GTK_IS_DROP_TARGET_ASYNC (self));
+  g_return_if_fail (GTK_IS_DROP_TARGET_ASYNC (this));
 
-  if (self->formats == formats)
+  if (this->formats == formats)
     return;
 
-  if (self->formats)
-    gdk_content_formats_unref (self->formats);
+  if (this->formats)
+    gdk_content_formats_unref (this->formats);
 
-  self->formats = formats;
+  this->formats = formats;
 
-  if (self->formats)
-    gdk_content_formats_ref (self->formats);
+  if (this->formats)
+    gdk_content_formats_ref (this->formats);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_FORMATS]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_FORMATS]);
 }
 
 /**
  * gtk_drop_target_async_get_formats:
- * @self: a `GtkDropTargetAsync`
+ * @this: a `GtkDropTargetAsync`
  *
  * Gets the data formats that this drop target accepts.
  *
@@ -613,53 +613,53 @@ gtk_drop_target_async_set_formats (GtkDropTargetAsync *self,
  * Returns: (nullable): the supported data formats
  */
 GdkContentFormats *
-gtk_drop_target_async_get_formats (GtkDropTargetAsync *self)
+gtk_drop_target_async_get_formats (GtkDropTargetAsync *this)
 {
-  g_return_val_if_fail (GTK_IS_DROP_TARGET_ASYNC (self), NULL);
+  g_return_val_if_fail (GTK_IS_DROP_TARGET_ASYNC (this), NULL);
 
-  return self->formats;
+  return this->formats;
 }
 
 /**
  * gtk_drop_target_async_set_actions:
- * @self: a `GtkDropTargetAsync`
+ * @this: a `GtkDropTargetAsync`
  * @actions: the supported actions
  *
  * Sets the actions that this drop target supports.
  */
 void
-gtk_drop_target_async_set_actions (GtkDropTargetAsync *self,
+gtk_drop_target_async_set_actions (GtkDropTargetAsync *this,
                                    GdkDragAction       actions)
 {
-  g_return_if_fail (GTK_IS_DROP_TARGET_ASYNC (self));
+  g_return_if_fail (GTK_IS_DROP_TARGET_ASYNC (this));
 
-  if (self->actions == actions)
+  if (this->actions == actions)
     return;
 
-  self->actions = actions;
+  this->actions = actions;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIONS]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ACTIONS]);
 }
 
 /**
  * gtk_drop_target_async_get_actions:
- * @self: a `GtkDropTargetAsync`
+ * @this: a `GtkDropTargetAsync`
  *
  * Gets the actions that this drop target supports.
  *
  * Returns: the actions that this drop target supports
  */
 GdkDragAction
-gtk_drop_target_async_get_actions (GtkDropTargetAsync *self)
+gtk_drop_target_async_get_actions (GtkDropTargetAsync *this)
 {
-  g_return_val_if_fail (GTK_IS_DROP_TARGET_ASYNC (self), GDK_ACTION_NONE);
+  g_return_val_if_fail (GTK_IS_DROP_TARGET_ASYNC (this), GDK_ACTION_NONE);
 
-  return self->actions;
+  return this->actions;
 }
 
 /**
  * gtk_drop_target_async_reject_drop:
- * @self: a `GtkDropTargetAsync`
+ * @this: a `GtkDropTargetAsync`
  * @drop: the `GdkDrop` of an ongoing drag operation
  *
  * Sets the @drop as not accepted on this drag site.
@@ -669,19 +669,19 @@ gtk_drop_target_async_get_actions (GtkDropTargetAsync *self)
  * the data.
  */
 void
-gtk_drop_target_async_reject_drop (GtkDropTargetAsync *self,
+gtk_drop_target_async_reject_drop (GtkDropTargetAsync *this,
                                    GdkDrop            *drop)
 {
-  g_return_if_fail (GTK_IS_DROP_TARGET_ASYNC (self));
+  g_return_if_fail (GTK_IS_DROP_TARGET_ASYNC (this));
   g_return_if_fail (GDK_IS_DROP (drop));
 
-  if (self->rejected)
+  if (this->rejected)
     return;
 
-  if (self->drop != drop)
+  if (this->drop != drop)
     return;
 
-  self->rejected = TRUE;
-  gtk_widget_unset_state_flags (gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (self)),
+  this->rejected = TRUE;
+  gtk_widget_unset_state_flags (gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (this)),
                                 GTK_STATE_FLAG_DROP_ACTIVE);
 }

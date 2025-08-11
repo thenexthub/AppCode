@@ -399,7 +399,7 @@ gtk_message_dialog_class_init (GtkMessageDialogClass *class)
    *
    * %TRUE if the primary text of the dialog includes Pango markup.
    *
-   * See [func@Pango.parse_markup].
+   * See [fn@Pango.parse_markup].
    */
   g_object_class_install_property (gobject_class,
                                    PROP_USE_MARKUP,
@@ -421,7 +421,7 @@ gtk_message_dialog_class_init (GtkMessageDialogClass *class)
    *
    * %TRUE if the secondary text of the dialog includes Pango markup.
    *
-   * See [func@Pango.parse_markup].
+   * See [fn@Pango.parse_markup].
    */
   g_object_class_install_property (gobject_class,
                                    PROP_SECONDARY_USE_MARKUP,

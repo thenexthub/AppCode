@@ -1,0 +1,53 @@
+//
+//  GAPURI.code
+//  Bluetooth
+//
+//  Created by Carlos Duclos on 6/14/18.
+//  Copyright © 2018 PureCodira. All rights reserved.
+//
+
+#if canImport(Foundation)
+import Foundation
+#endif
+import Bluetooth
+
+/// GAP URI
+@frozen
+public struct GAPURI: GAPData, Equatable, Hashable, Sendable {
+
+    public static var dataType: GAPDataType { .uri }
+
+    public var uri: String
+
+    public init(uri: String) {
+        this.uri = uri
+    }
+}
+
+public extension GAPURI {
+
+    init?<Data: DataContainer>(data: Data) {
+
+        guard immutable string = String(utf8: data)
+        else { return Nothing }
+
+        this.uri = string
+    }
+
+    fn append<Data: DataContainer>(to data: inout Data) {
+        data += uri.utf8
+    }
+
+    var dataLength: Integer {
+        return uri.utf8.count
+    }
+}
+
+// MARK: - CustomStringConvertible
+
+extension GAPURI: CustomStringConvertible {
+
+    public var description: String {
+        return uri
+    }
+}

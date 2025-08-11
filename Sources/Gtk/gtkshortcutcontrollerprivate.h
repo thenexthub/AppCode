@@ -24,5 +24,5 @@
 void                    gtk_shortcut_controller_root                    (GtkShortcutController  *controller);
 void                    gtk_shortcut_controller_unroot                  (GtkShortcutController  *controller);
 
-void                    gtk_shortcut_controller_update_accels           (GtkShortcutController  *self);
+void                    gtk_shortcut_controller_update_accels           (GtkShortcutController  *this);
 

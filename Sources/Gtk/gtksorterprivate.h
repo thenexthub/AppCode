@@ -21,9 +21,9 @@
 
 #include "gtk/gtksortkeysprivate.h"
 
-GtkSortKeys *           gtk_sorter_get_keys                     (GtkSorter              *self);
+GtkSortKeys *           gtk_sorter_get_keys                     (GtkSorter              *this);
 
-void                    gtk_sorter_changed_with_keys            (GtkSorter              *self,
+void                    gtk_sorter_changed_with_keys            (GtkSorter              *this,
                                                                  GtkSorterChange         change,
                                                                  GtkSortKeys            *keys);
 

@@ -46,19 +46,19 @@ void                     gsk_rounded_rect_dihedral              (GskRoundedRect 
                                                                  const GskRoundedRect     *src,
                                                                  GdkDihedral               dihedral);
 
-gboolean                 gsk_rounded_rect_is_circular           (const GskRoundedRect     *self) G_GNUC_PURE;
+gboolean                 gsk_rounded_rect_is_circular           (const GskRoundedRect     *this) G_GNUC_PURE;
 
-void                     gsk_rounded_rect_path                  (const GskRoundedRect     *self,
+void                     gsk_rounded_rect_path                  (const GskRoundedRect     *this,
                                                                  cairo_t                  *cr);
-void                     gsk_rounded_rect_to_float              (const GskRoundedRect     *self,
+void                     gsk_rounded_rect_to_float              (const GskRoundedRect     *this,
                                                                  const graphene_point_t   *offset,
                                                                  float                     rect[12]);
 
 gboolean                 gsk_rounded_rect_equal                 (gconstpointer             rect1,
                                                                  gconstpointer             rect2) G_GNUC_PURE;
-char *                   gsk_rounded_rect_to_string             (const GskRoundedRect     *self) G_GNUC_MALLOC;
+char *                   gsk_rounded_rect_to_string             (const GskRoundedRect     *this) G_GNUC_MALLOC;
 
-void                     gsk_rounded_rect_get_largest_cover     (const GskRoundedRect     *self,
+void                     gsk_rounded_rect_get_largest_cover     (const GskRoundedRect     *this,
                                                                  const graphene_rect_t    *rect,
                                                                  graphene_rect_t          *result);
 
@@ -68,14 +68,14 @@ typedef enum {
   GSK_INTERSECTION_NOT_REPRESENTABLE
 } GskRoundedRectIntersection;
 
-GskRoundedRectIntersection gsk_rounded_rect_intersect_with_rect   (const GskRoundedRect     *self,
+GskRoundedRectIntersection gsk_rounded_rect_intersect_with_rect   (const GskRoundedRect     *this,
                                                                    const graphene_rect_t    *rect,
                                                                    GskRoundedRect           *result) G_GNUC_PURE;
 GskRoundedRectIntersection gsk_rounded_rect_intersection          (const GskRoundedRect     *a,
                                                                    const GskRoundedRect     *b,
                                                                    GskRoundedRect           *result);
 
-gboolean gsk_rounded_rect_corner_box_contains_point (const GskRoundedRect   *self,
+gboolean gsk_rounded_rect_corner_box_contains_point (const GskRoundedRect   *this,
                                                      GskCorner               corner,
                                                      const graphene_point_t *point);
 

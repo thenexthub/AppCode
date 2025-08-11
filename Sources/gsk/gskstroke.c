@@ -45,18 +45,18 @@ G_DEFINE_BOXED_TYPE (GskStroke, gsk_stroke, gsk_stroke_copy, gsk_stroke_free)
 GskStroke *
 gsk_stroke_new (float line_width)
 {
-  GskStroke *self;
+  GskStroke *this;
 
   g_return_val_if_fail (line_width > 0, NULL);
 
-  self = g_new0 (GskStroke, 1);
+  this = g_new0 (GskStroke, 1);
 
-  self->line_width = line_width;
-  self->line_cap = GSK_LINE_CAP_BUTT;
-  self->line_join = GSK_LINE_JOIN_MITER;
-  self->miter_limit = 4.f; /* following svg */
+  this->line_width = line_width;
+  this->line_cap = GSK_LINE_CAP_BUTT;
+  this->line_join = GSK_LINE_JOIN_MITER;
+  this->miter_limit = 4.f; /* following svg */
 
-  return self;
+  return this;
 }
 
 /**
@@ -72,39 +72,39 @@ gsk_stroke_new (float line_width)
 GskStroke *
 gsk_stroke_copy (const GskStroke *other)
 {
-  GskStroke *self;
+  GskStroke *this;
 
   g_return_val_if_fail (other != NULL, NULL);
 
-  self = g_new (GskStroke, 1);
+  this = g_new (GskStroke, 1);
 
-  *self = GSK_STROKE_INIT_COPY (other);
+  *this = GSK_STROKE_INIT_COPY (other);
 
-  return self;
+  return this;
 }
 
 /**
  * gsk_stroke_free:
- * @self: a stroke
+ * @this: a stroke
  *
  * Frees a `GskStroke`.
  *
  * Since: 4.14
  */
 void
-gsk_stroke_free (GskStroke *self)
+gsk_stroke_free (GskStroke *this)
 {
-  if (self == NULL)
+  if (this == NULL)
     return;
 
-  gsk_stroke_clear (self);
+  gsk_stroke_clear (this);
 
-  g_free (self);
+  g_free (this);
 }
 
 /**
  * gsk_stroke_to_cairo:
- * @self: a stroke
+ * @this: a stroke
  * @cr: the cairo context to configure
  *
  * A helper function that sets the stroke parameters
@@ -113,13 +113,13 @@ gsk_stroke_free (GskStroke *self)
  * Since: 4.14
  */
 void
-gsk_stroke_to_cairo (const GskStroke *self,
+gsk_stroke_to_cairo (const GskStroke *this,
                      cairo_t         *cr)
 {
-  cairo_set_line_width (cr, self->line_width);
+  cairo_set_line_width (cr, this->line_width);
 
   /* gcc can optimize that to a direct case. This catches later additions to the enum */
-  switch (self->line_cap)
+  switch (this->line_cap)
     {
       case GSK_LINE_CAP_BUTT:
         cairo_set_line_cap (cr, CAIRO_LINE_CAP_BUTT);
@@ -136,7 +136,7 @@ gsk_stroke_to_cairo (const GskStroke *self,
     }
 
   /* gcc can optimize that to a direct case. This catches later additions to the enum */
-  switch (self->line_join)
+  switch (this->line_join)
     {
       case GSK_LINE_JOIN_MITER:
         cairo_set_line_join (cr, CAIRO_LINE_JOIN_MITER);
@@ -152,18 +152,18 @@ gsk_stroke_to_cairo (const GskStroke *self,
         break;
     }
 
-  cairo_set_miter_limit (cr, self->miter_limit);
+  cairo_set_miter_limit (cr, this->miter_limit);
 
-  if (self->dash_length)
+  if (this->dash_length)
     {
       gsize i;
-      double *dash = g_newa (double, self->n_dash);
+      double *dash = g_newa (double, this->n_dash);
 
-      for (i = 0; i < self->n_dash; i++)
+      for (i = 0; i < this->n_dash; i++)
         {
-          dash[i] = self->dash[i];
+          dash[i] = this->dash[i];
         }
-      cairo_set_dash (cr, dash, self->n_dash, self->dash_offset);
+      cairo_set_dash (cr, dash, this->n_dash, this->dash_offset);
     }
   else
     cairo_set_dash (cr, NULL, 0, 0.0);
@@ -204,7 +204,7 @@ gsk_stroke_equal (gconstpointer stroke1,
 
 /**
  * gsk_stroke_set_line_width:
- * @self: a stroke
+ * @this: a stroke
  * @line_width: width of the line in pixels
  *
  * Sets the line width to be used when stroking.
@@ -214,18 +214,18 @@ gsk_stroke_equal (gconstpointer stroke1,
  * Since: 4.14
  */
 void
-gsk_stroke_set_line_width (GskStroke *self,
+gsk_stroke_set_line_width (GskStroke *this,
                            float      line_width)
 {
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
   g_return_if_fail (line_width > 0);
 
-  self->line_width = line_width;
+  this->line_width = line_width;
 }
 
 /**
  * gsk_stroke_get_line_width:
- * @self: a stroke
+ * @this: a stroke
  *
  * Gets the line width used.
  *
@@ -234,16 +234,16 @@ gsk_stroke_set_line_width (GskStroke *self,
  * Since: 4.14
  */
 float
-gsk_stroke_get_line_width (const GskStroke *self)
+gsk_stroke_get_line_width (const GskStroke *this)
 {
-  g_return_val_if_fail (self != NULL, 0.0);
+  g_return_val_if_fail (this != NULL, 0.0);
 
-  return self->line_width;
+  return this->line_width;
 }
 
 /**
  * gsk_stroke_set_line_cap:
- * @self: a stroke
+ * @this: a stroke
  * @line_cap: the line cap
  *
  * Sets the line cap to be used when stroking.
@@ -253,17 +253,17 @@ gsk_stroke_get_line_width (const GskStroke *self)
  * Since: 4.14
  */
 void
-gsk_stroke_set_line_cap (GskStroke  *self,
+gsk_stroke_set_line_cap (GskStroke  *this,
                          GskLineCap  line_cap)
 {
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
 
-  self->line_cap = line_cap;
+  this->line_cap = line_cap;
 }
 
 /**
  * gsk_stroke_get_line_cap:
- * @self: a stroke
+ * @this: a stroke
  *
  * Gets the line cap used.
  *
@@ -274,16 +274,16 @@ gsk_stroke_set_line_cap (GskStroke  *self,
  * Since: 4.14
  */
 GskLineCap
-gsk_stroke_get_line_cap (const GskStroke *self)
+gsk_stroke_get_line_cap (const GskStroke *this)
 {
-  g_return_val_if_fail (self != NULL, 0.0);
+  g_return_val_if_fail (this != NULL, 0.0);
 
-  return self->line_cap;
+  return this->line_cap;
 }
 
 /**
  * gsk_stroke_set_line_join:
- * @self: a stroke
+ * @this: a stroke
  * @line_join: the line join to use
  *
  * Sets the line join to be used when stroking.
@@ -293,17 +293,17 @@ gsk_stroke_get_line_cap (const GskStroke *self)
  * Since: 4.14
  */
 void
-gsk_stroke_set_line_join (GskStroke   *self,
+gsk_stroke_set_line_join (GskStroke   *this,
                           GskLineJoin  line_join)
 {
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
 
-  self->line_join = line_join;
+  this->line_join = line_join;
 }
 
 /**
  * gsk_stroke_get_line_join:
- * @self: a stroke
+ * @this: a stroke
  *
  * Gets the line join used.
  *
@@ -314,16 +314,16 @@ gsk_stroke_set_line_join (GskStroke   *self,
  * Since: 4.14
  */
 GskLineJoin
-gsk_stroke_get_line_join (const GskStroke *self)
+gsk_stroke_get_line_join (const GskStroke *this)
 {
-  g_return_val_if_fail (self != NULL, 0.0);
+  g_return_val_if_fail (this != NULL, 0.0);
 
-  return self->line_join;
+  return this->line_join;
 }
 
 /**
  * gsk_stroke_set_miter_limit:
- * @self: a stroke
+ * @this: a stroke
  * @limit: the miter limit
  *
  * Sets the miter limit to be used when stroking.
@@ -339,18 +339,18 @@ gsk_stroke_get_line_join (const GskStroke *self)
  * Since: 4.14
  */
 void
-gsk_stroke_set_miter_limit (GskStroke  *self,
+gsk_stroke_set_miter_limit (GskStroke  *this,
                             float       limit)
 {
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
   g_return_if_fail (limit >= 0);
 
-  self->miter_limit = limit;
+  this->miter_limit = limit;
 }
 
 /**
  * gsk_stroke_get_miter_limit:
- * @self: a stroke
+ * @this: a stroke
  *
  * Gets the miter limit.
  *
@@ -359,16 +359,16 @@ gsk_stroke_set_miter_limit (GskStroke  *self,
  * Since: 4.14
  */
 float
-gsk_stroke_get_miter_limit (const GskStroke *self)
+gsk_stroke_get_miter_limit (const GskStroke *this)
 {
-  g_return_val_if_fail (self != NULL, 4.f);
+  g_return_val_if_fail (this != NULL, 4.f);
 
-  return self->miter_limit;
+  return this->miter_limit;
 }
 
 /**
  * gsk_stroke_set_dash:
- * @self: a stroke
+ * @this: a stroke
  * @dash: (array length=n_dash) (transfer none) (nullable):
  *   the array of dashes
  * @n_dash: number of elements in @dash
@@ -400,14 +400,14 @@ gsk_stroke_get_miter_limit (const GskStroke *self)
  * Since: 4.14
  */
 void
-gsk_stroke_set_dash (GskStroke   *self,
+gsk_stroke_set_dash (GskStroke   *this,
                      const float *dash,
                      gsize        n_dash)
 {
   float dash_length;
   gsize i;
 
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
   g_return_if_fail (dash != NULL || n_dash == 0);
 
   dash_length = 0;
@@ -421,15 +421,15 @@ gsk_stroke_set_dash (GskStroke   *self,
       dash_length += dash[i];
     }
 
-  self->dash_length = dash_length;
-  g_free (self->dash);
-  self->dash = g_memdup2 (dash, sizeof (gfloat) * n_dash);
-  self->n_dash = n_dash;
+  this->dash_length = dash_length;
+  g_free (this->dash);
+  this->dash = g_memdup2 (dash, sizeof (gfloat) * n_dash);
+  this->n_dash = n_dash;
 }
 
 /**
  * gsk_stroke_get_dash:
- * @self: a stroke
+ * @this: a stroke
  * @n_dash: (out): number of elements in the array returned
  *
  * Gets the dash array in use.
@@ -440,20 +440,20 @@ gsk_stroke_set_dash (GskStroke   *self,
  * Since: 4.14
  */
 const float *
-gsk_stroke_get_dash (const GskStroke *self,
+gsk_stroke_get_dash (const GskStroke *this,
                      gsize           *n_dash)
 {
-  g_return_val_if_fail (self != NULL, NULL);
+  g_return_val_if_fail (this != NULL, NULL);
   g_return_val_if_fail (n_dash != NULL, NULL);
 
-  *n_dash = self->n_dash;
+  *n_dash = this->n_dash;
 
-  return self->dash;
+  return this->dash;
 }
 
 /**
  * gsk_stroke_set_dash_offset:
- * @self: a stroke
+ * @this: a stroke
  * @offset: offset into the dash pattern
  *
  * Sets the offset into the dash pattern where dashing should begin.
@@ -466,17 +466,17 @@ gsk_stroke_get_dash (const GskStroke *self,
  * Since: 4.14
  */
 void
-gsk_stroke_set_dash_offset (GskStroke *self,
+gsk_stroke_set_dash_offset (GskStroke *this,
                             float      offset)
 {
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
 
-  self->dash_offset = offset;
+  this->dash_offset = offset;
 }
 
 /**
  * gsk_stroke_get_dash_offset:
- * @self: a stroke
+ * @this: a stroke
  *
  * Gets the dash offset.
  *
@@ -485,11 +485,11 @@ gsk_stroke_set_dash_offset (GskStroke *self,
  * Since: 4.14
  */
 float
-gsk_stroke_get_dash_offset (const GskStroke *self)
+gsk_stroke_get_dash_offset (const GskStroke *this)
 {
-  g_return_val_if_fail (self != NULL, 4.f);
+  g_return_val_if_fail (this != NULL, 4.f);
 
-  return self->dash_offset;
+  return this->dash_offset;
 }
 
 /*< private >

@@ -169,7 +169,7 @@ gtk_layout_overlay_snapshot (GtkInspectorOverlay *overlay,
 }
 
 static void
-gtk_layout_overlay_init (GtkLayoutOverlay *self)
+gtk_layout_overlay_init (GtkLayoutOverlay *this)
 {
 
 }

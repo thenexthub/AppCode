@@ -69,75 +69,75 @@ gtk_list_list_model_get_item_type (GListModel *list)
 static guint
 gtk_list_list_model_get_n_items (GListModel *list)
 {
-  GtkListListModel *self = GTK_LIST_LIST_MODEL (list);
+  GtkListListModel *this = GTK_LIST_LIST_MODEL (list);
 
-  return self->n_items;
+  return this->n_items;
 }
 
 static gboolean
-gtk_list_list_model_cache_is_valid (GtkListListModel *self)
+gtk_list_list_model_cache_is_valid (GtkListListModel *this)
 {
-  return self->cache_item != NULL;
+  return this->cache_item != NULL;
 }
 
 static void
-gtk_list_list_model_invalidate_cache (GtkListListModel *self)
+gtk_list_list_model_invalidate_cache (GtkListListModel *this)
 {
-  self->cache_item = NULL;
+  this->cache_item = NULL;
 }
 
 static gpointer
 gtk_list_list_model_get_item (GListModel *list,
                               guint       position)
 {
-  GtkListListModel *self = GTK_LIST_LIST_MODEL (list);
+  GtkListListModel *this = GTK_LIST_LIST_MODEL (list);
   gpointer result;
   guint i;
   guint start, end;
 
-  if (position >= self->n_items)
+  if (position >= this->n_items)
     return NULL;
 
   start = 0;
-  end = self->n_items;
-  if (gtk_list_list_model_cache_is_valid (self))
+  end = this->n_items;
+  if (gtk_list_list_model_cache_is_valid (this))
     {
-      if (self->cache_pos <= position)
-        start = self->cache_pos;
+      if (this->cache_pos <= position)
+        start = this->cache_pos;
       else
-        end = self->cache_pos;
+        end = this->cache_pos;
     }
 
-  if (self->get_last &&
+  if (this->get_last &&
       position > (start + end) / 2)
     {
-      if (end == self->cache_pos && gtk_list_list_model_cache_is_valid (self))
-        result = self->get_previous (self->cache_item, self->data);
+      if (end == this->cache_pos && gtk_list_list_model_cache_is_valid (this))
+        result = this->get_previous (this->cache_item, this->data);
       else
-        result = self->get_last (self->data);
+        result = this->get_last (this->data);
 
       for (i = end - 1; i > position; i--)
         {
-          result = self->get_previous (result, self->data);
+          result = this->get_previous (result, this->data);
         }
     }
   else
     {
-      if (start == self->cache_pos && gtk_list_list_model_cache_is_valid (self))
-        result = self->cache_item;
+      if (start == this->cache_pos && gtk_list_list_model_cache_is_valid (this))
+        result = this->cache_item;
       else
-        result = self->get_first (self->data);
+        result = this->get_first (this->data);
 
       for (i = start; i < position; i++)
         {
-          result = self->get_next (result, self->data);
+          result = this->get_next (result, this->data);
         }
     }
 
-  self->cache_item = result;
-  self->cache_pos = position;
+  this->cache_item = result;
+  this->cache_pos = position;
 
-  return self->get_item (result, self->data);
+  return this->get_item (result, this->data);
 }
 
 static void
@@ -158,7 +158,7 @@ gtk_list_list_model_get_property (GObject    *object,
                                   GValue     *value,
                                   GParamSpec *pspec)
 {
-  GtkListListModel *self = GTK_LIST_LIST_MODEL (object);
+  GtkListListModel *this = GTK_LIST_LIST_MODEL (object);
 
   switch (prop_id)
     {
@@ -167,7 +167,7 @@ gtk_list_list_model_get_property (GObject    *object,
       break;
 
     case PROP_N_ITEMS:
-      g_value_set_uint (value, self->n_items);
+      g_value_set_uint (value, this->n_items);
       break;
 
     default:
@@ -179,13 +179,13 @@ gtk_list_list_model_get_property (GObject    *object,
 static void
 gtk_list_list_model_dispose (GObject *object)
 {
-  GtkListListModel *self = GTK_LIST_LIST_MODEL (object);
+  GtkListListModel *this = GTK_LIST_LIST_MODEL (object);
 
-  if (self->notify)
-    self->notify (self->data);
+  if (this->notify)
+    this->notify (this->data);
 
-  self->n_items = 0;
-  self->notify = NULL;
+  this->n_items = 0;
+  this->notify = NULL;
 
   G_OBJECT_CLASS (gtk_list_list_model_parent_class)->dispose (object);
 }
@@ -212,7 +212,7 @@ gtk_list_list_model_class_init (GtkListListModelClass *klass)
 }
 
 static void
-gtk_list_list_model_init (GtkListListModel *self)
+gtk_list_list_model_init (GtkListListModel *this)
 {
 }
 
@@ -276,74 +276,74 @@ gtk_list_list_model_new_with_size (guint          n_items,
 }
 
 static guint
-gtk_list_list_model_find (GtkListListModel *self,
+gtk_list_list_model_find (GtkListListModel *this,
                           gpointer          item)
 {
   guint position;
   gpointer x;
 
   position = 0;
-  for (x = self->get_first (self->data);
+  for (x = this->get_first (this->data);
        x != item;
-       x = self->get_next (x, self->data))
+       x = this->get_next (x, this->data))
     position++;
 
   return position;
 }
 
 void
-gtk_list_list_model_item_added (GtkListListModel *self,
+gtk_list_list_model_item_added (GtkListListModel *this,
                                 gpointer          item)
 {
-  g_return_if_fail (GTK_IS_LIST_LIST_MODEL (self));
+  g_return_if_fail (GTK_IS_LIST_LIST_MODEL (this));
   g_return_if_fail (item != NULL);
 
-  gtk_list_list_model_item_added_at (self, gtk_list_list_model_find (self, item));
+  gtk_list_list_model_item_added_at (this, gtk_list_list_model_find (this, item));
 }
 
 void
-gtk_list_list_model_item_added_at (GtkListListModel *self,
+gtk_list_list_model_item_added_at (GtkListListModel *this,
                                    guint             position)
 {
-  g_return_if_fail (GTK_IS_LIST_LIST_MODEL (self));
-  g_return_if_fail (position <= self->n_items);
+  g_return_if_fail (GTK_IS_LIST_LIST_MODEL (this));
+  g_return_if_fail (position <= this->n_items);
 
-  self->n_items++;
-  if (position <= self->cache_pos)
-    self->cache_pos++;
+  this->n_items++;
+  if (position <= this->cache_pos)
+    this->cache_pos++;
 
-  g_list_model_items_changed (G_LIST_MODEL (self), position, 0, 1);
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+  g_list_model_items_changed (G_LIST_MODEL (this), position, 0, 1);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 }
 
 void
-gtk_list_list_model_item_removed (GtkListListModel *self,
+gtk_list_list_model_item_removed (GtkListListModel *this,
                                   gpointer          previous)
 {
   guint position;
 
-  g_return_if_fail (GTK_IS_LIST_LIST_MODEL (self));
+  g_return_if_fail (GTK_IS_LIST_LIST_MODEL (this));
 
   if (previous == NULL)
     position = 0;
   else
-    position = 1 + gtk_list_list_model_find (self, previous);
+    position = 1 + gtk_list_list_model_find (this, previous);
 
-  gtk_list_list_model_item_removed_at (self, position);
+  gtk_list_list_model_item_removed_at (this, position);
 }
 
 void
-gtk_list_list_model_item_moved (GtkListListModel *self,
+gtk_list_list_model_item_moved (GtkListListModel *this,
                                 gpointer          item,
                                 gpointer          previous_previous)
 {
   guint position, previous_position;
   guint min, max;
 
-  g_return_if_fail (GTK_IS_LIST_LIST_MODEL (self));
+  g_return_if_fail (GTK_IS_LIST_LIST_MODEL (this));
   g_return_if_fail (item != previous_previous);
 
-  position = gtk_list_list_model_find (self, item);
+  position = gtk_list_list_model_find (this, item);
 
   if (previous_previous == NULL)
     {
@@ -351,7 +351,7 @@ gtk_list_list_model_item_moved (GtkListListModel *self,
     }
   else
     {
-      previous_position = gtk_list_list_model_find (self, previous_previous);
+      previous_position = gtk_list_list_model_find (this, previous_previous);
       if (position > previous_position)
         previous_position++;
     }
@@ -363,52 +363,52 @@ gtk_list_list_model_item_moved (GtkListListModel *self,
   min = MIN (position, previous_position);
   max = MAX (position, previous_position) + 1;
 
-  if (self->cache_item == item)
-    self->cache_pos = position;
-  else if (self->cache_pos >= min && self->cache_pos < max)
-    self->cache_pos += (self->cache_pos > position ? 1 : -1);
+  if (this->cache_item == item)
+    this->cache_pos = position;
+  else if (this->cache_pos >= min && this->cache_pos < max)
+    this->cache_pos += (this->cache_pos > position ? 1 : -1);
 
-  g_list_model_items_changed (G_LIST_MODEL (self), min, max - min, max - min);
+  g_list_model_items_changed (G_LIST_MODEL (this), min, max - min, max - min);
 }
 
 void
-gtk_list_list_model_item_removed_at (GtkListListModel *self,
+gtk_list_list_model_item_removed_at (GtkListListModel *this,
                                      guint             position)
 {
-  g_return_if_fail (GTK_IS_LIST_LIST_MODEL (self));
-  g_return_if_fail (position < self->n_items);
+  g_return_if_fail (GTK_IS_LIST_LIST_MODEL (this));
+  g_return_if_fail (position < this->n_items);
 
-  self->n_items -= 1;
-  if (position == self->cache_pos)
-    gtk_list_list_model_invalidate_cache (self);
-  else if (position < self->cache_pos)
-    self->cache_pos--;
+  this->n_items -= 1;
+  if (position == this->cache_pos)
+    gtk_list_list_model_invalidate_cache (this);
+  else if (position < this->cache_pos)
+    this->cache_pos--;
 
-  g_list_model_items_changed (G_LIST_MODEL (self), position, 1, 0);
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+  g_list_model_items_changed (G_LIST_MODEL (this), position, 1, 0);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 }
 
 void
-gtk_list_list_model_clear (GtkListListModel *self)
+gtk_list_list_model_clear (GtkListListModel *this)
 {
   guint n_items;
 
-  g_return_if_fail (GTK_IS_LIST_LIST_MODEL (self));
+  g_return_if_fail (GTK_IS_LIST_LIST_MODEL (this));
 
-  n_items = self->n_items;
+  n_items = this->n_items;
   
-  if (self->notify)
-    self->notify (self->data);
+  if (this->notify)
+    this->notify (this->data);
 
-  self->n_items = 0;
-  self->notify = NULL;
+  this->n_items = 0;
+  this->notify = NULL;
 
-  gtk_list_list_model_invalidate_cache (self);
+  gtk_list_list_model_invalidate_cache (this);
 
   if (n_items > 0)
     {
-      g_list_model_items_changed (G_LIST_MODEL (self), 0, n_items, 0);
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+      g_list_model_items_changed (G_LIST_MODEL (this), 0, n_items, 0);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
     }
 }
 

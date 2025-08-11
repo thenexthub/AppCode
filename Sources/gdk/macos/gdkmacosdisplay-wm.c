@@ -28,7 +28,7 @@
 #define WARP_OFFSET_Y 15
 
 static void
-_gdk_macos_display_position_toplevel_with_parent (GdkMacosDisplay *self,
+_gdk_macos_display_position_toplevel_with_parent (GdkMacosDisplay *this,
                                                   GdkMacosSurface *surface,
                                                   GdkMacosSurface *parent,
                                                   int             *x,
@@ -38,7 +38,7 @@ _gdk_macos_display_position_toplevel_with_parent (GdkMacosDisplay *self,
   GdkRectangle parent_rect;
   GdkMonitor *monitor;
 
-  g_assert (GDK_IS_MACOS_DISPLAY (self));
+  g_assert (GDK_IS_MACOS_DISPLAY (this));
   g_assert (GDK_IS_MACOS_TOPLEVEL_SURFACE (surface));
   g_assert (GDK_IS_MACOS_TOPLEVEL_SURFACE (parent));
 
@@ -80,7 +80,7 @@ has_surface_at_origin (const GList *surfaces,
 }
 
 static void
-_gdk_macos_display_position_toplevel (GdkMacosDisplay *self,
+_gdk_macos_display_position_toplevel (GdkMacosDisplay *this,
                                       GdkMacosSurface *surface,
                                       GdkMonitor      *selected_monitor,
                                       int             *x,
@@ -92,12 +92,12 @@ _gdk_macos_display_position_toplevel (GdkMacosDisplay *self,
   GdkMonitor *monitor;
   CGPoint mouse;
 
-  g_assert (GDK_IS_MACOS_DISPLAY (self));
+  g_assert (GDK_IS_MACOS_DISPLAY (this));
   g_assert (GDK_IS_MACOS_TOPLEVEL_SURFACE (surface));
 
   mouse = [NSEvent mouseLocation];
   if (!selected_monitor)
-    monitor = _gdk_macos_display_get_monitor_at_display_coords (self, mouse.x, mouse.y);
+    monitor = _gdk_macos_display_get_monitor_at_display_coords (this, mouse.x, mouse.y);
   else
     monitor = selected_monitor;
 
@@ -117,7 +117,7 @@ _gdk_macos_display_position_toplevel (GdkMacosDisplay *self,
   /* Try to see if there are any other surfaces at this origin and if so,
    * adjust until we get something better.
    */
-  surfaces = _gdk_macos_display_get_surfaces (self);
+  surfaces = _gdk_macos_display_get_surfaces (this);
   while (has_surface_at_origin (surfaces, *x, *y))
     {
       *x += WARP_OFFSET_X;
@@ -141,7 +141,7 @@ _gdk_macos_display_position_toplevel (GdkMacosDisplay *self,
  * and other weird areas the user can't use.
  */
 void
-_gdk_macos_display_position_surface (GdkMacosDisplay *self,
+_gdk_macos_display_position_surface (GdkMacosDisplay *this,
                                      GdkMacosSurface *surface,
                                      GdkMonitor      *monitor,
                                      int             *x,
@@ -149,13 +149,13 @@ _gdk_macos_display_position_surface (GdkMacosDisplay *self,
 {
   GdkSurface *transient_for;
 
-  g_return_if_fail (GDK_IS_MACOS_DISPLAY (self));
+  g_return_if_fail (GDK_IS_MACOS_DISPLAY (this));
   g_return_if_fail (GDK_IS_MACOS_TOPLEVEL_SURFACE (surface));
 
   transient_for = GDK_SURFACE (surface)->transient_for;
 
   if (transient_for != NULL)
-    _gdk_macos_display_position_toplevel_with_parent (self, surface, GDK_MACOS_SURFACE (transient_for), x, y);
+    _gdk_macos_display_position_toplevel_with_parent (this, surface, GDK_MACOS_SURFACE (transient_for), x, y);
   else
-    _gdk_macos_display_position_toplevel (self, surface, monitor, x, y);
+    _gdk_macos_display_position_toplevel (this, surface, monitor, x, y);
 }

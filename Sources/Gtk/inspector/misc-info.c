@@ -217,8 +217,8 @@ disconnect_each_other (gpointer  still_alive,
 {
   if (GTK_INSPECTOR_IS_MISC_INFO (still_alive))
     {
-      GtkInspectorMiscInfo *self = GTK_INSPECTOR_MISC_INFO (still_alive);
-      self->object = NULL;
+      GtkInspectorMiscInfo *this = GTK_INSPECTOR_MISC_INFO (still_alive);
+      this->object = NULL;
     }
 
   g_signal_handlers_disconnect_matched (still_alive, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, for_science);

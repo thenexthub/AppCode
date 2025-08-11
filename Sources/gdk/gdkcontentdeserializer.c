@@ -42,7 +42,7 @@
  *
  * GTK provides serializers and deserializers for common data types
  * such as text, colors, images or file lists. To register your own
- * deserialization functions, use [func@content_register_deserializer].
+ * deserialization functions, use [fn@content_register_deserializer].
  *
  * Also see [class@Gdk.ContentSerializer].
  */
@@ -224,7 +224,7 @@ gdk_content_deserializer_get_value (GdkContentDeserializer *deserializer)
  *
  * Gets the input stream for the current operation.
  *
- * This is the stream that was passed to [func@Gdk.content_deserialize_async].
+ * This is the stream that was passed to [fn@Gdk.content_deserialize_async].
  *
  * Returns: (transfer none): the input stream for the current operation
  */
@@ -242,7 +242,7 @@ gdk_content_deserializer_get_input_stream (GdkContentDeserializer *deserializer)
  *
  * Gets the I/O priority for the current operation.
  *
- * This is the priority that was passed to [func@Gdk.content_deserialize_async].
+ * This is the priority that was passed to [fn@Gdk.content_deserialize_async].
  *
  * Returns: the I/O priority for the current operation
  */
@@ -260,7 +260,7 @@ gdk_content_deserializer_get_priority (GdkContentDeserializer *deserializer)
  *
  * Gets the cancellable for the current operation.
  *
- * This is the `GCancellable` that was passed to [func@Gdk.content_deserialize_async].
+ * This is the `GCancellable` that was passed to [fn@Gdk.content_deserialize_async].
  *
  * Returns: (transfer none) (nullable): the cancellable for the current operation
  */

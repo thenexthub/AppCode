@@ -28,7 +28,7 @@
  * Represents the source of an ongoing DND operation.
  *
  * A `GdkDrag` is created when a drag is started, and stays alive for duration of
- * the DND operation. After a drag has been started with [func@Gdk.Drag.begin],
+ * the DND operation. After a drag has been started with [fn@Gdk.Drag.begin],
  * the caller gets informed about the status of the ongoing drag operation
  * with signals on the `GdkDrag` object.
  *

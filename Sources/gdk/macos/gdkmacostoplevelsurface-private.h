@@ -45,8 +45,8 @@ struct _GdkMacosToplevelSurfaceClass
 };
 
 GType            _gdk_macos_toplevel_surface_get_type           (void);
-void             _gdk_macos_toplevel_surface_attach_to_parent   (GdkMacosToplevelSurface *self);
-void             _gdk_macos_toplevel_surface_detach_from_parent (GdkMacosToplevelSurface *self);
+void             _gdk_macos_toplevel_surface_attach_to_parent   (GdkMacosToplevelSurface *this);
+void             _gdk_macos_toplevel_surface_detach_from_parent (GdkMacosToplevelSurface *this);
 
 G_END_DECLS
 

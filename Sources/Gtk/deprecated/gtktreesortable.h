@@ -63,7 +63,7 @@ typedef struct _GtkTreeSortableIface GtkTreeSortableIface;
  * @model: The `GtkTreeModel` the comparison is within
  * @a: A `GtkTreeIter` in @model
  * @b: Another `GtkTreeIter` in @model
- * @user_data: Data passed when the compare func is assigned e.g. by
+ * @user_data: Data passed when the compare fn is assigned e.g. by
  *  gtk_tree_sortable_set_sort_func()
  *
  * A GtkTreeIterCompareFunc should return a negative integer, zero, or a positive

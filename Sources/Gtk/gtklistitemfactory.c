@@ -78,37 +78,37 @@
 G_DEFINE_TYPE (GtkListItemFactory, gtk_list_item_factory, G_TYPE_OBJECT)
 
 static void
-gtk_list_item_factory_default_setup (GtkListItemFactory *self,
+gtk_list_item_factory_default_setup (GtkListItemFactory *this,
                                      GObject            *item,
                                      gboolean            bind,
-                                     GFunc               func,
+                                     GFunc               fn,
                                      gpointer            data)
 {
-  if (func)
-    func (item, data);
+  if (fn)
+    fn (item, data);
 }
 
 static void
-gtk_list_item_factory_default_teardown (GtkListItemFactory *self,
+gtk_list_item_factory_default_teardown (GtkListItemFactory *this,
                                         GObject            *item,
                                         gboolean            unbind,
-                                        GFunc               func,
+                                        GFunc               fn,
                                         gpointer            data)
 {
-  if (func)
-    func (item, data);
+  if (fn)
+    fn (item, data);
 }
 
 static void
-gtk_list_item_factory_default_update (GtkListItemFactory *self,
+gtk_list_item_factory_default_update (GtkListItemFactory *this,
                                       GObject            *item,
                                       gboolean            unbind,
                                       gboolean            bind,
-                                      GFunc               func,
+                                      GFunc               fn,
                                       gpointer            data)
 {
-  if (func)
-    func (item, data);
+  if (fn)
+    fn (item, data);
 }
 
 static void
@@ -120,44 +120,44 @@ gtk_list_item_factory_class_init (GtkListItemFactoryClass *klass)
 }
 
 static void
-gtk_list_item_factory_init (GtkListItemFactory *self)
+gtk_list_item_factory_init (GtkListItemFactory *this)
 {
 }
 
 void
-gtk_list_item_factory_setup (GtkListItemFactory *self,
+gtk_list_item_factory_setup (GtkListItemFactory *this,
                              GObject            *item,
                              gboolean            bind,
-                             GFunc               func,
+                             GFunc               fn,
                              gpointer            data)
 {
-  g_return_if_fail (GTK_IS_LIST_ITEM_FACTORY (self));
+  g_return_if_fail (GTK_IS_LIST_ITEM_FACTORY (this));
 
-  GTK_LIST_ITEM_FACTORY_GET_CLASS (self)->setup (self, item, bind, func, data);
+  GTK_LIST_ITEM_FACTORY_GET_CLASS (this)->setup (this, item, bind, fn, data);
 }
 
 void
-gtk_list_item_factory_teardown (GtkListItemFactory *self,
+gtk_list_item_factory_teardown (GtkListItemFactory *this,
                                 GObject            *item,
                                 gboolean            unbind,
-                                GFunc               func,
+                                GFunc               fn,
                                 gpointer            data)
 {
-  g_return_if_fail (GTK_IS_LIST_ITEM_FACTORY (self));
+  g_return_if_fail (GTK_IS_LIST_ITEM_FACTORY (this));
 
-  GTK_LIST_ITEM_FACTORY_GET_CLASS (self)->teardown (self, item, unbind, func, data);
+  GTK_LIST_ITEM_FACTORY_GET_CLASS (this)->teardown (this, item, unbind, fn, data);
 }
 
 void
-gtk_list_item_factory_update (GtkListItemFactory *self,
+gtk_list_item_factory_update (GtkListItemFactory *this,
                               GObject            *item,
                               gboolean            unbind,
                               gboolean            bind,
-                              GFunc               func,
+                              GFunc               fn,
                               gpointer            data)
 {
-  g_return_if_fail (GTK_IS_LIST_ITEM_FACTORY (self));
+  g_return_if_fail (GTK_IS_LIST_ITEM_FACTORY (this));
   g_return_if_fail (G_IS_OBJECT (item));
 
-  GTK_LIST_ITEM_FACTORY_GET_CLASS (self)->update (self, item, unbind, bind, func, data);
+  GTK_LIST_ITEM_FACTORY_GET_CLASS (this)->update (this, item, unbind, bind, fn, data);
 }

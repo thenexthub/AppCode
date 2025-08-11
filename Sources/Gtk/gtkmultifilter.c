@@ -89,19 +89,19 @@ gtk_multi_filter_get_item_type (GListModel *list)
 static guint
 gtk_multi_filter_get_n_items (GListModel *list)
 {
-  GtkMultiFilter *self = GTK_MULTI_FILTER (list);
+  GtkMultiFilter *this = GTK_MULTI_FILTER (list);
 
-  return gtk_filters_get_size (&self->filters);
+  return gtk_filters_get_size (&this->filters);
 }
 
 static gpointer
 gtk_multi_filter_get_item (GListModel *list,
                            guint       position)
 {
-  GtkMultiFilter *self = GTK_MULTI_FILTER (list);
+  GtkMultiFilter *this = GTK_MULTI_FILTER (list);
 
-  if (position < gtk_filters_get_size (&self->filters))
-    return g_object_ref (gtk_filters_get (&self->filters, position));
+  if (position < gtk_filters_get_size (&this->filters))
+    return g_object_ref (gtk_filters_get (&this->filters, position));
   else
     return NULL;
 }
@@ -143,9 +143,9 @@ G_DEFINE_ABSTRACT_TYPE_WITH_CODE (GtkMultiFilter, gtk_multi_filter, GTK_TYPE_FIL
 static void
 gtk_multi_filter_changed_cb (GtkFilter       *filter,
                              GtkFilterChange  change,
-                             GtkMultiFilter  *self)
+                             GtkMultiFilter  *this)
 {
-  gtk_filter_changed (GTK_FILTER (self), change);
+  gtk_filter_changed (GTK_FILTER (this), change);
 }
 
 static void
@@ -154,7 +154,7 @@ gtk_multi_filter_get_property (GObject    *object,
                                GValue     *value,
                                GParamSpec *pspec)
 {
-  GtkMultiFilter *self = GTK_MULTI_FILTER (object);
+  GtkMultiFilter *this = GTK_MULTI_FILTER (object);
 
   switch (prop_id)
     {
@@ -163,7 +163,7 @@ gtk_multi_filter_get_property (GObject    *object,
       break;
 
     case PROP_N_ITEMS:
-      g_value_set_uint (value, gtk_filters_get_size (&self->filters));
+      g_value_set_uint (value, gtk_filters_get_size (&this->filters));
       break;
 
     default:
@@ -175,16 +175,16 @@ gtk_multi_filter_get_property (GObject    *object,
 static void
 gtk_multi_filter_dispose (GObject *object)
 {
-  GtkMultiFilter *self = GTK_MULTI_FILTER (object);
+  GtkMultiFilter *this = GTK_MULTI_FILTER (object);
   guint i;
 
-  for (i = 0; i < gtk_filters_get_size (&self->filters); i++)
+  for (i = 0; i < gtk_filters_get_size (&this->filters); i++)
     {
-      GtkFilter *filter = gtk_filters_get (&self->filters, i);
-      g_signal_handlers_disconnect_by_func (filter, gtk_multi_filter_changed_cb, self);
+      GtkFilter *filter = gtk_filters_get (&this->filters, i);
+      g_signal_handlers_disconnect_by_func (filter, gtk_multi_filter_changed_cb, this);
     }
 
-  gtk_filters_clear (&self->filters);
+  gtk_filters_clear (&this->filters);
 
   G_OBJECT_CLASS (gtk_multi_filter_parent_class)->dispose (object);
 }
@@ -229,37 +229,37 @@ gtk_multi_filter_class_init (GtkMultiFilterClass *class)
 }
 
 static void
-gtk_multi_filter_init (GtkMultiFilter *self)
+gtk_multi_filter_init (GtkMultiFilter *this)
 {
-  gtk_filters_init (&self->filters);
+  gtk_filters_init (&this->filters);
 }
 
 /**
  * gtk_multi_filter_append:
- * @self: a multi filter
+ * @this: a multi filter
  * @filter: (transfer full): a filter to add
  *
  * Adds a filter.
  */
 void
-gtk_multi_filter_append (GtkMultiFilter *self,
+gtk_multi_filter_append (GtkMultiFilter *this,
                          GtkFilter    *filter)
 {
-  g_return_if_fail (GTK_IS_MULTI_FILTER (self));
+  g_return_if_fail (GTK_IS_MULTI_FILTER (this));
   g_return_if_fail (GTK_IS_FILTER (filter));
 
-  g_signal_connect (filter, "changed", G_CALLBACK (gtk_multi_filter_changed_cb), self);
-  gtk_filters_append (&self->filters, filter);
-  g_list_model_items_changed (G_LIST_MODEL (self), gtk_filters_get_size (&self->filters) - 1, 0, 1);
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+  g_signal_connect (filter, "changed", G_CALLBACK (gtk_multi_filter_changed_cb), this);
+  gtk_filters_append (&this->filters, filter);
+  g_list_model_items_changed (G_LIST_MODEL (this), gtk_filters_get_size (&this->filters) - 1, 0, 1);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 
-  gtk_filter_changed (GTK_FILTER (self),
-                      GTK_MULTI_FILTER_GET_CLASS (self)->addition_change);
+  gtk_filter_changed (GTK_FILTER (this),
+                      GTK_MULTI_FILTER_GET_CLASS (this)->addition_change);
 }
 
 /**
  * gtk_multi_filter_remove:
- * @self: a multi filter
+ * @this: a multi filter
  * @position: position of filter to remove
  *
  * Removes a filter.
@@ -268,24 +268,24 @@ gtk_multi_filter_append (GtkMultiFilter *self,
  * nothing happens.
  **/
 void
-gtk_multi_filter_remove (GtkMultiFilter *self,
+gtk_multi_filter_remove (GtkMultiFilter *this,
                          guint           position)
 {
   guint length;
   GtkFilter *filter;
 
-  length = gtk_filters_get_size (&self->filters);
+  length = gtk_filters_get_size (&this->filters);
   if (position >= length)
     return;
 
-  filter = gtk_filters_get (&self->filters, position);
-  g_signal_handlers_disconnect_by_func (filter, gtk_multi_filter_changed_cb, self);
-  gtk_filters_splice (&self->filters, position, 1, FALSE, NULL, 0);
-  g_list_model_items_changed (G_LIST_MODEL (self), position, 1, 0);
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+  filter = gtk_filters_get (&this->filters, position);
+  g_signal_handlers_disconnect_by_func (filter, gtk_multi_filter_changed_cb, this);
+  gtk_filters_splice (&this->filters, position, 1, FALSE, NULL, 0);
+  g_list_model_items_changed (G_LIST_MODEL (this), position, 1, 0);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 
-  gtk_filter_changed (GTK_FILTER (self),
-                      GTK_MULTI_FILTER_GET_CLASS (self)->removal_change);
+  gtk_filter_changed (GTK_FILTER (this),
+                      GTK_MULTI_FILTER_GET_CLASS (this)->removal_change);
 }
 
 /*** ANY FILTER ***/
@@ -306,12 +306,12 @@ static gboolean
 gtk_any_filter_match (GtkFilter *filter,
                       gpointer   item)
 {
-  GtkMultiFilter *self = GTK_MULTI_FILTER (filter);
+  GtkMultiFilter *this = GTK_MULTI_FILTER (filter);
   guint i;
 
-  for (i = 0; i < gtk_filters_get_size (&self->filters); i++)
+  for (i = 0; i < gtk_filters_get_size (&this->filters); i++)
     {
-      GtkFilter *child = gtk_filters_get (&self->filters, i);
+      GtkFilter *child = gtk_filters_get (&this->filters, i);
 
       if (gtk_filter_match (child, item))
         return TRUE;
@@ -323,13 +323,13 @@ gtk_any_filter_match (GtkFilter *filter,
 static GtkFilterMatch
 gtk_any_filter_get_strictness (GtkFilter *filter)
 {
-  GtkMultiFilter *self = GTK_MULTI_FILTER (filter);
+  GtkMultiFilter *this = GTK_MULTI_FILTER (filter);
   guint i;
   GtkFilterMatch result = GTK_FILTER_MATCH_NONE;
 
-  for (i = 0; i < gtk_filters_get_size (&self->filters); i++)
+  for (i = 0; i < gtk_filters_get_size (&this->filters); i++)
     {
-      GtkFilter *child = gtk_filters_get (&self->filters, i);
+      GtkFilter *child = gtk_filters_get (&this->filters, i);
 
       switch (gtk_filter_get_strictness (child))
       {
@@ -363,7 +363,7 @@ gtk_any_filter_class_init (GtkAnyFilterClass *class)
 }
 
 static void
-gtk_any_filter_init (GtkAnyFilter *self)
+gtk_any_filter_init (GtkAnyFilter *this)
 {
 }
 
@@ -404,12 +404,12 @@ static gboolean
 gtk_every_filter_match (GtkFilter *filter,
                         gpointer   item)
 {
-  GtkMultiFilter *self = GTK_MULTI_FILTER (filter);
+  GtkMultiFilter *this = GTK_MULTI_FILTER (filter);
   guint i;
 
-  for (i = 0; i < gtk_filters_get_size (&self->filters); i++)
+  for (i = 0; i < gtk_filters_get_size (&this->filters); i++)
     {
-      GtkFilter *child = gtk_filters_get (&self->filters, i);
+      GtkFilter *child = gtk_filters_get (&this->filters, i);
 
       if (!gtk_filter_match (child, item))
         return FALSE;
@@ -421,13 +421,13 @@ gtk_every_filter_match (GtkFilter *filter,
 static GtkFilterMatch
 gtk_every_filter_get_strictness (GtkFilter *filter)
 {
-  GtkMultiFilter *self = GTK_MULTI_FILTER (filter);
+  GtkMultiFilter *this = GTK_MULTI_FILTER (filter);
   guint i;
   GtkFilterMatch result = GTK_FILTER_MATCH_ALL;
 
-  for (i = 0; i < gtk_filters_get_size (&self->filters); i++)
+  for (i = 0; i < gtk_filters_get_size (&this->filters); i++)
     {
-      GtkFilter *child = gtk_filters_get (&self->filters, i);
+      GtkFilter *child = gtk_filters_get (&this->filters, i);
 
       switch (gtk_filter_get_strictness (child))
       {
@@ -461,7 +461,7 @@ gtk_every_filter_class_init (GtkEveryFilterClass *class)
 }
 
 static void
-gtk_every_filter_init (GtkEveryFilter *self)
+gtk_every_filter_init (GtkEveryFilter *this)
 {
 }
 

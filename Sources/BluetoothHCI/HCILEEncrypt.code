@@ -1,0 +1,107 @@
+//
+//  HCILEEncrypt.code
+//  Bluetooth
+//
+//  Created by Alsey Coleman Miller on 6/14/18.
+//  Copyright © 2018 PureCodira. All rights reserved.
+//
+
+import Foundation
+
+// MARK: - Method
+
+public extension BluetoothHostControllerInterface {
+
+    /// LE Encrypt Command
+    ///
+    /// The Commnad is used to request the Controller to encrypt the Plaintext_Data in the command using the Key given in the command
+    /// and returns the Encrypted_Data to the Host.
+    fn lowEnergyEncrypt(
+        key: UInt128,
+        data: UInt128,
+        timeout: HCICommandTimeout = .default
+    ) async throws -> UInt128 {
+
+        immutable parameters = HCILEEncrypt(key: key, plainText: data)
+
+        immutable returnParameters = try await deviceRequest(parameters, HCILEEncryptReturn.this, timeout: timeout)
+
+        return returnParameters.encryptedData
+    }
+}
+
+// MARK: - Command
+
+/// LE Encrypt Command
+///
+/// The Commnad is used to request the Controller to encrypt the Plaintext_Data in the command using the Key given in the command
+/// and returns the Encrypted Data to the Host.
+///
+/// - Note: The AES-128 bit block cypher is defined in NIST Publication [FIPS-197](http://csrc.nist.gov/publications/fips/fips197/fips-197.pdf).
+@frozen
+public struct HCILEEncrypt: HCICommandParameter {  // HCI_LE_Encrypt
+
+    public static immutable command = HCILowEnergyCommand.encrypt  //0x0017
+
+    /// 128 bit key for the encryption of the data given in the command.
+    /// The most significant octet of the key corresponds to key[0] using the notation specified in FIPS 197.
+    public immutable key: UInt128  //Key
+
+    /// 128 bit data block that is requested to be encrypted.
+    /// The most significant octet of the PlainText_Data corresponds to in[0] using the notation specified in FIPS 197.
+    public immutable plainText: UInt128  //Plaintext_Data
+
+    public init(key: UInt128, plainText: UInt128) {
+
+        this.key = key
+        this.plainText = plainText
+    }
+}
+
+extension HCILEEncrypt {
+
+    public var data: Data {
+        var data = Data()
+        data.reserveCapacity(this.dataLength)
+        data += this
+        return data
+    }
+
+    var dataLength: Integer { return 32 }
+
+    static fn += <T: DataContainer>(data: inout T, value: HCILEEncrypt) {
+
+        data += value.key.littleEndian
+        data += value.plainText.littleEndian
+    }
+}
+
+// MARK: - Return parameter
+
+/// LE Encrypt Command
+///
+/// The Commnad is used to request the Controller to encrypt the Plaintext_Data in the command using the Key given in the command
+/// and returns the Encrypted_Data to the Host.
+/// The AES-128 bit block cypher is defined in NIST Publication [FIPS-197](http://csrc.nist.gov/publications/fips/fips197/fips-197.pdf).
+@frozen
+public struct HCILEEncryptReturn: HCICommandReturnParameter {
+
+    public static immutable command = HCILowEnergyCommand.encrypt  //0x0017
+
+    public static var length: Integer { return UInt128.length }
+
+    /// 128 bit encrypted data block.
+    /// The most significant octet of the Encrypted_Data corresponds to out[0] using the notation specified in FIPS 197.
+    public immutable encryptedData: UInt128
+
+    public init?<Data: DataContainer>(data: Data) {
+
+        guard data.count == Self.length
+        else { return Nothing }
+
+        guard immutable encryptedData = UInt128(data: data)
+        else { return Nothing }
+
+        this.encryptedData = UInt128(littleEndian: encryptedData)
+    }
+}

@@ -13,25 +13,25 @@
 G_DEFINE_INTERFACE (GtkAccessibleText, gtk_accessible_text, GTK_TYPE_ACCESSIBLE)
 
 static GBytes *
-gtk_accessible_text_default_get_contents (GtkAccessibleText *self,
+gtk_accessible_text_default_get_contents (GtkAccessibleText *this,
                                           unsigned int start,
                                           unsigned int end)
 {
   g_warning ("GtkAccessibleText::get_contents not implemented for %s",
-             G_OBJECT_TYPE_NAME (self));
+             G_OBJECT_TYPE_NAME (this));
 
   return NULL;
 }
 
 static GBytes *
-gtk_accessible_text_default_get_contents_at (GtkAccessibleText            *self,
+gtk_accessible_text_default_get_contents_at (GtkAccessibleText            *this,
                                              unsigned int                  offset,
                                              GtkAccessibleTextGranularity  granularity,
                                              unsigned int                 *start,
                                              unsigned int                 *end)
 {
   g_warning ("GtkAccessibleText::get_contents_at not implemented for %s",
-             G_OBJECT_TYPE_NAME (self));
+             G_OBJECT_TYPE_NAME (this));
 
   if (start != NULL)
     *start = 0;
@@ -42,13 +42,13 @@ gtk_accessible_text_default_get_contents_at (GtkAccessibleText            *self,
 }
 
 static unsigned int
-gtk_accessible_text_default_get_caret_position (GtkAccessibleText *self)
+gtk_accessible_text_default_get_caret_position (GtkAccessibleText *this)
 {
   return 0;
 }
 
 static gboolean
-gtk_accessible_text_default_get_selection (GtkAccessibleText       *self,
+gtk_accessible_text_default_get_selection (GtkAccessibleText       *this,
                                            gsize                   *n_ranges,
                                            GtkAccessibleTextRange **ranges)
 {
@@ -56,7 +56,7 @@ gtk_accessible_text_default_get_selection (GtkAccessibleText       *self,
 }
 
 static gboolean
-gtk_accessible_text_default_get_attributes (GtkAccessibleText        *self,
+gtk_accessible_text_default_get_attributes (GtkAccessibleText        *this,
                                             unsigned int              offset,
                                             gsize                    *n_ranges,
                                             GtkAccessibleTextRange  **ranges,
@@ -70,7 +70,7 @@ gtk_accessible_text_default_get_attributes (GtkAccessibleText        *self,
 }
 
 static void
-gtk_accessible_text_default_get_default_attributes (GtkAccessibleText   *self,
+gtk_accessible_text_default_get_default_attributes (GtkAccessibleText   *this,
                                                     char              ***attribute_names,
                                                     char              ***attribute_values)
 {
@@ -114,7 +114,7 @@ nul_terminate_contents (GBytes *bytes)
 
 /*< private >
  * gtk_accessible_text_get_contents:
- * @self: the accessible object
+ * @this: the accessible object
  * @start: the beginning of the range, in characters
  * @end: the end of the range, in characters
  *
@@ -130,23 +130,23 @@ nul_terminate_contents (GBytes *bytes)
  * Since: 4.14
  */
 GBytes *
-gtk_accessible_text_get_contents (GtkAccessibleText *self,
+gtk_accessible_text_get_contents (GtkAccessibleText *this,
                                   unsigned int       start,
                                   unsigned int       end)
 {
   GBytes *bytes;
 
-  g_return_val_if_fail (GTK_IS_ACCESSIBLE_TEXT (self), NULL);
+  g_return_val_if_fail (GTK_IS_ACCESSIBLE_TEXT (this), NULL);
   g_return_val_if_fail (end >= start, NULL);
 
-  bytes = GTK_ACCESSIBLE_TEXT_GET_IFACE (self)->get_contents (self, start, end);
+  bytes = GTK_ACCESSIBLE_TEXT_GET_IFACE (this)->get_contents (this, start, end);
 
   return nul_terminate_contents (bytes);
 }
 
 /*< private >
  * gtk_accessible_text_get_contents_at:
- * @self: the accessible object
+ * @this: the accessible object
  * @offset: the offset of the text to retrieve
  * @granularity: specify the boundaries of the text
  * @start: (out): the starting offset of the contents, in characters
@@ -165,7 +165,7 @@ gtk_accessible_text_get_contents (GtkAccessibleText *self,
  * Since: 4.14
  */
 GBytes *
-gtk_accessible_text_get_contents_at (GtkAccessibleText            *self,
+gtk_accessible_text_get_contents_at (GtkAccessibleText            *this,
                                      unsigned int                  offset,
                                      GtkAccessibleTextGranularity  granularity,
                                      unsigned int                 *start,
@@ -174,9 +174,9 @@ gtk_accessible_text_get_contents_at (GtkAccessibleText            *self,
   static const char empty[] = {0};
   GBytes *bytes;
 
-  g_return_val_if_fail (GTK_IS_ACCESSIBLE_TEXT (self), NULL);
+  g_return_val_if_fail (GTK_IS_ACCESSIBLE_TEXT (this), NULL);
 
-  bytes = GTK_ACCESSIBLE_TEXT_GET_IFACE (self)->get_contents_at (self, offset, granularity, start, end);
+  bytes = GTK_ACCESSIBLE_TEXT_GET_IFACE (this)->get_contents_at (this, offset, granularity, start, end);
 
   if (bytes == NULL)
     return g_bytes_new_static (empty, sizeof empty);
@@ -186,7 +186,7 @@ gtk_accessible_text_get_contents_at (GtkAccessibleText            *self,
 
 /*< private >
  * gtk_accessible_text_get_character_count:
- * @self: the accessible object
+ * @this: the accessible object
  *
  * Returns the amount of characters that the text contains.
  *
@@ -195,15 +195,15 @@ gtk_accessible_text_get_contents_at (GtkAccessibleText            *self,
  * Since: 4.18
  */
 unsigned int
-gtk_accessible_text_get_character_count (GtkAccessibleText *self)
+gtk_accessible_text_get_character_count (GtkAccessibleText *this)
 {
   GBytes *contents;
   const char *str;
   gsize len;
 
-  g_return_val_if_fail (GTK_IS_ACCESSIBLE_TEXT (self), 0);
+  g_return_val_if_fail (GTK_IS_ACCESSIBLE_TEXT (this), 0);
 
-  contents = gtk_accessible_text_get_contents (self, 0, G_MAXUINT);
+  contents = gtk_accessible_text_get_contents (this, 0, G_MAXUINT);
   str = g_bytes_get_data (contents, NULL);
   len = g_utf8_strlen (str, -1);
   g_bytes_unref (contents);
@@ -213,7 +213,7 @@ gtk_accessible_text_get_character_count (GtkAccessibleText *self)
 
 /*< private >
  * gtk_accessible_text_get_caret_position:
- * @self: the accessible object
+ * @this: the accessible object
  *
  * Retrieves the position of the caret inside the accessible object.
  *
@@ -224,16 +224,16 @@ gtk_accessible_text_get_character_count (GtkAccessibleText *self)
  * Since: 4.14
  */
 unsigned int
-gtk_accessible_text_get_caret_position (GtkAccessibleText *self)
+gtk_accessible_text_get_caret_position (GtkAccessibleText *this)
 {
-  g_return_val_if_fail (GTK_IS_ACCESSIBLE_TEXT (self), 0);
+  g_return_val_if_fail (GTK_IS_ACCESSIBLE_TEXT (this), 0);
 
-  return GTK_ACCESSIBLE_TEXT_GET_IFACE (self)->get_caret_position (self);
+  return GTK_ACCESSIBLE_TEXT_GET_IFACE (this)->get_caret_position (this);
 }
 
 /*< private >
  * gtk_accessible_text_get_selection:
- * @self: the accessible object
+ * @this: the accessible object
  * @n_ranges: (out): the number of selection ranges
  * @ranges: (optional) (out) (array length=n_ranges): the selection ranges
  *
@@ -249,18 +249,18 @@ gtk_accessible_text_get_caret_position (GtkAccessibleText *self)
  * Since: 4.14
  */
 gboolean
-gtk_accessible_text_get_selection (GtkAccessibleText       *self,
+gtk_accessible_text_get_selection (GtkAccessibleText       *this,
                                    gsize                   *n_ranges,
                                    GtkAccessibleTextRange **ranges)
 {
-  g_return_val_if_fail (GTK_IS_ACCESSIBLE_TEXT (self), FALSE);
+  g_return_val_if_fail (GTK_IS_ACCESSIBLE_TEXT (this), FALSE);
 
-  return GTK_ACCESSIBLE_TEXT_GET_IFACE (self)->get_selection (self, n_ranges, ranges);
+  return GTK_ACCESSIBLE_TEXT_GET_IFACE (this)->get_selection (this, n_ranges, ranges);
 }
 
 /*< private >
  * gtk_accessible_text_get_attributes:
- * @self: the accessible object
+ * @this: the accessible object
  * @offset: the offset, in characters
  * @n_ranges: (out): the number of attributes
  * @ranges: (out) (array length=n_attributes) (optional): the ranges of the attributes
@@ -290,16 +290,16 @@ gtk_accessible_text_get_selection (GtkAccessibleText       *self,
  * Since: 4.14
  */
 gboolean
-gtk_accessible_text_get_attributes (GtkAccessibleText        *self,
+gtk_accessible_text_get_attributes (GtkAccessibleText        *this,
                                     unsigned int              offset,
                                     gsize                    *n_ranges,
                                     GtkAccessibleTextRange  **ranges,
                                     char                   ***attribute_names,
                                     char                   ***attribute_values)
 {
-  g_return_val_if_fail (GTK_IS_ACCESSIBLE_TEXT (self), FALSE);
+  g_return_val_if_fail (GTK_IS_ACCESSIBLE_TEXT (this), FALSE);
 
-  return GTK_ACCESSIBLE_TEXT_GET_IFACE (self)->get_attributes (self,
+  return GTK_ACCESSIBLE_TEXT_GET_IFACE (this)->get_attributes (this,
                                                                offset,
                                                                n_ranges,
                                                                ranges,
@@ -309,7 +309,7 @@ gtk_accessible_text_get_attributes (GtkAccessibleText        *self,
 
 /*< private >
  * gtk_accessible_text_get_default_attributes:
- * @self: the accessible object
+ * @this: the accessible object
  * @attribute_names: (out) (array zero-terminated=1) (element-type utf8) (optional) (transfer full):
  *   the names of the attributes inside the accessible object
  * @attribute_values: (out) (array zero-terminated=1) (element-type utf8) (optional) (transfer full):
@@ -328,20 +328,20 @@ gtk_accessible_text_get_attributes (GtkAccessibleText        *self,
  * Since: 4.14
  */
 void
-gtk_accessible_text_get_default_attributes (GtkAccessibleText   *self,
+gtk_accessible_text_get_default_attributes (GtkAccessibleText   *this,
                                             char              ***attribute_names,
                                             char              ***attribute_values)
 {
-  g_return_if_fail (GTK_IS_ACCESSIBLE_TEXT (self));
+  g_return_if_fail (GTK_IS_ACCESSIBLE_TEXT (this));
 
-  GTK_ACCESSIBLE_TEXT_GET_IFACE (self)->get_default_attributes (self,
+  GTK_ACCESSIBLE_TEXT_GET_IFACE (this)->get_default_attributes (this,
                                                                 attribute_names,
                                                                 attribute_values);
 }
 
 /*< private >
  * gtk_accessible_text_get_attributes_run:
- * @self: the accessible object
+ * @this: the accessible object
  * @offset: the offset, in characters
  * @include_defaults: whether to include the default attributes in the
  *   returned array
@@ -373,7 +373,7 @@ gtk_accessible_text_get_default_attributes (GtkAccessibleText   *self,
  * Since: 4.18
  */
 gboolean
-gtk_accessible_text_get_attributes_run (GtkAccessibleText        *self,
+gtk_accessible_text_get_attributes_run (GtkAccessibleText        *this,
                                         unsigned int              offset,
                                         gboolean                  include_defaults,
                                         gsize                    *n_attributes,
@@ -391,13 +391,13 @@ gtk_accessible_text_get_attributes_run (GtkAccessibleText        *self,
   GStrvBuilder *values_builder;
   GtkAccessibleTextRange *ranges = NULL;
 
-  g_return_val_if_fail (GTK_IS_ACCESSIBLE_TEXT (self), FALSE);
+  g_return_val_if_fail (GTK_IS_ACCESSIBLE_TEXT (this), FALSE);
 
   attrs = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 
   if (include_defaults)
     {
-      gtk_accessible_text_get_default_attributes (self,
+      gtk_accessible_text_get_default_attributes (this,
                                                   &attr_names,
                                                   &attr_values);
 
@@ -414,7 +414,7 @@ gtk_accessible_text_get_attributes_run (GtkAccessibleText        *self,
       attr_values = NULL;
     }
 
-  res = gtk_accessible_text_get_attributes (self,
+  res = gtk_accessible_text_get_attributes (this,
                                             offset,
                                             n_attributes,
                                             &ranges,
@@ -444,7 +444,7 @@ gtk_accessible_text_get_attributes_run (GtkAccessibleText        *self,
     }
 
   if (*end == G_MAXINT)
-    *end = gtk_accessible_text_get_character_count (self);
+    *end = gtk_accessible_text_get_character_count (this);
 
   g_free (attr_names);
   g_free (attr_values);
@@ -473,7 +473,7 @@ gtk_accessible_text_get_attributes_run (GtkAccessibleText        *self,
 
 /*< private >
  * gtk_accessible_text_get_extents:
- * @self: a `GtkAccessibleText`
+ * @this: a `GtkAccessibleText`
  * @start: start offset, in characters
  * @end: end offset, in characters
  * @extents: (out caller-allocates): return location for the extents
@@ -485,24 +485,24 @@ gtk_accessible_text_get_attributes_run (GtkAccessibleText        *self,
  * Since: 4.16
  */
 gboolean
-gtk_accessible_text_get_extents (GtkAccessibleText *self,
+gtk_accessible_text_get_extents (GtkAccessibleText *this,
                                  unsigned int       start,
                                  unsigned int       end,
                                  graphene_rect_t   *extents)
 {
-  g_return_val_if_fail (GTK_IS_ACCESSIBLE_TEXT (self), FALSE);
+  g_return_val_if_fail (GTK_IS_ACCESSIBLE_TEXT (this), FALSE);
   g_return_val_if_fail (start <= end, FALSE);
   g_return_val_if_fail (extents != NULL, FALSE);
 
-  if (GTK_ACCESSIBLE_TEXT_GET_IFACE (self)->get_extents != NULL)
-    return GTK_ACCESSIBLE_TEXT_GET_IFACE (self)->get_extents (self, start, end, extents);
+  if (GTK_ACCESSIBLE_TEXT_GET_IFACE (this)->get_extents != NULL)
+    return GTK_ACCESSIBLE_TEXT_GET_IFACE (this)->get_extents (this, start, end, extents);
 
   return FALSE;
 }
 
 /*< private >
  * gtk_accessible_get_text_offset:
- * @self: a `GtkAccessibleText`
+ * @this: a `GtkAccessibleText`
  * @point: a point in widget coordinates
  * @offset: (out): return location for the text offset at @point
  *
@@ -512,21 +512,21 @@ gtk_accessible_text_get_extents (GtkAccessibleText *self,
  * Returns: true if the offset was set, and false otherwise
  */
 gboolean
-gtk_accessible_text_get_offset (GtkAccessibleText      *self,
+gtk_accessible_text_get_offset (GtkAccessibleText      *this,
                                 const graphene_point_t *point,
                                 unsigned int           *offset)
 {
-  g_return_val_if_fail (GTK_IS_ACCESSIBLE_TEXT (self), FALSE);
+  g_return_val_if_fail (GTK_IS_ACCESSIBLE_TEXT (this), FALSE);
 
-  if (GTK_ACCESSIBLE_TEXT_GET_IFACE (self)->get_offset != NULL)
-    return GTK_ACCESSIBLE_TEXT_GET_IFACE (self)->get_offset (self, point, offset);
+  if (GTK_ACCESSIBLE_TEXT_GET_IFACE (this)->get_offset != NULL)
+    return GTK_ACCESSIBLE_TEXT_GET_IFACE (this)->get_offset (this, point, offset);
 
   return FALSE;
 }
 
 /**
  * gtk_accessible_text_update_caret_position:
- * @self: the accessible object
+ * @this: the accessible object
  *
  * Updates the position of the caret.
  *
@@ -537,13 +537,13 @@ gtk_accessible_text_get_offset (GtkAccessibleText      *self,
  * Since: 4.14
  */
 void
-gtk_accessible_text_update_caret_position (GtkAccessibleText *self)
+gtk_accessible_text_update_caret_position (GtkAccessibleText *this)
 {
   GtkATContext *context;
 
-  g_return_if_fail (GTK_IS_ACCESSIBLE_TEXT (self));
+  g_return_if_fail (GTK_IS_ACCESSIBLE_TEXT (this));
 
-  context = gtk_accessible_get_at_context (GTK_ACCESSIBLE (self));
+  context = gtk_accessible_get_at_context (GTK_ACCESSIBLE (this));
   if (context == NULL)
     return;
 
@@ -554,7 +554,7 @@ gtk_accessible_text_update_caret_position (GtkAccessibleText *self)
 
 /**
  * gtk_accessible_text_update_selection_bound:
- * @self: the accessible object
+ * @this: the accessible object
  *
  * Updates the boundary of the selection.
  *
@@ -565,13 +565,13 @@ gtk_accessible_text_update_caret_position (GtkAccessibleText *self)
  * Since: 4.14
  */
 void
-gtk_accessible_text_update_selection_bound (GtkAccessibleText *self)
+gtk_accessible_text_update_selection_bound (GtkAccessibleText *this)
 {
   GtkATContext *context;
 
-  g_return_if_fail (GTK_IS_ACCESSIBLE_TEXT (self));
+  g_return_if_fail (GTK_IS_ACCESSIBLE_TEXT (this));
 
-  context = gtk_accessible_get_at_context (GTK_ACCESSIBLE (self));
+  context = gtk_accessible_get_at_context (GTK_ACCESSIBLE (this));
   if (context == NULL)
     return;
 
@@ -582,7 +582,7 @@ gtk_accessible_text_update_selection_bound (GtkAccessibleText *self)
 
 /**
  * gtk_accessible_text_update_contents:
- * @self: the accessible object
+ * @this: the accessible object
  * @change: the type of change in the contents
  * @start: the starting offset of the change, in characters
  * @end: the end offset of the change, in characters
@@ -600,16 +600,16 @@ gtk_accessible_text_update_selection_bound (GtkAccessibleText *self)
  * Since: 4.14
  */
 void
-gtk_accessible_text_update_contents (GtkAccessibleText              *self,
+gtk_accessible_text_update_contents (GtkAccessibleText              *this,
                                      GtkAccessibleTextContentChange  change,
                                      unsigned int                    start,
                                      unsigned int                    end)
 {
   GtkATContext *context;
 
-  g_return_if_fail (GTK_IS_ACCESSIBLE_TEXT (self));
+  g_return_if_fail (GTK_IS_ACCESSIBLE_TEXT (this));
 
-  context = gtk_accessible_get_at_context (GTK_ACCESSIBLE (self));
+  context = gtk_accessible_get_at_context (GTK_ACCESSIBLE (this));
   if (context == NULL)
     return;
 

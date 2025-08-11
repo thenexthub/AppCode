@@ -177,19 +177,19 @@ gtk_list_view_split (GtkListBase *base,
                      GtkListTile *tile,
                      guint        n_items)
 {
-  GtkListView *self = GTK_LIST_VIEW (base);
+  GtkListView *this = GTK_LIST_VIEW (base);
   GtkListTile *new_tile;
   int spacing, row_height;
 
-  gtk_list_base_get_border_spacing (GTK_LIST_BASE (self), NULL, &spacing);
+  gtk_list_base_get_border_spacing (GTK_LIST_BASE (this), NULL, &spacing);
   row_height = (tile->area.height - (tile->n_items - 1) * spacing) / tile->n_items;
 
-  new_tile = gtk_list_tile_split (self->item_manager, tile, n_items);
-  gtk_list_tile_set_area_size (self->item_manager,
+  new_tile = gtk_list_tile_split (this->item_manager, tile, n_items);
+  gtk_list_tile_set_area_size (this->item_manager,
                                tile,
                                tile->area.width,
                                row_height * tile->n_items + spacing * (tile->n_items - 1));
-  gtk_list_tile_set_area (self->item_manager,
+  gtk_list_tile_set_area (this->item_manager,
                           new_tile,
                           &(GdkRectangle) {
                             tile->area.x,
@@ -210,22 +210,22 @@ gtk_list_view_prepare_section (GtkListBase *base,
 
 /* We define the listview as **inert** when the factory isn't used. */
 static gboolean
-gtk_list_view_is_inert (GtkListView *self)
+gtk_list_view_is_inert (GtkListView *this)
 {
-  GtkWidget *widget = GTK_WIDGET (self);
+  GtkWidget *widget = GTK_WIDGET (this);
 
   return !gtk_widget_get_visible (widget) ||
          gtk_widget_get_root (widget) == NULL;
 }
 
 static void
-gtk_list_view_update_factories_with (GtkListView        *self,
+gtk_list_view_update_factories_with (GtkListView        *this,
                                      GtkListItemFactory *factory,
                                      GtkListItemFactory *header_factory)
 {
   GtkListTile *tile;
 
-  for (tile = gtk_list_item_manager_get_first (self->item_manager);
+  for (tile = gtk_list_item_manager_get_first (this->item_manager);
        tile != NULL;
        tile = gtk_rb_tree_node_get_next (tile))
     {
@@ -253,36 +253,36 @@ gtk_list_view_update_factories_with (GtkListView        *self,
 }
 
 static void
-gtk_list_view_update_factories (GtkListView *self)
+gtk_list_view_update_factories (GtkListView *this)
 {
-  gtk_list_view_update_factories_with (self,
-                                       gtk_list_view_is_inert (self) ? NULL : self->factory,
-                                       gtk_list_view_is_inert (self) ? NULL : self->header_factory);
+  gtk_list_view_update_factories_with (this,
+                                       gtk_list_view_is_inert (this) ? NULL : this->factory,
+                                       gtk_list_view_is_inert (this) ? NULL : this->header_factory);
 }
 
 static void
-gtk_list_view_clear_factories (GtkListView *self)
+gtk_list_view_clear_factories (GtkListView *this)
 {
-  gtk_list_view_update_factories_with (self, NULL, NULL);
+  gtk_list_view_update_factories_with (this, NULL, NULL);
 }
 
 static GtkListItemBase *
 gtk_list_view_create_list_widget (GtkListBase *base)
 {
-  GtkListView *self = GTK_LIST_VIEW (base);
+  GtkListView *this = GTK_LIST_VIEW (base);
   GtkListItemFactory *factory;
   GtkWidget *result;
 
-  if (gtk_list_view_is_inert (self))
+  if (gtk_list_view_is_inert (this))
     factory = NULL;
   else
-    factory = self->factory;
+    factory = this->factory;
 
   result = gtk_list_item_widget_new (factory,
                                      "row",
                                      GTK_ACCESSIBLE_ROLE_LIST_ITEM);
 
-  gtk_list_factory_widget_set_single_click_activate (GTK_LIST_FACTORY_WIDGET (result), self->single_click_activate);
+  gtk_list_factory_widget_set_single_click_activate (GTK_LIST_FACTORY_WIDGET (result), this->single_click_activate);
 
   return GTK_LIST_ITEM_BASE (result);
 }
@@ -290,13 +290,13 @@ gtk_list_view_create_list_widget (GtkListBase *base)
 static GtkListHeaderBase *
 gtk_list_view_create_header_widget (GtkListBase *base)
 {
-  GtkListView *self = GTK_LIST_VIEW (base);
+  GtkListView *this = GTK_LIST_VIEW (base);
   GtkListItemFactory *factory;
 
-  if (gtk_list_view_is_inert (self))
+  if (gtk_list_view_is_inert (this))
     factory = NULL;
   else
-    factory = self->header_factory;
+    factory = this->header_factory;
 
   return GTK_LIST_HEADER_BASE (gtk_list_header_widget_new (factory));
 }
@@ -306,11 +306,11 @@ gtk_list_view_get_allocation (GtkListBase  *base,
                               guint         pos,
                               GdkRectangle *area)
 {
-  GtkListView *self = GTK_LIST_VIEW (base);
+  GtkListView *this = GTK_LIST_VIEW (base);
   GtkListTile *tile;
   guint offset;
 
-  tile = gtk_list_item_manager_get_nth (self->item_manager, pos, &offset);
+  tile = gtk_list_item_manager_get_nth (this->item_manager, pos, &offset);
   if (tile == NULL)
     return FALSE;
 
@@ -328,7 +328,7 @@ gtk_list_view_get_allocation (GtkListBase  *base,
       GtkListTile *other;
       int spacing;
 
-      gtk_list_base_get_border_spacing (GTK_LIST_BASE (self), NULL, &spacing);
+      gtk_list_base_get_border_spacing (GTK_LIST_BASE (this), NULL, &spacing);
 
       for (other = gtk_rb_tree_node_get_previous (tile);
            other;
@@ -384,10 +384,10 @@ gtk_list_view_get_position_from_allocation (GtkListBase           *base,
                                             guint                 *pos,
                                             cairo_rectangle_int_t *area)
 {
-  GtkListView *self = GTK_LIST_VIEW (base);
+  GtkListView *this = GTK_LIST_VIEW (base);
   GtkListTile *tile;
 
-  tile = gtk_list_item_manager_get_nearest_tile (self->item_manager, x, y);
+  tile = gtk_list_item_manager_get_nearest_tile (this->item_manager, x, y);
   if (tile == NULL)
     return FALSE;
 
@@ -395,14 +395,14 @@ gtk_list_view_get_position_from_allocation (GtkListBase           *base,
     tile = gtk_rb_tree_node_get_previous (tile);
   if (tile == NULL)
     {
-      tile = gtk_list_item_manager_get_first (self->item_manager);
+      tile = gtk_list_item_manager_get_first (this->item_manager);
       while (tile && tile->n_items == 0)
         tile = gtk_rb_tree_node_get_next (tile);
       if (tile == NULL)
         return FALSE;
     }
 
-  *pos = gtk_list_tile_get_position (self->item_manager, tile);
+  *pos = gtk_list_tile_get_position (this->item_manager, tile);
   if (area)
     *area = tile->area;
 
@@ -410,7 +410,7 @@ gtk_list_view_get_position_from_allocation (GtkListBase           *base,
     {
       int row_height, tile_pos, spacing;
 
-      gtk_list_base_get_border_spacing (GTK_LIST_BASE (self), NULL, &spacing);
+      gtk_list_base_get_border_spacing (GTK_LIST_BASE (this), NULL, &spacing);
       row_height = (tile->area.height - (tile->n_items - 1) * spacing) / tile->n_items;
       if (y >= tile->area.y + tile->area.height)
         tile_pos = tile->n_items - 1;
@@ -473,7 +473,7 @@ compare_ints (gconstpointer first,
 }
 
 static guint
-gtk_list_view_get_unknown_row_height (GtkListView *self,
+gtk_list_view_get_unknown_row_height (GtkListView *this,
                                       GArray      *heights)
 {
   g_return_val_if_fail (heights->len > 0, 0);
@@ -491,7 +491,7 @@ gtk_list_view_measure_across (GtkWidget      *widget,
                               int            *minimum,
                               int            *natural)
 {
-  GtkListView *self = GTK_LIST_VIEW (widget);
+  GtkListView *this = GTK_LIST_VIEW (widget);
   GtkListTile *tile;
   int min, nat, child_min, child_nat;
   /* XXX: Figure out how to split a given height into per-row heights.
@@ -501,7 +501,7 @@ gtk_list_view_measure_across (GtkWidget      *widget,
   min = 0;
   nat = 0;
 
-  for (tile = gtk_list_item_manager_get_first (self->item_manager);
+  for (tile = gtk_list_item_manager_get_first (this->item_manager);
        tile != NULL;
        tile = gtk_rb_tree_node_get_next (tile))
     {
@@ -527,16 +527,16 @@ gtk_list_view_measure_list (GtkWidget      *widget,
                             int            *minimum,
                             int            *natural)
 {
-  GtkListView *self = GTK_LIST_VIEW (widget);
+  GtkListView *this = GTK_LIST_VIEW (widget);
   GtkListTile *tile;
   int min, nat, child_min, child_nat, spacing;
   GArray *min_heights, *nat_heights;
   guint n_unknown, n_items;
 
-  n_items = gtk_list_base_get_n_items (GTK_LIST_BASE (self));
+  n_items = gtk_list_base_get_n_items (GTK_LIST_BASE (this));
   if (n_items == 0)
     return;
-  gtk_list_base_get_border_spacing (GTK_LIST_BASE (self), NULL, &spacing);
+  gtk_list_base_get_border_spacing (GTK_LIST_BASE (this), NULL, &spacing);
 
   min_heights = g_array_new (FALSE, FALSE, sizeof (int));
   nat_heights = g_array_new (FALSE, FALSE, sizeof (int));
@@ -544,7 +544,7 @@ gtk_list_view_measure_list (GtkWidget      *widget,
   min = 0;
   nat = 0;
 
-  for (tile = gtk_list_item_manager_get_first (self->item_manager);
+  for (tile = gtk_list_item_manager_get_first (this->item_manager);
        tile != NULL;
        tile = gtk_rb_tree_node_get_next (tile))
     {
@@ -569,8 +569,8 @@ gtk_list_view_measure_list (GtkWidget      *widget,
 
   if (n_unknown)
     {
-      min += n_unknown * gtk_list_view_get_unknown_row_height (self, min_heights);
-      nat += n_unknown * gtk_list_view_get_unknown_row_height (self, nat_heights);
+      min += n_unknown * gtk_list_view_get_unknown_row_height (this, min_heights);
+      nat += n_unknown * gtk_list_view_get_unknown_row_height (this, nat_heights);
     }
   g_array_free (min_heights, TRUE);
   g_array_free (nat_heights, TRUE);
@@ -588,9 +588,9 @@ gtk_list_view_measure (GtkWidget      *widget,
                        int            *minimum_baseline,
                        int            *natural_baseline)
 {
-  GtkListView *self = GTK_LIST_VIEW (widget);
+  GtkListView *this = GTK_LIST_VIEW (widget);
 
-  if (orientation == gtk_list_base_get_orientation (GTK_LIST_BASE (self)))
+  if (orientation == gtk_list_base_get_orientation (GTK_LIST_BASE (this)))
     gtk_list_view_measure_list (widget, orientation, for_size, minimum, natural);
   else
     gtk_list_view_measure_across (widget, orientation, for_size, minimum, natural);
@@ -602,26 +602,26 @@ gtk_list_view_size_allocate (GtkWidget *widget,
                              int        height,
                              int        baseline)
 {
-  GtkListView *self = GTK_LIST_VIEW (widget);
+  GtkListView *this = GTK_LIST_VIEW (widget);
   GtkListTile *tile;
   GArray *heights;
   int min, nat, row_height, y, list_width, spacing;
   GtkOrientation orientation, opposite_orientation;
   GtkScrollablePolicy scroll_policy, opposite_scroll_policy;
 
-  orientation = gtk_list_base_get_orientation (GTK_LIST_BASE (self));
+  orientation = gtk_list_base_get_orientation (GTK_LIST_BASE (this));
   opposite_orientation = OPPOSITE_ORIENTATION (orientation);
-  scroll_policy = gtk_list_base_get_scroll_policy (GTK_LIST_BASE (self), orientation);
-  opposite_scroll_policy = gtk_list_base_get_scroll_policy (GTK_LIST_BASE (self), opposite_orientation);
-  gtk_list_base_get_border_spacing (GTK_LIST_BASE (self), NULL, &spacing);
+  scroll_policy = gtk_list_base_get_scroll_policy (GTK_LIST_BASE (this), orientation);
+  opposite_scroll_policy = gtk_list_base_get_scroll_policy (GTK_LIST_BASE (this), opposite_orientation);
+  gtk_list_base_get_border_spacing (GTK_LIST_BASE (this), NULL, &spacing);
 
-  gtk_list_item_manager_gc_tiles (self->item_manager);
+  gtk_list_item_manager_gc_tiles (this->item_manager);
 
   /* step 0: exit early if list is empty */
-  tile = gtk_list_item_manager_get_first (self->item_manager);
+  tile = gtk_list_item_manager_get_first (this->item_manager);
   if (tile == NULL)
     {
-      gtk_list_base_allocate (GTK_LIST_BASE (self));
+      gtk_list_base_allocate (GTK_LIST_BASE (this));
       return;
     }
 
@@ -652,24 +652,24 @@ gtk_list_view_size_allocate (GtkWidget *widget,
         row_height = min;
       else
         row_height = nat;
-      gtk_list_tile_set_area_size (self->item_manager, tile, list_width, row_height);
+      gtk_list_tile_set_area_size (this->item_manager, tile, list_width, row_height);
       if (tile->type == GTK_LIST_TILE_ITEM)
         g_array_append_val (heights, row_height);
     }
 
   /* step 3: determine height of unknown items and set the positions */
-  row_height = gtk_list_view_get_unknown_row_height (self, heights);
+  row_height = gtk_list_view_get_unknown_row_height (this, heights);
   g_array_free (heights, TRUE);
 
   y = 0;
-  for (tile = gtk_list_item_manager_get_first (self->item_manager);
+  for (tile = gtk_list_item_manager_get_first (this->item_manager);
        tile != NULL;
        tile = gtk_rb_tree_node_get_next (tile))
     {
-      gtk_list_tile_set_area_position (self->item_manager, tile, 0, y);
+      gtk_list_tile_set_area_position (this->item_manager, tile, 0, y);
       if (tile->widget == NULL)
         {
-          gtk_list_tile_set_area_size (self->item_manager,
+          gtk_list_tile_set_area_size (this->item_manager,
                                        tile,
                                        list_width,
                                        row_height * tile->n_items
@@ -680,27 +680,27 @@ gtk_list_view_size_allocate (GtkWidget *widget,
     }
 
   /* step 4: allocate the rest */
-  gtk_list_base_allocate (GTK_LIST_BASE (self));
+  gtk_list_base_allocate (GTK_LIST_BASE (this));
 }
 
 static void
 gtk_list_view_root (GtkWidget *widget)
 {
-  GtkListView *self = GTK_LIST_VIEW (widget);
+  GtkListView *this = GTK_LIST_VIEW (widget);
 
   GTK_WIDGET_CLASS (gtk_list_view_parent_class)->root (widget);
 
-  if (!gtk_list_view_is_inert (self))
-    gtk_list_view_update_factories (self);
+  if (!gtk_list_view_is_inert (this))
+    gtk_list_view_update_factories (this);
 }
 
 static void
 gtk_list_view_unroot (GtkWidget *widget)
 {
-  GtkListView *self = GTK_LIST_VIEW (widget);
+  GtkListView *this = GTK_LIST_VIEW (widget);
 
-  if (!gtk_list_view_is_inert (self))
-    gtk_list_view_clear_factories (self);
+  if (!gtk_list_view_is_inert (this))
+    gtk_list_view_clear_factories (this);
 
   GTK_WIDGET_CLASS (gtk_list_view_parent_class)->unroot (widget);
 }
@@ -708,21 +708,21 @@ gtk_list_view_unroot (GtkWidget *widget)
 static void
 gtk_list_view_show (GtkWidget *widget)
 {
-  GtkListView *self = GTK_LIST_VIEW (widget);
+  GtkListView *this = GTK_LIST_VIEW (widget);
 
   GTK_WIDGET_CLASS (gtk_list_view_parent_class)->show (widget);
 
-  if (!gtk_list_view_is_inert (self))
-    gtk_list_view_update_factories (self);
+  if (!gtk_list_view_is_inert (this))
+    gtk_list_view_update_factories (this);
 }
 
 static void
 gtk_list_view_hide (GtkWidget *widget)
 {
-  GtkListView *self = GTK_LIST_VIEW (widget);
+  GtkListView *this = GTK_LIST_VIEW (widget);
 
-  if (!gtk_list_view_is_inert (self))
-    gtk_list_view_clear_factories (self);
+  if (!gtk_list_view_is_inert (this))
+    gtk_list_view_clear_factories (this);
 
   GTK_WIDGET_CLASS (gtk_list_view_parent_class)->hide (widget);
 }
@@ -730,12 +730,12 @@ gtk_list_view_hide (GtkWidget *widget)
 static void
 gtk_list_view_dispose (GObject *object)
 {
-  GtkListView *self = GTK_LIST_VIEW (object);
+  GtkListView *this = GTK_LIST_VIEW (object);
 
-  self->item_manager = NULL;
+  this->item_manager = NULL;
 
-  g_clear_object (&self->factory);
-  g_clear_object (&self->header_factory);
+  g_clear_object (&this->factory);
+  g_clear_object (&this->header_factory);
 
   G_OBJECT_CLASS (gtk_list_view_parent_class)->dispose (object);
 }
@@ -746,36 +746,36 @@ gtk_list_view_get_property (GObject    *object,
                             GValue     *value,
                             GParamSpec *pspec)
 {
-  GtkListView *self = GTK_LIST_VIEW (object);
+  GtkListView *this = GTK_LIST_VIEW (object);
 
   switch (property_id)
     {
     case PROP_ENABLE_RUBBERBAND:
-      g_value_set_boolean (value, gtk_list_base_get_enable_rubberband (GTK_LIST_BASE (self)));
+      g_value_set_boolean (value, gtk_list_base_get_enable_rubberband (GTK_LIST_BASE (this)));
       break;
 
     case PROP_FACTORY:
-      g_value_set_object (value, self->factory);
+      g_value_set_object (value, this->factory);
       break;
 
     case PROP_HEADER_FACTORY:
-      g_value_set_object (value, self->header_factory);
+      g_value_set_object (value, this->header_factory);
       break;
 
     case PROP_MODEL:
-      g_value_set_object (value, gtk_list_base_get_model (GTK_LIST_BASE (self)));
+      g_value_set_object (value, gtk_list_base_get_model (GTK_LIST_BASE (this)));
       break;
 
     case PROP_SHOW_SEPARATORS:
-      g_value_set_boolean (value, self->show_separators);
+      g_value_set_boolean (value, this->show_separators);
       break;
 
     case PROP_SINGLE_CLICK_ACTIVATE:
-      g_value_set_boolean (value, self->single_click_activate);
+      g_value_set_boolean (value, this->single_click_activate);
       break;
 
     case PROP_TAB_BEHAVIOR:
-      g_value_set_enum (value, gtk_list_base_get_tab_behavior (GTK_LIST_BASE (self)));
+      g_value_set_enum (value, gtk_list_base_get_tab_behavior (GTK_LIST_BASE (this)));
       break;
 
     default:
@@ -790,36 +790,36 @@ gtk_list_view_set_property (GObject      *object,
                             const GValue *value,
                             GParamSpec   *pspec)
 {
-  GtkListView *self = GTK_LIST_VIEW (object);
+  GtkListView *this = GTK_LIST_VIEW (object);
 
   switch (property_id)
     {
     case PROP_ENABLE_RUBBERBAND:
-      gtk_list_view_set_enable_rubberband (self, g_value_get_boolean (value));
+      gtk_list_view_set_enable_rubberband (this, g_value_get_boolean (value));
       break;
 
     case PROP_FACTORY:
-      gtk_list_view_set_factory (self, g_value_get_object (value));
+      gtk_list_view_set_factory (this, g_value_get_object (value));
       break;
 
     case PROP_HEADER_FACTORY:
-      gtk_list_view_set_header_factory (self, g_value_get_object (value));
+      gtk_list_view_set_header_factory (this, g_value_get_object (value));
       break;
 
     case PROP_MODEL:
-      gtk_list_view_set_model (self, g_value_get_object (value));
+      gtk_list_view_set_model (this, g_value_get_object (value));
       break;
 
     case PROP_SHOW_SEPARATORS:
-      gtk_list_view_set_show_separators (self, g_value_get_boolean (value));
+      gtk_list_view_set_show_separators (this, g_value_get_boolean (value));
       break;
 
     case PROP_SINGLE_CLICK_ACTIVATE:
-      gtk_list_view_set_single_click_activate (self, g_value_get_boolean (value));
+      gtk_list_view_set_single_click_activate (this, g_value_get_boolean (value));
       break;
 
     case PROP_TAB_BEHAVIOR:
-      gtk_list_view_set_tab_behavior (self, g_value_get_enum (value));
+      gtk_list_view_set_tab_behavior (this, g_value_get_enum (value));
       break;
 
     default:
@@ -833,14 +833,14 @@ gtk_list_view_activate_item (GtkWidget  *widget,
                              const char *action_name,
                              GVariant   *parameter)
 {
-  GtkListView *self = GTK_LIST_VIEW (widget);
+  GtkListView *this = GTK_LIST_VIEW (widget);
   guint pos;
 
   if (!g_variant_check_format_string (parameter, "u", FALSE))
     return;
 
   g_variant_get (parameter, "u", &pos);
-  if (pos >= gtk_list_base_get_n_items (GTK_LIST_BASE (self)))
+  if (pos >= gtk_list_base_get_n_items (GTK_LIST_BASE (this)))
     return;
 
   g_signal_emit (widget, signals[ACTIVATE], 0, pos);
@@ -957,7 +957,7 @@ gtk_list_view_class_init (GtkListViewClass *klass)
 
   /**
    * GtkListView::activate:
-   * @self: the listview
+   * @this: the listview
    * @position: position of item to activate
    *
    * Emitted when a row has been activated by the user.
@@ -999,15 +999,15 @@ gtk_list_view_class_init (GtkListViewClass *klass)
 }
 
 static void
-gtk_list_view_init (GtkListView *self)
+gtk_list_view_init (GtkListView *this)
 {
-  self->item_manager = gtk_list_base_get_manager (GTK_LIST_BASE (self));
+  this->item_manager = gtk_list_base_get_manager (GTK_LIST_BASE (this));
 
-  gtk_list_base_set_anchor_max_widgets (GTK_LIST_BASE (self),
+  gtk_list_base_set_anchor_max_widgets (GTK_LIST_BASE (this),
                                         GTK_LIST_VIEW_MAX_LIST_ITEMS,
                                         GTK_LIST_VIEW_EXTRA_ITEMS);
 
-  gtk_widget_add_css_class (GTK_WIDGET (self), "view");
+  gtk_widget_add_css_class (GTK_WIDGET (this), "view");
 }
 
 /**
@@ -1050,23 +1050,23 @@ gtk_list_view_new (GtkSelectionModel  *model,
 
 /**
  * gtk_list_view_get_model:
- * @self: a listview
+ * @this: a listview
  *
  * Gets the model that's currently used to read the items displayed.
  *
  * Returns: (nullable) (transfer none): The model in use
  */
 GtkSelectionModel *
-gtk_list_view_get_model (GtkListView *self)
+gtk_list_view_get_model (GtkListView *this)
 {
-  g_return_val_if_fail (GTK_IS_LIST_VIEW (self), NULL);
+  g_return_val_if_fail (GTK_IS_LIST_VIEW (this), NULL);
 
-  return gtk_list_base_get_model (GTK_LIST_BASE (self));
+  return gtk_list_base_get_model (GTK_LIST_BASE (this));
 }
 
 /**
  * gtk_list_view_set_model:
- * @self: a listview
+ * @this: a listview
  * @model: (nullable) (transfer none): the model to use
  *
  * Sets the model to use.
@@ -1074,63 +1074,63 @@ gtk_list_view_get_model (GtkListView *self)
  * This must be a [iface@Gtk.SelectionModel] to use.
  */
 void
-gtk_list_view_set_model (GtkListView       *self,
+gtk_list_view_set_model (GtkListView       *this,
                          GtkSelectionModel *model)
 {
-  g_return_if_fail (GTK_IS_LIST_VIEW (self));
+  g_return_if_fail (GTK_IS_LIST_VIEW (this));
   g_return_if_fail (model == NULL || GTK_IS_SELECTION_MODEL (model));
 
-  if (!gtk_list_base_set_model (GTK_LIST_BASE (self), model))
+  if (!gtk_list_base_set_model (GTK_LIST_BASE (this), model))
     return;
 
-  gtk_accessible_update_property (GTK_ACCESSIBLE (self),
+  gtk_accessible_update_property (GTK_ACCESSIBLE (this),
                                   GTK_ACCESSIBLE_PROPERTY_MULTI_SELECTABLE, GTK_IS_MULTI_SELECTION (model),
                                   -1);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_MODEL]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_MODEL]);
 }
 
 /**
  * gtk_list_view_get_factory:
- * @self: a listview
+ * @this: a listview
  *
  * Gets the factory that's currently used to populate list items.
  *
  * Returns: (nullable) (transfer none): The factory in use
  */
 GtkListItemFactory *
-gtk_list_view_get_factory (GtkListView *self)
+gtk_list_view_get_factory (GtkListView *this)
 {
-  g_return_val_if_fail (GTK_IS_LIST_VIEW (self), NULL);
+  g_return_val_if_fail (GTK_IS_LIST_VIEW (this), NULL);
 
-  return self->factory;
+  return this->factory;
 }
 
 /**
  * gtk_list_view_set_factory:
- * @self: a listview
+ * @this: a listview
  * @factory: (nullable) (transfer none): the factory to use
  *
  * Sets the `GtkListItemFactory` to use for populating list items.
  */
 void
-gtk_list_view_set_factory (GtkListView        *self,
+gtk_list_view_set_factory (GtkListView        *this,
                            GtkListItemFactory *factory)
 {
-  g_return_if_fail (GTK_IS_LIST_VIEW (self));
+  g_return_if_fail (GTK_IS_LIST_VIEW (this));
   g_return_if_fail (factory == NULL || GTK_IS_LIST_ITEM_FACTORY (factory));
 
-  if (!g_set_object (&self->factory, factory))
+  if (!g_set_object (&this->factory, factory))
     return;
 
-  gtk_list_view_update_factories (self);
+  gtk_list_view_update_factories (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_FACTORY]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_FACTORY]);
 }
 
 /**
  * gtk_list_view_get_header_factory:
- * @self: a listview
+ * @this: a listview
  *
  * Gets the factory that's currently used to populate section headers.
  *
@@ -1139,16 +1139,16 @@ gtk_list_view_set_factory (GtkListView        *self,
  * Since: 4.12
  */
 GtkListItemFactory *
-gtk_list_view_get_header_factory (GtkListView *self)
+gtk_list_view_get_header_factory (GtkListView *this)
 {
-  g_return_val_if_fail (GTK_IS_LIST_VIEW (self), NULL);
+  g_return_val_if_fail (GTK_IS_LIST_VIEW (this), NULL);
 
-  return self->header_factory;
+  return this->header_factory;
 }
 
 /**
  * gtk_list_view_set_header_factory:
- * @self: a listview
+ * @this: a listview
  * @factory: (nullable) (transfer none): the factory to use
  *
  * Sets the `GtkListItemFactory` to use for populating the
@@ -1160,27 +1160,27 @@ gtk_list_view_get_header_factory (GtkListView *self)
  * Since: 4.12
  */
 void
-gtk_list_view_set_header_factory (GtkListView        *self,
+gtk_list_view_set_header_factory (GtkListView        *this,
                                   GtkListItemFactory *factory)
 {
   gboolean had_sections;
 
-  g_return_if_fail (GTK_IS_LIST_VIEW (self));
+  g_return_if_fail (GTK_IS_LIST_VIEW (this));
   g_return_if_fail (factory == NULL || GTK_IS_LIST_ITEM_FACTORY (factory));
 
-  had_sections = gtk_list_item_manager_get_has_sections (self->item_manager);
+  had_sections = gtk_list_item_manager_get_has_sections (this->item_manager);
 
-  if (!g_set_object (&self->header_factory, factory))
+  if (!g_set_object (&this->header_factory, factory))
     return;
 
-  gtk_list_item_manager_set_has_sections (self->item_manager, factory != NULL);
+  gtk_list_item_manager_set_has_sections (this->item_manager, factory != NULL);
 
-  if (!gtk_list_view_is_inert (self) &&
-      had_sections && gtk_list_item_manager_get_has_sections (self->item_manager))
+  if (!gtk_list_view_is_inert (this) &&
+      had_sections && gtk_list_item_manager_get_has_sections (this->item_manager))
     {
       GtkListTile *tile;
 
-      for (tile = gtk_list_item_manager_get_first (self->item_manager);
+      for (tile = gtk_list_item_manager_get_first (this->item_manager);
            tile != NULL;
            tile = gtk_rb_tree_node_get_next (tile))
         {
@@ -1189,39 +1189,39 @@ gtk_list_view_set_header_factory (GtkListView        *self,
         }
     }
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_HEADER_FACTORY]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_HEADER_FACTORY]);
 }
 
 /**
  * gtk_list_view_set_show_separators:
- * @self: a listview
+ * @this: a listview
  * @show_separators: whether to show separators
  *
  * Sets whether the listview should show separators
  * between rows.
  */
 void
-gtk_list_view_set_show_separators (GtkListView *self,
+gtk_list_view_set_show_separators (GtkListView *this,
                                    gboolean     show_separators)
 {
-  g_return_if_fail (GTK_IS_LIST_VIEW (self));
+  g_return_if_fail (GTK_IS_LIST_VIEW (this));
 
-  if (self->show_separators == show_separators)
+  if (this->show_separators == show_separators)
     return;
 
-  self->show_separators = show_separators;
+  this->show_separators = show_separators;
 
   if (show_separators)
-    gtk_widget_add_css_class (GTK_WIDGET (self), "separators");
+    gtk_widget_add_css_class (GTK_WIDGET (this), "separators");
   else
-    gtk_widget_remove_css_class (GTK_WIDGET (self), "separators");
+    gtk_widget_remove_css_class (GTK_WIDGET (this), "separators");
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SHOW_SEPARATORS]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SHOW_SEPARATORS]);
 }
 
 /**
  * gtk_list_view_get_show_separators:
- * @self: a listview
+ * @this: a listview
  *
  * Returns whether the listview should show separators
  * between rows.
@@ -1229,35 +1229,35 @@ gtk_list_view_set_show_separators (GtkListView *self,
  * Returns: true if the listview shows separators
  */
 gboolean
-gtk_list_view_get_show_separators (GtkListView *self)
+gtk_list_view_get_show_separators (GtkListView *this)
 {
-  g_return_val_if_fail (GTK_IS_LIST_VIEW (self), FALSE);
+  g_return_val_if_fail (GTK_IS_LIST_VIEW (this), FALSE);
 
-  return self->show_separators;
+  return this->show_separators;
 }
 
 /**
  * gtk_list_view_set_single_click_activate:
- * @self: a listview
+ * @this: a listview
  * @single_click_activate: whether to activate items on single click
  *
  * Sets whether rows should be activated on single click and
  * selected on hover.
  */
 void
-gtk_list_view_set_single_click_activate (GtkListView *self,
+gtk_list_view_set_single_click_activate (GtkListView *this,
                                          gboolean     single_click_activate)
 {
   GtkListTile *tile;
 
-  g_return_if_fail (GTK_IS_LIST_VIEW (self));
+  g_return_if_fail (GTK_IS_LIST_VIEW (this));
 
-  if (single_click_activate == self->single_click_activate)
+  if (single_click_activate == this->single_click_activate)
     return;
 
-  self->single_click_activate = single_click_activate;
+  this->single_click_activate = single_click_activate;
 
-  for (tile = gtk_list_item_manager_get_first (self->item_manager);
+  for (tile = gtk_list_item_manager_get_first (this->item_manager);
        tile != NULL;
        tile = gtk_rb_tree_node_get_next (tile))
     {
@@ -1265,12 +1265,12 @@ gtk_list_view_set_single_click_activate (GtkListView *self,
         gtk_list_factory_widget_set_single_click_activate (GTK_LIST_FACTORY_WIDGET (tile->widget), single_click_activate);
     }
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SINGLE_CLICK_ACTIVATE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SINGLE_CLICK_ACTIVATE]);
 }
 
 /**
  * gtk_list_view_get_single_click_activate:
- * @self: a listview
+ * @this: a listview
  *
  * Returns whether rows will be activated on single click and
  * selected on hover.
@@ -1278,53 +1278,53 @@ gtk_list_view_set_single_click_activate (GtkListView *self,
  * Returns: true if rows are activated on single click
  */
 gboolean
-gtk_list_view_get_single_click_activate (GtkListView *self)
+gtk_list_view_get_single_click_activate (GtkListView *this)
 {
-  g_return_val_if_fail (GTK_IS_LIST_VIEW (self), FALSE);
+  g_return_val_if_fail (GTK_IS_LIST_VIEW (this), FALSE);
 
-  return self->single_click_activate;
+  return this->single_click_activate;
 }
 
 /**
  * gtk_list_view_set_enable_rubberband:
- * @self: a listview
+ * @this: a listview
  * @enable_rubberband: whether to enable rubberband selection
  *
  * Sets whether selections can be changed by dragging with the mouse.
  */
 void
-gtk_list_view_set_enable_rubberband (GtkListView *self,
+gtk_list_view_set_enable_rubberband (GtkListView *this,
                                      gboolean     enable_rubberband)
 {
-  g_return_if_fail (GTK_IS_LIST_VIEW (self));
+  g_return_if_fail (GTK_IS_LIST_VIEW (this));
 
-  if (enable_rubberband == gtk_list_base_get_enable_rubberband (GTK_LIST_BASE (self)))
+  if (enable_rubberband == gtk_list_base_get_enable_rubberband (GTK_LIST_BASE (this)))
     return;
 
-  gtk_list_base_set_enable_rubberband (GTK_LIST_BASE (self), enable_rubberband);
+  gtk_list_base_set_enable_rubberband (GTK_LIST_BASE (this), enable_rubberband);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ENABLE_RUBBERBAND]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ENABLE_RUBBERBAND]);
 }
 
 /**
  * gtk_list_view_get_enable_rubberband:
- * @self: a listview
+ * @this: a listview
  *
  * Returns whether rows can be selected by dragging with the mouse.
  *
  * Returns: true if rubberband selection is enabled
  */
 gboolean
-gtk_list_view_get_enable_rubberband (GtkListView *self)
+gtk_list_view_get_enable_rubberband (GtkListView *this)
 {
-  g_return_val_if_fail (GTK_IS_LIST_VIEW (self), FALSE);
+  g_return_val_if_fail (GTK_IS_LIST_VIEW (this), FALSE);
 
-  return gtk_list_base_get_enable_rubberband (GTK_LIST_BASE (self));
+  return gtk_list_base_get_enable_rubberband (GTK_LIST_BASE (this));
 }
 
 /**
  * gtk_list_view_set_tab_behavior:
- * @self: a listview
+ * @this: a listview
  * @tab_behavior: The desired tab behavior
  *
  * Sets the <kbd>Tab</kbd> key behavior.
@@ -1336,22 +1336,22 @@ gtk_list_view_get_enable_rubberband (GtkListView *self)
  * Since: 4.12
  */
 void
-gtk_list_view_set_tab_behavior (GtkListView        *self,
+gtk_list_view_set_tab_behavior (GtkListView        *this,
                                 GtkListTabBehavior  tab_behavior)
 {
-  g_return_if_fail (GTK_IS_LIST_VIEW (self));
+  g_return_if_fail (GTK_IS_LIST_VIEW (this));
 
-  if (tab_behavior == gtk_list_base_get_tab_behavior (GTK_LIST_BASE (self)))
+  if (tab_behavior == gtk_list_base_get_tab_behavior (GTK_LIST_BASE (this)))
     return;
 
-  gtk_list_base_set_tab_behavior (GTK_LIST_BASE (self), tab_behavior);
+  gtk_list_base_set_tab_behavior (GTK_LIST_BASE (this), tab_behavior);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_TAB_BEHAVIOR]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_TAB_BEHAVIOR]);
 }
 
 /**
  * gtk_list_view_get_tab_behavior:
- * @self: a listview
+ * @this: a listview
  *
  * Gets the behavior set for the <kbd>Tab</kbd> key.
  *
@@ -1360,16 +1360,16 @@ gtk_list_view_set_tab_behavior (GtkListView        *self,
  * Since: 4.12
  */
 GtkListTabBehavior
-gtk_list_view_get_tab_behavior (GtkListView *self)
+gtk_list_view_get_tab_behavior (GtkListView *this)
 {
-  g_return_val_if_fail (GTK_IS_LIST_VIEW (self), FALSE);
+  g_return_val_if_fail (GTK_IS_LIST_VIEW (this), FALSE);
 
-  return gtk_list_base_get_tab_behavior (GTK_LIST_BASE (self));
+  return gtk_list_base_get_tab_behavior (GTK_LIST_BASE (this));
 }
 
 /**
  * gtk_list_view_scroll_to:
- * @self: a listview
+ * @this: a listview
  * @pos: position of the item. Must be less than the number of
  *   items in the view.
  * @flags: actions to perform
@@ -1385,13 +1385,13 @@ gtk_list_view_get_tab_behavior (GtkListView *self)
  * Since: 4.12
  */
 void
-gtk_list_view_scroll_to (GtkListView        *self,
+gtk_list_view_scroll_to (GtkListView        *this,
                          guint               pos,
                          GtkListScrollFlags  flags,
                          GtkScrollInfo      *scroll)
 {
-  g_return_if_fail (GTK_IS_LIST_VIEW (self));
-  g_return_if_fail (pos < gtk_list_base_get_n_items (GTK_LIST_BASE (self)));
+  g_return_if_fail (GTK_IS_LIST_VIEW (this));
+  g_return_if_fail (pos < gtk_list_base_get_n_items (GTK_LIST_BASE (this)));
 
-  gtk_list_base_scroll_to (GTK_LIST_BASE (self), pos, flags, scroll);
+  gtk_list_base_scroll_to (GTK_LIST_BASE (this), pos, flags, scroll);
 }

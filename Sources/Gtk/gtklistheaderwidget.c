@@ -50,35 +50,35 @@ static void
 gtk_list_header_widget_setup_func (gpointer object,
                                    gpointer data)
 {
-  GtkListHeaderWidget *self = GTK_LIST_HEADER_WIDGET (data);
-  GtkListHeaderWidgetPrivate *priv = gtk_list_header_widget_get_instance_private (self);
+  GtkListHeaderWidget *this = GTK_LIST_HEADER_WIDGET (data);
+  GtkListHeaderWidgetPrivate *priv = gtk_list_header_widget_get_instance_private (this);
   GtkListHeader *header = object;
 
   priv->header = header;
-  header->owner = self;
+  header->owner = this;
 
-  gtk_list_header_widget_set_child (self, header->child);
+  gtk_list_header_widget_set_child (this, header->child);
 
   gtk_list_header_do_notify (header,
-                             gtk_list_header_base_get_item (GTK_LIST_HEADER_BASE (self)) != NULL,
-                             gtk_list_header_base_get_start (GTK_LIST_HEADER_BASE (self)) != GTK_INVALID_LIST_POSITION,
-                             gtk_list_header_base_get_end (GTK_LIST_HEADER_BASE (self)) != GTK_INVALID_LIST_POSITION,
-                             gtk_list_header_base_get_start (GTK_LIST_HEADER_BASE (self)) != gtk_list_header_base_get_end (GTK_LIST_HEADER_BASE (self)));
+                             gtk_list_header_base_get_item (GTK_LIST_HEADER_BASE (this)) != NULL,
+                             gtk_list_header_base_get_start (GTK_LIST_HEADER_BASE (this)) != GTK_INVALID_LIST_POSITION,
+                             gtk_list_header_base_get_end (GTK_LIST_HEADER_BASE (this)) != GTK_INVALID_LIST_POSITION,
+                             gtk_list_header_base_get_start (GTK_LIST_HEADER_BASE (this)) != gtk_list_header_base_get_end (GTK_LIST_HEADER_BASE (this)));
 }
 
 static void
-gtk_list_header_widget_setup_factory (GtkListHeaderWidget *self)
+gtk_list_header_widget_setup_factory (GtkListHeaderWidget *this)
 {
-  GtkListHeaderWidgetPrivate *priv = gtk_list_header_widget_get_instance_private (self);
+  GtkListHeaderWidgetPrivate *priv = gtk_list_header_widget_get_instance_private (this);
   GtkListHeader *header;
 
   header = gtk_list_header_new ();
 
   gtk_list_item_factory_setup (priv->factory,
                                G_OBJECT (header),
-                               gtk_list_header_base_get_item (GTK_LIST_HEADER_BASE (self)) != NULL,
+                               gtk_list_header_base_get_item (GTK_LIST_HEADER_BASE (this)) != NULL,
                                gtk_list_header_widget_setup_func,
-                               self);
+                               this);
 
   g_assert (priv->header == header);
 }
@@ -87,33 +87,33 @@ static void
 gtk_list_header_widget_teardown_func (gpointer object,
                                       gpointer data)
 {
-  GtkListHeaderWidget *self = GTK_LIST_HEADER_WIDGET (data);
-  GtkListHeaderWidgetPrivate *priv = gtk_list_header_widget_get_instance_private (self);
+  GtkListHeaderWidget *this = GTK_LIST_HEADER_WIDGET (data);
+  GtkListHeaderWidgetPrivate *priv = gtk_list_header_widget_get_instance_private (this);
   GtkListHeader *header = object;
 
   header->owner = NULL;
   priv->header = NULL;
 
-  gtk_list_header_widget_set_child (self, NULL);
+  gtk_list_header_widget_set_child (this, NULL);
 
   gtk_list_header_do_notify (header,
-                             gtk_list_header_base_get_item (GTK_LIST_HEADER_BASE (self)) != NULL,
-                             gtk_list_header_base_get_start (GTK_LIST_HEADER_BASE (self)) != GTK_INVALID_LIST_POSITION,
-                             gtk_list_header_base_get_end (GTK_LIST_HEADER_BASE (self)) != GTK_INVALID_LIST_POSITION,
-                             gtk_list_header_base_get_start (GTK_LIST_HEADER_BASE (self)) != gtk_list_header_base_get_end (GTK_LIST_HEADER_BASE (self)));
+                             gtk_list_header_base_get_item (GTK_LIST_HEADER_BASE (this)) != NULL,
+                             gtk_list_header_base_get_start (GTK_LIST_HEADER_BASE (this)) != GTK_INVALID_LIST_POSITION,
+                             gtk_list_header_base_get_end (GTK_LIST_HEADER_BASE (this)) != GTK_INVALID_LIST_POSITION,
+                             gtk_list_header_base_get_start (GTK_LIST_HEADER_BASE (this)) != gtk_list_header_base_get_end (GTK_LIST_HEADER_BASE (this)));
 }
 
 static void
-gtk_list_header_widget_teardown_factory (GtkListHeaderWidget *self)
+gtk_list_header_widget_teardown_factory (GtkListHeaderWidget *this)
 {
-  GtkListHeaderWidgetPrivate *priv = gtk_list_header_widget_get_instance_private (self);
+  GtkListHeaderWidgetPrivate *priv = gtk_list_header_widget_get_instance_private (this);
   gpointer header = priv->header;
 
   gtk_list_item_factory_teardown (priv->factory,
                                   header,
-                                  gtk_list_header_base_get_item (GTK_LIST_HEADER_BASE (self)) != NULL,
+                                  gtk_list_header_base_get_item (GTK_LIST_HEADER_BASE (this)) != NULL,
                                   gtk_list_header_widget_teardown_func,
-                                  self);
+                                  this);
 
   g_assert (priv->header == NULL);
   g_object_unref (header);
@@ -131,8 +131,8 @@ gtk_list_header_widget_update_func (gpointer object,
                                     gpointer data)
 {
   GtkListHeaderWidgetUpdate *update = data;
-  GtkListHeaderWidget *self = update->widget;
-  GtkListHeaderBase *base = GTK_LIST_HEADER_BASE (self);
+  GtkListHeaderWidget *this = update->widget;
+  GtkListHeaderBase *base = GTK_LIST_HEADER_BASE (this);
   /* Track notify manually instead of freeze/thaw_notify for performance reasons. */
   gboolean notify_item, notify_start, notify_end, notify_n_items;
 
@@ -157,15 +157,15 @@ gtk_list_header_widget_update (GtkListHeaderBase *base,
                                guint              start,
                                guint              end)
 {
-  GtkListHeaderWidget *self = GTK_LIST_HEADER_WIDGET (base);
-  GtkListHeaderWidgetPrivate *priv = gtk_list_header_widget_get_instance_private (self);
-  GtkListHeaderWidgetUpdate update = { self, item, start, end };
+  GtkListHeaderWidget *this = GTK_LIST_HEADER_WIDGET (base);
+  GtkListHeaderWidgetPrivate *priv = gtk_list_header_widget_get_instance_private (this);
+  GtkListHeaderWidgetUpdate update = { this, item, start, end };
 
   if (priv->header)
     {
       gtk_list_item_factory_update (priv->factory,
                                     G_OBJECT (priv->header),
-                                    gtk_list_header_base_get_item (GTK_LIST_HEADER_BASE (self)) != NULL,
+                                    gtk_list_header_base_get_item (GTK_LIST_HEADER_BASE (this)) != NULL,
                                     item != NULL,
                                     gtk_list_header_widget_update_func,
                                     &update);
@@ -182,12 +182,12 @@ gtk_list_header_widget_set_property (GObject      *object,
                                      const GValue *value,
                                      GParamSpec   *pspec)
 {
-  GtkListHeaderWidget *self = GTK_LIST_HEADER_WIDGET (object);
+  GtkListHeaderWidget *this = GTK_LIST_HEADER_WIDGET (object);
 
   switch (property_id)
     {
     case PROP_FACTORY:
-      gtk_list_header_widget_set_factory (self, g_value_get_object (value));
+      gtk_list_header_widget_set_factory (this, g_value_get_object (value));
       break;
 
     default:
@@ -197,15 +197,15 @@ gtk_list_header_widget_set_property (GObject      *object,
 }
 
 static void
-gtk_list_header_widget_clear_factory (GtkListHeaderWidget *self)
+gtk_list_header_widget_clear_factory (GtkListHeaderWidget *this)
 {
-  GtkListHeaderWidgetPrivate *priv = gtk_list_header_widget_get_instance_private (self);
+  GtkListHeaderWidgetPrivate *priv = gtk_list_header_widget_get_instance_private (this);
 
   if (priv->factory == NULL)
     return;
 
   if (priv->header)
-    gtk_list_header_widget_teardown_factory (self);
+    gtk_list_header_widget_teardown_factory (this);
 
   g_clear_object (&priv->factory);
 }
@@ -213,9 +213,9 @@ gtk_list_header_widget_clear_factory (GtkListHeaderWidget *self)
 static void
 gtk_list_header_widget_dispose (GObject *object)
 {
-  GtkListHeaderWidget *self = GTK_LIST_HEADER_WIDGET (object);
+  GtkListHeaderWidget *this = GTK_LIST_HEADER_WIDGET (object);
 
-  gtk_list_header_widget_clear_factory (self);
+  gtk_list_header_widget_clear_factory (this);
 
   G_OBJECT_CLASS (gtk_list_header_widget_parent_class)->dispose (object);
 }
@@ -245,29 +245,29 @@ gtk_list_header_widget_class_init (GtkListHeaderWidgetClass *klass)
 }
 
 static void
-gtk_list_header_widget_init (GtkListHeaderWidget *self)
+gtk_list_header_widget_init (GtkListHeaderWidget *this)
 {
 }
 
 void
-gtk_list_header_widget_set_factory (GtkListHeaderWidget *self,
+gtk_list_header_widget_set_factory (GtkListHeaderWidget *this,
                                     GtkListItemFactory  *factory)
 {
-  GtkListHeaderWidgetPrivate *priv = gtk_list_header_widget_get_instance_private (self);
+  GtkListHeaderWidgetPrivate *priv = gtk_list_header_widget_get_instance_private (this);
 
   if (priv->factory == factory)
     return;
 
-  gtk_list_header_widget_clear_factory (self);
+  gtk_list_header_widget_clear_factory (this);
 
   if (factory)
     {
       priv->factory = g_object_ref (factory);
 
-      gtk_list_header_widget_setup_factory (self);
+      gtk_list_header_widget_setup_factory (this);
     }
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_FACTORY]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_FACTORY]);
 }
 
 GtkWidget *
@@ -279,10 +279,10 @@ gtk_list_header_widget_new (GtkListItemFactory *factory)
 }
 
 void
-gtk_list_header_widget_set_child (GtkListHeaderWidget *self,
+gtk_list_header_widget_set_child (GtkListHeaderWidget *this,
                                   GtkWidget           *child)
 {
-  GtkWidget *cur_child = gtk_widget_get_first_child (GTK_WIDGET (self));
+  GtkWidget *cur_child = gtk_widget_get_first_child (GTK_WIDGET (this));
 
   if (cur_child == child)
     return;
@@ -290,6 +290,6 @@ gtk_list_header_widget_set_child (GtkListHeaderWidget *self,
   g_clear_pointer (&cur_child, gtk_widget_unparent);
 
   if (child)
-    gtk_widget_set_parent (child, GTK_WIDGET (self));
+    gtk_widget_set_parent (child, GTK_WIDGET (this));
 }
 

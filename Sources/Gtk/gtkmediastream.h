@@ -36,16 +36,16 @@ struct _GtkMediaStreamClass
 {
   GObjectClass parent_class;
 
-  gboolean              (* play)                                (GtkMediaStream *self);
-  void                  (* pause)                               (GtkMediaStream *self);
-  void                  (* seek)                                (GtkMediaStream *self,
+  gboolean              (* play)                                (GtkMediaStream *this);
+  void                  (* pause)                               (GtkMediaStream *this);
+  void                  (* seek)                                (GtkMediaStream *this,
                                                                  gint64          timestamp);
-  void                  (* update_audio)                        (GtkMediaStream *self,
+  void                  (* update_audio)                        (GtkMediaStream *this,
                                                                  gboolean        muted,
                                                                  double          volume);
-  void                  (* realize)                             (GtkMediaStream *self,
+  void                  (* realize)                             (GtkMediaStream *this,
                                                                  GdkSurface      *surface);
-  void                  (* unrealize)                           (GtkMediaStream *self,
+  void                  (* unrealize)                           (GtkMediaStream *this,
                                                                  GdkSurface      *surface);
 
   /* Padding for future expansion */
@@ -60,101 +60,101 @@ struct _GtkMediaStreamClass
 };
 
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_media_stream_is_prepared            (GtkMediaStream *self);
+gboolean                gtk_media_stream_is_prepared            (GtkMediaStream *this);
 GDK_AVAILABLE_IN_ALL
-const GError *          gtk_media_stream_get_error              (GtkMediaStream *self);
+const GError *          gtk_media_stream_get_error              (GtkMediaStream *this);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_media_stream_has_audio              (GtkMediaStream *self);
+gboolean                gtk_media_stream_has_audio              (GtkMediaStream *this);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_media_stream_has_video              (GtkMediaStream *self);
+gboolean                gtk_media_stream_has_video              (GtkMediaStream *this);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_media_stream_play                   (GtkMediaStream *self);
+void                    gtk_media_stream_play                   (GtkMediaStream *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_media_stream_pause                  (GtkMediaStream *self);
+void                    gtk_media_stream_pause                  (GtkMediaStream *this);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_media_stream_get_playing            (GtkMediaStream *self);
+gboolean                gtk_media_stream_get_playing            (GtkMediaStream *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_media_stream_set_playing            (GtkMediaStream *self,
+void                    gtk_media_stream_set_playing            (GtkMediaStream *this,
                                                                  gboolean        playing);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_media_stream_get_ended              (GtkMediaStream *self);
+gboolean                gtk_media_stream_get_ended              (GtkMediaStream *this);
 
 GDK_AVAILABLE_IN_ALL
-gint64                  gtk_media_stream_get_timestamp          (GtkMediaStream *self);
+gint64                  gtk_media_stream_get_timestamp          (GtkMediaStream *this);
 GDK_AVAILABLE_IN_ALL
-gint64                  gtk_media_stream_get_duration           (GtkMediaStream *self);
+gint64                  gtk_media_stream_get_duration           (GtkMediaStream *this);
 
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_media_stream_is_seekable            (GtkMediaStream *self);
+gboolean                gtk_media_stream_is_seekable            (GtkMediaStream *this);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_media_stream_is_seeking             (GtkMediaStream *self);
+gboolean                gtk_media_stream_is_seeking             (GtkMediaStream *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_media_stream_seek                   (GtkMediaStream *self,
+void                    gtk_media_stream_seek                   (GtkMediaStream *this,
                                                                  gint64          timestamp);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_media_stream_get_loop               (GtkMediaStream *self);
+gboolean                gtk_media_stream_get_loop               (GtkMediaStream *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_media_stream_set_loop               (GtkMediaStream *self,
+void                    gtk_media_stream_set_loop               (GtkMediaStream *this,
                                                                  gboolean        loop);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_media_stream_get_muted              (GtkMediaStream *self);
+gboolean                gtk_media_stream_get_muted              (GtkMediaStream *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_media_stream_set_muted              (GtkMediaStream *self,
+void                    gtk_media_stream_set_muted              (GtkMediaStream *this,
                                                                  gboolean        muted);
 GDK_AVAILABLE_IN_ALL
-double                  gtk_media_stream_get_volume             (GtkMediaStream *self);
+double                  gtk_media_stream_get_volume             (GtkMediaStream *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_media_stream_set_volume             (GtkMediaStream *self,
+void                    gtk_media_stream_set_volume             (GtkMediaStream *this,
                                                                  double          volume);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_media_stream_realize                (GtkMediaStream *self,
+void                    gtk_media_stream_realize                (GtkMediaStream *this,
                                                                  GdkSurface      *surface);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_media_stream_unrealize              (GtkMediaStream *self,
+void                    gtk_media_stream_unrealize              (GtkMediaStream *this,
                                                                  GdkSurface      *surface);
 
 /* for implementations only */
 GDK_DEPRECATED_IN_4_4_FOR(gtk_media_stream_stream_prepared)
-void                    gtk_media_stream_prepared               (GtkMediaStream *self,
+void                    gtk_media_stream_prepared               (GtkMediaStream *this,
                                                                  gboolean        has_audio,
                                                                  gboolean        has_video,
                                                                  gboolean        seekable,
                                                                  gint64          duration);
 GDK_DEPRECATED_IN_4_4_FOR(gtk_media_stream_stream_unprepared)
-void                    gtk_media_stream_unprepared             (GtkMediaStream *self);
+void                    gtk_media_stream_unprepared             (GtkMediaStream *this);
 
 GDK_AVAILABLE_IN_4_4
-void                    gtk_media_stream_stream_prepared        (GtkMediaStream *self,
+void                    gtk_media_stream_stream_prepared        (GtkMediaStream *this,
                                                                  gboolean        has_audio,
                                                                  gboolean        has_video,
                                                                  gboolean        seekable,
                                                                  gint64          duration);
 GDK_AVAILABLE_IN_4_4
-void                    gtk_media_stream_stream_unprepared      (GtkMediaStream *self);
+void                    gtk_media_stream_stream_unprepared      (GtkMediaStream *this);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_media_stream_update                 (GtkMediaStream *self,
+void                    gtk_media_stream_update                 (GtkMediaStream *this,
                                                                  gint64          timestamp);
 GDK_DEPRECATED_IN_4_4_FOR(gtk_media_stream_stream_ended)
-void                    gtk_media_stream_ended                  (GtkMediaStream *self);
+void                    gtk_media_stream_ended                  (GtkMediaStream *this);
 GDK_AVAILABLE_IN_4_4
-void                    gtk_media_stream_stream_ended           (GtkMediaStream *self);
+void                    gtk_media_stream_stream_ended           (GtkMediaStream *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_media_stream_seek_success           (GtkMediaStream *self);
+void                    gtk_media_stream_seek_success           (GtkMediaStream *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_media_stream_seek_failed            (GtkMediaStream *self);
+void                    gtk_media_stream_seek_failed            (GtkMediaStream *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_media_stream_gerror                 (GtkMediaStream *self,
+void                    gtk_media_stream_gerror                 (GtkMediaStream *this,
                                                                  GError         *error);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_media_stream_error                  (GtkMediaStream *self,
+void                    gtk_media_stream_error                  (GtkMediaStream *this,
                                                                  GQuark          domain,
                                                                  int             code,
                                                                  const char     *format,
                                                                  ...) G_GNUC_PRINTF (4, 5);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_media_stream_error_valist           (GtkMediaStream *self,
+void                    gtk_media_stream_error_valist           (GtkMediaStream *this,
                                                                  GQuark          domain,
                                                                  int             code,
                                                                  const char     *format,

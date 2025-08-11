@@ -10,11 +10,11 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (GskVulkanFrame, gsk_vulkan_frame, GSK, VULKAN_FRAME, GskGpuFrame)
 
-void                    gsk_vulkan_semaphores_add_wait                  (GskVulkanSemaphores    *self,
+void                    gsk_vulkan_semaphores_add_wait                  (GskVulkanSemaphores    *this,
                                                                          VkSemaphore             semaphore,
                                                                          uint64_t                semaphore_wait,
                                                                          VkPipelineStageFlags    stage);
-void                    gsk_vulkan_semaphores_add_signal                (GskVulkanSemaphores    *self,
+void                    gsk_vulkan_semaphores_add_signal                (GskVulkanSemaphores    *this,
                                                                          VkSemaphore             semaphore);
 
 G_END_DECLS

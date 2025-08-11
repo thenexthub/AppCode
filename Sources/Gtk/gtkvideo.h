@@ -46,37 +46,37 @@ GDK_AVAILABLE_IN_ALL
 GtkWidget *     gtk_video_new_for_resource              (const char             *resource_path);
 
 GDK_AVAILABLE_IN_ALL
-GtkMediaStream *gtk_video_get_media_stream              (GtkVideo               *self);
+GtkMediaStream *gtk_video_get_media_stream              (GtkVideo               *this);
 GDK_AVAILABLE_IN_ALL
-void            gtk_video_set_media_stream              (GtkVideo               *self,
+void            gtk_video_set_media_stream              (GtkVideo               *this,
                                                          GtkMediaStream         *stream);
 GDK_AVAILABLE_IN_ALL
-GFile *         gtk_video_get_file                      (GtkVideo               *self);
+GFile *         gtk_video_get_file                      (GtkVideo               *this);
 GDK_AVAILABLE_IN_ALL
-void            gtk_video_set_file                      (GtkVideo               *self,
+void            gtk_video_set_file                      (GtkVideo               *this,
                                                          GFile                  *file);
 GDK_AVAILABLE_IN_ALL
-void            gtk_video_set_filename                  (GtkVideo               *self,
+void            gtk_video_set_filename                  (GtkVideo               *this,
                                                          const char             *filename);
 GDK_AVAILABLE_IN_ALL
-void            gtk_video_set_resource                  (GtkVideo               *self,
+void            gtk_video_set_resource                  (GtkVideo               *this,
                                                          const char             *resource_path);
 GDK_AVAILABLE_IN_ALL
-gboolean        gtk_video_get_autoplay                  (GtkVideo               *self);
+gboolean        gtk_video_get_autoplay                  (GtkVideo               *this);
 GDK_AVAILABLE_IN_ALL
-void            gtk_video_set_autoplay                  (GtkVideo               *self,
+void            gtk_video_set_autoplay                  (GtkVideo               *this,
                                                          gboolean                autoplay);
 GDK_AVAILABLE_IN_ALL
-gboolean        gtk_video_get_loop                      (GtkVideo               *self);
+gboolean        gtk_video_get_loop                      (GtkVideo               *this);
 GDK_AVAILABLE_IN_ALL
-void            gtk_video_set_loop                      (GtkVideo               *self,
+void            gtk_video_set_loop                      (GtkVideo               *this,
                                                          gboolean                loop);
 
 GDK_AVAILABLE_IN_4_14
 GtkGraphicsOffloadEnabled
-                gtk_video_get_graphics_offload          (GtkVideo               *self);
+                gtk_video_get_graphics_offload          (GtkVideo               *this);
 GDK_AVAILABLE_IN_4_14
-void            gtk_video_set_graphics_offload          (GtkVideo               *self,
+void            gtk_video_set_graphics_offload          (GtkVideo               *this,
                                                          GtkGraphicsOffloadEnabled enabled);
 
 G_END_DECLS

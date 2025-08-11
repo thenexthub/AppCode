@@ -32,12 +32,12 @@ GdkMonitor *
 gdk_android_monitor_new (GdkDisplay *display);
 
 void
-gdk_android_monitor_update (GdkAndroidMonitor *self, const GdkRectangle *bounds, gfloat density);
+gdk_android_monitor_update (GdkAndroidMonitor *this, const GdkRectangle *bounds, gfloat density);
 
 void
-gdk_android_monitor_add_toplevel (GdkAndroidMonitor *self);
+gdk_android_monitor_add_toplevel (GdkAndroidMonitor *this);
 
 void
-gdk_android_monitor_drop_toplevel (GdkAndroidMonitor *self);
+gdk_android_monitor_drop_toplevel (GdkAndroidMonitor *this);
 
 G_END_DECLS

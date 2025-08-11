@@ -524,7 +524,7 @@ load_layout_dll (const char               *dll,
     typedef KLPKBDTABLES (*KbdLayerDescriptor)(VOID);
 
     HMODULE             lib;
-    KbdLayerDescriptor  func;
+    KbdLayerDescriptor  fn;
     KLPKBDTABLES        tables;
 
     g_return_val_if_fail (dll != NULL, FALSE);
@@ -533,11 +533,11 @@ load_layout_dll (const char               *dll,
     if (lib == NULL)
       goto fail1;
 
-    func = (KbdLayerDescriptor) GetProcAddress (lib, "KbdLayerDescriptor");
-    if (func == NULL)
+    fn = (KbdLayerDescriptor) GetProcAddress (lib, "KbdLayerDescriptor");
+    if (fn == NULL)
       goto fail2;
 
-    tables = func();
+    tables = fn();
 
     info->lib = lib;
     info->tables = (PKBDTABLES) tables.ptr;

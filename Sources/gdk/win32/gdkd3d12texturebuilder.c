@@ -88,14 +88,14 @@ static GParamSpec *properties[N_PROPS] = { NULL, };
 static void
 gdk_d3d12_texture_builder_dispose (GObject *object)
 {
-  GdkD3D12TextureBuilder *self = GDK_D3D12_TEXTURE_BUILDER (object);
+  GdkD3D12TextureBuilder *this = GDK_D3D12_TEXTURE_BUILDER (object);
 
-  g_clear_object (&self->update_texture);
-  g_clear_pointer (&self->update_region, cairo_region_destroy);
-  g_clear_pointer (&self->color_state, gdk_color_state_unref);
+  g_clear_object (&this->update_texture);
+  g_clear_pointer (&this->update_region, cairo_region_destroy);
+  g_clear_pointer (&this->color_state, gdk_color_state_unref);
 
-  gdk_win32_com_clear (&self->resource);
-  gdk_win32_com_clear (&self->fence);
+  gdk_win32_com_clear (&this->resource);
+  gdk_win32_com_clear (&this->fence);
 
   G_OBJECT_CLASS (gdk_d3d12_texture_builder_parent_class)->dispose (object);
 }
@@ -106,36 +106,36 @@ gdk_d3d12_texture_builder_get_property (GObject    *object,
                                         GValue     *value,
                                         GParamSpec *pspec)
 {
-  GdkD3D12TextureBuilder *self = GDK_D3D12_TEXTURE_BUILDER (object);
+  GdkD3D12TextureBuilder *this = GDK_D3D12_TEXTURE_BUILDER (object);
 
   switch (property_id)
     {
     case PROP_COLOR_STATE:
-      g_value_set_boxed (value, self->color_state);
+      g_value_set_boxed (value, this->color_state);
       break;
 
     case PROP_FENCE:
-      g_value_set_pointer (value, self->fence);
+      g_value_set_pointer (value, this->fence);
       break;
 
     case PROP_FENCE_WAIT:
-      g_value_set_uint64 (value, self->fence_wait);
+      g_value_set_uint64 (value, this->fence_wait);
       break;
 
     case PROP_PREMULTIPLIED:
-      g_value_set_boolean (value, self->premultiplied);
+      g_value_set_boolean (value, this->premultiplied);
       break;
 
     case PROP_RESOURCE:
-      g_value_set_pointer (value, self->resource);
+      g_value_set_pointer (value, this->resource);
       break;
 
     case PROP_UPDATE_REGION:
-      g_value_set_boxed (value, self->update_region);
+      g_value_set_boxed (value, this->update_region);
       break;
 
     case PROP_UPDATE_TEXTURE:
-      g_value_set_object (value, self->update_texture);
+      g_value_set_object (value, this->update_texture);
       break;
 
     default:
@@ -150,36 +150,36 @@ gdk_d3d12_texture_builder_set_property (GObject      *object,
                                         const GValue *value,
                                         GParamSpec   *pspec)
 {
-  GdkD3D12TextureBuilder *self = GDK_D3D12_TEXTURE_BUILDER (object);
+  GdkD3D12TextureBuilder *this = GDK_D3D12_TEXTURE_BUILDER (object);
 
   switch (property_id)
     {
     case PROP_COLOR_STATE:
-      gdk_d3d12_texture_builder_set_color_state (self, g_value_get_boxed (value));
+      gdk_d3d12_texture_builder_set_color_state (this, g_value_get_boxed (value));
       break;
 
     case PROP_FENCE:
-      gdk_d3d12_texture_builder_set_fence (self, g_value_get_pointer (value));
+      gdk_d3d12_texture_builder_set_fence (this, g_value_get_pointer (value));
       break;
 
     case PROP_FENCE_WAIT:
-      gdk_d3d12_texture_builder_set_fence_wait (self, g_value_get_uint64 (value));
+      gdk_d3d12_texture_builder_set_fence_wait (this, g_value_get_uint64 (value));
       break;
 
     case PROP_PREMULTIPLIED:
-      gdk_d3d12_texture_builder_set_premultiplied (self, g_value_get_boolean (value));
+      gdk_d3d12_texture_builder_set_premultiplied (this, g_value_get_boolean (value));
       break;
 
     case PROP_RESOURCE:
-      gdk_d3d12_texture_builder_set_resource (self, g_value_get_pointer (value));
+      gdk_d3d12_texture_builder_set_resource (this, g_value_get_pointer (value));
       break;
 
     case PROP_UPDATE_REGION:
-      gdk_d3d12_texture_builder_set_update_region (self, g_value_get_boxed (value));
+      gdk_d3d12_texture_builder_set_update_region (this, g_value_get_boxed (value));
       break;
 
     case PROP_UPDATE_TEXTURE:
-      gdk_d3d12_texture_builder_set_update_texture (self, g_value_get_object (value));
+      gdk_d3d12_texture_builder_set_update_texture (this, g_value_get_object (value));
       break;
 
     default:
@@ -285,9 +285,9 @@ gdk_d3d12_texture_builder_class_init (GdkD3D12TextureBuilderClass *klass)
 }
 
 static void
-gdk_d3d12_texture_builder_init (GdkD3D12TextureBuilder *self)
+gdk_d3d12_texture_builder_init (GdkD3D12TextureBuilder *this)
 {
-  self->premultiplied = TRUE;
+  this->premultiplied = TRUE;
 }
 
 /**
@@ -307,7 +307,7 @@ gdk_d3d12_texture_builder_new (void)
 
 /**
  * gdk_d3d12_texture_builder_get_resource:
- * @self: a `GdkD3D12TextureBuilder`
+ * @this: a `GdkD3D12TextureBuilder`
  *
  * Returns the resource that this texture builder is
  * associated with.
@@ -317,16 +317,16 @@ gdk_d3d12_texture_builder_new (void)
  * Since: 4.20
  */
 ID3D12Resource *
-gdk_d3d12_texture_builder_get_resource (GdkD3D12TextureBuilder *self)
+gdk_d3d12_texture_builder_get_resource (GdkD3D12TextureBuilder *this)
 {
-  g_return_val_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (self), NULL);
+  g_return_val_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (this), NULL);
 
-  return self->resource;
+  return this->resource;
 }
 
 /**
  * gdk_d3d12_texture_builder_set_resource:
- * @self: a `GdkD3D12TextureBuilder`
+ * @this: a `GdkD3D12TextureBuilder`
  * @resource: the resource
  *
  * Sets the resource that this texture builder is going to construct
@@ -335,26 +335,26 @@ gdk_d3d12_texture_builder_get_resource (GdkD3D12TextureBuilder *self)
  * Since: 4.20
  */
 void
-gdk_d3d12_texture_builder_set_resource (GdkD3D12TextureBuilder *self,
+gdk_d3d12_texture_builder_set_resource (GdkD3D12TextureBuilder *this,
                                         ID3D12Resource         *resource)
 {
-  g_return_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (self));
+  g_return_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (this));
 
-  if (self->resource == resource)
+  if (this->resource == resource)
     return;
 
   if (resource)
     ID3D12Resource_AddRef (resource);
-  if (self->resource)
-    ID3D12Resource_Release (self->resource);
-  self->resource = resource;
+  if (this->resource)
+    ID3D12Resource_Release (this->resource);
+  this->resource = resource;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_RESOURCE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_RESOURCE]);
 }
 
 /**
  * gdk_d3d12_texture_builder_get_fence:
- * @self: a `GdkD3D12TextureBuilder`
+ * @this: a `GdkD3D12TextureBuilder`
  *
  * Returns the fence that this texture builder is
  * associated with.
@@ -364,16 +364,16 @@ gdk_d3d12_texture_builder_set_resource (GdkD3D12TextureBuilder *self,
  * Since: 4.20
  */
 ID3D12Fence *
-gdk_d3d12_texture_builder_get_fence (GdkD3D12TextureBuilder *self)
+gdk_d3d12_texture_builder_get_fence (GdkD3D12TextureBuilder *this)
 {
-  g_return_val_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (self), NULL);
+  g_return_val_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (this), NULL);
 
-  return self->fence;
+  return this->fence;
 }
 
 /**
  * gdk_d3d12_texture_builder_set_fence:
- * @self: a `GdkD3D12TextureBuilder`
+ * @this: a `GdkD3D12TextureBuilder`
  * @fence: the fence
  *
  * Sets the fence that this texture builder is going to construct
@@ -382,25 +382,25 @@ gdk_d3d12_texture_builder_get_fence (GdkD3D12TextureBuilder *self)
  * Since: 4.20
  */
 void
-gdk_d3d12_texture_builder_set_fence (GdkD3D12TextureBuilder *self,
+gdk_d3d12_texture_builder_set_fence (GdkD3D12TextureBuilder *this,
                                      ID3D12Fence            *fence)
 {
-  g_return_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (self));
+  g_return_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (this));
 
-  if (self->fence == fence)
+  if (this->fence == fence)
     return;
 
   if (fence)
     ID3D12Fence_AddRef (fence);
-  gdk_win32_com_clear (&self->fence);
-  self->fence = fence;
+  gdk_win32_com_clear (&this->fence);
+  this->fence = fence;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_FENCE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_FENCE]);
 }
 
 /**
  * gdk_d3d12_texture_builder_get_fence_wait:
- * @self: a `GdkD3D12TextureBuilder`
+ * @this: a `GdkD3D12TextureBuilder`
  *
  * Returns the value that GTK should wait for on the fence
  * before using the resource.
@@ -410,16 +410,16 @@ gdk_d3d12_texture_builder_set_fence (GdkD3D12TextureBuilder *self,
  * Since: 4.20
  */
 guint64
-gdk_d3d12_texture_builder_get_fence_wait (GdkD3D12TextureBuilder *self)
+gdk_d3d12_texture_builder_get_fence_wait (GdkD3D12TextureBuilder *this)
 {
-  g_return_val_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (self), 0);
+  g_return_val_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (this), 0);
 
-  return self->fence_wait;
+  return this->fence_wait;
 }
 
 /**
  * gdk_d3d12_texture_builder_set_fence_wait:
- * @self: a `GdkD3D12TextureBuilder`
+ * @this: a `GdkD3D12TextureBuilder`
  * @fence_wait: the value to wait on
  *
  * Sets the value that GTK should wait on on the given fence before using the
@@ -430,22 +430,22 @@ gdk_d3d12_texture_builder_get_fence_wait (GdkD3D12TextureBuilder *self)
  * Since: 4.20
  */
 void
-gdk_d3d12_texture_builder_set_fence_wait (GdkD3D12TextureBuilder *self,
+gdk_d3d12_texture_builder_set_fence_wait (GdkD3D12TextureBuilder *this,
                                           guint64                 fence_wait)
 {
-  g_return_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (self));
+  g_return_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (this));
 
-  if (self->fence_wait == fence_wait)
+  if (this->fence_wait == fence_wait)
     return;
 
-  self->fence_wait = fence_wait;
+  this->fence_wait = fence_wait;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_FENCE_WAIT]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_FENCE_WAIT]);
 }
 
 /**
  * gdk_d3d12_texture_builder_get_premultiplied:
- * @self: a `GdkD3D12TextureBuilder`
+ * @this: a `GdkD3D12TextureBuilder`
  *
  * Whether the data is premultiplied.
  *
@@ -454,16 +454,16 @@ gdk_d3d12_texture_builder_set_fence_wait (GdkD3D12TextureBuilder *self,
  * Since: 4.20
  */
 gboolean
-gdk_d3d12_texture_builder_get_premultiplied (GdkD3D12TextureBuilder *self)
+gdk_d3d12_texture_builder_get_premultiplied (GdkD3D12TextureBuilder *this)
 {
-  g_return_val_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (self), TRUE);
+  g_return_val_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (this), TRUE);
 
-  return self->premultiplied;
+  return this->premultiplied;
 }
 
 /**
  * gdk_d3d12_texture_builder_set_premultiplied:
- * @self: a `GdkD3D12TextureBuilder`
+ * @this: a `GdkD3D12TextureBuilder`
  * @premultiplied: whether the data is premultiplied
  *
  * Sets whether the data is premultiplied.
@@ -474,22 +474,22 @@ gdk_d3d12_texture_builder_get_premultiplied (GdkD3D12TextureBuilder *self)
  * Since: 4.20
  */
 void
-gdk_d3d12_texture_builder_set_premultiplied (GdkD3D12TextureBuilder *self,
+gdk_d3d12_texture_builder_set_premultiplied (GdkD3D12TextureBuilder *this,
                                              gboolean                premultiplied)
 {
-  g_return_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (self));
+  g_return_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (this));
 
-  if (self->premultiplied == premultiplied)
+  if (this->premultiplied == premultiplied)
     return;
 
-  self->premultiplied = premultiplied;
+  this->premultiplied = premultiplied;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_PREMULTIPLIED]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_PREMULTIPLIED]);
 }
 
 /**
  * gdk_d3d12_texture_builder_get_color_state:
- * @self: a `GdkD3D12TextureBuilder`
+ * @this: a `GdkD3D12TextureBuilder`
  *
  * Gets the color state previously set via gdk_d3d12_texture_builder_set_color_state().
  *
@@ -498,16 +498,16 @@ gdk_d3d12_texture_builder_set_premultiplied (GdkD3D12TextureBuilder *self,
  * Since: 4.20
  */
 GdkColorState *
-gdk_d3d12_texture_builder_get_color_state (GdkD3D12TextureBuilder *self)
+gdk_d3d12_texture_builder_get_color_state (GdkD3D12TextureBuilder *this)
 {
-  g_return_val_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (self), NULL);
+  g_return_val_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (this), NULL);
 
-  return self->color_state;
+  return this->color_state;
 }
 
 /**
  * gdk_d3d12_texture_builder_set_color_state:
- * @self: a `GdkD3D12TextureBuilder`
+ * @this: a `GdkD3D12TextureBuilder`
  * @color_state: (nullable): a `GdkColorState` or `NULL` to unset the colorstate.
  *
  * Sets the color state for the texture.
@@ -519,26 +519,26 @@ gdk_d3d12_texture_builder_get_color_state (GdkD3D12TextureBuilder *self)
  * Since: 4.20
  */
 void
-gdk_d3d12_texture_builder_set_color_state (GdkD3D12TextureBuilder *self,
+gdk_d3d12_texture_builder_set_color_state (GdkD3D12TextureBuilder *this,
                                            GdkColorState          *color_state)
 {
-  g_return_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (self));
+  g_return_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (this));
 
-  if (self->color_state == color_state ||
-      (self->color_state != NULL && color_state != NULL && gdk_color_state_equal (self->color_state, color_state)))
+  if (this->color_state == color_state ||
+      (this->color_state != NULL && color_state != NULL && gdk_color_state_equal (this->color_state, color_state)))
     return;
 
-  g_clear_pointer (&self->color_state, gdk_color_state_unref);
-  self->color_state = color_state;
+  g_clear_pointer (&this->color_state, gdk_color_state_unref);
+  this->color_state = color_state;
   if (color_state)
     gdk_color_state_ref (color_state);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_COLOR_STATE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_COLOR_STATE]);
 }
 
 /**
  * gdk_d3d12_texture_builder_get_update_texture:
- * @self: a `GdkD3D12TextureBuilder`
+ * @this: a `GdkD3D12TextureBuilder`
  *
  * Gets the texture previously set via gdk_d3d12_texture_builder_set_update_texture() or
  * %NULL if none was set.
@@ -548,16 +548,16 @@ gdk_d3d12_texture_builder_set_color_state (GdkD3D12TextureBuilder *self,
  * Since: 4.20
  */
 GdkTexture *
-gdk_d3d12_texture_builder_get_update_texture (GdkD3D12TextureBuilder *self)
+gdk_d3d12_texture_builder_get_update_texture (GdkD3D12TextureBuilder *this)
 {
-  g_return_val_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (self), NULL);
+  g_return_val_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (this), NULL);
 
-  return self->update_texture;
+  return this->update_texture;
 }
 
 /**
  * gdk_d3d12_texture_builder_set_update_texture:
- * @self: a `GdkD3D12TextureBuilder`
+ * @this: a `GdkD3D12TextureBuilder`
  * @texture: (nullable): the texture to update
  *
  * Sets the texture to be updated by this texture. See
@@ -566,21 +566,21 @@ gdk_d3d12_texture_builder_get_update_texture (GdkD3D12TextureBuilder *self)
  * Since: 4.20
  */
 void
-gdk_d3d12_texture_builder_set_update_texture (GdkD3D12TextureBuilder *self,
+gdk_d3d12_texture_builder_set_update_texture (GdkD3D12TextureBuilder *this,
                                               GdkTexture             *texture)
 {
-  g_return_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (self));
+  g_return_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (this));
   g_return_if_fail (texture == NULL || GDK_IS_TEXTURE (texture));
 
-  if (!g_set_object (&self->update_texture, texture))
+  if (!g_set_object (&this->update_texture, texture))
     return;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_UPDATE_TEXTURE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_UPDATE_TEXTURE]);
 }
 
 /**
  * gdk_d3d12_texture_builder_get_update_region:
- * @self: a `GdkD3D12TextureBuilder`
+ * @this: a `GdkD3D12TextureBuilder`
  *
  * Gets the region previously set via gdk_d3d12_texture_builder_set_update_region() or
  * %NULL if none was set.
@@ -590,16 +590,16 @@ gdk_d3d12_texture_builder_set_update_texture (GdkD3D12TextureBuilder *self,
  * Since: 4.20
  */
 cairo_region_t *
-gdk_d3d12_texture_builder_get_update_region (GdkD3D12TextureBuilder *self)
+gdk_d3d12_texture_builder_get_update_region (GdkD3D12TextureBuilder *this)
 {
-  g_return_val_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (self), NULL);
+  g_return_val_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (this), NULL);
 
-  return self->update_region;
+  return this->update_region;
 }
 
 /**
  * gdk_d3d12_texture_builder_set_update_region:
- * @self: a `GdkD3D12TextureBuilder`
+ * @this: a `GdkD3D12TextureBuilder`
  * @region: (nullable): the region to update
  *
  * Sets the region to be updated by this texture. Together with
@@ -616,25 +616,25 @@ gdk_d3d12_texture_builder_get_update_region (GdkD3D12TextureBuilder *self)
  * Since: 4.20
  */
 void
-gdk_d3d12_texture_builder_set_update_region (GdkD3D12TextureBuilder *self,
+gdk_d3d12_texture_builder_set_update_region (GdkD3D12TextureBuilder *this,
                                               cairo_region_t      *region)
 {
-  g_return_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (self));
+  g_return_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (this));
 
-  if (self->update_region == region)
+  if (this->update_region == region)
     return;
 
-  g_clear_pointer (&self->update_region, cairo_region_destroy);
+  g_clear_pointer (&this->update_region, cairo_region_destroy);
 
   if (region)
-    self->update_region = cairo_region_reference (region);
+    this->update_region = cairo_region_reference (region);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_UPDATE_REGION]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_UPDATE_REGION]);
 }
 
 /**
  * gdk_d3d12_texture_builder_build:
- * @self: a `GdkD3D12TextureBuilder`
+ * @this: a `GdkD3D12TextureBuilder`
  * @destroy: (nullable): destroy function to be called when the texture is
  *   released
  * @data: user data to pass to the destroy function
@@ -663,15 +663,15 @@ gdk_d3d12_texture_builder_set_update_region (GdkD3D12TextureBuilder *self,
  * Since: 4.20
  */
 GdkTexture *
-gdk_d3d12_texture_builder_build (GdkD3D12TextureBuilder *self,
+gdk_d3d12_texture_builder_build (GdkD3D12TextureBuilder *this,
                                   GDestroyNotify           destroy,
                                   gpointer                 data,
                                   GError                 **error)
 {
-  g_return_val_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (self), NULL);
+  g_return_val_if_fail (GDK_IS_D3D12_TEXTURE_BUILDER (this), NULL);
   g_return_val_if_fail (destroy == NULL || data != NULL, NULL);
   g_return_val_if_fail (error == NULL || *error == NULL, NULL);
-  g_return_val_if_fail (self->resource, NULL);
+  g_return_val_if_fail (this->resource, NULL);
 
-  return gdk_d3d12_texture_new_from_builder (self, destroy, data, error);
+  return gdk_d3d12_texture_new_from_builder (this, destroy, data, error);
 }

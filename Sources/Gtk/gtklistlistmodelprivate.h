@@ -53,19 +53,19 @@ GtkListListModel *      gtk_list_list_model_new_with_size       (guint          
                                                                  gpointer                data,
                                                                  GDestroyNotify          notify);
 
-void                    gtk_list_list_model_item_added          (GtkListListModel       *self,
+void                    gtk_list_list_model_item_added          (GtkListListModel       *this,
                                                                  gpointer                item);
-void                    gtk_list_list_model_item_added_at       (GtkListListModel       *self,
+void                    gtk_list_list_model_item_added_at       (GtkListListModel       *this,
                                                                  guint                   position);
-void                    gtk_list_list_model_item_removed        (GtkListListModel       *self,
+void                    gtk_list_list_model_item_removed        (GtkListListModel       *this,
                                                                  gpointer                previous);
-void                    gtk_list_list_model_item_removed_at     (GtkListListModel       *self,
+void                    gtk_list_list_model_item_removed_at     (GtkListListModel       *this,
                                                                  guint                   position);
-void                    gtk_list_list_model_item_moved          (GtkListListModel       *self,
+void                    gtk_list_list_model_item_moved          (GtkListListModel       *this,
                                                                  gpointer                item,
                                                                  gpointer                previous_previous);
 
-void                    gtk_list_list_model_clear               (GtkListListModel       *self);
+void                    gtk_list_list_model_clear               (GtkListListModel       *this);
 
 
 G_END_DECLS

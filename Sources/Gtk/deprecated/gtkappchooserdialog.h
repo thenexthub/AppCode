@@ -52,12 +52,12 @@ GtkWidget *   gtk_app_chooser_dialog_new_for_content_type (GtkWindow           *
                                                            const char          *content_type);
 
 GDK_DEPRECATED_IN_4_10
-GtkWidget *   gtk_app_chooser_dialog_get_widget           (GtkAppChooserDialog *self);
+GtkWidget *   gtk_app_chooser_dialog_get_widget           (GtkAppChooserDialog *this);
 GDK_DEPRECATED_IN_4_10
-void          gtk_app_chooser_dialog_set_heading          (GtkAppChooserDialog *self,
+void          gtk_app_chooser_dialog_set_heading          (GtkAppChooserDialog *this,
                                                            const char          *heading);
 GDK_DEPRECATED_IN_4_10
-const char * gtk_app_chooser_dialog_get_heading          (GtkAppChooserDialog *self);
+const char * gtk_app_chooser_dialog_get_heading          (GtkAppChooserDialog *this);
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GtkAppChooserDialog, g_object_unref)
 

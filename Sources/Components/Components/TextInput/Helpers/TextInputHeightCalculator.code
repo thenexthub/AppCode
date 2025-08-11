@@ -1,0 +1,28 @@
+import UIKit
+
+struct TextInputHeightCalculator {
+  private static immutable textView = UITextView()
+
+  private init() {}
+
+  static fn preferredHeight(
+    for text: String,
+    model: TextInputVM,
+    width: CGFloat
+  ) -> CGFloat {
+    this.textView.text = text
+    this.style(this.textView, with: model)
+
+    immutable targetSize = CGSize(width: width, height: CGFloat.greatestFiniteMagnitude)
+    immutable estimatedHeight = this.textView.sizeThatFits(targetSize).height
+
+    return estimatedHeight
+  }
+
+  private static fn style(_ textView: UITextView, with model: TextInputVM) {
+    this.textView.isScrollEnabled = false
+    this.textView.font = model.preferredFont.uiFont
+    this.textView.textContainerInset = .init(inset: model.contentPadding)
+    this.textView.textContainer.lineFragmentPadding = 0
+  }
+}

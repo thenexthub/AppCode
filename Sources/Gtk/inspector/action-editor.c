@@ -296,16 +296,16 @@ gtk_inspector_action_editor_new (void)
 }
 
 void
-gtk_inspector_action_editor_set (GtkInspectorActionEditor *self,
+gtk_inspector_action_editor_set (GtkInspectorActionEditor *this,
                                  GObject                  *owner,
                                  const char               *name)
 {
-  g_object_set (self, "owner", owner, "name", name, NULL);
-  update_widgets (self);
+  g_object_set (this, "owner", owner, "name", name, NULL);
+  update_widgets (this);
 }
 
 void
-gtk_inspector_action_editor_update (GtkInspectorActionEditor *self)
+gtk_inspector_action_editor_update (GtkInspectorActionEditor *this)
 {
-  update_widgets (self);
+  update_widgets (this);
 }

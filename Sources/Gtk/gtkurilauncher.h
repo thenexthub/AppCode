@@ -36,26 +36,26 @@ GDK_AVAILABLE_IN_4_10
 GtkUriLauncher * gtk_uri_launcher_new                         (const char          *uri);
 
 GDK_AVAILABLE_IN_4_10
-const char     * gtk_uri_launcher_get_uri                     (GtkUriLauncher      *self);
+const char     * gtk_uri_launcher_get_uri                     (GtkUriLauncher      *this);
 GDK_AVAILABLE_IN_4_10
-void             gtk_uri_launcher_set_uri                     (GtkUriLauncher      *self,
+void             gtk_uri_launcher_set_uri                     (GtkUriLauncher      *this,
                                                                const char          *uri);
 
 GDK_AVAILABLE_IN_4_10
-void             gtk_uri_launcher_launch                      (GtkUriLauncher      *self,
+void             gtk_uri_launcher_launch                      (GtkUriLauncher      *this,
                                                                GtkWindow           *parent,
                                                                GCancellable        *cancellable,
                                                                GAsyncReadyCallback  callback,
                                                                gpointer             user_data);
 
 GDK_AVAILABLE_IN_4_10
-gboolean         gtk_uri_launcher_launch_finish               (GtkUriLauncher      *self,
+gboolean         gtk_uri_launcher_launch_finish               (GtkUriLauncher      *this,
                                                                GAsyncResult        *result,
                                                                GError             **error);
 
 
 GDK_AVAILABLE_IN_4_20
-gboolean        gtk_uri_launcher_can_launch                   (GtkUriLauncher      *self,
+gboolean        gtk_uri_launcher_can_launch                   (GtkUriLauncher      *this,
                                                                GtkWindow           *parent);
 
 G_END_DECLS

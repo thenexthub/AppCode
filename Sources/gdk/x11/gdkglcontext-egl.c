@@ -67,7 +67,7 @@ static gboolean
 gdk_x11_gl_context_egl_make_current (GdkGLContext *context,
                                      gboolean      surfaceless)
 {
-  GdkX11GLContextEGL *self = GDK_X11_GL_CONTEXT_EGL (context);
+  GdkX11GLContextEGL *this = GDK_X11_GL_CONTEXT_EGL (context);
   GdkDisplay *display = gdk_gl_context_get_display (context);
   EGLDisplay egl_display = gdk_display_get_egl_display (display);
   gboolean do_frame_sync = FALSE;
@@ -84,9 +84,9 @@ gdk_x11_gl_context_egl_make_current (GdkGLContext *context,
    * to the vblank. */
   do_frame_sync = ! gdk_display_is_composited (display);
 
-  if (do_frame_sync != self->do_frame_sync)
+  if (do_frame_sync != this->do_frame_sync)
     {
-      self->do_frame_sync = do_frame_sync;
+      this->do_frame_sync = do_frame_sync;
 
       if (do_frame_sync)
         eglSwapInterval (egl_display, 1);
@@ -123,9 +123,9 @@ gdk_x11_gl_context_egl_class_init (GdkX11GLContextEGLClass *klass)
 }
 
 static void
-gdk_x11_gl_context_egl_init (GdkX11GLContextEGL *self)
+gdk_x11_gl_context_egl_init (GdkX11GLContextEGL *this)
 {
-  self->do_frame_sync = TRUE;
+  this->do_frame_sync = TRUE;
 }
 
 /**

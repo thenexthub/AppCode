@@ -172,13 +172,13 @@ gtk_css_animation_is_static (GtkStyleAnimation *style_animation)
 static void
 gtk_css_animation_free (GtkStyleAnimation *animation)
 {
-  GtkCssAnimation *self = (GtkCssAnimation *)animation;
+  GtkCssAnimation *this = (GtkCssAnimation *)animation;
 
-  g_free (self->name);
-  _gtk_css_keyframes_unref (self->keyframes);
-  gtk_css_value_unref (self->ease);
+  g_free (this->name);
+  _gtk_css_keyframes_unref (this->keyframes);
+  gtk_css_value_unref (this->ease);
 
-  g_free (self);
+  g_free (this);
 }
 
 static const GtkStyleAnimationClass GTK_CSS_ANIMATION_CLASS = {

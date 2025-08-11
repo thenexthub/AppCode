@@ -916,7 +916,7 @@ _gdk_display_get_pointer_info (GdkDisplay *display,
 
 void
 _gdk_display_pointer_info_foreach (GdkDisplay                   *display,
-                                   GdkDisplayPointerInfoForeach  func,
+                                   GdkDisplayPointerInfoForeach  fn,
                                    gpointer                      user_data)
 {
   GHashTableIter iter;
@@ -929,7 +929,7 @@ _gdk_display_pointer_info_foreach (GdkDisplay                   *display,
       GdkPointerSurfaceInfo *info = value;
       GdkDevice *device = key;
 
-      (func) (display, device, info, user_data);
+      (fn) (display, device, info, user_data);
     }
 }
 
@@ -1288,10 +1288,10 @@ gdk_display_get_keymap (GdkDisplay *display)
 
 /*< private >
  * gdk_display_prepare_vulkan:
- * @self: a `GdkDisplay`
+ * @this: a `GdkDisplay`
  * @error: return location for a `GError`
  *
- * Checks that Vulkan is available for @self and ensures that it is
+ * Checks that Vulkan is available for @this and ensures that it is
  * properly initialized.
  *
  * When this fails, an @error will be set describing the error and this
@@ -1309,23 +1309,23 @@ gdk_display_get_keymap (GdkDisplay *display)
  * Returns: %TRUE if the display supports Vulkan
  */
 gboolean
-gdk_display_prepare_vulkan (GdkDisplay  *self,
+gdk_display_prepare_vulkan (GdkDisplay  *this,
                             GError     **error)
 {
-  g_return_val_if_fail (GDK_IS_DISPLAY (self), FALSE);
+  g_return_val_if_fail (GDK_IS_DISPLAY (this), FALSE);
   g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 #ifdef GDK_RENDERING_VULKAN
-  if (!self->vk_instance && !self->vulkan_error)
-    gdk_display_create_vulkan_instance (self, &self->vulkan_error);
+  if (!this->vk_instance && !this->vulkan_error)
+    gdk_display_create_vulkan_instance (this, &this->vulkan_error);
 
-  if (self->vk_instance == NULL)
+  if (this->vk_instance == NULL)
     {
       if (error)
-        *error = g_error_copy (self->vulkan_error);
+        *error = g_error_copy (this->vulkan_error);
     }
 
-  return self->vk_instance != NULL;
+  return this->vk_instance != NULL;
 #else
   g_set_error (error, GDK_VULKAN_ERROR, GDK_VULKAN_ERROR_UNSUPPORTED,
                "GTK was built without Vulkan support");
@@ -1335,7 +1335,7 @@ gdk_display_prepare_vulkan (GdkDisplay  *self,
 
 /*<private>
  * gdk_display_create_vulkan_context:
- * @self: a `GdkDisplay`
+ * @this: a `GdkDisplay`
  * @surface: (nullable): the `GdkSurface` to use or %NULL for a surfaceless
  *   context
  * @error: return location for an error
@@ -1351,11 +1351,11 @@ gdk_display_prepare_vulkan (GdkDisplay  *self,
  *   %NULL on error
  */
 GdkVulkanContext *
-gdk_display_create_vulkan_context (GdkDisplay  *self,
+gdk_display_create_vulkan_context (GdkDisplay  *this,
                                    GdkSurface  *surface,
                                    GError     **error)
 {
-  g_return_val_if_fail (GDK_IS_DISPLAY (self), NULL);
+  g_return_val_if_fail (GDK_IS_DISPLAY (this), NULL);
   g_return_val_if_fail (surface == NULL || GDK_IS_SURFACE (surface), NULL);
   g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
@@ -1366,42 +1366,42 @@ gdk_display_create_vulkan_context (GdkDisplay  *self,
       return NULL;
     }
 
-  if (GDK_DISPLAY_GET_CLASS (self)->vk_extension_name == NULL)
+  if (GDK_DISPLAY_GET_CLASS (this)->vk_extension_name == NULL)
     {
       g_set_error (error, GDK_VULKAN_ERROR, GDK_VULKAN_ERROR_UNSUPPORTED,
-                   "The %s backend has no Vulkan support.", G_OBJECT_TYPE_NAME (self));
+                   "The %s backend has no Vulkan support.", G_OBJECT_TYPE_NAME (this));
       return FALSE;
     }
 
   if (surface)
     {
-      return g_object_new (GDK_DISPLAY_GET_CLASS (self)->vk_context_type,
+      return g_object_new (GDK_DISPLAY_GET_CLASS (this)->vk_context_type,
                            "surface", surface,
                            NULL);
     }
   else
     {
-      return g_object_new (GDK_DISPLAY_GET_CLASS (self)->vk_context_type,
-                           "display", self,
+      return g_object_new (GDK_DISPLAY_GET_CLASS (this)->vk_context_type,
+                           "display", this,
                            NULL);
     }
 }
 
 gboolean
-gdk_display_has_vulkan_feature (GdkDisplay        *self,
+gdk_display_has_vulkan_feature (GdkDisplay        *this,
                                 GdkVulkanFeatures  feature)
 {
 #ifdef GDK_RENDERING_VULKAN
-  return !!(self->vulkan_features & feature);
+  return !!(this->vulkan_features & feature);
 #else
   return FALSE;
 #endif
 }
 
 static void
-gdk_display_init_gl (GdkDisplay *self)
+gdk_display_init_gl (GdkDisplay *this)
 {
-  GdkDisplayPrivate *priv = gdk_display_get_instance_private (self);
+  GdkDisplayPrivate *priv = gdk_display_get_instance_private (this);
   GdkGLContext *context;
   gint64 before G_GNUC_UNUSED;
   gint64 before2 G_GNUC_UNUSED;
@@ -1416,7 +1416,7 @@ gdk_display_init_gl (GdkDisplay *self)
       return;
     }
 
-  context = GDK_DISPLAY_GET_CLASS (self)->init_gl (self, &priv->gl_error);
+  context = GDK_DISPLAY_GET_CLASS (this)->init_gl (this, &priv->gl_error);
   if (context == NULL)
     return;
 
@@ -1443,10 +1443,10 @@ gdk_display_init_gl (GdkDisplay *self)
 
 /**
  * gdk_display_prepare_gl:
- * @self: a `GdkDisplay`
+ * @this: a `GdkDisplay`
  * @error: return location for a `GError`
  *
- * Checks that OpenGL is available for @self and ensures that it is
+ * Checks that OpenGL is available for @this and ensures that it is
  * properly initialized.
  * When this fails, an @error will be set describing the error and this
  * function returns %FALSE.
@@ -1466,12 +1466,12 @@ gdk_display_init_gl (GdkDisplay *self)
  * Since: 4.4
  **/
 gboolean
-gdk_display_prepare_gl (GdkDisplay  *self,
+gdk_display_prepare_gl (GdkDisplay  *this,
                         GError     **error)
 {
-  GdkDisplayPrivate *priv = gdk_display_get_instance_private (self);
+  GdkDisplayPrivate *priv = gdk_display_get_instance_private (this);
 
-  g_return_val_if_fail (GDK_IS_DISPLAY (self), FALSE);
+  g_return_val_if_fail (GDK_IS_DISPLAY (this), FALSE);
   g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
   for (;;)
@@ -1488,7 +1488,7 @@ gdk_display_prepare_gl (GdkDisplay  *self,
           return FALSE;
         }
 
-      gdk_display_init_gl (self);
+      gdk_display_init_gl (this);
 
       /* try again */
     }
@@ -1496,7 +1496,7 @@ gdk_display_prepare_gl (GdkDisplay  *self,
 
 /**
  * gdk_display_create_gl_context:
- * @self: a `GdkDisplay`
+ * @this: a `GdkDisplay`
  * @error: return location for an error
  *
  * Creates a new `GdkGLContext` for the `GdkDisplay`.
@@ -1514,21 +1514,21 @@ gdk_display_prepare_gl (GdkDisplay  *self,
  * Since: 4.6
  */
 GdkGLContext *
-gdk_display_create_gl_context (GdkDisplay  *self,
+gdk_display_create_gl_context (GdkDisplay  *this,
                                GError     **error)
 {
-  g_return_val_if_fail (GDK_IS_DISPLAY (self), NULL);
+  g_return_val_if_fail (GDK_IS_DISPLAY (this), NULL);
   g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
-  if (!gdk_display_prepare_gl (self, error))
+  if (!gdk_display_prepare_gl (this, error))
     return NULL;
 
-  return gdk_gl_context_new (self, NULL, FALSE);
+  return gdk_gl_context_new (this, NULL, FALSE);
 }
 
 /*< private >
  * gdk_display_get_gl_context:
- * @self: the `GdkDisplay`
+ * @this: the `GdkDisplay`
  *
  * Gets the GL context returned from [vfunc@Gdk.Display.init_gl]
  * previously.
@@ -1540,9 +1540,9 @@ gdk_display_create_gl_context (GdkDisplay  *self,
  * Returns: The `GdkGLContext`
  */
 GdkGLContext *
-gdk_display_get_gl_context (GdkDisplay *self)
+gdk_display_get_gl_context (GdkDisplay *this)
 {
-  GdkDisplayPrivate *priv = gdk_display_get_instance_private (self);
+  GdkDisplayPrivate *priv = gdk_display_get_instance_private (this);
 
   return priv->gl_context;
 }
@@ -1616,10 +1616,10 @@ describe_egl_config (EGLDisplay egl_display,
 }
 
 gpointer
-gdk_display_get_egl_config (GdkDisplay     *self,
+gdk_display_get_egl_config (GdkDisplay     *this,
                             GdkMemoryDepth  depth)
 {
-  GdkDisplayPrivate *priv = gdk_display_get_instance_private (self);
+  GdkDisplayPrivate *priv = gdk_display_get_instance_private (this);
 
   switch (depth)
     {
@@ -1684,11 +1684,11 @@ typedef enum {
 } GdkEGLConfigCreateFlags;
 
 static EGLConfig
-gdk_display_create_egl_config (GdkDisplay               *self,
+gdk_display_create_egl_config (GdkDisplay               *this,
                                GdkEGLConfigCreateFlags   flags,
                                GError                  **error)
 {
-  GdkDisplayPrivate *priv = gdk_display_get_instance_private (self);
+  GdkDisplayPrivate *priv = gdk_display_get_instance_private (this);
   G_GNUC_UNUSED gint64 start_time = GDK_PROFILER_CURRENT_TIME;
   EGLint attrs[MAX_EGL_ATTRS];
   EGLConfig *configs;
@@ -1714,7 +1714,7 @@ gdk_display_create_egl_config (GdkDisplay               *self,
   attrs[i++] = 8;
 
   if (flags & GDK_EGL_CONFIG_HDR &&
-      self->have_egl_pixel_format_float)
+      this->have_egl_pixel_format_float)
     {
       attrs[i++] = EGL_COLOR_COMPONENT_TYPE_EXT;
       attrs[i++] = EGL_DONT_CARE;
@@ -1744,7 +1744,7 @@ gdk_display_create_egl_config (GdkDisplay               *self,
 
   for (i = 0; i < count; i++)
     {
-      guint score = GDK_DISPLAY_GET_CLASS (self)->rate_egl_config (self, priv->egl_display, configs[i]);
+      guint score = GDK_DISPLAY_GET_CLASS (this)->rate_egl_config (this, priv->egl_display, configs[i]);
 
       if (score < best_score)
         {
@@ -1843,13 +1843,13 @@ find_egl_device (EGLDisplay egl_display)
 }
 
 gboolean
-gdk_display_init_egl (GdkDisplay  *self,
+gdk_display_init_egl (GdkDisplay  *this,
                       int          platform,
                       gpointer     native_display,
                       gboolean     allow_any,
                       GError     **error)
 {
-  GdkDisplayPrivate *priv = gdk_display_get_instance_private (self);
+  GdkDisplayPrivate *priv = gdk_display_get_instance_private (this);
   G_GNUC_UNUSED gint64 start_time = GDK_PROFILER_CURRENT_TIME;
   int major, minor;
 
@@ -1909,7 +1909,7 @@ gdk_display_init_egl (GdkDisplay  *self,
       return FALSE;
     }
 
-  priv->egl_config = gdk_display_create_egl_config (self,
+  priv->egl_config = gdk_display_create_egl_config (this,
                                                     allow_any ? 0 : GDK_EGL_CONFIG_PERFECT,
                                                     error);
   if (priv->egl_config == NULL)
@@ -1918,27 +1918,27 @@ gdk_display_init_egl (GdkDisplay  *self,
       return FALSE;
     }
 
-  self->have_egl_buffer_age =
+  this->have_egl_buffer_age =
     epoxy_has_egl_extension (priv->egl_display, "EGL_EXT_buffer_age");
-  self->have_egl_no_config_context =
+  this->have_egl_no_config_context =
     epoxy_has_egl_extension (priv->egl_display, "EGL_KHR_no_config_context");
-  self->have_egl_pixel_format_float =
+  this->have_egl_pixel_format_float =
     epoxy_has_egl_extension (priv->egl_display, "EGL_EXT_pixel_format_float");
-  self->have_egl_dma_buf_import =
+  this->have_egl_dma_buf_import =
     epoxy_has_egl_extension (priv->egl_display, "EGL_EXT_image_dma_buf_import_modifiers");
-  self->have_egl_dma_buf_export =
+  this->have_egl_dma_buf_export =
     epoxy_has_egl_extension (priv->egl_display, "EGL_MESA_image_dma_buf_export");
-  self->have_egl_gl_colorspace =
+  this->have_egl_gl_colorspace =
     epoxy_has_egl_extension (priv->egl_display, "EGL_KHR_gl_colorspace");
 
-  if (self->have_egl_no_config_context)
-    priv->egl_config_high_depth = gdk_display_create_egl_config (self,
+  if (this->have_egl_no_config_context)
+    priv->egl_config_high_depth = gdk_display_create_egl_config (this,
                                                           GDK_EGL_CONFIG_HDR,
                                                           error);
   if (priv->egl_config_high_depth == NULL)
     priv->egl_config_high_depth = priv->egl_config;
 
-  if (GDK_DISPLAY_DEBUG_CHECK (self, OPENGL))
+  if (GDK_DISPLAY_DEBUG_CHECK (this, OPENGL))
     {
       char *ext = describe_extensions (priv->egl_display);
       char *std_cfg = describe_egl_config (priv->egl_display, priv->egl_config);
@@ -1984,7 +1984,7 @@ gdk_display_init_egl (GdkDisplay  *self,
 
 /*<private>
  * gdk_display_get_egl_display:
- * @self: a display
+ * @this: a display
  *
  * Retrieves the EGL display connection object for the given GDK display.
  *
@@ -1994,15 +1994,15 @@ gdk_display_init_egl (GdkDisplay  *self,
  * Returns: (nullable): the EGL display object
  */
 gpointer
-gdk_display_get_egl_display (GdkDisplay *self)
+gdk_display_get_egl_display (GdkDisplay *this)
 {
 #ifdef HAVE_EGL
-  GdkDisplayPrivate *priv = gdk_display_get_instance_private (self);
+  GdkDisplayPrivate *priv = gdk_display_get_instance_private (this);
 
-  g_return_val_if_fail (GDK_IS_DISPLAY (self), NULL);
+  g_return_val_if_fail (GDK_IS_DISPLAY (this), NULL);
 
   if (!priv->egl_display &&
-      !gdk_display_prepare_gl (self, NULL))
+      !gdk_display_prepare_gl (this, NULL))
     return NULL;
 
   return priv->egl_display;
@@ -2012,14 +2012,14 @@ gdk_display_get_egl_display (GdkDisplay *self)
 }
 
 void
-gdk_display_init_dmabuf (GdkDisplay *self)
+gdk_display_init_dmabuf (GdkDisplay *this)
 {
   GdkDmabufFormatsBuilder *builder;
 
-  if (self->dmabuf_formats != NULL)
+  if (this->dmabuf_formats != NULL)
     return;
 
-  GDK_DISPLAY_DEBUG (self, DMABUF,
+  GDK_DISPLAY_DEBUG (this, DMABUF,
                      "Beginning initialization of dmabuf support");
 
   builder = gdk_dmabuf_formats_builder_new ();
@@ -2028,26 +2028,26 @@ gdk_display_init_dmabuf (GdkDisplay *self)
   if (gdk_has_feature (GDK_FEATURE_DMABUF))
     {
 #ifdef GDK_RENDERING_VULKAN
-      gdk_vulkan_init_dmabuf (self);
-      if (self->vk_dmabuf_formats)
-        gdk_dmabuf_formats_builder_add_formats (builder, self->vk_dmabuf_formats);
+      gdk_vulkan_init_dmabuf (this);
+      if (this->vk_dmabuf_formats)
+        gdk_dmabuf_formats_builder_add_formats (builder, this->vk_dmabuf_formats);
 #endif
 
 #ifdef HAVE_EGL
-      gdk_dmabuf_egl_init (self);
-      if (self->egl_dmabuf_formats)
-        gdk_dmabuf_formats_builder_add_formats (builder, self->egl_dmabuf_formats);
+      gdk_dmabuf_egl_init (this);
+      if (this->egl_dmabuf_formats)
+        gdk_dmabuf_formats_builder_add_formats (builder, this->egl_dmabuf_formats);
 #endif
 
       gdk_dmabuf_formats_builder_add_formats (builder, gdk_dmabuf_get_mmap_formats ());
     }
 #endif
 
-  self->dmabuf_formats = gdk_dmabuf_formats_builder_free_to_formats (builder);
+  this->dmabuf_formats = gdk_dmabuf_formats_builder_free_to_formats (builder);
 
-  GDK_DISPLAY_DEBUG (self, DMABUF,
+  GDK_DISPLAY_DEBUG (this, DMABUF,
                      "Initialization finished. Advertising %zu dmabuf formats",
-                     gdk_dmabuf_formats_get_n_formats (self->dmabuf_formats));
+                     gdk_dmabuf_formats_get_n_formats (this->dmabuf_formats));
 }
 
 /**
@@ -2314,7 +2314,7 @@ gdk_display_list_seats (GdkDisplay *display)
 
 /**
  * gdk_display_get_monitors:
- * @self: a `GdkDisplay`
+ * @this: a `GdkDisplay`
  *
  * Gets the list of monitors associated with this display.
  *
@@ -2327,11 +2327,11 @@ gdk_display_list_seats (GdkDisplay *display)
  * Returns: (transfer none): a `GListModel` of `GdkMonitor`
  */
 GListModel *
-gdk_display_get_monitors (GdkDisplay *self)
+gdk_display_get_monitors (GdkDisplay *this)
 {
-  g_return_val_if_fail (GDK_IS_DISPLAY (self), NULL);
+  g_return_val_if_fail (GDK_IS_DISPLAY (this), NULL);
 
-  return GDK_DISPLAY_GET_CLASS (self)->get_monitors (self);
+  return GDK_DISPLAY_GET_CLASS (this)->get_monitors (this);
 }
 
 /**

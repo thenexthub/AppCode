@@ -47,21 +47,21 @@ GDK_AVAILABLE_IN_ALL
 GtkEventController *    gtk_shortcut_controller_new_for_model           (GListModel             *model);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_shortcut_controller_set_mnemonics_modifiers (GtkShortcutController  *self,
+void                    gtk_shortcut_controller_set_mnemonics_modifiers (GtkShortcutController  *this,
                                                                          GdkModifierType         modifiers);
 GDK_AVAILABLE_IN_ALL
-GdkModifierType         gtk_shortcut_controller_get_mnemonics_modifiers (GtkShortcutController  *self);
+GdkModifierType         gtk_shortcut_controller_get_mnemonics_modifiers (GtkShortcutController  *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_shortcut_controller_set_scope               (GtkShortcutController  *self,
+void                    gtk_shortcut_controller_set_scope               (GtkShortcutController  *this,
                                                                          GtkShortcutScope        scope);
 GDK_AVAILABLE_IN_ALL
-GtkShortcutScope        gtk_shortcut_controller_get_scope               (GtkShortcutController  *self);
+GtkShortcutScope        gtk_shortcut_controller_get_scope               (GtkShortcutController  *this);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_shortcut_controller_add_shortcut            (GtkShortcutController  *self,
+void                    gtk_shortcut_controller_add_shortcut            (GtkShortcutController  *this,
                                                                          GtkShortcut            *shortcut);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_shortcut_controller_remove_shortcut         (GtkShortcutController  *self,
+void                    gtk_shortcut_controller_remove_shortcut         (GtkShortcutController  *this,
                                                                          GtkShortcut            *shortcut);
 
 G_END_DECLS

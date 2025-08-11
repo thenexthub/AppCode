@@ -45,11 +45,11 @@ GDK_AVAILABLE_IN_ALL
 GtkEventController *    gtk_drop_controller_motion_new                  (void);
 
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_drop_controller_motion_contains_pointer     (GtkDropControllerMotion        *self);
+gboolean                gtk_drop_controller_motion_contains_pointer     (GtkDropControllerMotion        *this);
 GDK_AVAILABLE_IN_ALL
-GdkDrop *               gtk_drop_controller_motion_get_drop             (GtkDropControllerMotion        *self);
+GdkDrop *               gtk_drop_controller_motion_get_drop             (GtkDropControllerMotion        *this);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_drop_controller_motion_is_pointer           (GtkDropControllerMotion        *self);
+gboolean                gtk_drop_controller_motion_is_pointer           (GtkDropControllerMotion        *this);
 
 G_END_DECLS
 

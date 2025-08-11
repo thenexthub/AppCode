@@ -70,18 +70,18 @@ static GParamSpec *properties[NUM_PROPERTIES];
 G_DEFINE_TYPE (GtkColorDialog, gtk_color_dialog, G_TYPE_OBJECT)
 
 static void
-gtk_color_dialog_init (GtkColorDialog *self)
+gtk_color_dialog_init (GtkColorDialog *this)
 {
-  self->modal = TRUE;
-  self->with_alpha = TRUE;
+  this->modal = TRUE;
+  this->with_alpha = TRUE;
 }
 
 static void
 gtk_color_dialog_finalize (GObject *object)
 {
-  GtkColorDialog *self = GTK_COLOR_DIALOG (object);
+  GtkColorDialog *this = GTK_COLOR_DIALOG (object);
 
-  g_free (self->title);
+  g_free (this->title);
 
   G_OBJECT_CLASS (gtk_color_dialog_parent_class)->finalize (object);
 }
@@ -92,20 +92,20 @@ gtk_color_dialog_get_property (GObject      *object,
                                GValue       *value,
                                GParamSpec   *pspec)
 {
-  GtkColorDialog *self = GTK_COLOR_DIALOG (object);
+  GtkColorDialog *this = GTK_COLOR_DIALOG (object);
 
   switch (property_id)
     {
     case PROP_TITLE:
-      g_value_set_string (value, self->title);
+      g_value_set_string (value, this->title);
       break;
 
     case PROP_MODAL:
-      g_value_set_boolean (value, self->modal);
+      g_value_set_boolean (value, this->modal);
       break;
 
     case PROP_WITH_ALPHA:
-      g_value_set_boolean (value, self->with_alpha);
+      g_value_set_boolean (value, this->with_alpha);
       break;
 
     default:
@@ -120,20 +120,20 @@ gtk_color_dialog_set_property (GObject      *object,
                                const GValue *value,
                                GParamSpec   *pspec)
 {
-  GtkColorDialog *self = GTK_COLOR_DIALOG (object);
+  GtkColorDialog *this = GTK_COLOR_DIALOG (object);
 
   switch (prop_id)
     {
     case PROP_TITLE:
-      gtk_color_dialog_set_title (self, g_value_get_string (value));
+      gtk_color_dialog_set_title (this, g_value_get_string (value));
       break;
 
     case PROP_MODAL:
-      gtk_color_dialog_set_modal (self, g_value_get_boolean (value));
+      gtk_color_dialog_set_modal (this, g_value_get_boolean (value));
       break;
 
     case PROP_WITH_ALPHA:
-      gtk_color_dialog_set_with_alpha (self, g_value_get_boolean (value));
+      gtk_color_dialog_set_with_alpha (this, g_value_get_boolean (value));
       break;
 
     default:
@@ -216,7 +216,7 @@ gtk_color_dialog_new (void)
 
 /**
  * gtk_color_dialog_get_title:
- * @self: a color dialog
+ * @this: a color dialog
  *
  * Returns the title that will be shown on the
  * color chooser dialog.
@@ -226,16 +226,16 @@ gtk_color_dialog_new (void)
  * Since: 4.10
  */
 const char *
-gtk_color_dialog_get_title (GtkColorDialog *self)
+gtk_color_dialog_get_title (GtkColorDialog *this)
 {
-  g_return_val_if_fail (GTK_IS_COLOR_DIALOG (self), NULL);
+  g_return_val_if_fail (GTK_IS_COLOR_DIALOG (this), NULL);
 
-  return self->title;
+  return this->title;
 }
 
 /**
  * gtk_color_dialog_set_title:
- * @self: a color dialog
+ * @this: a color dialog
  * @title: the new title
  *
  * Sets the title that will be shown on the
@@ -244,27 +244,27 @@ gtk_color_dialog_get_title (GtkColorDialog *self)
  * Since: 4.10
  */
 void
-gtk_color_dialog_set_title (GtkColorDialog *self,
+gtk_color_dialog_set_title (GtkColorDialog *this,
                             const char     *title)
 {
   char *new_title;
 
-  g_return_if_fail (GTK_IS_COLOR_DIALOG (self));
+  g_return_if_fail (GTK_IS_COLOR_DIALOG (this));
   g_return_if_fail (title != NULL);
 
-  if (g_strcmp0 (self->title, title) == 0)
+  if (g_strcmp0 (this->title, title) == 0)
     return;
 
   new_title = g_strdup (title);
-  g_free (self->title);
-  self->title = new_title;
+  g_free (this->title);
+  this->title = new_title;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_TITLE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_TITLE]);
 }
 
 /**
  * gtk_color_dialog_get_modal:
- * @self: a color dialog
+ * @this: a color dialog
  *
  * Returns whether the color chooser dialog
  * blocks interaction with the parent window
@@ -275,16 +275,16 @@ gtk_color_dialog_set_title (GtkColorDialog *self,
  * Since: 4.10
  */
 gboolean
-gtk_color_dialog_get_modal (GtkColorDialog *self)
+gtk_color_dialog_get_modal (GtkColorDialog *this)
 {
-  g_return_val_if_fail (GTK_IS_COLOR_DIALOG (self), TRUE);
+  g_return_val_if_fail (GTK_IS_COLOR_DIALOG (this), TRUE);
 
-  return self->modal;
+  return this->modal;
 }
 
 /**
  * gtk_color_dialog_set_modal:
- * @self: a color dialog
+ * @this: a color dialog
  * @modal: the new value
  *
  * Sets whether the color chooser dialog
@@ -294,22 +294,22 @@ gtk_color_dialog_get_modal (GtkColorDialog *self)
  * Since: 4.10
  */
 void
-gtk_color_dialog_set_modal (GtkColorDialog *self,
+gtk_color_dialog_set_modal (GtkColorDialog *this,
                             gboolean        modal)
 {
-  g_return_if_fail (GTK_IS_COLOR_DIALOG (self));
+  g_return_if_fail (GTK_IS_COLOR_DIALOG (this));
 
-  if (self->modal == modal)
+  if (this->modal == modal)
     return;
 
-  self->modal = modal;
+  this->modal = modal;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_MODAL]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_MODAL]);
 }
 
 /**
  * gtk_color_dialog_get_with_alpha:
- * @self: a color dailog
+ * @this: a color dailog
  *
  * Returns whether colors may have alpha.
  *
@@ -318,16 +318,16 @@ gtk_color_dialog_set_modal (GtkColorDialog *self,
  * Since: 4.10
  */
 gboolean
-gtk_color_dialog_get_with_alpha (GtkColorDialog *self)
+gtk_color_dialog_get_with_alpha (GtkColorDialog *this)
 {
-  g_return_val_if_fail (GTK_IS_COLOR_DIALOG (self), TRUE);
+  g_return_val_if_fail (GTK_IS_COLOR_DIALOG (this), TRUE);
 
-  return self->with_alpha;
+  return this->with_alpha;
 }
 
 /**
  * gtk_color_dialog_set_with_alpha:
- * @self: a color dialog
+ * @this: a color dialog
  * @with_alpha: the new value
  *
  * Sets whether colors may have alpha.
@@ -335,17 +335,17 @@ gtk_color_dialog_get_with_alpha (GtkColorDialog *self)
  * Since: 4.10
  */
 void
-gtk_color_dialog_set_with_alpha (GtkColorDialog *self,
+gtk_color_dialog_set_with_alpha (GtkColorDialog *this,
                                  gboolean        with_alpha)
 {
-  g_return_if_fail (GTK_IS_COLOR_DIALOG (self));
+  g_return_if_fail (GTK_IS_COLOR_DIALOG (this));
 
-  if (self->with_alpha == with_alpha)
+  if (this->with_alpha == with_alpha)
     return;
 
-  self->with_alpha = with_alpha;
+  this->with_alpha = with_alpha;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_WITH_ALPHA]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_WITH_ALPHA]);
 }
 
 /* }}} */
@@ -396,15 +396,15 @@ G_GNUC_END_IGNORE_DEPRECATIONS
 }
 
 static GtkWidget *
-create_color_chooser (GtkColorDialog *self,
+create_color_chooser (GtkColorDialog *this,
                       GtkWindow      *parent,
                       const GdkRGBA  *initial_color)
 {
   GtkWidget *window;
   char *title;
 
-  if (self->title)
-    title = self->title;
+  if (this->title)
+    title = this->title;
   else
     title = _("Pick a Color");
 
@@ -412,8 +412,8 @@ G_GNUC_BEGIN_IGNORE_DEPRECATIONS
   window = gtk_color_chooser_dialog_new (title, parent);
   if (initial_color)
     gtk_color_chooser_set_rgba (GTK_COLOR_CHOOSER (window), initial_color);
-  gtk_color_chooser_set_use_alpha (GTK_COLOR_CHOOSER (window), self->with_alpha);
-  gtk_window_set_modal (GTK_WINDOW (window), self->modal);
+  gtk_color_chooser_set_use_alpha (GTK_COLOR_CHOOSER (window), this->with_alpha);
+  gtk_window_set_modal (GTK_WINDOW (window), this->modal);
 G_GNUC_END_IGNORE_DEPRECATIONS
 
   return window;
@@ -424,7 +424,7 @@ G_GNUC_END_IGNORE_DEPRECATIONS
 
 /**
  * gtk_color_dialog_choose_rgba:
- * @self: a color dialog
+ * @this: a color dialog
  * @parent: (nullable): the parent window
  * @initial_color: (nullable): the color to select initially
  * @cancellable: (nullable): a cancellable to cancel the operation
@@ -437,7 +437,7 @@ G_GNUC_END_IGNORE_DEPRECATIONS
  * Since: 4.10
  */
 void
-gtk_color_dialog_choose_rgba (GtkColorDialog       *self,
+gtk_color_dialog_choose_rgba (GtkColorDialog       *this,
                               GtkWindow            *parent,
                               const GdkRGBA        *initial_color,
                               GCancellable         *cancellable,
@@ -447,11 +447,11 @@ gtk_color_dialog_choose_rgba (GtkColorDialog       *self,
   GtkWidget *window;
   GTask *task;
 
-  g_return_if_fail (GTK_IS_COLOR_DIALOG (self));
+  g_return_if_fail (GTK_IS_COLOR_DIALOG (this));
 
-  window = create_color_chooser (self, parent, initial_color);
+  window = create_color_chooser (this, parent, initial_color);
 
-  task = g_task_new (self, cancellable, callback, user_data);
+  task = g_task_new (this, cancellable, callback, user_data);
   g_task_set_check_cancellable (task, FALSE);
   g_task_set_source_tag (task, gtk_color_dialog_choose_rgba);
   g_task_set_task_data (task, window, (GDestroyNotify) gtk_window_destroy);
@@ -465,7 +465,7 @@ gtk_color_dialog_choose_rgba (GtkColorDialog       *self,
 
 /**
  * gtk_color_dialog_choose_rgba_finish:
- * @self: a color dialog
+ * @this: a color dialog
  * @result: the result
  * @error: return location for a [enum@Gtk.DialogError] error
  *
@@ -476,12 +476,12 @@ gtk_color_dialog_choose_rgba (GtkColorDialog       *self,
  * Since: 4.10
  */
 GdkRGBA *
-gtk_color_dialog_choose_rgba_finish (GtkColorDialog  *self,
+gtk_color_dialog_choose_rgba_finish (GtkColorDialog  *this,
                                      GAsyncResult    *result,
                                      GError         **error)
 {
-  g_return_val_if_fail (GTK_IS_COLOR_DIALOG (self), NULL);
-  g_return_val_if_fail (g_task_is_valid (result, self), NULL);
+  g_return_val_if_fail (GTK_IS_COLOR_DIALOG (this), NULL);
+  g_return_val_if_fail (g_task_is_valid (result, this), NULL);
   g_return_val_if_fail (g_task_get_source_tag (G_TASK (result)) == gtk_color_dialog_choose_rgba, NULL);
 
   /* Destroy the dialog window not to be bound to GTask lifecycle */

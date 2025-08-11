@@ -33,26 +33,26 @@ typedef GtkAccessibleValue *(* GtkAccessibleAttributeDefaultFunc) (int attribute
 GtkAccessibleAttributeSet *     gtk_accessible_attribute_set_new                (gsize                             n_attributes,
                                                                                  GtkAccessibleAttributeNameFunc    name_func,
                                                                                  GtkAccessibleAttributeDefaultFunc default_func);
-GtkAccessibleAttributeSet *     gtk_accessible_attribute_set_ref                (GtkAccessibleAttributeSet  *self);
-void                            gtk_accessible_attribute_set_unref              (GtkAccessibleAttributeSet  *self);
+GtkAccessibleAttributeSet *     gtk_accessible_attribute_set_ref                (GtkAccessibleAttributeSet  *this);
+void                            gtk_accessible_attribute_set_unref              (GtkAccessibleAttributeSet  *this);
 
-gsize                           gtk_accessible_attribute_set_get_length         (GtkAccessibleAttributeSet  *self);
+gsize                           gtk_accessible_attribute_set_get_length         (GtkAccessibleAttributeSet  *this);
 
-gboolean                        gtk_accessible_attribute_set_add                (GtkAccessibleAttributeSet  *self,
+gboolean                        gtk_accessible_attribute_set_add                (GtkAccessibleAttributeSet  *this,
                                                                                  int                         attribute,
                                                                                  GtkAccessibleValue         *value);
-gboolean                        gtk_accessible_attribute_set_remove             (GtkAccessibleAttributeSet  *self,
+gboolean                        gtk_accessible_attribute_set_remove             (GtkAccessibleAttributeSet  *this,
                                                                                  int                         state);
-gboolean                        gtk_accessible_attribute_set_contains           (GtkAccessibleAttributeSet  *self,
+gboolean                        gtk_accessible_attribute_set_contains           (GtkAccessibleAttributeSet  *this,
                                                                                  int                         state);
-GtkAccessibleValue *            gtk_accessible_attribute_set_get_value          (GtkAccessibleAttributeSet  *self,
+GtkAccessibleValue *            gtk_accessible_attribute_set_get_value          (GtkAccessibleAttributeSet  *this,
                                                                                  int                         state);
 
-guint                           gtk_accessible_attribute_set_get_changed        (GtkAccessibleAttributeSet   *self);
+guint                           gtk_accessible_attribute_set_get_changed        (GtkAccessibleAttributeSet   *this);
 
-void                            gtk_accessible_attribute_set_print              (GtkAccessibleAttributeSet  *self,
+void                            gtk_accessible_attribute_set_print              (GtkAccessibleAttributeSet  *this,
                                                                                  gboolean                    only_set,
                                                                                  GString                    *string);
-char *                          gtk_accessible_attribute_set_to_string          (GtkAccessibleAttributeSet  *self);
+char *                          gtk_accessible_attribute_set_to_string          (GtkAccessibleAttributeSet  *this);
 
 G_END_DECLS

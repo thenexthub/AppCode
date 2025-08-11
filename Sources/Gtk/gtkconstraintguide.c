@@ -248,7 +248,7 @@ gtk_constraint_guide_set_property (GObject      *gobject,
                                    const GValue *value,
                                    GParamSpec   *pspec)
 {
-  GtkConstraintGuide *self = GTK_CONSTRAINT_GUIDE (gobject);
+  GtkConstraintGuide *this = GTK_CONSTRAINT_GUIDE (gobject);
   int val;
   GuideValue index;
 
@@ -262,25 +262,25 @@ gtk_constraint_guide_set_property (GObject      *gobject,
     case PROP_MAX_HEIGHT:
       val = g_value_get_int (value);
       index = prop_id - 1;
-      if (self->values[index] != val)
+      if (this->values[index] != val)
         {
-          self->values[index] = val;
+          this->values[index] = val;
           g_object_notify_by_pspec (gobject, pspec);
 
-          gtk_constraint_guide_update_constraint (self, index);
+          gtk_constraint_guide_update_constraint (this, index);
           if (index == MIN_WIDTH || index == MAX_WIDTH)
-            gtk_constraint_guide_update_constraint (self, NAT_WIDTH);
+            gtk_constraint_guide_update_constraint (this, NAT_WIDTH);
           if (index == MIN_HEIGHT || index == MAX_HEIGHT)
-            gtk_constraint_guide_update_constraint (self, NAT_HEIGHT);
+            gtk_constraint_guide_update_constraint (this, NAT_HEIGHT);
         }
       break;
 
     case PROP_STRENGTH:
-      gtk_constraint_guide_set_strength (self, g_value_get_enum (value));
+      gtk_constraint_guide_set_strength (this, g_value_get_enum (value));
       break;
 
     case PROP_NAME:
-      gtk_constraint_guide_set_name (self, g_value_get_string (value));
+      gtk_constraint_guide_set_name (this, g_value_get_string (value));
       break;
 
     default:
@@ -295,7 +295,7 @@ gtk_constraint_guide_get_property (GObject    *gobject,
                                    GValue     *value,
                                    GParamSpec *pspec)
 {
-  GtkConstraintGuide *self = GTK_CONSTRAINT_GUIDE (gobject);
+  GtkConstraintGuide *this = GTK_CONSTRAINT_GUIDE (gobject);
 
   switch (prop_id)
     {
@@ -305,15 +305,15 @@ gtk_constraint_guide_get_property (GObject    *gobject,
     case PROP_NAT_HEIGHT:
     case PROP_MAX_WIDTH:
     case PROP_MAX_HEIGHT:
-      g_value_set_int (value, self->values[prop_id - 1]);
+      g_value_set_int (value, this->values[prop_id - 1]);
       break;
 
     case PROP_STRENGTH:
-      g_value_set_enum (value, self->strength);
+      g_value_set_enum (value, this->strength);
       break;
 
     case PROP_NAME:
-      g_value_set_string (value, self->name);
+      g_value_set_string (value, this->name);
       break;
 
     default:
@@ -325,11 +325,11 @@ gtk_constraint_guide_get_property (GObject    *gobject,
 static void
 gtk_constraint_guide_finalize (GObject *object)
 {
-  GtkConstraintGuide *self = GTK_CONSTRAINT_GUIDE (object);
+  GtkConstraintGuide *this = GTK_CONSTRAINT_GUIDE (object);
 
-  g_free (self->name);
+  g_free (this->name);
 
-  g_clear_pointer (&self->bound_attributes, g_hash_table_unref);
+  g_clear_pointer (&this->bound_attributes, g_hash_table_unref);
 
   G_OBJECT_CLASS (gtk_constraint_guide_parent_class)->finalize (object);
 }

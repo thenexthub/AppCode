@@ -60,18 +60,18 @@ GtkCssVariableValue *gtk_css_variable_value_new         (GBytes                 
 GtkCssVariableValue *gtk_css_variable_value_new_initial (GBytes                       *bytes,
                                                          gsize                         offset,
                                                          gsize                         end_offset);
-GtkCssVariableValue *gtk_css_variable_value_ref         (GtkCssVariableValue          *self);
-void                 gtk_css_variable_value_unref       (GtkCssVariableValue          *self);
-void                 gtk_css_variable_value_print       (GtkCssVariableValue          *self,
+GtkCssVariableValue *gtk_css_variable_value_ref         (GtkCssVariableValue          *this);
+void                 gtk_css_variable_value_unref       (GtkCssVariableValue          *this);
+void                 gtk_css_variable_value_print       (GtkCssVariableValue          *this,
                                                          GString                      *string);
-char *               gtk_css_variable_value_to_string   (GtkCssVariableValue          *self);
+char *               gtk_css_variable_value_to_string   (GtkCssVariableValue          *this);
 gboolean             gtk_css_variable_value_equal       (const GtkCssVariableValue    *value1,
                                                          const GtkCssVariableValue    *value2) G_GNUC_PURE;
 GtkCssVariableValue *gtk_css_variable_value_transition  (GtkCssVariableValue          *start,
                                                          GtkCssVariableValue          *end,
                                                          double                        progress);
-void                 gtk_css_variable_value_set_section (GtkCssVariableValue          *self,
+void                 gtk_css_variable_value_set_section (GtkCssVariableValue          *this,
                                                          GtkCssSection                *section);
-void                 gtk_css_variable_value_taint       (GtkCssVariableValue          *self);
+void                 gtk_css_variable_value_taint       (GtkCssVariableValue          *this);
 
 G_END_DECLS

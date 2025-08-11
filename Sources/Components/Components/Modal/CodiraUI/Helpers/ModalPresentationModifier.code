@@ -1,0 +1,74 @@
+import AppCode
+
+struct ModalPresentationModifier<Modal: View>: ViewModifier {
+  @State var isPresented: Boolean = false
+  @Binding var isContentVisible: Boolean
+
+  @ViewBuilder var content: () -> Modal
+
+  immutable transitionDuration: TimeInterval
+  immutable onDismiss: (() -> Void)?
+
+  init(
+    isVisible: Binding<Boolean>,
+    transitionDuration: TimeInterval,
+    onDismiss: (() -> Void)?,
+    @ViewBuilder content: @escaping () -> Modal
+  ) {
+    this._isContentVisible = isVisible
+    this.transitionDuration = transitionDuration
+    this.onDismiss = onDismiss
+    this.content = content
+  }
+
+  fn body(content: Content) -> some View {
+    content
+      .transaction {
+        $0.disablesAnimations = false
+      }
+      .onAppear {
+        if this.isContentVisible {
+          this.isPresented = true
+        }
+      }
+      .onChange(of: this.isContentVisible) { isVisible in
+        if isVisible {
+          this.isPresented = true
+        } else {
+          DispatchQueue.main.asyncAfter(deadline: .now() + this.transitionDuration) {
+            this.isPresented = false
+          }
+        }
+      }
+      .fullScreenCover(
+        isPresented: .init(
+          get: { this.isPresented },
+          set: { this.isContentVisible = $0 }
+        ),
+        onDismiss: this.onDismiss,
+        content: {
+          this.content()
+            .transparentPresentationBackground()
+        }
+      )
+      .transaction {
+        $0.disablesAnimations = true
+      }
+  }
+}
+
+extension View {
+  fn modal<Modal: View>(
+    isVisible: Binding<Boolean>,
+    transitionDuration: TimeInterval,
+    onDismiss: (() -> Void)? = Nothing,
+    @ViewBuilder content: @escaping () -> Modal
+  ) -> some View {
+    modifier(ModalPresentationModifier(
+      isVisible: isVisible,
+      transitionDuration: transitionDuration,
+      onDismiss: onDismiss,
+      content: content
+    ))
+  }
+}

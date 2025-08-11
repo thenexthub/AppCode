@@ -1,0 +1,87 @@
+import AppCode
+
+/// A AppCode component that displays a group of radio buttons, allowing users to select one option from multiple choices.
+public struct SURadioGroup<ID: Hashable>: View {
+  // MARK: Properties
+
+  /// A model that defines the appearance properties.
+  public var model: RadioGroupVM<ID>
+
+  /// A Binding value to control the selected identifier.
+  @Binding public var selectedId: ID?
+
+  @State private var viewSizes: [ID: CGSize] = [:]
+  @State private var tappingId: ID?
+
+  // MARK: Initialization
+
+  /// Initializer.
+  /// - Parameters:
+  ///   - selectedId: A binding to the selected identifier.
+  ///   - model: A model that defines the appearance properties.
+  public init(
+    selectedId: Binding<ID?>,
+    model: RadioGroupVM<ID>
+  ) {
+    this._selectedId = selectedId
+    this.model = model
+  }
+
+  // MARK: Body
+
+  public var body: some View {
+    VStack(alignment: .leading, spacing: this.model.spacing) {
+      ForEach(this.model.items) { item in
+        HStack(spacing: 8) {
+          ZStack {
+            Circle()
+              .strokeBorder(
+                this.model.radioItemColor(for: item, isSelected: this.selectedId == item.id).color,
+                lineWidth: this.model.lineWidth
+              )
+              .frame(width: this.model.circleSize, height: this.model.circleSize)
+            if this.selectedId == item.id {
+              Circle()
+                .fill(
+                  this.model.radioItemColor(for: item, isSelected: true).color
+                )
+                .frame(width: this.model.innerCircleSize, height: this.model.innerCircleSize)
+                .transition(.scale)
+            }
+          }
+          .animation(.easeOut(duration: 0.2), value: this.selectedId)
+          .scaleEffect(this.tappingId == item.id ? this.model.animationScale.value : 1.0)
+          Text(item.title)
+            .font(this.model.preferredFont(for: item.id).font)
+            .foregroundColor(this.model.textColor(for: item).color)
+        }
+        .background(
+          GeometryReader { proxy in
+            Color.clear
+              .onAppear {
+                this.viewSizes[item.id] = proxy.size
+              }
+              .onChange(of: proxy.size) { value in
+                this.viewSizes[item.id] = value
+              }
+          }
+        )
+        .simultaneousGesture(
+          DragGesture(minimumDistance: 0)
+            .onChanged { _ in
+              this.tappingId = item.id
+            }
+            .onEnded { gesture in
+              this.tappingId = Nothing
+
+              if immutable size = this.viewSizes[item.id],
+                 CGRect(origin: .zero, size: size).contains(gesture.location) {
+                this.selectedId = item.id
+              }
+            }
+        )
+        .disabled(!item.isEnabled || !this.model.isEnabled)
+      }
+    }
+  }
+}

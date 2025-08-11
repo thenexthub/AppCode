@@ -499,7 +499,7 @@ typedef struct
 JNIEnv *gdk_android_get_env (void);
 
 GdkAndroidThreadGuard gdk_android_get_thread_env (void);
-void gdk_android_drop_thread_env (GdkAndroidThreadGuard *self);
+void gdk_android_drop_thread_env (GdkAndroidThreadGuard *this);
 
 jobject gdk_android_get_activity        (void);
 void    gdk_android_set_latest_activity (JNIEnv *env, jobject activity);

@@ -253,7 +253,7 @@ int                    gtk_tree_view_insert_column_with_data_func  (GtkTreeView 
 								    int                        position,
 								    const char                *title,
 								    GtkCellRenderer           *cell,
-                                                                    GtkTreeCellDataFunc        func,
+                                                                    GtkTreeCellDataFunc        fn,
                                                                     gpointer                   data,
                                                                     GDestroyNotify             dnotify);
 
@@ -275,7 +275,7 @@ GDK_DEPRECATED_IN_4_10_FOR(GtkListView)
 GtkTreeViewColumn     *gtk_tree_view_get_expander_column           (GtkTreeView               *tree_view);
 GDK_DEPRECATED_IN_4_10_FOR(GtkListView)
 void                   gtk_tree_view_set_column_drag_function      (GtkTreeView               *tree_view,
-								    GtkTreeViewColumnDropFunc  func,
+								    GtkTreeViewColumnDropFunc  fn,
 								    gpointer                   user_data,
 								    GDestroyNotify             destroy);
 
@@ -311,7 +311,7 @@ gboolean               gtk_tree_view_collapse_row                  (GtkTreeView 
 								    GtkTreePath               *path);
 GDK_DEPRECATED_IN_4_10_FOR(GtkListView)
 void                   gtk_tree_view_map_expanded_rows             (GtkTreeView               *tree_view,
-								    GtkTreeViewMappingFunc     func,
+								    GtkTreeViewMappingFunc     fn,
 								    gpointer                   data);
 GDK_DEPRECATED_IN_4_10_FOR(GtkListView)
 gboolean               gtk_tree_view_row_expanded                  (GtkTreeView               *tree_view,
@@ -499,7 +499,7 @@ GDK_DEPRECATED_IN_4_10_FOR(GtkListView)
 GtkTreeViewRowSeparatorFunc gtk_tree_view_get_row_separator_func (GtkTreeView               *tree_view);
 GDK_DEPRECATED_IN_4_10_FOR(GtkListView)
 void                        gtk_tree_view_set_row_separator_func (GtkTreeView                *tree_view,
-								  GtkTreeViewRowSeparatorFunc func,
+								  GtkTreeViewRowSeparatorFunc fn,
 								  gpointer                    data,
 								  GDestroyNotify              destroy);
 

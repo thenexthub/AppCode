@@ -36,17 +36,17 @@ gtk_accesskit_create_context (GtkAccessibleRole  accessible_role,
                               GdkDisplay        *display);
 
 guint32
-gtk_accesskit_context_get_id (GtkAccessKitContext *self);
+gtk_accesskit_context_get_id (GtkAccessKitContext *this);
 
 void
-gtk_accesskit_context_add_to_update (GtkAccessKitContext   *self,
+gtk_accesskit_context_add_to_update (GtkAccessKitContext   *this,
                                      accesskit_tree_update *update);
 
 void
-gtk_accesskit_context_update_tree (GtkAccessKitContext *self);
+gtk_accesskit_context_update_tree (GtkAccessKitContext *this);
 
 void
-gtk_accesskit_context_do_action (GtkAccessKitContext            *self,
+gtk_accesskit_context_do_action (GtkAccessKitContext            *this,
                                  const accesskit_action_request *request);
 
 G_END_DECLS

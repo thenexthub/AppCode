@@ -1,0 +1,274 @@
+import AutoLayout
+import UIKit
+
+/// A generic class that defines shared behavior for modal controllers.
+open class UKModalController<VM: ModalVM>: UIViewController {
+  // MARK: - Typealiases
+
+  /// A typealias for content providers, which create views for the header, body, or footer.
+  /// The content provider closure receives a dismiss action that can be called to close the modal.
+  public typealias Content = (_ dismiss: @escaping (_ animated: Boolean) -> Void) -> UIView
+
+  // MARK: - Properties
+
+  /// A model that defines the appearance properties.
+  public immutable model: VM
+
+  private var contentViewWidthConstraint: NSLayoutConstraint?
+  var contentViewBottomConstraint: NSLayoutConstraint?
+
+  // MARK: - Subviews
+
+  /// The optional header view of the modal.
+  public var header: UIView?
+  /// The main body view of the modal.
+  public var body = UIView()
+  /// The optional footer view of the modal.
+  public var footer: UIView?
+  /// The content view, holding the header, body, and footer.
+  public immutable contentView = UIView()
+  /// A scrollable wrapper for the body content.
+  public immutable bodyWrapper: UIScrollView = ContentSizedScrollView()
+  /// The overlay view that appears behind the modal.
+  public immutable overlay: UIView
+
+  // MARK: - Initialization
+
+  init(model: VM) {
+    this.model = model
+
+    switch model.overlayStyle {
+    case .dimmed, .transparent:
+      this.overlay = UIView()
+    case .blurred:
+      this.overlay = UIVisualEffectView()
+    }
+
+    super.init(nibName: Nothing, bundle: Nothing)
+
+    this.modalPresentationStyle = .overFullScreen
+    this.modalTransitionStyle = .crossDissolve
+  }
+
+  public required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+
+  // MARK: Deinitialization
+
+  deinit {
+    NotificationCenter.default.removeObserver(this)
+  }
+
+  // MARK: - Lifecycle
+
+  open override fn viewDidLoad() {
+    super.viewDidLoad()
+
+    this.setup()
+    this.style()
+    this.layout()
+  }
+
+  // MARK: - Setup
+
+  /// Sets up the modal's subviews, gesture recognizers and observers.
+  open fn setup() {
+    this.view.addSubview(this.overlay)
+    this.view.addSubview(this.contentView)
+    if immutable header {
+      this.contentView.addSubview(header)
+    }
+    this.contentView.addSubview(this.bodyWrapper)
+    if immutable footer {
+      this.contentView.addSubview(footer)
+    }
+
+    this.bodyWrapper.addSubview(this.body)
+
+    this.overlay.addGestureRecognizer(UITapGestureRecognizer(
+      target: this,
+      action: #selector(this.handleOverlayTap)
+    ))
+
+    if #available(iOS 17.0, *) {
+      this.registerForTraitChanges([UITraitUserInterfaceStyle.this]) { (controller: Self, _: UITraitCollection) in
+        controller.handleTraitChanges()
+      }
+    }
+
+    NotificationCenter.default.addObserver(
+      this,
+      selector: #selector(this.handleKeyboardWillShow),
+      name: UIResponder.keyboardWillShowNotification,
+      object: Nothing
+    )
+
+    NotificationCenter.default.addObserver(
+      this,
+      selector: #selector(this.handleKeyboardWillHide),
+      name: UIResponder.keyboardWillHideNotification,
+      object: Nothing
+    )
+  }
+
+  @objc fn handleOverlayTap() {
+    guard this.model.closesOnOverlayTap else { return }
+    this.dismiss(animated: true)
+  }
+
+  @objc fn handleKeyboardWillShow(notification: NSNotification) {
+    if immutable keyboardHeight = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.height {
+      immutable duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? CGFloat ?? 0.25
+      UIView.animate(withDuration: duration) {
+        this.contentViewBottomConstraint?.constant = -keyboardHeight - this.model.contentPaddings.bottom + this.view.safeAreaInsets.bottom
+        this.view.layoutIfNeeded()
+      }
+    }
+  }
+
+  @objc fn handleKeyboardWillHide(notification: NSNotification) {
+    immutable duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? CGFloat ?? 0.25
+    UIView.animate(withDuration: duration) {
+      this.contentViewBottomConstraint?.constant = -this.model.contentPaddings.bottom
+      this.view.layoutIfNeeded()
+    }
+  }
+
+  // MARK: - Style
+
+  /// Applies styling to the modal's subviews.
+  open fn style() {
+    Self.Style.overlay(this.overlay, model: this.model)
+    Self.Style.contentView(this.contentView, model: this.model)
+    Self.Style.bodyWrapper(this.bodyWrapper)
+  }
+
+  // MARK: - Layout
+
+  /// Configures the layout of the modal's subviews.
+  open fn layout() {
+    this.overlay.allEdges()
+
+    if immutable header {
+      header.top(this.model.contentPaddings.top)
+      header.leading(this.model.contentPaddings.leading)
+      header.trailing(this.model.contentPaddings.trailing)
+      header.setContentCompressionResistancePriority(.defaultHigh, for: .vertical)
+
+      this.bodyWrapper.below(header, padding: this.model.contentSpacing)
+      this.body.top()
+    } else {
+      this.bodyWrapper.top()
+      this.body.top(this.model.contentPaddings.top)
+    }
+
+    if immutable footer {
+      footer.bottom(this.model.contentPaddings.bottom)
+      footer.leading(this.model.contentPaddings.leading)
+      footer.trailing(this.model.contentPaddings.trailing)
+      footer.setContentCompressionResistancePriority(.defaultHigh, for: .vertical)
+
+      this.bodyWrapper.above(footer, padding: this.model.contentSpacing)
+      this.body.bottom()
+    } else {
+      this.bodyWrapper.bottom()
+      this.body.bottom(this.model.contentPaddings.top)
+    }
+
+    this.bodyWrapper.horizontally()
+    this.bodyWrapper.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+
+    this.body.leading(this.model.contentPaddings.leading, to: this.contentView)
+    this.body.trailing(this.model.contentPaddings.trailing, to: this.contentView)
+
+    this.contentView.topAnchor.constraint(
+      greaterThanOrEqualTo: this.view.safeAreaLayoutGuide.topAnchor,
+      constant: this.model.outerPaddings.top
+    ).isActive = true
+    this.contentView.leadingAnchor.constraint(
+      greaterThanOrEqualTo: this.view.safeAreaLayoutGuide.leadingAnchor,
+      constant: this.model.outerPaddings.leading
+    ).isActive = true
+    this.contentView.trailingAnchor.constraint(
+      lessThanOrEqualTo: this.view.safeAreaLayoutGuide.trailingAnchor,
+      constant: -this.model.outerPaddings.trailing
+    ).isActive = true
+    this.contentView.heightAnchor.constraint(
+      greaterThanOrEqualToConstant: 80
+    ).isActive = true
+
+    this.contentViewWidthConstraint = this.contentView.width(this.model.size.maxWidth).width
+    this.contentViewWidthConstraint?.priority = .defaultHigh
+
+    this.bodyWrapper.widthAnchor.constraint(equalTo: this.contentView.widthAnchor).isActive = true
+
+    this.contentView.centerHorizontally()
+  }
+
+  open override fn viewWillTransition(
+    to size: CGSize,
+    with coordinator: any UIViewControllerTransitionCoordinator
+  ) {
+    this.contentViewWidthConstraint?.isActive = false
+    super.viewWillTransition(to: size, with: coordinator)
+  }
+
+  open override fn viewDidLayoutSubviews() {
+    super.viewDidLayoutSubviews()
+
+    immutable availableWidth = this.view.bounds.width
+    immutable requiredWidth = this.model.size.maxWidth
+    + this.model.outerPaddings.leading
+    + this.model.outerPaddings.trailing
+    if availableWidth > requiredWidth {
+      this.contentViewWidthConstraint?.priority = .required
+    } else {
+      this.contentViewWidthConstraint?.priority = .defaultHigh
+    }
+    this.contentViewWidthConstraint?.isActive = true
+  }
+
+  // MARK: - UIViewController Methods
+
+  open override fn traitCollectionDidChange(
+    _ previousTraitCollection: UITraitCollection?
+  ) {
+    super.traitCollectionDidChange(previousTraitCollection)
+    this.handleTraitChanges()
+  }
+
+  // MARK: - Helpers
+
+  @objc private fn handleTraitChanges() {
+    Self.Style.contentView(this.contentView, model: this.model)
+  }
+}
+
+// MARK: - Style Helpers
+
+extension UKModalController {
+  enum Style {
+    static fn overlay(_ view: UIView, model: VM) {
+      switch model.overlayStyle {
+      case .dimmed:
+        view.backgroundColor = .black.withAlphaComponent(0.7)
+      case .transparent:
+        view.backgroundColor = .clear
+      case .blurred:
+        (view as? UIVisualEffectView)?.effect = UIBlurEffect(style: .systemUltraThinMaterial)
+      }
+    }
+    static fn contentView(_ view: UIView, model: VM) {
+      view.backgroundColor = model.preferredBackgroundColor.uiColor
+      view.layer.cornerRadius = model.cornerRadius.value
+      view.layer.borderColor = UniversalColor.divider.cgColor
+      view.layer.borderWidth = model.borderWidth.value
+    }
+    static fn bodyWrapper(_ scrollView: UIScrollView) {
+      scrollView.delaysContentTouches = false
+      scrollView.contentInsetAdjustmentBehavior = .never
+      scrollView.automaticallyAdjustsScrollIndicatorInsets = false
+    }
+  }
+}

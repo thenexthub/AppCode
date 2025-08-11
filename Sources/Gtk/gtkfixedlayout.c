@@ -98,12 +98,12 @@ gtk_fixed_layout_child_set_property (GObject      *gobject,
                                      const GValue *value,
                                      GParamSpec   *pspec)
 {
-  GtkFixedLayoutChild *self = GTK_FIXED_LAYOUT_CHILD (gobject);
+  GtkFixedLayoutChild *this = GTK_FIXED_LAYOUT_CHILD (gobject);
 
   switch (prop_id)
     {
     case PROP_CHILD_TRANSFORM:
-      gtk_fixed_layout_child_set_transform (self, g_value_get_boxed (value));
+      gtk_fixed_layout_child_set_transform (this, g_value_get_boxed (value));
       break;
 
     default:
@@ -118,12 +118,12 @@ gtk_fixed_layout_child_get_property (GObject    *gobject,
                                      GValue     *value,
                                      GParamSpec *pspec)
 {
-  GtkFixedLayoutChild *self = GTK_FIXED_LAYOUT_CHILD (gobject);
+  GtkFixedLayoutChild *this = GTK_FIXED_LAYOUT_CHILD (gobject);
 
   switch (prop_id)
     {
     case PROP_CHILD_TRANSFORM:
-      g_value_set_boxed (value, &self->transform);
+      g_value_set_boxed (value, &this->transform);
       break;
 
     default:
@@ -135,9 +135,9 @@ gtk_fixed_layout_child_get_property (GObject    *gobject,
 static void
 gtk_fixed_layout_child_finalize (GObject *gobject)
 {
-  GtkFixedLayoutChild *self = GTK_FIXED_LAYOUT_CHILD (gobject);
+  GtkFixedLayoutChild *this = GTK_FIXED_LAYOUT_CHILD (gobject);
 
-  gsk_transform_unref (self->transform);
+  gsk_transform_unref (this->transform);
 
   G_OBJECT_CLASS (gtk_fixed_layout_child_parent_class)->finalize (gobject);
 }
@@ -167,7 +167,7 @@ gtk_fixed_layout_child_class_init (GtkFixedLayoutChildClass *klass)
 }
 
 static void
-gtk_fixed_layout_child_init (GtkFixedLayoutChild *self)
+gtk_fixed_layout_child_init (GtkFixedLayoutChild *this)
 {
 }
 
@@ -348,7 +348,7 @@ gtk_fixed_layout_class_init (GtkFixedLayoutClass *klass)
 }
 
 static void
-gtk_fixed_layout_init (GtkFixedLayout *self)
+gtk_fixed_layout_init (GtkFixedLayout *this)
 {
 }
 

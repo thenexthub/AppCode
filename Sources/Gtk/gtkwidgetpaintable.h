@@ -32,9 +32,9 @@ GDK_AVAILABLE_IN_ALL
 GdkPaintable *  gtk_widget_paintable_new                (GtkWidget              *widget);
 
 GDK_AVAILABLE_IN_ALL
-GtkWidget *     gtk_widget_paintable_get_widget         (GtkWidgetPaintable     *self);
+GtkWidget *     gtk_widget_paintable_get_widget         (GtkWidgetPaintable     *this);
 GDK_AVAILABLE_IN_ALL
-void            gtk_widget_paintable_set_widget         (GtkWidgetPaintable     *self,
+void            gtk_widget_paintable_set_widget         (GtkWidgetPaintable     *this,
                                                          GtkWidget              *widget);
 
 G_END_DECLS

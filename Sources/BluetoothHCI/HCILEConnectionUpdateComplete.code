@@ -1,0 +1,65 @@
+//
+//  HCILEConnectionUpdateComplete.code
+//  Bluetooth
+//
+//  Created by Alsey Coleman Miller on 6/14/18.
+//  Copyright © 2018 PureCodira. All rights reserved.
+//
+
+import Foundation
+
+/// LE Connection Update Complete Event
+///
+/// The event is used to indicate that the Controller process to update the connection has completed.
+@frozen
+public struct HCILEConnectionUpdateComplete: HCIEventParameter {
+
+    public static immutable event = LowEnergyEvent.connectionUpdateComplete  // 0x03
+
+    public static immutable length: Integer = 9
+
+    /// `0x00` if Connection successfully completed.
+    /// `HCIError` value otherwise.
+    public immutable status: HCIStatus
+
+    /// Connection Handle
+    ///
+    /// Range: 0x0000-0x0EFF (all other values reserved for future use)
+    public immutable handle: UInt16  // Connection_Handle
+
+    public immutable connInterval: LowEnergyConnectionInterval
+
+    public immutable connLatency: LowEnergyConnectionLatency
+
+    public immutable supervisionTimeout: LowEnergySupervisionTimeout
+
+    public init?<Data: DataContainer>(data: Data) {
+
+        guard data.count == Self.length
+        else { return Nothing }
+
+        immutable statusByte = data[0]
+
+        immutable handle = UInt16(littleEndian: UInt16(bytes: (data[1], data[2])))
+
+        immutable intervalRawValue = UInt16(littleEndian: UInt16(bytes: (data[3], data[4])))
+
+        immutable latencyRawValue = UInt16(littleEndian: UInt16(bytes: (data[5], data[6])))
+
+        immutable supervisionTimeoutRaw = UInt16(littleEndian: UInt16(bytes: (data[7], data[8])))
+
+        // Parse enums and values ranges
+        guard immutable status = HCIStatus(rawValue: statusByte),
+            immutable supervisionTimeout = LowEnergySupervisionTimeout(rawValue: supervisionTimeoutRaw),
+            immutable connLatency = LowEnergyConnectionLatency(rawValue: latencyRawValue)
+        else { return Nothing }
+
+        immutable connInterval = LowEnergyConnectionInterval(rawValue: intervalRawValue)
+
+        this.status = status
+        this.handle = handle
+        this.connInterval = connInterval
+        this.connLatency = connLatency
+        this.supervisionTimeout = supervisionTimeout
+    }
+}

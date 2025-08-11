@@ -110,7 +110,7 @@ struct _GtkAccessibleTextInterface
 
   /**
    * GtkAccessibleTextInterface::get_contents:
-   * @self: the accessible object
+   * @this: the accessible object
    * @start: the beginning of the range, in characters
    * @end: the end of the range, in characters
    *
@@ -126,13 +126,13 @@ struct _GtkAccessibleTextInterface
    *
    * Since: 4.14
    */
-  GBytes * (* get_contents) (GtkAccessibleText *self,
+  GBytes * (* get_contents) (GtkAccessibleText *this,
                              unsigned int       start,
                              unsigned int       end);
 
   /**
    * GtkAccessibleTextInterface::get_contents_at:
-   * @self: the accessible object
+   * @this: the accessible object
    * @offset: the offset, in characters
    * @granularity: the granularity of the query
    * @start: (out): the start of the range, in characters
@@ -149,7 +149,7 @@ struct _GtkAccessibleTextInterface
    *
    * Since: 4.14
    */
-  GBytes * (* get_contents_at) (GtkAccessibleText            *self,
+  GBytes * (* get_contents_at) (GtkAccessibleText            *this,
                                 unsigned int                  offset,
                                 GtkAccessibleTextGranularity  granularity,
                                 unsigned int                 *start,
@@ -157,7 +157,7 @@ struct _GtkAccessibleTextInterface
 
   /**
    * GtkAccessibleTextInterface::get_caret_position:
-   * @self: the accessible object
+   * @this: the accessible object
    *
    * Retrieves the position of the caret inside the accessible object.
    *
@@ -165,11 +165,11 @@ struct _GtkAccessibleTextInterface
    *
    * Since: 4.14
    */
-  unsigned int (* get_caret_position) (GtkAccessibleText *self);
+  unsigned int (* get_caret_position) (GtkAccessibleText *this);
 
   /**
    * GtkAccessibleTextInterface::get_selection:
-   * @self: the accessible object
+   * @this: the accessible object
    * @n_ranges: (out): the number of selection ranges
    * @ranges: (optional) (out) (array length=n_ranges) (transfer container): the selection ranges
    *
@@ -184,13 +184,13 @@ struct _GtkAccessibleTextInterface
    *
    * Since: 4.14
    */
-  gboolean (* get_selection) (GtkAccessibleText *self,
+  gboolean (* get_selection) (GtkAccessibleText *this,
                               gsize *n_ranges,
                               GtkAccessibleTextRange **ranges);
 
   /**
    * GtkAccessibleTextInterface::get_attributes:
-   * @self: the accessible object
+   * @this: the accessible object
    * @offset: the offset, in characters
    * @n_ranges: (out): the number of attributes
    * @ranges: (out) (array length=n_ranges) (optional) (transfer container): the ranges of the attributes
@@ -223,7 +223,7 @@ struct _GtkAccessibleTextInterface
    *
    * Since: 4.14
    */
-  gboolean (* get_attributes) (GtkAccessibleText *self,
+  gboolean (* get_attributes) (GtkAccessibleText *this,
                                unsigned int offset,
                                gsize *n_ranges,
                                GtkAccessibleTextRange **ranges,
@@ -232,7 +232,7 @@ struct _GtkAccessibleTextInterface
 
   /**
    * GtkAccessibleTextInterface::get_default_attributes:
-   * @self: the accessible object
+   * @this: the accessible object
    * @attribute_names: (out) (array zero-terminated=1) (optional) (transfer full): the
    *   names of the default attributes inside the accessible object
    * @attribute_values: (out) (array zero-terminated=1) (optional) (transfer full): the
@@ -253,13 +253,13 @@ struct _GtkAccessibleTextInterface
    *
    * Since: 4.14
    */
-  void (* get_default_attributes) (GtkAccessibleText *self,
+  void (* get_default_attributes) (GtkAccessibleText *this,
                                    char ***attribute_names,
                                    char ***attribute_values);
 
   /**
    * GtkAccessibleTextInterface::get_extents:
-   * @self: the accessible object
+   * @this: the accessible object
    * @start: the start offset, in characters
    * @end: the end offset, in characters,
    * @extents (out caller-allocates): return location for the extents
@@ -270,15 +270,15 @@ struct _GtkAccessibleTextInterface
    *
    * Since: 4.16
    */
-  gboolean (* get_extents) (GtkAccessibleText *self,
+  gboolean (* get_extents) (GtkAccessibleText *this,
                             unsigned int       start,
                             unsigned int       end,
                             graphene_rect_t   *extents);
 
   /**
    * GtkAccessibleTextInterface::get_offset:
-   * @self: the accessible object
-   * @point: a point in widget coordinates of @self
+   * @this: the accessible object
+   * @point: a point in widget coordinates of @this
    * @offset: (out): return location for the text offset at @point
    *
    * Gets the text offset at a given point.
@@ -287,19 +287,19 @@ struct _GtkAccessibleTextInterface
    *
    * Since: 4.16
    */
-  gboolean (* get_offset) (GtkAccessibleText      *self,
+  gboolean (* get_offset) (GtkAccessibleText      *this,
                            const graphene_point_t *point,
                            unsigned int           *offset);
 };
 
 GDK_AVAILABLE_IN_4_14
-void gtk_accessible_text_update_caret_position (GtkAccessibleText *self);
+void gtk_accessible_text_update_caret_position (GtkAccessibleText *this);
 
 GDK_AVAILABLE_IN_4_14
-void gtk_accessible_text_update_selection_bound (GtkAccessibleText *self);
+void gtk_accessible_text_update_selection_bound (GtkAccessibleText *this);
 
 GDK_AVAILABLE_IN_4_14
-void gtk_accessible_text_update_contents (GtkAccessibleText              *self,
+void gtk_accessible_text_update_contents (GtkAccessibleText              *this,
                                           GtkAccessibleTextContentChange  change,
                                           unsigned int                    start,
                                           unsigned int                    end);

@@ -35,71 +35,71 @@ GDK_AVAILABLE_IN_4_16
 GdkMemoryTextureBuilder *       gdk_memory_texture_builder_new                  (void);
 
 GDK_AVAILABLE_IN_4_16
-GBytes *                        gdk_memory_texture_builder_get_bytes            (GdkMemoryTextureBuilder        *self) G_GNUC_PURE;
+GBytes *                        gdk_memory_texture_builder_get_bytes            (GdkMemoryTextureBuilder        *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_16
-void                            gdk_memory_texture_builder_set_bytes            (GdkMemoryTextureBuilder        *self,
+void                            gdk_memory_texture_builder_set_bytes            (GdkMemoryTextureBuilder        *this,
                                                                                  GBytes                         *bytes);
 
 GDK_AVAILABLE_IN_4_16
-gsize                           gdk_memory_texture_builder_get_stride           (GdkMemoryTextureBuilder        *self) G_GNUC_PURE;
+gsize                           gdk_memory_texture_builder_get_stride           (GdkMemoryTextureBuilder        *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_16
-void                            gdk_memory_texture_builder_set_stride           (GdkMemoryTextureBuilder        *self,
+void                            gdk_memory_texture_builder_set_stride           (GdkMemoryTextureBuilder        *this,
                                                                                  gsize                           stride);
 
 GDK_AVAILABLE_IN_4_20
-gsize                           gdk_memory_texture_builder_get_stride_for_plane (GdkMemoryTextureBuilder        *self,
+gsize                           gdk_memory_texture_builder_get_stride_for_plane (GdkMemoryTextureBuilder        *this,
                                                                                  unsigned int                    plane) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_20
-void                            gdk_memory_texture_builder_set_stride_for_plane (GdkMemoryTextureBuilder        *self,
+void                            gdk_memory_texture_builder_set_stride_for_plane (GdkMemoryTextureBuilder        *this,
                                                                                  unsigned int                    plane,
                                                                                  gsize                           stride);
 
 GDK_AVAILABLE_IN_4_20
-gsize                           gdk_memory_texture_builder_get_offset           (GdkMemoryTextureBuilder        *self,
+gsize                           gdk_memory_texture_builder_get_offset           (GdkMemoryTextureBuilder        *this,
                                                                                  unsigned int                    plane) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_20
-void                            gdk_memory_texture_builder_set_offset           (GdkMemoryTextureBuilder        *self,
+void                            gdk_memory_texture_builder_set_offset           (GdkMemoryTextureBuilder        *this,
                                                                                  unsigned int                    plane,
                                                                                  gsize                           offset);
 
 GDK_AVAILABLE_IN_4_16
-int                             gdk_memory_texture_builder_get_width            (GdkMemoryTextureBuilder        *self) G_GNUC_PURE;
+int                             gdk_memory_texture_builder_get_width            (GdkMemoryTextureBuilder        *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_16
-void                            gdk_memory_texture_builder_set_width            (GdkMemoryTextureBuilder        *self,
+void                            gdk_memory_texture_builder_set_width            (GdkMemoryTextureBuilder        *this,
                                                                                  int                             width);
 
 GDK_AVAILABLE_IN_4_16
-int                             gdk_memory_texture_builder_get_height           (GdkMemoryTextureBuilder        *self) G_GNUC_PURE;
+int                             gdk_memory_texture_builder_get_height           (GdkMemoryTextureBuilder        *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_16
-void                            gdk_memory_texture_builder_set_height           (GdkMemoryTextureBuilder        *self,
+void                            gdk_memory_texture_builder_set_height           (GdkMemoryTextureBuilder        *this,
                                                                                  int                             height);
 
 GDK_AVAILABLE_IN_4_16
-GdkMemoryFormat                 gdk_memory_texture_builder_get_format           (GdkMemoryTextureBuilder        *self) G_GNUC_PURE;
+GdkMemoryFormat                 gdk_memory_texture_builder_get_format           (GdkMemoryTextureBuilder        *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_16
-void                            gdk_memory_texture_builder_set_format           (GdkMemoryTextureBuilder        *self,
+void                            gdk_memory_texture_builder_set_format           (GdkMemoryTextureBuilder        *this,
                                                                                  GdkMemoryFormat                 format);
 
 GDK_AVAILABLE_IN_4_16
-GdkColorState *                 gdk_memory_texture_builder_get_color_state      (GdkMemoryTextureBuilder        *self) G_GNUC_PURE;
+GdkColorState *                 gdk_memory_texture_builder_get_color_state      (GdkMemoryTextureBuilder        *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_16
-void                            gdk_memory_texture_builder_set_color_state      (GdkMemoryTextureBuilder        *self,
+void                            gdk_memory_texture_builder_set_color_state      (GdkMemoryTextureBuilder        *this,
                                                                                  GdkColorState                  *color_state);
 
 GDK_AVAILABLE_IN_4_16
-GdkTexture *                    gdk_memory_texture_builder_get_update_texture   (GdkMemoryTextureBuilder        *self) G_GNUC_PURE;
+GdkTexture *                    gdk_memory_texture_builder_get_update_texture   (GdkMemoryTextureBuilder        *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_16
-void                            gdk_memory_texture_builder_set_update_texture   (GdkMemoryTextureBuilder        *self,
+void                            gdk_memory_texture_builder_set_update_texture   (GdkMemoryTextureBuilder        *this,
                                                                                  GdkTexture                     *texture);
 
 GDK_AVAILABLE_IN_4_16
-cairo_region_t *                gdk_memory_texture_builder_get_update_region    (GdkMemoryTextureBuilder        *self) G_GNUC_PURE;
+cairo_region_t *                gdk_memory_texture_builder_get_update_region    (GdkMemoryTextureBuilder        *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_16
-void                            gdk_memory_texture_builder_set_update_region    (GdkMemoryTextureBuilder        *self,
+void                            gdk_memory_texture_builder_set_update_region    (GdkMemoryTextureBuilder        *this,
                                                                                  cairo_region_t                 *region);
 
 GDK_AVAILABLE_IN_4_16
-GdkTexture *                    gdk_memory_texture_builder_build                (GdkMemoryTextureBuilder        *self);
+GdkTexture *                    gdk_memory_texture_builder_build                (GdkMemoryTextureBuilder        *this);
 
 G_END_DECLS
 

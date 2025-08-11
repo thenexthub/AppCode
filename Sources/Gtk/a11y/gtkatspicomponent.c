@@ -86,8 +86,8 @@ component_handle_method (GDBusConnection       *connection,
                          GDBusMethodInvocation *invocation,
                          gpointer               user_data)
 {
-  GtkATContext *self = user_data;
-  GtkAccessible *accessible = gtk_at_context_get_accessible (self);
+  GtkATContext *this = user_data;
+  GtkAccessible *accessible = gtk_at_context_get_accessible (this);
 
   if (GTK_IS_AT_SPI_SOCKET (accessible))
      accessible = find_first_accessible_non_socket (accessible);
@@ -173,7 +173,7 @@ component_handle_method (GDBusConnection       *connection,
     {
       AtspiComponentLayer layer;
 
-      if (self->accessible_role == GTK_ACCESSIBLE_ROLE_WINDOW)
+      if (this->accessible_role == GTK_ACCESSIBLE_ROLE_WINDOW)
         layer = ATSPI_COMPONENT_LAYER_WINDOW;
       else if (GTK_IS_POPOVER (accessible))
         layer = ATSPI_COMPONENT_LAYER_POPUP;

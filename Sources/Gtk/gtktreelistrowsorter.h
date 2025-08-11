@@ -36,9 +36,9 @@ GDK_AVAILABLE_IN_ALL
 GtkTreeListRowSorter *  gtk_tree_list_row_sorter_new                   (GtkSorter            *sorter);
 
 GDK_AVAILABLE_IN_ALL
-GtkSorter *             gtk_tree_list_row_sorter_get_sorter            (GtkTreeListRowSorter *self);
+GtkSorter *             gtk_tree_list_row_sorter_get_sorter            (GtkTreeListRowSorter *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_tree_list_row_sorter_set_sorter            (GtkTreeListRowSorter *self,
+void                    gtk_tree_list_row_sorter_set_sorter            (GtkTreeListRowSorter *this,
                                                                         GtkSorter            *sorter);
 
 G_END_DECLS

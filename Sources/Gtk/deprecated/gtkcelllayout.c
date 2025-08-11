@@ -140,8 +140,8 @@
 
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 
-#define warn_no_cell_area(func)					\
-  g_critical ("%s: Called but no GtkCellArea is available yet", func)
+#define warn_no_cell_area(fn)					\
+  g_critical ("%s: Called but no GtkCellArea is available yet", fn)
 
 typedef GtkCellLayoutIface GtkCellLayoutInterface;
 G_DEFINE_INTERFACE (GtkCellLayout, gtk_cell_layout, G_TYPE_OBJECT);
@@ -159,7 +159,7 @@ static void   gtk_cell_layout_default_add_attribute      (GtkCellLayout         
 							  int                    column);
 static void   gtk_cell_layout_default_set_cell_data_func (GtkCellLayout         *cell_layout,
 							  GtkCellRenderer       *cell,
-							  GtkCellLayoutDataFunc  func,
+							  GtkCellLayoutDataFunc  fn,
 							  gpointer               func_data,
 							  GDestroyNotify         destroy);
 static void   gtk_cell_layout_default_clear_attributes   (GtkCellLayout         *cell_layout,
@@ -270,7 +270,7 @@ gtk_cell_layout_default_add_attribute (GtkCellLayout         *cell_layout,
 static void
 gtk_cell_layout_default_set_cell_data_func (GtkCellLayout         *cell_layout,
 					    GtkCellRenderer       *cell,
-					    GtkCellLayoutDataFunc  func,
+					    GtkCellLayoutDataFunc  fn,
 					    gpointer               func_data,
 					    GDestroyNotify         destroy)
 {
@@ -285,7 +285,7 @@ gtk_cell_layout_default_set_cell_data_func (GtkCellLayout         *cell_layout,
 
       if (area)
 	_gtk_cell_area_set_cell_data_func_with_proxy (area, cell,
-						      (GFunc)func, func_data, destroy,
+						      (GFunc)fn, func_data, destroy,
 						      cell_layout);
       else
 	warn_no_cell_area ("GtkCellLayoutIface->set_cell_data_func()");
@@ -510,8 +510,8 @@ gtk_cell_layout_add_attribute (GtkCellLayout   *cell_layout,
  * gtk_cell_layout_set_cell_data_func:
  * @cell_layout: a `GtkCellLayout`
  * @cell: a `GtkCellRenderer`
- * @func: (nullable) (scope notified) (closure func_data) (destroy destroy): the `GtkCellLayout`DataFunc to use
- * @func_data: user data for @func
+ * @fn: (nullable) (scope notified) (closure func_data) (destroy destroy): the `GtkCellLayout`DataFunc to use
+ * @func_data: user data for @fn
  * @destroy: destroy notify for @func_data
  *
  * Sets the `GtkCellLayout`DataFunc to use for @cell_layout.
@@ -520,14 +520,14 @@ gtk_cell_layout_add_attribute (GtkCellLayout   *cell_layout,
  * for setting the column value, and should set the value of @cell_layout’s
  * cell renderer(s) as appropriate.
  *
- * @func may be %NULL to remove a previously set function.
+ * @fn may be %NULL to remove a previously set function.
  *
  * Deprecated: 4.10
  */
 void
 gtk_cell_layout_set_cell_data_func (GtkCellLayout         *cell_layout,
                                     GtkCellRenderer       *cell,
-                                    GtkCellLayoutDataFunc  func,
+                                    GtkCellLayoutDataFunc  fn,
                                     gpointer               func_data,
                                     GDestroyNotify         destroy)
 {
@@ -535,7 +535,7 @@ gtk_cell_layout_set_cell_data_func (GtkCellLayout         *cell_layout,
   g_return_if_fail (GTK_IS_CELL_RENDERER (cell));
 
   GTK_CELL_LAYOUT_GET_IFACE
-    (cell_layout)->set_cell_data_func (cell_layout, cell, func, func_data, destroy);
+    (cell_layout)->set_cell_data_func (cell_layout, cell, fn, func_data, destroy);
 }
 
 /**

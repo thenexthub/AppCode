@@ -20,10 +20,10 @@ struct _GskGpuImagePrivate
 G_DEFINE_TYPE_WITH_PRIVATE (GskGpuImage, gsk_gpu_image, G_TYPE_OBJECT)
 
 static void
-gsk_gpu_image_get_default_projection_matrix (GskGpuImage       *self,
+gsk_gpu_image_get_default_projection_matrix (GskGpuImage       *this,
                                              graphene_matrix_t *out_projection)
 {
-  GskGpuImagePrivate *priv = gsk_gpu_image_get_instance_private (self);
+  GskGpuImagePrivate *priv = gsk_gpu_image_get_instance_private (this);
 
   graphene_matrix_init_ortho (out_projection,
                               0, priv->width,
@@ -46,14 +46,14 @@ gsk_gpu_image_texture_toggle_ref_cb (gpointer  texture,
 static void
 gsk_gpu_image_dispose (GObject *object)
 {
-  GskGpuImage *self = GSK_GPU_IMAGE (object);
-  GskGpuImagePrivate *priv = gsk_gpu_image_get_instance_private (self);
+  GskGpuImage *this = GSK_GPU_IMAGE (object);
+  GskGpuImagePrivate *priv = gsk_gpu_image_get_instance_private (this);
 
   if (priv->flags & GSK_GPU_IMAGE_TOGGLE_REF)
     {
       priv->flags &= ~GSK_GPU_IMAGE_TOGGLE_REF;
-      G_OBJECT (self)->ref_count++;
-      g_object_remove_toggle_ref (G_OBJECT (self), gsk_gpu_image_texture_toggle_ref_cb, NULL);
+      G_OBJECT (this)->ref_count++;
+      g_object_remove_toggle_ref (G_OBJECT (this), gsk_gpu_image_texture_toggle_ref_cb, NULL);
     }
 
   G_OBJECT_CLASS (gsk_gpu_image_parent_class)->dispose (object);
@@ -70,12 +70,12 @@ gsk_gpu_image_class_init (GskGpuImageClass *klass)
 }
 
 static void
-gsk_gpu_image_init (GskGpuImage *self)
+gsk_gpu_image_init (GskGpuImage *this)
 {
 }
 
 void
-gsk_gpu_image_setup (GskGpuImage      *self,
+gsk_gpu_image_setup (GskGpuImage      *this,
                      GskGpuImageFlags  flags,
                      GskGpuConversion  conversion,
                      GdkShaderOp       shader_op,
@@ -83,7 +83,7 @@ gsk_gpu_image_setup (GskGpuImage      *self,
                      gsize             width,
                      gsize             height)
 {
-  GskGpuImagePrivate *priv = gsk_gpu_image_get_instance_private (self);
+  GskGpuImagePrivate *priv = gsk_gpu_image_get_instance_private (this);
 
   priv->flags = flags;
   priv->format = format;
@@ -95,8 +95,8 @@ gsk_gpu_image_setup (GskGpuImage      *self,
 
 /*
  * gsk_gpu_image_toggle_ref_texture:
- * @self: a GskGpuImage
- * @texture: the texture owning @self
+ * @this: a GskGpuImage
+ * @texture: the texture owning @this
  *
  * This function must be called whenever the texture owns the data
  * used by the image. It will then add a toggle ref, so that ref'ing
@@ -108,54 +108,54 @@ gsk_gpu_image_setup (GskGpuImage      *self,
  * get unref'ed, the texture is free to go away.
  **/
 void
-gsk_gpu_image_toggle_ref_texture (GskGpuImage *self,
+gsk_gpu_image_toggle_ref_texture (GskGpuImage *this,
                                   GdkTexture  *texture)
 {
-  GskGpuImagePrivate *priv = gsk_gpu_image_get_instance_private (self);
+  GskGpuImagePrivate *priv = gsk_gpu_image_get_instance_private (this);
 
   g_assert ((priv->flags & GSK_GPU_IMAGE_TOGGLE_REF) == 0);
 
   priv->flags |= GSK_GPU_IMAGE_TOGGLE_REF;
   g_object_ref (texture);
-  g_object_add_toggle_ref (G_OBJECT (self), gsk_gpu_image_texture_toggle_ref_cb, texture);
-  g_object_unref (self);
+  g_object_add_toggle_ref (G_OBJECT (this), gsk_gpu_image_texture_toggle_ref_cb, texture);
+  g_object_unref (this);
 }
 
 GdkMemoryFormat
-gsk_gpu_image_get_format (GskGpuImage *self)
+gsk_gpu_image_get_format (GskGpuImage *this)
 {
-  GskGpuImagePrivate *priv = gsk_gpu_image_get_instance_private (self);
+  GskGpuImagePrivate *priv = gsk_gpu_image_get_instance_private (this);
 
   return priv->format;
 }
 
 gsize
-gsk_gpu_image_get_width (GskGpuImage *self)
+gsk_gpu_image_get_width (GskGpuImage *this)
 {
-  GskGpuImagePrivate *priv = gsk_gpu_image_get_instance_private (self);
+  GskGpuImagePrivate *priv = gsk_gpu_image_get_instance_private (this);
 
   return priv->width;
 }
 
 gsize
-gsk_gpu_image_get_height (GskGpuImage *self)
+gsk_gpu_image_get_height (GskGpuImage *this)
 {
-  GskGpuImagePrivate *priv = gsk_gpu_image_get_instance_private (self);
+  GskGpuImagePrivate *priv = gsk_gpu_image_get_instance_private (this);
 
   return priv->height;
 }
 
 GskGpuImageFlags
-gsk_gpu_image_get_flags (GskGpuImage *self)
+gsk_gpu_image_get_flags (GskGpuImage *this)
 {
-  GskGpuImagePrivate *priv = gsk_gpu_image_get_instance_private (self);
+  GskGpuImagePrivate *priv = gsk_gpu_image_get_instance_private (this);
 
   return priv->flags;
 }
 
 /*<private>
  * gsk_gpu_image_get_conversion:
- * @self: the image
+ * @this: the image
  *
  * Returns the conversion applied by the image between the actual raw
  * image data and the way it's read in shaders/framebuffers.
@@ -163,33 +163,33 @@ gsk_gpu_image_get_flags (GskGpuImage *self)
  * Returns: the conversion
  **/
 GskGpuConversion
-gsk_gpu_image_get_conversion (GskGpuImage *self)
+gsk_gpu_image_get_conversion (GskGpuImage *this)
 {
-  GskGpuImagePrivate *priv = gsk_gpu_image_get_instance_private (self);
+  GskGpuImagePrivate *priv = gsk_gpu_image_get_instance_private (this);
 
   return priv->conversion;
 }
 
 GdkShaderOp
-gsk_gpu_image_get_shader_op (GskGpuImage *self)
+gsk_gpu_image_get_shader_op (GskGpuImage *this)
 {
-  GskGpuImagePrivate *priv = gsk_gpu_image_get_instance_private (self);
+  GskGpuImagePrivate *priv = gsk_gpu_image_get_instance_private (this);
 
   return priv->shader_op;
 }
 
 void
-gsk_gpu_image_set_flags (GskGpuImage      *self,
+gsk_gpu_image_set_flags (GskGpuImage      *this,
                          GskGpuImageFlags  flags)
 {
-  GskGpuImagePrivate *priv = gsk_gpu_image_get_instance_private (self);
+  GskGpuImagePrivate *priv = gsk_gpu_image_get_instance_private (this);
 
   priv->flags |= flags;
 }
 
 void
-gsk_gpu_image_get_projection_matrix (GskGpuImage       *self,
+gsk_gpu_image_get_projection_matrix (GskGpuImage       *this,
                                      graphene_matrix_t *out_projection)
 {
-  GSK_GPU_IMAGE_GET_CLASS (self)->get_projection_matrix (self, out_projection);
+  GSK_GPU_IMAGE_GET_CLASS (this)->get_projection_matrix (this, out_projection);
 }

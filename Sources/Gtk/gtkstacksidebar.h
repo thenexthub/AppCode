@@ -40,10 +40,10 @@ GType       gtk_stack_sidebar_get_type  (void) G_GNUC_CONST;
 GDK_AVAILABLE_IN_ALL
 GtkWidget * gtk_stack_sidebar_new       (void);
 GDK_AVAILABLE_IN_ALL
-void        gtk_stack_sidebar_set_stack (GtkStackSidebar *self,
+void        gtk_stack_sidebar_set_stack (GtkStackSidebar *this,
                                          GtkStack        *stack);
 GDK_AVAILABLE_IN_ALL
-GtkStack *  gtk_stack_sidebar_get_stack (GtkStackSidebar *self);
+GtkStack *  gtk_stack_sidebar_get_stack (GtkStackSidebar *this);
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GtkStackSidebar, g_object_unref)
 

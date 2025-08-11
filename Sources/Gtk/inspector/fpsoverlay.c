@@ -142,7 +142,7 @@ gtk_fps_overlay_snapshot (GtkInspectorOverlay *overlay,
                           GskRenderNode       *node,
                           GtkWidget           *widget)
 {
-  GtkFpsOverlay *self = GTK_FPS_OVERLAY (overlay);
+  GtkFpsOverlay *this = GTK_FPS_OVERLAY (overlay);
   GtkFpsInfo *info;
   gint64 now;
   double fps;
@@ -151,11 +151,11 @@ gtk_fps_overlay_snapshot (GtkInspectorOverlay *overlay,
   double overlay_opacity;
 
   now = gdk_frame_clock_get_frame_time (gtk_widget_get_frame_clock (widget));
-  info = g_hash_table_lookup (self->infos, widget);
+  info = g_hash_table_lookup (this->infos, widget);
   if (info == NULL)
     {
       info = gtk_fps_info_new (widget);
-      g_hash_table_insert (self->infos, widget, info);
+      g_hash_table_insert (this->infos, widget, info);
     }
   if (info->last_node != node)
     {
@@ -168,7 +168,7 @@ gtk_fps_overlay_snapshot (GtkInspectorOverlay *overlay,
     {
       if (now - info->last_frame > GDK_FPS_OVERLAY_LINGER_DURATION + GDK_FPS_OVERLAY_FADE_DURATION)
         {
-          g_hash_table_remove (self->infos, widget);
+          g_hash_table_remove (this->infos, widget);
           return;
         }
       else if (now - info->last_frame > GDK_FPS_OVERLAY_LINGER_DURATION)
@@ -253,11 +253,11 @@ gtk_fps_overlay_snapshot (GtkInspectorOverlay *overlay,
 static void
 gtk_fps_overlay_queue_draw (GtkInspectorOverlay *overlay)
 {
-  GtkFpsOverlay *self = GTK_FPS_OVERLAY (overlay);
+  GtkFpsOverlay *this = GTK_FPS_OVERLAY (overlay);
   GHashTableIter iter;
   gpointer widget;
 
-  g_hash_table_iter_init (&iter, self->infos);
+  g_hash_table_iter_init (&iter, this->infos);
   while (g_hash_table_iter_next (&iter, &widget, NULL))
     {
       GdkSurface *surface = gtk_native_get_surface (gtk_widget_get_native (widget));
@@ -269,9 +269,9 @@ gtk_fps_overlay_queue_draw (GtkInspectorOverlay *overlay)
 static void
 gtk_fps_overlay_dispose (GObject *object)
 {
-  GtkFpsOverlay *self = GTK_FPS_OVERLAY (object);
+  GtkFpsOverlay *this = GTK_FPS_OVERLAY (object);
 
-  g_hash_table_unref (self->infos);
+  g_hash_table_unref (this->infos);
 
   G_OBJECT_CLASS (gtk_fps_overlay_parent_class)->dispose (object);
 }
@@ -289,18 +289,18 @@ gtk_fps_overlay_class_init (GtkFpsOverlayClass *klass)
 }
 
 static void
-gtk_fps_overlay_init (GtkFpsOverlay *self)
+gtk_fps_overlay_init (GtkFpsOverlay *this)
 {
-  self->infos = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, gtk_fps_info_free);
+  this->infos = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, gtk_fps_info_free);
 }
 
 GtkInspectorOverlay *
 gtk_fps_overlay_new (void)
 {
-  GtkFpsOverlay *self;
+  GtkFpsOverlay *this;
 
-  self = g_object_new (GTK_TYPE_FPS_OVERLAY, NULL);
+  this = g_object_new (GTK_TYPE_FPS_OVERLAY, NULL);
 
-  return GTK_INSPECTOR_OVERLAY (self);
+  return GTK_INSPECTOR_OVERLAY (this);
 }
 

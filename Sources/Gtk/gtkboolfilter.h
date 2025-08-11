@@ -36,14 +36,14 @@ GDK_AVAILABLE_IN_ALL
 GtkBoolFilter *         gtk_bool_filter_new                     (GtkExpression          *expression);
 
 GDK_AVAILABLE_IN_ALL
-GtkExpression *         gtk_bool_filter_get_expression          (GtkBoolFilter          *self);
+GtkExpression *         gtk_bool_filter_get_expression          (GtkBoolFilter          *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_bool_filter_set_expression          (GtkBoolFilter          *self,
+void                    gtk_bool_filter_set_expression          (GtkBoolFilter          *this,
                                                                  GtkExpression          *expression);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_bool_filter_get_invert              (GtkBoolFilter          *self);
+gboolean                gtk_bool_filter_get_invert              (GtkBoolFilter          *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_bool_filter_set_invert              (GtkBoolFilter          *self,
+void                    gtk_bool_filter_set_invert              (GtkBoolFilter          *this,
                                                                  gboolean                invert);
 
 

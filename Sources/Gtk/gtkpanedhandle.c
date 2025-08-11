@@ -72,10 +72,10 @@ gtk_paned_handle_contains (GtkWidget *widget,
 static void
 gtk_paned_handle_finalize (GObject *object)
 {
-  GtkPanedHandle *self = GTK_PANED_HANDLE (object);
+  GtkPanedHandle *this = GTK_PANED_HANDLE (object);
   GtkWidget *widget;
 
-  widget = _gtk_widget_get_first_child (GTK_WIDGET (self));
+  widget = _gtk_widget_get_first_child (GTK_WIDGET (this));
   while (widget != NULL)
     {
       GtkWidget *next = _gtk_widget_get_next_sibling (widget);
@@ -103,7 +103,7 @@ gtk_paned_handle_class_init (GtkPanedHandleClass *klass)
 }
 
 static void
-gtk_paned_handle_init (GtkPanedHandle *self)
+gtk_paned_handle_init (GtkPanedHandle *this)
 {
 }
 

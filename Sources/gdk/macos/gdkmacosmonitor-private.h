@@ -33,14 +33,14 @@ char              *_gdk_macos_monitor_get_localized_name    (NSScreen          *
 char              *_gdk_macos_monitor_get_connector_name    (CGDirectDisplayID  screen_id);
 GdkMacosMonitor   *_gdk_macos_monitor_new                   (GdkMacosDisplay   *display,
                                                              CGDirectDisplayID  screen_id);
-CGDirectDisplayID  _gdk_macos_monitor_get_screen_id         (GdkMacosMonitor   *self);
-gboolean           _gdk_macos_monitor_reconfigure           (GdkMacosMonitor   *self);
-CGColorSpaceRef    _gdk_macos_monitor_copy_colorspace       (GdkMacosMonitor   *self);
-void               _gdk_macos_monitor_add_frame_callback    (GdkMacosMonitor   *self,
+CGDirectDisplayID  _gdk_macos_monitor_get_screen_id         (GdkMacosMonitor   *this);
+gboolean           _gdk_macos_monitor_reconfigure           (GdkMacosMonitor   *this);
+CGColorSpaceRef    _gdk_macos_monitor_copy_colorspace       (GdkMacosMonitor   *this);
+void               _gdk_macos_monitor_add_frame_callback    (GdkMacosMonitor   *this,
                                                              GdkMacosSurface   *surface);
-void               _gdk_macos_monitor_remove_frame_callback (GdkMacosMonitor   *self,
+void               _gdk_macos_monitor_remove_frame_callback (GdkMacosMonitor   *this,
                                                              GdkMacosSurface   *surface);
-void               _gdk_macos_monitor_clamp                 (GdkMacosMonitor   *self,
+void               _gdk_macos_monitor_clamp                 (GdkMacosMonitor   *this,
                                                              GdkRectangle      *area);
 
 G_END_DECLS

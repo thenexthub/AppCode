@@ -98,7 +98,7 @@ struct _GtkColorButtonClass {
   GtkWidgetClass parent_class;
 
   void (* color_set) (GtkColorButton *cp);
-  void (* activate)  (GtkColorButton *self);
+  void (* activate)  (GtkColorButton *this);
 };
 
 /* Properties */
@@ -147,9 +147,9 @@ G_DEFINE_TYPE_WITH_CODE (GtkColorButton, gtk_color_button, GTK_TYPE_WIDGET,
                                                 gtk_color_button_iface_init))
 
 static void
-gtk_color_button_activate (GtkColorButton *self)
+gtk_color_button_activate (GtkColorButton *this)
 {
-  gtk_widget_activate (self->button);
+  gtk_widget_activate (this->button);
 }
 
 static void

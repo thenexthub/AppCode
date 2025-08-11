@@ -91,52 +91,52 @@ enum {
 static GParamSpec *properties[LAST_PROP];
 
 static void
-gtk_shortcuts_shortcut_set_accelerator (GtkShortcutsShortcut *self,
+gtk_shortcuts_shortcut_set_accelerator (GtkShortcutsShortcut *this,
                                         const char           *accelerator)
 {
-  gtk_shortcut_label_set_accelerator (self->accelerator, accelerator);
+  gtk_shortcut_label_set_accelerator (this->accelerator, accelerator);
 }
 
 static void
-gtk_shortcuts_shortcut_set_accel_size_group (GtkShortcutsShortcut *self,
+gtk_shortcuts_shortcut_set_accel_size_group (GtkShortcutsShortcut *this,
                                              GtkSizeGroup         *group)
 {
-  if (self->accel_size_group)
+  if (this->accel_size_group)
     {
-      gtk_size_group_remove_widget (self->accel_size_group, GTK_WIDGET (self->accelerator));
-      gtk_size_group_remove_widget (self->accel_size_group, GTK_WIDGET (self->image));
+      gtk_size_group_remove_widget (this->accel_size_group, GTK_WIDGET (this->accelerator));
+      gtk_size_group_remove_widget (this->accel_size_group, GTK_WIDGET (this->image));
     }
 
   if (group)
     {
-      gtk_size_group_add_widget (group, GTK_WIDGET (self->accelerator));
-      gtk_size_group_add_widget (group, GTK_WIDGET (self->image));
+      gtk_size_group_add_widget (group, GTK_WIDGET (this->accelerator));
+      gtk_size_group_add_widget (group, GTK_WIDGET (this->image));
     }
 
-  g_set_object (&self->accel_size_group, group);
+  g_set_object (&this->accel_size_group, group);
 }
 
 static void
-gtk_shortcuts_shortcut_set_title_size_group (GtkShortcutsShortcut *self,
+gtk_shortcuts_shortcut_set_title_size_group (GtkShortcutsShortcut *this,
                                              GtkSizeGroup         *group)
 {
-  if (self->title_size_group)
-    gtk_size_group_remove_widget (self->title_size_group, GTK_WIDGET (self->title_box));
+  if (this->title_size_group)
+    gtk_size_group_remove_widget (this->title_size_group, GTK_WIDGET (this->title_box));
   if (group)
-    gtk_size_group_add_widget (group, GTK_WIDGET (self->title_box));
+    gtk_size_group_add_widget (group, GTK_WIDGET (this->title_box));
 
-  g_set_object (&self->title_size_group, group);
+  g_set_object (&this->title_size_group, group);
 }
 
 static void
-update_subtitle_from_type (GtkShortcutsShortcut *self)
+update_subtitle_from_type (GtkShortcutsShortcut *this)
 {
   const char *subtitle;
 
-  if (self->subtitle_set)
+  if (this->subtitle_set)
     return;
 
-  switch (self->shortcut_type)
+  switch (this->shortcut_type)
     {
     case GTK_SHORTCUT_ACCELERATOR:
     case GTK_SHORTCUT_GESTURE:
@@ -180,43 +180,43 @@ update_subtitle_from_type (GtkShortcutsShortcut *self)
       break;
     }
 
-  gtk_label_set_label (self->subtitle, subtitle);
-  gtk_widget_set_visible (GTK_WIDGET (self->subtitle), subtitle != NULL);
-  g_object_notify (G_OBJECT (self), "subtitle");
+  gtk_label_set_label (this->subtitle, subtitle);
+  gtk_widget_set_visible (GTK_WIDGET (this->subtitle), subtitle != NULL);
+  g_object_notify (G_OBJECT (this), "subtitle");
 }
 
 static void
-gtk_shortcuts_shortcut_set_subtitle_set (GtkShortcutsShortcut *self,
+gtk_shortcuts_shortcut_set_subtitle_set (GtkShortcutsShortcut *this,
                                          gboolean              subtitle_set)
 {
-  if (self->subtitle_set != subtitle_set)
+  if (this->subtitle_set != subtitle_set)
     {
-      self->subtitle_set = subtitle_set;
-      g_object_notify (G_OBJECT (self), "subtitle-set");
+      this->subtitle_set = subtitle_set;
+      g_object_notify (G_OBJECT (this), "subtitle-set");
     }
-  update_subtitle_from_type (self);
+  update_subtitle_from_type (this);
 }
 
 static void
-gtk_shortcuts_shortcut_set_subtitle (GtkShortcutsShortcut *self,
+gtk_shortcuts_shortcut_set_subtitle (GtkShortcutsShortcut *this,
                                      const char           *subtitle)
 {
-  gtk_label_set_label (self->subtitle, subtitle);
-  gtk_widget_set_visible (GTK_WIDGET (self->subtitle), subtitle && subtitle[0]);
-  gtk_shortcuts_shortcut_set_subtitle_set (self, subtitle && subtitle[0]);
+  gtk_label_set_label (this->subtitle, subtitle);
+  gtk_widget_set_visible (GTK_WIDGET (this->subtitle), subtitle && subtitle[0]);
+  gtk_shortcuts_shortcut_set_subtitle_set (this, subtitle && subtitle[0]);
 
-  g_object_notify (G_OBJECT (self), "subtitle");
+  g_object_notify (G_OBJECT (this), "subtitle");
 }
 
 static void
-update_icon_from_type (GtkShortcutsShortcut *self)
+update_icon_from_type (GtkShortcutsShortcut *this)
 {
   GIcon *icon;
 
-  if (self->icon_set)
+  if (this->icon_set)
     return;
 
-  switch (self->shortcut_type)
+  switch (this->shortcut_type)
     {
     case GTK_SHORTCUT_GESTURE_PINCH:
       icon = g_themed_icon_new ("gesture-pinch-symbolic");
@@ -259,53 +259,53 @@ update_icon_from_type (GtkShortcutsShortcut *self)
 
   if (icon)
     {
-      gtk_image_set_from_gicon (self->image, icon);
-      gtk_image_set_pixel_size (self->image, 64);
+      gtk_image_set_from_gicon (this->image, icon);
+      gtk_image_set_pixel_size (this->image, 64);
       g_object_unref (icon);
     }
 }
 
 static void
-gtk_shortcuts_shortcut_set_icon_set (GtkShortcutsShortcut *self,
+gtk_shortcuts_shortcut_set_icon_set (GtkShortcutsShortcut *this,
                                      gboolean              icon_set)
 {
-  if (self->icon_set != icon_set)
+  if (this->icon_set != icon_set)
     {
-      self->icon_set = icon_set;
-      g_object_notify (G_OBJECT (self), "icon-set");
+      this->icon_set = icon_set;
+      g_object_notify (G_OBJECT (this), "icon-set");
     }
-  update_icon_from_type (self);
+  update_icon_from_type (this);
 }
 
 static void
-gtk_shortcuts_shortcut_set_icon (GtkShortcutsShortcut *self,
+gtk_shortcuts_shortcut_set_icon (GtkShortcutsShortcut *this,
                                  GIcon                *gicon)
 {
-  gtk_image_set_from_gicon (self->image, gicon);
-  gtk_shortcuts_shortcut_set_icon_set (self, gicon != NULL);
-  g_object_notify (G_OBJECT (self), "icon");
+  gtk_image_set_from_gicon (this->image, gicon);
+  gtk_shortcuts_shortcut_set_icon_set (this, gicon != NULL);
+  g_object_notify (G_OBJECT (this), "icon");
 }
 
 static void
-update_visible_from_direction (GtkShortcutsShortcut *self)
+update_visible_from_direction (GtkShortcutsShortcut *this)
 {
-  gtk_widget_set_visible (GTK_WIDGET (self),
-                          self->direction == GTK_TEXT_DIR_NONE ||
-                          self->direction == gtk_widget_get_direction (GTK_WIDGET (self)));
+  gtk_widget_set_visible (GTK_WIDGET (this),
+                          this->direction == GTK_TEXT_DIR_NONE ||
+                          this->direction == gtk_widget_get_direction (GTK_WIDGET (this)));
 }
 
 static void
-gtk_shortcuts_shortcut_set_direction (GtkShortcutsShortcut *self,
+gtk_shortcuts_shortcut_set_direction (GtkShortcutsShortcut *this,
                                       GtkTextDirection      direction)
 {
-  if (self->direction == direction)
+  if (this->direction == direction)
     return;
 
-  self->direction = direction;
+  this->direction = direction;
 
-  update_visible_from_direction (self);
+  update_visible_from_direction (this);
 
-  g_object_notify (G_OBJECT (self), "direction");
+  g_object_notify (G_OBJECT (this), "direction");
 }
 
 static void
@@ -318,32 +318,32 @@ gtk_shortcuts_shortcut_direction_changed (GtkWidget        *widget,
 }
 
 static void
-gtk_shortcuts_shortcut_set_type (GtkShortcutsShortcut *self,
+gtk_shortcuts_shortcut_set_type (GtkShortcutsShortcut *this,
                                  GtkShortcutType       type)
 {
-  if (self->shortcut_type == type)
+  if (this->shortcut_type == type)
     return;
 
-  self->shortcut_type = type;
+  this->shortcut_type = type;
 
-  update_subtitle_from_type (self);
-  update_icon_from_type (self);
+  update_subtitle_from_type (this);
+  update_icon_from_type (this);
 
-  gtk_widget_set_visible (GTK_WIDGET (self->accelerator), type == GTK_SHORTCUT_ACCELERATOR);
-  gtk_widget_set_visible (GTK_WIDGET (self->image), type != GTK_SHORTCUT_ACCELERATOR);
+  gtk_widget_set_visible (GTK_WIDGET (this->accelerator), type == GTK_SHORTCUT_ACCELERATOR);
+  gtk_widget_set_visible (GTK_WIDGET (this->image), type != GTK_SHORTCUT_ACCELERATOR);
 
 
-  g_object_notify (G_OBJECT (self), "shortcut-type");
+  g_object_notify (G_OBJECT (this), "shortcut-type");
 }
 
 static void
-gtk_shortcuts_shortcut_set_action_name (GtkShortcutsShortcut *self,
+gtk_shortcuts_shortcut_set_action_name (GtkShortcutsShortcut *this,
                                         const char           *action_name)
 {
-  g_free (self->action_name);
-  self->action_name = g_strdup (action_name);
+  g_free (this->action_name);
+  this->action_name = g_strdup (action_name);
 
-  g_object_notify (G_OBJECT (self), "action-name");
+  g_object_notify (G_OBJECT (this), "action-name");
 }
 
 static void
@@ -352,44 +352,44 @@ gtk_shortcuts_shortcut_get_property (GObject    *object,
                                      GValue     *value,
                                      GParamSpec *pspec)
 {
-  GtkShortcutsShortcut *self = GTK_SHORTCUTS_SHORTCUT (object);
+  GtkShortcutsShortcut *this = GTK_SHORTCUTS_SHORTCUT (object);
 
   switch (prop_id)
     {
     case PROP_TITLE:
-      g_value_set_string (value, gtk_label_get_label (self->title));
+      g_value_set_string (value, gtk_label_get_label (this->title));
       break;
 
     case PROP_SUBTITLE:
-      g_value_set_string (value, gtk_label_get_label (self->subtitle));
+      g_value_set_string (value, gtk_label_get_label (this->subtitle));
       break;
 
     case PROP_SUBTITLE_SET:
-      g_value_set_boolean (value, self->subtitle_set);
+      g_value_set_boolean (value, this->subtitle_set);
       break;
 
     case PROP_ACCELERATOR:
-      g_value_set_string (value, gtk_shortcut_label_get_accelerator (self->accelerator));
+      g_value_set_string (value, gtk_shortcut_label_get_accelerator (this->accelerator));
       break;
 
     case PROP_ICON:
-      g_value_set_object (value, gtk_image_get_gicon (self->image));
+      g_value_set_object (value, gtk_image_get_gicon (this->image));
       break;
 
     case PROP_ICON_SET:
-      g_value_set_boolean (value, self->icon_set);
+      g_value_set_boolean (value, this->icon_set);
       break;
 
     case PROP_DIRECTION:
-      g_value_set_enum (value, self->direction);
+      g_value_set_enum (value, this->direction);
       break;
 
     case PROP_SHORTCUT_TYPE:
-      g_value_set_enum (value, self->shortcut_type);
+      g_value_set_enum (value, this->shortcut_type);
       break;
 
     case PROP_ACTION_NAME:
-      g_value_set_string (value, self->action_name);
+      g_value_set_string (value, this->action_name);
       break;
 
     default:
@@ -403,52 +403,52 @@ gtk_shortcuts_shortcut_set_property (GObject      *object,
                                      const GValue *value,
                                      GParamSpec   *pspec)
 {
-  GtkShortcutsShortcut *self = GTK_SHORTCUTS_SHORTCUT (object);
+  GtkShortcutsShortcut *this = GTK_SHORTCUTS_SHORTCUT (object);
 
   switch (prop_id)
     {
     case PROP_ACCELERATOR:
-      gtk_shortcuts_shortcut_set_accelerator (self, g_value_get_string (value));
+      gtk_shortcuts_shortcut_set_accelerator (this, g_value_get_string (value));
       break;
 
     case PROP_ICON:
-      gtk_shortcuts_shortcut_set_icon (self, g_value_get_object (value));
+      gtk_shortcuts_shortcut_set_icon (this, g_value_get_object (value));
       break;
 
     case PROP_ICON_SET:
-      gtk_shortcuts_shortcut_set_icon_set (self, g_value_get_boolean (value));
+      gtk_shortcuts_shortcut_set_icon_set (this, g_value_get_boolean (value));
       break;
 
     case PROP_ACCEL_SIZE_GROUP:
-      gtk_shortcuts_shortcut_set_accel_size_group (self, GTK_SIZE_GROUP (g_value_get_object (value)));
+      gtk_shortcuts_shortcut_set_accel_size_group (this, GTK_SIZE_GROUP (g_value_get_object (value)));
       break;
 
     case PROP_TITLE:
-      gtk_label_set_label (self->title, g_value_get_string (value));
+      gtk_label_set_label (this->title, g_value_get_string (value));
       break;
 
     case PROP_SUBTITLE:
-      gtk_shortcuts_shortcut_set_subtitle (self, g_value_get_string (value));
+      gtk_shortcuts_shortcut_set_subtitle (this, g_value_get_string (value));
       break;
 
     case PROP_SUBTITLE_SET:
-      gtk_shortcuts_shortcut_set_subtitle_set (self, g_value_get_boolean (value));
+      gtk_shortcuts_shortcut_set_subtitle_set (this, g_value_get_boolean (value));
       break;
 
     case PROP_TITLE_SIZE_GROUP:
-      gtk_shortcuts_shortcut_set_title_size_group (self, GTK_SIZE_GROUP (g_value_get_object (value)));
+      gtk_shortcuts_shortcut_set_title_size_group (this, GTK_SIZE_GROUP (g_value_get_object (value)));
       break;
 
     case PROP_DIRECTION:
-      gtk_shortcuts_shortcut_set_direction (self, g_value_get_enum (value));
+      gtk_shortcuts_shortcut_set_direction (this, g_value_get_enum (value));
       break;
 
     case PROP_SHORTCUT_TYPE:
-      gtk_shortcuts_shortcut_set_type (self, g_value_get_enum (value));
+      gtk_shortcuts_shortcut_set_type (this, g_value_get_enum (value));
       break;
 
     case PROP_ACTION_NAME:
-      gtk_shortcuts_shortcut_set_action_name (self, g_value_get_string (value));
+      gtk_shortcuts_shortcut_set_action_name (this, g_value_get_string (value));
       break;
 
     default:
@@ -460,35 +460,35 @@ gtk_shortcuts_shortcut_set_property (GObject      *object,
 static void
 gtk_shortcuts_shortcut_finalize (GObject *object)
 {
-  GtkShortcutsShortcut *self = GTK_SHORTCUTS_SHORTCUT (object);
+  GtkShortcutsShortcut *this = GTK_SHORTCUTS_SHORTCUT (object);
 
-  g_clear_object (&self->accel_size_group);
-  g_clear_object (&self->title_size_group);
-  g_free (self->action_name);
-  gtk_widget_unparent (GTK_WIDGET (self->box));
+  g_clear_object (&this->accel_size_group);
+  g_clear_object (&this->title_size_group);
+  g_free (this->action_name);
+  gtk_widget_unparent (GTK_WIDGET (this->box));
 
   G_OBJECT_CLASS (gtk_shortcuts_shortcut_parent_class)->finalize (object);
 }
 
 void
-gtk_shortcuts_shortcut_update_accel (GtkShortcutsShortcut *self,
+gtk_shortcuts_shortcut_update_accel (GtkShortcutsShortcut *this,
                                      GtkWindow            *window)
 {
   GtkApplication *app;
   char **accels;
   char *str;
 
-  if (self->action_name == NULL)
+  if (this->action_name == NULL)
     return;
 
   app = gtk_window_get_application (window);
   if (app == NULL)
     return;
 
-  accels = gtk_application_get_accels_for_action (app, self->action_name);
+  accels = gtk_application_get_accels_for_action (app, this->action_name);
   str = g_strjoinv (" ", accels);
 
-  gtk_shortcuts_shortcut_set_accelerator (self, str);
+  gtk_shortcuts_shortcut_set_accelerator (this, str);
 
   g_free (str);
   g_strfreev (accels);
@@ -555,7 +555,7 @@ gtk_shortcuts_shortcut_class_init (GtkShortcutsShortcutClass *klass)
    * is set to %GTK_SHORTCUT_ACCELERATOR.
    *
    * The syntax of this property is (an extension of) the syntax understood
-   * by [func@Gtk.accelerator_parse]. Multiple accelerators can be specified
+   * by [fn@Gtk.accelerator_parse]. Multiple accelerators can be specified
    * by separating them with a space, but keep in mind that the available width
    * is limited.
    *
@@ -739,61 +739,61 @@ gtk_shortcuts_shortcut_class_init (GtkShortcutsShortcutClass *klass)
 }
 
 static void
-gtk_shortcuts_shortcut_init (GtkShortcutsShortcut *self)
+gtk_shortcuts_shortcut_init (GtkShortcutsShortcut *this)
 {
-  gtk_widget_set_focusable (GTK_WIDGET (self), TRUE);
+  gtk_widget_set_focusable (GTK_WIDGET (this), TRUE);
 
 
-  self->box = g_object_new (GTK_TYPE_BOX,
+  this->box = g_object_new (GTK_TYPE_BOX,
                             "orientation", GTK_ORIENTATION_HORIZONTAL,
                             "spacing", 12,
                             NULL);
-  gtk_widget_set_parent (GTK_WIDGET (self->box), GTK_WIDGET (self));
+  gtk_widget_set_parent (GTK_WIDGET (this->box), GTK_WIDGET (this));
 
-  self->direction = GTK_TEXT_DIR_NONE;
-  self->shortcut_type = GTK_SHORTCUT_ACCELERATOR;
+  this->direction = GTK_TEXT_DIR_NONE;
+  this->shortcut_type = GTK_SHORTCUT_ACCELERATOR;
 
-  self->image = g_object_new (GTK_TYPE_IMAGE,
+  this->image = g_object_new (GTK_TYPE_IMAGE,
                               "visible", FALSE,
                               "valign", GTK_ALIGN_CENTER,
                               "accessible-role", GTK_ACCESSIBLE_ROLE_PRESENTATION,
                               NULL);
-  gtk_box_append (GTK_BOX (self->box), GTK_WIDGET (self->image));
+  gtk_box_append (GTK_BOX (this->box), GTK_WIDGET (this->image));
 
-  self->accelerator = g_object_new (GTK_TYPE_SHORTCUT_LABEL,
+  this->accelerator = g_object_new (GTK_TYPE_SHORTCUT_LABEL,
                                     "visible", TRUE,
                                     "valign", GTK_ALIGN_CENTER,
                                     NULL);
-  gtk_box_append (GTK_BOX (self->box), GTK_WIDGET (self->accelerator));
+  gtk_box_append (GTK_BOX (this->box), GTK_WIDGET (this->accelerator));
 
-  self->title_box = g_object_new (GTK_TYPE_BOX,
+  this->title_box = g_object_new (GTK_TYPE_BOX,
                                   "visible", TRUE,
                                   "valign", GTK_ALIGN_CENTER,
                                   "hexpand", TRUE,
                                   "orientation", GTK_ORIENTATION_VERTICAL,
                                   NULL);
-  gtk_box_append (GTK_BOX (self->box), GTK_WIDGET (self->title_box));
+  gtk_box_append (GTK_BOX (this->box), GTK_WIDGET (this->title_box));
 
-  self->title = g_object_new (GTK_TYPE_LABEL,
+  this->title = g_object_new (GTK_TYPE_LABEL,
                               "visible", TRUE,
                               "xalign", 0.0f,
                               NULL);
-  gtk_box_append (GTK_BOX (self->title_box), GTK_WIDGET (self->title));
+  gtk_box_append (GTK_BOX (this->title_box), GTK_WIDGET (this->title));
 
-  self->subtitle = g_object_new (GTK_TYPE_LABEL,
+  this->subtitle = g_object_new (GTK_TYPE_LABEL,
                                  "visible", FALSE,
                                  "xalign", 0.0f,
                                  NULL);
-  gtk_widget_add_css_class (GTK_WIDGET (self->subtitle), "dim-label");
-  gtk_box_append (GTK_BOX (self->title_box), GTK_WIDGET (self->subtitle));
+  gtk_widget_add_css_class (GTK_WIDGET (this->subtitle), "dim-label");
+  gtk_box_append (GTK_BOX (this->title_box), GTK_WIDGET (this->subtitle));
 
 #if 0
-  gtk_accessible_update_relation (GTK_ACCESSIBLE (self),
-                                  GTK_ACCESSIBLE_RELATION_LABELLED_BY, self->accelerator, self->title, NULL,
+  gtk_accessible_update_relation (GTK_ACCESSIBLE (this),
+                                  GTK_ACCESSIBLE_RELATION_LABELLED_BY, this->accelerator, this->title, NULL,
                                   -1);
 #endif
 
-  gtk_accessible_update_property (GTK_ACCESSIBLE (self),
+  gtk_accessible_update_property (GTK_ACCESSIBLE (this),
                                   GTK_ACCESSIBLE_PROPERTY_DESCRIPTION, "",
                                   -1);
 }

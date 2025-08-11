@@ -89,77 +89,77 @@ gtk_accessible_value_alloc (const GtkAccessibleValueClass *value_class)
 
 /*< private >
  * gtk_accessible_value_ref:
- * @self: a `GtkAccessibleValue`
+ * @this: a `GtkAccessibleValue`
  *
  * Acquires a reference on the given `GtkAccessibleValue`.
  *
  * Returns: (transfer full): the value, with an additional reference
  */
 GtkAccessibleValue *
-gtk_accessible_value_ref (GtkAccessibleValue *self)
+gtk_accessible_value_ref (GtkAccessibleValue *this)
 {
-  g_return_val_if_fail (self != NULL, NULL);
+  g_return_val_if_fail (this != NULL, NULL);
 
-  self->ref_count += 1;
+  this->ref_count += 1;
 
-  return self;
+  return this;
 }
 
 /*< private >
  * gtk_accessible_value_unref:
- * @self: (transfer full): a `GtkAccessibleValue`
+ * @this: (transfer full): a `GtkAccessibleValue`
  *
  * Releases a reference on the given `GtkAccessibleValue`.
  */
 void
-gtk_accessible_value_unref (GtkAccessibleValue *self)
+gtk_accessible_value_unref (GtkAccessibleValue *this)
 {
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
 
-  self->ref_count -= 1;
-  if (self->ref_count == 0)
+  this->ref_count -= 1;
+  if (this->ref_count == 0)
     {
-      if (self->value_class->finalize != NULL)
-        self->value_class->finalize (self);
+      if (this->value_class->finalize != NULL)
+        this->value_class->finalize (this);
 
-      g_free (self);
+      g_free (this);
     }
 }
 
 /*< private >
  * gtk_accessible_value_print:
- * @self: a `GtkAccessibleValue`
+ * @this: a `GtkAccessibleValue`
  * @buffer: a `GString`
  *
  * Prints the contents of a `GtkAccessibleValue` into the given @buffer.
  */
 void
-gtk_accessible_value_print (const GtkAccessibleValue *self,
+gtk_accessible_value_print (const GtkAccessibleValue *this,
                             GString                  *buffer)
 {
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
   g_return_if_fail (buffer != NULL);
 
-  if (self->value_class->print != NULL)
-    self->value_class->print (self, buffer);
+  if (this->value_class->print != NULL)
+    this->value_class->print (this, buffer);
 }
 
 /*< private >
  * gtk_accessible_value_to_string:
- * @self: a `GtkAccessibleValue`
+ * @this: a `GtkAccessibleValue`
  *
  * Fills a string with the contents of the given `GtkAccessibleValue`.
  *
  * Returns: (transfer full): a string with the contents of the value
  */
 char *
-gtk_accessible_value_to_string (const GtkAccessibleValue *self)
+gtk_accessible_value_to_string (const GtkAccessibleValue *this)
 {
-  g_return_val_if_fail (self != NULL, NULL);
+  g_return_val_if_fail (this != NULL, NULL);
 
   GString *buffer = g_string_new (NULL);
 
-  gtk_accessible_value_print (self, buffer);
+  gtk_accessible_value_print (this, buffer);
 
   return g_string_free (buffer, FALSE);
 }
@@ -217,9 +217,9 @@ static void
 gtk_int_accessible_value_print (const GtkAccessibleValue *value,
                                 GString                  *buffer)
 {
-  const GtkIntAccessibleValue *self = (GtkIntAccessibleValue *) value;
+  const GtkIntAccessibleValue *this = (GtkIntAccessibleValue *) value;
 
-  g_string_append_printf (buffer, "%d", self->value);
+  g_string_append_printf (buffer, "%d", this->value);
 }
 
 static const GtkAccessibleValueClass GTK_INT_ACCESSIBLE_VALUE = {
@@ -240,8 +240,8 @@ gtk_int_accessible_value_new (int value)
    *      allocating a new GtkAccessibleValue instance. Needs some profiling
    *      to figure out the common integer values used by large applications
    */
-  GtkIntAccessibleValue *self = (GtkIntAccessibleValue *) res;
-  self->value = value;
+  GtkIntAccessibleValue *this = (GtkIntAccessibleValue *) res;
+  this->value = value;
 
   return res;
 }
@@ -249,12 +249,12 @@ gtk_int_accessible_value_new (int value)
 int
 gtk_int_accessible_value_get (const GtkAccessibleValue *value)
 {
-  GtkIntAccessibleValue *self = (GtkIntAccessibleValue *) value;
+  GtkIntAccessibleValue *this = (GtkIntAccessibleValue *) value;
 
   g_return_val_if_fail (value != NULL, 0);
   g_return_val_if_fail (value->value_class == &GTK_INT_ACCESSIBLE_VALUE, 0);
 
-  return self->value;
+  return this->value;
 }
 
 typedef struct {
@@ -277,9 +277,9 @@ static void
 gtk_number_accessible_value_print (const GtkAccessibleValue *value,
                                    GString                  *buffer)
 {
-  const GtkNumberAccessibleValue *self = (GtkNumberAccessibleValue *) value;
+  const GtkNumberAccessibleValue *this = (GtkNumberAccessibleValue *) value;
 
-  g_string_append_printf (buffer, "%g", self->value);
+  g_string_append_printf (buffer, "%g", this->value);
 }
 
 static const GtkAccessibleValueClass GTK_NUMBER_ACCESSIBLE_VALUE = {
@@ -295,8 +295,8 @@ gtk_number_accessible_value_new (double value)
 {
   GtkAccessibleValue *res = gtk_accessible_value_alloc (&GTK_NUMBER_ACCESSIBLE_VALUE);
 
-  GtkNumberAccessibleValue *self = (GtkNumberAccessibleValue *) res;
-  self->value = value;
+  GtkNumberAccessibleValue *this = (GtkNumberAccessibleValue *) res;
+  this->value = value;
 
   return res;
 }
@@ -304,12 +304,12 @@ gtk_number_accessible_value_new (double value)
 double
 gtk_number_accessible_value_get (const GtkAccessibleValue *value)
 {
-  GtkNumberAccessibleValue *self = (GtkNumberAccessibleValue *) value;
+  GtkNumberAccessibleValue *this = (GtkNumberAccessibleValue *) value;
 
   g_return_val_if_fail (value != NULL, 0);
   g_return_val_if_fail (value->value_class == &GTK_NUMBER_ACCESSIBLE_VALUE, 0);
 
-  return self->value;
+  return this->value;
 }
 
 typedef struct {
@@ -322,9 +322,9 @@ typedef struct {
 static void
 gtk_string_accessible_value_finalize (GtkAccessibleValue *value)
 {
-  GtkStringAccessibleValue *self = (GtkStringAccessibleValue *) value;
+  GtkStringAccessibleValue *this = (GtkStringAccessibleValue *) value;
 
-  g_free (self->value);
+  g_free (this->value);
 }
 
 static gboolean
@@ -344,9 +344,9 @@ static void
 gtk_string_accessible_value_print (const GtkAccessibleValue *value,
                                    GString                  *buffer)
 {
-  const GtkStringAccessibleValue *self = (GtkStringAccessibleValue *) value;
+  const GtkStringAccessibleValue *this = (GtkStringAccessibleValue *) value;
 
-  g_string_append (buffer, self->value);
+  g_string_append (buffer, this->value);
 }
 
 static const GtkAccessibleValueClass GTK_STRING_ACCESSIBLE_VALUE = {
@@ -363,10 +363,10 @@ gtk_string_accessible_value_new (const char *str)
 {
   GtkAccessibleValue *res = gtk_accessible_value_alloc (&GTK_STRING_ACCESSIBLE_VALUE);
 
-  GtkStringAccessibleValue *self = (GtkStringAccessibleValue *) res;
+  GtkStringAccessibleValue *this = (GtkStringAccessibleValue *) res;
 
-  self->value = g_strdup (str);
-  self->length = strlen (str);
+  this->value = g_strdup (str);
+  this->length = strlen (str);
 
   return res;
 }
@@ -374,12 +374,12 @@ gtk_string_accessible_value_new (const char *str)
 const char *
 gtk_string_accessible_value_get (const GtkAccessibleValue *value)
 {
-  GtkStringAccessibleValue *self = (GtkStringAccessibleValue *) value;
+  GtkStringAccessibleValue *this = (GtkStringAccessibleValue *) value;
 
   g_return_val_if_fail (value != NULL, 0);
   g_return_val_if_fail (value->value_class == &GTK_STRING_ACCESSIBLE_VALUE, 0);
 
-  return self->value;
+  return this->value;
 }
 
 typedef struct {
@@ -392,18 +392,18 @@ static void
 remove_weak_ref (gpointer  data,
                  GObject  *old_reference)
 {
-  GtkReferenceAccessibleValue *self = data;
+  GtkReferenceAccessibleValue *this = data;
 
-  self->ref = NULL;
+  this->ref = NULL;
 }
 
 static void
 gtk_reference_accessible_value_finalize (GtkAccessibleValue *value)
 {
-  GtkReferenceAccessibleValue *self = (GtkReferenceAccessibleValue *) value;
+  GtkReferenceAccessibleValue *this = (GtkReferenceAccessibleValue *) value;
 
-  if (self->ref != NULL)
-    g_object_weak_unref (G_OBJECT (self->ref), remove_weak_ref, self);
+  if (this->ref != NULL)
+    g_object_weak_unref (G_OBJECT (this->ref), remove_weak_ref, this);
 }
 
 static gboolean
@@ -420,13 +420,13 @@ static void
 gtk_reference_accessible_value_print (const GtkAccessibleValue *value,
                                       GString                  *buffer)
 {
-  const GtkReferenceAccessibleValue *self = (GtkReferenceAccessibleValue *) value;
+  const GtkReferenceAccessibleValue *this = (GtkReferenceAccessibleValue *) value;
 
-  if (self->ref != NULL)
+  if (this->ref != NULL)
     {
       g_string_append_printf (buffer, "%s<%p>",
-                              G_OBJECT_TYPE_NAME (self->ref),
-                              self->ref);
+                              G_OBJECT_TYPE_NAME (this->ref),
+                              this->ref);
     }
   else
     {
@@ -450,10 +450,10 @@ gtk_reference_accessible_value_new (GtkAccessible *ref)
 
   GtkAccessibleValue *res = gtk_accessible_value_alloc (&GTK_REFERENCE_ACCESSIBLE_VALUE);
 
-  GtkReferenceAccessibleValue *self = (GtkReferenceAccessibleValue *) res;
+  GtkReferenceAccessibleValue *this = (GtkReferenceAccessibleValue *) res;
 
-  self->ref = ref;
-  g_object_weak_ref (G_OBJECT (self->ref), remove_weak_ref, self);
+  this->ref = ref;
+  g_object_weak_ref (G_OBJECT (this->ref), remove_weak_ref, this);
 
   return res;
 }
@@ -461,12 +461,12 @@ gtk_reference_accessible_value_new (GtkAccessible *ref)
 GtkAccessible *
 gtk_reference_accessible_value_get (const GtkAccessibleValue *value)
 {
-  GtkReferenceAccessibleValue *self = (GtkReferenceAccessibleValue *) value;
+  GtkReferenceAccessibleValue *this = (GtkReferenceAccessibleValue *) value;
 
   g_return_val_if_fail (value != NULL, 0);
   g_return_val_if_fail (value->value_class == &GTK_REFERENCE_ACCESSIBLE_VALUE, 0);
 
-  return self->ref;
+  return this->ref;
 }
 
 typedef struct {
@@ -479,13 +479,13 @@ static void
 remove_weak_ref_from_list (gpointer  data,
                            GObject  *old_reference)
 {
-  GtkReferenceListAccessibleValue *self = data;
+  GtkReferenceListAccessibleValue *this = data;
 
-  GList *item = g_list_find (self->refs, old_reference);
+  GList *item = g_list_find (this->refs, old_reference);
 
   if (item != NULL)
     {
-      self->refs = g_list_remove_link (self->refs, item);
+      this->refs = g_list_remove_link (this->refs, item);
       g_list_free (item);
     }
 }
@@ -493,15 +493,15 @@ remove_weak_ref_from_list (gpointer  data,
 static void
 gtk_reference_list_accessible_value_finalize (GtkAccessibleValue *value)
 {
-  GtkReferenceListAccessibleValue *self = (GtkReferenceListAccessibleValue *) value;
+  GtkReferenceListAccessibleValue *this = (GtkReferenceListAccessibleValue *) value;
 
-  for (GList *l = self->refs; l != NULL; l = l->next)
+  for (GList *l = this->refs; l != NULL; l = l->next)
     {
       if (l->data != NULL)
-        g_object_weak_unref (G_OBJECT (l->data), remove_weak_ref_from_list, self);
+        g_object_weak_unref (G_OBJECT (l->data), remove_weak_ref_from_list, this);
     }
 
-  g_list_free (self->refs);
+  g_list_free (this->refs);
 }
 
 static gboolean
@@ -527,15 +527,15 @@ static void
 gtk_reference_list_accessible_value_print (const GtkAccessibleValue *value,
                                            GString                  *buffer)
 {
-  const GtkReferenceListAccessibleValue *self = (GtkReferenceListAccessibleValue *) value;
+  const GtkReferenceListAccessibleValue *this = (GtkReferenceListAccessibleValue *) value;
 
-  if (self->refs == NULL)
+  if (this->refs == NULL)
     {
       g_string_append (buffer, "<null>");
       return;
     }
 
-  for (GList *l = self->refs; l != NULL; l = l->next)
+  for (GList *l = this->refs; l != NULL; l = l->next)
     {
       g_string_append_printf (buffer, "%s<%p>",
                               G_OBJECT_TYPE_NAME (l->data),
@@ -566,13 +566,13 @@ gtk_reference_list_accessible_value_new (GList *value)
 {
   GtkAccessibleValue *res = gtk_accessible_value_alloc (&GTK_REFERENCE_LIST_ACCESSIBLE_VALUE);
 
-  GtkReferenceListAccessibleValue *self = (GtkReferenceListAccessibleValue *) res;
+  GtkReferenceListAccessibleValue *this = (GtkReferenceListAccessibleValue *) res;
 
-  self->refs = value;
-  if (self->refs != NULL)
+  this->refs = value;
+  if (this->refs != NULL)
     {
-      for (GList *l = self->refs; l != NULL; l = l->next)
-        g_object_weak_ref (l->data, remove_weak_ref_from_list, self);
+      for (GList *l = this->refs; l != NULL; l = l->next)
+        g_object_weak_ref (l->data, remove_weak_ref_from_list, this);
     }
 
   return res;
@@ -581,40 +581,40 @@ gtk_reference_list_accessible_value_new (GList *value)
 GList *
 gtk_reference_list_accessible_value_get (const GtkAccessibleValue *value)
 {
-  GtkReferenceListAccessibleValue *self = (GtkReferenceListAccessibleValue *) value;
+  GtkReferenceListAccessibleValue *this = (GtkReferenceListAccessibleValue *) value;
 
   g_return_val_if_fail (value != NULL, 0);
   g_return_val_if_fail (value->value_class == &GTK_REFERENCE_LIST_ACCESSIBLE_VALUE, 0);
 
-  return self->refs;
+  return this->refs;
 }
 
 void
 gtk_reference_list_accessible_value_append (GtkAccessibleValue *value,
                                             GtkAccessible      *ref)
 {
-  GtkReferenceListAccessibleValue *self = (GtkReferenceListAccessibleValue *) value;
+  GtkReferenceListAccessibleValue *this = (GtkReferenceListAccessibleValue *) value;
 
   g_return_if_fail (value != NULL);
   g_return_if_fail (value->value_class == &GTK_REFERENCE_LIST_ACCESSIBLE_VALUE);
 
-  self->refs = g_list_append (self->refs, ref);
+  this->refs = g_list_append (this->refs, ref);
 
-  g_object_weak_ref (G_OBJECT (ref), remove_weak_ref_from_list, self);
+  g_object_weak_ref (G_OBJECT (ref), remove_weak_ref_from_list, this);
 }
 
 void
 gtk_reference_list_accessible_value_remove (GtkAccessibleValue *value,
                                             GtkAccessible      *ref)
 {
-  GtkReferenceListAccessibleValue *self = (GtkReferenceListAccessibleValue *) value;
+  GtkReferenceListAccessibleValue *this = (GtkReferenceListAccessibleValue *) value;
 
   g_return_if_fail (value != NULL);
   g_return_if_fail (value->value_class == &GTK_REFERENCE_LIST_ACCESSIBLE_VALUE);
 
-  self->refs = g_list_remove (self->refs, ref);
+  this->refs = g_list_remove (this->refs, ref);
 
-  g_object_weak_unref (G_OBJECT (ref), remove_weak_ref_from_list, self);
+  g_object_weak_unref (G_OBJECT (ref), remove_weak_ref_from_list, this);
 }
 
 /* }}} */

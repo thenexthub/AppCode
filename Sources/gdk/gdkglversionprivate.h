@@ -88,15 +88,15 @@ gdk_gl_versions_get_for_api (GdkGLAPI api)
 }
 
 static inline int
-gdk_gl_version_get_major (const GdkGLVersion *self)
+gdk_gl_version_get_major (const GdkGLVersion *this)
 {
-  return self->major;
+  return this->major;
 }
 
 static inline int
-gdk_gl_version_get_minor (const GdkGLVersion *self)
+gdk_gl_version_get_minor (const GdkGLVersion *this)
 {
-  return self->minor;
+  return this->minor;
 }
 
 static inline int

@@ -50,7 +50,7 @@ GDK_AVAILABLE_IN_ALL
 GtkWidget* gtk_calendar_new		(void);
 
 GDK_DEPRECATED_IN_4_20_FOR (gtk_calendar_set_date)
-void          gtk_calendar_select_day                  (GtkCalendar *self,
+void          gtk_calendar_select_day                  (GtkCalendar *this,
                                                         GDateTime   *date);
 
 GDK_AVAILABLE_IN_ALL
@@ -63,47 +63,47 @@ GDK_AVAILABLE_IN_ALL
 void	   gtk_calendar_clear_marks	(GtkCalendar *calendar);
 
 GDK_AVAILABLE_IN_ALL
-void          gtk_calendar_set_show_week_numbers       (GtkCalendar *self,
+void          gtk_calendar_set_show_week_numbers       (GtkCalendar *this,
                                                         gboolean     value);
 GDK_AVAILABLE_IN_ALL
-gboolean      gtk_calendar_get_show_week_numbers       (GtkCalendar *self);
+gboolean      gtk_calendar_get_show_week_numbers       (GtkCalendar *this);
 GDK_AVAILABLE_IN_ALL
-void          gtk_calendar_set_show_heading            (GtkCalendar *self,
+void          gtk_calendar_set_show_heading            (GtkCalendar *this,
                                                         gboolean     value);
 GDK_AVAILABLE_IN_ALL
-gboolean      gtk_calendar_get_show_heading            (GtkCalendar *self);
+gboolean      gtk_calendar_get_show_heading            (GtkCalendar *this);
 GDK_AVAILABLE_IN_ALL
-void          gtk_calendar_set_show_day_names          (GtkCalendar *self,
+void          gtk_calendar_set_show_day_names          (GtkCalendar *this,
                                                         gboolean     value);
 GDK_AVAILABLE_IN_ALL
-gboolean      gtk_calendar_get_show_day_names          (GtkCalendar *self);
+gboolean      gtk_calendar_get_show_day_names          (GtkCalendar *this);
 
 GDK_AVAILABLE_IN_4_14
-void          gtk_calendar_set_day                     (GtkCalendar *self,
+void          gtk_calendar_set_day                     (GtkCalendar *this,
                                                         int          day);
 
 GDK_AVAILABLE_IN_4_14
-int           gtk_calendar_get_day                     (GtkCalendar *self);
+int           gtk_calendar_get_day                     (GtkCalendar *this);
 
 GDK_AVAILABLE_IN_4_14
-void          gtk_calendar_set_month                   (GtkCalendar *self,
+void          gtk_calendar_set_month                   (GtkCalendar *this,
                                                         int          month);
 
 GDK_AVAILABLE_IN_4_14
-int           gtk_calendar_get_month                   (GtkCalendar *self);
+int           gtk_calendar_get_month                   (GtkCalendar *this);
 
 GDK_AVAILABLE_IN_4_14
-void          gtk_calendar_set_year                    (GtkCalendar *self,
+void          gtk_calendar_set_year                    (GtkCalendar *this,
                                                         int          year);
 
 GDK_AVAILABLE_IN_4_14
-int           gtk_calendar_get_year                    (GtkCalendar *self);
+int           gtk_calendar_get_year                    (GtkCalendar *this);
 
 GDK_AVAILABLE_IN_4_20
-void          gtk_calendar_set_date                    (GtkCalendar *self,
+void          gtk_calendar_set_date                    (GtkCalendar *this,
                                                         GDateTime   *date);
 GDK_AVAILABLE_IN_ALL
-GDateTime *   gtk_calendar_get_date                    (GtkCalendar *self);
+GDateTime *   gtk_calendar_get_date                    (GtkCalendar *this);
 
 GDK_AVAILABLE_IN_ALL
 gboolean   gtk_calendar_get_day_is_marked      (GtkCalendar    *calendar,

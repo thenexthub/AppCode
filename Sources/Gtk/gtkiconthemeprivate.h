@@ -26,7 +26,7 @@ const char *gtk_string_set_add (GtkStringSet *set,
 
 #define IMAGE_MISSING_RESOURCE_PATH "/org/gtk/libgtk/icons/16x16/status/image-missing.png"
 
-int gtk_icon_theme_get_serial (GtkIconTheme *self);
+int gtk_icon_theme_get_serial (GtkIconTheme *this);
 
 void icon_cache_remove              (GtkIconPaintable *icon);
 void icon_cache_mark_used_if_cached (GtkIconPaintable *icon);

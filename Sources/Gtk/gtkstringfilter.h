@@ -53,24 +53,24 @@ GDK_AVAILABLE_IN_ALL
 GtkStringFilter *       gtk_string_filter_new                   (GtkExpression          *expression);
 
 GDK_AVAILABLE_IN_ALL
-const char *            gtk_string_filter_get_search            (GtkStringFilter        *self);
+const char *            gtk_string_filter_get_search            (GtkStringFilter        *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_string_filter_set_search            (GtkStringFilter        *self,
+void                    gtk_string_filter_set_search            (GtkStringFilter        *this,
                                                                  const char             *search);
 GDK_AVAILABLE_IN_ALL
-GtkExpression *         gtk_string_filter_get_expression        (GtkStringFilter        *self);
+GtkExpression *         gtk_string_filter_get_expression        (GtkStringFilter        *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_string_filter_set_expression        (GtkStringFilter        *self,
+void                    gtk_string_filter_set_expression        (GtkStringFilter        *this,
                                                                  GtkExpression          *expression);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_string_filter_get_ignore_case       (GtkStringFilter        *self);
+gboolean                gtk_string_filter_get_ignore_case       (GtkStringFilter        *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_string_filter_set_ignore_case       (GtkStringFilter        *self,
+void                    gtk_string_filter_set_ignore_case       (GtkStringFilter        *this,
                                                                  gboolean                ignore_case);
 GDK_AVAILABLE_IN_ALL
-GtkStringFilterMatchMode gtk_string_filter_get_match_mode       (GtkStringFilter        *self);
+GtkStringFilterMatchMode gtk_string_filter_get_match_mode       (GtkStringFilter        *this);
 GDK_AVAILABLE_IN_ALL
-void                     gtk_string_filter_set_match_mode       (GtkStringFilter        *self,
+void                     gtk_string_filter_set_match_mode       (GtkStringFilter        *this,
                                                                  GtkStringFilterMatchMode mode);
 
 

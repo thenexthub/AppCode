@@ -52,10 +52,10 @@ static GParamSpec *properties[N_PROPS] = { NULL, };
 static void
 gtk_list_header_dispose (GObject *object)
 {
-  GtkListHeader *self = GTK_LIST_HEADER (object);
+  GtkListHeader *this = GTK_LIST_HEADER (object);
 
-  g_assert (self->owner == NULL); /* would hold a reference */
-  g_clear_object (&self->child);
+  g_assert (this->owner == NULL); /* would hold a reference */
+  g_clear_object (&this->child);
 
   G_OBJECT_CLASS (gtk_list_header_parent_class)->dispose (object);
 }
@@ -66,33 +66,33 @@ gtk_list_header_get_property (GObject    *object,
                               GValue     *value,
                               GParamSpec *pspec)
 {
-  GtkListHeader *self = GTK_LIST_HEADER (object);
+  GtkListHeader *this = GTK_LIST_HEADER (object);
 
   switch (property_id)
     {
     case PROP_CHILD:
-      g_value_set_object (value, self->child);
+      g_value_set_object (value, this->child);
       break;
 
     case PROP_END:
-      if (self->owner)
-        g_value_set_uint (value, gtk_list_header_base_get_end (GTK_LIST_HEADER_BASE (self->owner)));
+      if (this->owner)
+        g_value_set_uint (value, gtk_list_header_base_get_end (GTK_LIST_HEADER_BASE (this->owner)));
       else
         g_value_set_uint (value, GTK_INVALID_LIST_POSITION);
       break;
 
     case PROP_ITEM:
-      if (self->owner)
-        g_value_set_object (value, gtk_list_header_base_get_item (GTK_LIST_HEADER_BASE (self->owner)));
+      if (this->owner)
+        g_value_set_object (value, gtk_list_header_base_get_item (GTK_LIST_HEADER_BASE (this->owner)));
       break;
 
     case PROP_N_ITEMS:
-      g_value_set_uint (value, gtk_list_header_get_n_items (self));
+      g_value_set_uint (value, gtk_list_header_get_n_items (this));
       break;
 
     case PROP_START:
-      if (self->owner)
-        g_value_set_uint (value, gtk_list_header_base_get_start (GTK_LIST_HEADER_BASE (self->owner)));
+      if (this->owner)
+        g_value_set_uint (value, gtk_list_header_base_get_start (GTK_LIST_HEADER_BASE (this->owner)));
       else
         g_value_set_uint (value, GTK_INVALID_LIST_POSITION);
       break;
@@ -109,12 +109,12 @@ gtk_list_header_set_property (GObject      *object,
                               const GValue *value,
                               GParamSpec   *pspec)
 {
-  GtkListHeader *self = GTK_LIST_HEADER (object);
+  GtkListHeader *this = GTK_LIST_HEADER (object);
 
   switch (property_id)
     {
     case PROP_CHILD:
-      gtk_list_header_set_child (self, g_value_get_object (value));
+      gtk_list_header_set_child (this, g_value_get_object (value));
       break;
 
     default:
@@ -196,7 +196,7 @@ gtk_list_header_class_init (GtkListHeaderClass *klass)
 }
 
 static void
-gtk_list_header_init (GtkListHeader *self)
+gtk_list_header_init (GtkListHeader *this)
 {
 }
 
@@ -227,32 +227,32 @@ gtk_list_header_do_notify (GtkListHeader *list_header,
 
 /**
  * gtk_list_header_get_item:
- * @self: a `GtkListHeader`
+ * @this: a `GtkListHeader`
  *
  * Gets the model item at the start of the section.
  * This is the item that occupies the list model at position
  * [property@Gtk.ListHeader:start].
  *
- * If @self is unbound, this function returns %NULL.
+ * If @this is unbound, this function returns %NULL.
  *
  * Returns: (nullable) (transfer none) (type GObject): The item displayed
  *
  * Since: 4.12
  **/
 gpointer
-gtk_list_header_get_item (GtkListHeader *self)
+gtk_list_header_get_item (GtkListHeader *this)
 {
-  g_return_val_if_fail (GTK_IS_LIST_HEADER (self), NULL);
+  g_return_val_if_fail (GTK_IS_LIST_HEADER (this), NULL);
 
-  if (self->owner)
-    return gtk_list_header_base_get_item (GTK_LIST_HEADER_BASE (self->owner));
+  if (this->owner)
+    return gtk_list_header_base_get_item (GTK_LIST_HEADER_BASE (this->owner));
   else
     return NULL;
 }
 
 /**
  * gtk_list_header_get_child:
- * @self: a `GtkListHeader`
+ * @this: a `GtkListHeader`
  *
  * Gets the child previously set via gtk_list_header_set_child() or
  * %NULL if none was set.
@@ -262,16 +262,16 @@ gtk_list_header_get_item (GtkListHeader *self)
  * Since: 4.12
  */
 GtkWidget *
-gtk_list_header_get_child (GtkListHeader *self)
+gtk_list_header_get_child (GtkListHeader *this)
 {
-  g_return_val_if_fail (GTK_IS_LIST_HEADER (self), NULL);
+  g_return_val_if_fail (GTK_IS_LIST_HEADER (this), NULL);
 
-  return self->child;
+  return this->child;
 }
 
 /**
  * gtk_list_header_set_child:
- * @self: a `GtkListHeader`
+ * @this: a `GtkListHeader`
  * @child: (nullable): The list item's child or %NULL to unset
  *
  * Sets the child to be used for this listitem.
@@ -283,97 +283,97 @@ gtk_list_header_get_child (GtkListHeader *self)
  * Since: 4.12
  */
 void
-gtk_list_header_set_child (GtkListHeader *self,
+gtk_list_header_set_child (GtkListHeader *this,
                            GtkWidget   *child)
 {
-  g_return_if_fail (GTK_IS_LIST_HEADER (self));
+  g_return_if_fail (GTK_IS_LIST_HEADER (this));
   g_return_if_fail (child == NULL || gtk_widget_get_parent (child) == NULL);
 
-  if (self->child == child)
+  if (this->child == child)
     return;
 
-  g_clear_object (&self->child);
+  g_clear_object (&this->child);
 
   if (child)
     {
       g_object_ref_sink (child);
-      self->child = child;
+      this->child = child;
     }
 
-  if (self->owner)
-    gtk_list_header_widget_set_child (self->owner, child);
+  if (this->owner)
+    gtk_list_header_widget_set_child (this->owner, child);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_CHILD]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_CHILD]);
 }
 
 /**
  * gtk_list_header_get_start:
- * @self: a `GtkListHeader`
+ * @this: a `GtkListHeader`
  *
- * Gets the start position in the model of the section that @self is
+ * Gets the start position in the model of the section that @this is
  * currently the header for.
  *
- * If @self is unbound, %GTK_INVALID_LIST_POSITION is returned.
+ * If @this is unbound, %GTK_INVALID_LIST_POSITION is returned.
  *
  * Returns: The start position of the section
  *
  * Since: 4.12
  */
 guint
-gtk_list_header_get_start (GtkListHeader *self)
+gtk_list_header_get_start (GtkListHeader *this)
 {
-  g_return_val_if_fail (GTK_IS_LIST_HEADER (self), GTK_INVALID_LIST_POSITION);
+  g_return_val_if_fail (GTK_IS_LIST_HEADER (this), GTK_INVALID_LIST_POSITION);
 
-  if (self->owner)
-    return gtk_list_header_base_get_start (GTK_LIST_HEADER_BASE (self->owner));
+  if (this->owner)
+    return gtk_list_header_base_get_start (GTK_LIST_HEADER_BASE (this->owner));
   else
     return GTK_INVALID_LIST_POSITION;
 }
 
 /**
  * gtk_list_header_get_end:
- * @self: a `GtkListHeader`
+ * @this: a `GtkListHeader`
  *
- * Gets the end position in the model of the section that @self is
+ * Gets the end position in the model of the section that @this is
  * currently the header for.
  *
- * If @self is unbound, %GTK_INVALID_LIST_POSITION is returned.
+ * If @this is unbound, %GTK_INVALID_LIST_POSITION is returned.
  *
  * Returns: The end position of the section
  *
  * Since: 4.12
  */
 guint
-gtk_list_header_get_end (GtkListHeader *self)
+gtk_list_header_get_end (GtkListHeader *this)
 {
-  g_return_val_if_fail (GTK_IS_LIST_HEADER (self), GTK_INVALID_LIST_POSITION);
+  g_return_val_if_fail (GTK_IS_LIST_HEADER (this), GTK_INVALID_LIST_POSITION);
 
-  if (self->owner)
-    return gtk_list_header_base_get_end (GTK_LIST_HEADER_BASE (self->owner));
+  if (this->owner)
+    return gtk_list_header_base_get_end (GTK_LIST_HEADER_BASE (this->owner));
   else
     return GTK_INVALID_LIST_POSITION;
 }
 
 /**
  * gtk_list_header_get_n_items:
- * @self: a `GtkListHeader`
+ * @this: a `GtkListHeader`
  *
  * Gets the the number of items in the section.
  *
- * If @self is unbound, 0 is returned.
+ * If @this is unbound, 0 is returned.
  *
  * Returns: The number of items in the section
  *
  * Since: 4.12
  */
 guint
-gtk_list_header_get_n_items (GtkListHeader *self)
+gtk_list_header_get_n_items (GtkListHeader *this)
 {
-  g_return_val_if_fail (GTK_IS_LIST_HEADER (self), GTK_INVALID_LIST_POSITION);
+  g_return_val_if_fail (GTK_IS_LIST_HEADER (this), GTK_INVALID_LIST_POSITION);
 
-  if (self->owner)
-    return gtk_list_header_base_get_end (GTK_LIST_HEADER_BASE (self->owner)) -
-           gtk_list_header_base_get_start (GTK_LIST_HEADER_BASE (self->owner));
+  if (this->owner)
+    return gtk_list_header_base_get_end (GTK_LIST_HEADER_BASE (this->owner)) -
+           gtk_list_header_base_get_start (GTK_LIST_HEADER_BASE (this->owner));
   else
     return 0;
 }

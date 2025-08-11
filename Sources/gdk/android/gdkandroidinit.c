@@ -778,9 +778,9 @@ gdk_android_get_thread_env (void)
 }
 
 void
-gdk_android_drop_thread_env (GdkAndroidThreadGuard *self)
+gdk_android_drop_thread_env (GdkAndroidThreadGuard *this)
 {
-  if (self->needs_detach)
+  if (this->needs_detach)
     {
       gdk_android_thread_env = NULL;
       gint rc = (*gdk_android_vm)->DetachCurrentThread (gdk_android_vm);

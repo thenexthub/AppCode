@@ -92,24 +92,24 @@ struct _GtkTimSort
   GtkTimSortRun run[GTK_TIM_SORT_MAX_PENDING];
 };
 
-void            gtk_tim_sort_init                               (GtkTimSort             *self,
+void            gtk_tim_sort_init                               (GtkTimSort             *this,
                                                                  gpointer                base,
                                                                  gsize                   size,
                                                                  gsize                   element_size,
                                                                  GCompareDataFunc        compare_func,
                                                                  gpointer                data);
-void            gtk_tim_sort_finish                             (GtkTimSort             *self);
+void            gtk_tim_sort_finish                             (GtkTimSort             *this);
 
-void            gtk_tim_sort_get_runs                           (GtkTimSort             *self,
+void            gtk_tim_sort_get_runs                           (GtkTimSort             *this,
                                                                  gsize                   runs[GTK_TIM_SORT_MAX_PENDING + 1]);
-void            gtk_tim_sort_set_runs                           (GtkTimSort             *self,
+void            gtk_tim_sort_set_runs                           (GtkTimSort             *this,
                                                                  gsize                  *runs);
-void            gtk_tim_sort_set_max_merge_size                 (GtkTimSort             *self,
+void            gtk_tim_sort_set_max_merge_size                 (GtkTimSort             *this,
                                                                  gsize                   max_merge_size);
 
-gsize           gtk_tim_sort_get_progress                       (GtkTimSort             *self);
+gsize           gtk_tim_sort_get_progress                       (GtkTimSort             *this);
 
-gboolean        gtk_tim_sort_step                               (GtkTimSort             *self,
+gboolean        gtk_tim_sort_step                               (GtkTimSort             *this,
                                                                  GtkTimSortRun          *out_change);
 
 void            gtk_tim_sort                                    (gpointer                base,

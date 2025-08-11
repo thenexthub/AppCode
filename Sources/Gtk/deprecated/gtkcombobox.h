@@ -103,7 +103,7 @@ GDK_DEPRECATED_IN_4_10_FOR(GtkDropDown)
 GtkTreeViewRowSeparatorFunc gtk_combo_box_get_row_separator_func (GtkComboBox                *combo_box);
 GDK_DEPRECATED_IN_4_10_FOR(GtkDropDown)
 void                        gtk_combo_box_set_row_separator_func (GtkComboBox                *combo_box,
-                                                                  GtkTreeViewRowSeparatorFunc func,
+                                                                  GtkTreeViewRowSeparatorFunc fn,
                                                                   gpointer                    data,
                                                                   GDestroyNotify              destroy);
 

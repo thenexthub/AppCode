@@ -57,9 +57,9 @@
   }
 
 static void
-gdk_android_surface_reposition_children (GdkAndroidSurface *self)
+gdk_android_surface_reposition_children (GdkAndroidSurface *this)
 {
-  for (const GList *iter = GDK_SURFACE (self)->children;
+  for (const GList *iter = GDK_SURFACE (this)->children;
        iter != NULL;
        iter = iter->next)
     {
@@ -71,9 +71,9 @@ gdk_android_surface_reposition_children (GdkAndroidSurface *self)
 }
 
 static void
-gdk_android_surface_drop_child_refs (GdkAndroidSurface *self)
+gdk_android_surface_drop_child_refs (GdkAndroidSurface *this)
 {
-  GdkSurface *surface = (GdkSurface *)self;
+  GdkSurface *surface = (GdkSurface *)this;
   JNIEnv *env = gdk_android_get_env();
   for (const GList *i = surface->children; i != NULL; i = i->next)
     {
@@ -96,22 +96,22 @@ void
 _gdk_android_surface_bind_native (JNIEnv *env, jobject this, jlong identifier)
 {
   GdkAndroidDisplay *display = gdk_android_display_get_display_instance ();
-  GdkAndroidSurface *self = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
-  gdk_android_check_surface_throw (self, this);
+  GdkAndroidSurface *this = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
+  gdk_android_check_surface_throw (this, this);
 
-  g_debug ("TRACE: Surface.BindNative (%p [%s])", self, G_OBJECT_TYPE_NAME (self));
+  g_debug ("TRACE: Surface.BindNative (%p [%s])", this, G_OBJECT_TYPE_NAME (this));
 
-  if (self->surface)
+  if (this->surface)
     {
-      (*env)->CallVoidMethod (env, self->surface, gdk_android_get_java_cache ()->surface.drop);
-      (*env)->DeleteGlobalRef (env, self->surface);
+      (*env)->CallVoidMethod (env, this->surface, gdk_android_get_java_cache ()->surface.drop);
+      (*env)->DeleteGlobalRef (env, this->surface);
     }
-  gdk_android_surface_drop_child_refs(self);
-  self->surface = (*env)->NewGlobalRef (env, this);
+  gdk_android_surface_drop_child_refs(this);
+  this->surface = (*env)->NewGlobalRef (env, this);
 
-  (*env)->CallVoidMethod(env, this, gdk_android_get_java_cache ()->surface.set_visibility, self->visible);
+  (*env)->CallVoidMethod(env, this, gdk_android_get_java_cache ()->surface.set_visibility, this->visible);
 
-  gdk_android_surface_set_input_region ((GdkSurface *) self, ((GdkSurface *) self)->input_region);
+  gdk_android_surface_set_input_region ((GdkSurface *) this, ((GdkSurface *) this)->input_region);
 }
 
 void
@@ -119,14 +119,14 @@ _gdk_android_surface_on_attach (JNIEnv *env, jobject this)
 {
   glong identifier = (*env)->GetLongField (env, this, gdk_android_get_java_cache ()->surface.surface_identifier);
   GdkAndroidDisplay *display = gdk_android_display_get_display_instance ();
-  GdkAndroidSurface *self = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
-  gdk_android_check_surface (self);
+  GdkAndroidSurface *this = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
+  gdk_android_check_surface (this);
 
-  g_debug ("TRACE: Surface.OnAttach (%p [%s])", self, G_OBJECT_TYPE_NAME (self));
+  g_debug ("TRACE: Surface.OnAttach (%p [%s])", this, G_OBJECT_TYPE_NAME (this));
 }
 
 static void
-gdk_android_surface_handle_map (GdkAndroidSurface *self);
+gdk_android_surface_handle_map (GdkAndroidSurface *this);
 void
 _gdk_android_surface_on_layout_surface (JNIEnv *env, jobject this,
                                         jint width, jint height,
@@ -134,36 +134,36 @@ _gdk_android_surface_on_layout_surface (JNIEnv *env, jobject this,
 {
   glong identifier = (*env)->GetLongField (env, this, gdk_android_get_java_cache ()->surface.surface_identifier);
   GdkAndroidDisplay *display = gdk_android_display_get_display_instance ();
-  GdkAndroidSurface *self = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
-  gdk_android_check_surface (self);
+  GdkAndroidSurface *this = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
+  gdk_android_check_surface (this);
 
-  g_debug ("TRACE: Surface.OnLayoutSurface (%p [%s]): %dx%d @ %f", self, G_OBJECT_TYPE_NAME (self), width, height, scale);
+  g_debug ("TRACE: Surface.OnLayoutSurface (%p [%s]): %dx%d @ %f", this, G_OBJECT_TYPE_NAME (this), width, height, scale);
 
-  self->cfg.width = width;
-  self->cfg.height = height;
-  self->cfg.scale = scale;
+  this->cfg.width = width;
+  this->cfg.height = height;
+  this->cfg.scale = scale;
 
-  GdkAndroidSurfaceClass *klass = GDK_ANDROID_SURFACE_GET_CLASS (self);
+  GdkAndroidSurfaceClass *klass = GDK_ANDROID_SURFACE_GET_CLASS (this);
   if (klass->on_layout)
-    klass->on_layout (self);
+    klass->on_layout (this);
 
-  GdkSurface *surface = (GdkSurface *)self;
-  surface->width = ceilf (self->cfg.width / self->cfg.scale);
-  surface->height = ceilf (self->cfg.height / self->cfg.scale);
-  surface->x = self->cfg.x / self->cfg.scale;
-  surface->y = self->cfg.y / self->cfg.scale;
+  GdkSurface *surface = (GdkSurface *)this;
+  surface->width = ceilf (this->cfg.width / this->cfg.scale);
+  surface->height = ceilf (this->cfg.height / this->cfg.scale);
+  surface->x = this->cfg.x / this->cfg.scale;
+  surface->y = this->cfg.y / this->cfg.scale;
 
   g_debug ("New surface bounds: %dx%d at (%d|%d)", surface->width, surface->height, surface->x, surface->y);
   _gdk_surface_update_size (surface);
-  gdk_android_surface_reposition_children (self);
+  gdk_android_surface_reposition_children (this);
   gdk_surface_invalidate_rect (surface, NULL);
 
-  gdk_surface_request_layout ((GdkSurface *) self);
+  gdk_surface_request_layout ((GdkSurface *) this);
 
-  if (self->delayed_map)
+  if (this->delayed_map)
     {
-      gdk_android_surface_handle_map (self);
-      self->delayed_map = FALSE;
+      gdk_android_surface_handle_map (this);
+      this->delayed_map = FALSE;
     }
 }
 
@@ -173,23 +173,23 @@ _gdk_android_surface_on_layout_position (JNIEnv *env, jobject this,
 {
   glong identifier = (*env)->GetLongField (env, this, gdk_android_get_java_cache ()->surface.surface_identifier);
   GdkAndroidDisplay *display = gdk_android_display_get_display_instance ();
-  GdkAndroidSurface *self = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
-  gdk_android_check_surface (self);
+  GdkAndroidSurface *this = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
+  gdk_android_check_surface (this);
 
-  g_debug ("TRACE: Surface.OnLayoutPosition (%p [%s]): (%d|%d)", self, G_OBJECT_TYPE_NAME (self), x, y);
+  g_debug ("TRACE: Surface.OnLayoutPosition (%p [%s]): (%d|%d)", this, G_OBJECT_TYPE_NAME (this), x, y);
 
-  self->cfg.x = x;
-  self->cfg.y = y;
+  this->cfg.x = x;
+  this->cfg.y = y;
 
-  GdkAndroidSurfaceClass *klass = GDK_ANDROID_SURFACE_GET_CLASS (self);
+  GdkAndroidSurfaceClass *klass = GDK_ANDROID_SURFACE_GET_CLASS (this);
   if (klass->on_layout)
-    klass->on_layout (self);
+    klass->on_layout (this);
 
-  GdkSurface *surface = (GdkSurface *)self;
-  surface->x = self->cfg.x / self->cfg.scale;
-  surface->y = self->cfg.y / self->cfg.scale;
+  GdkSurface *surface = (GdkSurface *)this;
+  surface->x = this->cfg.x / this->cfg.scale;
+  surface->y = this->cfg.y / this->cfg.scale;
 
-  gdk_android_surface_reposition_children (self);
+  gdk_android_surface_reposition_children (this);
 }
 
 void
@@ -198,10 +198,10 @@ _gdk_android_surface_on_detach (JNIEnv *env, jobject this)
   glong identifier = (*env)->GetLongField (env, this, gdk_android_get_java_cache ()->surface.surface_identifier);
 
   GdkAndroidDisplay *display = gdk_android_display_get_display_instance ();
-  GdkAndroidSurface *self = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
-  gdk_android_check_surface (self);
+  GdkAndroidSurface *this = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
+  gdk_android_check_surface (this);
 
-  g_debug ("TRACE: Surface.OnDetach (%p [%s])", self, G_OBJECT_TYPE_NAME (self));
+  g_debug ("TRACE: Surface.OnDetach (%p [%s])", this, G_OBJECT_TYPE_NAME (this));
 }
 
 void
@@ -219,10 +219,10 @@ _gdk_android_surface_on_motion_event (JNIEnv *env, jobject this,
   glong identifier = (*env)->GetLongField (env, this, gdk_android_get_java_cache ()->surface.surface_identifier);
 
   GdkAndroidDisplay *display = gdk_android_display_get_display_instance ();
-  GdkAndroidSurface *self = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
-  gdk_android_check_surface (self);
+  GdkAndroidSurface *this = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
+  gdk_android_check_surface (this);
 
-  gdk_android_events_handle_motion_event (self, event, event_identifier);
+  gdk_android_events_handle_motion_event (this, event, event_identifier);
 }
 
 void
@@ -231,10 +231,10 @@ _gdk_android_surface_on_key_event (JNIEnv *env, jobject this, jobject event)
   glong identifier = (*env)->GetLongField (env, this, gdk_android_get_java_cache ()->surface.surface_identifier);
 
   GdkAndroidDisplay *display = gdk_android_display_get_display_instance ();
-  GdkAndroidSurface *self = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
-  gdk_android_check_surface (self);
+  GdkAndroidSurface *this = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
+  gdk_android_check_surface (this);
 
-  gdk_android_events_handle_key_event (self, event);
+  gdk_android_events_handle_key_event (this, event);
 }
 
 jboolean
@@ -243,17 +243,17 @@ _gdk_android_surface_on_drag_event (JNIEnv *env, jobject this, jobject event)
   glong identifier = (*env)->GetLongField (env, this, gdk_android_get_java_cache ()->surface.surface_identifier);
 
   GdkAndroidDisplay *display = gdk_android_display_get_display_instance ();
-  GdkAndroidSurface *self = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
-  gdk_android_check_surface_val (self, FALSE);
+  GdkAndroidSurface *this = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
+  gdk_android_check_surface_val (this, FALSE);
 
-  return gdk_android_dnd_surface_handle_drop_event (self, event);
+  return gdk_android_dnd_surface_handle_drop_event (this, event);
 }
 
 typedef struct
 {
   pthread_barrier_t event_loop_idle;
   pthread_barrier_t surface_update_complete;
-  GdkAndroidSurface *self;
+  GdkAndroidSurface *this;
   gboolean visible;
 } GdkAndroidSurfaceOnVisibilityData;
 
@@ -266,9 +266,9 @@ gdk_android_surface_do_map_cb (GdkSeat    *seat,
 }
 
 static void
-gdk_android_surface_handle_map (GdkAndroidSurface *self)
+gdk_android_surface_handle_map (GdkAndroidSurface *this)
 {
-  GdkSurface *surface = (GdkSurface *) self;
+  GdkSurface *surface = (GdkSurface *) this;
   GdkAndroidDisplay *display = (GdkAndroidDisplay *) gdk_surface_get_display (surface);
 
   // Resynchronize visibility state in case of mismatch.
@@ -278,15 +278,15 @@ gdk_android_surface_handle_map (GdkAndroidSurface *self)
   //   the surface should actually be hidden.
   //   Early return, as seat_grab can also lead to popup_present calls.
   JNIEnv *env = gdk_android_get_env();
-  if (!self->visible)
+  if (!this->visible)
     {
-      (*env)->CallVoidMethod (env, self->surface, gdk_android_get_java_cache ()->surface.set_visibility, FALSE);
+      (*env)->CallVoidMethod (env, this->surface, gdk_android_get_java_cache ()->surface.set_visibility, FALSE);
       return;
     }
 
   if (surface->autohide)
     {
-      g_debug ("Grabbing surface %p [%s]", self, G_OBJECT_TYPE_NAME (self));
+      g_debug ("Grabbing surface %p [%s]", this, G_OBJECT_TYPE_NAME (this));
       gdk_seat_grab ((GdkSeat *) display->seat,
                      surface,
                      GDK_SEAT_CAPABILITY_ALL,
@@ -307,28 +307,28 @@ gdk_android_surface_eventloop_idle (GdkAndroidSurfaceOnVisibilityData *data)
   pthread_barrier_wait (&data->event_loop_idle);
 
   // data becomes invalid after the next call, so copy what is needed
-  GdkAndroidSurface *self = g_object_ref (data->self);
+  GdkAndroidSurface *this = g_object_ref (data->this);
   gboolean visible = data->visible;
 
   // wait for the ui thread to have updated the native window
   pthread_barrier_wait (&data->surface_update_complete);
 
-  GdkSurface *surface = (GdkSurface *) self;
+  GdkSurface *surface = (GdkSurface *) this;
 
-  g_debug ("TRACE: Surface.OnVisibility (%p [%s])", self, G_OBJECT_TYPE_NAME (self));
+  g_debug ("TRACE: Surface.OnVisibility (%p [%s])", this, G_OBJECT_TYPE_NAME (this));
   // GdkFrameClock *clock = gdk_surface_get_frame_clock(surface);
   if (visible)
     {
       // GDK_FRAME_CLOCK_GET_CLASS(clock)->thaw(clock); // is this legal?
-      // gdk_android_surface_queue_configuration_update(self);
-      if (self->cfg.x == 0 || self->cfg.y == 0)
+      // gdk_android_surface_queue_configuration_update(this);
+      if (this->cfg.x == 0 || this->cfg.y == 0)
         {
-          self->delayed_map = TRUE;
+          this->delayed_map = TRUE;
         }
       else
         {
-          self->delayed_map = FALSE;
-          gdk_android_surface_handle_map (self);
+          this->delayed_map = FALSE;
+          gdk_android_surface_handle_map (this);
         }
     }
   else
@@ -340,9 +340,9 @@ gdk_android_surface_eventloop_idle (GdkAndroidSurfaceOnVisibilityData *data)
       // Gdk.Surface.hide getting called. Just resetting to the previous
       // visibility state seems to mostly work and the reposition calls on
       // popups to properly push or reposition themselves on the ToplevelView.
-      gboolean old_visibility = self->visible;
+      gboolean old_visibility = this->visible;
 
-      self->delayed_map = FALSE;
+      this->delayed_map = FALSE;
       // There is still an issue where GdkSurface.set_is_mapped triggers
       // Gtk.Widget.hide, which inturn cause a GtkWidget.unparent -> unrealize,
       // which then calls Gdk.Surface.destroy and fully removes the popup, even
@@ -353,10 +353,10 @@ gdk_android_surface_eventloop_idle (GdkAndroidSurfaceOnVisibilityData *data)
       gdk_surface_set_is_mapped (surface, FALSE);
 
       // cont. ugly hack
-      self->visible = old_visibility;
+      this->visible = old_visibility;
     }
 
-  g_object_unref (self);
+  g_object_unref (this);
   return G_SOURCE_REMOVE;
 }
 
@@ -366,43 +366,43 @@ _gdk_android_surface_on_visibility_ui_thread (JNIEnv *env, jobject this,
 {
   glong identifier = (*env)->GetLongField (env, this, gdk_android_get_java_cache ()->surface.surface_identifier);
   GdkAndroidDisplay *display = gdk_android_display_get_display_instance ();
-  GdkAndroidSurface *self = gdk_android_display_get_surface_from_identifier (display, identifier);
-  if (!self)
+  GdkAndroidSurface *this = gdk_android_display_get_surface_from_identifier (display, identifier);
+  if (!this)
     return;
-  if (!GDK_IS_ANDROID_SURFACE (self))
+  if (!GDK_IS_ANDROID_SURFACE (this))
     {
-      g_object_unref (self);
+      g_object_unref (this);
       return;
     }
 
-  g_debug ("TRACE: [UiThread] Surface.OnVisibility (%p [%s]): %d", self, G_OBJECT_TYPE_NAME (self), visible);
+  g_debug ("TRACE: [UiThread] Surface.OnVisibility (%p [%s]): %d", this, G_OBJECT_TYPE_NAME (this), visible);
 
   GdkAndroidSurfaceOnVisibilityData data;
   pthread_barrier_init (&data.event_loop_idle, NULL, 2);
   pthread_barrier_init (&data.surface_update_complete, NULL, 2);
-  data.self = self;
+  data.this = this;
   data.visible = visible;
 
   g_idle_add_full (G_PRIORITY_DEFAULT - 10, G_SOURCE_FUNC (gdk_android_surface_eventloop_idle), &data, NULL);
   pthread_barrier_wait (&data.event_loop_idle); // wait for eventloop idle
 
-  g_mutex_lock (&self->native_lock);
+  g_mutex_lock (&this->native_lock);
 
-  g_clear_pointer (&self->native, ANativeWindow_release);
+  g_clear_pointer (&this->native, ANativeWindow_release);
   if (visible)
     {
       (*env)->PushLocalFrame (env, 2);
       jobject holder = (*env)->CallObjectMethod (env, this, gdk_android_get_java_cache ()->surface.get_holder);
       jobject android_surface = (*env)->CallObjectMethod (env, holder, gdk_android_get_java_cache ()->a_surfaceholder.get_surface);
-      self->native = ANativeWindow_fromSurface (env, android_surface);
+      this->native = ANativeWindow_fromSurface (env, android_surface);
       (*env)->PopLocalFrame (env, NULL);
     }
 
-  GdkDrawContext *attached = gdk_surface_get_attached_context ((GdkSurface *)self);
+  GdkDrawContext *attached = gdk_surface_get_attached_context ((GdkSurface *)this);
   if (GDK_IS_GL_CONTEXT (attached))
-    gdk_gl_context_set_egl_native_window ((GdkGLContext *)attached, self->native);
+    gdk_gl_context_set_egl_native_window ((GdkGLContext *)attached, this->native);
 
-  g_mutex_unlock (&self->native_lock);
+  g_mutex_unlock (&this->native_lock);
 
   pthread_barrier_wait (&data.surface_update_complete); // immutable the eventloop continue running
   // The bionic pthread barrier implementation behaves a bit wierd when doing calling wait multiple
@@ -411,7 +411,7 @@ _gdk_android_surface_on_visibility_ui_thread (JNIEnv *env, jobject this,
   pthread_barrier_destroy (&data.event_loop_idle);
   pthread_barrier_destroy (&data.surface_update_complete);
 
-  g_object_unref (self);
+  g_object_unref (this);
 }
 
 /**
@@ -429,19 +429,19 @@ G_DEFINE_TYPE (GdkAndroidSurface, gdk_android_surface, GDK_TYPE_SURFACE)
 static void
 gdk_android_surface_finalize (GObject *object)
 {
-  GdkAndroidSurface *self = GDK_ANDROID_SURFACE (object);
-  g_debug ("Finalizing surface %p [%s]", (gpointer) self, G_OBJECT_TYPE_NAME (self));
-  if (self->active_drop)
+  GdkAndroidSurface *this = GDK_ANDROID_SURFACE (object);
+  g_debug ("Finalizing surface %p [%s]", (gpointer) this, G_OBJECT_TYPE_NAME (this));
+  if (this->active_drop)
     {
-      g_info ("Finalizing surface %p with active drop operation", self);
-      g_object_unref (self->active_drop);
+      g_info ("Finalizing surface %p with active drop operation", this);
+      g_object_unref (this->active_drop);
     }
   JNIEnv *env = gdk_android_get_env ();
-  if (self->native)
-    ANativeWindow_release (self->native);
-  if (self->surface)
-    (*env)->DeleteGlobalRef (env, self->surface);
-  g_mutex_clear (&self->native_lock);
+  if (this->native)
+    ANativeWindow_release (this->native);
+  if (this->surface)
+    (*env)->DeleteGlobalRef (env, this->surface);
+  g_mutex_clear (&this->native_lock);
   G_OBJECT_CLASS (gdk_android_surface_parent_class)->finalize (object);
 }
 
@@ -449,8 +449,8 @@ static void
 gdk_android_surface_frame_clock_after_paint (GdkFrameClock *clock,
                                              GdkSurface    *surface)
 {
-  GdkAndroidSurface *self = (GdkAndroidSurface *)surface;
-  if (!self->surface)
+  GdkAndroidSurface *this = (GdkAndroidSurface *)surface;
+  if (!this->surface)
     return;
 
   GdkFrameTimings *timings = gdk_frame_clock_get_timings (clock, gdk_frame_clock_get_frame_counter (clock));
@@ -459,7 +459,7 @@ gdk_android_surface_frame_clock_after_paint (GdkFrameClock *clock,
 
   JNIEnv *env = gdk_android_get_env();
   (*env)->PushLocalFrame (env, 1);
-  jobject view = (*env)->CallObjectMethod (env, self->surface,
+  jobject view = (*env)->CallObjectMethod (env, this->surface,
                                            gdk_android_get_java_cache ()->a_view.get_display);
   if (!view)
     goto exit;
@@ -476,8 +476,8 @@ exit:
 static void
 gdk_android_surface_constructed (GObject *object)
 {
-  GdkAndroidSurface *self = GDK_ANDROID_SURFACE (object);
-  GdkSurface *surface = (GdkSurface *) self;
+  GdkAndroidSurface *this = GDK_ANDROID_SURFACE (object);
+  GdkSurface *surface = (GdkSurface *) this;
   GdkAndroidDisplay *display = GDK_ANDROID_DISPLAY (gdk_surface_get_display (surface));
 
   GdkFrameClock *frame_clock = _gdk_frame_clock_idle_new ();
@@ -486,10 +486,10 @@ gdk_android_surface_constructed (GObject *object)
   g_signal_connect (frame_clock,
                     "after-paint",
                     G_CALLBACK (gdk_android_surface_frame_clock_after_paint),
-                    self);
+                    this);
   g_object_unref (frame_clock);
 
-  gdk_android_display_add_surface (display, self);
+  gdk_android_display_add_surface (display, this);
 
   G_OBJECT_CLASS (gdk_android_surface_parent_class)->constructed (object);
 }
@@ -497,22 +497,22 @@ gdk_android_surface_constructed (GObject *object)
 static void
 gdk_android_surface_hide (GdkSurface *surface)
 {
-  GdkAndroidSurface *self = (GdkAndroidSurface *) surface;
+  GdkAndroidSurface *this = (GdkAndroidSurface *) surface;
 
   // Being able to call hide implies there being the possibility to unhide it again.
   // Where should that be implemented?
-  g_debug ("AndroidSurface: hide called %p [%s] (%d %d)", self,
-           G_OBJECT_TYPE_NAME (self), surface->is_mapped, surface->pending_is_mapped);
+  g_debug ("AndroidSurface: hide called %p [%s] (%d %d)", this,
+           G_OBJECT_TYPE_NAME (this), surface->is_mapped, surface->pending_is_mapped);
 
-  self->visible = FALSE;
+  this->visible = FALSE;
 
-  if (!self->surface || surface->destroyed)
+  if (!this->surface || surface->destroyed)
     return;
 
   JNIEnv *env = gdk_android_get_env ();
 
   if (surface->is_mapped)
-    (*env)->CallVoidMethod (env, self->surface, gdk_android_get_java_cache ()->surface.set_visibility, FALSE);
+    (*env)->CallVoidMethod (env, this->surface, gdk_android_get_java_cache ()->surface.set_visibility, FALSE);
 
   _gdk_surface_clear_update_area (surface);
 }
@@ -550,15 +550,15 @@ static void
 gdk_android_surface_set_input_region (GdkSurface     *surface,
                                       cairo_region_t *shape_region)
 {
-  GdkAndroidSurface *self = (GdkAndroidSurface *) surface;
-  if (!self->surface)
+  GdkAndroidSurface *this = (GdkAndroidSurface *) surface;
+  if (!this->surface)
     return;
 
   JNIEnv *env = gdk_android_get_env ();
   if (!shape_region)
     {
       (*env)->CallVoidMethod (env,
-                              self->surface,
+                              this->surface,
                               gdk_android_get_java_cache ()->surface.set_input_region,
                               NULL);
       return;
@@ -575,15 +575,15 @@ gdk_android_surface_set_input_region (GdkSurface     *surface,
 
       jobject jrect = (*env)->NewObject (env, gdk_android_get_java_cache ()->a_rectf.klass,
                                          gdk_android_get_java_cache ()->a_rectf.constructor,
-                                         (jfloat) (rect.x * self->cfg.scale),
-                                         (jfloat) (rect.y * self->cfg.scale),
-                                         (jfloat) ((rect.x + rect.width) * self->cfg.scale),
-                                         (jfloat) ((rect.y + rect.height) * self->cfg.scale));
+                                         (jfloat) (rect.x * this->cfg.scale),
+                                         (jfloat) (rect.y * this->cfg.scale),
+                                         (jfloat) ((rect.x + rect.width) * this->cfg.scale),
+                                         (jfloat) ((rect.y + rect.height) * this->cfg.scale));
       (*env)->SetObjectArrayElement (env, jrects, i, jrect);
       (*env)->DeleteLocalRef (env, jrect);
     }
 
-  (*env)->CallVoidMethod (env, self->surface, gdk_android_get_java_cache ()->surface.set_input_region, jrects);
+  (*env)->CallVoidMethod (env, this->surface, gdk_android_get_java_cache ()->surface.set_input_region, jrects);
 
   (*env)->PopLocalFrame (env, NULL);
 }
@@ -591,27 +591,27 @@ gdk_android_surface_set_input_region (GdkSurface     *surface,
 static void
 gdk_android_surface_destroy (GdkSurface *surface, gboolean foreign_destroy)
 {
-  GdkAndroidSurface *self = GDK_ANDROID_SURFACE (surface);
+  GdkAndroidSurface *this = GDK_ANDROID_SURFACE (surface);
   GdkAndroidDisplay *display = GDK_ANDROID_DISPLAY (gdk_surface_get_display (surface));
-  g_debug ("Destroying Surface %p (foreign: %d)", (gpointer) self, foreign_destroy);
+  g_debug ("Destroying Surface %p (foreign: %d)", (gpointer) this, foreign_destroy);
 
   g_signal_handlers_disconnect_by_func (gdk_surface_get_frame_clock (surface),
                                         gdk_android_surface_frame_clock_after_paint,
                                         surface);
 
-  if (!foreign_destroy && self->surface)
+  if (!foreign_destroy && this->surface)
     {
       JNIEnv *env = gdk_android_get_env ();
-      (*env)->CallVoidMethod (env, self->surface, gdk_android_get_java_cache ()->surface.drop);
+      (*env)->CallVoidMethod (env, this->surface, gdk_android_get_java_cache ()->surface.drop);
     }
-  g_hash_table_remove (display->surfaces, self);
+  g_hash_table_remove (display->surfaces, this);
 }
 
 static gdouble
 gdk_android_surface_get_scale (GdkSurface *surface)
 {
-  GdkAndroidSurface *self = GDK_ANDROID_SURFACE (surface);
-  return self->cfg.scale;
+  GdkAndroidSurface *this = GDK_ANDROID_SURFACE (surface);
+  return this->cfg.scale;
 }
 
 static gboolean
@@ -648,21 +648,21 @@ gdk_android_surface_class_init (GdkAndroidSurfaceClass *klass)
 }
 
 static void
-gdk_android_surface_init (GdkAndroidSurface *self)
+gdk_android_surface_init (GdkAndroidSurface *this)
 {
-  g_mutex_init (&self->native_lock);
+  g_mutex_init (&this->native_lock);
 
-  self->delayed_map = FALSE;
-  self->cfg = (GdkAndroidSurfaceConfiguration){
+  this->delayed_map = FALSE;
+  this->cfg = (GdkAndroidSurfaceConfiguration){
     .x = 0, .y = 0, .width = 0, .height = 0, .scale = 1.f
   };
 }
 
 GdkAndroidToplevel *
-gdk_android_surface_get_toplevel (GdkAndroidSurface *self)
+gdk_android_surface_get_toplevel (GdkAndroidSurface *this)
 {
-  GdkSurface *surface = (GdkSurface *) self;
+  GdkSurface *surface = (GdkSurface *) this;
   if (surface->parent)
     return gdk_android_surface_get_toplevel (GDK_ANDROID_SURFACE (surface->parent));
-  return GDK_ANDROID_TOPLEVEL (self);
+  return GDK_ANDROID_TOPLEVEL (this);
 }

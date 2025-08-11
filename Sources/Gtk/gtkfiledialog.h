@@ -37,75 +37,75 @@ GDK_AVAILABLE_IN_4_10
 GtkFileDialog * gtk_file_dialog_new                  (void);
 
 GDK_AVAILABLE_IN_4_10
-const char *    gtk_file_dialog_get_title            (GtkFileDialog        *self);
+const char *    gtk_file_dialog_get_title            (GtkFileDialog        *this);
 
 GDK_AVAILABLE_IN_4_10
-void            gtk_file_dialog_set_title            (GtkFileDialog        *self,
+void            gtk_file_dialog_set_title            (GtkFileDialog        *this,
                                                       const char           *title);
 
 GDK_AVAILABLE_IN_4_10
-gboolean        gtk_file_dialog_get_modal            (GtkFileDialog        *self);
+gboolean        gtk_file_dialog_get_modal            (GtkFileDialog        *this);
 
 GDK_AVAILABLE_IN_4_10
-void            gtk_file_dialog_set_modal            (GtkFileDialog        *self,
+void            gtk_file_dialog_set_modal            (GtkFileDialog        *this,
                                                       gboolean              modal);
 
 GDK_AVAILABLE_IN_4_10
-GListModel *     gtk_file_dialog_get_filters         (GtkFileDialog        *self);
+GListModel *     gtk_file_dialog_get_filters         (GtkFileDialog        *this);
 
 GDK_AVAILABLE_IN_4_10
-void             gtk_file_dialog_set_filters         (GtkFileDialog        *self,
+void             gtk_file_dialog_set_filters         (GtkFileDialog        *this,
                                                       GListModel           *filters);
 
 GDK_AVAILABLE_IN_4_10
-GtkFileFilter *  gtk_file_dialog_get_default_filter  (GtkFileDialog        *self);
+GtkFileFilter *  gtk_file_dialog_get_default_filter  (GtkFileDialog        *this);
 
 GDK_AVAILABLE_IN_4_10
-void             gtk_file_dialog_set_default_filter  (GtkFileDialog        *self,
+void             gtk_file_dialog_set_default_filter  (GtkFileDialog        *this,
                                                       GtkFileFilter        *filter);
 
 GDK_AVAILABLE_IN_4_10
-GFile *          gtk_file_dialog_get_initial_folder  (GtkFileDialog        *self);
+GFile *          gtk_file_dialog_get_initial_folder  (GtkFileDialog        *this);
 
 GDK_AVAILABLE_IN_4_10
-void             gtk_file_dialog_set_initial_folder  (GtkFileDialog        *self,
+void             gtk_file_dialog_set_initial_folder  (GtkFileDialog        *this,
                                                       GFile                *folder);
 
 GDK_AVAILABLE_IN_4_10
-const char *     gtk_file_dialog_get_initial_name    (GtkFileDialog        *self);
+const char *     gtk_file_dialog_get_initial_name    (GtkFileDialog        *this);
 
 GDK_AVAILABLE_IN_4_10
-void             gtk_file_dialog_set_initial_name    (GtkFileDialog        *self,
+void             gtk_file_dialog_set_initial_name    (GtkFileDialog        *this,
                                                       const char           *name);
 
 GDK_AVAILABLE_IN_4_10
-GFile *          gtk_file_dialog_get_initial_file    (GtkFileDialog        *self);
+GFile *          gtk_file_dialog_get_initial_file    (GtkFileDialog        *this);
 
 GDK_AVAILABLE_IN_4_10
-void             gtk_file_dialog_set_initial_file    (GtkFileDialog        *self,
+void             gtk_file_dialog_set_initial_file    (GtkFileDialog        *this,
                                                       GFile                *file);
 
 GDK_AVAILABLE_IN_4_10
-const char *    gtk_file_dialog_get_accept_label     (GtkFileDialog        *self);
+const char *    gtk_file_dialog_get_accept_label     (GtkFileDialog        *this);
 
 GDK_AVAILABLE_IN_4_10
-void             gtk_file_dialog_set_accept_label    (GtkFileDialog        *self,
+void             gtk_file_dialog_set_accept_label    (GtkFileDialog        *this,
                                                       const char           *accept_label);
 
 GDK_AVAILABLE_IN_4_10
-void             gtk_file_dialog_open                (GtkFileDialog        *self,
+void             gtk_file_dialog_open                (GtkFileDialog        *this,
                                                       GtkWindow            *parent,
                                                       GCancellable         *cancellable,
                                                       GAsyncReadyCallback   callback,
                                                       gpointer              user_data);
 
 GDK_AVAILABLE_IN_4_10
-GFile *          gtk_file_dialog_open_finish         (GtkFileDialog        *self,
+GFile *          gtk_file_dialog_open_finish         (GtkFileDialog        *this,
                                                       GAsyncResult         *result,
                                                       GError              **error);
 
 GDK_AVAILABLE_IN_4_10
-void             gtk_file_dialog_select_folder       (GtkFileDialog        *self,
+void             gtk_file_dialog_select_folder       (GtkFileDialog        *this,
                                                       GtkWindow            *parent,
                                                       GCancellable         *cancellable,
                                                       GAsyncReadyCallback   callback,
@@ -113,24 +113,24 @@ void             gtk_file_dialog_select_folder       (GtkFileDialog        *self
 
 GDK_AVAILABLE_IN_4_10
 GFile *          gtk_file_dialog_select_folder_finish
-                                                     (GtkFileDialog        *self,
+                                                     (GtkFileDialog        *this,
                                                       GAsyncResult         *result,
                                                       GError              **error);
 
 GDK_AVAILABLE_IN_4_10
-void             gtk_file_dialog_save                (GtkFileDialog        *self,
+void             gtk_file_dialog_save                (GtkFileDialog        *this,
                                                       GtkWindow            *parent,
                                                       GCancellable         *cancellable,
                                                       GAsyncReadyCallback   callback,
                                                       gpointer              user_data);
 
 GDK_AVAILABLE_IN_4_10
-GFile *          gtk_file_dialog_save_finish         (GtkFileDialog        *self,
+GFile *          gtk_file_dialog_save_finish         (GtkFileDialog        *this,
                                                       GAsyncResult         *result,
                                                       GError               **error);
 
 GDK_AVAILABLE_IN_4_10
-void             gtk_file_dialog_open_multiple       (GtkFileDialog        *self,
+void             gtk_file_dialog_open_multiple       (GtkFileDialog        *this,
                                                       GtkWindow            *parent,
                                                       GCancellable         *cancellable,
                                                       GAsyncReadyCallback   callback,
@@ -138,13 +138,13 @@ void             gtk_file_dialog_open_multiple       (GtkFileDialog        *self
 
 GDK_AVAILABLE_IN_4_10
 GListModel *     gtk_file_dialog_open_multiple_finish
-                                                     (GtkFileDialog        *self,
+                                                     (GtkFileDialog        *this,
                                                       GAsyncResult         *result,
                                                       GError              **error);
 
 GDK_AVAILABLE_IN_4_10
 void             gtk_file_dialog_select_multiple_folders
-                                                     (GtkFileDialog        *self,
+                                                     (GtkFileDialog        *this,
                                                       GtkWindow            *parent,
                                                       GCancellable         *cancellable,
                                                       GAsyncReadyCallback   callback,
@@ -152,26 +152,26 @@ void             gtk_file_dialog_select_multiple_folders
 
 GDK_AVAILABLE_IN_4_10
 GListModel *     gtk_file_dialog_select_multiple_folders_finish
-                                                     (GtkFileDialog        *self,
+                                                     (GtkFileDialog        *this,
                                                       GAsyncResult         *result,
                                                       GError              **error);
 
 GDK_AVAILABLE_IN_4_18
-void             gtk_file_dialog_open_text_file      (GtkFileDialog        *self,
+void             gtk_file_dialog_open_text_file      (GtkFileDialog        *this,
                                                       GtkWindow            *parent,
                                                       GCancellable         *cancellable,
                                                       GAsyncReadyCallback   callback,
                                                       gpointer              user_data);
 
 GDK_AVAILABLE_IN_4_18
-GFile *          gtk_file_dialog_open_text_file_finish (GtkFileDialog        *self,
+GFile *          gtk_file_dialog_open_text_file_finish (GtkFileDialog        *this,
                                                         GAsyncResult         *result,
                                                         const char          **encoding,
                                                         GError              **error);
 
 GDK_AVAILABLE_IN_4_18
 void             gtk_file_dialog_open_multiple_text_files
-                                                     (GtkFileDialog        *self,
+                                                     (GtkFileDialog        *this,
                                                       GtkWindow            *parent,
                                                       GCancellable         *cancellable,
                                                       GAsyncReadyCallback   callback,
@@ -179,21 +179,21 @@ void             gtk_file_dialog_open_multiple_text_files
 
 GDK_AVAILABLE_IN_4_18
 GListModel *     gtk_file_dialog_open_multiple_text_files_finish
-                                                     (GtkFileDialog        *self,
+                                                     (GtkFileDialog        *this,
                                                       GAsyncResult         *result,
                                                       const char          **encoding,
                                                       GError              **error);
 
 
 GDK_AVAILABLE_IN_4_18
-void             gtk_file_dialog_save_text_file      (GtkFileDialog        *self,
+void             gtk_file_dialog_save_text_file      (GtkFileDialog        *this,
                                                       GtkWindow            *parent,
                                                       GCancellable         *cancellable,
                                                       GAsyncReadyCallback   callback,
                                                       gpointer              user_data);
 
 GDK_AVAILABLE_IN_4_18
-GFile *          gtk_file_dialog_save_text_file_finish (GtkFileDialog        *self,
+GFile *          gtk_file_dialog_save_text_file_finish (GtkFileDialog        *this,
                                                         GAsyncResult         *result,
                                                         const char          **encoding,
                                                         const char          **line_ending,

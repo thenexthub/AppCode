@@ -548,16 +548,16 @@ G_DEFINE_TYPE_WITH_CODE (GtkWindow, gtk_window, GTK_TYPE_WIDGET,
 static GtkAccessibleInterface *parent_accessible_iface;
 
 static gboolean
-gtk_window_accessible_get_platform_state (GtkAccessible              *self,
+gtk_window_accessible_get_platform_state (GtkAccessible              *this,
                                           GtkAccessiblePlatformState  state)
 {
   switch (state)
     {
     case GTK_ACCESSIBLE_PLATFORM_STATE_FOCUSABLE:
     case GTK_ACCESSIBLE_PLATFORM_STATE_FOCUSED:
-      return parent_accessible_iface->get_platform_state (self, state);
+      return parent_accessible_iface->get_platform_state (this, state);
     case GTK_ACCESSIBLE_PLATFORM_STATE_ACTIVE:
-      return gtk_window_is_active (GTK_WINDOW (self));
+      return gtk_window_is_active (GTK_WINDOW (this));
     default:
       g_assert_not_reached ();
     }
@@ -1805,7 +1805,7 @@ gtk_window_activate_close (GtkWidget  *widget,
 }
 
 static gboolean
-gtk_window_accept_rootwindow_drop (GtkDropTargetAsync *self,
+gtk_window_accept_rootwindow_drop (GtkDropTargetAsync *this,
                                    GdkDrop            *drop,
                                    double              x,
                                    double              y,
@@ -2174,8 +2174,8 @@ gtk_window_root_get_display (GtkRoot *root)
 static GdkSurface *
 gtk_window_native_get_surface (GtkNative *native)
 {
-  GtkWindow *self = GTK_WINDOW (native);
-  GtkWindowPrivate *priv = gtk_window_get_instance_private (self);
+  GtkWindow *this = GTK_WINDOW (native);
+  GtkWindowPrivate *priv = gtk_window_get_instance_private (this);
 
   return priv->surface;
 }
@@ -2183,8 +2183,8 @@ gtk_window_native_get_surface (GtkNative *native)
 static GskRenderer *
 gtk_window_native_get_renderer (GtkNative *native)
 {
-  GtkWindow *self = GTK_WINDOW (native);
-  GtkWindowPrivate *priv = gtk_window_get_instance_private (self);
+  GtkWindow *this = GTK_WINDOW (native);
+  GtkWindowPrivate *priv = gtk_window_get_instance_private (this);
 
   return priv->renderer;
 }
@@ -2192,8 +2192,8 @@ gtk_window_native_get_renderer (GtkNative *native)
 static GtkConstraintSolver *
 gtk_window_root_get_constraint_solver (GtkRoot *root)
 {
-  GtkWindow *self = GTK_WINDOW (root);
-  GtkWindowPrivate *priv = gtk_window_get_instance_private (self);
+  GtkWindow *this = GTK_WINDOW (root);
+  GtkWindowPrivate *priv = gtk_window_get_instance_private (this);
 
   if (!priv->constraint_solver)
     {
@@ -2207,8 +2207,8 @@ gtk_window_root_get_constraint_solver (GtkRoot *root)
 static GtkWidget *
 gtk_window_root_get_focus (GtkRoot *root)
 {
-  GtkWindow *self = GTK_WINDOW (root);
-  GtkWindowPrivate *priv = gtk_window_get_instance_private (self);
+  GtkWindow *this = GTK_WINDOW (root);
+  GtkWindowPrivate *priv = gtk_window_get_instance_private (this);
 
   return priv->focus_widget;
 }
@@ -2222,8 +2222,8 @@ static void
 gtk_window_root_set_focus (GtkRoot   *root,
                            GtkWidget *focus)
 {
-  GtkWindow *self = GTK_WINDOW (root);
-  GtkWindowPrivate *priv = gtk_window_get_instance_private (self);
+  GtkWindow *this = GTK_WINDOW (root);
+  GtkWindowPrivate *priv = gtk_window_get_instance_private (this);
   GtkWidget *old_focus = NULL;
 
   if (focus && !gtk_widget_is_sensitive (focus))
@@ -2247,7 +2247,7 @@ gtk_window_root_set_focus (GtkRoot   *root,
   if (old_focus)
     gtk_widget_set_has_focus (old_focus, FALSE);
 
-  synthesize_focus_change_events (self, old_focus, focus, GTK_CROSSING_FOCUS);
+  synthesize_focus_change_events (this, old_focus, focus, GTK_CROSSING_FOCUS);
 
   if (focus)
     gtk_widget_set_has_focus (focus, priv->is_active);
@@ -2263,7 +2263,7 @@ gtk_window_root_set_focus (GtkRoot   *root,
       g_clear_object (&priv->move_focus_widget);
     }
 
-  g_object_notify (G_OBJECT (self), "focus-widget");
+  g_object_notify (G_OBJECT (this), "focus-widget");
 }
 
 static void
@@ -2369,7 +2369,7 @@ gtk_window_native_interface_init (GtkNativeInterface *iface)
  *
  * All top-level windows created by this function are stored
  * in an internal top-level window list. This list can be obtained
- * from [func@Gtk.Window.list_toplevels]. Due to GTK keeping a
+ * from [fn@Gtk.Window.list_toplevels]. Due to GTK keeping a
  * reference to the window internally, this function does not
  * return a reference to the caller.
  *
@@ -3688,7 +3688,7 @@ gtk_window_set_default_icon_name (const char *name)
  *
  * The returned string is owned by GTK and should not
  * be modified. It is only valid until the next call to
- * [func@Gtk.Window.set_default_icon_name].
+ * [fn@Gtk.Window.set_default_icon_name].
  *
  * Returns: (nullable): the fallback icon name for windows
  */

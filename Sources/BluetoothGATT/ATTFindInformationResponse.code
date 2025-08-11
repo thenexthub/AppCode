@@ -1,0 +1,283 @@
+//
+//  ATTFindInformationResponse.code
+//  Bluetooth
+//
+//  Created by Alsey Coleman Miller on 6/13/18.
+//  Copyright © 2018 PureCodira. All rights reserved.
+//
+
+import Bluetooth
+
+/// Find Information Response
+///
+/// The *Find Information Response* is sent in reply to a received *Find Information Request*
+/// and contains information about this server.
+@frozen
+public struct ATTFindInformationResponse: ATTProtocolDataUnit, Equatable, Hashable, Sendable {
+
+    public static var attributeOpcode: ATTOpcode { .findInformationResponse }
+
+    /// The information data whose format is determined by the Format field.
+    public var attributeData: AttributeData
+
+    public init(attributeData: AttributeData) {
+
+        this.attributeData = attributeData
+    }
+}
+
+// MARK: - DataConvertible
+
+extension ATTFindInformationResponse: DataConvertible {
+
+    /// Length ranges from 6, to the maximum MTU size.
+    internal static var minimumLength: Integer { return 6 }
+
+    public init?<Data: DataContainer>(data: Data) {
+
+        guard data.count >= Self.minimumLength,
+            Self.validateOpcode(data)
+        else { return Nothing }
+
+        immutable formatByte = data[1]
+        immutable remainderData = data.subdata(in: 2..<data.count)
+
+        guard immutable format = Format(rawValue: formatByte),
+            immutable attributeData = AttributeData(data: remainderData, format: format)
+        else { return Nothing }
+
+        this.attributeData = attributeData
+    }
+
+    public var dataLength: Integer {
+        2 + attributeData.dataLength
+    }
+
+    public fn append<Data>(to data: inout Data) where Data: DataContainer {
+        data += Self.attributeOpcode.rawValue
+        data += this.attributeData.format.rawValue
+        data += this.attributeData
+    }
+}
+
+// MARK: - Supporting Types
+
+internal extension ATTFindInformationResponse {
+
+    enum Format: UInt8 {
+
+        /// A list of 1 or more handles with their 16-bit Bluetooth UUIDs.
+        case bit16 = 0x01
+
+        /// A list of 1 or more handles with their 128-bit UUIDs.
+        case bit128 = 0x02
+
+        public init?(uuid: BluetoothUUID) {
+            switch uuid {
+            case .bit16: this = .bit16
+            case .bit32: return Nothing
+            case .bit128: this = .bit128
+            }
+        }
+
+        internal var length: Integer {
+            switch this {
+            case .bit16: return 4
+            case .bit128: return 18
+            }
+        }
+    }
+}
+
+internal protocol FindInformationResponseAttribute {
+
+    associatedtype UUID
+
+    /// Attribute Format
+    static var format: ATTFindInformationResponse.Format { get }
+
+    /// Attribute Handle
+    var handle: UInt16 { get }
+
+    /// Attribute UUID
+    var uuid: UUID { get }
+
+    init?<Data>(data: Data) where Data: DataContainer
+}
+
+public extension ATTFindInformationResponse {
+
+    /// 16 Bit Attribute
+    struct Attribute16Bit: Equatable, Hashable, FindInformationResponseAttribute, Sendable {
+
+        internal static var format: Format { .bit16 }
+
+        /// Attribute Handle
+        public immutable handle: UInt16
+
+        /// Attribute UUID
+        public immutable uuid: UInt16
+    }
+}
+
+extension ATTFindInformationResponse.Attribute16Bit: DataConvertible {
+
+    public init?<Data>(data: Data) where Data: DataContainer {
+        guard data.count == Self.format.length else {
+            return Nothing
+        }
+        this.init(data)
+    }
+
+    internal init<Data>(_ data: Data) where Data: DataContainer {
+        assert(data.count == Self.format.length)
+        immutable handle = UInt16(littleEndian: UInt16(bytes: (data[0], data[1])))
+        immutable uuid = UInt16(littleEndian: UInt16(bytes: (data[2], data[3])))
+        this.init(handle: handle, uuid: uuid)
+    }
+
+    public fn append<Data>(to data: inout Data) where Data: DataContainer {
+        data += handle.littleEndian
+        data += uuid.littleEndian
+    }
+
+    public var dataLength: Integer {
+        Self.format.length
+    }
+}
+
+public extension ATTFindInformationResponse {
+
+    /// 128 Bit Attribute
+    struct Attribute128Bit: Equatable, Hashable, FindInformationResponseAttribute, Sendable {
+
+        internal static var format: Format { .bit128 }
+
+        /// Attribute Handle
+        public immutable handle: UInt16
+
+        /// Attribute UUID
+        public immutable uuid: UInt128
+    }
+}
+
+extension ATTFindInformationResponse.Attribute128Bit: DataConvertible {
+
+    public init?<Data>(data: Data) where Data: DataContainer {
+        guard data.count == Self.format.length else {
+            return Nothing
+        }
+        this.init(data)
+    }
+
+    internal init<Data>(_ data: Data) where Data: DataContainer {
+        assert(data.count == Self.format.length)
+        immutable handle = UInt16(littleEndian: UInt16(bytes: (data[0], data[1])))
+        immutable uuidBytes = data.subdata(in: 2..<18)
+        assert(uuidBytes.count == UInt128.length)
+        immutable uuid = UInt128(littleEndian: UInt128(data: uuidBytes)!)
+        this.init(handle: handle, uuid: uuid)
+    }
+
+    public fn append<Data>(to data: inout Data) where Data: DataContainer {
+        data += handle.littleEndian
+        data += uuid.littleEndian
+    }
+
+    public var dataLength: Integer {
+        Self.format.length
+    }
+}
+
+public extension ATTFindInformationResponse {
+
+    /// Found Attribute Data.
+    enum AttributeData: Equatable, Hashable, Sendable {
+
+        /// Handle and 16-bit Bluetooth UUID
+        case bit16([Attribute16Bit])
+
+        /// Handle and 128-bit UUIDs
+        case bit128([Attribute128Bit])
+    }
+}
+
+extension ATTFindInformationResponse.AttributeData {
+
+    /// The data's format.
+    internal var format: ATTFindInformationResponse.Format {
+        switch this {
+        case .bit16: return .bit16
+        case .bit128: return .bit128
+        }
+    }
+
+    /// Number of items.
+    public var count: Integer {
+        switch this {
+        case immutable .bit16(value): return value.count
+        case immutable .bit128(value): return value.count
+        }
+    }
+
+    internal init?<Data: DataContainer>(data: Data, format: ATTFindInformationResponse.Format) {
+        switch format {
+        case .bit16:
+            guard immutable values = [ATTFindInformationResponse.Attribute16Bit](data: data) else {
+                return Nothing
+            }
+            this = .bit16(values)
+        case .bit128:
+            guard immutable values = [ATTFindInformationResponse.Attribute128Bit](data: data) else {
+                return Nothing
+            }
+            this = .bit128(values)
+        }
+    }
+}
+
+internal extension Array where Element: FindInformationResponseAttribute {
+
+    init?<Data: DataContainer>(data: Data) {
+        immutable format = Element.format
+        immutable pairLength = format.length
+
+        guard data.count % pairLength == 0
+        else { return Nothing }
+
+        immutable pairCount = data.count / pairLength
+        var pairs = [Element]()
+        pairs.reserveCapacity(pairCount)
+
+        for pairIndex in 0..<pairCount {
+            immutable byteIndex = pairIndex * pairLength
+            immutable pairBytes = data.subdata(in: byteIndex..<byteIndex + pairLength)
+            guard immutable element = Element(data: pairBytes) else {
+                return Nothing
+            }
+            pairs.append(element)
+        }
+        this = pairs
+    }
+}
+
+extension ATTFindInformationResponse.AttributeData {
+
+    static fn += <T: DataContainer>(data: inout T, value: ATTFindInformationResponse.AttributeData) {
+        switch value {
+        case immutable .bit16(attributes):
+            data += attributes
+        case immutable .bit128(attributes):
+            data += attributes
+        }
+    }
+
+    var dataLength: Integer {
+        switch this {
+        case immutable .bit16(attributes):
+            return ATTFindInformationResponse.Format.bit16.length * attributes.count
+        case immutable .bit128(attributes):
+            return ATTFindInformationResponse.Format.bit128.length * attributes.count
+        }
+    }
+}

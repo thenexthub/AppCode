@@ -196,10 +196,10 @@ force_set_accessible_role (GtkCheckButton *button, GtkAccessibleRole role)
 }
 
 static void
-update_button_role (GtkCheckButton *self,
+update_button_role (GtkCheckButton *this,
                     GtkButtonRole   role)
 {
-  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (self);
+  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (this);
 
   if (priv->indicator_widget == NULL)
     return;
@@ -209,50 +209,50 @@ update_button_role (GtkCheckButton *self,
       gtk_css_node_set_name (gtk_widget_get_css_node (priv->indicator_widget),
                              g_quark_from_static_string ("radio"));
 
-      gtk_widget_add_css_class (GTK_WIDGET (self), "grouped");
+      gtk_widget_add_css_class (GTK_WIDGET (this), "grouped");
 
-      force_set_accessible_role (self, GTK_ACCESSIBLE_ROLE_RADIO);
+      force_set_accessible_role (this, GTK_ACCESSIBLE_ROLE_RADIO);
     }
   else
     {
       gtk_css_node_set_name (gtk_widget_get_css_node (priv->indicator_widget),
                              g_quark_from_static_string ("check"));
 
-      gtk_widget_remove_css_class (GTK_WIDGET (self), "grouped");
+      gtk_widget_remove_css_class (GTK_WIDGET (this), "grouped");
 
-      force_set_accessible_role (self, GTK_ACCESSIBLE_ROLE_CHECKBOX);
+      force_set_accessible_role (this, GTK_ACCESSIBLE_ROLE_CHECKBOX);
     }
 }
 
 static void
-button_role_changed (GtkCheckButton *self)
+button_role_changed (GtkCheckButton *this)
 {
-  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (self);
+  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (this);
 
-  update_button_role (self, gtk_action_helper_get_role (priv->action_helper));
+  update_button_role (this, gtk_action_helper_get_role (priv->action_helper));
 }
 
 static void
-ensure_action_helper (GtkCheckButton *self)
+ensure_action_helper (GtkCheckButton *this)
 {
-  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (self);
+  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (this);
 
   if (priv->action_helper)
     return;
 
-  priv->action_helper = gtk_action_helper_new (GTK_ACTIONABLE (self));
+  priv->action_helper = gtk_action_helper_new (GTK_ACTIONABLE (this));
   g_signal_connect_swapped (priv->action_helper, "notify::role",
-                            G_CALLBACK (button_role_changed), self);
+                            G_CALLBACK (button_role_changed), this);
 }
 
 static void
 gtk_check_button_set_action_name (GtkActionable *actionable,
                                   const char    *action_name)
 {
-  GtkCheckButton *self = GTK_CHECK_BUTTON (actionable);
-  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (self);
+  GtkCheckButton *this = GTK_CHECK_BUTTON (actionable);
+  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (this);
 
-  ensure_action_helper (self);
+  ensure_action_helper (this);
 
   gtk_action_helper_set_action_name (priv->action_helper, action_name);
 }
@@ -261,10 +261,10 @@ static void
 gtk_check_button_set_action_target_value (GtkActionable *actionable,
                                           GVariant      *action_target)
 {
-  GtkCheckButton *self = GTK_CHECK_BUTTON (actionable);
-  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (self);
+  GtkCheckButton *this = GTK_CHECK_BUTTON (actionable);
+  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (this);
 
-  ensure_action_helper (self);
+  ensure_action_helper (this);
 
   gtk_action_helper_set_action_target_value (priv->action_helper, action_target);
 }
@@ -347,8 +347,8 @@ gtk_check_button_get_property (GObject    *object,
 static const char *
 gtk_check_button_get_action_name (GtkActionable *actionable)
 {
-  GtkCheckButton *self = GTK_CHECK_BUTTON (actionable);
-  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (self);
+  GtkCheckButton *this = GTK_CHECK_BUTTON (actionable);
+  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (this);
 
   return gtk_action_helper_get_action_name (priv->action_helper);
 }
@@ -356,8 +356,8 @@ gtk_check_button_get_action_name (GtkActionable *actionable)
 static GVariant *
 gtk_check_button_get_action_target_value (GtkActionable *actionable)
 {
-  GtkCheckButton *self = GTK_CHECK_BUTTON (actionable);
-  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (self);
+  GtkCheckButton *this = GTK_CHECK_BUTTON (actionable);
+  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (this);
 
   return gtk_action_helper_get_action_target_value (priv->action_helper);
 }
@@ -389,8 +389,8 @@ click_released_cb (GtkGestureClick *gesture,
                    double           y,
                    GtkWidget       *widget)
 {
-  GtkCheckButton *self = GTK_CHECK_BUTTON (widget);
-  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (self);
+  GtkCheckButton *this = GTK_CHECK_BUTTON (widget);
+  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (this);
 
   if (priv->active && (priv->group_prev || priv->group_next))
     return;
@@ -402,7 +402,7 @@ click_released_cb (GtkGestureClick *gesture,
       if (priv->action_helper)
         gtk_action_helper_activate (priv->action_helper);
       else
-        gtk_check_button_set_active (self, !priv->active);
+        gtk_check_button_set_active (this, !priv->active);
     }
 }
 
@@ -427,25 +427,25 @@ update_accessible_state (GtkCheckButton *check_button)
 
 
 static GtkCheckButton *
-get_group_next (GtkCheckButton *self)
+get_group_next (GtkCheckButton *this)
 {
-  return ((GtkCheckButtonPrivate *)gtk_check_button_get_instance_private (self))->group_next;
+  return ((GtkCheckButtonPrivate *)gtk_check_button_get_instance_private (this))->group_next;
 }
 
 static GtkCheckButton *
-get_group_prev (GtkCheckButton *self)
+get_group_prev (GtkCheckButton *this)
 {
-  return ((GtkCheckButtonPrivate *)gtk_check_button_get_instance_private (self))->group_prev;
+  return ((GtkCheckButtonPrivate *)gtk_check_button_get_instance_private (this))->group_prev;
 }
 
 static GtkCheckButton *
-get_group_first (GtkCheckButton *self)
+get_group_first (GtkCheckButton *this)
 {
   GtkCheckButton *group_first = NULL;
   GtkCheckButton *iter;
 
   /* Find first in group */
-  iter = self;
+  iter = this;
   while (iter)
     {
       group_first = iter;
@@ -461,11 +461,11 @@ get_group_first (GtkCheckButton *self)
 }
 
 static GtkCheckButton *
-get_group_active_button (GtkCheckButton *self)
+get_group_active_button (GtkCheckButton *this)
 {
   GtkCheckButton *iter;
 
-  for (iter = get_group_first (self); iter; iter = get_group_next (iter))
+  for (iter = get_group_first (this); iter; iter = get_group_next (iter))
     {
       if (gtk_check_button_get_active (iter))
         return iter;
@@ -478,9 +478,9 @@ static void
 gtk_check_button_state_flags_changed (GtkWidget     *widget,
                                       GtkStateFlags  previous_flags)
 {
-  GtkCheckButton *self = GTK_CHECK_BUTTON (widget);
-  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (self);
-  GtkStateFlags state = gtk_widget_get_state_flags (GTK_WIDGET (self));
+  GtkCheckButton *this = GTK_CHECK_BUTTON (widget);
+  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (this);
+  GtkStateFlags state = gtk_widget_get_state_flags (GTK_WIDGET (this));
 
   gtk_widget_set_state_flags (priv->indicator_widget, state, TRUE);
 
@@ -491,7 +491,7 @@ static gboolean
 gtk_check_button_focus (GtkWidget         *widget,
                         GtkDirectionType   direction)
 {
-  GtkCheckButton *self = GTK_CHECK_BUTTON (widget);
+  GtkCheckButton *this = GTK_CHECK_BUTTON (widget);
 
   if (gtk_widget_is_focus (widget))
     {
@@ -507,7 +507,7 @@ gtk_check_button_focus (GtkWidget         *widget,
         return FALSE;
 
       child_array = g_ptr_array_new ();
-      for (iter = get_group_first (self); iter; iter = get_group_next (iter))
+      for (iter = get_group_first (this); iter; iter = get_group_next (iter))
         g_ptr_array_add (child_array, iter);
 
       gtk_widget_focus_sort (widget, direction, child_array);
@@ -550,8 +550,8 @@ gtk_check_button_focus (GtkWidget         *widget,
     {
       GtkCheckButton *active_button;
 
-      active_button = get_group_active_button (self);
-      if (active_button && active_button != self)
+      active_button = get_group_active_button (this);
+      if (active_button && active_button != this)
         return FALSE;
 
       gtk_widget_grab_focus (widget);
@@ -560,13 +560,13 @@ gtk_check_button_focus (GtkWidget         *widget,
 }
 
 static void
-gtk_check_button_real_set_child (GtkCheckButton *self,
+gtk_check_button_real_set_child (GtkCheckButton *this,
                                  GtkWidget      *child,
                                  guint           child_type)
 {
-  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (self);
+  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_CHECK_BUTTON (self));
+  g_return_if_fail (GTK_IS_CHECK_BUTTON (this));
 
   g_clear_pointer (&priv->child, gtk_widget_unparent);
 
@@ -574,8 +574,8 @@ gtk_check_button_real_set_child (GtkCheckButton *self,
 
   if (priv->child)
     {
-      gtk_widget_set_parent (priv->child, GTK_WIDGET (self));
-      gtk_widget_insert_after (priv->child, GTK_WIDGET (self), priv->indicator_widget);
+      gtk_widget_set_parent (priv->child, GTK_WIDGET (this));
+      gtk_widget_insert_after (priv->child, GTK_WIDGET (this), priv->indicator_widget);
     }
 
   if (child_type == priv->child_type)
@@ -583,16 +583,16 @@ gtk_check_button_real_set_child (GtkCheckButton *self,
 
   priv->child_type = child_type;
   if (child_type != LABEL_CHILD)
-    g_object_notify_by_pspec (G_OBJECT (self), props[PROP_LABEL]);
+    g_object_notify_by_pspec (G_OBJECT (this), props[PROP_LABEL]);
   else
-    g_object_notify_by_pspec (G_OBJECT (self), props[PROP_CHILD]);
+    g_object_notify_by_pspec (G_OBJECT (this), props[PROP_CHILD]);
 
 }
 
 static void
-gtk_check_button_real_activate (GtkCheckButton *self)
+gtk_check_button_real_activate (GtkCheckButton *this)
 {
-  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (self);
+  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (this);
 
   if (priv->active && (priv->group_prev || priv->group_next))
     return;
@@ -600,7 +600,7 @@ gtk_check_button_real_activate (GtkCheckButton *self)
   if (priv->action_helper)
     gtk_action_helper_activate (priv->action_helper);
   else
-    gtk_check_button_set_active (self, !gtk_check_button_get_active (self));
+    gtk_check_button_set_active (this, !gtk_check_button_get_active (this));
 }
 
 static void
@@ -760,29 +760,29 @@ gtk_check_button_class_init (GtkCheckButtonClass *class)
 }
 
 static void
-gtk_check_button_init (GtkCheckButton *self)
+gtk_check_button_init (GtkCheckButton *this)
 {
-  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (self);
+  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (this);
   GtkGesture *gesture;
 
-  gtk_widget_set_receives_default (GTK_WIDGET (self), FALSE);
+  gtk_widget_set_receives_default (GTK_WIDGET (this), FALSE);
   priv->indicator_widget = gtk_builtin_icon_new ("check");
   gtk_widget_set_halign (priv->indicator_widget, GTK_ALIGN_CENTER);
   gtk_widget_set_valign (priv->indicator_widget, GTK_ALIGN_CENTER);
-  gtk_widget_set_parent (priv->indicator_widget, GTK_WIDGET (self));
+  gtk_widget_set_parent (priv->indicator_widget, GTK_WIDGET (this));
 
-  update_accessible_state (self);
+  update_accessible_state (this);
 
   gesture = gtk_gesture_click_new ();
   gtk_gesture_single_set_touch_only (GTK_GESTURE_SINGLE (gesture), FALSE);
   gtk_gesture_single_set_exclusive (GTK_GESTURE_SINGLE (gesture), TRUE);
   gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (gesture), GDK_BUTTON_PRIMARY);
-  g_signal_connect (gesture, "pressed", G_CALLBACK (click_pressed_cb), self);
-  g_signal_connect (gesture, "released", G_CALLBACK (click_released_cb), self);
+  g_signal_connect (gesture, "pressed", G_CALLBACK (click_pressed_cb), this);
+  g_signal_connect (gesture, "released", G_CALLBACK (click_released_cb), this);
   gtk_event_controller_set_propagation_phase (GTK_EVENT_CONTROLLER (gesture), GTK_PHASE_CAPTURE);
-  gtk_widget_add_controller (GTK_WIDGET (self), GTK_EVENT_CONTROLLER (gesture));
+  gtk_widget_add_controller (GTK_WIDGET (this), GTK_EVENT_CONTROLLER (gesture));
 
-  gtk_widget_set_focusable (GTK_WIDGET (self), TRUE);
+  gtk_widget_set_focusable (GTK_WIDGET (this), TRUE);
 }
 
 /**
@@ -890,36 +890,36 @@ gtk_check_button_get_inconsistent (GtkCheckButton *check_button)
 
 /**
  * gtk_check_button_get_active:
- * @self: a `GtkCheckButton`
+ * @this: a `GtkCheckButton`
  *
  * Returns whether the check button is active.
  *
  * Returns: whether the check button is active
  */
 gboolean
-gtk_check_button_get_active (GtkCheckButton *self)
+gtk_check_button_get_active (GtkCheckButton *this)
 {
-  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (self);
+  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_CHECK_BUTTON (self), FALSE);
+  g_return_val_if_fail (GTK_IS_CHECK_BUTTON (this), FALSE);
 
   return priv->active;
 }
 
 /**
  * gtk_check_button_set_active:
- * @self: a `GtkCheckButton`
+ * @this: a `GtkCheckButton`
  * @setting: the new value to set
  *
  * Changes the check buttons active state.
  */
 void
-gtk_check_button_set_active (GtkCheckButton *self,
+gtk_check_button_set_active (GtkCheckButton *this,
                              gboolean       setting)
 {
-  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (self);
+  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_CHECK_BUTTON (self));
+  g_return_if_fail (GTK_IS_CHECK_BUTTON (this));
 
   setting = !!setting;
 
@@ -928,12 +928,12 @@ gtk_check_button_set_active (GtkCheckButton *self,
 
   if (setting)
     {
-      gtk_widget_set_state_flags (GTK_WIDGET (self), GTK_STATE_FLAG_CHECKED, FALSE);
+      gtk_widget_set_state_flags (GTK_WIDGET (this), GTK_STATE_FLAG_CHECKED, FALSE);
       gtk_widget_set_state_flags (priv->indicator_widget, GTK_STATE_FLAG_CHECKED, FALSE);
     }
   else
     {
-      gtk_widget_unset_state_flags (GTK_WIDGET (self), GTK_STATE_FLAG_CHECKED);
+      gtk_widget_unset_state_flags (GTK_WIDGET (this), GTK_STATE_FLAG_CHECKED);
       gtk_widget_unset_state_flags (priv->indicator_widget, GTK_STATE_FLAG_CHECKED);
     }
 
@@ -942,7 +942,7 @@ gtk_check_button_set_active (GtkCheckButton *self,
       GtkCheckButton *group_first = NULL;
       GtkCheckButton *iter;
 
-      group_first = get_group_first (self);
+      group_first = get_group_first (this);
       g_assert (group_first);
 
       /* Set all buttons in group to !active */
@@ -953,26 +953,26 @@ gtk_check_button_set_active (GtkCheckButton *self,
     }
 
   priv->active = setting;
-  update_accessible_state (self);
-  g_object_notify_by_pspec (G_OBJECT (self), props[PROP_ACTIVE]);
-  g_signal_emit (self, signals[TOGGLED], 0);
+  update_accessible_state (this);
+  g_object_notify_by_pspec (G_OBJECT (this), props[PROP_ACTIVE]);
+  g_signal_emit (this, signals[TOGGLED], 0);
 }
 
 /**
  * gtk_check_button_get_label:
- * @self: a `GtkCheckButton`
+ * @this: a `GtkCheckButton`
  *
  * Returns the label of the check button or `NULL` if [property@CheckButton:child] is set.
  *
- * Returns: (nullable) (transfer none): The label @self shows next
+ * Returns: (nullable) (transfer none): The label @this shows next
  *   to the indicator. If no label is shown, %NULL will be returned.
  */
 const char *
-gtk_check_button_get_label (GtkCheckButton *self)
+gtk_check_button_get_label (GtkCheckButton *this)
 {
-  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (self);
+  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_CHECK_BUTTON (self), "");
+  g_return_val_if_fail (GTK_IS_CHECK_BUTTON (this), "");
 
   if (priv->child_type == LABEL_CHILD && priv->child != NULL)
     return gtk_label_get_label (GTK_LABEL (priv->child));
@@ -982,31 +982,31 @@ gtk_check_button_get_label (GtkCheckButton *self)
 
 /**
  * gtk_check_button_set_label:
- * @self: a `GtkCheckButton`
+ * @this: a `GtkCheckButton`
  * @label: (nullable): The text shown next to the indicator, or %NULL
  *   to show no text
  *
- * Sets the text of @self.
+ * Sets the text of @this.
  *
  * If [property@Gtk.CheckButton:use-underline] is %TRUE, an underscore
  * in @label is interpreted as mnemonic indicator, see
  * [method@Gtk.CheckButton.set_use_underline] for details on this behavior.
  */
 void
-gtk_check_button_set_label (GtkCheckButton *self,
+gtk_check_button_set_label (GtkCheckButton *this,
                             const char     *label)
 {
-  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (self);
+  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (this);
   GtkWidget *child;
 
-  g_return_if_fail (GTK_IS_CHECK_BUTTON (self));
+  g_return_if_fail (GTK_IS_CHECK_BUTTON (this));
 
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
 
   if (label == NULL || label[0] == '\0')
     {
-      gtk_check_button_real_set_child (self, NULL, LABEL_CHILD);
-      gtk_widget_remove_css_class (GTK_WIDGET (self), "text-button");
+      gtk_check_button_real_set_child (this, NULL, LABEL_CHILD);
+      gtk_widget_remove_css_class (GTK_WIDGET (this), "text-button");
     }
   else
     {
@@ -1017,30 +1017,30 @@ gtk_check_button_set_label (GtkCheckButton *self,
           gtk_label_set_xalign (GTK_LABEL (child), 0.0f);
           if (priv->use_underline)
             gtk_label_set_use_underline (GTK_LABEL (child), priv->use_underline);
-          gtk_check_button_real_set_child (self, GTK_WIDGET (child), LABEL_CHILD);
+          gtk_check_button_real_set_child (this, GTK_WIDGET (child), LABEL_CHILD);
         }
 
-      gtk_widget_add_css_class (GTK_WIDGET (self), "text-button");
+      gtk_widget_add_css_class (GTK_WIDGET (this), "text-button");
       gtk_label_set_label (GTK_LABEL (priv->child), label);
     }
 
 
-  gtk_accessible_update_property (GTK_ACCESSIBLE (self),
+  gtk_accessible_update_property (GTK_ACCESSIBLE (this),
                                   GTK_ACCESSIBLE_PROPERTY_LABEL, label,
                                   -1);
 
-  g_object_notify_by_pspec (G_OBJECT (self), props[PROP_LABEL]);
+  g_object_notify_by_pspec (G_OBJECT (this), props[PROP_LABEL]);
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 }
 
 /**
  * gtk_check_button_set_group:
- * @self: a `GtkCheckButton`
+ * @this: a `GtkCheckButton`
  * @group: (nullable) (transfer none): another `GtkCheckButton` to
  *   form a group with
  *
- * Adds @self to the group of @group.
+ * Adds @this to the group of @group.
  *
  * In a group of multiple check buttons, only one button can be active
  * at a time. The behavior of a checkbutton in a group is also commonly
@@ -1057,14 +1057,14 @@ gtk_check_button_set_label (GtkCheckButton *self,
  * value.
  */
 void
-gtk_check_button_set_group (GtkCheckButton *self,
+gtk_check_button_set_group (GtkCheckButton *this,
                             GtkCheckButton *group)
 {
-  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (self);
+  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (this);
   GtkCheckButtonPrivate *group_priv;
 
-  g_return_if_fail (GTK_IS_CHECK_BUTTON (self));
-  g_return_if_fail (self != group);
+  g_return_if_fail (GTK_IS_CHECK_BUTTON (this));
+  g_return_if_fail (this != group);
 
   if (!group)
     {
@@ -1082,9 +1082,9 @@ gtk_check_button_set_group (GtkCheckButton *self,
       priv->group_next = NULL;
       priv->group_prev = NULL;
 
-      update_button_role (self, GTK_BUTTON_ROLE_CHECK);
+      update_button_role (this, GTK_BUTTON_ROLE_CHECK);
 
-      force_set_accessible_role (self, GTK_ACCESSIBLE_ROLE_CHECKBOX);
+      force_set_accessible_role (this, GTK_ACCESSIBLE_ROLE_CHECKBOX);
 
       return;
     }
@@ -1099,25 +1099,25 @@ gtk_check_button_set_group (GtkCheckButton *self,
     {
       GtkCheckButtonPrivate *prev = gtk_check_button_get_instance_private (group_priv->group_prev);
 
-      prev->group_next = self;
+      prev->group_next = this;
       priv->group_prev = group_priv->group_prev;
     }
 
-  group_priv->group_prev = self;
+  group_priv->group_prev = this;
   priv->group_next = group;
 
-  update_button_role (self, GTK_BUTTON_ROLE_RADIO);
+  update_button_role (this, GTK_BUTTON_ROLE_RADIO);
   update_button_role (group, GTK_BUTTON_ROLE_RADIO);
 
-  force_set_accessible_role (self, GTK_ACCESSIBLE_ROLE_RADIO);
+  force_set_accessible_role (this, GTK_ACCESSIBLE_ROLE_RADIO);
   force_set_accessible_role (group, GTK_ACCESSIBLE_ROLE_RADIO);
 
-  g_object_notify_by_pspec (G_OBJECT (self), props[PROP_GROUP]);
+  g_object_notify_by_pspec (G_OBJECT (this), props[PROP_GROUP]);
 }
 
 /**
  * gtk_check_button_get_use_underline:
- * @self: a `GtkCheckButton`
+ * @this: a `GtkCheckButton`
  *
  * Returns whether underlines in the label indicate mnemonics.
  *
@@ -1126,33 +1126,33 @@ gtk_check_button_set_group (GtkCheckButton *self,
  *   a new value.
  */
 gboolean
-gtk_check_button_get_use_underline (GtkCheckButton *self)
+gtk_check_button_get_use_underline (GtkCheckButton *this)
 {
-  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (self);
+  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_CHECK_BUTTON (self), FALSE);
+  g_return_val_if_fail (GTK_IS_CHECK_BUTTON (this), FALSE);
 
   return priv->use_underline;
 }
 
 /**
  * gtk_check_button_set_use_underline:
- * @self: a `GtkCheckButton`
+ * @this: a `GtkCheckButton`
  * @setting: the new value to set
  *
  * Sets whether underlines in the label indicate mnemonics.
  *
- * If @setting is %TRUE, an underscore character in @self's label
+ * If @setting is %TRUE, an underscore character in @this's label
  * indicates a mnemonic accelerator key. This behavior is similar
  * to [property@Gtk.Label:use-underline].
  */
 void
-gtk_check_button_set_use_underline (GtkCheckButton *self,
+gtk_check_button_set_use_underline (GtkCheckButton *this,
                                     gboolean       setting)
 {
-  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (self);
+  GtkCheckButtonPrivate *priv = gtk_check_button_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_CHECK_BUTTON (self));
+  g_return_if_fail (GTK_IS_CHECK_BUTTON (this));
 
   setting = !!setting;
 
@@ -1163,7 +1163,7 @@ gtk_check_button_set_use_underline (GtkCheckButton *self,
   if (priv->child_type == LABEL_CHILD && priv->child != NULL)
     gtk_label_set_use_underline (GTK_LABEL (priv->child), priv->use_underline);
 
-  g_object_notify_by_pspec (G_OBJECT (self), props[PROP_USE_UNDERLINE]);
+  g_object_notify_by_pspec (G_OBJECT (this), props[PROP_USE_UNDERLINE]);
 }
 
 /**

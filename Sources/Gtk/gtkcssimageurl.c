@@ -178,7 +178,7 @@ static gboolean
 gtk_css_image_url_parse (GtkCssImage  *image,
                          GtkCssParser *parser)
 {
-  GtkCssImageUrl *self = GTK_CSS_IMAGE_URL (image);
+  GtkCssImageUrl *this = GTK_CSS_IMAGE_URL (image);
   char *url, *scheme;
 
   url = gtk_css_parser_consume_url (parser);
@@ -201,7 +201,7 @@ gtk_css_image_url_parse (GtkCssImage  *image,
           if (texture)
             {
               GdkPaintable *paintable = GDK_PAINTABLE (texture);
-              self->loaded_image = gtk_css_image_paintable_new (paintable, paintable);
+              this->loaded_image = gtk_css_image_paintable_new (paintable, paintable);
             }
           else
             {
@@ -223,7 +223,7 @@ gtk_css_image_url_parse (GtkCssImage  *image,
     }
   else
     {
-      self->file = gtk_css_parser_resolve_url (parser, url);
+      this->file = gtk_css_parser_resolve_url (parser, url);
     }
 
   g_free (url);

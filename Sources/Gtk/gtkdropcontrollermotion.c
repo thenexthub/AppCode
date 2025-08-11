@@ -99,7 +99,7 @@ update_pointer_focus (GtkEventController    *controller,
                       double                 x,
                       double                 y)
 {
-  GtkDropControllerMotion *self = GTK_DROP_CONTROLLER_MOTION (controller);
+  GtkDropControllerMotion *this = GTK_DROP_CONTROLLER_MOTION (controller);
   GtkWidget *widget = gtk_event_controller_get_widget (controller);
   gboolean is_pointer = FALSE;
   gboolean contains_pointer = FALSE;
@@ -126,7 +126,7 @@ update_pointer_focus (GtkEventController    *controller,
       is_pointer = FALSE;
     }
 
-  if (self->contains_pointer != contains_pointer)
+  if (this->contains_pointer != contains_pointer)
     {
       enter = contains_pointer;
       leave = !contains_pointer;
@@ -135,23 +135,23 @@ update_pointer_focus (GtkEventController    *controller,
   if (leave)
     g_signal_emit (controller, signals[LEAVE], 0);
 
-  g_object_freeze_notify (G_OBJECT (self));
-  if (self->is_pointer != is_pointer)
+  g_object_freeze_notify (G_OBJECT (this));
+  if (this->is_pointer != is_pointer)
     {
-      self->is_pointer = is_pointer;
-      g_object_notify (G_OBJECT (self), "is-pointer");
+      this->is_pointer = is_pointer;
+      g_object_notify (G_OBJECT (this), "is-pointer");
     }
-  if (self->contains_pointer != contains_pointer)
+  if (this->contains_pointer != contains_pointer)
     {
-      self->contains_pointer = contains_pointer;
+      this->contains_pointer = contains_pointer;
       if (contains_pointer)
-        self->drop = g_object_ref (crossing->drop);
+        this->drop = g_object_ref (crossing->drop);
       else
-        g_clear_object (&self->drop);
-      g_object_notify (G_OBJECT (self), "contains-pointer");
-      g_object_notify (G_OBJECT (self), "drop");
+        g_clear_object (&this->drop);
+      g_object_notify (G_OBJECT (this), "contains-pointer");
+      g_object_notify (G_OBJECT (this), "drop");
     }
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 
   if (enter)
     g_signal_emit (controller, signals[ENTER], 0, x, y);
@@ -173,20 +173,20 @@ gtk_drop_controller_motion_get_property (GObject    *object,
                                          GValue     *value,
                                          GParamSpec *pspec)
 {
-  GtkDropControllerMotion *self = GTK_DROP_CONTROLLER_MOTION (object);
+  GtkDropControllerMotion *this = GTK_DROP_CONTROLLER_MOTION (object);
 
   switch (prop_id)
     {
     case PROP_CONTAINS_POINTER:
-      g_value_set_boolean (value, self->contains_pointer);
+      g_value_set_boolean (value, this->contains_pointer);
       break;
 
     case PROP_DROP:
-      g_value_set_object (value, self->drop);
+      g_value_set_object (value, this->drop);
       break;
 
     case PROP_IS_POINTER:
-      g_value_set_boolean (value, self->is_pointer);
+      g_value_set_boolean (value, this->is_pointer);
       break;
 
     default:
@@ -263,7 +263,7 @@ gtk_drop_controller_motion_class_init (GtkDropControllerMotionClass *klass)
 
   /**
    * GtkDropControllerMotion::enter:
-   * @self: the object which received the signal
+   * @this: the object which received the signal
    * @x: coordinates of pointer location
    * @y: coordinates of pointer location
    *
@@ -284,7 +284,7 @@ gtk_drop_controller_motion_class_init (GtkDropControllerMotionClass *klass)
 
   /**
    * GtkDropControllerMotion::leave:
-   * @self: the object which received the signal
+   * @this: the object which received the signal
    *
    * Signals that the pointer has left the widget.
    */
@@ -298,7 +298,7 @@ gtk_drop_controller_motion_class_init (GtkDropControllerMotionClass *klass)
 
   /**
    * GtkDropControllerMotion::motion:
-   * @self: The object that received the signal
+   * @this: The object that received the signal
    * @x: the x coordinate
    * @y: the y coordinate
    *
@@ -319,7 +319,7 @@ gtk_drop_controller_motion_class_init (GtkDropControllerMotionClass *klass)
 }
 
 static void
-gtk_drop_controller_motion_init (GtkDropControllerMotion *self)
+gtk_drop_controller_motion_init (GtkDropControllerMotion *this)
 {
 }
 
@@ -340,53 +340,53 @@ gtk_drop_controller_motion_new (void)
 
 /**
  * gtk_drop_controller_motion_contains_pointer:
- * @self: a `GtkDropControllerMotion`
+ * @this: a `GtkDropControllerMotion`
  *
  * Returns if a Drag-and-Drop operation is within the widget
- * @self or one of its children.
+ * @this or one of its children.
  *
- * Returns: %TRUE if a dragging pointer is within @self or one of its children.
+ * Returns: %TRUE if a dragging pointer is within @this or one of its children.
  */
 gboolean
-gtk_drop_controller_motion_contains_pointer (GtkDropControllerMotion *self)
+gtk_drop_controller_motion_contains_pointer (GtkDropControllerMotion *this)
 {
-  g_return_val_if_fail (GTK_IS_DROP_CONTROLLER_MOTION (self), FALSE);
+  g_return_val_if_fail (GTK_IS_DROP_CONTROLLER_MOTION (this), FALSE);
 
-  return self->contains_pointer;
+  return this->contains_pointer;
 }
 
 /**
  * gtk_drop_controller_motion_get_drop:
- * @self: a `GtkDropControllerMotion`
+ * @this: a `GtkDropControllerMotion`
  *
  * Returns the `GdkDrop` of a current Drag-and-Drop operation
- * over the widget of @self.
+ * over the widget of @this.
  *
  * Returns: (transfer none) (nullable): The `GdkDrop` currently
- *   happening within @self
+ *   happening within @this
  */
 GdkDrop *
-gtk_drop_controller_motion_get_drop (GtkDropControllerMotion *self)
+gtk_drop_controller_motion_get_drop (GtkDropControllerMotion *this)
 {
-  g_return_val_if_fail (GTK_IS_DROP_CONTROLLER_MOTION (self), FALSE);
+  g_return_val_if_fail (GTK_IS_DROP_CONTROLLER_MOTION (this), FALSE);
 
-  return self->drop;
+  return this->drop;
 }
 
 /**
  * gtk_drop_controller_motion_is_pointer:
- * @self: a `GtkDropControllerMotion`
+ * @this: a `GtkDropControllerMotion`
  *
  * Returns if a Drag-and-Drop operation is within the widget
- * @self, not one of its children.
+ * @this, not one of its children.
  *
- * Returns: %TRUE if a dragging pointer is within @self but
+ * Returns: %TRUE if a dragging pointer is within @this but
  *   not one of its children
  */
 gboolean
-gtk_drop_controller_motion_is_pointer (GtkDropControllerMotion *self)
+gtk_drop_controller_motion_is_pointer (GtkDropControllerMotion *this)
 {
-  g_return_val_if_fail (GTK_IS_DROP_CONTROLLER_MOTION (self), FALSE);
+  g_return_val_if_fail (GTK_IS_DROP_CONTROLLER_MOTION (this), FALSE);
 
-  return self->is_pointer;
+  return this->is_pointer;
 }

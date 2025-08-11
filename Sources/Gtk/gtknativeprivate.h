@@ -15,14 +15,14 @@ struct _GtkNativeInterface
   GTypeInterface g_iface;
 
   /*< public >*/
-  GdkSurface *  (* get_surface)           (GtkNative    *self);
-  GskRenderer * (* get_renderer)          (GtkNative    *self);
+  GdkSurface *  (* get_surface)           (GtkNative    *this);
+  GskRenderer * (* get_renderer)          (GtkNative    *this);
 
-  void          (* get_surface_transform) (GtkNative    *self,
+  void          (* get_surface_transform) (GtkNative    *this,
                                            double       *x,
                                            double       *y);
 
-  void          (* layout)                (GtkNative    *self,
+  void          (* layout)                (GtkNative    *this,
                                            int           width,
                                            int           height);
 };

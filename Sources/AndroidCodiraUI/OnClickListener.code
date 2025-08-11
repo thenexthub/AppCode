@@ -1,5 +1,5 @@
 //
-//  OnClickListener.swift
+//  OnClickListener.code
 //  AndroidAppCode
 //
 //  Created by Alsey Coleman Miller on 6/9/25.
@@ -8,7 +8,7 @@
 import Foundation
 import AndroidKit
 
-@JavaClass("com.pureswift.swiftandroid.ViewOnClickListener", extends: AndroidView.View.OnClickListener.this)
+@JavaClass("com.pureswift.codeandroid.ViewOnClickListener", extends: AndroidView.View.OnClickListener.this)
 open class ViewOnClickListener: JavaObject {
     
     public typealias Action = () -> ()
@@ -20,7 +20,7 @@ open class ViewOnClickListener: JavaObject {
     public fn getAction() -> CodiraObject?
 }
 
-@JavaImplementation("com.pureswift.swiftandroid.ViewOnClickListener")
+@JavaImplementation("com.pureswift.codeandroid.ViewOnClickListener")
 extension ViewOnClickListener {
     
     @JavaMethod

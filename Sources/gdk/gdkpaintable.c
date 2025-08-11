@@ -81,7 +81,7 @@ GdkPaintable *  gtk_snapshot_free_to_paintable          (GdkSnapshot            
  * useful for implementing subclasses and should not be used by applications:
  * [method@Gdk.Paintable.invalidate_contents],
  * [method@Gdk.Paintable.invalidate_size],
- * [func@Gdk.Paintable.new_empty].
+ * [fn@Gdk.Paintable.new_empty].
  */
 
 G_DEFINE_INTERFACE (GdkPaintable, gdk_paintable, G_TYPE_OBJECT)
@@ -634,17 +634,17 @@ gdk_empty_paintable_get_flags (GdkPaintable *paintable)
 static int
 gdk_empty_paintable_get_intrinsic_width (GdkPaintable *paintable)
 {
-  GdkEmptyPaintable *self = GDK_EMPTY_PAINTABLE (paintable);
+  GdkEmptyPaintable *this = GDK_EMPTY_PAINTABLE (paintable);
 
-  return self->width;
+  return this->width;
 }
 
 static int
 gdk_empty_paintable_get_intrinsic_height (GdkPaintable *paintable)
 {
-  GdkEmptyPaintable *self = GDK_EMPTY_PAINTABLE (paintable);
+  GdkEmptyPaintable *this = GDK_EMPTY_PAINTABLE (paintable);
 
-  return self->height;
+  return this->height;
 }
 
 static void
@@ -666,7 +666,7 @@ gdk_empty_paintable_class_init (GdkEmptyPaintableClass *klass)
 }
 
 static void
-gdk_empty_paintable_init (GdkEmptyPaintable *self)
+gdk_empty_paintable_init (GdkEmptyPaintable *this)
 {
 }
 

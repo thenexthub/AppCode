@@ -96,9 +96,9 @@ gtk_string_object_init (GtkStringObject *object)
 static void
 gtk_string_object_finalize (GObject *object)
 {
-  GtkStringObject *self = GTK_STRING_OBJECT (object);
+  GtkStringObject *this = GTK_STRING_OBJECT (object);
 
-  g_free (self->string);
+  g_free (this->string);
 
   G_OBJECT_CLASS (gtk_string_object_parent_class)->finalize (object);
 }
@@ -109,12 +109,12 @@ gtk_string_object_get_property (GObject    *object,
                                 GValue     *value,
                                 GParamSpec *pspec)
 {
-  GtkStringObject *self = GTK_STRING_OBJECT (object);
+  GtkStringObject *this = GTK_STRING_OBJECT (object);
 
   switch (property_id)
     {
     case PROP_STRING:
-      g_value_set_string (value, self->string);
+      g_value_set_string (value, this->string);
       break;
 
     default:
@@ -173,18 +173,18 @@ gtk_string_object_new (const char *string)
 
 /**
  * gtk_string_object_get_string:
- * @self: a `GtkStringObject`
+ * @this: a `GtkStringObject`
  *
  * Returns the string contained in a `GtkStringObject`.
  *
- * Returns: the string of @self
+ * Returns: the string of @this
  */
 const char *
-gtk_string_object_get_string (GtkStringObject *self)
+gtk_string_object_get_string (GtkStringObject *this)
 {
-  g_return_val_if_fail (GTK_IS_STRING_OBJECT (self), NULL);
+  g_return_val_if_fail (GTK_IS_STRING_OBJECT (this), NULL);
 
-  return self->string;
+  return this->string;
 }
 
 /* }}} */
@@ -211,21 +211,21 @@ gtk_string_list_get_item_type (GListModel *list)
 static guint
 gtk_string_list_get_n_items (GListModel *list)
 {
-  GtkStringList *self = GTK_STRING_LIST (list);
+  GtkStringList *this = GTK_STRING_LIST (list);
 
-  return objects_get_size (&self->items);
+  return objects_get_size (&this->items);
 }
 
 static gpointer
 gtk_string_list_get_item (GListModel *list,
                           guint       position)
 {
-  GtkStringList *self = GTK_STRING_LIST (list);
+  GtkStringList *this = GTK_STRING_LIST (list);
 
-  if (position >= objects_get_size (&self->items))
+  if (position >= objects_get_size (&this->items))
     return NULL;
 
-  return g_object_ref (objects_get (&self->items, position));
+  return g_object_ref (objects_get (&this->items, position));
 }
 
 static void
@@ -428,9 +428,9 @@ G_DEFINE_TYPE_WITH_CODE (GtkStringList, gtk_string_list, G_TYPE_OBJECT,
 static void
 gtk_string_list_dispose (GObject *object)
 {
-  GtkStringList *self = GTK_STRING_LIST (object);
+  GtkStringList *this = GTK_STRING_LIST (object);
 
-  objects_clear (&self->items);
+  objects_clear (&this->items);
 
   G_OBJECT_CLASS (gtk_string_list_parent_class)->dispose (object);
 }
@@ -441,16 +441,16 @@ gtk_string_list_get_property (GObject    *object,
                               GValue     *value,
                               GParamSpec *pspec)
 {
-  GtkStringList *self = GTK_STRING_LIST (object);
+  GtkStringList *this = GTK_STRING_LIST (object);
 
   switch (prop_id)
     {
     case PROP_ITEM_TYPE:
-      g_value_set_gtype (value, gtk_string_list_get_item_type (G_LIST_MODEL (self)));
+      g_value_set_gtype (value, gtk_string_list_get_item_type (G_LIST_MODEL (this)));
       break;
 
     case PROP_N_ITEMS:
-      g_value_set_uint (value, gtk_string_list_get_n_items (G_LIST_MODEL (self)));
+      g_value_set_uint (value, gtk_string_list_get_n_items (G_LIST_MODEL (this)));
       break;
 
     default:
@@ -465,12 +465,12 @@ gtk_string_list_set_property (GObject      *object,
                               const GValue *value,
                               GParamSpec   *pspec)
 {
-  GtkStringList *self = GTK_STRING_LIST (object);
+  GtkStringList *this = GTK_STRING_LIST (object);
 
   switch (prop_id)
     {
     case PROP_STRINGS:
-      gtk_string_list_splice (self, 0, 0,
+      gtk_string_list_splice (this, 0, 0,
                               (const char * const *) g_value_get_boxed (value));
       break;
 
@@ -529,9 +529,9 @@ gtk_string_list_class_init (GtkStringListClass *class)
 }
 
 static void
-gtk_string_list_init (GtkStringList *self)
+gtk_string_list_init (GtkStringList *this)
 {
-  objects_init (&self->items);
+  objects_init (&this->items);
 }
 
 /* }}} */
@@ -555,12 +555,12 @@ gtk_string_list_new (const char * const *strings)
 
 /**
  * gtk_string_list_splice:
- * @self: a `GtkStringList`
+ * @this: a `GtkStringList`
  * @position: the position at which to make the change
  * @n_removals: the number of strings to remove
  * @additions: (array zero-terminated=1) (nullable): The strings to add
  *
- * Changes @self by removing @n_removals strings and adding @additions
+ * Changes @this by removing @n_removals strings and adding @additions
  * to it.
  *
  * This function is more efficient than [method@Gtk.StringList.append]
@@ -574,112 +574,112 @@ gtk_string_list_new (const char * const *strings)
  * of the list at the time this function is called).
  */
 void
-gtk_string_list_splice (GtkStringList      *self,
+gtk_string_list_splice (GtkStringList      *this,
                         guint               position,
                         guint               n_removals,
                         const char * const *additions)
 {
   guint i, n_additions;
 
-  g_return_if_fail (GTK_IS_STRING_LIST (self));
+  g_return_if_fail (GTK_IS_STRING_LIST (this));
   g_return_if_fail (position + n_removals >= position); /* overflow */
-  g_return_if_fail (position + n_removals <= objects_get_size (&self->items));
+  g_return_if_fail (position + n_removals <= objects_get_size (&this->items));
 
   if (additions)
     n_additions = g_strv_length ((char **) additions);
   else
     n_additions = 0;
 
-  objects_splice (&self->items, position, n_removals, FALSE, NULL, n_additions);
+  objects_splice (&this->items, position, n_removals, FALSE, NULL, n_additions);
 
   for (i = 0; i < n_additions; i++)
     {
-      *objects_index (&self->items, position + i) = gtk_string_object_new (additions[i]);
+      *objects_index (&this->items, position + i) = gtk_string_object_new (additions[i]);
     }
 
   if (n_removals || n_additions)
-    g_list_model_items_changed (G_LIST_MODEL (self), position, n_removals, n_additions);
+    g_list_model_items_changed (G_LIST_MODEL (this), position, n_removals, n_additions);
 
   if (n_removals != n_additions)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 }
 
 /**
  * gtk_string_list_append:
- * @self: a `GtkStringList`
+ * @this: a `GtkStringList`
  * @string: the string to insert
  *
- * Appends @string to @self.
+ * Appends @string to @this.
  *
  * The @string will be copied. See
  * [method@Gtk.StringList.take] for a way to avoid that.
  */
 void
-gtk_string_list_append (GtkStringList *self,
+gtk_string_list_append (GtkStringList *this,
                         const char    *string)
 {
-  g_return_if_fail (GTK_IS_STRING_LIST (self));
+  g_return_if_fail (GTK_IS_STRING_LIST (this));
 
-  objects_append (&self->items, gtk_string_object_new (string));
+  objects_append (&this->items, gtk_string_object_new (string));
 
-  g_list_model_items_changed (G_LIST_MODEL (self), objects_get_size (&self->items) - 1, 0, 1);
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+  g_list_model_items_changed (G_LIST_MODEL (this), objects_get_size (&this->items) - 1, 0, 1);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 }
 
 /**
  * gtk_string_list_take:
- * @self: a `GtkStringList`
+ * @this: a `GtkStringList`
  * @string: (transfer full): the string to insert
  *
- * Adds @string to self at the end, and takes
+ * Adds @string to this at the end, and takes
  * ownership of it.
  *
  * This variant of [method@Gtk.StringList.append]
  * is convenient for formatting strings:
  *
  * ```c
- * gtk_string_list_take (self, g_strdup_print ("%d dollars", lots));
+ * gtk_string_list_take (this, g_strdup_print ("%d dollars", lots));
  * ```
  */
 void
-gtk_string_list_take (GtkStringList *self,
+gtk_string_list_take (GtkStringList *this,
                       char          *string)
 {
-  g_return_if_fail (GTK_IS_STRING_LIST (self));
+  g_return_if_fail (GTK_IS_STRING_LIST (this));
 
-  objects_append (&self->items, gtk_string_object_new_take (string));
+  objects_append (&this->items, gtk_string_object_new_take (string));
 
-  g_list_model_items_changed (G_LIST_MODEL (self), objects_get_size (&self->items) - 1, 0, 1);
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+  g_list_model_items_changed (G_LIST_MODEL (this), objects_get_size (&this->items) - 1, 0, 1);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 }
 
 /**
  * gtk_string_list_remove:
- * @self: a `GtkStringList`
+ * @this: a `GtkStringList`
  * @position: the position of the string that is to be removed
  *
- * Removes the string at @position from @self.
+ * Removes the string at @position from @this.
  *
  * @position must be smaller than the current
  * length of the list.
  */
 void
-gtk_string_list_remove (GtkStringList *self,
+gtk_string_list_remove (GtkStringList *this,
                         guint          position)
 {
-  g_return_if_fail (GTK_IS_STRING_LIST (self));
+  g_return_if_fail (GTK_IS_STRING_LIST (this));
 
-  gtk_string_list_splice (self, position, 1, NULL);
+  gtk_string_list_splice (this, position, 1, NULL);
 }
 
 /**
  * gtk_string_list_get_string:
- * @self: a `GtkStringList`
+ * @this: a `GtkStringList`
  * @position: the position to get the string for
  *
- * Gets the string that is at @position in @self.
+ * Gets the string that is at @position in @this.
  *
- * If @self does not contain @position items, %NULL is returned.
+ * If @this does not contain @position items, %NULL is returned.
  *
  * This function returns the const char *. To get the
  * object wrapping it, use g_list_model_get_item().
@@ -687,44 +687,44 @@ gtk_string_list_remove (GtkStringList *self,
  * Returns: (nullable): the string at the given position
  */
 const char *
-gtk_string_list_get_string (GtkStringList *self,
+gtk_string_list_get_string (GtkStringList *this,
                             guint          position)
 {
-  g_return_val_if_fail (GTK_IS_STRING_LIST (self), NULL);
+  g_return_val_if_fail (GTK_IS_STRING_LIST (this), NULL);
 
-  if (position >= objects_get_size (&self->items))
+  if (position >= objects_get_size (&this->items))
     return NULL;
 
-  return objects_get (&self->items, position)->string;
+  return objects_get (&this->items, position)->string;
 }
 
 /**
  * gtk_string_list_find:
- * @self: a `GtkStringList`
+ * @this: a `GtkStringList`
  * @string: the string to find
  *
- * Gets the position of the @string in @self.
+ * Gets the position of the @string in @this.
  *
- * If @self does not contain @string item, `G_MAXUINT` is returned.
+ * If @this does not contain @string item, `G_MAXUINT` is returned.
  *
  * Returns: the position of the string
  *
  * Since: 4.18
  */
 guint
-gtk_string_list_find (GtkStringList *self,
+gtk_string_list_find (GtkStringList *this,
                       const char    *string)
 {
   guint position;
   guint items_size;
 
-  g_return_val_if_fail (GTK_IS_STRING_LIST (self), G_MAXUINT);
+  g_return_val_if_fail (GTK_IS_STRING_LIST (this), G_MAXUINT);
 
   position = G_MAXUINT;
-  items_size = objects_get_size (&self->items);
+  items_size = objects_get_size (&this->items);
   for (guint i = 0; i < items_size; i++)
   {
-    if (strcmp (string, objects_get (&self->items, i)->string) == 0)
+    if (strcmp (string, objects_get (&this->items, i)->string) == 0)
     {
       position = i;
       break;

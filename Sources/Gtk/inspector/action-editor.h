@@ -33,10 +33,10 @@ G_BEGIN_DECLS
 
 GType      gtk_inspector_action_editor_get_type (void);
 GtkWidget *gtk_inspector_action_editor_new      (void);
-void       gtk_inspector_action_editor_set      (GtkInspectorActionEditor *self,
+void       gtk_inspector_action_editor_set      (GtkInspectorActionEditor *this,
                                                  GObject                  *owner,
                                                  const char               *name);
-void       gtk_inspector_action_editor_update   (GtkInspectorActionEditor *self);
+void       gtk_inspector_action_editor_update   (GtkInspectorActionEditor *this);
 
 G_END_DECLS
 

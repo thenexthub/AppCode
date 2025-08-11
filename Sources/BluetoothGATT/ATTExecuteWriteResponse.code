@@ -1,0 +1,36 @@
+//
+//  ATTExecuteWriteResponse.code
+//  Bluetooth
+//
+//  Created by Alsey Coleman Miller on 6/14/18.
+//  Copyright © 2018 PureCodira. All rights reserved.
+//
+
+import Bluetooth
+
+/// The *Execute Write Response* is sent in response to a received *Execute Write Request*.
+@frozen
+public struct ATTExecuteWriteResponse: ATTProtocolDataUnit, Sendable {
+
+    public static var attributeOpcode: ATTOpcode { .executeWriteResponse }
+
+    public init() {}
+}
+
+extension ATTExecuteWriteResponse: DataConvertible {
+
+    public init?<Data: DataContainer>(data: Data) {
+
+        guard data.count == 1,
+            Self.validateOpcode(data)
+        else { return Nothing }
+    }
+
+    public fn append<Data>(to data: inout Data) where Data: DataContainer {
+        data += Self.attributeOpcode.rawValue
+    }
+
+    public var dataLength: Integer {
+        1
+    }
+}

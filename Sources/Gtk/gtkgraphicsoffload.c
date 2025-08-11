@@ -104,17 +104,17 @@ static GParamSpec *properties[LAST_PROP] = { NULL, };
 G_DEFINE_TYPE (GtkGraphicsOffload, gtk_graphics_offload, GTK_TYPE_WIDGET)
 
 static void
-gtk_graphics_offload_init (GtkGraphicsOffload *self)
+gtk_graphics_offload_init (GtkGraphicsOffload *this)
 {
-  self->enabled = GTK_GRAPHICS_OFFLOAD_ENABLED;
+  this->enabled = GTK_GRAPHICS_OFFLOAD_ENABLED;
 }
 
 static void
 gtk_graphics_offload_dispose (GObject *object)
 {
-  GtkGraphicsOffload *self = GTK_GRAPHICS_OFFLOAD (object);
+  GtkGraphicsOffload *this = GTK_GRAPHICS_OFFLOAD (object);
 
-  g_clear_pointer (&self->child, gtk_widget_unparent);
+  g_clear_pointer (&this->child, gtk_widget_unparent);
 
   G_OBJECT_CLASS (gtk_graphics_offload_parent_class)->dispose (object);
 }
@@ -125,20 +125,20 @@ gtk_graphics_offload_set_property (GObject      *object,
                                    const GValue *value,
                                    GParamSpec   *pspec)
 {
-  GtkGraphicsOffload *self = GTK_GRAPHICS_OFFLOAD (object);
+  GtkGraphicsOffload *this = GTK_GRAPHICS_OFFLOAD (object);
 
   switch (property_id)
     {
     case PROP_CHILD:
-      gtk_graphics_offload_set_child (self, g_value_get_object (value));
+      gtk_graphics_offload_set_child (this, g_value_get_object (value));
       break;
 
     case PROP_ENABLED:
-      gtk_graphics_offload_set_enabled (self, g_value_get_enum (value));
+      gtk_graphics_offload_set_enabled (this, g_value_get_enum (value));
       break;
 
     case PROP_BLACK_BACKGROUND:
-      gtk_graphics_offload_set_black_background (self, g_value_get_boolean (value));
+      gtk_graphics_offload_set_black_background (this, g_value_get_boolean (value));
       break;
 
     default:
@@ -152,20 +152,20 @@ gtk_graphics_offload_get_property (GObject    *object,
                                    GValue     *value,
                                    GParamSpec *pspec)
 {
-  GtkGraphicsOffload *self = GTK_GRAPHICS_OFFLOAD (object);
+  GtkGraphicsOffload *this = GTK_GRAPHICS_OFFLOAD (object);
 
   switch (property_id)
     {
     case PROP_CHILD:
-      g_value_set_object (value, gtk_graphics_offload_get_child (self));
+      g_value_set_object (value, gtk_graphics_offload_get_child (this));
       break;
 
     case PROP_ENABLED:
-      g_value_set_enum (value, gtk_graphics_offload_get_enabled (self));
+      g_value_set_enum (value, gtk_graphics_offload_get_enabled (this));
       break;
 
     case PROP_BLACK_BACKGROUND:
-      g_value_set_boolean (value, gtk_graphics_offload_get_black_background (self));
+      g_value_set_boolean (value, gtk_graphics_offload_get_black_background (this));
       break;
 
     default:
@@ -174,61 +174,61 @@ gtk_graphics_offload_get_property (GObject    *object,
 }
 
 static void
-sync_subsurface (GtkGraphicsOffload *self)
+sync_subsurface (GtkGraphicsOffload *this)
 {
-  GtkWidget *widget = GTK_WIDGET (self);
+  GtkWidget *widget = GTK_WIDGET (this);
 
-  if (gtk_widget_get_realized (widget) && self->enabled != GTK_GRAPHICS_OFFLOAD_DISABLED)
+  if (gtk_widget_get_realized (widget) && this->enabled != GTK_GRAPHICS_OFFLOAD_DISABLED)
     {
-      if (!self->subsurface)
-        self->subsurface = gdk_surface_create_subsurface (gtk_widget_get_surface (widget));
+      if (!this->subsurface)
+        this->subsurface = gdk_surface_create_subsurface (gtk_widget_get_surface (widget));
     }
   else
     {
-      g_clear_object (&self->subsurface);
+      g_clear_object (&this->subsurface);
     }
 }
 
 static void
 gtk_graphics_offload_realize (GtkWidget *widget)
 {
-  GtkGraphicsOffload *self = GTK_GRAPHICS_OFFLOAD (widget);
+  GtkGraphicsOffload *this = GTK_GRAPHICS_OFFLOAD (widget);
 
   GTK_WIDGET_CLASS (gtk_graphics_offload_parent_class)->realize (widget);
 
-  sync_subsurface (self);
+  sync_subsurface (this);
 }
 
 static void
 gtk_graphics_offload_unrealize (GtkWidget *widget)
 {
-  GtkGraphicsOffload *self = GTK_GRAPHICS_OFFLOAD (widget);
+  GtkGraphicsOffload *this = GTK_GRAPHICS_OFFLOAD (widget);
 
   GTK_WIDGET_CLASS (gtk_graphics_offload_parent_class)->unrealize (widget);
 
-  sync_subsurface (self);
+  sync_subsurface (this);
 }
 
 static void
 gtk_graphics_offload_snapshot (GtkWidget   *widget,
                                GtkSnapshot *snapshot)
 {
-  GtkGraphicsOffload *self = GTK_GRAPHICS_OFFLOAD (widget);
+  GtkGraphicsOffload *this = GTK_GRAPHICS_OFFLOAD (widget);
 
-  if (self->subsurface)
-    gtk_snapshot_push_subsurface (snapshot, self->subsurface);
+  if (this->subsurface)
+    gtk_snapshot_push_subsurface (snapshot, this->subsurface);
 
-  if (self->black_background)
+  if (this->black_background)
     gtk_snapshot_append_color (snapshot,
                                &GDK_RGBA_BLACK,
                                &GRAPHENE_RECT_INIT (0, 0,
                                                     gtk_widget_get_width (widget),
                                                     gtk_widget_get_height (widget)));
 
-  if (self->child)
-    gtk_widget_snapshot_child (widget, self->child, snapshot);
+  if (this->child)
+    gtk_widget_snapshot_child (widget, this->child, snapshot);
 
-  if (self->subsurface)
+  if (this->subsurface)
     gtk_snapshot_pop (snapshot);
 }
 
@@ -306,55 +306,55 @@ gtk_graphics_offload_new (GtkWidget *child)
 
 /**
  * gtk_graphics_offload_set_child:
- * @self: a `GtkGraphicsOffload`
+ * @this: a `GtkGraphicsOffload`
  * @child: (nullable): the child widget
  *
- * Sets the child of @self.
+ * Sets the child of @this.
  *
  * Since: 4.14
  */
 void
-gtk_graphics_offload_set_child (GtkGraphicsOffload *self,
+gtk_graphics_offload_set_child (GtkGraphicsOffload *this,
                                 GtkWidget           *child)
 {
-  g_return_if_fail (GTK_IS_GRAPHICS_OFFLOAD (self));
-  g_return_if_fail (child == NULL || self->child == child || (GTK_IS_WIDGET (child) &&gtk_widget_get_parent (child) == NULL));
+  g_return_if_fail (GTK_IS_GRAPHICS_OFFLOAD (this));
+  g_return_if_fail (child == NULL || this->child == child || (GTK_IS_WIDGET (child) &&gtk_widget_get_parent (child) == NULL));
 
-  if (self->child == child)
+  if (this->child == child)
     return;
 
-  g_clear_pointer (&self->child, gtk_widget_unparent);
+  g_clear_pointer (&this->child, gtk_widget_unparent);
 
   if (child)
     {
-      self->child = child;
-      gtk_widget_set_parent (child, GTK_WIDGET (self));
+      this->child = child;
+      gtk_widget_set_parent (child, GTK_WIDGET (this));
     }
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_CHILD]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_CHILD]);
 }
 
 /**
  * gtk_graphics_offload_get_child:
- * @self: a `GtkGraphicsOffload`
+ * @this: a `GtkGraphicsOffload`
  *
- * Gets the child of @self.
+ * Gets the child of @this.
  *
  * Returns: (nullable) (transfer none): the child widget
  *
  * Since: 4.14
  */
 GtkWidget *
-gtk_graphics_offload_get_child (GtkGraphicsOffload *self)
+gtk_graphics_offload_get_child (GtkGraphicsOffload *this)
 {
-  g_return_val_if_fail (GTK_IS_GRAPHICS_OFFLOAD (self), NULL);
+  g_return_val_if_fail (GTK_IS_GRAPHICS_OFFLOAD (this), NULL);
 
-  return self->child;
+  return this->child;
 }
 
 /**
  * gtk_graphics_offload_set_enabled:
- * @self: a `GtkGraphicsOffload`
+ * @this: a `GtkGraphicsOffload`
  * @enabled: whether to enable offload
  *
  * Sets whether this GtkGraphicsOffload widget will attempt
@@ -363,43 +363,43 @@ gtk_graphics_offload_get_child (GtkGraphicsOffload *self)
  * Since: 4.14
  */
 void
-gtk_graphics_offload_set_enabled (GtkGraphicsOffload        *self,
+gtk_graphics_offload_set_enabled (GtkGraphicsOffload        *this,
                                   GtkGraphicsOffloadEnabled  enabled)
 {
-  g_return_if_fail (GTK_IS_GRAPHICS_OFFLOAD (self));
+  g_return_if_fail (GTK_IS_GRAPHICS_OFFLOAD (this));
 
-  if (self->enabled == enabled)
+  if (this->enabled == enabled)
     return;
 
-  self->enabled = enabled;
+  this->enabled = enabled;
 
-  sync_subsurface (self);
-  gtk_widget_queue_draw (GTK_WIDGET (self));
+  sync_subsurface (this);
+  gtk_widget_queue_draw (GTK_WIDGET (this));
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ENABLED]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ENABLED]);
 }
 
 /**
  * gtk_graphics_offload_get_enabled:
- * @self: a `GtkGraphicsOffload`
+ * @this: a `GtkGraphicsOffload`
  *
- * Returns whether offload is enabled for @self.
+ * Returns whether offload is enabled for @this.
  *
  * Returns: whether offload is enabled
  *
  * Since: 4.14
  */
 GtkGraphicsOffloadEnabled
-gtk_graphics_offload_get_enabled (GtkGraphicsOffload *self)
+gtk_graphics_offload_get_enabled (GtkGraphicsOffload *this)
 {
-  g_return_val_if_fail (GTK_IS_GRAPHICS_OFFLOAD (self), TRUE);
+  g_return_val_if_fail (GTK_IS_GRAPHICS_OFFLOAD (this), TRUE);
 
-  return self->enabled;
+  return this->enabled;
 }
 
 /**
  * gtk_graphics_offload_set_black_background:
- * @self: a `GtkGraphicsOffload`
+ * @this: a `GtkGraphicsOffload`
  * @value: whether to draw a black background behind the content
  *
  * Sets whether this GtkGraphicsOffload widget will draw a black
@@ -420,24 +420,24 @@ gtk_graphics_offload_get_enabled (GtkGraphicsOffload *self)
  * Since: 4.16
  */
 void
-gtk_graphics_offload_set_black_background (GtkGraphicsOffload *self,
+gtk_graphics_offload_set_black_background (GtkGraphicsOffload *this,
                                            gboolean            value)
 {
-  g_return_if_fail (GTK_IS_GRAPHICS_OFFLOAD (self));
+  g_return_if_fail (GTK_IS_GRAPHICS_OFFLOAD (this));
 
-  if (self->black_background == value)
+  if (this->black_background == value)
     return;
 
-  self->black_background = value;
+  this->black_background = value;
 
-  gtk_widget_queue_draw (GTK_WIDGET (self));
+  gtk_widget_queue_draw (GTK_WIDGET (this));
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_BLACK_BACKGROUND]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_BLACK_BACKGROUND]);
 }
 
 /**
  * gtk_graphics_offload_get_black_background:
- * @self: a `GtkGraphicsOffload`
+ * @this: a `GtkGraphicsOffload`
  *
  * Returns whether the widget draws a black background.
  *
@@ -448,9 +448,9 @@ gtk_graphics_offload_set_black_background (GtkGraphicsOffload *self,
  * Since: 4.16
  */
 gboolean
-gtk_graphics_offload_get_black_background (GtkGraphicsOffload *self)
+gtk_graphics_offload_get_black_background (GtkGraphicsOffload *this)
 {
-  g_return_val_if_fail (GTK_IS_GRAPHICS_OFFLOAD (self), FALSE);
+  g_return_val_if_fail (GTK_IS_GRAPHICS_OFFLOAD (this), FALSE);
 
-  return self->black_background;
+  return this->black_background;
 }

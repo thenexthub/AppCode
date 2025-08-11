@@ -131,8 +131,8 @@ static guint signals[LAST_SIGNAL] = { 0, };
  *
  * The available routines for drawing are documented in the
  * [Cairo documentation](https://www.cairographics.org/manual/); GDK
- * offers additional API to integrate with Cairo, like [func@Gdk.cairo_set_source_rgba]
- * or [func@Gdk.cairo_set_source_pixbuf].
+ * offers additional API to integrate with Cairo, like [fn@Gdk.cairo_set_source_rgba]
+ * or [fn@Gdk.cairo_set_source_pixbuf].
  *
  * To receive mouse events on a drawing area, you will need to use
  * event controllers. To receive keyboard events, you will need to set
@@ -151,16 +151,16 @@ gtk_drawing_area_set_property (GObject      *gobject,
                                const GValue *value,
                                GParamSpec   *pspec)
 {
-  GtkDrawingArea *self = GTK_DRAWING_AREA (gobject);
+  GtkDrawingArea *this = GTK_DRAWING_AREA (gobject);
 
   switch (prop_id)
     {
     case PROP_CONTENT_WIDTH:
-      gtk_drawing_area_set_content_width (self, g_value_get_int (value));
+      gtk_drawing_area_set_content_width (this, g_value_get_int (value));
       break;
 
     case PROP_CONTENT_HEIGHT:
-      gtk_drawing_area_set_content_height (self, g_value_get_int (value));
+      gtk_drawing_area_set_content_height (this, g_value_get_int (value));
       break;
 
     default:
@@ -174,8 +174,8 @@ gtk_drawing_area_get_property (GObject    *gobject,
                                GValue     *value,
                                GParamSpec *pspec)
 {
-  GtkDrawingArea *self = GTK_DRAWING_AREA (gobject);
-  GtkDrawingAreaPrivate *priv = gtk_drawing_area_get_instance_private (self);
+  GtkDrawingArea *this = GTK_DRAWING_AREA (gobject);
+  GtkDrawingAreaPrivate *priv = gtk_drawing_area_get_instance_private (this);
 
   switch (prop_id)
     {
@@ -195,8 +195,8 @@ gtk_drawing_area_get_property (GObject    *gobject,
 static void
 gtk_drawing_area_dispose (GObject *object)
 {
-  GtkDrawingArea *self = GTK_DRAWING_AREA (object);
-  GtkDrawingAreaPrivate *priv = gtk_drawing_area_get_instance_private (self);
+  GtkDrawingArea *this = GTK_DRAWING_AREA (object);
+  GtkDrawingAreaPrivate *priv = gtk_drawing_area_get_instance_private (this);
 
   if (priv->draw_func_target_destroy_notify != NULL)
     priv->draw_func_target_destroy_notify (priv->draw_func_target);
@@ -217,8 +217,8 @@ gtk_drawing_area_measure (GtkWidget      *widget,
                           int            *minimum_baseline,
                           int            *natural_baseline)
 {
-  GtkDrawingArea *self = GTK_DRAWING_AREA (widget);
-  GtkDrawingAreaPrivate *priv = gtk_drawing_area_get_instance_private (self);
+  GtkDrawingArea *this = GTK_DRAWING_AREA (widget);
+  GtkDrawingAreaPrivate *priv = gtk_drawing_area_get_instance_private (this);
 
   if (orientation == GTK_ORIENTATION_HORIZONTAL)
     {
@@ -243,8 +243,8 @@ static void
 gtk_drawing_area_snapshot (GtkWidget   *widget,
                            GtkSnapshot *snapshot)
 {
-  GtkDrawingArea *self = GTK_DRAWING_AREA (widget);
-  GtkDrawingAreaPrivate *priv = gtk_drawing_area_get_instance_private (self);
+  GtkDrawingArea *this = GTK_DRAWING_AREA (widget);
+  GtkDrawingAreaPrivate *priv = gtk_drawing_area_get_instance_private (this);
   cairo_t *cr;
   int width, height;
 
@@ -260,7 +260,7 @@ gtk_drawing_area_snapshot (GtkWidget   *widget,
                                       0, 0,
                                       width, height
                                   ));
-  priv->draw_func (self,
+  priv->draw_func (this,
                    cr,
                    width, height,
                    priv->draw_func_target);
@@ -349,7 +349,7 @@ gtk_drawing_area_new (void)
 
 /**
  * gtk_drawing_area_set_content_width:
- * @self: a `GtkDrawingArea`
+ * @this: a `GtkDrawingArea`
  * @width: the width of contents
  *
  * Sets the desired width of the contents of the drawing area.
@@ -362,12 +362,12 @@ gtk_drawing_area_new (void)
  * If the width is set to 0 (the default), the drawing area may disappear.
  */
 void
-gtk_drawing_area_set_content_width (GtkDrawingArea *self,
+gtk_drawing_area_set_content_width (GtkDrawingArea *this,
                                     int             width)
 {
-  GtkDrawingAreaPrivate *priv = gtk_drawing_area_get_instance_private (self);
+  GtkDrawingAreaPrivate *priv = gtk_drawing_area_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_DRAWING_AREA (self));
+  g_return_if_fail (GTK_IS_DRAWING_AREA (this));
   g_return_if_fail (width >= 0);
 
   if (priv->content_width == width)
@@ -375,31 +375,31 @@ gtk_drawing_area_set_content_width (GtkDrawingArea *self,
 
   priv->content_width = width;
 
-  gtk_widget_queue_resize (GTK_WIDGET (self));
-  g_object_notify_by_pspec (G_OBJECT (self), props[PROP_CONTENT_WIDTH]);
+  gtk_widget_queue_resize (GTK_WIDGET (this));
+  g_object_notify_by_pspec (G_OBJECT (this), props[PROP_CONTENT_WIDTH]);
 }
 
 /**
  * gtk_drawing_area_get_content_width:
- * @self: a `GtkDrawingArea`
+ * @this: a `GtkDrawingArea`
  *
  * Retrieves the content width of the `GtkDrawingArea`.
  *
  * Returns: The width requested for content of the drawing area
  */
 int
-gtk_drawing_area_get_content_width (GtkDrawingArea *self)
+gtk_drawing_area_get_content_width (GtkDrawingArea *this)
 {
-  GtkDrawingAreaPrivate *priv = gtk_drawing_area_get_instance_private (self);
+  GtkDrawingAreaPrivate *priv = gtk_drawing_area_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_DRAWING_AREA (self), 0);
+  g_return_val_if_fail (GTK_IS_DRAWING_AREA (this), 0);
 
   return priv->content_width;
 }
 
 /**
  * gtk_drawing_area_set_content_height:
- * @self: a `GtkDrawingArea`
+ * @this: a `GtkDrawingArea`
  * @height: the height of contents
  *
  * Sets the desired height of the contents of the drawing area.
@@ -412,12 +412,12 @@ gtk_drawing_area_get_content_width (GtkDrawingArea *self)
  * If the height is set to 0 (the default), the drawing area may disappear.
  */
 void
-gtk_drawing_area_set_content_height (GtkDrawingArea *self,
+gtk_drawing_area_set_content_height (GtkDrawingArea *this,
                                      int             height)
 {
-  GtkDrawingAreaPrivate *priv = gtk_drawing_area_get_instance_private (self);
+  GtkDrawingAreaPrivate *priv = gtk_drawing_area_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_DRAWING_AREA (self));
+  g_return_if_fail (GTK_IS_DRAWING_AREA (this));
   g_return_if_fail (height >= 0);
 
   if (priv->content_height == height)
@@ -425,31 +425,31 @@ gtk_drawing_area_set_content_height (GtkDrawingArea *self,
 
   priv->content_height = height;
 
-  gtk_widget_queue_resize (GTK_WIDGET (self));
-  g_object_notify_by_pspec (G_OBJECT (self), props[PROP_CONTENT_HEIGHT]);
+  gtk_widget_queue_resize (GTK_WIDGET (this));
+  g_object_notify_by_pspec (G_OBJECT (this), props[PROP_CONTENT_HEIGHT]);
 }
 
 /**
  * gtk_drawing_area_get_content_height:
- * @self: a `GtkDrawingArea`
+ * @this: a `GtkDrawingArea`
  *
  * Retrieves the content height of the `GtkDrawingArea`.
  *
  * Returns: The height requested for content of the drawing area
  */
 int
-gtk_drawing_area_get_content_height (GtkDrawingArea *self)
+gtk_drawing_area_get_content_height (GtkDrawingArea *this)
 {
-  GtkDrawingAreaPrivate *priv = gtk_drawing_area_get_instance_private (self);
+  GtkDrawingAreaPrivate *priv = gtk_drawing_area_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_DRAWING_AREA (self), 0);
+  g_return_val_if_fail (GTK_IS_DRAWING_AREA (this), 0);
 
   return priv->content_height;
 }
 
 /**
  * gtk_drawing_area_set_draw_func:
- * @self: a `GtkDrawingArea`
+ * @this: a `GtkDrawingArea`
  * @draw_func: (nullable) (scope notified) (closure user_data) (destroy destroy): callback
  *   that lets you draw the drawing area's contents
  * @user_data: user data passed to @draw_func
@@ -471,14 +471,14 @@ gtk_drawing_area_get_content_height (GtkDrawingArea *self)
  * on the drawing area. This will cause a redraw and will call @draw_func again.
  */
 void
-gtk_drawing_area_set_draw_func (GtkDrawingArea         *self,
+gtk_drawing_area_set_draw_func (GtkDrawingArea         *this,
                                 GtkDrawingAreaDrawFunc  draw_func,
                                 gpointer                user_data,
                                 GDestroyNotify          destroy)
 {
-  GtkDrawingAreaPrivate *priv = gtk_drawing_area_get_instance_private (self);
+  GtkDrawingAreaPrivate *priv = gtk_drawing_area_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_DRAWING_AREA (self));
+  g_return_if_fail (GTK_IS_DRAWING_AREA (this));
 
   if (priv->draw_func_target_destroy_notify != NULL)
     priv->draw_func_target_destroy_notify (priv->draw_func_target);
@@ -487,5 +487,5 @@ gtk_drawing_area_set_draw_func (GtkDrawingArea         *self,
   priv->draw_func_target = user_data;
   priv->draw_func_target_destroy_notify = destroy;
 
-  gtk_widget_queue_draw (GTK_WIDGET (self));
+  gtk_widget_queue_draw (GTK_WIDGET (this));
 }

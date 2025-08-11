@@ -21,9 +21,9 @@ struct _GskGpuMipmapOp
 static void
 gsk_gpu_mipmap_op_finish (GskGpuOp *op)
 {
-  GskGpuMipmapOp *self = (GskGpuMipmapOp *) op;
+  GskGpuMipmapOp *this = (GskGpuMipmapOp *) op;
 
-  g_object_unref (self->image);
+  g_object_unref (this->image);
 }
 
 static void
@@ -32,10 +32,10 @@ gsk_gpu_mipmap_op_print (GskGpuOp    *op,
                          GString     *string,
                          guint        indent)
 {
-  GskGpuMipmapOp *self = (GskGpuMipmapOp *) op;
+  GskGpuMipmapOp *this = (GskGpuMipmapOp *) op;
 
   gsk_gpu_print_op (string, indent, "mipmap");
-  gsk_gpu_print_image (string, self->image);
+  gsk_gpu_print_image (string, this->image);
   gsk_gpu_print_newline (string);
 }
 
@@ -45,16 +45,16 @@ gsk_gpu_mipmap_op_vk_command (GskGpuOp              *op,
                               GskGpuFrame           *frame,
                               GskVulkanCommandState *state)
 {
-  GskGpuMipmapOp *self = (GskGpuMipmapOp *) op;
+  GskGpuMipmapOp *this = (GskGpuMipmapOp *) op;
   GskVulkanImage *image;
   VkImage vk_image;
   gsize width, height;
   guint i, n_levels;
 
-  image = GSK_VULKAN_IMAGE (self->image);
+  image = GSK_VULKAN_IMAGE (this->image);
   vk_image = gsk_vulkan_image_get_vk_image (image);
-  width = gsk_gpu_image_get_width (self->image);
-  height = gsk_gpu_image_get_height (self->image);
+  width = gsk_gpu_image_get_width (this->image);
+  height = gsk_gpu_image_get_height (this->image);
   n_levels = gsk_gpu_mipmap_levels (width, height);
 
   /* optimize me: only transition mipmap layers 1..n, but not 0 */
@@ -155,9 +155,9 @@ gsk_gpu_mipmap_op_gl_command (GskGpuOp          *op,
                               GskGpuFrame       *frame,
                               GskGLCommandState *state)
 {
-  GskGpuMipmapOp *self = (GskGpuMipmapOp *) op;
+  GskGpuMipmapOp *this = (GskGpuMipmapOp *) op;
 
-  gsk_gl_image_bind_textures (GSK_GL_IMAGE (self->image), GL_TEXTURE0);
+  gsk_gl_image_bind_textures (GSK_GL_IMAGE (this->image), GL_TEXTURE0);
   /* need to reset the images again */
   state->current_images[0] = NULL;
 
@@ -181,13 +181,13 @@ void
 gsk_gpu_mipmap_op (GskGpuFrame *frame,
                    GskGpuImage *image)
 {
-  GskGpuMipmapOp *self;
+  GskGpuMipmapOp *this;
 
   g_assert ((gsk_gpu_image_get_flags (image) & (GSK_GPU_IMAGE_CAN_MIPMAP | GSK_GPU_IMAGE_MIPMAP)) == GSK_GPU_IMAGE_CAN_MIPMAP);
 
-  self = (GskGpuMipmapOp *) gsk_gpu_op_alloc (frame, &GSK_GPU_MIPMAP_OP_CLASS);
+  this = (GskGpuMipmapOp *) gsk_gpu_op_alloc (frame, &GSK_GPU_MIPMAP_OP_CLASS);
 
-  self->image = g_object_ref (image);
+  this->image = g_object_ref (image);
 
   gsk_gpu_image_set_flags (image, GSK_GPU_IMAGE_MIPMAP);
 }

@@ -40,22 +40,22 @@ GtkFilterListModel *    gtk_filter_list_model_new               (GListModel     
                                                                  GtkFilter              *filter);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_filter_list_model_set_filter        (GtkFilterListModel     *self,
+void                    gtk_filter_list_model_set_filter        (GtkFilterListModel     *this,
                                                                  GtkFilter              *filter);
 GDK_AVAILABLE_IN_ALL
-GtkFilter *             gtk_filter_list_model_get_filter        (GtkFilterListModel     *self);
+GtkFilter *             gtk_filter_list_model_get_filter        (GtkFilterListModel     *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_filter_list_model_set_model         (GtkFilterListModel     *self,
+void                    gtk_filter_list_model_set_model         (GtkFilterListModel     *this,
                                                                  GListModel             *model);
 GDK_AVAILABLE_IN_ALL
-GListModel *            gtk_filter_list_model_get_model         (GtkFilterListModel     *self);
+GListModel *            gtk_filter_list_model_get_model         (GtkFilterListModel     *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_filter_list_model_set_incremental   (GtkFilterListModel     *self,
+void                    gtk_filter_list_model_set_incremental   (GtkFilterListModel     *this,
                                                                  gboolean                incremental);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_filter_list_model_get_incremental   (GtkFilterListModel     *self);
+gboolean                gtk_filter_list_model_get_incremental   (GtkFilterListModel     *this);
 GDK_AVAILABLE_IN_ALL
-guint                   gtk_filter_list_model_get_pending       (GtkFilterListModel     *self);
+guint                   gtk_filter_list_model_get_pending       (GtkFilterListModel     *this);
 
 
 G_END_DECLS

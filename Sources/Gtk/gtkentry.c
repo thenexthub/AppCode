@@ -332,10 +332,10 @@ G_DEFINE_TYPE_WITH_CODE (GtkEntry, gtk_entry, GTK_TYPE_WIDGET,
  * similar wrappers (GtkPasswordEntry, GtkSpinButton, etc).
  */
 static gboolean
-gtk_entry_accessible_get_platform_state (GtkAccessible              *self,
+gtk_entry_accessible_get_platform_state (GtkAccessible              *this,
                                          GtkAccessiblePlatformState  state)
 {
-  return gtk_editable_delegate_get_accessible_platform_state (GTK_EDITABLE (self), state);
+  return gtk_editable_delegate_get_accessible_platform_state (GTK_EDITABLE (this), state);
 }
 
 static void
@@ -929,7 +929,7 @@ gtk_entry_class_init (GtkEntryClass *class)
 
   /**
    * GtkEntry::activate:
-   * @self: The widget on which the signal is emitted
+   * @this: The widget on which the signal is emitted
    *
    * Emitted when the entry is activated.
    *
@@ -1831,7 +1831,7 @@ gtk_entry_snapshot (GtkWidget   *widget,
  * special entries which the user usually doesn't want to replace all text
  * in, such as search-as-you-type entries.
  *
- * Returns: %TRUE if focus is now inside @self
+ * Returns: %TRUE if focus is now inside @this
  */
 gboolean
 gtk_entry_grab_focus_without_selecting (GtkEntry *entry)

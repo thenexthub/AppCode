@@ -32,10 +32,10 @@
 #include "gtkwidgetprivate.h"
 #include "gtktypebuiltins.h"
 
-static void     activated      (GtkFontDialogButton *self);
-static void     button_clicked (GtkFontDialogButton *self);
+static void     activated      (GtkFontDialogButton *this);
+static void     button_clicked (GtkFontDialogButton *this);
 static void     update_button_sensitivity
-                               (GtkFontDialogButton *self);
+                               (GtkFontDialogButton *this);
 
 /**
  * GtkFontDialogButton:
@@ -116,52 +116,52 @@ static unsigned int font_dialog_button_signals[NUM_SIGNALS] = { 0 };
 G_DEFINE_TYPE (GtkFontDialogButton, gtk_font_dialog_button, GTK_TYPE_WIDGET)
 
 static void
-gtk_font_dialog_button_init (GtkFontDialogButton *self)
+gtk_font_dialog_button_init (GtkFontDialogButton *this)
 {
   GtkWidget *box;
   PangoFontDescription *font_desc;
 
-  g_signal_connect_swapped (self, "activate", G_CALLBACK (activated), self);
+  g_signal_connect_swapped (this, "activate", G_CALLBACK (activated), this);
 
-  self->button = gtk_button_new ();
-  g_signal_connect_swapped (self->button, "clicked", G_CALLBACK (button_clicked), self);
-  self->font_label = gtk_label_new (_("Font"));
-  gtk_widget_set_hexpand (self->font_label, TRUE);
-  self->size_label = gtk_label_new ("14");
-  self->font_size_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+  this->button = gtk_button_new ();
+  g_signal_connect_swapped (this->button, "clicked", G_CALLBACK (button_clicked), this);
+  this->font_label = gtk_label_new (_("Font"));
+  gtk_widget_set_hexpand (this->font_label, TRUE);
+  this->size_label = gtk_label_new ("14");
+  this->font_size_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 
   box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_append (GTK_BOX (box), self->font_label);
+  gtk_box_append (GTK_BOX (box), this->font_label);
 
-  gtk_box_append (GTK_BOX (self->font_size_box), gtk_separator_new (GTK_ORIENTATION_VERTICAL));
-  gtk_box_append (GTK_BOX (self->font_size_box), self->size_label);
-  gtk_box_append (GTK_BOX (box), self->font_size_box);
+  gtk_box_append (GTK_BOX (this->font_size_box), gtk_separator_new (GTK_ORIENTATION_VERTICAL));
+  gtk_box_append (GTK_BOX (this->font_size_box), this->size_label);
+  gtk_box_append (GTK_BOX (box), this->font_size_box);
 
-  gtk_button_set_child (GTK_BUTTON (self->button), box);
-  gtk_widget_set_parent (self->button, GTK_WIDGET (self));
+  gtk_button_set_child (GTK_BUTTON (this->button), box);
+  gtk_widget_set_parent (this->button, GTK_WIDGET (this));
 
-  self->level = GTK_FONT_LEVEL_FONT;
+  this->level = GTK_FONT_LEVEL_FONT;
 
-  self->use_font = FALSE;
-  self->use_size = FALSE;
+  this->use_font = FALSE;
+  this->use_size = FALSE;
 
   font_desc = pango_font_description_from_string ("Sans 12");
-  gtk_font_dialog_button_set_font_desc (self, font_desc);
+  gtk_font_dialog_button_set_font_desc (this, font_desc);
   pango_font_description_free (font_desc);
 
-  gtk_widget_add_css_class (self->button, "font");
+  gtk_widget_add_css_class (this->button, "font");
 }
 
 static void
 gtk_font_dialog_button_unroot (GtkWidget *widget)
 {
-  GtkFontDialogButton *self = GTK_FONT_DIALOG_BUTTON (widget);
+  GtkFontDialogButton *this = GTK_FONT_DIALOG_BUTTON (widget);
 
-  if (self->cancellable)
+  if (this->cancellable)
     {
-      g_cancellable_cancel (self->cancellable);
-      g_clear_object (&self->cancellable);
-      update_button_sensitivity (self);
+      g_cancellable_cancel (this->cancellable);
+      g_clear_object (&this->cancellable);
+      update_button_sensitivity (this);
     }
 
   GTK_WIDGET_CLASS (gtk_font_dialog_button_parent_class)->unroot (widget);
@@ -173,36 +173,36 @@ gtk_font_dialog_button_set_property (GObject      *object,
                                      const GValue *value,
                                      GParamSpec   *pspec)
 {
-  GtkFontDialogButton *self = GTK_FONT_DIALOG_BUTTON (object);
+  GtkFontDialogButton *this = GTK_FONT_DIALOG_BUTTON (object);
 
   switch (param_id)
     {
     case PROP_DIALOG:
-      gtk_font_dialog_button_set_dialog (self, g_value_get_object (value));
+      gtk_font_dialog_button_set_dialog (this, g_value_get_object (value));
       break;
 
     case PROP_LEVEL:
-      gtk_font_dialog_button_set_level (self, g_value_get_enum (value));
+      gtk_font_dialog_button_set_level (this, g_value_get_enum (value));
       break;
 
     case PROP_FONT_DESC:
-      gtk_font_dialog_button_set_font_desc (self, g_value_get_boxed (value));
+      gtk_font_dialog_button_set_font_desc (this, g_value_get_boxed (value));
       break;
 
     case PROP_FONT_FEATURES:
-      gtk_font_dialog_button_set_font_features (self, g_value_get_string (value));
+      gtk_font_dialog_button_set_font_features (this, g_value_get_string (value));
       break;
 
     case PROP_LANGUAGE:
-      gtk_font_dialog_button_set_language (self, g_value_get_boxed (value));
+      gtk_font_dialog_button_set_language (this, g_value_get_boxed (value));
       break;
 
     case PROP_USE_FONT:
-      gtk_font_dialog_button_set_use_font (self, g_value_get_boolean (value));
+      gtk_font_dialog_button_set_use_font (this, g_value_get_boolean (value));
       break;
 
     case PROP_USE_SIZE:
-      gtk_font_dialog_button_set_use_size (self, g_value_get_boolean (value));
+      gtk_font_dialog_button_set_use_size (this, g_value_get_boolean (value));
       break;
 
     default:
@@ -217,36 +217,36 @@ gtk_font_dialog_button_get_property (GObject      *object,
                                      GValue       *value,
                                      GParamSpec   *pspec)
 {
-  GtkFontDialogButton *self = GTK_FONT_DIALOG_BUTTON (object);
+  GtkFontDialogButton *this = GTK_FONT_DIALOG_BUTTON (object);
 
   switch (param_id)
     {
     case PROP_DIALOG:
-      g_value_set_object (value, self->dialog);
+      g_value_set_object (value, this->dialog);
       break;
 
     case PROP_LEVEL:
-      g_value_set_enum (value, self->level);
+      g_value_set_enum (value, this->level);
       break;
 
     case PROP_FONT_DESC:
-      g_value_set_boxed (value, self->font_desc);
+      g_value_set_boxed (value, this->font_desc);
       break;
 
     case PROP_FONT_FEATURES:
-      g_value_set_string (value, self->font_features);
+      g_value_set_string (value, this->font_features);
       break;
 
     case PROP_LANGUAGE:
-      g_value_set_boxed (value, self->language);
+      g_value_set_boxed (value, this->language);
       break;
 
     case PROP_USE_FONT:
-      g_value_set_boolean (value, self->use_font);
+      g_value_set_boolean (value, this->use_font);
       break;
 
     case PROP_USE_SIZE:
-      g_value_set_boolean (value, self->use_size);
+      g_value_set_boolean (value, this->use_size);
       break;
 
     default:
@@ -258,9 +258,9 @@ gtk_font_dialog_button_get_property (GObject      *object,
 static void
 gtk_font_dialog_button_dispose (GObject *object)
 {
-  GtkFontDialogButton *self = GTK_FONT_DIALOG_BUTTON (object);
+  GtkFontDialogButton *this = GTK_FONT_DIALOG_BUTTON (object);
 
-  g_clear_pointer (&self->button, gtk_widget_unparent);
+  g_clear_pointer (&this->button, gtk_widget_unparent);
 
   G_OBJECT_CLASS (gtk_font_dialog_button_parent_class)->dispose (object);
 }
@@ -268,14 +268,14 @@ gtk_font_dialog_button_dispose (GObject *object)
 static void
 gtk_font_dialog_button_finalize (GObject *object)
 {
-  GtkFontDialogButton *self = GTK_FONT_DIALOG_BUTTON (object);
+  GtkFontDialogButton *this = GTK_FONT_DIALOG_BUTTON (object);
 
-  g_assert (self->cancellable == NULL);
-  g_clear_object (&self->dialog);
-  pango_font_description_free (self->font_desc);
-  g_clear_object (&self->font_family);
-  g_clear_object (&self->font_face);
-  g_free (self->font_features);
+  g_assert (this->cancellable == NULL);
+  g_clear_object (&this->dialog);
+  pango_font_description_free (this->font_desc);
+  g_clear_object (&this->font_family);
+  g_clear_object (&this->font_face);
+  g_free (this->font_features);
 
   G_OBJECT_CLASS (gtk_font_dialog_button_parent_class)->finalize (object);
 }
@@ -426,11 +426,11 @@ gtk_font_dialog_button_class_init (GtkFontDialogButtonClass *class)
 /* {{{ Private API, callbacks */
 
 static void
-update_button_sensitivity (GtkFontDialogButton *self)
+update_button_sensitivity (GtkFontDialogButton *this)
 {
-  if (self->button)
-    gtk_widget_set_sensitive (self->button,
-                              self->dialog != NULL && self->cancellable == NULL);
+  if (this->button)
+    gtk_widget_set_sensitive (this->button,
+                              this->dialog != NULL && this->cancellable == NULL);
 }
 
 static void
@@ -439,7 +439,7 @@ family_chosen (GObject      *source,
                gpointer      data)
 {
   GtkFontDialog *dialog = GTK_FONT_DIALOG (source);
-  GtkFontDialogButton *self = data;
+  GtkFontDialogButton *this = data;
   PangoFontFamily *family;
 
   family = gtk_font_dialog_choose_family_finish (dialog, result, NULL);
@@ -450,14 +450,14 @@ family_chosen (GObject      *source,
       desc = pango_font_description_new ();
       pango_font_description_set_family (desc, pango_font_family_get_name (family));
 
-      gtk_font_dialog_button_set_font_desc (self, desc);
+      gtk_font_dialog_button_set_font_desc (this, desc);
 
       pango_font_description_free (desc);
       g_object_unref (family);
     }
 
-  g_clear_object (&self->cancellable);
-  update_button_sensitivity (self);
+  g_clear_object (&this->cancellable);
+  update_button_sensitivity (this);
 }
 
 static void
@@ -466,7 +466,7 @@ face_chosen (GObject      *source,
              gpointer      data)
 {
   GtkFontDialog *dialog = GTK_FONT_DIALOG (source);
-  GtkFontDialogButton *self = data;
+  GtkFontDialogButton *this = data;
   PangoFontFace *face;
 
   face = gtk_font_dialog_choose_face_finish (dialog, result, NULL);
@@ -476,14 +476,14 @@ face_chosen (GObject      *source,
 
       desc = pango_font_face_describe (face);
 
-      gtk_font_dialog_button_set_font_desc (self, desc);
+      gtk_font_dialog_button_set_font_desc (this, desc);
 
       pango_font_description_free (desc);
       g_object_unref (face);
     }
 
-  g_clear_object (&self->cancellable);
-  update_button_sensitivity (self);
+  g_clear_object (&this->cancellable);
+  update_button_sensitivity (this);
 }
 
 static void
@@ -492,18 +492,18 @@ font_chosen (GObject      *source,
              gpointer      data)
 {
   GtkFontDialog *dialog = GTK_FONT_DIALOG (source);
-  GtkFontDialogButton *self = data;
+  GtkFontDialogButton *this = data;
   PangoFontDescription *desc;
 
   desc = gtk_font_dialog_choose_font_finish (dialog, result, NULL);
   if (desc)
     {
-      gtk_font_dialog_button_set_font_desc (self, desc);
+      gtk_font_dialog_button_set_font_desc (this, desc);
       pango_font_description_free (desc);
     }
 
-  g_clear_object (&self->cancellable);
-  update_button_sensitivity (self);
+  g_clear_object (&this->cancellable);
+  update_button_sensitivity (this);
 }
 
 static void
@@ -512,7 +512,7 @@ font_and_features_chosen (GObject      *source,
                           gpointer      data)
 {
   GtkFontDialog *dialog = GTK_FONT_DIALOG (source);
-  GtkFontDialogButton *self = data;
+  GtkFontDialogButton *this = data;
   PangoFontDescription *desc;
   char *features;
   PangoLanguage *language;
@@ -521,58 +521,58 @@ font_and_features_chosen (GObject      *source,
                                                        &desc, &features, &language,
                                                        NULL))
     {
-      gtk_font_dialog_button_set_font_desc (self, desc);
-      gtk_font_dialog_button_set_font_features (self, features);
-      gtk_font_dialog_button_set_language (self, language);
+      gtk_font_dialog_button_set_font_desc (this, desc);
+      gtk_font_dialog_button_set_font_features (this, features);
+      gtk_font_dialog_button_set_language (this, language);
 
       pango_font_description_free (desc);
       g_free (features);
     }
 
-  g_clear_object (&self->cancellable);
-  update_button_sensitivity (self);
+  g_clear_object (&this->cancellable);
+  update_button_sensitivity (this);
 }
 
 static void
-activated (GtkFontDialogButton *self)
+activated (GtkFontDialogButton *this)
 {
-  gtk_widget_activate (self->button);
+  gtk_widget_activate (this->button);
 }
 
 static void
-button_clicked (GtkFontDialogButton *self)
+button_clicked (GtkFontDialogButton *this)
 {
-  GtkRoot *root = gtk_widget_get_root (GTK_WIDGET (self));
+  GtkRoot *root = gtk_widget_get_root (GTK_WIDGET (this));
   GtkWindow *parent = NULL;
 
-  g_assert (self->cancellable == NULL);
-  self->cancellable = g_cancellable_new ();
+  g_assert (this->cancellable == NULL);
+  this->cancellable = g_cancellable_new ();
 
-  update_button_sensitivity (self);
+  update_button_sensitivity (this);
 
   if (GTK_IS_WINDOW (root))
     parent = GTK_WINDOW (root);
 
-  switch (self->level)
+  switch (this->level)
     {
     case GTK_FONT_LEVEL_FAMILY:
-      gtk_font_dialog_choose_family (self->dialog, parent, self->font_family,
-                                     self->cancellable, family_chosen, self);
+      gtk_font_dialog_choose_family (this->dialog, parent, this->font_family,
+                                     this->cancellable, family_chosen, this);
       break;
 
     case GTK_FONT_LEVEL_FACE:
-      gtk_font_dialog_choose_face (self->dialog, parent, self->font_face,
-                                   self->cancellable, face_chosen, self);
+      gtk_font_dialog_choose_face (this->dialog, parent, this->font_face,
+                                   this->cancellable, face_chosen, this);
       break;
 
     case GTK_FONT_LEVEL_FONT:
-      gtk_font_dialog_choose_font (self->dialog, parent, self->font_desc,
-                                   self->cancellable, font_chosen, self);
+      gtk_font_dialog_choose_font (this->dialog, parent, this->font_desc,
+                                   this->cancellable, font_chosen, this);
       break;
 
     case GTK_FONT_LEVEL_FEATURES:
-      gtk_font_dialog_choose_font_and_features (self->dialog, parent, self->font_desc,
-                                                self->cancellable, font_and_features_chosen, self);
+      gtk_font_dialog_choose_font_and_features (this->dialog, parent, this->font_desc,
+                                                this->cancellable, font_and_features_chosen, this);
       break;
 
     default:
@@ -591,22 +591,22 @@ font_description_style_equal (const PangoFontDescription *a,
 }
 
 static void
-update_font_data (GtkFontDialogButton *self)
+update_font_data (GtkFontDialogButton *this)
 {
   PangoFontMap *fontmap = NULL;
   const char *family_name;
 
-  g_assert (self->font_desc != NULL);
+  g_assert (this->font_desc != NULL);
 
-  g_clear_object (&self->font_family);
-  g_clear_object (&self->font_face);
+  g_clear_object (&this->font_family);
+  g_clear_object (&this->font_face);
 
-  family_name = pango_font_description_get_family (self->font_desc);
+  family_name = pango_font_description_get_family (this->font_desc);
   if (family_name == NULL)
     return;
 
-  if (self->dialog)
-    fontmap = gtk_font_dialog_get_font_map (self->dialog);
+  if (this->dialog)
+    fontmap = gtk_font_dialog_get_font_map (this->dialog);
   if (!fontmap)
     fontmap = pango_cairo_font_map_get_default ();
 
@@ -618,23 +618,23 @@ update_font_data (GtkFontDialogButton *self)
 
       if (g_ascii_strcasecmp (name, family_name) == 0)
         {
-          g_set_object (&self->font_family, family);
+          g_set_object (&this->font_family, family);
           break;
         }
     }
 
-  if (self->font_family == NULL)
+  if (this->font_family == NULL)
     return;
 
-  for (unsigned i = 0; i < g_list_model_get_n_items (G_LIST_MODEL (self->font_family)); i++)
+  for (unsigned i = 0; i < g_list_model_get_n_items (G_LIST_MODEL (this->font_family)); i++)
     {
-      PangoFontFace *face = g_list_model_get_item (G_LIST_MODEL (self->font_family), i);
+      PangoFontFace *face = g_list_model_get_item (G_LIST_MODEL (this->font_family), i);
       PangoFontDescription *tmp_desc = pango_font_face_describe (face);
       g_object_unref (face);
 
-      if (font_description_style_equal (tmp_desc, self->font_desc))
+      if (font_description_style_equal (tmp_desc, this->font_desc))
         {
-          g_set_object (&self->font_face, face);
+          g_set_object (&this->font_face, face);
           pango_font_description_free (tmp_desc);
           break;
         }
@@ -644,58 +644,58 @@ update_font_data (GtkFontDialogButton *self)
 }
 
 static void
-update_font_info (GtkFontDialogButton *self)
+update_font_info (GtkFontDialogButton *this)
 {
   const char *fam_name;
   const char *face_name;
   char *family_style;
   char *size;
 
-  if (self->font_family)
-    fam_name = pango_font_family_get_name (self->font_family);
+  if (this->font_family)
+    fam_name = pango_font_family_get_name (this->font_family);
   else
     fam_name = C_("font", "None");
-  if (self->font_face)
-    face_name = pango_font_face_get_face_name (self->font_face);
+  if (this->font_face)
+    face_name = pango_font_face_get_face_name (this->font_face);
   else
     face_name = "";
 
-  if (self->level == GTK_FONT_LEVEL_FAMILY)
+  if (this->level == GTK_FONT_LEVEL_FAMILY)
     family_style = g_strdup (fam_name);
   else
     family_style = g_strconcat (fam_name, " ", face_name, NULL);
 
-  gtk_label_set_text (GTK_LABEL (self->font_label), family_style);
+  gtk_label_set_text (GTK_LABEL (this->font_label), family_style);
   g_free (family_style);
 
-  if (self->level >= GTK_FONT_LEVEL_FONT)
+  if (this->level >= GTK_FONT_LEVEL_FONT)
     {
       /* mirror Pango, which doesn't translate this either */
       size = g_strdup_printf ("%2.4g%s",
-                              pango_font_description_get_size (self->font_desc) / (double)PANGO_SCALE,
-                              pango_font_description_get_size_is_absolute (self->font_desc) ? "px" : "");
+                              pango_font_description_get_size (this->font_desc) / (double)PANGO_SCALE,
+                              pango_font_description_get_size_is_absolute (this->font_desc) ? "px" : "");
 
-      gtk_label_set_text (GTK_LABEL (self->size_label), size);
+      gtk_label_set_text (GTK_LABEL (this->size_label), size);
       g_free (size);
     }
 
-  gtk_widget_set_visible (self->font_size_box, self->level >= GTK_FONT_LEVEL_FONT);
+  gtk_widget_set_visible (this->font_size_box, this->level >= GTK_FONT_LEVEL_FONT);
 }
 
 static void
-apply_use_font (GtkFontDialogButton *self)
+apply_use_font (GtkFontDialogButton *this)
 {
-  if (!self->use_font)
-    gtk_label_set_attributes (GTK_LABEL (self->font_label), NULL);
+  if (!this->use_font)
+    gtk_label_set_attributes (GTK_LABEL (this->font_label), NULL);
   else
     {
       PangoFontDescription *desc;
       PangoAttrList *attrs;
       PangoLanguage *language;
 
-      desc = pango_font_description_copy (self->font_desc);
+      desc = pango_font_description_copy (this->font_desc);
 
-      if (!self->use_size)
+      if (!this->use_size)
         pango_font_description_unset_fields (desc, PANGO_FONT_MASK_SIZE);
 
       attrs = pango_attr_list_new ();
@@ -705,18 +705,18 @@ apply_use_font (GtkFontDialogButton *self)
 
       /* Force current font and features */
       pango_attr_list_insert (attrs, pango_attr_font_desc_new (desc));
-      if (self->font_features)
-        pango_attr_list_insert (attrs, pango_attr_font_features_new (self->font_features));
-      if (self->language)
-        language = self->language;
-      else if (self->dialog)
-        language = gtk_font_dialog_get_language (self->dialog);
+      if (this->font_features)
+        pango_attr_list_insert (attrs, pango_attr_font_features_new (this->font_features));
+      if (this->language)
+        language = this->language;
+      else if (this->dialog)
+        language = gtk_font_dialog_get_language (this->dialog);
       else
         language = NULL;
       if (language)
         pango_attr_list_insert (attrs, pango_attr_language_new (language));
 
-      gtk_label_set_attributes (GTK_LABEL (self->font_label), attrs);
+      gtk_label_set_attributes (GTK_LABEL (this->font_label), attrs);
 
       pango_attr_list_unref (attrs);
       pango_font_description_free (desc);
@@ -743,17 +743,17 @@ apply_use_font (GtkFontDialogButton *self)
 GtkWidget *
 gtk_font_dialog_button_new (GtkFontDialog *dialog)
 {
-  GtkWidget *self;
+  GtkWidget *this;
 
   g_return_val_if_fail (dialog == NULL || GTK_IS_FONT_DIALOG (dialog), NULL);
 
-  self = g_object_new (GTK_TYPE_FONT_DIALOG_BUTTON,
+  this = g_object_new (GTK_TYPE_FONT_DIALOG_BUTTON,
                        "dialog", dialog,
                        NULL);
 
   g_clear_object (&dialog);
 
-  return self;
+  return this;
 }
 
 /* }}} */
@@ -761,7 +761,7 @@ gtk_font_dialog_button_new (GtkFontDialog *dialog)
 
 /**
  * gtk_font_dialog_button_set_dialog:
- * @self: a `GtkFontDialogButton`
+ * @this: a `GtkFontDialogButton`
  * @dialog: the new `GtkFontDialog`
  *
  * Sets a `GtkFontDialog` object to use for
@@ -771,41 +771,41 @@ gtk_font_dialog_button_new (GtkFontDialog *dialog)
  * Since: 4.10
  */
 void
-gtk_font_dialog_button_set_dialog (GtkFontDialogButton *self,
+gtk_font_dialog_button_set_dialog (GtkFontDialogButton *this,
                                    GtkFontDialog       *dialog)
 {
-  g_return_if_fail (GTK_IS_FONT_DIALOG_BUTTON (self));
+  g_return_if_fail (GTK_IS_FONT_DIALOG_BUTTON (this));
   g_return_if_fail (dialog == NULL || GTK_IS_FONT_DIALOG (dialog));
 
-  if (!g_set_object (&self->dialog, dialog))
+  if (!g_set_object (&this->dialog, dialog))
     return;
 
-  update_button_sensitivity (self);
+  update_button_sensitivity (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DIALOG]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_DIALOG]);
 }
 
 /**
  * gtk_font_dialog_button_get_dialog:
- * @self: a `GtkFontDialogButton`
+ * @this: a `GtkFontDialogButton`
  *
- * Returns the `GtkFontDialog` of @self.
+ * Returns the `GtkFontDialog` of @this.
  *
  * Returns: (nullable) (transfer none): the `GtkFontDialog`
  *
  * Since: 4.10
  */
 GtkFontDialog *
-gtk_font_dialog_button_get_dialog (GtkFontDialogButton *self)
+gtk_font_dialog_button_get_dialog (GtkFontDialogButton *this)
 {
-  g_return_val_if_fail (GTK_IS_FONT_DIALOG_BUTTON (self), NULL);
+  g_return_val_if_fail (GTK_IS_FONT_DIALOG_BUTTON (this), NULL);
 
-  return self->dialog;
+  return this->dialog;
 }
 
 /**
  * gtk_font_dialog_button_get_level:
- * @self: a `GtkFontDialogButton
+ * @this: a `GtkFontDialogButton
  *
  * Returns the level of detail at which this dialog
  * lets the user select fonts.
@@ -815,16 +815,16 @@ gtk_font_dialog_button_get_dialog (GtkFontDialogButton *self)
  * Since: 4.10
  */
 GtkFontLevel
-gtk_font_dialog_button_get_level (GtkFontDialogButton *self)
+gtk_font_dialog_button_get_level (GtkFontDialogButton *this)
 {
-  g_return_val_if_fail (GTK_IS_FONT_DIALOG_BUTTON (self), GTK_FONT_LEVEL_FONT);
+  g_return_val_if_fail (GTK_IS_FONT_DIALOG_BUTTON (this), GTK_FONT_LEVEL_FONT);
 
-  return self->level;
+  return this->level;
 }
 
 /**
  * gtk_font_dialog_button_set_level:
- * @self: a `GtkFontDialogButton`
+ * @this: a `GtkFontDialogButton`
  * @level: the level of detail
  *
  * Sets the level of detail at which this dialog
@@ -833,22 +833,22 @@ gtk_font_dialog_button_get_level (GtkFontDialogButton *self)
  * Since: 4.10
  */
 void
-gtk_font_dialog_button_set_level (GtkFontDialogButton *self,
+gtk_font_dialog_button_set_level (GtkFontDialogButton *this,
                                   GtkFontLevel         level)
 {
-  g_return_if_fail (GTK_IS_FONT_DIALOG_BUTTON (self));
+  g_return_if_fail (GTK_IS_FONT_DIALOG_BUTTON (this));
 
-  if (self->level == level)
+  if (this->level == level)
     return;
 
-  self->level = level;
+  this->level = level;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_LEVEL]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_LEVEL]);
 }
 
 /**
  * gtk_font_dialog_button_set_font_desc:
- * @self: a `GtkFontDialogButton`
+ * @this: a `GtkFontDialogButton`
  * @font_desc: the new font
  *
  * Sets the font of the button.
@@ -856,32 +856,32 @@ gtk_font_dialog_button_set_level (GtkFontDialogButton *self,
  * Since: 4.10
  */
 void
-gtk_font_dialog_button_set_font_desc (GtkFontDialogButton        *self,
+gtk_font_dialog_button_set_font_desc (GtkFontDialogButton        *this,
                                       const PangoFontDescription *font_desc)
 {
-  g_return_if_fail (GTK_IS_FONT_DIALOG_BUTTON (self));
+  g_return_if_fail (GTK_IS_FONT_DIALOG_BUTTON (this));
   g_return_if_fail (font_desc != NULL);
 
-  if (self->font_desc == font_desc ||
-      (self->font_desc && font_desc &&
-       pango_font_description_equal (self->font_desc, font_desc)))
+  if (this->font_desc == font_desc ||
+      (this->font_desc && font_desc &&
+       pango_font_description_equal (this->font_desc, font_desc)))
     return;
 
-  if (self->font_desc)
-    pango_font_description_free (self->font_desc);
+  if (this->font_desc)
+    pango_font_description_free (this->font_desc);
 
-  self->font_desc = pango_font_description_copy (font_desc);
+  this->font_desc = pango_font_description_copy (font_desc);
 
-  update_font_data (self);
-  update_font_info (self);
-  apply_use_font (self);
+  update_font_data (this);
+  update_font_info (this);
+  apply_use_font (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_FONT_DESC]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_FONT_DESC]);
 }
 
 /**
  * gtk_font_dialog_button_get_font_desc:
- * @self: a `GtkFontDialogButton`
+ * @this: a `GtkFontDialogButton`
  *
  * Returns the font of the button.
  *
@@ -894,16 +894,16 @@ gtk_font_dialog_button_set_font_desc (GtkFontDialogButton        *self,
  * Since: 4.10
  */
 PangoFontDescription *
-gtk_font_dialog_button_get_font_desc (GtkFontDialogButton *self)
+gtk_font_dialog_button_get_font_desc (GtkFontDialogButton *this)
 {
-  g_return_val_if_fail (GTK_IS_FONT_DIALOG_BUTTON (self), NULL);
+  g_return_val_if_fail (GTK_IS_FONT_DIALOG_BUTTON (this), NULL);
 
-  return self->font_desc;
+  return this->font_desc;
 }
 
 /**
  * gtk_font_dialog_button_set_font_features:
- * @self: a `GtkFontDialogButton`
+ * @this: a `GtkFontDialogButton`
  * @font_features: (nullable): the font features
  *
  * Sets the font features of the button.
@@ -911,28 +911,28 @@ gtk_font_dialog_button_get_font_desc (GtkFontDialogButton *self)
  * Since: 4.10
  */
 void
-gtk_font_dialog_button_set_font_features (GtkFontDialogButton *self,
+gtk_font_dialog_button_set_font_features (GtkFontDialogButton *this,
                                           const char          *font_features)
 {
   char *new_features;
 
-  g_return_if_fail (GTK_IS_FONT_DIALOG_BUTTON (self));
+  g_return_if_fail (GTK_IS_FONT_DIALOG_BUTTON (this));
 
-  if (g_strcmp0 (self->font_features, font_features) == 0)
+  if (g_strcmp0 (this->font_features, font_features) == 0)
     return;
 
   new_features = g_strdup (font_features);
-  g_free (self->font_features);
-  self->font_features = new_features;
+  g_free (this->font_features);
+  this->font_features = new_features;
 
-  apply_use_font (self);
+  apply_use_font (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_FONT_FEATURES]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_FONT_FEATURES]);
 }
 
 /**
  * gtk_font_dialog_button_get_font_features:
- * @self: a `GtkFontDialogButton`
+ * @this: a `GtkFontDialogButton`
  *
  * Returns the font features of the button.
  *
@@ -949,16 +949,16 @@ gtk_font_dialog_button_set_font_features (GtkFontDialogButton *self,
  * Since: 4.10
  */
 const char *
-gtk_font_dialog_button_get_font_features (GtkFontDialogButton *self)
+gtk_font_dialog_button_get_font_features (GtkFontDialogButton *this)
 {
-  g_return_val_if_fail (GTK_IS_FONT_DIALOG_BUTTON (self), NULL);
+  g_return_val_if_fail (GTK_IS_FONT_DIALOG_BUTTON (this), NULL);
 
-  return self->font_features;
+  return this->font_features;
 }
 
 /**
  * gtk_font_dialog_button_set_language:
- * @self: a `GtkFontDialogButton`
+ * @this: a `GtkFontDialogButton`
  * @language: (nullable): the new language
  *
  * Sets the language to use for font features.
@@ -966,24 +966,24 @@ gtk_font_dialog_button_get_font_features (GtkFontDialogButton *self)
  * Since: 4.10
  */
 void
-gtk_font_dialog_button_set_language (GtkFontDialogButton *self,
+gtk_font_dialog_button_set_language (GtkFontDialogButton *this,
                                      PangoLanguage       *language)
 {
-  g_return_if_fail (GTK_IS_FONT_DIALOG_BUTTON (self));
+  g_return_if_fail (GTK_IS_FONT_DIALOG_BUTTON (this));
 
-  if (self->language == language)
+  if (this->language == language)
     return;
 
-  self->language = language;
+  this->language = language;
 
-  apply_use_font (self);
+  apply_use_font (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_LANGUAGE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_LANGUAGE]);
 }
 
 /**
  * gtk_font_dialog_button_get_language:
- * @self: a `GtkFontDialogButton`
+ * @this: a `GtkFontDialogButton`
  *
  * Returns the language that is used for font features.
  *
@@ -992,11 +992,11 @@ gtk_font_dialog_button_set_language (GtkFontDialogButton *self,
  * Since: 4.10
  */
 PangoLanguage *
-gtk_font_dialog_button_get_language (GtkFontDialogButton *self)
+gtk_font_dialog_button_get_language (GtkFontDialogButton *this)
 {
-  g_return_val_if_fail (GTK_IS_FONT_DIALOG_BUTTON (self), NULL);
+  g_return_val_if_fail (GTK_IS_FONT_DIALOG_BUTTON (this), NULL);
 
-  return self->language;
+  return this->language;
 }
 
 /* }}} */
@@ -1004,7 +1004,7 @@ gtk_font_dialog_button_get_language (GtkFontDialogButton *self)
 /* vim:set foldmethod=marker expandtab: */
 /**
  * gtk_font_dialog_button_set_use_font:
- * @self: a `GtkFontDialogButton`
+ * @this: a `GtkFontDialogButton`
  * @use_font: If `TRUE`, font name will be written using
  *   the chosen font
  *
@@ -1014,24 +1014,24 @@ gtk_font_dialog_button_get_language (GtkFontDialogButton *self)
  * Since: 4.10
  */
 void
-gtk_font_dialog_button_set_use_font (GtkFontDialogButton *self,
+gtk_font_dialog_button_set_use_font (GtkFontDialogButton *this,
                                      gboolean             use_font)
 {
-  g_return_if_fail (GTK_IS_FONT_DIALOG_BUTTON (self));
+  g_return_if_fail (GTK_IS_FONT_DIALOG_BUTTON (this));
 
-  if (self->use_font == use_font)
+  if (this->use_font == use_font)
     return;
 
-  self->use_font = use_font;
+  this->use_font = use_font;
 
-  apply_use_font (self);
+  apply_use_font (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_USE_FONT]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_USE_FONT]);
 }
 
 /**
  * gtk_font_dialog_button_get_use_font:
- * @self: a `GtkFontDialogButton`
+ * @this: a `GtkFontDialogButton`
  *
  * Returns whether the selected font is used in the label.
  *
@@ -1040,16 +1040,16 @@ gtk_font_dialog_button_set_use_font (GtkFontDialogButton *self,
  * Since: 4.10
  */
 gboolean
-gtk_font_dialog_button_get_use_font (GtkFontDialogButton *self)
+gtk_font_dialog_button_get_use_font (GtkFontDialogButton *this)
 {
-  g_return_val_if_fail (GTK_IS_FONT_DIALOG_BUTTON (self), FALSE);
+  g_return_val_if_fail (GTK_IS_FONT_DIALOG_BUTTON (this), FALSE);
 
-  return self->use_font;
+  return this->use_font;
 }
 
 /**
  * gtk_font_dialog_button_set_use_size:
- * @self: a `GtkFontDialogButton`
+ * @this: a `GtkFontDialogButton`
  * @use_size: If `TRUE`, font name will be written using
  *   the chosen font size
  *
@@ -1059,24 +1059,24 @@ gtk_font_dialog_button_get_use_font (GtkFontDialogButton *self)
  * Since: 4.10
  */
 void
-gtk_font_dialog_button_set_use_size (GtkFontDialogButton *self,
+gtk_font_dialog_button_set_use_size (GtkFontDialogButton *this,
                                      gboolean             use_size)
 {
-  g_return_if_fail (GTK_IS_FONT_DIALOG_BUTTON (self));
+  g_return_if_fail (GTK_IS_FONT_DIALOG_BUTTON (this));
 
-  if (self->use_size == use_size)
+  if (this->use_size == use_size)
     return;
 
-  self->use_size = use_size;
+  this->use_size = use_size;
 
-  apply_use_font (self);
+  apply_use_font (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_USE_SIZE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_USE_SIZE]);
 }
 
 /**
  * gtk_font_dialog_button_get_use_size:
- * @self: a `GtkFontDialogButton`
+ * @this: a `GtkFontDialogButton`
  *
  * Returns whether the selected font size is used in the label.
  *
@@ -1085,11 +1085,11 @@ gtk_font_dialog_button_set_use_size (GtkFontDialogButton *self,
  * Since: 4.10
  */
 gboolean
-gtk_font_dialog_button_get_use_size (GtkFontDialogButton *self)
+gtk_font_dialog_button_get_use_size (GtkFontDialogButton *this)
 {
-  g_return_val_if_fail (GTK_IS_FONT_DIALOG_BUTTON (self), FALSE);
+  g_return_val_if_fail (GTK_IS_FONT_DIALOG_BUTTON (this), FALSE);
 
-  return self->use_size;
+  return this->use_size;
 }
 
 /* }}} */

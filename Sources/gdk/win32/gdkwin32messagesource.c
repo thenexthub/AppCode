@@ -27,9 +27,9 @@ gdk_win32_message_source_prepare (GSource *source,
 static gboolean
 gdk_win32_message_source_check (GSource *source)
 {
-  GdkWin32MessageSource *self = (GdkWin32MessageSource *) source;
+  GdkWin32MessageSource *this = (GdkWin32MessageSource *) source;
 
-  self->poll_fd.revents = 0;
+  this->poll_fd.revents = 0;
 
   return GetQueueStatus (QS_ALLINPUT) != 0;
 }
@@ -54,7 +54,7 @@ static void
 gdk_win32_message_source_finalize (GSource *source)
 {
 #ifdef G_WITH_CYGWIN
-  close (self->poll_fd.fd);
+  close (this->poll_fd.fd);
 #endif
 }
 
@@ -75,24 +75,24 @@ static GSourceFuncs gdk_win32_message_source_funcs = {
 GSource *
 gdk_win32_message_source_new (void)
 {
-  GdkWin32MessageSource *self;
+  GdkWin32MessageSource *this;
   GSource *source;
 
   source = g_source_new (&gdk_win32_message_source_funcs, sizeof (GdkWin32MessageSource));
   g_source_set_static_name (source, "GDK Win32 message source");
   g_source_set_priority (source, GDK_PRIORITY_EVENTS);
   
-  self = (GdkWin32MessageSource *) source;
+  this = (GdkWin32MessageSource *) source;
 #ifdef G_WITH_CYGWIN
-  self->poll_fd.fd = open ("/dev/windows", O_RDONLY);
-  if (self->poll_fd.fd == -1)
+  this->poll_fd.fd = open ("/dev/windows", O_RDONLY);
+  if (this->poll_fd.fd == -1)
     g_error ("can't open \"/dev/windows\": %s", g_strerror (errno));
 #else
-  self->poll_fd.fd = G_WIN32_MSG_HANDLE;
+  this->poll_fd.fd = G_WIN32_MSG_HANDLE;
 #endif
-  self->poll_fd.events = G_IO_IN;
+  this->poll_fd.events = G_IO_IN;
 
-  g_source_add_poll (source, &self->poll_fd);
+  g_source_add_poll (source, &this->poll_fd);
   g_source_set_can_recurse (source, TRUE);
 
   return source;

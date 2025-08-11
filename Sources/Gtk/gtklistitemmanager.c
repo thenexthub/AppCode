@@ -156,19 +156,19 @@ gtk_list_item_change_get_header (GtkListItemChange *change)
 }
 
 static void
-potentially_empty_rectangle_union (cairo_rectangle_int_t       *self,
+potentially_empty_rectangle_union (cairo_rectangle_int_t       *this,
                                    const cairo_rectangle_int_t *area)
 {
   if (area->width <= 0 || area->height <= 0)
     return;
 
-  if (self->width <= 0 || self->height <= 0)
+  if (this->width <= 0 || this->height <= 0)
     {
-      *self = *area;
+      *this = *area;
       return;
     }
 
-  gdk_rectangle_union (self, area, self);
+  gdk_rectangle_union (this, area, this);
 }
 
 static void
@@ -242,76 +242,76 @@ gtk_list_item_manager_new (GtkWidget          *widget,
                            void                (* prepare_section) (GtkWidget *, GtkListTile *, guint),
                            GtkListHeaderBase * (* create_header_widget) (GtkWidget *))
 {
-  GtkListItemManager *self;
+  GtkListItemManager *this;
 
   g_return_val_if_fail (GTK_IS_WIDGET (widget), NULL);
 
-  self = g_object_new (GTK_TYPE_LIST_ITEM_MANAGER, NULL);
+  this = g_object_new (GTK_TYPE_LIST_ITEM_MANAGER, NULL);
 
   /* not taking a ref because the widget refs us */
-  self->widget = widget;
-  self->split_func = split_func;
-  self->create_widget = create_widget;
-  self->prepare_section = prepare_section;
-  self->create_header_widget = create_header_widget;
+  this->widget = widget;
+  this->split_func = split_func;
+  this->create_widget = create_widget;
+  this->prepare_section = prepare_section;
+  this->create_header_widget = create_header_widget;
 
-  self->items = gtk_rb_tree_new_for_size (sizeof (GtkListTile),
+  this->items = gtk_rb_tree_new_for_size (sizeof (GtkListTile),
                                           sizeof (GtkListTileAugment),
                                           gtk_list_item_manager_augment_node,
                                           gtk_list_item_manager_clear_node,
                                           NULL);
 
-  return self;
+  return this;
 }
 
 static gboolean
-gtk_list_item_manager_has_sections (GtkListItemManager *self)
+gtk_list_item_manager_has_sections (GtkListItemManager *this)
 {
-  if (self->model == NULL || !self->has_sections)
+  if (this->model == NULL || !this->has_sections)
     return FALSE;
 
-  return GTK_IS_SECTION_MODEL (self->model);
+  return GTK_IS_SECTION_MODEL (this->model);
 }
 
 void
-gtk_list_item_manager_get_tile_bounds (GtkListItemManager *self,
+gtk_list_item_manager_get_tile_bounds (GtkListItemManager *this,
                                        GdkRectangle       *out_bounds)
 {
   GtkListTile *tile;
   GtkListTileAugment *aug;
 
-  tile = gtk_rb_tree_get_root (self->items);
+  tile = gtk_rb_tree_get_root (this->items);
   if (tile == NULL)
     {
       *out_bounds = (GdkRectangle) { 0, 0, 0, 0 };
       return;
     }
 
-  aug = gtk_rb_tree_get_augment (self->items, tile);
+  aug = gtk_rb_tree_get_augment (this->items, tile);
   *out_bounds = aug->area;
 }
 
 gpointer
-gtk_list_item_manager_get_first (GtkListItemManager *self)
+gtk_list_item_manager_get_first (GtkListItemManager *this)
 {
-  return gtk_rb_tree_get_first (self->items);
+  return gtk_rb_tree_get_first (this->items);
 }
 
 gpointer
-gtk_list_item_manager_get_last (GtkListItemManager *self)
+gtk_list_item_manager_get_last (GtkListItemManager *this)
 {
-  return gtk_rb_tree_get_last (self->items);
+  return gtk_rb_tree_get_last (this->items);
 }
 
 gpointer
-gtk_list_item_manager_get_root (GtkListItemManager *self)
+gtk_list_item_manager_get_root (GtkListItemManager *this)
 {
-  return gtk_rb_tree_get_root (self->items);
+  return gtk_rb_tree_get_root (this->items);
 }
 
 /*
  * gtk_list_item_manager_get_nth:
- * @self: a `GtkListItemManager`
+ * @this: a `GtkListItemManager`
  * @position: position of the item
  * @offset: (out): offset into the returned tile
  *
@@ -325,20 +325,20 @@ gtk_list_item_manager_get_root (GtkListItemManager *self)
  *   %NULL if position is out of range
  **/
 gpointer
-gtk_list_item_manager_get_nth (GtkListItemManager *self,
+gtk_list_item_manager_get_nth (GtkListItemManager *this,
                                guint               position,
                                guint              *offset)
 {
   GtkListTile *tile, *tmp;
 
-  tile = gtk_rb_tree_get_root (self->items);
+  tile = gtk_rb_tree_get_root (this->items);
 
   while (tile)
     {
       tmp = gtk_rb_tree_node_get_left (tile);
       if (tmp)
         {
-          GtkListTileAugment *aug = gtk_rb_tree_get_augment (self->items, tmp);
+          GtkListTileAugment *aug = gtk_rb_tree_get_augment (this->items, tmp);
           if (position < aug->n_items)
             {
               tile = tmp;
@@ -361,7 +361,7 @@ gtk_list_item_manager_get_nth (GtkListItemManager *self,
 }
 
 static GtkListTile *
-gtk_list_tile_get_header (GtkListItemManager *self,
+gtk_list_tile_get_header (GtkListItemManager *this,
                           GtkListTile        *tile)
 {
   GtkListTileAugment *aug;
@@ -375,7 +375,7 @@ gtk_list_tile_get_header (GtkListItemManager *self,
           other = gtk_rb_tree_node_get_right (tile);
           if (other)
             {
-              aug = gtk_rb_tree_get_augment (self->items, other);
+              aug = gtk_rb_tree_get_augment (this->items, other);
               if (aug->has_header)
                 {
                   check_right = TRUE;
@@ -392,7 +392,7 @@ gtk_list_tile_get_header (GtkListItemManager *self,
       other = gtk_rb_tree_node_get_left (tile);
       if (other)
         {
-          aug = gtk_rb_tree_get_augment (self->items, other);
+          aug = gtk_rb_tree_get_augment (this->items, other);
           if (aug->has_header)
             {
               check_right = TRUE;
@@ -413,7 +413,7 @@ gtk_list_tile_get_header (GtkListItemManager *self,
 }
 
 static GtkListTile *
-gtk_list_tile_get_footer (GtkListItemManager *self,
+gtk_list_tile_get_footer (GtkListItemManager *this,
                           GtkListTile        *tile)
 {
   GtkListTileAugment *aug;
@@ -427,7 +427,7 @@ gtk_list_tile_get_footer (GtkListItemManager *self,
           other = gtk_rb_tree_node_get_left (tile);
           if (other)
             {
-              aug = gtk_rb_tree_get_augment (self->items, other);
+              aug = gtk_rb_tree_get_augment (this->items, other);
               if (aug->has_footer)
                 {
                   check_left = TRUE;
@@ -444,7 +444,7 @@ gtk_list_tile_get_footer (GtkListItemManager *self,
       other = gtk_rb_tree_node_get_right (tile);
       if (other)
         {
-          aug = gtk_rb_tree_get_augment (self->items, other);
+          aug = gtk_rb_tree_get_augment (this->items, other);
           if (aug->has_footer)
             {
               check_left = TRUE;
@@ -490,7 +490,7 @@ rectangle_distance (const cairo_rectangle_int_t *rect,
 }
 
 static GtkListTile *
-gtk_list_tile_get_tile_at (GtkListItemManager *self,
+gtk_list_tile_get_tile_at (GtkListItemManager *this,
                            GtkListTile        *tile,
                            int                 x,
                            int                 y,
@@ -503,7 +503,7 @@ gtk_list_tile_get_tile_at (GtkListItemManager *self,
   left = gtk_rb_tree_node_get_left (tile);
   if (left)
     {
-      aug = gtk_list_tile_get_augment (self, left);
+      aug = gtk_list_tile_get_augment (this, left);
       left_dist = rectangle_distance (&aug->area, x, y);
     }
   else
@@ -511,7 +511,7 @@ gtk_list_tile_get_tile_at (GtkListItemManager *self,
   right = gtk_rb_tree_node_get_right (tile);
   if (right)
     {
-      aug = gtk_list_tile_get_augment (self, right);
+      aug = gtk_list_tile_get_augment (this, right);
       right_dist = rectangle_distance (&aug->area, x, y);
     }
   else
@@ -536,7 +536,7 @@ gtk_list_tile_get_tile_at (GtkListItemManager *self,
           if (left_dist >= *distance)
             return result;
 
-          left = gtk_list_tile_get_tile_at (self, left, x, y, distance);
+          left = gtk_list_tile_get_tile_at (this, left, x, y, distance);
           if (left)
             result = left;
           left_dist = G_MAXINT;
@@ -546,7 +546,7 @@ gtk_list_tile_get_tile_at (GtkListItemManager *self,
           if (right_dist >= *distance)
             return result;
 
-          right = gtk_list_tile_get_tile_at (self, right, x, y, distance);
+          right = gtk_list_tile_get_tile_at (this, right, x, y, distance);
           if (right)
             result = right;
           right_dist = G_MAXINT;
@@ -556,7 +556,7 @@ gtk_list_tile_get_tile_at (GtkListItemManager *self,
 
 /*
  * gtk_list_item_manager_get_nearest_tile:
- * @self: a GtkListItemManager
+ * @this: a GtkListItemManager
  * @x: x coordinate of tile
  * @y: y coordinate of tile
  *
@@ -570,22 +570,22 @@ gtk_list_tile_get_tile_at (GtkListItemManager *self,
  * Returns: (nullable): The tile nearest to (x, y) or NULL if there are no tiles
  **/
 GtkListTile *
-gtk_list_item_manager_get_nearest_tile (GtkListItemManager *self,
+gtk_list_item_manager_get_nearest_tile (GtkListItemManager *this,
                                         int                 x,
                                         int                 y)
 {
   GtkListTile *root;
   int distance = G_MAXINT;
 
-  root = gtk_list_item_manager_get_root (self);
+  root = gtk_list_item_manager_get_root (this);
   if (root == NULL)
     return NULL;
 
-  return gtk_list_tile_get_tile_at (self, root, x, y, &distance);
+  return gtk_list_tile_get_tile_at (this, root, x, y, &distance);
 }
 
 guint
-gtk_list_tile_get_position (GtkListItemManager *self,
+gtk_list_tile_get_position (GtkListItemManager *this,
                             GtkListTile        *tile)
 {
   GtkListTile *parent, *left;
@@ -594,7 +594,7 @@ gtk_list_tile_get_position (GtkListItemManager *self,
   left = gtk_rb_tree_node_get_left (tile);
   if (left)
     {
-      GtkListTileAugment *aug = gtk_rb_tree_get_augment (self->items, left);
+      GtkListTileAugment *aug = gtk_rb_tree_get_augment (this->items, left);
       pos = aug->n_items;
     }
   else
@@ -612,7 +612,7 @@ gtk_list_tile_get_position (GtkListItemManager *self,
         {
           if (left)
             {
-              GtkListTileAugment *aug = gtk_rb_tree_get_augment (self->items, left);
+              GtkListTileAugment *aug = gtk_rb_tree_get_augment (this->items, left);
               pos += aug->n_items;
             }
           pos += parent->n_items;
@@ -625,10 +625,10 @@ gtk_list_tile_get_position (GtkListItemManager *self,
 }
 
 gpointer
-gtk_list_tile_get_augment (GtkListItemManager *self,
+gtk_list_tile_get_augment (GtkListItemManager *this,
                            GtkListTile        *tile)
 {
-  return gtk_rb_tree_get_augment (self->items, tile);
+  return gtk_rb_tree_get_augment (this->items, tile);
 }
 
 static GtkListTile *
@@ -655,7 +655,7 @@ gtk_list_tile_get_previous_skip (GtkListTile *tile)
 
 /*
  * gtk_list_tile_set_area:
- * @self: the list item manager
+ * @this: the list item manager
  * @tile: tile to set area for
  * @area: (nullable): area to set or NULL to clear
  *     the area
@@ -669,7 +669,7 @@ gtk_list_tile_get_previous_skip (GtkListTile *tile)
  * This function should only be called from inside size_allocate().
  **/
 void
-gtk_list_tile_set_area (GtkListItemManager          *self,
+gtk_list_tile_set_area (GtkListItemManager          *this,
                         GtkListTile                 *tile,
                         const cairo_rectangle_int_t *area)
 {
@@ -686,7 +686,7 @@ gtk_list_tile_set_area (GtkListItemManager          *self,
 }
 
 void
-gtk_list_tile_set_area_position (GtkListItemManager *self,
+gtk_list_tile_set_area_position (GtkListItemManager *this,
                                  GtkListTile        *tile,
                                  int                 x,
                                  int                 y)
@@ -700,7 +700,7 @@ gtk_list_tile_set_area_position (GtkListItemManager *self,
 }
 
 void
-gtk_list_tile_set_area_size (GtkListItemManager *self,
+gtk_list_tile_set_area_size (GtkListItemManager *this,
                              GtkListTile        *tile,
                              int                 width,
                              int                 height)
@@ -727,7 +727,7 @@ gtk_list_tile_set_type (GtkListTile     *tile,
 }
 
 static void
-gtk_list_item_tracker_unset_position (GtkListItemManager *self,
+gtk_list_item_tracker_unset_position (GtkListItemManager *this,
                                       GtkListItemTracker *tracker)
 {
   tracker->widget = NULL;
@@ -735,7 +735,7 @@ gtk_list_item_tracker_unset_position (GtkListItemManager *self,
 }
 
 static gboolean
-gtk_list_item_tracker_query_range (GtkListItemManager *self,
+gtk_list_item_tracker_query_range (GtkListItemManager *this,
                                    GtkListItemTracker *tracker,
                                    guint               n_items,
                                    guint              *out_start,
@@ -762,7 +762,7 @@ gtk_list_item_tracker_query_range (GtkListItemManager *self,
 }
 
 static void
-gtk_list_item_query_tracked_range (GtkListItemManager *self,
+gtk_list_item_query_tracked_range (GtkListItemManager *this,
                                    guint               n_items,
                                    guint               position,
                                    guint              *out_n_items,
@@ -778,9 +778,9 @@ gtk_list_item_query_tracked_range (GtkListItemManager *self,
 
   /* step 1: Check if position is tracked */
 
-  for (l = self->trackers; l; l = l->next)
+  for (l = this->trackers; l; l = l->next)
     {
-      if (!gtk_list_item_tracker_query_range (self, l->data, n_items, &tracker_start, &tracker_n_items))
+      if (!gtk_list_item_tracker_query_range (this, l->data, n_items, &tracker_start, &tracker_n_items))
         continue;
 
       if (tracker_start > position)
@@ -806,9 +806,9 @@ gtk_list_item_query_tracked_range (GtkListItemManager *self,
   /* step 2: make the tracked range as large as possible
    * NB: This is O(N_TRACKERS^2), but the number of trackers should be <5 */
 restart:
-  for (l = self->trackers; l; l = l->next)
+  for (l = this->trackers; l; l = l->next)
     {
-      if (!gtk_list_item_tracker_query_range (self, l->data, n_items, &tracker_start, &tracker_n_items))
+      if (!gtk_list_item_tracker_query_range (this, l->data, n_items, &tracker_start, &tracker_n_items))
         continue;
 
       if (tracker_start + tracker_n_items <= position + *out_n_items)
@@ -825,15 +825,15 @@ restart:
 }
 
 static GtkListTile *
-gtk_list_item_manager_ensure_split (GtkListItemManager *self,
+gtk_list_item_manager_ensure_split (GtkListItemManager *this,
                                     GtkListTile        *tile,
                                     guint               n_items)
 {
-  return self->split_func (self->widget, tile, n_items);
+  return this->split_func (this->widget, tile, n_items);
 }
 
 static void
-gtk_list_item_manager_remove_items (GtkListItemManager *self,
+gtk_list_item_manager_remove_items (GtkListItemManager *this,
                                     GtkListItemChange  *change,
                                     guint               position,
                                     guint               n_items)
@@ -844,9 +844,9 @@ gtk_list_item_manager_remove_items (GtkListItemManager *self,
   if (n_items == 0)
     return;
 
-  tile = gtk_list_item_manager_get_nth (self, position, &offset);
+  tile = gtk_list_item_manager_get_nth (this, position, &offset);
   if (offset)
-    tile = gtk_list_item_manager_ensure_split (self, tile, offset);
+    tile = gtk_list_item_manager_ensure_split (this, tile, offset);
   header = gtk_list_tile_get_previous_skip (tile);
   if (header != NULL &&
       (header->type != GTK_LIST_TILE_HEADER && header->type != GTK_LIST_TILE_UNMATCHED_HEADER))
@@ -876,7 +876,7 @@ gtk_list_item_manager_remove_items (GtkListItemManager *self,
         case GTK_LIST_TILE_ITEM:
           if (tile->n_items > n_items)
             {
-              gtk_list_item_manager_ensure_split (self, tile, n_items);
+              gtk_list_item_manager_ensure_split (this, tile, n_items);
               g_assert (tile->n_items <= n_items);
             }
           if (tile->widget)
@@ -906,11 +906,11 @@ gtk_list_item_manager_remove_items (GtkListItemManager *self,
         }
     }
 
-  gtk_widget_queue_resize (GTK_WIDGET (self->widget));
+  gtk_widget_queue_resize (GTK_WIDGET (this->widget));
 }
 
 static void
-gtk_list_item_manager_add_items (GtkListItemManager *self,
+gtk_list_item_manager_add_items (GtkListItemManager *this,
                                  GtkListItemChange  *change,
                                  guint               position,
                                  guint               n_items)
@@ -922,13 +922,13 @@ gtk_list_item_manager_add_items (GtkListItemManager *self,
   if (n_items == 0)
     return;
 
-  has_sections = gtk_list_item_manager_has_sections (self);
+  has_sections = gtk_list_item_manager_has_sections (this);
 
-  tile = gtk_list_item_manager_get_nth (self, position, &offset);
+  tile = gtk_list_item_manager_get_nth (this, position, &offset);
   if (tile == NULL)
     {
       /* at end of list, pick the footer */
-      for (tile = gtk_rb_tree_get_last (self->items);
+      for (tile = gtk_rb_tree_get_last (this->items);
            tile && tile->type == GTK_LIST_TILE_REMOVED;
            tile = gtk_rb_tree_node_get_previous (tile))
         { }
@@ -936,10 +936,10 @@ gtk_list_item_manager_add_items (GtkListItemManager *self,
       if (tile == NULL)
         {
           /* empty list, there isn't even a footer yet */
-          tile = gtk_rb_tree_insert_after (self->items, NULL);
+          tile = gtk_rb_tree_insert_after (this->items, NULL);
           tile->type = GTK_LIST_TILE_UNMATCHED_HEADER;
 
-          tile = gtk_rb_tree_insert_after (self->items, tile);
+          tile = gtk_rb_tree_insert_after (this->items, tile);
           tile->type = GTK_LIST_TILE_UNMATCHED_FOOTER;
         }
       else if (has_sections && tile->type == GTK_LIST_TILE_FOOTER)
@@ -948,15 +948,15 @@ gtk_list_item_manager_add_items (GtkListItemManager *self,
 
           gtk_list_tile_set_type (tile, GTK_LIST_TILE_UNMATCHED_FOOTER);
 
-          header = gtk_list_tile_get_header (self, tile);
+          header = gtk_list_tile_get_header (this, tile);
           gtk_list_item_change_clear_header (change, &header->widget);
           gtk_list_tile_set_type (header, GTK_LIST_TILE_UNMATCHED_HEADER);
         }
     }
   if (offset)
-    tile = gtk_list_item_manager_ensure_split (self, tile, offset);
+    tile = gtk_list_item_manager_ensure_split (this, tile, offset);
 
-  tile = gtk_rb_tree_insert_before (self->items, tile);
+  tile = gtk_rb_tree_insert_before (this->items, tile);
   tile->type = GTK_LIST_TILE_ITEM;
   tile->n_items = n_items;
   gtk_rb_tree_node_mark_dirty (tile);
@@ -968,10 +968,10 @@ gtk_list_item_manager_add_items (GtkListItemManager *self,
       if (section != NULL && section->type == GTK_LIST_TILE_HEADER)
         {
           guint start, end;
-          GtkListTile *footer = gtk_list_tile_get_footer (self, section);
+          GtkListTile *footer = gtk_list_tile_get_footer (this, section);
           GtkListTile *previous_footer = gtk_list_tile_get_previous_skip (section);
 
-          gtk_section_model_get_section (GTK_SECTION_MODEL (self->model), position, &start, &end);
+          gtk_section_model_get_section (GTK_SECTION_MODEL (this->model), position, &start, &end);
 
           if (previous_footer != NULL && previous_footer->type == GTK_LIST_TILE_FOOTER &&
               position > start && position < end)
@@ -980,7 +980,7 @@ gtk_list_item_manager_add_items (GtkListItemManager *self,
             gtk_list_tile_set_type (section, GTK_LIST_TILE_REMOVED);
             gtk_list_tile_set_type (previous_footer, GTK_LIST_TILE_REMOVED);
 
-            section = gtk_list_tile_get_header (self, previous_footer);
+            section = gtk_list_tile_get_header (this, previous_footer);
           }
 
           gtk_list_item_change_clear_header (change, &section->widget);
@@ -991,11 +991,11 @@ gtk_list_item_manager_add_items (GtkListItemManager *self,
         }
     }
 
-  gtk_widget_queue_resize (GTK_WIDGET (self->widget));
+  gtk_widget_queue_resize (GTK_WIDGET (this->widget));
 }
 
 static gboolean
-gtk_list_item_manager_merge_list_items (GtkListItemManager *self,
+gtk_list_item_manager_merge_list_items (GtkListItemManager *this,
                                         GtkListTile        *first,
                                         GtkListTile        *second)
 {
@@ -1005,14 +1005,14 @@ gtk_list_item_manager_merge_list_items (GtkListItemManager *self,
 
   first->n_items += second->n_items;
   gtk_rb_tree_node_mark_dirty (first);
-  gtk_rb_tree_remove (self->items, second);
+  gtk_rb_tree_remove (this->items, second);
 
   return TRUE;
 }
 
 /*
  * gtk_list_tile_split:
- * @self: the listitemmanager
+ * @this: the listitemmanager
  * @tile: a tile to split into two
  * @n_items: number of items to keep in tile
  *
@@ -1029,7 +1029,7 @@ gtk_list_item_manager_merge_list_items (GtkListItemManager *self,
  * Returns: The new tile
  **/
 GtkListTile *
-gtk_list_tile_split (GtkListItemManager *self,
+gtk_list_tile_split (GtkListItemManager *this,
                      GtkListTile        *tile,
                      guint               n_items)
 {
@@ -1039,7 +1039,7 @@ gtk_list_tile_split (GtkListItemManager *self,
   g_assert (n_items < tile->n_items);
   g_assert (tile->type == GTK_LIST_TILE_ITEM);
 
-  result = gtk_rb_tree_insert_after (self->items, tile);
+  result = gtk_rb_tree_insert_after (this->items, tile);
   result->type = GTK_LIST_TILE_ITEM;
   result->n_items = tile->n_items - n_items;
   tile->n_items = n_items;
@@ -1050,7 +1050,7 @@ gtk_list_tile_split (GtkListItemManager *self,
 
 /*
  * gtk_list_tile_gc:
- * @self: the listitemmanager
+ * @this: the listitemmanager
  * @tile: a tile or NULL
  *
  * Tries to get rid of tiles when they aren't needed anymore,
@@ -1062,7 +1062,7 @@ gtk_list_tile_split (GtkListItemManager *self,
  * Returns: The next tile or NULL if everything was gc'ed
  **/
 static GtkListTile *
-gtk_list_tile_gc (GtkListItemManager *self,
+gtk_list_tile_gc (GtkListItemManager *this,
                   GtkListTile        *tile)
 {
   GtkListTile *next;
@@ -1075,7 +1075,7 @@ gtk_list_tile_gc (GtkListItemManager *self,
       next = gtk_rb_tree_node_get_next (tile);
       while (next && next->type == GTK_LIST_TILE_REMOVED)
         {
-          gtk_rb_tree_remove (self->items, next);
+          gtk_rb_tree_remove (this->items, next);
           next = gtk_rb_tree_node_get_next (tile);
         }
 
@@ -1085,7 +1085,7 @@ gtk_list_tile_gc (GtkListItemManager *self,
           g_assert (tile->n_items > 0);
           if (next == NULL)
             break;
-          if (gtk_list_item_manager_merge_list_items (self, tile, next))
+          if (gtk_list_item_manager_merge_list_items (this, tile, next))
             continue;
           break;
 
@@ -1096,7 +1096,7 @@ gtk_list_tile_gc (GtkListItemManager *self,
           break;
 
         case GTK_LIST_TILE_REMOVED:
-          gtk_rb_tree_remove (self->items, tile);
+          gtk_rb_tree_remove (this->items, tile);
           tile = next;
           continue;
 
@@ -1113,7 +1113,7 @@ gtk_list_tile_gc (GtkListItemManager *self,
 
 /*
  * gtk_list_item_manager_gc_tiles:
- * @self: the listitemmanager
+ * @this: the listitemmanager
  *
  * Removes all tiles of type GTK_LIST_TILE_REMOVED
  * and merges item tiles as much as possible.
@@ -1121,31 +1121,31 @@ gtk_list_tile_gc (GtkListItemManager *self,
  * This function does not update the tiles' areas.
  */
 void
-gtk_list_item_manager_gc_tiles (GtkListItemManager *self)
+gtk_list_item_manager_gc_tiles (GtkListItemManager *this)
 {
   GtkListTile *tile;
 
-  for (tile = gtk_list_tile_gc (self, gtk_list_item_manager_get_first (self));
+  for (tile = gtk_list_tile_gc (this, gtk_list_item_manager_get_first (this));
        tile != NULL;
-       tile = gtk_list_tile_gc (self, gtk_rb_tree_node_get_next (tile)))
+       tile = gtk_list_tile_gc (this, gtk_rb_tree_node_get_next (tile)))
     {
     }
 }
 
 static void
-gtk_list_item_manager_release_items (GtkListItemManager *self,
+gtk_list_item_manager_release_items (GtkListItemManager *this,
                                      GtkListItemChange  *change)
 {
   GtkListTile *tile, *header;
   guint position, i, n_items, query_n_items;
   gboolean tracked, deleted_section;
 
-  n_items = g_list_model_get_n_items (G_LIST_MODEL (self->model));
+  n_items = g_list_model_get_n_items (G_LIST_MODEL (this->model));
   position = 0;
 
   while (position < n_items)
     {
-      gtk_list_item_query_tracked_range (self, n_items, position, &query_n_items, &tracked);
+      gtk_list_item_query_tracked_range (this, n_items, position, &query_n_items, &tracked);
       if (tracked)
         {
           position += query_n_items;
@@ -1153,7 +1153,7 @@ gtk_list_item_manager_release_items (GtkListItemManager *self,
         }
 
       deleted_section = FALSE;
-      tile = gtk_list_item_manager_get_nth (self, position, &i);
+      tile = gtk_list_item_manager_get_nth (this, position, &i);
       if (i == 0)
         {
           header = gtk_list_tile_get_previous_skip (tile);
@@ -1201,11 +1201,11 @@ gtk_list_item_manager_release_items (GtkListItemManager *self,
       if (deleted_section)
         {
           if (header == NULL)
-            header = gtk_list_tile_get_header (self, tile);
+            header = gtk_list_tile_get_header (this, tile);
           gtk_list_item_change_clear_header (change, &header->widget);
           gtk_list_tile_set_type (header, GTK_LIST_TILE_UNMATCHED_HEADER);
 
-          tile = gtk_list_tile_get_footer (self, tile);
+          tile = gtk_list_tile_get_footer (this, tile);
           gtk_list_tile_set_type (tile, GTK_LIST_TILE_UNMATCHED_FOOTER);
         }
       position += query_n_items;
@@ -1213,7 +1213,7 @@ gtk_list_item_manager_release_items (GtkListItemManager *self,
 }
 
 static GtkListTile *
-gtk_list_item_manager_insert_section (GtkListItemManager *self,
+gtk_list_item_manager_insert_section (GtkListItemManager *this,
                                       guint               pos,
                                       GtkListTileType     footer_type,
                                       GtkListTileType     header_type)
@@ -1221,12 +1221,12 @@ gtk_list_item_manager_insert_section (GtkListItemManager *self,
   GtkListTile *tile, *footer, *header;
   guint offset;
 
-  tile = gtk_list_item_manager_get_nth (self, pos, &offset);
+  tile = gtk_list_item_manager_get_nth (this, pos, &offset);
   if (tile == NULL)
     {
       if (footer_type == GTK_LIST_TILE_FOOTER)
         {
-          footer = gtk_rb_tree_get_last (self->items);
+          footer = gtk_rb_tree_get_last (this->items);
           if (footer->type != GTK_LIST_TILE_FOOTER && footer->type != GTK_LIST_TILE_UNMATCHED_FOOTER)
             footer = gtk_list_tile_get_previous_skip (footer);
           gtk_list_tile_set_type (footer, footer_type);
@@ -1235,7 +1235,7 @@ gtk_list_item_manager_insert_section (GtkListItemManager *self,
     }
 
   if (offset)
-    tile = gtk_list_item_manager_ensure_split (self, tile, offset);
+    tile = gtk_list_item_manager_ensure_split (this, tile, offset);
 
   header = gtk_list_tile_get_previous_skip (tile);
   if (header != NULL &&
@@ -1252,11 +1252,11 @@ gtk_list_item_manager_insert_section (GtkListItemManager *self,
     }
   else
     {
-      self->prepare_section (self->widget, tile, pos);
+      this->prepare_section (this->widget, tile, pos);
 
-      header = gtk_rb_tree_insert_before (self->items, tile);
+      header = gtk_rb_tree_insert_before (this->items, tile);
       gtk_list_tile_set_type (header, header_type);
-      footer = gtk_rb_tree_insert_before (self->items, header);
+      footer = gtk_rb_tree_insert_before (this->items, header);
       gtk_list_tile_set_type (footer, footer_type);
     }
 
@@ -1280,7 +1280,7 @@ gtk_list_tile_find_widget_before (GtkListTile *tile)
 }
 
 static void
-gtk_list_item_manager_ensure_items (GtkListItemManager *self,
+gtk_list_item_manager_ensure_items (GtkListItemManager *this,
                                     GtkListItemChange  *change,
                                     guint               update_start,
                                     int                 update_diff)
@@ -1290,55 +1290,55 @@ gtk_list_item_manager_ensure_items (GtkListItemManager *self,
   guint position, i, n_items, query_n_items, offset;
   gboolean tracked, has_sections;
 
-  if (self->model == NULL)
+  if (this->model == NULL)
     return;
 
-  n_items = g_list_model_get_n_items (G_LIST_MODEL (self->model));
+  n_items = g_list_model_get_n_items (G_LIST_MODEL (this->model));
   position = 0;
-  has_sections = gtk_list_item_manager_has_sections (self);
+  has_sections = gtk_list_item_manager_has_sections (this);
 
-  gtk_list_item_manager_release_items (self, change);
+  gtk_list_item_manager_release_items (this, change);
 
   while (position < n_items)
     {
-      gtk_list_item_query_tracked_range (self, n_items, position, &query_n_items, &tracked);
+      gtk_list_item_query_tracked_range (this, n_items, position, &query_n_items, &tracked);
       if (!tracked)
         {
           position += query_n_items;
           continue;
         }
 
-      tile = gtk_list_item_manager_get_nth (self, position, &offset);
+      tile = gtk_list_item_manager_get_nth (this, position, &offset);
       if (offset > 0)
-        tile = gtk_list_item_manager_ensure_split (self, tile, offset);
+        tile = gtk_list_item_manager_ensure_split (this, tile, offset);
 
       if (has_sections)
         {
-          header = gtk_list_tile_get_header (self, tile);
+          header = gtk_list_tile_get_header (this, tile);
           if (header->type == GTK_LIST_TILE_UNMATCHED_HEADER)
             {
               guint start, end;
               gpointer item;
 
-              gtk_section_model_get_section (GTK_SECTION_MODEL (self->model), position, &start, &end);
-              header = gtk_list_item_manager_insert_section (self,
+              gtk_section_model_get_section (GTK_SECTION_MODEL (this->model), position, &start, &end);
+              header = gtk_list_item_manager_insert_section (this,
                                                              start,
                                                              GTK_LIST_TILE_UNMATCHED_FOOTER,
                                                              GTK_LIST_TILE_HEADER);
               g_assert (header != NULL && header->widget == NULL);
               header->widget = GTK_WIDGET (gtk_list_item_change_get_header (change));
               if (header->widget == NULL)
-                header->widget = GTK_WIDGET (self->create_header_widget (self->widget));
-              item = g_list_model_get_item (G_LIST_MODEL (self->model), start);
+                header->widget = GTK_WIDGET (this->create_header_widget (this->widget));
+              item = g_list_model_get_item (G_LIST_MODEL (this->model), start);
               gtk_list_header_base_update (GTK_LIST_HEADER_BASE (header->widget),
                                            item,
                                            start, end);
               g_object_unref (item);
               gtk_widget_insert_after (header->widget,
-                                       self->widget,
+                                       this->widget,
                                        gtk_list_tile_find_widget_before (header));
 
-              gtk_list_item_manager_insert_section (self,
+              gtk_list_item_manager_insert_section (this,
                                                     end,
                                                     GTK_LIST_TILE_FOOTER,
                                                     GTK_LIST_TILE_UNMATCHED_HEADER);
@@ -1364,20 +1364,20 @@ gtk_list_item_manager_ensure_items (GtkListItemManager *self,
           {
             case GTK_LIST_TILE_ITEM:
               if (tile->n_items > 1)
-                gtk_list_item_manager_ensure_split (self, tile, 1);
+                gtk_list_item_manager_ensure_split (this, tile, 1);
 
               if (tile->widget == NULL)
                 {
-                  gpointer item = g_list_model_get_item (G_LIST_MODEL (self->model), position + i);
+                  gpointer item = g_list_model_get_item (G_LIST_MODEL (this->model), position + i);
                   tile->widget = GTK_WIDGET (gtk_list_item_change_get (change, item));
                   if (tile->widget == NULL)
-                    tile->widget = GTK_WIDGET (self->create_widget (self->widget));
+                    tile->widget = GTK_WIDGET (this->create_widget (this->widget));
                   gtk_list_item_base_update (GTK_LIST_ITEM_BASE (tile->widget),
                                              position + i,
                                              item,
-                                             gtk_selection_model_is_selected (self->model, position + i));
+                                             gtk_selection_model_is_selected (this->model, position + i));
                   g_object_unref (item);
-                  gtk_widget_insert_after (tile->widget, self->widget, insert_after);
+                  gtk_widget_insert_after (tile->widget, this->widget, insert_after);
                 }
               else
                 {
@@ -1386,7 +1386,7 @@ gtk_list_item_manager_ensure_items (GtkListItemManager *self,
                       gtk_list_item_base_update (GTK_LIST_ITEM_BASE (tile->widget),
                                                  position + i,
                                                  gtk_list_item_base_get_item (GTK_LIST_ITEM_BASE (tile->widget)),
-                                                 gtk_selection_model_is_selected (self->model, position + i));
+                                                 gtk_selection_model_is_selected (this->model, position + i));
                     }
                 }
               insert_after = tile->widget;
@@ -1399,22 +1399,22 @@ gtk_list_item_manager_ensure_items (GtkListItemManager *self,
                   guint start, end;
                   gpointer item;
 
-                  gtk_section_model_get_section (GTK_SECTION_MODEL (self->model), position + i, &start, &end);
+                  gtk_section_model_get_section (GTK_SECTION_MODEL (this->model), position + i, &start, &end);
 
                   gtk_list_tile_set_type (tile, GTK_LIST_TILE_HEADER);
                   g_assert (tile->widget == NULL);
                   tile->widget = GTK_WIDGET (gtk_list_item_change_get_header (change));
                   if (tile->widget == NULL)
-                    tile->widget = GTK_WIDGET (self->create_header_widget (self->widget));
-                  item = g_list_model_get_item (G_LIST_MODEL (self->model), start);
+                    tile->widget = GTK_WIDGET (this->create_header_widget (this->widget));
+                  item = g_list_model_get_item (G_LIST_MODEL (this->model), start);
                   gtk_list_header_base_update (GTK_LIST_HEADER_BASE (tile->widget),
                                                item,
                                                start, end);
                   g_object_unref (item);
-                  gtk_widget_insert_after (tile->widget, self->widget, insert_after);
+                  gtk_widget_insert_after (tile->widget, this->widget, insert_after);
                   insert_after = tile->widget;
 
-                  gtk_list_item_manager_insert_section (self,
+                  gtk_list_item_manager_insert_section (this,
                                                         end,
                                                         GTK_LIST_TILE_FOOTER,
                                                         GTK_LIST_TILE_UNMATCHED_HEADER);
@@ -1443,20 +1443,20 @@ gtk_list_item_manager_model_items_changed_cb (GListModel         *model,
                                               guint               position,
                                               guint               removed,
                                               guint               added,
-                                              GtkListItemManager *self)
+                                              GtkListItemManager *this)
 {
   GtkListItemChange change;
   GSList *l;
   guint n_items;
 
   gtk_list_item_change_init (&change);
-  n_items = g_list_model_get_n_items (G_LIST_MODEL (self->model));
+  n_items = g_list_model_get_n_items (G_LIST_MODEL (this->model));
 
-  gtk_list_item_manager_remove_items (self, &change, position, removed);
-  gtk_list_item_manager_add_items (self, &change, position, added);
+  gtk_list_item_manager_remove_items (this, &change, position, removed);
+  gtk_list_item_manager_add_items (this, &change, position, added);
 
   /* Check if any tracked item was removed */
-  for (l = self->trackers; l; l = l->next)
+  for (l = this->trackers; l; l = l->next)
     {
       GtkListItemTracker *tracker = l->data;
 
@@ -1475,8 +1475,8 @@ gtk_list_item_manager_model_items_changed_cb (GListModel         *model,
       GtkWidget *insert_after;
       guint i, offset;
 
-      tile = gtk_list_item_manager_get_nth (self, position, &offset);
-      for (new_tile = tile ? gtk_rb_tree_node_get_previous (tile) : gtk_rb_tree_get_last (self->items);
+      tile = gtk_list_item_manager_get_nth (this, position, &offset);
+      for (new_tile = tile ? gtk_rb_tree_node_get_previous (tile) : gtk_rb_tree_get_last (this->items);
            new_tile && new_tile->widget == NULL;
            new_tile = gtk_rb_tree_node_get_previous (new_tile))
         { }
@@ -1491,7 +1491,7 @@ gtk_list_item_manager_model_items_changed_cb (GListModel         *model,
           gpointer item;
 
           /* XXX: can we avoid temporarily allocating items on failure? */
-          item = g_list_model_get_item (G_LIST_MODEL (self->model), position + i);
+          item = g_list_model_get_item (G_LIST_MODEL (this->model), position + i);
           widget = gtk_list_item_change_find (&change, item);
           g_object_unref (item);
 
@@ -1508,7 +1508,7 @@ gtk_list_item_manager_model_items_changed_cb (GListModel         *model,
             }
           if (offset > 0)
             {
-              tile = gtk_list_item_manager_ensure_split (self, tile, offset);
+              tile = gtk_list_item_manager_ensure_split (this, tile, offset);
               offset = 0;
             }
 
@@ -1516,14 +1516,14 @@ gtk_list_item_manager_model_items_changed_cb (GListModel         *model,
           if (tile->n_items == 1)
             tile = gtk_rb_tree_node_get_next (tile);
           else
-            tile = gtk_list_item_manager_ensure_split (self, tile, 1);
+            tile = gtk_list_item_manager_ensure_split (this, tile, 1);
 
           new_tile->widget = GTK_WIDGET (widget);
           gtk_list_item_base_update (widget,
                                      position + i,
                                      item,
-                                     gtk_selection_model_is_selected (self->model, position + i));
-          gtk_widget_insert_after (new_tile->widget, self->widget, insert_after);
+                                     gtk_selection_model_is_selected (this->model, position + i));
+          gtk_widget_insert_after (new_tile->widget, this->widget, insert_after);
           insert_after = new_tile->widget;
         }
     }
@@ -1532,7 +1532,7 @@ gtk_list_item_manager_model_items_changed_cb (GListModel         *model,
    * positions for gtk_list_item_manager_ensure_items().
    * We don't update the items, they will be updated by ensure_items()
    * and then we can update them. */
-  for (l = self->trackers; l; l = l->next)
+  for (l = this->trackers; l; l = l->next)
     {
       GtkListItemTracker *tracker = l->data;
 
@@ -1579,13 +1579,13 @@ gtk_list_item_manager_model_items_changed_cb (GListModel         *model,
         }
     }
 
-  gtk_list_item_manager_ensure_items (self, &change, position + added, added - removed);
+  gtk_list_item_manager_ensure_items (this, &change, position + added, added - removed);
 
   /* final loop through the trackers: Grab the missing widgets.
    * For items that had been removed and a new position was set, grab
    * their item now that we ensured it exists.
    */
-  for (l = self->trackers; l; l = l->next)
+  for (l = this->trackers; l; l = l->next)
     {
       GtkListItemTracker *tracker = l->data;
       GtkListTile *tile;
@@ -1594,7 +1594,7 @@ gtk_list_item_manager_model_items_changed_cb (GListModel         *model,
           tracker->position == GTK_INVALID_LIST_POSITION)
         continue;
 
-      tile = gtk_list_item_manager_get_nth (self, tracker->position, NULL);
+      tile = gtk_list_item_manager_get_nth (this, tracker->position, NULL);
       g_assert (tile != NULL);
       g_assert (tile->widget);
       tracker->widget = GTK_LIST_ITEM_BASE (tile->widget);
@@ -1602,26 +1602,26 @@ gtk_list_item_manager_model_items_changed_cb (GListModel         *model,
 
   gtk_list_item_change_finish (&change);
 
-  gtk_widget_queue_resize (self->widget);
+  gtk_widget_queue_resize (this->widget);
 }
 
 static void
 gtk_list_item_manager_model_sections_changed_cb (GListModel         *model,
                                                  guint               position,
                                                  guint               n_items,
-                                                 GtkListItemManager *self)
+                                                 GtkListItemManager *this)
 {
   GtkListItemChange change;
   GtkListTile *tile, *header;
   guint offset;
 
-  if (!gtk_list_item_manager_has_sections (self))
+  if (!gtk_list_item_manager_has_sections (this))
     return;
 
   gtk_list_item_change_init (&change);
 
-  tile = gtk_list_item_manager_get_nth (self, position, &offset);
-  header = gtk_list_tile_get_header (self, tile);
+  tile = gtk_list_item_manager_get_nth (this, position, &offset);
+  header = gtk_list_tile_get_header (this, tile);
   gtk_list_item_change_clear_header (&change, &header->widget);
   gtk_list_tile_set_type (header, GTK_LIST_TILE_UNMATCHED_HEADER);
 
@@ -1655,27 +1655,27 @@ gtk_list_item_manager_model_sections_changed_cb (GListModel         *model,
     }
 
   if (!gtk_list_tile_is_footer (tile))
-    tile = gtk_list_tile_get_footer (self, tile);
+    tile = gtk_list_tile_get_footer (this, tile);
 
   gtk_list_tile_set_type (tile, GTK_LIST_TILE_UNMATCHED_FOOTER);
 
-  gtk_list_item_manager_ensure_items (self, &change, G_MAXUINT, 0);
+  gtk_list_item_manager_ensure_items (this, &change, G_MAXUINT, 0);
 
   gtk_list_item_change_finish (&change);
 
-  gtk_widget_queue_resize (GTK_WIDGET (self->widget));
+  gtk_widget_queue_resize (GTK_WIDGET (this->widget));
 }
 
 static void
 gtk_list_item_manager_model_selection_changed_cb (GListModel         *model,
                                                   guint               position,
                                                   guint               n_items,
-                                                  GtkListItemManager *self)
+                                                  GtkListItemManager *this)
 {
   GtkListTile *tile;
   guint offset;
 
-  tile = gtk_list_item_manager_get_nth (self, position, &offset);
+  tile = gtk_list_item_manager_get_nth (this, position, &offset);
 
   if (offset)
     {
@@ -1694,7 +1694,7 @@ gtk_list_item_manager_model_selection_changed_cb (GListModel         *model,
           gtk_list_item_base_update (GTK_LIST_ITEM_BASE (tile->widget),
                                      position,
                                      gtk_list_item_base_get_item (GTK_LIST_ITEM_BASE (tile->widget)),
-                                     gtk_selection_model_is_selected (self->model, position));
+                                     gtk_selection_model_is_selected (this->model, position));
         }
       position += tile->n_items;
       n_items -= MIN (n_items, tile->n_items);
@@ -1703,46 +1703,46 @@ gtk_list_item_manager_model_selection_changed_cb (GListModel         *model,
 }
 
 static void
-gtk_list_item_manager_clear_model (GtkListItemManager *self)
+gtk_list_item_manager_clear_model (GtkListItemManager *this)
 {
   GtkListItemChange change;
   GSList *l;
 
-  if (self->model == NULL)
+  if (this->model == NULL)
     return;
 
   gtk_list_item_change_init (&change);
-  gtk_list_item_manager_remove_items (self, &change, 0, g_list_model_get_n_items (G_LIST_MODEL (self->model)));
+  gtk_list_item_manager_remove_items (this, &change, 0, g_list_model_get_n_items (G_LIST_MODEL (this->model)));
   gtk_list_item_change_finish (&change);
-  for (l = self->trackers; l; l = l->next)
+  for (l = this->trackers; l; l = l->next)
     {
-      gtk_list_item_tracker_unset_position (self, l->data);
+      gtk_list_item_tracker_unset_position (this, l->data);
     }
 
-  g_signal_handlers_disconnect_by_func (self->model,
+  g_signal_handlers_disconnect_by_func (this->model,
                                         gtk_list_item_manager_model_selection_changed_cb,
-                                        self);
-  g_signal_handlers_disconnect_by_func (self->model,
+                                        this);
+  g_signal_handlers_disconnect_by_func (this->model,
                                         gtk_list_item_manager_model_items_changed_cb,
-                                        self);
-  g_signal_handlers_disconnect_by_func (self->model,
+                                        this);
+  g_signal_handlers_disconnect_by_func (this->model,
                                         gtk_list_item_manager_model_sections_changed_cb,
-                                        self);
-  g_clear_object (&self->model);
+                                        this);
+  g_clear_object (&this->model);
 
-  gtk_list_item_manager_gc_tiles (self);
+  gtk_list_item_manager_gc_tiles (this);
 
-  g_assert (gtk_rb_tree_get_root (self->items) == NULL);
+  g_assert (gtk_rb_tree_get_root (this->items) == NULL);
 }
 
 static void
 gtk_list_item_manager_dispose (GObject *object)
 {
-  GtkListItemManager *self = GTK_LIST_ITEM_MANAGER (object);
+  GtkListItemManager *this = GTK_LIST_ITEM_MANAGER (object);
 
-  gtk_list_item_manager_clear_model (self);
+  gtk_list_item_manager_clear_model (this);
 
-  g_clear_pointer (&self->items, gtk_rb_tree_unref);
+  g_clear_pointer (&this->items, gtk_rb_tree_unref);
 
   G_OBJECT_CLASS (gtk_list_item_manager_parent_class)->dispose (object);
 }
@@ -1756,79 +1756,79 @@ gtk_list_item_manager_class_init (GtkListItemManagerClass *klass)
 }
 
 static void
-gtk_list_item_manager_init (GtkListItemManager *self)
+gtk_list_item_manager_init (GtkListItemManager *this)
 {
 }
 
 void
-gtk_list_item_manager_set_model (GtkListItemManager *self,
+gtk_list_item_manager_set_model (GtkListItemManager *this,
                                  GtkSelectionModel  *model)
 {
-  g_return_if_fail (GTK_IS_LIST_ITEM_MANAGER (self));
+  g_return_if_fail (GTK_IS_LIST_ITEM_MANAGER (this));
   g_return_if_fail (model == NULL || GTK_IS_SELECTION_MODEL (model));
 
-  if (self->model == model)
+  if (this->model == model)
     return;
 
-  gtk_list_item_manager_clear_model (self);
+  gtk_list_item_manager_clear_model (this);
 
   if (model)
     {
       GtkListItemChange change;
 
-      self->model = g_object_ref (model);
+      this->model = g_object_ref (model);
 
       g_signal_connect (model,
                         "items-changed",
                         G_CALLBACK (gtk_list_item_manager_model_items_changed_cb),
-                        self);
+                        this);
       g_signal_connect (model,
                         "selection-changed",
                         G_CALLBACK (gtk_list_item_manager_model_selection_changed_cb),
-                        self);
+                        this);
       if (GTK_IS_SECTION_MODEL (model))
         g_signal_connect (model,
                           "sections-changed",
                           G_CALLBACK (gtk_list_item_manager_model_sections_changed_cb),
-                          self);
+                          this);
 
       gtk_list_item_change_init (&change);
-      gtk_list_item_manager_add_items (self, &change, 0, g_list_model_get_n_items (G_LIST_MODEL (model)));
-      gtk_list_item_manager_ensure_items (self, &change, G_MAXUINT, 0);
+      gtk_list_item_manager_add_items (this, &change, 0, g_list_model_get_n_items (G_LIST_MODEL (model)));
+      gtk_list_item_manager_ensure_items (this, &change, G_MAXUINT, 0);
       gtk_list_item_change_finish (&change);
     }
 }
 
 GtkSelectionModel *
-gtk_list_item_manager_get_model (GtkListItemManager *self)
+gtk_list_item_manager_get_model (GtkListItemManager *this)
 {
-  g_return_val_if_fail (GTK_IS_LIST_ITEM_MANAGER (self), NULL);
+  g_return_val_if_fail (GTK_IS_LIST_ITEM_MANAGER (this), NULL);
 
-  return self->model;
+  return this->model;
 }
 
 void
-gtk_list_item_manager_set_has_sections (GtkListItemManager *self,
+gtk_list_item_manager_set_has_sections (GtkListItemManager *this,
                                         gboolean            has_sections)
 {
   GtkListItemChange change;
   GtkListTile *tile;
   gboolean had_sections;
 
-  if (self->has_sections == has_sections)
+  if (this->has_sections == has_sections)
     return;
 
-  had_sections = gtk_list_item_manager_has_sections (self);
+  had_sections = gtk_list_item_manager_has_sections (this);
 
-  self->has_sections = has_sections;
+  this->has_sections = has_sections;
 
   gtk_list_item_change_init (&change);
 
-  if (had_sections && !gtk_list_item_manager_has_sections (self))
+  if (had_sections && !gtk_list_item_manager_has_sections (this))
     {
       GtkListTile *header = NULL, *footer = NULL;
 
-      for (tile = gtk_rb_tree_get_first (self->items);
+      for (tile = gtk_rb_tree_get_first (this->items);
            tile;
            tile = gtk_list_tile_get_next_skip (tile))
         {
@@ -1863,55 +1863,55 @@ gtk_list_item_manager_set_has_sections (GtkListItemManager *self,
         }
     }
 
-  gtk_list_item_manager_ensure_items (self, &change, G_MAXUINT, 0);
+  gtk_list_item_manager_ensure_items (this, &change, G_MAXUINT, 0);
   gtk_list_item_change_finish (&change);
 
-  gtk_widget_queue_resize (self->widget);
+  gtk_widget_queue_resize (this->widget);
 }
 
 gboolean
-gtk_list_item_manager_get_has_sections (GtkListItemManager *self)
+gtk_list_item_manager_get_has_sections (GtkListItemManager *this)
 {
-  return self->has_sections;
+  return this->has_sections;
 }
 
 GtkListItemTracker *
-gtk_list_item_tracker_new (GtkListItemManager *self)
+gtk_list_item_tracker_new (GtkListItemManager *this)
 {
   GtkListItemTracker *tracker;
 
-  g_return_val_if_fail (GTK_IS_LIST_ITEM_MANAGER (self), NULL);
+  g_return_val_if_fail (GTK_IS_LIST_ITEM_MANAGER (this), NULL);
 
   tracker = g_new0 (GtkListItemTracker, 1);
 
   tracker->position = GTK_INVALID_LIST_POSITION;
 
-  self->trackers = g_slist_prepend (self->trackers, tracker);
+  this->trackers = g_slist_prepend (this->trackers, tracker);
 
   return tracker;
 }
 
 void
-gtk_list_item_tracker_free (GtkListItemManager *self,
+gtk_list_item_tracker_free (GtkListItemManager *this,
                             GtkListItemTracker *tracker)
 {
   GtkListItemChange change;
 
-  gtk_list_item_tracker_unset_position (self, tracker);
+  gtk_list_item_tracker_unset_position (this, tracker);
 
-  self->trackers = g_slist_remove (self->trackers, tracker);
+  this->trackers = g_slist_remove (this->trackers, tracker);
 
   g_free (tracker);
 
   gtk_list_item_change_init (&change);
-  gtk_list_item_manager_ensure_items (self, &change, G_MAXUINT, 0);
+  gtk_list_item_manager_ensure_items (this, &change, G_MAXUINT, 0);
   gtk_list_item_change_finish (&change);
 
-  gtk_widget_queue_resize (self->widget);
+  gtk_widget_queue_resize (this->widget);
 }
 
 void
-gtk_list_item_tracker_set_position (GtkListItemManager *self,
+gtk_list_item_tracker_set_position (GtkListItemManager *this,
                                     GtkListItemTracker *tracker,
                                     guint               position,
                                     guint               n_before,
@@ -1921,12 +1921,12 @@ gtk_list_item_tracker_set_position (GtkListItemManager *self,
   GtkListTile *tile;
   guint n_items;
 
-  gtk_list_item_tracker_unset_position (self, tracker);
+  gtk_list_item_tracker_unset_position (this, tracker);
 
-  if (self->model == NULL)
+  if (this->model == NULL)
     return;
 
-  n_items = g_list_model_get_n_items (G_LIST_MODEL (self->model));
+  n_items = g_list_model_get_n_items (G_LIST_MODEL (this->model));
   if (position >= n_items)
     position = n_items - 1; /* for n_items == 0 this underflows to GTK_INVALID_LIST_POSITION */
 
@@ -1935,18 +1935,18 @@ gtk_list_item_tracker_set_position (GtkListItemManager *self,
   tracker->n_after = n_after;
 
   gtk_list_item_change_init (&change);
-  gtk_list_item_manager_ensure_items (self, &change, G_MAXUINT, 0);
+  gtk_list_item_manager_ensure_items (this, &change, G_MAXUINT, 0);
   gtk_list_item_change_finish (&change);
 
-  tile = gtk_list_item_manager_get_nth (self, position, NULL);
+  tile = gtk_list_item_manager_get_nth (this, position, NULL);
   if (tile)
     tracker->widget = GTK_LIST_ITEM_BASE (tile->widget);
 
-  gtk_widget_queue_resize (self->widget);
+  gtk_widget_queue_resize (this->widget);
 }
 
 guint
-gtk_list_item_tracker_get_position (GtkListItemManager *self,
+gtk_list_item_tracker_get_position (GtkListItemManager *this,
                                     GtkListItemTracker *tracker)
 {
   return tracker->position;

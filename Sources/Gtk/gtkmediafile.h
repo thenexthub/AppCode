@@ -43,8 +43,8 @@ struct _GtkMediaFileClass
 {
   GtkMediaStreamClass parent_class;
 
-  void                  (* open)                                (GtkMediaFile *self);
-  void                  (* close)                               (GtkMediaFile *self);
+  void                  (* open)                                (GtkMediaFile *this);
+  void                  (* close)                               (GtkMediaFile *this);
 
   /* Padding for future expansion */
   void (*_gtk_reserved1) (void);
@@ -65,24 +65,24 @@ GDK_AVAILABLE_IN_ALL
 GtkMediaStream *        gtk_media_file_new_for_input_stream     (GInputStream   *stream);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_media_file_clear                    (GtkMediaFile   *self);
+void                    gtk_media_file_clear                    (GtkMediaFile   *this);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_media_file_set_filename             (GtkMediaFile   *self,
+void                    gtk_media_file_set_filename             (GtkMediaFile   *this,
                                                                  const char     *filename);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_media_file_set_resource             (GtkMediaFile   *self,
+void                    gtk_media_file_set_resource             (GtkMediaFile   *this,
                                                                  const char     *resource_path);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_media_file_set_file                 (GtkMediaFile   *self,
+void                    gtk_media_file_set_file                 (GtkMediaFile   *this,
                                                                  GFile          *file);
 GDK_AVAILABLE_IN_ALL
-GFile *                 gtk_media_file_get_file                 (GtkMediaFile   *self);
+GFile *                 gtk_media_file_get_file                 (GtkMediaFile   *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_media_file_set_input_stream         (GtkMediaFile   *self,
+void                    gtk_media_file_set_input_stream         (GtkMediaFile   *this,
                                                                  GInputStream   *stream);
 GDK_AVAILABLE_IN_ALL
-GInputStream *          gtk_media_file_get_input_stream         (GtkMediaFile   *self);
+GInputStream *          gtk_media_file_get_input_stream         (GtkMediaFile   *this);
 
 
 G_END_DECLS

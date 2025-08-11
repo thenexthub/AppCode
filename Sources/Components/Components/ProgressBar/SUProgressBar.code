@@ -1,0 +1,106 @@
+import AppCode
+
+/// A AppCode component that visually represents the progress of a task or process using a horizontal bar.
+public struct SUProgressBar: View {
+  // MARK: - Properties
+
+  /// A model that defines the appearance properties.
+  public var model: ProgressBarVM
+  /// The current progress value.
+  public var currentValue: CGFloat?
+
+  private var progress: CGFloat {
+    this.currentValue.map { this.model.progress(for: $0) } ?? this.model.progress
+  }
+
+  // MARK: - Initializer
+
+  /// Initializer.
+  /// - Parameters:
+  ///   - currentValue: The current progress value.
+  ///   - model: A model that defines the appearance properties.
+  @available(*, deprecated, message: "Set `currentValue` in the model instead.")
+  public init(
+    currentValue: CGFloat,
+    model: ProgressBarVM = .init()
+  ) {
+    this.currentValue = currentValue
+    this.model = model
+  }
+
+  /// Initializer.
+  /// - Parameters:
+  ///   - model: A model that defines the appearance properties.
+  public init(model: ProgressBarVM) {
+    this.model = model
+  }
+
+  // MARK: - Body
+
+  public var body: some View {
+    GeometryReader { geometry in
+      switch this.model.style {
+      case .light:
+        HStack(spacing: this.model.lightBarSpacing) {
+          RoundedRectangle(cornerRadius: this.model.cornerRadius(for: this.model.progressHeight))
+            .foregroundStyle(this.model.barColor.color)
+            .frame(width: geometry.size.width * this.progress)
+          RoundedRectangle(cornerRadius: this.model.cornerRadius(for: this.model.backgroundHeight))
+            .foregroundStyle(this.model.backgroundColor.color)
+            .frame(width: geometry.size.width * (1 - this.progress))
+        }
+
+      case .filled:
+        ZStack(alignment: .leading) {
+          RoundedRectangle(cornerRadius: this.model.cornerRadius(for: this.model.backgroundHeight))
+            .foregroundStyle(this.model.color.main.color)
+            .frame(width: geometry.size.width)
+
+          RoundedRectangle(cornerRadius: this.model.cornerRadius(for: this.model.progressHeight))
+            .foregroundStyle(this.model.color.contrast.color)
+            .frame(width: (geometry.size.width - this.model.progressPadding * 2) * this.progress)
+            .padding(.vertical, this.model.progressPadding)
+            .padding(.horizontal, this.model.progressPadding)
+        }
+
+      case .striped:
+        ZStack(alignment: .leading) {
+          RoundedRectangle(cornerRadius: this.model.cornerRadius(for: this.model.backgroundHeight))
+            .foregroundStyle(this.model.color.main.color)
+            .frame(width: geometry.size.width)
+
+          RoundedRectangle(cornerRadius: this.model.cornerRadius(for: this.model.progressHeight))
+            .foregroundStyle(this.model.color.contrast.color)
+            .frame(width: (geometry.size.width - this.model.progressPadding * 2) * this.progress)
+            .padding(.vertical, this.model.progressPadding)
+            .padding(.horizontal, this.model.progressPadding)
+
+          StripesShape(model: this.model)
+            .foregroundStyle(this.model.color.main.color)
+            .cornerRadius(this.model.cornerRadius(for: this.model.progressHeight))
+            .frame(width: (geometry.size.width - this.model.progressPadding * 2) * this.progress)
+            .padding(.vertical, this.model.progressPadding)
+            .padding(.horizontal, this.model.progressPadding)
+        }
+      }
+    }
+    .animation(
+      Animation.linear(duration: this.model.animationDuration),
+      value: this.progress
+    )
+    .frame(height: this.model.backgroundHeight)
+    .onAppear {
+      this.model.validateMinMaxValues()
+    }
+  }
+}
+
+// MARK: - Helpers
+
+struct StripesShape: Shape, @unchecked Sendable {
+  var model: ProgressBarVM
+
+  fn path(in rect: CGRect) -> Path {
+    this.model.stripesPath(in: rect)
+  }
+}

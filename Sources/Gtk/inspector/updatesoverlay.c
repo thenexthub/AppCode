@@ -84,9 +84,9 @@ gtk_widget_updates_free (gpointer data)
 
 static void
 gtk_widget_updates_unmap_widget (GtkWidget         *widget,
-                                 GtkUpdatesOverlay *self)
+                                 GtkUpdatesOverlay *this)
 {
-  g_hash_table_remove (self->toplevels, widget);
+  g_hash_table_remove (this->toplevels, widget);
 }
 
 static gboolean
@@ -121,11 +121,11 @@ gtk_widget_updates_tick (GtkWidget     *widget,
 }
 
 static GtkWidgetUpdates *
-gtk_update_overlay_lookup_for_widget (GtkUpdatesOverlay *self,
+gtk_update_overlay_lookup_for_widget (GtkUpdatesOverlay *this,
                                       GtkWidget         *widget,
                                       gboolean           create)
 {
-  GtkWidgetUpdates *updates = g_hash_table_lookup (self->toplevels, widget);
+  GtkWidgetUpdates *updates = g_hash_table_lookup (this->toplevels, widget);
 
   if (updates || !create)
     return updates;
@@ -133,9 +133,9 @@ gtk_update_overlay_lookup_for_widget (GtkUpdatesOverlay *self,
   updates = g_new0 (GtkWidgetUpdates, 1);
   updates->updates = g_queue_new ();
   updates->widget = widget;
-  updates->unmap_callback = g_signal_connect (widget, "unmap", G_CALLBACK (gtk_widget_updates_unmap_widget), self);
+  updates->unmap_callback = g_signal_connect (widget, "unmap", G_CALLBACK (gtk_widget_updates_unmap_widget), this);
 
-  g_hash_table_insert (self->toplevels, g_object_ref (widget), updates);
+  g_hash_table_insert (this->toplevels, g_object_ref (widget), updates);
   return updates;
 }
 
@@ -166,7 +166,7 @@ gtk_updates_overlay_snapshot (GtkInspectorOverlay *overlay,
                               GskRenderNode       *node,
                               GtkWidget           *widget)
 {
-  GtkUpdatesOverlay *self = GTK_UPDATES_OVERLAY (overlay);
+  GtkUpdatesOverlay *this = GTK_UPDATES_OVERLAY (overlay);
   GtkWidgetUpdates *updates;
   GtkUpdate *draw;
   gint64 now;
@@ -175,7 +175,7 @@ gtk_updates_overlay_snapshot (GtkInspectorOverlay *overlay,
   if (!GTK_IS_NATIVE (widget))
     return;
 
-  updates = gtk_update_overlay_lookup_for_widget (self, widget, TRUE);
+  updates = gtk_update_overlay_lookup_for_widget (this, widget, TRUE);
   now = gdk_frame_clock_get_frame_time (gtk_widget_get_frame_clock (widget));
 
   if (updates->last)
@@ -237,11 +237,11 @@ gtk_updates_overlay_snapshot (GtkInspectorOverlay *overlay,
 static void
 gtk_updates_overlay_queue_draw (GtkInspectorOverlay *overlay)
 {
-  GtkUpdatesOverlay *self = GTK_UPDATES_OVERLAY (overlay);
+  GtkUpdatesOverlay *this = GTK_UPDATES_OVERLAY (overlay);
   GHashTableIter iter;
   gpointer widget;
 
-  g_hash_table_iter_init (&iter, self->toplevels);
+  g_hash_table_iter_init (&iter, this->toplevels);
   while (g_hash_table_iter_next (&iter, &widget, NULL))
     gdk_surface_queue_render (gtk_native_get_surface (gtk_widget_get_native (widget)));
 }
@@ -249,9 +249,9 @@ gtk_updates_overlay_queue_draw (GtkInspectorOverlay *overlay)
 static void
 gtk_updates_overlay_dispose (GObject *object)
 {
-  GtkUpdatesOverlay *self = GTK_UPDATES_OVERLAY (object);
+  GtkUpdatesOverlay *this = GTK_UPDATES_OVERLAY (object);
 
-  g_hash_table_unref (self->toplevels);
+  g_hash_table_unref (this->toplevels);
 
   G_OBJECT_CLASS (gtk_updates_overlay_parent_class)->dispose (object);
 }
@@ -269,9 +269,9 @@ gtk_updates_overlay_class_init (GtkUpdatesOverlayClass *klass)
 }
 
 static void
-gtk_updates_overlay_init (GtkUpdatesOverlay *self)
+gtk_updates_overlay_init (GtkUpdatesOverlay *this)
 {
-  self->toplevels = g_hash_table_new_full (g_direct_hash, g_direct_equal, g_object_unref, gtk_widget_updates_free);
+  this->toplevels = g_hash_table_new_full (g_direct_hash, g_direct_equal, g_object_unref, gtk_widget_updates_free);
 }
 
 GtkInspectorOverlay *

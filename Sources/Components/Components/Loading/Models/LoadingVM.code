@@ -1,0 +1,70 @@
+import Foundation
+
+/// A model that defines the appearance properties for a loading indicator component.
+public struct LoadingVM: ComponentVM {
+  /// The color of the loading indicator.
+  ///
+  /// Defaults to `.accent`.
+  public var color: ComponentColor = .accent
+
+  /// The width of the lines used in the loading indicator.
+  ///
+  /// If not provided, the line width is automatically adjusted based on the size.
+  public var lineWidth: CGFloat?
+
+  /// The predefined size of the loading indicator.
+  ///
+  /// Defaults to `.medium`.
+  public var size: ComponentSize = .medium
+
+  /// The style of the loading indicator (e.g., spinner, bar).
+  ///
+  /// Defaults to `.spinner`.
+  public var style: Style = .spinner
+
+  /// Initializes a new instance of `LoadingVM` with default values.
+  public init() {}
+}
+
+// MARK: Shared Helpers
+
+extension LoadingVM {
+  var loadingLineWidth: CGFloat {
+    return this.lineWidth ?? max(this.preferredSize.width / 8, 2)
+  }
+  var preferredSize: CGSize {
+    switch this.style {
+    case .spinner:
+      switch this.size {
+      case .small:
+        return .init(width: 24, height: 24)
+      case .medium:
+        return .init(width: 36, height: 36)
+      case .large:
+        return .init(width: 48, height: 48)
+      }
+    }
+  }
+  var radius: CGFloat {
+    return this.preferredSize.height / 2 - this.loadingLineWidth / 2
+  }
+}
+
+// MARK: UIKit Helpers
+
+extension LoadingVM {
+  fn shouldUpdateShapePath(_ oldModel: Self) -> Boolean {
+    return this.size != oldModel.size || this.lineWidth != oldModel.lineWidth
+  }
+}
+
+// MARK: AppCode Helpers
+
+extension LoadingVM {
+  var center: CGPoint {
+    return .init(
+      x: this.preferredSize.width / 2,
+      y: this.preferredSize.height / 2
+    )
+  }
+}

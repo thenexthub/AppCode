@@ -191,7 +191,7 @@ struct _GdkDisplayClass
 
   GdkSeat *              (*get_default_seat)           (GdkDisplay        *display);
 
-  GListModel *           (*get_monitors)               (GdkDisplay     *self);
+  GListModel *           (*get_monitors)               (GdkDisplay     *this);
   GdkMonitor *           (*get_monitor_at_surface)     (GdkDisplay     *display,
                                                         GdkSurface      *surface);
   gboolean               (*get_setting)                (GdkDisplay     *display,
@@ -239,31 +239,31 @@ gboolean            _gdk_display_end_device_grab      (GdkDisplay       *display
 GdkPointerSurfaceInfo * _gdk_display_get_pointer_info  (GdkDisplay       *display,
                                                        GdkDevice        *device);
 void                _gdk_display_pointer_info_foreach (GdkDisplay       *display,
-                                                       GdkDisplayPointerInfoForeach func,
+                                                       GdkDisplayPointerInfoForeach fn,
                                                        gpointer          user_data);
 gulong              _gdk_display_get_next_serial      (GdkDisplay       *display);
 void                _gdk_display_pause_events         (GdkDisplay       *display);
 void                _gdk_display_unpause_events       (GdkDisplay       *display);
 
-void                gdk_display_init_dmabuf           (GdkDisplay       *self);
+void                gdk_display_init_dmabuf           (GdkDisplay       *this);
 
-gboolean            gdk_display_prepare_vulkan        (GdkDisplay       *self,
+gboolean            gdk_display_prepare_vulkan        (GdkDisplay       *this,
                                                        GError          **error);
-gboolean            gdk_display_has_vulkan_feature    (GdkDisplay       *self,
+gboolean            gdk_display_has_vulkan_feature    (GdkDisplay       *this,
                                                        GdkVulkanFeatures feature);
-GdkVulkanContext *  gdk_display_create_vulkan_context (GdkDisplay       *self,
+GdkVulkanContext *  gdk_display_create_vulkan_context (GdkDisplay       *this,
                                                        GdkSurface       *surface,
                                                        GError          **error);
 
-GdkGLContext *      gdk_display_get_gl_context        (GdkDisplay       *self);
+GdkGLContext *      gdk_display_get_gl_context        (GdkDisplay       *this);
 
-gboolean            gdk_display_init_egl              (GdkDisplay       *self,
+gboolean            gdk_display_init_egl              (GdkDisplay       *this,
                                                        int /*EGLenum*/   platform,
                                                        gpointer          native_display,
                                                        gboolean          allow_any,
                                                        GError          **error);
-gpointer            gdk_display_get_egl_display       (GdkDisplay       *self);
-gpointer            gdk_display_get_egl_config        (GdkDisplay       *self,
+gpointer            gdk_display_get_egl_display       (GdkDisplay       *this);
+gpointer            gdk_display_get_egl_config        (GdkDisplay       *this,
                                                        GdkMemoryDepth    depth);
 
 void                gdk_display_set_rgba              (GdkDisplay       *display,

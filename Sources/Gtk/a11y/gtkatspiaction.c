@@ -56,14 +56,14 @@ struct _Action
 };
 
 static char *
-get_keybinding (GtkAtSpiContext *self)
+get_keybinding (GtkAtSpiContext *this)
 {
   const char *mnemonic = "";
   const char *shortcut = "";
 
-  if (gtk_at_context_has_accessible_relation (GTK_AT_CONTEXT (self), GTK_ACCESSIBLE_RELATION_LABELLED_BY))
+  if (gtk_at_context_has_accessible_relation (GTK_AT_CONTEXT (this), GTK_ACCESSIBLE_RELATION_LABELLED_BY))
     {
-      GtkAccessibleValue *value = gtk_at_context_get_accessible_relation (GTK_AT_CONTEXT (self), GTK_ACCESSIBLE_RELATION_LABELLED_BY);
+      GtkAccessibleValue *value = gtk_at_context_get_accessible_relation (GTK_AT_CONTEXT (this), GTK_ACCESSIBLE_RELATION_LABELLED_BY);
       GList *l = gtk_reference_list_accessible_value_get (value);
       if (l)
         {
@@ -77,9 +77,9 @@ get_keybinding (GtkAtSpiContext *self)
         }
     }
 
-  if (gtk_at_context_has_accessible_property (GTK_AT_CONTEXT (self), GTK_ACCESSIBLE_PROPERTY_KEY_SHORTCUTS))
+  if (gtk_at_context_has_accessible_property (GTK_AT_CONTEXT (this), GTK_ACCESSIBLE_PROPERTY_KEY_SHORTCUTS))
     {
-      GtkAccessibleValue *value = gtk_at_context_get_accessible_property (GTK_AT_CONTEXT (self), GTK_ACCESSIBLE_PROPERTY_KEY_SHORTCUTS);
+      GtkAccessibleValue *value = gtk_at_context_get_accessible_property (GTK_AT_CONTEXT (this), GTK_ACCESSIBLE_PROPERTY_KEY_SHORTCUTS);
       shortcut = gtk_string_accessible_value_get (value);
     }
 
@@ -87,7 +87,7 @@ get_keybinding (GtkAtSpiContext *self)
 }
 
 static void
-action_handle_method (GtkAtSpiContext        *self,
+action_handle_method (GtkAtSpiContext        *this,
                       const char             *method_name,
                       GVariant               *parameters,
                       GDBusMethodInvocation  *invocation,
@@ -161,7 +161,7 @@ action_handle_method (GtkAtSpiContext        *self,
 
       if (idx == 0) /* default action */
         {
-          char *keybinding = get_keybinding (self);
+          char *keybinding = get_keybinding (this);
           g_dbus_method_invocation_return_value (invocation, g_variant_new ("(s)", keybinding));
           g_free (keybinding);
         }
@@ -187,11 +187,11 @@ action_handle_method (GtkAtSpiContext        *self,
           const Action *action = &actions[i];
           char *keybinding = NULL;
 
-          if (action->is_enabled != NULL && !action->is_enabled (self))
+          if (action->is_enabled != NULL && !action->is_enabled (this))
             continue;
 
           if (i == 0)
-            keybinding = get_keybinding (self);
+            keybinding = get_keybinding (this);
 
           g_variant_builder_add (&builder, "(sss)",
                                  g_dpgettext2 (GETTEXT_PACKAGE, "accessibility", action->localized_name),
@@ -205,7 +205,7 @@ action_handle_method (GtkAtSpiContext        *self,
     }
   else if (g_strcmp0 (method_name, "DoAction") == 0)
     {
-      GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (self));
+      GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (this));
       GtkWidget *widget = GTK_WIDGET (accessible);
       int idx = -1;
 
@@ -221,7 +221,7 @@ action_handle_method (GtkAtSpiContext        *self,
         {
           const Action *action = &actions[idx];
 
-          if (action->is_enabled == NULL || action->is_enabled (self))
+          if (action->is_enabled == NULL || action->is_enabled (this))
             {
               gboolean res = TRUE;
 
@@ -231,7 +231,7 @@ action_handle_method (GtkAtSpiContext        *self,
                 }
               else
                 {
-                  res = action->activate (self);
+                  res = action->activate (this);
                 }
 
               g_dbus_method_invocation_return_value (invocation, g_variant_new ("(b)", res));
@@ -253,7 +253,7 @@ action_handle_method (GtkAtSpiContext        *self,
 }
 
 static GVariant *
-action_handle_get_property (GtkAtSpiContext  *self,
+action_handle_get_property (GtkAtSpiContext  *this,
                             const char       *property_name,
                             GError          **error,
                             const Action     *actions,
@@ -267,7 +267,7 @@ action_handle_get_property (GtkAtSpiContext  *self,
         {
           const Action *action = &actions[i];
 
-          if (action->is_enabled == NULL || action->is_enabled (self))
+          if (action->is_enabled == NULL || action->is_enabled (this))
             n_valid_actions += 1;
         }
 
@@ -301,9 +301,9 @@ button_handle_method (GDBusConnection       *connection,
                       GDBusMethodInvocation *invocation,
                       gpointer               user_data)
 {
-  GtkAtSpiContext *self = user_data;
+  GtkAtSpiContext *this = user_data;
 
-  action_handle_method (self, method_name, parameters, invocation,
+  action_handle_method (this, method_name, parameters, invocation,
                         button_actions,
                         G_N_ELEMENTS (button_actions));
 }
@@ -317,9 +317,9 @@ button_handle_get_property (GDBusConnection  *connection,
                             GError          **error,
                             gpointer          user_data)
 {
-  GtkAtSpiContext *self = user_data;
+  GtkAtSpiContext *this = user_data;
 
-  return action_handle_get_property (self, property_name, error,
+  return action_handle_get_property (this, property_name, error,
                                      button_actions,
                                      G_N_ELEMENTS (button_actions));
 }
@@ -352,9 +352,9 @@ switch_handle_method (GDBusConnection       *connection,
                       GDBusMethodInvocation *invocation,
                       gpointer               user_data)
 {
-  GtkAtSpiContext *self = user_data;
+  GtkAtSpiContext *this = user_data;
 
-  action_handle_method (self, method_name, parameters, invocation,
+  action_handle_method (this, method_name, parameters, invocation,
                         switch_actions,
                         G_N_ELEMENTS (switch_actions));
 }
@@ -368,9 +368,9 @@ switch_handle_get_property (GDBusConnection  *connection,
                             GError          **error,
                             gpointer          user_data)
 {
-  GtkAtSpiContext *self = user_data;
+  GtkAtSpiContext *this = user_data;
 
-  return action_handle_get_property (self, property_name, error,
+  return action_handle_get_property (this, property_name, error,
                                      switch_actions,
                                      G_N_ELEMENTS (switch_actions));
 }
@@ -385,33 +385,33 @@ static const GDBusInterfaceVTable switch_action_vtable = {
 /* {{{ GtkColorSwatch */
 
 static gboolean
-color_swatch_select (GtkAtSpiContext *self)
+color_swatch_select (GtkAtSpiContext *this)
 {
-  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (self));
+  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (this));
   gtk_color_swatch_select (GTK_COLOR_SWATCH (accessible));
   return TRUE;
 }
 
 static gboolean
-color_swatch_activate (GtkAtSpiContext *self)
+color_swatch_activate (GtkAtSpiContext *this)
 {
-  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (self));
+  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (this));
   gtk_color_swatch_activate (GTK_COLOR_SWATCH (accessible));
   return TRUE;
 }
 
 static gboolean
-color_swatch_customize (GtkAtSpiContext *self)
+color_swatch_customize (GtkAtSpiContext *this)
 {
-  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (self));
+  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (this));
   gtk_color_swatch_customize (GTK_COLOR_SWATCH (accessible));
   return TRUE;
 }
 
 static gboolean
-color_swatch_is_enabled (GtkAtSpiContext *self)
+color_swatch_is_enabled (GtkAtSpiContext *this)
 {
-  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (self));
+  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (this));
   return gtk_color_swatch_get_selectable (GTK_COLOR_SWATCH (accessible));
 }
 
@@ -452,9 +452,9 @@ color_swatch_handle_method (GDBusConnection       *connection,
                             GDBusMethodInvocation *invocation,
                             gpointer               user_data)
 {
-  GtkAtSpiContext *self = user_data;
+  GtkAtSpiContext *this = user_data;
 
-  action_handle_method (self, method_name, parameters, invocation,
+  action_handle_method (this, method_name, parameters, invocation,
                         color_swatch_actions,
                         G_N_ELEMENTS (color_swatch_actions));
 }
@@ -468,9 +468,9 @@ color_swatch_handle_get_property (GDBusConnection  *connection,
                                   GError          **error,
                                   gpointer          user_data)
 {
-  GtkAtSpiContext *self = user_data;
+  GtkAtSpiContext *this = user_data;
 
-  return action_handle_get_property (self, property_name, error,
+  return action_handle_get_property (this, property_name, error,
                                      color_swatch_actions,
                                      G_N_ELEMENTS (color_swatch_actions));
 }
@@ -503,9 +503,9 @@ expander_handle_method (GDBusConnection       *connection,
                         GDBusMethodInvocation *invocation,
                         gpointer               user_data)
 {
-  GtkAtSpiContext *self = user_data;
+  GtkAtSpiContext *this = user_data;
 
-  action_handle_method (self, method_name, parameters, invocation,
+  action_handle_method (this, method_name, parameters, invocation,
                         expander_actions,
                         G_N_ELEMENTS (expander_actions));
 }
@@ -519,9 +519,9 @@ expander_handle_get_property (GDBusConnection  *connection,
                               GError          **error,
                               gpointer          user_data)
 {
-  GtkAtSpiContext *self = user_data;
+  GtkAtSpiContext *this = user_data;
 
-  return action_handle_get_property (self, property_name, error,
+  return action_handle_get_property (this, property_name, error,
                                      expander_actions,
                                      G_N_ELEMENTS (expander_actions));
 }
@@ -535,10 +535,10 @@ static const GDBusInterfaceVTable expander_action_vtable = {
 /* }}} */
 /* {{{ GtkEntry */
 
-static gboolean is_primary_icon_enabled (GtkAtSpiContext *self);
-static gboolean is_secondary_icon_enabled (GtkAtSpiContext *self);
-static gboolean activate_primary_icon (GtkAtSpiContext *self);
-static gboolean activate_secondary_icon (GtkAtSpiContext *self);
+static gboolean is_primary_icon_enabled (GtkAtSpiContext *this);
+static gboolean is_secondary_icon_enabled (GtkAtSpiContext *this);
+static gboolean activate_primary_icon (GtkAtSpiContext *this);
+static gboolean activate_secondary_icon (GtkAtSpiContext *this);
 
 static const Action entry_actions[] = {
   {
@@ -568,36 +568,36 @@ static const Action entry_actions[] = {
 };
 
 static gboolean
-is_primary_icon_enabled (GtkAtSpiContext *self)
+is_primary_icon_enabled (GtkAtSpiContext *this)
 {
-  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (self));
+  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (this));
   GtkEntry *entry = GTK_ENTRY (accessible);
 
   return gtk_entry_get_icon_storage_type (entry, GTK_ENTRY_ICON_PRIMARY) != GTK_IMAGE_EMPTY;
 }
 
 static gboolean
-activate_primary_icon (GtkAtSpiContext *self)
+activate_primary_icon (GtkAtSpiContext *this)
 {
-  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (self));
+  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (this));
   GtkEntry *entry = GTK_ENTRY (accessible);
 
   return gtk_entry_activate_icon (entry, GTK_ENTRY_ICON_PRIMARY);
 }
 
 static gboolean
-is_secondary_icon_enabled (GtkAtSpiContext *self)
+is_secondary_icon_enabled (GtkAtSpiContext *this)
 {
-  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (self));
+  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (this));
   GtkEntry *entry = GTK_ENTRY (accessible);
 
   return gtk_entry_get_icon_storage_type (entry, GTK_ENTRY_ICON_SECONDARY) != GTK_IMAGE_EMPTY;
 }
 
 static gboolean
-activate_secondary_icon (GtkAtSpiContext *self)
+activate_secondary_icon (GtkAtSpiContext *this)
 {
-  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (self));
+  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (this));
   GtkEntry *entry = GTK_ENTRY (accessible);
 
   return gtk_entry_activate_icon (entry, GTK_ENTRY_ICON_SECONDARY);
@@ -613,9 +613,9 @@ entry_handle_method (GDBusConnection       *connection,
                      GDBusMethodInvocation *invocation,
                      gpointer               user_data)
 {
-  GtkAtSpiContext *self = user_data;
+  GtkAtSpiContext *this = user_data;
 
-  action_handle_method (self, method_name, parameters, invocation,
+  action_handle_method (this, method_name, parameters, invocation,
                         entry_actions,
                         G_N_ELEMENTS (entry_actions));
 }
@@ -629,9 +629,9 @@ entry_handle_get_property (GDBusConnection  *connection,
                            GError          **error,
                            gpointer          user_data)
 {
-  GtkAtSpiContext *self = user_data;
+  GtkAtSpiContext *this = user_data;
 
-  return action_handle_get_property (self, property_name, error,
+  return action_handle_get_property (this, property_name, error,
                                      entry_actions,
                                      G_N_ELEMENTS (entry_actions));
 }
@@ -645,8 +645,8 @@ static const GDBusInterfaceVTable entry_action_vtable = {
 /* }}} */
 /* {{{ GtkPasswordEntry */
 
-static gboolean is_peek_enabled (GtkAtSpiContext *self);
-static gboolean activate_peek (GtkAtSpiContext *self);
+static gboolean is_peek_enabled (GtkAtSpiContext *this);
+static gboolean activate_peek (GtkAtSpiContext *this);
 
 static const Action password_entry_actions[] = {
   {
@@ -668,9 +668,9 @@ static const Action password_entry_actions[] = {
 };
 
 static gboolean
-is_peek_enabled (GtkAtSpiContext *self)
+is_peek_enabled (GtkAtSpiContext *this)
 {
-  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (self));
+  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (this));
   GtkPasswordEntry *entry = GTK_PASSWORD_ENTRY (accessible);
 
   if (!gtk_password_entry_get_show_peek_icon (entry))
@@ -680,9 +680,9 @@ is_peek_enabled (GtkAtSpiContext *self)
 }
 
 static gboolean
-activate_peek (GtkAtSpiContext *self)
+activate_peek (GtkAtSpiContext *this)
 {
-  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (self));
+  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (this));
   GtkPasswordEntry *entry = GTK_PASSWORD_ENTRY (accessible);
 
   gtk_password_entry_toggle_peek (entry);
@@ -700,9 +700,9 @@ password_entry_handle_method (GDBusConnection       *connection,
                               GDBusMethodInvocation *invocation,
                               gpointer               user_data)
 {
-  GtkAtSpiContext *self = user_data;
+  GtkAtSpiContext *this = user_data;
 
-  action_handle_method (self, method_name, parameters, invocation,
+  action_handle_method (this, method_name, parameters, invocation,
                         password_entry_actions,
                         G_N_ELEMENTS (password_entry_actions));
 }
@@ -716,9 +716,9 @@ password_entry_handle_get_property (GDBusConnection  *connection,
                                     GError          **error,
                                     gpointer          user_data)
 {
-  GtkAtSpiContext *self = user_data;
+  GtkAtSpiContext *this = user_data;
 
-  return action_handle_get_property (self, property_name, error,
+  return action_handle_get_property (this, property_name, error,
                                      password_entry_actions,
                                      G_N_ELEMENTS (password_entry_actions));
 }
@@ -732,8 +732,8 @@ static const GDBusInterfaceVTable password_entry_action_vtable = {
 /* }}} */
 /* {{{ GtkSearchEntry */
 
-static gboolean is_clear_enabled (GtkAtSpiContext *self);
-static gboolean activate_clear (GtkAtSpiContext *self);
+static gboolean is_clear_enabled (GtkAtSpiContext *this);
+static gboolean activate_clear (GtkAtSpiContext *this);
 
 static const Action search_entry_actions[] = {
   {
@@ -755,9 +755,9 @@ static const Action search_entry_actions[] = {
 };
 
 static gboolean
-is_clear_enabled (GtkAtSpiContext *self)
+is_clear_enabled (GtkAtSpiContext *this)
 {
-  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (self));
+  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (this));
   GtkSearchEntry *entry = GTK_SEARCH_ENTRY (accessible);
 
   const char *str = gtk_editable_get_text (GTK_EDITABLE (entry));
@@ -769,9 +769,9 @@ is_clear_enabled (GtkAtSpiContext *self)
 }
 
 static gboolean
-activate_clear (GtkAtSpiContext *self)
+activate_clear (GtkAtSpiContext *this)
 {
-  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (self));
+  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (this));
 
   gtk_editable_set_text (GTK_EDITABLE (accessible), "");
 
@@ -788,9 +788,9 @@ search_entry_handle_method (GDBusConnection       *connection,
                             GDBusMethodInvocation *invocation,
                             gpointer               user_data)
 {
-  GtkAtSpiContext *self = user_data;
+  GtkAtSpiContext *this = user_data;
 
-  action_handle_method (self, method_name, parameters, invocation,
+  action_handle_method (this, method_name, parameters, invocation,
                         search_entry_actions,
                         G_N_ELEMENTS (search_entry_actions));
 }
@@ -804,9 +804,9 @@ search_entry_handle_get_property (GDBusConnection  *connection,
                                   GError          **error,
                                   gpointer          user_data)
 {
-  GtkAtSpiContext *self = user_data;
+  GtkAtSpiContext *this = user_data;
 
-  return action_handle_get_property (self, property_name, error,
+  return action_handle_get_property (this, property_name, error,
                                      search_entry_actions,
                                      G_N_ELEMENTS (search_entry_actions));
 }
@@ -908,8 +908,8 @@ widget_handle_method (GDBusConnection       *connection,
                       GDBusMethodInvocation *invocation,
                       gpointer               user_data)
 {
-  GtkAtSpiContext *self = user_data;
-  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (self));
+  GtkAtSpiContext *this = user_data;
+  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (this));
   GtkWidget *widget = GTK_WIDGET (accessible);
   GtkWidget *parent = gtk_widget_get_parent (widget);
   GtkActionMuxer *muxer = _gtk_widget_get_action_muxer (widget, FALSE);
@@ -1007,8 +1007,8 @@ widget_handle_get_property (GDBusConnection  *connection,
                             GError          **error,
                             gpointer          user_data)
 {
-  GtkAtSpiContext *self = user_data;
-  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (self));
+  GtkAtSpiContext *this = user_data;
+  GtkAccessible *accessible = gtk_at_context_get_accessible (GTK_AT_CONTEXT (this));
   GtkWidget *widget = GTK_WIDGET (accessible);
   GtkWidget *parent = gtk_widget_get_parent (widget);
   GtkActionMuxer *muxer = _gtk_widget_get_action_muxer (widget, FALSE);

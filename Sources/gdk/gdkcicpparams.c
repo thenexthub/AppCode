@@ -77,12 +77,12 @@ enum
 static GParamSpec *properties[N_PROPERTIES] = { NULL, };
 
 static void
-gdk_cicp_params_init (GdkCicpParams *self)
+gdk_cicp_params_init (GdkCicpParams *this)
 {
-  self->cicp.color_primaries = 2;
-  self->cicp.transfer_function = 2;
-  self->cicp.matrix_coefficients = 2;
-  self->cicp.range = GDK_CICP_RANGE_NARROW;
+  this->cicp.color_primaries = 2;
+  this->cicp.transfer_function = 2;
+  this->cicp.matrix_coefficients = 2;
+  this->cicp.range = GDK_CICP_RANGE_NARROW;
 }
 
 static void
@@ -91,24 +91,24 @@ gdk_cicp_params_get_property (GObject    *object,
                               GValue     *value,
                               GParamSpec *pspec)
 {
-  GdkCicpParams *self = GDK_CICP_PARAMS (object);
+  GdkCicpParams *this = GDK_CICP_PARAMS (object);
 
   switch (property_id)
     {
     case PROP_COLOR_PRIMARIES:
-      g_value_set_uint (value, self->cicp.color_primaries);
+      g_value_set_uint (value, this->cicp.color_primaries);
       break;
 
     case PROP_TRANSFER_FUNCTION:
-      g_value_set_uint (value, self->cicp.transfer_function);
+      g_value_set_uint (value, this->cicp.transfer_function);
       break;
 
     case PROP_MATRIX_COEFFICIENTS:
-      g_value_set_uint (value, self->cicp.matrix_coefficients);
+      g_value_set_uint (value, this->cicp.matrix_coefficients);
       break;
 
     case PROP_RANGE:
-      g_value_set_enum (value, self->cicp.range);
+      g_value_set_enum (value, this->cicp.range);
       break;
 
     default:
@@ -123,24 +123,24 @@ gdk_cicp_params_set_property (GObject      *object,
                               const GValue *value,
                               GParamSpec   *pspec)
 {
-  GdkCicpParams *self = GDK_CICP_PARAMS (object);
+  GdkCicpParams *this = GDK_CICP_PARAMS (object);
 
   switch (property_id)
     {
     case PROP_COLOR_PRIMARIES:
-      gdk_cicp_params_set_color_primaries (self, g_value_get_uint (value));
+      gdk_cicp_params_set_color_primaries (this, g_value_get_uint (value));
       break;
 
     case PROP_TRANSFER_FUNCTION:
-      gdk_cicp_params_set_transfer_function (self, g_value_get_uint (value));
+      gdk_cicp_params_set_transfer_function (this, g_value_get_uint (value));
       break;
 
     case PROP_MATRIX_COEFFICIENTS:
-      gdk_cicp_params_set_matrix_coefficients (self, g_value_get_uint (value));
+      gdk_cicp_params_set_matrix_coefficients (this, g_value_get_uint (value));
       break;
 
     case PROP_RANGE:
-      gdk_cicp_params_set_range (self, g_value_get_enum (value));
+      gdk_cicp_params_set_range (this, g_value_get_enum (value));
       break;
 
     default:
@@ -262,173 +262,173 @@ gdk_cicp_params_new (void)
 
 /**
  * gdk_cicp_params_get_color_primaries:
- * @self: a `GdkCicpParams`
+ * @this: a `GdkCicpParams`
  *
  * Returns the value of the color-primaries property
- * of @self.
+ * of @this.
  *
  * Returns: the color-primaries value
  *
  * Since: 4.16
  */
 guint
-gdk_cicp_params_get_color_primaries (GdkCicpParams *self)
+gdk_cicp_params_get_color_primaries (GdkCicpParams *this)
 {
-  g_return_val_if_fail (GDK_IS_CICP_PARAMS (self), 0);
+  g_return_val_if_fail (GDK_IS_CICP_PARAMS (this), 0);
 
-  return self->cicp.color_primaries;
+  return this->cicp.color_primaries;
 }
 
 /**
  * gdk_cicp_params_set_color_primaries:
- * @self: a `GdkCicpParams`
+ * @this: a `GdkCicpParams`
  * @color_primaries: the new color primaries value
  *
- * Sets the color-primaries property of @self.
+ * Sets the color-primaries property of @this.
  *
  * Since: 4.16
  */
 void
-gdk_cicp_params_set_color_primaries (GdkCicpParams *self,
+gdk_cicp_params_set_color_primaries (GdkCicpParams *this,
                                      guint          color_primaries)
 {
-  g_return_if_fail (GDK_IS_CICP_PARAMS (self));
+  g_return_if_fail (GDK_IS_CICP_PARAMS (this));
 
-  if (self->cicp.color_primaries == color_primaries)
+  if (this->cicp.color_primaries == color_primaries)
     return;
 
-  self->cicp.color_primaries = color_primaries;
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_COLOR_PRIMARIES]);
+  this->cicp.color_primaries = color_primaries;
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_COLOR_PRIMARIES]);
 }
 
 /**
  * gdk_cicp_params_get_transfer_function:
- * @self: a `GdkCicpParams`
+ * @this: a `GdkCicpParams`
  *
- * Gets the transfer-function property of @self.
+ * Gets the transfer-function property of @this.
  *
  * Returns: the transfer-function value
  *
  * Since: 4.16
  */
 guint
-gdk_cicp_params_get_transfer_function (GdkCicpParams *self)
+gdk_cicp_params_get_transfer_function (GdkCicpParams *this)
 {
-  g_return_val_if_fail (GDK_IS_CICP_PARAMS (self), 0);
+  g_return_val_if_fail (GDK_IS_CICP_PARAMS (this), 0);
 
-  return self->cicp.transfer_function;
+  return this->cicp.transfer_function;
 }
 
 /**
  * gdk_cicp_params_set_transfer_function:
- * @self: a `GdkCicpParams`
+ * @this: a `GdkCicpParams`
  * @transfer_function: the new transfer-function value
  *
- * Sets the transfer-function property of @self.
+ * Sets the transfer-function property of @this.
  *
  * Since: 4.16
  */
 void
-gdk_cicp_params_set_transfer_function (GdkCicpParams *self,
+gdk_cicp_params_set_transfer_function (GdkCicpParams *this,
                                        guint          transfer_function)
 {
-  g_return_if_fail (GDK_IS_CICP_PARAMS (self));
+  g_return_if_fail (GDK_IS_CICP_PARAMS (this));
 
-  if (self->cicp.transfer_function == transfer_function)
+  if (this->cicp.transfer_function == transfer_function)
     return;
 
-  self->cicp.transfer_function = transfer_function;
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_TRANSFER_FUNCTION]);
+  this->cicp.transfer_function = transfer_function;
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_TRANSFER_FUNCTION]);
 }
 
 /**
  * gdk_cicp_params_get_matrix_coefficients:
- * @self: a `GdkCicpParams`
+ * @this: a `GdkCicpParams`
  *
- * Gets the matrix-coefficients property of @self.
+ * Gets the matrix-coefficients property of @this.
  *
  * Returns: the matrix-coefficients value
  *
  * Since: 4.16
  */
 guint
-gdk_cicp_params_get_matrix_coefficients (GdkCicpParams *self)
+gdk_cicp_params_get_matrix_coefficients (GdkCicpParams *this)
 {
-  g_return_val_if_fail (GDK_IS_CICP_PARAMS (self), 0);
+  g_return_val_if_fail (GDK_IS_CICP_PARAMS (this), 0);
 
-  return self->cicp.matrix_coefficients;
+  return this->cicp.matrix_coefficients;
 }
 
 /**
  * gdk_cicp_params_set_matrix_coefficients:
- * @self a `GdkCicpParams`
+ * @this a `GdkCicpParams`
  * @matrix_coefficients: the new matrix-coefficients value
  *
- * Sets the matrix-coefficients property of @self.
+ * Sets the matrix-coefficients property of @this.
  *
  * Since: 4.16
  */
 void
-gdk_cicp_params_set_matrix_coefficients (GdkCicpParams *self,
+gdk_cicp_params_set_matrix_coefficients (GdkCicpParams *this,
                                          guint          matrix_coefficients)
 {
-  g_return_if_fail (GDK_IS_CICP_PARAMS (self));
+  g_return_if_fail (GDK_IS_CICP_PARAMS (this));
 
-  if (self->cicp.matrix_coefficients == matrix_coefficients)
+  if (this->cicp.matrix_coefficients == matrix_coefficients)
     return;
 
-  self->cicp.matrix_coefficients = matrix_coefficients;
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_MATRIX_COEFFICIENTS]);
+  this->cicp.matrix_coefficients = matrix_coefficients;
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_MATRIX_COEFFICIENTS]);
 }
 
 /**
  * gdk_cicp_params_get_range:
- * @self: a `GdkCicpParams`
+ * @this: a `GdkCicpParams`
  *
- * Gets the range property of @self.
+ * Gets the range property of @this.
  *
  * Returns: the range value
  *
  * Since: 4.16
  */
 GdkCicpRange
-gdk_cicp_params_get_range (GdkCicpParams *self)
+gdk_cicp_params_get_range (GdkCicpParams *this)
 {
-  g_return_val_if_fail (GDK_IS_CICP_PARAMS (self), GDK_CICP_RANGE_NARROW);
+  g_return_val_if_fail (GDK_IS_CICP_PARAMS (this), GDK_CICP_RANGE_NARROW);
 
-  return self->cicp.range;
+  return this->cicp.range;
 }
 
 /**
  * gdk_cicp_params_set_range:
- * @self: a `GdkCipParams`
+ * @this: a `GdkCipParams`
  * @range: the range value
  *
- * Sets the range property of @self
+ * Sets the range property of @this
  *
  * Since: 4.16
  */
 void
-gdk_cicp_params_set_range (GdkCicpParams *self,
+gdk_cicp_params_set_range (GdkCicpParams *this,
                            GdkCicpRange   range)
 {
-  g_return_if_fail (GDK_IS_CICP_PARAMS (self));
+  g_return_if_fail (GDK_IS_CICP_PARAMS (this));
 
-  if (self->cicp.range == range)
+  if (this->cicp.range == range)
     return;
 
-  self->cicp.range = range;
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_RANGE]);
+  this->cicp.range = range;
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_RANGE]);
 }
 
 /**
  * gdk_cicp_params_build_color_state:
- * @self: a `GdkCicpParams`
+ * @this: a `GdkCicpParams`
  * @error: return location for errors
  *
- * Creates a new `GdkColorState` object for the cicp parameters in @self.
+ * Creates a new `GdkColorState` object for the cicp parameters in @this.
  *
- * Note that this may fail if the cicp parameters in @self are not
+ * Note that this may fail if the cicp parameters in @this are not
  * supported by GTK. In that case, `NULL` is returned, and @error is set
  * with an error message that can be presented to the user.
  *
@@ -437,10 +437,10 @@ gdk_cicp_params_set_range (GdkCicpParams *self,
  * Since: 4.16
  */
 GdkColorState *
-gdk_cicp_params_build_color_state (GdkCicpParams  *self,
+gdk_cicp_params_build_color_state (GdkCicpParams  *this,
                                    GError        **error)
 {
-  return gdk_color_state_new_for_cicp (gdk_cicp_params_get_cicp (self), error);
+  return gdk_color_state_new_for_cicp (gdk_cicp_params_get_cicp (this), error);
 }
 
 /* }}} */
@@ -467,17 +467,17 @@ gdk_cicp_params_new_for_cicp (const GdkCicp *cicp)
 
 /*< private >
  * gdk_cicp_params_get_cicp:
- * @self: a `GdkCicpParams` object
+ * @this: a `GdkCicpParams` object
  *
- * Gets the `GdkCicp` struct of @self.
+ * Gets the `GdkCicp` struct of @this.
  *
  * Returns: (transfer none): a `GdkCicp` struct containing
- *     the values of @self
+ *     the values of @this
  */
 const GdkCicp *
-gdk_cicp_params_get_cicp (GdkCicpParams *self)
+gdk_cicp_params_get_cicp (GdkCicpParams *this)
 {
-  return &self->cicp;
+  return &this->cicp;
 }
 
 /* }}} */

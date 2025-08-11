@@ -179,14 +179,14 @@ static void
 button_toggled (GtkWidget *widget,
                 gpointer   data)
 {
-  GtkDropDown *self = data;
+  GtkDropDown *this = data;
 
   if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget)))
-    gtk_popover_popup (GTK_POPOVER (self->popup));
+    gtk_popover_popup (GTK_POPOVER (this->popup));
   else
-    gtk_popover_popdown (GTK_POPOVER (self->popup));
+    gtk_popover_popdown (GTK_POPOVER (this->popup));
 
-  gtk_accessible_update_state (GTK_ACCESSIBLE (self),
+  gtk_accessible_update_state (GTK_ACCESSIBLE (this),
                                GTK_ACCESSIBLE_STATE_EXPANDED, gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget)),
                                -1);
 }
@@ -195,10 +195,10 @@ static void
 popover_closed (GtkPopover *popover,
                 gpointer    data)
 {
-  GtkDropDown *self = data;
+  GtkDropDown *this = data;
 
-  gtk_editable_set_text (GTK_EDITABLE (self->search_entry), "");
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (self->button), FALSE);
+  gtk_editable_set_text (GTK_EDITABLE (this->search_entry), "");
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (this->button), FALSE);
 }
 
 static void
@@ -206,17 +206,17 @@ row_activated (GtkListView *listview,
                guint        position,
                gpointer     data)
 {
-  GtkDropDown *self = data;
+  GtkDropDown *this = data;
   GtkFilter *filter;
 
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (self->button), FALSE);
-  gtk_popover_popdown (GTK_POPOVER (self->popup));
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (this->button), FALSE);
+  gtk_popover_popdown (GTK_POPOVER (this->popup));
 
   /* reset the filter so positions are 1-1 */
-  filter = gtk_filter_list_model_get_filter (GTK_FILTER_LIST_MODEL (self->filter_model));
+  filter = gtk_filter_list_model_get_filter (GTK_FILTER_LIST_MODEL (this->filter_model));
   if (GTK_IS_STRING_FILTER (filter))
     gtk_string_filter_set_search (GTK_STRING_FILTER (filter), "");
-  gtk_drop_down_set_selected (self, gtk_single_selection_get_selected (GTK_SINGLE_SELECTION (self->popup_selection)));
+  gtk_drop_down_set_selected (this, gtk_single_selection_get_selected (GTK_SINGLE_SELECTION (this->popup_selection)));
 }
 
 static void
@@ -224,36 +224,36 @@ selection_changed (GtkSingleSelection *selection,
                    GParamSpec         *pspec,
                    gpointer            data)
 {
-  GtkDropDown *self = data;
+  GtkDropDown *this = data;
   guint selected;
   GtkFilter *filter;
 
-  selected = gtk_single_selection_get_selected (GTK_SINGLE_SELECTION (self->selection));
+  selected = gtk_single_selection_get_selected (GTK_SINGLE_SELECTION (this->selection));
 
   if (selected == GTK_INVALID_LIST_POSITION)
     {
-      gtk_stack_set_visible_child_name (GTK_STACK (self->button_stack), "empty");
+      gtk_stack_set_visible_child_name (GTK_STACK (this->button_stack), "empty");
     }
   else
     {
-      gtk_stack_set_visible_child_name (GTK_STACK (self->button_stack), "item");
+      gtk_stack_set_visible_child_name (GTK_STACK (this->button_stack), "item");
     }
 
-  if (selected != gtk_list_item_base_get_position (GTK_LIST_ITEM_BASE (self->button_item)))
+  if (selected != gtk_list_item_base_get_position (GTK_LIST_ITEM_BASE (this->button_item)))
     {
-      gtk_list_item_base_update (GTK_LIST_ITEM_BASE (self->button_item),
+      gtk_list_item_base_update (GTK_LIST_ITEM_BASE (this->button_item),
                                  selected,
-                                 gtk_single_selection_get_selected_item (GTK_SINGLE_SELECTION (self->selection)),
+                                 gtk_single_selection_get_selected_item (GTK_SINGLE_SELECTION (this->selection)),
                                  FALSE);
     }
 
   /* reset the filter so positions are 1-1 */
-  filter = gtk_filter_list_model_get_filter (GTK_FILTER_LIST_MODEL (self->filter_model));
+  filter = gtk_filter_list_model_get_filter (GTK_FILTER_LIST_MODEL (this->filter_model));
   if (GTK_IS_STRING_FILTER (filter))
     gtk_string_filter_set_search (GTK_STRING_FILTER (filter), "");
-  gtk_single_selection_set_selected (GTK_SINGLE_SELECTION (self->popup_selection), selected);
+  gtk_single_selection_set_selected (GTK_SINGLE_SELECTION (this->popup_selection), selected);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SELECTED]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SELECTED]);
 }
 
 static void
@@ -261,43 +261,43 @@ selection_item_changed (GtkSingleSelection *selection,
                         GParamSpec         *pspec,
                         gpointer            data)
 {
-  GtkDropDown *self = data;
+  GtkDropDown *this = data;
   gpointer item;
 
-  item = gtk_single_selection_get_selected_item (GTK_SINGLE_SELECTION (self->selection));
+  item = gtk_single_selection_get_selected_item (GTK_SINGLE_SELECTION (this->selection));
 
-  if (item != gtk_list_item_base_get_item (GTK_LIST_ITEM_BASE (self->button_item)))
+  if (item != gtk_list_item_base_get_item (GTK_LIST_ITEM_BASE (this->button_item)))
     {
-      gtk_list_item_base_update (GTK_LIST_ITEM_BASE (self->button_item),
-                                 gtk_single_selection_get_selected (GTK_SINGLE_SELECTION (self->selection)),
+      gtk_list_item_base_update (GTK_LIST_ITEM_BASE (this->button_item),
+                                 gtk_single_selection_get_selected (GTK_SINGLE_SELECTION (this->selection)),
                                  item,
                                  FALSE);
     }
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SELECTED_ITEM]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SELECTED_ITEM]);
 }
 
 static void
-gtk_drop_down_activate (GtkDropDown *self)
+gtk_drop_down_activate (GtkDropDown *this)
 {
-  gtk_widget_activate (self->button);
+  gtk_widget_activate (this->button);
 }
 
 static void
-update_filter (GtkDropDown *self)
+update_filter (GtkDropDown *this)
 {
-  if (self->filter_model)
+  if (this->filter_model)
     {
       GtkFilter *filter;
 
-      if (self->expression)
+      if (this->expression)
         {
-          filter = GTK_FILTER (gtk_string_filter_new (gtk_expression_ref (self->expression)));
-          gtk_string_filter_set_match_mode (GTK_STRING_FILTER (filter), self->search_match_mode);
+          filter = GTK_FILTER (gtk_string_filter_new (gtk_expression_ref (this->expression)));
+          gtk_string_filter_set_match_mode (GTK_STRING_FILTER (filter), this->search_match_mode);
         }
       else
         filter = GTK_FILTER (gtk_every_filter_new ());
-      gtk_filter_list_model_set_filter (GTK_FILTER_LIST_MODEL (self->filter_model), filter);
+      gtk_filter_list_model_set_filter (GTK_FILTER_LIST_MODEL (this->filter_model), filter);
       g_object_unref (filter);
     }
 }
@@ -305,13 +305,13 @@ update_filter (GtkDropDown *self)
 static void
 search_changed (GtkSearchEntry *entry, gpointer data)
 {
-  GtkDropDown *self = data;
+  GtkDropDown *this = data;
   const char *text;
   GtkFilter *filter;
 
   text  = gtk_editable_get_text (GTK_EDITABLE (entry));
 
-  filter = gtk_filter_list_model_get_filter (GTK_FILTER_LIST_MODEL (self->filter_model));
+  filter = gtk_filter_list_model_get_filter (GTK_FILTER_LIST_MODEL (this->filter_model));
   if (GTK_IS_STRING_FILTER (filter))
     gtk_string_filter_set_search (GTK_STRING_FILTER (filter), text);
 }
@@ -319,40 +319,40 @@ search_changed (GtkSearchEntry *entry, gpointer data)
 static void
 search_stop (GtkSearchEntry *entry, gpointer data)
 {
-  GtkDropDown *self = data;
+  GtkDropDown *this = data;
   GtkFilter *filter;
 
-  filter = gtk_filter_list_model_get_filter (GTK_FILTER_LIST_MODEL (self->filter_model));
+  filter = gtk_filter_list_model_get_filter (GTK_FILTER_LIST_MODEL (this->filter_model));
   if (GTK_IS_STRING_FILTER (filter))
     {
       if (gtk_string_filter_get_search (GTK_STRING_FILTER (filter)))
         gtk_string_filter_set_search (GTK_STRING_FILTER (filter), NULL);
       else
-        gtk_popover_popdown (GTK_POPOVER (self->popup));
+        gtk_popover_popdown (GTK_POPOVER (this->popup));
     }
 }
 
 static void
 gtk_drop_down_dispose (GObject *object)
 {
-  GtkDropDown *self = GTK_DROP_DOWN (object);
+  GtkDropDown *this = GTK_DROP_DOWN (object);
 
-  g_clear_pointer (&self->popup, gtk_widget_unparent);
-  g_clear_pointer (&self->button, gtk_widget_unparent);
+  g_clear_pointer (&this->popup, gtk_widget_unparent);
+  g_clear_pointer (&this->button, gtk_widget_unparent);
 
-  g_clear_object (&self->model);
-  if (self->selection)
+  g_clear_object (&this->model);
+  if (this->selection)
     {
-      g_signal_handlers_disconnect_by_func (self->selection, selection_changed, self);
-      g_signal_handlers_disconnect_by_func (self->selection, selection_item_changed, self);
+      g_signal_handlers_disconnect_by_func (this->selection, selection_changed, this);
+      g_signal_handlers_disconnect_by_func (this->selection, selection_item_changed, this);
     }
-  g_clear_object (&self->filter_model);
-  g_clear_pointer (&self->expression, gtk_expression_unref);
-  g_clear_object (&self->selection);
-  g_clear_object (&self->popup_selection);
-  g_clear_object (&self->factory);
-  g_clear_object (&self->list_factory);
-  g_clear_object (&self->header_factory);
+  g_clear_object (&this->filter_model);
+  g_clear_pointer (&this->expression, gtk_expression_unref);
+  g_clear_object (&this->selection);
+  g_clear_object (&this->popup_selection);
+  g_clear_object (&this->factory);
+  g_clear_object (&this->list_factory);
+  g_clear_object (&this->header_factory);
 
   G_OBJECT_CLASS (gtk_drop_down_parent_class)->dispose (object);
 }
@@ -363,48 +363,48 @@ gtk_drop_down_get_property (GObject    *object,
                             GValue     *value,
                             GParamSpec *pspec)
 {
-  GtkDropDown *self = GTK_DROP_DOWN (object);
+  GtkDropDown *this = GTK_DROP_DOWN (object);
 
   switch (property_id)
     {
     case PROP_FACTORY:
-      g_value_set_object (value, self->factory);
+      g_value_set_object (value, this->factory);
       break;
 
     case PROP_HEADER_FACTORY:
-      g_value_set_object (value, self->header_factory);
+      g_value_set_object (value, this->header_factory);
       break;
 
     case PROP_LIST_FACTORY:
-      g_value_set_object (value, self->list_factory);
+      g_value_set_object (value, this->list_factory);
       break;
 
     case PROP_MODEL:
-      g_value_set_object (value, self->model);
+      g_value_set_object (value, this->model);
       break;
 
     case PROP_SELECTED:
-      g_value_set_uint (value, gtk_drop_down_get_selected (self));
+      g_value_set_uint (value, gtk_drop_down_get_selected (this));
       break;
 
     case PROP_SELECTED_ITEM:
-      g_value_set_object (value, gtk_drop_down_get_selected_item (self));
+      g_value_set_object (value, gtk_drop_down_get_selected_item (this));
       break;
 
     case PROP_ENABLE_SEARCH:
-      g_value_set_boolean (value, self->enable_search);
+      g_value_set_boolean (value, this->enable_search);
       break;
 
     case PROP_EXPRESSION:
-      gtk_value_set_expression (value, self->expression);
+      gtk_value_set_expression (value, this->expression);
       break;
 
     case PROP_SHOW_ARROW:
-      g_value_set_boolean (value, gtk_drop_down_get_show_arrow (self));
+      g_value_set_boolean (value, gtk_drop_down_get_show_arrow (this));
       break;
 
     case PROP_SEARCH_MATCH_MODE:
-      g_value_set_enum (value, gtk_drop_down_get_search_match_mode (self));
+      g_value_set_enum (value, gtk_drop_down_get_search_match_mode (this));
       break;
 
     default:
@@ -419,44 +419,44 @@ gtk_drop_down_set_property (GObject      *object,
                             const GValue *value,
                             GParamSpec   *pspec)
 {
-  GtkDropDown *self = GTK_DROP_DOWN (object);
+  GtkDropDown *this = GTK_DROP_DOWN (object);
 
   switch (property_id)
     {
     case PROP_FACTORY:
-      gtk_drop_down_set_factory (self, g_value_get_object (value));
+      gtk_drop_down_set_factory (this, g_value_get_object (value));
       break;
 
     case PROP_HEADER_FACTORY:
-      gtk_drop_down_set_header_factory (self, g_value_get_object (value));
+      gtk_drop_down_set_header_factory (this, g_value_get_object (value));
       break;
 
     case PROP_LIST_FACTORY:
-      gtk_drop_down_set_list_factory (self, g_value_get_object (value));
+      gtk_drop_down_set_list_factory (this, g_value_get_object (value));
       break;
 
     case PROP_MODEL:
-      gtk_drop_down_set_model (self, g_value_get_object (value));
+      gtk_drop_down_set_model (this, g_value_get_object (value));
       break;
 
     case PROP_SELECTED:
-      gtk_drop_down_set_selected (self, g_value_get_uint (value));
+      gtk_drop_down_set_selected (this, g_value_get_uint (value));
       break;
 
     case PROP_ENABLE_SEARCH:
-      gtk_drop_down_set_enable_search (self, g_value_get_boolean (value));
+      gtk_drop_down_set_enable_search (this, g_value_get_boolean (value));
       break;
 
     case PROP_EXPRESSION:
-      gtk_drop_down_set_expression (self, gtk_value_get_expression (value));
+      gtk_drop_down_set_expression (this, gtk_value_get_expression (value));
       break;
 
     case PROP_SHOW_ARROW:
-      gtk_drop_down_set_show_arrow (self, g_value_get_boolean (value));
+      gtk_drop_down_set_show_arrow (this, g_value_get_boolean (value));
       break;
 
     case PROP_SEARCH_MATCH_MODE:
-      gtk_drop_down_set_search_match_mode (self, g_value_get_enum (value));
+      gtk_drop_down_set_search_match_mode (this, g_value_get_enum (value));
       break;
 
 
@@ -475,9 +475,9 @@ gtk_drop_down_measure (GtkWidget      *widget,
                        int            *minimum_baseline,
                        int            *natural_baseline)
 {
-  GtkDropDown *self = GTK_DROP_DOWN (widget);
+  GtkDropDown *this = GTK_DROP_DOWN (widget);
 
-  gtk_widget_measure (self->button,
+  gtk_widget_measure (this->button,
                       orientation,
                       size,
                       minimum, natural,
@@ -490,54 +490,54 @@ gtk_drop_down_size_allocate (GtkWidget *widget,
                              int        height,
                              int        baseline)
 {
-  GtkDropDown *self = GTK_DROP_DOWN (widget);
+  GtkDropDown *this = GTK_DROP_DOWN (widget);
 
-  gtk_widget_size_allocate (self->button, &(GtkAllocation) { 0, 0, width, height }, baseline);
+  gtk_widget_size_allocate (this->button, &(GtkAllocation) { 0, 0, width, height }, baseline);
 
-  gtk_widget_set_size_request (self->popup, width, -1);
-  gtk_widget_queue_resize (self->popup);
+  gtk_widget_set_size_request (this->popup, width, -1);
+  gtk_widget_queue_resize (this->popup);
 
-  gtk_popover_present (GTK_POPOVER (self->popup));
+  gtk_popover_present (GTK_POPOVER (this->popup));
 }
 
 static gboolean
 gtk_drop_down_focus (GtkWidget        *widget,
                      GtkDirectionType  direction)
 {
-  GtkDropDown *self = GTK_DROP_DOWN (widget);
+  GtkDropDown *this = GTK_DROP_DOWN (widget);
 
-  if (self->popup && gtk_widget_get_visible (self->popup))
-    return gtk_widget_child_focus (self->popup, direction);
+  if (this->popup && gtk_widget_get_visible (this->popup))
+    return gtk_widget_child_focus (this->popup, direction);
   else
-    return gtk_widget_child_focus (self->button, direction);
+    return gtk_widget_child_focus (this->button, direction);
 }
 
 static gboolean
 gtk_drop_down_grab_focus (GtkWidget *widget)
 {
-  GtkDropDown *self = GTK_DROP_DOWN (widget);
+  GtkDropDown *this = GTK_DROP_DOWN (widget);
 
-  return gtk_widget_grab_focus (self->button);
+  return gtk_widget_grab_focus (this->button);
 }
 
 static void
 gtk_drop_down_root (GtkWidget *widget)
 {
-  GtkDropDown *self = GTK_DROP_DOWN (widget);
+  GtkDropDown *this = GTK_DROP_DOWN (widget);
 
   GTK_WIDGET_CLASS (gtk_drop_down_parent_class)->root (widget);
 
-  if (self->factory)
-    gtk_list_factory_widget_set_factory (GTK_LIST_FACTORY_WIDGET (self->button_item), self->factory);
+  if (this->factory)
+    gtk_list_factory_widget_set_factory (GTK_LIST_FACTORY_WIDGET (this->button_item), this->factory);
 }
 
 static void
 gtk_drop_down_unroot (GtkWidget *widget)
 {
-  GtkDropDown *self = GTK_DROP_DOWN (widget);
+  GtkDropDown *this = GTK_DROP_DOWN (widget);
 
-  if (self->factory)
-    gtk_list_factory_widget_set_factory (GTK_LIST_FACTORY_WIDGET (self->button_item), NULL);
+  if (this->factory)
+    gtk_list_factory_widget_set_factory (GTK_LIST_FACTORY_WIDGET (this->button_item), NULL);
 
   GTK_WIDGET_CLASS (gtk_drop_down_parent_class)->unroot (widget);
 }
@@ -744,7 +744,7 @@ setup_item (GtkSignalListItemFactory *factory,
 }
 
 static void
-selected_item_changed (GtkDropDown *self,
+selected_item_changed (GtkDropDown *this,
                        GParamSpec  *pspec,
                        GtkListItem *list_item)
 {
@@ -754,7 +754,7 @@ selected_item_changed (GtkDropDown *self,
   box = gtk_list_item_get_child (list_item);
   icon = gtk_widget_get_last_child (box);
 
-  if (gtk_drop_down_get_selected_item (self) == gtk_list_item_get_item (list_item))
+  if (gtk_drop_down_get_selected_item (this) == gtk_list_item_get_item (list_item))
     gtk_widget_set_opacity (icon, 1.0);
   else
     gtk_widget_set_opacity (icon, 0.0);
@@ -763,13 +763,13 @@ selected_item_changed (GtkDropDown *self,
 static void
 root_changed (GtkWidget   *box,
               GParamSpec  *pspec,
-              GtkDropDown *self)
+              GtkDropDown *this)
 {
   GtkWidget *icon;
 
   icon = gtk_widget_get_last_child (box);
 
-  if (gtk_widget_get_ancestor (box, GTK_TYPE_POPOVER) == self->popup)
+  if (gtk_widget_get_ancestor (box, GTK_TYPE_POPOVER) == this->popup)
     gtk_widget_set_visible (icon, TRUE);
   else
     gtk_widget_set_visible (icon, FALSE);
@@ -780,7 +780,7 @@ bind_item (GtkSignalListItemFactory *factory,
            GtkListItem              *list_item,
            gpointer                  data)
 {
-  GtkDropDown *self = data;
+  GtkDropDown *this = data;
   gpointer item;
   GtkWidget *box;
   GtkWidget *label;
@@ -790,8 +790,8 @@ bind_item (GtkSignalListItemFactory *factory,
   box = gtk_list_item_get_child (list_item);
   label = gtk_widget_get_first_child (box);
 
-  if (self->expression &&
-      gtk_expression_evaluate (self->expression, item, &value))
+  if (this->expression &&
+      gtk_expression_evaluate (this->expression, item, &value))
     {
       gtk_label_set_label (GTK_LABEL (label), g_value_get_string (&value));
       g_value_unset (&value);
@@ -808,13 +808,13 @@ bind_item (GtkSignalListItemFactory *factory,
       g_critical ("Either GtkDropDown:factory or GtkDropDown:expression must be set");
     }
 
-  g_signal_connect (self, "notify::selected-item",
+  g_signal_connect (this, "notify::selected-item",
                     G_CALLBACK (selected_item_changed), list_item);
-  selected_item_changed (self, NULL, list_item);
+  selected_item_changed (this, NULL, list_item);
 
   g_signal_connect (box, "notify::root",
-                    G_CALLBACK (root_changed), self);
-  root_changed (box, NULL, self);
+                    G_CALLBACK (root_changed), this);
+  root_changed (box, NULL, this);
 }
 
 static void
@@ -822,48 +822,48 @@ unbind_item (GtkSignalListItemFactory *factory,
              GtkListItem              *list_item,
              gpointer                  data)
 {
-  GtkDropDown *self = data;
+  GtkDropDown *this = data;
   GtkWidget *box;
 
   box = gtk_list_item_get_child (list_item);
 
-  g_signal_handlers_disconnect_by_func (self, selected_item_changed, list_item);
-  g_signal_handlers_disconnect_by_func (box, root_changed, self);
+  g_signal_handlers_disconnect_by_func (this, selected_item_changed, list_item);
+  g_signal_handlers_disconnect_by_func (box, root_changed, this);
 }
 
 static void
-set_default_factory (GtkDropDown *self)
+set_default_factory (GtkDropDown *this)
 {
   GtkListItemFactory *factory;
 
   factory = gtk_signal_list_item_factory_new ();
 
-  g_signal_connect (factory, "setup", G_CALLBACK (setup_item), self);
-  g_signal_connect (factory, "bind", G_CALLBACK (bind_item), self);
-  g_signal_connect (factory, "unbind", G_CALLBACK (unbind_item), self);
+  g_signal_connect (factory, "setup", G_CALLBACK (setup_item), this);
+  g_signal_connect (factory, "bind", G_CALLBACK (bind_item), this);
+  g_signal_connect (factory, "unbind", G_CALLBACK (unbind_item), this);
 
-  gtk_drop_down_set_factory (self, factory);
-  self->uses_default_factory = TRUE;
+  gtk_drop_down_set_factory (this, factory);
+  this->uses_default_factory = TRUE;
 
-  if (self->uses_default_list_factory)
-    gtk_drop_down_set_list_factory (self, NULL);
+  if (this->uses_default_list_factory)
+    gtk_drop_down_set_list_factory (this, NULL);
 
   g_object_unref (factory);
 }
 
 static void
-gtk_drop_down_init (GtkDropDown *self)
+gtk_drop_down_init (GtkDropDown *this)
 {
   g_type_ensure (GTK_TYPE_BUILTIN_ICON);
   g_type_ensure (GTK_TYPE_LIST_ITEM_WIDGET);
 
-  gtk_widget_init_template (GTK_WIDGET (self));
+  gtk_widget_init_template (GTK_WIDGET (this));
 
-  self->show_arrow = gtk_widget_get_visible (self->arrow);
+  this->show_arrow = gtk_widget_get_visible (this->arrow);
 
-  set_default_factory (self);
+  set_default_factory (this);
 
-  self->search_match_mode = GTK_STRING_FILTER_MATCH_MODE_PREFIX;
+  this->search_match_mode = GTK_STRING_FILTER_MATCH_MODE_PREFIX;
 }
 
 /**
@@ -882,9 +882,9 @@ GtkWidget *
 gtk_drop_down_new (GListModel    *model,
                    GtkExpression *expression)
 {
-  GtkWidget *self;
+  GtkWidget *this;
 
-  self = g_object_new (GTK_TYPE_DROP_DOWN,
+  this = g_object_new (GTK_TYPE_DROP_DOWN,
                        "model", model,
                        "expression", expression,
                        NULL);
@@ -893,7 +893,7 @@ gtk_drop_down_new (GListModel    *model,
   g_clear_object (&model);
   g_clear_pointer (&expression, gtk_expression_unref);
 
-  return self;
+  return this;
 }
 
 /**
@@ -913,50 +913,50 @@ gtk_drop_down_new_from_strings (const char * const *strings)
 
 /**
  * gtk_drop_down_get_model:
- * @self: a `GtkDropDown`
+ * @this: a `GtkDropDown`
  *
  * Gets the model that provides the displayed items.
  *
  * Returns: (nullable) (transfer none): The model in use
  */
 GListModel *
-gtk_drop_down_get_model (GtkDropDown *self)
+gtk_drop_down_get_model (GtkDropDown *this)
 {
-  g_return_val_if_fail (GTK_IS_DROP_DOWN (self), NULL);
+  g_return_val_if_fail (GTK_IS_DROP_DOWN (this), NULL);
 
-  return self->model;
+  return this->model;
 }
 
 /**
  * gtk_drop_down_set_model:
- * @self: a `GtkDropDown`
+ * @this: a `GtkDropDown`
  * @model: (nullable) (transfer none): the model to use
  *
  * Sets the `GListModel` to use.
  */
 void
-gtk_drop_down_set_model (GtkDropDown *self,
+gtk_drop_down_set_model (GtkDropDown *this,
                          GListModel  *model)
 {
-  g_return_if_fail (GTK_IS_DROP_DOWN (self));
+  g_return_if_fail (GTK_IS_DROP_DOWN (this));
   g_return_if_fail (model == NULL || G_IS_LIST_MODEL (model));
 
-  if (!g_set_object (&self->model, model))
+  if (!g_set_object (&this->model, model))
     return;
 
   if (model == NULL)
     {
-      gtk_list_view_set_model (GTK_LIST_VIEW (self->popup_list), NULL);
+      gtk_list_view_set_model (GTK_LIST_VIEW (this->popup_list), NULL);
 
-      if (self->selection)
+      if (this->selection)
         {
-          g_signal_handlers_disconnect_by_func (self->selection, selection_changed, self);
-          g_signal_handlers_disconnect_by_func (self->selection, selection_item_changed, self);
+          g_signal_handlers_disconnect_by_func (this->selection, selection_changed, this);
+          g_signal_handlers_disconnect_by_func (this->selection, selection_item_changed, this);
         }
 
-      g_clear_object (&self->selection);
-      g_clear_object (&self->filter_model);
-      g_clear_object (&self->popup_selection);
+      g_clear_object (&this->selection);
+      g_clear_object (&this->filter_model);
+      g_clear_object (&this->popup_selection);
     }
   else
     {
@@ -964,31 +964,31 @@ gtk_drop_down_set_model (GtkDropDown *self,
       GtkSelectionModel *selection;
 
       filter_model = G_LIST_MODEL (gtk_filter_list_model_new (g_object_ref (model), NULL));
-      g_set_object (&self->filter_model, filter_model);
+      g_set_object (&this->filter_model, filter_model);
 
-      update_filter (self);
+      update_filter (this);
 
       selection = GTK_SELECTION_MODEL (gtk_single_selection_new (filter_model));
-      g_set_object (&self->popup_selection, selection);
-      gtk_list_view_set_model (GTK_LIST_VIEW (self->popup_list), selection);
+      g_set_object (&this->popup_selection, selection);
+      gtk_list_view_set_model (GTK_LIST_VIEW (this->popup_list), selection);
       g_object_unref (selection);
 
       selection = GTK_SELECTION_MODEL (gtk_single_selection_new (g_object_ref (model)));
-      g_set_object (&self->selection, selection);
+      g_set_object (&this->selection, selection);
       g_object_unref (selection);
 
-      g_signal_connect (self->selection, "notify::selected", G_CALLBACK (selection_changed), self);
-      g_signal_connect (self->selection, "notify::selected-item", G_CALLBACK (selection_item_changed), self);
-      selection_changed (GTK_SINGLE_SELECTION (self->selection), NULL, self);
-      selection_item_changed (GTK_SINGLE_SELECTION (self->selection), NULL, self);
+      g_signal_connect (this->selection, "notify::selected", G_CALLBACK (selection_changed), this);
+      g_signal_connect (this->selection, "notify::selected-item", G_CALLBACK (selection_item_changed), this);
+      selection_changed (GTK_SINGLE_SELECTION (this->selection), NULL, this);
+      selection_item_changed (GTK_SINGLE_SELECTION (this->selection), NULL, this);
     }
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_MODEL]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_MODEL]);
 }
 
 /**
  * gtk_drop_down_get_factory:
- * @self: a `GtkDropDown`
+ * @this: a `GtkDropDown`
  *
  * Gets the factory that's currently used to populate list items.
  *
@@ -999,47 +999,47 @@ gtk_drop_down_set_model (GtkDropDown *self,
  * Returns: (nullable) (transfer none): The factory in use
  */
 GtkListItemFactory *
-gtk_drop_down_get_factory (GtkDropDown *self)
+gtk_drop_down_get_factory (GtkDropDown *this)
 {
-  g_return_val_if_fail (GTK_IS_DROP_DOWN (self), NULL);
+  g_return_val_if_fail (GTK_IS_DROP_DOWN (this), NULL);
 
-  return self->factory;
+  return this->factory;
 }
 
 /**
  * gtk_drop_down_set_factory:
- * @self: a `GtkDropDown`
+ * @this: a `GtkDropDown`
  * @factory: (nullable) (transfer none): the factory to use
  *
  * Sets the `GtkListItemFactory` to use for populating list items.
  */
 void
-gtk_drop_down_set_factory (GtkDropDown        *self,
+gtk_drop_down_set_factory (GtkDropDown        *this,
                            GtkListItemFactory *factory)
 {
-  g_return_if_fail (GTK_IS_DROP_DOWN (self));
+  g_return_if_fail (GTK_IS_DROP_DOWN (this));
   g_return_if_fail (factory == NULL || GTK_LIST_ITEM_FACTORY (factory));
 
-  if (!g_set_object (&self->factory, factory))
+  if (!g_set_object (&this->factory, factory))
     return;
 
-  if (gtk_widget_get_root (GTK_WIDGET (self)))
-    gtk_list_factory_widget_set_factory (GTK_LIST_FACTORY_WIDGET (self->button_item), factory);
+  if (gtk_widget_get_root (GTK_WIDGET (this)))
+    gtk_list_factory_widget_set_factory (GTK_LIST_FACTORY_WIDGET (this->button_item), factory);
 
-  if (self->list_factory == NULL)
+  if (this->list_factory == NULL)
     {
-      gtk_list_view_set_factory (GTK_LIST_VIEW (self->popup_list), factory);
-      self->uses_default_list_factory = TRUE;
+      gtk_list_view_set_factory (GTK_LIST_VIEW (this->popup_list), factory);
+      this->uses_default_list_factory = TRUE;
     }
 
-  self->uses_default_factory = factory != NULL;
+  this->uses_default_factory = factory != NULL;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_FACTORY]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_FACTORY]);
 }
 
 /**
  * gtk_drop_down_get_header_factory:
- * @self: a `GtkDropDown`
+ * @this: a `GtkDropDown`
  *
  * Gets the factory that's currently used to create header widgets for the popup.
  *
@@ -1048,16 +1048,16 @@ gtk_drop_down_set_factory (GtkDropDown        *self,
  * Since: 4.12
  */
 GtkListItemFactory *
-gtk_drop_down_get_header_factory (GtkDropDown *self)
+gtk_drop_down_get_header_factory (GtkDropDown *this)
 {
-  g_return_val_if_fail (GTK_IS_DROP_DOWN (self), NULL);
+  g_return_val_if_fail (GTK_IS_DROP_DOWN (this), NULL);
 
-  return self->header_factory;
+  return this->header_factory;
 }
 
 /**
  * gtk_drop_down_set_header_factory:
- * @self: a `GtkDropDown`
+ * @this: a `GtkDropDown`
  * @factory: (nullable) (transfer none): the factory to use
  *
  * Sets the `GtkListItemFactory` to use for creating header widgets for the popup.
@@ -1065,88 +1065,88 @@ gtk_drop_down_get_header_factory (GtkDropDown *self)
  * Since: 4.12
  */
 void
-gtk_drop_down_set_header_factory (GtkDropDown        *self,
+gtk_drop_down_set_header_factory (GtkDropDown        *this,
                                   GtkListItemFactory *factory)
 {
-  g_return_if_fail (GTK_IS_DROP_DOWN (self));
+  g_return_if_fail (GTK_IS_DROP_DOWN (this));
   g_return_if_fail (factory == NULL || GTK_LIST_ITEM_FACTORY (factory));
 
-  if (!g_set_object (&self->header_factory, factory))
+  if (!g_set_object (&this->header_factory, factory))
     return;
 
-  gtk_list_view_set_header_factory (GTK_LIST_VIEW (self->popup_list), self->header_factory);
+  gtk_list_view_set_header_factory (GTK_LIST_VIEW (this->popup_list), this->header_factory);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_HEADER_FACTORY]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_HEADER_FACTORY]);
 }
 
 /**
  * gtk_drop_down_get_list_factory:
- * @self: a `GtkDropDown`
+ * @this: a `GtkDropDown`
  *
  * Gets the factory that's currently used to populate list items in the popup.
  *
  * Returns: (nullable) (transfer none): The factory in use
  */
 GtkListItemFactory *
-gtk_drop_down_get_list_factory (GtkDropDown *self)
+gtk_drop_down_get_list_factory (GtkDropDown *this)
 {
-  g_return_val_if_fail (GTK_IS_DROP_DOWN (self), NULL);
+  g_return_val_if_fail (GTK_IS_DROP_DOWN (this), NULL);
 
-  return self->list_factory;
+  return this->list_factory;
 }
 
 /**
  * gtk_drop_down_set_list_factory:
- * @self: a `GtkDropDown`
+ * @this: a `GtkDropDown`
  * @factory: (nullable) (transfer none): the factory to use
  *
  * Sets the `GtkListItemFactory` to use for populating list items in the popup.
  */
 void
-gtk_drop_down_set_list_factory (GtkDropDown        *self,
+gtk_drop_down_set_list_factory (GtkDropDown        *this,
                                 GtkListItemFactory *factory)
 {
-  g_return_if_fail (GTK_IS_DROP_DOWN (self));
+  g_return_if_fail (GTK_IS_DROP_DOWN (this));
   g_return_if_fail (factory == NULL || GTK_LIST_ITEM_FACTORY (factory));
 
-  if (!g_set_object (&self->list_factory, factory))
+  if (!g_set_object (&this->list_factory, factory))
     return;
 
-  if (self->list_factory != NULL)
-    gtk_list_view_set_factory (GTK_LIST_VIEW (self->popup_list), self->list_factory);
+  if (this->list_factory != NULL)
+    gtk_list_view_set_factory (GTK_LIST_VIEW (this->popup_list), this->list_factory);
   else
-    gtk_list_view_set_factory (GTK_LIST_VIEW (self->popup_list), self->factory);
+    gtk_list_view_set_factory (GTK_LIST_VIEW (this->popup_list), this->factory);
 
-  self->uses_default_list_factory = factory != NULL;
+  this->uses_default_list_factory = factory != NULL;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_LIST_FACTORY]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_LIST_FACTORY]);
 }
 
 /**
  * gtk_drop_down_set_selected:
- * @self: a `GtkDropDown`
+ * @this: a `GtkDropDown`
  * @position: the position of the item to select, or %GTK_INVALID_LIST_POSITION
  *
  * Selects the item at the given position.
  */
 void
-gtk_drop_down_set_selected (GtkDropDown *self,
+gtk_drop_down_set_selected (GtkDropDown *this,
                             guint        position)
 {
-  g_return_if_fail (GTK_IS_DROP_DOWN (self));
+  g_return_if_fail (GTK_IS_DROP_DOWN (this));
 
-  if (self->selection == NULL)
+  if (this->selection == NULL)
     return;
 
-  if (gtk_single_selection_get_selected (GTK_SINGLE_SELECTION (self->selection)) == position)
+  if (gtk_single_selection_get_selected (GTK_SINGLE_SELECTION (this->selection)) == position)
     return;
 
-  gtk_single_selection_set_selected (GTK_SINGLE_SELECTION (self->selection), position);
+  gtk_single_selection_set_selected (GTK_SINGLE_SELECTION (this->selection), position);
 }
 
 /**
  * gtk_drop_down_get_selected:
- * @self: a `GtkDropDown`
+ * @this: a `GtkDropDown`
  *
  * Gets the position of the selected item.
  *
@@ -1154,38 +1154,38 @@ gtk_drop_down_set_selected (GtkDropDown *self,
  *   if no item is selected
  */
 guint
-gtk_drop_down_get_selected (GtkDropDown *self)
+gtk_drop_down_get_selected (GtkDropDown *this)
 {
-  g_return_val_if_fail (GTK_IS_DROP_DOWN (self), GTK_INVALID_LIST_POSITION);
+  g_return_val_if_fail (GTK_IS_DROP_DOWN (this), GTK_INVALID_LIST_POSITION);
 
-  if (self->selection == NULL)
+  if (this->selection == NULL)
     return GTK_INVALID_LIST_POSITION;
 
-  return gtk_single_selection_get_selected (GTK_SINGLE_SELECTION (self->selection));
+  return gtk_single_selection_get_selected (GTK_SINGLE_SELECTION (this->selection));
 }
 
 /**
  * gtk_drop_down_get_selected_item:
- * @self: a `GtkDropDown`
+ * @this: a `GtkDropDown`
  *
  * Gets the selected item. If no item is selected, %NULL is returned.
  *
  * Returns: (transfer none) (type GObject) (nullable): The selected item
  */
 gpointer
-gtk_drop_down_get_selected_item (GtkDropDown *self)
+gtk_drop_down_get_selected_item (GtkDropDown *this)
 {
-  g_return_val_if_fail (GTK_IS_DROP_DOWN (self), NULL);
+  g_return_val_if_fail (GTK_IS_DROP_DOWN (this), NULL);
 
-  if (self->selection == NULL)
+  if (this->selection == NULL)
     return NULL;
 
-  return gtk_single_selection_get_selected_item (GTK_SINGLE_SELECTION (self->selection));
+  return gtk_single_selection_get_selected_item (GTK_SINGLE_SELECTION (this->selection));
 }
 
 /**
  * gtk_drop_down_set_enable_search:
- * @self: a `GtkDropDown`
+ * @this: a `GtkDropDown`
  * @enable_search: whether to enable search
  *
  * Sets whether a search entry will be shown in the popup that
@@ -1195,43 +1195,43 @@ gtk_drop_down_get_selected_item (GtkDropDown *self)
  * search to work.
  */
 void
-gtk_drop_down_set_enable_search (GtkDropDown *self,
+gtk_drop_down_set_enable_search (GtkDropDown *this,
                                  gboolean     enable_search)
 {
-  g_return_if_fail (GTK_IS_DROP_DOWN (self));
+  g_return_if_fail (GTK_IS_DROP_DOWN (this));
 
   enable_search = !!enable_search;
 
-  if (self->enable_search == enable_search)
+  if (this->enable_search == enable_search)
     return;
 
-  self->enable_search = enable_search;
+  this->enable_search = enable_search;
 
-  gtk_editable_set_text (GTK_EDITABLE (self->search_entry), "");
-  gtk_widget_set_visible (self->search_box, enable_search);
+  gtk_editable_set_text (GTK_EDITABLE (this->search_entry), "");
+  gtk_widget_set_visible (this->search_box, enable_search);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ENABLE_SEARCH]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ENABLE_SEARCH]);
 }
 
 /**
  * gtk_drop_down_get_enable_search:
- * @self: a `GtkDropDown`
+ * @this: a `GtkDropDown`
  *
  * Returns whether search is enabled.
  *
  * Returns: %TRUE if the popup includes a search entry
  */
 gboolean
-gtk_drop_down_get_enable_search (GtkDropDown *self)
+gtk_drop_down_get_enable_search (GtkDropDown *this)
 {
-  g_return_val_if_fail (GTK_IS_DROP_DOWN (self), FALSE);
+  g_return_val_if_fail (GTK_IS_DROP_DOWN (this), FALSE);
 
-  return self->enable_search;
+  return this->enable_search;
 }
 
 /**
  * gtk_drop_down_set_expression:
- * @self: a `GtkDropDown`
+ * @this: a `GtkDropDown`
  * @expression: (nullable): a `GtkExpression`
  *
  * Sets the expression that gets evaluated to obtain strings from items.
@@ -1240,33 +1240,33 @@ gtk_drop_down_get_enable_search (GtkDropDown *self)
  * a value type of %G_TYPE_STRING.
  */
 void
-gtk_drop_down_set_expression (GtkDropDown   *self,
+gtk_drop_down_set_expression (GtkDropDown   *this,
                               GtkExpression *expression)
 {
-  g_return_if_fail (GTK_IS_DROP_DOWN (self));
+  g_return_if_fail (GTK_IS_DROP_DOWN (this));
   g_return_if_fail (expression == NULL ||
                     gtk_expression_get_value_type (expression) == G_TYPE_STRING);
 
-  if (self->expression == expression)
+  if (this->expression == expression)
     return;
 
-  if (self->expression)
-    gtk_expression_unref (self->expression);
-  self->expression = expression;
-  if (self->expression)
-    gtk_expression_ref (self->expression);
+  if (this->expression)
+    gtk_expression_unref (this->expression);
+  this->expression = expression;
+  if (this->expression)
+    gtk_expression_ref (this->expression);
 
-  if (self->uses_default_factory)
-    set_default_factory (self);
+  if (this->uses_default_factory)
+    set_default_factory (this);
 
-  update_filter (self);
+  update_filter (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_EXPRESSION]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_EXPRESSION]);
 }
 
 /**
  * gtk_drop_down_get_expression:
- * @self: a `GtkDropDown`
+ * @this: a `GtkDropDown`
  *
  * Gets the expression set that is used to obtain strings from items.
  *
@@ -1275,16 +1275,16 @@ gtk_drop_down_set_expression (GtkDropDown   *self,
  * Returns: (nullable) (transfer none): a `GtkExpression`
  */
 GtkExpression *
-gtk_drop_down_get_expression (GtkDropDown *self)
+gtk_drop_down_get_expression (GtkDropDown *this)
 {
-  g_return_val_if_fail (GTK_IS_DROP_DOWN (self), NULL);
+  g_return_val_if_fail (GTK_IS_DROP_DOWN (this), NULL);
 
-  return self->expression;
+  return this->expression;
 }
 
 /**
  * gtk_drop_down_set_show_arrow:
- * @self: a `GtkDropDown`
+ * @this: a `GtkDropDown`
  * @show_arrow: whether to show an arrow within the widget
  *
  * Sets whether an arrow will be displayed within the widget.
@@ -1292,25 +1292,25 @@ gtk_drop_down_get_expression (GtkDropDown *self)
  * Since: 4.6
  */
 void
-gtk_drop_down_set_show_arrow (GtkDropDown *self,
+gtk_drop_down_set_show_arrow (GtkDropDown *this,
                               gboolean     show_arrow)
 {
-  g_return_if_fail (GTK_IS_DROP_DOWN (self));
+  g_return_if_fail (GTK_IS_DROP_DOWN (this));
 
   show_arrow = !!show_arrow;
 
-  if (self->show_arrow == show_arrow)
+  if (this->show_arrow == show_arrow)
     return;
 
-  self->show_arrow = show_arrow;
+  this->show_arrow = show_arrow;
 
-  gtk_widget_set_visible (self->arrow, show_arrow);
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SHOW_ARROW]);
+  gtk_widget_set_visible (this->arrow, show_arrow);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SHOW_ARROW]);
 }
 
 /**
  * gtk_drop_down_get_show_arrow:
- * @self: a `GtkDropDown`
+ * @this: a `GtkDropDown`
  *
  * Returns whether to show an arrow within the widget.
  *
@@ -1319,16 +1319,16 @@ gtk_drop_down_set_show_arrow (GtkDropDown *self,
  * Since: 4.6
  */
 gboolean
-gtk_drop_down_get_show_arrow (GtkDropDown *self)
+gtk_drop_down_get_show_arrow (GtkDropDown *this)
 {
-  g_return_val_if_fail (GTK_IS_DROP_DOWN (self), FALSE);
+  g_return_val_if_fail (GTK_IS_DROP_DOWN (this), FALSE);
 
-  return self->show_arrow;
+  return this->show_arrow;
 }
 
 /**
  * gtk_drop_down_set_search_match_mode:
- * @self: a `GtkDropDown`
+ * @this: a `GtkDropDown`
  * @search_match_mode: the new match mode
  *
  * Sets the match mode for the search filter.
@@ -1336,24 +1336,24 @@ gtk_drop_down_get_show_arrow (GtkDropDown *self)
  * Since: 4.12
  */
 void
-gtk_drop_down_set_search_match_mode (GtkDropDown *self,
+gtk_drop_down_set_search_match_mode (GtkDropDown *this,
                                      GtkStringFilterMatchMode search_match_mode)
 {
-  g_return_if_fail (GTK_IS_DROP_DOWN (self));
+  g_return_if_fail (GTK_IS_DROP_DOWN (this));
 
-  if (self->search_match_mode == search_match_mode)
+  if (this->search_match_mode == search_match_mode)
     return;
 
-  self->search_match_mode = search_match_mode;
+  this->search_match_mode = search_match_mode;
 
-  update_filter (self);
+  update_filter (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SEARCH_MATCH_MODE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SEARCH_MATCH_MODE]);
 }
 
 /**
  * gtk_drop_down_get_search_match_mode:
- * @self: a `GtkDropDown`
+ * @this: a `GtkDropDown`
  *
  * Returns the match mode that the search filter is using.
  *
@@ -1362,9 +1362,9 @@ gtk_drop_down_set_search_match_mode (GtkDropDown *self,
  * Since: 4.12
  */
 GtkStringFilterMatchMode
-gtk_drop_down_get_search_match_mode (GtkDropDown *self)
+gtk_drop_down_get_search_match_mode (GtkDropDown *this)
 {
-  g_return_val_if_fail (GTK_IS_DROP_DOWN (self), GTK_STRING_FILTER_MATCH_MODE_PREFIX);
+  g_return_val_if_fail (GTK_IS_DROP_DOWN (this), GTK_STRING_FILTER_MATCH_MODE_PREFIX);
 
-  return self->search_match_mode;
+  return this->search_match_mode;
 }

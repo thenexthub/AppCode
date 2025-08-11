@@ -85,12 +85,12 @@ G_DEFINE_TYPE (GtkAccessKitContext, gtk_accesskit_context, GTK_TYPE_AT_CONTEXT)
 static void
 gtk_accesskit_context_finalize (GObject *gobject)
 {
-  GtkAccessKitContext *self = GTK_ACCESSKIT_CONTEXT (gobject);
+  GtkAccessKitContext *this = GTK_ACCESSKIT_CONTEXT (gobject);
 
-  g_clear_object (&self->root);
-  g_clear_pointer (&self->single_text_layout.children, g_array_unref);
-  g_clear_pointer (&self->text_view_lines, g_hash_table_destroy);
-  g_clear_pointer (&self->text_view_lines_by_id, g_hash_table_destroy);
+  g_clear_object (&this->root);
+  g_clear_pointer (&this->single_text_layout.children, g_array_unref);
+  g_clear_pointer (&this->text_view_lines, g_hash_table_destroy);
+  g_clear_pointer (&this->text_view_lines_by_id, g_hash_table_destroy);
 
   G_OBJECT_CLASS (gtk_accesskit_context_parent_class)->finalize (gobject);
 }
@@ -98,51 +98,51 @@ gtk_accesskit_context_finalize (GObject *gobject)
 static void
 gtk_accesskit_context_realize (GtkATContext *context)
 {
-  GtkAccessKitContext *self = GTK_ACCESSKIT_CONTEXT (context);
+  GtkAccessKitContext *this = GTK_ACCESSKIT_CONTEXT (context);
   GtkAccessible *accessible = gtk_at_context_get_accessible (context);
 
 
   if (GTK_IS_ROOT (accessible))
-    self->root = gtk_accesskit_root_new (GTK_ROOT (accessible));
+    this->root = gtk_accesskit_root_new (GTK_ROOT (accessible));
   else
     {
       GtkAccessible *parent = gtk_accessible_get_accessible_parent (accessible);
       GtkATContext *parent_ctx = gtk_accessible_get_at_context (parent);
       GtkAccessKitContext *parent_accesskit_ctx = GTK_ACCESSKIT_CONTEXT (parent_ctx);
       gtk_at_context_realize (parent_ctx);
-      self->root = g_object_ref (parent_accesskit_ctx->root);
+      this->root = g_object_ref (parent_accesskit_ctx->root);
       g_object_unref (parent_ctx);
       g_object_unref (parent);
     }
 
-  self->id = gtk_accesskit_root_add_context (self->root, self);
+  this->id = gtk_accesskit_root_add_context (this->root, this);
 }
 
 static void
 gtk_accesskit_context_unrealize (GtkATContext *context)
 {
-  GtkAccessKitContext *self = GTK_ACCESSKIT_CONTEXT (context);
+  GtkAccessKitContext *this = GTK_ACCESSKIT_CONTEXT (context);
   GtkAccessible *accessible = gtk_at_context_get_accessible (context);
 
   GTK_DEBUG (A11Y, "Unrealizing AccessKit context for accessible '%s'",
                    G_OBJECT_TYPE_NAME (accessible));
 
-  gtk_accesskit_root_remove_context (self->root, self->id);
+  gtk_accesskit_root_remove_context (this->root, this->id);
 
-  g_clear_object (&self->root);
-  self->single_text_layout.id = 0;
-  g_clear_pointer (&self->single_text_layout.children, g_array_unref);
-  g_clear_pointer (&self->text_view_lines, g_hash_table_destroy);
-  g_clear_pointer (&self->text_view_lines_by_id, g_hash_table_destroy);
+  g_clear_object (&this->root);
+  this->single_text_layout.id = 0;
+  g_clear_pointer (&this->single_text_layout.children, g_array_unref);
+  g_clear_pointer (&this->text_view_lines, g_hash_table_destroy);
+  g_clear_pointer (&this->text_view_lines_by_id, g_hash_table_destroy);
 }
 
 static void
-queue_update (GtkAccessKitContext *self, gboolean force_to_end)
+queue_update (GtkAccessKitContext *this, gboolean force_to_end)
 {
-  if (!self->root)
+  if (!this->root)
     return;
 
-  gtk_accesskit_root_queue_update (self->root, self->id, force_to_end);
+  gtk_accesskit_root_queue_update (this->root, this->id, force_to_end);
 }
 
 static void
@@ -154,19 +154,19 @@ gtk_accesskit_context_state_change (GtkATContext                *ctx,
                                     GtkAccessibleAttributeSet   *properties,
                                     GtkAccessibleAttributeSet   *relations)
 {
-  GtkAccessKitContext *self = GTK_ACCESSKIT_CONTEXT (ctx);
+  GtkAccessKitContext *this = GTK_ACCESSKIT_CONTEXT (ctx);
 
-  queue_update (self, FALSE);
+  queue_update (this, FALSE);
 }
 
 static void
 gtk_accesskit_context_platform_change (GtkATContext                *ctx,
                                        GtkAccessiblePlatformChange  change)
 {
-  GtkAccessKitContext *self = GTK_ACCESSKIT_CONTEXT (ctx);
+  GtkAccessKitContext *this = GTK_ACCESSKIT_CONTEXT (ctx);
   GtkAccessible *accessible = gtk_at_context_get_accessible (ctx);
 
-  queue_update (self, FALSE);
+  queue_update (this, FALSE);
 
   if (GTK_IS_ROOT (accessible) &&
       change == GTK_ACCESSIBLE_PLATFORM_CHANGE_ACTIVE)
@@ -174,7 +174,7 @@ gtk_accesskit_context_platform_change (GtkATContext                *ctx,
       gboolean active =
         gtk_accessible_get_platform_state (accessible,
                                            GTK_ACCESSIBLE_PLATFORM_STATE_ACTIVE);
-      gtk_accesskit_root_update_window_focus_state (self->root, active);
+      gtk_accesskit_root_update_window_focus_state (this->root, active);
     }
 }
 
@@ -208,9 +208,9 @@ editable_ancestor (GtkAccessible *accessible)
 }
 
 static void
-queue_update_on_editable_ancestor (GtkAccessKitContext *self)
+queue_update_on_editable_ancestor (GtkAccessKitContext *this)
 {
-  GtkATContext *ctx = GTK_AT_CONTEXT (self);
+  GtkATContext *ctx = GTK_AT_CONTEXT (this);
   GtkAccessible *accessible = gtk_at_context_get_accessible (ctx);
   GtkAccessible *ancestor = editable_ancestor (accessible);
   GtkATContext *ancestor_ctx;
@@ -230,15 +230,15 @@ queue_update_on_editable_ancestor (GtkAccessKitContext *self)
 static void
 gtk_accesskit_context_bounds_change (GtkATContext *ctx)
 {
-  GtkAccessKitContext *self = GTK_ACCESSKIT_CONTEXT (ctx);
+  GtkAccessKitContext *this = GTK_ACCESSKIT_CONTEXT (ctx);
 
-  g_clear_pointer (&self->single_text_layout.children, g_array_unref);
-  if (self->text_view_lines)
-    g_hash_table_foreach (self->text_view_lines,
+  g_clear_pointer (&this->single_text_layout.children, g_array_unref);
+  if (this->text_view_lines)
+    g_hash_table_foreach (this->text_view_lines,
                           invalidate_text_view_line_layout, NULL);
 
-  queue_update (self, FALSE);
-  queue_update_on_editable_ancestor (self);
+  queue_update (this, FALSE);
+  queue_update_on_editable_ancestor (this);
 }
 
 static void
@@ -246,9 +246,9 @@ gtk_accesskit_context_child_change (GtkATContext             *ctx,
                                     GtkAccessibleChildChange  change,
                                     GtkAccessible            *child)
 {
-  GtkAccessKitContext *self = GTK_ACCESSKIT_CONTEXT (ctx);
+  GtkAccessKitContext *this = GTK_ACCESSKIT_CONTEXT (ctx);
 
-  queue_update (self, FALSE);
+  queue_update (this, FALSE);
 }
 
 static void
@@ -262,18 +262,18 @@ gtk_accesskit_context_announce (GtkATContext                      *context,
 static void
 gtk_accesskit_context_update_caret_position (GtkATContext *ctx)
 {
-  GtkAccessKitContext *self = GTK_ACCESSKIT_CONTEXT (ctx);
+  GtkAccessKitContext *this = GTK_ACCESSKIT_CONTEXT (ctx);
 
-  queue_update (self, FALSE);
+  queue_update (this, FALSE);
 }
 
 static void
 gtk_accesskit_context_update_selection_bound (GtkATContext *ctx)
 {
-  GtkAccessKitContext *self = GTK_ACCESSKIT_CONTEXT (ctx);
+  GtkAccessKitContext *this = GTK_ACCESSKIT_CONTEXT (ctx);
 
-  queue_update (self, FALSE);
-  queue_update_on_editable_ancestor (self);
+  queue_update (this, FALSE);
+  queue_update_on_editable_ancestor (this);
 }
 
 static void
@@ -282,12 +282,12 @@ gtk_accesskit_context_update_text_contents (GtkATContext *ctx,
                                             unsigned int start_offset,
                                             unsigned int end_offset)
 {
-  GtkAccessKitContext *self = GTK_ACCESSKIT_CONTEXT (ctx);
+  GtkAccessKitContext *this = GTK_ACCESSKIT_CONTEXT (ctx);
   GtkAccessible *accessible = gtk_at_context_get_accessible (ctx);
 
-  g_clear_pointer (&self->single_text_layout.children, g_array_unref);
+  g_clear_pointer (&this->single_text_layout.children, g_array_unref);
 
-  if (GTK_IS_TEXT_VIEW (accessible) && self->text_view_lines)
+  if (GTK_IS_TEXT_VIEW (accessible) && this->text_view_lines)
     {
       GtkTextView *text_view = GTK_TEXT_VIEW (accessible);
       GtkTextBuffer *buffer = gtk_text_view_get_buffer (text_view);
@@ -300,7 +300,7 @@ gtk_accesskit_context_update_text_contents (GtkATContext *ctx,
         {
           GtkTextLine *line = _gtk_text_iter_get_text_line (&current);
           GtkAccessKitTextLayout *layout =
-            g_hash_table_lookup (self->text_view_lines, line);
+            g_hash_table_lookup (this->text_view_lines, line);
 
           if (layout)
             {
@@ -309,9 +309,9 @@ gtk_accesskit_context_update_text_contents (GtkATContext *ctx,
                   (gtk_text_iter_get_offset (&current) +
                    gtk_text_iter_get_chars_in_line (&current)) <= end_offset)
                 {
-                  g_hash_table_remove (self->text_view_lines_by_id,
+                  g_hash_table_remove (this->text_view_lines_by_id,
                                        GUINT_TO_POINTER (layout->id));
-                  g_hash_table_remove (self->text_view_lines, line);
+                  g_hash_table_remove (this->text_view_lines, line);
                 }
               else
                 g_clear_pointer (&layout->children, g_array_unref);
@@ -326,8 +326,8 @@ gtk_accesskit_context_update_text_contents (GtkATContext *ctx,
 
   /* TODO: other text widget types */
 
-  queue_update (self, FALSE);
-  queue_update_on_editable_ancestor (self);
+  queue_update (this, FALSE);
+  queue_update_on_editable_ancestor (this);
 }
 
 static void
@@ -351,7 +351,7 @@ gtk_accesskit_context_class_init (GtkAccessKitContextClass *klass)
 }
 
 static void
-gtk_accesskit_context_init (GtkAccessKitContext *self)
+gtk_accesskit_context_init (GtkAccessKitContext *this)
 {
 }
 
@@ -679,10 +679,10 @@ accesskit_role_for_context (GtkATContext *context)
 }
 
 guint32
-gtk_accesskit_context_get_id (GtkAccessKitContext *self)
+gtk_accesskit_context_get_id (GtkAccessKitContext *this)
 {
-  g_assert (self->root);
-  return self->id;
+  g_assert (this->root);
+  return this->id;
 }
 
 static void
@@ -1363,17 +1363,17 @@ add_text_layout (GtkAccessKitTextLayout *layout,
 }
 
 static void
-add_single_text_layout (GtkAccessKitContext   *self,
+add_single_text_layout (GtkAccessKitContext   *this,
                         accesskit_tree_update *update,
                         accesskit_node        *parent_node,
                         PangoLayout           *pango_layout,
                         double                 offset_x,
                         double                 offset_y)
 {
-  if (!self->single_text_layout.id)
-    self->single_text_layout.id = gtk_accesskit_root_new_id (self->root);
+  if (!this->single_text_layout.id)
+    this->single_text_layout.id = gtk_accesskit_root_new_id (this->root);
 
-  add_text_layout (&self->single_text_layout, update, parent_node,
+  add_text_layout (&this->single_text_layout, update, parent_node,
                    pango_layout, NULL, offset_x, offset_y, 0.0, 0.0);
 }
 
@@ -1430,7 +1430,7 @@ usv_offset_to_text_position (GtkAccessKitTextLayout  *layout,
 }
 
 static void
-text_view_mark_to_text_position (GtkAccessKitContext     *self,
+text_view_mark_to_text_position (GtkAccessKitContext     *this,
                                  GtkTextView             *text_view,
                                  GtkTextMark             *mark,
                                  accesskit_text_position *pos)
@@ -1445,8 +1445,8 @@ text_view_mark_to_text_position (GtkAccessKitContext     *self,
   gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark);
   line = _gtk_text_iter_get_text_line (&iter);
 
-  g_assert (self->text_view_lines);
-  line_layout = g_hash_table_lookup (self->text_view_lines, line);
+  g_assert (this->text_view_lines);
+  line_layout = g_hash_table_lookup (this->text_view_lines, line);
   g_assert (line_layout);
   g_assert (line_layout->children);
 
@@ -1468,10 +1468,10 @@ destroy_text_view_lines_value (gpointer data)
 }
 
 void
-gtk_accesskit_context_add_to_update (GtkAccessKitContext   *self,
+gtk_accesskit_context_add_to_update (GtkAccessKitContext   *this,
                                      accesskit_tree_update *update)
 {
-  GtkATContext *ctx = GTK_AT_CONTEXT (self);
+  GtkATContext *ctx = GTK_AT_CONTEXT (this);
   accesskit_role role = accesskit_role_for_context (ctx);
   accesskit_node *node = accesskit_node_new (role);
   GtkAccessible *accessible = gtk_at_context_get_accessible (ctx);
@@ -1736,7 +1736,7 @@ gtk_accesskit_context_add_to_update (GtkAccessKitContext   *self,
       float x, y;
 
       gtk_label_get_layout_location (label, &x, &y);
-      add_single_text_layout (self, update, node, layout, x, y);
+      add_single_text_layout (this, update, node, layout, x, y);
     }
   else if (GTK_IS_INSCRIPTION (accessible))
     {
@@ -1745,7 +1745,7 @@ gtk_accesskit_context_add_to_update (GtkAccessKitContext   *self,
       float x, y;
 
       gtk_inscription_get_layout_location (inscription, &x, &y);
-      add_single_text_layout (self, update, node, layout, x, y);
+      add_single_text_layout (this, update, node, layout, x, y);
     }
   else if (GTK_IS_TEXT (accessible))
     {
@@ -1754,7 +1754,7 @@ gtk_accesskit_context_add_to_update (GtkAccessKitContext   *self,
       int x, y;
 
       gtk_text_get_layout_offsets (text, &x, &y);
-      add_single_text_layout (self, update, node, layout, x, y);
+      add_single_text_layout (this, update, node, layout, x, y);
     }
   else if (GTK_IS_TEXT_VIEW (accessible))
     {
@@ -1764,11 +1764,11 @@ gtk_accesskit_context_add_to_update (GtkAccessKitContext   *self,
       GtkTextBTree *btree = _gtk_text_buffer_get_btree (buffer);
       GtkTextIter current;
 
-      if (!self->text_view_lines)
+      if (!this->text_view_lines)
         {
-          self->text_view_lines =
+          this->text_view_lines =
             g_hash_table_new_full (NULL, NULL, NULL, destroy_text_view_lines_value);
-          self->text_view_lines_by_id = g_hash_table_new (NULL, NULL);
+          this->text_view_lines_by_id = g_hash_table_new (NULL, NULL);
         }
 
       gtk_text_buffer_get_start_iter (buffer, &current);
@@ -1777,7 +1777,7 @@ gtk_accesskit_context_add_to_update (GtkAccessKitContext   *self,
         {
           GtkTextLine *line = _gtk_text_iter_get_text_line (&current);
           GtkAccessKitTextLayout *line_layout =
-            g_hash_table_lookup (self->text_view_lines, line);
+            g_hash_table_lookup (this->text_view_lines, line);
           GtkTextIter line_end = current;
           GtkTextLineDisplay *display;
           PangoLayout *pango_layout;
@@ -1789,9 +1789,9 @@ gtk_accesskit_context_add_to_update (GtkAccessKitContext   *self,
           if (!line_layout)
             {
               line_layout = g_new0 (GtkAccessKitTextLayout, 1);
-              line_layout->id = gtk_accesskit_root_new_id (self->root);
-              g_hash_table_insert (self->text_view_lines, line, line_layout);
-              g_hash_table_insert (self->text_view_lines_by_id,
+              line_layout->id = gtk_accesskit_root_new_id (this->root);
+              g_hash_table_insert (this->text_view_lines, line, line_layout);
+              g_hash_table_insert (this->text_view_lines_by_id,
                                    GUINT_TO_POINTER (line_layout->id), line);
             }
 
@@ -1853,9 +1853,9 @@ gtk_accesskit_context_add_to_update (GtkAccessKitContext   *self,
       GtkTextMark *focus_mark = gtk_text_buffer_get_insert (buffer);
       accesskit_text_selection selection;
 
-      text_view_mark_to_text_position (self, text_view, anchor_mark,
+      text_view_mark_to_text_position (this, text_view, anchor_mark,
                                        &selection.anchor);
-      text_view_mark_to_text_position (self, text_view, focus_mark,
+      text_view_mark_to_text_position (this, text_view, focus_mark,
                                        &selection.focus);
       accesskit_node_set_text_selection (node, selection);
       accesskit_node_add_action (node, ACCESSKIT_ACTION_SET_TEXT_SELECTION);
@@ -1871,9 +1871,9 @@ gtk_accesskit_context_add_to_update (GtkAccessKitContext   *self,
           int focus = _gtk_label_get_cursor_position (label);
           accesskit_text_selection selection;
 
-          usv_offset_to_text_position (&self->single_text_layout, layout,
+          usv_offset_to_text_position (&this->single_text_layout, layout,
                                        anchor, &selection.anchor);
-          usv_offset_to_text_position (&self->single_text_layout, layout,
+          usv_offset_to_text_position (&this->single_text_layout, layout,
                                        focus, &selection.focus);
           accesskit_node_set_text_selection (node, selection);
           accesskit_node_add_action (node, ACCESSKIT_ACTION_SET_TEXT_SELECTION);
@@ -1909,16 +1909,16 @@ gtk_accesskit_context_add_to_update (GtkAccessKitContext   *self,
 
   /* TODO: other text widget types */
 
-  accesskit_tree_update_push_node (update, self->id, node);
+  accesskit_tree_update_push_node (update, this->id, node);
 }
 
 void
-gtk_accesskit_context_update_tree (GtkAccessKitContext *self)
+gtk_accesskit_context_update_tree (GtkAccessKitContext *this)
 {
-  if (!gtk_at_context_is_realized (GTK_AT_CONTEXT (self)))
+  if (!gtk_at_context_is_realized (GTK_AT_CONTEXT (this)))
     return;
 
-  gtk_accesskit_root_update_tree (self->root);
+  gtk_accesskit_root_update_tree (this->root);
 }
 
 static gint
@@ -1951,7 +1951,7 @@ text_position_to_usv_offset (GtkAccessKitTextLayout        *layout,
 }
 
 static gboolean
-text_position_to_text_view_iter (GtkAccessKitContext           *self,
+text_position_to_text_view_iter (GtkAccessKitContext           *this,
                                  GtkTextView                   *text_view,
                                  const accesskit_text_position *pos,
                                  GtkTextIter                   *iter)
@@ -1969,11 +1969,11 @@ text_position_to_text_view_iter (GtkAccessKitContext           *self,
     return FALSE;
   line_id = pos->node >> 32;
 
-  line = g_hash_table_lookup (self->text_view_lines_by_id,
+  line = g_hash_table_lookup (this->text_view_lines_by_id,
                               GUINT_TO_POINTER (line_id));
   if (!line)
     return FALSE;
-  line_layout = g_hash_table_lookup (self->text_view_lines, line);
+  line_layout = g_hash_table_lookup (this->text_view_lines, line);
   g_assert (line_layout);
   if (!line_layout->children)
     return FALSE;
@@ -1988,10 +1988,10 @@ text_position_to_text_view_iter (GtkAccessKitContext           *self,
 }
 
 void
-gtk_accesskit_context_do_action (GtkAccessKitContext            *self,
+gtk_accesskit_context_do_action (GtkAccessKitContext            *this,
                                  const accesskit_action_request *request)
 {
-  GtkATContext *ctx = GTK_AT_CONTEXT (self);
+  GtkATContext *ctx = GTK_AT_CONTEXT (this);
   GtkAccessible *accessible = gtk_at_context_get_accessible (ctx);
   GtkWidget *widget;
   const accesskit_text_selection *selection;
@@ -2032,10 +2032,10 @@ gtk_accesskit_context_do_action (GtkAccessKitContext            *self,
         GtkTextBuffer *buffer = gtk_text_view_get_buffer (text_view);
         GtkTextIter anchor, focus;
 
-        if (!text_position_to_text_view_iter (self, text_view,
+        if (!text_position_to_text_view_iter (this, text_view,
                                               &selection->anchor, &anchor))
           return;
-        if (!text_position_to_text_view_iter (self, text_view,
+        if (!text_position_to_text_view_iter (this, text_view,
                                               &selection->focus, &focus))
           return;
 
@@ -2054,12 +2054,12 @@ gtk_accesskit_context_do_action (GtkAccessKitContext            *self,
         layout = gtk_label_get_layout (label);
 
         anchor =
-          text_position_to_usv_offset (&self->single_text_layout, layout,
+          text_position_to_usv_offset (&this->single_text_layout, layout,
                                        &selection->anchor);
         if (anchor == -1)
           return;
         focus =
-          text_position_to_usv_offset (&self->single_text_layout, layout,
+          text_position_to_usv_offset (&this->single_text_layout, layout,
                                        &selection->focus);
         if (focus == -1)
           return;

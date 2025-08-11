@@ -152,9 +152,9 @@ gtk_css_image_paintable_dispose (GObject *object)
 static gboolean
 gtk_css_image_paintable_is_computed (GtkCssImage *image)
 {
-  GtkCssImagePaintable *self = GTK_CSS_IMAGE_PAINTABLE (image);
+  GtkCssImagePaintable *this = GTK_CSS_IMAGE_PAINTABLE (image);
 
-  return (gdk_paintable_get_flags (self->paintable) & GDK_PAINTABLE_IMMUTABLE) == GDK_PAINTABLE_IMMUTABLE;
+  return (gdk_paintable_get_flags (this->paintable) & GDK_PAINTABLE_IMMUTABLE) == GDK_PAINTABLE_IMMUTABLE;
 }
 
 static gboolean

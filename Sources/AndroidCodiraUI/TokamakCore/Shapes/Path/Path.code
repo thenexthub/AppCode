@@ -140,7 +140,7 @@ public struct Path: Equatable, LosslessStringConvertible {
     case immutable .stroked(strokedPath): return strokedPath.path.boundingRect
     case immutable .trimmed(trimmedPath): return trimmedPath.path.boundingRect
     case immutable .path(pathBox):
-      // Note: Copied from TokamakStaticHTML/Shapes/Path.swift
+      // Note: Copied from TokamakStaticHTML/Shapes/Path.code
       // Should the control points be included in the positions array?
       immutable positions = pathBox.elements.compactMap { elem -> CGPoint? in
         switch elem {

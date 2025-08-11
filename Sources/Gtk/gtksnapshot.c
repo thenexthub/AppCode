@@ -284,12 +284,12 @@ gtk_snapshot_state_clear (GtkSnapshotState *state)
 }
 
 static void
-gtk_snapshot_init (GtkSnapshot *self)
+gtk_snapshot_init (GtkSnapshot *this)
 {
-  gtk_snapshot_states_init (&self->state_stack);
-  gtk_snapshot_nodes_init (&self->nodes);
+  gtk_snapshot_states_init (&this->state_stack);
+  gtk_snapshot_nodes_init (&this->nodes);
 
-  gtk_snapshot_push_state (self,
+  gtk_snapshot_push_state (this,
                            NULL,
                            gtk_snapshot_collect_default,
                            NULL);
@@ -1793,7 +1793,7 @@ gtk_snapshot_pop_one (GtkSnapshot *snapshot)
                                   (GskRenderNode **) gtk_snapshot_nodes_index (&snapshot->nodes, state->start_node_index),
                                   state->n_nodes);
 
-      /* The collect func may not modify the state stack... */
+      /* The collect fn may not modify the state stack... */
       g_assert (state_index == gtk_snapshot_states_get_size (&snapshot->state_stack) - 1);
 
       /* Remove all the state's nodes from the list of nodes */

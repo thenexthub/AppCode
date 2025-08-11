@@ -61,14 +61,14 @@ void
 gdk_macos_monitor_get_workarea (GdkMonitor   *monitor,
                                 GdkRectangle *geometry)
 {
-  GdkMacosMonitor *self = (GdkMacosMonitor *)monitor;
+  GdkMacosMonitor *this = (GdkMacosMonitor *)monitor;
   int x,  y;
 
-  g_return_if_fail (GDK_IS_MACOS_MONITOR (self));
+  g_return_if_fail (GDK_IS_MACOS_MONITOR (this));
   g_return_if_fail (geometry != NULL);
 
-  x = self->workarea.origin.x;
-  y = self->workarea.origin.y + self->workarea.size.height;
+  x = this->workarea.origin.x;
+  y = this->workarea.origin.y + this->workarea.size.height;
 
   _gdk_macos_display_from_display_coords (GDK_MACOS_DISPLAY (monitor->display),
                                           x, y,
@@ -76,19 +76,19 @@ gdk_macos_monitor_get_workarea (GdkMonitor   *monitor,
 
   geometry->x = x;
   geometry->y = y;
-  geometry->width = self->workarea.size.width;
-  geometry->height = self->workarea.size.height;
+  geometry->width = this->workarea.size.width;
+  geometry->height = this->workarea.size.height;
 }
 
 static void
 gdk_macos_monitor_dispose (GObject *object)
 {
-  GdkMacosMonitor *self = (GdkMacosMonitor *)object;
+  GdkMacosMonitor *this = (GdkMacosMonitor *)object;
 
-  if (self->display_link)
+  if (this->display_link)
     {
-      g_source_destroy ((GSource *)self->display_link);
-      g_clear_pointer ((GSource **)&self->display_link, g_source_unref);
+      g_source_destroy ((GSource *)this->display_link);
+      g_clear_pointer ((GSource **)&this->display_link, g_source_unref);
     }
 
   G_OBJECT_CLASS (gdk_macos_monitor_parent_class)->dispose (object);
@@ -103,7 +103,7 @@ gdk_macos_monitor_class_init (GdkMacosMonitorClass *klass)
 }
 
 static void
-gdk_macos_monitor_init (GdkMacosMonitor *self)
+gdk_macos_monitor_init (GdkMacosMonitor *this)
 {
 }
 
@@ -207,21 +207,21 @@ find_screen (CGDirectDisplayID screen_id)
 }
 
 static gboolean
-gdk_macos_monitor_display_link_cb (GdkMacosMonitor *self)
+gdk_macos_monitor_display_link_cb (GdkMacosMonitor *this)
 {
   gint64 presentation_time;
   gint64 refresh_interval;
   GList *iter;
 
-  g_assert (GDK_IS_MACOS_MONITOR (self));
-  g_assert (!self->display_link->paused);
+  g_assert (GDK_IS_MACOS_MONITOR (this));
+  g_assert (!this->display_link->paused);
 
-  self->in_frame = TRUE;
+  this->in_frame = TRUE;
 
-  presentation_time = self->display_link->presentation_time;
-  refresh_interval = self->display_link->refresh_interval;
+  presentation_time = this->display_link->presentation_time;
+  refresh_interval = this->display_link->refresh_interval;
 
-  iter = self->awaiting_frames.head;
+  iter = this->awaiting_frames.head;
 
   while (iter != NULL)
     {
@@ -231,43 +231,43 @@ gdk_macos_monitor_display_link_cb (GdkMacosMonitor *self)
 
       iter = iter->next;
 
-      g_queue_unlink (&self->awaiting_frames, &surface->frame);
+      g_queue_unlink (&this->awaiting_frames, &surface->frame);
       _gdk_macos_surface_frame_presented (surface, presentation_time, refresh_interval);
     }
 
-  if (self->awaiting_frames.length == 0 && !self->display_link->paused)
-    gdk_display_link_source_pause (self->display_link);
+  if (this->awaiting_frames.length == 0 && !this->display_link->paused)
+    gdk_display_link_source_pause (this->display_link);
 
-  self->in_frame = FALSE;
+  this->in_frame = FALSE;
 
   return G_SOURCE_CONTINUE;
 }
 
 static void
-_gdk_macos_monitor_reset_display_link (GdkMacosMonitor  *self,
+_gdk_macos_monitor_reset_display_link (GdkMacosMonitor  *this,
                                        CGDisplayModeRef  mode)
 {
   GSource *source;
 
-  g_assert (GDK_IS_MACOS_MONITOR (self));
+  g_assert (GDK_IS_MACOS_MONITOR (this));
 
-  if (self->display_link)
+  if (this->display_link)
     {
-      g_source_destroy ((GSource *)self->display_link);
-      g_clear_pointer ((GSource **)&self->display_link, g_source_unref);
+      g_source_destroy ((GSource *)this->display_link);
+      g_clear_pointer ((GSource **)&this->display_link, g_source_unref);
     }
 
-  source = gdk_display_link_source_new (self->screen_id, mode);
-  self->display_link = (GdkDisplayLinkSource *)source;
+  source = gdk_display_link_source_new (this->screen_id, mode);
+  this->display_link = (GdkDisplayLinkSource *)source;
   g_source_set_callback (source,
                          (GSourceFunc) gdk_macos_monitor_display_link_cb,
-                         self,
+                         this,
                          NULL);
   g_source_attach (source, NULL);
 }
 
 gboolean
-_gdk_macos_monitor_reconfigure (GdkMacosMonitor *self)
+_gdk_macos_monitor_reconfigure (GdkMacosMonitor *this)
 {
   GdkSubpixelLayout subpixel_layout;
   CGDisplayModeRef mode;
@@ -286,22 +286,22 @@ _gdk_macos_monitor_reconfigure (GdkMacosMonitor *self)
   int width_mm;
   int height_mm;
 
-  g_return_val_if_fail (GDK_IS_MACOS_MONITOR (self), FALSE);
+  g_return_val_if_fail (GDK_IS_MACOS_MONITOR (this), FALSE);
 
-  display = GDK_MACOS_DISPLAY (GDK_MONITOR (self)->display);
+  display = GDK_MACOS_DISPLAY (GDK_MONITOR (this)->display);
 
-  if (!(screen = find_screen (self->screen_id)) ||
-      !(mode = CGDisplayCopyDisplayMode (self->screen_id)))
+  if (!(screen = find_screen (this->screen_id)) ||
+      !(mode = CGDisplayCopyDisplayMode (this->screen_id)))
     return FALSE;
 
-  size = CGDisplayScreenSize (self->screen_id);
+  size = CGDisplayScreenSize (this->screen_id);
   bounds = [screen frame];
   width = CGDisplayModeGetWidth (mode);
   pixel_width = CGDisplayModeGetPixelWidth (mode);
-  has_opengl = CGDisplayUsesOpenGLAcceleration (self->screen_id);
-  subpixel_layout = GetSubpixelLayout (self->screen_id);
+  has_opengl = CGDisplayUsesOpenGLAcceleration (this->screen_id);
+  subpixel_layout = GetSubpixelLayout (this->screen_id);
   name = _gdk_macos_monitor_get_localized_name (screen);
-  connector = _gdk_macos_monitor_get_connector_name (self->screen_id);
+  connector = _gdk_macos_monitor_get_connector_name (this->screen_id);
 
   if (width != 0 && pixel_width != 0)
     scale_factor = MAX (1, pixel_width / width);
@@ -321,15 +321,15 @@ _gdk_macos_monitor_reconfigure (GdkMacosMonitor *self)
   if (!(refresh_rate = CGDisplayModeGetRefreshRate (mode)))
     refresh_rate = 60 * 1000;
 
-  gdk_monitor_set_connector (GDK_MONITOR (self), connector);
-  gdk_monitor_set_model (GDK_MONITOR (self), name);
-  gdk_monitor_set_geometry (GDK_MONITOR (self), &geom);
-  gdk_monitor_set_physical_size (GDK_MONITOR (self), width_mm, height_mm);
-  gdk_monitor_set_scale_factor (GDK_MONITOR (self), scale_factor);
-  gdk_monitor_set_refresh_rate (GDK_MONITOR (self), refresh_rate);
-  gdk_monitor_set_subpixel_layout (GDK_MONITOR (self), subpixel_layout);
+  gdk_monitor_set_connector (GDK_MONITOR (this), connector);
+  gdk_monitor_set_model (GDK_MONITOR (this), name);
+  gdk_monitor_set_geometry (GDK_MONITOR (this), &geom);
+  gdk_monitor_set_physical_size (GDK_MONITOR (this), width_mm, height_mm);
+  gdk_monitor_set_scale_factor (GDK_MONITOR (this), scale_factor);
+  gdk_monitor_set_refresh_rate (GDK_MONITOR (this), refresh_rate);
+  gdk_monitor_set_subpixel_layout (GDK_MONITOR (this), subpixel_layout);
 
-  self->workarea = [screen visibleFrame];
+  this->workarea = [screen visibleFrame];
 
   /* We might be able to use this at some point to change which GSK renderer
    * we use for surfaces on this monitor.  For example, it might be better
@@ -337,10 +337,10 @@ _gdk_macos_monitor_reconfigure (GdkMacosMonitor *self)
    * Presumably that is more common in cases where macOS is running under
    * an emulator such as QEMU.
    */
-  self->has_opengl = !!has_opengl;
+  this->has_opengl = !!has_opengl;
 
   /* Create a new display link to receive feedback about when to render */
-  _gdk_macos_monitor_reset_display_link (self, mode);
+  _gdk_macos_monitor_reset_display_link (this, mode);
 
   CGDisplayModeRelease (mode);
   g_free (name);
@@ -353,91 +353,91 @@ GdkMacosMonitor *
 _gdk_macos_monitor_new (GdkMacosDisplay   *display,
                         CGDirectDisplayID  screen_id)
 {
-  GdkMacosMonitor *self;
+  GdkMacosMonitor *this;
 
   g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (display), NULL);
 
-  self = g_object_new (GDK_TYPE_MACOS_MONITOR,
+  this = g_object_new (GDK_TYPE_MACOS_MONITOR,
                        "display", display,
                        NULL);
 
-  self->screen_id = screen_id;
+  this->screen_id = screen_id;
 
-  _gdk_macos_monitor_reconfigure (self);
+  _gdk_macos_monitor_reconfigure (this);
 
-  return g_steal_pointer (&self);
+  return g_steal_pointer (&this);
 }
 
 CGDirectDisplayID
-_gdk_macos_monitor_get_screen_id (GdkMacosMonitor *self)
+_gdk_macos_monitor_get_screen_id (GdkMacosMonitor *this)
 {
-  g_return_val_if_fail (GDK_IS_MACOS_MONITOR (self), 0);
+  g_return_val_if_fail (GDK_IS_MACOS_MONITOR (this), 0);
 
-  return self->screen_id;
+  return this->screen_id;
 }
 
 CGColorSpaceRef
-_gdk_macos_monitor_copy_colorspace (GdkMacosMonitor *self)
+_gdk_macos_monitor_copy_colorspace (GdkMacosMonitor *this)
 {
-  g_return_val_if_fail (GDK_IS_MACOS_MONITOR (self), NULL);
+  g_return_val_if_fail (GDK_IS_MACOS_MONITOR (this), NULL);
 
-  return CGDisplayCopyColorSpace (self->screen_id);
+  return CGDisplayCopyColorSpace (this->screen_id);
 }
 
 void
-_gdk_macos_monitor_add_frame_callback (GdkMacosMonitor *self,
+_gdk_macos_monitor_add_frame_callback (GdkMacosMonitor *this,
                                        GdkMacosSurface *surface)
 {
-  g_return_if_fail (GDK_IS_MACOS_MONITOR (self));
+  g_return_if_fail (GDK_IS_MACOS_MONITOR (this));
   g_return_if_fail (GDK_IS_MACOS_SURFACE (surface));
   g_return_if_fail (surface->frame.data == (gpointer)surface);
   g_return_if_fail (surface->frame.prev == NULL);
   g_return_if_fail (surface->frame.next == NULL);
-  g_return_if_fail (self->awaiting_frames.head != &surface->frame);
-  g_return_if_fail (self->awaiting_frames.tail != &surface->frame);
+  g_return_if_fail (this->awaiting_frames.head != &surface->frame);
+  g_return_if_fail (this->awaiting_frames.tail != &surface->frame);
 
   /* Processing frames is always head to tail, so push to the
    * head so that we don't possibly re-enter this right after
    * adding to the queue.
    */
-  if (!queue_contains (&self->awaiting_frames, &surface->frame))
+  if (!queue_contains (&this->awaiting_frames, &surface->frame))
     {
-      g_queue_push_head_link (&self->awaiting_frames, &surface->frame);
+      g_queue_push_head_link (&this->awaiting_frames, &surface->frame);
 
-      if (!self->in_frame && self->awaiting_frames.length == 1)
-        gdk_display_link_source_unpause (self->display_link);
+      if (!this->in_frame && this->awaiting_frames.length == 1)
+        gdk_display_link_source_unpause (this->display_link);
     }
 }
 
 void
-_gdk_macos_monitor_remove_frame_callback (GdkMacosMonitor *self,
+_gdk_macos_monitor_remove_frame_callback (GdkMacosMonitor *this,
                                           GdkMacosSurface *surface)
 {
-  g_return_if_fail (GDK_IS_MACOS_MONITOR (self));
+  g_return_if_fail (GDK_IS_MACOS_MONITOR (this));
   g_return_if_fail (GDK_IS_MACOS_SURFACE (surface));
   g_return_if_fail (surface->frame.data == (gpointer)surface);
 
-  if (queue_contains (&self->awaiting_frames, &surface->frame))
+  if (queue_contains (&this->awaiting_frames, &surface->frame))
     {
-      g_queue_unlink (&self->awaiting_frames, &surface->frame);
+      g_queue_unlink (&this->awaiting_frames, &surface->frame);
 
-      if (!self->in_frame && self->awaiting_frames.length == 0)
-        gdk_display_link_source_pause (self->display_link);
+      if (!this->in_frame && this->awaiting_frames.length == 0)
+        gdk_display_link_source_pause (this->display_link);
     }
 }
 
 void
-_gdk_macos_monitor_clamp (GdkMacosMonitor *self,
+_gdk_macos_monitor_clamp (GdkMacosMonitor *this,
                           GdkRectangle    *area)
 {
   GdkRectangle workarea;
   GdkRectangle geom;
 
-  g_return_if_fail (GDK_IS_MACOS_MONITOR (self));
+  g_return_if_fail (GDK_IS_MACOS_MONITOR (this));
   g_return_if_fail (area != NULL);
 
-  gdk_macos_monitor_get_workarea (GDK_MONITOR (self), &workarea);
-  gdk_monitor_get_geometry (GDK_MONITOR (self), &geom);
+  gdk_macos_monitor_get_workarea (GDK_MONITOR (this), &workarea);
+  gdk_monitor_get_geometry (GDK_MONITOR (this), &geom);
 
   if (area->x + area->width > workarea.x + workarea.width)
     area->x = workarea.x + workarea.width - area->width;

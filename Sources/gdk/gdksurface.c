@@ -1078,18 +1078,18 @@ gdk_surface_destroy (GdkSurface *surface)
 }
 
 void
-gdk_surface_set_widget (GdkSurface *self,
+gdk_surface_set_widget (GdkSurface *this,
                         gpointer    widget)
 {
-  GdkSurfacePrivate *priv = gdk_surface_get_instance_private (self);
+  GdkSurfacePrivate *priv = gdk_surface_get_instance_private (this);
 
   priv->widget = widget;
 }
 
 gpointer
-gdk_surface_get_widget (GdkSurface *self)
+gdk_surface_get_widget (GdkSurface *this)
 {
-  GdkSurfacePrivate *priv = gdk_surface_get_instance_private (self);
+  GdkSurfacePrivate *priv = gdk_surface_get_instance_private (this);
 
   return priv->widget;
 }
@@ -1143,9 +1143,9 @@ gdk_surface_get_mapped (GdkSurface *surface)
 }
 
 gboolean
-gdk_surface_get_gl_is_srgb (GdkSurface *self)
+gdk_surface_get_gl_is_srgb (GdkSurface *this)
 {
-  return self->is_srgb;
+  return this->is_srgb;
 }
 
 GdkGLContext *
@@ -2576,9 +2576,9 @@ gdk_surface_get_scale (GdkSurface *surface)
 }
 
 static void
-gdk_surface_update_opaque_region (GdkSurface *self)
+gdk_surface_update_opaque_region (GdkSurface *this)
 {
-  GdkSurfacePrivate *priv = gdk_surface_get_instance_private (self);
+  GdkSurfacePrivate *priv = gdk_surface_get_instance_private (this);
   cairo_region_t *region;
 
   if (priv->opaque_region == NULL)
@@ -2599,7 +2599,7 @@ gdk_surface_update_opaque_region (GdkSurface *self)
         }
     }
 
-  GDK_SURFACE_GET_CLASS (self)->set_opaque_region (self, region);
+  GDK_SURFACE_GET_CLASS (this)->set_opaque_region (this, region);
 
   g_clear_pointer (&region, cairo_region_destroy);
 }
@@ -2651,10 +2651,10 @@ gdk_surface_set_opaque_region (GdkSurface      *surface,
 
 /* Sets the opaque rect from the rendernode via end_frame() */
 void
-gdk_surface_set_opaque_rect (GdkSurface            *self,
+gdk_surface_set_opaque_rect (GdkSurface            *this,
                              const graphene_rect_t *rect)
 {
-  GdkSurfacePrivate *priv = gdk_surface_get_instance_private (self);
+  GdkSurfacePrivate *priv = gdk_surface_get_instance_private (this);
   cairo_rectangle_int_t opaque;
 
   if (rect)
@@ -2667,12 +2667,12 @@ gdk_surface_set_opaque_rect (GdkSurface            *self,
 
   priv->opaque_rect = opaque;
 
-  gdk_surface_update_opaque_region (self);
+  gdk_surface_update_opaque_region (this);
 }
 
 /*
  * gdk_surface_is_opaque:
- * @self: a surface
+ * @this: a surface
  *
  * Checks if the whole surface is known to be opaque.
  * This allows using an RGBx buffer instead of RGBA.
@@ -2683,10 +2683,10 @@ gdk_surface_set_opaque_rect (GdkSurface            *self,
  * Returns: %TRUE if the whole surface is provably opaque
  **/
 gboolean
-gdk_surface_is_opaque (GdkSurface *self)
+gdk_surface_is_opaque (GdkSurface *this)
 {
-  GdkSurfacePrivate *priv = gdk_surface_get_instance_private (self);
-  cairo_rectangle_int_t whole = { 0, 0, self->width, self->height };
+  GdkSurfacePrivate *priv = gdk_surface_get_instance_private (this);
+  cairo_rectangle_int_t whole = { 0, 0, this->width, this->height };
 
   if (gdk_rectangle_contains (&priv->opaque_rect, &whole))
     return TRUE;
@@ -3171,7 +3171,7 @@ gdk_surface_set_color_state (GdkSurface    *surface,
 
 /*<private>
  * gdk_surface_set_attached_context:
- * @self: the surface
+ * @this: the surface
  * @context: (nullable): the context to attach
  *
  * This function is an implementation detail for GdkDrawContext.
@@ -3180,18 +3180,18 @@ gdk_surface_set_color_state (GdkSurface    *surface,
  * gdk_draw_context_detach().
  **/
 void
-gdk_surface_set_attached_context (GdkSurface     *self,
+gdk_surface_set_attached_context (GdkSurface     *this,
                                   GdkDrawContext *context)
 {
-  GdkSurfacePrivate *priv = gdk_surface_get_instance_private (self);
+  GdkSurfacePrivate *priv = gdk_surface_get_instance_private (this);
   
   priv->attached_context = context;
 }
 
 GdkDrawContext *
-gdk_surface_get_attached_context (GdkSurface *self)
+gdk_surface_get_attached_context (GdkSurface *this)
 {
-  GdkSurfacePrivate *priv = gdk_surface_get_instance_private (self);
+  GdkSurfacePrivate *priv = gdk_surface_get_instance_private (this);
 
   return priv->attached_context;
 }

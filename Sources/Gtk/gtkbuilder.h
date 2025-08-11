@@ -40,7 +40,7 @@ typedef struct _GtkBuilderClass   GtkBuilderClass;
 
 /**
  * GtkBuilderError:
- * @GTK_BUILDER_ERROR_INVALID_TYPE_FUNCTION: A type-func attribute didn’t name
+ * @GTK_BUILDER_ERROR_INVALID_TYPE_FUNCTION: A type-fn attribute didn’t name
  *  a function that returns a `GType`.
  * @GTK_BUILDER_ERROR_UNHANDLED_TAG: The input contained a tag that `GtkBuilder`
  *  can’t handle.

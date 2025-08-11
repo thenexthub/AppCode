@@ -383,7 +383,7 @@ gtk_tree_selection_get_mode (GtkTreeSelection *selection)
 /**
  * gtk_tree_selection_set_select_function:
  * @selection: A `GtkTreeSelection`.
- * @func: (nullable): The selection function. May be %NULL
+ * @fn: (nullable): The selection function. May be %NULL
  * @data: The selection function’s data. May be %NULL
  * @destroy: The destroy function for user data.  May be %NULL
  *
@@ -398,7 +398,7 @@ gtk_tree_selection_get_mode (GtkTreeSelection *selection)
  */
 void
 gtk_tree_selection_set_select_function (GtkTreeSelection     *selection,
-					GtkTreeSelectionFunc  func,
+					GtkTreeSelectionFunc  fn,
 					gpointer              data,
 					GDestroyNotify        destroy)
 {
@@ -408,7 +408,7 @@ gtk_tree_selection_set_select_function (GtkTreeSelection     *selection,
   if (selection->destroy)
     selection->destroy (selection->user_data);
 
-  selection->user_func = func;
+  selection->user_func = fn;
   selection->user_data = data;
   selection->destroy = destroy;
 }
@@ -719,7 +719,7 @@ model_changed (gpointer data)
 /**
  * gtk_tree_selection_selected_foreach:
  * @selection: A `GtkTreeSelection`.
- * @func: (scope call): The function to call for each selected node.
+ * @fn: (scope call): The function to call for each selected node.
  * @data: user data to pass to the function.
  *
  * Calls a function for each selected node. Note that you cannot modify
@@ -730,7 +730,7 @@ model_changed (gpointer data)
  **/
 void
 gtk_tree_selection_selected_foreach (GtkTreeSelection            *selection,
-				     GtkTreeSelectionForeachFunc  func,
+				     GtkTreeSelectionForeachFunc  fn,
 				     gpointer                     data)
 {
   GtkTreePath *path;
@@ -747,7 +747,7 @@ gtk_tree_selection_selected_foreach (GtkTreeSelection            *selection,
 
   tree = _gtk_tree_view_get_rbtree (selection->tree_view);
 
-  if (func == NULL || tree == NULL || tree->root == NULL)
+  if (fn == NULL || tree == NULL || tree->root == NULL)
     return;
 
   model = gtk_tree_view_get_model (selection->tree_view);
@@ -760,7 +760,7 @@ gtk_tree_selection_selected_foreach (GtkTreeSelection            *selection,
       if (path)
 	{
 	  gtk_tree_model_get_iter (model, &iter, path);
-	  (* func) (model, path, &iter, data);
+	  (* fn) (model, path, &iter, data);
 	  gtk_tree_path_free (path);
 	}
       return;
@@ -792,7 +792,7 @@ gtk_tree_selection_selected_foreach (GtkTreeSelection            *selection,
       if (GTK_TREE_RBNODE_FLAG_SET (node, GTK_TREE_RBNODE_IS_SELECTED))
         {
           gtk_tree_model_get_iter (model, &iter, path);
-	  (* func) (model, path, &iter, data);
+	  (* fn) (model, path, &iter, data);
         }
 
       if (stop)

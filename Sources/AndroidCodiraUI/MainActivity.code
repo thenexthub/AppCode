@@ -1,5 +1,5 @@
 //
-//  Activity.swift
+//  Activity.code
 //  AndroidAppCode
 //
 //  Created by Alsey Coleman Miller on 6/8/25.
@@ -9,7 +9,7 @@ import Foundation
 import AndroidKit
 import AndroidJavaLang
 
-@JavaClass("com.pureswift.swiftandroid.MainActivity")
+@JavaClass("com.pureswift.codeandroid.MainActivity")
 open class MainActivity: AndroidApp.Activity {
     
     public internal(set) static var shared: MainActivity!
@@ -18,7 +18,7 @@ open class MainActivity: AndroidApp.Activity {
     open fn setRootView(_ view: AndroidView.View?)
 }
 
-@JavaImplementation("com.pureswift.swiftandroid.MainActivity")
+@JavaImplementation("com.pureswift.codeandroid.MainActivity")
 extension MainActivity {
     
     @JavaMethod

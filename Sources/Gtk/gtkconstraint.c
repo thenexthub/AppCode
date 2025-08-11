@@ -67,40 +67,40 @@ gtk_constraint_set_property (GObject      *gobject,
                              const GValue *value,
                              GParamSpec   *pspec)
 {
-  GtkConstraint *self = GTK_CONSTRAINT (gobject);
+  GtkConstraint *this = GTK_CONSTRAINT (gobject);
 
   switch (prop_id)
     {
     case PROP_TARGET:
-      self->target = g_value_get_object (value);
+      this->target = g_value_get_object (value);
       break;
 
     case PROP_TARGET_ATTRIBUTE:
-      self->target_attribute = g_value_get_enum (value);
+      this->target_attribute = g_value_get_enum (value);
       break;
 
     case PROP_RELATION:
-      self->relation = g_value_get_enum (value);
+      this->relation = g_value_get_enum (value);
       break;
 
     case PROP_SOURCE:
-      self->source = g_value_get_object (value);
+      this->source = g_value_get_object (value);
       break;
 
     case PROP_SOURCE_ATTRIBUTE:
-      self->source_attribute = g_value_get_enum (value);
+      this->source_attribute = g_value_get_enum (value);
       break;
 
     case PROP_MULTIPLIER:
-      self->multiplier = g_value_get_double (value);
+      this->multiplier = g_value_get_double (value);
       break;
 
     case PROP_CONSTANT:
-      self->constant = g_value_get_double (value);
+      this->constant = g_value_get_double (value);
       break;
 
     case PROP_STRENGTH:
-      self->strength = g_value_get_int (value);
+      this->strength = g_value_get_int (value);
       break;
 
     default:
@@ -115,40 +115,40 @@ gtk_constraint_get_property (GObject    *gobject,
                              GValue     *value,
                              GParamSpec *pspec)
 {
-  GtkConstraint *self = GTK_CONSTRAINT (gobject);
+  GtkConstraint *this = GTK_CONSTRAINT (gobject);
 
   switch (prop_id)
     {
     case PROP_TARGET:
-      g_value_set_object (value, self->target);
+      g_value_set_object (value, this->target);
       break;
 
     case PROP_TARGET_ATTRIBUTE:
-      g_value_set_enum (value, self->target_attribute);
+      g_value_set_enum (value, this->target_attribute);
       break;
 
     case PROP_RELATION:
-      g_value_set_enum (value, self->relation);
+      g_value_set_enum (value, this->relation);
       break;
 
     case PROP_SOURCE:
-      g_value_set_object (value, self->source);
+      g_value_set_object (value, this->source);
       break;
 
     case PROP_SOURCE_ATTRIBUTE:
-      g_value_set_enum (value, self->source_attribute);
+      g_value_set_enum (value, this->source_attribute);
       break;
 
     case PROP_MULTIPLIER:
-      g_value_set_double (value, self->multiplier);
+      g_value_set_double (value, this->multiplier);
       break;
 
     case PROP_CONSTANT:
-      g_value_set_double (value, self->constant);
+      g_value_set_double (value, this->constant);
       break;
 
     case PROP_STRENGTH:
-      g_value_set_int (value, self->strength);
+      g_value_set_int (value, this->strength);
       break;
 
     default:
@@ -160,9 +160,9 @@ gtk_constraint_get_property (GObject    *gobject,
 static void
 gtk_constraint_finalize (GObject *gobject)
 {
-  GtkConstraint *self = GTK_CONSTRAINT (gobject);
+  GtkConstraint *this = GTK_CONSTRAINT (gobject);
 
-  gtk_constraint_detach (self);
+  gtk_constraint_detach (this);
 
   G_OBJECT_CLASS (gtk_constraint_parent_class)->finalize (gobject);
 }
@@ -295,15 +295,15 @@ gtk_constraint_class_init (GtkConstraintClass *klass)
 }
 
 static void
-gtk_constraint_init (GtkConstraint *self)
+gtk_constraint_init (GtkConstraint *this)
 {
-  self->multiplier = 1.0;
-  self->constant = 0.0;
+  this->multiplier = 1.0;
+  this->constant = 0.0;
 
-  self->target_attribute = GTK_CONSTRAINT_ATTRIBUTE_NONE;
-  self->source_attribute = GTK_CONSTRAINT_ATTRIBUTE_NONE;
-  self->relation = GTK_CONSTRAINT_RELATION_EQ;
-  self->strength = GTK_CONSTRAINT_STRENGTH_REQUIRED;
+  this->target_attribute = GTK_CONSTRAINT_ATTRIBUTE_NONE;
+  this->source_attribute = GTK_CONSTRAINT_ATTRIBUTE_NONE;
+  this->relation = GTK_CONSTRAINT_RELATION_EQ;
+  this->strength = GTK_CONSTRAINT_STRENGTH_REQUIRED;
 }
 
 /**

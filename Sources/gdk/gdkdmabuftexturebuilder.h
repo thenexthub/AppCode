@@ -35,91 +35,91 @@ GDK_AVAILABLE_IN_4_14
 GdkDmabufTextureBuilder *gdk_dmabuf_texture_builder_new              (void);
 
 GDK_AVAILABLE_IN_4_14
-GdkDisplay *             gdk_dmabuf_texture_builder_get_display      (GdkDmabufTextureBuilder    *self) G_GNUC_PURE;
+GdkDisplay *             gdk_dmabuf_texture_builder_get_display      (GdkDmabufTextureBuilder    *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_14
-void                     gdk_dmabuf_texture_builder_set_display      (GdkDmabufTextureBuilder    *self,
+void                     gdk_dmabuf_texture_builder_set_display      (GdkDmabufTextureBuilder    *this,
                                                                       GdkDisplay                 *display);
 
 GDK_AVAILABLE_IN_4_14
-unsigned int             gdk_dmabuf_texture_builder_get_width        (GdkDmabufTextureBuilder    *self) G_GNUC_PURE;
+unsigned int             gdk_dmabuf_texture_builder_get_width        (GdkDmabufTextureBuilder    *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_14
-void                     gdk_dmabuf_texture_builder_set_width        (GdkDmabufTextureBuilder    *self,
+void                     gdk_dmabuf_texture_builder_set_width        (GdkDmabufTextureBuilder    *this,
                                                                       unsigned int                width);
 
 GDK_AVAILABLE_IN_4_14
-unsigned int             gdk_dmabuf_texture_builder_get_height       (GdkDmabufTextureBuilder    *self) G_GNUC_PURE;
+unsigned int             gdk_dmabuf_texture_builder_get_height       (GdkDmabufTextureBuilder    *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_14
-void                     gdk_dmabuf_texture_builder_set_height       (GdkDmabufTextureBuilder    *self,
+void                     gdk_dmabuf_texture_builder_set_height       (GdkDmabufTextureBuilder    *this,
                                                                       unsigned int                height);
 
 GDK_AVAILABLE_IN_4_14
-guint32                  gdk_dmabuf_texture_builder_get_fourcc       (GdkDmabufTextureBuilder    *self) G_GNUC_PURE;
+guint32                  gdk_dmabuf_texture_builder_get_fourcc       (GdkDmabufTextureBuilder    *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_14
-void                     gdk_dmabuf_texture_builder_set_fourcc       (GdkDmabufTextureBuilder    *self,
+void                     gdk_dmabuf_texture_builder_set_fourcc       (GdkDmabufTextureBuilder    *this,
                                                                       guint32                     fourcc);
 
 GDK_AVAILABLE_IN_4_14
-guint64                  gdk_dmabuf_texture_builder_get_modifier     (GdkDmabufTextureBuilder    *self) G_GNUC_PURE;
+guint64                  gdk_dmabuf_texture_builder_get_modifier     (GdkDmabufTextureBuilder    *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_14
-void                     gdk_dmabuf_texture_builder_set_modifier     (GdkDmabufTextureBuilder    *self,
+void                     gdk_dmabuf_texture_builder_set_modifier     (GdkDmabufTextureBuilder    *this,
                                                                       guint64                     modifier);
 
 GDK_AVAILABLE_IN_4_14
-gboolean                 gdk_dmabuf_texture_builder_get_premultiplied (GdkDmabufTextureBuilder    *self) G_GNUC_PURE;
+gboolean                 gdk_dmabuf_texture_builder_get_premultiplied (GdkDmabufTextureBuilder    *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_14
-void                     gdk_dmabuf_texture_builder_set_premultiplied (GdkDmabufTextureBuilder    *self,
+void                     gdk_dmabuf_texture_builder_set_premultiplied (GdkDmabufTextureBuilder    *this,
                                                                        gboolean                    premultiplied);
 
 GDK_AVAILABLE_IN_4_14
-unsigned int             gdk_dmabuf_texture_builder_get_n_planes     (GdkDmabufTextureBuilder    *self) G_GNUC_PURE;
+unsigned int             gdk_dmabuf_texture_builder_get_n_planes     (GdkDmabufTextureBuilder    *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_14
-void                     gdk_dmabuf_texture_builder_set_n_planes     (GdkDmabufTextureBuilder    *self,
+void                     gdk_dmabuf_texture_builder_set_n_planes     (GdkDmabufTextureBuilder    *this,
                                                                       unsigned int                n_planes);
 
 GDK_AVAILABLE_IN_4_14
-int                      gdk_dmabuf_texture_builder_get_fd           (GdkDmabufTextureBuilder    *self,
+int                      gdk_dmabuf_texture_builder_get_fd           (GdkDmabufTextureBuilder    *this,
                                                                       unsigned int                plane) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_14
-void                     gdk_dmabuf_texture_builder_set_fd           (GdkDmabufTextureBuilder    *self,
+void                     gdk_dmabuf_texture_builder_set_fd           (GdkDmabufTextureBuilder    *this,
                                                                       unsigned int                plane,
                                                                       int                         fd);
 
 GDK_AVAILABLE_IN_4_14
-unsigned int             gdk_dmabuf_texture_builder_get_stride       (GdkDmabufTextureBuilder    *self,
+unsigned int             gdk_dmabuf_texture_builder_get_stride       (GdkDmabufTextureBuilder    *this,
                                                                       unsigned int                plane) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_14
-void                     gdk_dmabuf_texture_builder_set_stride       (GdkDmabufTextureBuilder    *self,
+void                     gdk_dmabuf_texture_builder_set_stride       (GdkDmabufTextureBuilder    *this,
                                                                       unsigned int                plane,
                                                                       unsigned int                stride);
 
 GDK_AVAILABLE_IN_4_14
-unsigned int             gdk_dmabuf_texture_builder_get_offset       (GdkDmabufTextureBuilder    *self,
+unsigned int             gdk_dmabuf_texture_builder_get_offset       (GdkDmabufTextureBuilder    *this,
                                                                       unsigned int                plane) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_14
-void                     gdk_dmabuf_texture_builder_set_offset       (GdkDmabufTextureBuilder    *self,
+void                     gdk_dmabuf_texture_builder_set_offset       (GdkDmabufTextureBuilder    *this,
                                                                       unsigned int                plane,
                                                                       unsigned int                offset);
 
 GDK_AVAILABLE_IN_4_16
-GdkColorState *          gdk_dmabuf_texture_builder_get_color_state    (GdkDmabufTextureBuilder  *self);
+GdkColorState *          gdk_dmabuf_texture_builder_get_color_state    (GdkDmabufTextureBuilder  *this);
 GDK_AVAILABLE_IN_4_16
-void                     gdk_dmabuf_texture_builder_set_color_state    (GdkDmabufTextureBuilder  *self,
+void                     gdk_dmabuf_texture_builder_set_color_state    (GdkDmabufTextureBuilder  *this,
                                                                         GdkColorState            *color_state);
 
 GDK_AVAILABLE_IN_4_14
-GdkTexture *             gdk_dmabuf_texture_builder_get_update_texture (GdkDmabufTextureBuilder  *self) G_GNUC_PURE;
+GdkTexture *             gdk_dmabuf_texture_builder_get_update_texture (GdkDmabufTextureBuilder  *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_14
-void                     gdk_dmabuf_texture_builder_set_update_texture (GdkDmabufTextureBuilder  *self,
+void                     gdk_dmabuf_texture_builder_set_update_texture (GdkDmabufTextureBuilder  *this,
                                                                         GdkTexture               *texture);
 
 GDK_AVAILABLE_IN_4_14
-cairo_region_t *         gdk_dmabuf_texture_builder_get_update_region (GdkDmabufTextureBuilder   *self) G_GNUC_PURE;
+cairo_region_t *         gdk_dmabuf_texture_builder_get_update_region (GdkDmabufTextureBuilder   *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_14
-void                     gdk_dmabuf_texture_builder_set_update_region (GdkDmabufTextureBuilder   *self,
+void                     gdk_dmabuf_texture_builder_set_update_region (GdkDmabufTextureBuilder   *this,
                                                                        cairo_region_t            *region);
 
 GDK_AVAILABLE_IN_4_14
-GdkTexture *             gdk_dmabuf_texture_builder_build            (GdkDmabufTextureBuilder    *self,
+GdkTexture *             gdk_dmabuf_texture_builder_build            (GdkDmabufTextureBuilder    *this,
                                                                       GDestroyNotify              destroy,
                                                                       gpointer                    data,
                                                                       GError                    **error);

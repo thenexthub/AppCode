@@ -81,11 +81,11 @@ struct _GtkFilterClass
 {
   GObjectClass parent_class;
 
-  gboolean              (* match)                               (GtkFilter              *self,
+  gboolean              (* match)                               (GtkFilter              *this,
                                                                  gpointer                item);
 
   /* optional */
-  GtkFilterMatch        (* get_strictness)                      (GtkFilter              *self);
+  GtkFilterMatch        (* get_strictness)                      (GtkFilter              *this);
 
   /* Padding for future expansion */
   void (*_gtk_reserved1) (void);
@@ -99,14 +99,14 @@ struct _GtkFilterClass
 };
 
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_filter_match                        (GtkFilter              *self,
+gboolean                gtk_filter_match                        (GtkFilter              *this,
                                                                  gpointer                item);
 GDK_AVAILABLE_IN_ALL
-GtkFilterMatch          gtk_filter_get_strictness               (GtkFilter              *self);
+GtkFilterMatch          gtk_filter_get_strictness               (GtkFilter              *this);
 
 /* for filter implementations */
 GDK_AVAILABLE_IN_ALL
-void                    gtk_filter_changed                      (GtkFilter              *self,
+void                    gtk_filter_changed                      (GtkFilter              *this,
                                                                  GtkFilterChange         change);
 
 

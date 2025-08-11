@@ -28,11 +28,11 @@ gsk_gpu_clear_op_print (GskGpuOp    *op,
                         GString     *string,
                         guint        indent)
 {
-  GskGpuClearOp *self = (GskGpuClearOp *) op;
+  GskGpuClearOp *this = (GskGpuClearOp *) op;
 
   gsk_gpu_print_op (string, indent, "clear");
-  gsk_gpu_print_int_rect (string, &self->rect);
-  gsk_gpu_print_rgba (string, self->color);
+  gsk_gpu_print_int_rect (string, &this->rect);
+  gsk_gpu_print_rgba (string, this->color);
   gsk_gpu_print_newline (string);
 }
 
@@ -42,10 +42,10 @@ gsk_gpu_clear_op_vk_command (GskGpuOp              *op,
                              GskGpuFrame           *frame,
                              GskVulkanCommandState *state)
 {
-  GskGpuClearOp *self = (GskGpuClearOp *) op;
+  GskGpuClearOp *this = (GskGpuClearOp *) op;
   VkClearValue clear_value;
 
-  memcpy (clear_value.color.float32, self->color, sizeof (float) * 4);
+  memcpy (clear_value.color.float32, this->color, sizeof (float) * 4);
 
   vkCmdClearAttachments (state->vk_command_buffer,
                          1,
@@ -57,8 +57,8 @@ gsk_gpu_clear_op_vk_command (GskGpuOp              *op,
                          1,
                          &(VkClearRect) {
                            {
-                             { self->rect.x, self->rect.y },
-                             { self->rect.width, self->rect.height },
+                             { this->rect.x, this->rect.y },
+                             { this->rect.width, this->rect.height },
                            },
                            0,
                            1
@@ -73,17 +73,17 @@ gsk_gpu_clear_op_gl_command (GskGpuOp          *op,
                              GskGpuFrame       *frame,
                              GskGLCommandState *state)
 {
-  GskGpuClearOp *self = (GskGpuClearOp *) op;
+  GskGpuClearOp *this = (GskGpuClearOp *) op;
   int scissor[4];
 
   glGetIntegerv (GL_SCISSOR_BOX, scissor);
 
   if (state->flip_y)
-    glScissor (self->rect.x, state->flip_y - self->rect.y - self->rect.height, self->rect.width, self->rect.height);
+    glScissor (this->rect.x, state->flip_y - this->rect.y - this->rect.height, this->rect.width, this->rect.height);
   else
-    glScissor (self->rect.x, self->rect.y, self->rect.width, self->rect.height);
+    glScissor (this->rect.x, this->rect.y, this->rect.width, this->rect.height);
 
-  glClearColor (self->color[0], self->color[1], self->color[2], self->color[3]);
+  glClearColor (this->color[0], this->color[1], this->color[2], this->color[3]);
   glClear (GL_COLOR_BUFFER_BIT);
 
   glScissor (scissor[0], scissor[1], scissor[2], scissor[3]);
@@ -107,10 +107,10 @@ gsk_gpu_clear_op (GskGpuFrame                 *frame,
                   const cairo_rectangle_int_t *rect,
                   const float                  color[4])
 {
-  GskGpuClearOp *self;
+  GskGpuClearOp *this;
 
-  self = (GskGpuClearOp *) gsk_gpu_op_alloc (frame, &GSK_GPU_CLEAR_OP_CLASS);
+  this = (GskGpuClearOp *) gsk_gpu_op_alloc (frame, &GSK_GPU_CLEAR_OP_CLASS);
 
-  self->rect = *rect;
-  memcpy (self->color, color, sizeof (float) * 4);
+  this->rect = *rect;
+  memcpy (this->color, color, sizeof (float) * 4);
 }

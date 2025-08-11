@@ -35,12 +35,12 @@ typedef struct _GtkFileThumbnail      GtkFileThumbnail;
 
 GType _gtk_file_thumbnail_get_type (void) G_GNUC_CONST;
 
-GFileInfo *_gtk_file_thumbnail_get_info (GtkFileThumbnail *self);
-void _gtk_file_thumbnail_set_info (GtkFileThumbnail *self,
+GFileInfo *_gtk_file_thumbnail_get_info (GtkFileThumbnail *this);
+void _gtk_file_thumbnail_set_info (GtkFileThumbnail *this,
                                    GFileInfo        *info);
 
-int _gtk_file_thumbnail_get_icon_size (GtkFileThumbnail *self);
-void _gtk_file_thumbnail_set_icon_size (GtkFileThumbnail *self,
+int _gtk_file_thumbnail_get_icon_size (GtkFileThumbnail *this);
+void _gtk_file_thumbnail_set_icon_size (GtkFileThumbnail *this,
                                         int               icon_size);
 
 G_END_DECLS

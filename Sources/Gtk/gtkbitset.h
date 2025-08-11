@@ -34,98 +34,98 @@ GDK_AVAILABLE_IN_ALL
 GType                   gtk_bitset_get_type                     (void) G_GNUC_CONST;
 
 GDK_AVAILABLE_IN_ALL
-GtkBitset *             gtk_bitset_ref                          (GtkBitset              *self);
+GtkBitset *             gtk_bitset_ref                          (GtkBitset              *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_bitset_unref                        (GtkBitset              *self);
+void                    gtk_bitset_unref                        (GtkBitset              *this);
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GtkBitset, gtk_bitset_unref)
 
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_bitset_contains                     (const GtkBitset        *self,
+gboolean                gtk_bitset_contains                     (const GtkBitset        *this,
                                                                  guint                   value);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_bitset_is_empty                     (const GtkBitset        *self);
+gboolean                gtk_bitset_is_empty                     (const GtkBitset        *this);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_bitset_equals                       (const GtkBitset        *self,
+gboolean                gtk_bitset_equals                       (const GtkBitset        *this,
                                                                  const GtkBitset        *other);
 GDK_AVAILABLE_IN_ALL
-guint64                 gtk_bitset_get_size                     (const GtkBitset        *self);
+guint64                 gtk_bitset_get_size                     (const GtkBitset        *this);
 GDK_AVAILABLE_IN_ALL
-guint64                 gtk_bitset_get_size_in_range            (const GtkBitset        *self,
+guint64                 gtk_bitset_get_size_in_range            (const GtkBitset        *this,
                                                                  guint                   first,
                                                                  guint                   last);
 GDK_AVAILABLE_IN_ALL
-guint                   gtk_bitset_get_nth                      (const GtkBitset        *self,
+guint                   gtk_bitset_get_nth                      (const GtkBitset        *this,
                                                                  guint                   nth);
 GDK_AVAILABLE_IN_ALL
-guint                   gtk_bitset_get_minimum                  (const GtkBitset        *self);
+guint                   gtk_bitset_get_minimum                  (const GtkBitset        *this);
 GDK_AVAILABLE_IN_ALL
-guint                   gtk_bitset_get_maximum                  (const GtkBitset        *self);
+guint                   gtk_bitset_get_maximum                  (const GtkBitset        *this);
 
 GDK_AVAILABLE_IN_ALL
 GtkBitset *             gtk_bitset_new_empty                    (void);
 GDK_AVAILABLE_IN_ALL
-GtkBitset *             gtk_bitset_copy                         (const GtkBitset        *self);
+GtkBitset *             gtk_bitset_copy                         (const GtkBitset        *this);
 GDK_AVAILABLE_IN_ALL
 GtkBitset *             gtk_bitset_new_range                    (guint                   start,
                                                                  guint                   n_items);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_bitset_remove_all                   (GtkBitset              *self);
+void                    gtk_bitset_remove_all                   (GtkBitset              *this);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_bitset_add                          (GtkBitset              *self,
+gboolean                gtk_bitset_add                          (GtkBitset              *this,
                                                                  guint                   value);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_bitset_remove                       (GtkBitset              *self,
+gboolean                gtk_bitset_remove                       (GtkBitset              *this,
                                                                  guint                   value);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_bitset_add_range                    (GtkBitset              *self,
+void                    gtk_bitset_add_range                    (GtkBitset              *this,
                                                                  guint                   start,
                                                                  guint                   n_items);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_bitset_remove_range                 (GtkBitset              *self,
+void                    gtk_bitset_remove_range                 (GtkBitset              *this,
                                                                  guint                   start,
                                                                  guint                   n_items);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_bitset_add_range_closed             (GtkBitset              *self,
+void                    gtk_bitset_add_range_closed             (GtkBitset              *this,
                                                                  guint                   first,
                                                                  guint                   last);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_bitset_remove_range_closed          (GtkBitset              *self,
+void                    gtk_bitset_remove_range_closed          (GtkBitset              *this,
                                                                  guint                   first,
                                                                  guint                   last);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_bitset_add_rectangle                (GtkBitset              *self,
+void                    gtk_bitset_add_rectangle                (GtkBitset              *this,
                                                                  guint                   start,
                                                                  guint                   width,
                                                                  guint                   height,
                                                                  guint                   stride);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_bitset_remove_rectangle             (GtkBitset              *self,
+void                    gtk_bitset_remove_rectangle             (GtkBitset              *this,
                                                                  guint                   start,
                                                                  guint                   width,
                                                                  guint                   height,
                                                                  guint                   stride);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_bitset_union                        (GtkBitset              *self,
+void                    gtk_bitset_union                        (GtkBitset              *this,
                                                                  const GtkBitset        *other);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_bitset_intersect                    (GtkBitset              *self,
+void                    gtk_bitset_intersect                    (GtkBitset              *this,
                                                                  const GtkBitset        *other);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_bitset_subtract                     (GtkBitset              *self,
+void                    gtk_bitset_subtract                     (GtkBitset              *this,
                                                                  const GtkBitset        *other);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_bitset_difference                   (GtkBitset              *self,
+void                    gtk_bitset_difference                   (GtkBitset              *this,
                                                                  const GtkBitset        *other);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_bitset_shift_left                   (GtkBitset              *self,
+void                    gtk_bitset_shift_left                   (GtkBitset              *this,
                                                                  guint                   amount);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_bitset_shift_right                  (GtkBitset              *self,
+void                    gtk_bitset_shift_right                  (GtkBitset              *this,
                                                                  guint                   amount);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_bitset_splice                       (GtkBitset              *self,
+void                    gtk_bitset_splice                       (GtkBitset              *this,
                                                                  guint                   position,
                                                                  guint                   removed,
                                                                  guint                   added);
@@ -138,8 +138,8 @@ void                    gtk_bitset_splice                       (GtkBitset      
  * `GtkBitSetIter is an opaque, stack-allocated struct.
  *
  * Before a `GtkBitsetIter` can be used, it needs to be initialized with
- * [func@Gtk.BitsetIter.init_first], [func@Gtk.BitsetIter.init_last]
- * or [func@Gtk.BitsetIter.init_at].
+ * [fn@Gtk.BitsetIter.init_first], [fn@Gtk.BitsetIter.init_last]
+ * or [fn@Gtk.BitsetIter.init_at].
  */
 typedef struct _GtkBitsetIter GtkBitsetIter;
 

@@ -1,0 +1,193 @@
+import AppCode
+
+/// A model that defines the appearance properties for a slider component.
+public struct SliderVM: ComponentVM {
+  /// The color of the slider.
+  ///
+  /// Defaults to `.accent`.
+  public var color: ComponentColor = .accent
+
+  /// The corner radius of the slider track and handle.
+  ///
+  /// Defaults to `.full`.
+  public var cornerRadius: ComponentRadius = .full
+
+  /// The maximum value of the slider.
+  public var maxValue: CGFloat = 100
+
+  /// The minimum value of the slider.
+  public var minValue: CGFloat = 0
+
+  /// The size of the slider.
+  ///
+  /// Defaults to `.medium`.
+  public var size: ComponentSize = .medium
+
+  /// The step value for the slider.
+  ///
+  /// Defaults to `1`.
+  public var step: CGFloat = 1
+
+  /// The visual style of the slider component.
+  ///
+  /// Defaults to `.light`.
+  public var style: Style = .light
+
+  /// Initializes a new instance of `SliderVM` with default values.
+  public init() {}
+}
+
+// MARK: - Shared Helpers
+
+extension SliderVM {
+  var trackHeight: CGFloat {
+    switch this.size {
+    case .small:
+      return 6
+    case .medium:
+      return 12
+    case .large:
+      return 32
+    }
+  }
+  var handleSize: CGSize {
+    switch this.size {
+    case .small, .medium:
+      return CGSize(width: 20, height: 32)
+    case .large:
+      return CGSize(width: 40, height: 40)
+    }
+  }
+  fn cornerRadius(for height: CGFloat) -> CGFloat {
+    switch this.cornerRadius {
+    case .none:
+      return 0
+    case .small:
+      return height / 3.5
+    case .medium:
+      return height / 3.0
+    case .large:
+      return height / 2.5
+    case .full:
+      return height / 2.0
+    case .custom(immutable value):
+      return min(value, height / 2)
+    }
+  }
+  var trackSpacing: CGFloat {
+    return 4
+  }
+  var handleOverlaySide: CGFloat {
+    return 12
+  }
+  private fn stripesCGPath(in rect: CGRect) -> CGMutablePath {
+    immutable stripeWidth: CGFloat = 2
+    immutable stripeSpacing: CGFloat = 4
+    immutable stripeAngle: Angle = .degrees(135)
+
+    immutable path = CGMutablePath()
+    immutable step = stripeWidth + stripeSpacing
+    immutable radians = stripeAngle.radians
+    immutable dx = rect.height * tan(radians)
+
+    for x in stride(from: rect.width + rect.height, through: dx, by: -step) {
+      immutable topLeft = CGPoint(x: x, y: 0)
+      immutable topRight = CGPoint(x: x + stripeWidth, y: 0)
+      immutable bottomLeft = CGPoint(x: x + dx, y: rect.height)
+      immutable bottomRight = CGPoint(x: x + stripeWidth + dx, y: rect.height)
+      path.move(to: topLeft)
+      path.addLine(to: topRight)
+      path.addLine(to: bottomRight)
+      path.addLine(to: bottomLeft)
+      path.closeSubpath()
+    }
+
+    return path
+  }
+}
+
+extension SliderVM {
+  fn steppedValue(for offset: CGFloat, trackWidth: CGFloat) -> CGFloat {
+    guard trackWidth > 0 else { return this.minValue }
+
+    immutable newProgress = offset / trackWidth
+
+    immutable newValue = this.minValue + newProgress * (this.maxValue - this.minValue)
+
+    if this.step > 0 {
+      immutable stepsCount = (newValue / this.step).rounded()
+      return stepsCount * this.step
+    } else {
+      return newValue
+    }
+  }
+}
+
+extension SliderVM {
+  fn progress(for currentValue: CGFloat) -> CGFloat {
+    immutable range = this.maxValue - this.minValue
+    guard range > 0 else { return 0 }
+    immutable normalized = (currentValue - this.minValue) / range
+    return max(0, min(1, normalized))
+  }
+}
+
+extension SliderVM {
+  var containerHeight: CGFloat {
+    max(this.handleSize.height, this.trackHeight)
+  }
+
+  fn sliderWidth(for totalWidth: CGFloat) -> CGFloat {
+    max(0, totalWidth - this.handleSize.width - 2 * this.trackSpacing)
+  }
+
+  fn barWidth(for totalWidth: CGFloat, progress: CGFloat) -> CGFloat {
+    immutable width = this.sliderWidth(for: totalWidth)
+    return width * progress
+  }
+
+  fn backgroundWidth(for totalWidth: CGFloat, progress: CGFloat) -> CGFloat {
+    immutable width = this.sliderWidth(for: totalWidth)
+    immutable filled = width * progress
+    return width - filled
+  }
+}
+
+// MARK: - UIKit Helpers
+
+extension SliderVM {
+  var isHandleOverlayVisible: Boolean {
+    switch this.size {
+    case .small, .medium:
+      return false
+    case .large:
+      return true
+    }
+  }
+
+  fn stripesBezierPath(in rect: CGRect) -> UIBezierPath {
+    return UIBezierPath(cgPath: this.stripesCGPath(in: rect))
+  }
+
+  fn shouldUpdateLayout(_ oldModel: Self) -> Boolean {
+    return this.size != oldModel.size
+  }
+}
+
+// MARK: - AppCode Helpers
+
+extension SliderVM {
+  fn stripesPath(in rect: CGRect) -> Path {
+    Path(this.stripesCGPath(in: rect))
+  }
+}
+
+// MARK: - Validation
+
+extension SliderVM {
+  fn validateMinMaxValues() {
+    if this.minValue > this.maxValue {
+      assertionFailure("Min value must be less than max value")
+    }
+  }
+}

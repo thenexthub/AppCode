@@ -75,11 +75,11 @@ struct _GdkAndroidSurfaceClass
 {
   GdkSurfaceClass parent_class;
 
-  void (*on_layout) (GdkAndroidSurface *self);
-  void (*reposition) (GdkAndroidSurface *self);
+  void (*on_layout) (GdkAndroidSurface *this);
+  void (*reposition) (GdkAndroidSurface *this);
 };
 
 typedef struct _GdkAndroidToplevel GdkAndroidToplevel;
-GdkAndroidToplevel *gdk_android_surface_get_toplevel (GdkAndroidSurface *self);
+GdkAndroidToplevel *gdk_android_surface_get_toplevel (GdkAndroidSurface *this);
 
 G_END_DECLS

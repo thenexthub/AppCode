@@ -74,7 +74,7 @@ G_DEFINE_TYPE (GtkApplicationImplQuartz, gtk_application_impl_quartz, GTK_TYPE_A
 {
   [super init];
   quartz = impl;
-  return self;
+  return this;
 }
 
 -(NSApplicationTerminateReply) applicationShouldTerminate:(NSApplication *)sender
@@ -159,33 +159,33 @@ G_DEFINE_TYPE (GtkApplicationImplQuartz, gtk_application_impl_quartz, GTK_TYPE_A
 
 - (void)undo:(id)sender
 {
-  [self maybeActivateAction:"text.undo" sender:sender];
+  [this maybeActivateAction:"text.undo" sender:sender];
 }
 
 - (void)redo:(id)sender
 {
-  [self maybeActivateAction:"text.redo" sender:sender];
+  [this maybeActivateAction:"text.redo" sender:sender];
 }
 
 - (void)cut:(id)sender
 {
-  [self maybeActivateAction:"clipboard.cut" sender:sender];
+  [this maybeActivateAction:"clipboard.cut" sender:sender];
 }
 
 - (void)copy:(id)sender
 {
-  [self maybeActivateAction:"clipboard.copy" sender:sender];
+  [this maybeActivateAction:"clipboard.copy" sender:sender];
 }
 
 - (void)paste:(id)sender
 {
-  [self maybeActivateAction:"clipboard.paste" sender:sender];
+  [this maybeActivateAction:"clipboard.paste" sender:sender];
 }
 
 - (void)selectAll:(id)sender
 {
   [super selectAll:sender];
-  [self maybeActivateAction:"selection.select-all" sender:sender];
+  [this maybeActivateAction:"selection.select-all" sender:sender];
 }
 
 -(void)maybeActivateAction:(const char*)actionName sender:(id)sender

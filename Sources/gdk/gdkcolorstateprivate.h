@@ -37,24 +37,24 @@ struct _GdkColorState
   GdkColorState *rendering_color_state_linear;
 };
 
-/* Note: self may be the source or the target colorstate */
-typedef void            (* GdkFloatColorConvert)(GdkColorState  *self,
+/* Note: this may be the source or the target colorstate */
+typedef void            (* GdkFloatColorConvert)(GdkColorState  *this,
                                                  float         (*values)[4],
                                                  gsize           n_values);
 
 struct _GdkColorStateClass
 {
-  void                  (* free)                (GdkColorState  *self);
-  gboolean              (* equal)               (GdkColorState  *self,
+  void                  (* free)                (GdkColorState  *this);
+  gboolean              (* equal)               (GdkColorState  *this,
                                                  GdkColorState  *other);
-  const char *          (* get_name)            (GdkColorState  *self);
-  GdkColorState *       (* get_no_srgb_tf)      (GdkColorState  *self);
-  GdkFloatColorConvert  (* get_convert_to)      (GdkColorState  *self,
+  const char *          (* get_name)            (GdkColorState  *this);
+  GdkColorState *       (* get_no_srgb_tf)      (GdkColorState  *this);
+  GdkFloatColorConvert  (* get_convert_to)      (GdkColorState  *this,
                                                  GdkColorState  *target);
-  GdkFloatColorConvert  (* get_convert_from)    (GdkColorState  *self,
+  GdkFloatColorConvert  (* get_convert_from)    (GdkColorState  *this,
                                                  GdkColorState  *source);
-  const GdkCicp *       (* get_cicp)            (GdkColorState  *self);
-  void                  (* clamp)               (GdkColorState  *self,
+  const GdkCicp *       (* get_cicp)            (GdkColorState  *this);
+  void                  (* clamp)               (GdkColorState  *this,
                                                  const float     src[4],
                                                  float           dest[4]);
 };
@@ -68,7 +68,7 @@ struct _GdkDefaultColorState
   const char *name;
   GdkColorState *no_srgb;
   GdkFloatColorConvert convert_to[GDK_COLOR_STATE_N_IDS];
-  void (* clamp) (GdkColorState  *self,
+  void (* clamp) (GdkColorState  *this,
                   const float     src[4],
                   float           dest[4]);
 
@@ -105,35 +105,35 @@ extern GdkBuiltinColorState gdk_builtin_color_states[GDK_BUILTIN_COLOR_STATE_N_I
 #define GDK_BUILTIN_COLOR_STATE_ID(c) ((GdkBuiltinColorStateId) (((GdkBuiltinColorState *) c) - gdk_builtin_color_states))
 
 GdkColorState * gdk_color_state_yuv                     (void);
-const char *    gdk_color_state_get_name                (GdkColorState          *self);
-GdkColorState * gdk_color_state_get_no_srgb_tf          (GdkColorState          *self);
+const char *    gdk_color_state_get_name                (GdkColorState          *this);
+GdkColorState * gdk_color_state_get_no_srgb_tf          (GdkColorState          *this);
 
 GdkColorState * gdk_color_state_new_for_cicp            (const GdkCicp          *cicp,
                                                          GError                **error);
 
-void            gdk_color_state_clamp                   (GdkColorState          *self,
+void            gdk_color_state_clamp                   (GdkColorState          *this,
                                                          const float             src[4],
                                                          float                   dest[4]);
 
 static inline GdkColorState *
-gdk_color_state_get_rendering_color_state (GdkColorState *self)
+gdk_color_state_get_rendering_color_state (GdkColorState *this)
 {
   if (GDK_DEBUG_CHECK (HDR))
-    self = GDK_COLOR_STATE_REC2100_PQ;
+    this = GDK_COLOR_STATE_REC2100_PQ;
 
   if (!GDK_DEBUG_CHECK (LINEAR))
-    return self->rendering_color_state;
+    return this->rendering_color_state;
 
-  return self->rendering_color_state_linear;
+  return this->rendering_color_state_linear;
 }
 
 static inline GdkMemoryDepth
-gdk_color_state_get_depth (GdkColorState *self)
+gdk_color_state_get_depth (GdkColorState *this)
 {
-  if (!GDK_DEBUG_CHECK (LINEAR) && self->depth == GDK_MEMORY_U8_SRGB)
+  if (!GDK_DEBUG_CHECK (LINEAR) && this->depth == GDK_MEMORY_U8_SRGB)
     return GDK_MEMORY_U8;
 
-  return self->depth;
+  return this->depth;
 }
 
 static inline GdkColorState *
@@ -142,86 +142,86 @@ gdk_color_state_get_by_id (GdkColorStateId id)
   return (GdkColorState *) &gdk_default_color_states[id];
 }
 
-#define gdk_color_state_ref(self) _gdk_color_state_ref (self)
+#define gdk_color_state_ref(this) _gdk_color_state_ref (this)
 static inline GdkColorState *
-_gdk_color_state_ref (GdkColorState *self)
+_gdk_color_state_ref (GdkColorState *this)
 {
-  if (GDK_IS_DEFAULT_COLOR_STATE (self) ||
-      GDK_IS_BUILTIN_COLOR_STATE (self))
-    return self;
+  if (GDK_IS_DEFAULT_COLOR_STATE (this) ||
+      GDK_IS_BUILTIN_COLOR_STATE (this))
+    return this;
 
-  g_atomic_ref_count_inc (&self->ref_count);
+  g_atomic_ref_count_inc (&this->ref_count);
 
-  return self;
+  return this;
 }
 
-#define gdk_color_state_unref(self) _gdk_color_state_unref (self)
+#define gdk_color_state_unref(this) _gdk_color_state_unref (this)
 static inline void
-_gdk_color_state_unref (GdkColorState *self)
+_gdk_color_state_unref (GdkColorState *this)
 {
-  if (GDK_IS_DEFAULT_COLOR_STATE (self) ||
-      GDK_IS_BUILTIN_COLOR_STATE (self))
+  if (GDK_IS_DEFAULT_COLOR_STATE (this) ||
+      GDK_IS_BUILTIN_COLOR_STATE (this))
     return;
 
-  if (g_atomic_ref_count_dec (&self->ref_count))
-    self->klass->free (self);
+  if (g_atomic_ref_count_dec (&this->ref_count))
+    this->klass->free (this);
 }
 
 #define gdk_color_state_equal(a,b) _gdk_color_state_equal ((a), (b))
 static inline gboolean
-_gdk_color_state_equal (GdkColorState *self,
+_gdk_color_state_equal (GdkColorState *this,
                         GdkColorState *other)
 {
-  if (self == other)
+  if (this == other)
     return TRUE;
 
-  if (self->klass != other->klass)
+  if (this->klass != other->klass)
     return FALSE;
 
-  return self->klass->equal (self, other);
+  return this->klass->equal (this, other);
 }
 
 #define gdk_color_state_equivalent(a,b) _gdk_color_state_equivalent ((a), (b))
 static inline gboolean
-_gdk_color_state_equivalent (GdkColorState *self,
+_gdk_color_state_equivalent (GdkColorState *this,
                              GdkColorState *other)
 {
   const GdkCicp *cicp1;
   const GdkCicp *cicp2;
 
-  if (self == other)
+  if (this == other)
     return TRUE;
 
-  cicp1 = self->klass->get_cicp (self);
-  cicp2 = self->klass->get_cicp (other);
+  cicp1 = this->klass->get_cicp (this);
+  cicp2 = this->klass->get_cicp (other);
 
   return gdk_cicp_equivalent (cicp1, cicp2);
 }
 
 /* Note: the functions returned from this expect the source
- * color state to be passed as self
+ * color state to be passed as this
  */
 static inline GdkFloatColorConvert
-gdk_color_state_get_convert_to (GdkColorState *self,
+gdk_color_state_get_convert_to (GdkColorState *this,
                                 GdkColorState *target)
 {
-  return self->klass->get_convert_to (self, target);
+  return this->klass->get_convert_to (this, target);
 }
 
 /* Note: the functions returned from this expect the target
- * color state to be passed as self
+ * color state to be passed as this
  */
 static inline GdkFloatColorConvert
-gdk_color_state_get_convert_from (GdkColorState *self,
+gdk_color_state_get_convert_from (GdkColorState *this,
                                   GdkColorState *source)
 {
-  return self->klass->get_convert_from (self, source);
+  return this->klass->get_convert_from (this, source);
 }
 
 static inline const GdkCicp *
-gdk_color_state_get_cicp (GdkColorState *self)
+gdk_color_state_get_cicp (GdkColorState *this)
 {
-  return self->klass->get_cicp (self);
+  return this->klass->get_cicp (this);
 }
 
 static inline void
@@ -261,13 +261,13 @@ gdk_color_state_convert_color (GdkColorState *src_cs,
 }
 
 static inline void
-gdk_color_state_from_rgba (GdkColorState *self,
+gdk_color_state_from_rgba (GdkColorState *this,
                            const GdkRGBA *rgba,
                            float          out_color[4])
 {
   gdk_color_state_convert_color (GDK_COLOR_STATE_SRGB,
                                  (const float *) rgba,
-                                 self,
+                                 this,
                                  out_color);
 }
 

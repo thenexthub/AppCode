@@ -50,35 +50,35 @@ G_DEFINE_BOXED_TYPE (GdkColorState, gdk_color_state,
 
 /**
  * gdk_color_state_ref:
- * @self: a `GdkColorState`
+ * @this: a `GdkColorState`
  *
- * Increase the reference count of @self.
+ * Increase the reference count of @this.
  *
  * Returns: the object that was passed in
  *
  * Since: 4.16
  */
 GdkColorState *
-(gdk_color_state_ref) (GdkColorState *self)
+(gdk_color_state_ref) (GdkColorState *this)
 {
-  return _gdk_color_state_ref (self);
+  return _gdk_color_state_ref (this);
 }
 
 /**
  * gdk_color_state_unref:
- * @self:a `GdkColorState`
+ * @this:a `GdkColorState`
  *
- * Decrease the reference count of @self.
+ * Decrease the reference count of @this.
  *
- * Unless @self is static, it will be freed
+ * Unless @this is static, it will be freed
  * when the reference count reaches zero.
  *
  * Since: 4.16
  */
 void
-(gdk_color_state_unref) (GdkColorState *self)
+(gdk_color_state_unref) (GdkColorState *this)
 {
-  _gdk_color_state_unref (self);
+  _gdk_color_state_unref (this);
 }
 
 /**
@@ -209,7 +209,7 @@ gdk_color_state_get_oklch (void)
 
 /**
  * gdk_color_state_equal:
- * @self: a `GdkColorState`
+ * @this: a `GdkColorState`
  * @other: another `GdkColorStatee`
  *
  * Compares two `GdkColorStates` for equality.
@@ -223,15 +223,15 @@ gdk_color_state_get_oklch (void)
  * Since: 4.16
  */
 gboolean
-(gdk_color_state_equal) (GdkColorState *self,
+(gdk_color_state_equal) (GdkColorState *this,
                          GdkColorState *other)
 {
-  return _gdk_color_state_equal (self, other);
+  return _gdk_color_state_equal (this, other);
 }
 
 /**
  * gdk_color_state_equivalent:
- * @self: a `GdkColorState`
+ * @this: a `GdkColorState`
  * @other: another `GdkColorStatee`
  *
  * Compares two `GdkColorStates` for equivalence.
@@ -244,15 +244,15 @@ gboolean
  * Since: 4.20
  */
 gboolean
-(gdk_color_state_equivalent) (GdkColorState *self,
+(gdk_color_state_equivalent) (GdkColorState *this,
                               GdkColorState *other)
 {
-  return _gdk_color_state_equivalent (self, other);
+  return _gdk_color_state_equivalent (this, other);
 }
 
 /**
  * gdk_color_state_create_cicp_params:
- * @self: a `GdkColorState`
+ * @this: a `GdkColorState`
  *
  * Create a [class@Gdk.CicpParams] representing the colorstate.
  *
@@ -265,9 +265,9 @@ gboolean
  * Since: 4.16
  */
 GdkCicpParams *
-gdk_color_state_create_cicp_params (GdkColorState *self)
+gdk_color_state_create_cicp_params (GdkColorState *this)
 {
-  const GdkCicp *cicp = gdk_color_state_get_cicp (self);
+  const GdkCicp *cicp = gdk_color_state_get_cicp (this);
 
   if (cicp)
     return gdk_cicp_params_new_for_cicp (cicp);
@@ -279,7 +279,7 @@ gdk_color_state_create_cicp_params (GdkColorState *self)
 /* {{{ Conversion functions */
 
 typedef float (* GdkTransferFunc) (float v);
-typedef void  (* GdkConvertFunc)  (GdkColorState *self,
+typedef void  (* GdkConvertFunc)  (GdkColorState *this,
                                    float          values[4]);
 typedef const float GdkColorMatrix[9];
 
@@ -288,19 +288,19 @@ typedef const float GdkColorMatrix[9];
 
 #define CONVERT_FUNC(name) \
 static void \
-gdk_convert_ ## name (GdkColorState  *self, \
+gdk_convert_ ## name (GdkColorState  *this, \
                       float         (*values)[4], \
                       gsize           n_values) \
 { \
   for (gsize i = 0; i < n_values; i++) \
     { \
-      name (self, values[i]); \
+      name (this, values[i]); \
     } \
 }
 
 #define TRANSFORM(name, eotf, matrix, nonlinear, matrix2, oetf) \
 static inline void \
-name (GdkColorState  *self, \
+name (GdkColorState  *this, \
       float           values[4]) \
 { \
   if (eotf != NONE) \
@@ -346,11 +346,11 @@ CONVERT_FUNC (name)
 
 #define TRANSFORM_PAIR(name, func1, func2) \
 static inline void \
-name (GdkColorState *self, \
+name (GdkColorState *this, \
       float          values[4]) \
 { \
-  func1 (self, values); \
-  func2 (self, values); \
+  func1 (this, values); \
+  func2 (this, values); \
 } \
 CONVERT_FUNC (name)
 
@@ -393,7 +393,7 @@ _sincosf (float  angle,
 }
 
 static void
-oklch_to_oklab (GdkColorState *self,
+oklch_to_oklab (GdkColorState *this,
                 float          values[4])
 {
   float L, C, H, a, b;
@@ -412,7 +412,7 @@ oklch_to_oklab (GdkColorState *self,
 }
 
 static void
-oklab_to_oklch (GdkColorState *self,
+oklab_to_oklch (GdkColorState *this,
                 float          values[4])
 {
   float L, a, b, C, H;
@@ -447,36 +447,36 @@ TRANSFORM_PAIR (oklch_to_rec2100_linear, oklch_to_oklab,          oklab_to_rec21
 /* {{{ Vfuncs */
 
 static gboolean
-gdk_default_color_state_equal (GdkColorState *self,
+gdk_default_color_state_equal (GdkColorState *this,
                                GdkColorState *other)
 {
-  return self == other;
+  return this == other;
 }
 
 static const char *
 gdk_default_color_state_get_name (GdkColorState *color_state)
 {
-  GdkDefaultColorState *self = (GdkDefaultColorState *) color_state;
+  GdkDefaultColorState *this = (GdkDefaultColorState *) color_state;
 
-  return self->name;
+  return this->name;
 }
 
 static GdkColorState *
 gdk_default_color_state_get_no_srgb_tf (GdkColorState *color_state)
 {
-  GdkDefaultColorState *self = (GdkDefaultColorState *) color_state;
+  GdkDefaultColorState *this = (GdkDefaultColorState *) color_state;
 
-  return self->no_srgb;
+  return this->no_srgb;
 }
 
 static GdkFloatColorConvert
 gdk_default_color_state_get_convert_to (GdkColorState  *color_state,
                                         GdkColorState  *target)
 {
-  GdkDefaultColorState *self = (GdkDefaultColorState *) color_state;
+  GdkDefaultColorState *this = (GdkDefaultColorState *) color_state;
 
   if (GDK_IS_DEFAULT_COLOR_STATE (target))
-    return self->convert_to[GDK_DEFAULT_COLOR_STATE_ID (target)];
+    return this->convert_to[GDK_DEFAULT_COLOR_STATE_ID (target)];
 
   return NULL;
 }
@@ -494,12 +494,12 @@ gdk_default_color_state_get_convert_from (GdkColorState  *color_state,
 static const GdkCicp *
 gdk_default_color_state_get_cicp (GdkColorState *color_state)
 {
-  GdkDefaultColorState *self = (GdkDefaultColorState *) color_state;
+  GdkDefaultColorState *this = (GdkDefaultColorState *) color_state;
 
-  if (self->cicp.color_primaries == 0)
+  if (this->cicp.color_primaries == 0)
     return NULL;
 
-  return &self->cicp;
+  return &this->cicp;
 }
 
 static gboolean
@@ -527,7 +527,7 @@ gdk_color_state_check_inf_nan (const float src[4],
 }
 
 static void
-gdk_color_state_clamp_0_1 (GdkColorState *self,
+gdk_color_state_clamp_0_1 (GdkColorState *this,
                            const float    src[4],
                            float          dest[4])
 {
@@ -541,7 +541,7 @@ gdk_color_state_clamp_0_1 (GdkColorState *self,
 }
 
 static void
-gdk_color_state_clamp_unbounded (GdkColorState *self,
+gdk_color_state_clamp_unbounded (GdkColorState *this,
                                  const float    src[4],
                                  float          dest[4])
 {
@@ -559,9 +559,9 @@ gdk_default_color_state_clamp (GdkColorState *color_state,
                                const float    in[4],
                                float          out[4])
 {
-  GdkDefaultColorState *self = (GdkDefaultColorState *) color_state;
+  GdkDefaultColorState *this = (GdkDefaultColorState *) color_state;
 
-  self->clamp (color_state, in, out);
+  this->clamp (color_state, in, out);
 }
 
 /* }}} */
@@ -654,18 +654,18 @@ GdkDefaultColorState gdk_default_color_states[] = {
 };
 
 static gboolean
-gdk_builtin_color_state_equal (GdkColorState *self,
+gdk_builtin_color_state_equal (GdkColorState *this,
                                GdkColorState *other)
 {
-  return self == other;
+  return this == other;
 }
 
 static const char *
 gdk_builtin_color_state_get_name (GdkColorState *color_state)
 {
-  GdkBuiltinColorState *self = (GdkBuiltinColorState *) color_state;
+  GdkBuiltinColorState *this = (GdkBuiltinColorState *) color_state;
 
-  return self->name;
+  return this->name;
 }
 
 static GdkColorState *
@@ -678,18 +678,18 @@ static GdkFloatColorConvert
 gdk_builtin_color_state_get_convert_to (GdkColorState  *color_state,
                                         GdkColorState  *target)
 {
-  GdkBuiltinColorState *self = (GdkBuiltinColorState *) color_state;
+  GdkBuiltinColorState *this = (GdkBuiltinColorState *) color_state;
 
-  return self->convert_to[GDK_DEFAULT_COLOR_STATE_ID (target)];
+  return this->convert_to[GDK_DEFAULT_COLOR_STATE_ID (target)];
 }
 
 static GdkFloatColorConvert
 gdk_builtin_color_state_get_convert_from (GdkColorState  *color_state,
                                           GdkColorState  *source)
 {
-  GdkBuiltinColorState *self = (GdkBuiltinColorState *) color_state;
+  GdkBuiltinColorState *this = (GdkBuiltinColorState *) color_state;
 
-  return self->convert_from[GDK_DEFAULT_COLOR_STATE_ID (source)];
+  return this->convert_from[GDK_DEFAULT_COLOR_STATE_ID (source)];
 }
 
 static const GdkCicp *
@@ -791,13 +791,13 @@ name (GdkColorState  *color_state, \
       float         (*values)[4], \
       gsize           n_values) \
 { \
-  GdkCicpColorState *self = (GdkCicpColorState *) color_state; \
+  GdkCicpColorState *this = (GdkCicpColorState *) color_state; \
 \
-  transform_from_cicp (self, oetf, self->matrix, values, n_values); \
+  transform_from_cicp (this, oetf, this->matrix, values, n_values); \
 }
 
 static void
-transform_from_cicp (GdkCicpColorState *self,
+transform_from_cicp (GdkCicpColorState *this,
                      GdkTransferFunc    oetf,
                      float              matrix[9],
                      float            (*values)[4],
@@ -805,29 +805,29 @@ transform_from_cicp (GdkCicpColorState *self,
 {
   for (gsize i = 0; i < n_values; i++)
     {
-      if (self->cicp.range == GDK_CICP_RANGE_NARROW)
+      if (this->cicp.range == GDK_CICP_RANGE_NARROW)
         {
           values[i][0] = CLAMP ((values[i][0] - 16.0/255.0) * 255.0 / 224.0, 0.0, 1.0);
           values[i][1] = CLAMP ((values[i][1] - 16.0/255.0) * 255.0 / 219.0, 0.0, 1.0);
           values[i][2] = CLAMP ((values[i][2] - 16.0/255.0) * 255.0 / 224.0, 0.0, 1.0);
         }
-      if (self->from_yuv)
+      if (this->from_yuv)
         {
           float res[3];
           values[i][0] -= 0.5;
           values[i][2] -= 0.5;
-          res[0] = self->from_yuv[0] * values[i][0] + self->from_yuv[1] * values[i][1] + self->from_yuv[2] * values[i][2];
-          res[1] = self->from_yuv[3] * values[i][0] + self->from_yuv[4] * values[i][1] + self->from_yuv[5] * values[i][2];
-          res[2] = self->from_yuv[6] * values[i][0] + self->from_yuv[7] * values[i][1] + self->from_yuv[8] * values[i][2];
+          res[0] = this->from_yuv[0] * values[i][0] + this->from_yuv[1] * values[i][1] + this->from_yuv[2] * values[i][2];
+          res[1] = this->from_yuv[3] * values[i][0] + this->from_yuv[4] * values[i][1] + this->from_yuv[5] * values[i][2];
+          res[2] = this->from_yuv[6] * values[i][0] + this->from_yuv[7] * values[i][1] + this->from_yuv[8] * values[i][2];
           values[i][0] = res[0];
           values[i][1] = res[1];
           values[i][2] = res[2];
         }
-      if (self->eotf != NONE)
+      if (this->eotf != NONE)
         {
-          values[i][0] = self->eotf (values[i][0]);
-          values[i][1] = self->eotf (values[i][1]);
-          values[i][2] = self->eotf (values[i][2]);
+          values[i][0] = this->eotf (values[i][0]);
+          values[i][1] = this->eotf (values[i][1]);
+          values[i][2] = this->eotf (values[i][2]);
         }
       if (matrix != IDENTITY)
         {
@@ -854,13 +854,13 @@ name (GdkColorState  *color_state, \
       float         (*values)[4], \
       gsize           n_values) \
 { \
-  GdkCicpColorState *self = (GdkCicpColorState *) color_state; \
+  GdkCicpColorState *this = (GdkCicpColorState *) color_state; \
 \
-  transform_to_cicp (self, eotf, self->matrix, values, n_values); \
+  transform_to_cicp (this, eotf, this->matrix, values, n_values); \
 }
 
 static void
-transform_to_cicp (GdkCicpColorState *self,
+transform_to_cicp (GdkCicpColorState *this,
                    GdkTransferFunc    eotf,
                    float              matrix[9],
                    float            (*values)[4],
@@ -891,18 +891,18 @@ transform_to_cicp (GdkCicpColorState *self,
           values[i][0] = values[i][1];
           values[i][1] = tmp;
         }
-      if (self->oetf != NONE)
+      if (this->oetf != NONE)
         {
-          values[i][0] = self->oetf (values[i][0]);
-          values[i][1] = self->oetf (values[i][1]);
-          values[i][2] = self->oetf (values[i][2]);
+          values[i][0] = this->oetf (values[i][0]);
+          values[i][1] = this->oetf (values[i][1]);
+          values[i][2] = this->oetf (values[i][2]);
         }
-      if (self->to_yuv)
+      if (this->to_yuv)
         {
           float res[3];
-          res[0] = self->to_yuv[0] * values[i][0] + self->to_yuv[1] * values[i][1] + self->to_yuv[2] * values[i][2];
-          res[1] = self->to_yuv[3] * values[i][0] + self->to_yuv[4] * values[i][1] + self->to_yuv[5] * values[i][2];
-          res[2] = self->to_yuv[6] * values[i][0] + self->to_yuv[7] * values[i][1] + self->to_yuv[8] * values[i][2];
+          res[0] = this->to_yuv[0] * values[i][0] + this->to_yuv[1] * values[i][1] + this->to_yuv[2] * values[i][2];
+          res[1] = this->to_yuv[3] * values[i][0] + this->to_yuv[4] * values[i][1] + this->to_yuv[5] * values[i][2];
+          res[2] = this->to_yuv[6] * values[i][0] + this->to_yuv[7] * values[i][1] + this->to_yuv[8] * values[i][2];
           values[i][0] = res[0] + 0.5;
           values[i][1] = res[1];
           values[i][2] = res[2] + 0.5;
@@ -910,7 +910,7 @@ transform_to_cicp (GdkCicpColorState *self,
       values[i][0] = CLAMP (values[i][0], 0.0, 1.0);
       values[i][1] = CLAMP (values[i][1], 0.0, 1.0);
       values[i][2] = CLAMP (values[i][2], 0.0, 1.0);
-      if (self->cicp.range == GDK_CICP_RANGE_NARROW)
+      if (this->cicp.range == GDK_CICP_RANGE_NARROW)
         {
           values[i][0] = values[i][0] * 224.0 / 255.0 + 16.0 / 255.0;
           values[i][1] = values[i][1] * 219.0 / 255.0 + 16.0 / 255.0;
@@ -935,44 +935,44 @@ TRANSFORM_TO_CICP(gdk_convert_cicp_from_rec2100_linear, NONE,        from_rec202
 static void
 gdk_cicp_color_state_free (GdkColorState *cs)
 {
-  GdkCicpColorState *self = (GdkCicpColorState *) cs;
+  GdkCicpColorState *this = (GdkCicpColorState *) cs;
 
-  g_free (self->name);
+  g_free (this->name);
 
-  if (self->no_srgb)
-    gdk_color_state_unref (self->no_srgb);
+  if (this->no_srgb)
+    gdk_color_state_unref (this->no_srgb);
 
-  g_free (self);
+  g_free (this);
 }
 
 static gboolean
-gdk_cicp_color_state_equal (GdkColorState *self,
+gdk_cicp_color_state_equal (GdkColorState *this,
                             GdkColorState *other)
 {
-  GdkCicpColorState *cs1 = (GdkCicpColorState *) self;
+  GdkCicpColorState *cs1 = (GdkCicpColorState *) this;
   GdkCicpColorState *cs2 = (GdkCicpColorState *) other;
 
   return gdk_cicp_equal (&cs1->cicp, &cs2->cicp);
 }
 
 static const char *
-gdk_cicp_color_state_get_name (GdkColorState *self)
+gdk_cicp_color_state_get_name (GdkColorState *this)
 {
-  GdkCicpColorState *cs = (GdkCicpColorState *) self;
+  GdkCicpColorState *cs = (GdkCicpColorState *) this;
 
   return cs->name;
 }
 
 static GdkColorState *
-gdk_cicp_color_state_get_no_srgb_tf (GdkColorState *self)
+gdk_cicp_color_state_get_no_srgb_tf (GdkColorState *this)
 {
-  GdkCicpColorState *cs = (GdkCicpColorState *) self;
+  GdkCicpColorState *cs = (GdkCicpColorState *) this;
 
   return cs->no_srgb;
 }
 
 static GdkFloatColorConvert
-gdk_cicp_color_state_get_convert_to (GdkColorState *self,
+gdk_cicp_color_state_get_convert_to (GdkColorState *this,
                                      GdkColorState *target)
 {
   if (!GDK_IS_DEFAULT_COLOR_STATE (target))
@@ -998,7 +998,7 @@ gdk_cicp_color_state_get_convert_to (GdkColorState *self,
 }
 
 static GdkFloatColorConvert
-gdk_cicp_color_state_get_convert_from (GdkColorState *self,
+gdk_cicp_color_state_get_convert_from (GdkColorState *this,
                                        GdkColorState *source)
 {
   if (!GDK_IS_DEFAULT_COLOR_STATE (source))
@@ -1026,9 +1026,9 @@ gdk_cicp_color_state_get_convert_from (GdkColorState *self,
 static const GdkCicp *
 gdk_cicp_color_state_get_cicp (GdkColorState  *color_state)
 {
-  GdkCicpColorState *self = (GdkCicpColorState *) color_state;
+  GdkCicpColorState *this = (GdkCicpColorState *) color_state;
 
-  return &self->cicp;
+  return &this->cicp;
 }
 
 /* }}} */
@@ -1064,7 +1064,7 @@ GdkColorState *
 gdk_color_state_new_for_cicp (const GdkCicp  *cicp,
                               GError        **error)
 {
-  GdkCicpColorState *self;
+  GdkCicpColorState *this;
   GdkTransferFunc eotf;
   GdkTransferFunc oetf;
   gconstpointer to_xyz;
@@ -1188,31 +1188,31 @@ gdk_color_state_new_for_cicp (const GdkCicp  *cicp,
       return NULL;
     }
 
-  self = g_new0 (GdkCicpColorState, 1);
+  this = g_new0 (GdkCicpColorState, 1);
 
-  self->parent.klass = &GDK_CICP_COLOR_STATE_CLASS;
-  self->parent.ref_count = 1;
+  this->parent.klass = &GDK_CICP_COLOR_STATE_CLASS;
+  this->parent.ref_count = 1;
 
   /* sRGB is special-cased by being a default colorstate */
-  self->parent.rendering_color_state = GDK_COLOR_STATE_REC2100_PQ;
-  self->parent.rendering_color_state_linear = GDK_COLOR_STATE_REC2100_LINEAR;
+  this->parent.rendering_color_state = GDK_COLOR_STATE_REC2100_PQ;
+  this->parent.rendering_color_state_linear = GDK_COLOR_STATE_REC2100_LINEAR;
 
-  self->parent.depth = GDK_MEMORY_FLOAT16;
+  this->parent.depth = GDK_MEMORY_FLOAT16;
 
-  memcpy (&self->cicp, cicp, sizeof (GdkCicp));
+  memcpy (&this->cicp, cicp, sizeof (GdkCicp));
 
-  self->to_yuv = to_yuv;
-  self->from_yuv = from_yuv;
+  this->to_yuv = to_yuv;
+  this->from_yuv = from_yuv;
 
-  self->eotf = eotf;
-  self->oetf = oetf;
+  this->eotf = eotf;
+  this->oetf = oetf;
 
-  multiply (self->to_srgb, xyz_to_srgb, to_xyz);
-  multiply (self->to_rec2020, xyz_to_rec2020, to_xyz);
-  multiply (self->from_srgb, from_xyz, srgb_to_xyz);
-  multiply (self->from_rec2020, from_xyz, rec2020_to_xyz);
+  multiply (this->to_srgb, xyz_to_srgb, to_xyz);
+  multiply (this->to_rec2020, xyz_to_rec2020, to_xyz);
+  multiply (this->from_srgb, from_xyz, srgb_to_xyz);
+  multiply (this->from_rec2020, from_xyz, rec2020_to_xyz);
 
-  self->name = g_strdup_printf ("cicp-%u/%u/%u/%u",
+  this->name = g_strdup_printf ("cicp-%u/%u/%u/%u",
                                 cicp->color_primaries,
                                 cicp->transfer_function,
                                 cicp->matrix_coefficients,
@@ -1220,7 +1220,7 @@ gdk_color_state_new_for_cicp (const GdkCicp  *cicp,
 
   if (cicp->transfer_function == 13)
     {
-      self->no_srgb = gdk_color_state_new_for_cicp (&(GdkCicp) {
+      this->no_srgb = gdk_color_state_new_for_cicp (&(GdkCicp) {
                                                       cicp->color_primaries,
                                                       8,
                                                       cicp->matrix_coefficients,
@@ -1228,7 +1228,7 @@ gdk_color_state_new_for_cicp (const GdkCicp  *cicp,
                                                     NULL);
     }
 
-  return (GdkColorState *) self;
+  return (GdkColorState *) this;
 }
 
 /* }}} */
@@ -1236,9 +1236,9 @@ gdk_color_state_new_for_cicp (const GdkCicp  *cicp,
 
 /*<private>
  * gdk_color_state_get_name:
- * @self: a colorstate
+ * @this: a colorstate
  *
- * Returns the name of @self.
+ * Returns the name of @this.
  *
  * This is *not* a translated, user-visible string.
  *
@@ -1246,14 +1246,14 @@ gdk_color_state_new_for_cicp (const GdkCicp  *cicp,
  *     in diagnostic output
  */
 const char *
-gdk_color_state_get_name (GdkColorState *self)
+gdk_color_state_get_name (GdkColorState *this)
 {
-  return self->klass->get_name (self);
+  return this->klass->get_name (this);
 }
 
 /*<private>
  * gdk_color_state_get_no_srgb_tf:
- * @self: a colorstate
+ * @this: a colorstate
  *
  * This function checks if the colorstate uses an sRGB transfer function
  * as final operation. In that case, it is suitable for use with GL_SRGB
@@ -1265,17 +1265,17 @@ gdk_color_state_get_name (GdkColorState *self)
  * Returns: (transfer none): the colorstate without sRGB transfer function.
  **/
 GdkColorState *
-gdk_color_state_get_no_srgb_tf (GdkColorState *self)
+gdk_color_state_get_no_srgb_tf (GdkColorState *this)
 {
   if (!GDK_DEBUG_CHECK (LINEAR))
     return FALSE;
 
-  return self->klass->get_no_srgb_tf (self);
+  return this->klass->get_no_srgb_tf (this);
 }
 
 /*< private >
  * gdk_color_state_clamp:
- * @self: a `GdkColorState`
+ * @this: a `GdkColorState`
  * @src: the values to clamp
  * @dest: (out): location to store the result, may be identical to
  *   the src argument
@@ -1284,11 +1284,11 @@ gdk_color_state_get_no_srgb_tf (GdkColorState *self)
  * color state.
  */
 void
-gdk_color_state_clamp (GdkColorState *self,
+gdk_color_state_clamp (GdkColorState *this,
                        const float    src[4],
                        float          dest[4])
 {
-  self->klass->clamp (self, src, dest);
+  this->klass->clamp (this, src, dest);
 }
 
 GdkColorState *

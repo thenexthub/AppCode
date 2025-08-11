@@ -40,7 +40,7 @@
  * queries information from all attached `GtkStyleProviders`. Style
  * providers can be either attached explicitly to the context through
  * [method@Gtk.StyleContext.add_provider], or to the display through
- * [func@Gtk.StyleContext.add_provider_for_display]. The resulting
+ * [fn@Gtk.StyleContext.add_provider_for_display]. The resulting
  * style is a combination of all providers’ information in priority order.
  *
  * For GTK widgets, any `GtkStyleContext` returned by
@@ -347,11 +347,11 @@ gtk_style_context_new_for_node (GtkCssNode *node)
  * Note that a style provider added by this function only affects
  * the style of the widget to which @context belongs. If you want
  * to affect the style of all widgets, use
- * [func@Gtk.StyleContext.add_provider_for_display].
+ * [fn@Gtk.StyleContext.add_provider_for_display].
  *
  * Note: If both priorities are the same, a `GtkStyleProvider`
  * added through this function takes precedence over another added
- * through [func@Gtk.StyleContext.add_provider_for_display].
+ * through [fn@Gtk.StyleContext.add_provider_for_display].
  *
  * Deprecated: 4.10: Use style classes instead
  */
@@ -519,7 +519,7 @@ gtk_style_context_get_scale (GtkStyleContext *context)
  * [method@Gtk.StyleContext.remove_class],
  * [method@Gtk.StyleContext.set_state] etc.
  *
- * Rendering using [func@Gtk.render_background] or similar
+ * Rendering using [fn@Gtk.render_background] or similar
  * functions are done using the given @node.
  *
  * To undo, call [method@Gtk.StyleContext.restore].

@@ -159,18 +159,18 @@ gtk_flatten_list_model_get_item_type (GListModel *list)
 static guint
 gtk_flatten_list_model_get_n_items (GListModel *list)
 {
-  GtkFlattenListModel *self = GTK_FLATTEN_LIST_MODEL (list);
+  GtkFlattenListModel *this = GTK_FLATTEN_LIST_MODEL (list);
   FlattenAugment *aug;
   FlattenNode *node;
 
-  if (!self->items)
+  if (!this->items)
     return 0;
 
-  node = gtk_rb_tree_get_root (self->items);
+  node = gtk_rb_tree_get_root (this->items);
   if (node == NULL)
     return 0;
 
-  aug = gtk_rb_tree_get_augment (self->items, node);
+  aug = gtk_rb_tree_get_augment (this->items, node);
   return aug->n_items;
 }
 
@@ -178,14 +178,14 @@ static gpointer
 gtk_flatten_list_model_get_item (GListModel *list,
                                  guint       position)
 {
-  GtkFlattenListModel *self = GTK_FLATTEN_LIST_MODEL (list);
+  GtkFlattenListModel *this = GTK_FLATTEN_LIST_MODEL (list);
   FlattenNode *node;
   guint model_pos;
 
-  if (!self->items)
+  if (!this->items)
     return NULL;
 
-  node = gtk_flatten_list_model_get_nth (self->items, position, &model_pos);
+  node = gtk_flatten_list_model_get_nth (this->items, position, &model_pos);
   if (node == NULL)
     return NULL;
 
@@ -206,14 +206,14 @@ gtk_flatten_list_model_get_section (GtkSectionModel *model,
                                     guint           *out_start,
                                     guint           *out_end)
 {
-  GtkFlattenListModel *self = GTK_FLATTEN_LIST_MODEL (model);
+  GtkFlattenListModel *this = GTK_FLATTEN_LIST_MODEL (model);
   FlattenNode *node;
   guint model_pos;
 
-  node = gtk_flatten_list_model_get_nth (self->items, position, &model_pos);
+  node = gtk_flatten_list_model_get_nth (this->items, position, &model_pos);
   if (node == NULL)
     {
-      *out_start = gtk_flatten_list_model_get_n_items (G_LIST_MODEL (self));
+      *out_start = gtk_flatten_list_model_get_n_items (G_LIST_MODEL (this));
       *out_end = G_MAXUINT;
       return;
     }
@@ -242,7 +242,7 @@ gtk_flatten_list_model_items_changed_cb (GListModel *model,
                                          gpointer    _node)
 {
   FlattenNode *node = _node, *parent, *left;
-  GtkFlattenListModel *self = node->list;
+  GtkFlattenListModel *this = node->list;
   guint real_position;
 
   gtk_rb_tree_node_mark_dirty (node);
@@ -251,7 +251,7 @@ gtk_flatten_list_model_items_changed_cb (GListModel *model,
   left = gtk_rb_tree_node_get_left (node);
   if (left)
     {
-      FlattenAugment *aug = gtk_rb_tree_get_augment (self->items, left);
+      FlattenAugment *aug = gtk_rb_tree_get_augment (this->items, left);
       real_position += aug->n_items;
     }
 
@@ -264,16 +264,16 @@ gtk_flatten_list_model_items_changed_cb (GListModel *model,
         {
           if (left)
             {
-              FlattenAugment *aug = gtk_rb_tree_get_augment (self->items, left);
+              FlattenAugment *aug = gtk_rb_tree_get_augment (this->items, left);
               real_position += aug->n_items;
             }
           real_position += g_list_model_get_n_items (parent->model);
         }
     }
 
-  g_list_model_items_changed (G_LIST_MODEL (self), real_position, removed, added);
+  g_list_model_items_changed (G_LIST_MODEL (this), real_position, removed, added);
   if (removed != added)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 }
 
 static void
@@ -313,7 +313,7 @@ gtk_flatten_list_model_augment (GtkRbTree *flatten,
 }
 
 static guint
-gtk_flatten_list_model_add_items (GtkFlattenListModel *self,
+gtk_flatten_list_model_add_items (GtkFlattenListModel *this,
                                   FlattenNode         *after,
                                   guint                position,
                                   guint                n)
@@ -324,13 +324,13 @@ gtk_flatten_list_model_add_items (GtkFlattenListModel *self,
   added = 0;
   for (i = 0; i < n; i++)
     {
-      node = gtk_rb_tree_insert_before (self->items, after);
-      node->model = g_list_model_get_item (self->model, position + i);
+      node = gtk_rb_tree_insert_before (this->items, after);
+      node->model = g_list_model_get_item (this->model, position + i);
       g_signal_connect (node->model,
                         "items-changed",
                         G_CALLBACK (gtk_flatten_list_model_items_changed_cb),
                         node);
-      node->list = self;
+      node->list = this;
       added += g_list_model_get_n_items (node->model);
     }
 
@@ -343,12 +343,12 @@ gtk_flatten_list_model_set_property (GObject      *object,
                                      const GValue *value,
                                      GParamSpec   *pspec)
 {
-  GtkFlattenListModel *self = GTK_FLATTEN_LIST_MODEL (object);
+  GtkFlattenListModel *this = GTK_FLATTEN_LIST_MODEL (object);
 
   switch (prop_id)
     {
     case PROP_MODEL:
-      gtk_flatten_list_model_set_model (self, g_value_get_object (value));
+      gtk_flatten_list_model_set_model (this, g_value_get_object (value));
       break;
 
     default:
@@ -363,20 +363,20 @@ gtk_flatten_list_model_get_property (GObject    *object,
                                      GValue     *value,
                                      GParamSpec *pspec)
 {
-  GtkFlattenListModel *self = GTK_FLATTEN_LIST_MODEL (object);
+  GtkFlattenListModel *this = GTK_FLATTEN_LIST_MODEL (object);
 
   switch (prop_id)
     {
     case PROP_ITEM_TYPE:
-      g_value_set_gtype (value, gtk_flatten_list_model_get_item_type (G_LIST_MODEL (self)));
+      g_value_set_gtype (value, gtk_flatten_list_model_get_item_type (G_LIST_MODEL (this)));
       break;
 
     case PROP_MODEL:
-      g_value_set_object (value, self->model);
+      g_value_set_object (value, this->model);
       break;
 
     case PROP_N_ITEMS:
-      g_value_set_uint (value, gtk_flatten_list_model_get_n_items (G_LIST_MODEL (self)));
+      g_value_set_uint (value, gtk_flatten_list_model_get_n_items (G_LIST_MODEL (this)));
       break;
 
     default:
@@ -390,47 +390,47 @@ gtk_flatten_list_model_model_items_changed_cb (GListModel          *model,
                                                guint                position,
                                                guint                removed,
                                                guint                added,
-                                               GtkFlattenListModel *self)
+                                               GtkFlattenListModel *this)
 {
   FlattenNode *node;
   guint i, real_position, real_removed, real_added;
 
-  node = gtk_flatten_list_model_get_nth_model (self->items, position, &real_position);
+  node = gtk_flatten_list_model_get_nth_model (this->items, position, &real_position);
 
   real_removed = 0;
   for (i = 0; i < removed; i++)
     {
       FlattenNode *next = gtk_rb_tree_node_get_next (node);
       real_removed += g_list_model_get_n_items (node->model);
-      gtk_rb_tree_remove (self->items, node);
+      gtk_rb_tree_remove (this->items, node);
       node = next;
     }
 
-  real_added = gtk_flatten_list_model_add_items (self, node, position, added);
+  real_added = gtk_flatten_list_model_add_items (this, node, position, added);
 
   if (real_removed > 0 || real_added > 0)
-    g_list_model_items_changed (G_LIST_MODEL (self), real_position, real_removed, real_added);
+    g_list_model_items_changed (G_LIST_MODEL (this), real_position, real_removed, real_added);
   if (real_removed != real_added)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 }
 
 static void
-gtk_flatten_list_clear_model (GtkFlattenListModel *self)
+gtk_flatten_list_clear_model (GtkFlattenListModel *this)
 {
-  if (self->model)
+  if (this->model)
     {
-      g_signal_handlers_disconnect_by_func (self->model, gtk_flatten_list_model_model_items_changed_cb, self);
-      g_clear_object (&self->model);
-      g_clear_pointer (&self->items, gtk_rb_tree_unref);
+      g_signal_handlers_disconnect_by_func (this->model, gtk_flatten_list_model_model_items_changed_cb, this);
+      g_clear_object (&this->model);
+      g_clear_pointer (&this->items, gtk_rb_tree_unref);
     }
 }
 
 static void
 gtk_flatten_list_model_dispose (GObject *object)
 {
-  GtkFlattenListModel *self = GTK_FLATTEN_LIST_MODEL (object);
+  GtkFlattenListModel *this = GTK_FLATTEN_LIST_MODEL (object);
 
-  gtk_flatten_list_clear_model (self);
+  gtk_flatten_list_clear_model (this);
 
   G_OBJECT_CLASS (gtk_flatten_list_model_parent_class)->dispose (object);
 }
@@ -482,7 +482,7 @@ gtk_flatten_list_model_class_init (GtkFlattenListModelClass *class)
 }
 
 static void
-gtk_flatten_list_model_init (GtkFlattenListModel *self)
+gtk_flatten_list_model_init (GtkFlattenListModel *this)
 {
 }
 
@@ -513,68 +513,68 @@ gtk_flatten_list_model_new (GListModel *model)
 
 /**
  * gtk_flatten_list_model_set_model:
- * @self: a `GtkFlattenListModel`
+ * @this: a `GtkFlattenListModel`
  * @model: (nullable) (transfer none): the new model
  *
  * Sets a new model to be flattened.
  */
 void
-gtk_flatten_list_model_set_model (GtkFlattenListModel *self,
+gtk_flatten_list_model_set_model (GtkFlattenListModel *this,
                                   GListModel          *model)
 {
   guint removed, added = 0;
 
-  g_return_if_fail (GTK_IS_FLATTEN_LIST_MODEL (self));
+  g_return_if_fail (GTK_IS_FLATTEN_LIST_MODEL (this));
   g_return_if_fail (model == NULL || G_IS_LIST_MODEL (model));
 
-  if (self->model == model)
+  if (this->model == model)
     return;
 
-  removed = g_list_model_get_n_items (G_LIST_MODEL (self)); 
-  gtk_flatten_list_clear_model (self);
+  removed = g_list_model_get_n_items (G_LIST_MODEL (this)); 
+  gtk_flatten_list_clear_model (this);
 
-  self->model = model;
+  this->model = model;
 
   if (model)
     {
       g_object_ref (model);
-      g_signal_connect (model, "items-changed", G_CALLBACK (gtk_flatten_list_model_model_items_changed_cb), self);
-      self->items = gtk_rb_tree_new (FlattenNode,
+      g_signal_connect (model, "items-changed", G_CALLBACK (gtk_flatten_list_model_model_items_changed_cb), this);
+      this->items = gtk_rb_tree_new (FlattenNode,
                                      FlattenAugment,
                                      gtk_flatten_list_model_augment,
                                      gtk_flatten_list_model_clear_node,
                                      NULL);
 
-      added = gtk_flatten_list_model_add_items (self, NULL, 0, g_list_model_get_n_items (model));
+      added = gtk_flatten_list_model_add_items (this, NULL, 0, g_list_model_get_n_items (model));
     }
 
   if (removed > 0 || added > 0)
-    g_list_model_items_changed (G_LIST_MODEL (self), 0, removed, added);
+    g_list_model_items_changed (G_LIST_MODEL (this), 0, removed, added);
   if (removed != added)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_MODEL]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_MODEL]);
 }
 
 /**
  * gtk_flatten_list_model_get_model:
- * @self: a `GtkFlattenListModel`
+ * @this: a `GtkFlattenListModel`
  *
  * Gets the model set via gtk_flatten_list_model_set_model().
  *
- * Returns: (nullable) (transfer none): The model flattened by @self
+ * Returns: (nullable) (transfer none): The model flattened by @this
  **/
 GListModel *
-gtk_flatten_list_model_get_model (GtkFlattenListModel *self)
+gtk_flatten_list_model_get_model (GtkFlattenListModel *this)
 {
-  g_return_val_if_fail (GTK_IS_FLATTEN_LIST_MODEL (self), NULL);
+  g_return_val_if_fail (GTK_IS_FLATTEN_LIST_MODEL (this), NULL);
 
-  return self->model;
+  return this->model;
 }
 
 /**
  * gtk_flatten_list_model_get_model_for_item:
- * @self: a `GtkFlattenListModel`
+ * @this: a `GtkFlattenListModel`
  * @position: a position
  *
  * Returns the model containing the item at the given position.
@@ -582,15 +582,15 @@ gtk_flatten_list_model_get_model (GtkFlattenListModel *self)
  * Returns: (transfer none) (nullable): the model containing the item at @position
  */
 GListModel *
-gtk_flatten_list_model_get_model_for_item (GtkFlattenListModel *self,
+gtk_flatten_list_model_get_model_for_item (GtkFlattenListModel *this,
                                            guint                position)
 {
   FlattenNode *node;
 
-  if (!self->items)
+  if (!this->items)
     return NULL;
 
-  node = gtk_flatten_list_model_get_nth (self->items, position, NULL);
+  node = gtk_flatten_list_model_get_nth (this->items, position, NULL);
   if (node == NULL)
     return NULL;
 

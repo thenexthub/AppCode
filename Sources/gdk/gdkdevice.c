@@ -1399,7 +1399,7 @@ gdk_device_get_layout_names (GdkDevice *device)
  * This is only relevant for keyboard devices.
  *
  * The direction of a layout is the direction of the majority
- * of its symbols. See [func@Pango.unichar_direction].
+ * of its symbols. See [fn@Pango.unichar_direction].
  *
  * Returns: %PANGO_DIRECTION_LTR or %PANGO_DIRECTION_RTL
  *   if it can determine the direction. %PANGO_DIRECTION_NEUTRAL

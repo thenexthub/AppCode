@@ -53,14 +53,14 @@
  *          double         y,
  *          gpointer       data)
  * {
- *   MyWidget *self = data;
+ *   MyWidget *this = data;
  *
  *   // Call the appropriate setter depending on the type of data
  *   // that we received
  *   if (G_VALUE_HOLDS (value, G_TYPE_FILE))
- *     my_widget_set_file (self, g_value_get_object (value));
+ *     my_widget_set_file (this, g_value_get_object (value));
  *   else if (G_VALUE_HOLDS (value, GDK_TYPE_PIXBUF))
- *     my_widget_set_pixbuf (self, g_value_get_object (value));
+ *     my_widget_set_pixbuf (this, g_value_get_object (value));
  *   else
  *     return FALSE;
  *
@@ -68,7 +68,7 @@
  * }
  *
  * static void
- * my_widget_init (MyWidget *self)
+ * my_widget_init (MyWidget *this)
  * {
  *   GtkDropTarget *target =
  *     gtk_drop_target_new (G_TYPE_INVALID, GDK_ACTION_COPY);
@@ -80,8 +80,8 @@
  *     GDK_TYPE_PIXBUF,
  *   }, 2);
  *
- *   g_signal_connect (target, "drop", G_CALLBACK (on_drop), self);
- *   gtk_widget_add_controller (GTK_WIDGET (self), GTK_EVENT_CONTROLLER (target));
+ *   g_signal_connect (target, "drop", G_CALLBACK (on_drop), this);
+ *   gtk_widget_add_controller (GTK_WIDGET (this), GTK_EVENT_CONTROLLER (target));
  * }
  * ```
  *
@@ -130,17 +130,17 @@ struct _GtkDropTargetClass
 {
   GtkEventControllerClass parent_class;
 
-  gboolean              (* accept)                              (GtkDropTarget  *self,
+  gboolean              (* accept)                              (GtkDropTarget  *this,
                                                                  GdkDrop        *drop);
-  GdkDragAction         (* enter)                               (GtkDropTarget  *self,
+  GdkDragAction         (* enter)                               (GtkDropTarget  *this,
                                                                  double          x,
                                                                  double          y);
-  GdkDragAction         (* motion)                              (GtkDropTarget  *self,
+  GdkDragAction         (* motion)                              (GtkDropTarget  *this,
                                                                  double          x,
                                                                  double          y);
-  void                  (* leave)                               (GtkDropTarget  *self,
+  void                  (* leave)                               (GtkDropTarget  *this,
                                                                  GdkDrop        *drop);
-  gboolean              (* drop)                                (GtkDropTarget  *self,
+  gboolean              (* drop)                                (GtkDropTarget  *this,
                                                                  const GValue   *value,
                                                                  double          x,
                                                                  double          y);
@@ -173,39 +173,39 @@ static guint signals[NUM_SIGNALS];
 G_DEFINE_TYPE (GtkDropTarget, gtk_drop_target, GTK_TYPE_EVENT_CONTROLLER);
 
 static void
-gtk_drop_target_end_drop (GtkDropTarget *self)
+gtk_drop_target_end_drop (GtkDropTarget *this)
 {
-  if (self->drop == NULL)
+  if (this->drop == NULL)
     return;
 
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
 
-  if (self->dropping)
+  if (this->dropping)
     {
-      gdk_drop_finish (self->drop, GDK_ACTION_NONE);
-      self->dropping = FALSE;
+      gdk_drop_finish (this->drop, GDK_ACTION_NONE);
+      this->dropping = FALSE;
     }
 
-  g_clear_object (&self->drop);
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DROP]);
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_CURRENT_DROP]);
+  g_clear_object (&this->drop);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_DROP]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_CURRENT_DROP]);
 
-  if (G_IS_VALUE (&self->value))
+  if (G_IS_VALUE (&this->value))
     {
-      g_value_unset (&self->value);
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_VALUE]);
+      g_value_unset (&this->value);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_VALUE]);
     }
 
-  if (self->cancellable)
+  if (this->cancellable)
     {
-      g_cancellable_cancel (self->cancellable);
-      g_clear_object (&self->cancellable);
+      g_cancellable_cancel (this->cancellable);
+      g_clear_object (&this->cancellable);
     }
 
-  gtk_widget_unset_state_flags (gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (self)),
+  gtk_widget_unset_state_flags (gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (this)),
                                 GTK_STATE_FLAG_DROP_ACTIVE);
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 }
 
 static GdkDragAction
@@ -224,23 +224,23 @@ make_action_unique (GdkDragAction actions)
 }
 
 static void
-gtk_drop_target_do_drop (GtkDropTarget *self)
+gtk_drop_target_do_drop (GtkDropTarget *this)
 {
   gboolean success;
 
-  g_assert (self->dropping);
-  g_assert (G_IS_VALUE (&self->value));
+  g_assert (this->dropping);
+  g_assert (G_IS_VALUE (&this->value));
 
-  g_signal_emit (self, signals[DROP], 0, &self->value, self->coords.x, self->coords.y, &success);
+  g_signal_emit (this, signals[DROP], 0, &this->value, this->coords.x, this->coords.y, &success);
 
   if (success)
-    gdk_drop_finish (self->drop, make_action_unique (self->actions & gdk_drop_get_actions (self->drop)));
+    gdk_drop_finish (this->drop, make_action_unique (this->actions & gdk_drop_get_actions (this->drop)));
   else
-    gdk_drop_finish (self->drop, GDK_ACTION_NONE);
+    gdk_drop_finish (this->drop, GDK_ACTION_NONE);
 
-  self->dropping = FALSE;
+  this->dropping = FALSE;
 
-  gtk_drop_target_end_drop (self);
+  gtk_drop_target_end_drop (this);
 }
 
 static void
@@ -248,143 +248,143 @@ gtk_drop_target_load_done (GObject      *source,
                            GAsyncResult *res,
                            gpointer      data)
 {
-  GtkDropTarget *self = data;
+  GtkDropTarget *this = data;
   const GValue *value;
   GError *error = NULL;
 
   value = gdk_drop_read_value_finish (GDK_DROP (source), res, &error);
   if (value == NULL)
     {
-      /* If this happens, data/self is invalid */
+      /* If this happens, data/this is invalid */
       if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
         {
           g_clear_error (&error);
           return;
         }
 
-      g_clear_object (&self->cancellable);
+      g_clear_object (&this->cancellable);
       /* XXX: Should this be a warning? */
       g_warning ("Failed to receive drop data: %s", error->message);
       g_clear_error (&error);
-      gtk_drop_target_end_drop (self);
+      gtk_drop_target_end_drop (this);
       return;
     }
 
-  g_clear_object (&self->cancellable);
-  g_value_init (&self->value, G_VALUE_TYPE (value));
-  g_value_copy (value, &self->value);
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_VALUE]);
+  g_clear_object (&this->cancellable);
+  g_value_init (&this->value, G_VALUE_TYPE (value));
+  g_value_copy (value, &this->value);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_VALUE]);
 
-  if (self->dropping)
-    gtk_drop_target_do_drop (self);
+  if (this->dropping)
+    gtk_drop_target_do_drop (this);
 }
 
 static gboolean
-gtk_drop_target_load_local (GtkDropTarget *self,
+gtk_drop_target_load_local (GtkDropTarget *this,
                             GType          type)
 {
   GdkDrag *drag;
 
-  drag = gdk_drop_get_drag (self->drop);
+  drag = gdk_drop_get_drag (this->drop);
   if (drag == NULL)
     return FALSE;
 
-  g_value_init (&self->value, type);
+  g_value_init (&this->value, type);
   if (gdk_content_provider_get_value (gdk_drag_get_content (drag),
-                                      &self->value,
+                                      &this->value,
                                       NULL))
     {
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_VALUE]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_VALUE]);
       return TRUE;
     }
 
-  g_value_unset (&self->value);
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_VALUE]);
+  g_value_unset (&this->value);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_VALUE]);
   return FALSE;
 }
 
 static gboolean
-gtk_drop_target_load (GtkDropTarget *self)
+gtk_drop_target_load (GtkDropTarget *this)
 {
   GType type;
 
-  g_assert (self->drop);
+  g_assert (this->drop);
 
-  if (G_IS_VALUE (&self->value))
+  if (G_IS_VALUE (&this->value))
     return TRUE;
 
-  if (self->cancellable)
+  if (this->cancellable)
     return FALSE;
 
-  type = gdk_content_formats_match_gtype (self->formats, gdk_drop_get_formats (self->drop));
+  type = gdk_content_formats_match_gtype (this->formats, gdk_drop_get_formats (this->drop));
 
-  if (gtk_drop_target_load_local (self, type))
+  if (gtk_drop_target_load_local (this, type))
     return TRUE;
 
-  self->cancellable = g_cancellable_new ();
+  this->cancellable = g_cancellable_new ();
 
-  gdk_drop_read_value_async (self->drop,
+  gdk_drop_read_value_async (this->drop,
                              type,
                              G_PRIORITY_DEFAULT,
-                             self->cancellable,
+                             this->cancellable,
                              gtk_drop_target_load_done,
-                             g_object_ref (self));
+                             g_object_ref (this));
   return FALSE;
 }
 
 static void
-gtk_drop_target_start_drop (GtkDropTarget *self,
+gtk_drop_target_start_drop (GtkDropTarget *this,
                             GdkDrop       *drop)
 {
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
 
-  gtk_drop_target_end_drop (self);
+  gtk_drop_target_end_drop (this);
 
-  self->drop = g_object_ref (drop);
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DROP]);
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_CURRENT_DROP]);
+  this->drop = g_object_ref (drop);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_DROP]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_CURRENT_DROP]);
 
-  if (self->preload)
-    gtk_drop_target_load (self);
+  if (this->preload)
+    gtk_drop_target_load (this);
 
-  gtk_widget_set_state_flags (gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (self)),
+  gtk_widget_set_state_flags (gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (this)),
                               GTK_STATE_FLAG_DROP_ACTIVE,
                               FALSE);
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 }
 
 static gboolean
-gtk_drop_target_accept (GtkDropTarget *self,
+gtk_drop_target_accept (GtkDropTarget *this,
                         GdkDrop       *drop)
 {
-  if ((gdk_drop_get_actions (drop) & gtk_drop_target_get_actions (self)) == GDK_ACTION_NONE)
+  if ((gdk_drop_get_actions (drop) & gtk_drop_target_get_actions (this)) == GDK_ACTION_NONE)
     return FALSE;
 
-  if (self->formats == NULL)
+  if (this->formats == NULL)
     return TRUE;
 
-  return gdk_content_formats_match_gtype (self->formats, gdk_drop_get_formats (drop)) != G_TYPE_INVALID;
+  return gdk_content_formats_match_gtype (this->formats, gdk_drop_get_formats (drop)) != G_TYPE_INVALID;
 }
 
 static GdkDragAction
-gtk_drop_target_enter (GtkDropTarget  *self,
+gtk_drop_target_enter (GtkDropTarget  *this,
                        double          x,
                        double          y)
 {
-  return make_action_unique (self->actions & gdk_drop_get_actions (self->drop));
+  return make_action_unique (this->actions & gdk_drop_get_actions (this->drop));
 }
 
 static GdkDragAction
-gtk_drop_target_motion (GtkDropTarget  *self,
+gtk_drop_target_motion (GtkDropTarget  *this,
                         double          x,
                         double          y)
 {
-  return make_action_unique (self->actions & gdk_drop_get_actions (self->drop));
+  return make_action_unique (this->actions & gdk_drop_get_actions (this->drop));
 }
 
 static gboolean
-gtk_drop_target_drop (GtkDropTarget  *self,
+gtk_drop_target_drop (GtkDropTarget  *this,
                       const GValue   *value,
                       double          x,
                       double          y)
@@ -416,11 +416,11 @@ gtk_drop_target_handle_event (GtkEventController *controller,
                               double              x,
                               double              y)
 {
-  GtkDropTarget *self = GTK_DROP_TARGET (controller);
+  GtkDropTarget *this = GTK_DROP_TARGET (controller);
 
   /* All drops have been rejected. New drops only arrive via crossing
    * events, so we can: */
-  if (self->drop == NULL)
+  if (this->drop == NULL)
     return FALSE;
 
   switch ((int) gdk_event_get_event_type (event))
@@ -431,10 +431,10 @@ gtk_drop_target_handle_event (GtkEventController *controller,
         GdkDragAction preferred;
 
         /* sanity check */
-        g_return_val_if_fail (self->drop == gdk_dnd_event_get_drop (event), FALSE);
+        g_return_val_if_fail (this->drop == gdk_dnd_event_get_drop (event), FALSE);
 
-        graphene_point_init (&self->coords, x, y);
-        g_signal_emit (self, signals[MOTION], 0, x, y, &preferred);
+        graphene_point_init (&this->coords, x, y);
+        g_signal_emit (this, signals[MOTION], 0, x, y, &preferred);
         if (!gdk_drag_action_is_unique (preferred))
           {
             g_critical ("Handler for GtkDropTarget::motion on %s %p did not return a unique preferred action",
@@ -442,7 +442,7 @@ gtk_drop_target_handle_event (GtkEventController *controller,
             preferred = make_action_unique (preferred);
           }
         if (preferred &&
-            gtk_drop_status (self->drop, self->actions, preferred))
+            gtk_drop_status (this->drop, this->actions, preferred))
           {
             gtk_widget_set_state_flags (widget, GTK_STATE_FLAG_DROP_ACTIVE, FALSE);
           }
@@ -456,12 +456,12 @@ gtk_drop_target_handle_event (GtkEventController *controller,
     case GDK_DROP_START:
       {
         /* sanity check */
-        g_return_val_if_fail (self->drop == gdk_dnd_event_get_drop (event), FALSE);
+        g_return_val_if_fail (this->drop == gdk_dnd_event_get_drop (event), FALSE);
 
-        graphene_point_init (&self->coords, x, y);
-        self->dropping = TRUE;
-        if (gtk_drop_target_load (self))
-          gtk_drop_target_do_drop (self);
+        graphene_point_init (&this->coords, x, y);
+        this->dropping = TRUE;
+        if (gtk_drop_target_load (this))
+          gtk_drop_target_do_drop (this);
 
         return TRUE;
       }
@@ -477,39 +477,39 @@ gtk_drop_target_handle_crossing (GtkEventController    *controller,
                                  double                 x,
                                  double                 y)
 {
-  GtkDropTarget *self = GTK_DROP_TARGET (controller);
+  GtkDropTarget *this = GTK_DROP_TARGET (controller);
   GtkWidget *widget = gtk_event_controller_get_widget (controller);
 
   if (crossing->type != GTK_CROSSING_DROP)
     return;
 
   /* sanity check */
-  g_warn_if_fail (self->drop == NULL || self->drop == crossing->drop);
+  g_warn_if_fail (this->drop == NULL || this->drop == crossing->drop);
 
   if (crossing->direction == GTK_CROSSING_IN)
     {
       gboolean accept = FALSE;
       GdkDragAction preferred;
 
-      if (self->drop != NULL)
+      if (this->drop != NULL)
         return;
 
-      /* if we were a target already but self->drop == NULL, the drop
+      /* if we were a target already but this->drop == NULL, the drop
        * was rejected already */
       if (crossing->old_descendent != NULL ||
           crossing->old_target == widget)
         return;
 
-      g_signal_emit (self, signals[ACCEPT], 0, crossing->drop, &accept);
+      g_signal_emit (this, signals[ACCEPT], 0, crossing->drop, &accept);
       if (!accept)
         return;
 
-      graphene_point_init (&self->coords, x, y);
-      gtk_drop_target_start_drop (self, crossing->drop);
+      graphene_point_init (&this->coords, x, y);
+      gtk_drop_target_start_drop (this, crossing->drop);
 
       /* start_drop ends w/ thaw_notify, where handler may reject, so recheck */
-      if (self->drop != NULL)
-        g_signal_emit (self, signals[ENTER], 0, x, y, &preferred);
+      if (this->drop != NULL)
+        g_signal_emit (this, signals[ENTER], 0, x, y, &preferred);
       else
         preferred = 0;
 
@@ -521,7 +521,7 @@ gtk_drop_target_handle_crossing (GtkEventController    *controller,
         }
 
       if (preferred &&
-          gtk_drop_status (self->drop, self->actions, preferred))
+          gtk_drop_status (this->drop, this->actions, preferred))
         {
           gtk_widget_set_state_flags (widget, GTK_STATE_FLAG_DROP_ACTIVE, FALSE);
         }
@@ -536,9 +536,9 @@ gtk_drop_target_handle_crossing (GtkEventController    *controller,
           crossing->new_target == widget)
         return;
 
-      g_signal_emit (self, signals[LEAVE], 0);
-      if (!self->dropping)
-        gtk_drop_target_end_drop (self);
+      g_signal_emit (this, signals[LEAVE], 0);
+      if (!this->dropping)
+        gtk_drop_target_end_drop (this);
 
       gtk_widget_unset_state_flags (widget, GTK_STATE_FLAG_DROP_ACTIVE);
     }
@@ -547,9 +547,9 @@ gtk_drop_target_handle_crossing (GtkEventController    *controller,
 static void
 gtk_drop_target_finalize (GObject *object)
 {
-  GtkDropTarget *self = GTK_DROP_TARGET (object);
+  GtkDropTarget *this = GTK_DROP_TARGET (object);
 
-  g_clear_pointer (&self->formats, gdk_content_formats_unref);
+  g_clear_pointer (&this->formats, gdk_content_formats_unref);
 
   G_OBJECT_CLASS (gtk_drop_target_parent_class)->finalize (object);
 }
@@ -560,22 +560,22 @@ gtk_drop_target_set_property (GObject      *object,
                               const GValue *value,
                               GParamSpec   *pspec)
 {
-  GtkDropTarget *self = GTK_DROP_TARGET (object);
+  GtkDropTarget *this = GTK_DROP_TARGET (object);
 
   switch (prop_id)
     {
     case PROP_ACTIONS:
-      gtk_drop_target_set_actions (self, g_value_get_flags (value));
+      gtk_drop_target_set_actions (this, g_value_get_flags (value));
       break;
 
     case PROP_FORMATS:
-      self->formats = g_value_dup_boxed (value);
-      if (self->formats == NULL)
-        self->formats = gdk_content_formats_new (NULL, 0);
+      this->formats = g_value_dup_boxed (value);
+      if (this->formats == NULL)
+        this->formats = gdk_content_formats_new (NULL, 0);
       break;
 
     case PROP_PRELOAD:
-      gtk_drop_target_set_preload (self, g_value_get_boolean (value));
+      gtk_drop_target_set_preload (this, g_value_get_boolean (value));
       break;
 
     default:
@@ -589,30 +589,30 @@ gtk_drop_target_get_property (GObject    *object,
                               GValue     *value,
                               GParamSpec *pspec)
 {
-  GtkDropTarget *self = GTK_DROP_TARGET (object);
+  GtkDropTarget *this = GTK_DROP_TARGET (object);
 
   switch (prop_id)
     {
     case PROP_ACTIONS:
-      g_value_set_flags (value, self->actions);
+      g_value_set_flags (value, this->actions);
       break;
 
     case PROP_DROP:
     case PROP_CURRENT_DROP:
-      g_value_set_object (value, self->drop);
+      g_value_set_object (value, this->drop);
       break;
 
     case PROP_FORMATS:
-      g_value_set_boxed (value, self->formats);
+      g_value_set_boxed (value, this->formats);
       break;
 
     case PROP_PRELOAD:
-      g_value_set_boolean (value, self->preload);
+      g_value_set_boolean (value, this->preload);
       break;
 
     case PROP_VALUE:
-      if (G_IS_VALUE (&self->value))
-        g_value_set_boxed (value, &self->value);
+      if (G_IS_VALUE (&this->value))
+        g_value_set_boxed (value, &this->value);
       else
         g_value_set_boxed (value, NULL);
       break;
@@ -734,7 +734,7 @@ gtk_drop_target_class_init (GtkDropTargetClass *class)
 
  /**
    * GtkDropTarget::accept:
-   * @self: the `GtkDropTarget`
+   * @this: the `GtkDropTarget`
    * @drop: the `GdkDrop`
    *
    * Emitted on the drop site when a drop operation is about to begin.
@@ -771,7 +771,7 @@ gtk_drop_target_class_init (GtkDropTargetClass *class)
 
   /**
    * GtkDropTarget::enter:
-   * @self: the `GtkDropTarget`
+   * @this: the `GtkDropTarget`
    * @x: the x coordinate of the current pointer position
    * @y: the y coordinate of the current pointer position
    *
@@ -797,7 +797,7 @@ gtk_drop_target_class_init (GtkDropTargetClass *class)
 
   /**
    * GtkDropTarget::motion:
-   * @self: the `GtkDropTarget`
+   * @this: the `GtkDropTarget`
    * @x: the x coordinate of the current pointer position
    * @y: the y coordinate of the current pointer position
    *
@@ -821,7 +821,7 @@ gtk_drop_target_class_init (GtkDropTargetClass *class)
 
   /**
    * GtkDropTarget::leave:
-   * @self: the `GtkDropTarget`
+   * @this: the `GtkDropTarget`
    *
    * Emitted on the drop site when the pointer leaves the widget.
    *
@@ -839,7 +839,7 @@ gtk_drop_target_class_init (GtkDropTargetClass *class)
 
   /**
    * GtkDropTarget::drop:
-   * @self: the `GtkDropTarget`
+   * @this: the `GtkDropTarget`
    * @value: the `GValue` being dropped
    * @x: the x coordinate of the current pointer position
    * @y: the y coordinate of the current pointer position
@@ -871,7 +871,7 @@ gtk_drop_target_class_init (GtkDropTargetClass *class)
 }
 
 static void
-gtk_drop_target_init (GtkDropTarget *self)
+gtk_drop_target_init (GtkDropTarget *this)
 {
 }
 
@@ -912,7 +912,7 @@ gtk_drop_target_new (GType         type,
 
 /**
  * gtk_drop_target_get_formats:
- * @self: a `GtkDropTarget`
+ * @this: a `GtkDropTarget`
  *
  * Gets the data formats that this drop target accepts.
  *
@@ -921,16 +921,16 @@ gtk_drop_target_new (GType         type,
  * Returns: (nullable) (transfer none): the supported data formats
  */
 GdkContentFormats *
-gtk_drop_target_get_formats (GtkDropTarget *self)
+gtk_drop_target_get_formats (GtkDropTarget *this)
 {
-  g_return_val_if_fail (GTK_IS_DROP_TARGET (self), NULL);
+  g_return_val_if_fail (GTK_IS_DROP_TARGET (this), NULL);
 
-  return self->formats;
+  return this->formats;
 }
 
 /**
  * gtk_drop_target_set_gtypes:
- * @self: a `GtkDropTarget`
+ * @this: a `GtkDropTarget`
  * @types: (nullable) (transfer none) (array length=n_types): all supported `GType`s
  *   that can be dropped on the target
  * @n_types: number of @types
@@ -938,30 +938,30 @@ gtk_drop_target_get_formats (GtkDropTarget *self)
  * Sets the supported `GType`s for this drop target.
  */
 void
-gtk_drop_target_set_gtypes (GtkDropTarget *self,
+gtk_drop_target_set_gtypes (GtkDropTarget *this,
                             GType         *types,
                             gsize          n_types)
 {
   GdkContentFormatsBuilder *builder;
   gsize i;
 
-  g_return_if_fail (GTK_IS_DROP_TARGET (self));
+  g_return_if_fail (GTK_IS_DROP_TARGET (this));
   g_return_if_fail (n_types == 0 || types != NULL);
 
-  gdk_content_formats_unref (self->formats);
+  gdk_content_formats_unref (this->formats);
 
   builder = gdk_content_formats_builder_new ();
   for (i = 0; i < n_types; i++)
     gdk_content_formats_builder_add_gtype (builder, types[i]);
 
-  self->formats = gdk_content_formats_builder_free_to_formats (builder);
+  this->formats = gdk_content_formats_builder_free_to_formats (builder);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_FORMATS]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_FORMATS]);
 }
 
 /**
  * gtk_drop_target_get_gtypes:
- * @self: a `GtkDropTarget`
+ * @this: a `GtkDropTarget`
  * @n_types: (out) (optional): the number of `GType`s contained in the
  *   return value
  *
@@ -974,91 +974,91 @@ gtk_drop_target_set_gtypes (GtkDropTarget *self,
  *   formats
  */
 const GType *
-gtk_drop_target_get_gtypes (GtkDropTarget *self,
+gtk_drop_target_get_gtypes (GtkDropTarget *this,
                             gsize         *n_types)
 {
-  g_return_val_if_fail (GTK_IS_DROP_TARGET (self), NULL);
+  g_return_val_if_fail (GTK_IS_DROP_TARGET (this), NULL);
 
-  return gdk_content_formats_get_gtypes (self->formats, n_types);
+  return gdk_content_formats_get_gtypes (this->formats, n_types);
 }
 
 /**
  * gtk_drop_target_set_actions:
- * @self: a `GtkDropTarget`
+ * @this: a `GtkDropTarget`
  * @actions: the supported actions
  *
  * Sets the actions that this drop target supports.
  */
 void
-gtk_drop_target_set_actions (GtkDropTarget *self,
+gtk_drop_target_set_actions (GtkDropTarget *this,
                              GdkDragAction  actions)
 {
-  g_return_if_fail (GTK_IS_DROP_TARGET (self));
+  g_return_if_fail (GTK_IS_DROP_TARGET (this));
 
-  if (self->actions == actions)
+  if (this->actions == actions)
     return;
 
-  self->actions = actions;
+  this->actions = actions;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIONS]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ACTIONS]);
 }
 
 /**
  * gtk_drop_target_get_actions:
- * @self: a `GtkDropTarget`
+ * @this: a `GtkDropTarget`
  *
  * Gets the actions that this drop target supports.
  *
  * Returns: the actions that this drop target supports
  */
 GdkDragAction
-gtk_drop_target_get_actions (GtkDropTarget *self)
+gtk_drop_target_get_actions (GtkDropTarget *this)
 {
-  g_return_val_if_fail (GTK_IS_DROP_TARGET (self), GDK_ACTION_NONE);
+  g_return_val_if_fail (GTK_IS_DROP_TARGET (this), GDK_ACTION_NONE);
 
-  return self->actions;
+  return this->actions;
 }
 
 /**
  * gtk_drop_target_set_preload:
- * @self: a `GtkDropTarget`
+ * @this: a `GtkDropTarget`
  * @preload: %TRUE to preload drop data
  *
  * Sets whether data should be preloaded on hover.
  */
 void
-gtk_drop_target_set_preload (GtkDropTarget *self,
+gtk_drop_target_set_preload (GtkDropTarget *this,
                              gboolean       preload)
 {
-  g_return_if_fail (GTK_IS_DROP_TARGET (self));
+  g_return_if_fail (GTK_IS_DROP_TARGET (this));
 
-  if (self->preload == preload)
+  if (this->preload == preload)
     return;
 
-  self->preload = preload;
+  this->preload = preload;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_PRELOAD]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_PRELOAD]);
 }
 
 /**
  * gtk_drop_target_get_preload:
- * @self: a `GtkDropTarget`
+ * @this: a `GtkDropTarget`
  *
  * Gets whether data should be preloaded on hover.
  *
  * Returns: %TRUE if drop data should be preloaded
  */
 gboolean
-gtk_drop_target_get_preload (GtkDropTarget *self)
+gtk_drop_target_get_preload (GtkDropTarget *this)
 {
-  g_return_val_if_fail (GTK_IS_DROP_TARGET (self), 0);
+  g_return_val_if_fail (GTK_IS_DROP_TARGET (this), 0);
 
-  return self->preload;
+  return this->preload;
 }
 
 /**
  * gtk_drop_target_get_drop:
- * @self: a `GtkDropTarget`
+ * @this: a `GtkDropTarget`
  *
  * Gets the currently handled drop operation.
  *
@@ -1069,16 +1069,16 @@ gtk_drop_target_get_preload (GtkDropTarget *self)
  * Deprecated: 4.4: Use [method@Gtk.DropTarget.get_current_drop] instead
  */
 GdkDrop *
-gtk_drop_target_get_drop (GtkDropTarget *self)
+gtk_drop_target_get_drop (GtkDropTarget *this)
 {
-  g_return_val_if_fail (GTK_IS_DROP_TARGET (self), NULL);
+  g_return_val_if_fail (GTK_IS_DROP_TARGET (this), NULL);
 
-  return self->drop;
+  return this->drop;
 }
 
 /**
  * gtk_drop_target_get_current_drop:
- * @self: a `GtkDropTarget`
+ * @this: a `GtkDropTarget`
  *
  * Gets the currently handled drop operation.
  *
@@ -1089,35 +1089,35 @@ gtk_drop_target_get_drop (GtkDropTarget *self)
  * Since: 4.4
  */
 GdkDrop *
-gtk_drop_target_get_current_drop (GtkDropTarget *self)
+gtk_drop_target_get_current_drop (GtkDropTarget *this)
 {
-  g_return_val_if_fail (GTK_IS_DROP_TARGET (self), NULL);
+  g_return_val_if_fail (GTK_IS_DROP_TARGET (this), NULL);
 
-  return self->drop;
+  return this->drop;
 }
 
 /**
  * gtk_drop_target_get_value:
- * @self: a `GtkDropTarget`
+ * @this: a `GtkDropTarget`
  *
  * Gets the current drop data, as a `GValue`.
  *
  * Returns: (nullable) (transfer none): The current drop data
  */
 const GValue *
-gtk_drop_target_get_value (GtkDropTarget *self)
+gtk_drop_target_get_value (GtkDropTarget *this)
 {
-  g_return_val_if_fail (GTK_IS_DROP_TARGET (self), NULL);
+  g_return_val_if_fail (GTK_IS_DROP_TARGET (this), NULL);
 
-  if (!G_IS_VALUE (&self->value))
+  if (!G_IS_VALUE (&this->value))
     return NULL;
 
-  return &self->value;
+  return &this->value;
 }
 
 /**
  * gtk_drop_target_reject:
- * @self: a `GtkDropTarget`
+ * @this: a `GtkDropTarget`
  *
  * Rejects the ongoing drop operation.
  *
@@ -1129,13 +1129,13 @@ gtk_drop_target_get_value (GtkDropTarget *self)
  * the data.
  */
 void
-gtk_drop_target_reject (GtkDropTarget *self)
+gtk_drop_target_reject (GtkDropTarget *this)
 {
-  g_return_if_fail (GTK_IS_DROP_TARGET (self));
+  g_return_if_fail (GTK_IS_DROP_TARGET (this));
 
-  if (self->drop == NULL)
+  if (this->drop == NULL)
     return;
 
-  gtk_drop_target_end_drop (self);
+  gtk_drop_target_end_drop (this);
 }
 

@@ -130,7 +130,7 @@ static void gtk_image_get_property         (GObject      *object,
                                             guint         prop_id,
                                             GValue       *value,
                                             GParamSpec   *pspec);
-static void gtk_image_clear_internal       (GtkImage *self,
+static void gtk_image_clear_internal       (GtkImage *this,
                                             gboolean  notify);
 
 enum
@@ -1112,11 +1112,11 @@ gtk_image_get_definition (GtkImage *image)
 }
 
 static void
-gtk_image_clear_internal (GtkImage *self,
+gtk_image_clear_internal (GtkImage *this,
                           gboolean  notify)
 {
-  GtkImageType storage_type = gtk_image_get_storage_type (self);
-  GObject *gobject = G_OBJECT (self);
+  GtkImageType storage_type = gtk_image_get_storage_type (this);
+  GObject *gobject = G_OBJECT (this);
 
   if (notify)
     {
@@ -1125,22 +1125,22 @@ gtk_image_clear_internal (GtkImage *self,
 
       g_object_notify_by_pspec (gobject, image_props[PROP_ICON_SIZE]);
 
-      gtk_image_notify_for_storage_type (self, storage_type);
+      gtk_image_notify_for_storage_type (this, storage_type);
     }
 
-  if (self->filename)
+  if (this->filename)
     {
-      g_free (self->filename);
-      self->filename = NULL;
+      g_free (this->filename);
+      this->filename = NULL;
 
       if (notify)
         g_object_notify_by_pspec (gobject, image_props[PROP_FILE]);
     }
 
-  if (self->resource_path)
+  if (this->resource_path)
     {
-      g_free (self->resource_path);
-      self->resource_path = NULL;
+      g_free (this->resource_path);
+      this->resource_path = NULL;
 
       if (notify)
         g_object_notify_by_pspec (gobject, image_props[PROP_RESOURCE]);
@@ -1148,21 +1148,21 @@ gtk_image_clear_internal (GtkImage *self,
 
   if (storage_type == GTK_IMAGE_PAINTABLE)
     {
-      GdkPaintable *paintable = _gtk_icon_helper_peek_paintable (self->icon_helper);
+      GdkPaintable *paintable = _gtk_icon_helper_peek_paintable (this->icon_helper);
       const guint flags = gdk_paintable_get_flags (paintable);
 
       if ((flags & GDK_PAINTABLE_STATIC_CONTENTS) == 0)
         g_signal_handlers_disconnect_by_func (paintable,
                                               gtk_image_paintable_invalidate_contents,
-                                              self);
+                                              this);
 
       if ((flags & GDK_PAINTABLE_STATIC_SIZE) == 0)
         g_signal_handlers_disconnect_by_func (paintable,
                                               gtk_image_paintable_invalidate_size,
-                                              self);
+                                              this);
     }
 
-  _gtk_icon_helper_clear (self->icon_helper);
+  _gtk_icon_helper_clear (this->icon_helper);
 }
 
 /**

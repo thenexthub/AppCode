@@ -61,31 +61,31 @@ static GParamSpec *properties[N_PROPS] = { NULL, };
 static guint signals[LAST_SIGNAL] = { 0 };
 
 static void
-gtk_list_factory_widget_activate_signal (GtkListFactoryWidget *self)
+gtk_list_factory_widget_activate_signal (GtkListFactoryWidget *this)
 {
-  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (self);
+  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (this);
 
   if (!priv->activatable)
     return;
 
-  gtk_widget_activate_action (GTK_WIDGET (self),
+  gtk_widget_activate_action (GTK_WIDGET (this),
                               "list.activate-item",
                               "u",
-                              gtk_list_item_base_get_position (GTK_LIST_ITEM_BASE (self)));
+                              gtk_list_item_base_get_position (GTK_LIST_ITEM_BASE (this)));
 }
 
 static gpointer
-gtk_list_factory_widget_default_create_object (GtkListFactoryWidget *self)
+gtk_list_factory_widget_default_create_object (GtkListFactoryWidget *this)
 {
   g_assert_not_reached ();
   return NULL;
 }
 
 static void
-gtk_list_factory_widget_default_setup_object (GtkListFactoryWidget *self,
+gtk_list_factory_widget_default_setup_object (GtkListFactoryWidget *this,
                                               gpointer              object)
 {
-  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (self);
+  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (this);
 
   priv->object = object;
 }
@@ -98,27 +98,27 @@ gtk_list_factory_widget_setup_func (gpointer object,
 }
 
 static void
-gtk_list_factory_widget_setup_factory (GtkListFactoryWidget *self)
+gtk_list_factory_widget_setup_factory (GtkListFactoryWidget *this)
 {
-  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (self);
+  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (this);
   gpointer object;
 
-  object = GTK_LIST_FACTORY_WIDGET_GET_CLASS (self)->create_object (self);
+  object = GTK_LIST_FACTORY_WIDGET_GET_CLASS (this)->create_object (this);
 
   gtk_list_item_factory_setup (priv->factory,
                                object,
-                               gtk_list_item_base_get_item (GTK_LIST_ITEM_BASE (self)) != NULL,
+                               gtk_list_item_base_get_item (GTK_LIST_ITEM_BASE (this)) != NULL,
                                gtk_list_factory_widget_setup_func,
-                               self);
+                               this);
 
   g_assert (priv->object == object);
 }
 
 static void
-gtk_list_factory_widget_default_teardown_object (GtkListFactoryWidget *self,
+gtk_list_factory_widget_default_teardown_object (GtkListFactoryWidget *this,
                                                  gpointer              object)
 {
-  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (self);
+  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (this);
 
   priv->object = NULL;
 }
@@ -131,29 +131,29 @@ gtk_list_factory_widget_teardown_func (gpointer object,
 }
 
 static void
-gtk_list_factory_widget_teardown_factory (GtkListFactoryWidget *self)
+gtk_list_factory_widget_teardown_factory (GtkListFactoryWidget *this)
 {
-  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (self);
+  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (this);
   gpointer item = priv->object;
 
   gtk_list_item_factory_teardown (priv->factory,
                                   item,
-                                  gtk_list_item_base_get_item (GTK_LIST_ITEM_BASE (self)) != NULL,
+                                  gtk_list_item_base_get_item (GTK_LIST_ITEM_BASE (this)) != NULL,
                                   gtk_list_factory_widget_teardown_func,
-                                  self);
+                                  this);
 
   g_assert (priv->object == NULL);
   g_object_unref (item);
 }
 
 static void
-gtk_list_factory_widget_default_update_object (GtkListFactoryWidget *self,
+gtk_list_factory_widget_default_update_object (GtkListFactoryWidget *this,
                                                gpointer              object,
                                                guint                 position,
                                                gpointer              item,
                                                gboolean              selected)
 {
-  GTK_LIST_ITEM_BASE_CLASS (gtk_list_factory_widget_parent_class)->update (GTK_LIST_ITEM_BASE (self),
+  GTK_LIST_ITEM_BASE_CLASS (gtk_list_factory_widget_parent_class)->update (GTK_LIST_ITEM_BASE (this),
                                                                            position,
                                                                            item,
                                                                            selected);
@@ -185,13 +185,13 @@ gtk_list_factory_widget_update (GtkListItemBase *base,
                                 gpointer         item,
                                 gboolean         selected)
 {
-  GtkListFactoryWidget *self = GTK_LIST_FACTORY_WIDGET (base);
-  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (self);
-  GtkListFactoryWidgetUpdate update = { self, position, item, selected };
+  GtkListFactoryWidget *this = GTK_LIST_FACTORY_WIDGET (base);
+  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (this);
+  GtkListFactoryWidgetUpdate update = { this, position, item, selected };
 
   if (priv->object)
     {
-      gpointer old_item = gtk_list_item_base_get_item (GTK_LIST_ITEM_BASE (self));
+      gpointer old_item = gtk_list_item_base_get_item (GTK_LIST_ITEM_BASE (this));
 
       gtk_list_item_factory_update (priv->factory,
                                     priv->object,
@@ -212,24 +212,24 @@ gtk_list_factory_widget_set_property (GObject      *object,
                                       const GValue *value,
                                       GParamSpec   *pspec)
 {
-  GtkListFactoryWidget *self = GTK_LIST_FACTORY_WIDGET (object);
+  GtkListFactoryWidget *this = GTK_LIST_FACTORY_WIDGET (object);
 
   switch (property_id)
     {
     case PROP_ACTIVATABLE:
-      gtk_list_factory_widget_set_activatable (self, g_value_get_boolean (value));
+      gtk_list_factory_widget_set_activatable (this, g_value_get_boolean (value));
       break;
 
     case PROP_FACTORY:
-      gtk_list_factory_widget_set_factory (self, g_value_get_object (value));
+      gtk_list_factory_widget_set_factory (this, g_value_get_object (value));
       break;
 
     case PROP_SELECTABLE:
-      gtk_list_factory_widget_set_selectable (self, g_value_get_boolean (value));
+      gtk_list_factory_widget_set_selectable (this, g_value_get_boolean (value));
       break;
 
     case PROP_SINGLE_CLICK_ACTIVATE:
-      gtk_list_factory_widget_set_single_click_activate (self, g_value_get_boolean (value));
+      gtk_list_factory_widget_set_single_click_activate (this, g_value_get_boolean (value));
       break;
 
     default:
@@ -239,24 +239,24 @@ gtk_list_factory_widget_set_property (GObject      *object,
 }
 
 static void
-gtk_list_factory_widget_clear_factory (GtkListFactoryWidget *self)
+gtk_list_factory_widget_clear_factory (GtkListFactoryWidget *this)
 {
-  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (self);
+  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (this);
 
   if (priv->factory == NULL)
     return;
 
   if (priv->object)
-    gtk_list_factory_widget_teardown_factory (self);
+    gtk_list_factory_widget_teardown_factory (this);
 
   g_clear_object (&priv->factory);
 }
 static void
 gtk_list_factory_widget_dispose (GObject *object)
 {
-  GtkListFactoryWidget *self = GTK_LIST_FACTORY_WIDGET (object);
+  GtkListFactoryWidget *this = GTK_LIST_FACTORY_WIDGET (object);
 
-  gtk_list_factory_widget_clear_factory (self);
+  gtk_list_factory_widget_clear_factory (this);
 
   G_OBJECT_CLASS (gtk_list_factory_widget_parent_class)->dispose (object);
 }
@@ -266,8 +266,8 @@ gtk_list_factory_widget_select_action (GtkWidget  *widget,
                                        const char *action_name,
                                        GVariant   *parameter)
 {
-  GtkListFactoryWidget *self = GTK_LIST_FACTORY_WIDGET (widget);
-  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (self);
+  GtkListFactoryWidget *this = GTK_LIST_FACTORY_WIDGET (widget);
+  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (this);
   gboolean modify, extend;
 
   if (!priv->selectable)
@@ -275,10 +275,10 @@ gtk_list_factory_widget_select_action (GtkWidget  *widget,
 
   g_variant_get (parameter, "(bb)", &modify, &extend);
 
-  gtk_widget_activate_action (GTK_WIDGET (self),
+  gtk_widget_activate_action (GTK_WIDGET (this),
                               "list.select-item",
                               "(ubb)",
-                              gtk_list_item_base_get_position (GTK_LIST_ITEM_BASE (self)), modify, extend);
+                              gtk_list_item_base_get_position (GTK_LIST_ITEM_BASE (this)), modify, extend);
 }
 
 static void
@@ -407,10 +407,10 @@ gtk_list_factory_widget_click_gesture_pressed (GtkGestureClick      *gesture,
                                                int                   n_press,
                                                double                x,
                                                double                y,
-                                               GtkListFactoryWidget *self)
+                                               GtkListFactoryWidget *this)
 {
-  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (self);
-  GtkWidget *widget = GTK_WIDGET (self);
+  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (this);
+  GtkWidget *widget = GTK_WIDGET (this);
 
   if (!priv->selectable && !priv->activatable)
     {
@@ -423,10 +423,10 @@ gtk_list_factory_widget_click_gesture_pressed (GtkGestureClick      *gesture,
       if (n_press == 2 && !priv->single_click_activate)
         {
           gtk_gesture_set_state (GTK_GESTURE (gesture), GTK_EVENT_SEQUENCE_CLAIMED);
-          gtk_widget_activate_action (GTK_WIDGET (self),
+          gtk_widget_activate_action (GTK_WIDGET (this),
                                       "list.activate-item",
                                       "u",
-                                      gtk_list_item_base_get_position (GTK_LIST_ITEM_BASE (self)));
+                                      gtk_list_item_base_get_position (GTK_LIST_ITEM_BASE (this)));
         }
     }
 
@@ -439,19 +439,19 @@ gtk_list_factory_widget_click_gesture_released (GtkGestureClick      *gesture,
                                                 int                   n_press,
                                                 double                x,
                                                 double                y,
-                                                GtkListFactoryWidget *self)
+                                                GtkListFactoryWidget *this)
 {
-  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (self);
+  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (this);
 
   if (priv->activatable)
     {
       if (n_press == 1 && priv->single_click_activate)
         {
           gtk_gesture_set_state (GTK_GESTURE (gesture), GTK_EVENT_SEQUENCE_CLAIMED);
-          gtk_widget_activate_action (GTK_WIDGET (self),
+          gtk_widget_activate_action (GTK_WIDGET (this),
                                       "list.activate-item",
                                       "u",
-                                      gtk_list_item_base_get_position (GTK_LIST_ITEM_BASE (self)));
+                                      gtk_list_item_base_get_position (GTK_LIST_ITEM_BASE (this)));
           return;
         }
     }
@@ -471,10 +471,10 @@ gtk_list_factory_widget_click_gesture_released (GtkGestureClick      *gesture,
       modify = modify | ((state & GDK_META_MASK) != 0);
 #endif
 
-      gtk_widget_activate_action (GTK_WIDGET (self),
+      gtk_widget_activate_action (GTK_WIDGET (this),
                                   "list.select-item",
                                   "(ubb)",
-                                  gtk_list_item_base_get_position (GTK_LIST_ITEM_BASE (self)), modify, extend);
+                                  gtk_list_item_base_get_position (GTK_LIST_ITEM_BASE (this)), modify, extend);
     }
 }
 
@@ -482,29 +482,29 @@ static void
 gtk_list_factory_widget_hover_cb (GtkEventControllerMotion *controller,
                                   double                    x,
                                   double                    y,
-                                  GtkListFactoryWidget     *self)
+                                  GtkListFactoryWidget     *this)
 {
-  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (self);
+  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (this);
 
   if (!priv->single_click_activate)
     return;
 
   if (priv->selectable)
     {
-      gtk_widget_activate_action (GTK_WIDGET (self),
+      gtk_widget_activate_action (GTK_WIDGET (this),
                                   "list.select-item",
                                   "(ubb)",
-                                  gtk_list_item_base_get_position (GTK_LIST_ITEM_BASE (self)), FALSE, FALSE);
+                                  gtk_list_item_base_get_position (GTK_LIST_ITEM_BASE (this)), FALSE, FALSE);
     }
 }
 
 static void
-gtk_list_factory_widget_init (GtkListFactoryWidget *self)
+gtk_list_factory_widget_init (GtkListFactoryWidget *this)
 {
   GtkEventController *controller;
   GtkGesture *gesture;
 
-  gtk_widget_set_focusable (GTK_WIDGET (self), TRUE);
+  gtk_widget_set_focusable (GTK_WIDGET (this), TRUE);
 
   gesture = gtk_gesture_click_new ();
   gtk_event_controller_set_propagation_phase (GTK_EVENT_CONTROLLER (gesture),
@@ -514,72 +514,72 @@ gtk_list_factory_widget_init (GtkListFactoryWidget *self)
   gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (gesture),
                                  GDK_BUTTON_PRIMARY);
   g_signal_connect (gesture, "pressed",
-                    G_CALLBACK (gtk_list_factory_widget_click_gesture_pressed), self);
+                    G_CALLBACK (gtk_list_factory_widget_click_gesture_pressed), this);
   g_signal_connect (gesture, "released",
-                    G_CALLBACK (gtk_list_factory_widget_click_gesture_released), self);
-  gtk_widget_add_controller (GTK_WIDGET (self), GTK_EVENT_CONTROLLER (gesture));
+                    G_CALLBACK (gtk_list_factory_widget_click_gesture_released), this);
+  gtk_widget_add_controller (GTK_WIDGET (this), GTK_EVENT_CONTROLLER (gesture));
 
   controller = gtk_event_controller_motion_new ();
-  g_signal_connect (controller, "enter", G_CALLBACK (gtk_list_factory_widget_hover_cb), self);
-  gtk_widget_add_controller (GTK_WIDGET (self), controller);
+  g_signal_connect (controller, "enter", G_CALLBACK (gtk_list_factory_widget_hover_cb), this);
+  gtk_widget_add_controller (GTK_WIDGET (this), controller);
 }
 
 gpointer
-gtk_list_factory_widget_get_object (GtkListFactoryWidget *self)
+gtk_list_factory_widget_get_object (GtkListFactoryWidget *this)
 {
-  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (self);
+  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (this);
 
   return priv->object;
 }
 
 void
-gtk_list_factory_widget_set_factory (GtkListFactoryWidget *self,
+gtk_list_factory_widget_set_factory (GtkListFactoryWidget *this,
                                      GtkListItemFactory   *factory)
 {
-  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (self);
+  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (this);
 
   if (priv->factory == factory)
     return;
 
-  gtk_list_factory_widget_clear_factory (self);
+  gtk_list_factory_widget_clear_factory (this);
 
   if (factory)
     {
       priv->factory = g_object_ref (factory);
 
-      gtk_list_factory_widget_setup_factory (self);
+      gtk_list_factory_widget_setup_factory (this);
     }
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_FACTORY]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_FACTORY]);
 }
 
 void
-gtk_list_factory_widget_set_single_click_activate (GtkListFactoryWidget *self,
+gtk_list_factory_widget_set_single_click_activate (GtkListFactoryWidget *this,
                                                    gboolean              single_click_activate)
 {
-  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (self);
+  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (this);
 
   if (priv->single_click_activate == single_click_activate)
     return;
 
   priv->single_click_activate = single_click_activate;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SINGLE_CLICK_ACTIVATE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SINGLE_CLICK_ACTIVATE]);
 }
 
 gboolean
-gtk_list_factory_widget_get_single_click_activate (GtkListFactoryWidget *self)
+gtk_list_factory_widget_get_single_click_activate (GtkListFactoryWidget *this)
 {
-  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (self);
+  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (this);
 
   return priv->single_click_activate;
 }
 
 void
-gtk_list_factory_widget_set_activatable (GtkListFactoryWidget *self,
+gtk_list_factory_widget_set_activatable (GtkListFactoryWidget *this,
                                          gboolean              activatable)
 {
-  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (self);
+  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (this);
 
   if (priv->activatable == activatable)
     return;
@@ -587,39 +587,39 @@ gtk_list_factory_widget_set_activatable (GtkListFactoryWidget *self,
   priv->activatable = activatable;
 
   if (activatable)
-    gtk_widget_add_css_class (GTK_WIDGET (self), "activatable");
+    gtk_widget_add_css_class (GTK_WIDGET (this), "activatable");
   else
-    gtk_widget_remove_css_class (GTK_WIDGET (self), "activatable");
+    gtk_widget_remove_css_class (GTK_WIDGET (this), "activatable");
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIVATABLE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ACTIVATABLE]);
 }
 
 gboolean
-gtk_list_factory_widget_get_activatable (GtkListFactoryWidget *self)
+gtk_list_factory_widget_get_activatable (GtkListFactoryWidget *this)
 {
-  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (self);
+  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (this);
 
   return priv->activatable;
 }
 
 void
-gtk_list_factory_widget_set_selectable (GtkListFactoryWidget *self,
+gtk_list_factory_widget_set_selectable (GtkListFactoryWidget *this,
                                         gboolean              selectable)
 {
-  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (self);
+  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (this);
 
   if (priv->selectable == selectable)
     return;
 
   priv->selectable = selectable;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SELECTABLE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SELECTABLE]);
 }
 
 gboolean
-gtk_list_factory_widget_get_selectable (GtkListFactoryWidget *self)
+gtk_list_factory_widget_get_selectable (GtkListFactoryWidget *this)
 {
-  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (self);
+  GtkListFactoryWidgetPrivate *priv = gtk_list_factory_widget_get_instance_private (this);
 
   return priv->selectable;
 }

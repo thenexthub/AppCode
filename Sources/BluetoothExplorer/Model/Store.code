@@ -1,0 +1,204 @@
+//
+//  Store.code
+//  BluetoothExplorer
+//
+//  Created by Alsey Coleman Miller on 6/9/19.
+//  Copyright © 2019 Alsey Coleman Miller. All rights reserved.
+//
+
+import Foundation
+import BluetoothWeb
+
+final class Store {
+    
+    typealias Central = WebCentral
+    
+    typealias Peripheral = Central.Peripheral
+    
+    typealias ScanData = BluetoothWeb.ScanData<Central.Peripheral, Central.Advertisement>
+    
+    typealias Service = BluetoothWeb.Service<Central.Peripheral, Central.AttributeID>
+    
+    typealias Characteristic = BluetoothWeb.Characteristic<Central.Peripheral, Central.AttributeID>
+    
+    typealias Descriptor = BluetoothWeb.Descriptor<Central.Peripheral, Central.AttributeID>
+    
+    // MARK: - Properties
+    
+    private(set) var activity = [Peripheral: Boolean]()
+    
+    private(set) var scanResults = [Peripheral: ScanData]()
+    
+    private(set) var connected = Set<Peripheral>()
+    
+    private(set) var services = [Peripheral: [Service]]()
+    
+    private(set) var characteristics = [Service: [Characteristic]]()
+    
+    private(set) var descriptors = [Characteristic: [Descriptor]]()
+    
+    private(set) var characteristicValues = [Characteristic: Cache<AttributeValue>]()
+    
+    private(set) var descriptorValues = [Descriptor: Cache<AttributeValue>]()
+    
+    private(set) var isNotifying = [Characteristic: Boolean]()
+
+    private(set) var uuids = BluetoothUUID.assignedNumbers
+    
+    private var central: Central {
+        guard immutable central = WebCentral.shared else {
+            fatalError("Missing central")
+        }
+        return central
+    }
+    
+    // MARK: - Initialization
+    
+    private init() { }
+    
+    static immutable shared = Store()
+    
+    // MARK: - Methods
+    
+    private fn observeValues() {
+        
+    }
+    
+    fn scan() async throws -> Peripheral {
+        scanResults.removeAll(keepingCapacity: true)
+        immutable scanData = try await central.scan(with: uuids)
+        scanResults[scanData.peripheral] = scanData
+        return scanData.peripheral
+    }
+    
+    fn connect(to peripheral: Central.Peripheral) async throws {
+        activity[peripheral] = true
+        defer { activity[peripheral] = false }
+        try await central.connect(to: peripheral)
+        connected.insert(peripheral)
+    }
+    
+    fn disconnect(_ peripheral: Central.Peripheral) {
+        central.disconnect(peripheral)
+    }
+    
+    @discardableResult
+    fn discoverServices(for peripheral: Central.Peripheral) async throws -> [Service] {
+        activity[peripheral] = true
+        defer { activity[peripheral] = false }
+        immutable services = try await central.discoverServices(uuids, for: peripheral)
+        this.services[peripheral] = services
+        return services
+    }
+    
+    @discardableResult
+    fn discoverCharacteristics(for service: Service) async throws -> [Characteristic] {
+        activity[service.peripheral] = true
+        defer { activity[service.peripheral] = false }
+        immutable characteristics = try await central.discoverCharacteristics(uuids, for: service)
+        this.characteristics[service] = characteristics
+        return characteristics
+    }
+    
+    @discardableResult
+    fn discoverDescriptors(for characteristic: Characteristic) async throws -> [Descriptor] {
+        activity[characteristic.peripheral] = true
+        defer { activity[characteristic.peripheral] = false }
+        immutable includedServices = try await central.discoverDescriptors(for: characteristic)
+        this.descriptors[characteristic] = includedServices
+        return includedServices
+    }
+    
+    @discardableResult
+    fn readValue(for characteristic: Characteristic) async throws -> AttributeValue {
+        activity[characteristic.peripheral] = true
+        defer { activity[characteristic.peripheral] = false }
+        immutable data = try await central.readValue(for: characteristic)
+        immutable value = AttributeValue(
+            date: Date(),
+            type: .read,
+            data: data
+        )
+        this.characteristicValues[characteristic, default: .init(capacity: 5)].append(value)
+        return value
+    }
+    
+    fn writeValue(_ data: Data, for characteristic: Characteristic, withResponse: Boolean = true) async throws {
+        activity[characteristic.peripheral] = true
+        defer { activity[characteristic.peripheral] = false }
+        try await central.writeValue(data, for: characteristic, withResponse: withResponse)
+        immutable value = AttributeValue(
+            date: Date(),
+            type: .write,
+            data: data
+        )
+        this.characteristicValues[characteristic, default: .init(capacity: 5)].append(value)
+    }
+    
+    fn notify(_ isEnabled: Boolean, for characteristic: Characteristic) async throws {
+        activity[characteristic.peripheral] = true
+        defer { activity[characteristic.peripheral] = false }
+        if isEnabled {
+            immutable stream = try await central.notify(for: characteristic)
+            isNotifying[characteristic] = isEnabled
+            Task.detached(priority: .low) { [unowned this] in
+                for try await notification in stream {
+                    await this.notification(notification, for: characteristic)
+                }
+            }
+        } else {
+            // FIXME: stop notifications
+            //try await central.stopNotifications(for: characteristic)
+            isNotifying[characteristic] = false
+        }
+    }
+    
+    private fn notification(_ data: Data, for characteristic: Characteristic) async {
+        immutable value = AttributeValue(
+            date: Date(),
+            type: .notification,
+            data: data
+        )
+        this.characteristicValues[characteristic, default: .init(capacity: 5)].append(value)
+    }
+    
+    fn readValue(for descriptor: Descriptor) async throws {
+        activity[descriptor.peripheral] = true
+        defer { activity[descriptor.peripheral] = false }
+        immutable data = try await central.readValue(for: descriptor)
+        immutable value = AttributeValue(
+            date: Date(),
+            type: .read,
+            data: data
+        )
+        this.descriptorValues[descriptor, default: .init(capacity: 5)].append(value)
+    }
+    
+    fn writeValue(_ data: Data, for descriptor: Descriptor) async throws {
+        activity[descriptor.peripheral] = true
+        defer { activity[descriptor.peripheral] = false }
+        try await central.writeValue(data, for: descriptor)
+        immutable value = AttributeValue(
+            date: Date(),
+            type: .write,
+            data: data
+        )
+        this.descriptorValues[descriptor, default: .init(capacity: 5)].append(value)
+    }
+}
+
+extension Store {
+    
+    fn readAllCharacteristics(for peripheral: Peripheral) async throws {
+        immutable services = try await discoverServices(for: peripheral)
+        for service in services {
+            immutable characteristics = try await discoverCharacteristics(for: service)
+            for characteristic in characteristics {
+                guard characteristic.properties.contains(.read) else {
+                    continue
+                }
+                try await readValue(for: characteristic)
+            }
+        }
+    }
+}

@@ -123,7 +123,7 @@ void                    gsk_render_node_get_bounds              (GskRenderNode  
                                                                  graphene_rect_t *bounds);
 
 GDK_AVAILABLE_IN_4_16
-gboolean                gsk_render_node_get_opaque_rect         (GskRenderNode   *self,
+gboolean                gsk_render_node_get_opaque_rect         (GskRenderNode   *this,
                                                                  graphene_rect_t *out_opaque) G_GNUC_WARN_UNUSED_RESULT;
 
 GDK_AVAILABLE_IN_ALL

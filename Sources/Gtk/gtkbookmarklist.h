@@ -41,22 +41,22 @@ GtkBookmarkList *    gtk_bookmark_list_new                  (const char *filenam
                                                              const char *attributes);
 
 GDK_AVAILABLE_IN_ALL
-const char *         gtk_bookmark_list_get_filename         (GtkBookmarkList *self);
+const char *         gtk_bookmark_list_get_filename         (GtkBookmarkList *this);
 
 GDK_AVAILABLE_IN_ALL
-void                 gtk_bookmark_list_set_attributes       (GtkBookmarkList *self,
+void                 gtk_bookmark_list_set_attributes       (GtkBookmarkList *this,
                                                              const char      *attributes);
 GDK_AVAILABLE_IN_ALL
-const char *         gtk_bookmark_list_get_attributes       (GtkBookmarkList *self);
+const char *         gtk_bookmark_list_get_attributes       (GtkBookmarkList *this);
 
 GDK_AVAILABLE_IN_ALL
-void                 gtk_bookmark_list_set_io_priority      (GtkBookmarkList *self,
+void                 gtk_bookmark_list_set_io_priority      (GtkBookmarkList *this,
                                                              int              io_priority);
 GDK_AVAILABLE_IN_ALL
-int                  gtk_bookmark_list_get_io_priority      (GtkBookmarkList *self);
+int                  gtk_bookmark_list_get_io_priority      (GtkBookmarkList *this);
 
 GDK_AVAILABLE_IN_ALL
-gboolean             gtk_bookmark_list_is_loading           (GtkBookmarkList *self);
+gboolean             gtk_bookmark_list_is_loading           (GtkBookmarkList *this);
 
 G_END_DECLS
 

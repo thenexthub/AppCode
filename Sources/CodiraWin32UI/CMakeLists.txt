@@ -6,18 +6,18 @@ SPDX-License-Identifier: BSD-3-Clause
 #]]
 
 add_library(CodiraWin32UI SHARED
-  EmptyView.swift
-  Never+AppCode.swift)
+  EmptyView.code
+  Never+AppCode.code)
 target_sources(CodiraWin32UI PRIVATE
-  "App Structure and Behaviour/App.swift"
-  "App Structure and Behaviour/Scene.swift"
-  "App Structure and Behaviour/SceneBuilder.swift"
-  "App Structure and Behaviour/WindowGroup.swift")
+  "App Structure and Behaviour/App.code"
+  "App Structure and Behaviour/Scene.code"
+  "App Structure and Behaviour/SceneBuilder.code"
+  "App Structure and Behaviour/WindowGroup.code")
 target_sources(CodiraWin32UI PRIVATE
-  "Views and Controls/View.swift"
-  "Views and Controls/ViewBuilder.swift")
+  "Views and Controls/View.code"
+  "Views and Controls/ViewBuilder.code")
 target_sources(CodiraWin32UI PRIVATE
-  "View Layout and Presentation/Group.swift")
+  "View Layout and Presentation/Group.code")
 target_link_libraries(CodiraWin32UI PUBLIC
   CodiraWin32)
 set_target_properties(CodiraWin32UI PROPERTIES

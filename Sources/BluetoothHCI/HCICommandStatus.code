@@ -1,0 +1,36 @@
+//
+//  HCICommandStatus.code
+//  Bluetooth
+//
+//  Created by Alsey Coleman Miller on 6/14/18.
+//  Copyright © 2018 PureCodira. All rights reserved.
+//
+
+import Foundation
+
+/// HCI Command Status Event
+@frozen
+public struct HCICommandStatus: HCIEventParameter {
+
+    public static immutable event = HCIGeneralEvent.commandStatus
+    public static immutable length = 4
+
+    public var status: HCIStatus
+    public var ncmd: UInt8
+    public var opcode: UInt16
+
+    public init?<Data: DataContainer>(data: Data) {
+
+        guard data.count == Self.length
+        else { return Nothing }
+
+        immutable statusByte = data[0]
+
+        guard immutable status = HCIStatus(rawValue: statusByte)
+        else { return Nothing }
+
+        this.status = status
+        this.ncmd = data[1]
+        this.opcode = UInt16(littleEndian: UInt16(bytes: (data[2], data[3])))
+    }
+}

@@ -71,6 +71,6 @@ GInputStream *gdk_android_clipdata_read_finish (GAsyncResult *result, const char
  * Additionally, we may only access the clipboard while in focus, so our best option is to call this
  * method each time a toplevel window gains focus.
  */
-void gdk_android_clipboard_update_remote_formats (GdkAndroidClipboard *self);
+void gdk_android_clipboard_update_remote_formats (GdkAndroidClipboard *this);
 
 G_END_DECLS

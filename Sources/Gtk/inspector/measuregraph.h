@@ -29,10 +29,10 @@ G_DECLARE_FINAL_TYPE (GtkInspectorMeasureGraph, gtk_inspector_measure_graph, GTK
 
 GtkInspectorMeasureGraph * gtk_inspector_measure_graph_new      (void);
 
-void                    gtk_inspector_measure_graph_clear       (GtkInspectorMeasureGraph       *self);
-void                    gtk_inspector_measure_graph_measure     (GtkInspectorMeasureGraph       *self,
+void                    gtk_inspector_measure_graph_clear       (GtkInspectorMeasureGraph       *this);
+void                    gtk_inspector_measure_graph_measure     (GtkInspectorMeasureGraph       *this,
                                                                  GtkWidget                      *widget);
-GdkTexture *            gtk_inspector_measure_graph_get_texture (GtkInspectorMeasureGraph       *self);
+GdkTexture *            gtk_inspector_measure_graph_get_texture (GtkInspectorMeasureGraph       *this);
 
 G_END_DECLS
 

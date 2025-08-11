@@ -1188,7 +1188,7 @@ struct _ProcessData
 G_DEFINE_TYPE (ProcessData, process_data, G_TYPE_OBJECT);
 
 static void
-process_data_init (ProcessData *self)
+process_data_init (ProcessData *this)
 {
 }
 
@@ -1216,14 +1216,14 @@ process_data_new (const char *name,
                   GPid        pid,
                   GdkTexture *texture)
 {
-  ProcessData *self;
+  ProcessData *this;
 
-  self = g_object_new (process_data_get_type (), NULL);
-  self->name = g_strdup (name);
-  self->pid = pid;
-  g_set_object (&self->texture, texture);
+  this = g_object_new (process_data_get_type (), NULL);
+  this->name = g_strdup (name);
+  this->pid = pid;
+  g_set_object (&this->texture, texture);
 
-  return self;
+  return this;
 }
 
 static void

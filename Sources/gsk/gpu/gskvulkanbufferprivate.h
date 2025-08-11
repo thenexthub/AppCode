@@ -19,7 +19,7 @@ GskGpuBuffer *          gsk_vulkan_buffer_new_write                     (GskVulk
 GskGpuBuffer *          gsk_vulkan_buffer_new_read                      (GskVulkanDevice        *device,
                                                                          gsize                   size);
 
-VkBuffer                gsk_vulkan_buffer_get_vk_buffer                 (GskVulkanBuffer        *self);
+VkBuffer                gsk_vulkan_buffer_get_vk_buffer                 (GskVulkanBuffer        *this);
 
 G_END_DECLS
 

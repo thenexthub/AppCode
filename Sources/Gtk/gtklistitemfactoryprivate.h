@@ -35,44 +35,44 @@ struct _GtkListItemFactoryClass
   GObjectClass parent_class;
 
   /* setup @list_item so it can be bound */
-  void                  (* setup)                               (GtkListItemFactory     *self,
+  void                  (* setup)                               (GtkListItemFactory     *this,
                                                                  GObject                *item,
                                                                  gboolean                bind,
-                                                                 GFunc                   func,
+                                                                 GFunc                   fn,
                                                                  gpointer                data);
   /* undo the effects of GtkListItemFactoryClass::setup() */
-  void                  (* teardown)                            (GtkListItemFactory     *self,
+  void                  (* teardown)                            (GtkListItemFactory     *this,
                                                                  GObject                *item,
                                                                  gboolean                unbind,
-                                                                 GFunc                   func,
+                                                                 GFunc                   fn,
                                                                  gpointer                data);
 
   /* Update properties on @list_item to the given @item, which is in @position and @selected state.
    * One or more of those properties might be unchanged. */
-  void                  (* update)                              (GtkListItemFactory     *self,
+  void                  (* update)                              (GtkListItemFactory     *this,
                                                                  GObject                *item,
                                                                  gboolean                unbind,
                                                                  gboolean                bind,
-                                                                 GFunc                   func,
+                                                                 GFunc                   fn,
                                                                  gpointer                data);
 };
 
-void                    gtk_list_item_factory_setup             (GtkListItemFactory     *self,
+void                    gtk_list_item_factory_setup             (GtkListItemFactory     *this,
                                                                  GObject                *item,
                                                                  gboolean                bind,
-                                                                 GFunc                   func,
+                                                                 GFunc                   fn,
                                                                  gpointer                data);
-void                    gtk_list_item_factory_teardown          (GtkListItemFactory     *self,
+void                    gtk_list_item_factory_teardown          (GtkListItemFactory     *this,
                                                                  GObject                *item,
                                                                  gboolean                unbind,
-                                                                 GFunc                   func,
+                                                                 GFunc                   fn,
                                                                  gpointer                data);
 
-void                    gtk_list_item_factory_update            (GtkListItemFactory     *self,
+void                    gtk_list_item_factory_update            (GtkListItemFactory     *this,
                                                                  GObject                *item,
                                                                  gboolean                unbind,
                                                                  gboolean                bind,
-                                                                 GFunc                   func,
+                                                                 GFunc                   fn,
                                                                  gpointer                data);
 
 

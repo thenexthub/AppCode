@@ -48,49 +48,49 @@ GDK_AVAILABLE_IN_4_20
 GdkD3D12TextureBuilder * gdk_d3d12_texture_builder_new                  (void);
 
 GDK_AVAILABLE_IN_4_20
-ID3D12Resource *         gdk_d3d12_texture_builder_get_resource         (GdkD3D12TextureBuilder *self) G_GNUC_PURE;
+ID3D12Resource *         gdk_d3d12_texture_builder_get_resource         (GdkD3D12TextureBuilder *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_20
-void                     gdk_d3d12_texture_builder_set_resource         (GdkD3D12TextureBuilder *self,
+void                     gdk_d3d12_texture_builder_set_resource         (GdkD3D12TextureBuilder *this,
                                                                          ID3D12Resource         *resource);
 
 GDK_AVAILABLE_IN_4_20
-ID3D12Fence *            gdk_d3d12_texture_builder_get_fence            (GdkD3D12TextureBuilder *self) G_GNUC_PURE;
+ID3D12Fence *            gdk_d3d12_texture_builder_get_fence            (GdkD3D12TextureBuilder *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_20
-void                     gdk_d3d12_texture_builder_set_fence            (GdkD3D12TextureBuilder *self,
+void                     gdk_d3d12_texture_builder_set_fence            (GdkD3D12TextureBuilder *this,
                                                                          ID3D12Fence            *fence);
 
 GDK_AVAILABLE_IN_4_20
-guint64                  gdk_d3d12_texture_builder_get_fence_wait       (GdkD3D12TextureBuilder *self) G_GNUC_PURE;
+guint64                  gdk_d3d12_texture_builder_get_fence_wait       (GdkD3D12TextureBuilder *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_20
-void                     gdk_d3d12_texture_builder_set_fence_wait       (GdkD3D12TextureBuilder *self,
+void                     gdk_d3d12_texture_builder_set_fence_wait       (GdkD3D12TextureBuilder *this,
                                                                          guint64                 fence_wait);
 
 GDK_AVAILABLE_IN_4_20
-gboolean                 gdk_d3d12_texture_builder_get_premultiplied    (GdkD3D12TextureBuilder *self) G_GNUC_PURE;
+gboolean                 gdk_d3d12_texture_builder_get_premultiplied    (GdkD3D12TextureBuilder *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_20
-void                     gdk_d3d12_texture_builder_set_premultiplied    (GdkD3D12TextureBuilder *self,
+void                     gdk_d3d12_texture_builder_set_premultiplied    (GdkD3D12TextureBuilder *this,
                                                                          gboolean                premultiplied);
 
 GDK_AVAILABLE_IN_4_20
-GdkColorState *          gdk_d3d12_texture_builder_get_color_state      (GdkD3D12TextureBuilder *self);
+GdkColorState *          gdk_d3d12_texture_builder_get_color_state      (GdkD3D12TextureBuilder *this);
 GDK_AVAILABLE_IN_4_20
-void                     gdk_d3d12_texture_builder_set_color_state      (GdkD3D12TextureBuilder *self,
+void                     gdk_d3d12_texture_builder_set_color_state      (GdkD3D12TextureBuilder *this,
                                                                          GdkColorState          *color_state);
 
 GDK_AVAILABLE_IN_4_20
-GdkTexture *             gdk_d3d12_texture_builder_get_update_texture   (GdkD3D12TextureBuilder *self) G_GNUC_PURE;
+GdkTexture *             gdk_d3d12_texture_builder_get_update_texture   (GdkD3D12TextureBuilder *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_20
-void                     gdk_d3d12_texture_builder_set_update_texture   (GdkD3D12TextureBuilder *self,
+void                     gdk_d3d12_texture_builder_set_update_texture   (GdkD3D12TextureBuilder *this,
                                                                          GdkTexture             *texture);
 
 GDK_AVAILABLE_IN_4_20
-cairo_region_t *         gdk_d3d12_texture_builder_get_update_region    (GdkD3D12TextureBuilder *self) G_GNUC_PURE;
+cairo_region_t *         gdk_d3d12_texture_builder_get_update_region    (GdkD3D12TextureBuilder *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_20
-void                     gdk_d3d12_texture_builder_set_update_region    (GdkD3D12TextureBuilder *self,
+void                     gdk_d3d12_texture_builder_set_update_region    (GdkD3D12TextureBuilder *this,
                                                                          cairo_region_t         *region);
 
 GDK_AVAILABLE_IN_4_20
-GdkTexture *             gdk_d3d12_texture_builder_build                (GdkD3D12TextureBuilder *self,
+GdkTexture *             gdk_d3d12_texture_builder_build                (GdkD3D12TextureBuilder *this,
                                                                          GDestroyNotify          destroy,
                                                                          gpointer                data,
                                                                          GError                **error);

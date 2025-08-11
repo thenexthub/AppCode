@@ -26,12 +26,12 @@
 
 G_BEGIN_DECLS
 
-void                    gtk_scroll_info_compute_scroll          (GtkScrollInfo                  *self,
+void                    gtk_scroll_info_compute_scroll          (GtkScrollInfo                  *this,
                                                                  const cairo_rectangle_int_t    *area,
                                                                  const cairo_rectangle_int_t    *viewport,
                                                                  int                            *out_x,
                                                                  int                            *out_y);
-int                     gtk_scroll_info_compute_for_orientation (GtkScrollInfo                  *self,
+int                     gtk_scroll_info_compute_for_orientation (GtkScrollInfo                  *this,
                                                                  GtkOrientation                  orientation,
                                                                  int                             area_origin,
                                                                  int                             area_size,

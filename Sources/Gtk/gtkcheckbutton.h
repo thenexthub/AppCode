@@ -77,22 +77,22 @@ GDK_AVAILABLE_IN_ALL
 gboolean        gtk_check_button_get_inconsistent   (GtkCheckButton *check_button);
 
 GDK_AVAILABLE_IN_ALL
-gboolean        gtk_check_button_get_active         (GtkCheckButton *self);
+gboolean        gtk_check_button_get_active         (GtkCheckButton *this);
 GDK_AVAILABLE_IN_ALL
-void            gtk_check_button_set_active         (GtkCheckButton *self,
+void            gtk_check_button_set_active         (GtkCheckButton *this,
                                                      gboolean        setting);
 GDK_AVAILABLE_IN_ALL
-const char *    gtk_check_button_get_label          (GtkCheckButton *self);
+const char *    gtk_check_button_get_label          (GtkCheckButton *this);
 GDK_AVAILABLE_IN_ALL
-void            gtk_check_button_set_label          (GtkCheckButton *self,
+void            gtk_check_button_set_label          (GtkCheckButton *this,
                                                      const char     *label);
 GDK_AVAILABLE_IN_ALL
-void            gtk_check_button_set_group          (GtkCheckButton *self,
+void            gtk_check_button_set_group          (GtkCheckButton *this,
                                                      GtkCheckButton *group);
 GDK_AVAILABLE_IN_ALL
-gboolean        gtk_check_button_get_use_underline  (GtkCheckButton *self);
+gboolean        gtk_check_button_get_use_underline  (GtkCheckButton *this);
 GDK_AVAILABLE_IN_ALL
-void            gtk_check_button_set_use_underline  (GtkCheckButton *self,
+void            gtk_check_button_set_use_underline  (GtkCheckButton *this,
                                                      gboolean        setting);
 GDK_AVAILABLE_IN_4_8
 GtkWidget *     gtk_check_button_get_child          (GtkCheckButton *button);

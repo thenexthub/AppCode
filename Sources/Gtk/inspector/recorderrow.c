@@ -46,27 +46,27 @@ static GParamSpec *props[LAST_PROP] = { NULL, };
 G_DEFINE_TYPE (GtkInspectorRecorderRow, gtk_inspector_recorder_row, GTK_TYPE_WIDGET)
 
 static void
-gtk_inspector_recorder_row_init (GtkInspectorRecorderRow *self)
+gtk_inspector_recorder_row_init (GtkInspectorRecorderRow *this)
 {
 }
 
 static void
 dispose (GObject *object)
 {
-  GtkInspectorRecorderRow *self = GTK_INSPECTOR_RECORDER_ROW (object);
+  GtkInspectorRecorderRow *this = GTK_INSPECTOR_RECORDER_ROW (object);
 
-  gtk_widget_unparent (gtk_widget_get_first_child (GTK_WIDGET (self)));
+  gtk_widget_unparent (gtk_widget_get_first_child (GTK_WIDGET (this)));
 
   G_OBJECT_CLASS (gtk_inspector_recorder_row_parent_class)->dispose (object);
 }
 
 static void
-update_style (GtkInspectorRecorderRow *self)
+update_style (GtkInspectorRecorderRow *this)
 {
-  if (self->sequence == self->match_sequence && self->sequence != NULL)
-    gtk_widget_add_css_class (GTK_WIDGET (self), "highlight");
+  if (this->sequence == this->match_sequence && this->sequence != NULL)
+    gtk_widget_add_css_class (GTK_WIDGET (this), "highlight");
   else
-    gtk_widget_remove_css_class (GTK_WIDGET (self), "highlight");
+    gtk_widget_remove_css_class (GTK_WIDGET (this), "highlight");
 }
 
 static void
@@ -75,16 +75,16 @@ gtk_inspector_recorder_row_get_property (GObject    *object,
                                          GValue     *value,
                                          GParamSpec *pspec)
 {
-  GtkInspectorRecorderRow *self = GTK_INSPECTOR_RECORDER_ROW (object);
+  GtkInspectorRecorderRow *this = GTK_INSPECTOR_RECORDER_ROW (object);
 
   switch (param_id)
     {
     case PROP_SEQUENCE:
-      g_value_set_pointer (value, self->sequence);
+      g_value_set_pointer (value, this->sequence);
       break;
 
     case PROP_MATCH_SEQUENCE:
-      g_value_set_pointer (value, self->match_sequence);
+      g_value_set_pointer (value, this->match_sequence);
       break;
 
     default:
@@ -99,18 +99,18 @@ gtk_inspector_recorder_row_set_property (GObject      *object,
                                          const GValue *value,
                                          GParamSpec   *pspec)
 {
-  GtkInspectorRecorderRow *self = GTK_INSPECTOR_RECORDER_ROW (object);
+  GtkInspectorRecorderRow *this = GTK_INSPECTOR_RECORDER_ROW (object);
 
   switch (param_id)
     {
     case PROP_SEQUENCE:
-      self->sequence = g_value_get_pointer (value);
-      update_style (self);
+      this->sequence = g_value_get_pointer (value);
+      update_style (this);
       break;
 
     case PROP_MATCH_SEQUENCE:
-      self->match_sequence = g_value_get_pointer (value);
-      update_style (self);
+      this->match_sequence = g_value_get_pointer (value);
+      update_style (this);
       break;
 
     default:

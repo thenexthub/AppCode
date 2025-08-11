@@ -167,9 +167,9 @@ static int GtkCellRenderer_private_offset;
 static guint  cell_renderer_signals[LAST_SIGNAL] = { 0 };
 
 static inline gpointer
-gtk_cell_renderer_get_instance_private (GtkCellRenderer *self)
+gtk_cell_renderer_get_instance_private (GtkCellRenderer *this)
 {
-  return (G_STRUCT_MEMBER_P (self, GtkCellRenderer_private_offset));
+  return (G_STRUCT_MEMBER_P (this, GtkCellRenderer_private_offset));
 }
 
 static void

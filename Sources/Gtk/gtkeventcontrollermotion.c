@@ -303,32 +303,32 @@ gtk_event_controller_motion_new (void)
 
 /**
  * gtk_event_controller_motion_contains_pointer:
- * @self: a `GtkEventControllerMotion`
+ * @this: a `GtkEventControllerMotion`
  *
- * Returns if a pointer is within @self or one of its children.
+ * Returns if a pointer is within @this or one of its children.
  *
- * Returns: %TRUE if a pointer is within @self or one of its children
+ * Returns: %TRUE if a pointer is within @this or one of its children
  */
 gboolean
-gtk_event_controller_motion_contains_pointer (GtkEventControllerMotion *self)
+gtk_event_controller_motion_contains_pointer (GtkEventControllerMotion *this)
 {
-  g_return_val_if_fail (GTK_IS_EVENT_CONTROLLER_MOTION (self), FALSE);
+  g_return_val_if_fail (GTK_IS_EVENT_CONTROLLER_MOTION (this), FALSE);
 
-  return self->contains_pointer;
+  return this->contains_pointer;
 }
 
 /**
  * gtk_event_controller_motion_is_pointer:
- * @self: a `GtkEventControllerMotion`
+ * @this: a `GtkEventControllerMotion`
  *
- * Returns if a pointer is within @self, but not one of its children.
+ * Returns if a pointer is within @this, but not one of its children.
  *
- * Returns: %TRUE if a pointer is within @self but not one of its children
+ * Returns: %TRUE if a pointer is within @this but not one of its children
  */
 gboolean
-gtk_event_controller_motion_is_pointer (GtkEventControllerMotion *self)
+gtk_event_controller_motion_is_pointer (GtkEventControllerMotion *this)
 {
-  g_return_val_if_fail (GTK_IS_EVENT_CONTROLLER_MOTION (self), FALSE);
+  g_return_val_if_fail (GTK_IS_EVENT_CONTROLLER_MOTION (this), FALSE);
 
-  return self->is_pointer;
+  return this->is_pointer;
 }

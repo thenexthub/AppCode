@@ -38,13 +38,13 @@ GDK_AVAILABLE_IN_ALL
 GtkFlattenListModel *    gtk_flatten_list_model_new             (GListModel             *model);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_flatten_list_model_set_model        (GtkFlattenListModel    *self,
+void                    gtk_flatten_list_model_set_model        (GtkFlattenListModel    *this,
                                                                  GListModel             *model);
 GDK_AVAILABLE_IN_ALL
-GListModel *            gtk_flatten_list_model_get_model        (GtkFlattenListModel    *self);
+GListModel *            gtk_flatten_list_model_get_model        (GtkFlattenListModel    *this);
 
 GDK_AVAILABLE_IN_ALL
-GListModel *            gtk_flatten_list_model_get_model_for_item (GtkFlattenListModel    *self,
+GListModel *            gtk_flatten_list_model_get_model_for_item (GtkFlattenListModel    *this,
                                                                    guint                   position);
 
 G_END_DECLS

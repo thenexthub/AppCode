@@ -60,13 +60,13 @@ GDK_AVAILABLE_IN_4_18
 GType gdk_android_display_get_type (void);
 
 GDK_AVAILABLE_IN_4_18
-JNIEnv *gdk_android_display_get_env (GdkDisplay *self);
+JNIEnv *gdk_android_display_get_env (GdkDisplay *this);
 
 GDK_AVAILABLE_IN_4_18
-GdkAndroidDisplayNightMode gdk_android_display_get_night_mode (GdkAndroidDisplay *self);
+GdkAndroidDisplayNightMode gdk_android_display_get_night_mode (GdkAndroidDisplay *this);
 
 
 GDK_AVAILABLE_IN_4_18
-gpointer gdk_android_display_get_egl_display (GdkAndroidDisplay *self);
+gpointer gdk_android_display_get_egl_display (GdkAndroidDisplay *this);
 
 G_END_DECLS

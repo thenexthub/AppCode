@@ -35,27 +35,27 @@ gtk_at_spi_create_context (GtkAccessibleRole  accessible_role,
                            GdkDisplay        *display);
 
 const char *
-gtk_at_spi_context_get_context_path (GtkAtSpiContext *self);
+gtk_at_spi_context_get_context_path (GtkAtSpiContext *this);
 
 GVariant *
-gtk_at_spi_context_to_ref (GtkAtSpiContext *self);
+gtk_at_spi_context_to_ref (GtkAtSpiContext *this);
 
 GtkAtSpiRoot *
-gtk_at_spi_context_get_root (GtkAtSpiContext *self);
+gtk_at_spi_context_get_root (GtkAtSpiContext *this);
 
 GVariant *
-gtk_at_spi_context_get_parent_ref (GtkAtSpiContext *self);
+gtk_at_spi_context_get_parent_ref (GtkAtSpiContext *this);
 
 GVariant *
-gtk_at_spi_context_get_interfaces (GtkAtSpiContext *self);
+gtk_at_spi_context_get_interfaces (GtkAtSpiContext *this);
 
 GVariant *
-gtk_at_spi_context_get_states (GtkAtSpiContext *self);
+gtk_at_spi_context_get_states (GtkAtSpiContext *this);
 
 int
-gtk_at_spi_context_get_index_in_parent (GtkAtSpiContext *self);
+gtk_at_spi_context_get_index_in_parent (GtkAtSpiContext *this);
 
 int
-gtk_at_spi_context_get_child_count (GtkAtSpiContext *self);
+gtk_at_spi_context_get_child_count (GtkAtSpiContext *this);
 
 G_END_DECLS

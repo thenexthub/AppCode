@@ -198,14 +198,14 @@ measure_available_space (GtkPlacesViewRow *row)
 static void
 gtk_places_view_row_finalize (GObject *object)
 {
-  GtkPlacesViewRow *self = GTK_PLACES_VIEW_ROW (object);
+  GtkPlacesViewRow *this = GTK_PLACES_VIEW_ROW (object);
 
-  g_cancellable_cancel (self->cancellable);
+  g_cancellable_cancel (this->cancellable);
 
-  g_clear_object (&self->volume);
-  g_clear_object (&self->mount);
-  g_clear_object (&self->file);
-  g_clear_object (&self->cancellable);
+  g_clear_object (&this->volume);
+  g_clear_object (&this->mount);
+  g_clear_object (&this->file);
+  g_clear_object (&this->cancellable);
 
   G_OBJECT_CLASS (gtk_places_view_row_parent_class)->finalize (object);
 }
@@ -216,38 +216,38 @@ gtk_places_view_row_get_property (GObject    *object,
                                   GValue     *value,
                                   GParamSpec *pspec)
 {
-  GtkPlacesViewRow *self;
+  GtkPlacesViewRow *this;
 
-  self = GTK_PLACES_VIEW_ROW (object);
+  this = GTK_PLACES_VIEW_ROW (object);
 
   switch (prop_id)
     {
     case PROP_ICON:
-      g_value_set_object (value, gtk_image_get_gicon (self->icon_image));
+      g_value_set_object (value, gtk_image_get_gicon (this->icon_image));
       break;
 
     case PROP_NAME:
-      g_value_set_string (value, gtk_label_get_label (self->name_label));
+      g_value_set_string (value, gtk_label_get_label (this->name_label));
       break;
 
     case PROP_PATH:
-      g_value_set_string (value, gtk_label_get_label (self->path_label));
+      g_value_set_string (value, gtk_label_get_label (this->path_label));
       break;
 
     case PROP_VOLUME:
-      g_value_set_object (value, self->volume);
+      g_value_set_object (value, this->volume);
       break;
 
     case PROP_MOUNT:
-      g_value_set_object (value, self->mount);
+      g_value_set_object (value, this->mount);
       break;
 
     case PROP_FILE:
-      g_value_set_object (value, self->file);
+      g_value_set_object (value, this->file);
       break;
 
     case PROP_IS_NETWORK:
-      g_value_set_boolean (value, self->is_network);
+      g_value_set_boolean (value, this->is_network);
       break;
 
     default:
@@ -261,48 +261,48 @@ gtk_places_view_row_set_property (GObject      *object,
                                   const GValue *value,
                                   GParamSpec   *pspec)
 {
-  GtkPlacesViewRow *self = GTK_PLACES_VIEW_ROW (object);
+  GtkPlacesViewRow *this = GTK_PLACES_VIEW_ROW (object);
 
   switch (prop_id)
     {
     case PROP_ICON:
-      gtk_image_set_from_gicon (self->icon_image, g_value_get_object (value));
+      gtk_image_set_from_gicon (this->icon_image, g_value_get_object (value));
       break;
 
     case PROP_NAME:
-      gtk_label_set_label (self->name_label, g_value_get_string (value));
+      gtk_label_set_label (this->name_label, g_value_get_string (value));
       break;
 
     case PROP_PATH:
-      gtk_label_set_label (self->path_label, g_value_get_string (value));
+      gtk_label_set_label (this->path_label, g_value_get_string (value));
       break;
 
     case PROP_VOLUME:
-      g_set_object (&self->volume, g_value_get_object (value));
+      g_set_object (&this->volume, g_value_get_object (value));
       break;
 
     case PROP_MOUNT:
-      g_set_object (&self->mount, g_value_get_object (value));
-      if (self->mount != NULL)
+      g_set_object (&this->mount, g_value_get_object (value));
+      if (this->mount != NULL)
         {
-          gtk_stack_set_visible_child (self->mount_stack, GTK_WIDGET (self->eject_button));
-          gtk_widget_set_child_visible (GTK_WIDGET (self->mount_stack), TRUE);
+          gtk_stack_set_visible_child (this->mount_stack, GTK_WIDGET (this->eject_button));
+          gtk_widget_set_child_visible (GTK_WIDGET (this->mount_stack), TRUE);
         }
       else
         {
-          gtk_widget_set_child_visible (GTK_WIDGET (self->mount_stack), FALSE);
+          gtk_widget_set_child_visible (GTK_WIDGET (this->mount_stack), FALSE);
         }
-      measure_available_space (self);
+      measure_available_space (this);
       break;
 
     case PROP_FILE:
-      g_set_object (&self->file, g_value_get_object (value));
-      measure_available_space (self);
+      g_set_object (&this->file, g_value_get_object (value));
+      measure_available_space (this);
       break;
 
     case PROP_IS_NETWORK:
-      gtk_places_view_row_set_is_network (self, g_value_get_boolean (value));
-      measure_available_space (self);
+      gtk_places_view_row_set_is_network (this, g_value_get_boolean (value));
+      measure_available_space (this);
       break;
 
     default:
@@ -385,9 +385,9 @@ gtk_places_view_row_class_init (GtkPlacesViewRowClass *klass)
 }
 
 static void
-gtk_places_view_row_init (GtkPlacesViewRow *self)
+gtk_places_view_row_init (GtkPlacesViewRow *this)
 {
-  gtk_widget_init_template (GTK_WIDGET (self));
+  gtk_widget_init_template (GTK_WIDGET (this));
 }
 
 GtkWidget*

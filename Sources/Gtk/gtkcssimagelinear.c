@@ -299,7 +299,7 @@ gtk_css_image_linear_snapshot (GtkCssImage *image,
 }
 
 static guint
-gtk_css_image_linear_parse_color_stop (GtkCssImageLinear *self,
+gtk_css_image_linear_parse_color_stop (GtkCssImageLinear *this,
                                        GtkCssParser      *parser,
                                        GArray            *stop_array)
 {
@@ -479,7 +479,7 @@ gtk_css_image_linear_parse_first_arg (GtkCssImageLinear *linear,
 
 typedef struct
 {
-  GtkCssImageLinear *self;
+  GtkCssImageLinear *this;
   GArray *stop_array;
 } ParseData;
 
@@ -489,33 +489,33 @@ gtk_css_image_linear_parse_arg (GtkCssParser *parser,
                                 gpointer      user_data)
 {
   ParseData *parse_data = user_data;
-  GtkCssImageLinear *self = parse_data->self;
+  GtkCssImageLinear *this = parse_data->this;
 
   if (arg == 0)
-    return gtk_css_image_linear_parse_first_arg (self, parser, parse_data->stop_array);
+    return gtk_css_image_linear_parse_first_arg (this, parser, parse_data->stop_array);
   else
-    return gtk_css_image_linear_parse_color_stop (self, parser, parse_data->stop_array);
+    return gtk_css_image_linear_parse_color_stop (this, parser, parse_data->stop_array);
 }
 
 static gboolean
 gtk_css_image_linear_parse (GtkCssImage  *image,
                             GtkCssParser *parser)
 {
-  GtkCssImageLinear *self = GTK_CSS_IMAGE_LINEAR (image);
+  GtkCssImageLinear *this = GTK_CSS_IMAGE_LINEAR (image);
   ParseData parse_data;
   gboolean success;
 
   if (gtk_css_parser_has_function (parser, "repeating-linear-gradient"))
-    self->repeating = TRUE;
+    this->repeating = TRUE;
   else if (gtk_css_parser_has_function (parser, "linear-gradient"))
-    self->repeating = FALSE;
+    this->repeating = FALSE;
   else
     {
       gtk_css_parser_error_syntax (parser, "Not a linear gradient");
       return FALSE;
     }
 
-  parse_data.self = self;
+  parse_data.this = this;
   parse_data.stop_array = g_array_new (TRUE, FALSE, sizeof (GtkCssImageLinearColorStop));
 
   success = gtk_css_parser_consume_function (parser, 3, G_MAXUINT, gtk_css_image_linear_parse_arg, &parse_data);
@@ -526,8 +526,8 @@ gtk_css_image_linear_parse (GtkCssImage  *image,
     }
   else
     {
-      self->n_stops = parse_data.stop_array->len;
-      self->color_stops = (GtkCssImageLinearColorStop *)g_array_free (parse_data.stop_array, FALSE);
+      this->n_stops = parse_data.stop_array->len;
+      this->color_stops = (GtkCssImageLinearColorStop *)g_array_free (parse_data.stop_array, FALSE);
     }
 
   return success;

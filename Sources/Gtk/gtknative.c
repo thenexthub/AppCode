@@ -55,7 +55,7 @@ static GQuark quark_gtk_native_private;
  *
  * To get the surface of a `GtkNative`, use [method@Gtk.Native.get_surface].
  * It is also possible to find the `GtkNative` to which a surface
- * belongs, with [func@Gtk.Native.get_for_surface].
+ * belongs, with [fn@Gtk.Native.get_for_surface].
  *
  * In addition to a [class@Gdk.Surface], a `GtkNative` also provides
  * a [class@Gsk.Renderer] for rendering on that surface. To get the
@@ -65,13 +65,13 @@ static GQuark quark_gtk_native_private;
 G_DEFINE_INTERFACE (GtkNative, gtk_native, GTK_TYPE_WIDGET)
 
 static GskRenderer *
-gtk_native_default_get_renderer (GtkNative *self)
+gtk_native_default_get_renderer (GtkNative *this)
 {
   return NULL;
 }
 
 static void
-gtk_native_default_get_surface_transform (GtkNative *self,
+gtk_native_default_get_surface_transform (GtkNative *this,
                                           double    *x,
                                           double    *y)
 {
@@ -80,7 +80,7 @@ gtk_native_default_get_surface_transform (GtkNative *self,
 }
 
 static void
-gtk_native_default_layout (GtkNative *self,
+gtk_native_default_layout (GtkNative *this,
                            int        width,
                            int        height)
 {
@@ -105,11 +105,11 @@ frame_clock_update_cb (GdkFrameClock *clock,
 }
 
 static void
-gtk_native_layout (GtkNative *self,
+gtk_native_layout (GtkNative *this,
                    int        width,
                    int        height)
 {
-  GTK_NATIVE_GET_IFACE (self)->layout (self, width, height);
+  GTK_NATIVE_GET_IFACE (this)->layout (this, width, height);
 }
 
 static void
@@ -156,46 +156,46 @@ verify_priv_unrealized (gpointer user_data)
 
 /**
  * gtk_native_realize:
- * @self: a `GtkNative`
+ * @this: a `GtkNative`
  *
  * Realizes a `GtkNative`.
  *
  * This should only be used by subclasses.
  */
 void
-gtk_native_realize (GtkNative *self)
+gtk_native_realize (GtkNative *this)
 {
   GdkSurface *surface;
   GdkFrameClock *clock;
   GtkNativePrivate *priv;
 
-  g_return_if_fail (g_object_get_qdata (G_OBJECT (self),
+  g_return_if_fail (g_object_get_qdata (G_OBJECT (this),
                                         quark_gtk_native_private) == NULL);
 
-  surface = gtk_native_get_surface (self);
+  surface = gtk_native_get_surface (this);
   clock = gdk_surface_get_frame_clock (surface);
   g_return_if_fail (clock != NULL);
 
   priv = g_new0 (GtkNativePrivate, 1);
   priv->update_handler_id = g_signal_connect_after (clock, "update",
                                               G_CALLBACK (frame_clock_update_cb),
-                                              self);
+                                              this);
   priv->layout_handler_id = g_signal_connect (surface, "layout",
                                               G_CALLBACK (surface_layout_cb),
-                                              self);
+                                              this);
 
   priv->scale_changed_handler_id = g_signal_connect (surface, "notify::scale-factor",
                                                      G_CALLBACK (scale_changed_cb),
-                                                     self);
+                                                     this);
 
   priv->enter_monitor_handler_id = g_signal_connect (surface, "enter-monitor",
                                                      G_CALLBACK (monitor_changed_cb),
-                                                     self);
+                                                     this);
   priv->leave_monitor_handler_id = g_signal_connect (surface, "leave-monitor",
                                                      G_CALLBACK (monitor_changed_cb),
-                                                     self);
+                                                     this);
 
-  g_object_set_qdata_full (G_OBJECT (self),
+  g_object_set_qdata_full (G_OBJECT (this),
                            quark_gtk_native_private,
                            priv,
                            verify_priv_unrealized);
@@ -203,23 +203,23 @@ gtk_native_realize (GtkNative *self)
 
 /**
  * gtk_native_unrealize:
- * @self: a `GtkNative`
+ * @this: a `GtkNative`
  *
  * Unrealizes a `GtkNative`.
  *
  * This should only be used by subclasses.
  */
 void
-gtk_native_unrealize (GtkNative *self)
+gtk_native_unrealize (GtkNative *this)
 {
   GtkNativePrivate *priv;
   GdkSurface *surface;
   GdkFrameClock *clock;
 
-  priv = g_object_get_qdata (G_OBJECT (self), quark_gtk_native_private);
+  priv = g_object_get_qdata (G_OBJECT (this), quark_gtk_native_private);
   g_return_if_fail (priv != NULL);
 
-  surface = gtk_native_get_surface (self);
+  surface = gtk_native_get_surface (this);
   clock = gdk_surface_get_frame_clock (surface);
   g_return_if_fail (clock != NULL);
 
@@ -229,62 +229,62 @@ gtk_native_unrealize (GtkNative *self)
   g_clear_signal_handler (&priv->enter_monitor_handler_id, surface);
   g_clear_signal_handler (&priv->leave_monitor_handler_id, surface);
 
-  g_object_set_qdata (G_OBJECT (self), quark_gtk_native_private, NULL);
+  g_object_set_qdata (G_OBJECT (this), quark_gtk_native_private, NULL);
 }
 
 /**
  * gtk_native_get_surface:
- * @self: a `GtkNative`
+ * @this: a `GtkNative`
  *
  * Returns the surface of this `GtkNative`.
  *
- * Returns: (transfer none) (nullable): the surface of @self
+ * Returns: (transfer none) (nullable): the surface of @this
  */
 GdkSurface *
-gtk_native_get_surface (GtkNative *self)
+gtk_native_get_surface (GtkNative *this)
 {
-  g_return_val_if_fail (GTK_IS_NATIVE (self), NULL);
+  g_return_val_if_fail (GTK_IS_NATIVE (this), NULL);
 
-  return GTK_NATIVE_GET_IFACE (self)->get_surface (self);
+  return GTK_NATIVE_GET_IFACE (this)->get_surface (this);
 }
 
 /**
  * gtk_native_get_renderer:
- * @self: a `GtkNative`
+ * @this: a `GtkNative`
  *
  * Returns the renderer that is used for this `GtkNative`.
  *
- * Returns: (transfer none) (nullable): the renderer for @self
+ * Returns: (transfer none) (nullable): the renderer for @this
  */
 GskRenderer *
-gtk_native_get_renderer (GtkNative *self)
+gtk_native_get_renderer (GtkNative *this)
 {
-  g_return_val_if_fail (GTK_IS_NATIVE (self), NULL);
+  g_return_val_if_fail (GTK_IS_NATIVE (this), NULL);
 
-  return GTK_NATIVE_GET_IFACE (self)->get_renderer (self);
+  return GTK_NATIVE_GET_IFACE (this)->get_renderer (this);
 }
 
 /**
  * gtk_native_get_surface_transform:
- * @self: a `GtkNative`
+ * @this: a `GtkNative`
  * @x: (out): return location for the x coordinate
  * @y: (out): return location for the y coordinate
  *
- * Retrieves the surface transform of @self.
+ * Retrieves the surface transform of @this.
  *
- * This is the translation from @self's surface coordinates into
- * @self's widget coordinates.
+ * This is the translation from @this's surface coordinates into
+ * @this's widget coordinates.
  */
 void
-gtk_native_get_surface_transform (GtkNative *self,
+gtk_native_get_surface_transform (GtkNative *this,
                                   double    *x,
                                   double    *y)
 {
-  g_return_if_fail (GTK_IS_NATIVE (self));
+  g_return_if_fail (GTK_IS_NATIVE (this));
   g_return_if_fail (x != NULL);
   g_return_if_fail (y != NULL);
 
-  GTK_NATIVE_GET_IFACE (self)->get_surface_transform (self, x, y);
+  GTK_NATIVE_GET_IFACE (this)->get_surface_transform (this, x, y);
 }
 
 /**
@@ -309,9 +309,9 @@ gtk_native_get_for_surface (GdkSurface *surface)
 }
 
 void
-gtk_native_queue_relayout (GtkNative *self)
+gtk_native_queue_relayout (GtkNative *this)
 {
-  GtkWidget *widget = GTK_WIDGET (self);
+  GtkWidget *widget = GTK_WIDGET (this);
   GdkSurface *surface;
   GdkFrameClock *clock;
 

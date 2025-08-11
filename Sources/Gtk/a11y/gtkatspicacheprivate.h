@@ -35,11 +35,11 @@ gtk_at_spi_cache_new (GDBusConnection *connection,
                       GtkAtSpiRoot    *root);
 
 void
-gtk_at_spi_cache_add_context (GtkAtSpiCache *self,
+gtk_at_spi_cache_add_context (GtkAtSpiCache *this,
                               GtkAtSpiContext *context);
 
 void
-gtk_at_spi_cache_remove_context (GtkAtSpiCache *self,
+gtk_at_spi_cache_remove_context (GtkAtSpiCache *this,
                                  GtkAtSpiContext *context);
 
 G_END_DECLS

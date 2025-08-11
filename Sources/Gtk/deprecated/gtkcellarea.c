@@ -102,7 +102,7 @@
  * support requesting and rendering rows in treemodels with an
  * exceedingly large amount of rows. The `GtkCellLayout` widget in
  * that case would calculate the required width of the rows in an
- * idle or timeout source (see [func@GLib.timeout_add]) and when the widget
+ * idle or timeout source (see [fn@GLib.timeout_add]) and when the widget
  * is requested its actual width in [vfunc@Gtk.Widget.measure]
  * it can simply consult the width accumulated so far in the
  * `GtkCellAreaContext` object.
@@ -116,10 +116,10 @@
  *                          int       *minimum_size,
  *                          int       *natural_size)
  * {
- *   Foo *self = FOO (widget);
- *   FooPrivate *priv = foo_get_instance_private (self);
+ *   Foo *this = FOO (widget);
+ *   FooPrivate *priv = foo_get_instance_private (this);
  *
- *   foo_ensure_at_least_one_handfull_of_rows_have_been_requested (self);
+ *   foo_ensure_at_least_one_handfull_of_rows_have_been_requested (this);
  *
  *   gtk_cell_area_context_get_preferred_width (priv->context, minimum_size, natural_size);
  * }
@@ -225,7 +225,7 @@
  * give every row its minimum or natural height or, if the model content
  * is expected to fit inside the layouting widget without scrolling, it
  * would make sense to calculate the allocation for each row at
- * the time the widget is allocated using [func@Gtk.distribute_natural_allocation].
+ * the time the widget is allocated using [fn@Gtk.distribute_natural_allocation].
  *
  * ## Handling Events and Driving Keyboard Focus
  *
@@ -262,8 +262,8 @@
  * foo_focus (GtkWidget       *widget,
  *            GtkDirectionType direction)
  * {
- *   Foo *self = FOO (widget);
- *   FooPrivate *priv = foo_get_instance_private (self);
+ *   Foo *this = FOO (widget);
+ *   FooPrivate *priv = foo_get_instance_private (this);
  *   int focus_row = priv->focus_row;
  *   gboolean have_focus = FALSE;
  *
@@ -454,7 +454,7 @@ static void      gtk_cell_area_add_attribute                 (GtkCellLayout     
                                                               int                    column);
 static void      gtk_cell_area_set_cell_data_func            (GtkCellLayout         *cell_layout,
                                                               GtkCellRenderer       *cell,
-                                                              GtkCellLayoutDataFunc  func,
+                                                              GtkCellLayoutDataFunc  fn,
                                                               gpointer               func_data,
                                                               GDestroyNotify         destroy);
 static void      gtk_cell_area_clear_attributes              (GtkCellLayout         *cell_layout,
@@ -514,13 +514,13 @@ typedef struct {
 typedef struct {
   GSList          *attributes;
 
-  GtkCellLayoutDataFunc  func;
+  GtkCellLayoutDataFunc  fn;
   gpointer               data;
   GDestroyNotify         destroy;
   GtkCellLayout         *proxy;
 } CellInfo;
 
-static CellInfo       *cell_info_new       (GtkCellLayoutDataFunc  func,
+static CellInfo       *cell_info_new       (GtkCellLayoutDataFunc  fn,
                                             gpointer               data,
                                             GDestroyNotify         destroy);
 static void            cell_info_free      (CellInfo              *info);
@@ -818,13 +818,13 @@ gtk_cell_area_class_init (GtkCellAreaClass *class)
  *                    CellInfo Basics                        *
  *************************************************************/
 static CellInfo *
-cell_info_new (GtkCellLayoutDataFunc  func,
+cell_info_new (GtkCellLayoutDataFunc  fn,
                gpointer               data,
                GDestroyNotify         destroy)
 {
   CellInfo *info = g_slice_new0 (CellInfo);
 
-  info->func     = func;
+  info->fn     = fn;
   info->data     = data;
   info->destroy  = destroy;
 
@@ -1235,8 +1235,8 @@ apply_cell_attributes (GtkCellRenderer *renderer,
 
   /* Call any GtkCellLayoutDataFunc that may have been set by the user
    */
-  if (info->func)
-    info->func (info->proxy ? info->proxy : GTK_CELL_LAYOUT (data->area), renderer,
+  if (info->fn)
+    info->fn (info->proxy ? info->proxy : GTK_CELL_LAYOUT (data->area), renderer,
 		data->model, data->iter, info->data);
 
   g_object_thaw_notify (G_OBJECT (renderer));
@@ -1497,13 +1497,13 @@ gtk_cell_area_add_attribute (GtkCellLayout         *cell_layout,
 static void
 gtk_cell_area_set_cell_data_func (GtkCellLayout         *cell_layout,
                                   GtkCellRenderer       *renderer,
-                                  GtkCellLayoutDataFunc  func,
+                                  GtkCellLayoutDataFunc  fn,
                                   gpointer               func_data,
                                   GDestroyNotify         destroy)
 {
   GtkCellArea *area   = GTK_CELL_AREA (cell_layout);
 
-  _gtk_cell_area_set_cell_data_func_with_proxy (area, renderer, (GFunc)func, func_data, destroy, NULL);
+  _gtk_cell_area_set_cell_data_func_with_proxy (area, renderer, (GFunc)fn, func_data, destroy, NULL);
 }
 
 static void
@@ -1623,7 +1623,7 @@ gtk_cell_area_remove (GtkCellArea        *area,
   g_return_if_fail (GTK_IS_CELL_AREA (area));
   g_return_if_fail (GTK_IS_CELL_RENDERER (renderer));
 
-  /* Remove any custom attributes and custom cell data func here first */
+  /* Remove any custom attributes and custom cell data fn here first */
   g_hash_table_remove (priv->cell_info, renderer);
 
   /* Remove focus siblings of this renderer */
@@ -3597,7 +3597,7 @@ gtk_cell_area_request_renderer (GtkCellArea        *area,
 void
 _gtk_cell_area_set_cell_data_func_with_proxy (GtkCellArea           *area,
 					      GtkCellRenderer       *cell,
-					      GFunc                  func,
+					      GFunc                  fn,
 					      gpointer               func_data,
 					      GDestroyNotify         destroy,
 					      gpointer               proxy)
@@ -3619,16 +3619,16 @@ _gtk_cell_area_set_cell_data_func_with_proxy (GtkCellArea           *area,
       if (info->destroy && info->data)
 	info->destroy (info->data);
 
-      if (func)
+      if (fn)
 	{
-	  info->func    = (GtkCellLayoutDataFunc)func;
+	  info->fn    = (GtkCellLayoutDataFunc)fn;
 	  info->data    = func_data;
 	  info->destroy = destroy;
 	  info->proxy   = proxy;
 	}
       else
 	{
-	  info->func    = NULL;
+	  info->fn    = NULL;
 	  info->data    = NULL;
 	  info->destroy = NULL;
 	  info->proxy   = NULL;
@@ -3636,7 +3636,7 @@ _gtk_cell_area_set_cell_data_func_with_proxy (GtkCellArea           *area,
     }
   else
     {
-      info = cell_info_new ((GtkCellLayoutDataFunc)func, func_data, destroy);
+      info = cell_info_new ((GtkCellLayoutDataFunc)fn, func_data, destroy);
       info->proxy = proxy;
 
       g_hash_table_insert (priv->cell_info, cell, info);

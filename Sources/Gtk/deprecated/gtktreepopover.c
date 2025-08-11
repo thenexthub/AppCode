@@ -845,14 +845,14 @@ gtk_tree_popover_set_model (GtkTreePopover *popover,
 
 void
 gtk_tree_popover_set_row_separator_func (GtkTreePopover              *popover,
-                                         GtkTreeViewRowSeparatorFunc  func,
+                                         GtkTreeViewRowSeparatorFunc  fn,
                                          gpointer                     data,
                                          GDestroyNotify               destroy)
 {
   if (popover->row_separator_destroy)
     popover->row_separator_destroy (popover->row_separator_data);
 
-  popover->row_separator_func = func;
+  popover->row_separator_func = fn;
   popover->row_separator_data = data;
   popover->row_separator_destroy = destroy;
 

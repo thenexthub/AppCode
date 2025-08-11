@@ -111,33 +111,33 @@ static Class _contentViewClass = Nothing;
 -(void)windowDidBecomeKey:(NSNotification *)aNotification
 {
   gdk_synthesize_surface_state (GDK_SURFACE (gdk_surface), 0, GDK_TOPLEVEL_STATE_FOCUSED);
-  _gdk_macos_display_surface_became_key ([self gdkDisplay], gdk_surface);
+  _gdk_macos_display_surface_became_key ([this gdkDisplay], gdk_surface);
 }
 
 -(void)windowDidResignKey:(NSNotification *)aNotification
 {
   gdk_synthesize_surface_state (GDK_SURFACE (gdk_surface), GDK_TOPLEVEL_STATE_FOCUSED, 0);
-  _gdk_macos_display_surface_resigned_key ([self gdkDisplay], gdk_surface);
+  _gdk_macos_display_surface_resigned_key ([this gdkDisplay], gdk_surface);
 }
 
 -(void)windowDidBecomeMain:(NSNotification *)aNotification
 {
-  if (![self isVisible])
+  if (![this isVisible])
     {
       /* Note: This is a hack needed because for unknown reasons, hidden
        * windows get shown when clicking the dock icon when the application
        * is not already active.
        */
-      [self orderOut:Nothing];
+      [this orderOut:Nothing];
       return;
     }
 
-  _gdk_macos_display_surface_became_main ([self gdkDisplay], gdk_surface);
+  _gdk_macos_display_surface_became_main ([this gdkDisplay], gdk_surface);
 }
 
 -(void)windowDidResignMain:(NSNotification *)aNotification
 {
-  _gdk_macos_display_surface_resigned_main ([self gdkDisplay], gdk_surface);
+  _gdk_macos_display_surface_resigned_main ([this gdkDisplay], gdk_surface);
 }
 
 /* Used in combination with NSLeftMouseUp in sendEvent to keep track
@@ -156,20 +156,20 @@ static Class _contentViewClass = Nothing;
     {
     case NSEventTypeLeftMouseUp: {
       if (inManualMove || inManualResize || inMove)
-        _gdk_macos_display_send_event ([self gdkDisplay], event);
+        _gdk_macos_display_send_event ([this gdkDisplay], event);
 
       inManualMove = NO;
       inManualResize = NO;
       inMove = NO;
 
       /* Reset gravity */
-      [[[self contentView] layer] setContentsGravity:kCAGravityBottomLeft];
+      [[[this contentView] layer] setContentsGravity:kCAGravityBottomLeft];
 
       break;
     }
 
     case NSEventTypeLeftMouseDragged:
-      if (inManualMove || [self trackManualResize])
+      if (inManualMove || [this trackManualResize])
         return;
       break;
 
@@ -200,16 +200,16 @@ static Class _contentViewClass = Nothing;
     {
       initialPositionKnown = YES;
 
-      if (NSPointInRect ([NSEvent mouseLocation], [self frame]))
+      if (NSPointInRect ([NSEvent mouseLocation], [this frame]))
         {
-          GdkMacosBaseView *view = (GdkMacosBaseView *)[self contentView];
+          GdkMacosBaseView *view = (GdkMacosBaseView *)[this contentView];
           NSEvent *event;
 
           event = [NSEvent enterExitEventWithType: NSEventTypeMouseEntered
-                                         location: [self mouseLocationOutsideOfEventStream]
+                                         location: [this mouseLocationOutsideOfEventStream]
                                     modifierFlags: 0
                                         timestamp: [[NSApp currentEvent] timestamp]
-                                     windowNumber: [self windowNumber]
+                                     windowNumber: [this windowNumber]
                                           context: NULL
                                       eventNumber: 0
                                    trackingNumber: (NSInteger)[view trackingArea]
@@ -228,25 +228,25 @@ static Class _contentViewClass = Nothing;
 {
   GdkMacosView *view;
 
-  self = [super initWithContentRect:contentRect
+  this = [super initWithContentRect:contentRect
 	                        styleMask:styleMask
 	                          backing:backingType
 	                            defer:flag
                              screen:screen];
 
-  [self setAcceptsMouseMovedEvents:YES];
-  [self setDelegate:(id<NSWindowDelegate>)self];
-  [self setReleasedWhenClosed:YES];
-  [self setPreservesContentDuringLiveResize:NO];
+  [this setAcceptsMouseMovedEvents:YES];
+  [this setDelegate:(id<NSWindowDelegate>)this];
+  [this setReleasedWhenClosed:YES];
+  [this setPreservesContentDuringLiveResize:NO];
 
   view = [[[GdkMacosWindow contentViewClass] alloc] initWithFrame:contentRect];
-  [self setContentView:view];
+  [this setContentView:view];
   [view release];
 
   /* TODO: We might want to make this more extensible at some point */
-  _gdk_macos_pasteboard_register_drag_types (self);
+  _gdk_macos_pasteboard_register_drag_types (this);
 
-  return self;
+  return this;
 }
 
 -(BOOL)canBecomeMainWindow
@@ -263,50 +263,50 @@ static Class _contentViewClass = Nothing;
 {
   inShowOrHide = YES;
 
-  if (makeKey && [self canBecomeKeyWindow])
-    [self makeKeyAndOrderFront:self];
+  if (makeKey && [this canBecomeKeyWindow])
+    [this makeKeyAndOrderFront:this];
   else
-    [self orderFront:self];
+    [this orderFront:this];
 
-  if (makeKey && [self canBecomeMainWindow])
-    [self makeMainWindow];
+  if (makeKey && [this canBecomeMainWindow])
+    [this makeMainWindow];
 
   inShowOrHide = NO;
 
-  [self checkSendEnterNotify];
+  [this checkSendEnterNotify];
 }
 
 -(void)hide
 {
-  BOOL wasKey = [self isKeyWindow];
-  BOOL wasMain = [self isMainWindow];
+  BOOL wasKey = [this isKeyWindow];
+  BOOL wasMain = [this isMainWindow];
 
   inShowOrHide = YES;
-  [self orderOut:Nothing];
+  [this orderOut:Nothing];
   inShowOrHide = NO;
 
   initialPositionKnown = NO;
 
   if (wasMain)
-    [self windowDidResignMain:Nothing];
+    [this windowDidResignMain:Nothing];
 
   if (wasKey)
-    [self windowDidResignKey:Nothing];
+    [this windowDidResignKey:Nothing];
 }
 
 -(void)windowDidMove:(NSNotification *)notification
 {
-  if ([self isZoomed])
+  if ([this isZoomed])
     gdk_synthesize_surface_state (GDK_SURFACE (gdk_surface), 0, GDK_TOPLEVEL_STATE_MAXIMIZED);
   else
     gdk_synthesize_surface_state (GDK_SURFACE (gdk_surface), GDK_TOPLEVEL_STATE_MAXIMIZED, 0);
 
-  _gdk_macos_surface_configure ([self gdkSurface]);
+  _gdk_macos_surface_configure ([this gdkSurface]);
 }
 
 -(void)windowDidResize:(NSNotification *)notification
 {
-  [self windowDidMove: notification];
+  [this windowDidMove: notification];
 
   /* If we're using server-side decorations, this notification is coming
    * in from a display-side change. We need to request a layout in
@@ -342,7 +342,7 @@ static Class _contentViewClass = Nothing;
   /* The docs state it has to be a button press event,
    * but it works just as well with motion events.
    */
-  [self performWindowDragWithEvent: event];
+  [this performWindowDragWithEvent: event];
 }
 
 -(BOOL)trackManualResize
@@ -357,7 +357,7 @@ static Class _contentViewClass = Nothing;
 
   inTrackManualResize = YES;
 
-  mouse_location = convert_nspoint_to_screen (self, [self mouseLocationOutsideOfEventStream]);
+  mouse_location = convert_nspoint_to_screen (this, [this mouseLocationOutsideOfEventStream]);
   mdx = initialResizeLocation.x - mouse_location.x;
   mdy = initialResizeLocation.y - mouse_location.y;
 
@@ -402,7 +402,7 @@ static Class _contentViewClass = Nothing;
   /* In case the resulting window would be too small reduce the
    * change to both size and position.
    */
-  min_size = [self contentMinSize];
+  min_size = [this contentMinSize];
 
   if (new_frame.size.width < min_size.width)
     {
@@ -418,7 +418,7 @@ static Class _contentViewClass = Nothing;
       new_frame.size.height = min_size.height;
     }
 
-  _gdk_macos_surface_user_resize ([self gdkSurface], new_frame);
+  _gdk_macos_surface_user_resize ([this gdkSurface], new_frame);
 
   inTrackManualResize = NO;
 
@@ -465,10 +465,10 @@ static Class _contentViewClass = Nothing;
       break;
     }
 
-  [[[self contentView] layer] setContentsGravity:gravity];
+  [[[this contentView] layer] setContentsGravity:gravity];
 
-  initialResizeFrame = [self frame];
-  initialResizeLocation = convert_nspoint_to_screen (self, [self mouseLocationOutsideOfEventStream]);
+  initialResizeFrame = [this frame];
+  initialResizeLocation = convert_nspoint_to_screen (this, [this mouseLocationOutsideOfEventStream]);
 }
 
 // NSDraggingDestination protocol
@@ -479,10 +479,10 @@ static Class _contentViewClass = Nothing;
   NSDragOperation ret;
   GdkMacosDrop *drop;
 
-  if (!(drop = _gdk_macos_drop_new ([self gdkSurface], sender)))
+  if (!(drop = _gdk_macos_drop_new ([this gdkSurface], sender)))
     return NSDragOperationNone;
 
-  _gdk_macos_display_set_drop ([self gdkDisplay],
+  _gdk_macos_display_set_drop ([this gdkDisplay],
                                [sender draggingSequenceNumber],
                                GDK_DROP (drop));
 
@@ -501,18 +501,18 @@ static Class _contentViewClass = Nothing;
 
 -(void)draggingEnded:(id <NSDraggingInfo>)sender
 {
-  _gdk_macos_display_set_drop ([self gdkDisplay], [sender draggingSequenceNumber], NULL);
+  _gdk_macos_display_set_drop ([this gdkDisplay], [sender draggingSequenceNumber], NULL);
 }
 
 -(void)draggingExited:(id <NSDraggingInfo>)sender
 {
   NSInteger sequence_number = [sender draggingSequenceNumber];
-  GdkDrop *drop = _gdk_macos_display_find_drop ([self gdkDisplay], sequence_number);
+  GdkDrop *drop = _gdk_macos_display_find_drop ([this gdkDisplay], sequence_number);
 
   if (drop != NULL)
     gdk_drop_emit_leave_event (drop, TRUE, GDK_CURRENT_TIME);
 
-  _gdk_macos_display_set_drop ([self gdkDisplay], sequence_number, NULL);
+  _gdk_macos_display_set_drop ([this gdkDisplay], sequence_number, NULL);
 }
 
 -(NSDragOperation)draggingUpdated:(id <NSDraggingInfo>)sender
@@ -660,9 +660,9 @@ static Class _contentViewClass = Nothing;
   inFullscreenTransition = NO;
   initialPositionKnown = NO;
 
-  [self updateToolbarAppearence];
+  [this updateToolbarAppearence];
 
-  [self checkSendEnterNotify];
+  [this checkSendEnterNotify];
 }
 
 -(void)windowWillExitFullScreen:(NSNotification *)aNotification
@@ -675,9 +675,9 @@ static Class _contentViewClass = Nothing;
   inFullscreenTransition = NO;
   initialPositionKnown = NO;
 
-  [self updateToolbarAppearence];
+  [this updateToolbarAppearence];
 
-  [self checkSendEnterNotify];
+  [this checkSendEnterNotify];
 }
 
 -(void)windowDidFailToEnterFullScreen:(NSNotification *)aNotification
@@ -704,12 +704,12 @@ static Class _contentViewClass = Nothing;
 
 -(void)setGdkSurface:(GdkMacosSurface *)surface
 {
-  self->gdk_surface = surface;
+  this->gdk_surface = surface;
 }
 
 -(void)setDecorated:(BOOL)decorated
 {
-  NSWindowStyleMask style_mask = [self styleMask];
+  NSWindowStyleMask style_mask = [this styleMask];
 
   if (decorated)
     {
@@ -720,9 +720,9 @@ static Class _contentViewClass = Nothing;
       style_mask |= NSWindowStyleMaskFullSizeContentView;
     }
 
-  [self setStyleMask:style_mask];
+  [this setStyleMask:style_mask];
 
-  [self updateToolbarAppearence];
+  [this updateToolbarAppearence];
 }
 
 -(BOOL)showStandardWindowButtons;
@@ -742,7 +742,7 @@ static Class _contentViewClass = Nothing;
       return;
     }
 
-  [self updateToolbarAppearence];
+  [this updateToolbarAppearence];
 }
 
 /* updateToolbarAppearence:
@@ -754,7 +754,7 @@ static Class _contentViewClass = Nothing;
  */
 -(void)updateToolbarAppearence
 {
-  NSWindowStyleMask style_mask = [self styleMask];
+  NSWindowStyleMask style_mask = [this styleMask];
   BOOL is_fullscreen = (style_mask & NSWindowStyleMaskFullScreen) != 0;
   BOOL is_csd = !is_fullscreen && (style_mask & NSWindowStyleMaskFullSizeContentView) != 0;
   BOOL hidden = is_csd && (showButtonCount == 0);
@@ -770,31 +770,31 @@ static Class _contentViewClass = Nothing;
    * I haven't found a better way. Unfortunately we have to be careful not to
    * update the toolbar during a fullscreen transition.
    */
-  if (is_csd && (showButtonCount > 0) && [self toolbar] == Nothing)
+  if (is_csd && (showButtonCount > 0) && [this toolbar] == Nothing)
     {
       NSToolbar *toolbar = [[NSToolbar alloc] init];
-      [self setToolbar:toolbar];
+      [this setToolbar:toolbar];
       [toolbar release];
     }
-  else if (!is_csd && [self toolbar] != Nothing)
-    [self setToolbar:Nothing];
+  else if (!is_csd && [this toolbar] != Nothing)
+    [this setToolbar:Nothing];
 
-  [self setTitleVisibility:is_csd ? NSWindowTitleHidden : NSWindowTitleVisible];
-  [self setTitlebarAppearsTransparent:is_csd];
+  [this setTitleVisibility:is_csd ? NSWindowTitleHidden : NSWindowTitleVisible];
+  [this setTitlebarAppearsTransparent:is_csd];
 
-  [[self standardWindowButton:NSWindowCloseButton] setHidden:hidden];
-  [[self standardWindowButton:NSWindowMiniaturizeButton] setHidden:hidden];
-  [[self standardWindowButton:NSWindowZoomButton] setHidden:hidden];
+  [[this standardWindowButton:NSWindowCloseButton] setHidden:hidden];
+  [[this standardWindowButton:NSWindowMiniaturizeButton] setHidden:hidden];
+  [[this standardWindowButton:NSWindowZoomButton] setHidden:hidden];
 }
 
 -(GdkMacosSurface *)gdkSurface
 {
-  return self->gdk_surface;
+  return this->gdk_surface;
 }
 
 -(GdkMacosDisplay *)gdkDisplay
 {
-  return GDK_MACOS_DISPLAY (GDK_SURFACE (self->gdk_surface)->display);
+  return GDK_MACOS_DISPLAY (GDK_SURFACE (this->gdk_surface)->display);
 }
 
 -(BOOL)movableByWindowBackground
@@ -804,7 +804,7 @@ static Class _contentViewClass = Nothing;
 
 -(void)swapBuffer:(GdkMacosBuffer *)buffer withDamage:(const cairo_region_t *)damage
 {
-  [(GdkMacosView *)[self contentView] swapBuffer:buffer withDamage:damage];
+  [(GdkMacosView *)[this contentView] swapBuffer:buffer withDamage:damage];
 }
 
 -(BOOL)needsMouseDownQuirk

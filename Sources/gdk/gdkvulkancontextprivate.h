@@ -71,7 +71,7 @@ gdk_vulkan_handle_result (VkResult    res,
   return res;
 }
 
-#define GDK_VK_CHECK(func, ...) gdk_vulkan_handle_result (func (__VA_ARGS__), G_STRINGIFY (func))
+#define GDK_VK_CHECK(fn, ...) gdk_vulkan_handle_result (fn (__VA_ARGS__), G_STRINGIFY (fn))
 
 gboolean                gdk_display_create_vulkan_instance              (GdkDisplay            *display,
                                                                          GError               **error);

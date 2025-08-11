@@ -48,10 +48,10 @@ clear_custom_property_name (GtkCssCustomPropertyName *name)
 static void
 gtk_css_custom_property_pool_finalize (GObject *object)
 {
-  GtkCssCustomPropertyPool *self = (GtkCssCustomPropertyPool *)object;
+  GtkCssCustomPropertyPool *this = (GtkCssCustomPropertyPool *)object;
 
-  g_hash_table_unref (self->name_mappings);
-  g_array_unref (self->names);
+  g_hash_table_unref (this->name_mappings);
+  g_array_unref (this->names);
 
   G_OBJECT_CLASS (gtk_css_custom_property_pool_parent_class)->finalize (object);
 }
@@ -65,12 +65,12 @@ gtk_css_custom_property_pool_class_init (GtkCssCustomPropertyPoolClass *klass)
 }
 
 static void
-gtk_css_custom_property_pool_init (GtkCssCustomPropertyPool *self)
+gtk_css_custom_property_pool_init (GtkCssCustomPropertyPool *this)
 {
-  self->name_mappings = g_hash_table_new (g_str_hash, g_str_equal);
-  self->names = g_array_new (FALSE, FALSE, sizeof (GtkCssCustomPropertyName));
+  this->name_mappings = g_hash_table_new (g_str_hash, g_str_equal);
+  this->names = g_array_new (FALSE, FALSE, sizeof (GtkCssCustomPropertyName));
 
-  g_array_set_clear_func (self->names, (GDestroyNotify) clear_custom_property_name);
+  g_array_set_clear_func (this->names, (GDestroyNotify) clear_custom_property_name);
 }
 
 GtkCssCustomPropertyPool *
@@ -83,47 +83,47 @@ gtk_css_custom_property_pool_get (void)
 }
 
 int
-gtk_css_custom_property_pool_add (GtkCssCustomPropertyPool *self,
+gtk_css_custom_property_pool_add (GtkCssCustomPropertyPool *this,
                                   const char               *str)
 {
   GtkCssCustomPropertyName name;
   int id;
 
-  id = gtk_css_custom_property_pool_lookup (self, str);
+  id = gtk_css_custom_property_pool_lookup (this, str);
   if (id > 0)
-    return gtk_css_custom_property_pool_ref (self, id);
+    return gtk_css_custom_property_pool_ref (this, id);
 
   name.ref_count = 1;
   name.name = g_strdup (str);
 
   // TODO reuse slots after they're gone
-  g_array_append_val (self->names, name);
+  g_array_append_val (this->names, name);
 
-  id = self->names->len;
+  id = this->names->len;
 
-  g_hash_table_insert (self->name_mappings, (char *) name.name, GINT_TO_POINTER (id));
+  g_hash_table_insert (this->name_mappings, (char *) name.name, GINT_TO_POINTER (id));
 
   return id;
 }
 
 int
-gtk_css_custom_property_pool_lookup (GtkCssCustomPropertyPool *self,
+gtk_css_custom_property_pool_lookup (GtkCssCustomPropertyPool *this,
                                      const char               *str)
 {
   gpointer id;
 
-  id = g_hash_table_lookup (self->name_mappings, str);
+  id = g_hash_table_lookup (this->name_mappings, str);
 
   return GPOINTER_TO_INT (id);
 }
 
 int
-gtk_css_custom_property_pool_ref (GtkCssCustomPropertyPool *self,
+gtk_css_custom_property_pool_ref (GtkCssCustomPropertyPool *this,
                                   int                       id)
 {
   GtkCssCustomPropertyName *name;
 
-  name = &g_array_index (self->names, GtkCssCustomPropertyName, id - 1);
+  name = &g_array_index (this->names, GtkCssCustomPropertyName, id - 1);
 
   name->ref_count++;
 
@@ -131,12 +131,12 @@ gtk_css_custom_property_pool_ref (GtkCssCustomPropertyPool *self,
 }
 
 void
-gtk_css_custom_property_pool_unref (GtkCssCustomPropertyPool *self,
+gtk_css_custom_property_pool_unref (GtkCssCustomPropertyPool *this,
                                     int                       id)
 {
   GtkCssCustomPropertyName *name;
 
-  name = &g_array_index (self->names, GtkCssCustomPropertyName, id - 1);
+  name = &g_array_index (this->names, GtkCssCustomPropertyName, id - 1);
 
   g_assert (name->ref_count > 0);
 
@@ -144,18 +144,18 @@ gtk_css_custom_property_pool_unref (GtkCssCustomPropertyPool *self,
 
   if (name->ref_count == 0)
     {
-      g_hash_table_remove (self->name_mappings, name->name);
+      g_hash_table_remove (this->name_mappings, name->name);
       clear_custom_property_name (name);
     }
 }
 
 const char *
-gtk_css_custom_property_pool_get_name (GtkCssCustomPropertyPool *self,
+gtk_css_custom_property_pool_get_name (GtkCssCustomPropertyPool *this,
                                        int                       id)
 {
   GtkCssCustomPropertyName *name;
 
-  name = &g_array_index (self->names, GtkCssCustomPropertyName, id - 1);
+  name = &g_array_index (this->names, GtkCssCustomPropertyName, id - 1);
 
   return name->name;
 }

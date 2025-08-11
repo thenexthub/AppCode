@@ -187,13 +187,13 @@ gtk_fixed_buildable_iface_init (GtkBuildableIface *iface)
 }
 
 static void
-gtk_fixed_init (GtkFixed *self)
+gtk_fixed_init (GtkFixed *this)
 {
-  GtkFixedPrivate *priv = gtk_fixed_get_instance_private (self);
+  GtkFixedPrivate *priv = gtk_fixed_get_instance_private (this);
 
-  gtk_widget_set_overflow (GTK_WIDGET (self), GTK_OVERFLOW_HIDDEN);
+  gtk_widget_set_overflow (GTK_WIDGET (this), GTK_OVERFLOW_HIDDEN);
 
-  priv->layout = gtk_widget_get_layout_manager (GTK_WIDGET (self));
+  priv->layout = gtk_widget_get_layout_manager (GTK_WIDGET (this));
 }
 
 /**

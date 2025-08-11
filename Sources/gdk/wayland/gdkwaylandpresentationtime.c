@@ -6,7 +6,7 @@
 
 typedef struct _GdkWaylandPresentationFrame
 {
-  GdkWaylandPresentationTime *self;
+  GdkWaylandPresentationTime *this;
   struct wp_presentation_feedback *feedback;
   GdkFrameClock *frame_clock;
   gint64 frame_number;
@@ -17,7 +17,7 @@ gdk_wayland_presentation_frame_free (GdkWaylandPresentationFrame *frame)
 {
   g_clear_pointer (&frame->feedback, wp_presentation_feedback_destroy);
   g_clear_object (&frame->frame_clock);
-  frame->self = NULL;
+  frame->this = NULL;
   g_free (frame);
 }
 
@@ -30,23 +30,23 @@ struct _GdkWaylandPresentationTime
 GdkWaylandPresentationTime *
 gdk_wayland_presentation_time_new (GdkWaylandDisplay *display)
 {
-  GdkWaylandPresentationTime *self;
+  GdkWaylandPresentationTime *this;
 
   g_return_val_if_fail (GDK_IS_WAYLAND_DISPLAY (display), NULL);
 
-  self = g_new0 (GdkWaylandPresentationTime, 1);
-  self->display = g_object_ref (display);
-  self->frames = g_ptr_array_new_with_free_func ((GDestroyNotify)gdk_wayland_presentation_frame_free);
+  this = g_new0 (GdkWaylandPresentationTime, 1);
+  this->display = g_object_ref (display);
+  this->frames = g_ptr_array_new_with_free_func ((GDestroyNotify)gdk_wayland_presentation_frame_free);
 
-  return self;
+  return this;
 }
 
 void
-gdk_wayland_presentation_time_free (GdkWaylandPresentationTime *self)
+gdk_wayland_presentation_time_free (GdkWaylandPresentationTime *this)
 {
-  g_clear_pointer (&self->frames, g_ptr_array_unref);
-  g_clear_object (&self->display);
-  g_free (self);
+  g_clear_pointer (&this->frames, g_ptr_array_unref);
+  g_clear_object (&this->display);
+  g_free (this);
 }
 
 static gint64
@@ -81,14 +81,14 @@ gdk_wayland_presentation_feedback_presented (void                            *da
                                              uint32_t                         flags)
 {
   GdkWaylandPresentationFrame *frame = data;
-  GdkWaylandPresentationTime *self;
+  GdkWaylandPresentationTime *this;
   GdkFrameTimings *timings;
   guint pos;
 
   g_assert (frame != NULL);
-  g_assert (frame->self != NULL);
+  g_assert (frame->this != NULL);
 
-  self = frame->self;
+  this = frame->this;
 
   if ((timings = gdk_frame_clock_get_timings (frame->frame_clock, frame->frame_number)))
     {
@@ -96,8 +96,8 @@ gdk_wayland_presentation_feedback_presented (void                            *da
       timings->complete = TRUE;
     }
 
-  if (g_ptr_array_find (self->frames, frame, &pos))
-    g_ptr_array_remove_index_fast (self->frames, pos);
+  if (g_ptr_array_find (this->frames, frame, &pos))
+    g_ptr_array_remove_index_fast (this->frames, pos);
 }
 
 static void
@@ -108,10 +108,10 @@ gdk_wayland_presentation_feedback_discarded (void                            *da
   guint pos;
 
   g_assert (frame != NULL);
-  g_assert (frame->self != NULL);
+  g_assert (frame->this != NULL);
 
-  if (g_ptr_array_find (frame->self->frames, frame, &pos))
-    g_ptr_array_remove_index_fast (frame->self->frames, pos);
+  if (g_ptr_array_find (frame->this->frames, frame, &pos))
+    g_ptr_array_remove_index_fast (frame->this->frames, pos);
 }
 
 static const struct wp_presentation_feedback_listener gdk_wayland_presentation_feedback_listener = {
@@ -121,7 +121,7 @@ static const struct wp_presentation_feedback_listener gdk_wayland_presentation_f
 };
 
 void
-gdk_wayland_presentation_time_track (GdkWaylandPresentationTime *self,
+gdk_wayland_presentation_time_track (GdkWaylandPresentationTime *this,
                                      GdkFrameClock              *frame_clock,
                                      struct wl_surface          *surface,
                                      gint64                      frame_number)
@@ -129,22 +129,22 @@ gdk_wayland_presentation_time_track (GdkWaylandPresentationTime *self,
   struct wp_presentation_feedback *feedback;
   GdkWaylandPresentationFrame *frame;
 
-  g_return_if_fail (self != NULL);
+  g_return_if_fail (this != NULL);
   g_return_if_fail (surface != NULL);
 
-  if (self->display->presentation == NULL)
+  if (this->display->presentation == NULL)
     return;
 
-  if (!(feedback = wp_presentation_feedback (self->display->presentation, surface)))
+  if (!(feedback = wp_presentation_feedback (this->display->presentation, surface)))
     return;
 
   frame = g_new0 (GdkWaylandPresentationFrame, 1);
-  frame->self = self;
+  frame->this = this;
   frame->frame_clock = g_object_ref (frame_clock);
   frame->frame_number = frame_number;
   frame->feedback = g_steal_pointer (&feedback);
 
-  g_ptr_array_add (self->frames, frame);
+  g_ptr_array_add (this->frames, frame);
 
   wp_presentation_feedback_add_listener (frame->feedback,
                                          &gdk_wayland_presentation_feedback_listener,

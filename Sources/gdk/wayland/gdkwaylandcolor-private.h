@@ -28,7 +28,7 @@ struct wl_proxy * gdk_wayland_color_get_color_representation_manager
 
 typedef struct _GdkWaylandColorSurface GdkWaylandColorSurface;
 
-typedef void      (* GdkColorStateChanged)                      (GdkWaylandColorSurface *self,
+typedef void      (* GdkColorStateChanged)                      (GdkWaylandColorSurface *this,
                                                                  GdkColorState          *cs,
                                                                  gpointer                data);
 
@@ -38,15 +38,15 @@ GdkWaylandColorSurface *
                                                                  GdkColorStateChanged    callback,
                                                                  gpointer                data);
 
-void              gdk_wayland_color_surface_free                (GdkWaylandColorSurface *self);
+void              gdk_wayland_color_surface_free                (GdkWaylandColorSurface *this);
 
-gboolean          gdk_wayland_color_surface_can_set_color_state (GdkWaylandColorSurface  *self,
+gboolean          gdk_wayland_color_surface_can_set_color_state (GdkWaylandColorSurface  *this,
                                                                  GdkColorState           *cs,
                                                                  guint32                  fourcc,
                                                                  gboolean                 premultiplied,
                                                                  GError                 **error);
-void              gdk_wayland_color_surface_set_color_state     (GdkWaylandColorSurface *self,
+void              gdk_wayland_color_surface_set_color_state     (GdkWaylandColorSurface *this,
                                                                  GdkColorState          *cs,
                                                                  guint32                 fourcc,
                                                                  gboolean                premultiplied);
-void              gdk_wayland_color_surface_unset_color_state   (GdkWaylandColorSurface *self);
+void              gdk_wayland_color_surface_unset_color_state   (GdkWaylandColorSurface *this);

@@ -79,53 +79,53 @@ struct _GdkMacosSurfaceClass
   GdkSurfaceClass parent_class;
 };
 
-NSWindow          *_gdk_macos_surface_get_native              (GdkMacosSurface      *self);
-void               _gdk_macos_surface_set_native              (GdkMacosSurface      *self,
+NSWindow          *_gdk_macos_surface_get_native              (GdkMacosSurface      *this);
+void               _gdk_macos_surface_set_native              (GdkMacosSurface      *this,
                                                                GdkMacosWindow       *window);
-CGDirectDisplayID  _gdk_macos_surface_get_screen_id           (GdkMacosSurface      *self);
-const char        *_gdk_macos_surface_get_title               (GdkMacosSurface      *self);
-void               _gdk_macos_surface_set_title               (GdkMacosSurface      *self,
+CGDirectDisplayID  _gdk_macos_surface_get_screen_id           (GdkMacosSurface      *this);
+const char        *_gdk_macos_surface_get_title               (GdkMacosSurface      *this);
+void               _gdk_macos_surface_set_title               (GdkMacosSurface      *this,
                                                                const char           *title);
-NSView            *_gdk_macos_surface_get_view                (GdkMacosSurface      *self);
-gboolean           _gdk_macos_surface_get_modal_hint          (GdkMacosSurface      *self);
-void               _gdk_macos_surface_set_modal_hint          (GdkMacosSurface      *self,
+NSView            *_gdk_macos_surface_get_view                (GdkMacosSurface      *this);
+gboolean           _gdk_macos_surface_get_modal_hint          (GdkMacosSurface      *this);
+void               _gdk_macos_surface_set_modal_hint          (GdkMacosSurface      *this,
                                                                gboolean              modal_hint);
-void               _gdk_macos_surface_set_geometry_hints      (GdkMacosSurface      *self,
+void               _gdk_macos_surface_set_geometry_hints      (GdkMacosSurface      *this,
                                                                const GdkGeometry    *geometry,
                                                                GdkSurfaceHints       geom_mask);
-void               _gdk_macos_surface_resize                  (GdkMacosSurface      *self,
+void               _gdk_macos_surface_resize                  (GdkMacosSurface      *this,
                                                                int                   width,
                                                                int                   height);
-void               _gdk_macos_surface_update_fullscreen_state (GdkMacosSurface      *self);
-void               _gdk_macos_surface_request_frame           (GdkMacosSurface      *self);
-void               _gdk_macos_surface_frame_presented         (GdkMacosSurface      *self,
+void               _gdk_macos_surface_update_fullscreen_state (GdkMacosSurface      *this);
+void               _gdk_macos_surface_request_frame           (GdkMacosSurface      *this);
+void               _gdk_macos_surface_frame_presented         (GdkMacosSurface      *this,
                                                                gint64                predicted_presentation_time,
                                                                gint64                refresh_interval);
-void               _gdk_macos_surface_show                    (GdkMacosSurface      *self);
-void               _gdk_macos_surface_synthesize_null_key     (GdkMacosSurface      *self);
-void               _gdk_macos_surface_move                    (GdkMacosSurface      *self,
+void               _gdk_macos_surface_show                    (GdkMacosSurface      *this);
+void               _gdk_macos_surface_synthesize_null_key     (GdkMacosSurface      *this);
+void               _gdk_macos_surface_move                    (GdkMacosSurface      *this,
                                                                int                   x,
                                                                int                   y);
-void               _gdk_macos_surface_move_resize             (GdkMacosSurface      *self,
+void               _gdk_macos_surface_move_resize             (GdkMacosSurface      *this,
                                                                int                   x,
                                                                int                   y,
                                                                int                   width,
                                                                int                   height);
-void               _gdk_macos_surface_configure               (GdkMacosSurface    *self);
-void               _gdk_macos_surface_user_resize             (GdkMacosSurface    *self,
+void               _gdk_macos_surface_configure               (GdkMacosSurface    *this);
+void               _gdk_macos_surface_user_resize             (GdkMacosSurface    *this,
                                                                CGRect              new_frame);
-gboolean           _gdk_macos_surface_is_tracking             (GdkMacosSurface      *self,
+gboolean           _gdk_macos_surface_is_tracking             (GdkMacosSurface      *this,
                                                                NSTrackingArea       *area);
-void               _gdk_macos_surface_monitor_changed         (GdkMacosSurface      *self);
-GdkMonitor        *_gdk_macos_surface_get_best_monitor        (GdkMacosSurface      *self);
-void               _gdk_macos_surface_reposition_children     (GdkMacosSurface      *self);
-void               _gdk_macos_surface_set_opacity             (GdkMacosSurface      *self,
+void               _gdk_macos_surface_monitor_changed         (GdkMacosSurface      *this);
+GdkMonitor        *_gdk_macos_surface_get_best_monitor        (GdkMacosSurface      *this);
+void               _gdk_macos_surface_reposition_children     (GdkMacosSurface      *this);
+void               _gdk_macos_surface_set_opacity             (GdkMacosSurface      *this,
                                                                double                opacity);
-void               _gdk_macos_surface_get_root_coords         (GdkMacosSurface      *self,
+void               _gdk_macos_surface_get_root_coords         (GdkMacosSurface      *this,
                                                                int                  *x,
                                                                int                  *y);
-GdkMacosBuffer    *_gdk_macos_surface_get_buffer              (GdkMacosSurface      *self);
-void               _gdk_macos_surface_swap_buffers            (GdkMacosSurface      *self,
+GdkMacosBuffer    *_gdk_macos_surface_get_buffer              (GdkMacosSurface      *this);
+void               _gdk_macos_surface_swap_buffers            (GdkMacosSurface      *this,
                                                                const cairo_region_t *damage);
 
 G_END_DECLS

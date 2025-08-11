@@ -49,7 +49,7 @@ GskGpuImage *           gsk_vulkan_image_new_for_dmabuf                 (GskVulk
                                                                          const GdkDmabuf        *dmabuf,
                                                                          gboolean                premultiplied,
                                                                          GskGpuConversion        conv);
-GdkTexture *            gsk_vulkan_image_to_dmabuf_texture              (GskVulkanImage         *self,
+GdkTexture *            gsk_vulkan_image_to_dmabuf_texture              (GskVulkanImage         *this,
                                                                          GdkColorState          *color_state);
 #endif
 #ifdef GDK_WINDOWING_WIN32
@@ -62,20 +62,20 @@ GskGpuImage *           gsk_vulkan_image_new_for_d3d12resource          (GskVulk
                                                                          gboolean                premultiplied);
 #endif
 
-guchar *                gsk_vulkan_image_get_data                       (GskVulkanImage         *self,
+guchar *                gsk_vulkan_image_get_data                       (GskVulkanImage         *this,
                                                                          GdkMemoryLayout        *out_layout);
 
-GskVulkanYcbcr *        gsk_vulkan_image_get_ycbcr                      (GskVulkanImage         *self);
-VkDescriptorSet         gsk_vulkan_image_get_vk_descriptor_set          (GskVulkanImage         *self,
+GskVulkanYcbcr *        gsk_vulkan_image_get_ycbcr                      (GskVulkanImage         *this);
+VkDescriptorSet         gsk_vulkan_image_get_vk_descriptor_set          (GskVulkanImage         *this,
                                                                          GskGpuSampler           sampler);
-VkPipelineStageFlags    gsk_vulkan_image_get_vk_pipeline_stage          (GskVulkanImage         *self);
-VkImageLayout           gsk_vulkan_image_get_vk_image_layout            (GskVulkanImage         *self);
-VkAccessFlags           gsk_vulkan_image_get_vk_access                  (GskVulkanImage         *self);
-void                    gsk_vulkan_image_set_vk_image_layout            (GskVulkanImage         *self,
+VkPipelineStageFlags    gsk_vulkan_image_get_vk_pipeline_stage          (GskVulkanImage         *this);
+VkImageLayout           gsk_vulkan_image_get_vk_image_layout            (GskVulkanImage         *this);
+VkAccessFlags           gsk_vulkan_image_get_vk_access                  (GskVulkanImage         *this);
+void                    gsk_vulkan_image_set_vk_image_layout            (GskVulkanImage         *this,
                                                                          VkPipelineStageFlags    stage,
                                                                          VkImageLayout           image_layout,
                                                                          VkAccessFlags           access);
-void                    gsk_vulkan_image_transition                     (GskVulkanImage         *self,
+void                    gsk_vulkan_image_transition                     (GskVulkanImage         *this,
                                                                          GskVulkanSemaphores    *semaphores,
                                                                          VkCommandBuffer         command_buffer,
                                                                          VkPipelineStageFlags    stage,
@@ -85,10 +85,10 @@ void                    gsk_vulkan_image_transition                     (GskVulk
   gsk_vulkan_image_transition ((image), VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, \
                                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_ACCESS_SHADER_READ_BIT)
 
-VkImage                 gsk_vulkan_image_get_vk_image                   (GskVulkanImage         *self);
-VkImageView             gsk_vulkan_image_get_vk_image_view              (GskVulkanImage         *self);
-VkFormat                gsk_vulkan_image_get_vk_format                  (GskVulkanImage         *self);
-VkFramebuffer           gsk_vulkan_image_get_vk_framebuffer             (GskVulkanImage         *self,
+VkImage                 gsk_vulkan_image_get_vk_image                   (GskVulkanImage         *this);
+VkImageView             gsk_vulkan_image_get_vk_image_view              (GskVulkanImage         *this);
+VkFormat                gsk_vulkan_image_get_vk_format                  (GskVulkanImage         *this);
+VkFramebuffer           gsk_vulkan_image_get_vk_framebuffer             (GskVulkanImage         *this,
                                                                          VkRenderPass            pass);
 
 G_END_DECLS

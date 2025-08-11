@@ -27,7 +27,7 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE (GtkFocusOverlay, gtk_focus_overlay, GTK, FOCUS_OVERLAY, GtkInspectorOverlay)
 
 GtkInspectorOverlay *   gtk_focus_overlay_new               (void);
-void                    gtk_focus_overlay_set_color         (GtkFocusOverlay    *self,
+void                    gtk_focus_overlay_set_color         (GtkFocusOverlay    *this,
                                                              const GdkRGBA      *color);
 
 G_END_DECLS

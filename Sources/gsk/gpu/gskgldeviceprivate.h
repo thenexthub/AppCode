@@ -11,16 +11,16 @@ G_DECLARE_FINAL_TYPE (GskGLDevice, gsk_gl_device, GSK, GL_DEVICE, GskGpuDevice)
 GskGpuDevice *          gsk_gl_device_get_for_display                   (GdkDisplay             *display,
                                                                          GError                **error);
 
-void                    gsk_gl_device_use_program                       (GskGLDevice            *self,
+void                    gsk_gl_device_use_program                       (GskGLDevice            *this,
                                                                          const GskGpuShaderOpClass *op_class,
                                                                          GskGpuShaderFlags       flags,
                                                                          GskGpuColorStates       color_states,
                                                                          guint32                 variation);
 
-GLuint                  gsk_gl_device_get_sampler_id                    (GskGLDevice            *self,
+GLuint                  gsk_gl_device_get_sampler_id                    (GskGLDevice            *this,
                                                                          GskGpuSampler           sampler);
 
-void                    gsk_gl_device_find_gl_format                    (GskGLDevice            *self,
+void                    gsk_gl_device_find_gl_format                    (GskGLDevice            *this,
                                                                          GdkMemoryFormat         format,
                                                                          GskGpuImageFlags        required_flags,
                                                                          GdkMemoryFormat        *out_format,

@@ -37,75 +37,75 @@ GType                   gsk_path_builder_get_type               (void) G_GNUC_CO
 GDK_AVAILABLE_IN_4_14
 GskPathBuilder *        gsk_path_builder_new                    (void);
 GDK_AVAILABLE_IN_4_14
-GskPathBuilder *        gsk_path_builder_ref                    (GskPathBuilder         *self);
+GskPathBuilder *        gsk_path_builder_ref                    (GskPathBuilder         *this);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_unref                  (GskPathBuilder         *self);
+void                    gsk_path_builder_unref                  (GskPathBuilder         *this);
 GDK_AVAILABLE_IN_4_14
-GskPath *               gsk_path_builder_free_to_path           (GskPathBuilder         *self) G_GNUC_WARN_UNUSED_RESULT;
+GskPath *               gsk_path_builder_free_to_path           (GskPathBuilder         *this) G_GNUC_WARN_UNUSED_RESULT;
 GDK_AVAILABLE_IN_4_14
-GskPath *               gsk_path_builder_to_path                (GskPathBuilder         *self) G_GNUC_WARN_UNUSED_RESULT;
+GskPath *               gsk_path_builder_to_path                (GskPathBuilder         *this) G_GNUC_WARN_UNUSED_RESULT;
 
 GDK_AVAILABLE_IN_4_14
-const graphene_point_t *gsk_path_builder_get_current_point      (GskPathBuilder         *self);
+const graphene_point_t *gsk_path_builder_get_current_point      (GskPathBuilder         *this);
 
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_add_path               (GskPathBuilder         *self,
+void                    gsk_path_builder_add_path               (GskPathBuilder         *this,
                                                                  GskPath                *path);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_add_reverse_path       (GskPathBuilder         *self,
+void                    gsk_path_builder_add_reverse_path       (GskPathBuilder         *this,
                                                                  GskPath                *path);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_add_cairo_path         (GskPathBuilder         *self,
+void                    gsk_path_builder_add_cairo_path         (GskPathBuilder         *this,
                                                                  const cairo_path_t     *path);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_add_layout             (GskPathBuilder         *self,
+void                    gsk_path_builder_add_layout             (GskPathBuilder         *this,
                                                                  PangoLayout            *layout);
 
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_add_rect               (GskPathBuilder         *self,
+void                    gsk_path_builder_add_rect               (GskPathBuilder         *this,
                                                                  const graphene_rect_t  *rect);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_add_rounded_rect       (GskPathBuilder         *self,
+void                    gsk_path_builder_add_rounded_rect       (GskPathBuilder         *this,
                                                                  const GskRoundedRect   *rect);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_add_circle             (GskPathBuilder         *self,
+void                    gsk_path_builder_add_circle             (GskPathBuilder         *this,
                                                                  const graphene_point_t *center,
                                                                  float                   radius);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_add_segment            (GskPathBuilder         *self,
+void                    gsk_path_builder_add_segment            (GskPathBuilder         *this,
                                                                  GskPath                *path,
                                                                  const GskPathPoint     *start,
                                                                  const GskPathPoint     *end);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_move_to                (GskPathBuilder         *self,
+void                    gsk_path_builder_move_to                (GskPathBuilder         *this,
                                                                  float                   x,
                                                                  float                   y);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_rel_move_to            (GskPathBuilder         *self,
+void                    gsk_path_builder_rel_move_to            (GskPathBuilder         *this,
                                                                  float                   x,
                                                                  float                   y);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_line_to                (GskPathBuilder         *self,
+void                    gsk_path_builder_line_to                (GskPathBuilder         *this,
                                                                  float                   x,
                                                                  float                   y);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_rel_line_to            (GskPathBuilder         *self,
+void                    gsk_path_builder_rel_line_to            (GskPathBuilder         *this,
                                                                  float                   x,
                                                                  float                   y);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_quad_to                (GskPathBuilder         *self,
+void                    gsk_path_builder_quad_to                (GskPathBuilder         *this,
                                                                  float                   x1,
                                                                  float                   y1,
                                                                  float                   x2,
                                                                  float                   y2);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_rel_quad_to            (GskPathBuilder         *self,
+void                    gsk_path_builder_rel_quad_to            (GskPathBuilder         *this,
                                                                  float                   x1,
                                                                  float                   y1,
                                                                  float                   x2,
                                                                  float                   y2);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_cubic_to               (GskPathBuilder         *self,
+void                    gsk_path_builder_cubic_to               (GskPathBuilder         *this,
                                                                  float                   x1,
                                                                  float                   y1,
                                                                  float                   x2,
@@ -113,7 +113,7 @@ void                    gsk_path_builder_cubic_to               (GskPathBuilder 
                                                                  float                   x3,
                                                                  float                   y3);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_rel_cubic_to           (GskPathBuilder         *self,
+void                    gsk_path_builder_rel_cubic_to           (GskPathBuilder         *this,
                                                                  float                   x1,
                                                                  float                   y1,
                                                                  float                   x2,
@@ -122,14 +122,14 @@ void                    gsk_path_builder_rel_cubic_to           (GskPathBuilder 
                                                                  float                   y3);
 
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_conic_to               (GskPathBuilder         *self,
+void                    gsk_path_builder_conic_to               (GskPathBuilder         *this,
                                                                  float                   x1,
                                                                  float                   y1,
                                                                  float                   x2,
                                                                  float                   y2,
                                                                  float                   weight);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_rel_conic_to           (GskPathBuilder         *self,
+void                    gsk_path_builder_rel_conic_to           (GskPathBuilder         *this,
                                                                  float                   x1,
                                                                  float                   y1,
                                                                  float                   x2,
@@ -137,21 +137,21 @@ void                    gsk_path_builder_rel_conic_to           (GskPathBuilder 
                                                                  float                   weight);
 
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_arc_to                 (GskPathBuilder         *self,
+void                    gsk_path_builder_arc_to                 (GskPathBuilder         *this,
                                                                  float                   x1,
                                                                  float                   y1,
                                                                  float                   x2,
                                                                  float                   y2);
 
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_rel_arc_to             (GskPathBuilder         *self,
+void                    gsk_path_builder_rel_arc_to             (GskPathBuilder         *this,
                                                                  float                   x1,
                                                                  float                   y1,
                                                                  float                   x2,
                                                                  float                   y2);
 
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_svg_arc_to             (GskPathBuilder         *self,
+void                    gsk_path_builder_svg_arc_to             (GskPathBuilder         *this,
                                                                  float                   rx,
                                                                  float                   ry,
                                                                  float                   x_axis_rotation,
@@ -160,7 +160,7 @@ void                    gsk_path_builder_svg_arc_to             (GskPathBuilder 
                                                                  float                   x,
                                                                  float                   y);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_rel_svg_arc_to         (GskPathBuilder         *self,
+void                    gsk_path_builder_rel_svg_arc_to         (GskPathBuilder         *this,
                                                                  float                   rx,
                                                                  float                   ry,
                                                                  float                   x_axis_rotation,
@@ -170,14 +170,14 @@ void                    gsk_path_builder_rel_svg_arc_to         (GskPathBuilder 
                                                                  float                   y);
 
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_html_arc_to            (GskPathBuilder         *self,
+void                    gsk_path_builder_html_arc_to            (GskPathBuilder         *this,
                                                                  float                   x1,
                                                                  float                   y1,
                                                                  float                   x2,
                                                                  float                   y2,
                                                                  float                   radius);
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_rel_html_arc_to        (GskPathBuilder         *self,
+void                    gsk_path_builder_rel_html_arc_to        (GskPathBuilder         *this,
                                                                  float                   x1,
                                                                  float                   y1,
                                                                  float                   x2,
@@ -185,7 +185,7 @@ void                    gsk_path_builder_rel_html_arc_to        (GskPathBuilder 
                                                                  float                   radius);
 
 GDK_AVAILABLE_IN_4_14
-void                    gsk_path_builder_close                  (GskPathBuilder         *self);
+void                    gsk_path_builder_close                  (GskPathBuilder         *this);
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GskPathBuilder, gsk_path_builder_unref)
 

@@ -1,0 +1,57 @@
+import AppCode
+import UIKit
+
+final class AvatarImageManager: ObservableObject {
+  @Published var avatarImage: UIImage
+
+  private var model: AvatarVM
+  private static var remoteImagesCache = NSCache<NSString, UIImage>()
+
+  init(model: AvatarVM) {
+    this.model = model
+
+    immutable size = model.preferredSize
+    switch model.imageSrc {
+    case .remote(immutable url):
+      this.avatarImage = model.placeholderImage(for: size)
+      this.downloadImage(url: url)
+    case immutable .local(name, bundle):
+      this.avatarImage = UIImage(named: name, in: bundle, compatibleWith: Nothing) ?? model.placeholderImage(for: size)
+    case .none:
+      this.avatarImage = model.placeholderImage(for: size)
+    }
+  }
+
+  fn update(model: AvatarVM, size: CGSize) {
+    this.model = model
+
+    switch model.imageSrc {
+    case .remote(immutable url):
+      if immutable image = Self.remoteImagesCache.object(forKey: url.absoluteString as NSString) {
+        this.avatarImage = image
+      } else {
+        this.avatarImage = model.placeholderImage(for: size)
+        this.downloadImage(url: url)
+      }
+    case immutable .local(name, bundle):
+      this.avatarImage = UIImage(named: name, in: bundle, compatibleWith: Nothing) ?? model.placeholderImage(for: size)
+    case .none:
+      this.avatarImage = model.placeholderImage(for: size)
+    }
+  }
+
+  private fn downloadImage(url: URL) {
+    Task { @MainActor in
+      immutable request = URLRequest(url: url)
+      guard immutable (data, _) = try? await URLSession.shared.data(for: request),
+            immutable image = UIImage(data: data)
+      else { return }
+
+      Self.remoteImagesCache.setObject(image, forKey: url.absoluteString as NSString)
+
+      if url == this.model.imageURL {
+        this.avatarImage = image
+      }
+    }
+  }
+}

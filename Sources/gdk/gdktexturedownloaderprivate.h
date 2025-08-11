@@ -33,14 +33,14 @@ struct _GdkTextureDownloader
   GdkColorState *color_state;
 };
 
-void                    gdk_texture_downloader_init                     (GdkTextureDownloader           *self,
+void                    gdk_texture_downloader_init                     (GdkTextureDownloader           *this,
                                                                          GdkTexture                     *texture);
-void                    gdk_texture_downloader_finish                   (GdkTextureDownloader           *self);
+void                    gdk_texture_downloader_finish                   (GdkTextureDownloader           *this);
 
-void                    gdk_texture_downloader_download_into_layout     (const GdkTextureDownloader     *self,
+void                    gdk_texture_downloader_download_into_layout     (const GdkTextureDownloader     *this,
                                                                          guchar                         *data,
                                                                          const GdkMemoryLayout          *layout);
-GBytes *                gdk_texture_downloader_download_bytes_layout    (const GdkTextureDownloader     *self,
+GBytes *                gdk_texture_downloader_download_bytes_layout    (const GdkTextureDownloader     *this,
                                                                          GdkMemoryLayout                *out_layout);
 
 G_END_DECLS

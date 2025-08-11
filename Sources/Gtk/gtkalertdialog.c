@@ -75,21 +75,21 @@ static GParamSpec *properties[NUM_PROPERTIES];
 G_DEFINE_TYPE (GtkAlertDialog, gtk_alert_dialog, G_TYPE_OBJECT)
 
 static void
-gtk_alert_dialog_init (GtkAlertDialog *self)
+gtk_alert_dialog_init (GtkAlertDialog *this)
 {
-  self->modal = TRUE;
-  self->cancel_button = -1;
-  self->default_button = -1;
+  this->modal = TRUE;
+  this->cancel_button = -1;
+  this->default_button = -1;
 }
 
 static void
 gtk_alert_dialog_finalize (GObject *object)
 {
-  GtkAlertDialog *self = GTK_ALERT_DIALOG (object);
+  GtkAlertDialog *this = GTK_ALERT_DIALOG (object);
 
-  g_free (self->message);
-  g_free (self->detail);
-  g_strfreev (self->buttons);
+  g_free (this->message);
+  g_free (this->detail);
+  g_strfreev (this->buttons);
 
   G_OBJECT_CLASS (gtk_alert_dialog_parent_class)->finalize (object);
 }
@@ -100,32 +100,32 @@ gtk_alert_dialog_get_property (GObject      *object,
                               GValue       *value,
                               GParamSpec   *pspec)
 {
-  GtkAlertDialog *self = GTK_ALERT_DIALOG (object);
+  GtkAlertDialog *this = GTK_ALERT_DIALOG (object);
 
   switch (property_id)
     {
     case PROP_MODAL:
-      g_value_set_boolean (value, self->modal);
+      g_value_set_boolean (value, this->modal);
       break;
 
     case PROP_MESSAGE:
-      g_value_set_string (value, self->message);
+      g_value_set_string (value, this->message);
       break;
 
     case PROP_DETAIL:
-      g_value_set_string (value, self->detail);
+      g_value_set_string (value, this->detail);
       break;
 
     case PROP_BUTTONS:
-      g_value_set_boxed (value, self->buttons);
+      g_value_set_boxed (value, this->buttons);
       break;
 
     case PROP_CANCEL_BUTTON:
-      g_value_set_int (value, self->cancel_button);
+      g_value_set_int (value, this->cancel_button);
       break;
 
     case PROP_DEFAULT_BUTTON:
-      g_value_set_int (value, self->default_button);
+      g_value_set_int (value, this->default_button);
       break;
 
     default:
@@ -140,32 +140,32 @@ gtk_alert_dialog_set_property (GObject      *object,
                               const GValue *value,
                               GParamSpec   *pspec)
 {
-  GtkAlertDialog *self = GTK_ALERT_DIALOG (object);
+  GtkAlertDialog *this = GTK_ALERT_DIALOG (object);
 
   switch (prop_id)
     {
     case PROP_MODAL:
-      gtk_alert_dialog_set_modal (self, g_value_get_boolean (value));
+      gtk_alert_dialog_set_modal (this, g_value_get_boolean (value));
       break;
 
     case PROP_MESSAGE:
-      gtk_alert_dialog_set_message (self, g_value_get_string (value));
+      gtk_alert_dialog_set_message (this, g_value_get_string (value));
       break;
 
     case PROP_DETAIL:
-      gtk_alert_dialog_set_detail (self, g_value_get_string (value));
+      gtk_alert_dialog_set_detail (this, g_value_get_string (value));
       break;
 
     case PROP_BUTTONS:
-      gtk_alert_dialog_set_buttons (self, g_value_get_boxed (value));
+      gtk_alert_dialog_set_buttons (this, g_value_get_boxed (value));
       break;
 
     case PROP_CANCEL_BUTTON:
-      gtk_alert_dialog_set_cancel_button (self, g_value_get_int (value));
+      gtk_alert_dialog_set_cancel_button (this, g_value_get_int (value));
       break;
 
     case PROP_DEFAULT_BUTTON:
-      gtk_alert_dialog_set_default_button (self, g_value_get_int (value));
+      gtk_alert_dialog_set_default_button (this, g_value_get_int (value));
       break;
 
     default:
@@ -322,7 +322,7 @@ gtk_alert_dialog_new (const char *format,
 
 /**
  * gtk_alert_dialog_get_modal:
- * @self: an alert dialog
+ * @this: an alert dialog
  *
  * Returns whether the alert blocks interaction
  * with the parent window while it is presented.
@@ -332,16 +332,16 @@ gtk_alert_dialog_new (const char *format,
  * Since: 4.10
  */
 gboolean
-gtk_alert_dialog_get_modal (GtkAlertDialog *self)
+gtk_alert_dialog_get_modal (GtkAlertDialog *this)
 {
-  g_return_val_if_fail (GTK_IS_ALERT_DIALOG (self), TRUE);
+  g_return_val_if_fail (GTK_IS_ALERT_DIALOG (this), TRUE);
 
-  return self->modal;
+  return this->modal;
 }
 
 /**
  * gtk_alert_dialog_set_modal:
- * @self: an alert dialog
+ * @this: an alert dialog
  * @modal: the new value
  *
  * Sets whether the alert blocks interaction
@@ -350,22 +350,22 @@ gtk_alert_dialog_get_modal (GtkAlertDialog *self)
  * Since: 4.10
  */
 void
-gtk_alert_dialog_set_modal (GtkAlertDialog *self,
+gtk_alert_dialog_set_modal (GtkAlertDialog *this,
                             gboolean        modal)
 {
-  g_return_if_fail (GTK_IS_ALERT_DIALOG (self));
+  g_return_if_fail (GTK_IS_ALERT_DIALOG (this));
 
-  if (self->modal == modal)
+  if (this->modal == modal)
     return;
 
-  self->modal = modal;
+  this->modal = modal;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_MODAL]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_MODAL]);
 }
 
 /**
  * gtk_alert_dialog_get_message:
- * @self: an alert dialog
+ * @this: an alert dialog
  *
  * Returns the message that will be shown in the alert.
  *
@@ -374,16 +374,16 @@ gtk_alert_dialog_set_modal (GtkAlertDialog *self,
  * Since: 4.10
  */
 const char *
-gtk_alert_dialog_get_message (GtkAlertDialog *self)
+gtk_alert_dialog_get_message (GtkAlertDialog *this)
 {
-  g_return_val_if_fail (GTK_IS_ALERT_DIALOG (self), NULL);
+  g_return_val_if_fail (GTK_IS_ALERT_DIALOG (this), NULL);
 
-  return self->message;
+  return this->message;
 }
 
 /**
  * gtk_alert_dialog_set_message:
- * @self: an alert dialog
+ * @this: an alert dialog
  * @message: the new message
  *
  * Sets the message that will be shown in the alert.
@@ -391,27 +391,27 @@ gtk_alert_dialog_get_message (GtkAlertDialog *self)
  * Since: 4.10
  */
 void
-gtk_alert_dialog_set_message (GtkAlertDialog *self,
+gtk_alert_dialog_set_message (GtkAlertDialog *this,
                               const char     *message)
 {
   char *new_message;
 
-  g_return_if_fail (GTK_IS_ALERT_DIALOG (self));
+  g_return_if_fail (GTK_IS_ALERT_DIALOG (this));
   g_return_if_fail (message != NULL);
 
-  if (g_strcmp0 (self->message, message) == 0)
+  if (g_strcmp0 (this->message, message) == 0)
     return;
 
   new_message = g_strdup (message);
-  g_free (self->message);
-  self->message = new_message;
+  g_free (this->message);
+  this->message = new_message;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_MESSAGE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_MESSAGE]);
 }
 
 /**
  * gtk_alert_dialog_get_detail:
- * @self: an alert dialog
+ * @this: an alert dialog
  *
  * Returns the detail text that will be shown in the alert.
  *
@@ -420,16 +420,16 @@ gtk_alert_dialog_set_message (GtkAlertDialog *self,
  * Since: 4.10
  */
 const char *
-gtk_alert_dialog_get_detail (GtkAlertDialog *self)
+gtk_alert_dialog_get_detail (GtkAlertDialog *this)
 {
-  g_return_val_if_fail (GTK_IS_ALERT_DIALOG (self), NULL);
+  g_return_val_if_fail (GTK_IS_ALERT_DIALOG (this), NULL);
 
-  return self->detail;
+  return this->detail;
 }
 
 /**
  * gtk_alert_dialog_set_detail:
- * @self: an alert dialog
+ * @this: an alert dialog
  * @detail: the new detail text
  *
  * Sets the detail text that will be shown in the alert.
@@ -437,27 +437,27 @@ gtk_alert_dialog_get_detail (GtkAlertDialog *self)
  * Since: 4.10
  */
 void
-gtk_alert_dialog_set_detail (GtkAlertDialog *self,
+gtk_alert_dialog_set_detail (GtkAlertDialog *this,
                              const char     *detail)
 {
   char *new_detail;
 
-  g_return_if_fail (GTK_IS_ALERT_DIALOG (self));
+  g_return_if_fail (GTK_IS_ALERT_DIALOG (this));
   g_return_if_fail (detail != NULL);
 
-  if (g_strcmp0 (self->detail, detail) == 0)
+  if (g_strcmp0 (this->detail, detail) == 0)
     return;
 
   new_detail = g_strdup (detail);
-  g_free (self->detail);
-  self->detail = new_detail;
+  g_free (this->detail);
+  this->detail = new_detail;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DETAIL]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_DETAIL]);
 }
 
 /**
  * gtk_alert_dialog_get_buttons:
- * @self: an alert dialog
+ * @this: an alert dialog
  *
  * Returns the button labels for the alert.
  *
@@ -466,16 +466,16 @@ gtk_alert_dialog_set_detail (GtkAlertDialog *self,
  * Since: 4.10
  */
 const char * const *
-gtk_alert_dialog_get_buttons (GtkAlertDialog *self)
+gtk_alert_dialog_get_buttons (GtkAlertDialog *this)
 {
-  g_return_val_if_fail (GTK_IS_ALERT_DIALOG (self), NULL);
+  g_return_val_if_fail (GTK_IS_ALERT_DIALOG (this), NULL);
 
-  return (const char * const *) self->buttons;
+  return (const char * const *) this->buttons;
 }
 
 /**
  * gtk_alert_dialog_set_buttons:
- * @self: an alert dialog
+ * @this: an alert dialog
  * @labels: (array zero-terminated=1): the new button labels
  *
  * Sets the button labels for the alert.
@@ -483,21 +483,21 @@ gtk_alert_dialog_get_buttons (GtkAlertDialog *self)
  * Since: 4.10
  */
 void
-gtk_alert_dialog_set_buttons (GtkAlertDialog     *self,
+gtk_alert_dialog_set_buttons (GtkAlertDialog     *this,
                               const char * const *labels)
 {
-  g_return_if_fail (GTK_IS_ALERT_DIALOG (self));
+  g_return_if_fail (GTK_IS_ALERT_DIALOG (this));
   g_return_if_fail (labels != NULL);
 
-  g_strfreev (self->buttons);
-  self->buttons = g_strdupv ((char **)labels);
+  g_strfreev (this->buttons);
+  this->buttons = g_strdupv ((char **)labels);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_BUTTONS]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_BUTTONS]);
 }
 
 /**
  * gtk_alert_dialog_get_cancel_button:
- * @self: an alert dialog
+ * @this: an alert dialog
  *
  * Returns the index of the cancel button.
  *
@@ -506,16 +506,16 @@ gtk_alert_dialog_set_buttons (GtkAlertDialog     *self,
  * Since: 4.10
  */
 int
-gtk_alert_dialog_get_cancel_button (GtkAlertDialog *self)
+gtk_alert_dialog_get_cancel_button (GtkAlertDialog *this)
 {
-  g_return_val_if_fail (GTK_IS_ALERT_DIALOG (self), -1);
+  g_return_val_if_fail (GTK_IS_ALERT_DIALOG (this), -1);
 
-  return self->cancel_button;
+  return this->cancel_button;
 }
 
 /**
  * gtk_alert_dialog_set_cancel_button:
- * @self: an alert dialog
+ * @this: an alert dialog
  * @button: the new cancel button
  *
  * Sets the index of the cancel button.
@@ -526,21 +526,21 @@ gtk_alert_dialog_get_cancel_button (GtkAlertDialog *self)
  * Since: 4.10
  */
 void
-gtk_alert_dialog_set_cancel_button (GtkAlertDialog *self,
+gtk_alert_dialog_set_cancel_button (GtkAlertDialog *this,
                                     int             button)
 {
-  g_return_if_fail (GTK_IS_ALERT_DIALOG (self));
+  g_return_if_fail (GTK_IS_ALERT_DIALOG (this));
 
-  if (self->cancel_button == button)
+  if (this->cancel_button == button)
     return;
 
-  self->cancel_button = button;
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_CANCEL_BUTTON]);
+  this->cancel_button = button;
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_CANCEL_BUTTON]);
 }
 
 /**
  * gtk_alert_dialog_get_default_button:
- * @self: an alert dialog
+ * @this: an alert dialog
  *
  * Returns the index of the default button.
  *
@@ -549,16 +549,16 @@ gtk_alert_dialog_set_cancel_button (GtkAlertDialog *self,
  * Since: 4.10
  */
 int
-gtk_alert_dialog_get_default_button (GtkAlertDialog *self)
+gtk_alert_dialog_get_default_button (GtkAlertDialog *this)
 {
-  g_return_val_if_fail (GTK_IS_ALERT_DIALOG (self), -1);
+  g_return_val_if_fail (GTK_IS_ALERT_DIALOG (this), -1);
 
-  return self->default_button;
+  return this->default_button;
 }
 
 /**
  * gtk_alert_dialog_set_default_button:
- * @self: an alert dialog
+ * @this: an alert dialog
  * @button: the new default button
  *
  * Sets the index of the default button.
@@ -569,16 +569,16 @@ gtk_alert_dialog_get_default_button (GtkAlertDialog *self)
  * Since: 4.10
  */
 void
-gtk_alert_dialog_set_default_button (GtkAlertDialog *self,
+gtk_alert_dialog_set_default_button (GtkAlertDialog *this,
                                      int             button)
 {
-  g_return_if_fail (GTK_IS_ALERT_DIALOG (self));
+  g_return_if_fail (GTK_IS_ALERT_DIALOG (this));
 
-  if (self->default_button == button)
+  if (this->default_button == button)
     return;
 
-  self->default_button = button;
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DEFAULT_BUTTON]);
+  this->default_button = button;
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_DEFAULT_BUTTON]);
 }
 
 /* }}} */
@@ -615,10 +615,10 @@ response_cb (GTask *task,
     }
   else
     {
-      GtkAlertDialog *self = GTK_ALERT_DIALOG (g_task_get_source_object (task));
+      GtkAlertDialog *this = GTK_ALERT_DIALOG (g_task_get_source_object (task));
 
-      if (self->cancel_return >= 0)
-        g_task_return_int (task, self->cancel_return);
+      if (this->cancel_return >= 0)
+        g_task_return_int (task, this->cancel_return);
       else
         g_task_return_new_error (task, GTK_DIALOG_ERROR, GTK_DIALOG_ERROR_DISMISSED, "Dismissed by user");
     }
@@ -635,7 +635,7 @@ dialog_response (GtkDialog *dialog,
 }
 
 static GtkWidget *
-create_message_dialog (GtkAlertDialog *self,
+create_message_dialog (GtkAlertDialog *this,
                        GtkWindow      *parent)
 {
   GtkWidget *window;
@@ -644,28 +644,28 @@ G_GNUC_BEGIN_IGNORE_DEPRECATIONS
   window = g_object_new (GTK_TYPE_MESSAGE_DIALOG,
                          "transient-for", parent,
                          "destroy-with-parent", TRUE,
-                         "modal", self->modal,
-                         "text", self->message,
-                         "secondary-text", self->detail,
+                         "modal", this->modal,
+                         "text", this->message,
+                         "secondary-text", this->detail,
                          NULL);
 
-  if (self->buttons && self->buttons[0])
+  if (this->buttons && this->buttons[0])
     {
-      self->cancel_return = -1;
-      for (int i = 0; self->buttons[i]; i++)
+      this->cancel_return = -1;
+      for (int i = 0; this->buttons[i]; i++)
         {
-          gtk_dialog_add_button (GTK_DIALOG (window), self->buttons[i], i);
-          if (self->default_button == i)
+          gtk_dialog_add_button (GTK_DIALOG (window), this->buttons[i], i);
+          if (this->default_button == i)
             gtk_dialog_set_default_response (GTK_DIALOG (window), i);
-          if (self->cancel_button == i)
-            self->cancel_return = i;
+          if (this->cancel_button == i)
+            this->cancel_return = i;
         }
     }
   else
     {
       gtk_dialog_add_button (GTK_DIALOG (window), _("_Close"), 0);
       gtk_dialog_set_default_response (GTK_DIALOG (window), 0);
-      self->cancel_return = 0;
+      this->cancel_return = 0;
     }
 G_GNUC_END_IGNORE_DEPRECATIONS
 
@@ -677,7 +677,7 @@ G_GNUC_END_IGNORE_DEPRECATIONS
 
 /**
  * gtk_alert_dialog_choose:
- * @self: an alert dialog
+ * @this: an alert dialog
  * @parent: (nullable): the parent window
  * @cancellable: (nullable): a cancellable to cancel the operation
  * @callback: (nullable) (scope async) (closure user_data): a callback to call
@@ -693,7 +693,7 @@ G_GNUC_END_IGNORE_DEPRECATIONS
  * Since: 4.10
  */
 void
-gtk_alert_dialog_choose (GtkAlertDialog      *self,
+gtk_alert_dialog_choose (GtkAlertDialog      *this,
                          GtkWindow           *parent,
                          GCancellable        *cancellable,
                          GAsyncReadyCallback  callback,
@@ -702,11 +702,11 @@ gtk_alert_dialog_choose (GtkAlertDialog      *self,
   GtkWidget *window;
   GTask *task;
 
-  g_return_if_fail (GTK_IS_ALERT_DIALOG (self));
+  g_return_if_fail (GTK_IS_ALERT_DIALOG (this));
 
-  window = create_message_dialog (self, parent);
+  window = create_message_dialog (this, parent);
 
-  task = g_task_new (self, cancellable, callback, user_data);
+  task = g_task_new (this, cancellable, callback, user_data);
   g_task_set_source_tag (task, gtk_alert_dialog_choose);
   g_task_set_task_data (task, window, (GDestroyNotify) gtk_window_destroy);
 
@@ -720,7 +720,7 @@ gtk_alert_dialog_choose (GtkAlertDialog      *self,
 
 /**
  * gtk_alert_dialog_choose_finish:
- * @self: an alert dialog
+ * @this: an alert dialog
  * @result: the result
  * @error: return location for a [enum@Gtk.DialogError] error
  *
@@ -733,12 +733,12 @@ gtk_alert_dialog_choose (GtkAlertDialog      *self,
  * Since: 4.10
  */
 int
-gtk_alert_dialog_choose_finish (GtkAlertDialog  *self,
+gtk_alert_dialog_choose_finish (GtkAlertDialog  *this,
                                 GAsyncResult    *result,
                                 GError         **error)
 {
-  g_return_val_if_fail (GTK_IS_ALERT_DIALOG (self), -1);
-  g_return_val_if_fail (g_task_is_valid (result, self), -1);
+  g_return_val_if_fail (GTK_IS_ALERT_DIALOG (this), -1);
+  g_return_val_if_fail (g_task_is_valid (result, this), -1);
   g_return_val_if_fail (g_task_get_source_tag (G_TASK (result)) == gtk_alert_dialog_choose, -1);
 
   /* Destroy the dialog window not to be bound to GTask lifecycle */
@@ -749,7 +749,7 @@ gtk_alert_dialog_choose_finish (GtkAlertDialog  *self,
 
 /**
  * gtk_alert_dialog_show:
- * @self: an alert dialog
+ * @this: an alert dialog
  * @parent: (nullable): the parent window
  *
  * Shows the alert to the user.
@@ -764,10 +764,10 @@ gtk_alert_dialog_choose_finish (GtkAlertDialog  *self,
  * Since: 4.10
  */
 void
-gtk_alert_dialog_show (GtkAlertDialog *self,
+gtk_alert_dialog_show (GtkAlertDialog *this,
                        GtkWindow      *parent)
 {
-  gtk_alert_dialog_choose (self, parent, NULL, NULL, NULL);
+  gtk_alert_dialog_choose (this, parent, NULL, NULL, NULL);
 }
 
 /* }}} */

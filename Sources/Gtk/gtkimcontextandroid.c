@@ -94,22 +94,22 @@ typedef struct _GtkIMContextAndroid
 static GtkIMContextAndroidJavaCache gtk_im_context_android_java_cache;
 
 #define GTK_IM_CONTEXT_ANDROID_DECLARE_SELF(this) \
-  GtkIMContextAndroid *self = (GtkIMContextAndroid *)(*env)->GetLongField (env, (this), gtk_im_context_android_java_cache.native_ptr); \
-  if (self == NULL) \
+  GtkIMContextAndroid *this = (GtkIMContextAndroid *)(*env)->GetLongField (env, (this), gtk_im_context_android_java_cache.native_ptr); \
+  if (this == NULL) \
     return; \
-  g_return_if_fail (GTK_IS_IM_CONTEXT_ANDROID (self));
+  g_return_if_fail (GTK_IS_IM_CONTEXT_ANDROID (this));
 #define GTK_IM_CONTEXT_ANDROID_DECLARE_SELF_WITH_RET(this, retval) \
-  GtkIMContextAndroid *self = (GtkIMContextAndroid *)(*env)->GetLongField (env, (this), gtk_im_context_android_java_cache.native_ptr); \
-  if (self == NULL) \
+  GtkIMContextAndroid *this = (GtkIMContextAndroid *)(*env)->GetLongField (env, (this), gtk_im_context_android_java_cache.native_ptr); \
+  if (this == NULL) \
     return (retval); \
-  g_return_val_if_fail (GTK_IS_IM_CONTEXT_ANDROID (self), (retval));
+  g_return_val_if_fail (GTK_IS_IM_CONTEXT_ANDROID (this), (retval));
 
 static jint
 _gtk_im_context_android_get_input_type (JNIEnv *env, jobject this)
 {
   GTK_IM_CONTEXT_ANDROID_DECLARE_SELF_WITH_RET (this, 0)
   jint input_type = 0;
-  switch (self->input_purpose)
+  switch (this->input_purpose)
     {
     case GTK_INPUT_PURPOSE_FREE_FORM:
       input_type = gtk_im_context_android_java_cache.input_type.class_text;
@@ -157,15 +157,15 @@ _gtk_im_context_android_get_input_type (JNIEnv *env, jobject this)
 
   if (input_type & gtk_im_context_android_java_cache.input_type.class_text)
     {
-      if (self->input_hints & GTK_INPUT_HINT_SPELLCHECK)
+      if (this->input_hints & GTK_INPUT_HINT_SPELLCHECK)
         input_type |= gtk_im_context_android_java_cache.input_type.text_flag_auto_correct;
-      if (self->input_hints & GTK_INPUT_HINT_WORD_COMPLETION)
+      if (this->input_hints & GTK_INPUT_HINT_WORD_COMPLETION)
         input_type |= gtk_im_context_android_java_cache.input_type.text_flag_auto_complete;
-      if (self->input_hints & GTK_INPUT_HINT_UPPERCASE_CHARS)
+      if (this->input_hints & GTK_INPUT_HINT_UPPERCASE_CHARS)
         input_type |= gtk_im_context_android_java_cache.input_type.text_flag_cap_characters;
-      if (self->input_hints & GTK_INPUT_HINT_UPPERCASE_WORDS)
+      if (this->input_hints & GTK_INPUT_HINT_UPPERCASE_WORDS)
         input_type |= gtk_im_context_android_java_cache.input_type.text_flag_cap_words;
-      if (self->input_hints & GTK_INPUT_HINT_UPPERCASE_SENTENCES)
+      if (this->input_hints & GTK_INPUT_HINT_UPPERCASE_SENTENCES)
         input_type |= gtk_im_context_android_java_cache.input_type.text_flag_cap_sentences;
     }
 
@@ -178,7 +178,7 @@ _gtk_im_context_android_get_surrounding (JNIEnv *env, jobject this)
   GTK_IM_CONTEXT_ANDROID_DECLARE_SELF_WITH_RET (this, NULL)
   gchar *text;
   gint cursor_idx_bytes, anchor_idx_bytes;
-  if (!gtk_im_context_get_surrounding_with_selection ((GtkIMContext *)self, &text, &cursor_idx_bytes, &anchor_idx_bytes))
+  if (!gtk_im_context_get_surrounding_with_selection ((GtkIMContext *)this, &text, &cursor_idx_bytes, &anchor_idx_bytes))
     return NULL;
   glong cursor_idx = g_utf8_strlen (text, cursor_idx_bytes);
   glong anchor_idx = g_utf8_strlen (text, anchor_idx_bytes);
@@ -193,14 +193,14 @@ static jboolean
 _gtk_im_context_android_delete_surrounding (JNIEnv *env, jobject this, jint offset, jint n_chars)
 {
   GTK_IM_CONTEXT_ANDROID_DECLARE_SELF_WITH_RET (this, FALSE)
-  return gtk_im_context_delete_surrounding ((GtkIMContext *)self, offset, n_chars);
+  return gtk_im_context_delete_surrounding ((GtkIMContext *)this, offset, n_chars);
 }
 
 static jobject
 _gtk_im_context_android_get_preedit (JNIEnv *env, jobject this)
 {
   GTK_IM_CONTEXT_ANDROID_DECLARE_SELF_WITH_RET (this, NULL)
-  return self->preedit;
+  return this->preedit;
 }
 
 static void
@@ -209,23 +209,23 @@ _gtk_im_context_android_update_preedit (JNIEnv *env, jobject this, jstring strin
   GTK_IM_CONTEXT_ANDROID_DECLARE_SELF (this)
 
   gboolean preedit_started = FALSE;
-  if (self->preedit)
+  if (this->preedit)
     {
-      (*env)->DeleteGlobalRef (env, self->preedit);
+      (*env)->DeleteGlobalRef (env, this->preedit);
       preedit_started = TRUE;
     }
-  self->preedit = string ? (*env)->NewGlobalRef (env, string) : NULL;
-  self->preedit_cursor = cursor;
-  if (self->preedit)
+  this->preedit = string ? (*env)->NewGlobalRef (env, string) : NULL;
+  this->preedit_cursor = cursor;
+  if (this->preedit)
     {
       if (!preedit_started)
-          g_signal_emit_by_name (self, "preedit-start");
-      g_signal_emit_by_name (self, "preedit-changed");
+          g_signal_emit_by_name (this, "preedit-start");
+      g_signal_emit_by_name (this, "preedit-changed");
     }
   else if (preedit_started)
     {
-      g_signal_emit_by_name (self, "preedit-changed");
-      g_signal_emit_by_name (self, "preedit-end");
+      g_signal_emit_by_name (this, "preedit-changed");
+      g_signal_emit_by_name (this, "preedit-end");
     }
 }
 
@@ -233,18 +233,18 @@ static jboolean
 _gtk_im_context_android_commit (JNIEnv *env, jobject this, jstring string)
 {
   GTK_IM_CONTEXT_ANDROID_DECLARE_SELF_WITH_RET (this, FALSE)
-  if (self->preedit) {
+  if (this->preedit) {
     if (string == NULL)
-      string = (*env)->NewLocalRef (env, self->preedit);
-    (*env)->DeleteGlobalRef (env, self->preedit);
-    self->preedit = NULL;
-    g_signal_emit_by_name (self, "preedit-changed");
-    g_signal_emit_by_name (self, "preedit-end");
+      string = (*env)->NewLocalRef (env, this->preedit);
+    (*env)->DeleteGlobalRef (env, this->preedit);
+    this->preedit = NULL;
+    g_signal_emit_by_name (this, "preedit-changed");
+    g_signal_emit_by_name (this, "preedit-end");
   }
   if (string)
     {
       gchar *str = gdk_android_java_to_utf8 (string, NULL);
-      g_signal_emit_by_name (self, "commit", str);
+      g_signal_emit_by_name (this, "commit", str);
       g_free (str);
       return TRUE;
     }
@@ -330,51 +330,51 @@ gdk_im_context_init_jni (void)
 static void
 gdk_im_context_android_finalize (GObject *object)
 {
-  GtkIMContextAndroid *self = (GtkIMContextAndroid *)object;
+  GtkIMContextAndroid *this = (GtkIMContextAndroid *)object;
   JNIEnv *env = gdk_android_get_env ();
-  (*env)->SetLongField (env, self->context, gtk_im_context_android_java_cache.native_ptr, 0);
-  (*env)->DeleteGlobalRef (env, self->context);
-  if (self->preedit)
-    (*env)->DeleteGlobalRef (env, self->preedit);
+  (*env)->SetLongField (env, this->context, gtk_im_context_android_java_cache.native_ptr, 0);
+  (*env)->DeleteGlobalRef (env, this->context);
+  if (this->preedit)
+    (*env)->DeleteGlobalRef (env, this->preedit);
   G_OBJECT_CLASS(gtk_im_context_android_parent_class)->finalize (object);
 }
 
 static void
-gtk_im_context_android_update_ime_keyboard (GtkIMContextAndroid *self)
+gtk_im_context_android_update_ime_keyboard (GtkIMContextAndroid *this)
 {
-  if (!GDK_IS_ANDROID_SURFACE (self->client_surface))
+  if (!GDK_IS_ANDROID_SURFACE (this->client_surface))
     return;
-  GdkAndroidSurface *surface = (GdkAndroidSurface *)self->client_surface;
+  GdkAndroidSurface *surface = (GdkAndroidSurface *)this->client_surface;
   if (surface->surface == NULL)
     return;
 
-  JNIEnv *env = gdk_android_display_get_env (gdk_surface_get_display (self->client_surface));
+  JNIEnv *env = gdk_android_display_get_env (gdk_surface_get_display (this->client_surface));
   (*env)->CallVoidMethod (env, surface->surface,
                           gdk_android_get_java_cache ()->surface.set_active_im_context,
-                          self->context);
+                          this->context);
   (*env)->CallVoidMethod (env, surface->surface,
                           gdk_android_get_java_cache ()->surface.set_ime_keyboard_state,
-                          self->focused);
+                          this->focused);
 }
 
 static void
 gtk_im_context_android_set_client_widget (GtkIMContext *context,
                                           GtkWidget    *widget)
 {
-  GtkIMContextAndroid *self = GTK_IM_CONTEXT_ANDROID (context);
+  GtkIMContextAndroid *this = GTK_IM_CONTEXT_ANDROID (context);
 
   GTK_DEBUG (MODULES, "gtk_im_context_android_set_client_surface: %p", widget);
 
-  self->client_widget = widget;
-  self->client_surface = NULL;
+  this->client_widget = widget;
+  this->client_surface = NULL;
 
   if (widget != NULL)
     {
       GtkNative *native = gtk_widget_get_native (widget);
       if (native != NULL)
         {
-          self->client_surface = gtk_native_get_surface (native);
-          gtk_im_context_android_update_ime_keyboard (self);
+          this->client_surface = gtk_native_get_surface (native);
+          gtk_im_context_android_update_ime_keyboard (this);
         }
     }
 
@@ -388,13 +388,13 @@ gtk_im_context_android_get_preedit_string (GtkIMContext   *context,
                                            PangoAttrList **attrs,
                                            gint           *cursor_pos)
 {
-  GtkIMContextAndroid *self = GTK_IM_CONTEXT_ANDROID (context);
-  if (!self->preedit)
+  GtkIMContextAndroid *this = GTK_IM_CONTEXT_ANDROID (context);
+  if (!this->preedit)
     return GTK_IM_CONTEXT_CLASS (gtk_im_context_android_parent_class)->get_preedit_string (context, string, attrs, cursor_pos);
 
-  gchar* utf8 = gdk_android_java_to_utf8 (self->preedit, NULL);
+  gchar* utf8 = gdk_android_java_to_utf8 (this->preedit, NULL);
   if (cursor_pos)
-    *cursor_pos = self->preedit_cursor >= 0 ? self->preedit_cursor : g_utf8_strlen (utf8, -1);
+    *cursor_pos = this->preedit_cursor >= 0 ? this->preedit_cursor : g_utf8_strlen (utf8, -1);
   if (attrs)
     {
       *attrs = pango_attr_list_new ();
@@ -421,21 +421,21 @@ gtk_im_context_android_get_preedit_string (GtkIMContext   *context,
 static void
 gtk_im_context_android_reset (GtkIMContext *context)
 {
-  GtkIMContextAndroid *self = GTK_IM_CONTEXT_ANDROID (context);
+  GtkIMContextAndroid *this = GTK_IM_CONTEXT_ANDROID (context);
   JNIEnv *env = gdk_android_get_env ();
   (*env)->PushLocalFrame (env, 1);
 
-  if (self->preedit)
+  if (this->preedit)
     {
-      (*env)->DeleteGlobalRef (env, self->preedit);
-      self->preedit = NULL;
-      g_signal_emit_by_name (self, "preedit-changed");
-      g_signal_emit_by_name (self, "preedit-end");
+      (*env)->DeleteGlobalRef (env, this->preedit);
+      this->preedit = NULL;
+      g_signal_emit_by_name (this, "preedit-changed");
+      g_signal_emit_by_name (this, "preedit-end");
     }
 
-  if (GDK_IS_ANDROID_SURFACE (self->client_surface))
+  if (GDK_IS_ANDROID_SURFACE (this->client_surface))
     {
-      GdkAndroidSurface *surface = (GdkAndroidSurface *)self->client_surface;
+      GdkAndroidSurface *surface = (GdkAndroidSurface *)this->client_surface;
       if (surface->surface)
         (*env)->CallStaticVoidMethod (env, gtk_im_context_android_java_cache.class,
                                   gtk_im_context_android_java_cache.reset,
@@ -450,9 +450,9 @@ gtk_im_context_android_focus_in (GtkIMContext *context)
 {
   GTK_DEBUG (MODULES, "gtk_im_context_android_focus_in");
 
-  GtkIMContextAndroid *self = GTK_IM_CONTEXT_ANDROID (context);
-  self->focused = TRUE;
-  gtk_im_context_android_update_ime_keyboard (self);
+  GtkIMContextAndroid *this = GTK_IM_CONTEXT_ANDROID (context);
+  this->focused = TRUE;
+  gtk_im_context_android_update_ime_keyboard (this);
 
   if (GTK_IM_CONTEXT_CLASS (gtk_im_context_android_parent_class)->focus_in)
     GTK_IM_CONTEXT_CLASS (gtk_im_context_android_parent_class)->focus_in (context);
@@ -463,9 +463,9 @@ gtk_im_context_android_focus_out (GtkIMContext *context)
 {
   GTK_DEBUG (MODULES, "gtk_im_context_android_focus_out");
 
-  GtkIMContextAndroid *self = GTK_IM_CONTEXT_ANDROID (context);
-  self->focused = FALSE;
-  gtk_im_context_android_update_ime_keyboard (self);
+  GtkIMContextAndroid *this = GTK_IM_CONTEXT_ANDROID (context);
+  this->focused = FALSE;
+  gtk_im_context_android_update_ime_keyboard (this);
 
   if (GTK_IM_CONTEXT_CLASS (gtk_im_context_android_parent_class)->focus_out)
     GTK_IM_CONTEXT_CLASS (gtk_im_context_android_parent_class)->focus_out (context);
@@ -475,9 +475,9 @@ static gboolean
 gtk_im_context_activate_osk_keyboard (GtkIMContext *context,
                                       GdkEvent     *event)
 {
-  GtkIMContextAndroid *self = (GtkIMContextAndroid *)context;
-  gtk_im_context_android_update_ime_keyboard (self);
-  return self->focused;
+  GtkIMContextAndroid *this = (GtkIMContextAndroid *)context;
+  gtk_im_context_android_update_ime_keyboard (this);
+  return this->focused;
 }
 
 static void
@@ -500,21 +500,21 @@ gtk_im_context_android_class_init (GtkIMContextAndroidClass *klass)
 }
 
 static void
-gtk_im_context_android_init (GtkIMContextAndroid *self)
+gtk_im_context_android_init (GtkIMContextAndroid *this)
 {
   GTK_DEBUG (MODULES, "gtk_im_context_android_init");
 
-  self->focused = FALSE;
-  self->input_purpose = GTK_INPUT_PURPOSE_FREE_FORM;
-  self->input_hints = GTK_INPUT_HINT_NONE;
+  this->focused = FALSE;
+  this->input_purpose = GTK_INPUT_PURPOSE_FREE_FORM;
+  this->input_hints = GTK_INPUT_HINT_NONE;
 
   JNIEnv *env = gdk_android_get_env ();
   (*env)->PushLocalFrame (env, 1);
-  self->context = (*env)->NewGlobalRef(env,
+  this->context = (*env)->NewGlobalRef(env,
                                        (*env)->NewObject (env, gtk_im_context_android_java_cache.class,
                                                           gtk_im_context_android_java_cache.constructor,
-                                                          self));
+                                                          this));
   (*env)->PopLocalFrame (env, NULL);
 
-  self->preedit_cursor = -1;
+  this->preedit_cursor = -1;
 }

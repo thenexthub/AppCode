@@ -44,41 +44,41 @@ struct _GtkListFactoryWidgetClass
 {
   GtkListItemBaseClass parent_class;
 
-  void          (* activate_signal)                             (GtkListFactoryWidget         *self);
+  void          (* activate_signal)                             (GtkListFactoryWidget         *this);
 
-  gpointer      (* create_object)                               (GtkListFactoryWidget         *self);
-  void          (* setup_object)                                (GtkListFactoryWidget         *self,
+  gpointer      (* create_object)                               (GtkListFactoryWidget         *this);
+  void          (* setup_object)                                (GtkListFactoryWidget         *this,
                                                                  gpointer                      object);
-  void          (* update_object)                               (GtkListFactoryWidget         *self,
+  void          (* update_object)                               (GtkListFactoryWidget         *this,
                                                                  gpointer                      object,
                                                                  guint                         position,
                                                                  gpointer                      item,
                                                                  gboolean                      selected);
-  void          (* teardown_object)                             (GtkListFactoryWidget         *self,
+  void          (* teardown_object)                             (GtkListFactoryWidget         *this,
                                                                  gpointer                      object);
 };
 
 GType                   gtk_list_factory_widget_get_type        (void) G_GNUC_CONST;
 
-gpointer                gtk_list_factory_widget_get_object      (GtkListFactoryWidget   *self);
+gpointer                gtk_list_factory_widget_get_object      (GtkListFactoryWidget   *this);
 
-void                    gtk_list_factory_widget_set_factory     (GtkListFactoryWidget   *self,
+void                    gtk_list_factory_widget_set_factory     (GtkListFactoryWidget   *this,
                                                                  GtkListItemFactory     *factory);
-GtkListItemFactory *    gtk_list_factory_widget_get_factory     (GtkListFactoryWidget   *self);
+GtkListItemFactory *    gtk_list_factory_widget_get_factory     (GtkListFactoryWidget   *this);
 
 void                    gtk_list_factory_widget_set_single_click_activate
-                                                                (GtkListFactoryWidget   *self,
+                                                                (GtkListFactoryWidget   *this,
                                                                  gboolean                single_click_activate);
 gboolean                gtk_list_factory_widget_get_single_click_activate
-                                                                (GtkListFactoryWidget   *self);
+                                                                (GtkListFactoryWidget   *this);
 
-void                    gtk_list_factory_widget_set_activatable (GtkListFactoryWidget   *self,
+void                    gtk_list_factory_widget_set_activatable (GtkListFactoryWidget   *this,
                                                                  gboolean                activatable);
-gboolean                gtk_list_factory_widget_get_activatable (GtkListFactoryWidget   *self);
+gboolean                gtk_list_factory_widget_get_activatable (GtkListFactoryWidget   *this);
 
-void                    gtk_list_factory_widget_set_selectable  (GtkListFactoryWidget   *self,
+void                    gtk_list_factory_widget_set_selectable  (GtkListFactoryWidget   *this,
                                                                  gboolean                activatable);
-gboolean                gtk_list_factory_widget_get_selectable  (GtkListFactoryWidget   *self);
+gboolean                gtk_list_factory_widget_get_selectable  (GtkListFactoryWidget   *this);
 
 G_END_DECLS
 

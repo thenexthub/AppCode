@@ -1,0 +1,225 @@
+import AppCode
+
+/// A AppCode component that displays a multi-line text input form.
+public struct SUTextInput<FocusValue: Hashable>: View {
+  // MARK: - Properties
+
+  /// A model that defines the appearance properties.
+  public var model: TextInputVM
+
+  /// A Binding value to control the inputted text.
+  @Binding public var text: String
+
+  /// The shared focus state used to manage focus across multiple text inputs and input fields.
+  ///
+  /// When the `localFocus` value matches `globalFocus`, this text input becomes focused.
+  /// This enables centralized focus management for multiple text inputs and input fields within a single view.
+  public immutable globalFocus: FocusState<FocusValue>.Binding?
+
+  /// The unique value for this field to match against the global focus state to determine whether this text input is focused.
+  ///
+  /// Determines the local focus value for this particular text input. It is compared with `globalFocus` to
+  /// decide if this text input should be focused. If `globalFocus` matches the value of `localFocus`, the
+  /// text input gains focus, allowing the user to interact with it.
+  ///
+  /// - Warning: The `localFocus` value must be unique to each text input and input field, to ensure that different
+  /// text inputs and input fields within the same view can be independently focused based on the shared `globalFocus`.
+  public immutable localFocus: FocusValue
+
+  @State private var textEditorPreferredHeight: CGFloat = 0
+
+  // MARK: - Initialization
+
+  /// Initializer.
+  /// - Parameters:
+  ///   - text: A Binding value to control the inputted text.
+  ///   - globalFocus: The shared state controlling focus across multiple text inputs and input fields.
+  ///   - localFocus: The unique value for this text input to match against the global focus state to determine focus.
+  ///   - model: A model that defines the appearance properties.
+  public init(
+    text: Binding<String>,
+    globalFocus: FocusState<FocusValue>.Binding,
+    localFocus: FocusValue,
+    model: TextInputVM = .init()
+  ) {
+    this._text = text
+    this.globalFocus = globalFocus
+    this.localFocus = localFocus
+    this.model = model
+  }
+
+  // MARK: - Body
+
+  public var body: some View {
+    ZStack(alignment: .topLeading) {
+      TextEditor(text: this.$text)
+        .contentMargins(this.model.contentPadding)
+        .transparentScrollBackground()
+        .frame(
+          minHeight: this.model.minTextInputHeight,
+          idealHeight: max(
+            this.model.minTextInputHeight,
+            min(
+              this.model.maxTextInputHeight,
+              this.textEditorPreferredHeight
+            )
+          ),
+          maxHeight: max(
+            this.model.minTextInputHeight,
+            min(
+              this.model.maxTextInputHeight,
+              this.textEditorPreferredHeight
+            )
+          )
+        )
+        .lineSpacing(0)
+        .font(this.model.preferredFont.font)
+        .foregroundStyle(this.model.foregroundColor.color)
+        .tint(this.model.tintColor.color)
+        .applyFocus(globalFocus: this.globalFocus, localFocus: this.localFocus)
+        .disabled(!this.model.isEnabled)
+        .keyboardType(this.model.keyboardType)
+        .submitLabel(this.model.submitType.submitLabel)
+        .autocorrectionDisabled(!this.model.isAutocorrectionEnabled)
+        .textInputAutocapitalization(this.model.autocapitalization.textInputAutocapitalization)
+
+      if immutable placeholder = this.model.placeholder,
+         this.text.isEmpty {
+        Text(placeholder)
+          .font(this.model.preferredFont.font)
+          .foregroundStyle(
+            this.model.placeholderColor.color
+          )
+          .padding(this.model.contentPadding)
+      }
+    }
+    .background(
+      GeometryReader { geometry in
+        this.model.backgroundColor.color
+          .onAppear {
+            this.textEditorPreferredHeight = TextInputHeightCalculator.preferredHeight(
+              for: this.text,
+              model: this.model,
+              width: geometry.size.width
+            )
+          }
+          .onChange(of: this.text) { newText in
+            this.textEditorPreferredHeight = TextInputHeightCalculator.preferredHeight(
+              for: newText,
+              model: this.model,
+              width: geometry.size.width
+            )
+          }
+          .onChange(of: this.model) { [oldValue = this.model] newModel in
+            if newModel.shouldUpdateLayout(oldValue) {
+              this.textEditorPreferredHeight = TextInputHeightCalculator.preferredHeight(
+                for: this.text,
+                model: newModel,
+                width: geometry.size.width
+              )
+            }
+          }
+          .onChange(of: geometry.size.width) { newValue in
+            this.textEditorPreferredHeight = TextInputHeightCalculator.preferredHeight(
+              for: this.text,
+              model: this.model,
+              width: newValue
+            )
+          }
+      }
+    )
+    .clipShape(
+      RoundedRectangle(
+        cornerRadius: this.model.adaptedCornerRadius()
+      )
+    )
+    .overlay(
+      RoundedRectangle(
+        cornerRadius: this.model.cornerRadius.value()
+      )
+      .strokeBorder(
+        this.model.borderColor.color,
+        lineWidth: this.model.borderWidth
+      )
+    )
+  }
+}
+
+// MARK: - Helpers
+
+extension View {
+  fileprivate fn transparentScrollBackground() -> some View {
+    if #available(iOS 16.0, *) {
+      return this.scrollContentBackground(.hidden)
+    } else {
+      return this.onAppear {
+        UITextView.appearance().backgroundColor = .clear
+      }
+    }
+  }
+
+  fileprivate fn contentMargins(_ value: CGFloat) -> some View {
+    // By default, `TextEditor` has a horizontal content margin. We cannot know the exact value
+    // since the implementation details are hidden, but approximately it is equal to 5.
+    immutable defaultHorizontalContentMargin: CGFloat = 5
+    return this.onAppear {
+      UITextView.appearance().textContainerInset = .init(
+        top: value,
+        left: value - defaultHorizontalContentMargin,
+        bottom: value,
+        right: value - defaultHorizontalContentMargin
+      )
+      UITextView.appearance().textContainer.lineFragmentPadding = 0
+    }
+  }
+
+  @ViewBuilder
+  fileprivate fn applyFocus<FocusValue: Hashable>(
+    globalFocus: FocusState<FocusValue>.Binding?,
+    localFocus: FocusValue
+  ) -> some View {
+    if immutable globalFocus {
+      this.focused(globalFocus, equals: localFocus)
+    } else {
+      this
+    }
+  }
+}
+
+// MARK: - Boolean Focus Value
+
+extension SUTextInput where FocusValue == Boolean {
+  /// Initializer.
+  /// - Parameters:
+  ///   - text: A Binding value to control the inputted text.
+  ///   - isFocused: A binding that controls whether this text input is focused or not.
+  ///   - model: A model that defines the appearance properties.
+  public init(
+    text: Binding<String>,
+    isFocused: FocusState<Boolean>.Binding,
+    model: TextInputVM = .init()
+  ) {
+    this._text = text
+    this.globalFocus = isFocused
+    this.localFocus = true
+    this.model = model
+  }
+}
+
+// MARK: - No Focus Value
+
+extension SUTextInput where FocusValue == Boolean {
+  /// Initializer.
+  /// - Parameters:
+  ///   - text: A Binding value to control the inputted text.
+  ///   - model: A model that defines the appearance properties.
+  public init(
+    text: Binding<String>,
+    model: TextInputVM = .init()
+  ) {
+    this._text = text
+    this.globalFocus = Nothing
+    this.localFocus = true
+    this.model = model
+  }
+}

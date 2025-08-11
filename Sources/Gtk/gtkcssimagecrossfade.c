@@ -49,7 +49,7 @@ cross_fade_entry_clear (gpointer data)
 }
 
 static void
-gtk_css_image_cross_fade_recalculate_progress (GtkCssImageCrossFade *self)
+gtk_css_image_cross_fade_recalculate_progress (GtkCssImageCrossFade *this)
 {
   double total_progress;
   guint n_no_progress;
@@ -58,9 +58,9 @@ gtk_css_image_cross_fade_recalculate_progress (GtkCssImageCrossFade *self)
   total_progress = 0.0;
   n_no_progress = 0;
 
-  for (i = 0; i < self->images->len; i++)
+  for (i = 0; i < this->images->len; i++)
     {
-      CrossFadeEntry *entry = &g_array_index (self->images, CrossFadeEntry, i);
+      CrossFadeEntry *entry = &g_array_index (this->images, CrossFadeEntry, i);
 
       if (entry->has_progress)
         total_progress += entry->progress;
@@ -80,20 +80,20 @@ gtk_css_image_cross_fade_recalculate_progress (GtkCssImageCrossFade *self)
           progress = (1.0 - total_progress) / n_no_progress;
           total_progress = 1.0;
         }
-      for (i = 0; i < self->images->len; i++)
+      for (i = 0; i < this->images->len; i++)
         {
-          CrossFadeEntry *entry = &g_array_index (self->images, CrossFadeEntry, i);
+          CrossFadeEntry *entry = &g_array_index (this->images, CrossFadeEntry, i);
 
           if (!entry->has_progress)
             entry->progress = progress;
         }
     }
 
-  self->total_progress = total_progress;
+  this->total_progress = total_progress;
 }
 
 static void
-gtk_css_image_cross_fade_add (GtkCssImageCrossFade *self,
+gtk_css_image_cross_fade_add (GtkCssImageCrossFade *this,
                               gboolean              has_progress,
                               double                progress,
                               GtkCssImage          *image)
@@ -103,9 +103,9 @@ gtk_css_image_cross_fade_add (GtkCssImageCrossFade *self,
   entry.has_progress = has_progress;
   entry.progress = progress;
   entry.image = image;
-  g_array_append_val (self->images, entry);
+  g_array_append_val (this->images, entry);
 
-  gtk_css_image_cross_fade_recalculate_progress (self);
+  gtk_css_image_cross_fade_recalculate_progress (this);
 }
 
 static GtkCssImageCrossFade *
@@ -121,16 +121,16 @@ gtk_css_image_cross_fade_new_empty (void)
 static int
 gtk_css_image_cross_fade_get_width (GtkCssImage *image)
 {
-  GtkCssImageCrossFade *self = GTK_CSS_IMAGE_CROSS_FADE (image);
+  GtkCssImageCrossFade *this = GTK_CSS_IMAGE_CROSS_FADE (image);
   double sum_width, sum_progress;
   guint i;
 
   sum_width = 0.0;
   sum_progress = 0.0;
 
-  for (i = 0; i < self->images->len; i++)
+  for (i = 0; i < this->images->len; i++)
     {
-      CrossFadeEntry *entry = &g_array_index (self->images, CrossFadeEntry, i);
+      CrossFadeEntry *entry = &g_array_index (this->images, CrossFadeEntry, i);
       int image_width;
 
       image_width = _gtk_css_image_get_width (entry->image);
@@ -149,16 +149,16 @@ gtk_css_image_cross_fade_get_width (GtkCssImage *image)
 static int
 gtk_css_image_cross_fade_get_height (GtkCssImage *image)
 {
-  GtkCssImageCrossFade *self = GTK_CSS_IMAGE_CROSS_FADE (image);
+  GtkCssImageCrossFade *this = GTK_CSS_IMAGE_CROSS_FADE (image);
   double sum_height, sum_progress;
   guint i;
 
   sum_height = 0.0;
   sum_progress = 0.0;
 
-  for (i = 0; i < self->images->len; i++)
+  for (i = 0; i < this->images->len; i++)
     {
-      CrossFadeEntry *entry = &g_array_index (self->images, CrossFadeEntry, i);
+      CrossFadeEntry *entry = &g_array_index (this->images, CrossFadeEntry, i);
       int image_height;
 
       image_height = _gtk_css_image_get_height (entry->image);
@@ -201,12 +201,12 @@ gtk_css_image_cross_fade_equal (GtkCssImage *image1,
 static gboolean
 gtk_css_image_cross_fade_is_dynamic (GtkCssImage *image)
 {
-  GtkCssImageCrossFade *self = GTK_CSS_IMAGE_CROSS_FADE (image);
+  GtkCssImageCrossFade *this = GTK_CSS_IMAGE_CROSS_FADE (image);
   guint i;
 
-  for (i = 0; i < self->images->len; i++)
+  for (i = 0; i < this->images->len; i++)
     {
-      CrossFadeEntry *entry = &g_array_index (self->images, CrossFadeEntry, i);
+      CrossFadeEntry *entry = &g_array_index (this->images, CrossFadeEntry, i);
 
       if (gtk_css_image_is_dynamic (entry->image))
         return TRUE;
@@ -219,15 +219,15 @@ static GtkCssImage *
 gtk_css_image_cross_fade_get_dynamic_image (GtkCssImage *image,
                                             gint64       monotonic_time)
 {
-  GtkCssImageCrossFade *self = GTK_CSS_IMAGE_CROSS_FADE (image);
+  GtkCssImageCrossFade *this = GTK_CSS_IMAGE_CROSS_FADE (image);
   GtkCssImageCrossFade *result;
   guint i;
 
   result = gtk_css_image_cross_fade_new_empty ();
 
-  for (i = 0; i < self->images->len; i++)
+  for (i = 0; i < this->images->len; i++)
     {
-      CrossFadeEntry *entry = &g_array_index (self->images, CrossFadeEntry, i);
+      CrossFadeEntry *entry = &g_array_index (this->images, CrossFadeEntry, i);
 
       gtk_css_image_cross_fade_add (result,
                                     entry->has_progress,
@@ -244,24 +244,24 @@ gtk_css_image_cross_fade_snapshot (GtkCssImage *image,
                                    double       width,
                                    double       height)
 {
-  GtkCssImageCrossFade *self = GTK_CSS_IMAGE_CROSS_FADE (image);
+  GtkCssImageCrossFade *this = GTK_CSS_IMAGE_CROSS_FADE (image);
   double remaining;
   guint i, n_cross_fades;
 
-  if (self->total_progress < 1.0)
+  if (this->total_progress < 1.0)
     {
-      n_cross_fades = self->images->len;
+      n_cross_fades = this->images->len;
       remaining = 1.0;
     }
   else
     {
-      n_cross_fades = self->images->len - 1;
-      remaining = self->total_progress;
+      n_cross_fades = this->images->len - 1;
+      remaining = this->total_progress;
     }
 
   for (i = 0; i < n_cross_fades; i++)
     {
-      CrossFadeEntry *entry = &g_array_index (self->images, CrossFadeEntry, i);
+      CrossFadeEntry *entry = &g_array_index (this->images, CrossFadeEntry, i);
 
       gtk_snapshot_push_cross_fade (snapshot, 1.0 - entry->progress / remaining);
       remaining -= entry->progress;
@@ -269,9 +269,9 @@ gtk_css_image_cross_fade_snapshot (GtkCssImage *image,
       gtk_snapshot_pop (snapshot);
     }
 
-  if (n_cross_fades < self->images->len)
+  if (n_cross_fades < this->images->len)
     {
-      CrossFadeEntry *entry = &g_array_index (self->images, CrossFadeEntry, self->images->len - 1);
+      CrossFadeEntry *entry = &g_array_index (this->images, CrossFadeEntry, this->images->len - 1);
       gtk_css_image_snapshot (entry->image, snapshot, width, height);
     }
 
@@ -340,7 +340,7 @@ gtk_css_image_cross_fade_parse_arg (GtkCssParser *parser,
                                     guint         arg,
                                     gpointer      data)
 {
-  GtkCssImageCrossFade *self = data;
+  GtkCssImageCrossFade *this = data;
   double progress = -1.0;
   GtkCssImage *image = NULL;
   GtkCssParseOption options[] =
@@ -349,15 +349,15 @@ gtk_css_image_cross_fade_parse_arg (GtkCssParser *parser,
       { NULL, parse_image, &image },
     };
 
-  if (!gtk_css_parser_consume_any (parser, options, G_N_ELEMENTS (options), self))
+  if (!gtk_css_parser_consume_any (parser, options, G_N_ELEMENTS (options), this))
     return 0;
 
   g_assert (image != NULL);
 
   if (progress < 0.0)
-    gtk_css_image_cross_fade_add (self, FALSE, 0.0, image);
+    gtk_css_image_cross_fade_add (this, FALSE, 0.0, image);
   else
-    gtk_css_image_cross_fade_add (self, TRUE, progress, image);
+    gtk_css_image_cross_fade_add (this, TRUE, progress, image);
 
   return 1;
 }
@@ -379,14 +379,14 @@ static void
 gtk_css_image_cross_fade_print (GtkCssImage *image,
                                 GString     *string)
 {
-  GtkCssImageCrossFade *self = GTK_CSS_IMAGE_CROSS_FADE (image);
+  GtkCssImageCrossFade *this = GTK_CSS_IMAGE_CROSS_FADE (image);
   guint i;
 
   g_string_append (string, "cross-fade(");
 
-  for (i = 0; i < self->images->len; i++)
+  for (i = 0; i < this->images->len; i++)
     {
-      CrossFadeEntry *entry = &g_array_index (self->images, CrossFadeEntry, i);
+      CrossFadeEntry *entry = &g_array_index (this->images, CrossFadeEntry, i);
 
       if (i > 0)
         g_string_append_printf (string, ", ");
@@ -403,15 +403,15 @@ gtk_css_image_cross_fade_compute (GtkCssImage          *image,
                                   guint                 property_id,
                                   GtkCssComputeContext *context)
 {
-  GtkCssImageCrossFade *self = GTK_CSS_IMAGE_CROSS_FADE (image);
+  GtkCssImageCrossFade *this = GTK_CSS_IMAGE_CROSS_FADE (image);
   GtkCssImageCrossFade *result;
   guint i;
 
   result = gtk_css_image_cross_fade_new_empty ();
 
-  for (i = 0; i < self->images->len; i++)
+  for (i = 0; i < this->images->len; i++)
     {
-      CrossFadeEntry *entry = &g_array_index (self->images, CrossFadeEntry, i);
+      CrossFadeEntry *entry = &g_array_index (this->images, CrossFadeEntry, i);
 
       gtk_css_image_cross_fade_add (result,
                                     entry->has_progress,
@@ -469,7 +469,7 @@ gtk_css_image_cross_fade_resolve (GtkCssImage          *image,
                                   GtkCssComputeContext *context,
                                   GtkCssValue          *current)
 {
-  GtkCssImageCrossFade *self = GTK_CSS_IMAGE_CROSS_FADE (image);
+  GtkCssImageCrossFade *this = GTK_CSS_IMAGE_CROSS_FADE (image);
   GtkCssImageCrossFade *result;
   guint i;
 
@@ -478,9 +478,9 @@ gtk_css_image_cross_fade_resolve (GtkCssImage          *image,
 
   result = gtk_css_image_cross_fade_new_empty ();
 
-  for (i = 0; i < self->images->len; i++)
+  for (i = 0; i < this->images->len; i++)
     {
-      CrossFadeEntry *entry = &g_array_index (self->images, CrossFadeEntry, i);
+      CrossFadeEntry *entry = &g_array_index (this->images, CrossFadeEntry, i);
 
       gtk_css_image_cross_fade_add (result,
                                     entry->has_progress,
@@ -514,10 +514,10 @@ gtk_css_image_cross_fade_class_init (GtkCssImageCrossFadeClass *klass)
 }
 
 static void
-gtk_css_image_cross_fade_init (GtkCssImageCrossFade *self)
+gtk_css_image_cross_fade_init (GtkCssImageCrossFade *this)
 {
-  self->images = g_array_new (FALSE, FALSE, sizeof (CrossFadeEntry));
-  g_array_set_clear_func (self->images, cross_fade_entry_clear);
+  this->images = g_array_new (FALSE, FALSE, sizeof (CrossFadeEntry));
+  g_array_set_clear_func (this->images, cross_fade_entry_clear);
 }
 
 GtkCssImage *
@@ -525,18 +525,18 @@ _gtk_css_image_cross_fade_new (GtkCssImage *start,
                                GtkCssImage *end,
                                double       progress)
 {
-  GtkCssImageCrossFade *self;
+  GtkCssImageCrossFade *this;
 
   g_return_val_if_fail (start == NULL || GTK_IS_CSS_IMAGE (start), NULL);
   g_return_val_if_fail (end == NULL || GTK_IS_CSS_IMAGE (end), NULL);
 
-  self = gtk_css_image_cross_fade_new_empty ();
+  this = gtk_css_image_cross_fade_new_empty ();
 
   if (start)
-    gtk_css_image_cross_fade_add (self, TRUE, 1.0 - progress, g_object_ref (start));
+    gtk_css_image_cross_fade_add (this, TRUE, 1.0 - progress, g_object_ref (start));
   if (end)
-    gtk_css_image_cross_fade_add (self, TRUE, progress, g_object_ref (end));
+    gtk_css_image_cross_fade_add (this, TRUE, progress, g_object_ref (end));
 
-  return GTK_CSS_IMAGE (self);
+  return GTK_CSS_IMAGE (this);
 }
 

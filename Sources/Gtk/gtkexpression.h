@@ -46,27 +46,27 @@ GDK_AVAILABLE_IN_ALL
 GType                   gtk_expression_get_type                 (void) G_GNUC_CONST;
 
 GDK_AVAILABLE_IN_ALL
-GtkExpression *         gtk_expression_ref                      (GtkExpression                  *self);
+GtkExpression *         gtk_expression_ref                      (GtkExpression                  *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_expression_unref                    (GtkExpression                  *self);
+void                    gtk_expression_unref                    (GtkExpression                  *this);
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GtkExpression, gtk_expression_unref)
 
 GDK_AVAILABLE_IN_ALL
-GType                   gtk_expression_get_value_type           (GtkExpression                  *self);
+GType                   gtk_expression_get_value_type           (GtkExpression                  *this);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_expression_is_static                (GtkExpression                  *self);
+gboolean                gtk_expression_is_static                (GtkExpression                  *this);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_expression_evaluate                 (GtkExpression                  *self,
+gboolean                gtk_expression_evaluate                 (GtkExpression                  *this,
                                                                  gpointer                        this_,
                                                                  GValue                         *value);
 GDK_AVAILABLE_IN_ALL
-GtkExpressionWatch *    gtk_expression_watch                    (GtkExpression                  *self,
+GtkExpressionWatch *    gtk_expression_watch                    (GtkExpression                  *this,
                                                                  gpointer                        this_,
                                                                  GtkExpressionNotify             notify,
                                                                  gpointer                        user_data,
                                                                  GDestroyNotify                  user_destroy);
 GDK_AVAILABLE_IN_ALL
-GtkExpressionWatch *    gtk_expression_bind                     (GtkExpression                  *self,
+GtkExpressionWatch *    gtk_expression_bind                     (GtkExpression                  *this,
                                                                  gpointer                        target,
                                                                  const char *                    property,
                                                                  gpointer                        this_);

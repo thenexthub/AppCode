@@ -177,7 +177,7 @@ setup_paper_size_item (GtkSignalListItemFactory *factory,
 static void
 bind_paper_size_list_item (GtkSignalListItemFactory *factory,
                            GtkListItem              *item,
-                           GtkPageSetupUnixDialog   *self)
+                           GtkPageSetupUnixDialog   *this)
 {
   GtkPageSetup *page_setup;
   GtkWidget *label;
@@ -190,9 +190,9 @@ bind_paper_size_list_item (GtkSignalListItemFactory *factory,
   label = gtk_list_item_get_child (item);
 
   pos = gtk_list_item_get_position (item);
-  papers = gtk_drop_down_get_model (GTK_DROP_DOWN (self->paper_size_combo));
+  papers = gtk_drop_down_get_model (GTK_DROP_DOWN (this->paper_size_combo));
   model = gtk_flatten_list_model_get_model_for_item (GTK_FLATTEN_LIST_MODEL (papers), pos);
-  if (model != G_LIST_MODEL (self->manage_papers_list))
+  if (model != G_LIST_MODEL (this->manage_papers_list))
     {
       GtkPaperSize *paper_size = gtk_page_setup_get_paper_size (page_setup);
       gtk_label_set_text (GTK_LABEL (label), gtk_paper_size_get_display_name (paper_size));
@@ -212,11 +212,11 @@ bind_paper_size_list_item (GtkSignalListItemFactory *factory,
 static void
 bind_paper_size_item (GtkSignalListItemFactory *factory,
                       GtkListItem              *item,
-                      GtkPageSetupUnixDialog   *self)
+                      GtkPageSetupUnixDialog   *this)
 {
   GtkWidget *label;
 
-  bind_paper_size_list_item (factory, item, self);
+  bind_paper_size_list_item (factory, item, this);
 
   label = gtk_list_item_get_child (item);
   gtk_widget_remove_css_class (label, "separator-before");
@@ -243,7 +243,7 @@ setup_printer_item (GtkSignalListItemFactory *factory,
 static void
 bind_printer_item (GtkSignalListItemFactory *factory,
                    GtkListItem              *item,
-                   GtkPageSetupUnixDialog   *self)
+                   GtkPageSetupUnixDialog   *this)
 {
   GtkPrinter *printer;
   GtkWidget *label;

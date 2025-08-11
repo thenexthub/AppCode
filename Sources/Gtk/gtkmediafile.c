@@ -68,15 +68,15 @@ G_DEFINE_ABSTRACT_TYPE_WITH_CODE (GtkMediaFile, gtk_media_file, GTK_TYPE_MEDIA_S
   g_critical ("Media file of type '%s' does not implement GtkMediaFile::" # method, G_OBJECT_TYPE_NAME (obj))
 
 static void
-gtk_media_file_default_open (GtkMediaFile *self)
+gtk_media_file_default_open (GtkMediaFile *this)
 {
-  GTK_MEDIA_FILE_WARN_NOT_IMPLEMENTED_METHOD (self, open);
+  GTK_MEDIA_FILE_WARN_NOT_IMPLEMENTED_METHOD (this, open);
 }
 
 static void
-gtk_media_file_default_close (GtkMediaFile *self)
+gtk_media_file_default_close (GtkMediaFile *this)
 {
-  gtk_media_stream_stream_unprepared (GTK_MEDIA_STREAM (self));
+  gtk_media_stream_stream_unprepared (GTK_MEDIA_STREAM (this));
 }
 
 static void
@@ -86,16 +86,16 @@ gtk_media_file_set_property (GObject      *object,
                              GParamSpec   *pspec)
 
 {
-  GtkMediaFile *self = GTK_MEDIA_FILE (object);
+  GtkMediaFile *this = GTK_MEDIA_FILE (object);
 
   switch (prop_id)
     {
     case PROP_FILE:
-      gtk_media_file_set_file (self, g_value_get_object (value));
+      gtk_media_file_set_file (this, g_value_get_object (value));
       break;
 
     case PROP_INPUT_STREAM:
-      gtk_media_file_set_input_stream (self, g_value_get_object (value));
+      gtk_media_file_set_input_stream (this, g_value_get_object (value));
       break;
 
     default:
@@ -110,8 +110,8 @@ gtk_media_file_get_property (GObject    *object,
                              GValue     *value,
                              GParamSpec *pspec)
 {
-  GtkMediaFile *self = GTK_MEDIA_FILE (object);
-  GtkMediaFilePrivate *priv = gtk_media_file_get_instance_private (self);
+  GtkMediaFile *this = GTK_MEDIA_FILE (object);
+  GtkMediaFilePrivate *priv = gtk_media_file_get_instance_private (this);
 
   switch (prop_id)
     {
@@ -132,8 +132,8 @@ gtk_media_file_get_property (GObject    *object,
 static void
 gtk_media_file_dispose (GObject *object)
 {
-  GtkMediaFile *self = GTK_MEDIA_FILE (object);
-  GtkMediaFilePrivate *priv = gtk_media_file_get_instance_private (self);
+  GtkMediaFile *this = GTK_MEDIA_FILE (object);
+  GtkMediaFilePrivate *priv = gtk_media_file_get_instance_private (this);
 
   g_clear_object (&priv->file);
   g_clear_object (&priv->input_stream);
@@ -179,7 +179,7 @@ gtk_media_file_class_init (GtkMediaFileClass *class)
 }
 
 static void
-gtk_media_file_init (GtkMediaFile *self)
+gtk_media_file_init (GtkMediaFile *this)
 {
 }
 
@@ -381,46 +381,46 @@ gtk_media_file_new_for_input_stream (GInputStream *stream)
 }
 
 static gboolean
-gtk_media_file_is_open (GtkMediaFile *self)
+gtk_media_file_is_open (GtkMediaFile *this)
 {
-  GtkMediaFilePrivate *priv = gtk_media_file_get_instance_private (self);
+  GtkMediaFilePrivate *priv = gtk_media_file_get_instance_private (this);
 
   return priv->file || priv->input_stream;
 }
 
 /**
  * gtk_media_file_clear:
- * @self: a `GtkMediaFile`
+ * @this: a `GtkMediaFile`
  *
  * Resets the media file to be empty.
  */
 void
-gtk_media_file_clear (GtkMediaFile *self)
+gtk_media_file_clear (GtkMediaFile *this)
 {
-  GtkMediaFilePrivate *priv = gtk_media_file_get_instance_private (self);
+  GtkMediaFilePrivate *priv = gtk_media_file_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_MEDIA_FILE (self));
+  g_return_if_fail (GTK_IS_MEDIA_FILE (this));
 
-  if (!gtk_media_file_is_open (self))
+  if (!gtk_media_file_is_open (this))
     return;
 
-  GTK_MEDIA_FILE_GET_CLASS (self)->close (self);
+  GTK_MEDIA_FILE_GET_CLASS (this)->close (this);
 
   if (priv->input_stream)
     {
       g_clear_object (&priv->input_stream);
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_INPUT_STREAM]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_INPUT_STREAM]);
     }
   if (priv->file)
     {
       g_clear_object (&priv->file);
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_FILE]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_FILE]);
     }
 }
 
 /**
  * gtk_media_file_set_filename:
- * @self: a `GtkMediaFile`
+ * @this: a `GtkMediaFile`
  * @filename: (type filename) (nullable): name of file to play
  *
  * Sets the `GtkMediaFile` to play the given file.
@@ -429,19 +429,19 @@ gtk_media_file_clear (GtkMediaFile *self)
  * to a `GFile` and calls [method@Gtk.MediaFile.set_file].
  **/
 void
-gtk_media_file_set_filename (GtkMediaFile *self,
+gtk_media_file_set_filename (GtkMediaFile *this,
                              const char   *filename)
 {
   GFile *file;
 
-  g_return_if_fail (GTK_IS_MEDIA_FILE (self));
+  g_return_if_fail (GTK_IS_MEDIA_FILE (this));
 
   if (filename)
     file = g_file_new_for_path (filename);
   else
     file = NULL;
 
-  gtk_media_file_set_file (self, file);
+  gtk_media_file_set_file (this, file);
 
   if (file)
     g_object_unref (file);
@@ -449,7 +449,7 @@ gtk_media_file_set_filename (GtkMediaFile *self,
 
 /**
  * gtk_media_file_set_resource:
- * @self: a `GtkMediaFile`
+ * @this: a `GtkMediaFile`
  * @resource_path: (nullable): path to resource to play
  *
  * Sets the `GtkMediaFile` to play the given resource.
@@ -458,12 +458,12 @@ gtk_media_file_set_filename (GtkMediaFile *self,
  * to a `GFile` and calls [method@Gtk.MediaFile.set_file].
  */
 void
-gtk_media_file_set_resource (GtkMediaFile *self,
+gtk_media_file_set_resource (GtkMediaFile *this,
                              const char   *resource_path)
 {
   GFile *file;
 
-  g_return_if_fail (GTK_IS_MEDIA_FILE (self));
+  g_return_if_fail (GTK_IS_MEDIA_FILE (this));
 
   if (resource_path)
     {
@@ -483,7 +483,7 @@ gtk_media_file_set_resource (GtkMediaFile *self,
     }
 
 
-  gtk_media_file_set_file (self, file);
+  gtk_media_file_set_file (this, file);
 
   if (file)
     g_object_unref (file);
@@ -491,7 +491,7 @@ gtk_media_file_set_resource (GtkMediaFile *self,
 
 /**
  * gtk_media_file_set_file:
- * @self: a `GtkMediaFile`
+ * @this: a `GtkMediaFile`
  * @file: (nullable): the file to play
  *
  * Sets the `GtkMediaFile` to play the given file.
@@ -499,56 +499,56 @@ gtk_media_file_set_resource (GtkMediaFile *self,
  * If any file is still playing, stop playing it.
  */
 void
-gtk_media_file_set_file (GtkMediaFile *self,
+gtk_media_file_set_file (GtkMediaFile *this,
                          GFile        *file)
 {
-  GtkMediaFilePrivate *priv = gtk_media_file_get_instance_private (self);
+  GtkMediaFilePrivate *priv = gtk_media_file_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_MEDIA_FILE (self));
+  g_return_if_fail (GTK_IS_MEDIA_FILE (this));
   g_return_if_fail (file == NULL || G_IS_FILE (file));
 
   if (file)
     g_object_ref (file);
 
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
 
-  gtk_media_file_clear (self);
+  gtk_media_file_clear (this);
 
   if (file)
     {
       priv->file = file;
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_FILE]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_FILE]);
 
-      GTK_MEDIA_FILE_GET_CLASS (self)->open (self);
+      GTK_MEDIA_FILE_GET_CLASS (this)->open (this);
     }
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 }
 
 /**
  * gtk_media_file_get_file:
- * @self: a `GtkMediaFile`
+ * @this: a `GtkMediaFile`
  *
- * Returns the file that @self is currently playing from.
+ * Returns the file that @this is currently playing from.
  *
- * When @self is not playing or not playing from a file,
+ * When @this is not playing or not playing from a file,
  * %NULL is returned.
  *
  * Returns: (nullable) (transfer none): The currently playing file
  */
 GFile *
-gtk_media_file_get_file (GtkMediaFile *self)
+gtk_media_file_get_file (GtkMediaFile *this)
 {
-  GtkMediaFilePrivate *priv = gtk_media_file_get_instance_private (self);
+  GtkMediaFilePrivate *priv = gtk_media_file_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_MEDIA_FILE (self), NULL);
+  g_return_val_if_fail (GTK_IS_MEDIA_FILE (this), NULL);
 
   return priv->file;
 }
 
 /**
  * gtk_media_file_set_input_stream:
- * @self: a `GtkMediaFile`
+ * @this: a `GtkMediaFile`
  * @stream: (nullable): the stream to play from
  *
  * Sets the `GtkMediaFile` to play the given stream.
@@ -559,49 +559,49 @@ gtk_media_file_get_file (GtkMediaFile *self)
  * playback. The stream will not be closed.
  */
 void
-gtk_media_file_set_input_stream (GtkMediaFile *self,
+gtk_media_file_set_input_stream (GtkMediaFile *this,
                                  GInputStream *stream)
 {
-  GtkMediaFilePrivate *priv = gtk_media_file_get_instance_private (self);
+  GtkMediaFilePrivate *priv = gtk_media_file_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_MEDIA_FILE (self));
+  g_return_if_fail (GTK_IS_MEDIA_FILE (this));
   g_return_if_fail (stream == NULL || G_IS_INPUT_STREAM (stream));
 
   if (stream)
     g_object_ref (stream);
 
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
 
-  gtk_media_file_clear (self);
+  gtk_media_file_clear (this);
 
   if (stream)
     {
       priv->input_stream = stream;
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_INPUT_STREAM]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_INPUT_STREAM]);
 
-      GTK_MEDIA_FILE_GET_CLASS (self)->open (self);
+      GTK_MEDIA_FILE_GET_CLASS (this)->open (this);
     }
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 }
 
 /**
  * gtk_media_file_get_input_stream:
- * @self: a `GtkMediaFile`
+ * @this: a `GtkMediaFile`
  *
- * Returns the stream that @self is currently playing from.
+ * Returns the stream that @this is currently playing from.
  *
- * When @self is not playing or not playing from a stream,
+ * When @this is not playing or not playing from a stream,
  * %NULL is returned.
  *
  * Returns: (nullable) (transfer none): The currently playing stream
  */
 GInputStream *
-gtk_media_file_get_input_stream (GtkMediaFile *self)
+gtk_media_file_get_input_stream (GtkMediaFile *this)
 {
-  GtkMediaFilePrivate *priv = gtk_media_file_get_instance_private (self);
+  GtkMediaFilePrivate *priv = gtk_media_file_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_MEDIA_FILE (self), NULL);
+  g_return_val_if_fail (GTK_IS_MEDIA_FILE (this), NULL);
 
   return priv->input_stream;
 }

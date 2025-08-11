@@ -151,29 +151,29 @@ gtk_map_list_model_get_item_type (GListModel *list)
 static guint
 gtk_map_list_model_get_n_items (GListModel *list)
 {
-  GtkMapListModel *self = GTK_MAP_LIST_MODEL (list);
+  GtkMapListModel *this = GTK_MAP_LIST_MODEL (list);
 
-  if (self->model == NULL)
+  if (this->model == NULL)
     return 0;
 
-  return g_list_model_get_n_items (self->model);
+  return g_list_model_get_n_items (this->model);
 }
 
 static gpointer
 gtk_map_list_model_get_item (GListModel *list,
                              guint       position)
 {
-  GtkMapListModel *self = GTK_MAP_LIST_MODEL (list);
+  GtkMapListModel *this = GTK_MAP_LIST_MODEL (list);
   MapNode *node;
   guint offset;
 
-  if (self->model == NULL)
+  if (this->model == NULL)
     return NULL;
 
-  if (self->items == NULL)
-    return g_list_model_get_item (self->model, position);
+  if (this->items == NULL)
+    return g_list_model_get_item (this->model, position);
 
-  node = gtk_map_list_model_get_nth (self->items, position, &offset);
+  node = gtk_map_list_model_get_nth (this->items, position, &offset);
   if (node == NULL)
     return NULL;
 
@@ -182,7 +182,7 @@ gtk_map_list_model_get_item (GListModel *list,
 
   if (offset != position)
     {
-      MapNode *before = gtk_rb_tree_insert_before (self->items, node);
+      MapNode *before = gtk_rb_tree_insert_before (this->items, node);
       before->n_items = position - offset;
       node->n_items -= before->n_items;
       gtk_rb_tree_node_mark_dirty (node);
@@ -190,13 +190,13 @@ gtk_map_list_model_get_item (GListModel *list,
 
   if (node->n_items > 1)
     {
-      MapNode *after = gtk_rb_tree_insert_after (self->items, node);
+      MapNode *after = gtk_rb_tree_insert_after (this->items, node);
       after->n_items = node->n_items - 1;
       node->n_items = 1;
       gtk_rb_tree_node_mark_dirty (node);
     }
 
-  node->item = self->map_func (g_list_model_get_item (self->model, position), self->user_data);
+  node->item = this->map_func (g_list_model_get_item (this->model, position), this->user_data);
   g_object_add_weak_pointer (node->item, &node->item);
 
   return node->item;
@@ -216,16 +216,16 @@ gtk_map_list_model_get_section (GtkSectionModel *model,
                                 guint           *out_start,
                                 guint           *out_end)
 {
-  GtkMapListModel *self = GTK_MAP_LIST_MODEL (model);
+  GtkMapListModel *this = GTK_MAP_LIST_MODEL (model);
 
-  if (GTK_IS_SECTION_MODEL (self->model))
+  if (GTK_IS_SECTION_MODEL (this->model))
     {
-      gtk_section_model_get_section (GTK_SECTION_MODEL (self->model), position, out_start, out_end);
+      gtk_section_model_get_section (GTK_SECTION_MODEL (this->model), position, out_start, out_end);
       return;
     }
 
   *out_start = 0;
-  *out_end = self->model ? g_list_model_get_n_items (self->model) : 0;
+  *out_end = this->model ? g_list_model_get_n_items (this->model) : 0;
 }
 
 static void
@@ -253,21 +253,21 @@ gtk_map_list_model_items_changed_cb (GListModel      *model,
                                      guint            position,
                                      guint            removed,
                                      guint            added,
-                                     GtkMapListModel *self)
+                                     GtkMapListModel *this)
 {
   MapNode *node;
   guint start, end;
   guint count;
 
-  if (self->items == NULL)
+  if (this->items == NULL)
     {
-      g_list_model_items_changed (G_LIST_MODEL (self), position, removed, added);
+      g_list_model_items_changed (G_LIST_MODEL (this), position, removed, added);
       if (removed != added)
-        g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+        g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
       return;
     }
 
-  node = gtk_map_list_model_get_nth (self->items, position, &start);
+  node = gtk_map_list_model_get_nth (this->items, position, &start);
   g_assert (start <= position);
 
   count = removed;
@@ -278,7 +278,7 @@ gtk_map_list_model_items_changed_cb (GListModel      *model,
         {
           MapNode *next = gtk_rb_tree_node_get_next (node);
           count -= node->n_items;
-          gtk_rb_tree_remove (self->items, node);
+          gtk_rb_tree_remove (this->items, node);
           node = next;
         }
       else
@@ -304,17 +304,17 @@ gtk_map_list_model_items_changed_cb (GListModel      *model,
   if (added)
     {
       if (node == NULL)
-        node = gtk_rb_tree_insert_before (self->items, NULL);
+        node = gtk_rb_tree_insert_before (this->items, NULL);
       else if (node->item)
-        node = gtk_rb_tree_insert_before (self->items, node);
+        node = gtk_rb_tree_insert_before (this->items, node);
 
       node->n_items += added;
       gtk_rb_tree_node_mark_dirty (node);
     }
 
-  g_list_model_items_changed (G_LIST_MODEL (self), position, removed, added);
+  g_list_model_items_changed (G_LIST_MODEL (this), position, removed, added);
   if (removed != added)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 }
 
 static void
@@ -323,12 +323,12 @@ gtk_map_list_model_set_property (GObject      *object,
                                  const GValue *value,
                                  GParamSpec   *pspec)
 {
-  GtkMapListModel *self = GTK_MAP_LIST_MODEL (object);
+  GtkMapListModel *this = GTK_MAP_LIST_MODEL (object);
 
   switch (prop_id)
     {
     case PROP_MODEL:
-      gtk_map_list_model_set_model (self, g_value_get_object (value));
+      gtk_map_list_model_set_model (this, g_value_get_object (value));
       break;
 
     default:
@@ -343,24 +343,24 @@ gtk_map_list_model_get_property (GObject     *object,
                                  GValue      *value,
                                  GParamSpec  *pspec)
 {
-  GtkMapListModel *self = GTK_MAP_LIST_MODEL (object);
+  GtkMapListModel *this = GTK_MAP_LIST_MODEL (object);
 
   switch (prop_id)
     {
     case PROP_HAS_MAP:
-      g_value_set_boolean (value, self->items != NULL);
+      g_value_set_boolean (value, this->items != NULL);
       break;
 
     case PROP_ITEM_TYPE:
-      g_value_set_gtype (value, gtk_map_list_model_get_item_type (G_LIST_MODEL (self)));
+      g_value_set_gtype (value, gtk_map_list_model_get_item_type (G_LIST_MODEL (this)));
       break;
 
     case PROP_MODEL:
-      g_value_set_object (value, self->model);
+      g_value_set_object (value, this->model);
       break;
 
     case PROP_N_ITEMS:
-      g_value_set_uint (value, gtk_map_list_model_get_n_items (G_LIST_MODEL (self)));
+      g_value_set_uint (value, gtk_map_list_model_get_n_items (G_LIST_MODEL (this)));
       break;
 
     default:
@@ -370,28 +370,28 @@ gtk_map_list_model_get_property (GObject     *object,
 }
 
 static void
-gtk_map_list_model_clear_model (GtkMapListModel *self)
+gtk_map_list_model_clear_model (GtkMapListModel *this)
 {
-  if (self->model == NULL)
+  if (this->model == NULL)
     return;
 
-  g_signal_handlers_disconnect_by_func (self->model, gtk_map_list_model_sections_changed_cb, self);
-  g_signal_handlers_disconnect_by_func (self->model, gtk_map_list_model_items_changed_cb, self);
-  g_clear_object (&self->model);
+  g_signal_handlers_disconnect_by_func (this->model, gtk_map_list_model_sections_changed_cb, this);
+  g_signal_handlers_disconnect_by_func (this->model, gtk_map_list_model_items_changed_cb, this);
+  g_clear_object (&this->model);
 }
 
 static void
 gtk_map_list_model_dispose (GObject *object)
 {
-  GtkMapListModel *self = GTK_MAP_LIST_MODEL (object);
+  GtkMapListModel *this = GTK_MAP_LIST_MODEL (object);
 
-  gtk_map_list_model_clear_model (self);
-  if (self->user_destroy)
-    self->user_destroy (self->user_data);
-  self->map_func = NULL;
-  self->user_data = NULL;
-  self->user_destroy = NULL;
-  g_clear_pointer (&self->items, gtk_rb_tree_unref);
+  gtk_map_list_model_clear_model (this);
+  if (this->user_destroy)
+    this->user_destroy (this->user_data);
+  this->map_func = NULL;
+  this->user_data = NULL;
+  this->user_destroy = NULL;
+  g_clear_pointer (&this->items, gtk_rb_tree_unref);
 
   G_OBJECT_CLASS (gtk_map_list_model_parent_class)->dispose (object);
 }
@@ -453,7 +453,7 @@ gtk_map_list_model_class_init (GtkMapListModelClass *class)
 }
 
 static void
-gtk_map_list_model_init (GtkMapListModel *self)
+gtk_map_list_model_init (GtkMapListModel *this)
 {
 }
 
@@ -526,42 +526,42 @@ gtk_map_list_model_clear_node (gpointer _node)
 }
 
 static void
-gtk_map_list_model_init_items (GtkMapListModel *self)
+gtk_map_list_model_init_items (GtkMapListModel *this)
 {
-  if (self->map_func && self->model)
+  if (this->map_func && this->model)
     {
       guint n_items;
 
-      if (self->items)
+      if (this->items)
         {
-          gtk_rb_tree_remove_all (self->items);
+          gtk_rb_tree_remove_all (this->items);
         }
       else
         {
-          self->items = gtk_rb_tree_new (MapNode,
+          this->items = gtk_rb_tree_new (MapNode,
                                          MapAugment,
                                          gtk_map_list_model_augment,
                                          gtk_map_list_model_clear_node,
                                          NULL);
         }
 
-      n_items = g_list_model_get_n_items (self->model);
+      n_items = g_list_model_get_n_items (this->model);
       if (n_items)
         {
-          MapNode *node = gtk_rb_tree_insert_before (self->items, NULL);
-          node->n_items = g_list_model_get_n_items (self->model);
+          MapNode *node = gtk_rb_tree_insert_before (this->items, NULL);
+          node->n_items = g_list_model_get_n_items (this->model);
           gtk_rb_tree_node_mark_dirty (node);
         }
     }
   else
     {
-      g_clear_pointer (&self->items, gtk_rb_tree_unref);
+      g_clear_pointer (&this->items, gtk_rb_tree_unref);
     }
 }
 
 /**
  * gtk_map_list_model_set_map_func:
- * @self: a `GtkMapListModel`
+ * @this: a `GtkMapListModel`
  * @map_func: (nullable) (scope notified) (closure user_data) (destroy user_destroy): map function
  * @user_data: user data passed to @map_func
  * @user_destroy: destroy notifier for @user_data
@@ -575,11 +575,11 @@ gtk_map_list_model_init_items (GtkMapListModel *self)
  * on the same item, because it may delete items it doesn't need anymore.
  *
  * GTK makes no effort to ensure that @map_func conforms to the item type
- * of @self. It assumes that the caller knows what they are doing and the map
+ * of @this. It assumes that the caller knows what they are doing and the map
  * function returns items of the appropriate type.
  */
 void
-gtk_map_list_model_set_map_func (GtkMapListModel        *self,
+gtk_map_list_model_set_map_func (GtkMapListModel        *this,
                                  GtkMapListModelMapFunc  map_func,
                                  gpointer                user_data,
                                  GDestroyNotify          user_destroy)
@@ -587,38 +587,38 @@ gtk_map_list_model_set_map_func (GtkMapListModel        *self,
   gboolean was_maped, will_be_maped;
   guint n_items;
 
-  g_return_if_fail (GTK_IS_MAP_LIST_MODEL (self));
+  g_return_if_fail (GTK_IS_MAP_LIST_MODEL (this));
   g_return_if_fail (map_func != NULL || (user_data == NULL && !user_destroy));
 
-  was_maped = self->map_func != NULL;
+  was_maped = this->map_func != NULL;
   will_be_maped = map_func != NULL;
 
   if (!was_maped && !will_be_maped)
     return;
 
-  if (self->user_destroy)
-    self->user_destroy (self->user_data);
+  if (this->user_destroy)
+    this->user_destroy (this->user_data);
 
-  self->map_func = map_func;
-  self->user_data = user_data;
-  self->user_destroy = user_destroy;
+  this->map_func = map_func;
+  this->user_data = user_data;
+  this->user_destroy = user_destroy;
 
-  gtk_map_list_model_init_items (self);
+  gtk_map_list_model_init_items (this);
 
-  if (self->model)
-    n_items = g_list_model_get_n_items (self->model);
+  if (this->model)
+    n_items = g_list_model_get_n_items (this->model);
   else
     n_items = 0;
   if (n_items)
-    g_list_model_items_changed (G_LIST_MODEL (self), 0, n_items, n_items);
+    g_list_model_items_changed (G_LIST_MODEL (this), 0, n_items, n_items);
 
   if (was_maped != will_be_maped)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_HAS_MAP]);
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_HAS_MAP]);
 }
 
 /**
  * gtk_map_list_model_set_model:
- * @self: a `GtkMapListModel`
+ * @this: a `GtkMapListModel`
  * @model: (nullable): The model to be mapped
  *
  * Sets the model to be mapped.
@@ -628,72 +628,72 @@ gtk_map_list_model_set_map_func (GtkMapListModel        *self,
  * they are doing and have set up an appropriate map function.
  */
 void
-gtk_map_list_model_set_model (GtkMapListModel *self,
+gtk_map_list_model_set_model (GtkMapListModel *this,
                               GListModel      *model)
 {
   guint removed, added;
 
-  g_return_if_fail (GTK_IS_MAP_LIST_MODEL (self));
+  g_return_if_fail (GTK_IS_MAP_LIST_MODEL (this));
   g_return_if_fail (model == NULL || G_IS_LIST_MODEL (model));
 
-  if (self->model == model)
+  if (this->model == model)
     return;
 
-  removed = g_list_model_get_n_items (G_LIST_MODEL (self));
-  gtk_map_list_model_clear_model (self);
+  removed = g_list_model_get_n_items (G_LIST_MODEL (this));
+  gtk_map_list_model_clear_model (this);
 
   if (model)
     {
-      self->model = g_object_ref (model);
-      g_signal_connect (model, "items-changed", G_CALLBACK (gtk_map_list_model_items_changed_cb), self);
+      this->model = g_object_ref (model);
+      g_signal_connect (model, "items-changed", G_CALLBACK (gtk_map_list_model_items_changed_cb), this);
       added = g_list_model_get_n_items (model);
 
       if (GTK_IS_SECTION_MODEL (model))
-        g_signal_connect (model, "sections-changed", G_CALLBACK (gtk_map_list_model_sections_changed_cb), self);
+        g_signal_connect (model, "sections-changed", G_CALLBACK (gtk_map_list_model_sections_changed_cb), this);
     }
   else
     {
       added = 0;
     }
 
-  gtk_map_list_model_init_items (self);
+  gtk_map_list_model_init_items (this);
 
   if (removed > 0 || added > 0)
-    g_list_model_items_changed (G_LIST_MODEL (self), 0, removed, added);
+    g_list_model_items_changed (G_LIST_MODEL (this), 0, removed, added);
   if (removed != added)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_MODEL]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_MODEL]);
 }
 
 /**
  * gtk_map_list_model_get_model:
- * @self: a `GtkMapListModel`
+ * @this: a `GtkMapListModel`
  *
  * Gets the model that is currently being mapped or %NULL if none.
  *
  * Returns: (nullable) (transfer none): The model that gets mapped
  */
 GListModel *
-gtk_map_list_model_get_model (GtkMapListModel *self)
+gtk_map_list_model_get_model (GtkMapListModel *this)
 {
-  g_return_val_if_fail (GTK_IS_MAP_LIST_MODEL (self), NULL);
+  g_return_val_if_fail (GTK_IS_MAP_LIST_MODEL (this), NULL);
 
-  return self->model;
+  return this->model;
 }
 
 /**
  * gtk_map_list_model_has_map:
- * @self: a `GtkMapListModel`
+ * @this: a `GtkMapListModel`
  *
- * Checks if a map function is currently set on @self.
+ * Checks if a map function is currently set on @this.
  *
  * Returns: %TRUE if a map function is set
  */
 gboolean
-gtk_map_list_model_has_map (GtkMapListModel *self)
+gtk_map_list_model_has_map (GtkMapListModel *this)
 {
-  g_return_val_if_fail (GTK_IS_MAP_LIST_MODEL (self), FALSE);
+  g_return_val_if_fail (GTK_IS_MAP_LIST_MODEL (this), FALSE);
 
-  return self->map_func != NULL;
+  return this->map_func != NULL;
 }

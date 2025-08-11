@@ -19,7 +19,7 @@ typedef enum
 void                    gsk_gpu_cached_glyph_init_cache                 (GskGpuCache            *cache);
 void                    gsk_gpu_cached_glyph_finish_cache               (GskGpuCache            *cache);
 
-GskGpuImage *           gsk_gpu_cached_glyph_lookup                     (GskGpuCache            *self,
+GskGpuImage *           gsk_gpu_cached_glyph_lookup                     (GskGpuCache            *this,
                                                                          GskGpuFrame            *frame,
                                                                          PangoFont              *font,
                                                                          PangoGlyph              glyph,

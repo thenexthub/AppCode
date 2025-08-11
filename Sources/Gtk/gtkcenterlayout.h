@@ -29,35 +29,35 @@ G_DECLARE_FINAL_TYPE (GtkCenterLayout, gtk_center_layout, GTK, CENTER_LAYOUT, Gt
 GDK_AVAILABLE_IN_ALL
 GtkLayoutManager *      gtk_center_layout_new                   (void);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_center_layout_set_orientation       (GtkCenterLayout     *self,
+void                    gtk_center_layout_set_orientation       (GtkCenterLayout     *this,
                                                                  GtkOrientation       orientation);
 GDK_AVAILABLE_IN_ALL
-GtkOrientation          gtk_center_layout_get_orientation       (GtkCenterLayout     *self);
+GtkOrientation          gtk_center_layout_get_orientation       (GtkCenterLayout     *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_center_layout_set_baseline_position (GtkCenterLayout     *self,
+void                    gtk_center_layout_set_baseline_position (GtkCenterLayout     *this,
                                                                  GtkBaselinePosition  baseline_position);
 GDK_AVAILABLE_IN_ALL
-GtkBaselinePosition     gtk_center_layout_get_baseline_position (GtkCenterLayout     *self);
+GtkBaselinePosition     gtk_center_layout_get_baseline_position (GtkCenterLayout     *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_center_layout_set_start_widget      (GtkCenterLayout     *self,
+void                    gtk_center_layout_set_start_widget      (GtkCenterLayout     *this,
                                                                  GtkWidget           *widget);
 GDK_AVAILABLE_IN_ALL
-GtkWidget *             gtk_center_layout_get_start_widget      (GtkCenterLayout     *self);
+GtkWidget *             gtk_center_layout_get_start_widget      (GtkCenterLayout     *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_center_layout_set_center_widget     (GtkCenterLayout     *self,
+void                    gtk_center_layout_set_center_widget     (GtkCenterLayout     *this,
                                                                  GtkWidget           *widget);
 GDK_AVAILABLE_IN_ALL
-GtkWidget *             gtk_center_layout_get_center_widget     (GtkCenterLayout     *self);
+GtkWidget *             gtk_center_layout_get_center_widget     (GtkCenterLayout     *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_center_layout_set_end_widget        (GtkCenterLayout     *self,
+void                    gtk_center_layout_set_end_widget        (GtkCenterLayout     *this,
                                                                  GtkWidget           *widget);
 GDK_AVAILABLE_IN_ALL
-GtkWidget *             gtk_center_layout_get_end_widget        (GtkCenterLayout     *self);
+GtkWidget *             gtk_center_layout_get_end_widget        (GtkCenterLayout     *this);
 
 GDK_AVAILABLE_IN_4_12
-void                    gtk_center_layout_set_shrink_center_last (GtkCenterLayout    *self,
+void                    gtk_center_layout_set_shrink_center_last (GtkCenterLayout    *this,
                                                                   gboolean            shrink_center_last);
 GDK_AVAILABLE_IN_4_12
-gboolean                gtk_center_layout_get_shrink_center_last (GtkCenterLayout    *self);
+gboolean                gtk_center_layout_get_shrink_center_last (GtkCenterLayout    *this);
 
 G_END_DECLS

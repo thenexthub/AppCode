@@ -96,11 +96,11 @@ gtk_css_transition_is_static (GtkStyleAnimation *animation)
 static void
 gtk_css_transition_free (GtkStyleAnimation *animation)
 {
-  GtkCssTransition *self = (GtkCssTransition *)animation;
+  GtkCssTransition *this = (GtkCssTransition *)animation;
 
-  gtk_css_value_unref (self->start);
-  gtk_css_value_unref (self->ease);
-  g_free (self);
+  gtk_css_value_unref (this->start);
+  gtk_css_value_unref (this->ease);
+  g_free (this);
 }
 
 static const GtkStyleAnimationClass GTK_CSS_TRANSITION_CLASS = {

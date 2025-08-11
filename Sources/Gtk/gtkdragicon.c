@@ -87,9 +87,9 @@ G_DEFINE_TYPE_WITH_CODE (GtkDragIcon, gtk_drag_icon, GTK_TYPE_WIDGET,
                                                 gtk_drag_icon_root_init))
 
 static GdkDisplay *
-gtk_drag_icon_root_get_display (GtkRoot *self)
+gtk_drag_icon_root_get_display (GtkRoot *this)
 {
-  GtkDragIcon *icon = GTK_DRAG_ICON (self);
+  GtkDragIcon *icon = GTK_DRAG_ICON (this);
 
   if (icon->surface)
     return gdk_surface_get_display (icon->surface);
@@ -326,12 +326,12 @@ gtk_drag_icon_get_property (GObject     *object,
                             GValue      *value,
                             GParamSpec  *pspec)
 {
-  GtkDragIcon *self = GTK_DRAG_ICON (object);
+  GtkDragIcon *this = GTK_DRAG_ICON (object);
 
   switch (prop_id)
     {
     case PROP_CHILD:
-      g_value_set_object (value, self->child);
+      g_value_set_object (value, this->child);
       break;
 
     default:
@@ -346,12 +346,12 @@ gtk_drag_icon_set_property (GObject      *object,
                             const GValue *value,
                             GParamSpec    *pspec)
 {
-  GtkDragIcon *self = GTK_DRAG_ICON (object);
+  GtkDragIcon *this = GTK_DRAG_ICON (object);
 
   switch (prop_id)
     {
     case PROP_CHILD:
-      gtk_drag_icon_set_child (self, g_value_get_object (value));
+      gtk_drag_icon_set_child (this, g_value_get_object (value));
       break;
 
     default:
@@ -395,9 +395,9 @@ gtk_drag_icon_class_init (GtkDragIconClass *klass)
 }
 
 static void
-gtk_drag_icon_init (GtkDragIcon *self)
+gtk_drag_icon_init (GtkDragIcon *this)
 {
-  gtk_widget_set_can_target (GTK_WIDGET (self), FALSE);
+  gtk_widget_set_can_target (GTK_WIDGET (this), FALSE);
 }
 
 /**
@@ -415,27 +415,27 @@ GtkWidget *
 gtk_drag_icon_get_for_drag (GdkDrag *drag)
 {
   static GQuark drag_icon_quark = 0;
-  GtkWidget *self;
+  GtkWidget *this;
 
   g_return_val_if_fail (GDK_IS_DRAG (drag), NULL);
 
   if (G_UNLIKELY (drag_icon_quark == 0))
     drag_icon_quark = g_quark_from_static_string ("-gtk-drag-icon");
 
-  self = g_object_get_qdata (G_OBJECT (drag), drag_icon_quark);
-  if (self == NULL)
+  this = g_object_get_qdata (G_OBJECT (drag), drag_icon_quark);
+  if (this == NULL)
     {
-      self = g_object_new (GTK_TYPE_DRAG_ICON, NULL);
+      this = g_object_new (GTK_TYPE_DRAG_ICON, NULL);
 
-      GTK_DRAG_ICON (self)->surface = g_object_ref (gdk_drag_get_drag_surface (drag));
+      GTK_DRAG_ICON (this)->surface = g_object_ref (gdk_drag_get_drag_surface (drag));
 
-      g_object_set_qdata_full (G_OBJECT (drag), drag_icon_quark, g_object_ref_sink (self), g_object_unref);
+      g_object_set_qdata_full (G_OBJECT (drag), drag_icon_quark, g_object_ref_sink (this), g_object_unref);
 
-      if (GTK_DRAG_ICON (self)->child != NULL)
-        gtk_widget_set_visible (self, TRUE);
+      if (GTK_DRAG_ICON (this)->child != NULL)
+        gtk_widget_set_visible (this, TRUE);
     }
 
-  return self;
+  return this;
 }
 
 /**
@@ -471,49 +471,49 @@ gtk_drag_icon_set_from_paintable (GdkDrag      *drag,
 
 /**
  * gtk_drag_icon_set_child:
- * @self: a `GtkDragIcon`
+ * @this: a `GtkDragIcon`
  * @child: (nullable): a `GtkWidget`
  *
  * Sets the widget to display as the drag icon.
  */
 void
-gtk_drag_icon_set_child (GtkDragIcon *self,
+gtk_drag_icon_set_child (GtkDragIcon *this,
                          GtkWidget   *child)
 {
-  g_return_if_fail (GTK_IS_DRAG_ICON (self));
+  g_return_if_fail (GTK_IS_DRAG_ICON (this));
   g_return_if_fail (child == NULL || gtk_widget_get_parent (child) == NULL);
 
-  if (self->child == child)
+  if (this->child == child)
     return;
 
-  if (self->child)
-    gtk_widget_unparent (self->child);
+  if (this->child)
+    gtk_widget_unparent (this->child);
 
-  self->child = child;
+  this->child = child;
 
-  if (self->child)
+  if (this->child)
     {
-      gtk_widget_set_parent (self->child, GTK_WIDGET (self));
-      gtk_widget_set_visible (GTK_WIDGET (self), TRUE);
+      gtk_widget_set_parent (this->child, GTK_WIDGET (this));
+      gtk_widget_set_visible (GTK_WIDGET (this), TRUE);
     }
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_CHILD]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_CHILD]);
 }
 
 /**
  * gtk_drag_icon_get_child:
- * @self: a `GtkDragIcon`
+ * @this: a `GtkDragIcon`
  *
  * Gets the widget currently used as drag icon.
  *
  * Returns: (nullable) (transfer none): The drag icon
  **/
 GtkWidget *
-gtk_drag_icon_get_child (GtkDragIcon *self)
+gtk_drag_icon_get_child (GtkDragIcon *this)
 {
-  g_return_val_if_fail (GTK_IS_DRAG_ICON (self), NULL);
+  g_return_val_if_fail (GTK_IS_DRAG_ICON (this), NULL);
 
-  return self->child;
+  return this->child;
 }
 
 /**

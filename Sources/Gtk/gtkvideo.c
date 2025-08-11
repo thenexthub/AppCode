@@ -100,10 +100,10 @@ G_DEFINE_TYPE (GtkVideo, gtk_video, GTK_TYPE_WIDGET)
 static GParamSpec *properties[N_PROPS] = { NULL, };
 
 static gboolean
-gtk_video_get_playing (GtkVideo *self)
+gtk_video_get_playing (GtkVideo *this)
 {
-  if (self->media_stream != NULL)
-    return gtk_media_stream_get_playing (self->media_stream);
+  if (this->media_stream != NULL)
+    return gtk_media_stream_get_playing (this->media_stream);
 
   return FALSE;
 }
@@ -111,77 +111,77 @@ gtk_video_get_playing (GtkVideo *self)
 static gboolean
 gtk_video_hide_controls (gpointer data)
 {
-  GtkVideo *self = data;
+  GtkVideo *this = data;
 
-  if (gtk_video_get_playing (self))
-    gtk_revealer_set_reveal_child (GTK_REVEALER (self->controls_revealer), FALSE);
+  if (gtk_video_get_playing (this))
+    gtk_revealer_set_reveal_child (GTK_REVEALER (this->controls_revealer), FALSE);
 
-  self->controls_hide_source = 0;
+  this->controls_hide_source = 0;
 
   return G_SOURCE_REMOVE;
 }
 
 static void
-gtk_video_reveal_controls (GtkVideo *self)
+gtk_video_reveal_controls (GtkVideo *this)
 {
-  gtk_revealer_set_reveal_child (GTK_REVEALER (self->controls_revealer), TRUE);
-  if (self->controls_hide_source)
-    g_source_remove (self->controls_hide_source);
-  self->controls_hide_source = g_timeout_add (3 * 1000,
+  gtk_revealer_set_reveal_child (GTK_REVEALER (this->controls_revealer), TRUE);
+  if (this->controls_hide_source)
+    g_source_remove (this->controls_hide_source);
+  this->controls_hide_source = g_timeout_add (3 * 1000,
                                               gtk_video_hide_controls,
-                                              self);
-  gdk_source_set_static_name_by_id (self->controls_hide_source, "[gtk] gtk_video_hide_controls");
+                                              this);
+  gdk_source_set_static_name_by_id (this->controls_hide_source, "[gtk] gtk_video_hide_controls");
 }
 
 static gboolean
 gtk_video_hide_cursor (gpointer data)
 {
-  GtkVideo *self = data;
+  GtkVideo *this = data;
 
-  if (self->fullscreen && gtk_video_get_playing (self) && !self->cursor_hidden)
+  if (this->fullscreen && gtk_video_get_playing (this) && !this->cursor_hidden)
     {
-      gtk_widget_set_cursor_from_name (GTK_WIDGET (self), "none");
-      self->cursor_hidden = TRUE;
+      gtk_widget_set_cursor_from_name (GTK_WIDGET (this), "none");
+      this->cursor_hidden = TRUE;
     }
 
-  self->cursor_hide_source = 0;
+  this->cursor_hide_source = 0;
 
   return G_SOURCE_REMOVE;
 }
 
 static void
-gtk_video_reveal_cursor (GtkVideo *self)
+gtk_video_reveal_cursor (GtkVideo *this)
 {
-  gtk_widget_set_cursor (GTK_WIDGET (self), NULL);
-  self->cursor_hidden = FALSE;
-  if (self->cursor_hide_source)
-    g_source_remove (self->cursor_hide_source);
-  self->cursor_hide_source = g_timeout_add (3 * 1000,
+  gtk_widget_set_cursor (GTK_WIDGET (this), NULL);
+  this->cursor_hidden = FALSE;
+  if (this->cursor_hide_source)
+    g_source_remove (this->cursor_hide_source);
+  this->cursor_hide_source = g_timeout_add (3 * 1000,
                                             gtk_video_hide_cursor,
-                                            self);
-  gdk_source_set_static_name_by_id (self->cursor_hide_source, "[gtk] gtk_video_hide_cursor");
+                                            this);
+  gdk_source_set_static_name_by_id (this->cursor_hide_source, "[gtk] gtk_video_hide_cursor");
 }
 
 static void
 gtk_video_motion (GtkEventControllerMotion *motion,
                   double                    x,
                   double                    y,
-                  GtkVideo                 *self)
+                  GtkVideo                 *this)
 {
-  if (self->last_x == x && self->last_y == y)
+  if (this->last_x == x && this->last_y == y)
     return;
 
-  self->last_x = x;
-  self->last_y = y;
+  this->last_x = x;
+  this->last_y = y;
 
-  gtk_video_reveal_cursor (self);
-  gtk_video_reveal_controls (self);
+  gtk_video_reveal_cursor (this);
+  gtk_video_reveal_controls (this);
 }
 
 static void
-gtk_video_pressed (GtkVideo *self)
+gtk_video_pressed (GtkVideo *this)
 {
-  gtk_video_reveal_controls (self);
+  gtk_video_reveal_controls (this);
 }
 
 static void
@@ -191,45 +191,45 @@ overlay_clicked_cb (GtkGestureClick *gesture,
                     double           y,
                     gpointer         data)
 {
-  GtkVideo *self = data;
+  GtkVideo *this = data;
 
-  if (self->media_stream)
-    gtk_media_stream_set_playing (self->media_stream, !gtk_media_stream_get_playing (self->media_stream));
+  if (this->media_stream)
+    gtk_media_stream_set_playing (this->media_stream, !gtk_media_stream_get_playing (this->media_stream));
 }
 
 static void
 gtk_video_realize (GtkWidget *widget)
 {
-  GtkVideo *self = GTK_VIDEO (widget);
+  GtkVideo *this = GTK_VIDEO (widget);
 
   GTK_WIDGET_CLASS (gtk_video_parent_class)->realize (widget);
 
-  if (self->media_stream)
+  if (this->media_stream)
     {
       GdkSurface *surface;
 
       surface = gtk_native_get_surface (gtk_widget_get_native (widget));
-      gtk_media_stream_realize (self->media_stream, surface);
+      gtk_media_stream_realize (this->media_stream, surface);
     }
 
-  if (self->file)
-    gtk_media_file_set_file (GTK_MEDIA_FILE (self->media_stream), self->file);
+  if (this->file)
+    gtk_media_file_set_file (GTK_MEDIA_FILE (this->media_stream), this->file);
 }
 
 static void
 gtk_video_unrealize (GtkWidget *widget)
 {
-  GtkVideo *self = GTK_VIDEO (widget);
+  GtkVideo *this = GTK_VIDEO (widget);
 
-  if (self->autoplay && self->media_stream)
-    gtk_media_stream_pause (self->media_stream);
+  if (this->autoplay && this->media_stream)
+    gtk_media_stream_pause (this->media_stream);
 
-  if (self->media_stream)
+  if (this->media_stream)
     {
       GdkSurface *surface;
 
       surface = gtk_native_get_surface (gtk_widget_get_native (widget));
-      gtk_media_stream_unrealize (self->media_stream, surface);
+      gtk_media_stream_unrealize (this->media_stream, surface);
     }
 
   GTK_WIDGET_CLASS (gtk_video_parent_class)->unrealize (widget);
@@ -238,14 +238,14 @@ gtk_video_unrealize (GtkWidget *widget)
 static void
 gtk_video_map (GtkWidget *widget)
 {
-  GtkVideo *self = GTK_VIDEO (widget);
+  GtkVideo *this = GTK_VIDEO (widget);
 
   GTK_WIDGET_CLASS (gtk_video_parent_class)->map (widget);
 
-  if (self->autoplay &&
-      self->media_stream &&
-      gtk_media_stream_is_prepared (self->media_stream))
-    gtk_media_stream_play (self->media_stream);
+  if (this->autoplay &&
+      this->media_stream &&
+      gtk_media_stream_is_prepared (this->media_stream))
+    gtk_media_stream_play (this->media_stream);
 
   gtk_video_reveal_cursor (GTK_VIDEO (widget));
 }
@@ -253,19 +253,19 @@ gtk_video_map (GtkWidget *widget)
 static void
 gtk_video_unmap (GtkWidget *widget)
 {
-  GtkVideo *self = GTK_VIDEO (widget);
+  GtkVideo *this = GTK_VIDEO (widget);
 
-  if (self->controls_hide_source)
+  if (this->controls_hide_source)
     {
-      g_source_remove (self->controls_hide_source);
-      self->controls_hide_source = 0;
-      gtk_revealer_set_reveal_child (GTK_REVEALER (self->controls_revealer), FALSE);
+      g_source_remove (this->controls_hide_source);
+      this->controls_hide_source = 0;
+      gtk_revealer_set_reveal_child (GTK_REVEALER (this->controls_revealer), FALSE);
     }
 
-  if (self->cursor_hide_source)
+  if (this->cursor_hide_source)
     {
-      g_source_remove (self->cursor_hide_source);
-      self->cursor_hide_source = 0;
+      g_source_remove (this->cursor_hide_source);
+      this->cursor_hide_source = 0;
       gtk_widget_set_cursor (widget, NULL);
     }
 
@@ -275,10 +275,10 @@ gtk_video_unmap (GtkWidget *widget)
 static void
 gtk_video_hide (GtkWidget *widget)
 {
-  GtkVideo *self = GTK_VIDEO (widget);
+  GtkVideo *this = GTK_VIDEO (widget);
 
-  if (self->autoplay && self->media_stream)
-    gtk_media_stream_pause (self->media_stream);
+  if (this->autoplay && this->media_stream)
+    gtk_media_stream_pause (this->media_stream);
 
   GTK_WIDGET_CLASS (gtk_video_parent_class)->hide (widget);
 }
@@ -286,12 +286,12 @@ gtk_video_hide (GtkWidget *widget)
 static void
 gtk_video_dispose (GObject *object)
 {
-  GtkVideo *self = GTK_VIDEO (object);
+  GtkVideo *this = GTK_VIDEO (object);
 
-  gtk_video_set_media_stream (self, NULL);
+  gtk_video_set_media_stream (this, NULL);
 
-  g_clear_pointer (&self->box, gtk_widget_unparent);
-  g_clear_object (&self->file);
+  g_clear_pointer (&this->box, gtk_widget_unparent);
+  g_clear_object (&this->file);
 
   G_OBJECT_CLASS (gtk_video_parent_class)->dispose (object);
 }
@@ -302,28 +302,28 @@ gtk_video_get_property (GObject    *object,
                         GValue     *value,
                         GParamSpec *pspec)
 {
-  GtkVideo *self = GTK_VIDEO (object);
+  GtkVideo *this = GTK_VIDEO (object);
 
   switch (property_id)
     {
     case PROP_AUTOPLAY:
-      g_value_set_boolean (value, self->autoplay);
+      g_value_set_boolean (value, this->autoplay);
       break;
 
     case PROP_FILE:
-      g_value_set_object (value, self->file);
+      g_value_set_object (value, this->file);
       break;
 
     case PROP_LOOP:
-      g_value_set_boolean (value, self->loop);
+      g_value_set_boolean (value, this->loop);
       break;
 
     case PROP_MEDIA_STREAM:
-      g_value_set_object (value, self->media_stream);
+      g_value_set_object (value, this->media_stream);
       break;
 
     case PROP_GRAPHICS_OFFLOAD:
-      g_value_set_enum (value, gtk_video_get_graphics_offload (self));
+      g_value_set_enum (value, gtk_video_get_graphics_offload (this));
       break;
 
     default:
@@ -338,28 +338,28 @@ gtk_video_set_property (GObject      *object,
                         const GValue *value,
                         GParamSpec   *pspec)
 {
-  GtkVideo *self = GTK_VIDEO (object);
+  GtkVideo *this = GTK_VIDEO (object);
 
   switch (property_id)
     {
     case PROP_AUTOPLAY:
-      gtk_video_set_autoplay (self, g_value_get_boolean (value));
+      gtk_video_set_autoplay (this, g_value_get_boolean (value));
       break;
 
     case PROP_FILE:
-      gtk_video_set_file (self, g_value_get_object (value));
+      gtk_video_set_file (this, g_value_get_object (value));
       break;
 
     case PROP_LOOP:
-      gtk_video_set_loop (self, g_value_get_boolean (value));
+      gtk_video_set_loop (this, g_value_get_boolean (value));
       break;
 
     case PROP_MEDIA_STREAM:
-      gtk_video_set_media_stream (self, g_value_get_object (value));
+      gtk_video_set_media_stream (this, g_value_get_object (value));
       break;
 
     case PROP_GRAPHICS_OFFLOAD:
-      gtk_video_set_graphics_offload (self, g_value_get_enum (value));
+      gtk_video_set_graphics_offload (this, g_value_get_enum (value));
       break;
 
     default:
@@ -371,9 +371,9 @@ gtk_video_set_property (GObject      *object,
 static void
 fullscreen_changed (GtkWindow  *window,
                     GParamSpec *pspec,
-                    GtkVideo   *self)
+                    GtkVideo   *this)
 {
-  self->fullscreen = gtk_window_is_fullscreen (window);
+  this->fullscreen = gtk_window_is_fullscreen (window);
 }
 
 static void
@@ -483,9 +483,9 @@ gtk_video_class_init (GtkVideoClass *klass)
 }
 
 static void
-gtk_video_init (GtkVideo *self)
+gtk_video_init (GtkVideo *this)
 {
-  gtk_widget_init_template (GTK_WIDGET (self));
+  gtk_widget_init_template (GTK_WIDGET (this));
 }
 
 /**
@@ -611,100 +611,100 @@ gtk_video_new_for_resource (const char *resource_path)
 
 /**
  * gtk_video_get_media_stream:
- * @self: a `GtkVideo`
+ * @this: a `GtkVideo`
  *
- * Gets the media stream managed by @self or %NULL if none.
+ * Gets the media stream managed by @this or %NULL if none.
  *
- * Returns: (nullable) (transfer none): The media stream managed by @self
+ * Returns: (nullable) (transfer none): The media stream managed by @this
  */
 GtkMediaStream *
-gtk_video_get_media_stream (GtkVideo *self)
+gtk_video_get_media_stream (GtkVideo *this)
 {
-  g_return_val_if_fail (GTK_IS_VIDEO (self), NULL);
+  g_return_val_if_fail (GTK_IS_VIDEO (this), NULL);
 
-  return self->media_stream;
+  return this->media_stream;
 }
 
 static void
-gtk_video_update_overlay_icon (GtkVideo *self)
+gtk_video_update_overlay_icon (GtkVideo *this)
 {
   const char *icon_name;
   const GError *error = NULL;
 
-  if (self->media_stream == NULL)
+  if (this->media_stream == NULL)
     icon_name = "media-eject-symbolic";
-  else if ((error = gtk_media_stream_get_error (self->media_stream)))
+  else if ((error = gtk_media_stream_get_error (this->media_stream)))
     icon_name = "dialog-error-symbolic";
-  else if (gtk_media_stream_get_ended (self->media_stream))
+  else if (gtk_media_stream_get_ended (this->media_stream))
     icon_name = "media-playlist-repeat-symbolic";
   else
     icon_name = "media-playback-start-symbolic";
 
-  gtk_image_set_from_icon_name (GTK_IMAGE (self->overlay_icon), icon_name);
+  gtk_image_set_from_icon_name (GTK_IMAGE (this->overlay_icon), icon_name);
   if (error)
-    gtk_widget_set_tooltip_text (self->overlay_icon, error->message);
+    gtk_widget_set_tooltip_text (this->overlay_icon, error->message);
   else
-    gtk_widget_set_tooltip_text (self->overlay_icon, NULL);
+    gtk_widget_set_tooltip_text (this->overlay_icon, NULL);
 }
 
 static void
-gtk_video_update_ended (GtkVideo *self)
+gtk_video_update_ended (GtkVideo *this)
 {
-  gtk_video_update_overlay_icon (self);
+  gtk_video_update_overlay_icon (this);
 }
 
 static void
-gtk_video_update_error (GtkVideo *self)
+gtk_video_update_error (GtkVideo *this)
 {
-  gtk_video_update_overlay_icon (self);
+  gtk_video_update_overlay_icon (this);
 }
 
 static void
-gtk_video_update_playing (GtkVideo *self)
+gtk_video_update_playing (GtkVideo *this)
 {
-  gboolean playing = gtk_video_get_playing (self);
+  gboolean playing = gtk_video_get_playing (this);
 
-  gtk_widget_set_visible (self->overlay_icon, !playing);
-  gtk_widget_set_cursor (GTK_WIDGET (self), NULL);
-  self->cursor_hidden = FALSE;
+  gtk_widget_set_visible (this->overlay_icon, !playing);
+  gtk_widget_set_cursor (GTK_WIDGET (this), NULL);
+  this->cursor_hidden = FALSE;
 }
 
 static void
-gtk_video_update_all (GtkVideo *self)
+gtk_video_update_all (GtkVideo *this)
 {
-  gtk_video_update_ended (self);
-  gtk_video_update_error (self);
-  gtk_video_update_playing (self);
+  gtk_video_update_ended (this);
+  gtk_video_update_error (this);
+  gtk_video_update_playing (this);
 }
 
 static void
 gtk_video_notify_cb (GtkMediaStream *stream,
                      GParamSpec     *pspec,
-                     GtkVideo       *self)
+                     GtkVideo       *this)
 {
   if (g_str_equal (pspec->name, "ended"))
-    gtk_video_update_ended (self);
+    gtk_video_update_ended (this);
   if (g_str_equal (pspec->name, "error"))
-    gtk_video_update_error (self);
+    gtk_video_update_error (this);
   if (g_str_equal (pspec->name, "playing"))
-    gtk_video_update_playing (self);
+    gtk_video_update_playing (this);
   if (g_str_equal (pspec->name, "prepared"))
     {
-      if (self->autoplay &&
+      if (this->autoplay &&
           gtk_media_stream_is_prepared (stream) &&
-          gtk_widget_get_mapped (GTK_WIDGET (self)))
+          gtk_widget_get_mapped (GTK_WIDGET (this)))
         gtk_media_stream_play (stream);
     }
 }
 
 /**
  * gtk_video_set_media_stream:
- * @self: a `GtkVideo`
+ * @this: a `GtkVideo`
  * @stream: (nullable): The media stream to play or %NULL to unset
  *
  * Sets the media stream to be played back.
  *
- * @self will take full control of managing the media stream. If you
+ * @this will take full control of managing the media stream. If you
  * want to manage a media stream yourself, consider using a
  * [class@Gtk.Picture] for display.
  *
@@ -712,97 +712,97 @@ gtk_video_notify_cb (GtkMediaStream *stream,
  * instead.
  */
 void
-gtk_video_set_media_stream (GtkVideo       *self,
+gtk_video_set_media_stream (GtkVideo       *this,
                             GtkMediaStream *stream)
 {
-  g_return_if_fail (GTK_IS_VIDEO (self));
+  g_return_if_fail (GTK_IS_VIDEO (this));
   g_return_if_fail (stream == NULL || GTK_IS_MEDIA_STREAM (stream));
 
-  if (self->media_stream == stream)
+  if (this->media_stream == stream)
     return;
 
-  if (self->media_stream)
+  if (this->media_stream)
     {
-      if (self->autoplay)
-        gtk_media_stream_pause (self->media_stream);
-      g_signal_handlers_disconnect_by_func (self->media_stream,
+      if (this->autoplay)
+        gtk_media_stream_pause (this->media_stream);
+      g_signal_handlers_disconnect_by_func (this->media_stream,
                                             gtk_video_notify_cb,
-                                            self);
-      if (gtk_widget_get_realized (GTK_WIDGET (self)))
+                                            this);
+      if (gtk_widget_get_realized (GTK_WIDGET (this)))
         {
           GdkSurface *surface;
 
-          surface = gtk_native_get_surface (gtk_widget_get_native (GTK_WIDGET (self)));
-          gtk_media_stream_unrealize (self->media_stream, surface);
+          surface = gtk_native_get_surface (gtk_widget_get_native (GTK_WIDGET (this)));
+          gtk_media_stream_unrealize (this->media_stream, surface);
         }
-      g_object_unref (self->media_stream);
-      self->media_stream = NULL;
+      g_object_unref (this->media_stream);
+      this->media_stream = NULL;
     }
 
   if (stream)
     {
-      self->media_stream = g_object_ref (stream);
-      gtk_media_stream_set_loop (stream, self->loop);
-      if (gtk_widget_get_realized (GTK_WIDGET (self)))
+      this->media_stream = g_object_ref (stream);
+      gtk_media_stream_set_loop (stream, this->loop);
+      if (gtk_widget_get_realized (GTK_WIDGET (this)))
         {
           GdkSurface *surface;
 
-          surface = gtk_native_get_surface (gtk_widget_get_native (GTK_WIDGET (self)));
+          surface = gtk_native_get_surface (gtk_widget_get_native (GTK_WIDGET (this)));
           gtk_media_stream_realize (stream, surface);
         }
-      g_signal_connect (self->media_stream,
+      g_signal_connect (this->media_stream,
                         "notify",
                         G_CALLBACK (gtk_video_notify_cb),
-                        self);
-      if (self->autoplay &&
+                        this);
+      if (this->autoplay &&
           gtk_media_stream_is_prepared (stream) &&
-          gtk_widget_get_mapped (GTK_WIDGET (self)))
+          gtk_widget_get_mapped (GTK_WIDGET (this)))
         gtk_media_stream_play (stream);
     }
 
-  gtk_media_controls_set_media_stream (GTK_MEDIA_CONTROLS (self->controls), stream);
-  gtk_picture_set_paintable (GTK_PICTURE (self->video_picture), GDK_PAINTABLE (stream));
+  gtk_media_controls_set_media_stream (GTK_MEDIA_CONTROLS (this->controls), stream);
+  gtk_picture_set_paintable (GTK_PICTURE (this->video_picture), GDK_PAINTABLE (stream));
 
-  gtk_video_update_all (self);
+  gtk_video_update_all (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_MEDIA_STREAM]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_MEDIA_STREAM]);
 }
 
 /**
  * gtk_video_get_file:
- * @self: a `GtkVideo`
+ * @this: a `GtkVideo`
  *
- * Gets the file played by @self or %NULL if not playing back
+ * Gets the file played by @this or %NULL if not playing back
  * a file.
  *
- * Returns: (nullable) (transfer none): The file played by @self
+ * Returns: (nullable) (transfer none): The file played by @this
  */
 GFile *
-gtk_video_get_file (GtkVideo *self)
+gtk_video_get_file (GtkVideo *this)
 {
-  g_return_val_if_fail (GTK_IS_VIDEO (self), NULL);
+  g_return_val_if_fail (GTK_IS_VIDEO (this), NULL);
 
-  return self->file;
+  return this->file;
 }
 
 /**
  * gtk_video_set_file:
- * @self: a `GtkVideo`
+ * @this: a `GtkVideo`
  * @file: (nullable): the file to play
  *
- * Makes @self play the given @file.
+ * Makes @this play the given @file.
  */
 void
-gtk_video_set_file (GtkVideo *self,
+gtk_video_set_file (GtkVideo *this,
                     GFile    *file)
 {
-  g_return_if_fail (GTK_IS_VIDEO (self));
+  g_return_if_fail (GTK_IS_VIDEO (this));
   g_return_if_fail (file == NULL || G_IS_FILE (file));
 
-  if (!g_set_object (&self->file, file))
+  if (!g_set_object (&this->file, file))
     return;
 
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
 
   if (file)
     {
@@ -810,51 +810,51 @@ gtk_video_set_file (GtkVideo *self,
 
       stream = gtk_media_file_new ();
 
-      if (gtk_widget_get_realized (GTK_WIDGET (self)))
+      if (gtk_widget_get_realized (GTK_WIDGET (this)))
         {
           GdkSurface *surface;
 
-          surface = gtk_native_get_surface (gtk_widget_get_native (GTK_WIDGET (self)));
+          surface = gtk_native_get_surface (gtk_widget_get_native (GTK_WIDGET (this)));
           gtk_media_stream_realize (stream, surface);
           gtk_media_file_set_file (GTK_MEDIA_FILE (stream), file);
         }
-      gtk_video_set_media_stream (self, stream);
+      gtk_video_set_media_stream (this, stream);
 
       g_object_unref (stream);
     }
   else
     {
-      gtk_video_set_media_stream (self, NULL);
+      gtk_video_set_media_stream (this, NULL);
     }
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_FILE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_FILE]);
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 }
 
 /**
  * gtk_video_set_filename:
- * @self: a `GtkVideo`
+ * @this: a `GtkVideo`
  * @filename: (type filename) (nullable): the filename to play
  *
- * Makes @self play the given @filename.
+ * Makes @this play the given @filename.
  *
  * This is a utility function that calls gtk_video_set_file(),
  */
 void
-gtk_video_set_filename (GtkVideo   *self,
+gtk_video_set_filename (GtkVideo   *this,
                         const char *filename)
 {
   GFile *file;
 
-  g_return_if_fail (GTK_IS_VIDEO (self));
+  g_return_if_fail (GTK_IS_VIDEO (this));
 
   if (filename)
     file = g_file_new_for_path (filename);
   else
     file = NULL;
 
-  gtk_video_set_file (self, file);
+  gtk_video_set_file (this, file);
 
   if (file)
     g_object_unref (file);
@@ -862,20 +862,20 @@ gtk_video_set_filename (GtkVideo   *self,
 
 /**
  * gtk_video_set_resource:
- * @self: a `GtkVideo`
+ * @this: a `GtkVideo`
  * @resource_path: (nullable): the resource to set
  *
- * Makes @self play the resource at the given @resource_path.
+ * Makes @this play the resource at the given @resource_path.
  *
  * This is a utility function that calls [method@Gtk.Video.set_file].
  */
 void
-gtk_video_set_resource (GtkVideo   *self,
+gtk_video_set_resource (GtkVideo   *this,
                         const char *resource_path)
 {
   GFile *file;
 
-  g_return_if_fail (GTK_IS_VIDEO (self));
+  g_return_if_fail (GTK_IS_VIDEO (this));
 
   if (resource_path)
     {
@@ -894,7 +894,7 @@ gtk_video_set_resource (GtkVideo   *self,
       file = NULL;
     }
 
-  gtk_video_set_file (self, file);
+  gtk_video_set_file (this, file);
 
   if (file)
     g_object_unref (file);
@@ -902,82 +902,82 @@ gtk_video_set_resource (GtkVideo   *self,
 
 /**
  * gtk_video_get_autoplay:
- * @self: a `GtkVideo`
+ * @this: a `GtkVideo`
  *
  * Returns %TRUE if videos have been set to loop.
  *
  * Returns: %TRUE if streams should autoplay
  */
 gboolean
-gtk_video_get_autoplay (GtkVideo *self)
+gtk_video_get_autoplay (GtkVideo *this)
 {
-  g_return_val_if_fail (GTK_IS_VIDEO (self), FALSE);
+  g_return_val_if_fail (GTK_IS_VIDEO (this), FALSE);
 
-  return self->autoplay;
+  return this->autoplay;
 }
 
 /**
  * gtk_video_set_autoplay:
- * @self: a `GtkVideo`
+ * @this: a `GtkVideo`
  * @autoplay: whether media streams should autoplay
  *
- * Sets whether @self automatically starts playback when it
+ * Sets whether @this automatically starts playback when it
  * becomes visible or when a new file gets loaded.
  */
 void
-gtk_video_set_autoplay (GtkVideo *self,
+gtk_video_set_autoplay (GtkVideo *this,
                         gboolean  autoplay)
 {
-  g_return_if_fail (GTK_IS_VIDEO (self));
+  g_return_if_fail (GTK_IS_VIDEO (this));
 
-  if (self->autoplay == autoplay)
+  if (this->autoplay == autoplay)
     return;
 
-  self->autoplay = autoplay;
+  this->autoplay = autoplay;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_AUTOPLAY]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_AUTOPLAY]);
 }
 
 /**
  * gtk_video_get_loop:
- * @self: a `GtkVideo`
+ * @this: a `GtkVideo`
  *
  * Returns %TRUE if videos have been set to loop.
  *
  * Returns: %TRUE if streams should loop
  */
 gboolean
-gtk_video_get_loop (GtkVideo *self)
+gtk_video_get_loop (GtkVideo *this)
 {
-  g_return_val_if_fail (GTK_IS_VIDEO (self), FALSE);
+  g_return_val_if_fail (GTK_IS_VIDEO (this), FALSE);
 
-  return self->loop;
+  return this->loop;
 }
 
 /**
  * gtk_video_set_loop:
- * @self: a `GtkVideo`
+ * @this: a `GtkVideo`
  * @loop: whether media streams should loop
  *
- * Sets whether new files loaded by @self should be set to loop.
+ * Sets whether new files loaded by @this should be set to loop.
  */
 void
-gtk_video_set_loop (GtkVideo *self,
+gtk_video_set_loop (GtkVideo *this,
                     gboolean  loop)
 {
-  g_return_if_fail (GTK_IS_VIDEO (self));
+  g_return_if_fail (GTK_IS_VIDEO (this));
 
-  if (self->loop == loop)
+  if (this->loop == loop)
     return;
 
-  self->loop = loop;
+  this->loop = loop;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_LOOP]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_LOOP]);
 }
 
 /**
  * gtk_video_get_graphics_offload:
- * @self: a `GtkVideo`
+ * @this: a `GtkVideo`
  *
  * Returns whether graphics offload is enabled.
  *
@@ -988,16 +988,16 @@ gtk_video_set_loop (GtkVideo *self,
  * Since: 4.14
  */
 GtkGraphicsOffloadEnabled
-gtk_video_get_graphics_offload (GtkVideo *self)
+gtk_video_get_graphics_offload (GtkVideo *this)
 {
-  g_return_val_if_fail (GTK_IS_VIDEO (self), GTK_GRAPHICS_OFFLOAD_DISABLED);
+  g_return_val_if_fail (GTK_IS_VIDEO (this), GTK_GRAPHICS_OFFLOAD_DISABLED);
 
-  return gtk_graphics_offload_get_enabled (GTK_GRAPHICS_OFFLOAD (self->graphics_offload));
+  return gtk_graphics_offload_get_enabled (GTK_GRAPHICS_OFFLOAD (this->graphics_offload));
 }
 
 /**
  * gtk_video_set_graphics_offload:
- * @self: a `GtkVideo`
+ * @this: a `GtkVideo`
  * @enabled: the new graphics offload status
  *
  * Sets whether to enable graphics offload.
@@ -1007,15 +1007,15 @@ gtk_video_get_graphics_offload (GtkVideo *self)
  * Since: 4.14
  */
 void
-gtk_video_set_graphics_offload (GtkVideo                  *self,
+gtk_video_set_graphics_offload (GtkVideo                  *this,
                                 GtkGraphicsOffloadEnabled  enabled)
 {
-  g_return_if_fail (GTK_IS_VIDEO (self));
+  g_return_if_fail (GTK_IS_VIDEO (this));
 
-  if (gtk_graphics_offload_get_enabled (GTK_GRAPHICS_OFFLOAD (self->graphics_offload)) == enabled)
+  if (gtk_graphics_offload_get_enabled (GTK_GRAPHICS_OFFLOAD (this->graphics_offload)) == enabled)
     return;
 
-  gtk_graphics_offload_set_enabled (GTK_GRAPHICS_OFFLOAD (self->graphics_offload), enabled);
+  gtk_graphics_offload_set_enabled (GTK_GRAPHICS_OFFLOAD (this->graphics_offload), enabled);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_GRAPHICS_OFFLOAD]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_GRAPHICS_OFFLOAD]);
 }

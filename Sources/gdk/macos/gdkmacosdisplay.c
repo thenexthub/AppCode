@@ -60,15 +60,15 @@ static GSource *event_source;
 static GQueue event_map = G_QUEUE_INIT;
 
 static GdkMacosMonitor *
-get_monitor (GdkMacosDisplay *self,
+get_monitor (GdkMacosDisplay *this,
              guint            position)
 {
   GdkMacosMonitor *monitor;
 
-  g_assert (GDK_IS_MACOS_DISPLAY (self));
+  g_assert (GDK_IS_MACOS_DISPLAY (this));
 
   /* Get the monitor but return a borrowed reference */
-  monitor = g_list_model_get_item (G_LIST_MODEL (self->monitors), position);
+  monitor = g_list_model_get_item (G_LIST_MODEL (this->monitors), position);
   if (monitor != NULL)
     g_object_unref (monitor);
 
@@ -96,40 +96,40 @@ static GdkMonitor *
 gdk_macos_display_get_monitor_at_surface (GdkDisplay *display,
                                           GdkSurface *surface)
 {
-  GdkMacosDisplay *self = (GdkMacosDisplay *)display;
+  GdkMacosDisplay *this = (GdkMacosDisplay *)display;
   CGDirectDisplayID screen_id;
   guint n_monitors;
 
-  g_assert (GDK_IS_MACOS_DISPLAY (self));
+  g_assert (GDK_IS_MACOS_DISPLAY (this));
   g_assert (GDK_IS_MACOS_SURFACE (surface));
 
   screen_id = _gdk_macos_surface_get_screen_id (GDK_MACOS_SURFACE (surface));
-  n_monitors = g_list_model_get_n_items (G_LIST_MODEL (self->monitors));
+  n_monitors = g_list_model_get_n_items (G_LIST_MODEL (this->monitors));
 
   for (guint i = 0; i < n_monitors; i++)
     {
-      GdkMacosMonitor *monitor = get_monitor (self, i);
+      GdkMacosMonitor *monitor = get_monitor (this, i);
 
       if (screen_id == _gdk_macos_monitor_get_screen_id (monitor))
         return GDK_MONITOR (monitor);
     }
 
-  return GDK_MONITOR (get_monitor (self, 0));
+  return GDK_MONITOR (get_monitor (this, 0));
 }
 
 static GdkMacosMonitor *
-gdk_macos_display_find_monitor (GdkMacosDisplay   *self,
+gdk_macos_display_find_monitor (GdkMacosDisplay   *this,
                                 CGDirectDisplayID  screen_id)
 {
   guint n_monitors;
 
-  g_assert (GDK_IS_MACOS_DISPLAY (self));
+  g_assert (GDK_IS_MACOS_DISPLAY (this));
 
-  n_monitors = g_list_model_get_n_items (G_LIST_MODEL (self->monitors));
+  n_monitors = g_list_model_get_n_items (G_LIST_MODEL (this->monitors));
 
   for (guint i = 0; i < n_monitors; i++)
     {
-      GdkMacosMonitor *monitor = get_monitor (self, i);
+      GdkMacosMonitor *monitor = get_monitor (this, i);
 
       if (screen_id == _gdk_macos_monitor_get_screen_id (monitor))
         return monitor;
@@ -139,48 +139,48 @@ gdk_macos_display_find_monitor (GdkMacosDisplay   *self,
 }
 
 static void
-gdk_macos_display_update_bounds (GdkMacosDisplay *self)
+gdk_macos_display_update_bounds (GdkMacosDisplay *this)
 {
   GDK_BEGIN_MACOS_ALLOC_POOL;
 
-  g_assert (GDK_IS_MACOS_DISPLAY (self));
+  g_assert (GDK_IS_MACOS_DISPLAY (this));
 
-  self->min_x = G_MAXINT;
-  self->min_y = G_MAXINT;
+  this->min_x = G_MAXINT;
+  this->min_y = G_MAXINT;
 
-  self->max_x = G_MININT;
-  self->max_y = G_MININT;
+  this->max_x = G_MININT;
+  this->max_y = G_MININT;
 
   for (id obj in [NSScreen screens])
     {
       NSRect geom = [(NSScreen *)obj frame];
 
-      self->min_x = MIN (self->min_x, geom.origin.x);
-      self->min_y = MIN (self->min_y, geom.origin.y);
-      self->max_x = MAX (self->max_x, geom.origin.x + geom.size.width);
-      self->max_y = MAX (self->max_y, geom.origin.y + geom.size.height);
+      this->min_x = MIN (this->min_x, geom.origin.x);
+      this->min_y = MIN (this->min_y, geom.origin.y);
+      this->max_x = MAX (this->max_x, geom.origin.x + geom.size.width);
+      this->max_y = MAX (this->max_y, geom.origin.y + geom.size.height);
     }
 
-  self->width = self->max_x - self->min_x;
-  self->height = self->max_y - self->min_y;
+  this->width = this->max_x - this->min_x;
+  this->height = this->max_y - this->min_y;
 
   GDK_DEBUG (MISC, "Displays reconfigured to bounds %d,%d %dx%d",
-                   self->min_x, self->min_y, self->width, self->height);
+                   this->min_x, this->min_y, this->width, this->height);
 
   GDK_END_MACOS_ALLOC_POOL;
 }
 
 void
-_gdk_macos_display_reload_monitors (GdkMacosDisplay *self)
+_gdk_macos_display_reload_monitors (GdkMacosDisplay *this)
 {
   GDK_BEGIN_MACOS_ALLOC_POOL;
 
   GArray *seen;
   guint n_monitors;
 
-  g_assert (GDK_IS_MACOS_DISPLAY (self));
+  g_assert (GDK_IS_MACOS_DISPLAY (this));
 
-  gdk_macos_display_update_bounds (self);
+  gdk_macos_display_update_bounds (this);
 
   seen = g_array_new (FALSE, FALSE, sizeof (CGDirectDisplayID));
 
@@ -192,23 +192,23 @@ _gdk_macos_display_reload_monitors (GdkMacosDisplay *self)
       screen_id = [[[obj deviceDescription] objectForKey:@"NSScreenNumber"] unsignedIntValue];
       g_array_append_val (seen, screen_id);
 
-      if ((monitor = gdk_macos_display_find_monitor (self, screen_id)))
+      if ((monitor = gdk_macos_display_find_monitor (this, screen_id)))
         {
           _gdk_macos_monitor_reconfigure (monitor);
         }
       else
         {
-          monitor = _gdk_macos_monitor_new (self, screen_id);
-          g_list_store_append (self->monitors, monitor);
+          monitor = _gdk_macos_monitor_new (this, screen_id);
+          g_list_store_append (this->monitors, monitor);
           g_object_unref (monitor);
         }
     }
 
-  n_monitors = g_list_model_get_n_items (G_LIST_MODEL (self->monitors));
+  n_monitors = g_list_model_get_n_items (G_LIST_MODEL (this->monitors));
 
   for (guint i = n_monitors; i > 0; i--)
     {
-      GdkMacosMonitor *monitor = get_monitor (self, i - 1);
+      GdkMacosMonitor *monitor = get_monitor (this, i - 1);
       CGDirectDisplayID screen_id = _gdk_macos_monitor_get_screen_id (monitor);
       gboolean found = FALSE;
 
@@ -222,7 +222,7 @@ _gdk_macos_display_reload_monitors (GdkMacosDisplay *self)
         }
 
       if (!found)
-        g_list_store_remove (self->monitors, i - 1);
+        g_list_store_remove (this->monitors, i - 1);
     }
 
   g_array_unref (seen);
@@ -231,14 +231,14 @@ _gdk_macos_display_reload_monitors (GdkMacosDisplay *self)
 }
 
 static void
-gdk_macos_display_load_seat (GdkMacosDisplay *self)
+gdk_macos_display_load_seat (GdkMacosDisplay *this)
 {
   GdkSeat *seat;
 
-  g_assert (GDK_IS_MACOS_DISPLAY (self));
+  g_assert (GDK_IS_MACOS_DISPLAY (this));
 
-  seat = _gdk_macos_seat_new (self);
-  gdk_display_add_seat (GDK_DISPLAY (self), seat);
+  seat = _gdk_macos_seat_new (this);
+  gdk_display_add_seat (GDK_DISPLAY (this), seat);
   g_object_unref (seat);
 }
 
@@ -305,14 +305,14 @@ push_nsevent (GdkEvent *gdk_event,
 static void
 gdk_macos_display_queue_events (GdkDisplay *display)
 {
-  GdkMacosDisplay *self = (GdkMacosDisplay *)display;
+  GdkMacosDisplay *this = (GdkMacosDisplay *)display;
   NSEvent *nsevent;
 
-  g_return_if_fail (GDK_IS_MACOS_DISPLAY (self));
+  g_return_if_fail (GDK_IS_MACOS_DISPLAY (this));
 
   while ((nsevent = _gdk_macos_event_source_get_pending ()))
     {
-      GdkEvent *event = _gdk_macos_display_translate (self, nsevent);
+      GdkEvent *event = _gdk_macos_display_translate (this, nsevent);
 
       if (event == GDK_MACOS_EVENT_DROP)
         {
@@ -321,10 +321,10 @@ gdk_macos_display_queue_events (GdkDisplay *display)
       else if (event != NULL)
         {
           push_nsevent (event, nsevent);
-          _gdk_windowing_got_event (GDK_DISPLAY (self),
-                                    _gdk_event_queue_append (GDK_DISPLAY (self), event),
+          _gdk_windowing_got_event (GDK_DISPLAY (this),
+                                    _gdk_event_queue_append (GDK_DISPLAY (this), event),
                                     event,
-                                    _gdk_display_get_next_serial (GDK_DISPLAY (self)));
+                                    _gdk_display_get_next_serial (GDK_DISPLAY (this)));
         }
       else
         {
@@ -335,60 +335,60 @@ gdk_macos_display_queue_events (GdkDisplay *display)
 }
 
 void
-_gdk_macos_display_surface_added (GdkMacosDisplay *self,
+_gdk_macos_display_surface_added (GdkMacosDisplay *this,
                                   GdkMacosSurface *surface)
 {
-  g_assert (GDK_IS_MACOS_DISPLAY (self));
+  g_assert (GDK_IS_MACOS_DISPLAY (this));
   g_assert (GDK_IS_MACOS_SURFACE (surface));
-  g_assert (!queue_contains (&self->sorted_surfaces, &surface->sorted));
-  g_assert (!queue_contains (&self->main_surfaces, &surface->main));
+  g_assert (!queue_contains (&this->sorted_surfaces, &surface->sorted));
+  g_assert (!queue_contains (&this->main_surfaces, &surface->main));
   g_assert (surface->sorted.data == surface);
   g_assert (surface->main.data == surface);
   g_assert (surface->frame.data == surface);
 
   if (GDK_IS_TOPLEVEL (surface))
-    g_queue_push_tail_link (&self->main_surfaces, &surface->main);
+    g_queue_push_tail_link (&this->main_surfaces, &surface->main);
 
-  _gdk_macos_display_clear_sorting (self);
+  _gdk_macos_display_clear_sorting (this);
 }
 
 void
-_gdk_macos_display_surface_removed (GdkMacosDisplay *self,
+_gdk_macos_display_surface_removed (GdkMacosDisplay *this,
                                     GdkMacosSurface *surface)
 {
-  g_return_if_fail (GDK_IS_MACOS_DISPLAY (self));
+  g_return_if_fail (GDK_IS_MACOS_DISPLAY (this));
   g_return_if_fail (GDK_IS_MACOS_SURFACE (surface));
 
-  if (self->keyboard_surface == surface)
-    _gdk_macos_display_surface_resigned_key (self, surface);
+  if (this->keyboard_surface == surface)
+    _gdk_macos_display_surface_resigned_key (this, surface);
 
-  if (queue_contains (&self->sorted_surfaces, &surface->sorted))
-    g_queue_unlink (&self->sorted_surfaces, &surface->sorted);
+  if (queue_contains (&this->sorted_surfaces, &surface->sorted))
+    g_queue_unlink (&this->sorted_surfaces, &surface->sorted);
 
-  if (queue_contains (&self->main_surfaces, &surface->main))
-    _gdk_macos_display_surface_resigned_main (self, surface);
+  if (queue_contains (&this->main_surfaces, &surface->main))
+    _gdk_macos_display_surface_resigned_main (this, surface);
 
-  g_return_if_fail (self->keyboard_surface != surface);
+  g_return_if_fail (this->keyboard_surface != surface);
 }
 
 void
-_gdk_macos_display_surface_became_key (GdkMacosDisplay *self,
+_gdk_macos_display_surface_became_key (GdkMacosDisplay *this,
                                        GdkMacosSurface *surface)
 {
   GdkDevice *keyboard;
   GdkEvent *event;
   GdkSeat *seat;
 
-  g_return_if_fail (GDK_IS_MACOS_DISPLAY (self));
+  g_return_if_fail (GDK_IS_MACOS_DISPLAY (this));
   g_return_if_fail (GDK_IS_MACOS_SURFACE (surface));
-  g_return_if_fail (self->keyboard_surface == NULL);
+  g_return_if_fail (this->keyboard_surface == NULL);
 
-  self->keyboard_surface = surface;
+  this->keyboard_surface = surface;
 
-  seat = gdk_display_get_default_seat (GDK_DISPLAY (self));
+  seat = gdk_display_get_default_seat (GDK_DISPLAY (this));
   keyboard = gdk_seat_get_keyboard (seat);
   event = gdk_focus_event_new (GDK_SURFACE (surface), keyboard, TRUE);
-  _gdk_event_queue_append (GDK_DISPLAY (self), event);
+  _gdk_event_queue_append (GDK_DISPLAY (this), event);
 
   /* For each parent surface, we want them to look like they
    * are also still focused, so ensure they have that same
@@ -416,19 +416,19 @@ _gdk_macos_display_surface_became_key (GdkMacosDisplay *self,
 static gboolean
 select_key_in_idle_cb (gpointer data)
 {
-  GdkMacosDisplay *self = data;
+  GdkMacosDisplay *this = data;
 
-  g_assert (GDK_IS_MACOS_DISPLAY (self));
+  g_assert (GDK_IS_MACOS_DISPLAY (this));
 
-  self->select_key_in_idle = 0;
+  this->select_key_in_idle = 0;
 
   /* Don't steal focus from NSPanel, etc */
-  if (self->key_window_is_foreign)
+  if (this->key_window_is_foreign)
     return G_SOURCE_REMOVE;
 
-  if (self->keyboard_surface == NULL)
+  if (this->keyboard_surface == NULL)
     {
-      const GList *surfaces = _gdk_macos_display_get_surfaces (self);
+      const GList *surfaces = _gdk_macos_display_get_surfaces (this);
 
       for (const GList *iter = surfaces; iter; iter = iter->next)
         {
@@ -447,17 +447,17 @@ select_key_in_idle_cb (gpointer data)
 }
 
 void
-_gdk_macos_display_surface_resigned_key (GdkMacosDisplay *self,
+_gdk_macos_display_surface_resigned_key (GdkMacosDisplay *this,
                                          GdkMacosSurface *surface)
 {
   gboolean was_keyboard_surface;
 
-  g_return_if_fail (GDK_IS_MACOS_DISPLAY (self));
+  g_return_if_fail (GDK_IS_MACOS_DISPLAY (this));
   g_return_if_fail (GDK_IS_MACOS_SURFACE (surface));
 
-  was_keyboard_surface = self->keyboard_surface == surface;
+  was_keyboard_surface = this->keyboard_surface == surface;
 
-  self->keyboard_surface = NULL;
+  this->keyboard_surface = NULL;
 
   if (was_keyboard_surface)
     {
@@ -466,12 +466,12 @@ _gdk_macos_display_surface_resigned_key (GdkMacosDisplay *self,
       GdkSeat *seat;
       GList *node;
 
-      seat = gdk_display_get_default_seat (GDK_DISPLAY (self));
+      seat = gdk_display_get_default_seat (GDK_DISPLAY (this));
       keyboard = gdk_seat_get_keyboard (seat);
       event = gdk_focus_event_new (GDK_SURFACE (surface), keyboard, FALSE);
-      node = _gdk_event_queue_append (GDK_DISPLAY (self), event);
-      _gdk_windowing_got_event (GDK_DISPLAY (self), node, event,
-                                _gdk_display_get_next_serial (GDK_DISPLAY (self)));
+      node = _gdk_event_queue_append (GDK_DISPLAY (this), event);
+      _gdk_windowing_got_event (GDK_DISPLAY (this), node, event,
+                                _gdk_display_get_next_serial (GDK_DISPLAY (this)));
     }
 
   /* For each parent surface, we want them to look like they
@@ -489,10 +489,10 @@ _gdk_macos_display_surface_resigned_key (GdkMacosDisplay *self,
         }
     }
 
-  _gdk_macos_display_clear_sorting (self);
+  _gdk_macos_display_clear_sorting (this);
 
-  if (self->select_key_in_idle == 0)
-    self->select_key_in_idle = g_idle_add (select_key_in_idle_cb, self);
+  if (this->select_key_in_idle == 0)
+    this->select_key_in_idle = g_idle_add (select_key_in_idle_cb, this);
 }
 
 /* Raises a transient window.
@@ -510,52 +510,52 @@ raise_transient (GdkMacosSurface *surface)
 }
 
 void
-_gdk_macos_display_surface_became_main (GdkMacosDisplay *self,
+_gdk_macos_display_surface_became_main (GdkMacosDisplay *this,
                                         GdkMacosSurface *surface)
 {
-  g_return_if_fail (GDK_IS_MACOS_DISPLAY (self));
+  g_return_if_fail (GDK_IS_MACOS_DISPLAY (this));
   g_return_if_fail (GDK_IS_MACOS_SURFACE (surface));
 
-  if (queue_contains (&self->main_surfaces, &surface->main))
-    g_queue_unlink (&self->main_surfaces, &surface->main);
+  if (queue_contains (&this->main_surfaces, &surface->main))
+    g_queue_unlink (&this->main_surfaces, &surface->main);
 
-  g_queue_push_head_link (&self->main_surfaces, &surface->main);
+  g_queue_push_head_link (&this->main_surfaces, &surface->main);
 
   if (GDK_SURFACE (surface)->transient_for)
     raise_transient (surface);
 
-  _gdk_macos_display_clear_sorting (self);
+  _gdk_macos_display_clear_sorting (this);
 }
 
 void
-_gdk_macos_display_surface_resigned_main (GdkMacosDisplay *self,
+_gdk_macos_display_surface_resigned_main (GdkMacosDisplay *this,
                                           GdkMacosSurface *surface)
 {
-  g_return_if_fail (GDK_IS_MACOS_DISPLAY (self));
+  g_return_if_fail (GDK_IS_MACOS_DISPLAY (this));
   g_return_if_fail (GDK_IS_MACOS_SURFACE (surface));
 
-  if (queue_contains (&self->main_surfaces, &surface->main))
-    g_queue_unlink (&self->main_surfaces, &surface->main);
+  if (queue_contains (&this->main_surfaces, &surface->main))
+    g_queue_unlink (&this->main_surfaces, &surface->main);
 
-  _gdk_macos_display_clear_sorting (self);
+  _gdk_macos_display_clear_sorting (this);
 }
 
 static GdkKeymap *
 gdk_macos_display_get_keymap (GdkDisplay *display)
 {
-  GdkMacosDisplay *self = (GdkMacosDisplay *)display;
+  GdkMacosDisplay *this = (GdkMacosDisplay *)display;
 
-  g_assert (GDK_IS_MACOS_DISPLAY (self));
+  g_assert (GDK_IS_MACOS_DISPLAY (this));
 
-  return GDK_KEYMAP (self->keymap);
+  return GDK_KEYMAP (this->keymap);
 }
 
 static void
-gdk_macos_display_load_clipboard (GdkMacosDisplay *self)
+gdk_macos_display_load_clipboard (GdkMacosDisplay *this)
 {
-  g_assert (GDK_IS_MACOS_DISPLAY (self));
+  g_assert (GDK_IS_MACOS_DISPLAY (this));
 
-  GDK_DISPLAY (self)->clipboard = _gdk_macos_clipboard_new (self);
+  GDK_DISPLAY (this)->clipboard = _gdk_macos_clipboard_new (this);
 }
 
 static GdkGLContext *
@@ -573,16 +573,16 @@ gdk_macos_display_init_gl (GdkDisplay  *display,
 static void
 gdk_macos_display_finalize (GObject *object)
 {
-  GdkMacosDisplay *self = (GdkMacosDisplay *)object;
+  GdkMacosDisplay *this = (GdkMacosDisplay *)object;
 
-  _gdk_macos_display_feedback_destroy (self);
+  _gdk_macos_display_feedback_destroy (this);
 
-  g_clear_handle_id (&self->select_key_in_idle, g_source_remove);
-  g_clear_pointer (&self->active_drags, g_hash_table_unref);
-  g_clear_pointer (&self->active_drops, g_hash_table_unref);
-  g_clear_object (&GDK_DISPLAY (self)->clipboard);
-  g_clear_object (&self->monitors);
-  g_clear_pointer (&self->name, g_free);
+  g_clear_handle_id (&this->select_key_in_idle, g_source_remove);
+  g_clear_pointer (&this->active_drags, g_hash_table_unref);
+  g_clear_pointer (&this->active_drops, g_hash_table_unref);
+  g_clear_object (&GDK_DISPLAY (this)->clipboard);
+  g_clear_object (&this->monitors);
+  g_clear_pointer (&this->name, g_free);
 
   G_OBJECT_CLASS (gdk_macos_display_parent_class)->finalize (object);
 }
@@ -619,22 +619,22 @@ gdk_macos_display_class_init (GdkMacosDisplayClass *klass)
 }
 
 static void
-gdk_macos_display_init (GdkMacosDisplay *self)
+gdk_macos_display_init (GdkMacosDisplay *this)
 {
-  self->monitors = g_list_store_new (GDK_TYPE_MONITOR);
-  self->active_drags = g_hash_table_new_full (NULL, NULL, NULL, g_object_unref);
-  self->active_drops = g_hash_table_new_full (NULL, NULL, NULL, g_object_unref);
+  this->monitors = g_list_store_new (GDK_TYPE_MONITOR);
+  this->active_drags = g_hash_table_new_full (NULL, NULL, NULL, g_object_unref);
+  this->active_drops = g_hash_table_new_full (NULL, NULL, NULL, g_object_unref);
 
-  gdk_display_set_composited (GDK_DISPLAY (self), TRUE);
-  gdk_display_set_input_shapes (GDK_DISPLAY (self), FALSE);
-  gdk_display_set_rgba (GDK_DISPLAY (self), TRUE);
-  gdk_display_set_shadow_width (GDK_DISPLAY (self), FALSE);
+  gdk_display_set_composited (GDK_DISPLAY (this), TRUE);
+  gdk_display_set_input_shapes (GDK_DISPLAY (this), FALSE);
+  gdk_display_set_rgba (GDK_DISPLAY (this), TRUE);
+  gdk_display_set_shadow_width (GDK_DISPLAY (this), FALSE);
 }
 
 GdkDisplay *
 _gdk_macos_display_open (const char *display_name)
 {
-  static GdkMacosDisplay *self;
+  static GdkMacosDisplay *this;
   ProcessSerialNumber psn = { 0, kCurrentProcess };
 
   /* Until we can have multiple GdkMacosEventSource instances
@@ -642,7 +642,7 @@ _gdk_macos_display_open (const char *display_name)
    * display connections. So just short-circuit if we already
    * have one active.
    */
-  if (self != NULL)
+  if (this != NULL)
     return NULL;
 
   display_name = display_name ? display_name : "";
@@ -655,79 +655,79 @@ _gdk_macos_display_open (const char *display_name)
 
   [NSApplication sharedApplication];
 
-  self = g_object_new (GDK_TYPE_MACOS_DISPLAY, NULL);
-  self->name = g_strdup (display_name);
-  self->keymap = _gdk_macos_keymap_new (self);
+  this = g_object_new (GDK_TYPE_MACOS_DISPLAY, NULL);
+  this->name = g_strdup (display_name);
+  this->keymap = _gdk_macos_keymap_new (this);
 
-  gdk_macos_display_load_seat (self);
-  gdk_macos_display_load_clipboard (self);
-  _gdk_macos_display_reload_monitors (self);
+  gdk_macos_display_load_seat (this);
+  gdk_macos_display_load_clipboard (this);
+  _gdk_macos_display_reload_monitors (this);
 
   /* Initialize feedback from display server */
-  _gdk_macos_display_feedback_init (self);
+  _gdk_macos_display_feedback_init (this);
 
   if (event_source == NULL)
     {
-      event_source = _gdk_macos_event_source_new (self);
+      event_source = _gdk_macos_event_source_new (this);
       g_source_attach (event_source, NULL);
     }
 
-  g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&self);
+  g_object_add_weak_pointer (G_OBJECT (this), (gpointer *)&this);
 
-  gdk_display_emit_opened (GDK_DISPLAY (self));
+  gdk_display_emit_opened (GDK_DISPLAY (this));
 
   [NSApp activateIgnoringOtherApps:YES];
 
-  return GDK_DISPLAY (self);
+  return GDK_DISPLAY (this);
 }
 
 void
-_gdk_macos_display_to_display_coords (GdkMacosDisplay *self,
+_gdk_macos_display_to_display_coords (GdkMacosDisplay *this,
                                       int              x,
                                       int              y,
                                       int             *out_x,
                                       int             *out_y)
 {
-  g_return_if_fail (GDK_IS_MACOS_DISPLAY (self));
+  g_return_if_fail (GDK_IS_MACOS_DISPLAY (this));
 
   if (out_y)
-    *out_y = self->height - y + self->min_y;
+    *out_y = this->height - y + this->min_y;
 
   if (out_x)
-    *out_x = x + self->min_x;
+    *out_x = x + this->min_x;
 }
 
 void
-_gdk_macos_display_from_display_coords (GdkMacosDisplay *self,
+_gdk_macos_display_from_display_coords (GdkMacosDisplay *this,
                                         int              x,
                                         int              y,
                                         int             *out_x,
                                         int             *out_y)
 {
-  g_return_if_fail (GDK_IS_MACOS_DISPLAY (self));
+  g_return_if_fail (GDK_IS_MACOS_DISPLAY (this));
 
   if (out_y != NULL)
-    *out_y = self->height - y + self->min_y;
+    *out_y = this->height - y + this->min_y;
 
   if (out_x != NULL)
-    *out_x = x - self->min_x;
+    *out_x = x - this->min_x;
 }
 
 GdkMonitor *
-_gdk_macos_display_get_monitor_at_coords (GdkMacosDisplay *self,
+_gdk_macos_display_get_monitor_at_coords (GdkMacosDisplay *this,
                                           int              x,
                                           int              y)
 {
   GdkMacosMonitor *best_match = NULL;
   guint n_monitors;
 
-  g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (self), NULL);
+  g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (this), NULL);
 
-  n_monitors = g_list_model_get_n_items (G_LIST_MODEL (self->monitors));
+  n_monitors = g_list_model_get_n_items (G_LIST_MODEL (this->monitors));
 
   for (guint i = 0; i < n_monitors; i++)
     {
-      GdkMacosMonitor *monitor = get_monitor (self, i);
+      GdkMacosMonitor *monitor = get_monitor (this, i);
       const GdkRectangle *geom = &GDK_MONITOR (monitor)->geometry;
 
       if (x >= geom->x &&
@@ -750,19 +750,19 @@ _gdk_macos_display_get_monitor_at_coords (GdkMacosDisplay *self,
 }
 
 GdkMonitor *
-_gdk_macos_display_get_monitor_at_display_coords (GdkMacosDisplay *self,
+_gdk_macos_display_get_monitor_at_display_coords (GdkMacosDisplay *this,
                                                   int              x,
                                                   int              y)
 {
-  g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (self), NULL);
+  g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (this), NULL);
 
-  _gdk_macos_display_from_display_coords (self, x, y, &x, &y);
+  _gdk_macos_display_from_display_coords (this, x, y, &x, &y);
 
-  return _gdk_macos_display_get_monitor_at_coords (self, x, y);
+  return _gdk_macos_display_get_monitor_at_coords (this, x, y);
 }
 
 NSScreen *
-_gdk_macos_display_get_screen_at_display_coords (GdkMacosDisplay *self,
+_gdk_macos_display_get_screen_at_display_coords (GdkMacosDisplay *this,
                                                  int              x,
                                                  int              y)
 {
@@ -771,7 +771,7 @@ _gdk_macos_display_get_screen_at_display_coords (GdkMacosDisplay *self,
   NSArray *screens;
   NSScreen *screen = NULL;
 
-  g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (self), NULL);
+  g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (this), NULL);
 
   screens = [NSScreen screens];
 
@@ -793,15 +793,15 @@ _gdk_macos_display_get_screen_at_display_coords (GdkMacosDisplay *self,
 }
 
 void
-_gdk_macos_display_break_all_grabs (GdkMacosDisplay *self,
+_gdk_macos_display_break_all_grabs (GdkMacosDisplay *this,
                                     guint32          time)
 {
   GdkDevice *devices[2];
   GdkSeat *seat;
 
-  g_return_if_fail (GDK_IS_MACOS_DISPLAY (self));
+  g_return_if_fail (GDK_IS_MACOS_DISPLAY (this));
 
-  seat = gdk_display_get_default_seat (GDK_DISPLAY (self));
+  seat = gdk_display_get_default_seat (GDK_DISPLAY (this));
   devices[0] = gdk_seat_get_keyboard (seat);
   devices[1] = gdk_seat_get_pointer (seat);
 
@@ -810,7 +810,7 @@ _gdk_macos_display_break_all_grabs (GdkMacosDisplay *self,
       GdkDevice *device = devices[i];
       GdkDeviceGrabInfo *grab;
 
-      grab = _gdk_display_get_last_device_grab (GDK_DISPLAY (self), device);
+      grab = _gdk_display_get_last_device_grab (GDK_DISPLAY (this), device);
 
       if (grab != NULL)
         {
@@ -821,23 +821,23 @@ _gdk_macos_display_break_all_grabs (GdkMacosDisplay *self,
                                              device,
                                              grab->surface,
                                              TRUE);
-          node = _gdk_event_queue_append (GDK_DISPLAY (self), event);
-          _gdk_windowing_got_event (GDK_DISPLAY (self), node, event,
-                                    _gdk_display_get_next_serial (GDK_DISPLAY (self)));
+          node = _gdk_event_queue_append (GDK_DISPLAY (this), event);
+          _gdk_windowing_got_event (GDK_DISPLAY (this), node, event,
+                                    _gdk_display_get_next_serial (GDK_DISPLAY (this)));
         }
     }
 }
 
 void
-_gdk_macos_display_queue_events (GdkMacosDisplay *self)
+_gdk_macos_display_queue_events (GdkMacosDisplay *this)
 {
-  g_return_if_fail (GDK_IS_MACOS_DISPLAY (self));
+  g_return_if_fail (GDK_IS_MACOS_DISPLAY (this));
 
-  gdk_macos_display_queue_events (GDK_DISPLAY (self));
+  gdk_macos_display_queue_events (GDK_DISPLAY (this));
 }
 
 static GdkMacosSurface *
-_gdk_macos_display_get_surface_at_coords (GdkMacosDisplay *self,
+_gdk_macos_display_get_surface_at_coords (GdkMacosDisplay *this,
                                           int              x,
                                           int              y,
                                           int             *surface_x,
@@ -845,11 +845,11 @@ _gdk_macos_display_get_surface_at_coords (GdkMacosDisplay *self,
 {
   const GList *surfaces;
 
-  g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (self), NULL);
+  g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (this), NULL);
   g_return_val_if_fail (surface_x != NULL, NULL);
   g_return_val_if_fail (surface_y != NULL, NULL);
 
-  surfaces = _gdk_macos_display_get_surfaces (self);
+  surfaces = _gdk_macos_display_get_surfaces (this);
 
   for (const GList *iter = surfaces; iter; iter = iter->next)
     {
@@ -887,7 +887,7 @@ _gdk_macos_display_get_surface_at_coords (GdkMacosDisplay *self,
 }
 
 GdkMacosSurface *
-_gdk_macos_display_get_surface_at_display_coords (GdkMacosDisplay *self,
+_gdk_macos_display_get_surface_at_display_coords (GdkMacosDisplay *this,
                                                   double           x,
                                                   double           y,
                                                   int             *surface_x,
@@ -896,28 +896,28 @@ _gdk_macos_display_get_surface_at_display_coords (GdkMacosDisplay *self,
   int x_gdk;
   int y_gdk;
 
-  g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (self), NULL);
+  g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (this), NULL);
   g_return_val_if_fail (surface_x != NULL, NULL);
   g_return_val_if_fail (surface_y != NULL, NULL);
 
-  _gdk_macos_display_from_display_coords (self, x, y, &x_gdk, &y_gdk);
+  _gdk_macos_display_from_display_coords (this, x, y, &x_gdk, &y_gdk);
 
-  return _gdk_macos_display_get_surface_at_coords (self, x_gdk, y_gdk, surface_x, surface_y);
+  return _gdk_macos_display_get_surface_at_coords (this, x_gdk, y_gdk, surface_x, surface_y);
 }
 
 NSWindow *
-_gdk_macos_display_find_native_under_pointer (GdkMacosDisplay *self,
+_gdk_macos_display_find_native_under_pointer (GdkMacosDisplay *this,
                                               int             *x,
                                               int             *y)
 {
   GdkMacosSurface *surface;
   NSPoint point;
 
-  g_assert (GDK_IS_MACOS_DISPLAY (self));
+  g_assert (GDK_IS_MACOS_DISPLAY (this));
 
   point = [NSEvent mouseLocation];
 
-  surface = _gdk_macos_display_get_surface_at_display_coords (self, point.x, point.y, x, y);
+  surface = _gdk_macos_display_get_surface_at_display_coords (this, point.x, point.y, x, y);
   if (surface != NULL)
     return _gdk_macos_surface_get_native (surface);
 
@@ -925,27 +925,27 @@ _gdk_macos_display_find_native_under_pointer (GdkMacosDisplay *self,
 }
 
 void
-_gdk_macos_display_clear_sorting (GdkMacosDisplay *self)
+_gdk_macos_display_clear_sorting (GdkMacosDisplay *this)
 {
-  g_return_if_fail (GDK_IS_MACOS_DISPLAY (self));
+  g_return_if_fail (GDK_IS_MACOS_DISPLAY (this));
 
-  while (self->sorted_surfaces.head != NULL)
-    g_queue_unlink (&self->sorted_surfaces, self->sorted_surfaces.head);
+  while (this->sorted_surfaces.head != NULL)
+    g_queue_unlink (&this->sorted_surfaces, this->sorted_surfaces.head);
 }
 
 const GList *
-_gdk_macos_display_get_surfaces (GdkMacosDisplay *self)
+_gdk_macos_display_get_surfaces (GdkMacosDisplay *this)
 {
-  g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (self), NULL);
+  g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (this), NULL);
 
-  if (self->sorted_surfaces.length == 0)
+  if (this->sorted_surfaces.length == 0)
     {
       GDK_BEGIN_MACOS_ALLOC_POOL;
 
       NSArray *array = [NSApp orderedWindows];
       GQueue sorted = G_QUEUE_INIT;
 
-      self->key_window_is_foreign = FALSE;
+      this->key_window_is_foreign = FALSE;
 
       for (id obj in array)
         {
@@ -953,7 +953,7 @@ _gdk_macos_display_get_surfaces (GdkMacosDisplay *self)
           GdkMacosSurface *surface;
 
           if ([nswindow isKeyWindow])
-            self->key_window_is_foreign = !GDK_IS_MACOS_WINDOW (nswindow);
+            this->key_window_is_foreign = !GDK_IS_MACOS_WINDOW (nswindow);
 
           if (!GDK_IS_MACOS_WINDOW (nswindow))
             continue;
@@ -966,7 +966,7 @@ _gdk_macos_display_get_surfaces (GdkMacosDisplay *self)
           g_queue_push_tail_link (&sorted, &surface->sorted);
         }
 
-      self->sorted_surfaces = sorted;
+      this->sorted_surfaces = sorted;
 
       /* We don't get notification of clipboard changes from the system so we
        * instead update it every time the foreground changes (and thusly
@@ -974,22 +974,22 @@ _gdk_macos_display_get_surfaces (GdkMacosDisplay *self)
        * with scripts, but that is currently out of scope for us.
        */
       _gdk_macos_clipboard_check_externally_modified (
-        GDK_MACOS_CLIPBOARD (GDK_DISPLAY (self)->clipboard));
+        GDK_MACOS_CLIPBOARD (GDK_DISPLAY (this)->clipboard));
 
       GDK_END_MACOS_ALLOC_POOL;
     }
 
-  return self->sorted_surfaces.head;
+  return this->sorted_surfaces.head;
 }
 
 void
-_gdk_macos_display_warp_pointer (GdkMacosDisplay *self,
+_gdk_macos_display_warp_pointer (GdkMacosDisplay *this,
                                  int              x,
                                  int              y)
 {
-  g_return_if_fail (GDK_IS_MACOS_DISPLAY (self));
+  g_return_if_fail (GDK_IS_MACOS_DISPLAY (this));
 
-  _gdk_macos_display_to_display_coords (self, x, y, &x, &y);
+  _gdk_macos_display_to_display_coords (this, x, y, &x, &y);
 
   CGWarpMouseCursorPosition ((CGPoint) { x, y });
 }
@@ -1045,53 +1045,53 @@ _gdk_macos_display_get_last_nsevent (void)
 }
 
 GdkDrag *
-_gdk_macos_display_find_drag (GdkMacosDisplay *self,
+_gdk_macos_display_find_drag (GdkMacosDisplay *this,
                               NSInteger        sequence_number)
 {
-  g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (self), NULL);
+  g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (this), NULL);
 
-  return g_hash_table_lookup (self->active_drags, GSIZE_TO_POINTER (sequence_number));
+  return g_hash_table_lookup (this->active_drags, GSIZE_TO_POINTER (sequence_number));
 }
 
 void
-_gdk_macos_display_set_drag (GdkMacosDisplay *self,
+_gdk_macos_display_set_drag (GdkMacosDisplay *this,
                              NSInteger        sequence_number,
                              GdkDrag         *drag)
 {
-  g_return_if_fail (GDK_IS_MACOS_DISPLAY (self));
+  g_return_if_fail (GDK_IS_MACOS_DISPLAY (this));
   g_return_if_fail (!drag || GDK_IS_MACOS_DRAG (drag));
 
   if (drag)
-    g_hash_table_insert (self->active_drags,
+    g_hash_table_insert (this->active_drags,
                          GSIZE_TO_POINTER (sequence_number),
                          g_object_ref (drag));
   else
-    g_hash_table_remove (self->active_drags,
+    g_hash_table_remove (this->active_drags,
                          GSIZE_TO_POINTER (sequence_number));
 }
 
 GdkDrop *
-_gdk_macos_display_find_drop (GdkMacosDisplay *self,
+_gdk_macos_display_find_drop (GdkMacosDisplay *this,
                               NSInteger        sequence_number)
 {
-  g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (self), NULL);
+  g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (this), NULL);
 
-  return g_hash_table_lookup (self->active_drops, GSIZE_TO_POINTER (sequence_number));
+  return g_hash_table_lookup (this->active_drops, GSIZE_TO_POINTER (sequence_number));
 }
 
 void
-_gdk_macos_display_set_drop (GdkMacosDisplay *self,
+_gdk_macos_display_set_drop (GdkMacosDisplay *this,
                              NSInteger        sequence_number,
                              GdkDrop         *drop)
 {
-  g_return_if_fail (GDK_IS_MACOS_DISPLAY (self));
+  g_return_if_fail (GDK_IS_MACOS_DISPLAY (this));
   g_return_if_fail (!drop || GDK_IS_MACOS_DROP (drop));
 
   if (drop)
-    g_hash_table_insert (self->active_drops,
+    g_hash_table_insert (this->active_drops,
                          GSIZE_TO_POINTER (sequence_number),
                          g_object_ref (drop));
   else
-    g_hash_table_remove (self->active_drops,
+    g_hash_table_remove (this->active_drops,
                          GSIZE_TO_POINTER (sequence_number));
 }

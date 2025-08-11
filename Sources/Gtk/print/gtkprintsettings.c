@@ -459,17 +459,17 @@ gtk_print_settings_set_int (GtkPrintSettings *settings,
 /**
  * gtk_print_settings_foreach:
  * @settings: a `GtkPrintSettings`
- * @func: (scope call) (closure user_data): the function to call
- * @user_data: user data for @func
+ * @fn: (scope call) (closure user_data): the function to call
+ * @user_data: user data for @fn
  *
- * Calls @func for each key-value pair of @settings.
+ * Calls @fn for each key-value pair of @settings.
  */
 void
 gtk_print_settings_foreach (GtkPrintSettings    *settings,
-			    GtkPrintSettingsFunc func,
+			    GtkPrintSettingsFunc fn,
 			    gpointer             user_data)
 {
-  g_hash_table_foreach (settings->hash, (GHFunc)func, user_data);
+  g_hash_table_foreach (settings->hash, (GHFunc)fn, user_data);
 }
 
 /**

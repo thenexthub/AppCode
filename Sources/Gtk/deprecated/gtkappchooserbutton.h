@@ -43,37 +43,37 @@ GDK_DEPRECATED_IN_4_10
 GtkWidget * gtk_app_chooser_button_new                (const char          *content_type);
 
 GDK_DEPRECATED_IN_4_10
-void        gtk_app_chooser_button_append_separator   (GtkAppChooserButton *self);
+void        gtk_app_chooser_button_append_separator   (GtkAppChooserButton *this);
 GDK_DEPRECATED_IN_4_10
-void        gtk_app_chooser_button_append_custom_item (GtkAppChooserButton *self,
+void        gtk_app_chooser_button_append_custom_item (GtkAppChooserButton *this,
                                                        const char          *name,
                                                        const char          *label,
                                                        GIcon               *icon);
 GDK_DEPRECATED_IN_4_10
-void     gtk_app_chooser_button_set_active_custom_item (GtkAppChooserButton *self,
+void     gtk_app_chooser_button_set_active_custom_item (GtkAppChooserButton *this,
                                                         const char          *name);
 
 GDK_DEPRECATED_IN_4_10
-void     gtk_app_chooser_button_set_show_dialog_item  (GtkAppChooserButton *self,
+void     gtk_app_chooser_button_set_show_dialog_item  (GtkAppChooserButton *this,
                                                        gboolean             setting);
 GDK_DEPRECATED_IN_4_10
-gboolean gtk_app_chooser_button_get_show_dialog_item  (GtkAppChooserButton *self);
+gboolean gtk_app_chooser_button_get_show_dialog_item  (GtkAppChooserButton *this);
 GDK_DEPRECATED_IN_4_10
-void     gtk_app_chooser_button_set_heading           (GtkAppChooserButton *self,
+void     gtk_app_chooser_button_set_heading           (GtkAppChooserButton *this,
                                                        const char          *heading);
 GDK_DEPRECATED_IN_4_10
 const char *
-         gtk_app_chooser_button_get_heading           (GtkAppChooserButton *self);
+         gtk_app_chooser_button_get_heading           (GtkAppChooserButton *this);
 GDK_DEPRECATED_IN_4_10
-void     gtk_app_chooser_button_set_show_default_item (GtkAppChooserButton *self,
+void     gtk_app_chooser_button_set_show_default_item (GtkAppChooserButton *this,
                                                        gboolean             setting);
 GDK_DEPRECATED_IN_4_10
-gboolean gtk_app_chooser_button_get_show_default_item (GtkAppChooserButton *self);
+gboolean gtk_app_chooser_button_get_show_default_item (GtkAppChooserButton *this);
 
 GDK_DEPRECATED_IN_4_10
-gboolean gtk_app_chooser_button_get_modal             (GtkAppChooserButton *self);
+gboolean gtk_app_chooser_button_get_modal             (GtkAppChooserButton *this);
 GDK_DEPRECATED_IN_4_10
-void     gtk_app_chooser_button_set_modal             (GtkAppChooserButton *self,
+void     gtk_app_chooser_button_set_modal             (GtkAppChooserButton *this,
                                                        gboolean             modal);
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GtkAppChooserButton, g_object_unref)

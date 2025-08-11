@@ -32,12 +32,12 @@ struct _GtkListHeaderBasePrivate
 G_DEFINE_TYPE_WITH_PRIVATE (GtkListHeaderBase, gtk_list_header_base, GTK_TYPE_WIDGET)
 
 static void
-gtk_list_header_base_default_update (GtkListHeaderBase *self,
+gtk_list_header_base_default_update (GtkListHeaderBase *this,
                                      gpointer           item,
                                      guint              start,
                                      guint              end)
 {
-  GtkListHeaderBasePrivate *priv = gtk_list_header_base_get_instance_private (self);
+  GtkListHeaderBasePrivate *priv = gtk_list_header_base_get_instance_private (this);
 
   g_set_object (&priv->item, item);
   priv->start = start;
@@ -47,8 +47,8 @@ gtk_list_header_base_default_update (GtkListHeaderBase *self,
 static void
 gtk_list_header_base_dispose (GObject *object)
 {
-  GtkListHeaderBase *self = GTK_LIST_HEADER_BASE (object);
-  GtkListHeaderBasePrivate *priv = gtk_list_header_base_get_instance_private (self);
+  GtkListHeaderBase *this = GTK_LIST_HEADER_BASE (object);
+  GtkListHeaderBasePrivate *priv = gtk_list_header_base_get_instance_private (this);
 
   g_clear_object (&priv->item);
 
@@ -66,46 +66,46 @@ gtk_list_header_base_class_init (GtkListHeaderBaseClass *klass)
 }
 
 static void
-gtk_list_header_base_init (GtkListHeaderBase *self)
+gtk_list_header_base_init (GtkListHeaderBase *this)
 {
 }
 
 void
-gtk_list_header_base_update (GtkListHeaderBase *self,
+gtk_list_header_base_update (GtkListHeaderBase *this,
                              gpointer           item,
                              guint              start,
                              guint              end)
 {
-  GtkListHeaderBasePrivate *priv = gtk_list_header_base_get_instance_private (self);
+  GtkListHeaderBasePrivate *priv = gtk_list_header_base_get_instance_private (this);
 
   if (priv->item == item &&
       priv->start == start && 
       priv->end == end)
     return;
 
-  GTK_LIST_HEADER_BASE_GET_CLASS (self)->update (self, item, start, end);
+  GTK_LIST_HEADER_BASE_GET_CLASS (this)->update (this, item, start, end);
 }
 
 guint
-gtk_list_header_base_get_start (GtkListHeaderBase *self)
+gtk_list_header_base_get_start (GtkListHeaderBase *this)
 {
-  GtkListHeaderBasePrivate *priv = gtk_list_header_base_get_instance_private (self);
+  GtkListHeaderBasePrivate *priv = gtk_list_header_base_get_instance_private (this);
 
   return priv->start;
 }
 
 guint
-gtk_list_header_base_get_end (GtkListHeaderBase *self)
+gtk_list_header_base_get_end (GtkListHeaderBase *this)
 {
-  GtkListHeaderBasePrivate *priv = gtk_list_header_base_get_instance_private (self);
+  GtkListHeaderBasePrivate *priv = gtk_list_header_base_get_instance_private (this);
 
   return priv->end;
 }
 
 gpointer
-gtk_list_header_base_get_item (GtkListHeaderBase *self)
+gtk_list_header_base_get_item (GtkListHeaderBase *this)
 {
-  GtkListHeaderBasePrivate *priv = gtk_list_header_base_get_instance_private (self);
+  GtkListHeaderBasePrivate *priv = gtk_list_header_base_get_instance_private (this);
 
   return priv->item;
 }

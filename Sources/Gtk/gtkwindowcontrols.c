@@ -120,9 +120,9 @@ static GParamSpec *props[LAST_PROP] = { NULL, };
 G_DEFINE_TYPE (GtkWindowControls, gtk_window_controls, GTK_TYPE_WIDGET)
 
 static char *
-get_layout (GtkWindowControls *self)
+get_layout (GtkWindowControls *this)
 {
-  GtkWidget *widget = GTK_WIDGET (self);
+  GtkWidget *widget = GTK_WIDGET (this);
   GtkRoot *root;
   char *layout_desc, *layout_half;
   char **tokens;
@@ -131,8 +131,8 @@ get_layout (GtkWindowControls *self)
   if (!root || !GTK_IS_WINDOW (root))
     return NULL;
 
-  if (self->decoration_layout)
-    layout_desc = g_strdup (self->decoration_layout);
+  if (this->decoration_layout)
+    layout_desc = g_strdup (this->decoration_layout);
   else
     g_object_get (gtk_widget_get_settings (widget),
                   "gtk-decoration-layout", &layout_desc,
@@ -152,7 +152,7 @@ get_layout (GtkWindowControls *self)
     }
   else
     {
-      switch (self->side)
+      switch (this->side)
         {
         case GTK_PACK_START:
           layout_half = g_strdup (tokens[0]);
@@ -215,26 +215,26 @@ update_window_icon (GtkWindow *window,
 }
 
 static void
-set_empty (GtkWindowControls *self,
+set_empty (GtkWindowControls *this,
            gboolean           empty)
 {
-  if (empty == self->empty)
+  if (empty == this->empty)
     return;
 
-  self->empty = empty;
+  this->empty = empty;
 
   if (empty)
-    gtk_widget_add_css_class (GTK_WIDGET (self), "empty");
+    gtk_widget_add_css_class (GTK_WIDGET (this), "empty");
   else
-    gtk_widget_remove_css_class (GTK_WIDGET (self), "empty");
+    gtk_widget_remove_css_class (GTK_WIDGET (this), "empty");
 
-  g_object_notify_by_pspec (G_OBJECT (self), props[PROP_EMPTY]);
+  g_object_notify_by_pspec (G_OBJECT (this), props[PROP_EMPTY]);
 }
 
 static void
-clear_controls (GtkWindowControls *self)
+clear_controls (GtkWindowControls *this)
 {
-  GtkWidget *child = gtk_widget_get_first_child (GTK_WIDGET (self));
+  GtkWidget *child = gtk_widget_get_first_child (GTK_WIDGET (this));
 
   while (child)
     {
@@ -247,9 +247,9 @@ clear_controls (GtkWindowControls *self)
 }
 
 static void
-update_window_buttons (GtkWindowControls *self)
+update_window_buttons (GtkWindowControls *this)
 {
-  GtkWidget *widget = GTK_WIDGET (self);
+  GtkWidget *widget = GTK_WIDGET (this);
   char *layout;
   char **tokens;
   int i;
@@ -264,42 +264,42 @@ update_window_buttons (GtkWindowControls *self)
   root = gtk_widget_get_root (widget);
   if (!root || !GTK_IS_WINDOW (root))
     {
-      set_empty (self, TRUE);
+      set_empty (this, TRUE);
 
       return;
     }
 
 #ifdef GDK_WINDOWING_MACOS
-  if (self->use_native_controls)
+  if (this->use_native_controls)
     {
       if (GTK_IS_WINDOW_BUTTONS_QUARTZ (gtk_widget_get_first_child (widget)))
         return;
 
-      clear_controls (self);
+      clear_controls (this);
 
-      if (self->side == GTK_PACK_START)
+      if (this->side == GTK_PACK_START)
         {
           GtkWidget *controls = g_object_new (GTK_TYPE_WINDOW_BUTTONS_QUARTZ, NULL);
-          g_object_bind_property (self, "decoration-layout",
+          g_object_bind_property (this, "decoration-layout",
                                   controls, "decoration-layout",
                                   G_BINDING_SYNC_CREATE);
-          gtk_widget_set_parent (controls, GTK_WIDGET (self));
+          gtk_widget_set_parent (controls, GTK_WIDGET (this));
 
-          gtk_widget_add_css_class (GTK_WIDGET (self), "native");
+          gtk_widget_add_css_class (GTK_WIDGET (this), "native");
           empty = FALSE;
         }
 
-      set_empty (self, empty);
+      set_empty (this, empty);
 
       return;
     }
   else
     {
-      gtk_widget_remove_css_class (GTK_WIDGET (self), "native");
+      gtk_widget_remove_css_class (GTK_WIDGET (this), "native");
     }
 #endif
 
-  clear_controls (self);
+  clear_controls (this);
 
   window = GTK_WINDOW (root);
   is_sovereign_window = !gtk_window_get_modal (window) &&
@@ -308,11 +308,11 @@ update_window_buttons (GtkWindowControls *self)
   resizable = gtk_window_get_resizable (window);
   deletable = gtk_window_get_deletable (window);
 
-  layout = get_layout (self);
+  layout = get_layout (this);
 
   if (!layout)
     {
-      set_empty (self, TRUE);
+      set_empty (this, TRUE);
 
       return;
     }
@@ -424,11 +424,11 @@ update_window_buttons (GtkWindowControls *self)
   g_free (layout);
   g_strfreev (tokens);
 
-  set_empty (self, empty);
+  set_empty (this, empty);
 }
 
 static void
-window_notify_cb (GtkWindowControls *self,
+window_notify_cb (GtkWindowControls *this,
                   GParamSpec        *pspec,
                   GtkWindow         *window)
 {
@@ -438,7 +438,7 @@ window_notify_cb (GtkWindowControls *self,
       pspec->name == I_("modal") ||
       pspec->name == I_("resizable") ||
       pspec->name == I_("transient-for"))
-    update_window_buttons (self);
+    update_window_buttons (this);
 }
 
 static void
@@ -478,9 +478,9 @@ gtk_window_controls_unroot (GtkWidget *widget)
 static void
 gtk_window_controls_dispose (GObject *object)
 {
-  GtkWindowControls *self = GTK_WINDOW_CONTROLS (object);
+  GtkWindowControls *this = GTK_WINDOW_CONTROLS (object);
 
-  clear_controls (self);
+  clear_controls (this);
 
   G_OBJECT_CLASS (gtk_window_controls_parent_class)->dispose (object);
 }
@@ -488,9 +488,9 @@ gtk_window_controls_dispose (GObject *object)
 static void
 gtk_window_controls_finalize (GObject *object)
 {
-  GtkWindowControls *self = GTK_WINDOW_CONTROLS (object);
+  GtkWindowControls *this = GTK_WINDOW_CONTROLS (object);
 
-  g_free (self->decoration_layout);
+  g_free (this->decoration_layout);
 
   G_OBJECT_CLASS (gtk_window_controls_parent_class)->finalize (object);
 }
@@ -501,24 +501,24 @@ gtk_window_controls_get_property (GObject    *object,
                                   GValue     *value,
                                   GParamSpec *pspec)
 {
-  GtkWindowControls *self = GTK_WINDOW_CONTROLS (object);
+  GtkWindowControls *this = GTK_WINDOW_CONTROLS (object);
 
   switch (prop_id)
     {
     case PROP_SIDE:
-      g_value_set_enum (value, gtk_window_controls_get_side (self));
+      g_value_set_enum (value, gtk_window_controls_get_side (this));
       break;
 
     case PROP_DECORATION_LAYOUT:
-      g_value_set_string (value, gtk_window_controls_get_decoration_layout (self));
+      g_value_set_string (value, gtk_window_controls_get_decoration_layout (this));
       break;
 
     case PROP_USE_NATIVE_CONTROLS:
-      g_value_set_boolean (value, gtk_window_controls_get_use_native_controls (self));
+      g_value_set_boolean (value, gtk_window_controls_get_use_native_controls (this));
       break;
 
     case PROP_EMPTY:
-      g_value_set_boolean (value, gtk_window_controls_get_empty (self));
+      g_value_set_boolean (value, gtk_window_controls_get_empty (this));
       break;
 
     default:
@@ -533,20 +533,20 @@ gtk_window_controls_set_property (GObject      *object,
                                   const GValue *value,
                                   GParamSpec   *pspec)
 {
-  GtkWindowControls *self = GTK_WINDOW_CONTROLS (object);
+  GtkWindowControls *this = GTK_WINDOW_CONTROLS (object);
 
   switch (prop_id)
     {
     case PROP_SIDE:
-      gtk_window_controls_set_side (self, g_value_get_enum (value));
+      gtk_window_controls_set_side (this, g_value_get_enum (value));
       break;
 
     case PROP_DECORATION_LAYOUT:
-      gtk_window_controls_set_decoration_layout (self, g_value_get_string (value));
+      gtk_window_controls_set_decoration_layout (this, g_value_get_string (value));
       break;
 
     case PROP_USE_NATIVE_CONTROLS:
-      gtk_window_controls_set_use_native_controls (self, g_value_get_boolean (value));
+      gtk_window_controls_set_use_native_controls (this, g_value_get_boolean (value));
       break;
 
     default:
@@ -633,17 +633,17 @@ gtk_window_controls_class_init (GtkWindowControlsClass *klass)
 }
 
 static void
-gtk_window_controls_init (GtkWindowControls *self)
+gtk_window_controls_init (GtkWindowControls *this)
 {
-  self->decoration_layout = NULL;
-  self->side = GTK_PACK_START;
-  self->use_native_controls = FALSE;
-  self->empty = TRUE;
+  this->decoration_layout = NULL;
+  this->side = GTK_PACK_START;
+  this->use_native_controls = FALSE;
+  this->empty = TRUE;
 
-  gtk_widget_add_css_class (GTK_WIDGET (self), "empty");
-  gtk_widget_add_css_class (GTK_WIDGET (self), "start");
+  gtk_widget_add_css_class (GTK_WIDGET (this), "empty");
+  gtk_widget_add_css_class (GTK_WIDGET (this), "start");
 
-  gtk_widget_set_can_focus (GTK_WIDGET (self), FALSE);
+  gtk_widget_set_can_focus (GTK_WIDGET (this), FALSE);
 }
 
 /**
@@ -664,23 +664,23 @@ gtk_window_controls_new (GtkPackType side)
 
 /**
  * gtk_window_controls_get_side:
- * @self: a window controls widget
+ * @this: a window controls widget
  *
  * Gets the side to which this window controls widget belongs.
  *
  * Returns: the side
  */
 GtkPackType
-gtk_window_controls_get_side (GtkWindowControls *self)
+gtk_window_controls_get_side (GtkWindowControls *this)
 {
-  g_return_val_if_fail (GTK_IS_WINDOW_CONTROLS (self), GTK_PACK_START);
+  g_return_val_if_fail (GTK_IS_WINDOW_CONTROLS (this), GTK_PACK_START);
 
-  return self->side;
+  return this->side;
 }
 
 /**
  * gtk_window_controls_set_side:
- * @self: a window controls widget
+ * @this: a window controls widget
  * @side: a side
  *
  * Determines which part of decoration layout
@@ -689,26 +689,26 @@ gtk_window_controls_get_side (GtkWindowControls *self)
  * See [property@Gtk.WindowControls:decoration-layout].
  */
 void
-gtk_window_controls_set_side (GtkWindowControls *self,
+gtk_window_controls_set_side (GtkWindowControls *this,
                               GtkPackType        side)
 {
-  g_return_if_fail (GTK_IS_WINDOW_CONTROLS (self));
+  g_return_if_fail (GTK_IS_WINDOW_CONTROLS (this));
 
-  if (self->side == side)
+  if (this->side == side)
     return;
 
-  self->side = side;
+  this->side = side;
 
   switch (side)
     {
     case GTK_PACK_START:
-      gtk_widget_add_css_class (GTK_WIDGET (self), "start");
-      gtk_widget_remove_css_class (GTK_WIDGET (self), "end");
+      gtk_widget_add_css_class (GTK_WIDGET (this), "start");
+      gtk_widget_remove_css_class (GTK_WIDGET (this), "end");
       break;
 
     case GTK_PACK_END:
-      gtk_widget_add_css_class (GTK_WIDGET (self), "end");
-      gtk_widget_remove_css_class (GTK_WIDGET (self), "start");
+      gtk_widget_add_css_class (GTK_WIDGET (this), "end");
+      gtk_widget_remove_css_class (GTK_WIDGET (this), "start");
       break;
 
     default:
@@ -716,30 +716,30 @@ gtk_window_controls_set_side (GtkWindowControls *self,
       break;
     }
 
-  update_window_buttons (self);
+  update_window_buttons (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), props[PROP_SIDE]);
+  g_object_notify_by_pspec (G_OBJECT (this), props[PROP_SIDE]);
 }
 
 /**
  * gtk_window_controls_get_decoration_layout:
- * @self: a window controls widget
+ * @this: a window controls widget
  *
  * Gets the decoration layout of this window controls widget
  *
  * Returns: (nullable): the decoration layout
  */
 const char *
-gtk_window_controls_get_decoration_layout (GtkWindowControls *self)
+gtk_window_controls_get_decoration_layout (GtkWindowControls *this)
 {
-  g_return_val_if_fail (GTK_IS_WINDOW_CONTROLS (self), NULL);
+  g_return_val_if_fail (GTK_IS_WINDOW_CONTROLS (this), NULL);
 
-  return self->decoration_layout;
+  return this->decoration_layout;
 }
 
 /**
  * gtk_window_controls_set_decoration_layout:
- * @self: a window controls widget
+ * @this: a window controls widget
  * @layout: (nullable): a decoration layout, or `NULL` to unset the layout
  *
  * Sets the decoration layout for the title buttons.
@@ -756,25 +756,25 @@ gtk_window_controls_get_decoration_layout (GtkWindowControls *self)
  * on the left, and minimize, maximize and close buttons on the right.
  *
  * If [property@Gtk.WindowControls:side] value is [enum@Gtk.PackType.start],
- * @self will display the part before the colon, otherwise after that.
+ * @this will display the part before the colon, otherwise after that.
  */
 void
-gtk_window_controls_set_decoration_layout (GtkWindowControls *self,
+gtk_window_controls_set_decoration_layout (GtkWindowControls *this,
                                            const char        *layout)
 {
-  g_return_if_fail (GTK_IS_WINDOW_CONTROLS (self));
+  g_return_if_fail (GTK_IS_WINDOW_CONTROLS (this));
 
-  g_set_str (&self->decoration_layout, layout);
+  g_set_str (&this->decoration_layout, layout);
 
-  update_window_buttons (self);
+  update_window_buttons (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), props[PROP_DECORATION_LAYOUT]);
+  g_object_notify_by_pspec (G_OBJECT (this), props[PROP_DECORATION_LAYOUT]);
 }
 
 
 /**
  * gtk_window_controls_get_use_native_controls:
- * @self: a window controls widget
+ * @this: a window controls widget
  *
  * Returns whether platform native window controls are shown.
  *
@@ -783,16 +783,16 @@ gtk_window_controls_set_decoration_layout (GtkWindowControls *self,
  * Since: 4.18
  */
 gboolean
-gtk_window_controls_get_use_native_controls (GtkWindowControls *self)
+gtk_window_controls_get_use_native_controls (GtkWindowControls *this)
 {
-  g_return_val_if_fail (GTK_IS_WINDOW_CONTROLS (self), FALSE);
+  g_return_val_if_fail (GTK_IS_WINDOW_CONTROLS (this), FALSE);
 
-  return self->use_native_controls;
+  return this->use_native_controls;
 }
 
 /**
  * gtk_window_controls_set_use_native_controls:
- * @self: a window_controls widget
+ * @this: a window_controls widget
  * @setting: true to show native window controls
  *
  * Sets whether platform native window controls are used.
@@ -805,36 +805,36 @@ gtk_window_controls_get_use_native_controls (GtkWindowControls *self)
  * Since: 4.18
  */
 void
-gtk_window_controls_set_use_native_controls (GtkWindowControls *self,
+gtk_window_controls_set_use_native_controls (GtkWindowControls *this,
                                              gboolean           setting)
 {
-  g_return_if_fail (GTK_IS_WINDOW_CONTROLS (self));
+  g_return_if_fail (GTK_IS_WINDOW_CONTROLS (this));
 
   setting = setting != FALSE;
 
-  if (self->use_native_controls == setting)
+  if (this->use_native_controls == setting)
     return;
 
-  self->use_native_controls = setting;
+  this->use_native_controls = setting;
 
-  update_window_buttons (self);
+  update_window_buttons (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), props[PROP_USE_NATIVE_CONTROLS]);
+  g_object_notify_by_pspec (G_OBJECT (this), props[PROP_USE_NATIVE_CONTROLS]);
 }
 
 /**
  * gtk_window_controls_get_empty:
- * @self: a window controls widget
+ * @this: a window controls widget
  *
  * Gets whether the widget has any window buttons.
  *
  * Returns: true if the widget has window buttons
  */
 gboolean
-gtk_window_controls_get_empty (GtkWindowControls *self)
+gtk_window_controls_get_empty (GtkWindowControls *this)
 {
-  g_return_val_if_fail (GTK_IS_WINDOW_CONTROLS (self), FALSE);
+  g_return_val_if_fail (GTK_IS_WINDOW_CONTROLS (this), FALSE);
 
-  return self->empty;
+  return this->empty;
 }
 

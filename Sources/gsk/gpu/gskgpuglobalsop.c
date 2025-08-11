@@ -48,14 +48,14 @@ gsk_gpu_globals_op_vk_command (GskGpuOp              *op,
                                GskGpuFrame           *frame,
                                GskVulkanCommandState *state)
 {
-  GskGpuGlobalsOp *self = (GskGpuGlobalsOp *) op;
+  GskGpuGlobalsOp *this = (GskGpuGlobalsOp *) op;
 
   vkCmdPushConstants (state->vk_command_buffer,
                       gsk_vulkan_device_get_default_vk_pipeline_layout (GSK_VULKAN_DEVICE (gsk_gpu_frame_get_device (frame))),
                       VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                       0,
-                      sizeof (self->instance),
-                      &self->instance);
+                      sizeof (this->instance),
+                      &this->instance);
 
   return op->next;
 }
@@ -66,14 +66,14 @@ gsk_gpu_globals_op_gl_command (GskGpuOp          *op,
                                GskGpuFrame       *frame,
                                GskGLCommandState *state)
 {
-  GskGpuGlobalsOp *self = (GskGpuGlobalsOp *) op;
+  GskGpuGlobalsOp *this = (GskGpuGlobalsOp *) op;
   gsize globals_size;
 
   globals_size = gsk_gpu_device_get_globals_aligned_size (gsk_gpu_frame_get_device (frame));
 
   gsk_gl_buffer_bind_range (GSK_GL_BUFFER (state->globals),
                             0,
-                            self->id * globals_size,
+                            this->id * globals_size,
                             sizeof (GskGpuGlobalsInstance));
 
   return op->next;
@@ -96,12 +96,12 @@ gsk_gpu_globals_op (GskGpuFrame             *frame,
                     const graphene_matrix_t *mvp,
                     const GskRoundedRect    *clip)
 {
-  GskGpuGlobalsOp *self;
+  GskGpuGlobalsOp *this;
 
-  self = (GskGpuGlobalsOp *) gsk_gpu_op_alloc (frame, &GSK_GPU_GLOBALS_OP_CLASS);
+  this = (GskGpuGlobalsOp *) gsk_gpu_op_alloc (frame, &GSK_GPU_GLOBALS_OP_CLASS);
 
-  graphene_matrix_to_float (mvp, self->instance.mvp);
-  gsk_rounded_rect_to_float (clip, graphene_point_zero (), self->instance.clip);
-  graphene_vec2_to_float (scale, self->instance.scale);
-  self->id = gsk_gpu_frame_add_globals (frame, &self->instance);
+  graphene_matrix_to_float (mvp, this->instance.mvp);
+  gsk_rounded_rect_to_float (clip, graphene_point_zero (), this->instance.clip);
+  graphene_vec2_to_float (scale, this->instance.scale);
+  this->id = gsk_gpu_frame_add_globals (frame, &this->instance);
 }

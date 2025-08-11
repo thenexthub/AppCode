@@ -658,8 +658,8 @@ gtk_application_window_init (GtkApplicationWindow *window)
 static void
 gtk_application_window_keys_changed (GtkWindow *window)
 {
-  GtkApplicationWindow *self = GTK_APPLICATION_WINDOW (window);
-  GtkApplicationWindowPrivate *priv = gtk_application_window_get_instance_private (self);
+  GtkApplicationWindow *this = GTK_APPLICATION_WINDOW (window);
+  GtkApplicationWindowPrivate *priv = gtk_application_window_get_instance_private (this);
 
   GTK_WINDOW_CLASS (gtk_application_window_parent_class)->keys_changed (window);
 

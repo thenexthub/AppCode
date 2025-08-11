@@ -244,7 +244,7 @@ const static struct {
 };
 
 static void
-gdk_macos_keymap_update (GdkMacosKeymap *self)
+gdk_macos_keymap_update (GdkMacosKeymap *this)
 {
   const void *chr_data = NULL;
   guint *p;
@@ -377,7 +377,7 @@ gdk_macos_keymap_update (GdkMacosKeymap *self)
       p[1] = p[2] = p[3] = 0;
     }
 
-  g_signal_emit_by_name (self, "keys-changed");
+  g_signal_emit_by_name (this, "keys-changed");
 }
 
 static PangoDirection
@@ -414,9 +414,9 @@ static guint
 gdk_macos_keymap_lookup_key (GdkKeymap          *keymap,
                              const GdkKeymapKey *key)
 {
-  GdkMacosKeymap *self = (GdkMacosKeymap *)keymap;
+  GdkMacosKeymap *this = (GdkMacosKeymap *)keymap;
 
-  g_assert (GDK_IS_MACOS_KEYMAP (self));
+  g_assert (GDK_IS_MACOS_KEYMAP (this));
   g_assert (key != NULL);
 
   return GET_KEYVAL (key->keycode, key->group, key->level);
@@ -611,11 +611,11 @@ input_sources_changed_notification (CFNotificationCenterRef  center,
                                     const void              *object,
                                     CFDictionaryRef          userInfo)
 {
-  GdkMacosKeymap *self = observer;
+  GdkMacosKeymap *this = observer;
 
-  g_assert (GDK_IS_MACOS_KEYMAP (self));
+  g_assert (GDK_IS_MACOS_KEYMAP (this));
 
-  gdk_macos_keymap_update (self);
+  gdk_macos_keymap_update (this);
 }
 
 static void
@@ -649,15 +649,15 @@ gdk_macos_keymap_class_init (GdkMacosKeymapClass *klass)
 }
 
 static void
-gdk_macos_keymap_init (GdkMacosKeymap *self)
+gdk_macos_keymap_init (GdkMacosKeymap *this)
 {
   CFNotificationCenterAddObserver (CFNotificationCenterGetDistributedCenter (),
-                                   self,
+                                   this,
                                    input_sources_changed_notification,
                                    CFSTR ("AppleSelectedInputSourcesChangedNotification"),
                                    NULL,
                                    CFNotificationSuspensionBehaviorDeliverImmediately);
-  gdk_macos_keymap_update (self);
+  gdk_macos_keymap_update (this);
 }
 
 GdkMacosKeymap *

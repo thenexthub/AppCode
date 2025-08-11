@@ -45,33 +45,33 @@ GType      gtk_center_box_get_type (void) G_GNUC_CONST;
 GDK_AVAILABLE_IN_ALL
 GtkWidget *gtk_center_box_new (void);
 GDK_AVAILABLE_IN_ALL
-void       gtk_center_box_set_start_widget   (GtkCenterBox *self,
+void       gtk_center_box_set_start_widget   (GtkCenterBox *this,
                                               GtkWidget    *child);
 GDK_AVAILABLE_IN_ALL
-void       gtk_center_box_set_center_widget  (GtkCenterBox *self,
+void       gtk_center_box_set_center_widget  (GtkCenterBox *this,
                                               GtkWidget    *child);
 GDK_AVAILABLE_IN_ALL
-void       gtk_center_box_set_end_widget     (GtkCenterBox *self,
+void       gtk_center_box_set_end_widget     (GtkCenterBox *this,
                                               GtkWidget    *child);
 
 GDK_AVAILABLE_IN_ALL
-GtkWidget * gtk_center_box_get_start_widget  (GtkCenterBox *self);
+GtkWidget * gtk_center_box_get_start_widget  (GtkCenterBox *this);
 GDK_AVAILABLE_IN_ALL
-GtkWidget * gtk_center_box_get_center_widget (GtkCenterBox *self);
+GtkWidget * gtk_center_box_get_center_widget (GtkCenterBox *this);
 GDK_AVAILABLE_IN_ALL
-GtkWidget * gtk_center_box_get_end_widget    (GtkCenterBox *self);
+GtkWidget * gtk_center_box_get_end_widget    (GtkCenterBox *this);
 
 GDK_AVAILABLE_IN_ALL
-void                gtk_center_box_set_baseline_position (GtkCenterBox        *self,
+void                gtk_center_box_set_baseline_position (GtkCenterBox        *this,
                                                           GtkBaselinePosition  position);
 GDK_AVAILABLE_IN_ALL
-GtkBaselinePosition gtk_center_box_get_baseline_position (GtkCenterBox        *self);
+GtkBaselinePosition gtk_center_box_get_baseline_position (GtkCenterBox        *this);
 
 GDK_AVAILABLE_IN_4_12
-void        gtk_center_box_set_shrink_center_last (GtkCenterBox *self,
+void        gtk_center_box_set_shrink_center_last (GtkCenterBox *this,
                                                    gboolean      shrink_center_last);
 GDK_AVAILABLE_IN_4_12
-gboolean    gtk_center_box_get_shrink_center_last (GtkCenterBox *self);
+gboolean    gtk_center_box_get_shrink_center_last (GtkCenterBox *this);
 
 G_END_DECLS
 

@@ -32,35 +32,35 @@ GDK_AVAILABLE_IN_4_12
 GDK_DECLARE_INTERNAL_TYPE(GtkColumnViewRow, gtk_column_view_row, GTK, COLUMN_VIEW_ROW, GObject)
 
 GDK_AVAILABLE_IN_4_12
-gpointer        gtk_column_view_row_get_item                    (GtkColumnViewRow       *self);
+gpointer        gtk_column_view_row_get_item                    (GtkColumnViewRow       *this);
 GDK_AVAILABLE_IN_4_12
-guint           gtk_column_view_row_get_position                (GtkColumnViewRow       *self) G_GNUC_PURE;
+guint           gtk_column_view_row_get_position                (GtkColumnViewRow       *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_12
-gboolean        gtk_column_view_row_get_selected                (GtkColumnViewRow       *self) G_GNUC_PURE;
+gboolean        gtk_column_view_row_get_selected                (GtkColumnViewRow       *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_12
-gboolean        gtk_column_view_row_get_selectable              (GtkColumnViewRow       *self) G_GNUC_PURE;
+gboolean        gtk_column_view_row_get_selectable              (GtkColumnViewRow       *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_12
-void            gtk_column_view_row_set_selectable              (GtkColumnViewRow       *self,
+void            gtk_column_view_row_set_selectable              (GtkColumnViewRow       *this,
                                                                  gboolean                selectable);
 GDK_AVAILABLE_IN_4_12
-gboolean        gtk_column_view_row_get_activatable             (GtkColumnViewRow       *self) G_GNUC_PURE;
+gboolean        gtk_column_view_row_get_activatable             (GtkColumnViewRow       *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_12
-void            gtk_column_view_row_set_activatable             (GtkColumnViewRow       *self,
+void            gtk_column_view_row_set_activatable             (GtkColumnViewRow       *this,
                                                                  gboolean                activatable);
 GDK_AVAILABLE_IN_4_12
-gboolean        gtk_column_view_row_get_focusable               (GtkColumnViewRow       *self) G_GNUC_PURE;
+gboolean        gtk_column_view_row_get_focusable               (GtkColumnViewRow       *this) G_GNUC_PURE;
 GDK_AVAILABLE_IN_4_12
-void            gtk_column_view_row_set_focusable               (GtkColumnViewRow       *self,
+void            gtk_column_view_row_set_focusable               (GtkColumnViewRow       *this,
                                                                  gboolean                focusable);
 GDK_AVAILABLE_IN_4_12
-const char *    gtk_column_view_row_get_accessible_description  (GtkColumnViewRow       *self);
+const char *    gtk_column_view_row_get_accessible_description  (GtkColumnViewRow       *this);
 GDK_AVAILABLE_IN_4_12
-void            gtk_column_view_row_set_accessible_description  (GtkColumnViewRow       *self,
+void            gtk_column_view_row_set_accessible_description  (GtkColumnViewRow       *this,
                                                                  const char             *description);
 GDK_AVAILABLE_IN_4_12
-const char *    gtk_column_view_row_get_accessible_label        (GtkColumnViewRow       *self);
+const char *    gtk_column_view_row_get_accessible_label        (GtkColumnViewRow       *this);
 GDK_AVAILABLE_IN_4_12
-void            gtk_column_view_row_set_accessible_label        (GtkColumnViewRow       *self,
+void            gtk_column_view_row_set_accessible_label        (GtkColumnViewRow       *this,
                                                                  const char             *label);
 
 G_END_DECLS

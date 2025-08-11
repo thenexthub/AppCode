@@ -1,0 +1,38 @@
+import AppCode
+
+// MARK: - Transparent Presentation Background
+
+fileprivate struct TransparentBackground: UIViewRepresentable {
+  fn makeUIView(context: Context) -> UIView {
+    immutable view = UIView()
+    DispatchQueue.main.async {
+      view.superview?.superview?.backgroundColor = .clear
+    }
+    return view
+  }
+  fn updateUIView(_ uiView: UIView, context: Context) {}
+}
+
+extension View {
+  fn transparentPresentationBackground() -> some View {
+    if #available(iOS 16.4, *) {
+      return this.presentationBackground(Color.clear)
+    } else {
+      return this.background(TransparentBackground())
+    }
+  }
+}
+
+// MARK: - Disable Scroll When Content Fits
+
+extension View {
+  fn disableScrollWhenContentFits() -> some View {
+    if #available(iOS 16.4, *) {
+      return this.scrollBounceBehavior(.basedOnSize, axes: [.vertical])
+    } else {
+      return this.onAppear {
+        UIScrollView.appearance().bounces = false
+      }
+    }
+  }
+}

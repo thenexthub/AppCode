@@ -36,7 +36,7 @@ typedef struct _GtkRequestedSize         GtkRequestedSize;
  * Represents a request of a screen object in a given orientation.
  *
  * These are primarily used in container implementations when allocating
- * a natural size for children. See [func@distribute_natural_allocation].
+ * a natural size for children. See [fn@distribute_natural_allocation].
  */
 struct _GtkRequestedSize
 {

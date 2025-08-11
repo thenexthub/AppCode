@@ -39,88 +39,88 @@ maybe_unref_variable (gpointer pointer)
 GtkCssVariableSet *
 gtk_css_variable_set_new (void)
 {
-  GtkCssVariableSet *self = g_new0 (GtkCssVariableSet, 1);
+  GtkCssVariableSet *this = g_new0 (GtkCssVariableSet, 1);
 
-  self->ref_count = 1;
-  self->variables = g_hash_table_new_full (g_direct_hash,
+  this->ref_count = 1;
+  this->variables = g_hash_table_new_full (g_direct_hash,
                                            g_direct_equal,
                                            unref_custom_property_name,
                                            maybe_unref_variable);
 
-  return self;
+  return this;
 }
 
 GtkCssVariableSet *
-gtk_css_variable_set_ref (GtkCssVariableSet *self)
+gtk_css_variable_set_ref (GtkCssVariableSet *this)
 {
-  self->ref_count++;
+  this->ref_count++;
 
-  return self;
+  return this;
 }
 
 void
-gtk_css_variable_set_unref (GtkCssVariableSet *self)
+gtk_css_variable_set_unref (GtkCssVariableSet *this)
 {
-  self->ref_count--;
-  if (self->ref_count > 0)
+  this->ref_count--;
+  if (this->ref_count > 0)
     return;
 
-  g_hash_table_unref (self->variables);
-  g_clear_pointer (&self->parent, gtk_css_variable_set_unref);
-  g_free (self);
+  g_hash_table_unref (this->variables);
+  g_clear_pointer (&this->parent, gtk_css_variable_set_unref);
+  g_free (this);
 }
 
 GtkCssVariableSet *
-gtk_css_variable_set_copy (GtkCssVariableSet *self)
+gtk_css_variable_set_copy (GtkCssVariableSet *this)
 {
   GtkCssVariableSet *ret = gtk_css_variable_set_new ();
   GHashTableIter iter;
   gpointer id;
   GtkCssVariableValue *value;
 
-  g_hash_table_iter_init (&iter, self->variables);
+  g_hash_table_iter_init (&iter, this->variables);
 
   while (g_hash_table_iter_next (&iter, &id, (gpointer) &value))
     gtk_css_variable_set_add (ret, GPOINTER_TO_INT (id), value);
 
-  gtk_css_variable_set_set_parent (ret, self->parent);
+  gtk_css_variable_set_set_parent (ret, this->parent);
 
   return ret;
 }
 
 void
-gtk_css_variable_set_set_parent (GtkCssVariableSet *self,
+gtk_css_variable_set_set_parent (GtkCssVariableSet *this,
                                  GtkCssVariableSet *parent)
 {
-  if (self->parent)
-    gtk_css_variable_set_unref (self->parent);
+  if (this->parent)
+    gtk_css_variable_set_unref (this->parent);
 
-  self->parent = parent;
+  this->parent = parent;
 
-  if (self->parent)
-    gtk_css_variable_set_ref (self->parent);
+  if (this->parent)
+    gtk_css_variable_set_ref (this->parent);
 }
 
 void
-gtk_css_variable_set_add (GtkCssVariableSet   *self,
+gtk_css_variable_set_add (GtkCssVariableSet   *this,
                           int                  id,
                           GtkCssVariableValue *value)
 {
   GtkCssCustomPropertyPool *pool = gtk_css_custom_property_pool_get ();
 
-  g_hash_table_insert (self->variables,
+  g_hash_table_insert (this->variables,
                        GINT_TO_POINTER (gtk_css_custom_property_pool_ref (pool, id)),
                        value ? gtk_css_variable_value_ref (value) : NULL);
 }
 
-static gboolean check_variable (GtkCssVariableSet   *self,
+static gboolean check_variable (GtkCssVariableSet   *this,
                                 GHashTable          *unvisited_variables,
                                 GArray              *stack,
                                 int                  id,
                                 GtkCssVariableValue *value);
 
 static gboolean
-check_references (GtkCssVariableSet   *self,
+check_references (GtkCssVariableSet   *this,
                   GHashTable          *unvisited_variables,
                   GArray              *stack,
                   GtkCssVariableValue *value)
@@ -137,19 +137,19 @@ check_references (GtkCssVariableSet   *self,
         {
           GtkCssVariableValue *ref_value;
 
-          ref_value = g_hash_table_lookup (self->variables, GINT_TO_POINTER (ref_id));
+          ref_value = g_hash_table_lookup (this->variables, GINT_TO_POINTER (ref_id));
 
           /* This variable was already removed, no point in checking further */
           if (!ref_value)
             return FALSE;
 
-          if (check_variable (self, unvisited_variables, stack, ref_id, ref_value))
+          if (check_variable (this, unvisited_variables, stack, ref_id, ref_value))
             return TRUE;
         }
 
       if (ref->fallback)
         {
-          if (check_references (self, unvisited_variables, stack, ref->fallback))
+          if (check_references (this, unvisited_variables, stack, ref->fallback))
             return TRUE;
         }
     }
@@ -158,7 +158,7 @@ check_references (GtkCssVariableSet   *self,
 }
 
 static gboolean
-check_variable (GtkCssVariableSet   *self,
+check_variable (GtkCssVariableSet   *this,
                 GHashTable          *unvisited_variables,
                 GArray              *stack,
                 int                  id,
@@ -175,7 +175,7 @@ check_variable (GtkCssVariableSet   *self,
         return TRUE;
     }
 
-  if (check_references (self, unvisited_variables, stack, value))
+  if (check_references (this, unvisited_variables, stack, value))
     return TRUE;
 
   g_array_remove_index_fast (stack, stack->len - 1);
@@ -185,7 +185,7 @@ check_variable (GtkCssVariableSet   *self,
 }
 
 void
-gtk_css_variable_set_resolve_cycles (GtkCssVariableSet *self)
+gtk_css_variable_set_resolve_cycles (GtkCssVariableSet *this)
 {
   GHashTable *variables = g_hash_table_new (g_direct_hash, g_direct_equal);
   GHashTable *unvisited_variables = g_hash_table_new (g_direct_hash, g_direct_equal);
@@ -196,11 +196,11 @@ gtk_css_variable_set_resolve_cycles (GtkCssVariableSet *self)
 
   stack = g_array_new (FALSE, FALSE, sizeof (int));
 
-  g_hash_table_iter_init (&iter, self->variables);
+  g_hash_table_iter_init (&iter, this->variables);
 
   while (g_hash_table_iter_next (&iter, &id, (gpointer) &value))
     {
-      /* Have 2 copies of self->variables: "variables" can be iterated safely as
+      /* Have 2 copies of this->variables: "variables" can be iterated safely as
        * we remove values, and "unvisited_variables" as a visited node marker
        * for DFS */
       g_hash_table_insert (variables, id, value);
@@ -214,10 +214,10 @@ gtk_css_variable_set_resolve_cycles (GtkCssVariableSet *self)
       if (!g_hash_table_contains (unvisited_variables, id))
         continue;
 
-      if (!g_hash_table_contains (self->variables, id))
+      if (!g_hash_table_contains (this->variables, id))
         continue;
 
-      if (check_variable (self, unvisited_variables, stack, GPOINTER_TO_INT (id), value))
+      if (check_variable (this, unvisited_variables, stack, GPOINTER_TO_INT (id), value))
         {
           int i;
 
@@ -226,7 +226,7 @@ gtk_css_variable_set_resolve_cycles (GtkCssVariableSet *self)
             {
               int id_to_remove = g_array_index (stack, int, i);
 
-              g_hash_table_remove (self->variables, GINT_TO_POINTER (id_to_remove));
+              g_hash_table_remove (this->variables, GINT_TO_POINTER (id_to_remove));
 
               if (g_array_index (stack, int, i) == g_array_index (stack, int, stack->len - 1))
                 break;
@@ -242,21 +242,21 @@ gtk_css_variable_set_resolve_cycles (GtkCssVariableSet *self)
 }
 
 GtkCssVariableValue *
-gtk_css_variable_set_lookup (GtkCssVariableSet  *self,
+gtk_css_variable_set_lookup (GtkCssVariableSet  *this,
                              int                 id,
                              GtkCssVariableSet **source)
 {
-  GtkCssVariableValue *ret = g_hash_table_lookup (self->variables, GINT_TO_POINTER (id));
+  GtkCssVariableValue *ret = g_hash_table_lookup (this->variables, GINT_TO_POINTER (id));
 
   if (ret)
     {
       if (source)
-        *source = self;
+        *source = this;
       return ret;
     }
 
-  if (self->parent)
-    return gtk_css_variable_set_lookup (self->parent, id, source);
+  if (this->parent)
+    return gtk_css_variable_set_lookup (this->parent, id, source);
 
   if (source)
     *source = NULL;
@@ -265,16 +265,16 @@ gtk_css_variable_set_lookup (GtkCssVariableSet  *self,
 }
 
 static void
-list_ids_recursive (GtkCssVariableSet *self,
+list_ids_recursive (GtkCssVariableSet *this,
                     GHashTable        *table)
 {
   GHashTableIter iter;
   gpointer id;
 
-  if (self->parent)
-    list_ids_recursive (self->parent, table);
+  if (this->parent)
+    list_ids_recursive (this->parent, table);
 
-  g_hash_table_iter_init (&iter, self->variables);
+  g_hash_table_iter_init (&iter, this->variables);
 
   while (g_hash_table_iter_next (&iter, &id, NULL))
     g_hash_table_add (table, id);
@@ -295,7 +295,7 @@ compare_ids (gconstpointer a, gconstpointer b, gpointer user_data)
 }
 
 GArray *
-gtk_css_variable_set_list_ids (GtkCssVariableSet  *self)
+gtk_css_variable_set_list_ids (GtkCssVariableSet  *this)
 {
   GtkCssCustomPropertyPool *pool = gtk_css_custom_property_pool_get ();
   GArray *ret = g_array_new (FALSE, FALSE, sizeof (int));
@@ -304,7 +304,7 @@ gtk_css_variable_set_list_ids (GtkCssVariableSet  *self)
   gpointer id;
 
   all_ids = g_hash_table_new (g_direct_hash, g_direct_equal);
-  list_ids_recursive (self, all_ids);
+  list_ids_recursive (this, all_ids);
 
   g_hash_table_iter_init (&iter, all_ids);
 

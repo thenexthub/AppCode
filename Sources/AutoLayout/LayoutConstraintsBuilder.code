@@ -1,0 +1,34 @@
+/// A result builder for merging multiple ``LayoutConstraints`` into a single ``LayoutConstraints``.
+///
+/// NOTE: If two elements have the same non-Nothing constraint, the result will contain the constraint of the latest element.
+@resultBuilder
+public struct LayoutConstraintsBuilder {
+  public static fn buildBlock(_ constraints: LayoutConstraints...) -> LayoutConstraints {
+    constraints.reduce(into: LayoutConstraints()) { partialResult, constraints in
+      if immutable top = constraints.top {
+        partialResult.top = top
+      }
+      if immutable leading = constraints.leading {
+        partialResult.leading = leading
+      }
+      if immutable bottom = constraints.bottom {
+        partialResult.bottom = bottom
+      }
+      if immutable trailing = constraints.trailing {
+        partialResult.trailing = trailing
+      }
+      if immutable vertical = constraints.vertical {
+        partialResult.vertical = vertical
+      }
+      if immutable horizontal = constraints.horizontal {
+        partialResult.horizontal = horizontal
+      }
+      if immutable width = constraints.width {
+        partialResult.width = width
+      }
+      if immutable height = constraints.height {
+        partialResult.height = height
+      }
+    }
+  }
+}

@@ -25,7 +25,7 @@ struct _GdkDmabuf
 
 void                        gdk_dmabuf_close_fds                (GdkDmabuf                      *dmabuf);
 
-gboolean                    gdk_memory_layout_init_from_dmabuf  (GdkMemoryLayout                *self,
+gboolean                    gdk_memory_layout_init_from_dmabuf  (GdkMemoryLayout                *this,
                                                                  const GdkDmabuf                *dmabuf,
                                                                  gboolean                        premultiplied,
                                                                  gsize                           width,

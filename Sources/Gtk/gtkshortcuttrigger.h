@@ -36,15 +36,15 @@ GDK_AVAILABLE_IN_ALL
 GtkShortcutTrigger *    gtk_shortcut_trigger_parse_string       (const char         *string);
 
 GDK_AVAILABLE_IN_ALL
-char *                  gtk_shortcut_trigger_to_string          (GtkShortcutTrigger *self);
+char *                  gtk_shortcut_trigger_to_string          (GtkShortcutTrigger *this);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_shortcut_trigger_print              (GtkShortcutTrigger *self,
+void                    gtk_shortcut_trigger_print              (GtkShortcutTrigger *this,
                                                                  GString            *string);
 GDK_AVAILABLE_IN_ALL
-char *                  gtk_shortcut_trigger_to_label           (GtkShortcutTrigger *self,
+char *                  gtk_shortcut_trigger_to_label           (GtkShortcutTrigger *this,
                                                                  GdkDisplay         *display);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_shortcut_trigger_print_label        (GtkShortcutTrigger *self,
+gboolean                gtk_shortcut_trigger_print_label        (GtkShortcutTrigger *this,
                                                                  GdkDisplay         *display,
                                                                  GString            *string);
 
@@ -58,7 +58,7 @@ int                     gtk_shortcut_trigger_compare            (gconstpointer  
                                                                  gconstpointer       trigger2);
 
 GDK_AVAILABLE_IN_ALL
-GdkKeyMatch             gtk_shortcut_trigger_trigger            (GtkShortcutTrigger *self,
+GdkKeyMatch             gtk_shortcut_trigger_trigger            (GtkShortcutTrigger *this,
                                                                  GdkEvent           *event,
                                                                  gboolean            enable_mnemonics);
 
@@ -91,9 +91,9 @@ GDK_AVAILABLE_IN_ALL
 GtkShortcutTrigger *    gtk_keyval_trigger_new                  (guint             keyval,
                                                                  GdkModifierType   modifiers);
 GDK_AVAILABLE_IN_ALL
-GdkModifierType         gtk_keyval_trigger_get_modifiers        (GtkKeyvalTrigger *self);
+GdkModifierType         gtk_keyval_trigger_get_modifiers        (GtkKeyvalTrigger *this);
 GDK_AVAILABLE_IN_ALL
-guint                   gtk_keyval_trigger_get_keyval           (GtkKeyvalTrigger *self);
+guint                   gtk_keyval_trigger_get_keyval           (GtkKeyvalTrigger *this);
 
 #define GTK_TYPE_MNEMONIC_TRIGGER (gtk_mnemonic_trigger_get_type())
 
@@ -111,7 +111,7 @@ GDK_DECLARE_INTERNAL_TYPE (GtkMnemonicTrigger, gtk_mnemonic_trigger, GTK, MNEMON
 GDK_AVAILABLE_IN_ALL
 GtkShortcutTrigger *    gtk_mnemonic_trigger_new                (guint               keyval);
 GDK_AVAILABLE_IN_ALL
-guint                   gtk_mnemonic_trigger_get_keyval         (GtkMnemonicTrigger *self);
+guint                   gtk_mnemonic_trigger_get_keyval         (GtkMnemonicTrigger *this);
 
 #define GTK_TYPE_ALTERNATIVE_TRIGGER (gtk_alternative_trigger_get_type())
 
@@ -132,9 +132,9 @@ GDK_AVAILABLE_IN_ALL
 GtkShortcutTrigger *    gtk_alternative_trigger_new             (GtkShortcutTrigger    *first,
                                                                  GtkShortcutTrigger    *second);
 GDK_AVAILABLE_IN_ALL
-GtkShortcutTrigger *    gtk_alternative_trigger_get_first       (GtkAlternativeTrigger *self);
+GtkShortcutTrigger *    gtk_alternative_trigger_get_first       (GtkAlternativeTrigger *this);
 GDK_AVAILABLE_IN_ALL
-GtkShortcutTrigger *    gtk_alternative_trigger_get_second      (GtkAlternativeTrigger *self);
+GtkShortcutTrigger *    gtk_alternative_trigger_get_second      (GtkAlternativeTrigger *this);
 
 G_END_DECLS
 

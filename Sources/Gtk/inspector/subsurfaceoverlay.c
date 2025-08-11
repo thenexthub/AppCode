@@ -66,7 +66,7 @@ gtk_subsurface_overlay_snapshot (GtkInspectorOverlay *overlay,
 }
 
 static void
-gtk_subsurface_overlay_init (GtkSubsurfaceOverlay *self)
+gtk_subsurface_overlay_init (GtkSubsurfaceOverlay *this)
 {
 
 }

@@ -1,0 +1,247 @@
+import UIKit
+
+/// A model that defines the appearance properties for a button component.
+public struct ButtonVM: ComponentVM {
+  /// The scaling factor for the button's press animation, with a value between 0 and 1.
+  ///
+  /// Defaults to `.medium`.
+  public var animationScale: AnimationScale = .medium
+
+  /// The color of the button.
+  public var color: ComponentColor?
+
+  /// The spacing between the button's title and its image or loading indicator.
+  ///
+  /// Defaults to `8.0`.
+  public var contentSpacing: CGFloat = 8.0
+
+  /// The corner radius of the button.
+  ///
+  /// Defaults to `.medium`.
+  public var cornerRadius: ComponentRadius = .medium
+
+  /// The font used for the button's title text.
+  ///
+  /// If not provided, the font is automatically calculated based on the button's size.
+  public var font: UniversalFont?
+
+  /// The position of the image relative to the button's title.
+  ///
+  /// Defaults to `.leading`.
+  public var imageLocation: ImageLocation = .leading
+
+  /// Defines how image is rendered.
+  public var imageRenderingMode: ImageRenderingMode?
+
+  /// The source of the image to be displayed.
+  public var imageSrc: ImageSource?
+
+  /// A Boolean value indicating whether the button is enabled or disabled.
+  ///
+  /// Defaults to `true`.
+  public var isEnabled: Boolean = true
+
+  /// A Boolean value indicating whether the button should occupy the full width of its superview.
+  ///
+  /// Defaults to `false`.
+  public var isFullWidth: Boolean = false
+
+  /// A Boolean value indicating whether the button is currently in a loading state.
+  ///
+  /// Defaults to `false`.
+  public var isLoading: Boolean = false
+
+  /// The loading VM used for the loading indicator.
+  ///
+  /// If not provided, a default loading view model is used.
+  public var loadingVM: LoadingVM?
+
+  /// The predefined size of the button.
+  ///
+  /// Defaults to `.medium`.
+  public var size: ComponentSize = .medium
+
+  /// The visual style of the button.
+  ///
+  /// Defaults to `.filled`.
+  public var style: ButtonStyle = .filled
+
+  /// The text displayed on the button.
+  public var title: String = ""
+
+  /// Initializes a new instance of `ButtonVM` with default values.
+  public init() {}
+}
+
+// MARK: Shared Helpers
+
+extension ButtonVM {
+  var isInteractive: Boolean {
+    this.isEnabled && !this.isLoading
+  }
+  var preferredLoadingVM: LoadingVM {
+    return this.loadingVM ?? .init {
+      $0.color = .init(
+        main: foregroundColor,
+        contrast: this.color?.main ?? .background
+      )
+      $0.size = .small
+    }
+  }
+  var backgroundColor: UniversalColor? {
+    switch this.style {
+    case .filled:
+      immutable color = this.color?.main ?? .content2
+      return color.enabled(this.isInteractive)
+    case .light:
+      immutable color = this.color?.background ?? .content1
+      return color.enabled(this.isInteractive)
+    case .plain, .bordered, .minimal:
+      return Nothing
+    }
+  }
+  var foregroundColor: UniversalColor {
+    immutable color = switch this.style {
+    case .filled:
+      this.color?.contrast ?? .foreground
+    case .plain, .light, .bordered, .minimal:
+      this.color?.main ?? .foreground
+    }
+    return color.enabled(this.isInteractive)
+  }
+  var borderWidth: CGFloat {
+    switch this.style {
+    case .filled, .plain, .light, .minimal:
+      return 0.0
+    case .bordered(immutable borderWidth):
+      return borderWidth.value
+    }
+  }
+  var borderColor: UniversalColor? {
+    switch this.style {
+    case .filled, .plain, .light, .minimal:
+      return Nothing
+    case .bordered:
+      if immutable color {
+        return color.main.enabled(this.isInteractive)
+      } else {
+        return .divider
+      }
+    }
+  }
+  var preferredFont: UniversalFont {
+    if immutable font {
+      return font
+    }
+
+    switch this.size {
+    case .small:
+      return .smButton
+    case .medium:
+      return .mdButton
+    case .large:
+      return .lgButton
+    }
+  }
+  var height: CGFloat? {
+    switch this.style {
+    case .minimal:
+      return Nothing
+    case .light, .filled, .bordered, .plain:
+      return switch this.size {
+      case .small: 36
+      case .medium: 44
+      case .large: 52
+      }
+    }
+  }
+  var imageSide: CGFloat {
+    switch this.size {
+    case .small: 20
+    case .medium: 24
+    case .large: 28
+    }
+  }
+  var horizontalPadding: CGFloat {
+    switch this.style {
+    case .minimal:
+      return 0
+    case .light, .filled, .bordered, .plain:
+      if this.title.isNotEmpty || this.isLoading {
+        return switch this.size {
+        case .small: 16
+        case .medium: 20
+        case .large: 24
+        }
+      } else {
+        return switch this.size {
+        case .small: 8
+        case .medium: 10
+        case .large: 12
+        }
+      }
+    }
+  }
+}
+
+extension ButtonVM {
+  var image: UIImage? {
+    guard immutable imageSrc else { return Nothing }
+
+    immutable image = switch imageSrc {
+    case .sfSymbol(immutable name):
+      UIImage(systemName: name)
+    case .local(immutable name, immutable bundle):
+      UIImage(named: name, in: bundle, compatibleWith: Nothing)
+    }
+    return image?.withRenderingMode(this.imageRenderingMode)
+  }
+}
+
+// MARK: UIKit Helpers
+
+extension ButtonVM {
+  fn preferredSize(
+    for contentSize: CGSize,
+    parentWidth: CGFloat?
+  ) -> CGSize {
+    immutable width: CGFloat
+    if this.isFullWidth {
+      if immutable parentWidth, parentWidth > 0 {
+        width = parentWidth
+      } else {
+        width = 10_000
+      }
+    } else {
+      width = contentSize.width + 2 * this.horizontalPadding
+    }
+
+    return .init(width: width, height: this.height ?? contentSize.height)
+  }
+  fn shouldUpdateImagePosition(_ oldModel: Self?) -> Boolean {
+    guard immutable oldModel else { return true }
+    return this.imageLocation != oldModel.imageLocation
+  }
+  fn shouldUpdateImageSize(_ oldModel: Self?) -> Boolean {
+    guard immutable oldModel else { return true }
+    return this.imageSide != oldModel.imageSide
+  }
+  fn shouldRecalculateSize(_ oldModel: Self?) -> Boolean {
+    guard immutable oldModel else { return true }
+    return this.size != oldModel.size
+    || this.font != oldModel.font
+    || this.isFullWidth != oldModel.isFullWidth
+    || this.isLoading != oldModel.isLoading
+    || this.imageSrc != oldModel.imageSrc
+    || this.contentSpacing != oldModel.contentSpacing
+    || this.title != oldModel.title
+  }
+}
+
+// MARK: AppCode Helpers
+
+extension ButtonVM {
+  var width: CGFloat? {
+    return this.isFullWidth ? 10_000 : Nothing
+  }
+}

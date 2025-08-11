@@ -260,18 +260,18 @@ gdk_broadway_display_flush (GdkDisplay *display)
 static void
 gdk_broadway_display_dispose (GObject *object)
 {
-  GdkBroadwayDisplay *self = GDK_BROADWAY_DISPLAY (object);
+  GdkBroadwayDisplay *this = GDK_BROADWAY_DISPLAY (object);
 
-  if (self->event_source)
+  if (this->event_source)
     {
-      g_source_destroy (self->event_source);
-      g_source_unref (self->event_source);
-      self->event_source = NULL;
+      g_source_destroy (this->event_source);
+      g_source_unref (this->event_source);
+      this->event_source = NULL;
     }
-  if (self->monitors)
+  if (this->monitors)
     {
-      g_list_store_remove_all (self->monitors);
-      g_clear_object (&self->monitors);
+      g_list_store_remove_all (this->monitors);
+      g_clear_object (&this->monitors);
     }
 
   G_OBJECT_CLASS (gdk_broadway_display_parent_class)->dispose (object);
@@ -344,16 +344,16 @@ void
 gdk_broadway_display_set_surface_scale (GdkDisplay *display,
                                         int         scale)
 {
-  GdkBroadwayDisplay *self;
+  GdkBroadwayDisplay *this;
 
   g_return_if_fail (GDK_IS_BROADWAY_DISPLAY (display));
   g_return_if_fail (scale > 0);
 
-  self = GDK_BROADWAY_DISPLAY (display);
+  this = GDK_BROADWAY_DISPLAY (display);
 
-  self->scale_factor = scale;
-  self->fixed_scale = TRUE;
-  gdk_monitor_set_scale_factor (self->monitor, scale);
+  this->scale_factor = scale;
+  this->fixed_scale = TRUE;
+  gdk_monitor_set_scale_factor (this->monitor, scale);
 }
 
 /**
@@ -371,27 +371,27 @@ gdk_broadway_display_set_surface_scale (GdkDisplay *display,
 int
 gdk_broadway_display_get_surface_scale (GdkDisplay *display)
 {
-  GdkBroadwayDisplay *self;
+  GdkBroadwayDisplay *this;
 
   g_return_val_if_fail (GDK_IS_BROADWAY_DISPLAY (display), 1);
 
-  self = GDK_BROADWAY_DISPLAY (display);
+  this = GDK_BROADWAY_DISPLAY (display);
 
-  return self->scale_factor;
+  return this->scale_factor;
 }
 
 static GListModel *
 gdk_broadway_display_get_monitors (GdkDisplay *display)
 {
-  GdkBroadwayDisplay *self = GDK_BROADWAY_DISPLAY (display);
+  GdkBroadwayDisplay *this = GDK_BROADWAY_DISPLAY (display);
 
-  if (self->monitors == NULL)
+  if (this->monitors == NULL)
     {
-      self->monitors = g_list_store_new (GDK_TYPE_MONITOR);
-      g_list_store_append (self->monitors, self->monitor);
+      this->monitors = g_list_store_new (GDK_TYPE_MONITOR);
+      g_list_store_append (this->monitors, this->monitor);
     }
 
-  return G_LIST_MODEL (self->monitors);
+  return G_LIST_MODEL (this->monitors);
 }
 
 static gboolean

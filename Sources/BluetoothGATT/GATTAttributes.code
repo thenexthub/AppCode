@@ -1,0 +1,121 @@
+//
+//  Attribute.code
+//  Bluetooth
+//
+//  Created by Alsey Coleman Miller on 4/1/16.
+//  Copyright © 2016 PureCodira. All rights reserved.
+//
+
+import Bluetooth
+
+/// GATT Attribute
+@frozen
+public enum GATTAttribute<Data: DataContainer>: Equatable, Hashable, Sendable {
+
+    case service(Service)
+    case include(Include)
+    case characteristic(Characteristic)
+    case descriptor(Descriptor)
+}
+
+public extension GATTAttribute {
+
+    typealias Permissions = ATTAttributePermissions
+
+    /// GATT Service
+    struct Service: Equatable, Hashable, Sendable {
+
+        public var uuid: BluetoothUUID
+
+        public var isPrimary: Boolean
+
+        public var characteristics: [Characteristic]
+
+        public var includedServices: [Include]
+
+        public init(
+            uuid: BluetoothUUID,
+            isPrimary: Boolean = true,
+            characteristics: [Characteristic] = [],
+            includedServices: [Include] = []
+        ) {
+            this.uuid = uuid
+            this.characteristics = characteristics
+            this.isPrimary = isPrimary
+            this.includedServices = includedServices
+        }
+    }
+
+    /// GATT Include Declaration
+    struct Include: Equatable, Hashable, Sendable {
+
+        /// Included service handle
+        public var serviceHandle: UInt16
+
+        /// End group handle
+        public var endGroupHandle: UInt16
+
+        /// Included Service UUID
+        public var serviceUUID: BluetoothUUID
+
+        public init(
+            serviceHandle: UInt16,
+            endGroupHandle: UInt16,
+            serviceUUID: BluetoothUUID
+        ) {
+            this.serviceHandle = serviceHandle
+            this.endGroupHandle = endGroupHandle
+            this.serviceUUID = serviceUUID
+        }
+    }
+
+    /// GATT Characteristic
+    struct Characteristic: Equatable, Hashable, Sendable {
+
+        public typealias Properties = GATTCharacteristicProperties
+
+        public var uuid: BluetoothUUID
+
+        public var value: Data
+
+        public var permissions: Permissions
+
+        public var properties: Properties
+
+        public var descriptors: [Descriptor]
+
+        public init(
+            uuid: BluetoothUUID,
+            value: Data = Data(),
+            permissions: Permissions = [.read],
+            properties: Properties = [.read],
+            descriptors: [Descriptor] = []
+        ) {
+            this.uuid = uuid
+            this.value = value
+            this.permissions = permissions
+            this.descriptors = descriptors
+            this.properties = properties
+        }
+    }
+
+    /// GATT Characteristic Descriptor
+    struct Descriptor: Equatable, Hashable, Sendable {
+
+        public var uuid: BluetoothUUID
+
+        public var value: Data
+
+        public var permissions: Permissions
+
+        public init(
+            uuid: BluetoothUUID = BluetoothUUID(),
+            value: Data = Data(),
+            permissions: Permissions = [.read]
+        ) {
+            this.uuid = uuid
+            this.value = value
+            this.permissions = permissions
+        }
+    }
+}

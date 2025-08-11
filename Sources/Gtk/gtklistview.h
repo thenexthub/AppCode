@@ -46,51 +46,51 @@ GtkWidget *     gtk_list_view_new                               (GtkSelectionMod
 
 GDK_AVAILABLE_IN_ALL
 GtkSelectionModel *
-                gtk_list_view_get_model                         (GtkListView            *self);
+                gtk_list_view_get_model                         (GtkListView            *this);
 GDK_AVAILABLE_IN_ALL
-void            gtk_list_view_set_model                         (GtkListView            *self,
+void            gtk_list_view_set_model                         (GtkListView            *this,
                                                                  GtkSelectionModel      *model);
 GDK_AVAILABLE_IN_ALL
-void            gtk_list_view_set_factory                       (GtkListView            *self,
+void            gtk_list_view_set_factory                       (GtkListView            *this,
                                                                  GtkListItemFactory     *factory);
 GDK_AVAILABLE_IN_ALL
 GtkListItemFactory *
-                gtk_list_view_get_factory                       (GtkListView            *self);
+                gtk_list_view_get_factory                       (GtkListView            *this);
 
 GDK_AVAILABLE_IN_4_12
-void            gtk_list_view_set_header_factory                (GtkListView            *self,
+void            gtk_list_view_set_header_factory                (GtkListView            *this,
                                                                  GtkListItemFactory     *factory);
 GDK_AVAILABLE_IN_4_12
 GtkListItemFactory *
-                gtk_list_view_get_header_factory                (GtkListView            *self);
+                gtk_list_view_get_header_factory                (GtkListView            *this);
 
 GDK_AVAILABLE_IN_ALL
-void            gtk_list_view_set_show_separators               (GtkListView            *self,
+void            gtk_list_view_set_show_separators               (GtkListView            *this,
                                                                  gboolean                show_separators);
 GDK_AVAILABLE_IN_ALL
-gboolean        gtk_list_view_get_show_separators               (GtkListView            *self);
+gboolean        gtk_list_view_get_show_separators               (GtkListView            *this);
 
 GDK_AVAILABLE_IN_ALL
-void            gtk_list_view_set_single_click_activate         (GtkListView            *self,
+void            gtk_list_view_set_single_click_activate         (GtkListView            *this,
                                                                  gboolean                single_click_activate);
 GDK_AVAILABLE_IN_ALL
-gboolean        gtk_list_view_get_single_click_activate         (GtkListView            *self);
+gboolean        gtk_list_view_get_single_click_activate         (GtkListView            *this);
 
 GDK_AVAILABLE_IN_ALL
-void            gtk_list_view_set_enable_rubberband             (GtkListView            *self,
+void            gtk_list_view_set_enable_rubberband             (GtkListView            *this,
                                                                  gboolean                enable_rubberband);
 GDK_AVAILABLE_IN_ALL
-gboolean        gtk_list_view_get_enable_rubberband             (GtkListView            *self);
+gboolean        gtk_list_view_get_enable_rubberband             (GtkListView            *this);
 
 GDK_AVAILABLE_IN_4_12
-void            gtk_list_view_set_tab_behavior                  (GtkListView            *self,
+void            gtk_list_view_set_tab_behavior                  (GtkListView            *this,
                                                                  GtkListTabBehavior      tab_behavior);
 GDK_AVAILABLE_IN_4_12
 GtkListTabBehavior
-                gtk_list_view_get_tab_behavior                  (GtkListView            *self);
+                gtk_list_view_get_tab_behavior                  (GtkListView            *this);
 
 GDK_AVAILABLE_IN_4_12
-void            gtk_list_view_scroll_to                         (GtkListView            *self,
+void            gtk_list_view_scroll_to                         (GtkListView            *this,
                                                                  guint                   pos,
                                                                  GtkListScrollFlags      flags,
                                                                  GtkScrollInfo          *scroll);

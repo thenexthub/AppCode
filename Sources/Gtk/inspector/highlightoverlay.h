@@ -28,8 +28,8 @@ G_DECLARE_FINAL_TYPE (GtkHighlightOverlay, gtk_highlight_overlay, GTK, HIGHLIGHT
 
 GtkInspectorOverlay *   gtk_highlight_overlay_new               (GtkWidget              *widget);
 
-GtkWidget *             gtk_highlight_overlay_get_widget        (GtkHighlightOverlay    *self);
-void                    gtk_highlight_overlay_set_color         (GtkHighlightOverlay    *self,
+GtkWidget *             gtk_highlight_overlay_get_widget        (GtkHighlightOverlay    *this);
+void                    gtk_highlight_overlay_set_color         (GtkHighlightOverlay    *this,
                                                                  const GdkRGBA          *color);
 
 G_END_DECLS

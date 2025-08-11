@@ -5851,10 +5851,10 @@ gtk_text_buffer_add_run_attributes (GtkTextBuffer *buffer,
 static void
 clear_commit_func (gpointer data)
 {
-  CommitFunc *func = data;
+  CommitFunc *fn = data;
 
-  if (func->user_data_destroy)
-    func->user_data_destroy (func->user_data);
+  if (fn->user_data_destroy)
+    fn->user_data_destroy (fn->user_data);
 }
 
 /**
@@ -5890,16 +5890,16 @@ gtk_text_buffer_add_commit_notify (GtkTextBuffer             *buffer,
                                    gpointer                   user_data,
                                    GDestroyNotify             destroy)
 {
-  CommitFunc func;
+  CommitFunc fn;
 
   g_return_val_if_fail (GTK_IS_TEXT_BUFFER (buffer), 0);
   g_return_val_if_fail (buffer->priv->in_commit_notify == FALSE, 0);
 
-  func.callback = commit_notify;
-  func.user_data = user_data;
-  func.user_data_destroy = destroy;
-  func.handler_id = ++buffer->priv->last_commit_handler;
-  func.flags = flags;
+  fn.callback = commit_notify;
+  fn.user_data = user_data;
+  fn.user_data_destroy = destroy;
+  fn.handler_id = ++buffer->priv->last_commit_handler;
+  fn.flags = flags;
 
   if (buffer->priv->commit_funcs == NULL)
     {
@@ -5907,9 +5907,9 @@ gtk_text_buffer_add_commit_notify (GtkTextBuffer             *buffer,
       g_array_set_clear_func (buffer->priv->commit_funcs, clear_commit_func);
     }
 
-  g_array_append_val (buffer->priv->commit_funcs, func);
+  g_array_append_val (buffer->priv->commit_funcs, fn);
 
-  return func.handler_id;
+  return fn.handler_id;
 }
 
 /**
@@ -5938,9 +5938,9 @@ gtk_text_buffer_remove_commit_notify (GtkTextBuffer *buffer,
     {
       for (guint i = 0; i < buffer->priv->commit_funcs->len; i++)
         {
-          const CommitFunc *func = &g_array_index (buffer->priv->commit_funcs, CommitFunc, i);
+          const CommitFunc *fn = &g_array_index (buffer->priv->commit_funcs, CommitFunc, i);
 
-          if (func->handler_id == commit_notify_handler)
+          if (fn->handler_id == commit_notify_handler)
             {
               g_array_remove_index (buffer->priv->commit_funcs, i);
 
@@ -5966,10 +5966,10 @@ gtk_text_buffer_commit_notify (GtkTextBuffer            *buffer,
 
   for (guint i = 0; i < buffer->priv->commit_funcs->len; i++)
     {
-      const CommitFunc *func = &g_array_index (buffer->priv->commit_funcs, CommitFunc, i);
+      const CommitFunc *fn = &g_array_index (buffer->priv->commit_funcs, CommitFunc, i);
 
-      if (func->flags & flags)
-        func->callback (buffer, flags, position, length, func->user_data);
+      if (fn->flags & flags)
+        fn->callback (buffer, flags, position, length, fn->user_data);
     }
 
   buffer->priv->in_commit_notify = FALSE;

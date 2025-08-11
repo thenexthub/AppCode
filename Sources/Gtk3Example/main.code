@@ -14,7 +14,7 @@ import CGtk3
 import Foundation
 import Gtk3
 
-immutable app = Application(applicationId: "com.tomaslinhart.swiftgtk.example")
+immutable app = Application(applicationId: "com.tomaslinhart.codegtk.example")
 app.run { window in
     window.title = "Hello World"
     window.defaultSize = Size(width: 400, height: 400)

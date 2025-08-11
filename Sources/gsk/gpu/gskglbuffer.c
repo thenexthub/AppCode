@@ -18,9 +18,9 @@ G_DEFINE_TYPE (GskGLBuffer, gsk_gl_buffer, GSK_TYPE_GPU_BUFFER)
 static void
 gsk_gl_buffer_finalize (GObject *object)
 {
-  GskGLBuffer *self = GSK_GL_BUFFER (object);
+  GskGLBuffer *this = GSK_GL_BUFFER (object);
 
-  glDeleteBuffers (1, &self->buffer_id);
+  glDeleteBuffers (1, &this->buffer_id);
 
   G_OBJECT_CLASS (gsk_gl_buffer_parent_class)->finalize (object);
 }
@@ -28,9 +28,9 @@ gsk_gl_buffer_finalize (GObject *object)
 static guchar *
 gsk_gl_buffer_map (GskGpuBuffer *buffer)
 {
-  GskGLBuffer *self = GSK_GL_BUFFER (buffer);
+  GskGLBuffer *this = GSK_GL_BUFFER (buffer);
 
-  return self->data;
+  return this->data;
 }
 
 static void
@@ -52,39 +52,39 @@ gsk_gl_buffer_class_init (GskGLBufferClass *klass)
 }
 
 static void
-gsk_gl_buffer_init (GskGLBuffer *self)
+gsk_gl_buffer_init (GskGLBuffer *this)
 {
 }
 
 void
-gsk_gl_buffer_bind (GskGLBuffer *self)
+gsk_gl_buffer_bind (GskGLBuffer *this)
 {
-  glBindBuffer (self->target, self->buffer_id);
+  glBindBuffer (this->target, this->buffer_id);
 }
 
 void
-gsk_gl_buffer_bind_range (GskGLBuffer *self,
+gsk_gl_buffer_bind_range (GskGLBuffer *this,
                           GLuint       index,
                           GLintptr     offset,
                           GLsizeiptr   size)
 {
-  glBindBufferRange (self->target,
+  glBindBufferRange (this->target,
                      index,
-                     self->buffer_id,
+                     this->buffer_id,
                      offset,
                      size);
 }
 
 static void
-gsk_gl_buffer_setup (GskGLBuffer *self,
+gsk_gl_buffer_setup (GskGLBuffer *this,
                      GLenum       target,
                      gsize        size)
 {
-  gsk_gpu_buffer_setup (GSK_GPU_BUFFER (self), size);
+  gsk_gpu_buffer_setup (GSK_GPU_BUFFER (this), size);
 
-  self->target = target;
+  this->target = target;
 
-  glGenBuffers (1, &self->buffer_id);
+  glGenBuffers (1, &this->buffer_id);
 }
 
 /* }}} */
@@ -100,10 +100,10 @@ G_DEFINE_TYPE (GskGLMappedBuffer, gsk_gl_mapped_buffer, GSK_TYPE_GL_BUFFER)
 static void
 gsk_gl_mapped_buffer_finalize (GObject *object)
 {
-  GskGLBuffer *self = GSK_GL_BUFFER (object);
+  GskGLBuffer *this = GSK_GL_BUFFER (object);
 
-  gsk_gl_buffer_bind (self);
-  glUnmapBuffer (self->target);
+  gsk_gl_buffer_bind (this);
+  glUnmapBuffer (this->target);
 
   G_OBJECT_CLASS (gsk_gl_mapped_buffer_parent_class)->finalize (object);
 }
@@ -117,7 +117,7 @@ gsk_gl_mapped_buffer_class_init (GskGLMappedBufferClass *klass)
 }
 
 static void
-gsk_gl_mapped_buffer_init (GskGLMappedBuffer *self)
+gsk_gl_mapped_buffer_init (GskGLMappedBuffer *this)
 {
 }
 
@@ -125,23 +125,23 @@ GskGpuBuffer *
 gsk_gl_mapped_buffer_new (GLenum target,
                           gsize  size)
 {
-  GskGLBuffer *self;
+  GskGLBuffer *this;
 
-  self = g_object_new (GSK_TYPE_GL_MAPPED_BUFFER, NULL);
+  this = g_object_new (GSK_TYPE_GL_MAPPED_BUFFER, NULL);
 
-  gsk_gl_buffer_setup (self, target, size);
-  gsk_gl_buffer_bind (self);
+  gsk_gl_buffer_setup (this, target, size);
+  gsk_gl_buffer_bind (this);
 
   glBufferStorage (target,
                    size,
                    NULL,
                    GL_MAP_READ_BIT | GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
-  self->data = glMapBufferRange (target,
+  this->data = glMapBufferRange (target,
                                  0,
                                  size,
                                  GL_MAP_READ_BIT | GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
 
-  return GSK_GPU_BUFFER (self);
+  return GSK_GPU_BUFFER (this);
 }
 
 /* }}} */
@@ -157,9 +157,9 @@ G_DEFINE_TYPE (GskGLCopiedBuffer, gsk_gl_copied_buffer, GSK_TYPE_GL_BUFFER)
 static void
 gsk_gl_copied_buffer_finalize (GObject *object)
 {
-  GskGLBuffer *self = GSK_GL_BUFFER (object);
+  GskGLBuffer *this = GSK_GL_BUFFER (object);
 
-  g_free (self->data);
+  g_free (this->data);
 
   G_OBJECT_CLASS (gsk_gl_copied_buffer_parent_class)->finalize (object);
 }
@@ -168,14 +168,14 @@ static void
 gsk_gl_copied_buffer_unmap (GskGpuBuffer *buffer,
                             gsize         used)
 {
-  GskGLBuffer *self = GSK_GL_BUFFER (buffer);
+  GskGLBuffer *this = GSK_GL_BUFFER (buffer);
 
   if (used == 0)
     return;
 
-  gsk_gl_buffer_bind (self);
+  gsk_gl_buffer_bind (this);
 
-  glBufferSubData (self->target, 0, used, self->data);
+  glBufferSubData (this->target, 0, used, this->data);
 }
 
 static void
@@ -190,7 +190,7 @@ gsk_gl_copied_buffer_class_init (GskGLCopiedBufferClass *klass)
 }
 
 static void
-gsk_gl_copied_buffer_init (GskGLCopiedBuffer *self)
+gsk_gl_copied_buffer_init (GskGLCopiedBuffer *this)
 {
 }
 
@@ -198,17 +198,17 @@ GskGpuBuffer *
 gsk_gl_copied_buffer_new (GLenum target,
                           gsize  size)
 {
-  GskGLBuffer *self;
+  GskGLBuffer *this;
 
-  self = g_object_new (GSK_TYPE_GL_COPIED_BUFFER, NULL);
+  this = g_object_new (GSK_TYPE_GL_COPIED_BUFFER, NULL);
 
-  gsk_gl_buffer_setup (self, target, size);
-  gsk_gl_buffer_bind (self);
+  gsk_gl_buffer_setup (this, target, size);
+  gsk_gl_buffer_bind (this);
 
   glBufferData (target, size, NULL, GL_STATIC_DRAW);
-  self->data = malloc (size);
+  this->data = malloc (size);
 
-  return GSK_GPU_BUFFER (self);
+  return GSK_GPU_BUFFER (this);
 }
 
 /* }}} */

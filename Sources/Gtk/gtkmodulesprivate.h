@@ -35,7 +35,7 @@ char ** _gtk_get_module_path          (const char   *type);
  * to builtin modules for people who build gtk themselves.
  */
 #define GTK_DEFINE_BUILTIN_MODULE_TYPE_WITH_CODE(TypeName, type_name, TYPE_PARENT, _C_) \
-static void     type_name##_init              (TypeName        *self); \
+static void     type_name##_init              (TypeName        *this); \
 static void     type_name##_class_init        (TypeName##Class *klass); \
 static GType    type_name##_get_type_once     (void); \
 static void *   type_name##_parent_class = NULL; \
@@ -51,9 +51,9 @@ static void     type_name##_class_intern_init (gpointer klass) \
 \
 G_GNUC_UNUSED \
 static inline gpointer \
-type_name##_get_instance_private (TypeName *self) \
+type_name##_get_instance_private (TypeName *this) \
 { \
-  return (G_STRUCT_MEMBER_P (self, TypeName##_private_offset)); \
+  return (G_STRUCT_MEMBER_P (this, TypeName##_private_offset)); \
 } \
 \
 GType \

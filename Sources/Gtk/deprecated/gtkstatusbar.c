@@ -141,15 +141,15 @@ G_DEFINE_TYPE (GtkStatusbar, gtk_statusbar, GTK_TYPE_WIDGET)
 static void
 gtk_statusbar_dispose (GObject *object)
 {
-  GtkStatusbar *self = GTK_STATUSBAR (object);
+  GtkStatusbar *this = GTK_STATUSBAR (object);
 
-  g_slist_free_full (self->messages, (GDestroyNotify) gtk_statusbar_msg_free);
-  self->messages = NULL;
+  g_slist_free_full (this->messages, (GDestroyNotify) gtk_statusbar_msg_free);
+  this->messages = NULL;
 
-  g_slist_free_full (self->keys, g_free);
-  self->keys = NULL;
+  g_slist_free_full (this->keys, g_free);
+  this->keys = NULL;
 
-  gtk_widget_dispose_template (GTK_WIDGET (self), GTK_TYPE_STATUSBAR);
+  gtk_widget_dispose_template (GTK_WIDGET (this), GTK_TYPE_STATUSBAR);
 
   G_OBJECT_CLASS (gtk_statusbar_parent_class)->dispose (object);
 }

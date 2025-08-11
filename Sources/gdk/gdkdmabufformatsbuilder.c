@@ -71,62 +71,62 @@ gdk_dmabuf_format_equal (gconstpointer data_a,
 }
 
 static void
-gdk_dmabuf_formats_builder_sort (GdkDmabufFormatsBuilder *self)
+gdk_dmabuf_formats_builder_sort (GdkDmabufFormatsBuilder *this)
 {
-  qsort (gdk_dmabuf_formats_builder_get_data (self),
-         gdk_dmabuf_formats_builder_get_size (self),
+  qsort (gdk_dmabuf_formats_builder_get_data (this),
+         gdk_dmabuf_formats_builder_get_size (this),
          sizeof (GdkDmabufFormat),
          gdk_dmabuf_format_compare);
 }
 
 /* list must be sorted */
 static void
-gdk_dmabuf_formats_builder_remove_duplicates (GdkDmabufFormatsBuilder *self)
+gdk_dmabuf_formats_builder_remove_duplicates (GdkDmabufFormatsBuilder *this)
 {
   gsize i, j;
 
-  for (i = 1, j = 0; i < gdk_dmabuf_formats_builder_get_size (self); i++)
+  for (i = 1, j = 0; i < gdk_dmabuf_formats_builder_get_size (this); i++)
     {
-      if (gdk_dmabuf_format_equal (gdk_dmabuf_formats_builder_get (self, i),
-                                   gdk_dmabuf_formats_builder_get (self, j)))
+      if (gdk_dmabuf_format_equal (gdk_dmabuf_formats_builder_get (this, i),
+                                   gdk_dmabuf_formats_builder_get (this, j)))
         continue;
 
       j++;
       if (i != j)
-        *gdk_dmabuf_formats_builder_index (self, j) = *gdk_dmabuf_formats_builder_index (self, i);
+        *gdk_dmabuf_formats_builder_index (this, j) = *gdk_dmabuf_formats_builder_index (this, i);
     }
 }
 
 GdkDmabufFormats *
-gdk_dmabuf_formats_builder_free_to_formats (GdkDmabufFormatsBuilder *self)
+gdk_dmabuf_formats_builder_free_to_formats (GdkDmabufFormatsBuilder *this)
 {
   GdkDmabufFormats *formats;
 
-  gdk_dmabuf_formats_builder_sort (self);
-  gdk_dmabuf_formats_builder_remove_duplicates (self);
+  gdk_dmabuf_formats_builder_sort (this);
+  gdk_dmabuf_formats_builder_remove_duplicates (this);
 
-  formats = gdk_dmabuf_formats_new (gdk_dmabuf_formats_builder_get_data (self),
-                                    gdk_dmabuf_formats_builder_get_size (self));
-  gdk_dmabuf_formats_builder_clear (self);
-  g_free (self);
+  formats = gdk_dmabuf_formats_new (gdk_dmabuf_formats_builder_get_data (this),
+                                    gdk_dmabuf_formats_builder_get_size (this));
+  gdk_dmabuf_formats_builder_clear (this);
+  g_free (this);
 
   return formats;
 }
 
 void
-gdk_dmabuf_formats_builder_add_format (GdkDmabufFormatsBuilder *self,
+gdk_dmabuf_formats_builder_add_format (GdkDmabufFormatsBuilder *this,
                                        guint32                  fourcc,
                                        guint64                  modifier)
 {
-  gdk_dmabuf_formats_builder_append (self, &(GdkDmabufFormat) { fourcc, modifier });
+  gdk_dmabuf_formats_builder_append (this, &(GdkDmabufFormat) { fourcc, modifier });
 }
 
 void
-gdk_dmabuf_formats_builder_add_formats (GdkDmabufFormatsBuilder *self,
+gdk_dmabuf_formats_builder_add_formats (GdkDmabufFormatsBuilder *this,
                                         GdkDmabufFormats        *formats)
 {
-  gdk_dmabuf_formats_builder_splice (self,
-                                     gdk_dmabuf_formats_builder_get_size (self),
+  gdk_dmabuf_formats_builder_splice (this,
+                                     gdk_dmabuf_formats_builder_get_size (this),
                                      0,
                                      FALSE,
                                      gdk_dmabuf_formats_peek_formats (formats),

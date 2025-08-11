@@ -110,54 +110,54 @@ static void
 gtk_list_item_widget_setup_object (GtkListFactoryWidget *fw,
                                    gpointer              object)
 {
-  GtkListItemWidget *self = GTK_LIST_ITEM_WIDGET (fw);
+  GtkListItemWidget *this = GTK_LIST_ITEM_WIDGET (fw);
   GtkListItem *list_item = object;
 
   GTK_LIST_FACTORY_WIDGET_CLASS (gtk_list_item_widget_parent_class)->setup_object (fw, object);
 
-  list_item->owner = self;
+  list_item->owner = this;
 
-  gtk_list_item_widget_set_child (self, list_item->child);
+  gtk_list_item_widget_set_child (this, list_item->child);
 
   gtk_list_factory_widget_set_activatable (fw, list_item->activatable);
   gtk_list_factory_widget_set_selectable (fw, list_item->selectable);
-  gtk_widget_set_focusable (GTK_WIDGET (self), list_item->focusable);
+  gtk_widget_set_focusable (GTK_WIDGET (this), list_item->focusable);
 
-  gtk_accessible_update_property (GTK_ACCESSIBLE (self),
+  gtk_accessible_update_property (GTK_ACCESSIBLE (this),
                                   GTK_ACCESSIBLE_PROPERTY_LABEL, list_item->accessible_label,
                                   GTK_ACCESSIBLE_PROPERTY_DESCRIPTION, list_item->accessible_description,
                                   -1);
 
   gtk_list_item_do_notify (list_item,
-                           gtk_list_item_base_get_item (GTK_LIST_ITEM_BASE (self)) != NULL,
-                           gtk_list_item_base_get_position (GTK_LIST_ITEM_BASE (self)) != GTK_INVALID_LIST_POSITION,
-                           gtk_list_item_base_get_selected (GTK_LIST_ITEM_BASE (self)));
+                           gtk_list_item_base_get_item (GTK_LIST_ITEM_BASE (this)) != NULL,
+                           gtk_list_item_base_get_position (GTK_LIST_ITEM_BASE (this)) != GTK_INVALID_LIST_POSITION,
+                           gtk_list_item_base_get_selected (GTK_LIST_ITEM_BASE (this)));
 }
 
 static void
 gtk_list_item_widget_teardown_object (GtkListFactoryWidget *fw,
                                       gpointer              object)
 {
-  GtkListItemWidget *self = GTK_LIST_ITEM_WIDGET (fw);
+  GtkListItemWidget *this = GTK_LIST_ITEM_WIDGET (fw);
   GtkListItem *list_item = object;
 
   GTK_LIST_FACTORY_WIDGET_CLASS (gtk_list_item_widget_parent_class)->teardown_object (fw, object);
 
   list_item->owner = NULL;
 
-  gtk_list_item_widget_set_child (self, NULL);
+  gtk_list_item_widget_set_child (this, NULL);
 
   gtk_list_factory_widget_set_activatable (fw, FALSE);
   gtk_list_factory_widget_set_selectable (fw, FALSE);
-  gtk_widget_set_focusable (GTK_WIDGET (self), TRUE);
+  gtk_widget_set_focusable (GTK_WIDGET (this), TRUE);
 
-  gtk_accessible_reset_property (GTK_ACCESSIBLE (self), GTK_ACCESSIBLE_PROPERTY_LABEL);
-  gtk_accessible_reset_property (GTK_ACCESSIBLE (self), GTK_ACCESSIBLE_PROPERTY_DESCRIPTION);
+  gtk_accessible_reset_property (GTK_ACCESSIBLE (this), GTK_ACCESSIBLE_PROPERTY_LABEL);
+  gtk_accessible_reset_property (GTK_ACCESSIBLE (this), GTK_ACCESSIBLE_PROPERTY_DESCRIPTION);
 
   gtk_list_item_do_notify (list_item,
-                           gtk_list_item_base_get_item (GTK_LIST_ITEM_BASE (self)) != NULL,
-                           gtk_list_item_base_get_position (GTK_LIST_ITEM_BASE (self)) != GTK_INVALID_LIST_POSITION,
-                           gtk_list_item_base_get_selected (GTK_LIST_ITEM_BASE (self)));
+                           gtk_list_item_base_get_item (GTK_LIST_ITEM_BASE (this)) != NULL,
+                           gtk_list_item_base_get_position (GTK_LIST_ITEM_BASE (this)) != GTK_INVALID_LIST_POSITION,
+                           gtk_list_item_base_get_selected (GTK_LIST_ITEM_BASE (this)));
 
   /* FIXME: This is technically not correct, the child is user code, isn't it? */
   gtk_list_item_set_child (list_item, NULL);
@@ -170,8 +170,8 @@ gtk_list_item_widget_update_object (GtkListFactoryWidget *fw,
                                     gpointer              item,
                                     gboolean              selected)
 {
-  GtkListItemWidget *self = GTK_LIST_ITEM_WIDGET (fw);
-  GtkListItemBase *base = GTK_LIST_ITEM_BASE (self);
+  GtkListItemWidget *this = GTK_LIST_ITEM_WIDGET (fw);
+  GtkListItemBase *base = GTK_LIST_ITEM_BASE (this);
   GtkListItem *list_item = object;
   /* Track notify manually instead of freeze/thaw_notify for performance reasons. */
   gboolean notify_item = FALSE, notify_position = FALSE, notify_selected = FALSE;
@@ -211,9 +211,9 @@ gtk_list_item_widget_class_init (GtkListItemWidgetClass *klass)
 }
 
 static void
-gtk_list_item_widget_init (GtkListItemWidget *self)
+gtk_list_item_widget_init (GtkListItemWidget *this)
 {
-  gtk_widget_set_focusable (GTK_WIDGET (self), TRUE);
+  gtk_widget_set_focusable (GTK_WIDGET (this), TRUE);
 }
 
 GtkWidget *
@@ -231,10 +231,10 @@ gtk_list_item_widget_new (GtkListItemFactory *factory,
 }
 
 void
-gtk_list_item_widget_set_child (GtkListItemWidget *self,
+gtk_list_item_widget_set_child (GtkListItemWidget *this,
                                 GtkWidget         *child)
 {
-  GtkWidget *cur_child = gtk_widget_get_first_child (GTK_WIDGET (self));
+  GtkWidget *cur_child = gtk_widget_get_first_child (GTK_WIDGET (this));
 
   if (cur_child == child)
     return;
@@ -242,6 +242,6 @@ gtk_list_item_widget_set_child (GtkListItemWidget *self,
   g_clear_pointer (&cur_child, gtk_widget_unparent);
 
   if (child)
-    gtk_widget_set_parent (child, GTK_WIDGET (self));
+    gtk_widget_set_parent (child, GTK_WIDGET (this));
 }
 

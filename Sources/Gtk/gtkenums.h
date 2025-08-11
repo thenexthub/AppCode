@@ -664,7 +664,7 @@ typedef enum
  * These values can be used with a [callback@GLib.CompareFunc]. However,
  * a `GCompareFunc` is allowed to return any integer values.
  * For converting such a value to a `GtkOrdering` value, use
- * [func@Gtk.Ordering.from_cmpfunc].
+ * [fn@Gtk.Ordering.from_cmpfunc].
  */
 typedef enum {
   GTK_ORDERING_SMALLER = -1,

@@ -482,7 +482,7 @@ _gtk_tree_data_list_header_new (int    n_columns,
 
       retval = g_list_prepend (retval, header);
       header->sort_column_id = i;
-      header->func = _gtk_tree_data_list_compare_func;
+      header->fn = _gtk_tree_data_list_compare_func;
       header->destroy = NULL;
       header->data = GINT_TO_POINTER (i);
     }
@@ -530,7 +530,7 @@ _gtk_tree_data_list_get_header (GList   *header_list,
 GList *
 _gtk_tree_data_list_set_header (GList                  *header_list,
 				int                     sort_column_id,
-				GtkTreeIterCompareFunc  func,
+				GtkTreeIterCompareFunc  fn,
 				gpointer                data,
 				GDestroyNotify          destroy)
 {
@@ -566,7 +566,7 @@ _gtk_tree_data_list_set_header (GList                  *header_list,
       d (header->data);
     }
   
-  header->func = func;
+  header->fn = fn;
   header->data = data;
   header->destroy = destroy;
 

@@ -34,9 +34,9 @@ struct _GtkDrop
 static void
 gtk_drop_free (gpointer data)
 {
-  GtkDrop *self = data;
+  GtkDrop *this = data;
 
-  g_free (self);
+  g_free (this);
 }
 
 static GtkDrop *
@@ -62,34 +62,34 @@ void
 gtk_drop_begin_event (GdkDrop      *drop,
                       GdkEventType  event_type)
 {
-  GtkDrop *self;
+  GtkDrop *this;
 
-  self = gtk_drop_lookup (drop);
+  this = gtk_drop_lookup (drop);
 
-  g_assert (self->waiting == FALSE);
-  g_assert (self->active == FALSE);
+  g_assert (this->waiting == FALSE);
+  g_assert (this->active == FALSE);
 
-  self->active = TRUE;
+  this->active = TRUE;
   if (event_type == GDK_DRAG_ENTER ||
       event_type == GDK_DRAG_MOTION)
-    self->waiting = TRUE;
+    this->waiting = TRUE;
 }
 
 void
 gtk_drop_end_event (GdkDrop *drop)
 {
-  GtkDrop *self;
+  GtkDrop *this;
 
-  self = gtk_drop_lookup (drop);
+  this = gtk_drop_lookup (drop);
 
-  g_assert (self->active == TRUE);
+  g_assert (this->active == TRUE);
 
-  if (self->waiting)
+  if (this->waiting)
     {
       gdk_drop_status (drop, 0, 0);
-      self->waiting = FALSE;
+      this->waiting = FALSE;
     }
-  self->active = FALSE;
+  this->active = FALSE;
 }
 
 gboolean
@@ -97,17 +97,17 @@ gtk_drop_status (GdkDrop       *drop,
                  GdkDragAction  actions,
                  GdkDragAction  preferred_action)
 {
-  GtkDrop *self;
+  GtkDrop *this;
 
-  self = gtk_drop_lookup (drop);
+  this = gtk_drop_lookup (drop);
 
-  g_assert (self->active == TRUE);
+  g_assert (this->active == TRUE);
 
-  if (!self->waiting)
+  if (!this->waiting)
     return FALSE;
 
   gdk_drop_status (drop, actions, preferred_action);
-  self->waiting = FALSE;
+  this->waiting = FALSE;
   return TRUE;
 }
                      

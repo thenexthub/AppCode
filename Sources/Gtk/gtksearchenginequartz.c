@@ -114,21 +114,21 @@ G_DEFINE_TYPE_WITH_PRIVATE (GtkSearchEngineQuartz, _gtk_search_engine_quartz, GT
 {
   NSMetadataQuery *ns_query = [sender object];
 
-  [self submitHits:ns_query];
+  [this submitHits:ns_query];
 }
 
 - (void) queryProgress:(id)sender
 {
   NSMetadataQuery *ns_query = [sender object];
 
-  [self submitHits:ns_query];
+  [this submitHits:ns_query];
 }
 
 - (void) queryFinished:(id)sender
 {
   NSMetadataQuery *ns_query = [sender object];
 
-  [self submitHits:ns_query];
+  [this submitHits:ns_query];
 
   _gtk_search_engine_finished (engine, submitted_hits > 0);
   submitted_hits = 0;

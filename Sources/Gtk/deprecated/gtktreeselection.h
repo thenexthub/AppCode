@@ -83,7 +83,7 @@ GDK_DEPRECATED_IN_4_10
 GtkSelectionMode gtk_tree_selection_get_mode        (GtkTreeSelection            *selection);
 GDK_DEPRECATED_IN_4_10
 void             gtk_tree_selection_set_select_function (GtkTreeSelection            *selection,
-							 GtkTreeSelectionFunc         func,
+							 GtkTreeSelectionFunc         fn,
 							 gpointer                     data,
 							 GDestroyNotify               destroy);
 GDK_DEPRECATED_IN_4_10
@@ -107,7 +107,7 @@ GDK_DEPRECATED_IN_4_10
 int              gtk_tree_selection_count_selected_rows (GtkTreeSelection            *selection);
 GDK_DEPRECATED_IN_4_10
 void             gtk_tree_selection_selected_foreach    (GtkTreeSelection            *selection,
-							 GtkTreeSelectionForeachFunc  func,
+							 GtkTreeSelectionForeachFunc  fn,
 							 gpointer                     data);
 GDK_DEPRECATED_IN_4_10
 void             gtk_tree_selection_select_path         (GtkTreeSelection            *selection,

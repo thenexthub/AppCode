@@ -29,16 +29,16 @@ G_DECLARE_FINAL_TYPE (GtkDataViewer, gtk_data_viewer, GTK, DATA_VIEWER, GtkWidge
 
 GtkWidget *     gtk_data_viewer_new                             (void);
 
-gboolean        gtk_data_viewer_is_loading                      (GtkDataViewer          *self);
+gboolean        gtk_data_viewer_is_loading                      (GtkDataViewer          *this);
 
-void            gtk_data_viewer_reset                           (GtkDataViewer          *self);
+void            gtk_data_viewer_reset                           (GtkDataViewer          *this);
 
-void            gtk_data_viewer_load_value                      (GtkDataViewer          *self,
+void            gtk_data_viewer_load_value                      (GtkDataViewer          *this,
                                                                  const GValue           *value);
-void            gtk_data_viewer_load_stream                     (GtkDataViewer          *self,
+void            gtk_data_viewer_load_stream                     (GtkDataViewer          *this,
                                                                  GInputStream           *stream,
                                                                  const char             *mime_type);
-void            gtk_data_viewer_load_error                      (GtkDataViewer          *self,
+void            gtk_data_viewer_load_error                      (GtkDataViewer          *this,
                                                                  GError                 *error);
 
 G_END_DECLS

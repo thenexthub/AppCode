@@ -831,9 +831,9 @@ gdk_color_state_from_image_description_bits (ImageDescription *desc)
 }
 
 static void
-gdk_wayland_color_surface_clear_image_desc (GdkWaylandColorSurface *self)
+gdk_wayland_color_surface_clear_image_desc (GdkWaylandColorSurface *this)
 {
-  ImageDescription *desc = self->current_desc;
+  ImageDescription *desc = this->current_desc;
 
   if (desc == NULL)
     return;
@@ -842,7 +842,7 @@ gdk_wayland_color_surface_clear_image_desc (GdkWaylandColorSurface *self)
   g_clear_pointer (&desc->info, wp_image_description_info_v1_destroy);
   g_free (desc);
 
-  self->current_desc = NULL;
+  this->current_desc = NULL;
 }
 
 static void
@@ -850,15 +850,15 @@ image_desc_info_done (void *data,
                       struct wp_image_description_info_v1 *info)
 {
   ImageDescription *desc = data;
-  GdkWaylandColorSurface *self = desc->surface;
+  GdkWaylandColorSurface *this = desc->surface;
   GdkColorState *cs;
 
-  g_assert (self->current_desc == desc);
+  g_assert (this->current_desc == desc);
 
   cs = gdk_color_state_from_image_description_bits (desc);
   if (cs)
     {
-      g_hash_table_insert (self->color->id_to_cs,
+      g_hash_table_insert (this->color->id_to_cs,
                            GUINT_TO_POINTER (desc->identity),
                            gdk_color_state_ref (cs));
     }
@@ -868,12 +868,12 @@ image_desc_info_done (void *data,
       g_clear_pointer (&desc->image_desc, wp_image_description_v1_destroy);
     }
 
-  if (self->callback)
-    self->callback (desc->surface, cs, self->data);
+  if (this->callback)
+    this->callback (desc->surface, cs, this->data);
 
   gdk_color_state_unref (cs);
 
-  gdk_wayland_color_surface_clear_image_desc (self);
+  gdk_wayland_color_surface_clear_image_desc (this);
 }
 
 static void
@@ -1037,13 +1037,13 @@ image_desc_failed (void                           *data,
                    const char                     *msg)
 {
   ImageDescription *desc = data;
-  GdkWaylandColorSurface *self = desc->surface;
+  GdkWaylandColorSurface *this = desc->surface;
 
-  g_assert (self->current_desc == desc);
+  g_assert (this->current_desc == desc);
 
-  self->callback (self, GDK_COLOR_STATE_SRGB, self->data);
+  this->callback (this, GDK_COLOR_STATE_SRGB, this->data);
 
-  gdk_wayland_color_surface_clear_image_desc (self);
+  gdk_wayland_color_surface_clear_image_desc (this);
 }
 
 static void
@@ -1052,17 +1052,17 @@ image_desc_ready (void                           *data,
                   uint32_t                        identity)
 {
   ImageDescription *desc = data;
-  GdkWaylandColorSurface *self = desc->surface;
+  GdkWaylandColorSurface *this = desc->surface;
   GdkColorState *cs;
 
-  g_assert (self->current_desc == desc);
+  g_assert (this->current_desc == desc);
 
-  cs = g_hash_table_lookup (self->color->id_to_cs, GUINT_TO_POINTER (identity));
+  cs = g_hash_table_lookup (this->color->id_to_cs, GUINT_TO_POINTER (identity));
   if (cs)
     {
-      self->callback (self, cs, self->data);
+      this->callback (this, cs, this->data);
 
-      gdk_wayland_color_surface_clear_image_desc (self);
+      gdk_wayland_color_surface_clear_image_desc (this);
       return;
     }
 
@@ -1082,21 +1082,21 @@ preferred_changed (void *data,
                    struct wp_color_management_surface_feedback_v1 *feedback,
                    uint32_t identity)
 {
-  GdkWaylandColorSurface *self = data;
+  GdkWaylandColorSurface *this = data;
   ImageDescription *desc;
 
-  if (!self->callback)
+  if (!this->callback)
     return;
 
   /* If there's still an ongoing query, cancel it. It's outdated. */
-  gdk_wayland_color_surface_clear_image_desc (self);
+  gdk_wayland_color_surface_clear_image_desc (this);
 
   desc = g_new0 (ImageDescription, 1);
 
-  desc->surface = self;
-  self->current_desc = desc;
+  desc->surface = this;
+  this->current_desc = desc;
 
-  desc->image_desc = wp_color_management_surface_feedback_v1_get_preferred_parametric (self->mgmt_feedback);
+  desc->image_desc = wp_color_management_surface_feedback_v1_get_preferred_parametric (this->mgmt_feedback);
 
   wp_image_description_v1_add_listener (desc->image_desc, &image_desc_listener, desc);
 }
@@ -1111,38 +1111,38 @@ gdk_wayland_color_surface_new (GdkWaylandColor      *color,
                                GdkColorStateChanged  callback,
                                gpointer              data)
 {
-  GdkWaylandColorSurface *self;
+  GdkWaylandColorSurface *this;
 
-  self = g_new0 (GdkWaylandColorSurface, 1);
+  this = g_new0 (GdkWaylandColorSurface, 1);
 
-  self->color = color;
-  self->wl_surface = wl_surface;
+  this->color = color;
+  this->wl_surface = wl_surface;
 
   if (color->color_manager)
     {
-      self->mgmt_surface = wp_color_manager_v1_get_surface (color->color_manager, wl_surface);
-      self->mgmt_feedback = wp_color_manager_v1_get_surface_feedback (color->color_manager, wl_surface);
+      this->mgmt_surface = wp_color_manager_v1_get_surface (color->color_manager, wl_surface);
+      this->mgmt_feedback = wp_color_manager_v1_get_surface_feedback (color->color_manager, wl_surface);
 
-      self->callback = callback;
-      self->data = data;
+      this->callback = callback;
+      this->data = data;
 
-      wp_color_management_surface_feedback_v1_add_listener (self->mgmt_feedback, &color_listener, self);
-      preferred_changed (self, self->mgmt_feedback, 0);
+      wp_color_management_surface_feedback_v1_add_listener (this->mgmt_feedback, &color_listener, this);
+      preferred_changed (this, this->mgmt_feedback, 0);
     }
 
-  return self;
+  return this;
 }
 
 void
-gdk_wayland_color_surface_free (GdkWaylandColorSurface *self)
+gdk_wayland_color_surface_free (GdkWaylandColorSurface *this)
 {
-  gdk_wayland_color_surface_clear_image_desc (self);
+  gdk_wayland_color_surface_clear_image_desc (this);
 
-  g_clear_pointer (&self->mgmt_surface, wp_color_management_surface_v1_destroy);
-  g_clear_pointer (&self->mgmt_feedback, wp_color_management_surface_feedback_v1_destroy);
-  g_clear_pointer (&self->repr_surface, wp_color_representation_surface_v1_destroy);
+  g_clear_pointer (&this->mgmt_surface, wp_color_management_surface_v1_destroy);
+  g_clear_pointer (&this->mgmt_feedback, wp_color_management_surface_feedback_v1_destroy);
+  g_clear_pointer (&this->repr_surface, wp_color_representation_surface_v1_destroy);
 
-  g_free (self);
+  g_free (this);
 }
 
 static struct wp_image_description_v1 *
@@ -1208,32 +1208,32 @@ gdk_wayland_color_get_color_representation (GdkWaylandColor *color,
 }
 
 void
-gdk_wayland_color_surface_set_color_state (GdkWaylandColorSurface *self,
+gdk_wayland_color_surface_set_color_state (GdkWaylandColorSurface *this,
                                            GdkColorState          *cs,
                                            guint32                 fourcc,
                                            gboolean                premultiplied)
 {
-  if (self->mgmt_surface)
+  if (this->mgmt_surface)
     {
       struct wp_image_description_v1 *desc;
 
-      desc = gdk_wayland_color_get_image_description (self->color, cs);
+      desc = gdk_wayland_color_get_image_description (this->color, cs);
 
       g_assert (desc);
 
-      GDK_DISPLAY_DEBUG (GDK_DISPLAY (self->color->display), MISC,
+      GDK_DISPLAY_DEBUG (GDK_DISPLAY (this->color->display), MISC,
                          "Setting color state %s (fourcc %.4s, premul %d) on surface: image desc %p",
                          gdk_color_state_get_name (cs),
                          (char *) &fourcc,
                          premultiplied,
                          desc);
 
-      wp_color_management_surface_v1_set_image_description (self->mgmt_surface,
+      wp_color_management_surface_v1_set_image_description (this->mgmt_surface,
                                                             desc,
                                                             WP_COLOR_MANAGER_V1_RENDER_INTENT_PERCEPTUAL);
     }
 
-  if (self->color->color_representation_manager)
+  if (this->color->color_representation_manager)
     {
       uint32_t coefficients, range, alpha;
       gboolean ret G_GNUC_UNUSED;
@@ -1243,10 +1243,10 @@ gdk_wayland_color_surface_set_color_state (GdkWaylandColorSurface *self,
       ret = gdk_memory_format_find_by_dmabuf_fourcc (fourcc, premultiplied, &format, &is_yuv);
       g_assert (ret);
 
-      ret = gdk_wayland_color_get_color_representation (self->color, cs, format, &coefficients, &range, &alpha);
+      ret = gdk_wayland_color_get_color_representation (this->color, cs, format, &coefficients, &range, &alpha);
       g_assert (ret);
 
-      GDK_DISPLAY_DEBUG (GDK_DISPLAY (self->color->display), MISC,
+      GDK_DISPLAY_DEBUG (GDK_DISPLAY (this->color->display), MISC,
                          "Setting color state %s (fourcc %.4s, premul %d)  on surface: coefficients: %u (%s), range: %u (%s), alpha %u (%s)",
                          gdk_color_state_get_name (cs),
                          (char *) &fourcc,
@@ -1255,25 +1255,25 @@ gdk_wayland_color_surface_set_color_state (GdkWaylandColorSurface *self,
                          range, wl_range_name (range),
                          alpha, wl_alpha_name (alpha));
 
-      if (!self->repr_surface)
-        self->repr_surface= wp_color_representation_manager_v1_get_surface (self->color->color_representation_manager, self->wl_surface);
+      if (!this->repr_surface)
+        this->repr_surface= wp_color_representation_manager_v1_get_surface (this->color->color_representation_manager, this->wl_surface);
 
-      wp_color_representation_surface_v1_set_coefficients_and_range (self->repr_surface, coefficients, range);
-      wp_color_representation_surface_v1_set_alpha_mode (self->repr_surface, alpha);
+      wp_color_representation_surface_v1_set_coefficients_and_range (this->repr_surface, coefficients, range);
+      wp_color_representation_surface_v1_set_alpha_mode (this->repr_surface, alpha);
     }
 }
 
 void
-gdk_wayland_color_surface_unset_color_state (GdkWaylandColorSurface *self)
+gdk_wayland_color_surface_unset_color_state (GdkWaylandColorSurface *this)
 {
-  if (self->mgmt_surface)
-    wp_color_management_surface_v1_unset_image_description (self->mgmt_surface);
+  if (this->mgmt_surface)
+    wp_color_management_surface_v1_unset_image_description (this->mgmt_surface);
 
-  g_clear_pointer (&self->repr_surface, wp_color_representation_surface_v1_destroy);
+  g_clear_pointer (&this->repr_surface, wp_color_representation_surface_v1_destroy);
 }
 
 gboolean
-gdk_wayland_color_surface_can_set_color_state (GdkWaylandColorSurface  *self,
+gdk_wayland_color_surface_can_set_color_state (GdkWaylandColorSurface  *this,
                                                GdkColorState           *cs,
                                                guint32                  fourcc,
                                                gboolean                 premultiplied,
@@ -1291,7 +1291,7 @@ gdk_wayland_color_surface_can_set_color_state (GdkWaylandColorSurface  *self,
 
   default_cs = is_yuv ? GDK_COLOR_STATE_YUV : GDK_COLOR_STATE_SRGB;
 
-  if (!self->mgmt_surface)
+  if (!this->mgmt_surface)
     {
       if (!gdk_color_state_equivalent (cs, default_cs))
         {
@@ -1301,14 +1301,14 @@ gdk_wayland_color_surface_can_set_color_state (GdkWaylandColorSurface  *self,
     }
   else
     {
-      if (!gdk_wayland_color_get_image_description (self->color, cs))
+      if (!gdk_wayland_color_get_image_description (this->color, cs))
         {
           g_set_error_literal (error, G_IO_ERROR, G_IO_ERROR_FAILED, "No image description");
           return FALSE;
         }
     }
 
-  if (!self->color->color_representation_manager)
+  if (!this->color->color_representation_manager)
     {
       if (!gdk_color_state_equivalent (cs, default_cs))
         {
@@ -1326,7 +1326,7 @@ gdk_wayland_color_surface_can_set_color_state (GdkWaylandColorSurface  *self,
     {
       uint32_t coefficients, range, alpha;
 
-      if (!gdk_wayland_color_get_color_representation (self->color, cs, format, &coefficients, &range, &alpha))
+      if (!gdk_wayland_color_get_color_representation (this->color, cs, format, &coefficients, &range, &alpha))
         {
           g_set_error_literal (error, G_IO_ERROR, G_IO_ERROR_FAILED, coefficients == 0 ? "Coefficients not supported"
                                                                                        : "Alpha not supported");

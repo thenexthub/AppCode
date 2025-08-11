@@ -118,18 +118,18 @@ G_DEFINE_TYPE_WITH_CODE (GtkAppChooserDialog, gtk_app_chooser_dialog, GTK_TYPE_D
 
 
 static void
-add_or_find_application (GtkAppChooserDialog *self)
+add_or_find_application (GtkAppChooserDialog *this)
 {
   GAppInfo *app;
 
-  app = gtk_app_chooser_get_app_info (GTK_APP_CHOOSER (self));
+  app = gtk_app_chooser_get_app_info (GTK_APP_CHOOSER (this));
 
   if (app)
     {
       /* we don't care about reporting errors here */
-      if (self->content_type)
+      if (this->content_type)
         g_app_info_set_as_last_used_for_type (app,
-                                              self->content_type,
+                                              this->content_type,
                                               NULL);
       g_object_unref (app);
     }
@@ -140,16 +140,16 @@ gtk_app_chooser_dialog_response (GtkDialog *dialog,
                                  int        response_id,
                                  gpointer   user_data)
 {
-  GtkAppChooserDialog *self = GTK_APP_CHOOSER_DIALOG (dialog);
+  GtkAppChooserDialog *this = GTK_APP_CHOOSER_DIALOG (dialog);
 
   switch (response_id)
     {
     case GTK_RESPONSE_OK:
-      add_or_find_application (self);
+      add_or_find_application (this);
       break;
     case GTK_RESPONSE_CANCEL:
     case GTK_RESPONSE_DELETE_EVENT:
-      self->dismissed = TRUE;
+      this->dismissed = TRUE;
       break;
     default:
       break;
@@ -186,7 +186,7 @@ get_extension (const char *basename)
 }
 
 static void
-set_dialog_properties (GtkAppChooserDialog *self)
+set_dialog_properties (GtkAppChooserDialog *this)
 {
   char *name;
   char *extension;
@@ -203,16 +203,16 @@ set_dialog_properties (GtkAppChooserDialog *self)
   description = NULL;
   unknown = TRUE;
 
-  if (self->gfile != NULL)
+  if (this->gfile != NULL)
     {
-      name = g_file_get_basename (self->gfile);
+      name = g_file_get_basename (this->gfile);
       extension = get_extension (name);
     }
 
-  if (self->content_type)
+  if (this->content_type)
     {
-      description = g_content_type_get_description (self->content_type);
-      unknown = g_content_type_is_unknown (self->content_type);
+      description = g_content_type_get_description (this->content_type);
+      unknown = g_content_type_is_unknown (this->content_type);
     }
 
   title = g_strdup (_("Select Application"));
@@ -225,21 +225,21 @@ set_dialog_properties (GtkAppChooserDialog *self)
       subtitle = g_strdup_printf (_("Opening “%s”."), name);
       string = g_strdup_printf (_("No applications found for “%s”"), name);
     }
-  else if (self->content_type)
+  else if (this->content_type)
     {
       /* Translators: %s is a file type description */
       subtitle = g_strdup_printf (_("Opening “%s” files."),
-                                  unknown ? self->content_type : description);
+                                  unknown ? this->content_type : description);
       string = g_strdup_printf (_("No applications found for “%s” files"),
-                                unknown ? self->content_type : description);
+                                unknown ? this->content_type : description);
     }
 
-  g_object_get (self, "use-header-bar", &use_header, NULL);
+  g_object_get (this, "use-header-bar", &use_header, NULL);
   if (use_header)
     {
       GtkWidget *box, *label;
 
-      header = gtk_dialog_get_header_bar (GTK_DIALOG (self));
+      header = gtk_dialog_get_header_bar (GTK_DIALOG (this));
 
       box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
       gtk_widget_set_valign (box, GTK_ALIGN_CENTER);
@@ -266,20 +266,20 @@ set_dialog_properties (GtkAppChooserDialog *self)
     }
   else
     {
-      gtk_window_set_title (GTK_WINDOW (self), _("Select Application"));
+      gtk_window_set_title (GTK_WINDOW (this), _("Select Application"));
     }
 
-  if (self->heading != NULL)
+  if (this->heading != NULL)
     {
-      gtk_label_set_markup (GTK_LABEL (self->label), self->heading);
-      gtk_widget_show (self->label);
+      gtk_label_set_markup (GTK_LABEL (this->label), this->heading);
+      gtk_widget_show (this->label);
     }
   else
     {
-      gtk_widget_hide (self->label);
+      gtk_widget_hide (this->label);
     }
 
-  gtk_app_chooser_widget_set_default_text (GTK_APP_CHOOSER_WIDGET (self->app_chooser_widget),
+  gtk_app_chooser_widget_set_default_text (GTK_APP_CHOOSER_WIDGET (this->app_chooser_widget),
                                            string);
 
   g_free (title);
@@ -294,16 +294,16 @@ static void
 show_more_button_clicked_cb (GtkButton *button,
                              gpointer   user_data)
 {
-  GtkAppChooserDialog *self = user_data;
+  GtkAppChooserDialog *this = user_data;
 
-  g_object_set (self->app_chooser_widget,
+  g_object_set (this->app_chooser_widget,
                 "show-recommended", TRUE,
                 "show-fallback", TRUE,
                 "show-other", TRUE,
                 NULL);
 
-  gtk_widget_hide (self->show_more_button);
-  self->show_more_clicked = TRUE;
+  gtk_widget_hide (this->show_more_button);
+  this->show_more_clicked = TRUE;
 }
 
 static void
@@ -311,55 +311,55 @@ widget_notify_for_button_cb (GObject    *source,
                              GParamSpec *pspec,
                              gpointer    user_data)
 {
-  GtkAppChooserDialog *self = user_data;
+  GtkAppChooserDialog *this = user_data;
   GtkAppChooserWidget *widget = GTK_APP_CHOOSER_WIDGET (source);
   gboolean should_hide;
 
   should_hide = gtk_app_chooser_widget_get_show_other (widget) ||
-    self->show_more_clicked;
+    this->show_more_clicked;
 
   if (should_hide)
-    gtk_widget_hide (self->show_more_button);
+    gtk_widget_hide (this->show_more_button);
 }
 
 static void
-construct_appchooser_widget (GtkAppChooserDialog *self)
+construct_appchooser_widget (GtkAppChooserDialog *this)
 {
   GAppInfo *info;
 
   /* Need to build the appchooser widget after, because of the content-type construct-only property */
-  self->app_chooser_widget = gtk_app_chooser_widget_new (self->content_type);
-  gtk_widget_set_vexpand (self->app_chooser_widget, TRUE);
-  gtk_box_append (GTK_BOX (self->inner_box), self->app_chooser_widget);
+  this->app_chooser_widget = gtk_app_chooser_widget_new (this->content_type);
+  gtk_widget_set_vexpand (this->app_chooser_widget, TRUE);
+  gtk_box_append (GTK_BOX (this->inner_box), this->app_chooser_widget);
 
-  g_signal_connect (self->app_chooser_widget, "application-selected",
-                    G_CALLBACK (widget_application_selected_cb), self);
-  g_signal_connect (self->app_chooser_widget, "application-activated",
-                    G_CALLBACK (widget_application_activated_cb), self);
-  g_signal_connect (self->app_chooser_widget, "notify::show-other",
-                    G_CALLBACK (widget_notify_for_button_cb), self);
+  g_signal_connect (this->app_chooser_widget, "application-selected",
+                    G_CALLBACK (widget_application_selected_cb), this);
+  g_signal_connect (this->app_chooser_widget, "application-activated",
+                    G_CALLBACK (widget_application_activated_cb), this);
+  g_signal_connect (this->app_chooser_widget, "notify::show-other",
+                    G_CALLBACK (widget_notify_for_button_cb), this);
 
   /* Add the custom button to the new appchooser */
-  gtk_box_append (GTK_BOX (self->inner_box),
-                     self->show_more_button);
+  gtk_box_append (GTK_BOX (this->inner_box),
+                     this->show_more_button);
 
-  gtk_box_append (GTK_BOX (self->inner_box),
-                     self->software_button);
+  gtk_box_append (GTK_BOX (this->inner_box),
+                     this->software_button);
 
-  info = gtk_app_chooser_get_app_info (GTK_APP_CHOOSER (self->app_chooser_widget));
-  gtk_dialog_set_response_sensitive (GTK_DIALOG (self), GTK_RESPONSE_OK, info != NULL);
+  info = gtk_app_chooser_get_app_info (GTK_APP_CHOOSER (this->app_chooser_widget));
+  gtk_dialog_set_response_sensitive (GTK_DIALOG (this), GTK_RESPONSE_OK, info != NULL);
   if (info)
     g_object_unref (info);
 
-  _gtk_app_chooser_widget_set_search_entry (GTK_APP_CHOOSER_WIDGET (self->app_chooser_widget),
-                                            GTK_EDITABLE (self->search_entry));
+  _gtk_app_chooser_widget_set_search_entry (GTK_APP_CHOOSER_WIDGET (this->app_chooser_widget),
+                                            GTK_EDITABLE (this->search_entry));
 
-  gtk_search_bar_set_key_capture_widget (GTK_SEARCH_BAR (self->search_bar),
-                                         GTK_WIDGET (self));
+  gtk_search_bar_set_key_capture_widget (GTK_SEARCH_BAR (this->search_bar),
+                                         GTK_WIDGET (this));
 }
 
 static void
-set_gfile_and_content_type (GtkAppChooserDialog *self,
+set_gfile_and_content_type (GtkAppChooserDialog *this,
                             GFile               *file)
 {
   GFileInfo *info;
@@ -367,12 +367,12 @@ set_gfile_and_content_type (GtkAppChooserDialog *self,
   if (file == NULL)
     return;
 
-  self->gfile = g_object_ref (file);
+  this->gfile = g_object_ref (file);
 
-  info = g_file_query_info (self->gfile,
+  info = g_file_query_info (this->gfile,
                             G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE,
                             0, NULL, NULL);
-  self->content_type = g_strdup (g_file_info_get_content_type (info));
+  this->content_type = g_strdup (g_file_info_get_content_type (info));
 
   g_object_unref (info);
 }
@@ -380,17 +380,17 @@ set_gfile_and_content_type (GtkAppChooserDialog *self,
 static GAppInfo *
 gtk_app_chooser_dialog_get_app_info (GtkAppChooser *object)
 {
-  GtkAppChooserDialog *self = GTK_APP_CHOOSER_DIALOG (object);
+  GtkAppChooserDialog *this = GTK_APP_CHOOSER_DIALOG (object);
 
-  return gtk_app_chooser_get_app_info (GTK_APP_CHOOSER (self->app_chooser_widget));
+  return gtk_app_chooser_get_app_info (GTK_APP_CHOOSER (this->app_chooser_widget));
 }
 
 static void
 gtk_app_chooser_dialog_refresh (GtkAppChooser *object)
 {
-  GtkAppChooserDialog *self = GTK_APP_CHOOSER_DIALOG (object);
+  GtkAppChooserDialog *this = GTK_APP_CHOOSER_DIALOG (object);
 
-  gtk_app_chooser_refresh (GTK_APP_CHOOSER (self->app_chooser_widget));
+  gtk_app_chooser_refresh (GTK_APP_CHOOSER (this->app_chooser_widget));
 }
 
 static void
@@ -418,14 +418,14 @@ show_error_dialog (const char *primary,
 
 static void
 software_button_clicked_cb (GtkButton           *button,
-                            GtkAppChooserDialog *self)
+                            GtkAppChooserDialog *this)
 {
   GSubprocess *process;
   GError *error = NULL;
   char *option;
 
-  if (self->content_type)
-    option = g_strconcat ("--search=", self->content_type, NULL);
+  if (this->content_type)
+    option = g_strconcat ("--search=", this->content_type, NULL);
   else
     option = g_strdup ("--mode=overview");
 
@@ -433,7 +433,7 @@ software_button_clicked_cb (GtkButton           *button,
   if (!process)
     {
       show_error_dialog (_("Failed to start GNOME Software"),
-                         error->message, GTK_WINDOW (self));
+                         error->message, GTK_WINDOW (this));
       g_error_free (error);
     }
   else
@@ -443,25 +443,25 @@ software_button_clicked_cb (GtkButton           *button,
 }
 
 static void
-ensure_software_button (GtkAppChooserDialog *self)
+ensure_software_button (GtkAppChooserDialog *this)
 {
   char *path;
 
   path = g_find_program_in_path ("gnome-software");
   if (path != NULL)
-    gtk_widget_show (self->software_button);
+    gtk_widget_show (this->software_button);
   else
-    gtk_widget_hide (self->software_button);
+    gtk_widget_hide (this->software_button);
 
   g_free (path);
 }
 
 static void
-setup_search (GtkAppChooserDialog *self)
+setup_search (GtkAppChooserDialog *this)
 {
   gboolean use_header;
 
-  g_object_get (self, "use-header-bar", &use_header, NULL);
+  g_object_get (this, "use-header-bar", &use_header, NULL);
   if (use_header)
     {
       GtkWidget *button;
@@ -475,14 +475,14 @@ setup_search (GtkAppChooserDialog *self)
       gtk_widget_add_css_class (button, "image-button");
       gtk_widget_remove_css_class (button, "text-button");
 
-      header = gtk_dialog_get_header_bar (GTK_DIALOG (self));
+      header = gtk_dialog_get_header_bar (GTK_DIALOG (this));
       gtk_header_bar_pack_end (GTK_HEADER_BAR (header), button);
-      gtk_size_group_add_widget (self->buttons, button);
+      gtk_size_group_add_widget (this->buttons, button);
 
       g_object_bind_property (button, "active",
-                              self->search_bar, "search-mode-enabled",
+                              this->search_bar, "search-mode-enabled",
                               G_BINDING_BIDIRECTIONAL);
-      g_object_bind_property (self->search_entry, "sensitive",
+      g_object_bind_property (this->search_entry, "sensitive",
                               button, "sensitive",
                               G_BINDING_BIDIRECTIONAL | G_BINDING_SYNC_CREATE);
     }
@@ -491,25 +491,25 @@ setup_search (GtkAppChooserDialog *self)
 static void
 gtk_app_chooser_dialog_constructed (GObject *object)
 {
-  GtkAppChooserDialog *self = GTK_APP_CHOOSER_DIALOG (object);
+  GtkAppChooserDialog *this = GTK_APP_CHOOSER_DIALOG (object);
 
   if (G_OBJECT_CLASS (gtk_app_chooser_dialog_parent_class)->constructed != NULL)
     G_OBJECT_CLASS (gtk_app_chooser_dialog_parent_class)->constructed (object);
 
-  construct_appchooser_widget (self);
-  set_dialog_properties (self);
-  ensure_software_button (self);
-  setup_search (self);
+  construct_appchooser_widget (this);
+  set_dialog_properties (this);
+  ensure_software_button (this);
+  setup_search (this);
 }
 
 static void
 gtk_app_chooser_dialog_dispose (GObject *object)
 {
-  GtkAppChooserDialog *self = GTK_APP_CHOOSER_DIALOG (object);
+  GtkAppChooserDialog *this = GTK_APP_CHOOSER_DIALOG (object);
 
-  g_clear_object (&self->gfile);
+  g_clear_object (&this->gfile);
 
-  self->dismissed = TRUE;
+  this->dismissed = TRUE;
 
   G_OBJECT_CLASS (gtk_app_chooser_dialog_parent_class)->dispose (object);
 }
@@ -517,10 +517,10 @@ gtk_app_chooser_dialog_dispose (GObject *object)
 static void
 gtk_app_chooser_dialog_finalize (GObject *object)
 {
-  GtkAppChooserDialog *self = GTK_APP_CHOOSER_DIALOG (object);
+  GtkAppChooserDialog *this = GTK_APP_CHOOSER_DIALOG (object);
 
-  g_free (self->content_type);
-  g_free (self->heading);
+  g_free (this->content_type);
+  g_free (this->heading);
 
   G_OBJECT_CLASS (gtk_app_chooser_dialog_parent_class)->finalize (object);
 }
@@ -531,20 +531,20 @@ gtk_app_chooser_dialog_set_property (GObject      *object,
                                      const GValue *value,
                                      GParamSpec   *pspec)
 {
-  GtkAppChooserDialog *self = GTK_APP_CHOOSER_DIALOG (object);
+  GtkAppChooserDialog *this = GTK_APP_CHOOSER_DIALOG (object);
 
   switch (property_id)
     {
     case PROP_GFILE:
-      set_gfile_and_content_type (self, g_value_get_object (value));
+      set_gfile_and_content_type (this, g_value_get_object (value));
       break;
     case PROP_CONTENT_TYPE:
       /* don't try to override a value previously set with the GFile */
-      if (self->content_type == NULL)
-        self->content_type = g_value_dup_string (value);
+      if (this->content_type == NULL)
+        this->content_type = g_value_dup_string (value);
       break;
     case PROP_HEADING:
-      gtk_app_chooser_dialog_set_heading (self, g_value_get_string (value));
+      gtk_app_chooser_dialog_set_heading (this, g_value_get_string (value));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -558,19 +558,19 @@ gtk_app_chooser_dialog_get_property (GObject    *object,
                                      GValue     *value,
                                      GParamSpec *pspec)
 {
-  GtkAppChooserDialog *self = GTK_APP_CHOOSER_DIALOG (object);
+  GtkAppChooserDialog *this = GTK_APP_CHOOSER_DIALOG (object);
 
   switch (property_id)
     {
     case PROP_GFILE:
-      if (self->gfile != NULL)
-        g_value_set_object (value, self->gfile);
+      if (this->gfile != NULL)
+        g_value_set_object (value, this->gfile);
       break;
     case PROP_CONTENT_TYPE:
-      g_value_set_string (value, self->content_type);
+      g_value_set_string (value, this->content_type);
       break;
     case PROP_HEADING:
-      g_value_set_string (value, self->heading);
+      g_value_set_string (value, this->heading);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -646,15 +646,15 @@ gtk_app_chooser_dialog_class_init (GtkAppChooserDialogClass *klass)
 }
 
 static void
-gtk_app_chooser_dialog_init (GtkAppChooserDialog *self)
+gtk_app_chooser_dialog_init (GtkAppChooserDialog *this)
 {
-  gtk_widget_init_template (GTK_WIDGET (self));
-  gtk_dialog_set_use_header_bar_from_setting (GTK_DIALOG (self));
+  gtk_widget_init_template (GTK_WIDGET (this));
+  gtk_dialog_set_use_header_bar_from_setting (GTK_DIALOG (this));
 
   /* we can't override the class signal handler here, as it's a RUN_LAST;
    * we want our signal handler instead to be executed before any user code.
    */
-  g_signal_connect (self, "response",
+  g_signal_connect (this, "response",
                     G_CALLBACK (gtk_app_chooser_dialog_response), NULL);
 }
 
@@ -739,25 +739,25 @@ gtk_app_chooser_dialog_new_for_content_type (GtkWindow      *parent,
 
 /**
  * gtk_app_chooser_dialog_get_widget:
- * @self: a `GtkAppChooserDialog`
+ * @this: a `GtkAppChooserDialog`
  *
  * Returns the `GtkAppChooserWidget` of this dialog.
  *
- * Returns: (transfer none): the `GtkAppChooserWidget` of @self
+ * Returns: (transfer none): the `GtkAppChooserWidget` of @this
  *
  * Deprecated: 4.10: This widget will be removed in GTK 5
  */
 GtkWidget *
-gtk_app_chooser_dialog_get_widget (GtkAppChooserDialog *self)
+gtk_app_chooser_dialog_get_widget (GtkAppChooserDialog *this)
 {
-  g_return_val_if_fail (GTK_IS_APP_CHOOSER_DIALOG (self), NULL);
+  g_return_val_if_fail (GTK_IS_APP_CHOOSER_DIALOG (this), NULL);
 
-  return self->app_chooser_widget;
+  return this->app_chooser_widget;
 }
 
 /**
  * gtk_app_chooser_dialog_set_heading:
- * @self: a `GtkAppChooserDialog`
+ * @this: a `GtkAppChooserDialog`
  * @heading: a string containing Pango markup
  *
  * Sets the text to display at the top of the dialog.
@@ -767,33 +767,33 @@ gtk_app_chooser_dialog_get_widget (GtkAppChooserDialog *self)
  * Deprecated: 4.10: This widget will be removed in GTK 5
  */
 void
-gtk_app_chooser_dialog_set_heading (GtkAppChooserDialog *self,
+gtk_app_chooser_dialog_set_heading (GtkAppChooserDialog *this,
                                     const char          *heading)
 {
-  g_return_if_fail (GTK_IS_APP_CHOOSER_DIALOG (self));
+  g_return_if_fail (GTK_IS_APP_CHOOSER_DIALOG (this));
 
-  g_free (self->heading);
-  self->heading = g_strdup (heading);
+  g_free (this->heading);
+  this->heading = g_strdup (heading);
 
-  if (self->label)
+  if (this->label)
     {
-      if (self->heading)
+      if (this->heading)
         {
-          gtk_label_set_markup (GTK_LABEL (self->label), self->heading);
-          gtk_widget_show (self->label);
+          gtk_label_set_markup (GTK_LABEL (this->label), this->heading);
+          gtk_widget_show (this->label);
         }
       else
         {
-          gtk_widget_hide (self->label);
+          gtk_widget_hide (this->label);
         }
     }
 
-  g_object_notify (G_OBJECT (self), "heading");
+  g_object_notify (G_OBJECT (this), "heading");
 }
 
 /**
  * gtk_app_chooser_dialog_get_heading:
- * @self: a `GtkAppChooserDialog`
+ * @this: a `GtkAppChooserDialog`
  *
  * Returns the text to display at the top of the dialog.
  *
@@ -803,9 +803,9 @@ gtk_app_chooser_dialog_set_heading (GtkAppChooserDialog *self,
  * Deprecated: 4.10: This widget will be removed in GTK 5
  */
 const char *
-gtk_app_chooser_dialog_get_heading (GtkAppChooserDialog *self)
+gtk_app_chooser_dialog_get_heading (GtkAppChooserDialog *this)
 {
-  g_return_val_if_fail (GTK_IS_APP_CHOOSER_DIALOG (self), NULL);
+  g_return_val_if_fail (GTK_IS_APP_CHOOSER_DIALOG (this), NULL);
 
-  return self->heading;
+  return this->heading;
 }

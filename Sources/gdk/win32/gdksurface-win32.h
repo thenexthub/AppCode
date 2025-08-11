@@ -219,7 +219,7 @@ void gdk_win32_surface_move_resize (GdkSurface *surface,
 
 GdkSurface *    gdk_win32_drag_surface_new                      (GdkDisplay             *display);
 
-void            gdk_win32_surface_set_dcomp_content             (GdkWin32Surface        *self,
+void            gdk_win32_surface_set_dcomp_content             (GdkWin32Surface        *this,
                                                                  IUnknown               *dcomp_content);
 
 #ifdef HAVE_EGL

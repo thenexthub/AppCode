@@ -265,23 +265,23 @@ G_DEFINE_TYPE (GtkConstraintSolver, gtk_constraint_solver, G_TYPE_OBJECT)
 static void
 gtk_constraint_solver_finalize (GObject *gobject)
 {
-  GtkConstraintSolver *self = GTK_CONSTRAINT_SOLVER (gobject);
+  GtkConstraintSolver *this = GTK_CONSTRAINT_SOLVER (gobject);
 
-  g_hash_table_remove_all (self->constraints);
-  g_clear_pointer (&self->constraints, g_hash_table_unref);
+  g_hash_table_remove_all (this->constraints);
+  g_clear_pointer (&this->constraints, g_hash_table_unref);
 
-  g_clear_pointer (&self->stay_error_vars, g_ptr_array_unref);
-  g_clear_pointer (&self->infeasible_rows, g_ptr_array_unref);
+  g_clear_pointer (&this->stay_error_vars, g_ptr_array_unref);
+  g_clear_pointer (&this->infeasible_rows, g_ptr_array_unref);
 
-  g_clear_pointer (&self->external_rows, g_hash_table_unref);
-  g_clear_pointer (&self->external_parametric_vars, g_hash_table_unref);
-  g_clear_pointer (&self->error_vars, g_hash_table_unref);
-  g_clear_pointer (&self->marker_vars, g_hash_table_unref);
-  g_clear_pointer (&self->edit_var_map, g_hash_table_unref);
-  g_clear_pointer (&self->stay_var_map, g_hash_table_unref);
+  g_clear_pointer (&this->external_rows, g_hash_table_unref);
+  g_clear_pointer (&this->external_parametric_vars, g_hash_table_unref);
+  g_clear_pointer (&this->error_vars, g_hash_table_unref);
+  g_clear_pointer (&this->marker_vars, g_hash_table_unref);
+  g_clear_pointer (&this->edit_var_map, g_hash_table_unref);
+  g_clear_pointer (&this->stay_var_map, g_hash_table_unref);
 
-  g_clear_pointer (&self->rows, g_hash_table_unref);
-  g_clear_pointer (&self->columns, g_hash_table_unref);
+  g_clear_pointer (&this->rows, g_hash_table_unref);
+  g_clear_pointer (&this->columns, g_hash_table_unref);
 
   G_OBJECT_CLASS (gtk_constraint_solver_parent_class)->finalize (gobject);
 }
@@ -295,88 +295,88 @@ gtk_constraint_solver_class_init (GtkConstraintSolverClass *klass)
 }
 
 static void
-gtk_constraint_solver_init (GtkConstraintSolver *self)
+gtk_constraint_solver_init (GtkConstraintSolver *this)
 {
-  self->columns =
+  this->columns =
     g_hash_table_new_full (NULL, NULL,
                            (GDestroyNotify) gtk_constraint_variable_unref,
                            (GDestroyNotify) gtk_constraint_variable_set_free);
 
-  self->rows =
+  this->rows =
     g_hash_table_new_full (NULL, NULL,
                            (GDestroyNotify) gtk_constraint_variable_unref,
                            (GDestroyNotify) gtk_constraint_expression_unref);
 
-  self->external_rows = g_hash_table_new (NULL, NULL);
+  this->external_rows = g_hash_table_new (NULL, NULL);
 
-  self->external_parametric_vars = g_hash_table_new (NULL, NULL);
+  this->external_parametric_vars = g_hash_table_new (NULL, NULL);
 
-  self->infeasible_rows = g_ptr_array_new ();
+  this->infeasible_rows = g_ptr_array_new ();
 
-  self->stay_error_vars =
+  this->stay_error_vars =
     g_ptr_array_new_with_free_func ((GDestroyNotify) gtk_constraint_variable_pair_free);
 
-  self->error_vars =
+  this->error_vars =
     g_hash_table_new_full (NULL, NULL,
                            NULL,
                            (GDestroyNotify) gtk_constraint_variable_set_free);
 
-  self->marker_vars = g_hash_table_new (NULL, NULL);
+  this->marker_vars = g_hash_table_new (NULL, NULL);
 
-  self->edit_var_map = g_hash_table_new_full (NULL, NULL,
+  this->edit_var_map = g_hash_table_new_full (NULL, NULL,
                                               NULL,
                                               edit_info_free);
 
-  self->stay_var_map = g_hash_table_new_full (NULL, NULL,
+  this->stay_var_map = g_hash_table_new_full (NULL, NULL,
                                               NULL,
                                               g_free);
 
   /* The rows table owns the objective variable */
-  self->objective = gtk_constraint_variable_new_objective ("Z");
-  g_hash_table_insert (self->rows,
-                       self->objective,
+  this->objective = gtk_constraint_variable_new_objective ("Z");
+  g_hash_table_insert (this->rows,
+                       this->objective,
                        gtk_constraint_expression_new (0.0));
 
-  self->constraints =
+  this->constraints =
     g_hash_table_new_full (NULL, NULL,
                            (GDestroyNotify) gtk_constraint_ref_free,
                            NULL);
 
-  self->slack_counter = 0;
-  self->dummy_counter = 0;
-  self->artificial_counter = 0;
-  self->freeze_count = 0;
+  this->slack_counter = 0;
+  this->dummy_counter = 0;
+  this->artificial_counter = 0;
+  this->freeze_count = 0;
 
-  self->needs_solving = FALSE;
-  self->auto_solve = TRUE;
+  this->needs_solving = FALSE;
+  this->auto_solve = TRUE;
 }
 
 static void
-gtk_constraint_ref_free (GtkConstraintRef *self)
+gtk_constraint_ref_free (GtkConstraintRef *this)
 {
-  gtk_constraint_solver_remove_constraint (self->solver, self);
+  gtk_constraint_solver_remove_constraint (this->solver, this);
 
-  gtk_constraint_expression_unref (self->expression);
+  gtk_constraint_expression_unref (this->expression);
 
-  if (self->is_edit || self->is_stay)
+  if (this->is_edit || this->is_stay)
     {
-      g_assert (self->variable != NULL);
-      gtk_constraint_variable_unref (self->variable);
+      g_assert (this->variable != NULL);
+      gtk_constraint_variable_unref (this->variable);
     }
 
-  g_free (self);
+  g_free (this);
 }
 
 static gboolean
-gtk_constraint_ref_is_inequality (const GtkConstraintRef *self)
+gtk_constraint_ref_is_inequality (const GtkConstraintRef *this)
 {
-  return self->relation != GTK_CONSTRAINT_RELATION_EQ;
+  return this->relation != GTK_CONSTRAINT_RELATION_EQ;
 }
 
 static gboolean
-gtk_constraint_ref_is_required (const GtkConstraintRef *self)
+gtk_constraint_ref_is_required (const GtkConstraintRef *this)
 {
-  return self->strength == GTK_CONSTRAINT_STRENGTH_REQUIRED;
+  return this->strength == GTK_CONSTRAINT_STRENGTH_REQUIRED;
 }
 
 static const char *relations[] = {
@@ -404,59 +404,59 @@ strength_to_string (int s)
 }
 
 static char *
-gtk_constraint_ref_to_string (const GtkConstraintRef *self)
+gtk_constraint_ref_to_string (const GtkConstraintRef *this)
 {
   GString *buf = g_string_new (NULL);
   char *str;
 
-  if (self->is_stay)
+  if (this->is_stay)
     g_string_append (buf, "[stay]");
-  else if (self->is_edit)
+  else if (this->is_edit)
     g_string_append (buf, "[edit]");
 
-  str = gtk_constraint_expression_to_string (self->expression);
+  str = gtk_constraint_expression_to_string (this->expression);
   g_string_append (buf, str);
   g_free (str);
 
   g_string_append_c (buf, ' ');
-  g_string_append (buf, relation_to_string (self->relation));
+  g_string_append (buf, relation_to_string (this->relation));
   g_string_append (buf, " 0.0");
 
-  if (gtk_constraint_ref_is_required (self))
+  if (gtk_constraint_ref_is_required (this))
     g_string_append (buf, " [strength:required]");
   else
     g_string_append_printf (buf, " [strength:%d (%s)]",
-                            self->strength,
-                            strength_to_string (self->strength));
+                            this->strength,
+                            strength_to_string (this->strength));
 
   return g_string_free (buf, FALSE);
 }
 
 static GtkConstraintVariableSet *
-gtk_constraint_solver_get_column_set (GtkConstraintSolver *self,
+gtk_constraint_solver_get_column_set (GtkConstraintSolver *this,
                                       GtkConstraintVariable *param_var)
 {
-  return g_hash_table_lookup (self->columns, param_var);
+  return g_hash_table_lookup (this->columns, param_var);
 }
 
 static gboolean
-gtk_constraint_solver_column_has_key (GtkConstraintSolver *self,
+gtk_constraint_solver_column_has_key (GtkConstraintSolver *this,
                                       GtkConstraintVariable *subject)
 {
-  return g_hash_table_contains (self->columns, subject);
+  return g_hash_table_contains (this->columns, subject);
 }
 
 static void
-gtk_constraint_solver_insert_column_variable (GtkConstraintSolver *self,
+gtk_constraint_solver_insert_column_variable (GtkConstraintSolver *this,
                                               GtkConstraintVariable *param_var,
                                               GtkConstraintVariable *row_var)
 {
-  GtkConstraintVariableSet *cset = g_hash_table_lookup (self->columns, param_var);
+  GtkConstraintVariableSet *cset = g_hash_table_lookup (this->columns, param_var);
 
   if (cset == NULL)
     {
       cset = gtk_constraint_variable_set_new ();
-      g_hash_table_insert (self->columns, gtk_constraint_variable_ref (param_var), cset);
+      g_hash_table_insert (this->columns, gtk_constraint_variable_ref (param_var), cset);
     }
 
   if (row_var != NULL)
@@ -464,35 +464,35 @@ gtk_constraint_solver_insert_column_variable (GtkConstraintSolver *self,
 }
 
 static void
-gtk_constraint_solver_insert_error_variable (GtkConstraintSolver *self,
+gtk_constraint_solver_insert_error_variable (GtkConstraintSolver *this,
                                              GtkConstraintRef *constraint,
                                              GtkConstraintVariable *variable)
 {
-  GtkConstraintVariableSet *cset = g_hash_table_lookup (self->error_vars, constraint);
+  GtkConstraintVariableSet *cset = g_hash_table_lookup (this->error_vars, constraint);
 
   if (cset == NULL)
     {
       cset = gtk_constraint_variable_set_new ();
-      g_hash_table_insert (self->error_vars, constraint, cset);
+      g_hash_table_insert (this->error_vars, constraint, cset);
     }
 
   gtk_constraint_variable_set_add (cset, variable);
 }
 
 static void
-gtk_constraint_solver_reset_stay_constants (GtkConstraintSolver *self)
+gtk_constraint_solver_reset_stay_constants (GtkConstraintSolver *this)
 {
   int i;
 
-  for (i = 0; i < self->stay_error_vars->len; i++)
+  for (i = 0; i < this->stay_error_vars->len; i++)
     {
-      GtkConstraintVariablePair *pair = g_ptr_array_index (self->stay_error_vars, i);
+      GtkConstraintVariablePair *pair = g_ptr_array_index (this->stay_error_vars, i);
       GtkConstraintExpression *expression;
 
-      expression = g_hash_table_lookup (self->rows, pair->first);
+      expression = g_hash_table_lookup (this->rows, pair->first);
 
       if (expression == NULL)
-        expression = g_hash_table_lookup (self->rows, pair->second);
+        expression = g_hash_table_lookup (this->rows, pair->second);
 
       if (expression != NULL)
         gtk_constraint_expression_set_constant (expression, 0.0);
@@ -500,40 +500,40 @@ gtk_constraint_solver_reset_stay_constants (GtkConstraintSolver *self)
 }
 
 static void
-gtk_constraint_solver_set_external_variables (GtkConstraintSolver *self)
+gtk_constraint_solver_set_external_variables (GtkConstraintSolver *this)
 {
   GHashTableIter iter;
   gpointer key_p;
 
-  g_hash_table_iter_init (&iter, self->external_parametric_vars);
+  g_hash_table_iter_init (&iter, this->external_parametric_vars);
   while (g_hash_table_iter_next (&iter, &key_p, NULL))
     {
       GtkConstraintVariable *variable = key_p;
 
-      if (g_hash_table_contains (self->rows, variable))
+      if (g_hash_table_contains (this->rows, variable))
         continue;
 
       gtk_constraint_variable_set_value (variable, 0.0);
     }
 
-  g_hash_table_iter_init (&iter, self->external_rows);
+  g_hash_table_iter_init (&iter, this->external_rows);
   while (g_hash_table_iter_next (&iter, &key_p, NULL))
     {
       GtkConstraintVariable *variable = key_p;
       GtkConstraintExpression *expression;
       double constant;
 
-      expression = g_hash_table_lookup (self->rows, variable);
+      expression = g_hash_table_lookup (this->rows, variable);
       constant = gtk_constraint_expression_get_constant (expression);
 
       gtk_constraint_variable_set_value (variable, constant);
     }
 
-  self->needs_solving = FALSE;
+  this->needs_solving = FALSE;
 }
 
 static void
-gtk_constraint_solver_add_row (GtkConstraintSolver *self,
+gtk_constraint_solver_add_row (GtkConstraintSolver *this,
                                GtkConstraintVariable *variable,
                                GtkConstraintExpression *expression)
 {
@@ -541,25 +541,25 @@ gtk_constraint_solver_add_row (GtkConstraintSolver *self,
   GtkConstraintVariable *t_v;
   double t_c;
 
-  g_hash_table_insert (self->rows,
+  g_hash_table_insert (this->rows,
                        gtk_constraint_variable_ref (variable),
                        gtk_constraint_expression_ref (expression));
 
   gtk_constraint_expression_iter_init (&iter, expression);
   while (gtk_constraint_expression_iter_next (&iter, &t_v, &t_c))
     {
-      gtk_constraint_solver_insert_column_variable (self, t_v, variable);
+      gtk_constraint_solver_insert_column_variable (this, t_v, variable);
 
       if (gtk_constraint_variable_is_external (t_v))
-        g_hash_table_add (self->external_parametric_vars, t_v);
+        g_hash_table_add (this->external_parametric_vars, t_v);
     }
 
   if (gtk_constraint_variable_is_external (variable))
-    g_hash_table_add (self->external_rows, variable);
+    g_hash_table_add (this->external_rows, variable);
 }
 
 static void
-gtk_constraint_solver_remove_column (GtkConstraintSolver *self,
+gtk_constraint_solver_remove_column (GtkConstraintSolver *this,
                                      GtkConstraintVariable *variable)
 {
   GtkConstraintVariable *v;
@@ -572,32 +572,32 @@ gtk_constraint_solver_remove_column (GtkConstraintSolver *self,
    */
   gtk_constraint_variable_ref (variable);
 
-  cset = g_hash_table_lookup (self->columns, variable);
+  cset = g_hash_table_lookup (this->columns, variable);
   if (cset == NULL)
     goto out;
 
   gtk_constraint_variable_set_iter_init (&iter, cset);
   while (gtk_constraint_variable_set_iter_next (&iter, &v))
     {
-      GtkConstraintExpression *e = g_hash_table_lookup (self->rows, v);
+      GtkConstraintExpression *e = g_hash_table_lookup (this->rows, v);
 
       gtk_constraint_expression_remove_variable (e, variable);
     }
 
-  g_hash_table_remove (self->columns, variable);
+  g_hash_table_remove (this->columns, variable);
 
 out:
   if (gtk_constraint_variable_is_external (variable))
     {
-      g_hash_table_remove (self->external_rows, variable);
-      g_hash_table_remove (self->external_parametric_vars, variable);
+      g_hash_table_remove (this->external_rows, variable);
+      g_hash_table_remove (this->external_parametric_vars, variable);
     }
 
   gtk_constraint_variable_unref (variable);
 }
 
 static GtkConstraintExpression *
-gtk_constraint_solver_remove_row (GtkConstraintSolver *self,
+gtk_constraint_solver_remove_row (GtkConstraintSolver *this,
                                   GtkConstraintVariable *variable,
                                   gboolean free_res)
 {
@@ -606,7 +606,7 @@ gtk_constraint_solver_remove_row (GtkConstraintSolver *self,
   GtkConstraintVariable *t_v;
   double t_c;
 
-  e = g_hash_table_lookup (self->rows, variable);
+  e = g_hash_table_lookup (this->rows, variable);
   g_assert (e != NULL);
 
   gtk_constraint_expression_ref (e);
@@ -614,18 +614,18 @@ gtk_constraint_solver_remove_row (GtkConstraintSolver *self,
   gtk_constraint_expression_iter_init (&iter, e);
   while (gtk_constraint_expression_iter_next (&iter, &t_v, &t_c))
     {
-      GtkConstraintVariableSet *cset = g_hash_table_lookup (self->columns, t_v);
+      GtkConstraintVariableSet *cset = g_hash_table_lookup (this->columns, t_v);
 
       if (cset != NULL)
         gtk_constraint_variable_set_remove (cset, variable);
     }
 
-  g_ptr_array_remove (self->infeasible_rows, variable);
+  g_ptr_array_remove (this->infeasible_rows, variable);
 
   if (gtk_constraint_variable_is_external (variable))
-    g_hash_table_remove (self->external_rows, variable);
+    g_hash_table_remove (this->external_rows, variable);
 
-  g_hash_table_remove (self->rows, variable);
+  g_hash_table_remove (this->rows, variable);
 
   if (free_res)
     {
@@ -638,18 +638,18 @@ gtk_constraint_solver_remove_row (GtkConstraintSolver *self,
 
 /*< private >
  * gtk_constraint_solver_substitute_out:
- * @self: a `GtkConstraintSolver`
+ * @this: a `GtkConstraintSolver`
  * @old_variable: a `GtkConstraintVariable`
  * @expression: a `GtkConstraintExpression`
  *
  * Replaces @old_variable in every row of the tableau with @expression.
  */
 static void
-gtk_constraint_solver_substitute_out (GtkConstraintSolver *self,
+gtk_constraint_solver_substitute_out (GtkConstraintSolver *this,
                                       GtkConstraintVariable *old_variable,
                                       GtkConstraintExpression *expression)
 {
-  GtkConstraintVariableSet *cset = g_hash_table_lookup (self->columns, old_variable);
+  GtkConstraintVariableSet *cset = g_hash_table_lookup (this->columns, old_variable);
   if (cset != NULL)
     {
       GtkConstraintVariableSetIter iter;
@@ -658,28 +658,28 @@ gtk_constraint_solver_substitute_out (GtkConstraintSolver *self,
       gtk_constraint_variable_set_iter_init (&iter, cset);
       while (gtk_constraint_variable_set_iter_next (&iter, &v))
         {
-          GtkConstraintExpression *row = g_hash_table_lookup (self->rows, v);
+          GtkConstraintExpression *row = g_hash_table_lookup (this->rows, v);
 
-          gtk_constraint_expression_substitute_out (row, old_variable, expression, v, self);
+          gtk_constraint_expression_substitute_out (row, old_variable, expression, v, this);
 
           if (gtk_constraint_variable_is_restricted (v) &&
               gtk_constraint_expression_get_constant (row) < 0)
-            g_ptr_array_add (self->infeasible_rows, v);
+            g_ptr_array_add (this->infeasible_rows, v);
         }
     }
 
   if (gtk_constraint_variable_is_external (old_variable))
     {
-      g_hash_table_add (self->external_rows, old_variable);
-      g_hash_table_remove (self->external_parametric_vars, old_variable);
+      g_hash_table_add (this->external_rows, old_variable);
+      g_hash_table_remove (this->external_parametric_vars, old_variable);
     }
 
-  g_hash_table_remove (self->columns, old_variable);
+  g_hash_table_remove (this->columns, old_variable);
 }
 
 /*< private >
  * gtk_constraint_solver_pivot:
- * @self: a `GtkConstraintSolver`
+ * @this: a `GtkConstraintSolver`
  * @entry_var: a `GtkConstraintVariable`
  * @exit_var: a `GtkConstraintVariable`
  *
@@ -690,7 +690,7 @@ gtk_constraint_solver_substitute_out (GtkConstraintSolver *self,
  * the tableau, making it a parametric variable.
  */
 static void
-gtk_constraint_solver_pivot (GtkConstraintSolver *self,
+gtk_constraint_solver_pivot (GtkConstraintSolver *this,
                              GtkConstraintVariable *entry_var,
                              GtkConstraintVariable *exit_var)
 {
@@ -707,15 +707,15 @@ gtk_constraint_solver_pivot (GtkConstraintSolver *self,
     g_critical ("INTERNAL: invalid exit variable during pivot");
 
   /* We keep a reference to the expression */
-  expr = gtk_constraint_solver_remove_row (self, exit_var, FALSE);
+  expr = gtk_constraint_solver_remove_row (this, exit_var, FALSE);
 
   gtk_constraint_expression_change_subject (expr, exit_var, entry_var);
-  gtk_constraint_solver_substitute_out (self, entry_var, expr);
+  gtk_constraint_solver_substitute_out (this, entry_var, expr);
 
   if (gtk_constraint_variable_is_external (entry_var))
-    g_hash_table_remove (self->external_parametric_vars, entry_var);
+    g_hash_table_remove (this->external_parametric_vars, entry_var);
 
-  gtk_constraint_solver_add_row (self, entry_var, expr);
+  gtk_constraint_solver_add_row (this, entry_var, expr);
 
   gtk_constraint_variable_unref (entry_var);
   gtk_constraint_variable_unref (exit_var);
@@ -723,16 +723,16 @@ gtk_constraint_solver_pivot (GtkConstraintSolver *self,
 }
 
 static void
-gtk_constraint_solver_optimize (GtkConstraintSolver *self,
+gtk_constraint_solver_optimize (GtkConstraintSolver *this,
                                 GtkConstraintVariable *z)
 {
   GtkConstraintVariable *entry = NULL, *exit = NULL;
-  GtkConstraintExpression *z_row = g_hash_table_lookup (self->rows, z);
+  GtkConstraintExpression *z_row = g_hash_table_lookup (this->rows, z);
   gint64 start_time = g_get_monotonic_time ();
 
   g_assert (z_row != NULL);
 
-  self->optimize_count += 1;
+  this->optimize_count += 1;
 
   if (GTK_DEBUG_CHECK (CONSTRAINTS))
     {
@@ -767,13 +767,13 @@ gtk_constraint_solver_optimize (GtkConstraintSolver *self,
 
       min_ratio = DBL_MAX;
 
-      column_vars = gtk_constraint_solver_get_column_set (self, entry);
+      column_vars = gtk_constraint_solver_get_column_set (this, entry);
       gtk_constraint_variable_set_iter_init (&viter, column_vars);
       while (gtk_constraint_variable_set_iter_next (&viter, &v))
         {
           if (gtk_constraint_variable_is_pivotable (v))
             {
-              GtkConstraintExpression *expr = g_hash_table_lookup (self->rows, v);
+              GtkConstraintExpression *expr = g_hash_table_lookup (this->rows, v);
               double coeff = gtk_constraint_expression_get_coefficient (expr, entry);
 
               if (coeff < 0.0)
@@ -805,17 +805,17 @@ gtk_constraint_solver_optimize (GtkConstraintSolver *self,
           g_free (exit_s);
         }
 
-      gtk_constraint_solver_pivot (self, entry, exit);
+      gtk_constraint_solver_pivot (this, entry, exit);
     }
 
   GTK_DEBUG (CONSTRAINTS, "solver.optimize.time := %.3f ms (pass: %d)",
                           (float) (g_get_monotonic_time () - start_time) / 1000.f,
-                          self->optimize_count);
+                          this->optimize_count);
 }
 
 /*< private >
  * gtk_constraint_solver_new_expression:
- * @self: a `GtkConstraintSolver`
+ * @this: a `GtkConstraintSolver`
  * @constraint: a `GtkConstraintRef`
  * @eplus_p: (out) (optional): the positive error variable
  * @eminus_p: (out) (optional): the negative error variable
@@ -831,7 +831,7 @@ gtk_constraint_solver_optimize (GtkConstraintSolver *self,
  * Returns: (transfer full): the new expression for the constraint
  */
 static GtkConstraintExpression *
-gtk_constraint_solver_new_expression (GtkConstraintSolver *self,
+gtk_constraint_solver_new_expression (GtkConstraintSolver *this,
                                       GtkConstraintRef *constraint,
                                       GtkConstraintVariable **eplus_p,
                                       GtkConstraintVariable **eminus_p,
@@ -855,12 +855,12 @@ gtk_constraint_solver_new_expression (GtkConstraintSolver *self,
   gtk_constraint_expression_iter_init (&eiter, cn_expr);
   while (gtk_constraint_expression_iter_next (&eiter, &t_v, &t_c))
     {
-      GtkConstraintExpression *e = g_hash_table_lookup (self->rows, t_v);
+      GtkConstraintExpression *e = g_hash_table_lookup (this->rows, t_v);
 
       if (e == NULL)
-        gtk_constraint_expression_add_variable (expr, t_v, t_c, NULL, self);
+        gtk_constraint_expression_add_variable (expr, t_v, t_c, NULL, this);
       else
-        gtk_constraint_expression_add_expression (expr, e, t_c, NULL, self);
+        gtk_constraint_expression_add_expression (expr, e, t_c, NULL, this);
     }
 
   if (gtk_constraint_ref_is_inequality (constraint))
@@ -881,30 +881,30 @@ gtk_constraint_solver_new_expression (GtkConstraintSolver *self,
        *
        *   expr - slack + error = 0
        */
-      self->slack_counter += 1;
+      this->slack_counter += 1;
 
       slack_var = gtk_constraint_variable_new_slack ("s");
       gtk_constraint_expression_set_variable (expr, slack_var, -1.0);
       gtk_constraint_variable_unref (slack_var);
 
-      g_hash_table_insert (self->marker_vars, constraint, slack_var);
+      g_hash_table_insert (this->marker_vars, constraint, slack_var);
 
       if (!gtk_constraint_ref_is_required (constraint))
         {
           GtkConstraintExpression *z_row;
           GtkConstraintVariable *eminus;
 
-          self->slack_counter += 1;
+          this->slack_counter += 1;
 
           eminus = gtk_constraint_variable_new_slack ("em");
           gtk_constraint_expression_set_variable (expr, eminus, 1.0);
           gtk_constraint_variable_unref (eminus);
 
-          z_row = g_hash_table_lookup (self->rows, self->objective);
+          z_row = g_hash_table_lookup (this->rows, this->objective);
           gtk_constraint_expression_set_variable (z_row, eminus, constraint->strength);
 
-          gtk_constraint_solver_insert_error_variable (self, constraint, eminus);
-          gtk_constraint_solver_note_added_variable (self, eminus, self->objective);
+          gtk_constraint_solver_insert_error_variable (this, constraint, eminus);
+          gtk_constraint_solver_note_added_variable (this, eminus, this->objective);
           gtk_constraint_variable_unref (eminus);
         }
     }
@@ -918,7 +918,7 @@ gtk_constraint_solver_new_expression (GtkConstraintSolver *self,
            * the dummy won't be allowed to enter the basis of the tableau
            * when pivoting.
            */
-          self->dummy_counter += 1;
+          this->dummy_counter += 1;
 
           dummy_var = gtk_constraint_variable_new_dummy ("dummy");
 
@@ -930,7 +930,7 @@ gtk_constraint_solver_new_expression (GtkConstraintSolver *self,
             *prev_constant_p = gtk_constraint_expression_get_constant (cn_expr);
 
           gtk_constraint_expression_set_variable (expr, dummy_var, 1.0);
-          g_hash_table_insert (self->marker_vars, constraint, dummy_var);
+          g_hash_table_insert (this->marker_vars, constraint, dummy_var);
 
           gtk_constraint_variable_unref (dummy_var);
         }
@@ -948,7 +948,7 @@ gtk_constraint_solver_new_expression (GtkConstraintSolver *self,
            *
            *   expr - eplus + eminus = 0
            */
-          self->slack_counter += 1;
+          this->slack_counter += 1;
 
           eplus = gtk_constraint_variable_new_slack ("ep");
           eminus = gtk_constraint_variable_new_slack ("em");
@@ -956,21 +956,21 @@ gtk_constraint_solver_new_expression (GtkConstraintSolver *self,
           gtk_constraint_expression_set_variable (expr, eplus, -1.0);
           gtk_constraint_expression_set_variable (expr, eminus, 1.0);
 
-          g_hash_table_insert (self->marker_vars, constraint, eplus);
+          g_hash_table_insert (this->marker_vars, constraint, eplus);
 
-          z_row = g_hash_table_lookup (self->rows, self->objective);
+          z_row = g_hash_table_lookup (this->rows, this->objective);
 
           gtk_constraint_expression_set_variable (z_row, eplus, constraint->strength);
           gtk_constraint_expression_set_variable (z_row, eminus, constraint->strength);
-          gtk_constraint_solver_note_added_variable (self, eplus, self->objective);
-          gtk_constraint_solver_note_added_variable (self, eminus, self->objective);
+          gtk_constraint_solver_note_added_variable (this, eplus, this->objective);
+          gtk_constraint_solver_note_added_variable (this, eminus, this->objective);
 
-          gtk_constraint_solver_insert_error_variable (self, constraint, eplus);
-          gtk_constraint_solver_insert_error_variable (self, constraint, eminus);
+          gtk_constraint_solver_insert_error_variable (this, constraint, eplus);
+          gtk_constraint_solver_insert_error_variable (this, constraint, eminus);
 
           if (constraint->is_stay)
             {
-              g_ptr_array_add (self->stay_error_vars, gtk_constraint_variable_pair_new (eplus, eminus));
+              g_ptr_array_add (this->stay_error_vars, gtk_constraint_variable_pair_new (eplus, eminus));
             }
           else if (constraint->is_edit)
             {
@@ -994,16 +994,16 @@ gtk_constraint_solver_new_expression (GtkConstraintSolver *self,
 }
 
 static void
-gtk_constraint_solver_dual_optimize (GtkConstraintSolver *self)
+gtk_constraint_solver_dual_optimize (GtkConstraintSolver *this)
 {
-  GtkConstraintExpression *z_row = g_hash_table_lookup (self->rows, self->objective);
+  GtkConstraintExpression *z_row = g_hash_table_lookup (this->rows, this->objective);
   gint64 start_time = g_get_monotonic_time ();
 
   /* We iterate until we don't have any more infeasible rows; the pivot()
    * at the end of the loop iteration may add or remove infeasible rows
    * as well
    */
-  while (self->infeasible_rows->len != 0)
+  while (this->infeasible_rows->len != 0)
     {
       GtkConstraintVariable *entry_var, *exit_var, *t_v;
       GtkConstraintExpressionIter eiter;
@@ -1011,10 +1011,10 @@ gtk_constraint_solver_dual_optimize (GtkConstraintSolver *self)
       double ratio, t_c;
 
       /* Pop the last element of the array */
-      exit_var = g_ptr_array_index (self->infeasible_rows, self->infeasible_rows->len - 1);
-      g_ptr_array_set_size (self->infeasible_rows, self->infeasible_rows->len - 1);
+      exit_var = g_ptr_array_index (this->infeasible_rows, this->infeasible_rows->len - 1);
+      g_ptr_array_set_size (this->infeasible_rows, this->infeasible_rows->len - 1);
 
-      expr = g_hash_table_lookup (self->rows, exit_var);
+      expr = g_hash_table_lookup (this->rows, exit_var);
       if (expr == NULL)
         continue;
 
@@ -1043,7 +1043,7 @@ gtk_constraint_solver_dual_optimize (GtkConstraintSolver *self)
       if (ratio == DBL_MAX)
         g_critical ("INTERNAL: ratio == DBL_MAX in dual_optimize");
 
-      gtk_constraint_solver_pivot (self, entry_var, exit_var);
+      gtk_constraint_solver_pivot (this, entry_var, exit_var);
     }
 
   GTK_DEBUG (CONSTRAINTS, "dual_optimize.time := %.3f ms",
@@ -1051,7 +1051,7 @@ gtk_constraint_solver_dual_optimize (GtkConstraintSolver *self)
 }
 
 static void
-gtk_constraint_solver_delta_edit_constant (GtkConstraintSolver *self,
+gtk_constraint_solver_delta_edit_constant (GtkConstraintSolver *this,
                                            double delta,
                                            GtkConstraintVariable *plus_error_var,
                                            GtkConstraintVariable *minus_error_var)
@@ -1061,7 +1061,7 @@ gtk_constraint_solver_delta_edit_constant (GtkConstraintSolver *self,
   GtkConstraintVariableSet *column_set;
   GtkConstraintVariableSetIter iter;
 
-  plus_expr = g_hash_table_lookup (self->rows, plus_error_var);
+  plus_expr = g_hash_table_lookup (this->rows, plus_error_var);
   if (plus_expr != NULL)
     {
       double new_constant = gtk_constraint_expression_get_constant (plus_expr) + delta;
@@ -1069,12 +1069,12 @@ gtk_constraint_solver_delta_edit_constant (GtkConstraintSolver *self,
       gtk_constraint_expression_set_constant (plus_expr, new_constant);
 
       if (new_constant < 0.0)
-        g_ptr_array_add (self->infeasible_rows, plus_error_var);
+        g_ptr_array_add (this->infeasible_rows, plus_error_var);
 
       return;
     }
 
-  minus_expr = g_hash_table_lookup (self->rows, minus_error_var);
+  minus_expr = g_hash_table_lookup (this->rows, minus_error_var);
   if (minus_expr != NULL)
     {
       double new_constant = gtk_constraint_expression_get_constant (minus_expr) - delta;
@@ -1082,12 +1082,12 @@ gtk_constraint_solver_delta_edit_constant (GtkConstraintSolver *self,
       gtk_constraint_expression_set_constant (minus_expr, new_constant);
 
       if (new_constant < 0.0)
-        g_ptr_array_add (self->infeasible_rows, minus_error_var);
+        g_ptr_array_add (this->infeasible_rows, minus_error_var);
 
       return;
     }
 
-  column_set = g_hash_table_lookup (self->columns, minus_error_var);
+  column_set = g_hash_table_lookup (this->columns, minus_error_var);
   if (column_set == NULL)
     {
       g_critical ("INTERNAL: Columns are unset during delta edit");
@@ -1100,19 +1100,19 @@ gtk_constraint_solver_delta_edit_constant (GtkConstraintSolver *self,
       GtkConstraintExpression *expr;
       double c, new_constant;
 
-      expr = g_hash_table_lookup (self->rows, basic_var);
+      expr = g_hash_table_lookup (this->rows, basic_var);
       c = gtk_constraint_expression_get_coefficient (expr, minus_error_var);
 
       new_constant = gtk_constraint_expression_get_constant (expr) + (c * delta);
       gtk_constraint_expression_set_constant (expr, new_constant);
 
       if (gtk_constraint_variable_is_restricted (basic_var) && new_constant < 0.0)
-        g_ptr_array_add (self->infeasible_rows, basic_var);
+        g_ptr_array_add (this->infeasible_rows, basic_var);
     }
 }
 
 static GtkConstraintVariable *
-gtk_constraint_solver_choose_subject (GtkConstraintSolver *self,
+gtk_constraint_solver_choose_subject (GtkConstraintSolver *this,
                                       GtkConstraintExpression *expression)
 {
   GtkConstraintExpressionIter eiter;
@@ -1132,7 +1132,7 @@ gtk_constraint_solver_choose_subject (GtkConstraintSolver *self,
         {
           if (!gtk_constraint_variable_is_restricted (t_v))
             {
-              if (!g_hash_table_contains (self->columns, t_v))
+              if (!g_hash_table_contains (this->columns, t_v))
                 {
                   retval_found = TRUE;
                   retval = t_v;
@@ -1148,11 +1148,11 @@ gtk_constraint_solver_choose_subject (GtkConstraintSolver *self,
                   !gtk_constraint_variable_is_dummy (t_v) &&
                   t_c < 0.0)
                 {
-                  GtkConstraintVariableSet *cset = g_hash_table_lookup (self->columns, t_v);
+                  GtkConstraintVariableSet *cset = g_hash_table_lookup (this->columns, t_v);
 
                   if (cset == NULL ||
                       (gtk_constraint_variable_set_is_singleton (cset) &&
-                       g_hash_table_contains (self->columns, self->objective)))
+                       g_hash_table_contains (this->columns, this->objective)))
                     {
                       subject = t_v;
                       found_new_restricted = TRUE;
@@ -1179,7 +1179,7 @@ gtk_constraint_solver_choose_subject (GtkConstraintSolver *self,
       if (!gtk_constraint_variable_is_dummy (t_v))
         return NULL;
 
-      if (!g_hash_table_contains (self->columns, t_v))
+      if (!g_hash_table_contains (this->columns, t_v))
         {
           subject = t_v;
           coeff = t_c;
@@ -1200,22 +1200,22 @@ gtk_constraint_solver_choose_subject (GtkConstraintSolver *self,
 }
 
 static gboolean
-gtk_constraint_solver_try_adding_directly (GtkConstraintSolver *self,
+gtk_constraint_solver_try_adding_directly (GtkConstraintSolver *this,
                                            GtkConstraintExpression *expression)
 {
   GtkConstraintVariable *subject;
 
-  subject = gtk_constraint_solver_choose_subject (self, expression);
+  subject = gtk_constraint_solver_choose_subject (this, expression);
   if (subject == NULL)
     return FALSE;
 
   gtk_constraint_variable_ref (subject);
 
   gtk_constraint_expression_new_subject (expression, subject);
-  if (gtk_constraint_solver_column_has_key (self, subject))
-    gtk_constraint_solver_substitute_out (self, subject, expression);
+  if (gtk_constraint_solver_column_has_key (this, subject))
+    gtk_constraint_solver_substitute_out (this, subject, expression);
 
-  gtk_constraint_solver_add_row (self, subject, expression);
+  gtk_constraint_solver_add_row (this, subject, expression);
 
   gtk_constraint_variable_unref (subject);
 
@@ -1223,7 +1223,7 @@ gtk_constraint_solver_try_adding_directly (GtkConstraintSolver *self,
 }
 
 static void
-gtk_constraint_solver_add_with_artificial_variable (GtkConstraintSolver *self,
+gtk_constraint_solver_add_with_artificial_variable (GtkConstraintSolver *this,
                                                     GtkConstraintExpression *expression)
 {
   GtkConstraintVariable *av, *az;
@@ -1232,26 +1232,26 @@ gtk_constraint_solver_add_with_artificial_variable (GtkConstraintSolver *self,
   GtkConstraintExpression *e;
 
   av = gtk_constraint_variable_new_slack ("a");
-  self->artificial_counter += 1;
+  this->artificial_counter += 1;
 
   az = gtk_constraint_variable_new_objective ("az");
 
   az_row = gtk_constraint_expression_clone (expression);
 
-  gtk_constraint_solver_add_row (self, az, az_row);
-  gtk_constraint_solver_add_row (self, av, expression);
+  gtk_constraint_solver_add_row (this, az, az_row);
+  gtk_constraint_solver_add_row (this, av, expression);
 
   gtk_constraint_expression_unref (az_row);
   gtk_constraint_variable_unref (av);
   gtk_constraint_variable_unref (az);
 
-  gtk_constraint_solver_optimize (self, az);
+  gtk_constraint_solver_optimize (this, az);
 
-  az_tableau_row = g_hash_table_lookup (self->rows, az);
+  az_tableau_row = g_hash_table_lookup (this->rows, az);
   if (!G_APPROX_VALUE (gtk_constraint_expression_get_constant (az_tableau_row), 0.0, 0.001))
     {
-      gtk_constraint_solver_remove_column (self, av);
-      gtk_constraint_solver_remove_row (self, az, TRUE);
+      gtk_constraint_solver_remove_column (this, av);
+      gtk_constraint_solver_remove_row (this, az, TRUE);
 
       if (GTK_DEBUG_CHECK (CONSTRAINTS))
         {
@@ -1263,15 +1263,15 @@ gtk_constraint_solver_add_with_artificial_variable (GtkConstraintSolver *self,
       return;
     }
 
-  e = g_hash_table_lookup (self->rows, av);
+  e = g_hash_table_lookup (this->rows, av);
   if (e != NULL)
     {
       GtkConstraintVariable *entry_var;
 
       if (gtk_constraint_expression_is_constant (e))
         {
-          gtk_constraint_solver_remove_row (self, av, TRUE);
-          gtk_constraint_solver_remove_row (self, az, TRUE);
+          gtk_constraint_solver_remove_row (this, av, TRUE);
+          gtk_constraint_solver_remove_row (this, az, TRUE);
           return;
         }
 
@@ -1279,17 +1279,17 @@ gtk_constraint_solver_add_with_artificial_variable (GtkConstraintSolver *self,
       if (entry_var == NULL)
         return;
 
-      gtk_constraint_solver_pivot (self, entry_var, av);
+      gtk_constraint_solver_pivot (this, entry_var, av);
     }
 
-  g_assert (!g_hash_table_contains (self->rows, av));
+  g_assert (!g_hash_table_contains (this->rows, av));
 
-  gtk_constraint_solver_remove_column (self, av);
-  gtk_constraint_solver_remove_row (self, az, TRUE);
+  gtk_constraint_solver_remove_column (this, av);
+  gtk_constraint_solver_remove_row (this, az, TRUE);
 }
 
 static void
-gtk_constraint_solver_add_constraint_internal (GtkConstraintSolver *self,
+gtk_constraint_solver_add_constraint_internal (GtkConstraintSolver *this,
                                                GtkConstraintRef *constraint)
 {
   GtkConstraintExpression *expr;
@@ -1297,7 +1297,7 @@ gtk_constraint_solver_add_constraint_internal (GtkConstraintSolver *self,
   GtkConstraintVariable *eminus;
   double prev_constant;
 
-  expr = gtk_constraint_solver_new_expression (self, constraint,
+  expr = gtk_constraint_solver_new_expression (this, constraint,
                                                &eplus,
                                                &eminus,
                                                &prev_constant);
@@ -1317,7 +1317,7 @@ gtk_constraint_solver_add_constraint_internal (GtkConstraintSolver *self,
 
       si->constraint = constraint;
 
-      g_hash_table_insert (self->stay_var_map, constraint->variable, si);
+      g_hash_table_insert (this->stay_var_map, constraint->variable, si);
     }
   else if (constraint->is_edit)
     {
@@ -1328,25 +1328,25 @@ gtk_constraint_solver_add_constraint_internal (GtkConstraintSolver *self,
       ei->eminus = eminus;
       ei->prev_constant = prev_constant;
 
-      g_hash_table_insert (self->edit_var_map, constraint->variable, ei);
+      g_hash_table_insert (this->edit_var_map, constraint->variable, ei);
     }
 
-  if (!gtk_constraint_solver_try_adding_directly (self, expr))
-    gtk_constraint_solver_add_with_artificial_variable (self, expr);
+  if (!gtk_constraint_solver_try_adding_directly (this, expr))
+    gtk_constraint_solver_add_with_artificial_variable (this, expr);
 
   gtk_constraint_expression_unref (expr);
 
-  self->needs_solving = TRUE;
+  this->needs_solving = TRUE;
 
-  if (self->auto_solve)
+  if (this->auto_solve)
     {
-      gtk_constraint_solver_optimize (self, self->objective);
-      gtk_constraint_solver_set_external_variables (self);
+      gtk_constraint_solver_optimize (this, this->objective);
+      gtk_constraint_solver_set_external_variables (this);
     }
 
-  constraint->solver = self;
+  constraint->solver = this;
 
-  g_hash_table_add (self->constraints, constraint);
+  g_hash_table_add (this->constraints, constraint);
 }
 
 /*< private >
@@ -1404,7 +1404,7 @@ gtk_constraint_solver_thaw (GtkConstraintSolver *solver)
 
 /*< private >
  * gtk_constraint_solver_note_added_variable:
- * @self: a `GtkConstraintSolver`
+ * @this: a `GtkConstraintSolver`
  * @variable: a `GtkConstraintVariable`
  * @subject: a `GtkConstraintVariable`
  *
@@ -1414,17 +1414,17 @@ gtk_constraint_solver_thaw (GtkConstraintSolver *solver)
  * should never be directly called.
  */
 void
-gtk_constraint_solver_note_added_variable (GtkConstraintSolver *self,
+gtk_constraint_solver_note_added_variable (GtkConstraintSolver *this,
                                            GtkConstraintVariable *variable,
                                            GtkConstraintVariable *subject)
 {
   if (subject != NULL)
-    gtk_constraint_solver_insert_column_variable (self, variable, subject);
+    gtk_constraint_solver_insert_column_variable (this, variable, subject);
 }
 
 /*< private >
  * gtk_constraint_solver_note_removed_variable:
- * @self: a `GtkConstraintSolver`
+ * @this: a `GtkConstraintSolver`
  * @variable: a `GtkConstraintVariable`
  * @subject: a `GtkConstraintVariable`
  *
@@ -1434,20 +1434,20 @@ gtk_constraint_solver_note_added_variable (GtkConstraintSolver *self,
  * should never be directly called.
  */
 void
-gtk_constraint_solver_note_removed_variable (GtkConstraintSolver *self,
+gtk_constraint_solver_note_removed_variable (GtkConstraintSolver *this,
                                              GtkConstraintVariable *variable,
                                              GtkConstraintVariable *subject)
 {
   GtkConstraintVariableSet *set;
 
-  set = g_hash_table_lookup (self->columns, variable);
+  set = g_hash_table_lookup (this->columns, variable);
   if (set != NULL && subject != NULL)
     gtk_constraint_variable_set_remove (set, subject);
 }
 
 /*< private >
  * gtk_constraint_solver_create_variable:
- * @self: a `GtkConstraintSolver`
+ * @this: a `GtkConstraintSolver`
  * @prefix: (nullable): the prefix of the variable
  * @name: (nullable): the name of the variable
  * @value: the initial value of the variable
@@ -1457,7 +1457,7 @@ gtk_constraint_solver_note_removed_variable (GtkConstraintSolver *self,
  * Returns: (transfer full): the newly created variable
  */
 GtkConstraintVariable *
-gtk_constraint_solver_create_variable (GtkConstraintSolver *self,
+gtk_constraint_solver_create_variable (GtkConstraintSolver *this,
                                        const char *prefix,
                                        const char *name,
                                        double value)
@@ -1467,7 +1467,7 @@ gtk_constraint_solver_create_variable (GtkConstraintSolver *self,
   res = gtk_constraint_variable_new (prefix, name);
   gtk_constraint_variable_set_value (res, value);
 
-  self->var_counter++;
+  this->var_counter++;
 
   return res;
 }
@@ -1500,7 +1500,7 @@ gtk_constraint_solver_resolve (GtkConstraintSolver *solver)
 
 /*< private >
  * gtk_constraint_solver_add_constraint:
- * @self: a `GtkConstraintSolver`
+ * @this: a `GtkConstraintSolver`
  * @variable: the subject of the constraint
  * @relation: the relation of the constraint
  * @expression: the expression of the constraint
@@ -1519,7 +1519,7 @@ gtk_constraint_solver_resolve (GtkConstraintSolver *solver)
  *   constraint from the solver
  */
 GtkConstraintRef *
-gtk_constraint_solver_add_constraint (GtkConstraintSolver *self,
+gtk_constraint_solver_add_constraint (GtkConstraintSolver *this,
                                       GtkConstraintVariable *variable,
                                       GtkConstraintRelation relation,
                                       GtkConstraintExpression *expression,
@@ -1527,7 +1527,7 @@ gtk_constraint_solver_add_constraint (GtkConstraintSolver *self,
 {
   GtkConstraintRef *res = g_new0 (GtkConstraintRef, 1);
 
-  res->solver = self;
+  res->solver = this;
   res->strength = strength;
   res->is_edit = FALSE;
   res->is_stay = FALSE;
@@ -1547,14 +1547,14 @@ gtk_constraint_solver_add_constraint (GtkConstraintSolver *self,
               gtk_constraint_expression_add_variable (res->expression,
                                                       variable, -1.0,
                                                       NULL,
-                                                      self);
+                                                      this);
               break;
 
             case GTK_CONSTRAINT_RELATION_LE:
               gtk_constraint_expression_add_variable (res->expression,
                                                       variable, -1.0,
                                                       NULL,
-                                                      self);
+                                                      this);
               break;
 
             case GTK_CONSTRAINT_RELATION_GE:
@@ -1562,7 +1562,7 @@ gtk_constraint_solver_add_constraint (GtkConstraintSolver *self,
               gtk_constraint_expression_add_variable (res->expression,
                                                       variable, 1.0,
                                                       NULL,
-                                                      self);
+                                                      this);
               break;
 
             default:
@@ -1571,14 +1571,14 @@ gtk_constraint_solver_add_constraint (GtkConstraintSolver *self,
         }
     }
 
-  gtk_constraint_solver_add_constraint_internal (self, res);
+  gtk_constraint_solver_add_constraint_internal (this, res);
 
   return res;
 }
 
 /*< private >
  * gtk_constraint_solver_add_stay_variable:
- * @self: a `GtkConstraintSolver`
+ * @this: a `GtkConstraintSolver`
  * @variable: a stay `GtkConstraintVariable`
  * @strength: the strength of the constraint
  *
@@ -1592,13 +1592,13 @@ gtk_constraint_solver_add_constraint (GtkConstraintSolver *self,
  *   constraint from the solver
  */
 GtkConstraintRef *
-gtk_constraint_solver_add_stay_variable (GtkConstraintSolver *self,
+gtk_constraint_solver_add_stay_variable (GtkConstraintSolver *this,
                                          GtkConstraintVariable *variable,
                                          int strength)
 {
   GtkConstraintRef *res = g_new0 (GtkConstraintRef, 1);
 
-  res->solver = self;
+  res->solver = this;
   res->variable = gtk_constraint_variable_ref (variable);
   res->relation = GTK_CONSTRAINT_RELATION_EQ;
   res->strength = strength;
@@ -1609,7 +1609,7 @@ gtk_constraint_solver_add_stay_variable (GtkConstraintSolver *self,
   gtk_constraint_expression_add_variable (res->expression,
                                           res->variable, -1.0,
                                           NULL,
-                                          self);
+                                          this);
 
   if (GTK_DEBUG_CHECK (CONSTRAINTS))
     {
@@ -1618,14 +1618,14 @@ gtk_constraint_solver_add_stay_variable (GtkConstraintSolver *self,
       g_free (str);
     }
 
-  gtk_constraint_solver_add_constraint_internal (self, res);
+  gtk_constraint_solver_add_constraint_internal (this, res);
 
   return res;
 }
 
 /*< private >
  * gtk_constraint_solver_remove_stay_variable:
- * @self: a `GtkConstraintSolver`
+ * @this: a `GtkConstraintSolver`
  * @variable: a stay variable
  *
  * Removes the stay constraint associated to @variable.
@@ -1633,10 +1633,10 @@ gtk_constraint_solver_add_stay_variable (GtkConstraintSolver *self,
  * This is a convenience function for gtk_constraint_solver_remove_constraint().
  */
 void
-gtk_constraint_solver_remove_stay_variable (GtkConstraintSolver *self,
+gtk_constraint_solver_remove_stay_variable (GtkConstraintSolver *this,
                                             GtkConstraintVariable *variable)
 {
-  StayInfo *si = g_hash_table_lookup (self->stay_var_map, variable);
+  StayInfo *si = g_hash_table_lookup (this->stay_var_map, variable);
 
   if (si == NULL)
     {
@@ -1649,12 +1649,12 @@ gtk_constraint_solver_remove_stay_variable (GtkConstraintSolver *self,
       return;
     }
 
-  gtk_constraint_solver_remove_constraint (self, si->constraint);
+  gtk_constraint_solver_remove_constraint (this, si->constraint);
 }
 
 /*< private >
  * gtk_constraint_solver_add_edit_variable:
- * @self: a `GtkConstraintSolver`
+ * @this: a `GtkConstraintSolver`
  * @variable: an edit variable
  * @strength: the strength of the constraint
  *
@@ -1670,13 +1670,13 @@ gtk_constraint_solver_remove_stay_variable (GtkConstraintSolver *self,
  * Returns: (transfer none): a reference to the newly added constraint
  */
 GtkConstraintRef *
-gtk_constraint_solver_add_edit_variable (GtkConstraintSolver *self,
+gtk_constraint_solver_add_edit_variable (GtkConstraintSolver *this,
                                          GtkConstraintVariable *variable,
                                          int strength)
 {
   GtkConstraintRef *res = g_new0 (GtkConstraintRef, 1);
 
-  res->solver = self;
+  res->solver = this;
   res->variable = gtk_constraint_variable_ref (variable);
   res->relation = GTK_CONSTRAINT_RELATION_EQ;
   res->strength = strength;
@@ -1687,16 +1687,16 @@ gtk_constraint_solver_add_edit_variable (GtkConstraintSolver *self,
   gtk_constraint_expression_add_variable (res->expression,
                                           variable, -1.0,
                                           NULL,
-                                          self);
+                                          this);
 
-  gtk_constraint_solver_add_constraint_internal (self, res);
+  gtk_constraint_solver_add_constraint_internal (this, res);
 
   return res;
 }
 
 /*< private >
  * gtk_constraint_solver_remove_edit_variable:
- * @self: a `GtkConstraintSolver`
+ * @this: a `GtkConstraintSolver`
  * @variable: an edit variable
  *
  * Removes the edit constraint associated to @variable.
@@ -1704,10 +1704,10 @@ gtk_constraint_solver_add_edit_variable (GtkConstraintSolver *self,
  * This is a convenience function around gtk_constraint_solver_remove_constraint().
  */
 void
-gtk_constraint_solver_remove_edit_variable (GtkConstraintSolver *self,
+gtk_constraint_solver_remove_edit_variable (GtkConstraintSolver *this,
                                             GtkConstraintVariable *variable)
 {
-  EditInfo *ei = g_hash_table_lookup (self->edit_var_map, variable);
+  EditInfo *ei = g_hash_table_lookup (this->edit_var_map, variable);
 
   if (ei == NULL)
     {
@@ -1720,18 +1720,18 @@ gtk_constraint_solver_remove_edit_variable (GtkConstraintSolver *self,
       return;
     }
 
-  gtk_constraint_solver_remove_constraint (self, ei->constraint);
+  gtk_constraint_solver_remove_constraint (this, ei->constraint);
 }
 
 /*< private >
  * gtk_constraint_solver_remove_constraint:
- * @self: a `GtkConstraintSolver`
+ * @this: a `GtkConstraintSolver`
  * @constraint: a constraint reference
  *
  * Removes a @constraint from the @solver.
  */
 void
-gtk_constraint_solver_remove_constraint (GtkConstraintSolver *self,
+gtk_constraint_solver_remove_constraint (GtkConstraintSolver *this,
                                          GtkConstraintRef *constraint)
 {
   GtkConstraintExpression *z_row;
@@ -1739,15 +1739,15 @@ gtk_constraint_solver_remove_constraint (GtkConstraintSolver *self,
   GtkConstraintVariableSet *error_vars;
   GtkConstraintVariableSetIter iter;
 
-  if (!g_hash_table_contains (self->constraints, constraint))
+  if (!g_hash_table_contains (this->constraints, constraint))
     return;
 
-  self->needs_solving = TRUE;
+  this->needs_solving = TRUE;
 
-  gtk_constraint_solver_reset_stay_constants (self);
+  gtk_constraint_solver_reset_stay_constants (this);
 
-  z_row = g_hash_table_lookup (self->rows, self->objective);
-  error_vars = g_hash_table_lookup (self->error_vars, constraint);
+  z_row = g_hash_table_lookup (this->rows, this->objective);
+  error_vars = g_hash_table_lookup (this->error_vars, constraint);
 
   if (error_vars != NULL)
     {
@@ -1756,39 +1756,39 @@ gtk_constraint_solver_remove_constraint (GtkConstraintSolver *self,
       gtk_constraint_variable_set_iter_init (&iter, error_vars);
       while (gtk_constraint_variable_set_iter_next (&iter, &v))
         {
-          GtkConstraintExpression *e = g_hash_table_lookup (self->rows, v);
+          GtkConstraintExpression *e = g_hash_table_lookup (this->rows, v);
 
           if (e == NULL)
             {
               gtk_constraint_expression_add_variable (z_row,
                                                       v,
                                                       constraint->strength,
-                                                      self->objective,
-                                                      self);
+                                                      this->objective,
+                                                      this);
             }
           else
             {
               gtk_constraint_expression_add_expression (z_row,
                                                         e,
                                                         constraint->strength,
-                                                        self->objective,
-                                                        self);
+                                                        this->objective,
+                                                        this);
             }
         }
     }
 
-  marker = g_hash_table_lookup (self->marker_vars, constraint);
+  marker = g_hash_table_lookup (this->marker_vars, constraint);
   if (marker == NULL)
     {
       g_critical ("Constraint %p not found", constraint);
       return;
     }
 
-  g_hash_table_remove (self->marker_vars, constraint);
+  g_hash_table_remove (this->marker_vars, constraint);
 
-  if (g_hash_table_lookup (self->rows, marker) == NULL)
+  if (g_hash_table_lookup (this->rows, marker) == NULL)
     {
-      GtkConstraintVariableSet *set = g_hash_table_lookup (self->columns, marker);
+      GtkConstraintVariableSet *set = g_hash_table_lookup (this->columns, marker);
       GtkConstraintVariable *exit_var = NULL;
       GtkConstraintVariable *v;
       double min_ratio = 0;
@@ -1801,7 +1801,7 @@ gtk_constraint_solver_remove_constraint (GtkConstraintSolver *self,
         {
           if (gtk_constraint_variable_is_restricted (v))
             {
-              GtkConstraintExpression *e = g_hash_table_lookup (self->rows, v);
+              GtkConstraintExpression *e = g_hash_table_lookup (this->rows, v);
               double coeff = gtk_constraint_expression_get_coefficient (e, marker);
 
               if (coeff < 0.0)
@@ -1826,7 +1826,7 @@ gtk_constraint_solver_remove_constraint (GtkConstraintSolver *self,
             {
               if (gtk_constraint_variable_is_restricted (v))
                 {
-                  GtkConstraintExpression *e = g_hash_table_lookup (self->rows, v);
+                  GtkConstraintExpression *e = g_hash_table_lookup (this->rows, v);
                   double coeff = gtk_constraint_expression_get_coefficient (e, marker);
                   double r = 0.0;
 
@@ -1845,13 +1845,13 @@ gtk_constraint_solver_remove_constraint (GtkConstraintSolver *self,
       if (exit_var == NULL)
         {
           if (gtk_constraint_variable_set_is_empty (set))
-            gtk_constraint_solver_remove_column (self, marker);
+            gtk_constraint_solver_remove_column (this, marker);
           else
             {
               gtk_constraint_variable_set_iter_init (&iter, set);
               while (gtk_constraint_variable_set_iter_next (&iter, &v))
                 {
-                  if (v != self->objective)
+                  if (v != this->objective)
                     {
                       exit_var = v;
                       break;
@@ -1861,12 +1861,12 @@ gtk_constraint_solver_remove_constraint (GtkConstraintSolver *self,
         }
 
       if (exit_var != NULL)
-        gtk_constraint_solver_pivot (self, marker, exit_var);
+        gtk_constraint_solver_pivot (this, marker, exit_var);
     }
 
 no_columns:
-  if (g_hash_table_lookup (self->rows, marker) != NULL)
-    gtk_constraint_solver_remove_row (self, marker, TRUE);
+  if (g_hash_table_lookup (this->rows, marker) != NULL)
+    gtk_constraint_solver_remove_row (this, marker, TRUE);
   else
     gtk_constraint_variable_unref (marker);
 
@@ -1878,7 +1878,7 @@ no_columns:
       while (gtk_constraint_variable_set_iter_next (&iter, &v))
         {
           if (v != marker)
-            gtk_constraint_solver_remove_column (self, v);
+            gtk_constraint_solver_remove_column (this, v);
         }
     }
 
@@ -1891,9 +1891,9 @@ no_columns:
 
           int i = 0;
 
-          for (i = 0; i < self->stay_error_vars->len; i++)
+          for (i = 0; i < this->stay_error_vars->len; i++)
             {
-              GtkConstraintVariablePair *pair = g_ptr_array_index (self->stay_error_vars, i);
+              GtkConstraintVariablePair *pair = g_ptr_array_index (this->stay_error_vars, i);
               gboolean found = FALSE;
 
               if (gtk_constraint_variable_set_remove (error_vars, pair->first))
@@ -1906,36 +1906,36 @@ no_columns:
                 g_ptr_array_add (remaining, gtk_constraint_variable_pair_new (pair->first, pair->second));
             }
 
-          g_clear_pointer (&self->stay_error_vars, g_ptr_array_unref);
-          self->stay_error_vars = remaining;
+          g_clear_pointer (&this->stay_error_vars, g_ptr_array_unref);
+          this->stay_error_vars = remaining;
         }
 
-      g_hash_table_remove (self->stay_var_map, constraint->variable);
+      g_hash_table_remove (this->stay_var_map, constraint->variable);
     }
   else if (constraint->is_edit)
     {
-      EditInfo *ei = g_hash_table_lookup (self->edit_var_map, constraint->variable);
+      EditInfo *ei = g_hash_table_lookup (this->edit_var_map, constraint->variable);
 
-      gtk_constraint_solver_remove_column (self, ei->eminus);
+      gtk_constraint_solver_remove_column (this, ei->eminus);
 
-      g_hash_table_remove (self->edit_var_map, constraint->variable);
+      g_hash_table_remove (this->edit_var_map, constraint->variable);
     }
 
   if (error_vars != NULL)
-    g_hash_table_remove (self->error_vars, constraint);
+    g_hash_table_remove (this->error_vars, constraint);
 
-  if (self->auto_solve)
+  if (this->auto_solve)
     {
-      gtk_constraint_solver_optimize (self, self->objective);
-      gtk_constraint_solver_set_external_variables (self);
+      gtk_constraint_solver_optimize (this, this->objective);
+      gtk_constraint_solver_set_external_variables (this);
     }
 
-  g_hash_table_remove (self->constraints, constraint);
+  g_hash_table_remove (this->constraints, constraint);
 }
 
 /*< private >
  * gtk_constraint_solver_suggest_value:
- * @self: a `GtkConstraintSolver`
+ * @this: a `GtkConstraintSolver`
  * @variable: a `GtkConstraintVariable`
  * @value: the suggested value for @variable
  *
@@ -1945,11 +1945,11 @@ no_columns:
  * in an edit phase.
  */
 void
-gtk_constraint_solver_suggest_value (GtkConstraintSolver *self,
+gtk_constraint_solver_suggest_value (GtkConstraintSolver *this,
                                      GtkConstraintVariable *variable,
                                      double value)
 {
-  EditInfo *ei = g_hash_table_lookup (self->edit_var_map, variable);
+  EditInfo *ei = g_hash_table_lookup (this->edit_var_map, variable);
   double delta;
   if (ei == NULL)
     {
@@ -1958,7 +1958,7 @@ gtk_constraint_solver_suggest_value (GtkConstraintSolver *self,
       return;
     }
 
-  if (!self->in_edit_phase)
+  if (!this->in_edit_phase)
     {
       g_critical ("Suggesting value '%g' for variable '%p' but solver is "
                   "not in an edit phase",
@@ -1969,7 +1969,7 @@ gtk_constraint_solver_suggest_value (GtkConstraintSolver *self,
   delta = value - ei->prev_constant;
   ei->prev_constant = value;
 
-  gtk_constraint_solver_delta_edit_constant (self, delta, ei->eplus, ei->eminus);
+  gtk_constraint_solver_delta_edit_constant (this, delta, ei->eplus, ei->eminus);
 }
 
 /*< private >

@@ -77,8 +77,8 @@ accessible_text_handle_method (GDBusConnection       *connection,
                                GDBusMethodInvocation *invocation,
                                gpointer               user_data)
 {
-  GtkATContext *self = user_data;
-  GtkAccessible *accessible = gtk_at_context_get_accessible (self);
+  GtkATContext *this = user_data;
+  GtkAccessible *accessible = gtk_at_context_get_accessible (this);
   GtkAccessibleText *accessible_text = GTK_ACCESSIBLE_TEXT (accessible);
 
   if (g_strcmp0 (method_name, "GetCaretOffset") == 0)
@@ -441,8 +441,8 @@ accessible_text_get_property (GDBusConnection  *connection,
                               GError          **error,
                               gpointer          user_data)
 {
-  GtkATContext *self = user_data;
-  GtkAccessible *accessible = gtk_at_context_get_accessible (self);
+  GtkATContext *this = user_data;
+  GtkAccessible *accessible = gtk_at_context_get_accessible (this);
   GtkAccessibleText *accessible_text = GTK_ACCESSIBLE_TEXT (accessible);
 
   if (g_strcmp0 (property_name, "CharacterCount") == 0)
@@ -504,8 +504,8 @@ editable_handle_method (GDBusConnection       *connection,
                         GDBusMethodInvocation *invocation,
                         gpointer               user_data)
 {
-  GtkATContext *self = user_data;
-  GtkAccessible *accessible = gtk_at_context_get_accessible (self);
+  GtkATContext *this = user_data;
+  GtkAccessible *accessible = gtk_at_context_get_accessible (this);
   GtkWidget *widget = GTK_WIDGET (accessible);
   GtkText *text_widget = gtk_editable_get_text_widget (widget);
 
@@ -846,8 +846,8 @@ editable_get_property (GDBusConnection  *connection,
                        GError          **error,
                        gpointer          user_data)
 {
-  GtkATContext *self = user_data;
-  GtkAccessible *accessible = gtk_at_context_get_accessible (self);
+  GtkATContext *this = user_data;
+  GtkAccessible *accessible = gtk_at_context_get_accessible (this);
   GtkWidget *widget = GTK_WIDGET (accessible);
 
   if (g_strcmp0 (property_name, "CharacterCount") == 0)

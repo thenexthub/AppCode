@@ -56,16 +56,16 @@ G_DEFINE_TYPE (GtkFilter, gtk_filter, G_TYPE_OBJECT)
 static guint signals[LAST_SIGNAL] = { 0 };
 
 static gboolean
-gtk_filter_default_match (GtkFilter *self,
+gtk_filter_default_match (GtkFilter *this,
                           gpointer   item)
 {
-  g_critical ("Filter of type '%s' does not implement GtkFilter::match", G_OBJECT_TYPE_NAME (self));
+  g_critical ("Filter of type '%s' does not implement GtkFilter::match", G_OBJECT_TYPE_NAME (this));
 
   return FALSE;
 }
 
 static GtkFilterMatch
-gtk_filter_default_get_strictness (GtkFilter *self)
+gtk_filter_default_get_strictness (GtkFilter *this)
 {
   return GTK_FILTER_MATCH_SOME;
 }
@@ -80,7 +80,7 @@ gtk_filter_class_init (GtkFilterClass *class)
 
   /**
    * GtkFilter::changed:
-   * @self: the filter
+   * @this: the filter
    * @change: how the filter changed
    *
    * Emitted whenever the filter changed.
@@ -109,13 +109,13 @@ gtk_filter_class_init (GtkFilterClass *class)
 }
 
 static void
-gtk_filter_init (GtkFilter *self)
+gtk_filter_init (GtkFilter *this)
 {
 }
 
 /**
  * gtk_filter_match:
- * @self: a filter
+ * @this: a filter
  * @item: (type GObject) (transfer none): The item to check
  *
  * Checks if the given @item is matched by the filter or not.
@@ -123,18 +123,18 @@ gtk_filter_init (GtkFilter *self)
  * Returns: true if the filter matches the item
  */
 gboolean
-gtk_filter_match (GtkFilter *self,
+gtk_filter_match (GtkFilter *this,
                   gpointer   item)
 {
-  g_return_val_if_fail (GTK_IS_FILTER (self), FALSE);
+  g_return_val_if_fail (GTK_IS_FILTER (this), FALSE);
   g_return_val_if_fail (item != NULL, FALSE);
 
-  return GTK_FILTER_GET_CLASS (self)->match (self, item);
+  return GTK_FILTER_GET_CLASS (this)->match (this, item);
 }
 
 /**
  * gtk_filter_get_strictness:
- * @self: a filter
+ * @this: a filter
  *
  * Gets the known strictness of a filter.
  *
@@ -146,19 +146,19 @@ gtk_filter_match (GtkFilter *self,
  * This function is meant purely for optimization purposes. Filters can
  * choose to omit implementing it, but `GtkFilterListModel` uses it.
  *
- * Returns: the strictness of @self
+ * Returns: the strictness of @this
  */
 GtkFilterMatch
-gtk_filter_get_strictness (GtkFilter *self)
+gtk_filter_get_strictness (GtkFilter *this)
 {
-  g_return_val_if_fail (GTK_IS_FILTER (self), GTK_FILTER_MATCH_SOME);
+  g_return_val_if_fail (GTK_IS_FILTER (this), GTK_FILTER_MATCH_SOME);
 
-  return GTK_FILTER_GET_CLASS (self)->get_strictness (self);
+  return GTK_FILTER_GET_CLASS (this)->get_strictness (this);
 }
 
 /**
  * gtk_filter_changed:
- * @self: a filter
+ * @this: a filter
  * @change: how the filter changed
  *
  * Notifies all users of the filter that it has changed.
@@ -175,10 +175,10 @@ gtk_filter_get_strictness (GtkFilter *self)
  * subclasses and should not be called from other functions.
  */
 void
-gtk_filter_changed (GtkFilter       *self,
+gtk_filter_changed (GtkFilter       *this,
                     GtkFilterChange  change)
 {
-  g_return_if_fail (GTK_IS_FILTER (self));
+  g_return_if_fail (GTK_IS_FILTER (this));
 
-  g_signal_emit (self, signals[CHANGED], 0, change);
+  g_signal_emit (this, signals[CHANGED], 0, change);
 }

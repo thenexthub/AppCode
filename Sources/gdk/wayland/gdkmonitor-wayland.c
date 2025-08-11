@@ -316,17 +316,17 @@ static const struct wl_output_listener output_listener =
 /* {{{ Private API */
 
 void
-gdk_wayland_display_init_xdg_output (GdkWaylandDisplay *self)
+gdk_wayland_display_init_xdg_output (GdkWaylandDisplay *this)
 {
   guint i, n;
 
   GDK_DEBUG (MISC, "init xdg-output support, %d monitor(s) already present",
-                   g_list_model_get_n_items (G_LIST_MODEL (self->monitors)));
+                   g_list_model_get_n_items (G_LIST_MODEL (this->monitors)));
 
-  n = g_list_model_get_n_items (G_LIST_MODEL (self->monitors));
+  n = g_list_model_get_n_items (G_LIST_MODEL (this->monitors));
   for (i = 0; i < n; i++)
     {
-      GdkWaylandMonitor *monitor = g_list_model_get_item (G_LIST_MODEL (self->monitors), i);
+      GdkWaylandMonitor *monitor = g_list_model_get_item (G_LIST_MODEL (this->monitors), i);
       gdk_wayland_monitor_get_xdg_output (monitor);
       g_object_unref (monitor);
     }
@@ -379,21 +379,21 @@ gdk_wayland_display_add_output (GdkWaylandDisplay *display_wayland,
 }
 
 void
-gdk_wayland_display_remove_output (GdkWaylandDisplay *self,
+gdk_wayland_display_remove_output (GdkWaylandDisplay *this,
                                    guint32            id)
 {
   guint i, n;
 
   GDK_DEBUG (MISC, "remove output %u", id);
 
-  n = g_list_model_get_n_items (G_LIST_MODEL (self->monitors));
+  n = g_list_model_get_n_items (G_LIST_MODEL (this->monitors));
   for (i = 0; i < n; i++)
     {
-      GdkWaylandMonitor *monitor = g_list_model_get_item (G_LIST_MODEL (self->monitors), i);
+      GdkWaylandMonitor *monitor = g_list_model_get_item (G_LIST_MODEL (this->monitors), i);
 
       if (monitor->id == id)
         {
-          g_list_store_remove (self->monitors, i);
+          g_list_store_remove (this->monitors, i);
           gdk_monitor_invalidate (GDK_MONITOR (monitor));
           g_object_unref (monitor);
           break;

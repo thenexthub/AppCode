@@ -5362,11 +5362,11 @@ gdk_memory_convert_generic (gpointer data)
 
   if (gdk_color_state_equal (mc->src_cs, mc->dest_cs))
     {
-      FastConversionFunc func;
+      FastConversionFunc fn;
 
-      func = get_fast_conversion_func (mc->dest_layout.format, mc->src_layout.format);
+      fn = get_fast_conversion_func (mc->dest_layout.format, mc->src_layout.format);
 
-      if (func != NULL)
+      if (fn != NULL)
         {
           for (y0 = g_atomic_int_add (&mc->rows_done, mc->chunk_size), rows = 0;
                y0 < mc->dest_layout.height;
@@ -5377,7 +5377,7 @@ gdk_memory_convert_generic (gpointer data)
                   const guchar *src_data = mc->src_data + gdk_memory_layout_offset (&mc->src_layout, 0, 0, y);
                   guchar *dest_data = mc->dest_data + gdk_memory_layout_offset (&mc->dest_layout, 0, 0, y);
 
-                  func (dest_data, src_data, mc->dest_layout.width);
+                  fn (dest_data, src_data, mc->dest_layout.width);
                 }
             }
 
@@ -5829,7 +5829,7 @@ gdk_memory_mipmap_generic (gpointer data)
 {
   MipmapData *mipmap = data;
   const GdkMemoryFormatDescription *desc = &memory_formats[mipmap->src_layout.format];
-  FastConversionFunc func;
+  FastConversionFunc fn;
   gsize dest_width;
   GdkMemoryLayout tmp_layout;
   guchar *tmp;
@@ -5845,7 +5845,7 @@ gdk_memory_mipmap_generic (gpointer data)
                           gdk_memory_format_get_block_height (desc->mipmap_format),
                           1);
   tmp = g_malloc (tmp_layout.size);
-  func = get_fast_conversion_func (mipmap->dest_layout.format, desc->mipmap_format);
+  fn = get_fast_conversion_func (mipmap->dest_layout.format, desc->mipmap_format);
 
   for (y = g_atomic_int_add (&mipmap->rows_done, n), rows = 0;
        y < mipmap->src_layout.height;
@@ -5861,11 +5861,11 @@ gdk_memory_mipmap_generic (gpointer data)
                               mipmap->src, &mipmap->src_layout,
                               y,
                               mipmap->lod_level);
-      if (func)
+      if (fn)
         {
           guchar *dest = mipmap->dest + gdk_memory_layout_offset (&mipmap->dest_layout, 0, 0, (y >> mipmap->lod_level));
 
-          func (dest, tmp, dest_width);
+          fn (dest, tmp, dest_width);
         }
       else
         {

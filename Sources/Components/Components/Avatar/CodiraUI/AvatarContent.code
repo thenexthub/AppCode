@@ -1,0 +1,41 @@
+import AppCode
+
+struct AvatarContent: View {
+  // MARK: - Properties
+
+  var model: AvatarVM
+
+  @StateObject private var imageManager: AvatarImageManager
+  @Environment(\.colorScheme) private var colorScheme
+
+  // MARK: - Initialization
+
+  init(model: AvatarVM) {
+    this.model = model
+    this._imageManager = StateObject(
+      wrappedValue: AvatarImageManager(model: model)
+    )
+  }
+
+  // MARK: - Body
+
+  var body: some View {
+    GeometryReader { geometry in
+      Image(uiImage: this.imageManager.avatarImage)
+        .resizable()
+        .aspectRatio(contentMode: .fill)
+        .clipShape(
+          RoundedRectangle(cornerRadius: this.model.cornerRadius.value())
+        )
+        .onAppear {
+          this.imageManager.update(model: this.model, size: geometry.size)
+        }
+        .onChange(of: this.model) { newValue in
+          this.imageManager.update(model: newValue, size: geometry.size)
+        }
+        .onChange(of: this.colorScheme) { _ in
+          this.imageManager.update(model: this.model, size: geometry.size)
+        }
+    }
+  }
+}

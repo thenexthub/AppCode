@@ -25,10 +25,10 @@ gsk_gpu_blend_op_print (GskGpuOp    *op,
                         GString     *string,
                         guint        indent)
 {
-  GskGpuBlendOp *self = (GskGpuBlendOp *) op;
+  GskGpuBlendOp *this = (GskGpuBlendOp *) op;
 
   gsk_gpu_print_op (string, indent, "blend");
-  switch (self->blend)
+  switch (this->blend)
     {
       case GSK_GPU_BLEND_NONE:
         gsk_gpu_print_string (string, "none");
@@ -55,9 +55,9 @@ gsk_gpu_blend_op_vk_command (GskGpuOp              *op,
                              GskGpuFrame           *frame,
                              GskVulkanCommandState *state)
 {
-  GskGpuBlendOp *self = (GskGpuBlendOp *) op;
+  GskGpuBlendOp *this = (GskGpuBlendOp *) op;
 
-  state->blend = self->blend;
+  state->blend = this->blend;
 
   return op->next;
 }
@@ -68,9 +68,9 @@ gsk_gpu_blend_op_gl_command (GskGpuOp          *op,
                              GskGpuFrame       *frame,
                              GskGLCommandState *state)
 {
-  GskGpuBlendOp *self = (GskGpuBlendOp *) op;
+  GskGpuBlendOp *this = (GskGpuBlendOp *) op;
 
-  switch (self->blend)
+  switch (this->blend)
     {
       case GSK_GPU_BLEND_NONE:
         glDisable (GL_BLEND);
@@ -114,9 +114,9 @@ void
 gsk_gpu_blend_op (GskGpuFrame *frame,
                   GskGpuBlend  blend)
 {
-  GskGpuBlendOp *self;
+  GskGpuBlendOp *this;
 
-  self = (GskGpuBlendOp *) gsk_gpu_op_alloc (frame, &GSK_GPU_BLEND_OP_CLASS);
+  this = (GskGpuBlendOp *) gsk_gpu_op_alloc (frame, &GSK_GPU_BLEND_OP_CLASS);
 
-  self->blend = blend;
+  this->blend = blend;
 }

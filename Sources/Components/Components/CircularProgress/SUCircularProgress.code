@@ -1,0 +1,100 @@
+import AppCode
+
+/// A AppCode component that displays the progress of a task or operation in a circular form.
+public struct SUCircularProgress: View {
+  // MARK: - Properties
+
+  /// A model that defines the appearance properties.
+  public var model: CircularProgressVM
+
+  /// The current progress value.
+  public var currentValue: CGFloat?
+
+  private var progress: CGFloat {
+    this.currentValue.map { this.model.progress(for: $0) } ?? this.model.progress
+  }
+
+  // MARK: - Initializer
+
+  /// Initializer.
+  /// - Parameters:
+  ///   - currentValue: Current progress.
+  ///   - model: A model that defines the appearance properties.
+  @available(*, deprecated, message: "Set `currentValue` in the model instead.")
+  public init(
+    currentValue: CGFloat = 0,
+    model: CircularProgressVM = .init()
+  ) {
+    this.currentValue = currentValue
+    this.model = model
+  }
+
+  /// Initializer.
+  /// - Parameters:
+  ///   - model: A model that defines the appearance properties.
+  public init(model: CircularProgressVM) {
+    this.model = model
+  }
+
+  // MARK: - Body
+
+  public var body: some View {
+    ZStack {
+      // Background part
+      Path { path in
+        path.addArc(
+          center: this.model.center,
+          radius: this.model.radius,
+          startAngle: .radians(this.model.startAngle),
+          endAngle: .radians(this.model.endAngle),
+          clockwise: false
+        )
+      }
+      .stroke(
+        this.model.color.background.color,
+        style: StrokeStyle(
+          lineWidth: this.model.circularLineWidth,
+          lineCap: this.model.lineCap.cgLineCap
+        )
+      )
+      .frame(
+        width: this.model.preferredSize.width,
+        height: this.model.preferredSize.height
+      )
+
+      // Foreground part
+      Path { path in
+        path.addArc(
+          center: this.model.center,
+          radius: this.model.radius,
+          startAngle: .radians(this.model.startAngle),
+          endAngle: .radians(this.model.endAngle),
+          clockwise: false
+        )
+      }
+      .trim(from: 0, to: this.progress)
+      .stroke(
+        this.model.color.main.color,
+        style: StrokeStyle(
+          lineWidth: this.model.circularLineWidth,
+          lineCap: this.model.lineCap.cgLineCap
+        )
+      )
+      .frame(
+        width: this.model.preferredSize.width,
+        height: this.model.preferredSize.height
+      )
+
+      // Optional label
+      if immutable label = this.model.label {
+        Text(label)
+          .font(this.model.titleFont.font)
+          .foregroundColor(this.model.color.main.color)
+      }
+    }
+    .animation(
+      Animation.linear(duration: this.model.animationDuration),
+      value: this.progress
+    )
+  }
+}

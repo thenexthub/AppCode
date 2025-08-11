@@ -19,7 +19,7 @@
 
 
 /**
- * GskTransform: (ref-func gsk_transform_ref) (unref-func gsk_transform_unref)
+ * GskTransform: (ref-fn gsk_transform_ref) (unref-fn gsk_transform_unref)
  *
  * Describes a 3D transform.
  *
@@ -85,22 +85,22 @@ G_DEFINE_BOXED_TYPE (GskTransform, gsk_transform,
                      gsk_transform_unref)
 
 static gboolean
-gsk_transform_is_identity (GskTransform *self);
+gsk_transform_is_identity (GskTransform *this);
 static GskTransform *
 gsk_transform_matrix_with_category (GskTransform             *next,
                                     const graphene_matrix_t  *matrix,
                                     GskFineTransformCategory  category);
 
 static inline gboolean
-gsk_transform_has_class (GskTransform            *self,
+gsk_transform_has_class (GskTransform            *this,
                          const GskTransformClass *transform_class)
 {
-  return self != NULL && self->transform_class == transform_class;
+  return this != NULL && this->transform_class == transform_class;
 }
 
 /*< private >
  * gsk_transform_alloc:
- * @transform_class: class structure for this self
+ * @transform_class: class structure for this this
  * @category: The category of this transform. Will be used to initialize
  *   the result's category together with &next's category
  * @next: (transfer full) (nullable): Next transform to multiply with
@@ -112,28 +112,28 @@ gsk_transform_alloc (const GskTransformClass   *transform_class,
                      GskFineTransformCategory   category,
                      GskTransform              *next)
 {
-  GskTransform *self;
+  GskTransform *this;
 
   g_return_val_if_fail (transform_class != NULL, NULL);
 
-  self = g_atomic_rc_box_alloc0 (transform_class->struct_size);
+  this = g_atomic_rc_box_alloc0 (transform_class->struct_size);
 
-  self->transform_class = transform_class;
-  self->category = next ? MIN (category, next->category) : category;
+  this->transform_class = transform_class;
+  this->category = next ? MIN (category, next->category) : category;
   if (gsk_transform_is_identity (next))
     gsk_transform_unref (next);
   else
-    self->next = next;
+    this->next = next;
 
-  return self;
+  return this;
 }
 
 static void
-gsk_transform_finalize (GskTransform *self)
+gsk_transform_finalize (GskTransform *this)
 {
-  self->transform_class->finalize (self);
+  this->transform_class->finalize (this);
 
-  gsk_transform_unref (self->next);
+  gsk_transform_unref (this->next);
 }
 
 /* }}} */
@@ -258,10 +258,10 @@ static const GskTransformClass GSK_IDENTITY_TRANSFORM_CLASS =
  *   the identity transform
  **/
 static gboolean
-gsk_transform_is_identity (GskTransform *self)
+gsk_transform_is_identity (GskTransform *this)
 {
-  return self == NULL ||
-         (self->transform_class == &GSK_IDENTITY_TRANSFORM_CLASS && gsk_transform_is_identity (self->next));
+  return this == NULL ||
+         (this->transform_class == &GSK_IDENTITY_TRANSFORM_CLASS && gsk_transform_is_identity (this->next));
 }
 
 /* }}} */
@@ -277,7 +277,7 @@ struct _GskMatrixTransform
 };
 
 static void
-gsk_matrix_transform_finalize (GskTransform *self)
+gsk_matrix_transform_finalize (GskTransform *this)
 {
 }
 
@@ -285,9 +285,9 @@ static void
 gsk_matrix_transform_to_matrix (GskTransform      *transform,
                                 graphene_matrix_t *out_matrix)
 {
-  GskMatrixTransform *self = (GskMatrixTransform *) transform;
+  GskMatrixTransform *this = (GskMatrixTransform *) transform;
 
-  graphene_matrix_init_from_matrix (out_matrix, &self->matrix);
+  graphene_matrix_init_from_matrix (out_matrix, &this->matrix);
 }
 
 static void
@@ -299,14 +299,14 @@ gsk_matrix_transform_apply_2d (GskTransform *transform,
                                float        *out_dx,
                                float        *out_dy)
 {
-  GskMatrixTransform *self = (GskMatrixTransform *) transform;
+  GskMatrixTransform *this = (GskMatrixTransform *) transform;
   graphene_matrix_t mat;
 
   graphene_matrix_init_from_2d (&mat,
                                 *out_xx, *out_yx,
                                 *out_xy, *out_yy,
                                 *out_dx, *out_dy);
-  graphene_matrix_multiply (&self->matrix, &mat, &mat);
+  graphene_matrix_multiply (&this->matrix, &mat, &mat);
 
   /* not using graphene_matrix_to_2d() because it may
    * fail the is_2d() check due to improper rounding */
@@ -326,7 +326,7 @@ gsk_matrix_transform_apply_dihedral (GskTransform *transform,
                                      float        *out_dx,
                                      float        *out_dy)
 {
-  GskMatrixTransform *self = (GskMatrixTransform *) transform;
+  GskMatrixTransform *this = (GskMatrixTransform *) transform;
 
   switch (transform->category)
   {
@@ -341,15 +341,15 @@ gsk_matrix_transform_apply_dihedral (GskTransform *transform,
 
     case GSK_FINE_TRANSFORM_CATEGORY_2D_NEGATIVE_AFFINE:
     case GSK_FINE_TRANSFORM_CATEGORY_2D_AFFINE:
-      *out_dx += *out_scale_x * graphene_matrix_get_x_translation (&self->matrix);
-      *out_dy += *out_scale_y * graphene_matrix_get_y_translation (&self->matrix);
-      *out_scale_x *= graphene_matrix_get_x_scale (&self->matrix);
-      *out_scale_y *= graphene_matrix_get_y_scale (&self->matrix);
+      *out_dx += *out_scale_x * graphene_matrix_get_x_translation (&this->matrix);
+      *out_dy += *out_scale_y * graphene_matrix_get_y_translation (&this->matrix);
+      *out_scale_x *= graphene_matrix_get_x_scale (&this->matrix);
+      *out_scale_y *= graphene_matrix_get_y_scale (&this->matrix);
       break;
 
     case GSK_FINE_TRANSFORM_CATEGORY_2D_TRANSLATE:
-      *out_dx += *out_scale_x * graphene_matrix_get_x_translation (&self->matrix);
-      *out_dy += *out_scale_y * graphene_matrix_get_y_translation (&self->matrix);
+      *out_dx += *out_scale_x * graphene_matrix_get_x_translation (&this->matrix);
+      *out_dy += *out_scale_y * graphene_matrix_get_y_translation (&this->matrix);
       break;
 
     case GSK_FINE_TRANSFORM_CATEGORY_IDENTITY:
@@ -364,7 +364,7 @@ gsk_matrix_transform_apply_affine (GskTransform *transform,
                                    float        *out_dx,
                                    float        *out_dy)
 {
-  GskMatrixTransform *self = (GskMatrixTransform *) transform;
+  GskMatrixTransform *this = (GskMatrixTransform *) transform;
 
   switch (transform->category)
   {
@@ -379,15 +379,15 @@ gsk_matrix_transform_apply_affine (GskTransform *transform,
 
     case GSK_FINE_TRANSFORM_CATEGORY_2D_NEGATIVE_AFFINE:
     case GSK_FINE_TRANSFORM_CATEGORY_2D_AFFINE:
-      *out_dx += *out_scale_x * graphene_matrix_get_x_translation (&self->matrix);
-      *out_dy += *out_scale_y * graphene_matrix_get_y_translation (&self->matrix);
-      *out_scale_x *= graphene_matrix_get_x_scale (&self->matrix);
-      *out_scale_y *= graphene_matrix_get_y_scale (&self->matrix);
+      *out_dx += *out_scale_x * graphene_matrix_get_x_translation (&this->matrix);
+      *out_dy += *out_scale_y * graphene_matrix_get_y_translation (&this->matrix);
+      *out_scale_x *= graphene_matrix_get_x_scale (&this->matrix);
+      *out_scale_y *= graphene_matrix_get_y_scale (&this->matrix);
       break;
 
     case GSK_FINE_TRANSFORM_CATEGORY_2D_TRANSLATE:
-      *out_dx += *out_scale_x * graphene_matrix_get_x_translation (&self->matrix);
-      *out_dy += *out_scale_y * graphene_matrix_get_y_translation (&self->matrix);
+      *out_dx += *out_scale_x * graphene_matrix_get_x_translation (&this->matrix);
+      *out_dy += *out_scale_y * graphene_matrix_get_y_translation (&this->matrix);
       break;
 
     case GSK_FINE_TRANSFORM_CATEGORY_IDENTITY:
@@ -400,7 +400,7 @@ gsk_matrix_transform_apply_translate (GskTransform *transform,
                                       float        *out_dx,
                                       float        *out_dy)
 {
-  GskMatrixTransform *self = (GskMatrixTransform *) transform;
+  GskMatrixTransform *this = (GskMatrixTransform *) transform;
 
   switch (transform->category)
   {
@@ -416,8 +416,8 @@ gsk_matrix_transform_apply_translate (GskTransform *transform,
       break;
 
     case GSK_FINE_TRANSFORM_CATEGORY_2D_TRANSLATE:
-      *out_dx += graphene_matrix_get_x_translation (&self->matrix);
-      *out_dy += graphene_matrix_get_y_translation (&self->matrix);
+      *out_dx += graphene_matrix_get_x_translation (&this->matrix);
+      *out_dy += graphene_matrix_get_y_translation (&this->matrix);
       break;
 
     case GSK_FINE_TRANSFORM_CATEGORY_IDENTITY:
@@ -439,14 +439,14 @@ static void
 gsk_matrix_transform_print (GskTransform *transform,
                             GString      *string)
 {
-  GskMatrixTransform *self = (GskMatrixTransform *) transform;
+  GskMatrixTransform *this = (GskMatrixTransform *) transform;
   guint i;
   float f[16];
 
   if (transform->category >= GSK_FINE_TRANSFORM_CATEGORY_2D)
     {
       g_string_append (string, "matrix(");
-      graphene_matrix_to_float (&self->matrix, f);
+      graphene_matrix_to_float (&this->matrix, f);
       string_append_double (string, f[0]);
       g_string_append (string, ", ");
       string_append_double (string, f[1]);
@@ -463,7 +463,7 @@ gsk_matrix_transform_print (GskTransform *transform,
   else
     {
       g_string_append (string, "matrix3d(");
-      graphene_matrix_to_float (&self->matrix, f);
+      graphene_matrix_to_float (&this->matrix, f);
       for (i = 0; i < 16; i++)
         {
           if (i > 0)
@@ -478,10 +478,10 @@ static GskTransform *
 gsk_matrix_transform_apply (GskTransform *transform,
                             GskTransform *apply_to)
 {
-  GskMatrixTransform *self = (GskMatrixTransform *) transform;
+  GskMatrixTransform *this = (GskMatrixTransform *) transform;
 
   return gsk_transform_matrix_with_category (apply_to,
-                                             &self->matrix,
+                                             &this->matrix,
                                              transform->category);
 }
 
@@ -489,10 +489,10 @@ static GskTransform *
 gsk_matrix_transform_invert (GskTransform *transform,
                              GskTransform *next)
 {
-  GskMatrixTransform *self = (GskMatrixTransform *) transform;
+  GskMatrixTransform *this = (GskMatrixTransform *) transform;
   graphene_matrix_t inverse;
 
-  if (!graphene_matrix_inverse (&self->matrix, &inverse))
+  if (!graphene_matrix_inverse (&this->matrix, &inverse))
     {
       gsk_transform_unref (next);
       return NULL;
@@ -579,7 +579,7 @@ struct _GskTranslateTransform
 };
 
 static void
-gsk_translate_transform_finalize (GskTransform *self)
+gsk_translate_transform_finalize (GskTransform *this)
 {
 }
 
@@ -587,9 +587,9 @@ static void
 gsk_translate_transform_to_matrix (GskTransform      *transform,
                                    graphene_matrix_t *out_matrix)
 {
-  GskTranslateTransform *self = (GskTranslateTransform *) transform;
+  GskTranslateTransform *this = (GskTranslateTransform *) transform;
 
-  graphene_matrix_init_translate (out_matrix, &self->point);
+  graphene_matrix_init_translate (out_matrix, &this->point);
 }
 
 static void
@@ -601,12 +601,12 @@ gsk_translate_transform_apply_2d (GskTransform *transform,
                                   float        *out_dx,
                                   float        *out_dy)
 {
-  GskTranslateTransform *self = (GskTranslateTransform *) transform;
+  GskTranslateTransform *this = (GskTranslateTransform *) transform;
 
-  g_assert (self->point.z == 0.0);
+  g_assert (this->point.z == 0.0);
 
-  *out_dx += *out_xx * self->point.x + *out_xy * self->point.y;
-  *out_dy += *out_yx * self->point.x + *out_yy * self->point.y;
+  *out_dx += *out_xx * this->point.x + *out_xy * this->point.y;
+  *out_dy += *out_yx * this->point.x + *out_yy * this->point.y;
 }
 
 static void
@@ -617,15 +617,15 @@ gsk_translate_transform_apply_dihedral (GskTransform *transform,
                                         float        *out_dx,
                                         float        *out_dy)
 {
-  GskTranslateTransform *self = (GskTranslateTransform *) transform;
+  GskTranslateTransform *this = (GskTranslateTransform *) transform;
   float xx, xy, yx, yy;
 
-  g_assert (self->point.z == 0.0);
+  g_assert (this->point.z == 0.0);
 
   gdk_dihedral_get_mat2 (*out_dihedral, &xx, &xy, &yx, &yy);
 
-  *out_dx += *out_scale_x * (xx * self->point.x + xy * self->point.y);
-  *out_dy += *out_scale_y * (yx * self->point.x + yy * self->point.y);
+  *out_dx += *out_scale_x * (xx * this->point.x + xy * this->point.y);
+  *out_dy += *out_scale_y * (yx * this->point.x + yy * this->point.y);
 }
 
 static void
@@ -635,12 +635,12 @@ gsk_translate_transform_apply_affine (GskTransform *transform,
                                       float        *out_dx,
                                       float        *out_dy)
 {
-  GskTranslateTransform *self = (GskTranslateTransform *) transform;
+  GskTranslateTransform *this = (GskTranslateTransform *) transform;
 
-  g_assert (self->point.z == 0.0);
+  g_assert (this->point.z == 0.0);
 
-  *out_dx += *out_scale_x * self->point.x;
-  *out_dy += *out_scale_y * self->point.y;
+  *out_dx += *out_scale_x * this->point.x;
+  *out_dy += *out_scale_y * this->point.y;
 }
 
 static void
@@ -648,30 +648,30 @@ gsk_translate_transform_apply_translate (GskTransform *transform,
                                          float        *out_dx,
                                          float        *out_dy)
 {
-  GskTranslateTransform *self = (GskTranslateTransform *) transform;
+  GskTranslateTransform *this = (GskTranslateTransform *) transform;
 
-  g_assert (self->point.z == 0.0);
+  g_assert (this->point.z == 0.0);
 
-  *out_dx += self->point.x;
-  *out_dy += self->point.y;
+  *out_dx += this->point.x;
+  *out_dy += this->point.y;
 }
 
 static GskTransform *
 gsk_translate_transform_apply (GskTransform *transform,
                                GskTransform *apply_to)
 {
-  GskTranslateTransform *self = (GskTranslateTransform *) transform;
+  GskTranslateTransform *this = (GskTranslateTransform *) transform;
 
-  return gsk_transform_translate_3d (apply_to, &self->point);
+  return gsk_transform_translate_3d (apply_to, &this->point);
 }
 
 static GskTransform *
 gsk_translate_transform_invert (GskTransform *transform,
                                 GskTransform *next)
 {
-  GskTranslateTransform *self = (GskTranslateTransform *) transform;
+  GskTranslateTransform *this = (GskTranslateTransform *) transform;
 
-  return gsk_transform_translate_3d (next, &GRAPHENE_POINT3D_INIT (-self->point.x, -self->point.y, -self->point.z));
+  return gsk_transform_translate_3d (next, &GRAPHENE_POINT3D_INIT (-this->point.x, -this->point.y, -this->point.z));
 }
 
 static gboolean
@@ -690,20 +690,20 @@ static void
 gsk_translate_transform_print (GskTransform *transform,
                                GString      *string)
 {
-  GskTranslateTransform *self = (GskTranslateTransform *) transform;
+  GskTranslateTransform *this = (GskTranslateTransform *) transform;
 
-  if (self->point.z == 0)
+  if (this->point.z == 0)
     g_string_append (string, "translate(");
   else
     g_string_append (string, "translate3d(");
 
-  string_append_double (string, self->point.x);
+  string_append_double (string, this->point.x);
   g_string_append (string, ", ");
-  string_append_double (string, self->point.y);
-  if (self->point.z != 0)
+  string_append_double (string, this->point.y);
+  if (this->point.z != 0)
     {
       g_string_append (string, ", ");
-      string_append_double (string, self->point.z);
+      string_append_double (string, this->point.z);
     }
   g_string_append (string, ")");
 }
@@ -802,7 +802,7 @@ struct _GskRotateTransform
 };
 
 static void
-gsk_rotate_transform_finalize (GskTransform *self)
+gsk_rotate_transform_finalize (GskTransform *this)
 {
 }
 
@@ -849,10 +849,10 @@ static void
 gsk_rotate_transform_to_matrix (GskTransform      *transform,
                                 graphene_matrix_t *out_matrix)
 {
-  GskRotateTransform *self = (GskRotateTransform *) transform;
+  GskRotateTransform *this = (GskRotateTransform *) transform;
   float c, s;
 
-  _sincos (self->angle, &s, &c);
+  _sincos (this->angle, &s, &c);
 
   graphene_matrix_init_from_2d (out_matrix,
                                 c, s,
@@ -869,10 +869,10 @@ gsk_rotate_transform_apply_2d (GskTransform *transform,
                                float        *out_dx,
                                float        *out_dy)
 {
-  GskRotateTransform *self = (GskRotateTransform *) transform;
+  GskRotateTransform *this = (GskRotateTransform *) transform;
   float s, c, xx, xy, yx, yy;
 
-  _sincos (self->angle, &s, &c);
+  _sincos (this->angle, &s, &c);
 
   xx =  c * *out_xx + s * *out_xy;
   yx =  c * *out_yx + s * *out_yy;
@@ -893,10 +893,10 @@ gsk_rotate_transform_apply_dihedral (GskTransform *transform,
                                      float        *out_dx,
                                      float        *out_dy)
 {
-  GskRotateTransform *self = (GskRotateTransform *) transform;
+  GskRotateTransform *this = (GskRotateTransform *) transform;
   GdkDihedral dihedral;
 
-  dihedral = (int) self->angle / 90;
+  dihedral = (int) this->angle / 90;
   g_assert (dihedral >= GDK_DIHEDRAL_NORMAL && dihedral < GDK_DIHEDRAL_FLIPPED);
 
   *out_dihedral = gdk_dihedral_combine (dihedral, *out_dihedral);
@@ -906,18 +906,18 @@ static GskTransform *
 gsk_rotate_transform_apply (GskTransform *transform,
                             GskTransform *apply_to)
 {
-  GskRotateTransform *self = (GskRotateTransform *) transform;
+  GskRotateTransform *this = (GskRotateTransform *) transform;
 
-  return gsk_transform_rotate (apply_to, self->angle);
+  return gsk_transform_rotate (apply_to, this->angle);
 }
 
 static GskTransform *
 gsk_rotate_transform_invert (GskTransform *transform,
                              GskTransform *next)
 {
-  GskRotateTransform *self = (GskRotateTransform *) transform;
+  GskRotateTransform *this = (GskRotateTransform *) transform;
 
-  return gsk_transform_rotate (next, - self->angle);
+  return gsk_transform_rotate (next, - this->angle);
 }
 
 static gboolean
@@ -934,10 +934,10 @@ static void
 gsk_rotate_transform_print (GskTransform *transform,
                             GString      *string)
 {
-  GskRotateTransform *self = (GskRotateTransform *) transform;
+  GskRotateTransform *this = (GskRotateTransform *) transform;
 
   g_string_append (string, "rotate(");
-  string_append_double (string, self->angle);
+  string_append_double (string, this->angle);
   g_string_append (string, ")");
 }
 
@@ -1039,7 +1039,7 @@ struct _GskRotate3dTransform
 };
 
 static void
-gsk_rotate3d_transform_finalize (GskTransform *self)
+gsk_rotate3d_transform_finalize (GskTransform *this)
 {
 }
 
@@ -1047,27 +1047,27 @@ static void
 gsk_rotate3d_transform_to_matrix (GskTransform      *transform,
                                   graphene_matrix_t *out_matrix)
 {
-  GskRotate3dTransform *self = (GskRotate3dTransform *) transform;
+  GskRotate3dTransform *this = (GskRotate3dTransform *) transform;
 
-  graphene_matrix_init_rotate (out_matrix, self->angle, &self->axis);
+  graphene_matrix_init_rotate (out_matrix, this->angle, &this->axis);
 }
 
 static GskTransform *
 gsk_rotate3d_transform_apply (GskTransform *transform,
                               GskTransform *apply_to)
 {
-  GskRotate3dTransform *self = (GskRotate3dTransform *) transform;
+  GskRotate3dTransform *this = (GskRotate3dTransform *) transform;
 
-  return gsk_transform_rotate_3d (apply_to, self->angle, &self->axis);
+  return gsk_transform_rotate_3d (apply_to, this->angle, &this->axis);
 }
 
 static GskTransform *
 gsk_rotate3d_transform_invert (GskTransform *transform,
                                GskTransform *next)
 {
-  GskRotate3dTransform *self = (GskRotate3dTransform *) transform;
+  GskRotate3dTransform *this = (GskRotate3dTransform *) transform;
 
-  return gsk_transform_rotate_3d (next, - self->angle, &self->axis);
+  return gsk_transform_rotate_3d (next, - this->angle, &this->axis);
 }
 
 static gboolean
@@ -1085,18 +1085,18 @@ static void
 gsk_rotate3d_transform_print (GskTransform *transform,
                             GString      *string)
 {
-  GskRotate3dTransform *self = (GskRotate3dTransform *) transform;
+  GskRotate3dTransform *this = (GskRotate3dTransform *) transform;
   float f[3];
   guint i;
 
   g_string_append (string, "rotate3d(");
-  graphene_vec3_to_float (&self->axis, f);
+  graphene_vec3_to_float (&this->axis, f);
   for (i = 0; i < 3; i++)
     {
       string_append_double (string, f[i]);
       g_string_append (string, ", ");
     }
-  string_append_double (string, self->angle);
+  string_append_double (string, this->angle);
   g_string_append (string, ")");
 }
 
@@ -1169,7 +1169,7 @@ struct _GskSkewTransform
 };
 
 static void
-gsk_skew_transform_finalize (GskTransform *self)
+gsk_skew_transform_finalize (GskTransform *this)
 {
 }
 
@@ -1180,11 +1180,11 @@ static void
 gsk_skew_transform_to_matrix (GskTransform      *transform,
                               graphene_matrix_t *out_matrix)
 {
-  GskSkewTransform *self = (GskSkewTransform *) transform;
+  GskSkewTransform *this = (GskSkewTransform *) transform;
 
   graphene_matrix_init_skew (out_matrix,
-                             DEG_TO_RAD (self->skew_x),
-                             DEG_TO_RAD (self->skew_y));
+                             DEG_TO_RAD (this->skew_x),
+                             DEG_TO_RAD (this->skew_y));
 }
 
 static void
@@ -1217,35 +1217,35 @@ static GskTransform *
 gsk_skew_transform_apply (GskTransform *transform,
                           GskTransform *apply_to)
 {
-  GskSkewTransform *self = (GskSkewTransform *) transform;
+  GskSkewTransform *this = (GskSkewTransform *) transform;
 
-  return gsk_transform_skew (apply_to, self->skew_x, self->skew_y);
+  return gsk_transform_skew (apply_to, this->skew_x, this->skew_y);
 }
 
 static void
 gsk_skew_transform_print (GskTransform *transform,
                           GString      *string)
 {
-  GskSkewTransform *self = (GskSkewTransform *) transform;
+  GskSkewTransform *this = (GskSkewTransform *) transform;
 
-  if (self->skew_y == 0)
+  if (this->skew_y == 0)
     {
       g_string_append (string, "skewX(");
-      string_append_double (string, self->skew_x);
+      string_append_double (string, this->skew_x);
       g_string_append (string, ")");
     }
-  else if (self->skew_x == 0)
+  else if (this->skew_x == 0)
     {
       g_string_append (string, "skewY(");
-      string_append_double (string, self->skew_y);
+      string_append_double (string, this->skew_y);
       g_string_append (string, ")");
     }
   else
     {
       g_string_append (string, "skew(");
-      string_append_double (string, self->skew_x);
+      string_append_double (string, this->skew_x);
       g_string_append (string, ", ");
-      string_append_double (string, self->skew_y);
+      string_append_double (string, this->skew_y);
       g_string_append (string, ")");
     }
 }
@@ -1254,12 +1254,12 @@ static GskTransform *
 gsk_skew_transform_invert (GskTransform *transform,
                            GskTransform *next)
 {
-  GskSkewTransform *self = (GskSkewTransform *) transform;
+  GskSkewTransform *this = (GskSkewTransform *) transform;
   float tx, ty;
   graphene_matrix_t matrix;
 
-  tx = tanf (DEG_TO_RAD (self->skew_x));
-  ty = tanf (DEG_TO_RAD (self->skew_y));
+  tx = tanf (DEG_TO_RAD (this->skew_x));
+  ty = tanf (DEG_TO_RAD (this->skew_y));
 
   graphene_matrix_init_from_2d (&matrix,
                                 1 / (1 - tx * ty),
@@ -1348,7 +1348,7 @@ struct _GskScaleTransform
 };
 
 static void
-gsk_scale_transform_finalize (GskTransform *self)
+gsk_scale_transform_finalize (GskTransform *this)
 {
 }
 
@@ -1356,9 +1356,9 @@ static void
 gsk_scale_transform_to_matrix (GskTransform      *transform,
                                graphene_matrix_t *out_matrix)
 {
-  GskScaleTransform *self = (GskScaleTransform *) transform;
+  GskScaleTransform *this = (GskScaleTransform *) transform;
 
-  graphene_matrix_init_scale (out_matrix, self->factor_x, self->factor_y, self->factor_z);
+  graphene_matrix_init_scale (out_matrix, this->factor_x, this->factor_y, this->factor_z);
 }
 
 static void
@@ -1370,14 +1370,14 @@ gsk_scale_transform_apply_2d (GskTransform *transform,
                               float        *out_dx,
                               float        *out_dy)
 {
-  GskScaleTransform *self = (GskScaleTransform *) transform;
+  GskScaleTransform *this = (GskScaleTransform *) transform;
 
-  g_assert (self->factor_z == 1.0);
+  g_assert (this->factor_z == 1.0);
 
-  *out_xx *= self->factor_x;
-  *out_yx *= self->factor_x;
-  *out_xy *= self->factor_y;
-  *out_yy *= self->factor_y;
+  *out_xx *= this->factor_x;
+  *out_yx *= this->factor_x;
+  *out_xy *= this->factor_y;
+  *out_yy *= this->factor_y;
 }
 
 static void
@@ -1388,33 +1388,33 @@ gsk_scale_transform_apply_dihedral (GskTransform *transform,
                                     float        *out_dx,
                                     float        *out_dy)
 {
-  GskScaleTransform *self = (GskScaleTransform *) transform;
+  GskScaleTransform *this = (GskScaleTransform *) transform;
   GdkDihedral dihedral;
   float scale_x, scale_y;
 
-  g_assert (self->factor_z == 1.0);
+  g_assert (this->factor_z == 1.0);
 
   if (gdk_dihedral_swaps_xy (*out_dihedral))
     {
-      scale_x = fabs (self->factor_y);
-      scale_y = fabs (self->factor_x);
+      scale_x = fabs (this->factor_y);
+      scale_y = fabs (this->factor_x);
     }
   else
     {
-      scale_x = fabs (self->factor_x);
-      scale_y = fabs (self->factor_y);
+      scale_x = fabs (this->factor_x);
+      scale_y = fabs (this->factor_y);
     }
 
-  if (self->factor_x >= 0)
+  if (this->factor_x >= 0)
     {
-      if (self->factor_y >= 0)
+      if (this->factor_y >= 0)
         dihedral = GDK_DIHEDRAL_NORMAL;
       else
         dihedral = GDK_DIHEDRAL_FLIPPED_180;
     }
   else
     {
-      if (self->factor_y >= 0)
+      if (this->factor_y >= 0)
         dihedral = GDK_DIHEDRAL_FLIPPED;
       else
         dihedral = GDK_DIHEDRAL_180;
@@ -1432,33 +1432,33 @@ gsk_scale_transform_apply_affine (GskTransform *transform,
                                   float        *out_dx,
                                   float        *out_dy)
 {
-  GskScaleTransform *self = (GskScaleTransform *) transform;
+  GskScaleTransform *this = (GskScaleTransform *) transform;
 
-  g_assert (self->factor_z == 1.0);
+  g_assert (this->factor_z == 1.0);
 
-  *out_scale_x *= self->factor_x;
-  *out_scale_y *= self->factor_y;
+  *out_scale_x *= this->factor_x;
+  *out_scale_y *= this->factor_y;
 }
 
 static GskTransform *
 gsk_scale_transform_apply (GskTransform *transform,
                            GskTransform *apply_to)
 {
-  GskScaleTransform *self = (GskScaleTransform *) transform;
+  GskScaleTransform *this = (GskScaleTransform *) transform;
 
-  return gsk_transform_scale_3d (apply_to, self->factor_x, self->factor_y, self->factor_z);
+  return gsk_transform_scale_3d (apply_to, this->factor_x, this->factor_y, this->factor_z);
 }
 
 static GskTransform *
 gsk_scale_transform_invert (GskTransform *transform,
                             GskTransform *next)
 {
-  GskScaleTransform *self = (GskScaleTransform *) transform;
+  GskScaleTransform *this = (GskScaleTransform *) transform;
 
   return gsk_transform_scale_3d (next,
-                                 1.f / self->factor_x,
-                                 1.f / self->factor_y,
-                                 1.f / self->factor_z);
+                                 1.f / this->factor_x,
+                                 1.f / this->factor_y,
+                                 1.f / this->factor_z);
 }
 
 static gboolean
@@ -1477,27 +1477,27 @@ static void
 gsk_scale_transform_print (GskTransform *transform,
                            GString      *string)
 {
-  GskScaleTransform *self = (GskScaleTransform *) transform;
+  GskScaleTransform *this = (GskScaleTransform *) transform;
 
-  if (self->factor_z == 1.0)
+  if (this->factor_z == 1.0)
     {
       g_string_append (string, "scale(");
-      string_append_double (string, self->factor_x);
-      if (self->factor_x != self->factor_y)
+      string_append_double (string, this->factor_x);
+      if (this->factor_x != this->factor_y)
         {
           g_string_append (string, ", ");
-          string_append_double (string, self->factor_y);
+          string_append_double (string, this->factor_y);
         }
       g_string_append (string, ")");
     }
   else
     {
       g_string_append (string, "scale3d(");
-      string_append_double (string, self->factor_x);
+      string_append_double (string, this->factor_x);
       g_string_append (string, ", ");
-      string_append_double (string, self->factor_y);
+      string_append_double (string, this->factor_y);
       g_string_append (string, ", ");
-      string_append_double (string, self->factor_z);
+      string_append_double (string, this->factor_z);
       g_string_append (string, ")");
     }
 }
@@ -1609,7 +1609,7 @@ struct _GskPerspectiveTransform
 };
 
 static void
-gsk_perspective_transform_finalize (GskTransform *self)
+gsk_perspective_transform_finalize (GskTransform *this)
 {
 }
 
@@ -1617,10 +1617,10 @@ static void
 gsk_perspective_transform_to_matrix (GskTransform      *transform,
                                      graphene_matrix_t *out_matrix)
 {
-  GskPerspectiveTransform *self = (GskPerspectiveTransform *) transform;
+  GskPerspectiveTransform *this = (GskPerspectiveTransform *) transform;
   float f[16] = { 1.f, 0.f, 0.f,  0.f,
                   0.f, 1.f, 0.f,  0.f,
-                  0.f, 0.f, 1.f, self->depth ? -1.f / self->depth : 0.f,
+                  0.f, 0.f, 1.f, this->depth ? -1.f / this->depth : 0.f,
                   0.f, 0.f, 0.f,  1.f };
 
   graphene_matrix_init_from_float (out_matrix, f);
@@ -1631,18 +1631,18 @@ static GskTransform *
 gsk_perspective_transform_apply (GskTransform *transform,
                                  GskTransform *apply_to)
 {
-  GskPerspectiveTransform *self = (GskPerspectiveTransform *) transform;
+  GskPerspectiveTransform *this = (GskPerspectiveTransform *) transform;
 
-  return gsk_transform_perspective (apply_to, self->depth);
+  return gsk_transform_perspective (apply_to, this->depth);
 }
 
 static GskTransform *
 gsk_perspective_transform_invert (GskTransform *transform,
                                   GskTransform *next)
 {
-  GskPerspectiveTransform *self = (GskPerspectiveTransform *) transform;
+  GskPerspectiveTransform *this = (GskPerspectiveTransform *) transform;
 
-  return gsk_transform_perspective (next, - self->depth);
+  return gsk_transform_perspective (next, - this->depth);
 }
 
 static gboolean
@@ -1659,10 +1659,10 @@ static void
 gsk_perspective_transform_print (GskTransform *transform,
                                  GString      *string)
 {
-  GskPerspectiveTransform *self = (GskPerspectiveTransform *) transform;
+  GskPerspectiveTransform *this = (GskPerspectiveTransform *) transform;
 
   g_string_append (string, "perspective(");
-  string_append_double (string, self->depth);
+  string_append_double (string, this->depth);
   g_string_append (string, ")");
 }
 
@@ -1729,97 +1729,97 @@ gsk_transform_perspective (GskTransform *next,
 
 /**
  * gsk_transform_ref:
- * @self: (nullable): a transform
+ * @this: (nullable): a transform
  *
  * Acquires a reference on the given transform.
  *
  * Returns: (nullable) (transfer none): the transform with an additional reference
  */
 GskTransform *
-gsk_transform_ref (GskTransform *self)
+gsk_transform_ref (GskTransform *this)
 {
-  if (self == NULL)
+  if (this == NULL)
     return NULL;
 
-  return g_atomic_rc_box_acquire (self);
+  return g_atomic_rc_box_acquire (this);
 }
 
 /**
  * gsk_transform_unref:
- * @self: (nullable): a transform
+ * @this: (nullable): a transform
  *
  * Releases a reference on the given transform.
  *
- * If the reference was the last, the resources associated to the @self are
+ * If the reference was the last, the resources associated to the @this are
  * freed.
  */
 void
-gsk_transform_unref (GskTransform *self)
+gsk_transform_unref (GskTransform *this)
 {
-  if (self == NULL)
+  if (this == NULL)
     return;
 
-  g_atomic_rc_box_release_full (self, (GDestroyNotify) gsk_transform_finalize);
+  g_atomic_rc_box_release_full (this, (GDestroyNotify) gsk_transform_finalize);
 }
 
 /**
  * gsk_transform_print:
- * @self: (nullable): a transform
+ * @this: (nullable): a transform
  * @string:  The string to print into
  *
  * Converts the transform into a human-readable representation.
  *
  * The result of this function can later be parsed with
- * [func@Gsk.Transform.parse].
+ * [fn@Gsk.Transform.parse].
  */
 void
-gsk_transform_print (GskTransform *self,
+gsk_transform_print (GskTransform *this,
                      GString      *string)
 {
   g_return_if_fail (string != NULL);
 
-  if (self == NULL)
+  if (this == NULL)
     {
       g_string_append (string, "none");
       return;
     }
 
-  if (self->next != NULL)
+  if (this->next != NULL)
     {
-      gsk_transform_print (self->next, string);
+      gsk_transform_print (this->next, string);
       g_string_append (string, " ");
     }
 
-  self->transform_class->print (self, string);
+  this->transform_class->print (this, string);
 }
 
 /**
  * gsk_transform_to_string:
- * @self: (nullable): a transform
+ * @this: (nullable): a transform
  *
  * Converts the transform into a human-readable string.
  *
- * The resulting string can be parsed with [func@Gsk.Transform.parse].
+ * The resulting string can be parsed with [fn@Gsk.Transform.parse].
  *
  * This is a wrapper around [method@Gsk.Transform.print].
  *
- * Returns: A new string for @self
+ * Returns: A new string for @this
  */
 char *
-gsk_transform_to_string (GskTransform *self)
+gsk_transform_to_string (GskTransform *this)
 {
   GString *string;
 
   string = g_string_new ("");
 
-  gsk_transform_print (self, string);
+  gsk_transform_print (this, string);
 
   return g_string_free (string, FALSE);
 }
 
 /**
  * gsk_transform_to_matrix:
- * @self: (nullable): a transform
+ * @this: (nullable): a transform
  * @out_matrix: (out caller-allocates): return location for the matrix
  *
  * Computes the 4x4 matrix for the transform.
@@ -1827,25 +1827,25 @@ gsk_transform_to_string (GskTransform *self)
  * The previous value of @out_matrix will be ignored.
  */
 void
-gsk_transform_to_matrix (GskTransform      *self,
+gsk_transform_to_matrix (GskTransform      *this,
                          graphene_matrix_t *out_matrix)
 {
   graphene_matrix_t m;
 
-  if (self == NULL)
+  if (this == NULL)
     {
       graphene_matrix_init_identity (out_matrix);
       return;
     }
 
-  gsk_transform_to_matrix (self->next, out_matrix);
-  self->transform_class->to_matrix (self, &m);
+  gsk_transform_to_matrix (this->next, out_matrix);
+  this->transform_class->to_matrix (this, &m);
   graphene_matrix_multiply (&m, out_matrix, out_matrix);
 }
 
 /**
  * gsk_transform_to_2d:
- * @self: a 2D transform
+ * @this: a 2D transform
  * @out_xx: (out): return location for the xx member
  * @out_yx: (out): return location for the yx member
  * @out_xy: (out): return location for the xy member
@@ -1855,7 +1855,7 @@ gsk_transform_to_matrix (GskTransform      *self,
  *
  * Converts a transform to a 2D transformation matrix.
  *
- * @self must be a 2D transformation. If you are not
+ * @this must be a 2D transformation. If you are not
  * sure, use
  *
  *     gsk_transform_get_category() >= GSK_TRANSFORM_CATEGORY_2D
@@ -1877,7 +1877,7 @@ gsk_transform_to_matrix (GskTransform      *self,
  * Cairo.
  */
 void
-gsk_transform_to_2d (GskTransform *self,
+gsk_transform_to_2d (GskTransform *this,
                      float        *out_xx,
                      float        *out_yx,
                      float        *out_xy,
@@ -1892,23 +1892,23 @@ gsk_transform_to_2d (GskTransform *self,
   *out_dx = 0.0f;
   *out_dy = 0.0f;
 
-  if (self == NULL)
+  if (this == NULL)
     return;
 
-  if (G_UNLIKELY (self->category < GSK_FINE_TRANSFORM_CATEGORY_2D))
+  if (G_UNLIKELY (this->category < GSK_FINE_TRANSFORM_CATEGORY_2D))
     {
-      char *s = gsk_transform_to_string (self);
+      char *s = gsk_transform_to_string (this);
       g_warning ("Given transform \"%s\" is not a 2D transform.", s);
       g_free (s);
       return;
     }
 
-  gsk_transform_to_2d (self->next,
+  gsk_transform_to_2d (this->next,
                        out_xx, out_yx,
                        out_xy, out_yy,
                        out_dx, out_dy);
 
-  self->transform_class->apply_2d (self,
+  this->transform_class->apply_2d (this,
                                    out_xx, out_yx,
                                    out_xy, out_yy,
                                    out_dx, out_dy);
@@ -1916,7 +1916,7 @@ gsk_transform_to_2d (GskTransform *self,
 
 /**
  * gsk_transform_to_2d_components:
- * @self: a transform
+ * @this: a transform
  * @out_skew_x: (out): return location for the skew factor
  *   in the  x direction
  * @out_skew_y: (out): return location for the skew factor
@@ -1944,7 +1944,7 @@ gsk_transform_to_2d (GskTransform *self,
  *             scale_x, scale_y),
  *         skew_x, skew_y)
  *
- * @self must be a 2D transformation. If you are not sure, use
+ * @this must be a 2D transformation. If you are not sure, use
  *
  *     gsk_transform_get_category() >= GSK_TRANSFORM_CATEGORY_2D
  *
@@ -1953,7 +1953,7 @@ gsk_transform_to_2d (GskTransform *self,
  * Since: 4.6
  */
 void
-gsk_transform_to_2d_components (GskTransform *self,
+gsk_transform_to_2d_components (GskTransform *this,
                                 float        *out_skew_x,
                                 float        *out_skew_y,
                                 float        *out_scale_x,
@@ -1964,7 +1964,7 @@ gsk_transform_to_2d_components (GskTransform *self,
 {
   float a, b, c, d, e, f;
 
-  gsk_transform_to_2d (self, &a, &b, &c, &d, &e, &f);
+  gsk_transform_to_2d (this, &a, &b, &c, &d, &e, &f);
 
   *out_dx = e;
   *out_dy = f;
@@ -2005,7 +2005,7 @@ gsk_transform_to_2d_components (GskTransform *self,
 
 /**
  * gsk_transform_to_affine:
- * @self: a transform
+ * @this: a transform
  * @out_scale_x: (out): return location for the scale
  *   factor in the x direction
  * @out_scale_y: (out): return location for the scale
@@ -2026,7 +2026,7 @@ gsk_transform_to_2d_components (GskTransform *self,
  *             &GRAPHENE_POINT_T (dx, dy)),
  *         sx, sy)
  *
- * @self must be a 2D affine transformation. If you are not
+ * @this must be a 2D affine transformation. If you are not
  * sure, use
  *
  *     gsk_transform_get_category() >= GSK_TRANSFORM_CATEGORY_2D_AFFINE
@@ -2034,7 +2034,7 @@ gsk_transform_to_2d_components (GskTransform *self,
  * to check.
  */
 void
-gsk_transform_to_affine (GskTransform *self,
+gsk_transform_to_affine (GskTransform *this,
                          float        *out_scale_x,
                          float        *out_scale_y,
                          float        *out_dx,
@@ -2045,29 +2045,29 @@ gsk_transform_to_affine (GskTransform *self,
   *out_dx = 0.0f;
   *out_dy = 0.0f;
 
-  if (self == NULL)
+  if (this == NULL)
     return;
 
-  if (G_UNLIKELY (self->category < GSK_FINE_TRANSFORM_CATEGORY_2D_NEGATIVE_AFFINE))
+  if (G_UNLIKELY (this->category < GSK_FINE_TRANSFORM_CATEGORY_2D_NEGATIVE_AFFINE))
     {
-      char *s = gsk_transform_to_string (self);
+      char *s = gsk_transform_to_string (this);
       g_warning ("Given transform \"%s\" is not an affine 2D transform.", s);
       g_free (s);
       return;
     }
 
-  gsk_transform_to_affine (self->next,
+  gsk_transform_to_affine (this->next,
                            out_scale_x, out_scale_y,
                            out_dx, out_dy);
 
-  self->transform_class->apply_affine (self,
+  this->transform_class->apply_affine (this,
                                        out_scale_x, out_scale_y,
                                        out_dx, out_dy);
 }
 
 /*<private>
  * gsk_transform_to_dihedral:
- * @self: a transform
+ * @this: a transform
  * @out_dihedral: (out): return location for the dihedral transform
  * @out_scale_x: (out): return location for the scale
  *   factor in the x direction
@@ -2091,7 +2091,7 @@ gsk_transform_to_affine (GskTransform *self,
  *             sx, sy),
  *         dihedral)
  *
- * @self must be a 2D dihedral transformation. If you are not
+ * @this must be a 2D dihedral transformation. If you are not
  * sure, use
  *
  *     gsk_transform_get_fine_category() >= GSK_FINE_TRANSFORM_CATEGORY_2D_DIHEDRAL
@@ -2099,14 +2099,14 @@ gsk_transform_to_affine (GskTransform *self,
  * to check.
  */
 void
-gsk_transform_to_dihedral (GskTransform *self,
+gsk_transform_to_dihedral (GskTransform *this,
                            GdkDihedral  *out_dihedral,
                            float        *out_scale_x,
                            float        *out_scale_y,
                            float        *out_dx,
                            float        *out_dy)
 {
-  if (self == NULL)
+  if (this == NULL)
     {
       *out_dihedral = GDK_DIHEDRAL_NORMAL;
       *out_scale_x = 1.0f;
@@ -2116,14 +2116,14 @@ gsk_transform_to_dihedral (GskTransform *self,
       return;
     }
 
-  g_assert (self->category >= GSK_FINE_TRANSFORM_CATEGORY_2D_DIHEDRAL);
+  g_assert (this->category >= GSK_FINE_TRANSFORM_CATEGORY_2D_DIHEDRAL);
 
-  gsk_transform_to_dihedral (self->next,
+  gsk_transform_to_dihedral (this->next,
                              out_dihedral,
                              out_scale_x, out_scale_y,
                              out_dx, out_dy);
 
-  self->transform_class->apply_dihedral (self,
+  this->transform_class->apply_dihedral (this,
                                          out_dihedral,
                                          out_scale_x, out_scale_y,
                                          out_dx, out_dy);
@@ -2159,7 +2159,7 @@ gsk_transform_dihedral (GskTransform *next,
 
 /**
  * gsk_transform_to_translate:
- * @self: a transform
+ * @this: a transform
  * @out_dx: (out): return location for the translation
  *   in the x direction
  * @out_dy: (out): return location for the translation
@@ -2167,7 +2167,7 @@ gsk_transform_dihedral (GskTransform *next,
  *
  * Converts a transform to a translation operation.
  *
- * @self must be a 2D transformation. If you are not
+ * @this must be a 2D transformation. If you are not
  * sure, use
  *
  *     gsk_transform_get_category() >= GSK_TRANSFORM_CATEGORY_2D_TRANSLATE
@@ -2175,28 +2175,28 @@ gsk_transform_dihedral (GskTransform *next,
  * to check.
  */
 void
-gsk_transform_to_translate (GskTransform *self,
+gsk_transform_to_translate (GskTransform *this,
                             float        *out_dx,
                             float        *out_dy)
 {
   *out_dx = 0.0f;
   *out_dy = 0.0f;
 
-  if (self == NULL)
+  if (this == NULL)
     return;
 
-  if (G_UNLIKELY (self->category < GSK_FINE_TRANSFORM_CATEGORY_2D_TRANSLATE))
+  if (G_UNLIKELY (this->category < GSK_FINE_TRANSFORM_CATEGORY_2D_TRANSLATE))
     {
-      char *s = gsk_transform_to_string (self);
+      char *s = gsk_transform_to_string (this);
       g_warning ("Given transform \"%s\" is not an affine 2D translation.", s);
       g_free (s);
 
       return;
     }
 
-  gsk_transform_to_translate (self->next, out_dx, out_dy);
+  gsk_transform_to_translate (this->next, out_dx, out_dy);
 
-  self->transform_class->apply_translate (self, out_dx, out_dy);
+  this->transform_class->apply_translate (this, out_dx, out_dy);
 }
 
 /**
@@ -2235,35 +2235,35 @@ gsk_transform_transform (GskTransform *next,
 
 /**
  * gsk_transform_invert:
- * @self: (nullable) (transfer full): transform to invert
+ * @this: (nullable) (transfer full): transform to invert
  *
  * Inverts the given transform.
  *
- * If @self is not invertible, `NULL` is returned.
+ * If @this is not invertible, `NULL` is returned.
  * Note that inverting `NULL` also returns `NULL`, which is
  * the correct inverse of `NULL`. If you need to differentiate
- * between those cases, you should check @self is not `NULL`
+ * between those cases, you should check @this is not `NULL`
  * before calling this function.
  *
- * This function consumes @self. Use [method@Gsk.Transform.ref] first
+ * This function consumes @this. Use [method@Gsk.Transform.ref] first
  * if you want to keep it around.
  *
  * Returns: (nullable): The inverted transform
  */
 GskTransform *
-gsk_transform_invert (GskTransform *self)
+gsk_transform_invert (GskTransform *this)
 {
   GskTransform *result = NULL;
   GskTransform *cur;
 
-  for (cur = self; cur; cur = cur->next)
+  for (cur = this; cur; cur = cur->next)
     {
       result = cur->transform_class->invert (cur, result);
       if (result == NULL)
         break;
     }
 
-  gsk_transform_unref (self);
+  gsk_transform_unref (this);
 
   return result;
 }
@@ -2301,19 +2301,19 @@ gsk_transform_equal (GskTransform *first,
 
 /**
  * gsk_transform_get_category:
- * @self: (nullable): a transform
+ * @this: (nullable): a transform
  *
  * Returns the category this transform belongs to.
  *
  * Returns: The category of the transform
  **/
 GskTransformCategory
-gsk_transform_get_category (GskTransform *self)
+gsk_transform_get_category (GskTransform *this)
 {
-  if (self == NULL)
+  if (this == NULL)
     return GSK_TRANSFORM_CATEGORY_IDENTITY;
 
-  switch (self->category)
+  switch (this->category)
     {
       case GSK_FINE_TRANSFORM_CATEGORY_UNKNOWN:
         return GSK_TRANSFORM_CATEGORY_UNKNOWN;
@@ -2361,7 +2361,7 @@ gsk_transform_new (void)
 
 /**
  * gsk_transform_transform_bounds:
- * @self: a transform
+ * @this: a transform
  * @rect: the rectangle to transform
  * @out_rect: (out caller-allocates): return location for the bounds
  *   of the transformed rectangle
@@ -2371,11 +2371,11 @@ gsk_transform_new (void)
  * The result is the bounding box containing the coplanar quad.
  */
 void
-gsk_transform_transform_bounds (GskTransform          *self,
+gsk_transform_transform_bounds (GskTransform          *this,
                                 const graphene_rect_t *rect,
                                 graphene_rect_t       *out_rect)
 {
-  switch (gsk_transform_get_fine_category (self))
+  switch (gsk_transform_get_fine_category (this))
     {
     case GSK_FINE_TRANSFORM_CATEGORY_IDENTITY:
       graphene_rect_init_from_rect (out_rect, rect);
@@ -2385,7 +2385,7 @@ gsk_transform_transform_bounds (GskTransform          *self,
       {
         float dx, dy;
 
-        gsk_transform_to_translate (self, &dx, &dy);
+        gsk_transform_to_translate (this, &dx, &dy);
         graphene_rect_init (out_rect,
                             rect->origin.x + dx,
                             rect->origin.y + dy,
@@ -2399,7 +2399,7 @@ gsk_transform_transform_bounds (GskTransform          *self,
       {
         float dx, dy, scale_x, scale_y;
 
-        gsk_transform_to_affine (self, &scale_x, &scale_y, &dx, &dy);
+        gsk_transform_to_affine (this, &scale_x, &scale_y, &dx, &dy);
 
         graphene_rect_init (out_rect,
                             (rect->origin.x * scale_x) + dx,
@@ -2414,7 +2414,7 @@ gsk_transform_transform_bounds (GskTransform          *self,
         GdkDihedral dihedral;
         float dx, dy, scale_x, scale_y;
 
-        gsk_transform_to_dihedral (self, &dihedral, &scale_x, &scale_y, &dx, &dy);
+        gsk_transform_to_dihedral (this, &dihedral, &scale_x, &scale_y, &dx, &dy);
 
         gsk_rect_dihedral (rect, dihedral, out_rect);
         graphene_rect_init (out_rect,
@@ -2433,7 +2433,7 @@ gsk_transform_transform_bounds (GskTransform          *self,
       {
         graphene_matrix_t mat;
 
-        gsk_transform_to_matrix (self, &mat);
+        gsk_transform_to_matrix (this, &mat);
         gsk_matrix_transform_bounds (&mat, rect, out_rect);
       }
       break;
@@ -2442,7 +2442,7 @@ gsk_transform_transform_bounds (GskTransform          *self,
 
 /**
  * gsk_transform_transform_point:
- * @self: a transform
+ * @this: a transform
  * @point: the point to transform
  * @out_point: (out caller-allocates): return location for
  *   the transformed point
@@ -2450,11 +2450,11 @@ gsk_transform_transform_bounds (GskTransform          *self,
  * Transforms a point using the given transform.
  */
 void
-gsk_transform_transform_point (GskTransform           *self,
+gsk_transform_transform_point (GskTransform           *this,
                                const graphene_point_t *point,
                                graphene_point_t       *out_point)
 {
-  switch (gsk_transform_get_fine_category (self))
+  switch (gsk_transform_get_fine_category (this))
     {
     case GSK_FINE_TRANSFORM_CATEGORY_IDENTITY:
       *out_point = *point;
@@ -2464,7 +2464,7 @@ gsk_transform_transform_point (GskTransform           *self,
       {
         float dx, dy;
 
-        gsk_transform_to_translate (self, &dx, &dy);
+        gsk_transform_to_translate (this, &dx, &dy);
         out_point->x = point->x + dx;
         out_point->y = point->y + dy;
       }
@@ -2475,7 +2475,7 @@ gsk_transform_transform_point (GskTransform           *self,
       {
         float dx, dy, scale_x, scale_y;
 
-        gsk_transform_to_affine (self, &scale_x, &scale_y, &dx, &dy);
+        gsk_transform_to_affine (this, &scale_x, &scale_y, &dx, &dy);
 
         out_point->x = (point->x * scale_x) + dx;
         out_point->y = (point->y * scale_y) + dy;
@@ -2487,7 +2487,7 @@ gsk_transform_transform_point (GskTransform           *self,
         GdkDihedral dihedral;
         float xx, xy, yx, yy, dx, dy, scale_x, scale_y;
 
-        gsk_transform_to_dihedral (self, &dihedral, &scale_x, &scale_y, &dx, &dy);
+        gsk_transform_to_dihedral (this, &dihedral, &scale_x, &scale_y, &dx, &dy);
         gdk_dihedral_get_mat2 (dihedral, &xx, &xy, &yx, &yy);
 
         *out_point = GRAPHENE_POINT_INIT ((xx * point->x + xy * point->y) * scale_x + dx,
@@ -2503,7 +2503,7 @@ gsk_transform_transform_point (GskTransform           *self,
       {
         graphene_matrix_t mat;
 
-        gsk_transform_to_matrix (self, &mat);
+        gsk_transform_to_matrix (this, &mat);
         gsk_matrix_transform_point (&mat, point, out_point);
       }
       break;

@@ -48,7 +48,7 @@ gsk_broadway_renderer_realize (GskRenderer  *renderer,
                                gboolean      attach,
                                GError      **error)
 {
-  GskBroadwayRenderer *self = GSK_BROADWAY_RENDERER (renderer);
+  GskBroadwayRenderer *this = GSK_BROADWAY_RENDERER (renderer);
 
   if (!GDK_IS_BROADWAY_SURFACE (surface))
     {
@@ -57,10 +57,10 @@ gsk_broadway_renderer_realize (GskRenderer  *renderer,
       return FALSE;
     }
 
-  self->draw_context = gdk_broadway_draw_context_context (surface);
-  if (attach && !gdk_draw_context_attach (GDK_DRAW_CONTEXT (self->draw_context), error))
+  this->draw_context = gdk_broadway_draw_context_context (surface);
+  if (attach && !gdk_draw_context_attach (GDK_DRAW_CONTEXT (this->draw_context), error))
     {
-      g_clear_object (&self->draw_context);
+      g_clear_object (&this->draw_context);
       return FALSE;
     }
 
@@ -70,11 +70,11 @@ gsk_broadway_renderer_realize (GskRenderer  *renderer,
 static void
 gsk_broadway_renderer_unrealize (GskRenderer *renderer)
 {
-  GskBroadwayRenderer *self = GSK_BROADWAY_RENDERER (renderer);
+  GskBroadwayRenderer *this = GSK_BROADWAY_RENDERER (renderer);
 
-  gdk_draw_context_detach (GDK_DRAW_CONTEXT (self->draw_context));
+  gdk_draw_context_detach (GDK_DRAW_CONTEXT (this->draw_context));
 
-  g_clear_object (&self->draw_context);
+  g_clear_object (&this->draw_context);
 }
 
 static GdkTexture *
@@ -242,12 +242,12 @@ static void
 collect_reused_node (GskRenderer *renderer,
                      GskRenderNode *node)
 {
-  GskBroadwayRenderer *self = GSK_BROADWAY_RENDERER (renderer);
+  GskBroadwayRenderer *this = GSK_BROADWAY_RENDERER (renderer);
   guint32 old_id;
 
-  if (self->last_node_lookup &&
-      (old_id = GPOINTER_TO_INT(g_hash_table_lookup (self->last_node_lookup, node))) != 0)
-    g_hash_table_insert (self->node_lookup, node, GINT_TO_POINTER (old_id));
+  if (this->last_node_lookup &&
+      (old_id = GPOINTER_TO_INT(g_hash_table_lookup (this->last_node_lookup, node))) != 0)
+    g_hash_table_insert (this->node_lookup, node, GINT_TO_POINTER (old_id));
 
   collect_reused_child_nodes (renderer, node);
 }
@@ -382,22 +382,22 @@ add_new_node (GskRenderer *renderer,
               BroadwayNodeType type,
               graphene_rect_t *clip_bounds)
 {
-  GskBroadwayRenderer *self = GSK_BROADWAY_RENDERER (renderer);
+  GskBroadwayRenderer *this = GSK_BROADWAY_RENDERER (renderer);
   guint32 id, old_id;
 
-  if (self->last_node_lookup &&
-      (old_id = GPOINTER_TO_INT (g_hash_table_lookup (self->last_node_lookup, node))) != 0)
+  if (this->last_node_lookup &&
+      (old_id = GPOINTER_TO_INT (g_hash_table_lookup (this->last_node_lookup, node))) != 0)
     {
-      add_uint32 (self->nodes, BROADWAY_NODE_REUSE);
-      add_uint32 (self->nodes, old_id);
+      add_uint32 (this->nodes, BROADWAY_NODE_REUSE);
+      add_uint32 (this->nodes, old_id);
 
-      g_hash_table_insert (self->node_lookup, node, GINT_TO_POINTER(old_id));
+      g_hash_table_insert (this->node_lookup, node, GINT_TO_POINTER(old_id));
       collect_reused_child_nodes (renderer, node);
 
       return FALSE;
     }
 
-  id = ++self->next_node_id;
+  id = ++this->next_node_id;
 
   /* Never try to reuse partially visible container types the next
    * frame, as they could be be partial due to pruning against clip_bounds,
@@ -412,10 +412,10 @@ add_new_node (GskRenderer *renderer,
    */
   if (!node_type_is_container (type) ||
       node_is_fully_visible (node, clip_bounds))
-    g_hash_table_insert (self->node_lookup, node, GINT_TO_POINTER(id));
+    g_hash_table_insert (this->node_lookup, node, GINT_TO_POINTER(id));
 
-  add_uint32 (self->nodes, type);
-  add_uint32 (self->nodes, id);
+  add_uint32 (this->nodes, type);
+  add_uint32 (this->nodes, id);
 
   return TRUE;
 }
@@ -581,8 +581,8 @@ gsk_broadway_renderer_add_node (GskRenderer *renderer,
 {
   GdkDisplay *display = gdk_surface_get_display (gsk_renderer_get_surface (renderer));
   GdkBroadwayDisplay *broadway_display = GDK_BROADWAY_DISPLAY (display);
-  GskBroadwayRenderer *self = GSK_BROADWAY_RENDERER (renderer);
-  GArray *nodes = self->nodes;
+  GskBroadwayRenderer *this = GSK_BROADWAY_RENDERER (renderer);
+  GArray *nodes = this->nodes;
 
   switch (gsk_render_node_get_node_type (node))
     {
@@ -598,7 +598,7 @@ gsk_broadway_renderer_add_node (GskRenderer *renderer,
           GdkTexture *texture = gsk_texture_node_get_texture (node);
           guint32 texture_id;
 
-          /* No need to add to self->node_textures here, the node will keep it alive until end of frame. */
+          /* No need to add to this->node_textures here, the node will keep it alive until end of frame. */
 
           texture_id = gdk_broadway_display_ensure_texture (display, texture);
 
@@ -633,7 +633,7 @@ gsk_broadway_renderer_add_node (GskRenderer *renderer,
             }
 
           texture = gdk_texture_new_for_surface (image_surface);
-          g_ptr_array_add (self->node_textures, texture); /* Transfers ownership to node_textures */
+          g_ptr_array_add (this->node_textures, texture); /* Transfers ownership to node_textures */
           texture_id = gdk_broadway_display_ensure_texture (display, texture);
 
           add_rect (nodes, &node->bounds, offset_x, offset_y);
@@ -921,7 +921,7 @@ gsk_broadway_renderer_add_node (GskRenderer *renderer,
       cairo_destroy (cr);
 
       texture = gdk_texture_new_for_surface (surface);
-      g_ptr_array_add (self->node_textures, texture); /* Transfers ownership to node_textures */
+      g_ptr_array_add (this->node_textures, texture); /* Transfers ownership to node_textures */
 
       texture_id = gdk_broadway_display_ensure_texture (display, texture);
       add_float (nodes, x - offset_x);
@@ -939,41 +939,41 @@ gsk_broadway_renderer_render (GskRenderer          *renderer,
                               GskRenderNode        *root,
                               const cairo_region_t *update_area)
 {
-  GskBroadwayRenderer *self = GSK_BROADWAY_RENDERER (renderer);
+  GskBroadwayRenderer *this = GSK_BROADWAY_RENDERER (renderer);
 
-  self->node_lookup = g_hash_table_new (g_direct_hash, g_direct_equal);
+  this->node_lookup = g_hash_table_new (g_direct_hash, g_direct_equal);
 
-  gdk_draw_context_begin_frame_full (GDK_DRAW_CONTEXT (self->draw_context), NULL, GDK_MEMORY_U8, update_area, NULL);
+  gdk_draw_context_begin_frame_full (GDK_DRAW_CONTEXT (this->draw_context), NULL, GDK_MEMORY_U8, update_area, NULL);
 
   /* These are owned by the draw context between begin and end, but
      cache them here for easier access during the render */
-  self->nodes = self->draw_context->nodes;
-  self->node_textures = self->draw_context->node_textures;
+  this->nodes = this->draw_context->nodes;
+  this->node_textures = this->draw_context->node_textures;
 
   gsk_broadway_renderer_add_node (renderer, root, 0, 0, NULL);
 
-  self->nodes = NULL;
-  self->node_textures = NULL;
+  this->nodes = NULL;
+  this->node_textures = NULL;
 
-  gdk_draw_context_end_frame_full (GDK_DRAW_CONTEXT (self->draw_context), NULL);
+  gdk_draw_context_end_frame_full (GDK_DRAW_CONTEXT (this->draw_context), NULL);
 
-  if (self->last_node_lookup)
-    g_hash_table_unref (self->last_node_lookup);
-  self->last_node_lookup = self->node_lookup;
-  self->node_lookup = NULL;
+  if (this->last_node_lookup)
+    g_hash_table_unref (this->last_node_lookup);
+  this->last_node_lookup = this->node_lookup;
+  this->node_lookup = NULL;
 
-  if (self->last_root)
-    gsk_render_node_unref (self->last_root);
-  self->last_root = gsk_render_node_ref (root);
+  if (this->last_root)
+    gsk_render_node_unref (this->last_root);
+  this->last_root = gsk_render_node_ref (root);
 
-  if (self->next_node_id > G_MAXUINT32 / 2)
+  if (this->next_node_id > G_MAXUINT32 / 2)
     {
       /* We're "near" a wrap of the ids, lets avoid reusing any of
        * these nodes next frame, then we can reset the id counter
        * without risk of any old nodes sticking around and conflicting. */
 
-      g_hash_table_remove_all (self->last_node_lookup);
-      self->next_node_id = 0;
+      g_hash_table_remove_all (this->last_node_lookup);
+      this->next_node_id = 0;
     }
 }
 
@@ -989,7 +989,7 @@ gsk_broadway_renderer_class_init (GskBroadwayRendererClass *klass)
 }
 
 static void
-gsk_broadway_renderer_init (GskBroadwayRenderer *self)
+gsk_broadway_renderer_init (GskBroadwayRenderer *this)
 {
 }
 

@@ -47,7 +47,7 @@ G_DEFINE_TYPE (GdkMacosCairoContext, _gdk_macos_cairo_context, GDK_TYPE_CAIRO_CO
 static cairo_t *
 _gdk_macos_cairo_context_cairo_create (GdkCairoContext *cairo_context)
 {
-  GdkMacosCairoContext *self = (GdkMacosCairoContext *)cairo_context;
+  GdkMacosCairoContext *this = (GdkMacosCairoContext *)cairo_context;
   const cairo_region_t *damage;
   cairo_surface_t *image_surface;
   GdkMacosBuffer *buffer;
@@ -60,9 +60,9 @@ _gdk_macos_cairo_context_cairo_create (GdkCairoContext *cairo_context)
   guint stride;
   gboolean opaque;
 
-  g_assert (GDK_IS_MACOS_CAIRO_CONTEXT (self));
+  g_assert (GDK_IS_MACOS_CAIRO_CONTEXT (this));
 
-  surface = gdk_draw_context_get_surface (GDK_DRAW_CONTEXT (self));
+  surface = gdk_draw_context_get_surface (GDK_DRAW_CONTEXT (this));
   nswindow = _gdk_macos_surface_get_native (GDK_MACOS_SURFACE (surface));
   opaque = [nswindow isOpaque];
 
@@ -166,11 +166,11 @@ _gdk_macos_cairo_context_begin_frame (GdkDrawContext  *draw_context,
                                       GdkColorState  **out_color_state,
                                       GdkMemoryDepth  *out_depth)
 {
-  GdkMacosCairoContext *self = (GdkMacosCairoContext *)draw_context;
+  GdkMacosCairoContext *this = (GdkMacosCairoContext *)draw_context;
   GdkMacosBuffer *buffer;
   GdkMacosSurface *surface;
 
-  g_assert (GDK_IS_MACOS_CAIRO_CONTEXT (self));
+  g_assert (GDK_IS_MACOS_CAIRO_CONTEXT (this));
 
   [CATransaction begin];
   [CATransaction setDisableActions:YES];
@@ -220,11 +220,11 @@ _gdk_macos_cairo_context_end_frame (GdkDrawContext *draw_context,
                                     gpointer        context_data,
                                     cairo_region_t *painted)
 {
-  GdkMacosCairoContext *self = (GdkMacosCairoContext *)draw_context;
+  GdkMacosCairoContext *this = (GdkMacosCairoContext *)draw_context;
   GdkMacosSurface *surface;
   GdkMacosBuffer *buffer;
 
-  g_assert (GDK_IS_MACOS_CAIRO_CONTEXT (self));
+  g_assert (GDK_IS_MACOS_CAIRO_CONTEXT (this));
 
   surface = GDK_MACOS_SURFACE (gdk_draw_context_get_surface (draw_context));
   buffer = _gdk_macos_surface_get_buffer (surface);
@@ -279,6 +279,6 @@ _gdk_macos_cairo_context_class_init (GdkMacosCairoContextClass *klass)
 }
 
 static void
-_gdk_macos_cairo_context_init (GdkMacosCairoContext *self)
+_gdk_macos_cairo_context_init (GdkMacosCairoContext *this)
 {
 }

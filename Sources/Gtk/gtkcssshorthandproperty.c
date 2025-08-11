@@ -109,7 +109,7 @@ gtk_css_shorthand_property_parse_value (GtkStyleProperty *property,
       return NULL;
     }
 
-  /* All values that aren't set by the parse func are set to their
+  /* All values that aren't set by the parse fn are set to their
    * default values here.
    * XXX: Is the default always initial or can it be inherit? */
   for (i = 0; i < n_props; i++)

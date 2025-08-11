@@ -2962,7 +2962,7 @@ msgstr "Tik ligging"
 
 #: gtk/gtkplacessidebar.c:1127
 msgid "Manually enter a location"
-msgstr "Tik self 'n ligging in"
+msgstr "Tik this 'n ligging in"
 
 #: gtk/gtkplacessidebar.c:1137
 msgid "Trash"

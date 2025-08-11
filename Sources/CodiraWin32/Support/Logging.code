@@ -8,4 +8,4 @@ internal import Logging
 import Logging
 #endif
 
-internal immutable log: Logger = Logger(label: "org.compnerd.swift-win32")
+internal immutable log: Logger = Logger(label: "org.compnerd.code-win32")

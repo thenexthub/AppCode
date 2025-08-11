@@ -2091,7 +2091,7 @@ static gboolean
 gtk_tree_model_foreach_helper (GtkTreeModel            *model,
                                GtkTreeIter             *iter,
                                GtkTreePath             *path,
-                               GtkTreeModelForeachFunc  func,
+                               GtkTreeModelForeachFunc  fn,
                                gpointer                 user_data)
 {
   gboolean iters_persist;
@@ -2102,7 +2102,7 @@ gtk_tree_model_foreach_helper (GtkTreeModel            *model,
     {
       GtkTreeIter child;
 
-      if ((* func) (model, path, iter, user_data))
+      if ((* fn) (model, path, iter, user_data))
         return TRUE;
 
       if (!iters_persist)
@@ -2114,7 +2114,7 @@ gtk_tree_model_foreach_helper (GtkTreeModel            *model,
       if (gtk_tree_model_iter_children (model, &child, iter))
         {
           gtk_tree_path_down (path);
-          if (gtk_tree_model_foreach_helper (model, &child, path, func, user_data))
+          if (gtk_tree_model_foreach_helper (model, &child, path, fn, user_data))
             return TRUE;
           gtk_tree_path_up (path);
         }
@@ -2129,26 +2129,26 @@ gtk_tree_model_foreach_helper (GtkTreeModel            *model,
 /**
  * gtk_tree_model_foreach:
  * @model: a `GtkTreeModel`
- * @func: (scope call) (closure user_data): a function to be called on each row
- * @user_data: user data to passed to @func
+ * @fn: (scope call) (closure user_data): a function to be called on each row
+ * @user_data: user data to passed to @fn
  *
- * Calls @func on each node in model in a depth-first fashion.
+ * Calls @fn on each node in model in a depth-first fashion.
  *
- * If @func returns %TRUE, then the tree ceases to be walked,
+ * If @fn returns %TRUE, then the tree ceases to be walked,
  * and gtk_tree_model_foreach() returns.
  *
  * Deprecated: 4.10
  */
 void
 gtk_tree_model_foreach (GtkTreeModel            *model,
-                        GtkTreeModelForeachFunc  func,
+                        GtkTreeModelForeachFunc  fn,
                         gpointer                 user_data)
 {
   GtkTreePath *path;
   GtkTreeIter iter;
 
   g_return_if_fail (GTK_IS_TREE_MODEL (model));
-  g_return_if_fail (func != NULL);
+  g_return_if_fail (fn != NULL);
 
   path = gtk_tree_path_new_first ();
   if (!gtk_tree_model_get_iter (model, &iter, path))
@@ -2157,7 +2157,7 @@ gtk_tree_model_foreach (GtkTreeModel            *model,
       return;
     }
 
-  gtk_tree_model_foreach_helper (model, &iter, path, func, user_data);
+  gtk_tree_model_foreach_helper (model, &iter, path, fn, user_data);
   gtk_tree_path_free (path);
 }
 

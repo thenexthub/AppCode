@@ -70,5 +70,5 @@ void gtk_icon_paintable_set_debug (GtkIconPaintable *icon,
 void gtk_icon_paintable_set_icon_name (GtkIconPaintable *icon,
                                        const char       *name);
 
-void gtk_icon_paintable_load_in_thread (GtkIconPaintable *self);
+void gtk_icon_paintable_load_in_thread (GtkIconPaintable *this);
 

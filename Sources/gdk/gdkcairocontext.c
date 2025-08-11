@@ -52,13 +52,13 @@ gdk_cairo_context_class_init (GdkCairoContextClass *klass)
 }
 
 static void
-gdk_cairo_context_init (GdkCairoContext *self)
+gdk_cairo_context_init (GdkCairoContext *this)
 {
 }
 
 /**
  * gdk_cairo_context_cairo_create:
- * @self: a `GdkCairoContext` that is currently drawing
+ * @this: a `GdkCairoContext` that is currently drawing
  *
  * Retrieves a Cairo context to be used to draw on the `GdkSurface`
  * of @context.
@@ -76,22 +76,22 @@ gdk_cairo_context_init (GdkCairoContext *self)
  *   Cairo rendernodes, not by using renderers.
  */
 cairo_t *
-gdk_cairo_context_cairo_create (GdkCairoContext *self)
+gdk_cairo_context_cairo_create (GdkCairoContext *this)
 {
   GdkDrawContext *draw_context;
   cairo_t *cr;
   double scale;
 
-  g_return_val_if_fail (GDK_IS_CAIRO_CONTEXT (self), NULL);
+  g_return_val_if_fail (GDK_IS_CAIRO_CONTEXT (this), NULL);
 
-  draw_context = GDK_DRAW_CONTEXT (self);
+  draw_context = GDK_DRAW_CONTEXT (this);
 
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS
   if (!gdk_draw_context_is_in_frame (draw_context))
     return NULL;
 G_GNUC_END_IGNORE_DEPRECATIONS
 
-  cr = GDK_CAIRO_CONTEXT_GET_CLASS (self)->cairo_create (self);
+  cr = GDK_CAIRO_CONTEXT_GET_CLASS (this)->cairo_create (this);
 
   gdk_cairo_region (cr, gdk_draw_context_get_render_region (draw_context));
   cairo_clip (cr);

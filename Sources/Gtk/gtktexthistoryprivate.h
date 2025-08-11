@@ -49,33 +49,33 @@ struct _GtkTextHistoryFuncs
 
 GtkTextHistory *gtk_text_history_new                       (const GtkTextHistoryFuncs *funcs,
                                                             gpointer                   funcs_data);
-void            gtk_text_history_begin_user_action         (GtkTextHistory            *self);
-void            gtk_text_history_end_user_action           (GtkTextHistory            *self);
-void            gtk_text_history_begin_irreversible_action (GtkTextHistory            *self);
-void            gtk_text_history_end_irreversible_action   (GtkTextHistory            *self);
-gboolean        gtk_text_history_get_can_undo              (GtkTextHistory            *self);
-gboolean        gtk_text_history_get_can_redo              (GtkTextHistory            *self);
-void            gtk_text_history_undo                      (GtkTextHistory            *self);
-void            gtk_text_history_redo                      (GtkTextHistory            *self);
-guint           gtk_text_history_get_max_undo_levels       (GtkTextHistory            *self);
-void            gtk_text_history_set_max_undo_levels       (GtkTextHistory            *self,
+void            gtk_text_history_begin_user_action         (GtkTextHistory            *this);
+void            gtk_text_history_end_user_action           (GtkTextHistory            *this);
+void            gtk_text_history_begin_irreversible_action (GtkTextHistory            *this);
+void            gtk_text_history_end_irreversible_action   (GtkTextHistory            *this);
+gboolean        gtk_text_history_get_can_undo              (GtkTextHistory            *this);
+gboolean        gtk_text_history_get_can_redo              (GtkTextHistory            *this);
+void            gtk_text_history_undo                      (GtkTextHistory            *this);
+void            gtk_text_history_redo                      (GtkTextHistory            *this);
+guint           gtk_text_history_get_max_undo_levels       (GtkTextHistory            *this);
+void            gtk_text_history_set_max_undo_levels       (GtkTextHistory            *this,
                                                             guint                      max_undo_levels);
-void            gtk_text_history_modified_changed          (GtkTextHistory            *self,
+void            gtk_text_history_modified_changed          (GtkTextHistory            *this,
                                                             gboolean                   modified);
-void            gtk_text_history_selection_changed         (GtkTextHistory            *self,
+void            gtk_text_history_selection_changed         (GtkTextHistory            *this,
                                                             int                        selection_insert,
                                                             int                        selection_bound);
-void            gtk_text_history_text_inserted             (GtkTextHistory            *self,
+void            gtk_text_history_text_inserted             (GtkTextHistory            *this,
                                                             guint                      position,
                                                             const char                *text,
                                                             int                        len);
-void            gtk_text_history_text_deleted              (GtkTextHistory            *self,
+void            gtk_text_history_text_deleted              (GtkTextHistory            *this,
                                                             guint                      begin,
                                                             guint                      end,
                                                             const char                *text,
                                                             int                        len);
-gboolean        gtk_text_history_get_enabled               (GtkTextHistory            *self);
-void            gtk_text_history_set_enabled               (GtkTextHistory            *self,
+gboolean        gtk_text_history_get_enabled               (GtkTextHistory            *this);
+void            gtk_text_history_set_enabled               (GtkTextHistory            *this,
                                                             gboolean                   enabled);
 
 G_END_DECLS

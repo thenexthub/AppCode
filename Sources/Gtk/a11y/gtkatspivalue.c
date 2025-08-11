@@ -111,8 +111,8 @@ handle_value_set_property (GDBusConnection  *connection,
                            GError          **error,
                            gpointer          user_data)
 {
-  GtkATContext *self = user_data;
-  GtkAccessibleRange *range = GTK_ACCESSIBLE_RANGE (gtk_at_context_get_accessible (self));
+  GtkATContext *this = user_data;
+  GtkAccessibleRange *range = GTK_ACCESSIBLE_RANGE (gtk_at_context_get_accessible (this));
 
   if (g_strcmp0 (property_name, "CurrentValue") == 0)
     return gtk_accessible_range_set_current_value (range, g_variant_get_double (value));

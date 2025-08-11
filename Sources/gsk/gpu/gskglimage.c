@@ -34,22 +34,22 @@ static void
 gsk_gl_image_get_projection_matrix (GskGpuImage       *image,
                                     graphene_matrix_t *out_projection)
 {
-  GskGLImage *self = GSK_GL_IMAGE (image);
+  GskGLImage *this = GSK_GL_IMAGE (image);
 
   GSK_GPU_IMAGE_CLASS (gsk_gl_image_parent_class)->get_projection_matrix (image, out_projection);
 
-  if (self->texture_id[0] == 0)
+  if (this->texture_id[0] == 0)
     graphene_matrix_scale (out_projection, 1.f, -1.f, 1.f);
 }
 
 static gsize
-gsk_gl_image_get_n_textures (GskGLImage *self)
+gsk_gl_image_get_n_textures (GskGLImage *this)
 {
   gsize n;
 
   for (n = 1; n < 3; n++)
     {
-      if (self->texture_id[n] == 0)
+      if (this->texture_id[n] == 0)
         break;
     }
 
@@ -59,21 +59,21 @@ gsk_gl_image_get_n_textures (GskGLImage *self)
 static void
 gsk_gl_image_finalize (GObject *object)
 {
-  GskGLImage *self = GSK_GL_IMAGE (object);
-  gsize n_textures = gsk_gl_image_get_n_textures (self);
+  GskGLImage *this = GSK_GL_IMAGE (object);
+  gsize n_textures = gsk_gl_image_get_n_textures (this);
 
 
-  if (self->texture_id[0] && self->framebuffer_id)
-    glDeleteFramebuffers (1, &self->framebuffer_id);
+  if (this->texture_id[0] && this->framebuffer_id)
+    glDeleteFramebuffers (1, &this->framebuffer_id);
 
-  if (self->owns_texture)
-    glDeleteTextures (n_textures, self->texture_id);
+  if (this->owns_texture)
+    glDeleteTextures (n_textures, this->texture_id);
 
-  if (self->memory_id[0])
-    glDeleteMemoryObjectsEXT (n_textures, self->memory_id);
+  if (this->memory_id[0])
+    glDeleteMemoryObjectsEXT (n_textures, this->memory_id);
 
-  if (self->semaphore_id)
-    glDeleteSemaphoresEXT (1, &self->semaphore_id);
+  if (this->semaphore_id)
+    glDeleteSemaphoresEXT (1, &this->semaphore_id);
 
   G_OBJECT_CLASS (gsk_gl_image_parent_class)->finalize (object);
 }
@@ -90,7 +90,7 @@ gsk_gl_image_class_init (GskGLImageClass *klass)
 }
 
 static void
-gsk_gl_image_init (GskGLImage *self)
+gsk_gl_image_init (GskGLImage *this)
 {
 }
 
@@ -102,13 +102,13 @@ gsk_gl_image_new_backbuffer (GskGLDevice    *device,
                              gsize           width,
                              gsize           height)
 {
-  GskGLImage *self;
+  GskGLImage *this;
   GskGpuImageFlags flags;
   GskGpuConversion conv;
   GdkSwizzle swizzle;
   GLint gl_internal_format, gl_internal_srgb_format;
 
-  self = g_object_new (GSK_TYPE_GL_IMAGE, NULL);
+  this = g_object_new (GSK_TYPE_GL_IMAGE, NULL);
 
   /* We only do this so these variables get initialized */
   gsk_gl_device_find_gl_format (device,
@@ -118,25 +118,25 @@ gsk_gl_image_new_backbuffer (GskGLDevice    *device,
                                 &flags,
                                 &gl_internal_format,
                                 &gl_internal_srgb_format,
-                                &self->gl_format[0],
-                                &self->gl_type[0],
+                                &this->gl_format[0],
+                                &this->gl_type[0],
                                 &swizzle);
 
   if (is_srgb)
     {
       if (gl_internal_srgb_format != -1)
-        self->gl_internal_format[0] = gl_internal_srgb_format;
+        this->gl_internal_format[0] = gl_internal_srgb_format;
       else /* FIXME: Happens when the driver uses formats that it does not expose */
-        self->gl_internal_format[0] = gl_internal_format;
+        this->gl_internal_format[0] = gl_internal_format;
       conv = GSK_GPU_CONVERSION_SRGB;
     }
   else
     {
-      self->gl_internal_format[0] = gl_internal_format;
+      this->gl_internal_format[0] = gl_internal_format;
       conv = GSK_GPU_CONVERSION_NONE;
     }
 
-  gsk_gpu_image_setup (GSK_GPU_IMAGE (self),
+  gsk_gpu_image_setup (GSK_GPU_IMAGE (this),
                        flags,
                        conv,
                        gdk_memory_format_get_default_shader_op (format),
@@ -149,9 +149,9 @@ gsk_gl_image_new_backbuffer (GskGLDevice    *device,
    * IOSurface to a GL_TEXTURE_RECTANGLE. Otherwise, no scissor clip will
    * be applied in the command queue causing overdrawing.
    */
-  self->framebuffer_id = GDK_GL_CONTEXT_GET_CLASS (context)->get_default_framebuffer (context);
+  this->framebuffer_id = GDK_GL_CONTEXT_GET_CLASS (context)->get_default_framebuffer (context);
 
-  return GSK_GPU_IMAGE (self);
+  return GSK_GPU_IMAGE (this);
 }
 
 GskGpuImage *
@@ -162,7 +162,7 @@ gsk_gl_image_new (GskGLDevice      *device,
                   gsize             width,
                   gsize             height)
 {
-  GskGLImage *self;
+  GskGLImage *this;
   GdkSwizzle swizzle[3];
   GskGpuImageFlags flags;
   GskGpuConversion conv;
@@ -176,7 +176,7 @@ gsk_gl_image_new (GskGLDevice      *device,
 
   shader_op = gdk_memory_format_get_default_shader_op (format);
   n_textures = gdk_shader_op_get_n_shaders (shader_op);
-  self = g_object_new (GSK_TYPE_GL_IMAGE, NULL);
+  this = g_object_new (GSK_TYPE_GL_IMAGE, NULL);
 
   if (n_textures == 1 || (required_flags & (~GSK_GPU_IMAGE_FILTERABLE)) != 0)
     {
@@ -189,18 +189,18 @@ gsk_gl_image_new (GskGLDevice      *device,
                                     &flags,
                                     &gl_internal_format,
                                     &gl_internal_srgb_format,
-                                    &self->gl_format[0],
-                                    &self->gl_type[0],
+                                    &this->gl_format[0],
+                                    &this->gl_type[0],
                                     &swizzle[0]);
 
       if (try_srgb && gl_internal_srgb_format != -1)
         {
-          self->gl_internal_format[0] = gl_internal_srgb_format;
+          this->gl_internal_format[0] = gl_internal_srgb_format;
           conv = GSK_GPU_CONVERSION_SRGB;
         }
       else
         {
-          self->gl_internal_format[0] = gl_internal_format;
+          this->gl_internal_format[0] = gl_internal_format;
           conv = GSK_GPU_CONVERSION_NONE;
         }
     }
@@ -214,10 +214,10 @@ gsk_gl_image_new (GskGLDevice      *device,
           if (!gdk_memory_format_gl_format (format,
                                             i,
                                             gdk_gl_context_get_use_es (context),
-                                            &self->gl_internal_format[i],
+                                            &this->gl_internal_format[i],
                                             &srgb_format,
-                                            &self->gl_format[i],
-                                            &self->gl_type[i],
+                                            &this->gl_format[i],
+                                            &this->gl_type[i],
                                             &swizzle[i]))
             {
               g_assert_not_reached ();
@@ -228,22 +228,22 @@ gsk_gl_image_new (GskGLDevice      *device,
       conv = GSK_GPU_CONVERSION_NONE;
     }
 
-  gsk_gpu_image_setup (GSK_GPU_IMAGE (self),
+  gsk_gpu_image_setup (GSK_GPU_IMAGE (this),
                        flags,
                        conv,
                        gdk_memory_format_get_default_shader_op (format),
                        format,
                        width, height);
 
-  glGenTextures (n_textures, self->texture_id);
-  self->owns_texture = TRUE;
+  glGenTextures (n_textures, this->texture_id);
+  this->owns_texture = TRUE;
 
   for (i = 0; i < n_textures; i++)
     {
       gsize width_subsample, height_subsample, bpp;
 
       glActiveTexture (GL_TEXTURE0);
-      glBindTexture (GL_TEXTURE_2D, self->texture_id[i]);
+      glBindTexture (GL_TEXTURE_2D, this->texture_id[i]);
 
       glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
       glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -255,7 +255,7 @@ gsk_gl_image_new (GskGLDevice      *device,
                                           &width_subsample,
                                           &height_subsample,
                                           &bpp);
-      glTexImage2D (GL_TEXTURE_2D, 0, self->gl_internal_format[i], width / width_subsample, height / height_subsample, 0, self->gl_format[i], self->gl_type[i], NULL);
+      glTexImage2D (GL_TEXTURE_2D, 0, this->gl_internal_format[i], width / width_subsample, height / height_subsample, 0, this->gl_format[i], this->gl_type[i], NULL);
 
       /* Only apply swizzle if really needed, might not even be
        * supported if default values are set
@@ -273,7 +273,7 @@ gsk_gl_image_new (GskGLDevice      *device,
         }
     }
 
-  return GSK_GPU_IMAGE (self);
+  return GSK_GPU_IMAGE (this);
 }
 
 GskGpuImage *
@@ -289,7 +289,7 @@ gsk_gl_image_new_for_texture (GskGLDevice      *device,
 {
   GdkMemoryFormat format, real_format;
   GskGpuImageFlags flags;
-  GskGLImage *self;
+  GskGLImage *this;
   GLint gl_internal_format, gl_internal_srgb_format;
   GdkSwizzle swizzle;
   GdkShaderOp shader_op;
@@ -299,7 +299,7 @@ gsk_gl_image_new_for_texture (GskGLDevice      *device,
 
   format = gdk_texture_get_format (owner);
 
-  self = g_object_new (GSK_TYPE_GL_IMAGE, NULL);
+  this = g_object_new (GSK_TYPE_GL_IMAGE, NULL);
 
   gsk_gl_device_find_gl_format (device,
                                 format,
@@ -308,11 +308,11 @@ gsk_gl_image_new_for_texture (GskGLDevice      *device,
                                 &flags,
                                 &gl_internal_format,
                                 &gl_internal_srgb_format,
-                                &self->gl_format[0],
-                                &self->gl_type[0],
+                                &this->gl_format[0],
+                                &this->gl_type[0],
                                 &swizzle);
 
-  self->gl_internal_format[0] = gl_internal_format;
+  this->gl_internal_format[0] = gl_internal_format;
 
   if (format != real_format)
     {
@@ -334,23 +334,23 @@ gsk_gl_image_new_for_texture (GskGLDevice      *device,
       shader_op = GDK_SHADER_DEFAULT;
     }
 
-  gsk_gpu_image_setup (GSK_GPU_IMAGE (self),
+  gsk_gpu_image_setup (GSK_GPU_IMAGE (this),
                        flags | extra_flags,
                        conv,
                        shader_op,
                        format,
                        gdk_texture_get_width (owner),
                        gdk_texture_get_height (owner));
-  gsk_gpu_image_toggle_ref_texture (GSK_GPU_IMAGE (self), owner);
+  gsk_gpu_image_toggle_ref_texture (GSK_GPU_IMAGE (this), owner);
 
   for (i = 0; i < n_textures; i++)
     {
-      self->texture_id[i] = tex_id[i];
+      this->texture_id[i] = tex_id[i];
       if (mem_id)
-        self->memory_id[i] = mem_id[i];
+        this->memory_id[i] = mem_id[i];
     }
-  self->semaphore_id = semaphore_id;
-  self->owns_texture = take_ownership;
+  this->semaphore_id = semaphore_id;
+  this->owns_texture = take_ownership;
 
   /* XXX: We're waiting for the semaphore here, which is quite early.
    * And unexpected.
@@ -362,54 +362,54 @@ gsk_gl_image_new_for_texture (GskGLDevice      *device,
                           0, NULL,
                           n_textures, tex_id, (GLenum[1]) {GL_LAYOUT_GENERAL_EXT });
     }
-  return GSK_GPU_IMAGE (self);
+  return GSK_GPU_IMAGE (this);
 }
 
 void
-gsk_gl_image_bind_textures (GskGLImage *self,
+gsk_gl_image_bind_textures (GskGLImage *this,
                             GLenum      target)
 {
-  if (gsk_gpu_image_get_flags (GSK_GPU_IMAGE (self)) & GSK_GPU_IMAGE_EXTERNAL)
+  if (gsk_gpu_image_get_flags (GSK_GPU_IMAGE (this)) & GSK_GPU_IMAGE_EXTERNAL)
     {
       glActiveTexture (target);
-      glBindTexture (GL_TEXTURE_EXTERNAL_OES, self->texture_id[0]);
+      glBindTexture (GL_TEXTURE_EXTERNAL_OES, this->texture_id[0]);
     }
   else
     {
       gsize i;
 
-      for (i = 0; self->texture_id[i]; i++)
+      for (i = 0; this->texture_id[i]; i++)
         {
           glActiveTexture (target + i);
-          glBindTexture (GL_TEXTURE_2D, self->texture_id[i]);
+          glBindTexture (GL_TEXTURE_2D, this->texture_id[i]);
         }
     }
 }
 
 void
-gsk_gl_image_bind_framebuffer_target (GskGLImage *self,
+gsk_gl_image_bind_framebuffer_target (GskGLImage *this,
                                       GLenum      target)
 {
   GLenum status;
 
-  if (self->framebuffer_id)
+  if (this->framebuffer_id)
     {
-      glBindFramebuffer (target, self->framebuffer_id);
+      glBindFramebuffer (target, this->framebuffer_id);
       return;
     }
 
   /* We're the renderbuffer */
-  if (self->texture_id[0] == 0)
+  if (this->texture_id[0] == 0)
     {
       glBindFramebuffer (target, 0);
       return;
     }
 
-  g_assert (self->texture_id[1] == 0);
+  g_assert (this->texture_id[1] == 0);
 
-  glGenFramebuffers (1, &self->framebuffer_id);
-  glBindFramebuffer (target, self->framebuffer_id);
-  glFramebufferTexture2D (target, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self->texture_id[0], 0);
+  glGenFramebuffers (1, &this->framebuffer_id);
+  glBindFramebuffer (target, this->framebuffer_id);
+  glFramebufferTexture2D (target, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->texture_id[0], 0);
   status = glCheckFramebufferStatus (target);
 
   switch (status)
@@ -440,51 +440,51 @@ gsk_gl_image_bind_framebuffer_target (GskGLImage *self,
 }
 
 void
-gsk_gl_image_bind_framebuffer (GskGLImage *self)
+gsk_gl_image_bind_framebuffer (GskGLImage *this)
 {
-  gsk_gl_image_bind_framebuffer_target (self, GL_FRAMEBUFFER);
+  gsk_gl_image_bind_framebuffer_target (this, GL_FRAMEBUFFER);
 }
 
 gboolean
-gsk_gl_image_is_flipped (GskGLImage *self)
+gsk_gl_image_is_flipped (GskGLImage *this)
 {
-  return self->texture_id[0] == 0;
+  return this->texture_id[0] == 0;
 }
 
 GLint
-gsk_gl_image_get_gl_internal_format (GskGLImage *self,
+gsk_gl_image_get_gl_internal_format (GskGLImage *this,
                                      gsize       nth)
 {
-  return self->gl_internal_format[nth];
+  return this->gl_internal_format[nth];
 }
 
 GLenum
-gsk_gl_image_get_gl_format (GskGLImage *self,
+gsk_gl_image_get_gl_format (GskGLImage *this,
                             gsize       nth)
 {
-  return self->gl_format[nth];
+  return this->gl_format[nth];
 }
 
 GLenum
-gsk_gl_image_get_gl_type (GskGLImage *self,
+gsk_gl_image_get_gl_type (GskGLImage *this,
                           gsize       nth)
 {
-  return self->gl_type[nth];
+  return this->gl_type[nth];
 }
 
 GLuint
-gsk_gl_image_get_texture_id (GskGLImage *self,
+gsk_gl_image_get_texture_id (GskGLImage *this,
                              gsize       nth)
 {
-  return self->texture_id[nth];
+  return this->texture_id[nth];
 }
 
 void
-gsk_gl_image_steal_texture_ownership (GskGLImage *self)
+gsk_gl_image_steal_texture_ownership (GskGLImage *this)
 {
-  g_assert (self->texture_id[0]);
-  g_assert (self->owns_texture);
+  g_assert (this->texture_id[0]);
+  g_assert (this->owns_texture);
 
-  self->owns_texture = FALSE;
+  this->owns_texture = FALSE;
 }
 

@@ -207,9 +207,9 @@ gtk_cell_renderer_combo_class_init (GtkCellRendererComboClass *klass)
 }
 
 static void
-gtk_cell_renderer_combo_init (GtkCellRendererCombo *self)
+gtk_cell_renderer_combo_init (GtkCellRendererCombo *this)
 {
-  GtkCellRendererComboPrivate *priv = gtk_cell_renderer_combo_get_instance_private (self);
+  GtkCellRendererComboPrivate *priv = gtk_cell_renderer_combo_get_instance_private (this);
 
   priv->model = NULL;
   priv->text_column = -1;

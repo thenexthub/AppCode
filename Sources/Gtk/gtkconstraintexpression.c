@@ -692,7 +692,7 @@ struct _GtkConstraintExpression
 
 /*< private >
  * gtk_constraint_expression_add_term:
- * @self: a `GtkConstraintExpression`
+ * @this: a `GtkConstraintExpression`
  * @variable: a `GtkConstraintVariable`
  * @coefficient: a coefficient for @variable
  *
@@ -702,57 +702,57 @@ struct _GtkConstraintExpression
  * The @expression acquires a reference on @variable.
  */
 static void
-gtk_constraint_expression_add_term (GtkConstraintExpression *self,
+gtk_constraint_expression_add_term (GtkConstraintExpression *this,
                                     GtkConstraintVariable *variable,
                                     double coefficient)
 {
   Term *term;
 
-  if (self->terms == NULL)
+  if (this->terms == NULL)
     {
-      g_assert (self->first_term == NULL && self->last_term == NULL);
-      self->terms = g_hash_table_new_full (NULL, NULL,
+      g_assert (this->first_term == NULL && this->last_term == NULL);
+      this->terms = g_hash_table_new_full (NULL, NULL,
                                            NULL,
                                            term_free);
     }
 
   term = term_new (variable, coefficient);
 
-  g_hash_table_insert (self->terms, term->variable, term);
+  g_hash_table_insert (this->terms, term->variable, term);
 
-  if (self->first_term == NULL)
-    self->first_term = term;
+  if (this->first_term == NULL)
+    this->first_term = term;
 
-  term->prev = self->last_term;
+  term->prev = this->last_term;
 
-  if (self->last_term != NULL)
-    self->last_term->next = term;
+  if (this->last_term != NULL)
+    this->last_term->next = term;
 
-  self->last_term = term;
+  this->last_term = term;
 
   /* Increase the age of the expression, so that we can catch
    * mutations from within an iteration over the terms
    */
-  self->age += 1;
+  this->age += 1;
 }
 
 static void
-gtk_constraint_expression_remove_term (GtkConstraintExpression *self,
+gtk_constraint_expression_remove_term (GtkConstraintExpression *this,
                                        GtkConstraintVariable *variable)
 {
   Term *term, *iter;
 
-  if (self->terms == NULL)
+  if (this->terms == NULL)
     return;
 
-  term = g_hash_table_lookup (self->terms, variable);
+  term = g_hash_table_lookup (this->terms, variable);
   if (term == NULL)
     return;
 
   /* Keep the variable alive for the duration of the function */
   gtk_constraint_variable_ref (variable);
 
-  iter = self->first_term;
+  iter = this->first_term;
   while (iter != NULL)
     {
       Term *next = iter->next;
@@ -765,10 +765,10 @@ gtk_constraint_expression_remove_term (GtkConstraintExpression *self,
           if (next != NULL)
             next->prev = prev;
 
-          if (iter == self->first_term)
-            self->first_term = next;
-          if (iter == self->last_term)
-            self->last_term = prev;
+          if (iter == this->first_term)
+            this->first_term = next;
+          if (iter == this->last_term)
+            this->last_term = prev;
 
           iter->next = NULL;
           iter->prev = NULL;
@@ -779,11 +779,11 @@ gtk_constraint_expression_remove_term (GtkConstraintExpression *self,
       iter = next;
     }
 
-  g_hash_table_remove (self->terms, variable);
+  g_hash_table_remove (this->terms, variable);
 
   gtk_constraint_variable_unref (variable);
 
-  self->age += 1;
+  this->age += 1;
 }
 
 /*< private >
@@ -846,14 +846,14 @@ gtk_constraint_expression_ref (GtkConstraintExpression *expression)
 static void
 gtk_constraint_expression_clear (gpointer data)
 {
-  GtkConstraintExpression *self = data;
+  GtkConstraintExpression *this = data;
 
-  g_clear_pointer (&self->terms, g_hash_table_unref);
+  g_clear_pointer (&this->terms, g_hash_table_unref);
 
-  self->age = 0;
-  self->constant = 0.0;
-  self->first_term = NULL;
-  self->last_term = NULL;
+  this->age = 0;
+  this->constant = 0.0;
+  this->first_term = NULL;
+  this->last_term = NULL;
 }
 
 /*< private >

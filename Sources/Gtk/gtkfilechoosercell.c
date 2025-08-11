@@ -57,15 +57,15 @@ enum
 #define ICON_SIZE 16
 
 static void
-popup_menu (GtkFileChooserCell *self,
+popup_menu (GtkFileChooserCell *this,
             double              x,
             double              y)
 {
-  GtkWidget *widget = GTK_WIDGET (self);
+  GtkWidget *widget = GTK_WIDGET (this);
   GtkWidget *impl;
   graphene_point_t p;
 
-  gtk_widget_activate_action (GTK_WIDGET (self), "listitem.select", "(bb)", FALSE, FALSE);
+  gtk_widget_activate_action (GTK_WIDGET (this), "listitem.select", "(bb)", FALSE, FALSE);
 
   impl = gtk_widget_get_ancestor (widget, GTK_TYPE_FILE_CHOOSER_WIDGET);
 
@@ -73,9 +73,9 @@ popup_menu (GtkFileChooserCell *self,
                                  &GRAPHENE_POINT_INIT (x, y), &p))
     return;
 
-  if (self->list_item)
+  if (this->list_item)
     gtk_widget_activate_action (widget, "item.popup-file-list-menu",
-                                "(udd)", gtk_list_item_get_position (self->list_item), p.x, p.y);
+                                "(udd)", gtk_list_item_get_position (this->list_item), p.x, p.y);
 }
 
 static void
@@ -85,10 +85,10 @@ file_chooser_cell_clicked (GtkEventController *controller,
                            double              y)
 {
   GtkWidget *widget = gtk_event_controller_get_widget (controller);
-  GtkFileChooserCell *self = GTK_FILE_CHOOSER_CELL (widget);
+  GtkFileChooserCell *this = GTK_FILE_CHOOSER_CELL (widget);
 
   gtk_gesture_set_state (GTK_GESTURE (controller), GTK_EVENT_SEQUENCE_CLAIMED);
-  popup_menu (self, x, y);
+  popup_menu (this, x, y);
 }
 
 static void
@@ -97,10 +97,10 @@ file_chooser_cell_long_pressed (GtkEventController *controller,
                                 double              y)
 {
   GtkWidget *widget = gtk_event_controller_get_widget (controller);
-  GtkFileChooserCell *self = GTK_FILE_CHOOSER_CELL (widget);
+  GtkFileChooserCell *this = GTK_FILE_CHOOSER_CELL (widget);
 
   gtk_gesture_set_state (GTK_GESTURE (controller), GTK_EVENT_SEQUENCE_CLAIMED);
-  popup_menu (self, x, y);
+  popup_menu (this, x, y);
 }
 
 static GdkContentProvider *
@@ -116,24 +116,24 @@ drag_prepare_cb (GtkDragSource *source,
   GIcon *icon;
   int scale;
   GtkIconPaintable *paintable;
-  GtkFileChooserCell *self = user_data;
+  GtkFileChooserCell *this = user_data;
 
-  impl = GTK_FILE_CHOOSER_WIDGET (gtk_widget_get_ancestor (GTK_WIDGET (self),
+  impl = GTK_FILE_CHOOSER_WIDGET (gtk_widget_get_ancestor (GTK_WIDGET (this),
                                                            GTK_TYPE_FILE_CHOOSER_WIDGET));
 
-  if (self->list_item && !gtk_list_item_get_selected (self->list_item))
+  if (this->list_item && !gtk_list_item_get_selected (this->list_item))
     {
-      gtk_widget_activate_action (GTK_WIDGET (self), "listitem.select", "(bb)", FALSE, FALSE);
+      gtk_widget_activate_action (GTK_WIDGET (this), "listitem.select", "(bb)", FALSE, FALSE);
     }
 
   selection = gtk_file_chooser_widget_get_selected_files (impl);
   if (!selection)
     return NULL;
 
-  scale = gtk_widget_get_scale_factor (GTK_WIDGET (self));
-  icon_theme = gtk_icon_theme_get_for_display (gtk_widget_get_display (GTK_WIDGET (self)));
+  scale = gtk_widget_get_scale_factor (GTK_WIDGET (this));
+  icon_theme = gtk_icon_theme_get_for_display (gtk_widget_get_display (GTK_WIDGET (this)));
 
-  icon = _gtk_file_info_get_icon (self->item, ICON_SIZE, scale, icon_theme);
+  icon = _gtk_file_info_get_icon (this->item, ICON_SIZE, scale, icon_theme);
 
   paintable = gtk_icon_theme_lookup_by_gicon (icon_theme,icon, ICON_SIZE, scale, GTK_TEXT_DIR_NONE, 0);
 
@@ -148,7 +148,7 @@ drag_prepare_cb (GtkDragSource *source,
 }
 
 static void
-gtk_file_chooser_cell_init (GtkFileChooserCell *self)
+gtk_file_chooser_cell_init (GtkFileChooserCell *this)
 {
   GtkGesture *gesture;
   GtkDragSource *drag_source;
@@ -156,15 +156,15 @@ gtk_file_chooser_cell_init (GtkFileChooserCell *self)
   gesture = gtk_gesture_click_new ();
   gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (gesture), GDK_BUTTON_SECONDARY);
   g_signal_connect (gesture, "pressed", G_CALLBACK (file_chooser_cell_clicked), NULL);
-  gtk_widget_add_controller (GTK_WIDGET (self), GTK_EVENT_CONTROLLER (gesture));
+  gtk_widget_add_controller (GTK_WIDGET (this), GTK_EVENT_CONTROLLER (gesture));
 
   gesture = gtk_gesture_long_press_new ();
   gtk_gesture_single_set_touch_only (GTK_GESTURE_SINGLE (gesture), TRUE);
   g_signal_connect (gesture, "pressed", G_CALLBACK (file_chooser_cell_long_pressed), NULL);
 
   drag_source = gtk_drag_source_new ();
-  gtk_widget_add_controller (GTK_WIDGET (self), GTK_EVENT_CONTROLLER (drag_source));
-  g_signal_connect (drag_source, "prepare", G_CALLBACK (drag_prepare_cb), self);
+  gtk_widget_add_controller (GTK_WIDGET (this), GTK_EVENT_CONTROLLER (drag_source));
+  g_signal_connect (drag_source, "prepare", G_CALLBACK (drag_prepare_cb), this);
 }
 
 static void
@@ -179,10 +179,10 @@ gtk_file_chooser_cell_dispose (GObject *object)
 }
 
 static gboolean
-get_selectable (GtkFileChooserCell *self)
+get_selectable (GtkFileChooserCell *this)
 {
-  if (self->item)
-    return g_file_info_get_attribute_boolean (self->item, "filechooser::selectable");
+  if (this->item)
+    return g_file_info_get_attribute_boolean (this->item, "filechooser::selectable");
 
   return TRUE;
 }
@@ -193,22 +193,22 @@ gtk_file_chooser_cell_set_property (GObject      *object,
                                     const GValue *value,
                                     GParamSpec   *pspec)
 {
-  GtkFileChooserCell *self = GTK_FILE_CHOOSER_CELL (object);
+  GtkFileChooserCell *this = GTK_FILE_CHOOSER_CELL (object);
 
   switch (prop_id)
     {
     case PROP_ITEM:
-      self->item = g_value_get_object (value);
+      this->item = g_value_get_object (value);
 
-      if (get_selectable (self))
-        gtk_widget_remove_css_class (GTK_WIDGET (self), "dim-label");
+      if (get_selectable (this))
+        gtk_widget_remove_css_class (GTK_WIDGET (this), "dim-label");
       else
-        gtk_widget_add_css_class (GTK_WIDGET (self), "dim-label");
+        gtk_widget_add_css_class (GTK_WIDGET (this), "dim-label");
 
       break;
 
     case PROP_LIST_ITEM:
-      self->list_item = g_value_get_object (value);
+      this->list_item = g_value_get_object (value);
       break;
 
     default:
@@ -223,12 +223,12 @@ gtk_file_chooser_cell_get_property (GObject    *object,
                                     GValue     *value,
                                     GParamSpec *pspec)
 {
-  GtkFileChooserCell *self = GTK_FILE_CHOOSER_CELL (object);
+  GtkFileChooserCell *this = GTK_FILE_CHOOSER_CELL (object);
 
   switch (prop_id)
     {
     case PROP_ITEM:
-      g_value_set_object (value, self->item);
+      g_value_set_object (value, this->item);
       break;
 
     default:

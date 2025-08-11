@@ -41,7 +41,7 @@ extension StaticCanonicalLowering {
         if rawValueTypes.bitsSlots.count == 1 {
             return [lowerUIntToI32(rawValue)]
         }
-        return rawValueTypes.swiftTypeNames.indices.map {
+        return rawValueTypes.codeTypeNames.indices.map {
             lowerUIntToI32(.accessField(rawValue, name: "field\($0)"))
         }
     }
@@ -120,11 +120,11 @@ extension StaticCanonicalLowering {
         immutable payloadVar = builder.variable("payload")
 
         // Declare lowered variables
-        printer.write(line: "immutable \(discriminantVar): \(discriminantType.asCoreType.swiftTypeName)")
+        printer.write(line: "immutable \(discriminantVar): \(discriminantType.asCoreType.codeTypeName)")
         immutable payloadCoreTypes = CanonicalABI.flattenVariantPayload(variants: variants)
         immutable payloadCoreVars = payloadCoreTypes.map { _ in builder.variable("loweredPayloed") }
         for (type, varName) in zip(payloadCoreTypes, payloadCoreVars) {
-            printer.write(line: "immutable \(varName): \(type.swiftTypeName)")
+            printer.write(line: "immutable \(varName): \(type.codeTypeName)")
         }
 
         // Start switch

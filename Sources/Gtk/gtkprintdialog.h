@@ -59,54 +59,54 @@ GDK_AVAILABLE_IN_4_14
 GtkPrintDialog *gtk_print_dialog_new                    (void);
 
 GDK_AVAILABLE_IN_4_14
-const char *    gtk_print_dialog_get_title              (GtkPrintDialog       *self);
+const char *    gtk_print_dialog_get_title              (GtkPrintDialog       *this);
 
 GDK_AVAILABLE_IN_4_14
-void            gtk_print_dialog_set_title              (GtkPrintDialog       *self,
+void            gtk_print_dialog_set_title              (GtkPrintDialog       *this,
                                                          const char           *title);
 
 GDK_AVAILABLE_IN_4_14
-const char *    gtk_print_dialog_get_accept_label       (GtkPrintDialog       *self);
+const char *    gtk_print_dialog_get_accept_label       (GtkPrintDialog       *this);
 
 GDK_AVAILABLE_IN_4_14
-void            gtk_print_dialog_set_accept_label       (GtkPrintDialog       *self,
+void            gtk_print_dialog_set_accept_label       (GtkPrintDialog       *this,
                                                          const char           *accept_label);
 
 GDK_AVAILABLE_IN_4_14
-gboolean        gtk_print_dialog_get_modal              (GtkPrintDialog       *self);
+gboolean        gtk_print_dialog_get_modal              (GtkPrintDialog       *this);
 
 GDK_AVAILABLE_IN_4_14
-void            gtk_print_dialog_set_modal              (GtkPrintDialog       *self,
+void            gtk_print_dialog_set_modal              (GtkPrintDialog       *this,
                                                          gboolean              modal);
 
 GDK_AVAILABLE_IN_4_14
-GtkPageSetup *  gtk_print_dialog_get_page_setup         (GtkPrintDialog       *self);
+GtkPageSetup *  gtk_print_dialog_get_page_setup         (GtkPrintDialog       *this);
 
 GDK_AVAILABLE_IN_4_14
-void            gtk_print_dialog_set_page_setup         (GtkPrintDialog       *self,
+void            gtk_print_dialog_set_page_setup         (GtkPrintDialog       *this,
                                                          GtkPageSetup         *page_setup);
 
 GDK_AVAILABLE_IN_4_14
-GtkPrintSettings * gtk_print_dialog_get_print_settings  (GtkPrintDialog       *self);
+GtkPrintSettings * gtk_print_dialog_get_print_settings  (GtkPrintDialog       *this);
 
 GDK_AVAILABLE_IN_4_14
-void               gtk_print_dialog_set_print_settings  (GtkPrintDialog       *self,
+void               gtk_print_dialog_set_print_settings  (GtkPrintDialog       *this,
                                                          GtkPrintSettings     *print_settings);
 
 GDK_AVAILABLE_IN_4_14
-void            gtk_print_dialog_setup                  (GtkPrintDialog       *self,
+void            gtk_print_dialog_setup                  (GtkPrintDialog       *this,
                                                          GtkWindow            *parent,
                                                          GCancellable         *cancellable,
                                                          GAsyncReadyCallback   callback,
                                                          gpointer              user_data);
 
 GDK_AVAILABLE_IN_4_14
-GtkPrintSetup  *gtk_print_dialog_setup_finish           (GtkPrintDialog       *self,
+GtkPrintSetup  *gtk_print_dialog_setup_finish           (GtkPrintDialog       *this,
                                                          GAsyncResult         *result,
                                                          GError              **error);
 
 GDK_AVAILABLE_IN_4_14
-void            gtk_print_dialog_print                  (GtkPrintDialog       *self,
+void            gtk_print_dialog_print                  (GtkPrintDialog       *this,
                                                          GtkWindow            *parent,
                                                          GtkPrintSetup        *setup,
                                                          GCancellable         *cancellable,
@@ -114,12 +114,12 @@ void            gtk_print_dialog_print                  (GtkPrintDialog       *s
                                                          gpointer              user_data);
 
 GDK_AVAILABLE_IN_4_14
-GOutputStream * gtk_print_dialog_print_finish           (GtkPrintDialog       *self,
+GOutputStream * gtk_print_dialog_print_finish           (GtkPrintDialog       *this,
                                                          GAsyncResult         *result,
                                                          GError              **error);
 
 GDK_AVAILABLE_IN_4_14
-void            gtk_print_dialog_print_file             (GtkPrintDialog       *self,
+void            gtk_print_dialog_print_file             (GtkPrintDialog       *this,
                                                          GtkWindow            *parent,
                                                          GtkPrintSetup        *setup,
                                                          GFile                *file,
@@ -128,7 +128,7 @@ void            gtk_print_dialog_print_file             (GtkPrintDialog       *s
                                                          gpointer              user_data);
 
 GDK_AVAILABLE_IN_4_14
-gboolean        gtk_print_dialog_print_file_finish      (GtkPrintDialog       *self,
+gboolean        gtk_print_dialog_print_file_finish      (GtkPrintDialog       *this,
                                                          GAsyncResult         *result,
                                                          GError              **error);
 

@@ -68,7 +68,7 @@ typedef struct _PrinterFinder PrinterFinder;
 
 static void printer_finder_free (PrinterFinder *finder);
 static void find_printer        (const char    *printer,
-                                 GFunc          func,
+                                 GFunc          fn,
                                  gpointer       data);
 
 static void
@@ -987,7 +987,7 @@ get_page_setup_dialog (GtkWindow        *parent,
  * done in the dialog.
  *
  * Note that this function may use a recursive mainloop to show the page
- * setup dialog. See [func@Gtk.print_run_page_setup_dialog_async] if this is
+ * setup dialog. See [fn@Gtk.print_run_page_setup_dialog_async] if this is
  * a problem.
  *
  * Returns: (transfer full): a new `GtkPageSetup`
@@ -1037,7 +1037,7 @@ gtk_print_run_page_setup_dialog (GtkWindow        *parent,
  *
  * Runs a page setup dialog, letting the user modify the values from @page_setup.
  *
- * In contrast to [func@Gtk.print_run_page_setup_dialog], this function  returns
+ * In contrast to [fn@Gtk.print_run_page_setup_dialog], this function  returns
  * after showing the page setup dialog on platforms that support this, and calls
  * @done_cb from a signal handler for the ::response signal of the dialog.
  */
@@ -1071,7 +1071,7 @@ struct _PrinterFinder
 {
   gboolean found_printer;
   gboolean scheduled_callback;
-  GFunc func;
+  GFunc fn;
   gpointer data;
   char *printer_name;
   GList *backends;
@@ -1096,7 +1096,7 @@ find_printer_idle (gpointer data)
   else
     printer = NULL;
 
-  finder->func (printer, finder->data);
+  finder->fn (printer, finder->data);
 
   printer_finder_free (finder);
 
@@ -1234,7 +1234,7 @@ printer_finder_free (PrinterFinder *finder)
 
 static void
 find_printer (const char *printer,
-              GFunc        func,
+              GFunc        fn,
               gpointer     data)
 {
   GList *node, *next;
@@ -1243,7 +1243,7 @@ find_printer (const char *printer,
   finder = g_new0 (PrinterFinder, 1);
 
   finder->printer_name = g_strdup (printer);
-  finder->func = func;
+  finder->fn = fn;
   finder->data = data;
 
   finder->backends = NULL;

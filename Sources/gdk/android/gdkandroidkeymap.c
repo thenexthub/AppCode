@@ -203,6 +203,6 @@ gdk_android_keymap_class_init (GdkAndroidKeymapClass *klass)
 }
 
 static void
-gdk_android_keymap_init (GdkAndroidKeymap *self)
+gdk_android_keymap_init (GdkAndroidKeymap *this)
 {
 }

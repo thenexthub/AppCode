@@ -33,38 +33,38 @@ GDK_AVAILABLE_IN_4_10
 GdkTextureDownloader *  gdk_texture_downloader_new              (GdkTexture                     *texture);
 
 GDK_AVAILABLE_IN_4_10
-GdkTextureDownloader *  gdk_texture_downloader_copy             (const GdkTextureDownloader     *self);
+GdkTextureDownloader *  gdk_texture_downloader_copy             (const GdkTextureDownloader     *this);
 GDK_AVAILABLE_IN_4_10
-void                    gdk_texture_downloader_free             (GdkTextureDownloader           *self);
+void                    gdk_texture_downloader_free             (GdkTextureDownloader           *this);
 
 
 GDK_AVAILABLE_IN_4_10
-void                    gdk_texture_downloader_set_texture      (GdkTextureDownloader           *self,
+void                    gdk_texture_downloader_set_texture      (GdkTextureDownloader           *this,
                                                                  GdkTexture                     *texture);
 GDK_AVAILABLE_IN_4_10
-GdkTexture *            gdk_texture_downloader_get_texture      (const GdkTextureDownloader     *self);
+GdkTexture *            gdk_texture_downloader_get_texture      (const GdkTextureDownloader     *this);
 GDK_AVAILABLE_IN_4_10
-void                    gdk_texture_downloader_set_format       (GdkTextureDownloader           *self,
+void                    gdk_texture_downloader_set_format       (GdkTextureDownloader           *this,
                                                                  GdkMemoryFormat                 format);
 GDK_AVAILABLE_IN_4_10
-GdkMemoryFormat         gdk_texture_downloader_get_format       (const GdkTextureDownloader     *self);
+GdkMemoryFormat         gdk_texture_downloader_get_format       (const GdkTextureDownloader     *this);
 GDK_AVAILABLE_IN_4_16
-void                    gdk_texture_downloader_set_color_state  (GdkTextureDownloader           *self,
+void                    gdk_texture_downloader_set_color_state  (GdkTextureDownloader           *this,
                                                                  GdkColorState                  *color_state);
 GDK_AVAILABLE_IN_4_16
-GdkColorState *         gdk_texture_downloader_get_color_state  (const GdkTextureDownloader     *self);
+GdkColorState *         gdk_texture_downloader_get_color_state  (const GdkTextureDownloader     *this);
 
 
 GDK_AVAILABLE_IN_4_10
-void                    gdk_texture_downloader_download_into    (const GdkTextureDownloader     *self,
+void                    gdk_texture_downloader_download_into    (const GdkTextureDownloader     *this,
                                                                  guchar                         *data,
                                                                  gsize                           stride);
 GDK_AVAILABLE_IN_4_10
-GBytes *                gdk_texture_downloader_download_bytes   (const GdkTextureDownloader     *self,
+GBytes *                gdk_texture_downloader_download_bytes   (const GdkTextureDownloader     *this,
                                                                  gsize                          *out_stride);
 GDK_AVAILABLE_IN_4_20
 GBytes *                gdk_texture_downloader_download_bytes_with_planes
-                                                                (const GdkTextureDownloader     *self,
+                                                                (const GdkTextureDownloader     *this,
                                                                  gsize                           out_offsets[4],
                                                                  gsize                           out_strides[4]);
 

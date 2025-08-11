@@ -134,12 +134,12 @@ render_pass_cache_key_equal (gconstpointer a,
 }
 
 static VkDescriptorSetLayout
-gsk_vulkan_device_create_vk_image_set_layout (GskVulkanDevice *self)
+gsk_vulkan_device_create_vk_image_set_layout (GskVulkanDevice *this)
 {
   VkDevice vk_device;
   VkDescriptorSetLayout result;
 
-  vk_device = gsk_vulkan_device_get_vk_device (self);
+  vk_device = gsk_vulkan_device_get_vk_device (this);
 
   GSK_VK_CHECK (vkCreateDescriptorSetLayout, vk_device,
                                              &(VkDescriptorSetLayoutCreateInfo) {
@@ -162,14 +162,14 @@ gsk_vulkan_device_create_vk_image_set_layout (GskVulkanDevice *self)
 }
 
 VkPipelineLayout
-gsk_vulkan_device_create_vk_pipeline_layout (GskVulkanDevice       *self,
+gsk_vulkan_device_create_vk_pipeline_layout (GskVulkanDevice       *this,
                                              VkDescriptorSetLayout  image1_layout,
                                              VkDescriptorSetLayout  image2_layout)
 {
   VkDevice vk_device;
   VkPipelineLayout result;
 
-  vk_device = gsk_vulkan_device_get_vk_device (self);
+  vk_device = gsk_vulkan_device_get_vk_device (this);
 
   GSK_VK_CHECK (vkCreatePipelineLayout, vk_device,
                                         &(VkPipelineLayoutCreateInfo) {
@@ -202,9 +202,9 @@ gsk_vulkan_device_create_offscreen_image (GskGpuDevice   *device,
                                           gsize           width,
                                           gsize           height)
 {
-  GskVulkanDevice *self = GSK_VULKAN_DEVICE (device);
+  GskVulkanDevice *this = GSK_VULKAN_DEVICE (device);
 
-  return gsk_vulkan_image_new_for_offscreen (self,
+  return gsk_vulkan_image_new_for_offscreen (this,
                                              with_mipmap,
                                              format,
                                              is_srgb,
@@ -217,9 +217,9 @@ gsk_vulkan_device_create_atlas_image (GskGpuDevice *device,
                                       gsize         width,
                                       gsize         height)
 {
-  GskVulkanDevice *self = GSK_VULKAN_DEVICE (device);
+  GskVulkanDevice *this = GSK_VULKAN_DEVICE (device);
 
-  return gsk_vulkan_image_new_for_atlas (self,
+  return gsk_vulkan_image_new_for_atlas (this,
                                          width,
                                          height);
 }
@@ -232,9 +232,9 @@ gsk_vulkan_device_create_upload_image (GskGpuDevice     *device,
                                        gsize             width,
                                        gsize             height)
 {
-  GskVulkanDevice *self = GSK_VULKAN_DEVICE (device);
+  GskVulkanDevice *this = GSK_VULKAN_DEVICE (device);
 
-  return gsk_vulkan_image_new_for_upload (self,
+  return gsk_vulkan_image_new_for_upload (this,
                                           with_mipmap,
                                           format,
                                           conv,
@@ -248,11 +248,11 @@ gsk_vulkan_device_create_download_image (GskGpuDevice   *device,
                                          gsize           width,
                                          gsize           height)
 {
-  GskVulkanDevice *self = GSK_VULKAN_DEVICE (device);
+  GskVulkanDevice *this = GSK_VULKAN_DEVICE (device);
   GskGpuImage *image;
 
 #ifdef HAVE_DMABUF
-  image = gsk_vulkan_image_new_dmabuf (self,
+  image = gsk_vulkan_image_new_dmabuf (this,
                                        gdk_memory_depth_get_format (depth),
                                        gdk_memory_depth_is_srgb (depth),
                                        width,
@@ -261,7 +261,7 @@ gsk_vulkan_device_create_download_image (GskGpuDevice   *device,
     return image;
 #endif
 
-  image = gsk_vulkan_image_new_for_offscreen (self,
+  image = gsk_vulkan_image_new_for_offscreen (this,
                                               FALSE,
                                               gdk_memory_depth_get_format (depth),
                                               gdk_memory_depth_is_srgb (depth),
@@ -279,8 +279,8 @@ gsk_vulkan_device_make_current (GskGpuDevice *device)
 static void
 gsk_vulkan_device_finalize (GObject *object)
 {
-  GskVulkanDevice *self = GSK_VULKAN_DEVICE (object);
-  GskGpuDevice *device = GSK_GPU_DEVICE (self);
+  GskVulkanDevice *this = GSK_VULKAN_DEVICE (object);
+  GskGpuDevice *device = GSK_GPU_DEVICE (this);
   VkDevice vk_device;
   GdkDisplay *display;
   GHashTableIter iter;
@@ -288,11 +288,11 @@ gsk_vulkan_device_finalize (GObject *object)
   gsize i;
 
   display = gsk_gpu_device_get_display (device);
-  vk_device = gsk_vulkan_device_get_vk_device (self);
+  vk_device = gsk_vulkan_device_get_vk_device (this);
 
   g_object_steal_data (G_OBJECT (display), "-gsk-vulkan-device");
 
-  g_hash_table_iter_init (&iter, self->pipeline_cache);
+  g_hash_table_iter_init (&iter, this->pipeline_cache);
   while (g_hash_table_iter_next (&iter, &key, &value))
     {
       vkDestroyPipeline (vk_device,
@@ -300,9 +300,9 @@ gsk_vulkan_device_finalize (GObject *object)
                          NULL);
       g_free (key);
     }
-  g_hash_table_unref (self->pipeline_cache);
+  g_hash_table_unref (this->pipeline_cache);
 
-  g_hash_table_iter_init (&iter, self->render_pass_cache);
+  g_hash_table_iter_init (&iter, this->render_pass_cache);
   while (g_hash_table_iter_next (&iter, &key, &value))
     {
       vkDestroyRenderPass (vk_device,
@@ -310,34 +310,34 @@ gsk_vulkan_device_finalize (GObject *object)
                            NULL);
       g_free (key);
     }
-  g_hash_table_unref (self->render_pass_cache);
+  g_hash_table_unref (this->render_pass_cache);
 
-  for (i = 0; i < G_N_ELEMENTS (self->vk_samplers); i++)
+  for (i = 0; i < G_N_ELEMENTS (this->vk_samplers); i++)
     {
-      if (self->vk_samplers[i] != VK_NULL_HANDLE)
+      if (this->vk_samplers[i] != VK_NULL_HANDLE)
         vkDestroySampler (vk_device,
-                          self->vk_samplers[i],
+                          this->vk_samplers[i],
                           NULL);
     }
 
   vkDestroyPipelineLayout (vk_device,
-                           self->default_vk_pipeline_layout,
+                           this->default_vk_pipeline_layout,
                            NULL);
   vkDestroyDescriptorSetLayout (vk_device,
-                                self->vk_image_set_layout,
+                                this->vk_image_set_layout,
                                 NULL);
-  for (i = 0; i < descriptor_pools_get_size (&self->descriptor_pools); i++)
+  for (i = 0; i < descriptor_pools_get_size (&this->descriptor_pools); i++)
     vkDestroyDescriptorPool (vk_device,
-                             descriptor_pools_get (&self->descriptor_pools, i),
+                             descriptor_pools_get (&this->descriptor_pools, i),
                              NULL);
-  descriptor_pools_clear (&self->descriptor_pools);
+  descriptor_pools_clear (&this->descriptor_pools);
   vkDestroyCommandPool (vk_device,
-                        self->vk_command_pool,
+                        this->vk_command_pool,
                         NULL);
 
   for (i = 0; i < VK_MAX_MEMORY_TYPES; i++)
-    g_clear_pointer (&self->allocators[i], gsk_vulkan_allocator_unref);
-  g_clear_pointer (&self->external_allocator, gsk_vulkan_allocator_unref);
+    g_clear_pointer (&this->allocators[i], gsk_vulkan_allocator_unref);
+  g_clear_pointer (&this->external_allocator, gsk_vulkan_allocator_unref);
 
   G_OBJECT_CLASS (gsk_vulkan_device_parent_class)->finalize (object);
 }
@@ -358,39 +358,39 @@ gsk_vulkan_device_class_init (GskVulkanDeviceClass *klass)
 }
 
 static void
-gsk_vulkan_device_init (GskVulkanDevice *self)
+gsk_vulkan_device_init (GskVulkanDevice *this)
 {
-  self->render_pass_cache = g_hash_table_new (render_pass_cache_key_hash, render_pass_cache_key_equal);
-  self->pipeline_cache = g_hash_table_new (pipeline_cache_key_hash, pipeline_cache_key_equal);
+  this->render_pass_cache = g_hash_table_new (render_pass_cache_key_hash, render_pass_cache_key_equal);
+  this->pipeline_cache = g_hash_table_new (pipeline_cache_key_hash, pipeline_cache_key_equal);
 
-  descriptor_pools_init (&self->descriptor_pools);
+  descriptor_pools_init (&this->descriptor_pools);
 }
 
 static void
-gsk_vulkan_device_create_vk_objects (GskVulkanDevice *self)
+gsk_vulkan_device_create_vk_objects (GskVulkanDevice *this)
 {
   VkDevice vk_device;
 
-  vk_device = gsk_vulkan_device_get_vk_device (self);
+  vk_device = gsk_vulkan_device_get_vk_device (this);
 
   GSK_VK_CHECK (vkCreateCommandPool, vk_device,
                                      &(const VkCommandPoolCreateInfo) {
                                          .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-                                         .queueFamilyIndex = gsk_vulkan_device_get_vk_queue_family_index (self),
+                                         .queueFamilyIndex = gsk_vulkan_device_get_vk_queue_family_index (this),
                                          .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
                                      },
                                      NULL,
-                                     &self->vk_command_pool);
+                                     &this->vk_command_pool);
 
-  self->vk_image_set_layout = gsk_vulkan_device_create_vk_image_set_layout (self);
+  this->vk_image_set_layout = gsk_vulkan_device_create_vk_image_set_layout (this);
 
-  self->default_vk_pipeline_layout = gsk_vulkan_device_create_vk_pipeline_layout (self,
-                                                                                  self->vk_image_set_layout,
-                                                                                  self->vk_image_set_layout);
+  this->default_vk_pipeline_layout = gsk_vulkan_device_create_vk_pipeline_layout (this,
+                                                                                  this->vk_image_set_layout,
+                                                                                  this->vk_image_set_layout);
 }
 
 static void
-gsk_vulkan_device_setup (GskVulkanDevice *self,
+gsk_vulkan_device_setup (GskVulkanDevice *this,
                          GdkDisplay      *display)
 {
   VkPhysicalDeviceProperties2 vk_props = {
@@ -399,7 +399,7 @@ gsk_vulkan_device_setup (GskVulkanDevice *self,
   };
 
   vkGetPhysicalDeviceProperties2 (display->vk_physical_device, &vk_props);
-  gsk_gpu_device_setup (GSK_GPU_DEVICE (self),
+  gsk_gpu_device_setup (GSK_GPU_DEVICE (this),
                         display,
                         vk_props.properties.limits.maxImageDimension2D,
                         GSK_GPU_DEVICE_DEFAULT_TILE_SIZE,
@@ -410,79 +410,79 @@ GskGpuDevice *
 gsk_vulkan_device_get_for_display (GdkDisplay  *display,
                                    GError     **error)
 {
-  GskVulkanDevice *self;
+  GskVulkanDevice *this;
 
-  self = g_object_get_data (G_OBJECT (display), "-gsk-vulkan-device");
-  if (self)
-    return GSK_GPU_DEVICE (g_object_ref (self));
+  this = g_object_get_data (G_OBJECT (display), "-gsk-vulkan-device");
+  if (this)
+    return GSK_GPU_DEVICE (g_object_ref (this));
 
   if (!gdk_display_prepare_vulkan (display, error))
     return NULL;
 
-  self = g_object_new (GSK_TYPE_VULKAN_DEVICE, NULL);
-  self->features = display->vulkan_features;
+  this = g_object_new (GSK_TYPE_VULKAN_DEVICE, NULL);
+  this->features = display->vulkan_features;
 
-  gsk_vulkan_device_setup (self, display);
+  gsk_vulkan_device_setup (this, display);
 
-  gsk_vulkan_device_create_vk_objects (self);
+  gsk_vulkan_device_create_vk_objects (this);
 
-  g_object_set_data (G_OBJECT (display), "-gsk-vulkan-device", self);
+  g_object_set_data (G_OBJECT (display), "-gsk-vulkan-device", this);
 
-  return GSK_GPU_DEVICE (self);
+  return GSK_GPU_DEVICE (this);
 }
 
 gboolean
-gsk_vulkan_device_has_feature (GskVulkanDevice   *self,
+gsk_vulkan_device_has_feature (GskVulkanDevice   *this,
                                GdkVulkanFeatures  feature)
 {
-  return (self->features & feature) == feature;
+  return (this->features & feature) == feature;
 }
 
 VkDevice
-gsk_vulkan_device_get_vk_device (GskVulkanDevice *self)
+gsk_vulkan_device_get_vk_device (GskVulkanDevice *this)
 {
-  return gsk_gpu_device_get_display (GSK_GPU_DEVICE (self))->vk_device;
+  return gsk_gpu_device_get_display (GSK_GPU_DEVICE (this))->vk_device;
 }
 
 VkPhysicalDevice
-gsk_vulkan_device_get_vk_physical_device (GskVulkanDevice *self)
+gsk_vulkan_device_get_vk_physical_device (GskVulkanDevice *this)
 {
-  return gsk_gpu_device_get_display (GSK_GPU_DEVICE (self))->vk_physical_device;
+  return gsk_gpu_device_get_display (GSK_GPU_DEVICE (this))->vk_physical_device;
 }
 
 VkQueue
-gsk_vulkan_device_get_vk_queue (GskVulkanDevice *self)
+gsk_vulkan_device_get_vk_queue (GskVulkanDevice *this)
 {
-  return gsk_gpu_device_get_display (GSK_GPU_DEVICE (self))->vk_queue;
+  return gsk_gpu_device_get_display (GSK_GPU_DEVICE (this))->vk_queue;
 }
 
 uint32_t
-gsk_vulkan_device_get_vk_queue_family_index (GskVulkanDevice *self)
+gsk_vulkan_device_get_vk_queue_family_index (GskVulkanDevice *this)
 {
-  return gsk_gpu_device_get_display (GSK_GPU_DEVICE (self))->vk_queue_family_index;
+  return gsk_gpu_device_get_display (GSK_GPU_DEVICE (this))->vk_queue_family_index;
 }
 
 VkDescriptorSetLayout
-gsk_vulkan_device_get_vk_image_set_layout (GskVulkanDevice *self)
+gsk_vulkan_device_get_vk_image_set_layout (GskVulkanDevice *this)
 {
-  return self->vk_image_set_layout;
+  return this->vk_image_set_layout;
 }
 
 VkPipelineLayout
-gsk_vulkan_device_get_default_vk_pipeline_layout (GskVulkanDevice *self)
+gsk_vulkan_device_get_default_vk_pipeline_layout (GskVulkanDevice *this)
 {
-  return self->default_vk_pipeline_layout;
+  return this->default_vk_pipeline_layout;
 }
 
 VkPipelineLayout
-gsk_vulkan_device_get_vk_pipeline_layout (GskVulkanDevice *self,
+gsk_vulkan_device_get_vk_pipeline_layout (GskVulkanDevice *this,
                                           GskVulkanYcbcr  *ycbcr0,
                                           GskVulkanYcbcr  *ycbcr1)
 {
   if (ycbcr0 == VK_NULL_HANDLE)
     {
       if (ycbcr1 == VK_NULL_HANDLE)
-        return self->default_vk_pipeline_layout;
+        return this->default_vk_pipeline_layout;
       else
         return gsk_vulkan_ycbcr_get_vk_pipeline_layout (ycbcr1, 1);
     }
@@ -499,13 +499,13 @@ gsk_vulkan_device_get_vk_pipeline_layout (GskVulkanDevice *self,
 }
 
 VkCommandPool
-gsk_vulkan_device_get_vk_command_pool (GskVulkanDevice *self)
+gsk_vulkan_device_get_vk_command_pool (GskVulkanDevice *this)
 {
-  return self->vk_command_pool;
+  return this->vk_command_pool;
 }
 
 VkDescriptorSet
-gsk_vulkan_device_allocate_descriptor (GskVulkanDevice             *self,
+gsk_vulkan_device_allocate_descriptor (GskVulkanDevice             *this,
                                        const VkDescriptorSetLayout  layout,
                                        gsize                       *out_pool_id)
 {
@@ -514,16 +514,16 @@ gsk_vulkan_device_allocate_descriptor (GskVulkanDevice             *self,
   VkDescriptorPool new_pool;
   gsize i, n;
 
-  vk_device = gsk_vulkan_device_get_vk_device (self);
-  n = descriptor_pools_get_size (&self->descriptor_pools);
+  vk_device = gsk_vulkan_device_get_vk_device (this);
+  n = descriptor_pools_get_size (&this->descriptor_pools);
 
   for (i = 0; i < n; i++)
     {
-      gsize pool_id = (i + self->last_pool) % n;
+      gsize pool_id = (i + this->last_pool) % n;
       VkResult res = vkAllocateDescriptorSets (vk_device,
                                                &(VkDescriptorSetAllocateInfo) {
                                                    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-                                                   .descriptorPool = descriptor_pools_get (&self->descriptor_pools, pool_id),
+                                                   .descriptorPool = descriptor_pools_get (&this->descriptor_pools, pool_id),
                                                    .descriptorSetCount = 1,
                                                    .pSetLayouts = (VkDescriptorSetLayout[1]) {
                                                        layout,
@@ -532,8 +532,8 @@ gsk_vulkan_device_allocate_descriptor (GskVulkanDevice             *self,
                                               &result);
       if (res == VK_SUCCESS)
         {
-          self->last_pool = pool_id;
-          *out_pool_id = self->last_pool;
+          this->last_pool = pool_id;
+          *out_pool_id = this->last_pool;
           return result;
         }
       else if (res == VK_ERROR_OUT_OF_POOL_MEMORY ||
@@ -562,7 +562,7 @@ gsk_vulkan_device_allocate_descriptor (GskVulkanDevice             *self,
                                         },
                                         NULL,
                                         &new_pool);
-  descriptor_pools_append (&self->descriptor_pools, new_pool);
+  descriptor_pools_append (&this->descriptor_pools, new_pool);
   GSK_VK_CHECK (vkAllocateDescriptorSets, vk_device,
                                           &(VkDescriptorSetAllocateInfo) {
                                               .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
@@ -574,25 +574,25 @@ gsk_vulkan_device_allocate_descriptor (GskVulkanDevice             *self,
                                           },
                                           &result);
 
-  self->last_pool = descriptor_pools_get_size (&self->descriptor_pools) - 1;
-  *out_pool_id = self->last_pool;
+  this->last_pool = descriptor_pools_get_size (&this->descriptor_pools) - 1;
+  *out_pool_id = this->last_pool;
 
   return result;
 }
 
 void
-gsk_vulkan_device_free_descriptor (GskVulkanDevice *self,
+gsk_vulkan_device_free_descriptor (GskVulkanDevice *this,
                                    gsize            pool_id,
                                    VkDescriptorSet  set)
 {
-  vkFreeDescriptorSets (gsk_vulkan_device_get_vk_device (self),
-                        descriptor_pools_get (&self->descriptor_pools, pool_id),
+  vkFreeDescriptorSets (gsk_vulkan_device_get_vk_device (this),
+                        descriptor_pools_get (&this->descriptor_pools, pool_id),
                         1,
                         &set);
 }
 
 static VkSampler
-gsk_vulkan_device_create_sampler (GskVulkanDevice          *self,
+gsk_vulkan_device_create_sampler (GskVulkanDevice          *this,
                                   VkSamplerYcbcrConversion  vk_conversion,
                                   VkFilter                  vk_filter,
                                   VkSamplerAddressMode      vk_address_mode,
@@ -601,7 +601,7 @@ gsk_vulkan_device_create_sampler (GskVulkanDevice          *self,
 {
   VkSampler result;
 
-  GSK_VK_CHECK (vkCreateSampler, gsk_vulkan_device_get_vk_device (self),
+  GSK_VK_CHECK (vkCreateSampler, gsk_vulkan_device_get_vk_device (this),
                                  &(VkSamplerCreateInfo) {
                                      .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
                                      .magFilter = vk_filter,
@@ -627,7 +627,7 @@ gsk_vulkan_device_create_sampler (GskVulkanDevice          *self,
 }
 
 VkSampler
-gsk_vulkan_device_get_vk_sampler (GskVulkanDevice     *self,
+gsk_vulkan_device_get_vk_sampler (GskVulkanDevice     *this,
                                   GskGpuSampler        sampler)
 {
   const struct {
@@ -668,9 +668,9 @@ gsk_vulkan_device_get_vk_sampler (GskVulkanDevice     *self,
       },
   };
 
-  if (self->vk_samplers[sampler] == VK_NULL_HANDLE)
+  if (this->vk_samplers[sampler] == VK_NULL_HANDLE)
     {
-      self->vk_samplers[sampler] = gsk_vulkan_device_create_sampler (self,
+      this->vk_samplers[sampler] = gsk_vulkan_device_create_sampler (this,
                                                                      VK_NULL_HANDLE,
                                                                      filter_attrs[sampler].filter,
                                                                      filter_attrs[sampler].address_mode,
@@ -678,11 +678,11 @@ gsk_vulkan_device_get_vk_sampler (GskVulkanDevice     *self,
                                                                      filter_attrs[sampler].max_lod);
     }
 
-  return self->vk_samplers[sampler];
+  return this->vk_samplers[sampler];
 }
 
 VkRenderPass
-gsk_vulkan_device_get_vk_render_pass (GskVulkanDevice    *self,
+gsk_vulkan_device_get_vk_render_pass (GskVulkanDevice    *this,
                                       VkFormat            format,
                                       VkAttachmentLoadOp  vk_load_op,
                                       VkImageLayout       from_layout,
@@ -699,11 +699,11 @@ gsk_vulkan_device_get_vk_render_pass (GskVulkanDevice    *self,
     .from_layout = from_layout,
     .to_layout = to_layout,
   };
-  cached_result = g_hash_table_lookup (self->render_pass_cache, &cache_key);
+  cached_result = g_hash_table_lookup (this->render_pass_cache, &cache_key);
   if (cached_result)
     return cached_result->render_pass;
 
-  display = gsk_gpu_device_get_display (GSK_GPU_DEVICE (self));
+  display = gsk_gpu_device_get_display (GSK_GPU_DEVICE (this));
 
   GSK_VK_CHECK (vkCreateRenderPass, display->vk_device,
                                     &(VkRenderPassCreateInfo) {
@@ -748,7 +748,7 @@ gsk_vulkan_device_get_vk_render_pass (GskVulkanDevice    *self,
   cached_result = g_memdup2 (&cache_key, sizeof (RenderPassCacheKey));
   cached_result->render_pass = render_pass;
 
-  g_hash_table_insert (self->render_pass_cache, cached_result, cached_result);
+  g_hash_table_insert (this->render_pass_cache, cached_result, cached_result);
 
   return render_pass;
 }
@@ -811,7 +811,7 @@ static VkPipelineColorBlendAttachmentState blend_attachment_states[4] = {
 };
 
 VkPipeline
-gsk_vulkan_device_get_vk_pipeline (GskVulkanDevice           *self,
+gsk_vulkan_device_get_vk_pipeline (GskVulkanDevice           *this,
                                    VkPipelineLayout           vk_layout,
                                    const GskGpuShaderOpClass *op_class,
                                    GskGpuShaderFlags          flags,
@@ -838,11 +838,11 @@ gsk_vulkan_device_get_vk_pipeline (GskVulkanDevice           *self,
     .blend = blend,
     .vk_format = vk_format,
   };
-  cached_result = g_hash_table_lookup (self->pipeline_cache, &cache_key);
+  cached_result = g_hash_table_lookup (this->pipeline_cache, &cache_key);
   if (cached_result)
     return cached_result->vk_pipeline;
 
-  display = gsk_gpu_device_get_display (GSK_GPU_DEVICE (self));
+  display = gsk_gpu_device_get_display (GSK_GPU_DEVICE (this));
 
   vertex_shader_name = g_strconcat ("/org/gtk/libgsk/shaders/vulkan/",
                                     op_class->shader_name,
@@ -999,38 +999,38 @@ gsk_vulkan_device_get_vk_pipeline (GskVulkanDevice           *self,
 
   cached_result = g_memdup2 (&cache_key, sizeof (PipelineCacheKey));
   cached_result->vk_pipeline = vk_pipeline;
-  g_hash_table_add (self->pipeline_cache, cached_result);
+  g_hash_table_add (this->pipeline_cache, cached_result);
   gdk_display_vulkan_pipeline_cache_updated (display);
 
   return vk_pipeline;
 }
 
 GskVulkanAllocator *
-gsk_vulkan_device_get_allocator (GskVulkanDevice    *self,
+gsk_vulkan_device_get_allocator (GskVulkanDevice    *this,
                                  gsize               index)
 {
-  if (self->allocators[index] == NULL)
+  if (this->allocators[index] == NULL)
     {
       VkPhysicalDeviceMemoryProperties properties;
 
-      vkGetPhysicalDeviceMemoryProperties (gsk_vulkan_device_get_vk_physical_device (self),
+      vkGetPhysicalDeviceMemoryProperties (gsk_vulkan_device_get_vk_physical_device (this),
                                            &properties);
 
-      self->allocators[index] = gsk_vulkan_direct_allocator_new (gsk_vulkan_device_get_vk_device (self),
+      this->allocators[index] = gsk_vulkan_direct_allocator_new (gsk_vulkan_device_get_vk_device (this),
                                                                  index,
                                                                  &properties.memoryTypes[index]);
-      self->allocators[index] = gsk_vulkan_buddy_allocator_new (self->allocators[index],
+      this->allocators[index] = gsk_vulkan_buddy_allocator_new (this->allocators[index],
                                                                 1024 * 1024);
       //allocators[index] = gsk_vulkan_stats_allocator_new (allocators[index]);
     }
 
-  return self->allocators[index];
+  return this->allocators[index];
 }
 
 /* following code found in
  * https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkPhysicalDeviceMemoryProperties.html */
  gsize
- gsk_vulkan_device_find_allocator (GskVulkanDevice        *self,
+ gsk_vulkan_device_find_allocator (GskVulkanDevice        *this,
                                    uint32_t                allowed_types,
                                    VkMemoryPropertyFlags   required_flags,
                                    VkMemoryPropertyFlags   desired_flags)
@@ -1038,7 +1038,7 @@ gsk_vulkan_device_get_allocator (GskVulkanDevice    *self,
   VkPhysicalDeviceMemoryProperties properties;
   uint32_t i, found;
 
-  vkGetPhysicalDeviceMemoryProperties (gsk_vulkan_device_get_vk_physical_device (self),
+  vkGetPhysicalDeviceMemoryProperties (gsk_vulkan_device_get_vk_physical_device (this),
                                        &properties);
 
   found = properties.memoryTypeCount;
@@ -1065,13 +1065,13 @@ gsk_vulkan_device_get_allocator (GskVulkanDevice    *self,
 }
 
 GskVulkanAllocator *
-gsk_vulkan_device_get_external_allocator (GskVulkanDevice *self)
+gsk_vulkan_device_get_external_allocator (GskVulkanDevice *this)
 {
-  if (self->external_allocator == NULL)
+  if (this->external_allocator == NULL)
     {
-      self->external_allocator = gsk_vulkan_external_allocator_new (gsk_vulkan_device_get_vk_device (self));
-      //self->external_allocator = gsk_vulkan_stats_allocator_new (self->external_allocator);
+      this->external_allocator = gsk_vulkan_external_allocator_new (gsk_vulkan_device_get_vk_device (this));
+      //this->external_allocator = gsk_vulkan_stats_allocator_new (this->external_allocator);
     }
 
-  return self->external_allocator;
+  return this->external_allocator;
 }

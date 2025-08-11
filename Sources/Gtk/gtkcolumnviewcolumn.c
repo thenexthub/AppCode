@@ -110,16 +110,16 @@ static GParamSpec *properties[N_PROPS] = { NULL, };
 static void
 gtk_column_view_column_dispose (GObject *object)
 {
-  GtkColumnViewColumn *self = GTK_COLUMN_VIEW_COLUMN (object);
+  GtkColumnViewColumn *this = GTK_COLUMN_VIEW_COLUMN (object);
 
-  g_assert (self->view == NULL); /* would hold a ref otherwise */
-  g_assert (self->first_cell == NULL); /* no view = no children */
+  g_assert (this->view == NULL); /* would hold a ref otherwise */
+  g_assert (this->first_cell == NULL); /* no view = no children */
 
-  g_clear_object (&self->factory);
-  g_clear_object (&self->sorter);
-  g_clear_pointer (&self->title, g_free);
-  g_clear_object (&self->menu);
-  g_clear_pointer (&self->id, g_free);
+  g_clear_object (&this->factory);
+  g_clear_object (&this->sorter);
+  g_clear_pointer (&this->title, g_free);
+  g_clear_object (&this->menu);
+  g_clear_pointer (&this->id, g_free);
 
   G_OBJECT_CLASS (gtk_column_view_column_parent_class)->dispose (object);
 }
@@ -130,48 +130,48 @@ gtk_column_view_column_get_property (GObject    *object,
                                      GValue     *value,
                                      GParamSpec *pspec)
 {
-  GtkColumnViewColumn *self = GTK_COLUMN_VIEW_COLUMN (object);
+  GtkColumnViewColumn *this = GTK_COLUMN_VIEW_COLUMN (object);
 
   switch (property_id)
     {
     case PROP_COLUMN_VIEW:
-      g_value_set_object (value, self->view);
+      g_value_set_object (value, this->view);
       break;
 
     case PROP_FACTORY:
-      g_value_set_object (value, self->factory);
+      g_value_set_object (value, this->factory);
       break;
 
     case PROP_TITLE:
-      g_value_set_string (value, self->title);
+      g_value_set_string (value, this->title);
       break;
 
     case PROP_SORTER:
-      g_value_set_object (value, self->sorter);
+      g_value_set_object (value, this->sorter);
       break;
 
     case PROP_VISIBLE:
-      g_value_set_boolean (value, self->visible);
+      g_value_set_boolean (value, this->visible);
       break;
 
     case PROP_HEADER_MENU:
-      g_value_set_object (value, self->menu);
+      g_value_set_object (value, this->menu);
       break;
 
     case PROP_RESIZABLE:
-      g_value_set_boolean (value, self->resizable);
+      g_value_set_boolean (value, this->resizable);
       break;
 
     case PROP_EXPAND:
-      g_value_set_boolean (value, self->expand);
+      g_value_set_boolean (value, this->expand);
       break;
 
     case PROP_FIXED_WIDTH:
-      g_value_set_int (value, self->fixed_width);
+      g_value_set_int (value, this->fixed_width);
       break;
 
     case PROP_ID:
-      g_value_set_string (value, self->id);
+      g_value_set_string (value, this->id);
       break;
 
     default:
@@ -186,44 +186,44 @@ gtk_column_view_column_set_property (GObject      *object,
                                      const GValue *value,
                                      GParamSpec   *pspec)
 {
-  GtkColumnViewColumn *self = GTK_COLUMN_VIEW_COLUMN (object);
+  GtkColumnViewColumn *this = GTK_COLUMN_VIEW_COLUMN (object);
 
   switch (property_id)
     {
     case PROP_FACTORY:
-      gtk_column_view_column_set_factory (self, g_value_get_object (value));
+      gtk_column_view_column_set_factory (this, g_value_get_object (value));
       break;
 
     case PROP_TITLE:
-      gtk_column_view_column_set_title (self, g_value_get_string (value));
+      gtk_column_view_column_set_title (this, g_value_get_string (value));
       break;
 
     case PROP_SORTER:
-      gtk_column_view_column_set_sorter (self, g_value_get_object (value));
+      gtk_column_view_column_set_sorter (this, g_value_get_object (value));
       break;
 
     case PROP_VISIBLE:
-      gtk_column_view_column_set_visible (self, g_value_get_boolean (value));
+      gtk_column_view_column_set_visible (this, g_value_get_boolean (value));
       break;
 
     case PROP_HEADER_MENU:
-      gtk_column_view_column_set_header_menu (self, g_value_get_object (value));
+      gtk_column_view_column_set_header_menu (this, g_value_get_object (value));
       break;
 
     case PROP_RESIZABLE:
-      gtk_column_view_column_set_resizable (self, g_value_get_boolean (value));
+      gtk_column_view_column_set_resizable (this, g_value_get_boolean (value));
       break;
 
     case PROP_EXPAND:
-      gtk_column_view_column_set_expand (self, g_value_get_boolean (value));
+      gtk_column_view_column_set_expand (this, g_value_get_boolean (value));
       break;
 
     case PROP_FIXED_WIDTH:
-      gtk_column_view_column_set_fixed_width (self, g_value_get_int (value));
+      gtk_column_view_column_set_fixed_width (this, g_value_get_int (value));
       break;
 
     case PROP_ID:
-      gtk_column_view_column_set_id (self, g_value_get_string (value));
+      gtk_column_view_column_set_id (this, g_value_get_string (value));
       break;
 
     default:
@@ -356,14 +356,14 @@ gtk_column_view_column_class_init (GtkColumnViewColumnClass *klass)
 }
 
 static void
-gtk_column_view_column_init (GtkColumnViewColumn *self)
+gtk_column_view_column_init (GtkColumnViewColumn *this)
 {
-  self->minimum_size_request = -1;
-  self->natural_size_request = -1;
-  self->visible = TRUE;
-  self->resizable = FALSE;
-  self->expand = FALSE;
-  self->fixed_width = -1;
+  this->minimum_size_request = -1;
+  this->natural_size_request = -1;
+  this->visible = TRUE;
+  this->resizable = FALSE;
+  this->expand = FALSE;
+  this->fixed_width = -1;
 }
 
 /**
@@ -404,71 +404,71 @@ gtk_column_view_column_new (const char         *title,
 }
 
 GtkColumnViewCellWidget *
-gtk_column_view_column_get_first_cell (GtkColumnViewColumn *self)
+gtk_column_view_column_get_first_cell (GtkColumnViewColumn *this)
 {
-  return self->first_cell;
+  return this->first_cell;
 }
 
 void
-gtk_column_view_column_add_cell (GtkColumnViewColumn *self,
+gtk_column_view_column_add_cell (GtkColumnViewColumn *this,
                                  GtkColumnViewCellWidget   *cell)
 {
-  self->first_cell = cell;
+  this->first_cell = cell;
 
-  gtk_widget_set_visible (GTK_WIDGET (cell), self->visible);
-  gtk_column_view_column_queue_resize (self);
+  gtk_widget_set_visible (GTK_WIDGET (cell), this->visible);
+  gtk_column_view_column_queue_resize (this);
 }
 
 void
-gtk_column_view_column_remove_cell (GtkColumnViewColumn *self,
+gtk_column_view_column_remove_cell (GtkColumnViewColumn *this,
                                     GtkColumnViewCellWidget   *cell)
 {
-  if (cell == self->first_cell)
-    self->first_cell = gtk_column_view_cell_widget_get_next (cell);
+  if (cell == this->first_cell)
+    this->first_cell = gtk_column_view_cell_widget_get_next (cell);
 
-  gtk_column_view_column_queue_resize (self);
+  gtk_column_view_column_queue_resize (this);
   gtk_widget_queue_resize (GTK_WIDGET (cell));
 }
 
 void
-gtk_column_view_column_queue_resize (GtkColumnViewColumn *self)
+gtk_column_view_column_queue_resize (GtkColumnViewColumn *this)
 {
   GtkColumnViewCellWidget *cell;
 
-  if (self->minimum_size_request < 0)
+  if (this->minimum_size_request < 0)
     return;
 
-  self->minimum_size_request = -1;
-  self->natural_size_request = -1;
+  this->minimum_size_request = -1;
+  this->natural_size_request = -1;
 
-  if (self->header)
-    gtk_widget_queue_resize (self->header);
+  if (this->header)
+    gtk_widget_queue_resize (this->header);
 
-  for (cell = self->first_cell; cell; cell = gtk_column_view_cell_widget_get_next (cell))
+  for (cell = this->first_cell; cell; cell = gtk_column_view_cell_widget_get_next (cell))
     {
       gtk_widget_queue_resize (GTK_WIDGET (cell));
     }
 }
 
 void
-gtk_column_view_column_measure (GtkColumnViewColumn *self,
+gtk_column_view_column_measure (GtkColumnViewColumn *this,
                                 int                 *minimum,
                                 int                 *natural)
 {
-  if (self->fixed_width > -1)
+  if (this->fixed_width > -1)
     {
-      self->minimum_size_request  = self->fixed_width;
-      self->natural_size_request  = self->fixed_width;
+      this->minimum_size_request  = this->fixed_width;
+      this->natural_size_request  = this->fixed_width;
     }
 
-  if (self->minimum_size_request < 0)
+  if (this->minimum_size_request < 0)
     {
       GtkColumnViewCellWidget *cell;
       int min, nat, cell_min, cell_nat;
 
-      if (self->header)
+      if (this->header)
         {
-          gtk_widget_measure (self->header, GTK_ORIENTATION_HORIZONTAL, -1, &min, &nat, NULL, NULL);
+          gtk_widget_measure (this->header, GTK_ORIENTATION_HORIZONTAL, -1, &min, &nat, NULL, NULL);
         }
       else
         {
@@ -476,7 +476,7 @@ gtk_column_view_column_measure (GtkColumnViewColumn *self,
           nat = 0;
         }
 
-      for (cell = self->first_cell; cell; cell = gtk_column_view_cell_widget_get_next (cell))
+      for (cell = this->first_cell; cell; cell = gtk_column_view_cell_widget_get_next (cell))
         {
           gtk_widget_measure (GTK_WIDGET (cell),
                               GTK_ORIENTATION_HORIZONTAL,
@@ -488,45 +488,45 @@ gtk_column_view_column_measure (GtkColumnViewColumn *self,
           nat = MAX (nat, cell_nat);
         }
 
-      self->minimum_size_request = min;
-      self->natural_size_request = nat;
+      this->minimum_size_request = min;
+      this->natural_size_request = nat;
     }
 
-  *minimum = self->minimum_size_request;
-  *natural = self->natural_size_request;
+  *minimum = this->minimum_size_request;
+  *natural = this->natural_size_request;
 }
 
 void
-gtk_column_view_column_allocate (GtkColumnViewColumn *self,
+gtk_column_view_column_allocate (GtkColumnViewColumn *this,
                                  int                  offset,
                                  int                  size)
 {
-  self->allocation_offset = offset;
-  self->allocation_size = size;
-  self->header_position = offset;
+  this->allocation_offset = offset;
+  this->allocation_size = size;
+  this->header_position = offset;
 }
 
 void
-gtk_column_view_column_get_allocation (GtkColumnViewColumn *self,
+gtk_column_view_column_get_allocation (GtkColumnViewColumn *this,
                                        int                 *offset,
                                        int                 *size)
 {
   if (offset)
-    *offset = self->allocation_offset;
+    *offset = this->allocation_offset;
   if (size)
-    *size = self->allocation_size;
+    *size = this->allocation_size;
 }
 
 static void
-gtk_column_view_column_create_cells (GtkColumnViewColumn *self)
+gtk_column_view_column_create_cells (GtkColumnViewColumn *this)
 {
   GtkListView *list;
   GtkWidget *row;
 
-  if (self->first_cell)
+  if (this->first_cell)
     return;
 
-  list = gtk_column_view_get_list_view (GTK_COLUMN_VIEW (self->view));
+  list = gtk_column_view_get_list_view (GTK_COLUMN_VIEW (this->view));
   for (row = gtk_widget_get_first_child (GTK_WIDGET (list));
        row != NULL;
        row = gtk_widget_get_next_sibling (row))
@@ -537,7 +537,7 @@ gtk_column_view_column_create_cells (GtkColumnViewColumn *self)
 
       list_item = GTK_COLUMN_VIEW_ROW_WIDGET (row);
       base = GTK_LIST_ITEM_BASE (row);
-      cell = gtk_column_view_cell_widget_new (self, gtk_column_view_is_inert (self->view));
+      cell = gtk_column_view_cell_widget_new (this, gtk_column_view_is_inert (this->view));
       gtk_column_view_row_widget_add_child (list_item, cell);
       gtk_list_item_base_update (GTK_LIST_ITEM_BASE (cell),
                                  gtk_list_item_base_get_position (base),
@@ -547,97 +547,97 @@ gtk_column_view_column_create_cells (GtkColumnViewColumn *self)
 }
 
 static void
-gtk_column_view_column_remove_cells (GtkColumnViewColumn *self)
+gtk_column_view_column_remove_cells (GtkColumnViewColumn *this)
 {
-  while (self->first_cell)
-    gtk_column_view_cell_widget_remove (self->first_cell);
+  while (this->first_cell)
+    gtk_column_view_cell_widget_remove (this->first_cell);
 }
 
 static void
-gtk_column_view_column_create_header (GtkColumnViewColumn *self)
+gtk_column_view_column_create_header (GtkColumnViewColumn *this)
 {
-  if (self->header != NULL)
+  if (this->header != NULL)
     return;
 
-  self->header = gtk_column_view_title_new (self);
-  gtk_widget_set_visible (self->header, self->visible);
-  gtk_column_view_row_widget_add_child (gtk_column_view_get_header_widget (self->view),
-                                  self->header);
-  gtk_column_view_column_queue_resize (self);
+  this->header = gtk_column_view_title_new (this);
+  gtk_widget_set_visible (this->header, this->visible);
+  gtk_column_view_row_widget_add_child (gtk_column_view_get_header_widget (this->view),
+                                  this->header);
+  gtk_column_view_column_queue_resize (this);
 }
 
 static void
-gtk_column_view_column_remove_header (GtkColumnViewColumn *self)
+gtk_column_view_column_remove_header (GtkColumnViewColumn *this)
 {
-  if (self->header == NULL)
+  if (this->header == NULL)
     return;
 
-  gtk_column_view_row_widget_remove_child (gtk_column_view_get_header_widget (self->view),
-                                     self->header);
-  self->header = NULL;
-  gtk_column_view_column_queue_resize (self);
+  gtk_column_view_row_widget_remove_child (gtk_column_view_get_header_widget (this->view),
+                                     this->header);
+  this->header = NULL;
+  gtk_column_view_column_queue_resize (this);
 }
 
 static void
-gtk_column_view_column_ensure_cells (GtkColumnViewColumn *self)
+gtk_column_view_column_ensure_cells (GtkColumnViewColumn *this)
 {
-  if (self->view && gtk_column_view_column_get_visible (self))
-    gtk_column_view_column_create_cells (self);
+  if (this->view && gtk_column_view_column_get_visible (this))
+    gtk_column_view_column_create_cells (this);
   else
-    gtk_column_view_column_remove_cells (self);
+    gtk_column_view_column_remove_cells (this);
 
-  if (self->view)
-    gtk_column_view_column_create_header (self);
+  if (this->view)
+    gtk_column_view_column_create_header (this);
   else
-    gtk_column_view_column_remove_header (self);
+    gtk_column_view_column_remove_header (this);
 }
 
 /**
  * gtk_column_view_column_get_column_view:
- * @self: a column
+ * @this: a column
  *
  * Gets the column view that's currently displaying this column.
  *
- * If @self has not been added to a column view yet, `NULL` is returned.
+ * If @this has not been added to a column view yet, `NULL` is returned.
  *
- * Returns: (nullable) (transfer none): The column view displaying @self.
+ * Returns: (nullable) (transfer none): The column view displaying @this.
  */
 GtkColumnView *
-gtk_column_view_column_get_column_view (GtkColumnViewColumn *self)
+gtk_column_view_column_get_column_view (GtkColumnViewColumn *this)
 {
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (self), NULL);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (this), NULL);
 
-  return self->view;
+  return this->view;
 }
 
 void
-gtk_column_view_column_set_column_view (GtkColumnViewColumn *self,
+gtk_column_view_column_set_column_view (GtkColumnViewColumn *this,
                                         GtkColumnView       *view)
 {
-  if (self->view == view)
+  if (this->view == view)
     return;
 
-  gtk_column_view_column_remove_cells (self);
-  gtk_column_view_column_remove_header (self);
+  gtk_column_view_column_remove_cells (this);
+  gtk_column_view_column_remove_header (this);
 
-  self->view = view;
+  this->view = view;
 
-  gtk_column_view_column_ensure_cells (self);
+  gtk_column_view_column_ensure_cells (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_COLUMN_VIEW]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_COLUMN_VIEW]);
 }
 
 void
-gtk_column_view_column_set_position (GtkColumnViewColumn *self,
+gtk_column_view_column_set_position (GtkColumnViewColumn *this,
                                      guint                position)
 {
   GtkColumnViewCellWidget *cell;
 
-  gtk_column_view_row_widget_reorder_child (gtk_column_view_get_header_widget (self->view),
-                                      self->header,
+  gtk_column_view_row_widget_reorder_child (gtk_column_view_get_header_widget (this->view),
+                                      this->header,
                                       position);
 
-  for (cell = self->first_cell; cell; cell = gtk_column_view_cell_widget_get_next (cell))
+  for (cell = this->first_cell; cell; cell = gtk_column_view_cell_widget_get_next (cell))
     {
       GtkColumnViewRowWidget *list_item;
 
@@ -648,7 +648,7 @@ gtk_column_view_column_set_position (GtkColumnViewColumn *self,
 
 /**
  * gtk_column_view_column_get_factory:
- * @self: a column
+ * @this: a column
  *
  * Gets the factory that's currently used to populate list items
  * for this column.
@@ -656,29 +656,29 @@ gtk_column_view_column_set_position (GtkColumnViewColumn *self,
  * Returns: (nullable) (transfer none): The factory in use
  **/
 GtkListItemFactory *
-gtk_column_view_column_get_factory (GtkColumnViewColumn *self)
+gtk_column_view_column_get_factory (GtkColumnViewColumn *this)
 {
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (self), NULL);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (this), NULL);
 
-  return self->factory;
+  return this->factory;
 }
 
 void
-gtk_column_view_column_update_factory (GtkColumnViewColumn *self,
+gtk_column_view_column_update_factory (GtkColumnViewColumn *this,
                                        gboolean             inert)
 {
   GtkListItemFactory *factory;
   GtkColumnViewCellWidget *cell;
 
-  if (self->factory == NULL)
+  if (this->factory == NULL)
     return;
 
   if (inert)
     factory = NULL;
   else
-    factory = self->factory;
+    factory = this->factory;
 
-  for (cell = self->first_cell;
+  for (cell = this->first_cell;
        cell;
        cell = gtk_column_view_cell_widget_get_next (cell))
     {
@@ -688,34 +688,34 @@ gtk_column_view_column_update_factory (GtkColumnViewColumn *self,
 
 /**
  * gtk_column_view_column_set_factory:
- * @self: a column
+ * @this: a column
  * @factory: (nullable) (transfer none): the factory to use
  *
  * Sets the `GtkListItemFactory` to use for populating list items
  * for this column.
  */
 void
-gtk_column_view_column_set_factory (GtkColumnViewColumn *self,
+gtk_column_view_column_set_factory (GtkColumnViewColumn *this,
                                     GtkListItemFactory  *factory)
 {
-  g_return_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (self));
+  g_return_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (this));
   g_return_if_fail (factory == NULL || GTK_LIST_ITEM_FACTORY (factory));
 
-  if (self->factory && !factory)
-    gtk_column_view_column_update_factory (self, TRUE);
+  if (this->factory && !factory)
+    gtk_column_view_column_update_factory (this, TRUE);
 
-  if (!g_set_object (&self->factory, factory))
+  if (!g_set_object (&this->factory, factory))
     return;
 
-  if (self->view && !gtk_column_view_is_inert (self->view))
-    gtk_column_view_column_update_factory (self, FALSE);
+  if (this->view && !gtk_column_view_is_inert (this->view))
+    gtk_column_view_column_update_factory (this, FALSE);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_FACTORY]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_FACTORY]);
 }
 
 /**
  * gtk_column_view_column_set_title:
- * @self: a column
+ * @this: a column
  * @title: (nullable): Title to use for this column
  *
  * Sets the title of this column.
@@ -725,51 +725,51 @@ gtk_column_view_column_set_factory (GtkColumnViewColumn *self,
  * be translated.
  */
 void
-gtk_column_view_column_set_title (GtkColumnViewColumn *self,
+gtk_column_view_column_set_title (GtkColumnViewColumn *this,
                                   const char          *title)
 {
-  g_return_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (self));
+  g_return_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (this));
 
-  if (g_strcmp0 (self->title, title) == 0)
+  if (g_strcmp0 (this->title, title) == 0)
     return;
 
-  g_free (self->title);
-  self->title = g_strdup (title);
+  g_free (this->title);
+  this->title = g_strdup (title);
 
-  if (self->header)
-    gtk_column_view_title_set_title (GTK_COLUMN_VIEW_TITLE (self->header), title);
+  if (this->header)
+    gtk_column_view_title_set_title (GTK_COLUMN_VIEW_TITLE (this->header), title);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_TITLE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_TITLE]);
 }
 
 /**
  * gtk_column_view_column_get_title:
- * @self: a column
+ * @this: a column
  *
  * Returns the title set with [method@Gtk.ColumnViewColumn.set_title].
  *
  * Returns: (nullable): The column's title
  */
 const char *
-gtk_column_view_column_get_title (GtkColumnViewColumn *self)
+gtk_column_view_column_get_title (GtkColumnViewColumn *this)
 {
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (self), FALSE);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (this), FALSE);
 
-  return self->title;
+  return this->title;
 }
 
 static void
-gtk_column_view_column_remove_from_sorter (GtkColumnViewColumn *self)
+gtk_column_view_column_remove_from_sorter (GtkColumnViewColumn *this)
 {
-  if (self->view == NULL)
+  if (this->view == NULL)
     return;
 
-  gtk_column_view_sorter_remove_column (GTK_COLUMN_VIEW_SORTER (gtk_column_view_get_sorter (self->view)), self);
+  gtk_column_view_sorter_remove_column (GTK_COLUMN_VIEW_SORTER (gtk_column_view_get_sorter (this->view)), this);
 }
 
 /**
  * gtk_column_view_column_set_sorter:
- * @self: a column
+ * @this: a column
  * @sorter: (nullable): the `GtkSorter` to associate with @column
  *
  * Associates a sorter with the column.
@@ -784,118 +784,118 @@ gtk_column_view_column_remove_from_sorter (GtkColumnViewColumn *self)
  * for setting up customizable sorting for [class@Gtk.ColumnView].
  */
 void
-gtk_column_view_column_set_sorter (GtkColumnViewColumn *self,
+gtk_column_view_column_set_sorter (GtkColumnViewColumn *this,
                                    GtkSorter           *sorter)
 {
-  g_return_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (self));
+  g_return_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (this));
   g_return_if_fail (sorter == NULL || GTK_IS_SORTER (sorter));
 
-  if (!g_set_object (&self->sorter, sorter))
+  if (!g_set_object (&this->sorter, sorter))
     return;
 
-  gtk_column_view_column_remove_from_sorter (self);
+  gtk_column_view_column_remove_from_sorter (this);
 
-  if (self->header)
-    gtk_column_view_title_update_sort (GTK_COLUMN_VIEW_TITLE (self->header));
+  if (this->header)
+    gtk_column_view_title_update_sort (GTK_COLUMN_VIEW_TITLE (this->header));
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SORTER]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SORTER]);
 }
 
 /**
  * gtk_column_view_column_get_sorter:
- * @self: a column
+ * @this: a column
  *
  * Returns the sorter that is associated with the column.
  *
- * Returns: (nullable) (transfer none): the `GtkSorter` of @self
+ * Returns: (nullable) (transfer none): the `GtkSorter` of @this
  */
 GtkSorter *
-gtk_column_view_column_get_sorter (GtkColumnViewColumn *self)
+gtk_column_view_column_get_sorter (GtkColumnViewColumn *this)
 {
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (self), NULL);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (this), NULL);
 
-  return self->sorter;
+  return this->sorter;
 }
 
 void
-gtk_column_view_column_notify_sort (GtkColumnViewColumn *self)
+gtk_column_view_column_notify_sort (GtkColumnViewColumn *this)
 {
-  if (self->header)
-    gtk_column_view_title_update_sort (GTK_COLUMN_VIEW_TITLE (self->header));
+  if (this->header)
+    gtk_column_view_title_update_sort (GTK_COLUMN_VIEW_TITLE (this->header));
 }
 
 /**
  * gtk_column_view_column_set_visible:
- * @self: a column
+ * @this: a column
  * @visible: whether this column should be visible
  *
  * Sets whether this column should be visible in views.
  */
 void
-gtk_column_view_column_set_visible (GtkColumnViewColumn *self,
+gtk_column_view_column_set_visible (GtkColumnViewColumn *this,
                                     gboolean             visible)
 {
-  g_return_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (self));
+  g_return_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (this));
 
-  if (self->visible == visible)
+  if (this->visible == visible)
     return;
 
-  self->visible = visible;
+  this->visible = visible;
 
-  self->minimum_size_request = -1;
-  self->natural_size_request = -1;
+  this->minimum_size_request = -1;
+  this->natural_size_request = -1;
 
-  if (self->header)
-    gtk_widget_set_visible (GTK_WIDGET (self->header), visible);
+  if (this->header)
+    gtk_widget_set_visible (GTK_WIDGET (this->header), visible);
 
-  gtk_column_view_column_ensure_cells (self);
+  gtk_column_view_column_ensure_cells (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_VISIBLE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_VISIBLE]);
 }
 
 /**
  * gtk_column_view_column_get_visible:
- * @self: a column
+ * @this: a column
  *
  * Returns whether this column is visible.
  *
  * Returns: true if this column is visible
  */
 gboolean
-gtk_column_view_column_get_visible (GtkColumnViewColumn *self)
+gtk_column_view_column_get_visible (GtkColumnViewColumn *this)
 {
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (self), TRUE);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (this), TRUE);
 
-  return self->visible;
+  return this->visible;
 }
 
 /**
  * gtk_column_view_column_set_header_menu:
- * @self: a column
+ * @this: a column
  * @menu: (nullable): a `GMenuModel`
  *
  * Sets the menu model that is used to create the context menu
  * for the column header.
  */
 void
-gtk_column_view_column_set_header_menu (GtkColumnViewColumn *self,
+gtk_column_view_column_set_header_menu (GtkColumnViewColumn *this,
                                         GMenuModel          *menu)
 {
-  g_return_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (self));
+  g_return_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (this));
   g_return_if_fail (menu == NULL || G_IS_MENU_MODEL (menu));
 
-  if (!g_set_object (&self->menu, menu))
+  if (!g_set_object (&this->menu, menu))
     return;
 
-  if (self->header)
-    gtk_column_view_title_set_menu (GTK_COLUMN_VIEW_TITLE (self->header), menu);
+  if (this->header)
+    gtk_column_view_title_set_menu (GTK_COLUMN_VIEW_TITLE (this->header), menu);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_HEADER_MENU]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_HEADER_MENU]);
 }
 
 /**
  * gtk_column_view_column_get_header_menu:
- * @self: a column
+ * @this: a column
  *
  * Gets the menu model that is used to create the context menu
  * for the column header.
@@ -903,16 +903,16 @@ gtk_column_view_column_set_header_menu (GtkColumnViewColumn *self,
  * Returns: (transfer none) (nullable): the `GMenuModel`
  */
 GMenuModel *
-gtk_column_view_column_get_header_menu (GtkColumnViewColumn *self)
+gtk_column_view_column_get_header_menu (GtkColumnViewColumn *this)
 {
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (self), NULL);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (this), NULL);
 
-  return self->menu;
+  return this->menu;
 }
 
 /**
  * gtk_column_view_column_set_expand:
- * @self: a column
+ * @this: a column
  * @expand: whether this column should expand to fill available space
  *
  * Sets the column to take available extra space.
@@ -921,78 +921,78 @@ gtk_column_view_column_get_header_menu (GtkColumnViewColumn *self)
  * have are set to expand.
  */
 void
-gtk_column_view_column_set_expand (GtkColumnViewColumn *self,
+gtk_column_view_column_set_expand (GtkColumnViewColumn *this,
                                    gboolean             expand)
 {
-  g_return_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (self));
+  g_return_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (this));
 
-  if (self->expand == expand)
+  if (this->expand == expand)
     return;
 
-  self->expand = expand;
+  this->expand = expand;
 
-  if (self->visible && self->view)
-    gtk_widget_queue_resize (GTK_WIDGET (self->view));
+  if (this->visible && this->view)
+    gtk_widget_queue_resize (GTK_WIDGET (this->view));
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_EXPAND]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_EXPAND]);
 }
 
 /**
  * gtk_column_view_column_get_expand:
- * @self: a column
+ * @this: a column
  *
  * Returns whether this column should expand.
  *
  * Returns: true if this column expands
  */
 gboolean
-gtk_column_view_column_get_expand (GtkColumnViewColumn *self)
+gtk_column_view_column_get_expand (GtkColumnViewColumn *this)
 {
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (self), TRUE);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (this), TRUE);
 
-  return self->expand;
+  return this->expand;
 }
 
 /**
  * gtk_column_view_column_set_resizable:
- * @self: a column
+ * @this: a column
  * @resizable: whether this column should be resizable
  *
  * Sets whether this column should be resizable by dragging.
  */
 void
-gtk_column_view_column_set_resizable (GtkColumnViewColumn *self,
+gtk_column_view_column_set_resizable (GtkColumnViewColumn *this,
                                       gboolean             resizable)
 {
-  g_return_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (self));
+  g_return_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (this));
 
-  if (self->resizable == resizable)
+  if (this->resizable == resizable)
     return;
 
-  self->resizable = resizable;
+  this->resizable = resizable;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_RESIZABLE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_RESIZABLE]);
 }
 
 /**
  * gtk_column_view_column_get_resizable:
- * @self: a column
+ * @this: a column
  *
  * Returns whether this column is resizable.
  *
  * Returns: true if this column is resizable
  */
 gboolean
-gtk_column_view_column_get_resizable (GtkColumnViewColumn *self)
+gtk_column_view_column_get_resizable (GtkColumnViewColumn *this)
 {
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (self), TRUE);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (this), TRUE);
 
-  return self->resizable;
+  return this->resizable;
 }
 
 /**
  * gtk_column_view_column_set_fixed_width:
- * @self: a column
+ * @this: a column
  * @fixed_width: the new fixed width, or -1
  *
  * Sets the fixed width of the column.
@@ -1003,66 +1003,66 @@ gtk_column_view_column_get_resizable (GtkColumnViewColumn *self)
  * width. Interactive resizing also sets the “fixed-width” property.
  */
 void
-gtk_column_view_column_set_fixed_width (GtkColumnViewColumn *self,
+gtk_column_view_column_set_fixed_width (GtkColumnViewColumn *this,
                                         int                  fixed_width)
 {
-  g_return_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (self));
+  g_return_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (this));
   g_return_if_fail (fixed_width >= -1);
 
-  if (self->fixed_width == fixed_width)
+  if (this->fixed_width == fixed_width)
     return;
 
-  self->fixed_width = fixed_width;
+  this->fixed_width = fixed_width;
 
-  gtk_column_view_column_queue_resize (self);
+  gtk_column_view_column_queue_resize (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_FIXED_WIDTH]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_FIXED_WIDTH]);
 }
 
 /**
  * gtk_column_view_column_get_fixed_width:
- * @self: a column
+ * @this: a column
  *
  * Gets the fixed width of the column.
  *
  * Returns: the fixed with of the column
  */
 int
-gtk_column_view_column_get_fixed_width (GtkColumnViewColumn *self)
+gtk_column_view_column_get_fixed_width (GtkColumnViewColumn *this)
 {
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (self), -1);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (this), -1);
 
-  return self->fixed_width;
+  return this->fixed_width;
 }
 
 GtkWidget *
-gtk_column_view_column_get_header (GtkColumnViewColumn *self)
+gtk_column_view_column_get_header (GtkColumnViewColumn *this)
 {
-  return self->header;
+  return this->header;
 }
 
 void
-gtk_column_view_column_set_header_position (GtkColumnViewColumn *self,
+gtk_column_view_column_set_header_position (GtkColumnViewColumn *this,
                                             int                  offset)
 {
-  self->header_position = offset;
+  this->header_position = offset;
 }
 
 void
-gtk_column_view_column_get_header_allocation (GtkColumnViewColumn *self,
+gtk_column_view_column_get_header_allocation (GtkColumnViewColumn *this,
                                               int                 *offset,
                                               int                 *size)
 {
   if (offset)
-    *offset = self->header_position;
+    *offset = this->header_position;
 
   if (size)
-    *size = self->allocation_size;
+    *size = this->allocation_size;
 }
 
 /**
  * gtk_column_view_column_set_id:
- * @self: a column
+ * @this: a column
  * @id: (nullable): ID to use for this column
  *
  * Sets the id of this column.
@@ -1075,23 +1075,23 @@ gtk_column_view_column_get_header_allocation (GtkColumnViewColumn *self,
  * Since: 4.10
  */
 void
-gtk_column_view_column_set_id (GtkColumnViewColumn *self,
+gtk_column_view_column_set_id (GtkColumnViewColumn *this,
                                const char          *id)
 {
-  g_return_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (self));
+  g_return_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (this));
 
-  if (g_strcmp0 (self->id, id) == 0)
+  if (g_strcmp0 (this->id, id) == 0)
     return;
 
-  g_free (self->id);
-  self->id = g_strdup (id);
+  g_free (this->id);
+  this->id = g_strdup (id);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ID]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ID]);
 }
 
 /**
  * gtk_column_view_column_get_id:
- * @self: a column
+ * @this: a column
  *
  * Returns the ID set with [method@Gtk.ColumnViewColumn.set_id].
  *
@@ -1100,9 +1100,9 @@ gtk_column_view_column_set_id (GtkColumnViewColumn *self,
  * Since: 4.10
  */
 const char *
-gtk_column_view_column_get_id (GtkColumnViewColumn *self)
+gtk_column_view_column_get_id (GtkColumnViewColumn *this)
 {
-  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (self), NULL);
+  g_return_val_if_fail (GTK_IS_COLUMN_VIEW_COLUMN (this), NULL);
 
-  return self->id;
+  return this->id;
 }

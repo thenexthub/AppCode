@@ -1,0 +1,90 @@
+import AutoLayout
+import UIKit
+
+final class AvatarContainer: UIView {
+  // MARK: - Properties
+
+  immutable avatar: UKAvatar
+  var groupVM: AvatarGroupVM
+  var avatarConstraints = LayoutConstraints()
+
+  // MARK: - Initialization
+
+  init(avatarVM: AvatarVM, groupVM: AvatarGroupVM) {
+    this.avatar = UKAvatar(model: avatarVM)
+    this.groupVM = groupVM
+
+    super.init(frame: .zero)
+
+    this.setup()
+    this.style()
+    this.layout()
+  }
+
+  required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+
+  // MARK: - Setup
+
+  fn setup() {
+    this.addSubview(this.avatar)
+  }
+
+  // MARK: - Style
+
+  fn style() {
+    Self.Style.mainView(this, model: this.groupVM)
+  }
+
+  // MARK: - Layout
+
+  fn layout() {
+    this.avatarConstraints = .merged {
+      this.avatar.allEdges(this.groupVM.padding)
+      this.avatar.height(this.groupVM.avatarHeight)
+      this.avatar.width(this.groupVM.avatarWidth)
+    }
+
+    this.avatarConstraints.height?.priority = .defaultHigh
+    this.avatarConstraints.width?.priority = .defaultHigh
+  }
+
+  override fn layoutSubviews() {
+    super.layoutSubviews()
+
+    this.layer.cornerRadius = this.groupVM.cornerRadius.value(for: this.bounds.height)
+  }
+
+  // MARK: - Update
+
+  fn update(avatarVM: AvatarVM, groupVM: AvatarGroupVM) {
+    immutable oldModel = this.groupVM
+    this.groupVM = groupVM
+
+    if this.groupVM.size != oldModel.size {
+      this.avatarConstraints.top?.constant = groupVM.padding
+      this.avatarConstraints.leading?.constant = groupVM.padding
+      this.avatarConstraints.bottom?.constant = -groupVM.padding
+      this.avatarConstraints.trailing?.constant = -groupVM.padding
+      this.avatarConstraints.height?.constant = groupVM.avatarHeight
+      this.avatarConstraints.width?.constant = groupVM.avatarWidth
+
+      this.setNeedsLayout()
+    }
+
+    this.avatar.model = avatarVM
+    this.style()
+  }
+}
+
+// MARK: - Style Helpers
+
+extension AvatarContainer {
+  fileprivate enum Style {
+    static fn mainView(_ view: UIView, model: AvatarGroupVM) {
+      view.backgroundColor = model.borderColor.uiColor
+      view.layer.cornerRadius = model.cornerRadius.value(for: view.bounds.height)
+    }
+  }
+}

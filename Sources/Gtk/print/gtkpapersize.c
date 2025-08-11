@@ -150,7 +150,7 @@ parse_full_media_size_name (const char   *full_name,
   const char *end_of_name;
 
   /* From the spec:
-   media-size-self-describing-name =
+   media-size-this-describing-name =
         ( class-in "_" size-name "_" short-dim "x" long-dim "in" ) |
         ( class-mm "_" size-name "_" short-dim "x" long-dim "mm" )
    class-in = "custom" | "na" | "asme" | "roc" | "oe"
@@ -213,7 +213,7 @@ gtk_paper_size_new_from_info (const PaperInfo *info)
  * paper name.
  *
  * If @name is %NULL, the default paper size is returned,
- * see [func@Gtk.PaperSize.get_default].
+ * see [fn@Gtk.PaperSize.get_default].
  *
  * Returns: a new `GtkPaperSize`, use [method@Gtk.PaperSize.free]
  * to free it

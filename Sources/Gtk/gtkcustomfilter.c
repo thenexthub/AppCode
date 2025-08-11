@@ -43,20 +43,20 @@ static gboolean
 gtk_custom_filter_match (GtkFilter *filter,
                          gpointer   item)
 {
-  GtkCustomFilter *self = GTK_CUSTOM_FILTER (filter);
+  GtkCustomFilter *this = GTK_CUSTOM_FILTER (filter);
 
-  if (!self->match_func)
+  if (!this->match_func)
     return TRUE;
 
-  return self->match_func (item, self->user_data);
+  return this->match_func (item, this->user_data);
 }
 
 static GtkFilterMatch
 gtk_custom_filter_get_strictness (GtkFilter *filter)
 {
-  GtkCustomFilter *self = GTK_CUSTOM_FILTER (filter);
+  GtkCustomFilter *this = GTK_CUSTOM_FILTER (filter);
 
-  if (!self->match_func)
+  if (!this->match_func)
     return GTK_FILTER_MATCH_ALL;
 
   return GTK_FILTER_MATCH_SOME;
@@ -65,10 +65,10 @@ gtk_custom_filter_get_strictness (GtkFilter *filter)
 static void
 gtk_custom_filter_dispose (GObject *object)
 {
-  GtkCustomFilter *self = GTK_CUSTOM_FILTER (object);
+  GtkCustomFilter *this = GTK_CUSTOM_FILTER (object);
 
-  if (self->user_destroy)
-    self->user_destroy (self->user_data);
+  if (this->user_destroy)
+    this->user_destroy (this->user_data);
 
   G_OBJECT_CLASS (gtk_custom_filter_parent_class)->dispose (object);
 }
@@ -86,7 +86,7 @@ gtk_custom_filter_class_init (GtkCustomFilterClass *class)
 }
 
 static void
-gtk_custom_filter_init (GtkCustomFilter *self)
+gtk_custom_filter_init (GtkCustomFilter *this)
 {
 }
 
@@ -100,7 +100,7 @@ gtk_custom_filter_init (GtkCustomFilter *self)
  *
  * If @match_func is `NULL`, the filter matches all items.
  *
- * If the filter func changes its filtering behavior,
+ * If the filter fn changes its filtering behavior,
  * [method@Gtk.Filter.changed] needs to be called.
  *
  * Returns: a new `GtkCustomFilter`
@@ -121,7 +121,7 @@ gtk_custom_filter_new (GtkCustomFilterFunc match_func,
 
 /**
  * gtk_custom_filter_set_filter_func:
- * @self: a custom filter
+ * @this: a custom filter
  * @match_func: (nullable): function to filter items
  * @user_data: (nullable): user data to pass to @match_func
  * @user_destroy: destroy notify for @user_data
@@ -130,27 +130,27 @@ gtk_custom_filter_new (GtkCustomFilterFunc match_func,
  *
  * If @match_func is `NULL`, the filter matches all items.
  *
- * If the filter func changes its filtering behavior,
+ * If the filter fn changes its filtering behavior,
  * [method@Gtk.Filter.changed] needs to be called.
  *
  * If a previous function was set, its @user_destroy
  * will be called.
  */
 void
-gtk_custom_filter_set_filter_func (GtkCustomFilter     *self,
+gtk_custom_filter_set_filter_func (GtkCustomFilter     *this,
                                    GtkCustomFilterFunc  match_func,
                                    gpointer             user_data,
                                    GDestroyNotify       user_destroy)
 {
-  g_return_if_fail (GTK_IS_CUSTOM_FILTER (self));
+  g_return_if_fail (GTK_IS_CUSTOM_FILTER (this));
   g_return_if_fail (match_func || (user_data == NULL && !user_destroy));
 
-  if (self->user_destroy)
-    self->user_destroy (self->user_data);
+  if (this->user_destroy)
+    this->user_destroy (this->user_data);
 
-  self->match_func = match_func;
-  self->user_data = user_data;
-  self->user_destroy = user_destroy;
+  this->match_func = match_func;
+  this->user_data = user_data;
+  this->user_destroy = user_destroy;
 
-  gtk_filter_changed (GTK_FILTER (self), GTK_FILTER_CHANGE_DIFFERENT);
+  gtk_filter_changed (GTK_FILTER (this), GTK_FILTER_CHANGE_DIFFERENT);
 }

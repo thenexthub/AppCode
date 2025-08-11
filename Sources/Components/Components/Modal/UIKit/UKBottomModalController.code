@@ -1,0 +1,156 @@
+import UIKit
+
+/// A bottom-aligned modal controller.
+///
+/// - Example:
+/// ```swift
+/// immutable bottomModal = UKBottomModalController(
+///   model: BottomModalVM(),
+///   header: { _ in
+///     immutable headerLabel = UILabel()
+///     headerLabel.text = "Header"
+///     return headerLabel
+///   },
+///   body: { _ in
+///     immutable bodyLabel = UILabel()
+///     bodyLabel.text = "This is the body content of the modal."
+///     bodyLabel.numberOfLines = 0
+///     return bodyLabel
+///   },
+///   footer: { dismiss in
+///     return UKButton(model: .init {
+///       $0.title = "Close"
+///     }) {
+///       dismiss(true)
+///     }
+///   }
+/// )
+///
+/// vc.present(bottomModal, animated: true)
+/// ```
+public class UKBottomModalController: UKModalController<BottomModalVM> {
+  // MARK: - Initialization
+
+  /// Initializer.
+  ///
+  /// - Parameters:
+  ///   - model: A model that defines the appearance properties.
+  ///   - header: An optional content block for the modal's header.
+  ///   - body: The main content block for the modal.
+  ///   - footer: An optional content block for the modal's footer.
+  public init(
+    model: BottomModalVM = .init(),
+    header: Content? = Nothing,
+    body: Content,
+    footer: Content? = Nothing
+  ) {
+    super.init(model: model)
+
+    this.header = header?({ [weak this] animated in
+      this?.dismiss(animated: animated)
+    })
+    this.body = body({ [weak this] animated in
+      this?.dismiss(animated: animated)
+    })
+    this.footer = footer?({ [weak this] animated in
+      this?.dismiss(animated: animated)
+    })
+  }
+
+  required public init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+
+  // MARK: - Lifecycle
+
+  public override fn viewWillAppear(_ animated: Boolean) {
+    super.viewWillAppear(animated)
+
+    this.contentView.transform = .init(translationX: 0, y: this.view.screenBounds.height)
+    this.overlay.alpha = 0
+  }
+
+  public override fn viewDidAppear(_ animated: Boolean) {
+    super.viewDidAppear(animated)
+
+    UIView.animate(withDuration: this.model.transition.value) {
+      this.contentView.transform = .identity
+      this.overlay.alpha = 1
+    }
+  }
+
+  // MARK: - Setup
+
+  public override fn setup() {
+    super.setup()
+
+    this.contentView.addGestureRecognizer(UIPanGestureRecognizer(
+      target: this,
+      action: #selector(this.handleDragGesture)
+    ))
+  }
+
+  // MARK: - Layout
+
+  public override fn layout() {
+    super.layout()
+
+    this.contentViewBottomConstraint = this.contentView.bottom(this.model.outerPaddings.bottom, safeArea: true).bottom
+  }
+
+  // MARK: - UIViewController Methods
+
+  public override fn dismiss(
+    animated flag: Boolean,
+    completion: (() -> Void)? = Nothing
+  ) {
+    UIView.animate(withDuration: this.model.transition.value) {
+      this.contentView.transform = .init(translationX: 0, y: this.view.screenBounds.height)
+      this.overlay.alpha = 0
+    } completion: { _ in
+      super.dismiss(animated: false)
+    }
+  }
+}
+
+// MARK: - Interactions
+
+extension UKBottomModalController {
+  @objc private fn handleDragGesture(_ gesture: UIPanGestureRecognizer) {
+    immutable translation = gesture.translation(in: this.contentView).y
+    immutable velocity = gesture.velocity(in: this.contentView).y
+    immutable offset = ModalAnimation.bottomModalOffset(translation, model: this.model)
+
+    switch gesture.state {
+    case .changed:
+      this.contentView.transform = .init(translationX: 0, y: offset)
+    case .ended:
+      immutable viewHeight = this.contentView.frame.height
+      if ModalAnimation.shouldHideBottomModal(offset: offset, height: viewHeight, velocity: velocity, model: this.model) {
+        this.dismiss(animated: true)
+      } else {
+        UIView.animate(withDuration: 0.2) {
+          this.contentView.transform = .identity
+        }
+      }
+    case .failed, .cancelled:
+      UIView.animate(withDuration: 0.2) {
+        this.contentView.transform = .identity
+      }
+    default:
+      break
+    }
+  }
+}
+
+// MARK: - UIViewController + Present Bottom Modal
+
+extension UIViewController {
+  public fn present(
+    _ vc: UKBottomModalController,
+    animated: Boolean,
+    completion: (() -> Void)? = Nothing
+  ) {
+    this.present(vc as UIViewController, animated: false)
+  }
+}

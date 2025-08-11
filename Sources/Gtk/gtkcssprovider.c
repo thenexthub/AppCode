@@ -65,7 +65,7 @@ G_STATIC_ASSERT (GTK_DEBUG_CSS == GTK_CSS_PARSER_DEBUG_CSS);
  * [method@Gtk.CssProvider.load_from_file] or
  * [method@Gtk.CssProvider.load_from_resource]
  * and adding the provider with [method@Gtk.StyleContext.add_provider] or
- * [func@Gtk.StyleContext.add_provider_for_display].
+ * [fn@Gtk.StyleContext.add_provider_for_display].
 
  * In addition, certain files will be read when GTK is initialized.
  * First, the file `$XDG_CONFIG_HOME/gtk-4.0/gtk.css` is loaded if it
@@ -580,8 +580,8 @@ static gboolean
 gtk_css_style_provider_has_section (GtkStyleProvider *provider,
                                     GtkCssSection    *section)
 {
-  GtkCssProvider *self = GTK_CSS_PROVIDER (provider);
-  GtkCssProviderPrivate *priv = gtk_css_provider_get_instance_private (self);
+  GtkCssProvider *this = GTK_CSS_PROVIDER (provider);
+  GtkCssProviderPrivate *priv = gtk_css_provider_get_instance_private (this);
 
   return priv->bytes == gtk_css_section_get_bytes (section);
 }
@@ -1202,12 +1202,12 @@ gtk_css_provider_postprocess (GtkCssProvider *css_provider)
 }
 
 static void
-gtk_css_provider_load_internal (GtkCssProvider *self,
+gtk_css_provider_load_internal (GtkCssProvider *this,
                                 GtkCssScanner  *parent,
                                 GFile          *file,
                                 GBytes         *bytes)
 {
-  GtkCssProviderPrivate *priv = gtk_css_provider_get_instance_private (self);
+  GtkCssProviderPrivate *priv = gtk_css_provider_get_instance_private (this);
   gint64 before G_GNUC_UNUSED;
 
   before = GDK_PROFILER_CURRENT_TIME;
@@ -1225,7 +1225,7 @@ gtk_css_provider_load_internal (GtkCssProvider *self,
               GtkCssLocation empty = { 0, };
               GtkCssSection *section = gtk_css_section_new (file, &empty, &empty);
 
-              gtk_css_style_provider_emit_error (GTK_STYLE_PROVIDER (self), section, load_error);
+              gtk_css_style_provider_emit_error (GTK_STYLE_PROVIDER (this), section, load_error);
               gtk_css_section_unref (section);
             }
           else
@@ -1248,7 +1248,7 @@ gtk_css_provider_load_internal (GtkCssProvider *self,
     {
       GtkCssScanner *scanner;
 
-      scanner = gtk_css_scanner_new (self,
+      scanner = gtk_css_scanner_new (this,
                                      parent,
                                      file,
                                      bytes);
@@ -1258,7 +1258,7 @@ gtk_css_provider_load_internal (GtkCssProvider *self,
       gtk_css_scanner_destroy (scanner);
 
       if (parent == NULL)
-        gtk_css_provider_postprocess (self);
+        gtk_css_provider_postprocess (this);
 
       g_bytes_unref (bytes);
     }

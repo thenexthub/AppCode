@@ -35,44 +35,44 @@ G_DEFINE_TYPE (GskVulkanRenderer, gsk_vulkan_renderer, GSK_TYPE_GPU_RENDERER)
 
 #ifdef GDK_RENDERING_VULKAN
 static void
-gsk_vulkan_renderer_free_targets (GskVulkanRenderer *self)
+gsk_vulkan_renderer_free_targets (GskVulkanRenderer *this)
 {
   guint i;
 
-  for (i = 0; i < self->n_targets; i++)
+  for (i = 0; i < this->n_targets; i++)
     {
-      g_object_unref (self->targets[i]);
+      g_object_unref (this->targets[i]);
     }
 
-  g_clear_pointer (&self->targets, g_free);
-  self->n_targets = 0;
+  g_clear_pointer (&this->targets, g_free);
+  this->n_targets = 0;
 }
 
 static void
 gsk_vulkan_renderer_update_images_cb (GdkVulkanContext  *context,
-                                      GskVulkanRenderer *self)
+                                      GskVulkanRenderer *this)
 {
   GskVulkanDevice *device;
   GdkSurface *surface;
   guint width, height;
   guint i;
 
-  surface = gsk_renderer_get_surface (GSK_RENDERER (self));
+  surface = gsk_renderer_get_surface (GSK_RENDERER (this));
   if (surface == NULL)
     return;
 
-  device = GSK_VULKAN_DEVICE (gsk_gpu_renderer_get_device (GSK_GPU_RENDERER (self)));
+  device = GSK_VULKAN_DEVICE (gsk_gpu_renderer_get_device (GSK_GPU_RENDERER (this)));
 
-  gsk_vulkan_renderer_free_targets (self);
+  gsk_vulkan_renderer_free_targets (this);
 
-  self->n_targets = gdk_vulkan_context_get_n_images (context);
-  self->targets = g_new (GskGpuImage *, self->n_targets);
+  this->n_targets = gdk_vulkan_context_get_n_images (context);
+  this->targets = g_new (GskGpuImage *, this->n_targets);
 
   gdk_draw_context_get_buffer_size (GDK_DRAW_CONTEXT (context), &width, &height);
 
-  for (i = 0; i < self->n_targets; i++)
+  for (i = 0; i < this->n_targets; i++)
     {
-      self->targets[i] = gsk_vulkan_image_new_for_swapchain (device,
+      this->targets[i] = gsk_vulkan_image_new_for_swapchain (device,
                                                              gdk_vulkan_context_get_image (context, i),
                                                              gdk_vulkan_context_get_image_format (context),
                                                              gdk_vulkan_context_get_memory_format (context),
@@ -87,7 +87,7 @@ gsk_vulkan_renderer_create_context (GskGpuRenderer       *renderer,
                                     GskGpuOptimizations  *supported,
                                     GError              **error)
 {
-  GskVulkanRenderer *self = GSK_VULKAN_RENDERER (renderer);
+  GskVulkanRenderer *this = GSK_VULKAN_RENDERER (renderer);
   GdkVulkanContext *context;
 
   context = gdk_display_create_vulkan_context (display, surface, error);
@@ -97,8 +97,8 @@ gsk_vulkan_renderer_create_context (GskGpuRenderer       *renderer,
   g_signal_connect (context,
                     "images-updated",
                     G_CALLBACK (gsk_vulkan_renderer_update_images_cb),
-                    self);
-  gsk_vulkan_renderer_update_images_cb (context, self);
+                    this);
+  gsk_vulkan_renderer_update_images_cb (context, this);
 
   *supported = -1;
 
@@ -125,23 +125,23 @@ gsk_vulkan_renderer_restore_current (GskGpuRenderer *renderer,
 static GskGpuImage *
 gsk_vulkan_renderer_get_backbuffer (GskGpuRenderer *renderer)
 {
-  GskVulkanRenderer *self = GSK_VULKAN_RENDERER (renderer);
+  GskVulkanRenderer *this = GSK_VULKAN_RENDERER (renderer);
   GdkVulkanContext *context;
   
   context = GDK_VULKAN_CONTEXT (gsk_gpu_renderer_get_context (renderer));
 
-  return g_object_ref (self->targets[gdk_vulkan_context_get_draw_index (context)]);
+  return g_object_ref (this->targets[gdk_vulkan_context_get_draw_index (context)]);
 }
 
 static void
 gsk_vulkan_renderer_unrealize (GskRenderer *renderer)
 {
-  GskVulkanRenderer *self = GSK_VULKAN_RENDERER (renderer);
+  GskVulkanRenderer *this = GSK_VULKAN_RENDERER (renderer);
 
-  gsk_vulkan_renderer_free_targets (self);
-  g_signal_handlers_disconnect_by_func (gsk_gpu_renderer_get_context (GSK_GPU_RENDERER (self)),
+  gsk_vulkan_renderer_free_targets (this);
+  g_signal_handlers_disconnect_by_func (gsk_gpu_renderer_get_context (GSK_GPU_RENDERER (this)),
                                         gsk_vulkan_renderer_update_images_cb,
-                                        self);
+                                        this);
 
   GSK_RENDERER_CLASS (gsk_vulkan_renderer_parent_class)->unrealize (renderer);
 }
@@ -185,7 +185,7 @@ gsk_vulkan_renderer_class_init (GskVulkanRendererClass *klass)
 }
 
 static void
-gsk_vulkan_renderer_init (GskVulkanRenderer *self)
+gsk_vulkan_renderer_init (GskVulkanRenderer *this)
 {
 }
 

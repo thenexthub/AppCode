@@ -64,72 +64,72 @@ static GParamSpec *properties[NUM_PROPERTIES] = { NULL, };
 static GType
 gtk_property_lookup_list_model_get_item_type (GListModel *list)
 {
-  GtkPropertyLookupListModel *self = GTK_PROPERTY_LOOKUP_LIST_MODEL (list);
+  GtkPropertyLookupListModel *this = GTK_PROPERTY_LOOKUP_LIST_MODEL (list);
 
-  return self->item_type;
+  return this->item_type;
 }
 
 static gboolean
-gtk_property_lookup_list_model_is_infinite (GtkPropertyLookupListModel *self)
+gtk_property_lookup_list_model_is_infinite (GtkPropertyLookupListModel *this)
 {
-  if (self->items->len == 0)
+  if (this->items->len == 0)
     return FALSE;
 
-  return g_ptr_array_index (self->items, self->items->len - 1) == NULL;
+  return g_ptr_array_index (this->items, this->items->len - 1) == NULL;
 }
 
 static void
 gtk_property_lookup_list_model_notify_cb (GObject                    *object,
                                           GParamSpec                 *pspec,
-                                          GtkPropertyLookupListModel *self);
+                                          GtkPropertyLookupListModel *this);
 
 static guint
-gtk_property_lookup_list_model_clear (GtkPropertyLookupListModel *self,
+gtk_property_lookup_list_model_clear (GtkPropertyLookupListModel *this,
                                       guint                       remaining)
 {
   guint i;
 
-  for (i = remaining; i < self->items->len; i++)
+  for (i = remaining; i < this->items->len; i++)
     {
-      gpointer object = g_ptr_array_index (self->items, i);
+      gpointer object = g_ptr_array_index (this->items, i);
       if (object == NULL)
         break;
 
-      g_signal_handlers_disconnect_by_func (object, gtk_property_lookup_list_model_notify_cb, self);
+      g_signal_handlers_disconnect_by_func (object, gtk_property_lookup_list_model_notify_cb, this);
       g_object_unref (object);
     }
 
   /* keeps the sentinel, yay! */
-  g_ptr_array_remove_range (self->items, remaining, i - remaining);
+  g_ptr_array_remove_range (this->items, remaining, i - remaining);
 
   return i - remaining;
 }
 
 static guint
-gtk_property_lookup_list_model_append (GtkPropertyLookupListModel *self,
+gtk_property_lookup_list_model_append (GtkPropertyLookupListModel *this,
                                        guint                       n_items)
 {
   gpointer last, next;
   guint i, start;
 
-  g_assert (self->items->len > 0);
-  g_assert (!gtk_property_lookup_list_model_is_infinite (self));
+  g_assert (this->items->len > 0);
+  g_assert (!gtk_property_lookup_list_model_is_infinite (this));
 
-  last = g_ptr_array_index (self->items, self->items->len - 1);
-  start = self->items->len;
+  last = g_ptr_array_index (this->items, this->items->len - 1);
+  start = this->items->len;
   for (i = start; i < n_items; i++)
     {
-      g_object_get (last, self->property, &next, NULL);
+      g_object_get (last, this->property, &next, NULL);
       if (next == NULL)
         return i - start;
       
       g_signal_connect_closure_by_id (next,
                                       g_signal_lookup ("notify", G_OBJECT_TYPE (next)),
-                                      g_quark_from_static_string (self->property),
-                                      g_cclosure_new (G_CALLBACK (gtk_property_lookup_list_model_notify_cb), G_OBJECT (self), NULL),
+                                      g_quark_from_static_string (this->property),
+                                      g_cclosure_new (G_CALLBACK (gtk_property_lookup_list_model_notify_cb), G_OBJECT (this), NULL),
                                       FALSE);
 
-      g_ptr_array_add (self->items, next);
+      g_ptr_array_add (this->items, next);
       last = next;
     }
 
@@ -137,36 +137,36 @@ gtk_property_lookup_list_model_append (GtkPropertyLookupListModel *self,
 }
 
 static void
-gtk_property_lookup_list_model_ensure (GtkPropertyLookupListModel *self,
+gtk_property_lookup_list_model_ensure (GtkPropertyLookupListModel *this,
                                        guint                       n_items)
 {
-  if (!gtk_property_lookup_list_model_is_infinite (self))
+  if (!gtk_property_lookup_list_model_is_infinite (this))
     return;
 
-  if (self->items->len - 1 >= n_items)
+  if (this->items->len - 1 >= n_items)
     return;
   
   /* remove NULL sentinel */
-  g_ptr_array_remove_index (self->items, self->items->len - 1);
+  g_ptr_array_remove_index (this->items, this->items->len - 1);
 
-  if (self->items->len == 0)
+  if (this->items->len == 0)
     return;
 
-  if (gtk_property_lookup_list_model_append (self, n_items) == n_items)
+  if (gtk_property_lookup_list_model_append (this, n_items) == n_items)
     {
       /* re-add NULL sentinel */
-      g_ptr_array_add (self->items, NULL);
+      g_ptr_array_add (this->items, NULL);
     }
 }
 
 static void
 gtk_property_lookup_list_model_notify_cb (GObject                    *object,
                                           GParamSpec                 *pspec,
-                                          GtkPropertyLookupListModel *self)
+                                          GtkPropertyLookupListModel *this)
 {
   guint position, removed, added;
 
-  if (!g_ptr_array_find (self->items, object, &position))
+  if (!g_ptr_array_find (this->items, object, &position))
     {
       /* can only happen if we forgot to disconnect a signal handler */
       g_assert_not_reached ();
@@ -176,41 +176,41 @@ gtk_property_lookup_list_model_notify_cb (GObject                    *object,
    */
   position++;
 
-  removed = gtk_property_lookup_list_model_clear (self, position);
+  removed = gtk_property_lookup_list_model_clear (this, position);
 
-  if (!gtk_property_lookup_list_model_is_infinite (self))
-    added = gtk_property_lookup_list_model_append (self, G_MAXUINT);
+  if (!gtk_property_lookup_list_model_is_infinite (this))
+    added = gtk_property_lookup_list_model_append (this, G_MAXUINT);
   else
     added = 0;
 
   if (removed > 0 || added > 0)
-    g_list_model_items_changed (G_LIST_MODEL (self), position, removed, added);
+    g_list_model_items_changed (G_LIST_MODEL (this), position, removed, added);
   if (removed != added)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 }
 
 static guint
 gtk_property_lookup_list_model_get_n_items (GListModel *list)
 {
-  GtkPropertyLookupListModel *self = GTK_PROPERTY_LOOKUP_LIST_MODEL (list);
+  GtkPropertyLookupListModel *this = GTK_PROPERTY_LOOKUP_LIST_MODEL (list);
 
-  gtk_property_lookup_list_model_ensure (self, G_MAXUINT);
+  gtk_property_lookup_list_model_ensure (this, G_MAXUINT);
 
-  return self->items->len;
+  return this->items->len;
 }
 
 static gpointer
 gtk_property_lookup_list_model_get_item (GListModel *list,
                                          guint       position)
 {
-  GtkPropertyLookupListModel *self = GTK_PROPERTY_LOOKUP_LIST_MODEL (list);
+  GtkPropertyLookupListModel *this = GTK_PROPERTY_LOOKUP_LIST_MODEL (list);
 
-  gtk_property_lookup_list_model_ensure (self, position + 1);
+  gtk_property_lookup_list_model_ensure (this, position + 1);
 
-  if (position >= self->items->len)
+  if (position >= this->items->len)
     return NULL;
 
-  return g_object_ref (g_ptr_array_index (self->items, position));
+  return g_object_ref (g_ptr_array_index (this->items, position));
 }
 
 static void
@@ -278,21 +278,21 @@ gtk_property_lookup_list_model_set_property (GObject      *object,
                                              const GValue *value,
                                              GParamSpec   *pspec)
 {
-  GtkPropertyLookupListModel *self = GTK_PROPERTY_LOOKUP_LIST_MODEL (object);
+  GtkPropertyLookupListModel *this = GTK_PROPERTY_LOOKUP_LIST_MODEL (object);
 
   switch (prop_id)
     {
     case PROP_ITEM_TYPE:
-      self->item_type = g_value_get_gtype (value);
-      g_return_if_fail (self->item_type != 0);
+      this->item_type = g_value_get_gtype (value);
+      g_return_if_fail (this->item_type != 0);
       break;
 
     case PROP_OBJECT:
-      gtk_property_lookup_list_model_set_object (self, g_value_get_object (value));
+      gtk_property_lookup_list_model_set_object (this, g_value_get_object (value));
       break;
 
     case PROP_PROPERTY:
-      self->property = g_value_dup_string (value);
+      this->property = g_value_dup_string (value);
       break;
 
     default:
@@ -300,10 +300,10 @@ gtk_property_lookup_list_model_set_property (GObject      *object,
       break;
     }
 
-  if (self->property && self->item_type &&
-      !lookup_pspec (self->item_type, self->property))
+  if (this->property && this->item_type &&
+      !lookup_pspec (this->item_type, this->property))
     {
-      g_critical ("type %s has no property named \"%s\"", g_type_name (self->item_type), self->property);
+      g_critical ("type %s has no property named \"%s\"", g_type_name (this->item_type), this->property);
     }
 }
 
@@ -313,24 +313,24 @@ gtk_property_lookup_list_model_get_property (GObject     *object,
                                              GValue      *value,
                                              GParamSpec  *pspec)
 {
-  GtkPropertyLookupListModel *self = GTK_PROPERTY_LOOKUP_LIST_MODEL (object);
+  GtkPropertyLookupListModel *this = GTK_PROPERTY_LOOKUP_LIST_MODEL (object);
 
   switch (prop_id)
     {
     case PROP_ITEM_TYPE:
-      g_value_set_gtype (value, self->item_type);
+      g_value_set_gtype (value, this->item_type);
       break;
 
     case PROP_N_ITEMS:
-      g_value_set_uint (value, gtk_property_lookup_list_model_get_n_items (G_LIST_MODEL (self)));
+      g_value_set_uint (value, gtk_property_lookup_list_model_get_n_items (G_LIST_MODEL (this)));
       break;
 
     case PROP_OBJECT:
-      g_value_set_object (value, gtk_property_lookup_list_model_get_object (self));
+      g_value_set_object (value, gtk_property_lookup_list_model_get_object (this));
       break;
 
     case PROP_PROPERTY:
-      g_value_set_string (value, self->property);
+      g_value_set_string (value, this->property);
       break;
 
     default:
@@ -342,9 +342,9 @@ gtk_property_lookup_list_model_get_property (GObject     *object,
 static void
 gtk_property_lookup_list_model_dispose (GObject *object)
 {
-  GtkPropertyLookupListModel *self = GTK_PROPERTY_LOOKUP_LIST_MODEL (object);
+  GtkPropertyLookupListModel *this = GTK_PROPERTY_LOOKUP_LIST_MODEL (object);
 
-  gtk_property_lookup_list_model_clear (self, 0);
+  gtk_property_lookup_list_model_clear (this, 0);
 
   G_OBJECT_CLASS (gtk_property_lookup_list_model_parent_class)->dispose (object);
 }
@@ -352,10 +352,10 @@ gtk_property_lookup_list_model_dispose (GObject *object)
 static void
 gtk_property_lookup_list_model_finalize (GObject *object)
 {
-  GtkPropertyLookupListModel *self = GTK_PROPERTY_LOOKUP_LIST_MODEL (object);
+  GtkPropertyLookupListModel *this = GTK_PROPERTY_LOOKUP_LIST_MODEL (object);
 
-  g_ptr_array_unref (self->items);
-  g_free (self->property);
+  g_ptr_array_unref (this->items);
+  g_free (this->property);
 
   G_OBJECT_CLASS (gtk_property_lookup_list_model_parent_class)->finalize (object);
 }
@@ -416,12 +416,12 @@ gtk_property_lookup_list_model_class_init (GtkPropertyLookupListModelClass *klas
 }
 
 static void
-gtk_property_lookup_list_model_init (GtkPropertyLookupListModel *self)
+gtk_property_lookup_list_model_init (GtkPropertyLookupListModel *this)
 {
-  self->item_type = G_TYPE_OBJECT;
-  self->items = g_ptr_array_new ();
+  this->item_type = G_TYPE_OBJECT;
+  this->items = g_ptr_array_new ();
   /* add sentinel */
-  g_ptr_array_add (self->items, NULL);
+  g_ptr_array_add (this->items, NULL);
 }
 
 GtkPropertyLookupListModel *
@@ -438,56 +438,56 @@ gtk_property_lookup_list_model_new (GType       item_type,
 }
 
 void
-gtk_property_lookup_list_model_set_object (GtkPropertyLookupListModel *self,
+gtk_property_lookup_list_model_set_object (GtkPropertyLookupListModel *this,
                                            gpointer                    object)
 {
   guint removed, added;
 
-  g_return_if_fail (GTK_IS_PROPERTY_LOOKUP_LIST_MODEL (self));
+  g_return_if_fail (GTK_IS_PROPERTY_LOOKUP_LIST_MODEL (this));
 
   if (object)
     {
-      if (self->items->len != 0 &&
-          g_ptr_array_index (self->items, 0) == object)
+      if (this->items->len != 0 &&
+          g_ptr_array_index (this->items, 0) == object)
         return;
 
-      removed = gtk_property_lookup_list_model_clear (self, 0);
+      removed = gtk_property_lookup_list_model_clear (this, 0);
 
-      g_ptr_array_insert (self->items, 0, g_object_ref (object));
+      g_ptr_array_insert (this->items, 0, g_object_ref (object));
       g_signal_connect_closure_by_id (object,
                                       g_signal_lookup ("notify", G_OBJECT_TYPE (object)),
-                                      g_quark_from_static_string (self->property),
-                                      g_cclosure_new (G_CALLBACK (gtk_property_lookup_list_model_notify_cb), G_OBJECT (self), NULL),
+                                      g_quark_from_static_string (this->property),
+                                      g_cclosure_new (G_CALLBACK (gtk_property_lookup_list_model_notify_cb), G_OBJECT (this), NULL),
                                       FALSE);
       added = 1;
-      if (!gtk_property_lookup_list_model_is_infinite (self))
-        added += gtk_property_lookup_list_model_append (self, G_MAXUINT);
+      if (!gtk_property_lookup_list_model_is_infinite (this))
+        added += gtk_property_lookup_list_model_append (this, G_MAXUINT);
     }
   else
     {
-      if (self->items->len == 0 ||
-          g_ptr_array_index (self->items, 0) == NULL)
+      if (this->items->len == 0 ||
+          g_ptr_array_index (this->items, 0) == NULL)
         return;
 
-      removed = gtk_property_lookup_list_model_clear (self, 0);
+      removed = gtk_property_lookup_list_model_clear (this, 0);
       added = 0;
     }
 
   g_assert (removed != 0 || added != 0);
 
-  g_list_model_items_changed (G_LIST_MODEL (self), 0, removed, added);
+  g_list_model_items_changed (G_LIST_MODEL (this), 0, removed, added);
   if (removed != added)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 }
 
 gpointer
-gtk_property_lookup_list_model_get_object (GtkPropertyLookupListModel *self)
+gtk_property_lookup_list_model_get_object (GtkPropertyLookupListModel *this)
 {
-  g_return_val_if_fail (GTK_IS_PROPERTY_LOOKUP_LIST_MODEL (self), NULL);
+  g_return_val_if_fail (GTK_IS_PROPERTY_LOOKUP_LIST_MODEL (this), NULL);
 
-  if (self->items->len == 0)
+  if (this->items->len == 0)
     return NULL;
   
-  return g_ptr_array_index (self->items, 0);
+  return g_ptr_array_index (this->items, 0);
 }
 

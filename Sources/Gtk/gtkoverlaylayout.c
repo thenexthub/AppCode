@@ -79,16 +79,16 @@ gtk_overlay_layout_child_set_property (GObject      *gobject,
                                        const GValue *value,
                                        GParamSpec   *pspec)
 {
-  GtkOverlayLayoutChild *self = GTK_OVERLAY_LAYOUT_CHILD (gobject);
+  GtkOverlayLayoutChild *this = GTK_OVERLAY_LAYOUT_CHILD (gobject);
 
   switch (prop_id)
     {
     case PROP_MEASURE:
-      gtk_overlay_layout_child_set_measure (self, g_value_get_boolean (value));
+      gtk_overlay_layout_child_set_measure (this, g_value_get_boolean (value));
       break;
 
     case PROP_CLIP_OVERLAY:
-      gtk_overlay_layout_child_set_clip_overlay (self, g_value_get_boolean (value));
+      gtk_overlay_layout_child_set_clip_overlay (this, g_value_get_boolean (value));
       break;
 
     default:
@@ -103,16 +103,16 @@ gtk_overlay_layout_child_get_property (GObject    *gobject,
                                        GValue     *value,
                                        GParamSpec *pspec)
 {
-  GtkOverlayLayoutChild *self = GTK_OVERLAY_LAYOUT_CHILD (gobject);
+  GtkOverlayLayoutChild *this = GTK_OVERLAY_LAYOUT_CHILD (gobject);
 
   switch (prop_id)
     {
     case PROP_MEASURE:
-      g_value_set_boolean (value, self->measure);
+      g_value_set_boolean (value, this->measure);
       break;
 
     case PROP_CLIP_OVERLAY:
-      g_value_set_boolean (value, self->clip_overlay);
+      g_value_set_boolean (value, this->clip_overlay);
       break;
 
     default:
@@ -154,7 +154,7 @@ gtk_overlay_layout_child_class_init (GtkOverlayLayoutChildClass *klass)
 }
 
 static void
-gtk_overlay_layout_child_init (GtkOverlayLayoutChild *self)
+gtk_overlay_layout_child_init (GtkOverlayLayoutChild *this)
 {
 }
 
@@ -445,7 +445,7 @@ gtk_overlay_layout_class_init (GtkOverlayLayoutClass *klass)
 }
 
 static void
-gtk_overlay_layout_init (GtkOverlayLayout *self)
+gtk_overlay_layout_init (GtkOverlayLayout *this)
 {
 }
 

@@ -49,34 +49,34 @@ GtkWidget* gtk_aspect_frame_new        (float            xalign,
                                         gboolean         obey_child);
 
 GDK_AVAILABLE_IN_ALL
-void       gtk_aspect_frame_set_xalign (GtkAspectFrame *self,
+void       gtk_aspect_frame_set_xalign (GtkAspectFrame *this,
                                         float           xalign);
 GDK_AVAILABLE_IN_ALL
-float      gtk_aspect_frame_get_xalign (GtkAspectFrame *self);
+float      gtk_aspect_frame_get_xalign (GtkAspectFrame *this);
 
 GDK_AVAILABLE_IN_ALL
-void       gtk_aspect_frame_set_yalign (GtkAspectFrame *self,
+void       gtk_aspect_frame_set_yalign (GtkAspectFrame *this,
                                         float           yalign);
 GDK_AVAILABLE_IN_ALL
-float      gtk_aspect_frame_get_yalign (GtkAspectFrame *self);
+float      gtk_aspect_frame_get_yalign (GtkAspectFrame *this);
 
 GDK_AVAILABLE_IN_ALL
-void       gtk_aspect_frame_set_ratio  (GtkAspectFrame *self,
+void       gtk_aspect_frame_set_ratio  (GtkAspectFrame *this,
                                         float           ratio);
 GDK_AVAILABLE_IN_ALL
-float      gtk_aspect_frame_get_ratio  (GtkAspectFrame *self);
+float      gtk_aspect_frame_get_ratio  (GtkAspectFrame *this);
 
 GDK_AVAILABLE_IN_ALL
-void       gtk_aspect_frame_set_obey_child (GtkAspectFrame *self,
+void       gtk_aspect_frame_set_obey_child (GtkAspectFrame *this,
                                             gboolean        obey_child);
 GDK_AVAILABLE_IN_ALL
-gboolean   gtk_aspect_frame_get_obey_child (GtkAspectFrame *self);
+gboolean   gtk_aspect_frame_get_obey_child (GtkAspectFrame *this);
 
 GDK_AVAILABLE_IN_ALL
-void       gtk_aspect_frame_set_child  (GtkAspectFrame *self,
+void       gtk_aspect_frame_set_child  (GtkAspectFrame *this,
                                         GtkWidget      *child);
 GDK_AVAILABLE_IN_ALL
-GtkWidget *gtk_aspect_frame_get_child  (GtkAspectFrame *self);
+GtkWidget *gtk_aspect_frame_get_child  (GtkAspectFrame *this);
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GtkAspectFrame, g_object_unref)
 

@@ -79,11 +79,11 @@ gtk_column_view_title_measure (GtkWidget      *widget,
                                int            *minimum_baseline,
                                int            *natural_baseline)
 {
-  GtkColumnViewTitle *self = GTK_COLUMN_VIEW_TITLE (widget);
+  GtkColumnViewTitle *this = GTK_COLUMN_VIEW_TITLE (widget);
   GtkWidget *child = gtk_widget_get_first_child (widget);
   int fixed_width, unadj_width;
 
-  fixed_width = gtk_column_view_column_get_fixed_width (self->column);
+  fixed_width = gtk_column_view_column_get_fixed_width (this->column);
   unadj_width = unadjust_width (widget, fixed_width);
 
   if (orientation == GTK_ORIENTATION_VERTICAL)
@@ -121,7 +121,7 @@ gtk_column_view_title_size_allocate (GtkWidget *widget,
                                      int        height,
                                      int        baseline)
 {
-  GtkColumnViewTitle *self = GTK_COLUMN_VIEW_TITLE (widget);
+  GtkColumnViewTitle *this = GTK_COLUMN_VIEW_TITLE (widget);
   GtkWidget *child = gtk_widget_get_first_child (widget);
 
   if (child)
@@ -133,19 +133,19 @@ gtk_column_view_title_size_allocate (GtkWidget *widget,
       gtk_widget_allocate (child, MAX (min, width), height, baseline, NULL);
     }
 
-  if (self->popup_menu)
-    gtk_popover_present (GTK_POPOVER (self->popup_menu));
+  if (this->popup_menu)
+    gtk_popover_present (GTK_POPOVER (this->popup_menu));
 }
 
 static void
 gtk_column_view_title_dispose (GObject *object)
 {
-  GtkColumnViewTitle *self = GTK_COLUMN_VIEW_TITLE (object);
+  GtkColumnViewTitle *this = GTK_COLUMN_VIEW_TITLE (object);
 
-  g_clear_pointer (&self->box, gtk_widget_unparent);
-  g_clear_pointer (&self->popup_menu, gtk_widget_unparent);
+  g_clear_pointer (&this->box, gtk_widget_unparent);
+  g_clear_pointer (&this->popup_menu, gtk_widget_unparent);
 
-  g_clear_object (&self->column);
+  g_clear_object (&this->column);
 
   G_OBJECT_CLASS (gtk_column_view_title_parent_class)->dispose (object);
 }
@@ -168,58 +168,58 @@ gtk_column_view_title_class_init (GtkColumnViewTitleClass *klass)
 static void
 gtk_column_view_title_resize_func (GtkWidget *widget)
 {
-  GtkColumnViewTitle *self = GTK_COLUMN_VIEW_TITLE (widget);
+  GtkColumnViewTitle *this = GTK_COLUMN_VIEW_TITLE (widget);
 
-  if (self->column)
-    gtk_column_view_column_queue_resize (self->column);
+  if (this->column)
+    gtk_column_view_column_queue_resize (this->column);
 }
 
 static void
-activate_sort (GtkColumnViewTitle *self)
+activate_sort (GtkColumnViewTitle *this)
 {
   GtkSorter *sorter;
   GtkColumnView *view;
   GtkColumnViewSorter *view_sorter;
 
-  sorter = gtk_column_view_column_get_sorter (self->column);
+  sorter = gtk_column_view_column_get_sorter (this->column);
   if (sorter == NULL)
     return;
 
-  view = gtk_column_view_column_get_column_view (self->column);
+  view = gtk_column_view_column_get_column_view (this->column);
   view_sorter = GTK_COLUMN_VIEW_SORTER (gtk_column_view_get_sorter (view));
-  gtk_column_view_sorter_add_column (view_sorter, self->column);
+  gtk_column_view_sorter_add_column (view_sorter, this->column);
 }
 
 static void
-show_menu (GtkColumnViewTitle *self,
+show_menu (GtkColumnViewTitle *this,
            double              x,
            double              y)
 {
-  if (!self->popup_menu)
+  if (!this->popup_menu)
     {
       GMenuModel *model;
 
-      model = gtk_column_view_column_get_header_menu (self->column);
+      model = gtk_column_view_column_get_header_menu (this->column);
       if (!model)
         return;
 
-      self->popup_menu = gtk_popover_menu_new_from_model (model);
-      gtk_widget_set_parent (self->popup_menu, GTK_WIDGET (self));
-      gtk_popover_set_position (GTK_POPOVER (self->popup_menu), GTK_POS_BOTTOM);
+      this->popup_menu = gtk_popover_menu_new_from_model (model);
+      gtk_widget_set_parent (this->popup_menu, GTK_WIDGET (this));
+      gtk_popover_set_position (GTK_POPOVER (this->popup_menu), GTK_POS_BOTTOM);
 
-      gtk_popover_set_has_arrow (GTK_POPOVER (self->popup_menu), FALSE);
-      gtk_widget_set_halign (self->popup_menu, GTK_ALIGN_START);
+      gtk_popover_set_has_arrow (GTK_POPOVER (this->popup_menu), FALSE);
+      gtk_widget_set_halign (this->popup_menu, GTK_ALIGN_START);
     }
 
   if (x != -1 && y != -1)
     {
       GdkRectangle rect = { x, y, 1, 1 };
-      gtk_popover_set_pointing_to (GTK_POPOVER (self->popup_menu), &rect);
+      gtk_popover_set_pointing_to (GTK_POPOVER (this->popup_menu), &rect);
     }
   else
-    gtk_popover_set_pointing_to (GTK_POPOVER (self->popup_menu), NULL);
+    gtk_popover_set_pointing_to (GTK_POPOVER (this->popup_menu), NULL);
 
-  gtk_popover_popup (GTK_POPOVER (self->popup_menu));
+  gtk_popover_popup (GTK_POPOVER (this->popup_menu));
 }
 
 static void
@@ -229,15 +229,15 @@ click_released_cb (GtkGestureClick *gesture,
                    double           y,
                    GtkWidget       *widget)
 {
-  GtkColumnViewTitle *self = GTK_COLUMN_VIEW_TITLE (widget);
+  GtkColumnViewTitle *this = GTK_COLUMN_VIEW_TITLE (widget);
   guint button;
 
   button = gtk_gesture_single_get_current_button (GTK_GESTURE_SINGLE (gesture));
 
   if (button == GDK_BUTTON_PRIMARY)
-    activate_sort (self);
+    activate_sort (this);
   else if (button == GDK_BUTTON_SECONDARY)
-    show_menu (self, x, y);
+    show_menu (this, x, y);
 }
 
 static void
@@ -245,7 +245,7 @@ click_pressed_cb (GtkGestureClick *gesture,
                   int              n_press,
                   double           x,
                   double           y,
-                  GtkColumnView   *self)
+                  GtkColumnView   *this)
 {
   /* Claim the state here to prevent propagation, the event controllers in
    * GtkColumView have already been handled in the CAPTURE phase */
@@ -253,29 +253,29 @@ click_pressed_cb (GtkGestureClick *gesture,
 }
 
 static void
-gtk_column_view_title_init (GtkColumnViewTitle *self)
+gtk_column_view_title_init (GtkColumnViewTitle *this)
 {
-  GtkWidget *widget = GTK_WIDGET (self);
+  GtkWidget *widget = GTK_WIDGET (this);
   GtkGesture *gesture;
 
   widget->priv->resize_func = gtk_column_view_title_resize_func;
 
   gtk_widget_set_overflow (widget, GTK_OVERFLOW_HIDDEN);
 
-  self->box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_parent (self->box, widget);
+  this->box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_parent (this->box, widget);
 
-  self->title = gtk_label_new (NULL);
-  gtk_box_append (GTK_BOX (self->box), self->title);
+  this->title = gtk_label_new (NULL);
+  gtk_box_append (GTK_BOX (this->box), this->title);
 
-  self->sort = gtk_builtin_icon_new ("sort-indicator");
-  gtk_box_append (GTK_BOX (self->box), self->sort);
+  this->sort = gtk_builtin_icon_new ("sort-indicator");
+  gtk_box_append (GTK_BOX (this->box), this->sort);
 
   gesture = gtk_gesture_click_new ();
   gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (gesture), 0);
-  g_signal_connect (gesture, "released", G_CALLBACK (click_released_cb), self);
-  g_signal_connect (gesture, "pressed", G_CALLBACK (click_pressed_cb), self);
-  gtk_widget_add_controller (GTK_WIDGET (self), GTK_EVENT_CONTROLLER (gesture));
+  g_signal_connect (gesture, "released", G_CALLBACK (click_released_cb), this);
+  g_signal_connect (gesture, "pressed", G_CALLBACK (click_pressed_cb), this);
+  gtk_widget_add_controller (GTK_WIDGET (this), GTK_EVENT_CONTROLLER (gesture));
 }
 
 GtkWidget *
@@ -294,52 +294,52 @@ gtk_column_view_title_new (GtkColumnViewColumn *column)
 }
 
 void
-gtk_column_view_title_set_title (GtkColumnViewTitle *self,
+gtk_column_view_title_set_title (GtkColumnViewTitle *this,
                                  const char         *title)
 {
-  gtk_label_set_label (GTK_LABEL (self->title), title);
+  gtk_label_set_label (GTK_LABEL (this->title), title);
 }
 
 void
-gtk_column_view_title_set_menu (GtkColumnViewTitle *self,
+gtk_column_view_title_set_menu (GtkColumnViewTitle *this,
                                 GMenuModel         *model)
 {
-  g_clear_pointer (&self->popup_menu, gtk_widget_unparent);
+  g_clear_pointer (&this->popup_menu, gtk_widget_unparent);
 }
 
 void
-gtk_column_view_title_update_sort (GtkColumnViewTitle *self)
+gtk_column_view_title_update_sort (GtkColumnViewTitle *this)
 {
-  if (gtk_column_view_column_get_sorter (self->column))
+  if (gtk_column_view_column_get_sorter (this->column))
     {
       GtkColumnView *view;
       GtkColumnViewSorter *view_sorter;
       GtkColumnViewColumn *primary;
       GtkSortType sort_order;
 
-      view = gtk_column_view_column_get_column_view (self->column);
+      view = gtk_column_view_column_get_column_view (this->column);
       view_sorter = GTK_COLUMN_VIEW_SORTER (gtk_column_view_get_sorter (view));
       primary = gtk_column_view_sorter_get_primary_sort_column (view_sorter);
       sort_order = gtk_column_view_sorter_get_primary_sort_order (view_sorter);
 
-      gtk_widget_set_visible (self->sort, TRUE);
-      gtk_widget_remove_css_class (self->sort, "ascending");
-      gtk_widget_remove_css_class (self->sort, "descending");
-      gtk_widget_remove_css_class (self->sort, "unsorted");
+      gtk_widget_set_visible (this->sort, TRUE);
+      gtk_widget_remove_css_class (this->sort, "ascending");
+      gtk_widget_remove_css_class (this->sort, "descending");
+      gtk_widget_remove_css_class (this->sort, "unsorted");
 
-      if (self->column != primary)
-        gtk_widget_add_css_class (self->sort, "unsorted");
+      if (this->column != primary)
+        gtk_widget_add_css_class (this->sort, "unsorted");
       else if (sort_order == GTK_SORT_DESCENDING)
-        gtk_widget_add_css_class (self->sort, "descending");
+        gtk_widget_add_css_class (this->sort, "descending");
       else
-        gtk_widget_add_css_class (self->sort, "ascending");
+        gtk_widget_add_css_class (this->sort, "ascending");
     }
   else
-    gtk_widget_set_visible (self->sort, FALSE);
+    gtk_widget_set_visible (this->sort, FALSE);
 }
 
 GtkColumnViewColumn *
-gtk_column_view_title_get_column (GtkColumnViewTitle *self)
+gtk_column_view_title_get_column (GtkColumnViewTitle *this)
 {
-  return self->column;
+  return this->column;
 }

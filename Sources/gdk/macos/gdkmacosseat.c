@@ -99,22 +99,22 @@ gdk_macos_tablet_data_free (gpointer user_data)
 static void
 gdk_macos_seat_dispose (GObject *object)
 {
-  GdkMacosSeat *self = GDK_MACOS_SEAT (object);
+  GdkMacosSeat *this = GDK_MACOS_SEAT (object);
 
-  if (self->logical_pointer)
+  if (this->logical_pointer)
     {
-      gdk_seat_device_removed (GDK_SEAT (self), self->logical_pointer);
-      g_clear_object (&self->logical_pointer);
+      gdk_seat_device_removed (GDK_SEAT (this), this->logical_pointer);
+      g_clear_object (&this->logical_pointer);
     }
 
-  if (self->logical_keyboard)
+  if (this->logical_keyboard)
     {
-      gdk_seat_device_removed (GDK_SEAT (self), self->logical_keyboard);
-      g_clear_object (&self->logical_pointer);
+      gdk_seat_device_removed (GDK_SEAT (this), this->logical_keyboard);
+      g_clear_object (&this->logical_pointer);
     }
 
-  g_clear_pointer (&self->tablets, g_ptr_array_unref);
-  g_clear_pointer (&self->tools, g_ptr_array_unref);
+  g_clear_pointer (&this->tablets, g_ptr_array_unref);
+  g_clear_pointer (&this->tools, g_ptr_array_unref);
 
   G_OBJECT_CLASS (gdk_macos_seat_parent_class)->dispose (object);
 }
@@ -122,12 +122,12 @@ gdk_macos_seat_dispose (GObject *object)
 static GdkSeatCapabilities
 gdk_macos_seat_get_capabilities (GdkSeat *seat)
 {
-  GdkMacosSeat *self = GDK_MACOS_SEAT (seat);
+  GdkMacosSeat *this = GDK_MACOS_SEAT (seat);
   GdkSeatCapabilities caps = 0;
 
-  if (self->logical_pointer)
+  if (this->logical_pointer)
     caps |= GDK_SEAT_CAPABILITY_POINTER;
-  if (self->logical_keyboard)
+  if (this->logical_keyboard)
     caps |= GDK_SEAT_CAPABILITY_KEYBOARD;
 
   return caps;
@@ -143,7 +143,7 @@ gdk_macos_seat_grab (GdkSeat                *seat,
                      GdkSeatGrabPrepareFunc  prepare_func,
                      gpointer                prepare_func_data)
 {
-  GdkMacosSeat *self = GDK_MACOS_SEAT (seat);
+  GdkMacosSeat *this = GDK_MACOS_SEAT (seat);
   guint32 evtime = event ? gdk_event_get_time (event) : GDK_CURRENT_TIME;
   GdkGrabStatus status = GDK_GRAB_SUCCESS;
   gboolean was_visible;
@@ -177,7 +177,7 @@ gdk_macos_seat_grab (GdkSeat                *seat,
       if (capabilities & GDK_SEAT_CAPABILITY_TOUCH)
         pointer_evmask |= TOUCH_EVENTS;
 
-      status = gdk_device_grab (self->logical_pointer, surface,
+      status = gdk_device_grab (this->logical_pointer, surface,
                                 owner_events,
                                 pointer_evmask, cursor,
                                 evtime);
@@ -186,7 +186,7 @@ gdk_macos_seat_grab (GdkSeat                *seat,
   if (status == GDK_GRAB_SUCCESS &&
       capabilities & GDK_SEAT_CAPABILITY_KEYBOARD)
     {
-      status = gdk_device_grab (self->logical_keyboard, surface,
+      status = gdk_device_grab (this->logical_keyboard, surface,
                                 owner_events,
                                 KEYBOARD_EVENTS, cursor,
                                 evtime);
@@ -194,7 +194,7 @@ gdk_macos_seat_grab (GdkSeat                *seat,
       if (status != GDK_GRAB_SUCCESS)
         {
           if (capabilities & ~GDK_SEAT_CAPABILITY_KEYBOARD)
-            gdk_device_ungrab (self->logical_pointer, evtime);
+            gdk_device_ungrab (this->logical_pointer, evtime);
         }
     }
 
@@ -209,11 +209,11 @@ gdk_macos_seat_grab (GdkSeat                *seat,
 static void
 gdk_macos_seat_ungrab (GdkSeat *seat)
 {
-  GdkMacosSeat *self = GDK_MACOS_SEAT (seat);
+  GdkMacosSeat *this = GDK_MACOS_SEAT (seat);
 
   G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
-  gdk_device_ungrab (self->logical_pointer, GDK_CURRENT_TIME);
-  gdk_device_ungrab (self->logical_keyboard, GDK_CURRENT_TIME);
+  gdk_device_ungrab (this->logical_pointer, GDK_CURRENT_TIME);
+  gdk_device_ungrab (this->logical_keyboard, GDK_CURRENT_TIME);
   G_GNUC_END_IGNORE_DEPRECATIONS;
 }
 
@@ -221,16 +221,16 @@ static GdkDevice *
 gdk_macos_seat_get_logical_device (GdkSeat             *seat,
                                    GdkSeatCapabilities  capability)
 {
-  GdkMacosSeat *self = GDK_MACOS_SEAT (seat);
+  GdkMacosSeat *this = GDK_MACOS_SEAT (seat);
 
   /* There must be only one flag set */
   switch ((guint) capability)
     {
     case GDK_SEAT_CAPABILITY_POINTER:
     case GDK_SEAT_CAPABILITY_TOUCH:
-      return self->logical_pointer;
+      return this->logical_pointer;
     case GDK_SEAT_CAPABILITY_KEYBOARD:
-      return self->logical_keyboard;
+      return this->logical_keyboard;
     default:
       g_warning ("Unhandled capability %x", capability);
       break;
@@ -243,20 +243,20 @@ static GList *
 gdk_macos_seat_get_devices (GdkSeat             *seat,
                             GdkSeatCapabilities  capabilities)
 {
-  GdkMacosSeat *self = GDK_MACOS_SEAT (seat);
+  GdkMacosSeat *this = GDK_MACOS_SEAT (seat);
   GList *physical_devices = NULL;
 
-  if (self->logical_pointer && (capabilities & GDK_SEAT_CAPABILITY_POINTER))
-    physical_devices = g_list_prepend (physical_devices, self->logical_pointer);
+  if (this->logical_pointer && (capabilities & GDK_SEAT_CAPABILITY_POINTER))
+    physical_devices = g_list_prepend (physical_devices, this->logical_pointer);
 
-  if (self->logical_keyboard && (capabilities & GDK_SEAT_CAPABILITY_KEYBOARD))
-    physical_devices = g_list_prepend (physical_devices, self->logical_keyboard);
+  if (this->logical_keyboard && (capabilities & GDK_SEAT_CAPABILITY_KEYBOARD))
+    physical_devices = g_list_prepend (physical_devices, this->logical_keyboard);
 
   if (capabilities & GDK_SEAT_CAPABILITY_TABLET_STYLUS)
     {
-      for (guint i = 0; i < self->tablets->len; i++)
+      for (guint i = 0; i < this->tablets->len; i++)
         {
-          GdkMacosTabletData *tablet = g_ptr_array_index (self->tablets, i);
+          GdkMacosTabletData *tablet = g_ptr_array_index (this->tablets, i);
 
           physical_devices = g_list_prepend (physical_devices, tablet->stylus_device);
         }
@@ -268,13 +268,13 @@ gdk_macos_seat_get_devices (GdkSeat             *seat,
 static GList *
 gdk_macos_seat_get_tools (GdkSeat *seat)
 {
-  GdkMacosSeat *self = GDK_MACOS_SEAT (seat);
+  GdkMacosSeat *this = GDK_MACOS_SEAT (seat);
   GdkDeviceTool *tool;
   GList *tools = NULL;
 
-  for (guint i = 0; i < self->tools->len; i++)
+  for (guint i = 0; i < this->tools->len; i++)
     {
-      tool = g_ptr_array_index (self->tools, i);
+      tool = g_ptr_array_index (this->tools, i);
       tools = g_list_prepend (tools, tool);
     }
 
@@ -298,57 +298,57 @@ gdk_macos_seat_class_init (GdkMacosSeatClass *klass)
 }
 
 static void
-gdk_macos_seat_init (GdkMacosSeat *self)
+gdk_macos_seat_init (GdkMacosSeat *this)
 {
-  self->tablets = g_ptr_array_new_with_free_func (gdk_macos_tablet_data_free);
-  self->tools = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+  this->tablets = g_ptr_array_new_with_free_func (gdk_macos_tablet_data_free);
+  this->tools = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 }
 
 static void
-init_devices (GdkMacosSeat *self)
+init_devices (GdkMacosSeat *this)
 {
   /* pointer */
-  self->logical_pointer = g_object_new (GDK_TYPE_MACOS_DEVICE,
+  this->logical_pointer = g_object_new (GDK_TYPE_MACOS_DEVICE,
                                         "name", "Core Pointer",
                                         "source", GDK_SOURCE_MOUSE,
                                         "has-cursor", TRUE,
-                                        "display", self->display,
-                                        "seat", self,
+                                        "display", this->display,
+                                        "seat", this,
                                         NULL);
 
   /* keyboard */
-  self->logical_keyboard = g_object_new (GDK_TYPE_MACOS_DEVICE,
+  this->logical_keyboard = g_object_new (GDK_TYPE_MACOS_DEVICE,
                                          "name", "Core Keyboard",
                                          "source", GDK_SOURCE_KEYBOARD,
                                          "has-cursor", FALSE,
-                                         "display", self->display,
-                                         "seat", self,
+                                         "display", this->display,
+                                         "seat", this,
                                          NULL);
 
   /* link both */
-  _gdk_device_set_associated_device (self->logical_pointer, self->logical_keyboard);
-  _gdk_device_set_associated_device (self->logical_keyboard, self->logical_pointer);
+  _gdk_device_set_associated_device (this->logical_pointer, this->logical_keyboard);
+  _gdk_device_set_associated_device (this->logical_keyboard, this->logical_pointer);
 
-  gdk_seat_device_added (GDK_SEAT (self), self->logical_pointer);
-  gdk_seat_device_added (GDK_SEAT (self), self->logical_keyboard);
+  gdk_seat_device_added (GDK_SEAT (this), this->logical_pointer);
+  gdk_seat_device_added (GDK_SEAT (this), this->logical_keyboard);
 }
 
 GdkSeat *
 _gdk_macos_seat_new (GdkMacosDisplay *display)
 {
-  GdkMacosSeat *self;
+  GdkMacosSeat *this;
 
   g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (display), NULL);
 
-  self = g_object_new (GDK_TYPE_MACOS_SEAT,
+  this = g_object_new (GDK_TYPE_MACOS_SEAT,
                        "display", display,
                        NULL);
 
-  self->display = display;
+  this->display = display;
 
-  init_devices (self);
+  init_devices (this);
 
-  return GDK_SEAT (g_steal_pointer (&self));
+  return GDK_SEAT (g_steal_pointer (&this));
 }
 
 static GdkDeviceToolType
@@ -384,17 +384,17 @@ get_device_tool_axes_from_nsevent (NSEvent *nsevent)
 }
 
 static GdkMacosTabletData *
-create_tablet_data_from_nsevent (GdkMacosSeat *self,
+create_tablet_data_from_nsevent (GdkMacosSeat *this,
                                  NSEvent      *nsevent)
 {
   GdkMacosTabletData *tablet;
-  GdkDisplay *display = gdk_seat_get_display (GDK_SEAT (self));
+  GdkDisplay *display = gdk_seat_get_display (GDK_SEAT (this));
   GdkDevice *logical_device, *stylus_device;
   char *logical_name;
   char *vid, *pid;
 
   tablet = g_new0 (GdkMacosTabletData, 1);
-  tablet->seat = GDK_SEAT (self);
+  tablet->seat = GDK_SEAT (this);
   tablet->device_id = [nsevent deviceID];
   /* FIXME: find a better name */
   tablet->name = g_strdup_printf ("Tablet %lu", [nsevent deviceID]);
@@ -408,7 +408,7 @@ create_tablet_data_from_nsevent (GdkMacosSeat *self,
                                  "source", GDK_SOURCE_MOUSE,
                                  "has-cursor", TRUE,
                                  "display", display,
-                                 "seat", self,
+                                 "seat", this,
                                  NULL);
 
   stylus_device = g_object_new (GDK_TYPE_MACOS_DEVICE,
@@ -416,7 +416,7 @@ create_tablet_data_from_nsevent (GdkMacosSeat *self,
                                 "source", GDK_SOURCE_PEN,
                                 "has-cursor", FALSE,
                                 "display", display,
-                                "seat", self,
+                                "seat", this,
                                 "vendor-id", vid,
                                 "product-id", pid,
                                 NULL);
@@ -424,11 +424,11 @@ create_tablet_data_from_nsevent (GdkMacosSeat *self,
   tablet->logical_device = logical_device;
   tablet->stylus_device = stylus_device;
 
-  _gdk_device_set_associated_device (logical_device, self->logical_keyboard);
+  _gdk_device_set_associated_device (logical_device, this->logical_keyboard);
   _gdk_device_set_associated_device (stylus_device, logical_device);
 
-  gdk_seat_device_added (GDK_SEAT (self), logical_device);
-  gdk_seat_device_added (GDK_SEAT (self), stylus_device);
+  gdk_seat_device_added (GDK_SEAT (this), logical_device);
+  gdk_seat_device_added (GDK_SEAT (this), stylus_device);
 
   g_free (logical_name);
   g_free (vid);
@@ -438,14 +438,14 @@ create_tablet_data_from_nsevent (GdkMacosSeat *self,
 }
 
 static GdkMacosTabletData *
-get_tablet_data_from_nsevent (GdkMacosSeat *self,
+get_tablet_data_from_nsevent (GdkMacosSeat *this,
                               NSEvent      *nsevent)
 {
   GdkMacosTabletData *tablet = NULL;
 
-  for (guint i = 0; i < self->tablets->len; i++)
+  for (guint i = 0; i < this->tablets->len; i++)
     {
-      GdkMacosTabletData *t = g_ptr_array_index (self->tablets, i);
+      GdkMacosTabletData *t = g_ptr_array_index (this->tablets, i);
 
       if (t->device_id == [nsevent deviceID])
         {
@@ -455,7 +455,7 @@ get_tablet_data_from_nsevent (GdkMacosSeat *self,
     }
 
   if (!tablet)
-    tablet = create_tablet_data_from_nsevent (self, nsevent);
+    tablet = create_tablet_data_from_nsevent (this, nsevent);
 
   return tablet;
 }

@@ -156,13 +156,13 @@ get_keyboard_modifiers_from_ns_event (NSEvent *nsevent)
 }
 
 GdkModifierType
-_gdk_macos_display_get_current_mouse_modifiers (GdkMacosDisplay *self)
+_gdk_macos_display_get_current_mouse_modifiers (GdkMacosDisplay *this)
 {
   return get_mouse_button_modifiers_from_ns_buttons ([NSEvent pressedMouseButtons]);
 }
 
 GdkModifierType
-_gdk_macos_display_get_current_keyboard_modifiers (GdkMacosDisplay *self)
+_gdk_macos_display_get_current_keyboard_modifiers (GdkMacosDisplay *this)
 {
   return get_keyboard_modifiers_from_ns_flags ([NSEvent modifierFlags]);
 }
@@ -586,7 +586,7 @@ fill_motion_event (GdkMacosDisplay *display,
 }
 
 static GdkEvent *
-fill_scroll_event (GdkMacosDisplay *self,
+fill_scroll_event (GdkMacosDisplay *this,
                    GdkMacosSurface *surface,
                    NSEvent         *nsevent,
                    int              x,
@@ -614,10 +614,10 @@ fill_scroll_event (GdkMacosDisplay *self,
   if (phase == 0 && momentumPhase != 0)
     return GDK_MACOS_EVENT_DROP;
 
-  seat = gdk_display_get_default_seat (GDK_DISPLAY (self));
+  seat = gdk_display_get_default_seat (GDK_DISPLAY (this));
   pointer = gdk_seat_get_pointer (seat);
-  state = _gdk_macos_display_get_current_mouse_modifiers (self) |
-          _gdk_macos_display_get_current_keyboard_modifiers (self);
+  state = _gdk_macos_display_get_current_mouse_modifiers (this) |
+          _gdk_macos_display_get_current_keyboard_modifiers (this);
 
   /* If we are starting a new phase, send a stop so any previous
    * scrolling immediately stops.
@@ -693,7 +693,7 @@ fill_scroll_event (GdkMacosDisplay *self,
        * scroll, so try to send a scroll is_stop event.
        */
       if (ret != NULL)
-        _gdk_event_queue_append (GDK_DISPLAY (self), g_steal_pointer (&ret));
+        _gdk_event_queue_append (GDK_DISPLAY (this), g_steal_pointer (&ret));
       ret = gdk_scroll_event_new (GDK_SURFACE (surface),
                                   pointer,
                                   NULL,
@@ -708,7 +708,7 @@ fill_scroll_event (GdkMacosDisplay *self,
 
 
 static GdkEvent *
-fill_event (GdkMacosDisplay *self,
+fill_event (GdkMacosDisplay *this,
             GdkMacosWindow  *window,
             NSEvent         *nsevent,
             int              x,
@@ -726,27 +726,27 @@ fill_event (GdkMacosDisplay *self,
     case NSEventTypeLeftMouseUp:
     case NSEventTypeRightMouseUp:
     case NSEventTypeOtherMouseUp:
-      ret = fill_button_event (self, surface, nsevent, x, y);
+      ret = fill_button_event (this, surface, nsevent, x, y);
       break;
 
     case NSEventTypeLeftMouseDragged:
     case NSEventTypeRightMouseDragged:
     case NSEventTypeOtherMouseDragged:
     case NSEventTypeMouseMoved:
-      ret = fill_motion_event (self, surface, nsevent, x, y);
+      ret = fill_motion_event (this, surface, nsevent, x, y);
       break;
 
     case NSEventTypeMagnify:
     case NSEventTypeRotate:
-      ret = fill_pinch_event (self, surface, nsevent, x, y);
+      ret = fill_pinch_event (this, surface, nsevent, x, y);
       break;
 
     case NSEventTypeMouseExited:
     case NSEventTypeMouseEntered:
       {
-        GdkSeat *seat = gdk_display_get_default_seat (GDK_DISPLAY (self));
+        GdkSeat *seat = gdk_display_get_default_seat (GDK_DISPLAY (this));
         GdkDevice *pointer = gdk_seat_get_pointer (seat);
-        GdkDeviceGrabInfo *grab = _gdk_display_get_last_device_grab (GDK_DISPLAY (self), pointer);
+        GdkDeviceGrabInfo *grab = _gdk_display_get_last_device_grab (GDK_DISPLAY (this), pointer);
 
         if ([(GdkMacosWindow *)window isInManualResizeOrMove])
           {
@@ -757,7 +757,7 @@ fill_event (GdkMacosDisplay *self,
             if (event_type == NSEventTypeMouseExited)
               [[NSCursor arrowCursor] set];
 
-            ret = synthesize_crossing_event (self, surface, nsevent, x, y);
+            ret = synthesize_crossing_event (this, surface, nsevent, x, y);
           }
       }
 
@@ -769,13 +769,13 @@ fill_event (GdkMacosDisplay *self,
       GdkEventType type = _gdk_macos_keymap_get_event_type (nsevent);
 
       if (type)
-        ret = fill_key_event (self, surface, nsevent, type);
+        ret = fill_key_event (this, surface, nsevent, type);
 
       break;
     }
 
     case NSEventTypeScrollWheel:
-      ret = fill_scroll_event (self, surface, nsevent, x, y);
+      ret = fill_scroll_event (this, surface, nsevent, x, y);
       break;
 
     default:
@@ -817,7 +817,7 @@ get_surface_point_from_screen_point (GdkSurface *surface,
 }
 
 static GdkSurface *
-find_surface_under_pointer (GdkMacosDisplay *self,
+find_surface_under_pointer (GdkMacosDisplay *this,
                             NSPoint          screen_point,
                             int             *x,
                             int             *y)
@@ -825,7 +825,7 @@ find_surface_under_pointer (GdkMacosDisplay *self,
   GdkMacosSurface *surface;
   int x_tmp, y_tmp;
 
-  surface = _gdk_macos_display_get_surface_at_display_coords (self,
+  surface = _gdk_macos_display_get_surface_at_display_coords (this,
                                                               screen_point.x,
                                                               screen_point.y,
                                                               &x_tmp,
@@ -833,7 +833,7 @@ find_surface_under_pointer (GdkMacosDisplay *self,
 
   if (surface != NULL)
     {
-      _gdk_macos_display_from_display_coords (self,
+      _gdk_macos_display_from_display_coords (this,
                                               screen_point.x,
                                               screen_point.y,
                                               &x_tmp, &y_tmp);
@@ -856,7 +856,7 @@ find_surface_under_pointer (GdkMacosDisplay *self,
 }
 
 static GdkSurface *
-get_surface_from_ns_event (GdkMacosDisplay *self,
+get_surface_from_ns_event (GdkMacosDisplay *this,
                            NSEvent         *nsevent,
                            NSPoint         *screen_point,
                            int             *x,
@@ -912,7 +912,7 @@ get_surface_from_ns_event (GdkMacosDisplay *self,
            * Because we cannot ingest this event into GDK, we have to do it
            * here, not very nice.
            */
-          _gdk_macos_display_break_all_grabs (self, get_time_from_ns_event (nsevent));
+          _gdk_macos_display_break_all_grabs (this, get_time_from_ns_event (nsevent));
 
           /* If the X,Y is on the frame itself, then we don't want to discover
            * the surface under the pointer at all so that we immutable OS X handle
@@ -944,7 +944,7 @@ find_under_pointer:
        * titlebar.
        */
       *screen_point = [NSEvent mouseLocation];
-      surface = find_surface_under_pointer (self, *screen_point, x, y);
+      surface = find_surface_under_pointer (this, *screen_point, x, y);
     }
 
   return surface;
@@ -974,7 +974,7 @@ find_surface_for_keyboard_event (NSEvent *nsevent)
 }
 
 static GdkMacosSurface *
-find_surface_for_mouse_event (GdkMacosDisplay *self,
+find_surface_for_mouse_event (GdkMacosDisplay *this,
                               NSEvent         *nsevent,
                               int             *x,
                               int             *y)
@@ -991,11 +991,11 @@ find_surface_for_mouse_event (GdkMacosDisplay *self,
    * the input region (shadow) which we might want to ignore. This is
    * handled for us deeper in the event unwrapping.
    */
-  if (!(surface = get_surface_from_ns_event (self, nsevent, &point, x, y)))
+  if (!(surface = get_surface_from_ns_event (this, nsevent, &point, x, y)))
     return NULL;
 
   display = gdk_surface_get_display (surface);
-  seat = gdk_display_get_default_seat (GDK_DISPLAY (self));
+  seat = gdk_display_get_default_seat (GDK_DISPLAY (this));
   pointer = gdk_seat_get_pointer (seat);
 
   event_type = [nsevent type];
@@ -1021,7 +1021,7 @@ find_surface_for_mouse_event (GdkMacosDisplay *self,
           GdkSurface *surface_under_pointer;
           int x_tmp, y_tmp;
 
-          surface_under_pointer = find_surface_under_pointer (self, point, &x_tmp, &y_tmp);
+          surface_under_pointer = find_surface_under_pointer (this, point, &x_tmp, &y_tmp);
           if (surface_under_pointer)
             {
               surface = surface_under_pointer;
@@ -1061,7 +1061,7 @@ find_surface_for_mouse_event (GdkMacosDisplay *self,
       /* As for owner events, we need to use the surface under the
        * pointer, not the window from the NSEvent.
        */
-      surface_under_pointer = find_surface_under_pointer (self, point, &x_tmp, &y_tmp);
+      surface_under_pointer = find_surface_under_pointer (this, point, &x_tmp, &y_tmp);
       if (surface_under_pointer != NULL)
         {
           surface = surface_under_pointer;
@@ -1079,7 +1079,7 @@ find_surface_for_mouse_event (GdkMacosDisplay *self,
  * into account grabs, event propagation, and event masks.
  */
 static GdkMacosSurface *
-find_surface_for_ns_event (GdkMacosDisplay *self,
+find_surface_for_ns_event (GdkMacosDisplay *this,
                            NSEvent         *nsevent,
                            int             *x,
                            int             *y)
@@ -1088,7 +1088,7 @@ find_surface_for_ns_event (GdkMacosDisplay *self,
   GdkSurface *surface;
   NSPoint point;
 
-  g_assert (GDK_IS_MACOS_DISPLAY (self));
+  g_assert (GDK_IS_MACOS_DISPLAY (this));
   g_assert (nsevent != NULL);
   g_assert (x != NULL);
   g_assert (y != NULL);
@@ -1108,14 +1108,14 @@ find_surface_for_ns_event (GdkMacosDisplay *self,
     case NSEventTypeScrollWheel:
     case NSEventTypeMagnify:
     case NSEventTypeRotate:
-      return find_surface_for_mouse_event (self, nsevent, x, y);
+      return find_surface_for_mouse_event (this, nsevent, x, y);
 
     case NSEventTypeMouseEntered:
     case NSEventTypeMouseExited:
       /* Only handle our own entered/exited events, not the ones for the
        * titlebar buttons.
        */
-      if ((surface = get_surface_from_ns_event (self, nsevent, &point, x, y)) &&
+      if ((surface = get_surface_from_ns_event (this, nsevent, &point, x, y)) &&
           (view = (GdkMacosBaseView *)[GDK_MACOS_SURFACE (surface)->window contentView]) &&
           ([nsevent trackingArea] == [view trackingArea]))
         return GDK_MACOS_SURFACE (surface);
@@ -1134,7 +1134,7 @@ find_surface_for_ns_event (GdkMacosDisplay *self,
 }
 
 GdkEvent *
-_gdk_macos_display_translate (GdkMacosDisplay *self,
+_gdk_macos_display_translate (GdkMacosDisplay *this,
                               NSEvent         *nsevent)
 {
   GdkMacosSurface *surface;
@@ -1144,7 +1144,7 @@ _gdk_macos_display_translate (GdkMacosDisplay *self,
   int x;
   int y;
 
-  g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (self), NULL);
+  g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (this), NULL);
   g_return_val_if_fail (nsevent != NULL, NULL);
 
   /* There is no support for real desktop wide grabs, so we break
@@ -1154,7 +1154,7 @@ _gdk_macos_display_translate (GdkMacosDisplay *self,
   if (event_type == NSEventTypeAppKitDefined)
     {
       if ([nsevent subtype] == NSEventSubtypeApplicationDeactivated)
-        _gdk_macos_display_break_all_grabs (self, get_time_from_ns_event (nsevent));
+        _gdk_macos_display_break_all_grabs (this, get_time_from_ns_event (nsevent));
 
       /* This could potentially be used to break grabs when clicking
        * on the title. The subtype 20 is undocumented so it's probably
@@ -1171,7 +1171,7 @@ _gdk_macos_display_translate (GdkMacosDisplay *self,
    */
   if (event_type == NSEventTypeTabletProximity)
     {
-      GdkSeat *seat = gdk_display_get_default_seat (GDK_DISPLAY (self));
+      GdkSeat *seat = gdk_display_get_default_seat (GDK_DISPLAY (this));
 
       _gdk_macos_seat_handle_tablet_tool_event (GDK_MACOS_SEAT (seat), nsevent);
 
@@ -1191,7 +1191,7 @@ _gdk_macos_display_translate (GdkMacosDisplay *self,
   /* If we can't find a GdkSurface to deliver the event to, then we
    * should pass it along to the NSApp.
    */
-  if (!(surface = find_surface_for_ns_event (self, nsevent, &x, &y)))
+  if (!(surface = find_surface_for_ns_event (this, nsevent, &x, &y)))
     return NULL;
 
   if (!(window = (GdkMacosWindow *)_gdk_macos_surface_get_native (surface)) ||
@@ -1204,7 +1204,7 @@ _gdk_macos_display_translate (GdkMacosDisplay *self,
    */
   if ([window isInMove])
     {
-      _gdk_macos_display_break_all_grabs (self, get_time_from_ns_event (nsevent));
+      _gdk_macos_display_break_all_grabs (this, get_time_from_ns_event (nsevent));
       return NULL;
     }
 
@@ -1245,7 +1245,7 @@ _gdk_macos_display_translate (GdkMacosDisplay *self,
             [NSApp sendEvent:nsevent];
 
           [window showAndMakeKey:YES];
-          _gdk_macos_display_clear_sorting (self);
+          _gdk_macos_display_clear_sorting (this);
         }
     }
   else if (is_motion_event(event_type))
@@ -1256,11 +1256,11 @@ _gdk_macos_display_translate (GdkMacosDisplay *self,
         [NSApp sendEvent:nsevent];
     }
 
-  return fill_event (self, window, nsevent, x, y);
+  return fill_event (this, window, nsevent, x, y);
 }
 
 void
-_gdk_macos_display_send_event (GdkMacosDisplay *self,
+_gdk_macos_display_send_event (GdkMacosDisplay *this,
                                NSEvent         *nsevent)
 {
   GdkMacosSurface *surface;
@@ -1269,14 +1269,14 @@ _gdk_macos_display_send_event (GdkMacosDisplay *self,
   int x;
   int y;
 
-  g_return_if_fail (GDK_IS_MACOS_DISPLAY (self));
+  g_return_if_fail (GDK_IS_MACOS_DISPLAY (this));
   g_return_if_fail (nsevent != NULL);
 
-  if ((surface = find_surface_for_ns_event (self, nsevent, &x, &y)) &&
+  if ((surface = find_surface_for_ns_event (this, nsevent, &x, &y)) &&
       (window = (GdkMacosWindow *)_gdk_macos_surface_get_native (surface)) &&
-      (event = fill_event (self, window, nsevent, x, y)))
-    _gdk_windowing_got_event (GDK_DISPLAY (self),
-                              _gdk_event_queue_append (GDK_DISPLAY (self), event),
+      (event = fill_event (this, window, nsevent, x, y)))
+    _gdk_windowing_got_event (GDK_DISPLAY (this),
+                              _gdk_event_queue_append (GDK_DISPLAY (this), event),
                               event,
-                              _gdk_display_get_next_serial (GDK_DISPLAY (self)));
+                              _gdk_display_get_next_serial (GDK_DISPLAY (this)));
 }

@@ -82,7 +82,7 @@ GtkPrinterOption *   gtk_printer_option_set_lookup           (GtkPrinterOptionSe
 							      const char              *name);
 GDK_AVAILABLE_IN_ALL
 void                 gtk_printer_option_set_foreach          (GtkPrinterOptionSet     *set,
-							      GtkPrinterOptionSetFunc  func,
+							      GtkPrinterOptionSetFunc  fn,
 							      gpointer                 user_data);
 GDK_AVAILABLE_IN_ALL
 void                 gtk_printer_option_set_clear_conflicts  (GtkPrinterOptionSet     *set);
@@ -91,7 +91,7 @@ GList *              gtk_printer_option_set_get_groups       (GtkPrinterOptionSe
 GDK_AVAILABLE_IN_ALL
 void                 gtk_printer_option_set_foreach_in_group (GtkPrinterOptionSet     *set,
 							      const char              *group,
-							      GtkPrinterOptionSetFunc  func,
+							      GtkPrinterOptionSetFunc  fn,
 							      gpointer                 user_data);
 
 G_END_DECLS

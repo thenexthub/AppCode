@@ -39,21 +39,21 @@ GtkShortcut *   gtk_shortcut_new_with_arguments                 (GtkShortcutTrig
 
 GDK_AVAILABLE_IN_ALL
 GtkShortcutTrigger *
-                gtk_shortcut_get_trigger                        (GtkShortcut            *self);
+                gtk_shortcut_get_trigger                        (GtkShortcut            *this);
 GDK_AVAILABLE_IN_ALL
-void            gtk_shortcut_set_trigger                        (GtkShortcut            *self,
+void            gtk_shortcut_set_trigger                        (GtkShortcut            *this,
                                                                  GtkShortcutTrigger     *trigger);
 GDK_AVAILABLE_IN_ALL
 GtkShortcutAction *
-                gtk_shortcut_get_action                         (GtkShortcut            *self);
+                gtk_shortcut_get_action                         (GtkShortcut            *this);
 GDK_AVAILABLE_IN_ALL
-void            gtk_shortcut_set_action                         (GtkShortcut            *self,
+void            gtk_shortcut_set_action                         (GtkShortcut            *this,
                                                                  GtkShortcutAction      *action);
 
 GDK_AVAILABLE_IN_ALL
-GVariant *      gtk_shortcut_get_arguments                      (GtkShortcut            *self);
+GVariant *      gtk_shortcut_get_arguments                      (GtkShortcut            *this);
 GDK_AVAILABLE_IN_ALL
-void            gtk_shortcut_set_arguments                      (GtkShortcut            *self,
+void            gtk_shortcut_set_arguments                      (GtkShortcut            *this,
                                                                  GVariant               *args);
 
 G_END_DECLS

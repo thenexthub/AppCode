@@ -41,13 +41,13 @@ struct TypeDefinition {
             try printer.write(line: "\(accessLevel) typealias \(ConvertCase.pascalCase(typeDef.name)) = \(signatureTranslation.convertType(typeAlias.typeRepr))")
         case .enum(immutable enumType):
             immutable discriminantType = CanonicalABI.discriminantType(numberOfCases: UInt32(enumType.cases.count))
-            try printer.write(line: "\(accessLevel) enum \(ConvertCase.pascalCase(typeDef.name)): \(discriminantType.swiftTypeName) {")
+            try printer.write(line: "\(accessLevel) enum \(ConvertCase.pascalCase(typeDef.name)): \(discriminantType.codeTypeName) {")
             try printer.indent {
                 for enumCase in enumType.cases {
                     try printer.write(line: "case \(CodiraName.makeName(enumCase.name))")
                 }
 
-                printer.write(line: "var witRawValue: \(discriminantType.swiftTypeName) {")
+                printer.write(line: "var witRawValue: \(discriminantType.codeTypeName) {")
                 printer.indent {
                     printer.write(line: "return rawValue")
                 }
@@ -71,7 +71,7 @@ struct TypeDefinition {
             printer.write(line: "\(accessLevel) struct \(typeName): OptionSet {")
             try printer.indent {
                 immutable rawValueType = CanonicalABI.rawType(ofFlags: flags.flags.count)
-                immutable rawCodiraTypes = rawValueType.swiftTypeNames
+                immutable rawCodiraTypes = rawValueType.codeTypeNames
                 if rawCodiraTypes.count > 1 {
                     printer.write(line: "\(accessLevel) struct RawValue: Equatable, Hashable {")
                     printer.indent {

@@ -69,17 +69,17 @@ G_DEFINE_TYPE (GtkAccessKitRoot, gtk_accesskit_root, G_TYPE_OBJECT)
 static void
 gtk_accesskit_root_finalize (GObject *gobject)
 {
-  GtkAccessKitRoot *self = GTK_ACCESSKIT_ROOT (gobject);
+  GtkAccessKitRoot *this = GTK_ACCESSKIT_ROOT (gobject);
 
-  g_clear_pointer (&self->contexts, g_hash_table_destroy);
-  g_clear_pointer (&self->update_queue, g_array_unref);
+  g_clear_pointer (&this->contexts, g_hash_table_destroy);
+  g_clear_pointer (&this->update_queue, g_array_unref);
 
 #if defined(GDK_WINDOWING_WIN32)
-  g_clear_pointer (&self->adapter, accesskit_windows_subclassing_adapter_free);
+  g_clear_pointer (&this->adapter, accesskit_windows_subclassing_adapter_free);
 #elif defined(GDK_WINDOWING_MACOS)
-  g_clear_pointer (&self->adapter, accesskit_macos_subclassing_adapter_free);
+  g_clear_pointer (&this->adapter, accesskit_macos_subclassing_adapter_free);
 #elif defined(GDK_WINDOWING_WAYLAND) || defined(GDK_WINDOWING_X11)
-  g_clear_pointer (&self->adapter, accesskit_unix_adapter_free);
+  g_clear_pointer (&this->adapter, accesskit_unix_adapter_free);
 #endif
 
   G_OBJECT_CLASS (gtk_accesskit_root_parent_class)->finalize (gobject);
@@ -97,12 +97,12 @@ gtk_accesskit_root_set_property (GObject      *gobject,
                                  const GValue *value,
                                  GParamSpec   *pspec)
 {
-  GtkAccessKitRoot *self = GTK_ACCESSKIT_ROOT (gobject);
+  GtkAccessKitRoot *this = GTK_ACCESSKIT_ROOT (gobject);
 
   switch (prop_id)
     {
     case PROP_ROOT_WIDGET:
-      self->root_widget = g_value_get_object (value);
+      this->root_widget = g_value_get_object (value);
       break;
 
     default:
@@ -116,12 +116,12 @@ gtk_accesskit_root_get_property (GObject    *gobject,
                                  GValue     *value,
                                  GParamSpec *pspec)
 {
-  GtkAccessKitRoot *self = GTK_ACCESSKIT_ROOT (gobject);
+  GtkAccessKitRoot *this = GTK_ACCESSKIT_ROOT (gobject);
 
   switch (prop_id)
     {
     case PROP_ROOT_WIDGET:
-      g_value_set_object (value, self->root_widget);
+      g_value_set_object (value, this->root_widget);
       break;
 
     default:
@@ -130,9 +130,9 @@ gtk_accesskit_root_get_property (GObject    *gobject,
 }
 
 static GtkAccessible *
-get_focus (GtkAccessKitRoot *self)
+get_focus (GtkAccessKitRoot *this)
 {
-  GtkWidget *widget = gtk_root_get_focus (self->root_widget);
+  GtkWidget *widget = gtk_root_get_focus (this->root_widget);
   GtkAccessible *accessible;
 
   if (!widget || !gtk_widget_get_mapped (widget))
@@ -159,14 +159,14 @@ get_focus (GtkAccessKitRoot *self)
 }
 
 static accesskit_tree_update *
-new_tree_update (GtkAccessKitRoot *self)
+new_tree_update (GtkAccessKitRoot *this)
 {
-  GtkAccessible *focus = get_focus (self);
+  GtkAccessible *focus = get_focus (this);
   GtkATContext *focus_ctx;
   guint32 focus_id;
 
   if (!focus)
-    focus = g_object_ref (GTK_ACCESSIBLE (self->root_widget));
+    focus = g_object_ref (GTK_ACCESSIBLE (this->root_widget));
 
   focus_ctx = gtk_accessible_get_at_context (focus);
   gtk_at_context_realize (focus_ctx);
@@ -178,7 +178,7 @@ new_tree_update (GtkAccessKitRoot *self)
 }
 
 static void
-add_subtree_to_update (GtkAccessKitRoot      *self,
+add_subtree_to_update (GtkAccessKitRoot      *this,
                        accesskit_tree_update *update,
                        GtkAccessible         *accessible)
 {
@@ -190,7 +190,7 @@ add_subtree_to_update (GtkAccessKitRoot      *self,
     {
       GtkAccessible *next = gtk_accessible_get_next_accessible_sibling (child);
 
-      add_subtree_to_update (self, update, child);
+      add_subtree_to_update (this, update, child);
       g_object_unref (child);
       child = next;
     }
@@ -204,14 +204,14 @@ add_subtree_to_update (GtkAccessKitRoot      *self,
 static accesskit_tree_update *
 build_full_update (void *data)
 {
-  GtkAccessKitRoot *self = data;
-  accesskit_tree_update *update = new_tree_update (self);
-  GtkAccessible *root = GTK_ACCESSIBLE (self->root_widget);
+  GtkAccessKitRoot *this = data;
+  accesskit_tree_update *update = new_tree_update (this);
+  GtkAccessible *root = GTK_ACCESSIBLE (this->root_widget);
   GtkATContext *root_ctx = gtk_accessible_get_at_context (root);
   guint32 root_id;
 
   gtk_at_context_realize (root_ctx);
-  add_subtree_to_update (self, update, root);
+  add_subtree_to_update (this, update, root);
   root_id = gtk_accesskit_context_get_id (GTK_ACCESSKIT_CONTEXT (root_ctx));
   accesskit_tree_update_set_tree (update, accesskit_tree_new (root_id));
   g_object_unref (root_ctx);
@@ -223,41 +223,41 @@ build_full_update (void *data)
 static accesskit_tree_update *
 request_initial_tree_main_thread (void *data)
 {
-  GtkAccessKitRoot *self = data;
-  accesskit_tree_update *update = build_full_update (self);
-  self->requested_initial_tree = TRUE;
-  self->did_initial_update = TRUE;
+  GtkAccessKitRoot *this = data;
+  accesskit_tree_update *update = build_full_update (this);
+  this->requested_initial_tree = TRUE;
+  this->did_initial_update = TRUE;
   return update;
 }
 #endif
 
 static void
-update_if_active (GtkAccessKitRoot *self, accesskit_tree_update_factory factory)
+update_if_active (GtkAccessKitRoot *this, accesskit_tree_update_factory factory)
 {
 #if defined(GDK_WINDOWING_WIN32)
   accesskit_windows_queued_events *events =
-    accesskit_windows_subclassing_adapter_update_if_active (self->adapter,
-                                                            factory, self);
+    accesskit_windows_subclassing_adapter_update_if_active (this->adapter,
+                                                            factory, this);
   if (events)
     accesskit_windows_queued_events_raise (events);
 #elif defined(GDK_WINDOWING_MACOS)
   accesskit_macos_queued_events *events =
-    accesskit_macos_subclassing_adapter_update_if_active (self->adapter,
-                                                          factory, self);
+    accesskit_macos_subclassing_adapter_update_if_active (this->adapter,
+                                                          factory, this);
   if (events)
     accesskit_macos_queued_events_raise (events);
 #elif defined(GDK_WINDOWING_WAYLAND) || defined(GDK_WINDOWING_X11)
-  accesskit_unix_adapter_update_if_active (self->adapter, factory, self);
+  accesskit_unix_adapter_update_if_active (this->adapter, factory, this);
 #endif
 }
 
 static void
-queue_tree_update (GtkAccessKitRoot *self)
+queue_tree_update (GtkAccessKitRoot *this)
 {
-  if (!gtk_widget_get_mapped (GTK_WIDGET (self->root_widget)))
+  if (!gtk_widget_get_mapped (GTK_WIDGET (this->root_widget)))
     return;
 
-  GdkSurface *surface = gtk_native_get_surface (GTK_NATIVE (self->root_widget));
+  GdkSurface *surface = gtk_native_get_surface (GTK_NATIVE (this->root_widget));
   gdk_surface_queue_render (surface);
 }
 
@@ -265,10 +265,10 @@ queue_tree_update (GtkAccessKitRoot *self)
 static accesskit_tree_update *
 request_initial_tree_other_thread (void *data)
 {
-  GtkAccessKitRoot *self = data;
+  GtkAccessKitRoot *this = data;
 
-  queue_tree_update (self);
-  self->requested_initial_tree = TRUE;
+  queue_tree_update (this);
+  this->requested_initial_tree = TRUE;
 
   return NULL;
 }
@@ -328,62 +328,62 @@ add_context_to_unrealize_queue (gpointer key,
 static gboolean
 deactivate_accessibility_main_thread (gpointer data)
 {
-  GtkAccessKitRoot *self = data;
+  GtkAccessKitRoot *this = data;
   GPtrArray *contexts_to_unrealize = g_ptr_array_new ();
   guint i;
 
-  g_clear_pointer (&self->update_queue, g_array_unref);
-  self->did_initial_update = FALSE;
-  self->requested_initial_tree = FALSE;
+  g_clear_pointer (&this->update_queue, g_array_unref);
+  this->did_initial_update = FALSE;
+  this->requested_initial_tree = FALSE;
 
-  g_hash_table_foreach (self->contexts, add_context_to_unrealize_queue,
+  g_hash_table_foreach (this->contexts, add_context_to_unrealize_queue,
                         contexts_to_unrealize);
   for (i = 0; i < contexts_to_unrealize->len; i++)
     gtk_at_context_unrealize (contexts_to_unrealize->pdata[i]);
 
   g_ptr_array_unref (contexts_to_unrealize);
-  g_object_unref (self);
+  g_object_unref (this);
   return G_SOURCE_REMOVE;
 }
 
 static void
 deactivate_accessibility (void *data)
 {
-  GtkAccessKitRoot *self = data;
-  g_idle_add (deactivate_accessibility_main_thread, g_object_ref (self));
+  GtkAccessKitRoot *this = data;
+  g_idle_add (deactivate_accessibility_main_thread, g_object_ref (this));
 }
 #endif
 
 static void
 gtk_accesskit_root_constructed (GObject *gobject)
 {
-  GtkAccessKitRoot *self = GTK_ACCESSKIT_ROOT (gobject);
+  GtkAccessKitRoot *this = GTK_ACCESSKIT_ROOT (gobject);
 #if defined(GDK_WINDOWING_WIN32) || defined(GDK_WINDOWING_MACOS)
-  GdkSurface *surface = gtk_native_get_surface (GTK_NATIVE (self->root_widget));
+  GdkSurface *surface = gtk_native_get_surface (GTK_NATIVE (this->root_widget));
 #endif
 #if defined(GDK_WINDOWING_MACOS)
   gpointer window = gdk_macos_surface_get_native_window (GDK_MACOS_SURFACE (surface));
 #endif
 
-  g_assert (gtk_native_get_surface (GTK_NATIVE (self->root_widget)) != NULL);
+  g_assert (gtk_native_get_surface (GTK_NATIVE (this->root_widget)) != NULL);
 
-  self->contexts = g_hash_table_new (NULL, NULL);
+  this->contexts = g_hash_table_new (NULL, NULL);
 
 #if defined(GDK_WINDOWING_WIN32)
-  self->adapter =
+  this->adapter =
     accesskit_windows_subclassing_adapter_new (GDK_SURFACE_HWND (surface),
                                                request_initial_tree_main_thread,
-                                               self, do_action, self);
+                                               this, do_action, this);
 #elif defined(GDK_WINDOWING_MACOS)
-  self->adapter =
+  this->adapter =
     accesskit_macos_subclassing_adapter_for_window (window,
                                                     request_initial_tree_main_thread,
-                                                    self, do_action, self);
+                                                    this, do_action, this);
 #elif defined(GDK_WINDOWING_WAYLAND) || defined(GDK_WINDOWING_X11)
-  self->adapter =
-    accesskit_unix_adapter_new (request_initial_tree_other_thread, self,
-                                do_action, self,
-                                deactivate_accessibility, self);
+  this->adapter =
+    accesskit_unix_adapter_new (request_initial_tree_other_thread, this,
+                                do_action, this,
+                                deactivate_accessibility, this);
 #endif
 
   G_OBJECT_CLASS (gtk_accesskit_root_parent_class)->constructed (gobject);
@@ -411,7 +411,7 @@ gtk_accesskit_root_class_init (GtkAccessKitRootClass *klass)
 }
 
 static void
-gtk_accesskit_root_init (GtkAccessKitRoot *self)
+gtk_accesskit_root_init (GtkAccessKitRoot *this)
 {
 }
 
@@ -424,73 +424,73 @@ gtk_accesskit_root_new (GtkRoot *root_widget)
 }
 
 static void
-remove_from_update_queue (GtkAccessKitRoot *self, guint id)
+remove_from_update_queue (GtkAccessKitRoot *this, guint id)
 {
   guint i;
 
-  if (!self->update_queue)
+  if (!this->update_queue)
     return;
 
-  for (i = 0; i < self->update_queue->len; i++)
+  for (i = 0; i < this->update_queue->len; i++)
     {
-      if (g_array_index (self->update_queue, guint, i) == id)
+      if (g_array_index (this->update_queue, guint, i) == id)
         {
-          g_array_remove_index (self->update_queue, i);
+          g_array_remove_index (this->update_queue, i);
           return;
         }
     }
 }
 
 static void
-add_to_update_queue (GtkAccessKitRoot *self, guint id, gboolean force_to_end)
+add_to_update_queue (GtkAccessKitRoot *this, guint id, gboolean force_to_end)
 {
   guint i;
 
-  if (!self->update_queue)
-    self->update_queue = g_array_new (FALSE, FALSE, sizeof (guint));
+  if (!this->update_queue)
+    this->update_queue = g_array_new (FALSE, FALSE, sizeof (guint));
 
   if (force_to_end)
-    remove_from_update_queue (self, id);
+    remove_from_update_queue (this, id);
   else
     {
-      for (i = 0; i < self->update_queue->len; i++)
+      for (i = 0; i < this->update_queue->len; i++)
         {
-          if (g_array_index (self->update_queue, guint, i) == id)
+          if (g_array_index (this->update_queue, guint, i) == id)
             return;
         }
     }
 
-  g_array_append_val (self->update_queue, id);
+  g_array_append_val (this->update_queue, id);
 }
 
 guint32
-gtk_accesskit_root_new_id (GtkAccessKitRoot *self)
+gtk_accesskit_root_new_id (GtkAccessKitRoot *this)
 {
-  return ++self->next_id;
+  return ++this->next_id;
 }
 
 guint32
-gtk_accesskit_root_add_context (GtkAccessKitRoot    *self,
+gtk_accesskit_root_add_context (GtkAccessKitRoot    *this,
                                 GtkAccessKitContext *context)
 {
-  guint32 id = gtk_accesskit_root_new_id (self);
-  g_hash_table_insert (self->contexts, GUINT_TO_POINTER (id), context);
+  guint32 id = gtk_accesskit_root_new_id (this);
+  g_hash_table_insert (this->contexts, GUINT_TO_POINTER (id), context);
 
-  if (self->did_initial_update)
-    add_to_update_queue (self, id, FALSE);
+  if (this->did_initial_update)
+    add_to_update_queue (this, id, FALSE);
 
   return id;
 }
 
 void
-gtk_accesskit_root_remove_context (GtkAccessKitRoot *self, guint32 id)
+gtk_accesskit_root_remove_context (GtkAccessKitRoot *this, guint32 id)
 {
-  g_hash_table_remove (self->contexts, GUINT_TO_POINTER (id));
-  remove_from_update_queue (self, id);
+  g_hash_table_remove (this->contexts, GUINT_TO_POINTER (id));
+  remove_from_update_queue (this, id);
 }
 
 static void
-add_unrealized_descendants_to_update (GtkAccessKitRoot      *self,
+add_unrealized_descendants_to_update (GtkAccessKitRoot      *this,
                                       accesskit_tree_update *update,
                                       GtkAccessKitContext   *accesskit_ctx)
 {
@@ -509,9 +509,9 @@ add_unrealized_descendants_to_update (GtkAccessKitRoot      *self,
             GTK_ACCESSKIT_CONTEXT (child_ctx);
 
           gtk_at_context_realize (child_ctx);
-          remove_from_update_queue (self,
+          remove_from_update_queue (this,
                                     gtk_accesskit_context_get_id (child_accesskit_ctx));
-          add_unrealized_descendants_to_update (self, update,
+          add_unrealized_descendants_to_update (this, update,
                                                 child_accesskit_ctx);
           gtk_accesskit_context_add_to_update (child_accesskit_ctx, update);
         }
@@ -525,22 +525,22 @@ add_unrealized_descendants_to_update (GtkAccessKitRoot      *self,
 static accesskit_tree_update *
 build_incremental_update (void *data)
 {
-  GtkAccessKitRoot *self = data;
-  accesskit_tree_update *update = new_tree_update (self);
+  GtkAccessKitRoot *this = data;
+  accesskit_tree_update *update = new_tree_update (this);
 
-  while (self->update_queue)
+  while (this->update_queue)
     {
-      GArray *current_queue = self->update_queue;
+      GArray *current_queue = this->update_queue;
       guint i;
 
-      self->update_queue = NULL;
+      this->update_queue = NULL;
 
       for (i = 0; i < current_queue->len; i++)
         {
           guint id = g_array_index (current_queue, guint, i);
           GtkAccessKitContext *accesskit_ctx =
-            g_hash_table_lookup (self->contexts, GUINT_TO_POINTER (id));
-          add_unrealized_descendants_to_update (self, update, accesskit_ctx);
+            g_hash_table_lookup (this->contexts, GUINT_TO_POINTER (id));
+          add_unrealized_descendants_to_update (this, update, accesskit_ctx);
           gtk_accesskit_context_add_to_update (accesskit_ctx, update);
         }
 
@@ -551,44 +551,44 @@ build_incremental_update (void *data)
 }
 
 void
-gtk_accesskit_root_queue_update (GtkAccessKitRoot *self,
+gtk_accesskit_root_queue_update (GtkAccessKitRoot *this,
                                  guint32           id,
                                  gboolean          force_to_end)
 {
-  if (!self->did_initial_update)
+  if (!this->did_initial_update)
     return;
 
-  add_to_update_queue (self, id, force_to_end);
+  add_to_update_queue (this, id, force_to_end);
 
-  queue_tree_update (self);
+  queue_tree_update (this);
 }
 
 void
-gtk_accesskit_root_update_tree (GtkAccessKitRoot *self)
+gtk_accesskit_root_update_tree (GtkAccessKitRoot *this)
 {
-  if (self->did_initial_update)
+  if (this->did_initial_update)
     {
-      if (self->update_queue)
-        update_if_active (self, build_incremental_update);
+      if (this->update_queue)
+        update_if_active (this, build_incremental_update);
     }
-  else if (self->requested_initial_tree)
+  else if (this->requested_initial_tree)
     {
-      update_if_active (self, build_full_update);
-      self->did_initial_update = TRUE;
+      update_if_active (this, build_full_update);
+      this->did_initial_update = TRUE;
     }
 }
 
 void
-gtk_accesskit_root_update_window_focus_state (GtkAccessKitRoot *self,
+gtk_accesskit_root_update_window_focus_state (GtkAccessKitRoot *this,
                                               gboolean          focused)
 {
 #if defined(GDK_WINDOWING_MACOS)
   accesskit_macos_queued_events *events =
-    accesskit_macos_subclassing_adapter_update_view_focus_state (self->adapter,
+    accesskit_macos_subclassing_adapter_update_view_focus_state (this->adapter,
                                                                  focused);
   if (events)
     accesskit_macos_queued_events_raise (events);
 #elif defined(GDK_WINDOWING_WAYLAND) || defined(GDK_WINDOWING_X11)
-  accesskit_unix_adapter_update_window_focus_state (self->adapter, focused);
+  accesskit_unix_adapter_update_window_focus_state (this->adapter, focused);
 #endif
 }

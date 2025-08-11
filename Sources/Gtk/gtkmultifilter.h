@@ -33,10 +33,10 @@ GDK_AVAILABLE_IN_ALL
 GDK_DECLARE_INTERNAL_TYPE (GtkMultiFilter, gtk_multi_filter, GTK, MULTI_FILTER, GtkFilter)
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_multi_filter_append                 (GtkMultiFilter         *self,
+void                    gtk_multi_filter_append                 (GtkMultiFilter         *this,
                                                                  GtkFilter              *filter);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_multi_filter_remove                 (GtkMultiFilter         *self,
+void                    gtk_multi_filter_remove                 (GtkMultiFilter         *this,
                                                                  guint                   position);
 
 #define GTK_TYPE_ANY_FILTER             (gtk_any_filter_get_type ())

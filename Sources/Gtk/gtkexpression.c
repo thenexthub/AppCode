@@ -26,7 +26,7 @@
 #include <gobject/gvaluecollector.h>
 
 /**
- * GtkExpression: (ref-func gtk_expression_ref) (unref-func gtk_expression_unref) (set-value-func gtk_value_set_expression) (get-value-func gtk_value_get_expression)
+ * GtkExpression: (ref-fn gtk_expression_ref) (unref-fn gtk_expression_unref) (set-value-fn gtk_value_set_expression) (get-value-fn gtk_value_get_expression)
  *
  * Provides a way to describe references to values.
  *
@@ -89,7 +89,7 @@
  * ## GtkExpression in GObject properties
  *
  * In order to use a `GtkExpression` as a `GObject` property, you must use the
- * [func@Gtk.param_spec_expression] when creating a `GParamSpec` to install in the
+ * [fn@Gtk.param_spec_expression] when creating a `GParamSpec` to install in the
  * `GObject` class being defined; for instance:
  *
  * ```c
@@ -103,8 +103,8 @@
  * ```
  *
  * When implementing the `GObjectClass.set_property` and `GObjectClass.get_property`
- * virtual functions, you must use [func@Gtk.value_get_expression], to retrieve the
- * stored `GtkExpression` from the `GValue` container, and [func@Gtk.value_set_expression],
+ * virtual functions, you must use [fn@Gtk.value_get_expression], to retrieve the
+ * stored `GtkExpression` from the `GValue` container, and [fn@Gtk.value_set_expression],
  * to store the `GtkExpression` into the `GValue`; for instance:
  *
  * ```c
@@ -264,12 +264,12 @@ struct _GtkExpressionClass
                                                  GValue                 *value);
 
   gsize                 (* watch_size)          (GtkExpression          *expr);
-  void                  (* watch)               (GtkExpression          *self,
+  void                  (* watch)               (GtkExpression          *this,
                                                  GtkExpressionSubWatch  *watch,
                                                  gpointer                this_,
                                                  GtkExpressionNotify     notify,
                                                  gpointer                user_data);
-  void                  (* unwatch)             (GtkExpression          *self,
+  void                  (* unwatch)             (GtkExpression          *this,
                                                  GtkExpressionSubWatch  *watch);
 };
 
@@ -285,12 +285,12 @@ struct _GtkExpressionTypeInfo
                                                  GValue                 *value);
 
   gsize                 (* watch_size)          (GtkExpression          *expr);
-  void                  (* watch)               (GtkExpression          *self,
+  void                  (* watch)               (GtkExpression          *this,
                                                  GtkExpressionSubWatch  *watch,
                                                  gpointer                this_,
                                                  GtkExpressionNotify     notify,
                                                  gpointer                user_data);
-  void                  (* unwatch)             (GtkExpression          *self,
+  void                  (* unwatch)             (GtkExpression          *this,
                                                  GtkExpressionSubWatch  *watch);
 };
 
@@ -636,19 +636,19 @@ gtk_param_spec_expression (const char  *name,
 /* {{{ GtkExpression internals */
 
 static void
-gtk_expression_real_finalize (GtkExpression *self)
+gtk_expression_real_finalize (GtkExpression *this)
 {
-  g_type_free_instance ((GTypeInstance *) self);
+  g_type_free_instance ((GTypeInstance *) this);
 }
 
 static gsize
-gtk_expression_real_watch_size (GtkExpression *self)
+gtk_expression_real_watch_size (GtkExpression *this)
 {
   return 0;
 }
 
 static void
-gtk_expression_real_watch (GtkExpression         *self,
+gtk_expression_real_watch (GtkExpression         *this,
                            GtkExpressionSubWatch *watch,
                            gpointer               this_,
                            GtkExpressionNotify    notify,
@@ -657,15 +657,15 @@ gtk_expression_real_watch (GtkExpression         *self,
 }
 
 static void
-gtk_expression_real_unwatch (GtkExpression         *self,
+gtk_expression_real_unwatch (GtkExpression         *this,
                              GtkExpressionSubWatch *watch)
 {
 }
 
 static gsize
-gtk_expression_watch_size (GtkExpression *self)
+gtk_expression_watch_size (GtkExpression *this)
 {
-  return GTK_EXPRESSION_GET_CLASS (self)->watch_size (self);
+  return GTK_EXPRESSION_GET_CLASS (this)->watch_size (this);
 }
 
 static void
@@ -678,9 +678,9 @@ gtk_expression_class_init (GtkExpressionClass *klass)
 }
 
 static void
-gtk_expression_init (GtkExpression *self)
+gtk_expression_init (GtkExpression *this)
 {
-  g_atomic_ref_count_init (&self->ref_count);
+  g_atomic_ref_count_init (&this->ref_count);
 }
 
 GType
@@ -794,30 +794,30 @@ static gpointer
 gtk_expression_alloc (GType expression_type,
                       GType value_type)
 {
-  GtkExpression *self;
+  GtkExpression *this;
 
-  self = (GtkExpression *) g_type_create_instance (expression_type);
+  this = (GtkExpression *) g_type_create_instance (expression_type);
 
-  self->value_type = value_type;
+  this->value_type = value_type;
 
-  return self;
+  return this;
 }
 
 static void
-gtk_expression_subwatch_init (GtkExpression         *self,
+gtk_expression_subwatch_init (GtkExpression         *this,
                               GtkExpressionSubWatch *watch,
                               gpointer               this,
                               GtkExpressionNotify    notify,
                               gpointer               user_data)
 {
-  GTK_EXPRESSION_GET_CLASS (self)->watch (self, watch, this, notify, user_data);
+  GTK_EXPRESSION_GET_CLASS (this)->watch (this, watch, this, notify, user_data);
 }
 
 static void
-gtk_expression_subwatch_finish (GtkExpression         *self,
+gtk_expression_subwatch_finish (GtkExpression         *this,
                                 GtkExpressionSubWatch *watch)
 {
-  GTK_EXPRESSION_GET_CLASS (self)->unwatch (self, watch);
+  GTK_EXPRESSION_GET_CLASS (this)->unwatch (this, watch);
 }
 
 /* }}} */
@@ -839,9 +839,9 @@ struct _GtkConstantExpression
 static void
 gtk_constant_expression_finalize (GtkExpression *expr)
 {
-  GtkConstantExpression *self = (GtkConstantExpression *) expr;
+  GtkConstantExpression *this = (GtkConstantExpression *) expr;
 
-  g_value_unset (&self->value);
+  g_value_unset (&this->value);
 
   GTK_EXPRESSION_SUPER (expr)->finalize (expr);
 }
@@ -857,10 +857,10 @@ gtk_constant_expression_evaluate (GtkExpression *expr,
                                   gpointer       this,
                                   GValue        *value)
 {
-  GtkConstantExpression *self = (GtkConstantExpression *) expr;
+  GtkConstantExpression *this = (GtkConstantExpression *) expr;
 
-  g_value_init (value, G_VALUE_TYPE (&self->value));
-  g_value_copy (&self->value, value);
+  g_value_init (value, G_VALUE_TYPE (&this->value));
+  g_value_copy (&this->value, value);
   return TRUE;
 }
 
@@ -933,15 +933,15 @@ GtkExpression *
 gtk_constant_expression_new_for_value (const GValue *value)
 {
   GtkExpression *result;
-  GtkConstantExpression *self;
+  GtkConstantExpression *this;
 
   g_return_val_if_fail (G_IS_VALUE (value), NULL);
 
   result = gtk_expression_alloc (GTK_TYPE_CONSTANT_EXPRESSION, G_VALUE_TYPE (value));
-  self = (GtkConstantExpression *) result;
+  this = (GtkConstantExpression *) result;
 
-  g_value_init (&self->value, G_VALUE_TYPE (value));
-  g_value_copy (value, &self->value);
+  g_value_init (&this->value, G_VALUE_TYPE (value));
+  g_value_copy (value, &this->value);
 
   return result;
 }
@@ -957,11 +957,11 @@ gtk_constant_expression_new_for_value (const GValue *value)
 const GValue *
 gtk_constant_expression_get_value (GtkExpression *expression)
 {
-  GtkConstantExpression *self = (GtkConstantExpression *) expression;
+  GtkConstantExpression *this = (GtkConstantExpression *) expression;
 
   g_return_val_if_fail (G_TYPE_CHECK_INSTANCE_TYPE (expression, GTK_TYPE_CONSTANT_EXPRESSION), NULL);
 
-  return &self->value;
+  return &this->value;
 }
 
 /* }}} */
@@ -995,11 +995,11 @@ gtk_object_expression_weak_ref_cb (gpointer  data,
                                    GObject  *object)
 {
   WeakRefGuard *guard = data;
-  GtkObjectExpression *self = guard->data;
+  GtkObjectExpression *this = guard->data;
 
-  if (self != NULL)
+  if (this != NULL)
     {
-      GSList *iter = self->watches;
+      GSList *iter = this->watches;
 
       while (iter)
         {
@@ -1015,15 +1015,15 @@ gtk_object_expression_weak_ref_cb (gpointer  data,
 static void
 gtk_object_expression_finalize (GtkExpression *expr)
 {
-  GtkObjectExpression *self = (GtkObjectExpression *) expr;
+  GtkObjectExpression *this = (GtkObjectExpression *) expr;
   GObject *object;
 
-  object = g_weak_ref_get (&self->object_wr);
+  object = g_weak_ref_get (&this->object_wr);
 
   if (object != NULL)
     {
-      g_object_weak_unref (object, gtk_object_expression_weak_ref_cb, self->guard);
-      weak_ref_guard_unref (self->guard);
+      g_object_weak_unref (object, gtk_object_expression_weak_ref_cb, this->guard);
+      weak_ref_guard_unref (this->guard);
       g_object_unref (object);
     }
   else
@@ -1036,10 +1036,10 @@ gtk_object_expression_finalize (GtkExpression *expr)
        */
     }
 
-  g_clear_pointer (&self->guard, weak_ref_guard_unref);
-  g_weak_ref_clear (&self->object_wr);
+  g_clear_pointer (&this->guard, weak_ref_guard_unref);
+  g_weak_ref_clear (&this->object_wr);
 
-  g_assert (self->watches == NULL);
+  g_assert (this->watches == NULL);
 
   GTK_EXPRESSION_SUPER (expr)->finalize (expr);
 }
@@ -1055,10 +1055,10 @@ gtk_object_expression_evaluate (GtkExpression *expr,
                                 gpointer       this,
                                 GValue        *value)
 {
-  GtkObjectExpression *self = (GtkObjectExpression *) expr;
+  GtkObjectExpression *this = (GtkObjectExpression *) expr;
   GObject *object;
 
-  object = g_weak_ref_get (&self->object_wr);
+  object = g_weak_ref_get (&this->object_wr);
   if (object == NULL)
     return FALSE;
 
@@ -1080,21 +1080,21 @@ gtk_object_expression_watch (GtkExpression         *expr,
                              GtkExpressionNotify    notify,
                              gpointer               user_data)
 {
-  GtkObjectExpression *self = (GtkObjectExpression *) expr;
+  GtkObjectExpression *this = (GtkObjectExpression *) expr;
   GtkObjectExpressionWatch *owatch = (GtkObjectExpressionWatch *) watch;
 
   owatch->notify = notify;
   owatch->user_data = user_data;
-  self->watches = g_slist_prepend (self->watches, owatch);
+  this->watches = g_slist_prepend (this->watches, owatch);
 }
 
 static void
 gtk_object_expression_unwatch (GtkExpression         *expr,
                                GtkExpressionSubWatch *watch)
 {
-  GtkObjectExpression *self = (GtkObjectExpression *) expr;
+  GtkObjectExpression *this = (GtkObjectExpression *) expr;
 
-  self->watches = g_slist_remove (self->watches, watch);
+  this->watches = g_slist_remove (this->watches, watch);
 }
 
 static const GtkExpressionTypeInfo gtk_object_expression_info =
@@ -1131,19 +1131,19 @@ GtkExpression *
 gtk_object_expression_new (GObject *object)
 {
   GtkExpression *result;
-  GtkObjectExpression *self;
+  GtkObjectExpression *this;
 
   g_return_val_if_fail (G_IS_OBJECT (object), NULL);
 
   result = gtk_expression_alloc (GTK_TYPE_OBJECT_EXPRESSION, G_OBJECT_TYPE (object));
 
-  self = (GtkObjectExpression *) result;
-  g_weak_ref_init (&self->object_wr, object);
-  self->guard = weak_ref_guard_new (self);
+  this = (GtkObjectExpression *) result;
+  g_weak_ref_init (&this->object_wr, object);
+  this->guard = weak_ref_guard_new (this);
 
   g_object_weak_ref (object,
                      gtk_object_expression_weak_ref_cb,
-                     weak_ref_guard_ref (self->guard));
+                     weak_ref_guard_ref (this->guard));
 
   return result;
 }
@@ -1159,12 +1159,12 @@ gtk_object_expression_new (GObject *object)
 GObject *
 gtk_object_expression_get_object (GtkExpression *expression)
 {
-  GtkObjectExpression *self = (GtkObjectExpression *) expression;
+  GtkObjectExpression *this = (GtkObjectExpression *) expression;
   GObject *object;
 
   g_return_val_if_fail (G_TYPE_CHECK_INSTANCE_TYPE (expression, GTK_TYPE_OBJECT_EXPRESSION), NULL);
 
-  object = g_weak_ref_get (&self->object_wr);
+  object = g_weak_ref_get (&this->object_wr);
 
   /* Return a borrowed instance */
   if (object != NULL)
@@ -1194,9 +1194,9 @@ struct _GtkPropertyExpression
 static void
 gtk_property_expression_finalize (GtkExpression *expr)
 {
-  GtkPropertyExpression *self = (GtkPropertyExpression *) expr;
+  GtkPropertyExpression *this = (GtkPropertyExpression *) expr;
 
-  g_clear_pointer (&self->expr, gtk_expression_unref);
+  g_clear_pointer (&this->expr, gtk_expression_unref);
 
   GTK_EXPRESSION_SUPER (expr)->finalize (expr);
 }
@@ -1208,13 +1208,13 @@ gtk_property_expression_is_static (GtkExpression *expr)
 }
 
 static GObject *
-gtk_property_expression_get_object (GtkPropertyExpression *self,
+gtk_property_expression_get_object (GtkPropertyExpression *this,
                                     gpointer               this)
 {
   GValue expr_value = G_VALUE_INIT;
   GObject *object;
 
-  if (self->expr == NULL)
+  if (this->expr == NULL)
     {
       if (this)
         return g_object_ref (this);
@@ -1222,7 +1222,7 @@ gtk_property_expression_get_object (GtkPropertyExpression *self,
         return NULL;
     }
 
-  if (!gtk_expression_evaluate (self->expr, this, &expr_value))
+  if (!gtk_expression_evaluate (this->expr, this, &expr_value))
     return NULL;
 
   if (!G_VALUE_HOLDS_OBJECT (&expr_value))
@@ -1236,7 +1236,7 @@ gtk_property_expression_get_object (GtkPropertyExpression *self,
   if (object == NULL)
     return NULL;
 
-  if (!G_TYPE_CHECK_INSTANCE_TYPE (object, self->pspec->owner_type))
+  if (!G_TYPE_CHECK_INSTANCE_TYPE (object, this->pspec->owner_type))
     {
       g_object_unref (object);
       return NULL;
@@ -1250,14 +1250,14 @@ gtk_property_expression_evaluate (GtkExpression *expr,
                                   gpointer       this,
                                   GValue        *value)
 {
-  GtkPropertyExpression *self = (GtkPropertyExpression *) expr;
+  GtkPropertyExpression *this = (GtkPropertyExpression *) expr;
   GObject *object;
 
-  object = gtk_property_expression_get_object (self, this);
+  object = gtk_property_expression_get_object (this, this);
   if (object == NULL)
     return FALSE;
 
-  g_object_get_property (object, self->pspec->name, value);
+  g_object_get_property (object, this->pspec->name, value);
   g_object_unref (object);
   return TRUE;
 }
@@ -1329,12 +1329,12 @@ gtk_property_expression_watch_expr_notify_cb (gpointer data)
 static gsize
 gtk_property_expression_watch_size (GtkExpression *expr)
 {
-  GtkPropertyExpression *self = (GtkPropertyExpression *) expr;
+  GtkPropertyExpression *this = (GtkPropertyExpression *) expr;
   gsize result;
 
   result = sizeof (GtkPropertyExpressionWatch);
-  if (self->expr)
-    result += gtk_expression_watch_size (self->expr);
+  if (this->expr)
+    result += gtk_expression_watch_size (this->expr);
 
   return result;
 }
@@ -1347,15 +1347,15 @@ gtk_property_expression_watch (GtkExpression         *expr,
                                gpointer               user_data)
 {
   GtkPropertyExpressionWatch *pwatch = (GtkPropertyExpressionWatch *) watch;
-  GtkPropertyExpression *self = (GtkPropertyExpression *) expr;
+  GtkPropertyExpression *this = (GtkPropertyExpression *) expr;
 
   pwatch->notify = notify;
   pwatch->user_data = user_data;
-  pwatch->expr = self;
+  pwatch->expr = this;
   pwatch->this = this_;
-  if (self->expr && !gtk_expression_is_static (self->expr))
+  if (this->expr && !gtk_expression_is_static (this->expr))
     {
-      gtk_expression_subwatch_init (self->expr,
+      gtk_expression_subwatch_init (this->expr,
                                     (GtkExpressionSubWatch *) pwatch->sub,
                                     this_,
                                     gtk_property_expression_watch_expr_notify_cb,
@@ -1370,12 +1370,12 @@ gtk_property_expression_unwatch (GtkExpression         *expr,
                                  GtkExpressionSubWatch *watch)
 {
   GtkPropertyExpressionWatch *pwatch = (GtkPropertyExpressionWatch *) watch;
-  GtkPropertyExpression *self = (GtkPropertyExpression *) expr;
+  GtkPropertyExpression *this = (GtkPropertyExpression *) expr;
 
   gtk_property_expression_watch_destroy_closure (pwatch);
 
-  if (self->expr && !gtk_expression_is_static (self->expr))
-    gtk_expression_subwatch_finish (self->expr, (GtkExpressionSubWatch *) pwatch->sub);
+  if (this->expr && !gtk_expression_is_static (this->expr))
+    gtk_expression_subwatch_finish (this->expr, (GtkExpressionSubWatch *) pwatch->sub);
 }
 
 static const GtkExpressionTypeInfo gtk_property_expression_info =
@@ -1472,13 +1472,13 @@ gtk_property_expression_new_for_pspec (GtkExpression *expression,
                                        GParamSpec    *pspec)
 {
   GtkExpression *result;
-  GtkPropertyExpression *self;
+  GtkPropertyExpression *this;
 
   result = gtk_expression_alloc (GTK_TYPE_PROPERTY_EXPRESSION, pspec->value_type);
-  self = (GtkPropertyExpression *) result;
+  this = (GtkPropertyExpression *) result;
 
-  self->pspec = pspec;
-  self->expr = expression;
+  this->pspec = pspec;
+  this->expr = expression;
 
   return result;
 }
@@ -1495,11 +1495,11 @@ gtk_property_expression_new_for_pspec (GtkExpression *expression,
 GtkExpression *
 gtk_property_expression_get_expression (GtkExpression *expression)
 {
-  GtkPropertyExpression *self = (GtkPropertyExpression *) expression;
+  GtkPropertyExpression *this = (GtkPropertyExpression *) expression;
 
   g_return_val_if_fail (G_TYPE_CHECK_INSTANCE_TYPE (expression, GTK_TYPE_PROPERTY_EXPRESSION), NULL);
 
-  return self->expr;
+  return this->expr;
 }
 
 /**
@@ -1514,11 +1514,11 @@ gtk_property_expression_get_expression (GtkExpression *expression)
 GParamSpec *
 gtk_property_expression_get_pspec (GtkExpression *expression)
 {
-  GtkPropertyExpression *self = (GtkPropertyExpression *) expression;
+  GtkPropertyExpression *this = (GtkPropertyExpression *) expression;
 
   g_return_val_if_fail (G_TYPE_CHECK_INSTANCE_TYPE (expression, GTK_TYPE_PROPERTY_EXPRESSION), NULL);
 
-  return self->pspec;
+  return this->pspec;
 }
 
 /* }}} */
@@ -1543,16 +1543,16 @@ struct _GtkClosureExpression
 static void
 gtk_closure_expression_finalize (GtkExpression *expr)
 {
-  GtkClosureExpression *self = (GtkClosureExpression *) expr;
+  GtkClosureExpression *this = (GtkClosureExpression *) expr;
   guint i;
 
-  for (i = 0; i < self->n_params; i++)
+  for (i = 0; i < this->n_params; i++)
     {
-      gtk_expression_unref (self->params[i]);
+      gtk_expression_unref (this->params[i]);
     }
-  g_free (self->params);
+  g_free (this->params);
 
-  g_closure_unref (self->closure);
+  g_closure_unref (this->closure);
 
   GTK_EXPRESSION_SUPER (expr)->finalize (expr);
 }
@@ -1560,12 +1560,12 @@ gtk_closure_expression_finalize (GtkExpression *expr)
 static gboolean
 gtk_closure_expression_is_static (GtkExpression *expr)
 {
-  GtkClosureExpression *self = (GtkClosureExpression *) expr;
+  GtkClosureExpression *this = (GtkClosureExpression *) expr;
   guint i;
 
-  for (i = 0; i < self->n_params; i++)
+  for (i = 0; i < this->n_params; i++)
     {
-      if (!gtk_expression_is_static (self->params[i]))
+      if (!gtk_expression_is_static (this->params[i]))
         return FALSE;
     }
 
@@ -1577,17 +1577,17 @@ gtk_closure_expression_evaluate (GtkExpression *expr,
                                  gpointer       this,
                                  GValue        *value)
 {
-  GtkClosureExpression *self = (GtkClosureExpression *) expr;
+  GtkClosureExpression *this = (GtkClosureExpression *) expr;
   GValue *instance_and_params;
   gboolean result = TRUE;
   guint i;
 
-  instance_and_params = g_alloca (sizeof (GValue) * (self->n_params + 1));
-  memset (instance_and_params, 0, sizeof (GValue) * (self->n_params + 1));
+  instance_and_params = g_alloca (sizeof (GValue) * (this->n_params + 1));
+  memset (instance_and_params, 0, sizeof (GValue) * (this->n_params + 1));
 
-  for (i = 0; i < self->n_params; i++)
+  for (i = 0; i < this->n_params; i++)
     {
-      if (!gtk_expression_evaluate (self->params[i], this, &instance_and_params[i + 1]))
+      if (!gtk_expression_evaluate (this->params[i], this, &instance_and_params[i + 1]))
         {
           result = FALSE;
           goto out;
@@ -1599,14 +1599,14 @@ gtk_closure_expression_evaluate (GtkExpression *expr,
     g_value_init (instance_and_params, G_TYPE_OBJECT);
 
   g_value_init (value, expr->value_type);
-  g_closure_invoke (self->closure,
+  g_closure_invoke (this->closure,
                     value,
-                    self->n_params + 1,
+                    this->n_params + 1,
                     instance_and_params,
                     NULL);
 
 out:
-  for (i = 0; i < self->n_params + 1; i++)
+  for (i = 0; i < this->n_params + 1; i++)
     g_value_unset (&instance_and_params[i]);
 
   return result;
@@ -1632,18 +1632,18 @@ gtk_closure_expression_watch_notify_cb (gpointer data)
 static gsize
 gtk_closure_expression_watch_size (GtkExpression *expr)
 {
-  GtkClosureExpression *self = (GtkClosureExpression *) expr;
+  GtkClosureExpression *this = (GtkClosureExpression *) expr;
   gsize size;
   guint i;
 
   size = sizeof (GtkClosureExpressionWatch);
 
-  for (i = 0; i < self->n_params; i++)
+  for (i = 0; i < this->n_params; i++)
     {
-      if (gtk_expression_is_static (self->params[i]))
+      if (gtk_expression_is_static (this->params[i]))
         continue;
 
-      size += gtk_expression_watch_size (self->params[i]);
+      size += gtk_expression_watch_size (this->params[i]);
     }
 
   return size;
@@ -1657,7 +1657,7 @@ gtk_closure_expression_watch (GtkExpression         *expr,
                               gpointer               user_data)
 {
   GtkClosureExpressionWatch *cwatch = (GtkClosureExpressionWatch *) watch;
-  GtkClosureExpression *self = (GtkClosureExpression *) expr;
+  GtkClosureExpression *this = (GtkClosureExpression *) expr;
   guchar *sub;
   guint i;
 
@@ -1665,17 +1665,17 @@ gtk_closure_expression_watch (GtkExpression         *expr,
   cwatch->user_data = user_data;
 
   sub = cwatch->sub;
-  for (i = 0; i < self->n_params; i++)
+  for (i = 0; i < this->n_params; i++)
     {
-      if (gtk_expression_is_static (self->params[i]))
+      if (gtk_expression_is_static (this->params[i]))
         continue;
 
-      gtk_expression_subwatch_init (self->params[i],
+      gtk_expression_subwatch_init (this->params[i],
                                     (GtkExpressionSubWatch *) sub,
                                     this_,
                                     gtk_closure_expression_watch_notify_cb,
                                     watch);
-      sub += gtk_expression_watch_size (self->params[i]);
+      sub += gtk_expression_watch_size (this->params[i]);
     }
 }
 
@@ -1684,19 +1684,19 @@ gtk_closure_expression_unwatch (GtkExpression         *expr,
                                 GtkExpressionSubWatch *watch)
 {
   GtkClosureExpressionWatch *cwatch = (GtkClosureExpressionWatch *) watch;
-  GtkClosureExpression *self = (GtkClosureExpression *) expr;
+  GtkClosureExpression *this = (GtkClosureExpression *) expr;
   guchar *sub;
   guint i;
 
   sub = cwatch->sub;
-  for (i = 0; i < self->n_params; i++)
+  for (i = 0; i < this->n_params; i++)
     {
-      if (gtk_expression_is_static (self->params[i]))
+      if (gtk_expression_is_static (this->params[i]))
         continue;
 
-      gtk_expression_subwatch_finish (self->params[i],
+      gtk_expression_subwatch_finish (this->params[i],
                                       (GtkExpressionSubWatch *) sub);
-      sub += gtk_expression_watch_size (self->params[i]);
+      sub += gtk_expression_watch_size (this->params[i]);
     }
 }
 
@@ -1737,24 +1737,24 @@ gtk_closure_expression_new (GType                value_type,
                             GtkExpression      **params)
 {
   GtkExpression *result;
-  GtkClosureExpression *self;
+  GtkClosureExpression *this;
   guint i;
 
   g_return_val_if_fail (closure != NULL, NULL);
   g_return_val_if_fail (n_params == 0 || params != NULL, NULL);
 
   result = gtk_expression_alloc (GTK_TYPE_CLOSURE_EXPRESSION, value_type);
-  self = (GtkClosureExpression *) result;
+  this = (GtkClosureExpression *) result;
 
-  self->closure = g_closure_ref (closure);
+  this->closure = g_closure_ref (closure);
   g_closure_sink (closure);
   if (G_CLOSURE_NEEDS_MARSHAL (closure))
     g_closure_set_marshal (closure, g_cclosure_marshal_generic);
 
-  self->n_params = n_params;
-  self->params = g_new (GtkExpression *, n_params);
+  this->n_params = n_params;
+  this->params = g_new (GtkExpression *, n_params);
   for (i = 0; i < n_params; i++)
-    self->params[i] = params[i];
+    this->params[i] = params[i];
 
   return result;
 }
@@ -1817,7 +1817,7 @@ gtk_cclosure_expression_new (GType                value_type,
                              GClosureNotify       user_destroy)
 {
   GtkExpression *result;
-  GtkClosureExpression *self;
+  GtkClosureExpression *this;
   GClosure *closure;
   guint i;
 
@@ -1825,21 +1825,21 @@ gtk_cclosure_expression_new (GType                value_type,
   g_return_val_if_fail (n_params == 0 || params != NULL, NULL);
 
   result = gtk_expression_alloc (GTK_TYPE_CCLOSURE_EXPRESSION, value_type);
-  self = (GtkClosureExpression *) result;
+  this = (GtkClosureExpression *) result;
 
   closure = g_cclosure_new (callback_func, user_data, user_destroy);
   if (marshal)
     g_closure_set_marshal (closure, marshal);
 
-  self->closure = g_closure_ref (closure);
+  this->closure = g_closure_ref (closure);
   g_closure_sink (closure);
   if (G_CLOSURE_NEEDS_MARSHAL (closure))
     g_closure_set_marshal (closure, g_cclosure_marshal_generic);
 
-  self->n_params = n_params;
-  self->params = g_new (GtkExpression *, n_params);
+  this->n_params = n_params;
+  this->params = g_new (GtkExpression *, n_params);
   for (i = 0; i < n_params; i++)
-    self->params[i] = params[i];
+    this->params[i] = params[i];
 
   return result;
 }
@@ -1850,43 +1850,43 @@ gtk_cclosure_expression_new (GType                value_type,
 
 /**
  * gtk_expression_ref:
- * @self: a `GtkExpression`
+ * @this: a `GtkExpression`
  *
  * Acquires a reference on the given `GtkExpression`.
  *
  * Returns: (transfer full): the `GtkExpression` with an additional reference
  */
 GtkExpression *
-gtk_expression_ref (GtkExpression *self)
+gtk_expression_ref (GtkExpression *this)
 {
-  g_return_val_if_fail (GTK_IS_EXPRESSION (self), NULL);
+  g_return_val_if_fail (GTK_IS_EXPRESSION (this), NULL);
 
-  g_atomic_ref_count_inc (&self->ref_count);
+  g_atomic_ref_count_inc (&this->ref_count);
 
-  return self;
+  return this;
 }
 
 /**
  * gtk_expression_unref:
- * @self: (transfer full): a `GtkExpression`
+ * @this: (transfer full): a `GtkExpression`
  *
  * Releases a reference on the given `GtkExpression`.
  *
- * If the reference was the last, the resources associated to the `self` are
+ * If the reference was the last, the resources associated to the `this` are
  * freed.
  */
 void
-gtk_expression_unref (GtkExpression *self)
+gtk_expression_unref (GtkExpression *this)
 {
-  g_return_if_fail (GTK_IS_EXPRESSION (self));
+  g_return_if_fail (GTK_IS_EXPRESSION (this));
 
-  if (g_atomic_ref_count_dec (&self->ref_count))
-    GTK_EXPRESSION_GET_CLASS (self)->finalize (self);
+  if (g_atomic_ref_count_dec (&this->ref_count))
+    GTK_EXPRESSION_GET_CLASS (this)->finalize (this);
 }
 
 /**
  * gtk_expression_get_value_type:
- * @self: a `GtkExpression`
+ * @this: a `GtkExpression`
  *
  * Gets the `GType` that this expression evaluates to.
  *
@@ -1896,16 +1896,16 @@ gtk_expression_unref (GtkExpression *self)
  * Returns: The type returned from [method@Gtk.Expression.evaluate]
  */
 GType
-gtk_expression_get_value_type (GtkExpression *self)
+gtk_expression_get_value_type (GtkExpression *this)
 {
-  g_return_val_if_fail (GTK_IS_EXPRESSION (self), G_TYPE_INVALID);
+  g_return_val_if_fail (GTK_IS_EXPRESSION (this), G_TYPE_INVALID);
 
-  return self->value_type;
+  return this->value_type;
 }
 
 /**
  * gtk_expression_evaluate:
- * @self: a `GtkExpression`
+ * @this: a `GtkExpression`
  * @this_: (transfer none) (type GObject) (nullable): the this argument for the evaluation
  * @value: an empty `GValue`
  *
@@ -1923,20 +1923,20 @@ gtk_expression_get_value_type (GtkExpression *self)
  * Returns: `TRUE` if the expression could be evaluated
  **/
 gboolean
-gtk_expression_evaluate (GtkExpression *self,
+gtk_expression_evaluate (GtkExpression *this,
                          gpointer       this_,
                          GValue        *value)
 {
-  g_return_val_if_fail (GTK_IS_EXPRESSION (self), FALSE);
+  g_return_val_if_fail (GTK_IS_EXPRESSION (this), FALSE);
   g_return_val_if_fail (this_ == NULL || G_IS_OBJECT (this_), FALSE);
   g_return_val_if_fail (value != NULL, FALSE);
 
-  return GTK_EXPRESSION_GET_CLASS (self)->evaluate (self, this_, value);
+  return GTK_EXPRESSION_GET_CLASS (this)->evaluate (this, this_, value);
 }
 
 /**
  * gtk_expression_is_static:
- * @self: a `GtkExpression`
+ * @this: a `GtkExpression`
  *
  * Checks if the expression is static.
  *
@@ -1949,11 +1949,11 @@ gtk_expression_evaluate (GtkExpression *self,
  * Returns: `TRUE` if the expression is static
  **/
 gboolean
-gtk_expression_is_static (GtkExpression *self)
+gtk_expression_is_static (GtkExpression *this)
 {
-  g_return_val_if_fail (GTK_IS_EXPRESSION (self), FALSE);
+  g_return_val_if_fail (GTK_IS_EXPRESSION (this), FALSE);
 
-  return GTK_EXPRESSION_GET_CLASS (self)->is_static (self);
+  return GTK_EXPRESSION_GET_CLASS (this)->is_static (this);
 }
 
 static gboolean
@@ -1994,7 +1994,7 @@ gtk_expression_watch_cb (gpointer data)
 
 /**
  * gtk_expression_watch:
- * @self: a `GtkExpression`
+ * @this: a `GtkExpression`
  * @this_: (transfer none) (type GObject) (nullable): the `this` argument to
  *   watch
  * @notify: (closure user_data): callback to invoke when the expression changes
@@ -2003,7 +2003,7 @@ gtk_expression_watch_cb (gpointer data)
  *
  * Watch the given `expression` for changes.
  *
- * The @notify function will be called whenever the evaluation of `self`
+ * The @notify function will be called whenever the evaluation of `this`
  * may have changed.
  *
  * GTK cannot guarantee that the evaluation did indeed change when the @notify
@@ -2017,7 +2017,7 @@ gtk_expression_watch_cb (gpointer data)
  *   if you want to keep the watch around.
  **/
 GtkExpressionWatch *
-gtk_expression_watch (GtkExpression       *self,
+gtk_expression_watch (GtkExpression       *this,
                       gpointer             this_,
                       GtkExpressionNotify  notify,
                       gpointer             user_data,
@@ -2025,13 +2025,13 @@ gtk_expression_watch (GtkExpression       *self,
 {
   GtkExpressionWatch *watch;
 
-  g_return_val_if_fail (self != NULL, NULL);
+  g_return_val_if_fail (this != NULL, NULL);
   g_return_val_if_fail (this_ == NULL || G_IS_OBJECT (this_), NULL);
   g_return_val_if_fail (notify != NULL, NULL);
 
-  watch = g_atomic_rc_box_alloc0 (sizeof (GtkExpressionWatch) + gtk_expression_watch_size (self));
+  watch = g_atomic_rc_box_alloc0 (sizeof (GtkExpressionWatch) + gtk_expression_watch_size (this));
 
-  watch->expression = gtk_expression_ref (self);
+  watch->expression = gtk_expression_ref (this);
   watch->guard = weak_ref_guard_new (watch);
   g_weak_ref_init (&watch->this_wr, this_);
   if (this_)
@@ -2042,7 +2042,7 @@ gtk_expression_watch (GtkExpression       *self,
   watch->user_data = user_data;
   watch->user_destroy = user_destroy;
 
-  gtk_expression_subwatch_init (self,
+  gtk_expression_subwatch_init (this,
                                 (GtkExpressionSubWatch *) watch->sub,
                                 this_,
                                 gtk_expression_watch_cb,
@@ -2083,7 +2083,7 @@ gtk_expression_watch_finalize (gpointer data)
  *
  * Releases a reference on the given `GtkExpressionWatch`.
  *
- * If the reference was the last, the resources associated to `self` are
+ * If the reference was the last, the resources associated to `this` are
  * freed.
  */
 void
@@ -2268,29 +2268,29 @@ gtk_expression_bind_notify (gpointer data)
 
 /**
  * gtk_expression_bind:
- * @self: (transfer full): a `GtkExpression`
+ * @this: (transfer full): a `GtkExpression`
  * @target: (transfer none) (type GObject): the target object to bind to
  * @property: name of the property on `target` to bind to
  * @this_: (transfer none) (type GObject) (nullable): the this argument for
- *   the evaluation of `self`
+ *   the evaluation of `this`
  *
- * Bind `target`'s property named `property` to `self`.
+ * Bind `target`'s property named `property` to `this`.
  *
- * The value that `self` evaluates to is set via `g_object_set()` on
- * `target`. This is repeated whenever `self` changes to ensure that
- * the object's property stays synchronized with `self`.
+ * The value that `this` evaluates to is set via `g_object_set()` on
+ * `target`. This is repeated whenever `this` changes to ensure that
+ * the object's property stays synchronized with `this`.
  *
- * If `self`'s evaluation fails, `target`'s `property` is not updated.
+ * If `this`'s evaluation fails, `target`'s `property` is not updated.
  * You can ensure that this doesn't happen by using a fallback
  * expression.
  *
- * Note that this function takes ownership of `self`. If you want
+ * Note that this function takes ownership of `this`. If you want
  * to keep it around, you should [method@Gtk.Expression.ref] it beforehand.
  *
  * Returns: (transfer none): a `GtkExpressionWatch`
  **/
 GtkExpressionWatch *
-gtk_expression_bind (GtkExpression *self,
+gtk_expression_bind (GtkExpression *this,
                      gpointer       target,
                      const char    *property,
                      gpointer       this_)
@@ -2299,7 +2299,7 @@ gtk_expression_bind (GtkExpression *self,
   GParamSpec *pspec;
   GSList *binds;
 
-  g_return_val_if_fail (GTK_IS_EXPRESSION (self), NULL);
+  g_return_val_if_fail (GTK_IS_EXPRESSION (this), NULL);
   g_return_val_if_fail (G_IS_OBJECT (target), NULL);
   g_return_val_if_fail (property != NULL, NULL);
   g_return_val_if_fail (this_ == NULL || G_IS_OBJECT (this_), NULL);
@@ -2324,7 +2324,7 @@ gtk_expression_bind (GtkExpression *self,
     g_object_weak_ref (target, invalidate_binds, NULL);
   g_weak_ref_init (&bind->target_wr, target);
   bind->pspec = pspec;
-  bind->watch = gtk_expression_watch (self,
+  bind->watch = gtk_expression_watch (this,
                                       this_,
                                       gtk_expression_bind_notify,
                                       bind,
@@ -2332,7 +2332,7 @@ gtk_expression_bind (GtkExpression *self,
   binds = g_slist_prepend (binds, bind);
   g_object_set_data_full (target, "gtk-expression-binds", binds, free_binds);
 
-  gtk_expression_unref (self);
+  gtk_expression_unref (this);
 
   gtk_expression_bind_notify (bind);
 

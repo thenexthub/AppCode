@@ -52,18 +52,18 @@ static gboolean
 gtk_bool_filter_match (GtkFilter *filter,
                        gpointer   item)
 {
-  GtkBoolFilter *self = GTK_BOOL_FILTER (filter);
+  GtkBoolFilter *this = GTK_BOOL_FILTER (filter);
   GValue value = G_VALUE_INIT;
   gboolean result;
 
-  if (self->expression == NULL ||
-      !gtk_expression_evaluate (self->expression, item, &value))
+  if (this->expression == NULL ||
+      !gtk_expression_evaluate (this->expression, item, &value))
     return FALSE;
   result = g_value_get_boolean (&value);
 
   g_value_unset (&value);
 
-  if (self->invert)
+  if (this->invert)
     result = !result;
 
   return result;
@@ -72,9 +72,9 @@ gtk_bool_filter_match (GtkFilter *filter,
 static GtkFilterMatch
 gtk_bool_filter_get_strictness (GtkFilter *filter)
 {
-  GtkBoolFilter *self = GTK_BOOL_FILTER (filter);
+  GtkBoolFilter *this = GTK_BOOL_FILTER (filter);
 
-  if (self->expression == NULL)
+  if (this->expression == NULL)
     return GTK_FILTER_MATCH_NONE;
 
   return GTK_FILTER_MATCH_SOME;
@@ -86,16 +86,16 @@ gtk_bool_filter_set_property (GObject      *object,
                               const GValue *value,
                               GParamSpec   *pspec)
 {
-  GtkBoolFilter *self = GTK_BOOL_FILTER (object);
+  GtkBoolFilter *this = GTK_BOOL_FILTER (object);
 
   switch (prop_id)
     {
     case PROP_EXPRESSION:
-      gtk_bool_filter_set_expression (self, gtk_value_get_expression (value));
+      gtk_bool_filter_set_expression (this, gtk_value_get_expression (value));
       break;
 
     case PROP_INVERT:
-      gtk_bool_filter_set_invert (self, g_value_get_boolean (value));
+      gtk_bool_filter_set_invert (this, g_value_get_boolean (value));
       break;
 
     default:
@@ -110,16 +110,16 @@ gtk_bool_filter_get_property (GObject     *object,
                               GValue      *value,
                               GParamSpec  *pspec)
 {
-  GtkBoolFilter *self = GTK_BOOL_FILTER (object);
+  GtkBoolFilter *this = GTK_BOOL_FILTER (object);
 
   switch (prop_id)
     {
     case PROP_EXPRESSION:
-      gtk_value_set_expression (value, self->expression);
+      gtk_value_set_expression (value, this->expression);
       break;
 
     case PROP_INVERT:
-      g_value_set_boolean (value, self->invert);
+      g_value_set_boolean (value, this->invert);
       break;
 
     default:
@@ -131,9 +131,9 @@ gtk_bool_filter_get_property (GObject     *object,
 static void
 gtk_bool_filter_dispose (GObject *object)
 {
-  GtkBoolFilter *self = GTK_BOOL_FILTER (object);
+  GtkBoolFilter *this = GTK_BOOL_FILTER (object);
 
-  g_clear_pointer (&self->expression, gtk_expression_unref);
+  g_clear_pointer (&this->expression, gtk_expression_unref);
 
   G_OBJECT_CLASS (gtk_bool_filter_parent_class)->dispose (object);
 }
@@ -174,7 +174,7 @@ gtk_bool_filter_class_init (GtkBoolFilterClass *class)
 }
 
 static void
-gtk_bool_filter_init (GtkBoolFilter *self)
+gtk_bool_filter_init (GtkBoolFilter *this)
 {
 }
 
@@ -202,7 +202,7 @@ gtk_bool_filter_new (GtkExpression *expression)
 
 /**
  * gtk_bool_filter_get_expression:
- * @self: a bool filter
+ * @this: a bool filter
  *
  * Gets the expression that the filter evaluates for
  * each item.
@@ -210,16 +210,16 @@ gtk_bool_filter_new (GtkExpression *expression)
  * Returns: (transfer none) (nullable): the expression
  */
 GtkExpression *
-gtk_bool_filter_get_expression (GtkBoolFilter *self)
+gtk_bool_filter_get_expression (GtkBoolFilter *this)
 {
-  g_return_val_if_fail (GTK_IS_BOOL_FILTER (self), NULL);
+  g_return_val_if_fail (GTK_IS_BOOL_FILTER (this), NULL);
 
-  return self->expression;
+  return this->expression;
 }
 
 /**
  * gtk_bool_filter_set_expression:
- * @self: a bool filter
+ * @this: a bool filter
  * @expression: (nullable): the expression
  *
  * Sets the expression that the filter uses to check if items
@@ -228,60 +228,60 @@ gtk_bool_filter_get_expression (GtkBoolFilter *self)
  * The expression must have a value type of `G_TYPE_BOOLEAN`.
  */
 void
-gtk_bool_filter_set_expression (GtkBoolFilter *self,
+gtk_bool_filter_set_expression (GtkBoolFilter *this,
                                 GtkExpression *expression)
 {
-  g_return_if_fail (GTK_IS_BOOL_FILTER (self));
+  g_return_if_fail (GTK_IS_BOOL_FILTER (this));
   g_return_if_fail (expression == NULL || gtk_expression_get_value_type (expression) == G_TYPE_BOOLEAN);
 
-  if (self->expression == expression)
+  if (this->expression == expression)
     return;
 
-  g_clear_pointer (&self->expression, gtk_expression_unref);
+  g_clear_pointer (&this->expression, gtk_expression_unref);
   if (expression)
-    self->expression = gtk_expression_ref (expression);
+    this->expression = gtk_expression_ref (expression);
 
-  gtk_filter_changed (GTK_FILTER (self), GTK_FILTER_CHANGE_DIFFERENT);
+  gtk_filter_changed (GTK_FILTER (this), GTK_FILTER_CHANGE_DIFFERENT);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_EXPRESSION]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_EXPRESSION]);
 }
 
 /**
  * gtk_bool_filter_get_invert:
- * @self: a bool filter
+ * @this: a bool filter
  *
  * Returns whether the filter inverts the expression.
  *
  * Returns: true if the filter inverts
  */
 gboolean
-gtk_bool_filter_get_invert (GtkBoolFilter *self)
+gtk_bool_filter_get_invert (GtkBoolFilter *this)
 {
-  g_return_val_if_fail (GTK_IS_BOOL_FILTER (self), TRUE);
+  g_return_val_if_fail (GTK_IS_BOOL_FILTER (this), TRUE);
 
-  return self->invert;
+  return this->invert;
 }
 
 /**
  * gtk_bool_filter_set_invert:
- * @self: a bool filter
+ * @this: a bool filter
  * @invert: true to invert
  *
  * Sets whether the filter should invert the expression.
  */
 void
-gtk_bool_filter_set_invert (GtkBoolFilter *self,
+gtk_bool_filter_set_invert (GtkBoolFilter *this,
                             gboolean       invert)
 {
-  g_return_if_fail (GTK_IS_BOOL_FILTER (self));
+  g_return_if_fail (GTK_IS_BOOL_FILTER (this));
 
-  if (self->invert == invert)
+  if (this->invert == invert)
     return;
 
-  self->invert = invert;
+  this->invert = invert;
 
-  gtk_filter_changed (GTK_FILTER (self), GTK_FILTER_CHANGE_DIFFERENT);
+  gtk_filter_changed (GTK_FILTER (this), GTK_FILTER_CHANGE_DIFFERENT);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_INVERT]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_INVERT]);
 }
 

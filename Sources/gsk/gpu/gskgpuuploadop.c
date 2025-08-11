@@ -268,11 +268,11 @@ struct _GskGpuUploadTextureOp
 static void
 gsk_gpu_upload_texture_op_finish (GskGpuOp *op)
 {
-  GskGpuUploadTextureOp *self = (GskGpuUploadTextureOp *) op;
+  GskGpuUploadTextureOp *this = (GskGpuUploadTextureOp *) op;
 
-  g_object_unref (self->image);
-  g_clear_object (&self->buffer);
-  g_object_unref (self->texture);
+  g_object_unref (this->image);
+  g_clear_object (&this->buffer);
+  g_object_unref (this->texture);
 }
 
 static void
@@ -281,14 +281,14 @@ gsk_gpu_upload_texture_op_print (GskGpuOp    *op,
                                  GString     *string,
                                  guint        indent)
 {
-  GskGpuUploadTextureOp *self = (GskGpuUploadTextureOp *) op;
+  GskGpuUploadTextureOp *this = (GskGpuUploadTextureOp *) op;
 
   gsk_gpu_print_op (string, indent, "upload-texture");
-  gsk_gpu_print_image (string, self->image);
-  if (self->lod_level > 0)
+  gsk_gpu_print_image (string, this->image);
+  if (this->lod_level > 0)
     g_string_append_printf (string, " @%ux %s",
-                            1 << self->lod_level,
-                            self->lod_filter == GSK_SCALING_FILTER_TRILINEAR ? "linear" : "nearest");
+                            1 << this->lod_level,
+                            this->lod_filter == GSK_SCALING_FILTER_TRILINEAR ? "linear" : "nearest");
   gsk_gpu_print_newline (string);
 }
 
@@ -297,24 +297,24 @@ gsk_gpu_upload_texture_op_draw (GskGpuOp              *op,
                                 guchar                *data,
                                 const GdkMemoryLayout *layout)
 {
-  GskGpuUploadTextureOp *self = (GskGpuUploadTextureOp *) op;
+  GskGpuUploadTextureOp *this = (GskGpuUploadTextureOp *) op;
 
-  if (self->lod_level == 0)
+  if (this->lod_level == 0)
     {
-      gdk_texture_do_download (self->texture, data, layout, gdk_texture_get_color_state (self->texture));
+      gdk_texture_do_download (this->texture, data, layout, gdk_texture_get_color_state (this->texture));
     }
   else
     {
       GdkMemoryLayout bytes_layout;
       GBytes *bytes;
       
-      bytes = gdk_texture_download_bytes (self->texture, &bytes_layout);
+      bytes = gdk_texture_download_bytes (this->texture, &bytes_layout);
       gdk_memory_mipmap (data,
                          layout,
                          g_bytes_get_data (bytes, NULL),
                          &bytes_layout,
-                         self->lod_level,
-                         self->lod_filter == GSK_SCALING_FILTER_TRILINEAR ? TRUE : FALSE);
+                         this->lod_level,
+                         this->lod_filter == GSK_SCALING_FILTER_TRILINEAR ? TRUE : FALSE);
       g_bytes_unref (bytes);
     }
 }
@@ -325,14 +325,14 @@ gsk_gpu_upload_texture_op_vk_command (GskGpuOp              *op,
                                       GskGpuFrame           *frame,
                                       GskVulkanCommandState *state)
 {
-  GskGpuUploadTextureOp *self = (GskGpuUploadTextureOp *) op;
+  GskGpuUploadTextureOp *this = (GskGpuUploadTextureOp *) op;
 
   return gsk_gpu_upload_op_vk_command (op,
                                        frame,
                                        state,
-                                       GSK_VULKAN_IMAGE (self->image),
+                                       GSK_VULKAN_IMAGE (this->image),
                                        gsk_gpu_upload_texture_op_draw,
-                                       &self->buffer);
+                                       &this->buffer);
 }
 #endif
 
@@ -341,11 +341,11 @@ gsk_gpu_upload_texture_op_gl_command (GskGpuOp          *op,
                                       GskGpuFrame       *frame,
                                       GskGLCommandState *state)
 {
-  GskGpuUploadTextureOp *self = (GskGpuUploadTextureOp *) op;
+  GskGpuUploadTextureOp *this = (GskGpuUploadTextureOp *) op;
 
   return gsk_gpu_upload_op_gl_command (op,
                                        frame,
-                                       self->image,
+                                       this->image,
                                        gsk_gpu_upload_texture_op_draw);
 }
 
@@ -367,7 +367,7 @@ gsk_gpu_upload_texture_op_try (GskGpuFrame      *frame,
                                GskScalingFilter  lod_filter,
                                GdkTexture       *texture)
 {
-  GskGpuUploadTextureOp *self;
+  GskGpuUploadTextureOp *this;
   GskGpuImage *image;
   GdkMemoryFormat format;
 
@@ -418,14 +418,14 @@ gsk_gpu_upload_texture_op_try (GskGpuFrame      *frame,
       g_type_class_unref (enum_class);
     }
 
-  self = (GskGpuUploadTextureOp *) gsk_gpu_op_alloc (frame, &GSK_GPU_UPLOAD_TEXTURE_OP_CLASS);
+  this = (GskGpuUploadTextureOp *) gsk_gpu_op_alloc (frame, &GSK_GPU_UPLOAD_TEXTURE_OP_CLASS);
 
-  self->texture = g_object_ref (texture);
-  self->lod_level = lod_level;
-  self->lod_filter = lod_filter;
-  self->image = image;
+  this->texture = g_object_ref (texture);
+  this->lod_level = lod_level;
+  this->lod_filter = lod_filter;
+  this->image = image;
 
-  return g_object_ref (self->image);
+  return g_object_ref (this->image);
 }
 
 typedef struct _GskGpuUploadCairoOp GskGpuUploadCairoOp;
@@ -437,7 +437,7 @@ struct _GskGpuUploadCairoOp
   GskGpuImage *image;
   cairo_rectangle_int_t area;
   graphene_rect_t viewport;
-  GskGpuCairoFunc func;
+  GskGpuCairoFunc fn;
   GskGpuCairoPrintFunc print_func;
   gpointer user_data;
   GDestroyNotify user_destroy;
@@ -448,12 +448,12 @@ struct _GskGpuUploadCairoOp
 static void
 gsk_gpu_upload_cairo_op_finish (GskGpuOp *op)
 {
-  GskGpuUploadCairoOp *self = (GskGpuUploadCairoOp *) op;
+  GskGpuUploadCairoOp *this = (GskGpuUploadCairoOp *) op;
 
-  g_object_unref (self->image);
-  if (self->user_destroy)
-    self->user_destroy (self->user_data);
-  g_clear_object (&self->buffer);
+  g_object_unref (this->image);
+  if (this->user_destroy)
+    this->user_destroy (this->user_data);
+  g_clear_object (&this->buffer);
 }
 
 static void
@@ -462,13 +462,13 @@ gsk_gpu_upload_cairo_op_print (GskGpuOp    *op,
                                GString     *string,
                                guint        indent)
 {
-  GskGpuUploadCairoOp *self = (GskGpuUploadCairoOp *) op;
+  GskGpuUploadCairoOp *this = (GskGpuUploadCairoOp *) op;
 
   gsk_gpu_print_op (string, indent, "upload-cairo");
-  gsk_gpu_print_int_rect (string, &self->area);
-  gsk_gpu_print_image (string, self->image);
-  if (self->print_func)
-    self->print_func (self->user_data, string);
+  gsk_gpu_print_int_rect (string, &this->area);
+  gsk_gpu_print_image (string, this->image);
+  if (this->print_func)
+    this->print_func (this->user_data, string);
   gsk_gpu_print_newline (string);
 }
 
@@ -477,28 +477,28 @@ gsk_gpu_upload_cairo_op_draw (GskGpuOp              *op,
                               guchar                *data,
                               const GdkMemoryLayout *layout)
 {
-  GskGpuUploadCairoOp *self = (GskGpuUploadCairoOp *) op;
+  GskGpuUploadCairoOp *this = (GskGpuUploadCairoOp *) op;
   cairo_surface_t *surface;
   float sx, sy;
   cairo_t *cr;
 
   surface = cairo_image_surface_create_for_data (data,
                                                  CAIRO_FORMAT_ARGB32,
-                                                 self->area.width,
-                                                 self->area.height,
+                                                 this->area.width,
+                                                 this->area.height,
                                                  layout->planes[0].stride);
-  sx = self->area.width / self->viewport.size.width;
-  sy = self->area.height / self->viewport.size.height;
+  sx = this->area.width / this->viewport.size.width;
+  sy = this->area.height / this->viewport.size.height;
   cairo_surface_set_device_scale (surface, sx, sy);
-  cairo_surface_set_device_offset (surface, - sx * self->viewport.origin.x,
-                                            - sy * self->viewport.origin.y);
+  cairo_surface_set_device_offset (surface, - sx * this->viewport.origin.x,
+                                            - sy * this->viewport.origin.y);
 
   cr = cairo_create (surface);
   cairo_set_operator (cr, CAIRO_OPERATOR_CLEAR);
   cairo_paint (cr);
   cairo_set_operator (cr, CAIRO_OPERATOR_OVER);
 
-  self->func (self->user_data, cr);
+  this->fn (this->user_data, cr);
 
   cairo_destroy (cr);
 
@@ -512,15 +512,15 @@ gsk_gpu_upload_cairo_op_vk_command (GskGpuOp              *op,
                                     GskGpuFrame           *frame,
                                     GskVulkanCommandState *state)
 {
-  GskGpuUploadCairoOp *self = (GskGpuUploadCairoOp *) op;
+  GskGpuUploadCairoOp *this = (GskGpuUploadCairoOp *) op;
 
   return gsk_gpu_upload_op_vk_command_with_area (op,
                                                  frame,
                                                  state,
-                                                 GSK_VULKAN_IMAGE (self->image),
-                                                 &self->area,
+                                                 GSK_VULKAN_IMAGE (this->image),
+                                                 &this->area,
                                                  gsk_gpu_upload_cairo_op_draw,
-                                                 &self->buffer);
+                                                 &this->buffer);
 }
 #endif
 
@@ -529,12 +529,12 @@ gsk_gpu_upload_cairo_op_gl_command (GskGpuOp          *op,
                                     GskGpuFrame       *frame,
                                     GskGLCommandState *state)
 {
-  GskGpuUploadCairoOp *self = (GskGpuUploadCairoOp *) op;
+  GskGpuUploadCairoOp *this = (GskGpuUploadCairoOp *) op;
 
   return gsk_gpu_upload_op_gl_command_with_area (op,
                                                  frame,
-                                                 self->image,
-                                                 &self->area,
+                                                 this->image,
+                                                 &this->area,
                                                  gsk_gpu_upload_cairo_op_draw);
 }
 
@@ -553,7 +553,7 @@ GskGpuImage *
 gsk_gpu_upload_cairo_op (GskGpuFrame           *frame,
                          const graphene_vec2_t *scale,
                          const graphene_rect_t *viewport,
-                         GskGpuCairoFunc        func,
+                         GskGpuCairoFunc        fn,
                          gpointer               user_data,
                          GDestroyNotify         user_destroy)
 {
@@ -575,7 +575,7 @@ gsk_gpu_upload_cairo_op (GskGpuFrame           *frame,
                                   gsk_gpu_image_get_height (image),
                                 },
                                 viewport,
-                                func,
+                                fn,
                                 NULL,
                                 user_data,
                                 user_destroy);
@@ -590,20 +590,20 @@ gsk_gpu_upload_cairo_into_op (GskGpuFrame                 *frame,
                               GskGpuImage                 *image,
                               const cairo_rectangle_int_t *area,
                               const graphene_rect_t       *viewport,
-                              GskGpuCairoFunc              func,
+                              GskGpuCairoFunc              fn,
                               GskGpuCairoPrintFunc         print_func,
                               gpointer                     user_data,
                               GDestroyNotify               user_destroy)
 {
-  GskGpuUploadCairoOp *self;
+  GskGpuUploadCairoOp *this;
 
-  self = (GskGpuUploadCairoOp *) gsk_gpu_op_alloc (frame, &GSK_GPU_UPLOAD_CAIRO_OP_CLASS);
+  this = (GskGpuUploadCairoOp *) gsk_gpu_op_alloc (frame, &GSK_GPU_UPLOAD_CAIRO_OP_CLASS);
 
-  self->image = g_object_ref (image);
-  self->area = *area;
-  self->viewport = *viewport;
-  self->func = func;
-  self->print_func = print_func;
-  self->user_data = user_data;
-  self->user_destroy = user_destroy;
+  this->image = g_object_ref (image);
+  this->area = *area;
+  this->viewport = *viewport;
+  this->fn = fn;
+  this->print_func = print_func;
+  this->user_data = user_data;
+  this->user_destroy = user_destroy;
 }

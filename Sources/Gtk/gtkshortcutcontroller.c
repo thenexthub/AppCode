@@ -122,18 +122,18 @@ gtk_shortcut_controller_list_model_get_item_type (GListModel *list)
 static guint
 gtk_shortcut_controller_list_model_get_n_items (GListModel *list)
 {
-  GtkShortcutController *self = GTK_SHORTCUT_CONTROLLER (list);
+  GtkShortcutController *this = GTK_SHORTCUT_CONTROLLER (list);
 
-  return g_list_model_get_n_items (self->shortcuts);
+  return g_list_model_get_n_items (this->shortcuts);
 }
 
 static gpointer
 gtk_shortcut_controller_list_model_get_item (GListModel *list,
                                              guint       position)
 {
-  GtkShortcutController *self = GTK_SHORTCUT_CONTROLLER (list);
+  GtkShortcutController *this = GTK_SHORTCUT_CONTROLLER (list);
 
-  return g_list_model_get_item (self->shortcuts, position);
+  return g_list_model_get_item (this->shortcuts, position);
 }
 
 static void
@@ -177,9 +177,9 @@ G_DEFINE_TYPE_WITH_CODE (GtkShortcutController, gtk_shortcut_controller,
                          G_IMPLEMENT_INTERFACE (GTK_TYPE_BUILDABLE, gtk_shortcut_controller_buildable_init))
 
 static gboolean
-gtk_shortcut_controller_is_rooted (GtkShortcutController *self)
+gtk_shortcut_controller_is_rooted (GtkShortcutController *this)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (self));
+  GtkWidget *widget = gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (this));
 
   if (widget == NULL)
     return FALSE;
@@ -192,11 +192,11 @@ gtk_shortcut_controller_items_changed_cb (GListModel            *model,
                                           guint                  position,
                                           guint                  removed,
                                           guint                  added,
-                                          GtkShortcutController *self)
+                                          GtkShortcutController *this)
 {
-  g_list_model_items_changed (G_LIST_MODEL (self), position, removed, added);
+  g_list_model_items_changed (G_LIST_MODEL (this), position, removed, added);
   if (removed != added)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 }
 
 static void
@@ -205,12 +205,12 @@ gtk_shortcut_controller_set_property (GObject      *object,
                                       const GValue *value,
                                       GParamSpec   *pspec)
 {
-  GtkShortcutController *self = GTK_SHORTCUT_CONTROLLER (object);
+  GtkShortcutController *this = GTK_SHORTCUT_CONTROLLER (object);
 
   switch (prop_id)
     {
     case PROP_MNEMONICS_MODIFIERS:
-      gtk_shortcut_controller_set_mnemonics_modifiers (self, g_value_get_flags (value));
+      gtk_shortcut_controller_set_mnemonics_modifiers (this, g_value_get_flags (value));
       break;
 
     case PROP_MODEL:
@@ -218,24 +218,24 @@ gtk_shortcut_controller_set_property (GObject      *object,
         GListModel *model = g_value_get_object (value);
         if (model == NULL)
           {
-            self->shortcuts = G_LIST_MODEL (g_list_store_new (GTK_TYPE_SHORTCUT));
-            self->custom_shortcuts = TRUE;
+            this->shortcuts = G_LIST_MODEL (g_list_store_new (GTK_TYPE_SHORTCUT));
+            this->custom_shortcuts = TRUE;
           }
         else
           {
-            self->shortcuts = g_object_ref (model);
-            self->custom_shortcuts = FALSE;
+            this->shortcuts = g_object_ref (model);
+            this->custom_shortcuts = FALSE;
           }
 
-        self->shortcuts_changed_id =  g_signal_connect (self->shortcuts,
+        this->shortcuts_changed_id =  g_signal_connect (this->shortcuts,
                                                         "items-changed",
                                                         G_CALLBACK (gtk_shortcut_controller_items_changed_cb),
-                                                        self);
+                                                        this);
       }
       break;
 
     case PROP_SCOPE:
-      gtk_shortcut_controller_set_scope (self, g_value_get_enum (value));
+      gtk_shortcut_controller_set_scope (this, g_value_get_enum (value));
       break;
 
     default:
@@ -249,7 +249,7 @@ gtk_shortcut_controller_get_property (GObject    *object,
                                       GValue     *value,
                                       GParamSpec *pspec)
 {
-  GtkShortcutController *self = GTK_SHORTCUT_CONTROLLER (object);
+  GtkShortcutController *this = GTK_SHORTCUT_CONTROLLER (object);
 
   switch (prop_id)
     {
@@ -258,15 +258,15 @@ gtk_shortcut_controller_get_property (GObject    *object,
       break;
 
     case PROP_MNEMONICS_MODIFIERS:
-      g_value_set_flags (value, self->mnemonics_modifiers);
+      g_value_set_flags (value, this->mnemonics_modifiers);
       break;
 
     case PROP_N_ITEMS:
-      g_value_set_uint (value, g_list_model_get_n_items (self->shortcuts));
+      g_value_set_uint (value, g_list_model_get_n_items (this->shortcuts));
       break;
 
     case PROP_SCOPE:
-      g_value_set_enum (value, self->scope);
+      g_value_set_enum (value, this->scope);
       break;
 
     default:
@@ -277,10 +277,10 @@ gtk_shortcut_controller_get_property (GObject    *object,
 static void
 gtk_shortcut_controller_dispose (GObject *object)
 {
-  GtkShortcutController *self = GTK_SHORTCUT_CONTROLLER (object);
+  GtkShortcutController *this = GTK_SHORTCUT_CONTROLLER (object);
 
-  if (self->custom_shortcuts)
-    g_list_store_remove_all (G_LIST_STORE (self->shortcuts));
+  if (this->custom_shortcuts)
+    g_list_store_remove_all (G_LIST_STORE (this->shortcuts));
 
   G_OBJECT_CLASS (gtk_shortcut_controller_parent_class)->dispose (object);
 }
@@ -288,10 +288,10 @@ gtk_shortcut_controller_dispose (GObject *object)
 static void
 gtk_shortcut_controller_finalize (GObject *object)
 {
-  GtkShortcutController *self = GTK_SHORTCUT_CONTROLLER (object);
+  GtkShortcutController *this = GTK_SHORTCUT_CONTROLLER (object);
 
-  g_clear_signal_handler (&self->shortcuts_changed_id, self->shortcuts);
-  g_clear_object (&self->shortcuts);
+  g_clear_signal_handler (&this->shortcuts_changed_id, this->shortcuts);
+  g_clear_object (&this->shortcuts);
 
   G_OBJECT_CLASS (gtk_shortcut_controller_parent_class)->finalize (object);
 }
@@ -317,13 +317,13 @@ gtk_shortcut_controller_run_controllers (GtkEventController *controller,
                                          double              y,
                                          gboolean            enable_mnemonics)
 {
-  GtkShortcutController *self = GTK_SHORTCUT_CONTROLLER (controller);
+  GtkShortcutController *this = GTK_SHORTCUT_CONTROLLER (controller);
   int i, p;
   GArray *shortcuts = NULL;
   gboolean has_exact = FALSE;
   gboolean retval = FALSE;
 
-  for (i = 0, p = g_list_model_get_n_items (self->shortcuts); i < p; i++)
+  for (i = 0, p = g_list_model_get_n_items (this->shortcuts); i < p; i++)
     {
       GtkShortcut *shortcut;
       ShortcutData *data;
@@ -335,11 +335,11 @@ gtk_shortcut_controller_run_controllers (GtkEventController *controller,
        * for mnemonics.
        */
       if (enable_mnemonics)
-        index = (self->last_activated + 1 + i) % g_list_model_get_n_items (self->shortcuts);
+        index = (this->last_activated + 1 + i) % g_list_model_get_n_items (this->shortcuts);
       else
         index = i;
 
-      shortcut = g_list_model_get_item (self->shortcuts, index);
+      shortcut = g_list_model_get_item (this->shortcuts, index);
       if (!GTK_IS_SHORTCUT (shortcut))
         {
           g_object_unref (shortcut);
@@ -370,11 +370,11 @@ gtk_shortcut_controller_run_controllers (GtkEventController *controller,
           g_assert_not_reached ();
         }
 
-      widget = gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (self));
-      if (!self->custom_shortcuts &&
-          GTK_IS_FLATTEN_LIST_MODEL (self->shortcuts))
+      widget = gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (this));
+      if (!this->custom_shortcuts &&
+          GTK_IS_FLATTEN_LIST_MODEL (this->shortcuts))
         {
-          GListModel *model = gtk_flatten_list_model_get_model_for_item (GTK_FLATTEN_LIST_MODEL (self->shortcuts), index);
+          GListModel *model = gtk_flatten_list_model_get_model_for_item (GTK_FLATTEN_LIST_MODEL (this->shortcuts), index);
           if (GTK_IS_SHORTCUT_CONTROLLER (model))
             widget = gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (model));
         }
@@ -430,7 +430,7 @@ gtk_shortcut_controller_run_controllers (GtkEventController *controller,
                                         data->widget,
                                         gtk_shortcut_get_arguments (data->shortcut)))
         {
-          self->last_activated = data->index;
+          this->last_activated = data->index;
           retval = TRUE;
           break;
         }
@@ -447,11 +447,11 @@ gtk_shortcut_controller_handle_event (GtkEventController *controller,
                                       double              x,
                                       double              y)
 {
-  GtkShortcutController *self = GTK_SHORTCUT_CONTROLLER (controller);
+  GtkShortcutController *this = GTK_SHORTCUT_CONTROLLER (controller);
   GdkEventType event_type = gdk_event_get_event_type (event);
   gboolean enable_mnemonics;
 
-  if (self->scope != GTK_SHORTCUT_SCOPE_LOCAL)
+  if (this->scope != GTK_SHORTCUT_SCOPE_LOCAL)
     return FALSE;
 
   if (event_type != GDK_KEY_PRESS && event_type != GDK_KEY_RELEASE)
@@ -463,7 +463,7 @@ gtk_shortcut_controller_handle_event (GtkEventController *controller,
 
       modifiers = gdk_event_get_modifier_state (event);
       consumed_modifiers = gdk_key_event_get_consumed_modifiers (event);
-      enable_mnemonics = (modifiers & ~consumed_modifiers & gtk_accelerator_get_default_mod_mask ()) == self->mnemonics_modifiers;
+      enable_mnemonics = (modifiers & ~consumed_modifiers & gtk_accelerator_get_default_mod_mask ()) == this->mnemonics_modifiers;
     }
   else
     {
@@ -508,14 +508,14 @@ update_accel (GtkShortcut    *shortcut,
 }
 
 void
-gtk_shortcut_controller_update_accels (GtkShortcutController *self)
+gtk_shortcut_controller_update_accels (GtkShortcutController *this)
 {
-  GListModel *shortcuts = self->shortcuts;
+  GListModel *shortcuts = this->shortcuts;
   GtkWidget *widget;
   GtkActionMuxer *muxer;
   guint i, p;
 
-  widget = gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (self));
+  widget = gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (this));
   if (!widget || GTK_IS_MODEL_BUTTON (widget))
     return;
 
@@ -533,24 +533,24 @@ static void
 gtk_shortcut_controller_set_widget (GtkEventController *controller,
                                     GtkWidget          *widget)
 {
-  GtkShortcutController *self = GTK_SHORTCUT_CONTROLLER (controller);
+  GtkShortcutController *this = GTK_SHORTCUT_CONTROLLER (controller);
 
   GTK_EVENT_CONTROLLER_CLASS (gtk_shortcut_controller_parent_class)->set_widget (controller, widget);
 
-  gtk_shortcut_controller_update_accels (self);
+  gtk_shortcut_controller_update_accels (this);
 
   if (_gtk_widget_get_root (widget))
-    gtk_shortcut_controller_root (self);
+    gtk_shortcut_controller_root (this);
 }
 
 static void
 gtk_shortcut_controller_unset_widget (GtkEventController *controller)
 {
-  GtkShortcutController *self = GTK_SHORTCUT_CONTROLLER (controller);
+  GtkShortcutController *this = GTK_SHORTCUT_CONTROLLER (controller);
   GtkWidget *widget = gtk_event_controller_get_widget (controller);
 
   if (_gtk_widget_get_root (widget))
-    gtk_shortcut_controller_unroot (self);
+    gtk_shortcut_controller_unroot (this);
 
 #if 0
   int i;
@@ -641,17 +641,17 @@ gtk_shortcut_controller_class_init (GtkShortcutControllerClass *klass)
 }
 
 static void
-gtk_shortcut_controller_init (GtkShortcutController *self)
+gtk_shortcut_controller_init (GtkShortcutController *this)
 {
-  self->mnemonics_modifiers = GDK_ALT_MASK;
+  this->mnemonics_modifiers = GDK_ALT_MASK;
 }
 
 void
-gtk_shortcut_controller_root (GtkShortcutController *self)
+gtk_shortcut_controller_root (GtkShortcutController *this)
 {
   GtkShortcutManager *manager;
 
-  switch (self->scope)
+  switch (this->scope)
     {
     case GTK_SHORTCUT_SCOPE_LOCAL:
       return;
@@ -660,7 +660,7 @@ gtk_shortcut_controller_root (GtkShortcutController *self)
       {
         GtkWidget *widget;
 
-        for (widget = gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (self));
+        for (widget = gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (this));
              !GTK_IS_SHORTCUT_MANAGER (widget);
              widget = _gtk_widget_get_parent (widget))
           ;
@@ -674,7 +674,7 @@ gtk_shortcut_controller_root (GtkShortcutController *self)
 
     case GTK_SHORTCUT_SCOPE_GLOBAL:
       {
-        GtkRoot *root = gtk_widget_get_root (gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (self)));
+        GtkRoot *root = gtk_widget_get_root (gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (this)));
 
         if (!GTK_IS_SHORTCUT_MANAGER (root))
           return;
@@ -688,15 +688,15 @@ gtk_shortcut_controller_root (GtkShortcutController *self)
       return;
     }
 
-  GTK_SHORTCUT_MANAGER_GET_IFACE (manager)->add_controller (manager, self);
+  GTK_SHORTCUT_MANAGER_GET_IFACE (manager)->add_controller (manager, this);
 }
 
 void
-gtk_shortcut_controller_unroot (GtkShortcutController *self)
+gtk_shortcut_controller_unroot (GtkShortcutController *this)
 {
   GtkShortcutManager *manager;
 
-  switch (self->scope)
+  switch (this->scope)
     {
     case GTK_SHORTCUT_SCOPE_LOCAL:
       return;
@@ -705,7 +705,7 @@ gtk_shortcut_controller_unroot (GtkShortcutController *self)
       {
         GtkWidget *widget;
 
-        for (widget = gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (self));
+        for (widget = gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (this));
              !GTK_IS_SHORTCUT_MANAGER (widget);
              widget = _gtk_widget_get_parent (widget))
           ;
@@ -719,7 +719,7 @@ gtk_shortcut_controller_unroot (GtkShortcutController *self)
 
     case GTK_SHORTCUT_SCOPE_GLOBAL:
       {
-        GtkRoot *root = gtk_widget_get_root (gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (self)));
+        GtkRoot *root = gtk_widget_get_root (gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (this)));
 
         if (!GTK_IS_SHORTCUT_MANAGER (root))
           return;
@@ -733,7 +733,7 @@ gtk_shortcut_controller_unroot (GtkShortcutController *self)
       return;
     }
 
-  GTK_SHORTCUT_MANAGER_GET_IFACE (manager)->remove_controller (manager, self);
+  GTK_SHORTCUT_MANAGER_GET_IFACE (manager)->remove_controller (manager, this);
 }
 
 /**
@@ -775,30 +775,30 @@ gtk_shortcut_controller_new_for_model (GListModel *model)
 
 /**
  * gtk_shortcut_controller_add_shortcut:
- * @self: the controller
+ * @this: the controller
  * @shortcut: (transfer full): a `GtkShortcut`
  *
- * Adds @shortcut to the list of shortcuts handled by @self.
+ * Adds @shortcut to the list of shortcuts handled by @this.
  *
  * If this controller uses an external shortcut list, this
  * function does nothing.
  */
 void
-gtk_shortcut_controller_add_shortcut (GtkShortcutController *self,
+gtk_shortcut_controller_add_shortcut (GtkShortcutController *this,
                                       GtkShortcut           *shortcut)
 {
   GtkWidget *widget;
 
-  g_return_if_fail (GTK_IS_SHORTCUT_CONTROLLER (self));
+  g_return_if_fail (GTK_IS_SHORTCUT_CONTROLLER (this));
   g_return_if_fail (GTK_IS_SHORTCUT (shortcut));
 
-  if (!self->custom_shortcuts)
+  if (!this->custom_shortcuts)
     {
       g_object_unref (shortcut);
       return;
     }
 
-  widget = gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (self));
+  widget = gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (this));
   if (widget)
     {
       GtkActionMuxer *muxer = _gtk_widget_get_action_muxer (widget, TRUE);
@@ -806,34 +806,34 @@ gtk_shortcut_controller_add_shortcut (GtkShortcutController *self,
       update_accel (shortcut, muxer, TRUE);
     }
 
-  g_list_store_append (G_LIST_STORE (self->shortcuts), shortcut);
+  g_list_store_append (G_LIST_STORE (this->shortcuts), shortcut);
   g_object_unref (shortcut);
 }
 
 /**
  * gtk_shortcut_controller_remove_shortcut:
- * @self: the controller
+ * @this: the controller
  * @shortcut: a `GtkShortcut`
  *
- * Removes @shortcut from the list of shortcuts handled by @self.
+ * Removes @shortcut from the list of shortcuts handled by @this.
  *
  * If @shortcut had not been added to @controller or this controller
  * uses an external shortcut list, this function does nothing.
  **/
 void
-gtk_shortcut_controller_remove_shortcut (GtkShortcutController  *self,
+gtk_shortcut_controller_remove_shortcut (GtkShortcutController  *this,
                                          GtkShortcut            *shortcut)
 {
   GtkWidget *widget;
   guint i;
 
-  g_return_if_fail (GTK_IS_SHORTCUT_CONTROLLER (self));
+  g_return_if_fail (GTK_IS_SHORTCUT_CONTROLLER (this));
   g_return_if_fail (GTK_IS_SHORTCUT (shortcut));
 
-  if (!self->custom_shortcuts)
+  if (!this->custom_shortcuts)
     return;
 
-  widget = gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (self));
+  widget = gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (this));
   if (widget)
     {
       GtkActionMuxer *muxer = _gtk_widget_get_action_muxer (widget, FALSE);
@@ -841,14 +841,14 @@ gtk_shortcut_controller_remove_shortcut (GtkShortcutController  *self,
       update_accel (shortcut, muxer, FALSE);
     }
 
-  for (i = 0; i < g_list_model_get_n_items (self->shortcuts); i++)
+  for (i = 0; i < g_list_model_get_n_items (this->shortcuts); i++)
     {
-      GtkShortcut *item = g_list_model_get_item (self->shortcuts, i);
+      GtkShortcut *item = g_list_model_get_item (this->shortcuts, i);
 
       if (item == shortcut)
         {
           g_object_unref (item);
-          g_list_store_remove (G_LIST_STORE (self->shortcuts), i);
+          g_list_store_remove (G_LIST_STORE (this->shortcuts), i);
           return;
         }
 
@@ -858,7 +858,7 @@ gtk_shortcut_controller_remove_shortcut (GtkShortcutController  *self,
 
 /**
  * gtk_shortcut_controller_set_scope:
- * @self: a `GtkShortcutController`
+ * @this: a `GtkShortcutController`
  * @scope: the new scope to use
  *
  * Sets the controller to have the given @scope.
@@ -872,32 +872,32 @@ gtk_shortcut_controller_remove_shortcut (GtkShortcutController  *self,
  * when the widget has focus.
  */
 void
-gtk_shortcut_controller_set_scope (GtkShortcutController *self,
+gtk_shortcut_controller_set_scope (GtkShortcutController *this,
                                    GtkShortcutScope       scope)
 {
   gboolean rooted;
 
-  g_return_if_fail (GTK_IS_SHORTCUT_CONTROLLER (self));
+  g_return_if_fail (GTK_IS_SHORTCUT_CONTROLLER (this));
 
-  if (self->scope == scope)
+  if (this->scope == scope)
     return;
 
-  rooted = gtk_shortcut_controller_is_rooted (self);
+  rooted = gtk_shortcut_controller_is_rooted (this);
 
   if (rooted)
-    gtk_shortcut_controller_unroot (self);
+    gtk_shortcut_controller_unroot (this);
 
-  self->scope = scope;
+  this->scope = scope;
 
   if (rooted)
-    gtk_shortcut_controller_root (self);
+    gtk_shortcut_controller_root (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SCOPE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SCOPE]);
 }
 
 /**
  * gtk_shortcut_controller_get_scope:
- * @self: a `GtkShortcutController`
+ * @this: a `GtkShortcutController`
  *
  * Gets the scope for when this controller activates its shortcuts.
  *
@@ -906,16 +906,16 @@ gtk_shortcut_controller_set_scope (GtkShortcutController *self,
  * Returns: the controller's scope
  */
 GtkShortcutScope
-gtk_shortcut_controller_get_scope (GtkShortcutController *self)
+gtk_shortcut_controller_get_scope (GtkShortcutController *this)
 {
-  g_return_val_if_fail (GTK_IS_SHORTCUT_CONTROLLER (self), GTK_SHORTCUT_SCOPE_LOCAL);
+  g_return_val_if_fail (GTK_IS_SHORTCUT_CONTROLLER (this), GTK_SHORTCUT_SCOPE_LOCAL);
 
-  return self->scope;
+  return this->scope;
 }
 
 /**
  * gtk_shortcut_controller_set_mnemonics_modifiers: (set-property mnemonic-modifiers)
- * @self: a `GtkShortcutController`
+ * @this: a `GtkShortcutController`
  * @modifiers: the new mnemonics_modifiers to use
  *
  * Sets the controller to use the given modifier for mnemonics.
@@ -933,31 +933,31 @@ gtk_shortcut_controller_get_scope (GtkShortcutController *self)
  * have their own modifiers for activating mnemonics.
  */
 void
-gtk_shortcut_controller_set_mnemonics_modifiers (GtkShortcutController *self,
+gtk_shortcut_controller_set_mnemonics_modifiers (GtkShortcutController *this,
                                                  GdkModifierType        modifiers)
 {
-  g_return_if_fail (GTK_IS_SHORTCUT_CONTROLLER (self));
+  g_return_if_fail (GTK_IS_SHORTCUT_CONTROLLER (this));
 
-  if (self->mnemonics_modifiers == modifiers)
+  if (this->mnemonics_modifiers == modifiers)
     return;
 
-  self->mnemonics_modifiers = modifiers;
+  this->mnemonics_modifiers = modifiers;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_MNEMONICS_MODIFIERS]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_MNEMONICS_MODIFIERS]);
 }
 
 /**
  * gtk_shortcut_controller_get_mnemonics_modifiers: (get-property mnemonic-modifiers)
- * @self: a `GtkShortcutController`
+ * @this: a `GtkShortcutController`
  *
  * Gets the mnemonics modifiers for when this controller activates its shortcuts.
  *
  * Returns: the controller's mnemonics modifiers
  */
 GdkModifierType
-gtk_shortcut_controller_get_mnemonics_modifiers (GtkShortcutController *self)
+gtk_shortcut_controller_get_mnemonics_modifiers (GtkShortcutController *this)
 {
-  g_return_val_if_fail (GTK_IS_SHORTCUT_CONTROLLER (self), 0);
+  g_return_val_if_fail (GTK_IS_SHORTCUT_CONTROLLER (this), 0);
 
-  return self->mnemonics_modifiers;
+  return this->mnemonics_modifiers;
 }

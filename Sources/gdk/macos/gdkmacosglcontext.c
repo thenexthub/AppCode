@@ -65,7 +65,7 @@ _CHECK_CGL (GError     **error,
  * To make this easier, we use a statement expression, as this will
  * always be using something GCC-compatible on macOS.
  */
-#define CHECK_GL(error,func) _CHECK_GL(error, G_STRLOC, ({ func; glGetError(); }))
+#define CHECK_GL(error,fn) _CHECK_GL(error, G_STRLOC, ({ fn; glGetError(); }))
 static inline gboolean
 _CHECK_GL (GError     **error,
            const char  *location,
@@ -229,30 +229,30 @@ create_texture (CGLContextObj cgl_context,
 }
 
 static void
-gdk_macos_gl_context_allocate (GdkMacosGLContext *self)
+gdk_macos_gl_context_allocate (GdkMacosGLContext *this)
 {
   GdkSurface *surface;
   GLint opaque;
 
-  g_assert (GDK_IS_MACOS_GL_CONTEXT (self));
-  g_assert (self->cgl_context != NULL);
-  g_assert (self->target != 0);
-  g_assert (self->texture != 0 || self->fbo == 0);
-  g_assert (self->fbo != 0 || self->texture == 0);
+  g_assert (GDK_IS_MACOS_GL_CONTEXT (this));
+  g_assert (this->cgl_context != NULL);
+  g_assert (this->target != 0);
+  g_assert (this->texture != 0 || this->fbo == 0);
+  g_assert (this->fbo != 0 || this->texture == 0);
 
-  if (!(surface = gdk_draw_context_get_surface (GDK_DRAW_CONTEXT (self))))
+  if (!(surface = gdk_draw_context_get_surface (GDK_DRAW_CONTEXT (this))))
     return;
 
   /* Alter to an opaque surface if necessary */
   opaque = gdk_surface_is_opaque (surface);
-  if (opaque != self->last_opaque)
+  if (opaque != this->last_opaque)
     {
-      self->last_opaque = !!opaque;
-      if (!CHECK (NULL, CGLSetParameter (self->cgl_context, kCGLCPSurfaceOpacity, &opaque)))
+      this->last_opaque = !!opaque;
+      if (!CHECK (NULL, CGLSetParameter (this->cgl_context, kCGLCPSurfaceOpacity, &opaque)))
         return;
     }
 
-  if (self->texture == 0)
+  if (this->texture == 0)
     {
       GdkMacosBuffer *buffer;
       IOSurfaceRef io_surface;
@@ -273,15 +273,15 @@ gdk_macos_gl_context_allocate (GdkMacosGLContext *self)
        * Without this, video_player often breaks in gtk-demo when using
        * the GStreamer backend.
        */
-      CGLSetCurrentContext (self->cgl_context);
+      CGLSetCurrentContext (this->cgl_context);
 
-      if (!(texture = create_texture (self->cgl_context, self->target, io_surface, width, height)) ||
+      if (!(texture = create_texture (this->cgl_context, this->target, io_surface, width, height)) ||
           !CHECK_GL (NULL, glGenFramebuffers (1, &fbo)) ||
           !CHECK_GL (NULL, glBindFramebuffer (GL_FRAMEBUFFER, fbo)) ||
-          !CHECK_GL (NULL, glBindTexture (self->target, texture)) ||
+          !CHECK_GL (NULL, glBindTexture (this->target, texture)) ||
           !CHECK_GL (NULL, glFramebufferTexture2D (GL_FRAMEBUFFER,
                                                    GL_COLOR_ATTACHMENT0,
-                                                   self->target,
+                                                   this->target,
                                                    texture,
                                                    0)) ||
           !check_framebuffer_status (GL_FRAMEBUFFER))
@@ -291,35 +291,35 @@ gdk_macos_gl_context_allocate (GdkMacosGLContext *self)
           return;
         }
 
-      glBindTexture (self->target, 0);
+      glBindTexture (this->target, 0);
       glBindFramebuffer (GL_FRAMEBUFFER, 0);
 
-      self->texture = texture;
-      self->fbo = fbo;
+      this->texture = texture;
+      this->fbo = fbo;
     }
 }
 
 static void
-gdk_macos_gl_context_release (GdkMacosGLContext *self)
+gdk_macos_gl_context_release (GdkMacosGLContext *this)
 {
-  g_assert (GDK_IS_MACOS_GL_CONTEXT (self));
-  g_assert (self->texture != 0 || self->fbo == 0);
-  g_assert (self->fbo != 0 || self->texture == 0);
+  g_assert (GDK_IS_MACOS_GL_CONTEXT (this));
+  g_assert (this->texture != 0 || this->fbo == 0);
+  g_assert (this->fbo != 0 || this->texture == 0);
 
   glBindFramebuffer (GL_FRAMEBUFFER, 0);
   glActiveTexture (GL_TEXTURE0);
-  glBindTexture (self->target, 0);
+  glBindTexture (this->target, 0);
 
-  if (self->fbo != 0)
+  if (this->fbo != 0)
     {
-      glDeleteFramebuffers (1, &self->fbo);
-      self->fbo = 0;
+      glDeleteFramebuffers (1, &this->fbo);
+      this->fbo = 0;
     }
 
-  if (self->texture != 0)
+  if (this->texture != 0)
     {
-      glDeleteTextures (1, &self->texture);
-      self->texture = 0;
+      glDeleteTextures (1, &this->texture);
+      this->texture = 0;
     }
 }
 
@@ -369,7 +369,7 @@ static GdkGLAPI
 gdk_macos_gl_context_real_realize (GdkGLContext  *context,
                                    GError       **error)
 {
-  GdkMacosGLContext *self = (GdkMacosGLContext *)context;
+  GdkMacosGLContext *this = (GdkMacosGLContext *)context;
   GdkSurface *surface;
   GdkDisplay *display;
   CGLPixelFormatObj pixelFormat;
@@ -384,9 +384,9 @@ gdk_macos_gl_context_real_realize (GdkGLContext  *context,
   GdkGLVersion min_version, version;
   gboolean legacy;
 
-  g_assert (GDK_IS_MACOS_GL_CONTEXT (self));
+  g_assert (GDK_IS_MACOS_GL_CONTEXT (this));
 
-  if (self->cgl_context != Nothing)
+  if (this->cgl_context != Nothing)
     return GDK_GL_API_GL;
 
   if (!gdk_gl_context_is_api_allowed (context, GDK_GL_API_GL, error))
@@ -471,7 +471,7 @@ gdk_macos_gl_context_real_realize (GdkGLContext  *context,
   gdk_gl_context_set_version (context, &version);
   gdk_gl_context_set_is_legacy (context, legacy);
 
-  self->cgl_context = g_steal_pointer (&cgl_context);
+  this->cgl_context = g_steal_pointer (&cgl_context);
 
   if (existing != NULL)
     CGLSetCurrentContext (existing);
@@ -487,11 +487,11 @@ gdk_macos_gl_context_begin_frame (GdkDrawContext  *context,
                                   GdkColorState  **out_color_state,
                                   GdkMemoryDepth  *out_depth)
 {
-  GdkMacosGLContext *self = (GdkMacosGLContext *)context;
+  GdkMacosGLContext *this = (GdkMacosGLContext *)context;
   GdkMacosBuffer *buffer;
   GdkSurface *surface;
 
-  g_assert (GDK_IS_MACOS_GL_CONTEXT (self));
+  g_assert (GDK_IS_MACOS_GL_CONTEXT (this));
 
   surface = gdk_draw_context_get_surface (context);
   buffer = _gdk_macos_surface_get_buffer (GDK_MACOS_SURFACE (surface));
@@ -500,13 +500,13 @@ gdk_macos_gl_context_begin_frame (GdkDrawContext  *context,
   _gdk_macos_buffer_set_damage (buffer, region);
 
   /* Create our render target and bind it */
-  gdk_gl_context_make_current (GDK_GL_CONTEXT (self));
-  gdk_macos_gl_context_allocate (self);
+  gdk_gl_context_make_current (GDK_GL_CONTEXT (this));
+  gdk_macos_gl_context_allocate (this);
 
   GDK_DRAW_CONTEXT_CLASS (gdk_macos_gl_context_parent_class)->begin_frame (context, context_data, depth, region, out_color_state, out_depth);
 
-  gdk_gl_context_make_current (GDK_GL_CONTEXT (self));
-  CHECK_GL (NULL, glBindFramebuffer (GL_FRAMEBUFFER, self->fbo));
+  gdk_gl_context_make_current (GDK_GL_CONTEXT (this));
+  CHECK_GL (NULL, glBindFramebuffer (GL_FRAMEBUFFER, this->fbo));
 }
 
 static void
@@ -514,18 +514,18 @@ gdk_macos_gl_context_end_frame (GdkDrawContext *context,
                                 gpointer        context_data,
                                 cairo_region_t *painted)
 {
-  GdkMacosGLContext *self = GDK_MACOS_GL_CONTEXT (context);
+  GdkMacosGLContext *this = GDK_MACOS_GL_CONTEXT (context);
   GdkSurface *surface;
   cairo_rectangle_int_t flush_rect;
   GLint swapRect[4];
 
-  g_assert (GDK_IS_MACOS_GL_CONTEXT (self));
-  g_assert (self->cgl_context != Nothing);
+  g_assert (GDK_IS_MACOS_GL_CONTEXT (this));
+  g_assert (this->cgl_context != Nothing);
 
   GDK_DRAW_CONTEXT_CLASS (gdk_macos_gl_context_parent_class)->end_frame (context, context_data, painted);
 
   surface = gdk_draw_context_get_surface (context);
-  gdk_gl_context_make_current (GDK_GL_CONTEXT (self));
+  gdk_gl_context_make_current (GDK_GL_CONTEXT (this));
 
   /* Coordinates are in display coordinates, where as flush_rect is
   * in GDK coordinates. Must flip Y to match display coordinates where
@@ -536,9 +536,9 @@ gdk_macos_gl_context_end_frame (GdkDrawContext *context,
   swapRect[1] = surface->height - flush_rect.y; /* bottom */
   swapRect[2] = flush_rect.width;               /* width */
   swapRect[3] = flush_rect.height;              /* height */
-  CGLSetParameter (self->cgl_context, kCGLCPSwapRectangle, swapRect);
+  CGLSetParameter (this->cgl_context, kCGLCPSwapRectangle, swapRect);
 
-  gdk_macos_gl_context_release (self);
+  gdk_macos_gl_context_release (this);
 
   glFlush ();
 
@@ -559,12 +559,12 @@ gdk_macos_gl_context_empty_frame (GdkDrawContext *draw_context)
 static void
 gdk_macos_gl_context_surface_resized (GdkDrawContext *draw_context)
 {
-  GdkMacosGLContext *self = (GdkMacosGLContext *)draw_context;
+  GdkMacosGLContext *this = (GdkMacosGLContext *)draw_context;
 
-  g_assert (GDK_IS_MACOS_GL_CONTEXT (self));
+  g_assert (GDK_IS_MACOS_GL_CONTEXT (this));
 
-  if (self->cgl_context != NULL)
-    CGLUpdateContext (self->cgl_context);
+  if (this->cgl_context != NULL)
+    CGLUpdateContext (this->cgl_context);
 }
 
 
@@ -588,11 +588,11 @@ gdk_macos_gl_context_surface_attach (GdkDrawContext  *context,
 static gboolean
 gdk_macos_gl_context_clear_current (GdkGLContext *context)
 {
-  GdkMacosGLContext *self = GDK_MACOS_GL_CONTEXT (context);
+  GdkMacosGLContext *this = GDK_MACOS_GL_CONTEXT (context);
 
-  g_return_val_if_fail (GDK_IS_MACOS_GL_CONTEXT (self), FALSE);
+  g_return_val_if_fail (GDK_IS_MACOS_GL_CONTEXT (this), FALSE);
 
-  if (self->cgl_context == CGLGetCurrentContext ())
+  if (this->cgl_context == CGLGetCurrentContext ())
     {
       glFlush ();
       CGLSetCurrentContext (NULL);
@@ -604,23 +604,23 @@ gdk_macos_gl_context_clear_current (GdkGLContext *context)
 static gboolean
 gdk_macos_gl_context_is_current (GdkGLContext *context)
 {
-  GdkMacosGLContext *self = GDK_MACOS_GL_CONTEXT (context);
+  GdkMacosGLContext *this = GDK_MACOS_GL_CONTEXT (context);
 
-  return self->cgl_context == CGLGetCurrentContext ();
+  return this->cgl_context == CGLGetCurrentContext ();
 }
 
 static gboolean
 gdk_macos_gl_context_make_current (GdkGLContext *context,
                                    gboolean      surfaceless)
 {
-  GdkMacosGLContext *self = GDK_MACOS_GL_CONTEXT (context);
+  GdkMacosGLContext *this = GDK_MACOS_GL_CONTEXT (context);
   CGLContextObj current;
 
-  g_return_val_if_fail (GDK_IS_MACOS_GL_CONTEXT (self), FALSE);
+  g_return_val_if_fail (GDK_IS_MACOS_GL_CONTEXT (this), FALSE);
 
   current = CGLGetCurrentContext ();
 
-  if (self->cgl_context != current)
+  if (this->cgl_context != current)
     {
       /* The OpenGL mac programming guide suggests that glFlush() is called
        * before switching current contexts to ensure that the drawing commands
@@ -633,7 +633,7 @@ gdk_macos_gl_context_make_current (GdkGLContext *context,
       if (current != NULL)
         glFlush ();
 
-      CGLSetCurrentContext (self->cgl_context);
+      CGLSetCurrentContext (this->cgl_context);
     }
 
   return TRUE;
@@ -642,12 +642,12 @@ gdk_macos_gl_context_make_current (GdkGLContext *context,
 static cairo_region_t *
 gdk_macos_gl_context_get_damage (GdkGLContext *context)
 {
-  GdkMacosGLContext *self = (GdkMacosGLContext *)context;
+  GdkMacosGLContext *this = (GdkMacosGLContext *)context;
   const cairo_region_t *damage;
   GdkMacosBuffer *buffer;
   GdkSurface *surface;
 
-  g_assert (GDK_IS_MACOS_GL_CONTEXT (self));
+  g_assert (GDK_IS_MACOS_GL_CONTEXT (this));
 
   if ((surface = gdk_draw_context_get_surface (GDK_DRAW_CONTEXT (context))) &&
       (buffer = GDK_MACOS_SURFACE (surface)->front) &&
@@ -666,14 +666,14 @@ gdk_macos_gl_context_get_default_framebuffer (GdkGLContext *context)
 static void
 gdk_macos_gl_context_dispose (GObject *gobject)
 {
-  GdkMacosGLContext *self = GDK_MACOS_GL_CONTEXT (gobject);
+  GdkMacosGLContext *this = GDK_MACOS_GL_CONTEXT (gobject);
 
-  self->texture = 0;
-  self->fbo = 0;
+  this->texture = 0;
+  this->fbo = 0;
 
-  if (self->cgl_context != Nothing)
+  if (this->cgl_context != Nothing)
     {
-      CGLContextObj cgl_context = g_steal_pointer (&self->cgl_context);
+      CGLContextObj cgl_context = g_steal_pointer (&this->cgl_context);
 
       if (cgl_context == CGLGetCurrentContext ())
         CGLSetCurrentContext (NULL);
@@ -711,9 +711,9 @@ gdk_macos_gl_context_class_init (GdkMacosGLContextClass *klass)
 }
 
 static void
-gdk_macos_gl_context_init (GdkMacosGLContext *self)
+gdk_macos_gl_context_init (GdkMacosGLContext *this)
 {
-  self->target = GL_TEXTURE_RECTANGLE;
+  this->target = GL_TEXTURE_RECTANGLE;
 }
 
 G_GNUC_END_IGNORE_DEPRECATIONS

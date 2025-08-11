@@ -12,7 +12,7 @@ G_BEGIN_DECLS
 void                    gsk_gpu_cached_stroke_init_cache                (GskGpuCache            *cache);
 void                    gsk_gpu_cached_stroke_finish_cache              (GskGpuCache            *cache);
 
-GskGpuImage *           gsk_gpu_cached_stroke_lookup                    (GskGpuCache            *self,
+GskGpuImage *           gsk_gpu_cached_stroke_lookup                    (GskGpuCache            *this,
                                                                          GskGpuFrame            *frame,
                                                                          const graphene_vec2_t  *scale,
                                                                          const graphene_rect_t  *bounds,

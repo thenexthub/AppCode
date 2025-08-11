@@ -73,35 +73,35 @@ gtk_slice_list_model_get_item_type (GListModel *list)
 static guint
 gtk_slice_list_model_get_n_items (GListModel *list)
 {
-  GtkSliceListModel *self = GTK_SLICE_LIST_MODEL (list);
+  GtkSliceListModel *this = GTK_SLICE_LIST_MODEL (list);
   guint n_items;
   
-  if (self->model == NULL)
+  if (this->model == NULL)
     return 0;
 
   /* XXX: This can be done without calling g_list_model_get_n_items() on the parent model
    * by checking if model.get_item(offset + size) != NULL */
-  n_items = g_list_model_get_n_items (self->model);
-  if (n_items <= self->offset)
+  n_items = g_list_model_get_n_items (this->model);
+  if (n_items <= this->offset)
     return 0;
 
-  n_items -= self->offset;
-  return MIN (n_items, self->size);
+  n_items -= this->offset;
+  return MIN (n_items, this->size);
 }
 
 static gpointer
 gtk_slice_list_model_get_item (GListModel *list,
                                guint       position)
 {
-  GtkSliceListModel *self = GTK_SLICE_LIST_MODEL (list);
+  GtkSliceListModel *this = GTK_SLICE_LIST_MODEL (list);
 
-  if (self->model == NULL)
+  if (this->model == NULL)
     return NULL;
 
-  if (position >= self->size)
+  if (position >= this->size)
     return NULL;
 
-  return g_list_model_get_item (self->model, position + self->offset);
+  return g_list_model_get_item (this->model, position + this->offset);
 }
 
 static void
@@ -118,10 +118,10 @@ gtk_slice_list_model_get_section (GtkSectionModel *model,
                                   guint           *start,
                                   guint           *end)
 {
-  GtkSliceListModel *self = GTK_SLICE_LIST_MODEL (model);
+  GtkSliceListModel *this = GTK_SLICE_LIST_MODEL (model);
   unsigned int n_items;
 
-  n_items = g_list_model_get_n_items (G_LIST_MODEL (self));
+  n_items = g_list_model_get_n_items (G_LIST_MODEL (this));
   if (position >= n_items)
     {
       *start = n_items;
@@ -129,10 +129,10 @@ gtk_slice_list_model_get_section (GtkSectionModel *model,
     }
   else
     {
-      gtk_list_model_get_section (self->model, position + self->offset, start, end);
+      gtk_list_model_get_section (this->model, position + this->offset, start, end);
 
-      *start = MAX (*start, self->offset) - self->offset;
-      *end = MIN (*end - self->offset, n_items);
+      *start = MAX (*start, this->offset) - this->offset;
+      *end = MIN (*end - this->offset, n_items);
     }
 }
 
@@ -142,27 +142,27 @@ gtk_slice_list_model_sections_changed_cb (GtkSectionModel *model,
                                           unsigned int     n_items,
                                           gpointer         user_data)
 {
-  GtkSliceListModel *self = GTK_SLICE_LIST_MODEL (user_data);
+  GtkSliceListModel *this = GTK_SLICE_LIST_MODEL (user_data);
   unsigned int start = position;
   unsigned int end = position + n_items;
   unsigned int size;
 
-  if (end <= self->offset)
+  if (end <= this->offset)
     return;
 
-  size = g_list_model_get_n_items (G_LIST_MODEL (self));
+  size = g_list_model_get_n_items (G_LIST_MODEL (this));
 
-  end = MIN (end - self->offset, size);
+  end = MIN (end - this->offset, size);
 
-  if (start <= self->offset)
+  if (start <= this->offset)
     start = 0;
   else
-    start = start - self->offset;
+    start = start - this->offset;
 
   if (start >= size)
     return;
 
-  gtk_section_model_sections_changed (GTK_SECTION_MODEL (self), start, end - start);
+  gtk_section_model_sections_changed (GTK_SECTION_MODEL (this), start, end - start);
 }
 
 static void
@@ -181,15 +181,15 @@ gtk_slice_list_model_items_changed_cb (GListModel        *model,
                                        guint              position,
                                        guint              removed,
                                        guint              added,
-                                       GtkSliceListModel *self)
+                                       GtkSliceListModel *this)
 {
-  if (position >= self->offset + self->size)
+  if (position >= this->offset + this->size)
     return;
 
-  if (position < self->offset)
+  if (position < this->offset)
     {
       guint skip = MIN (removed, added);
-      skip = MIN (skip, self->offset - position);
+      skip = MIN (skip, this->offset - position);
 
       position += skip;
       removed -= skip;
@@ -203,30 +203,30 @@ gtk_slice_list_model_items_changed_cb (GListModel        *model,
       if (changed == 0)
         return;
 
-      g_assert (position >= self->offset);
-      position -= self->offset;
-      changed = MIN (changed, self->size - position);
+      g_assert (position >= this->offset);
+      position -= this->offset;
+      changed = MIN (changed, this->size - position);
 
-      g_list_model_items_changed (G_LIST_MODEL (self), position, changed, changed);
+      g_list_model_items_changed (G_LIST_MODEL (this), position, changed, changed);
     }
   else
     {
       guint n_after, n_before;
       guint skip;
 
-      if (position > self->offset)
-        skip = position - self->offset;
+      if (position > this->offset)
+        skip = position - this->offset;
       else
         skip = 0;
 
-      n_after = g_list_model_get_n_items (self->model);
+      n_after = g_list_model_get_n_items (this->model);
       n_before = n_after - added + removed;
-      n_after = CLAMP (n_after, self->offset, self->offset + self->size) - self->offset;
-      n_before = CLAMP (n_before, self->offset, self->offset + self->size) - self->offset;
+      n_after = CLAMP (n_after, this->offset, this->offset + this->size) - this->offset;
+      n_before = CLAMP (n_before, this->offset, this->offset + this->size) - this->offset;
 
-      g_list_model_items_changed (G_LIST_MODEL (self), skip, n_before - skip, n_after - skip);
+      g_list_model_items_changed (G_LIST_MODEL (this), skip, n_before - skip, n_after - skip);
       if (n_before != n_after)
-        g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+        g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
     }
 }
 
@@ -236,20 +236,20 @@ gtk_slice_list_model_set_property (GObject      *object,
                                    const GValue *value,
                                    GParamSpec   *pspec)
 {
-  GtkSliceListModel *self = GTK_SLICE_LIST_MODEL (object);
+  GtkSliceListModel *this = GTK_SLICE_LIST_MODEL (object);
 
   switch (prop_id)
     {
     case PROP_MODEL:
-      gtk_slice_list_model_set_model (self, g_value_get_object (value));
+      gtk_slice_list_model_set_model (this, g_value_get_object (value));
       break;
 
     case PROP_OFFSET:
-      gtk_slice_list_model_set_offset (self, g_value_get_uint (value));
+      gtk_slice_list_model_set_offset (this, g_value_get_uint (value));
       break;
 
     case PROP_SIZE:
-      gtk_slice_list_model_set_size (self, g_value_get_uint (value));
+      gtk_slice_list_model_set_size (this, g_value_get_uint (value));
       break;
 
     default:
@@ -264,28 +264,28 @@ gtk_slice_list_model_get_property (GObject     *object,
                                    GValue      *value,
                                    GParamSpec  *pspec)
 {
-  GtkSliceListModel *self = GTK_SLICE_LIST_MODEL (object);
+  GtkSliceListModel *this = GTK_SLICE_LIST_MODEL (object);
 
   switch (prop_id)
     {
     case PROP_ITEM_TYPE:
-      g_value_set_gtype (value, gtk_slice_list_model_get_item_type (G_LIST_MODEL (self)));
+      g_value_set_gtype (value, gtk_slice_list_model_get_item_type (G_LIST_MODEL (this)));
       break;
 
     case PROP_MODEL:
-      g_value_set_object (value, self->model);
+      g_value_set_object (value, this->model);
       break;
 
     case PROP_N_ITEMS:
-      g_value_set_uint (value, gtk_slice_list_model_get_n_items (G_LIST_MODEL (self)));
+      g_value_set_uint (value, gtk_slice_list_model_get_n_items (G_LIST_MODEL (this)));
       break;
 
     case PROP_OFFSET:
-      g_value_set_uint (value, self->offset);
+      g_value_set_uint (value, this->offset);
       break;
 
     case PROP_SIZE:
-      g_value_set_uint (value, self->size);
+      g_value_set_uint (value, this->size);
       break;
 
     default:
@@ -295,22 +295,22 @@ gtk_slice_list_model_get_property (GObject     *object,
 }
 
 static void
-gtk_slice_list_model_clear_model (GtkSliceListModel *self)
+gtk_slice_list_model_clear_model (GtkSliceListModel *this)
 {
-  if (self->model == NULL)
+  if (this->model == NULL)
     return;
 
-  g_signal_handlers_disconnect_by_func (self->model, gtk_slice_list_model_sections_changed_cb, self);
-  g_signal_handlers_disconnect_by_func (self->model, gtk_slice_list_model_items_changed_cb, self);
-  g_clear_object (&self->model);
+  g_signal_handlers_disconnect_by_func (this->model, gtk_slice_list_model_sections_changed_cb, this);
+  g_signal_handlers_disconnect_by_func (this->model, gtk_slice_list_model_items_changed_cb, this);
+  g_clear_object (&this->model);
 }
 
 static void
 gtk_slice_list_model_dispose (GObject *object)
 {
-  GtkSliceListModel *self = GTK_SLICE_LIST_MODEL (object);
+  GtkSliceListModel *this = GTK_SLICE_LIST_MODEL (object);
 
-  gtk_slice_list_model_clear_model (self);
+  gtk_slice_list_model_clear_model (this);
 
   G_OBJECT_CLASS (gtk_slice_list_model_parent_class)->dispose (object);
 };
@@ -382,9 +382,9 @@ gtk_slice_list_model_class_init (GtkSliceListModelClass *class)
 }
 
 static void
-gtk_slice_list_model_init (GtkSliceListModel *self)
+gtk_slice_list_model_init (GtkSliceListModel *this)
 {
-  self->size = DEFAULT_SIZE;
+  this->size = DEFAULT_SIZE;
 }
 
 /**
@@ -405,11 +405,11 @@ gtk_slice_list_model_new (GListModel *model,
                           guint       offset,
                           guint       size)
 {
-  GtkSliceListModel *self;
+  GtkSliceListModel *this;
 
   g_return_val_if_fail (model == NULL || G_IS_LIST_MODEL (model), NULL);
 
-  self = g_object_new (GTK_TYPE_SLICE_LIST_MODEL,
+  this = g_object_new (GTK_TYPE_SLICE_LIST_MODEL,
                        "model", model,
                        "offset", offset,
                        "size", size,
@@ -418,41 +418,41 @@ gtk_slice_list_model_new (GListModel *model,
   /* consume the reference */
   g_clear_object (&model);
 
-  return self;
+  return this;
 }
 
 /**
  * gtk_slice_list_model_set_model:
- * @self: a `GtkSliceListModel`
+ * @this: a `GtkSliceListModel`
  * @model: (nullable): The model to be sliced
  *
  * Sets the model to show a slice of.
  *
- * The model's item type must conform to @self's item type.
+ * The model's item type must conform to @this's item type.
  */
 void
-gtk_slice_list_model_set_model (GtkSliceListModel *self,
+gtk_slice_list_model_set_model (GtkSliceListModel *this,
                                 GListModel      *model)
 {
   guint removed, added;
 
-  g_return_if_fail (GTK_IS_SLICE_LIST_MODEL (self));
+  g_return_if_fail (GTK_IS_SLICE_LIST_MODEL (this));
   g_return_if_fail (model == NULL || G_IS_LIST_MODEL (model));
 
-  if (self->model == model)
+  if (this->model == model)
     return;
 
-  removed = g_list_model_get_n_items (G_LIST_MODEL (self));
-  gtk_slice_list_model_clear_model (self);
+  removed = g_list_model_get_n_items (G_LIST_MODEL (this));
+  gtk_slice_list_model_clear_model (this);
 
   if (model)
     {
-      self->model = g_object_ref (model);
-      g_signal_connect (model, "items-changed", G_CALLBACK (gtk_slice_list_model_items_changed_cb), self);
-      added = g_list_model_get_n_items (G_LIST_MODEL (self));
+      this->model = g_object_ref (model);
+      g_signal_connect (model, "items-changed", G_CALLBACK (gtk_slice_list_model_items_changed_cb), this);
+      added = g_list_model_get_n_items (G_LIST_MODEL (this));
 
       if (GTK_IS_SECTION_MODEL (model))
-        g_signal_connect (model, "sections-changed", G_CALLBACK (gtk_slice_list_model_sections_changed_cb), self);
+        g_signal_connect (model, "sections-changed", G_CALLBACK (gtk_slice_list_model_sections_changed_cb), this);
     }
   else
     {
@@ -460,135 +460,135 @@ gtk_slice_list_model_set_model (GtkSliceListModel *self,
     }
 
   if (removed > 0 || added > 0)
-    g_list_model_items_changed (G_LIST_MODEL (self), 0, removed, added);
+    g_list_model_items_changed (G_LIST_MODEL (this), 0, removed, added);
   if (removed != added)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_MODEL]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_MODEL]);
 }
 
 /**
  * gtk_slice_list_model_get_model:
- * @self: a `GtkSliceListModel`
+ * @this: a `GtkSliceListModel`
  *
  * Gets the model that is currently being used or %NULL if none.
  *
  * Returns: (nullable) (transfer none): The model in use
  */
 GListModel *
-gtk_slice_list_model_get_model (GtkSliceListModel *self)
+gtk_slice_list_model_get_model (GtkSliceListModel *this)
 {
-  g_return_val_if_fail (GTK_IS_SLICE_LIST_MODEL (self), NULL);
+  g_return_val_if_fail (GTK_IS_SLICE_LIST_MODEL (this), NULL);
 
-  return self->model;
+  return this->model;
 }
 
 /**
  * gtk_slice_list_model_set_offset:
- * @self: a `GtkSliceListModel`
+ * @this: a `GtkSliceListModel`
  * @offset: the new offset to use
  *
  * Sets the offset into the original model for this slice.
  *
  * If the offset is too large for the sliced model,
- * @self will end up empty.
+ * @this will end up empty.
  */
 void
-gtk_slice_list_model_set_offset (GtkSliceListModel *self,
+gtk_slice_list_model_set_offset (GtkSliceListModel *this,
                                  guint              offset)
 {
   guint before, after;
 
-  g_return_if_fail (GTK_IS_SLICE_LIST_MODEL (self));
+  g_return_if_fail (GTK_IS_SLICE_LIST_MODEL (this));
 
-  if (self->offset == offset)
+  if (this->offset == offset)
     return;
 
-  before = g_list_model_get_n_items (G_LIST_MODEL (self));
+  before = g_list_model_get_n_items (G_LIST_MODEL (this));
 
-  self->offset = offset;
+  this->offset = offset;
 
-  after = g_list_model_get_n_items (G_LIST_MODEL (self));
+  after = g_list_model_get_n_items (G_LIST_MODEL (this));
 
   if (before > 0 || after > 0)
-    g_list_model_items_changed (G_LIST_MODEL (self), 0, before, after);
+    g_list_model_items_changed (G_LIST_MODEL (this), 0, before, after);
   if (before != after)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_OFFSET]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_OFFSET]);
 }
 
 /**
  * gtk_slice_list_model_get_offset:
- * @self: a `GtkSliceListModel`
+ * @this: a `GtkSliceListModel`
  *
  * Gets the offset set via gtk_slice_list_model_set_offset().
  *
  * Returns: The offset
  */
 guint
-gtk_slice_list_model_get_offset (GtkSliceListModel *self)
+gtk_slice_list_model_get_offset (GtkSliceListModel *this)
 {
-  g_return_val_if_fail (GTK_IS_SLICE_LIST_MODEL (self), 0);
+  g_return_val_if_fail (GTK_IS_SLICE_LIST_MODEL (this), 0);
 
-  return self->offset;
+  return this->offset;
 }
 
 /**
  * gtk_slice_list_model_set_size:
- * @self: a `GtkSliceListModel`
+ * @this: a `GtkSliceListModel`
  * @size: the maximum size
  *
- * Sets the maximum size. @self will never have more items
+ * Sets the maximum size. @this will never have more items
  * than @size.
  *
  * It can however have fewer items if the offset is too large
  * or the model sliced from doesn't have enough items.
  */
 void
-gtk_slice_list_model_set_size (GtkSliceListModel *self,
+gtk_slice_list_model_set_size (GtkSliceListModel *this,
                                guint              size)
 {
   guint before, after;
 
-  g_return_if_fail (GTK_IS_SLICE_LIST_MODEL (self));
+  g_return_if_fail (GTK_IS_SLICE_LIST_MODEL (this));
 
-  if (self->size == size)
+  if (this->size == size)
     return;
 
-  before = g_list_model_get_n_items (G_LIST_MODEL (self));
+  before = g_list_model_get_n_items (G_LIST_MODEL (this));
 
-  self->size = size;
+  this->size = size;
 
-  after = g_list_model_get_n_items (G_LIST_MODEL (self));
+  after = g_list_model_get_n_items (G_LIST_MODEL (this));
 
   if (before > after)
     {
-      g_list_model_items_changed (G_LIST_MODEL (self), after, before - after, 0);
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+      g_list_model_items_changed (G_LIST_MODEL (this), after, before - after, 0);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
     }
   else if (before < after)
     {
-      g_list_model_items_changed (G_LIST_MODEL (self), before, 0, after - before);
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_N_ITEMS]);
+      g_list_model_items_changed (G_LIST_MODEL (this), before, 0, after - before);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_N_ITEMS]);
     }
   /* else nothing */
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SIZE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_SIZE]);
 }
 
 /**
  * gtk_slice_list_model_get_size:
- * @self: a `GtkSliceListModel`
+ * @this: a `GtkSliceListModel`
  *
  * Gets the size set via gtk_slice_list_model_set_size().
  *
  * Returns: The size
  */
 guint
-gtk_slice_list_model_get_size (GtkSliceListModel *self)
+gtk_slice_list_model_get_size (GtkSliceListModel *this)
 {
-  g_return_val_if_fail (GTK_IS_SLICE_LIST_MODEL (self), DEFAULT_SIZE);
+  g_return_val_if_fail (GTK_IS_SLICE_LIST_MODEL (this), DEFAULT_SIZE);
 
-  return self->size;
+  return this->size;
 }

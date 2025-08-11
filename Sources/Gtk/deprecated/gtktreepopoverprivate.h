@@ -29,7 +29,7 @@ G_DECLARE_FINAL_TYPE (GtkTreePopover, gtk_tree_popover, GTK, TREE_POPOVER, GtkPo
 void gtk_tree_popover_set_model              (GtkTreePopover              *popover,
                                               GtkTreeModel                *model);
 void gtk_tree_popover_set_row_separator_func (GtkTreePopover              *popover,
-                                              GtkTreeViewRowSeparatorFunc  func,
+                                              GtkTreeViewRowSeparatorFunc  fn,
                                               gpointer                     data,
                                               GDestroyNotify               destroy);
 void gtk_tree_popover_set_active             (GtkTreePopover              *popover,

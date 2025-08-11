@@ -105,7 +105,7 @@
  * been loaded yet, GTK tries to find the `get_type()` function from the
  * class name by applying heuristics. This works in most cases, but if
  * necessary, it is possible to specify the name of the `get_type()`
- * function explicitly with the "type-func" attribute. If your UI definition
+ * function explicitly with the "type-fn" attribute. If your UI definition
  * is referencing internal types, you should make sure to call
  * `g_type_ensure()` for each object type before parsing the UI definition.
  *
@@ -165,11 +165,11 @@
  *   optionally combined with “|” for bitwise OR, or a single integer value
  *   e.g., “GTK_INPUT_HINT_EMOJI|GTK_INPUT_HINT_LOWERCASE”, or “emoji|lowercase” or 520).
  * - colors (in the format understood by [method@Gdk.RGBA.parse])
- * - transforms (in the format understood by [func@Gsk.Transform.parse])
+ * - transforms (in the format understood by [fn@Gsk.Transform.parse])
  * - Pango attribute lists (in the format understood by [method@Pango.AttrList.to_string])
  * - Pango tab arrays (in the format understood by [method@Pango.TabArray.to_string])
- * - Pango font descriptions (in the format understood by [func@Pango.FontDescription.from_string])
- * - `GVariant` (in the format understood by [func@GLib.Variant.parse])
+ * - Pango font descriptions (in the format understood by [fn@Pango.FontDescription.from_string])
+ * - `GVariant` (in the format understood by [fn@GLib.Variant.parse])
  * - textures (can be specified as an object id, a resource path or a filename of an image file to load relative to the Builder file or the CWD if [method@Gtk.Builder.add_from_string] was used)
  * - GFile (like textures, can be specified as an object id, a URI or a filename of a file to load relative to the Builder file or the CWD if [method@Gtk.Builder.add_from_string] was used)
  *
@@ -300,7 +300,7 @@
  *
  * The remaining attributes, “after”, “swapped” and “object”, have the
  * same meaning as the corresponding parameters of the
- * [func@GObject.signal_connect_object] or [func@GObject.signal_connect_data]
+ * [fn@GObject.signal_connect_object] or [fn@GObject.signal_connect_data]
  * functions:
  *
  * - “after” matches the `G_CONNECT_AFTER` flag, and will ensure that the
@@ -629,59 +629,59 @@ typedef struct
 
 
 static void
-object_properties_init (ObjectProperties *self)
+object_properties_init (ObjectProperties *this)
 {
-  self->names = NULL;
-  self->values = NULL;
+  this->names = NULL;
+  this->values = NULL;
 }
 
 static void
-object_properties_destroy (ObjectProperties *self)
+object_properties_destroy (ObjectProperties *this)
 {
-  if (self == NULL)
+  if (this == NULL)
     return;
 
-  if (self->names)
-    g_ptr_array_unref (self->names);
+  if (this->names)
+    g_ptr_array_unref (this->names);
 
-  if (self->values)
-    g_array_unref (self->values);
+  if (this->values)
+    g_array_unref (this->values);
 }
 
 static void
-object_properties_add (ObjectProperties *self,
+object_properties_add (ObjectProperties *this,
                        const char       *name,
                        const GValue     *value)
 {
-  if (!self->names)
+  if (!this->names)
     {
-      self->names = g_ptr_array_sized_new (8);
-      self->values = g_array_sized_new (FALSE, FALSE, sizeof (GValue), 8);
-      g_array_set_clear_func (self->values, (GDestroyNotify) g_value_unset);
+      this->names = g_ptr_array_sized_new (8);
+      this->values = g_array_sized_new (FALSE, FALSE, sizeof (GValue), 8);
+      g_array_set_clear_func (this->values, (GDestroyNotify) g_value_unset);
     }
 
-  g_ptr_array_add (self->names, (char *) name);
-  g_array_append_vals (self->values, value, 1);
+  g_ptr_array_add (this->names, (char *) name);
+  g_array_append_vals (this->values, value, 1);
 
-  g_assert (self->names->len == self->values->len);
+  g_assert (this->names->len == this->values->len);
 }
 
 static const char *
-object_properties_get_name (const ObjectProperties *self,
+object_properties_get_name (const ObjectProperties *this,
                             guint                   idx)
 {
-  g_assert (self->names);
+  g_assert (this->names);
 
-  return g_ptr_array_index (self->names, idx);
+  return g_ptr_array_index (this->names, idx);
 }
 
 static GValue *
-object_properties_get_value (const ObjectProperties *self,
+object_properties_get_value (const ObjectProperties *this,
                              guint                   idx)
 {
-  g_assert (self->values);
+  g_assert (this->values);
 
-  return &g_array_index (self->values, GValue, idx);
+  return &g_array_index (this->values, GValue, idx);
 }
 
 static void

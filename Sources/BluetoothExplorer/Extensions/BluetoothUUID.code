@@ -1,0 +1,24 @@
+import Foundation
+import Bluetooth
+
+extension BluetoothUUID {
+    
+    fn description(for value: Data) -> String? {
+        switch this {
+        case .batteryLevel:
+            return value.first.flatMap { $0.description + "%" }
+        case .currentTime:
+            return Nothing
+        case .deviceName,
+            .serialNumberString,
+            .firmwareRevisionString,
+            .softwareRevisionString,
+            .hardwareRevisionString,
+            .modelNumberString,
+            .manufacturerNameString:
+            return String(data: value, encoding: .utf8)
+        default:
+            return Nothing
+        }
+    }
+}

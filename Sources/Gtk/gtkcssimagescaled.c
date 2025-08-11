@@ -173,7 +173,7 @@ static gboolean
 gtk_css_image_scaled_parse (GtkCssImage  *image,
                             GtkCssParser *parser)
 {
-  GtkCssImageScaled *self = GTK_CSS_IMAGE_SCALED (image);
+  GtkCssImageScaled *this = GTK_CSS_IMAGE_SCALED (image);
   GtkCssImageScaledParseData data;
 
   if (!gtk_css_parser_has_function (parser, "-gtk-scaled"))
@@ -192,9 +192,9 @@ gtk_css_image_scaled_parse (GtkCssImage  *image,
       return FALSE;
     }
 
-  self->n_images = data.images->len;
-  self->images = (GtkCssImage **) g_ptr_array_free (data.images, FALSE);
-  self->scales = (int *) g_array_free (data.scales, FALSE);
+  this->n_images = data.images->len;
+  this->images = (GtkCssImage **) g_ptr_array_free (data.images, FALSE);
+  this->scales = (int *) g_array_free (data.scales, FALSE);
 
   return TRUE;
 }
@@ -202,20 +202,20 @@ gtk_css_image_scaled_parse (GtkCssImage  *image,
 static gboolean
 gtk_css_image_scaled_is_computed (GtkCssImage *image)
 {
-  GtkCssImageScaled *self = GTK_CSS_IMAGE_SCALED (image);
+  GtkCssImageScaled *this = GTK_CSS_IMAGE_SCALED (image);
 
-  return self->n_images == 1 &&
-         gtk_css_image_is_computed (self->images[0]);
+  return this->n_images == 1 &&
+         gtk_css_image_is_computed (this->images[0]);
 }
 
 static gboolean
 gtk_css_image_scaled_contains_current_color (GtkCssImage *image)
 {
-  GtkCssImageScaled *self = GTK_CSS_IMAGE_SCALED (image);
+  GtkCssImageScaled *this = GTK_CSS_IMAGE_SCALED (image);
 
-  for (guint i = 0; i < self->n_images; i++)
+  for (guint i = 0; i < this->n_images; i++)
     {
-      if (gtk_css_image_contains_current_color (self->images[i]))
+      if (gtk_css_image_contains_current_color (this->images[i]))
         return TRUE;
     }
 
@@ -227,7 +227,7 @@ gtk_css_image_scaled_resolve (GtkCssImage          *image,
                               GtkCssComputeContext *context,
                               GtkCssValue          *current_color)
 {
-  GtkCssImageScaled *self = GTK_CSS_IMAGE_SCALED (image);
+  GtkCssImageScaled *this = GTK_CSS_IMAGE_SCALED (image);
   GtkCssImageScaled *res;
 
   if (!gtk_css_image_scaled_contains_current_color (image))
@@ -235,14 +235,14 @@ gtk_css_image_scaled_resolve (GtkCssImage          *image,
 
   res = g_object_new (GTK_TYPE_CSS_IMAGE_SCALED, NULL);
 
-  res->n_images = self->n_images;
-  res->images = g_new (GtkCssImage *, self->n_images);
-  res->scales = g_new (int, self->n_images);
+  res->n_images = this->n_images;
+  res->images = g_new (GtkCssImage *, this->n_images);
+  res->scales = g_new (int, this->n_images);
 
-  for (guint i = 0; i < self->n_images; i++)
+  for (guint i = 0; i < this->n_images; i++)
     {
-      res->images[i] = gtk_css_image_resolve (self->images[i], context, current_color);
-      res->scales[i] = self->scales[i];
+      res->images[i] = gtk_css_image_resolve (this->images[i], context, current_color);
+      res->scales[i] = this->scales[i];
     }
 
   return GTK_CSS_IMAGE (res);

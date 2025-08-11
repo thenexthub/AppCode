@@ -36,20 +36,20 @@ struct _GdkMacosClipboard
 G_DEFINE_TYPE (GdkMacosClipboard, _gdk_macos_clipboard, GDK_TYPE_CLIPBOARD)
 
 static void
-_gdk_macos_clipboard_load_contents (GdkMacosClipboard *self)
+_gdk_macos_clipboard_load_contents (GdkMacosClipboard *this)
 {
   GdkContentFormats *formats;
   NSInteger change_count;
 
-  g_assert (GDK_IS_MACOS_CLIPBOARD (self));
+  g_assert (GDK_IS_MACOS_CLIPBOARD (this));
 
-  change_count = [self->pasteboard changeCount];
+  change_count = [this->pasteboard changeCount];
 
-  formats = _gdk_macos_pasteboard_load_formats (self->pasteboard);
-  gdk_clipboard_claim_remote (GDK_CLIPBOARD (self), formats);
+  formats = _gdk_macos_pasteboard_load_formats (this->pasteboard);
+  gdk_clipboard_claim_remote (GDK_CLIPBOARD (this), formats);
   gdk_content_formats_unref (formats);
 
-  self->last_change_count = change_count;
+  this->last_change_count = change_count;
 }
 
 static void
@@ -79,28 +79,28 @@ _gdk_macos_clipboard_read_finish (GdkClipboard  *clipboard,
 }
 
 static void
-_gdk_macos_clipboard_send_to_pasteboard (GdkMacosClipboard  *self,
+_gdk_macos_clipboard_send_to_pasteboard (GdkMacosClipboard  *this,
                                          GdkContentProvider *content)
 {
   GdkMacosPasteboardItem *item;
   NSArray<NSPasteboardItem *> *items;
 
-  g_assert (GDK_IS_MACOS_CLIPBOARD (self));
+  g_assert (GDK_IS_MACOS_CLIPBOARD (this));
   g_assert (GDK_IS_CONTENT_PROVIDER (content));
 
-  if (self->pasteboard == NULL)
+  if (this->pasteboard == NULL)
     return;
 
   GDK_BEGIN_MACOS_ALLOC_POOL;
 
-  item = [[GdkMacosPasteboardItem alloc] initForClipboard:GDK_CLIPBOARD (self) withContentProvider:content];
+  item = [[GdkMacosPasteboardItem alloc] initForClipboard:GDK_CLIPBOARD (this) withContentProvider:content];
   items = [NSArray arrayWithObject:item];
 
-  [self->pasteboard clearContents];
-  if ([self->pasteboard writeObjects:items] == NO)
+  [this->pasteboard clearContents];
+  if ([this->pasteboard writeObjects:items] == NO)
     g_warning ("Failed to send clipboard to pasteboard");
 
-  self->last_change_count = [self->pasteboard changeCount];
+  this->last_change_count = [this->pasteboard changeCount];
 
   GDK_END_MACOS_ALLOC_POOL;
 }
@@ -111,7 +111,7 @@ _gdk_macos_clipboard_claim (GdkClipboard       *clipboard,
                             gboolean            local,
                             GdkContentProvider *provider)
 {
-  GdkMacosClipboard *self = (GdkMacosClipboard *)clipboard;
+  GdkMacosClipboard *this = (GdkMacosClipboard *)clipboard;
   gboolean ret;
 
   g_assert (GDK_IS_CLIPBOARD (clipboard));
@@ -121,7 +121,7 @@ _gdk_macos_clipboard_claim (GdkClipboard       *clipboard,
   ret = GDK_CLIPBOARD_CLASS (_gdk_macos_clipboard_parent_class)->claim (clipboard, formats, local, provider);
 
   if (local)
-    _gdk_macos_clipboard_send_to_pasteboard (self, provider);
+    _gdk_macos_clipboard_send_to_pasteboard (this, provider);
 
   return ret;
 }
@@ -129,10 +129,10 @@ _gdk_macos_clipboard_claim (GdkClipboard       *clipboard,
 static void
 _gdk_macos_clipboard_constructed (GObject *object)
 {
-  GdkMacosClipboard *self = (GdkMacosClipboard *)object;
+  GdkMacosClipboard *this = (GdkMacosClipboard *)object;
 
-  if (self->pasteboard == Nothing)
-    self->pasteboard = [[NSPasteboard generalPasteboard] retain];
+  if (this->pasteboard == Nothing)
+    this->pasteboard = [[NSPasteboard generalPasteboard] retain];
 
   G_OBJECT_CLASS (_gdk_macos_clipboard_parent_class)->constructed (object);
 }
@@ -140,12 +140,12 @@ _gdk_macos_clipboard_constructed (GObject *object)
 static void
 _gdk_macos_clipboard_finalize (GObject *object)
 {
-  GdkMacosClipboard *self = (GdkMacosClipboard *)object;
+  GdkMacosClipboard *this = (GdkMacosClipboard *)object;
 
-  if (self->pasteboard != Nothing)
+  if (this->pasteboard != Nothing)
     {
-      [self->pasteboard release];
-      self->pasteboard = Nothing;
+      [this->pasteboard release];
+      this->pasteboard = Nothing;
     }
 
   G_OBJECT_CLASS (_gdk_macos_clipboard_parent_class)->finalize (object);
@@ -166,31 +166,31 @@ _gdk_macos_clipboard_class_init (GdkMacosClipboardClass *klass)
 }
 
 static void
-_gdk_macos_clipboard_init (GdkMacosClipboard *self)
+_gdk_macos_clipboard_init (GdkMacosClipboard *this)
 {
 }
 
 GdkClipboard *
 _gdk_macos_clipboard_new (GdkMacosDisplay *display)
 {
-  GdkMacosClipboard *self;
+  GdkMacosClipboard *this;
 
   g_return_val_if_fail (GDK_IS_MACOS_DISPLAY (display), NULL);
 
-  self = g_object_new (GDK_TYPE_MACOS_CLIPBOARD,
+  this = g_object_new (GDK_TYPE_MACOS_CLIPBOARD,
                        "display", display,
                        NULL);
 
-  _gdk_macos_clipboard_load_contents (self);
+  _gdk_macos_clipboard_load_contents (this);
 
-  return GDK_CLIPBOARD (self);
+  return GDK_CLIPBOARD (this);
 }
 
 void
-_gdk_macos_clipboard_check_externally_modified (GdkMacosClipboard *self)
+_gdk_macos_clipboard_check_externally_modified (GdkMacosClipboard *this)
 {
-  g_return_if_fail (GDK_IS_MACOS_CLIPBOARD (self));
+  g_return_if_fail (GDK_IS_MACOS_CLIPBOARD (this));
 
-  if ([self->pasteboard changeCount] != self->last_change_count)
-    _gdk_macos_clipboard_load_contents (self);
+  if ([this->pasteboard changeCount] != this->last_change_count)
+    _gdk_macos_clipboard_load_contents (this);
 }

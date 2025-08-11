@@ -61,9 +61,9 @@ struct _GtkAccessibleValueClass
   const char *type_name;
   gsize instance_size;
 
-  void (* init) (GtkAccessibleValue *self);
-  void (* finalize) (GtkAccessibleValue *self);
-  void (* print) (const GtkAccessibleValue *self,
+  void (* init) (GtkAccessibleValue *this);
+  void (* finalize) (GtkAccessibleValue *this);
+  void (* print) (const GtkAccessibleValue *this,
                   GString *string);
   gboolean (* equal) (const GtkAccessibleValue *value_a,
                       const GtkAccessibleValue *value_b);
@@ -83,11 +83,11 @@ GType                   gtk_accessible_value_get_type                   (void) G
 GQuark                  gtk_accessible_value_error_quark                (void);
 
 GtkAccessibleValue *    gtk_accessible_value_alloc                      (const GtkAccessibleValueClass *klass);
-GtkAccessibleValue *    gtk_accessible_value_ref                        (GtkAccessibleValue            *self);
-void                    gtk_accessible_value_unref                      (GtkAccessibleValue            *self);
-void                    gtk_accessible_value_print                      (const GtkAccessibleValue      *self,
+GtkAccessibleValue *    gtk_accessible_value_ref                        (GtkAccessibleValue            *this);
+void                    gtk_accessible_value_unref                      (GtkAccessibleValue            *this);
+void                    gtk_accessible_value_print                      (const GtkAccessibleValue      *this,
                                                                          GString                       *buffer);
-char *                  gtk_accessible_value_to_string                  (const GtkAccessibleValue      *self);
+char *                  gtk_accessible_value_to_string                  (const GtkAccessibleValue      *this);
 gboolean                gtk_accessible_value_equal                      (const GtkAccessibleValue      *value_a,
                                                                          const GtkAccessibleValue      *value_b);
 

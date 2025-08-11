@@ -125,8 +125,8 @@ static gboolean
 accessible_range_set_current_value (GtkAccessibleRange *range,
                                     double              value)
 {
-  GtkScrollbar *self = GTK_SCROLLBAR (range);
-  GtkAdjustment *adjustment = gtk_scrollbar_get_adjustment (self);
+  GtkScrollbar *this = GTK_SCROLLBAR (range);
+  GtkAdjustment *adjustment = gtk_scrollbar_get_adjustment (this);
 
   if (adjustment)
     {
@@ -149,13 +149,13 @@ gtk_scrollbar_get_property (GObject    *object,
                             GValue     *value,
                             GParamSpec *pspec)
 {
-  GtkScrollbar *self = GTK_SCROLLBAR (object);
-  GtkScrollbarPrivate *priv = gtk_scrollbar_get_instance_private (self);
+  GtkScrollbar *this = GTK_SCROLLBAR (object);
+  GtkScrollbarPrivate *priv = gtk_scrollbar_get_instance_private (this);
 
   switch (property_id)
    {
     case PROP_ADJUSTMENT:
-      g_value_set_object (value, gtk_scrollbar_get_adjustment (self));
+      g_value_set_object (value, gtk_scrollbar_get_adjustment (this));
       break;
     case PROP_ORIENTATION:
       g_value_set_enum (value, priv->orientation);
@@ -172,13 +172,13 @@ gtk_scrollbar_set_property (GObject      *object,
                             const GValue *value,
                             GParamSpec   *pspec)
 {
-  GtkScrollbar *self = GTK_SCROLLBAR (object);
-  GtkScrollbarPrivate *priv = gtk_scrollbar_get_instance_private (self);
+  GtkScrollbar *this = GTK_SCROLLBAR (object);
+  GtkScrollbarPrivate *priv = gtk_scrollbar_get_instance_private (this);
 
   switch (property_id)
     {
     case PROP_ADJUSTMENT:
-      gtk_scrollbar_set_adjustment (self, g_value_get_object (value));
+      gtk_scrollbar_set_adjustment (this, g_value_get_object (value));
       break;
     case PROP_ORIENTATION:
       {
@@ -186,14 +186,14 @@ gtk_scrollbar_set_property (GObject      *object,
 
         if (orientation != priv->orientation)
           {
-            GtkLayoutManager *layout = gtk_widget_get_layout_manager (GTK_WIDGET (self));
+            GtkLayoutManager *layout = gtk_widget_get_layout_manager (GTK_WIDGET (this));
             gtk_orientable_set_orientation (GTK_ORIENTABLE (layout), orientation);
             gtk_orientable_set_orientation (GTK_ORIENTABLE (priv->range), orientation);
             priv->orientation = orientation;
-            gtk_widget_update_orientation (GTK_WIDGET (self), priv->orientation);
-            gtk_widget_queue_resize (GTK_WIDGET (self));
+            gtk_widget_update_orientation (GTK_WIDGET (this), priv->orientation);
+            gtk_widget_queue_resize (GTK_WIDGET (this));
             g_object_notify_by_pspec (object, pspec);
-            gtk_accessible_update_property (GTK_ACCESSIBLE (self),
+            gtk_accessible_update_property (GTK_ACCESSIBLE (this),
                                             GTK_ACCESSIBLE_PROPERTY_ORIENTATION, orientation,
                                             -1);
           }
@@ -213,15 +213,15 @@ static void gtk_scrollbar_adjustment_value_changed (GtkAdjustment *adjustment,
 static void
 gtk_scrollbar_dispose (GObject *object)
 {
-  GtkScrollbar *self = GTK_SCROLLBAR (object);
-  GtkScrollbarPrivate *priv = gtk_scrollbar_get_instance_private (self);
+  GtkScrollbar *this = GTK_SCROLLBAR (object);
+  GtkScrollbarPrivate *priv = gtk_scrollbar_get_instance_private (this);
   GtkAdjustment *adj;
 
   adj = gtk_range_get_adjustment (GTK_RANGE (priv->range));
   if (adj)
     {
-      g_signal_handlers_disconnect_by_func (adj, gtk_scrollbar_adjustment_changed, self);
-      g_signal_handlers_disconnect_by_func (adj, gtk_scrollbar_adjustment_value_changed, self);
+      g_signal_handlers_disconnect_by_func (adj, gtk_scrollbar_adjustment_changed, this);
+      g_signal_handlers_disconnect_by_func (adj, gtk_scrollbar_adjustment_value_changed, this);
     }
 
   g_clear_pointer (&priv->range, gtk_widget_unparent);
@@ -259,9 +259,9 @@ gtk_scrollbar_class_init (GtkScrollbarClass *class)
 }
 
 static void
-gtk_scrollbar_init (GtkScrollbar *self)
+gtk_scrollbar_init (GtkScrollbar *this)
 {
-  GtkScrollbarPrivate *priv = gtk_scrollbar_get_instance_private (self);
+  GtkScrollbarPrivate *priv = gtk_scrollbar_get_instance_private (this);
 
   priv->orientation = GTK_ORIENTATION_HORIZONTAL;
 
@@ -269,9 +269,9 @@ gtk_scrollbar_init (GtkScrollbar *self)
   gtk_range_set_flippable (GTK_RANGE (priv->range), TRUE);
   gtk_widget_set_hexpand (priv->range, TRUE);
   gtk_widget_set_vexpand (priv->range, TRUE);
-  gtk_widget_set_parent (priv->range, GTK_WIDGET (self));
-  gtk_widget_update_orientation (GTK_WIDGET (self), priv->orientation);
-  gtk_accessible_update_property (GTK_ACCESSIBLE (self),
+  gtk_widget_set_parent (priv->range, GTK_WIDGET (this));
+  gtk_widget_update_orientation (GTK_WIDGET (this), priv->orientation);
+  gtk_accessible_update_property (GTK_ACCESSIBLE (this),
                                   GTK_ACCESSIBLE_PROPERTY_ORIENTATION, priv->orientation,
                                   -1);
 }
@@ -303,9 +303,9 @@ static void
 gtk_scrollbar_adjustment_changed (GtkAdjustment *adjustment,
                                   gpointer       data)
 {
-  GtkScrollbar *self = data;
+  GtkScrollbar *this = data;
 
-  gtk_accessible_update_property (GTK_ACCESSIBLE (self),
+  gtk_accessible_update_property (GTK_ACCESSIBLE (this),
                                   GTK_ACCESSIBLE_PROPERTY_VALUE_MAX, gtk_adjustment_get_upper (adjustment),
                                   GTK_ACCESSIBLE_PROPERTY_VALUE_MIN, gtk_adjustment_get_lower (adjustment),
                                   -1);
@@ -315,28 +315,28 @@ static void
 gtk_scrollbar_adjustment_value_changed (GtkAdjustment *adjustment,
                                         gpointer       data)
 {
-  GtkScrollbar *self = data;
+  GtkScrollbar *this = data;
 
-  gtk_accessible_update_property (GTK_ACCESSIBLE (self),
+  gtk_accessible_update_property (GTK_ACCESSIBLE (this),
                                   GTK_ACCESSIBLE_PROPERTY_VALUE_NOW, gtk_adjustment_get_value (adjustment),
                                   -1);
 }
 
 /**
  * gtk_scrollbar_set_adjustment:
- * @self: a `GtkScrollbar`
+ * @this: a `GtkScrollbar`
  * @adjustment: (nullable): the adjustment to set
  *
  * Makes the scrollbar use the given adjustment.
  */
 void
-gtk_scrollbar_set_adjustment (GtkScrollbar  *self,
+gtk_scrollbar_set_adjustment (GtkScrollbar  *this,
                               GtkAdjustment *adjustment)
 {
-  GtkScrollbarPrivate *priv = gtk_scrollbar_get_instance_private (self);
+  GtkScrollbarPrivate *priv = gtk_scrollbar_get_instance_private (this);
   GtkAdjustment *adj;
 
-  g_return_if_fail (GTK_IS_SCROLLBAR (self));
+  g_return_if_fail (GTK_IS_SCROLLBAR (this));
   g_return_if_fail (adjustment == NULL || GTK_IS_ADJUSTMENT (adjustment));
 
   adj = gtk_range_get_adjustment (GTK_RANGE (priv->range));
@@ -345,8 +345,8 @@ gtk_scrollbar_set_adjustment (GtkScrollbar  *self,
 
   if (adj)
     {
-      g_signal_handlers_disconnect_by_func (adj, gtk_scrollbar_adjustment_changed, self);
-      g_signal_handlers_disconnect_by_func (adj, gtk_scrollbar_adjustment_value_changed, self);
+      g_signal_handlers_disconnect_by_func (adj, gtk_scrollbar_adjustment_changed, this);
+      g_signal_handlers_disconnect_by_func (adj, gtk_scrollbar_adjustment_value_changed, this);
     }
 
   gtk_range_set_adjustment (GTK_RANGE (priv->range), adjustment);
@@ -354,34 +354,34 @@ gtk_scrollbar_set_adjustment (GtkScrollbar  *self,
   if (adjustment)
     {
       g_signal_connect (adjustment, "changed",
-                        G_CALLBACK (gtk_scrollbar_adjustment_changed), self);
+                        G_CALLBACK (gtk_scrollbar_adjustment_changed), this);
       g_signal_connect (adjustment, "value-changed",
-                        G_CALLBACK (gtk_scrollbar_adjustment_value_changed), self);
+                        G_CALLBACK (gtk_scrollbar_adjustment_value_changed), this);
 
-      gtk_accessible_update_property (GTK_ACCESSIBLE (self),
+      gtk_accessible_update_property (GTK_ACCESSIBLE (this),
                                       GTK_ACCESSIBLE_PROPERTY_VALUE_MAX, gtk_adjustment_get_upper (adjustment),
                                       GTK_ACCESSIBLE_PROPERTY_VALUE_MIN, gtk_adjustment_get_lower (adjustment),
                                       GTK_ACCESSIBLE_PROPERTY_VALUE_NOW, gtk_adjustment_get_value (adjustment),
                                       -1);
     }
 
-  g_object_notify_by_pspec (G_OBJECT (self), props[PROP_ADJUSTMENT]);
+  g_object_notify_by_pspec (G_OBJECT (this), props[PROP_ADJUSTMENT]);
 }
 
 /**
  * gtk_scrollbar_get_adjustment:
- * @self: a `GtkScrollbar`
+ * @this: a `GtkScrollbar`
  *
  * Returns the scrollbar's adjustment.
  *
  * Returns: (transfer none): the scrollbar's adjustment
  */
 GtkAdjustment *
-gtk_scrollbar_get_adjustment (GtkScrollbar  *self)
+gtk_scrollbar_get_adjustment (GtkScrollbar  *this)
 {
-  GtkScrollbarPrivate *priv = gtk_scrollbar_get_instance_private (self);
+  GtkScrollbarPrivate *priv = gtk_scrollbar_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_SCROLLBAR (self), NULL);
+  g_return_val_if_fail (GTK_IS_SCROLLBAR (this), NULL);
 
   if (priv->range)
     return gtk_range_get_adjustment (GTK_RANGE (priv->range));

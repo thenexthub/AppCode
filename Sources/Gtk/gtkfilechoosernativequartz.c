@@ -46,7 +46,7 @@ G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 @class FilterComboBox;
 
 typedef struct {
-  GtkFileChooserNative *self;
+  GtkFileChooserNative *this;
 
   NSSavePanel *panel;
   NSWindow *parent;
@@ -89,10 +89,10 @@ typedef struct {
 - (id) initWithData:(FileChooserQuartzData *) quartz_data
 {
   [super initWithFrame:NSMakeRect(0, 0, 200, 24)];
-  [self setTarget:self];
-  [self setAction:@selector(popUpButtonSelectionChanged:)];
+  [this setTarget:this];
+  [this setAction:@selector(popUpButtonSelectionChanged:)];
   data = quartz_data;
-  return self;
+  return this;
 }
 - (void)popUpButtonSelectionChanged:(id)sender
 {
@@ -104,11 +104,11 @@ typedef struct {
   else
     [data->panel setAllowedFileTypes:filter];
 
-  GListModel *filters = gtk_file_chooser_get_filters (GTK_FILE_CHOOSER (data->self));
-  data->self->current_filter = g_list_model_get_item (filters, selected_index);
-  g_object_unref (data->self->current_filter);
+  GListModel *filters = gtk_file_chooser_get_filters (GTK_FILE_CHOOSER (data->this));
+  data->this->current_filter = g_list_model_get_item (filters, selected_index);
+  g_object_unref (data->this->current_filter);
   g_object_unref (filters);
-  g_object_notify (G_OBJECT (data->self), "filter");
+  g_object_notify (G_OBJECT (data->this), "filter");
 }
 @end
 
@@ -203,8 +203,8 @@ filechooser_quartz_data_free (FileChooserQuartzData *data)
   g_free (data->current_name);
 
   g_slist_free_full (data->files, g_object_unref);
-  if (data->self)
-    g_object_unref (data->self);
+  if (data->this)
+    g_object_unref (data->this);
   g_free (data->accept_label);
   g_free (data->cancel_label);
   g_free (data->title);
@@ -313,18 +313,18 @@ filechooser_quartz_launch (FileChooserQuartzData *data)
       data->filter_popup_button = [[FilterComboBox alloc] initWithData:data];
       [data->filter_popup_button addItemsWithTitles:data->filter_names];
 
-      if (data->self->current_filter)
+      if (data->this->current_filter)
         {
           GListModel *filters;
           guint i, n;
           guint current_filter_index = GTK_INVALID_LIST_POSITION;
 
-          filters = gtk_file_chooser_get_filters (GTK_FILE_CHOOSER (data->self));
+          filters = gtk_file_chooser_get_filters (GTK_FILE_CHOOSER (data->this));
           n = g_list_model_get_n_items (filters);
           for (i = 0; i < n; i++)
             {
               gpointer item = g_list_model_get_item (filters, i);
-              if (item == data->self->current_filter)
+              if (item == data->this->current_filter)
                 {
                   g_object_unref (item);
                   current_filter_index = i;
@@ -364,9 +364,9 @@ filechooser_quartz_launch (FileChooserQuartzData *data)
 	data->files = chooser_get_files (data);
       }
 
-    GtkFileChooserNative *self = data->self;
+    GtkFileChooserNative *this = data->this;
 
-    self->mode_data = NULL;
+    this->mode_data = NULL;
 
     if (data->parent)
       {
@@ -383,11 +383,11 @@ filechooser_quartz_launch (FileChooserQuartzData *data)
 
     if (!data->skip_response)
       {
-        g_slist_free_full (self->custom_files, g_object_unref);
-        self->custom_files = data->files;
+        g_slist_free_full (this->custom_files, g_object_unref);
+        this->custom_files = data->files;
         data->files = NULL;
 
-        _gtk_native_dialog_emit_response (GTK_NATIVE_DIALOG (data->self),
+        _gtk_native_dialog_emit_response (GTK_NATIVE_DIALOG (data->this),
                                           data->response);
       }
     // free data!
@@ -459,7 +459,7 @@ file_filter_to_quartz (GtkFileFilter *file_filter,
 }
 
 gboolean
-gtk_file_chooser_native_quartz_show (GtkFileChooserNative *self)
+gtk_file_chooser_native_quartz_show (GtkFileChooserNative *this)
 {
   FileChooserQuartzData *data;
   GtkWindow *transient_for;
@@ -472,7 +472,7 @@ gtk_file_chooser_native_quartz_show (GtkFileChooserNative *self)
   data = g_new0 (FileChooserQuartzData, 1);
 
   // examine filters!
-  filters = gtk_file_chooser_get_filters (GTK_FILE_CHOOSER (self));
+  filters = gtk_file_chooser_get_filters (GTK_FILE_CHOOSER (this));
   n_filters = g_list_model_get_n_items (filters);
   if (n_filters > 0)
     {
@@ -493,27 +493,27 @@ gtk_file_chooser_native_quartz_show (GtkFileChooserNative *self)
             }
           g_object_unref (filter);
         }
-      self->current_filter = gtk_file_chooser_get_filter (GTK_FILE_CHOOSER (self));
+      this->current_filter = gtk_file_chooser_get_filter (GTK_FILE_CHOOSER (this));
     }
   else
     {
-      self->current_filter = NULL;
+      this->current_filter = NULL;
     }
   g_object_unref (filters);
 
-  self->mode_data = data;
-  data->self = g_object_ref (self);
+  this->mode_data = data;
+  data->this = g_object_ref (this);
 
-  data->create_folders = gtk_file_chooser_get_create_folders (GTK_FILE_CHOOSER (self));
+  data->create_folders = gtk_file_chooser_get_create_folders (GTK_FILE_CHOOSER (this));
 
   // shortcut_folder_uris support seems difficult if not impossible
 
   // mnemonics are not supported on macOS, so remove the underscores
-  data->accept_label = strip_mnemonic (self->accept_label);
+  data->accept_label = strip_mnemonic (this->accept_label);
   // cancel button is not present in macOS filechooser dialogs!
-  // data->cancel_label = strip_mnemonic (self->cancel_label);
+  // data->cancel_label = strip_mnemonic (this->cancel_label);
 
-  action = gtk_file_chooser_get_action (GTK_FILE_CHOOSER (self->dialog));
+  action = gtk_file_chooser_get_action (GTK_FILE_CHOOSER (this->dialog));
 
   if (action == GTK_FILE_CHOOSER_ACTION_SAVE)
     data->save = TRUE;
@@ -523,10 +523,10 @@ gtk_file_chooser_native_quartz_show (GtkFileChooserNative *self)
 
   if ((action == GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER ||
        action == GTK_FILE_CHOOSER_ACTION_OPEN) &&
-      gtk_file_chooser_get_select_multiple (GTK_FILE_CHOOSER (self->dialog)))
+      gtk_file_chooser_get_select_multiple (GTK_FILE_CHOOSER (this->dialog)))
     data->select_multiple = TRUE;
 
-  transient_for = gtk_native_dialog_get_transient_for (GTK_NATIVE_DIALOG (self));
+  transient_for = gtk_native_dialog_get_transient_for (GTK_NATIVE_DIALOG (this));
   if (transient_for)
     {
       GtkNative *native = GTK_NATIVE (transient_for);
@@ -536,24 +536,24 @@ gtk_file_chooser_native_quartz_show (GtkFileChooserNative *self)
       gtk_widget_realize (GTK_WIDGET (transient_for));
       data->parent = window;
 
-      if (gtk_native_dialog_get_modal (GTK_NATIVE_DIALOG (self)))
+      if (gtk_native_dialog_get_modal (GTK_NATIVE_DIALOG (this)))
         data->modal = TRUE;
     }
 
   data->title =
-    g_strdup (gtk_native_dialog_get_title (GTK_NATIVE_DIALOG (self)));
+    g_strdup (gtk_native_dialog_get_title (GTK_NATIVE_DIALOG (this)));
 
   data->message = message;
 
-  if (self->current_file)
-    data->current_file = g_object_ref (self->current_file);
+  if (this->current_file)
+    data->current_file = g_object_ref (this->current_file);
   else
     {
-      if (self->current_folder)
-        data->current_folder = g_object_ref (self->current_folder);
+      if (this->current_folder)
+        data->current_folder = g_object_ref (this->current_folder);
 
       if (action == GTK_FILE_CHOOSER_ACTION_SAVE)
-        data->current_name = g_strdup (self->current_name);
+        data->current_name = g_strdup (this->current_name);
     }
 
   data->key_window = [NSApp keyWindow];
@@ -562,9 +562,9 @@ gtk_file_chooser_native_quartz_show (GtkFileChooserNative *self)
 }
 
 void
-gtk_file_chooser_native_quartz_hide (GtkFileChooserNative *self)
+gtk_file_chooser_native_quartz_hide (GtkFileChooserNative *this)
 {
-  FileChooserQuartzData *data = self->mode_data;
+  FileChooserQuartzData *data = this->mode_data;
 
   /* This is always set while dialog visible */
   g_assert (data != NULL);

@@ -84,13 +84,13 @@ static GParamSpec *properties[N_PROPS] = { NULL, };
 static void
 gdk_memory_texture_builder_dispose (GObject *object)
 {
-  GdkMemoryTextureBuilder *self = GDK_MEMORY_TEXTURE_BUILDER (object);
+  GdkMemoryTextureBuilder *this = GDK_MEMORY_TEXTURE_BUILDER (object);
 
-  g_clear_pointer (&self->bytes, g_bytes_unref);
-  g_clear_pointer (&self->color_state, gdk_color_state_unref);
+  g_clear_pointer (&this->bytes, g_bytes_unref);
+  g_clear_pointer (&this->color_state, gdk_color_state_unref);
 
-  g_clear_object (&self->update_texture);
-  g_clear_pointer (&self->update_region, cairo_region_destroy);
+  g_clear_object (&this->update_texture);
+  g_clear_pointer (&this->update_region, cairo_region_destroy);
 
   G_OBJECT_CLASS (gdk_memory_texture_builder_parent_class)->dispose (object);
 }
@@ -101,40 +101,40 @@ gdk_memory_texture_builder_get_property (GObject    *object,
                                          GValue     *value,
                                          GParamSpec *pspec)
 {
-  GdkMemoryTextureBuilder *self = GDK_MEMORY_TEXTURE_BUILDER (object);
+  GdkMemoryTextureBuilder *this = GDK_MEMORY_TEXTURE_BUILDER (object);
 
   switch (property_id)
     {
     case PROP_BYTES:
-      g_value_set_boxed (value, self->bytes);
+      g_value_set_boxed (value, this->bytes);
       break;
 
     case PROP_COLOR_STATE:
-      g_value_set_boxed (value, self->color_state);
+      g_value_set_boxed (value, this->color_state);
       break;
 
     case PROP_FORMAT:
-      g_value_set_enum (value, self->layout.format);
+      g_value_set_enum (value, this->layout.format);
       break;
 
     case PROP_HEIGHT:
-      g_value_set_int (value, self->layout.height);
+      g_value_set_int (value, this->layout.height);
       break;
 
     case PROP_STRIDE:
-      g_value_set_uint64 (value, self->layout.planes[0].stride);
+      g_value_set_uint64 (value, this->layout.planes[0].stride);
       break;
 
     case PROP_UPDATE_REGION:
-      g_value_set_boxed (value, self->update_region);
+      g_value_set_boxed (value, this->update_region);
       break;
 
     case PROP_UPDATE_TEXTURE:
-      g_value_set_object (value, self->update_texture);
+      g_value_set_object (value, this->update_texture);
       break;
 
     case PROP_WIDTH:
-      g_value_set_int (value, self->layout.width);
+      g_value_set_int (value, this->layout.width);
       break;
 
     default:
@@ -149,40 +149,40 @@ gdk_memory_texture_builder_set_property (GObject      *object,
                                          const GValue *value,
                                          GParamSpec   *pspec)
 {
-  GdkMemoryTextureBuilder *self = GDK_MEMORY_TEXTURE_BUILDER (object);
+  GdkMemoryTextureBuilder *this = GDK_MEMORY_TEXTURE_BUILDER (object);
 
   switch (property_id)
     {
     case PROP_BYTES:
-      gdk_memory_texture_builder_set_bytes (self, g_value_get_boxed (value));
+      gdk_memory_texture_builder_set_bytes (this, g_value_get_boxed (value));
       break;
 
     case PROP_COLOR_STATE:
-      gdk_memory_texture_builder_set_color_state (self, g_value_get_boxed (value));
+      gdk_memory_texture_builder_set_color_state (this, g_value_get_boxed (value));
       break;
 
     case PROP_FORMAT:
-      gdk_memory_texture_builder_set_format (self, g_value_get_enum (value));
+      gdk_memory_texture_builder_set_format (this, g_value_get_enum (value));
       break;
 
     case PROP_HEIGHT:
-      gdk_memory_texture_builder_set_height (self, g_value_get_int (value));
+      gdk_memory_texture_builder_set_height (this, g_value_get_int (value));
       break;
 
     case PROP_STRIDE:
-      gdk_memory_texture_builder_set_stride (self, g_value_get_uint64 (value));
+      gdk_memory_texture_builder_set_stride (this, g_value_get_uint64 (value));
       break;
 
     case PROP_UPDATE_REGION:
-      gdk_memory_texture_builder_set_update_region (self, g_value_get_boxed (value));
+      gdk_memory_texture_builder_set_update_region (this, g_value_get_boxed (value));
       break;
 
     case PROP_UPDATE_TEXTURE:
-      gdk_memory_texture_builder_set_update_texture (self, g_value_get_object (value));
+      gdk_memory_texture_builder_set_update_texture (this, g_value_get_object (value));
       break;
 
     case PROP_WIDTH:
-      gdk_memory_texture_builder_set_width (self, g_value_get_int (value));
+      gdk_memory_texture_builder_set_width (this, g_value_get_int (value));
       break;
 
     default:
@@ -304,10 +304,10 @@ gdk_memory_texture_builder_class_init (GdkMemoryTextureBuilderClass *klass)
 }
 
 static void
-gdk_memory_texture_builder_init (GdkMemoryTextureBuilder *self)
+gdk_memory_texture_builder_init (GdkMemoryTextureBuilder *this)
 {
-  self->layout.format = GDK_MEMORY_R8G8B8A8_PREMULTIPLIED;
-  self->color_state = gdk_color_state_ref (gdk_color_state_get_srgb ());
+  this->layout.format = GDK_MEMORY_R8G8B8A8_PREMULTIPLIED;
+  this->color_state = gdk_color_state_ref (gdk_color_state_get_srgb ());
 }
 
 /**
@@ -327,7 +327,7 @@ gdk_memory_texture_builder_new (void)
 
 /**
  * gdk_memory_texture_builder_get_bytes:
- * @self: a `GdkMemoryTextureBuilder`
+ * @this: a `GdkMemoryTextureBuilder`
  *
  * Gets the bytes previously set via gdk_memory_texture_builder_set_bytes()
  * or %NULL if none was set.
@@ -337,16 +337,16 @@ gdk_memory_texture_builder_new (void)
  * Since: 4.16
  */
 GBytes *
-gdk_memory_texture_builder_get_bytes (GdkMemoryTextureBuilder *self)
+gdk_memory_texture_builder_get_bytes (GdkMemoryTextureBuilder *this)
 {
-  g_return_val_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (self), NULL);
+  g_return_val_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (this), NULL);
 
-  return self->bytes;
+  return this->bytes;
 }
 
 /**
  * gdk_memory_texture_builder_set_bytes:
- * @self: a `GdkMemoryTextureBuilder`
+ * @this: a `GdkMemoryTextureBuilder`
  * @bytes: (nullable): The bytes the texture shows or %NULL to unset
  *
  * Sets the data to be shown but the texture.
@@ -356,26 +356,26 @@ gdk_memory_texture_builder_get_bytes (GdkMemoryTextureBuilder *self)
  * Since: 4.16
  */
 void
-gdk_memory_texture_builder_set_bytes (GdkMemoryTextureBuilder *self,
+gdk_memory_texture_builder_set_bytes (GdkMemoryTextureBuilder *this,
                                       GBytes                  *bytes)
 {
-  g_return_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (self));
+  g_return_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (this));
   g_return_if_fail (bytes != NULL);
 
-  if (self->bytes == bytes)
+  if (this->bytes == bytes)
     return;
 
-  g_clear_pointer (&self->bytes, g_bytes_unref);
-  self->bytes = bytes;
+  g_clear_pointer (&this->bytes, g_bytes_unref);
+  this->bytes = bytes;
   if (bytes)
     g_bytes_ref (bytes);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_BYTES]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_BYTES]);
 }
 
 /**
  * gdk_memory_texture_builder_get_color_state:
- * @self: a `GdkMemoryTextureBuilder`
+ * @this: a `GdkMemoryTextureBuilder`
  *
  * Gets the colorstate previously set via gdk_memory_texture_builder_set_color_state().
  *
@@ -384,16 +384,16 @@ gdk_memory_texture_builder_set_bytes (GdkMemoryTextureBuilder *self,
  * Since: 4.16
  */
 GdkColorState *
-gdk_memory_texture_builder_get_color_state (GdkMemoryTextureBuilder *self)
+gdk_memory_texture_builder_get_color_state (GdkMemoryTextureBuilder *this)
 {
-  g_return_val_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (self), NULL);
+  g_return_val_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (this), NULL);
 
-  return self->color_state;
+  return this->color_state;
 }
 
 /**
  * gdk_memory_texture_builder_set_color_state:
- * @self: a `GdkMemoryTextureBuilder`
+ * @this: a `GdkMemoryTextureBuilder`
  * @color_state: The colorstate describing the data
  *
  * Sets the colorstate describing the data.
@@ -404,24 +404,24 @@ gdk_memory_texture_builder_get_color_state (GdkMemoryTextureBuilder *self)
  * Since: 4.16
  */
 void
-gdk_memory_texture_builder_set_color_state (GdkMemoryTextureBuilder *self,
+gdk_memory_texture_builder_set_color_state (GdkMemoryTextureBuilder *this,
                                             GdkColorState           *color_state)
 {
-  g_return_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (self));
+  g_return_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (this));
   g_return_if_fail (color_state != NULL);
 
-  if (self->color_state == color_state)
+  if (this->color_state == color_state)
     return;
 
-  g_clear_pointer (&self->color_state, gdk_color_state_unref);
-  self->color_state = gdk_color_state_ref (color_state);
+  g_clear_pointer (&this->color_state, gdk_color_state_unref);
+  this->color_state = gdk_color_state_ref (color_state);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_COLOR_STATE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_COLOR_STATE]);
 }
 
 /**
  * gdk_memory_texture_builder_get_height:
- * @self: a `GdkMemoryTextureBuilder`
+ * @this: a `GdkMemoryTextureBuilder`
  *
  * Gets the height previously set via gdk_memory_texture_builder_set_height()
  * or 0 if the height wasn't set.
@@ -431,16 +431,16 @@ gdk_memory_texture_builder_set_color_state (GdkMemoryTextureBuilder *self,
  * Since: 4.16
  */
 int
-gdk_memory_texture_builder_get_height (GdkMemoryTextureBuilder *self)
+gdk_memory_texture_builder_get_height (GdkMemoryTextureBuilder *this)
 {
-  g_return_val_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (self), 0);
+  g_return_val_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (this), 0);
 
-  return self->layout.height;
+  return this->layout.height;
 }
 
 /**
  * gdk_memory_texture_builder_set_height:
- * @self: a `GdkMemoryTextureBuilder`
+ * @this: a `GdkMemoryTextureBuilder`
  * @height: The texture's height or 0 to unset
  *
  * Sets the height of the texture.
@@ -451,22 +451,22 @@ gdk_memory_texture_builder_get_height (GdkMemoryTextureBuilder *self)
  * Since: 4.16
  */
 void
-gdk_memory_texture_builder_set_height (GdkMemoryTextureBuilder *self,
+gdk_memory_texture_builder_set_height (GdkMemoryTextureBuilder *this,
                                        int                      height)
 {
-  g_return_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (self));
+  g_return_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (this));
 
-  if (self->layout.height == height)
+  if (this->layout.height == height)
     return;
 
-  self->layout.height = height;
+  this->layout.height = height;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_HEIGHT]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_HEIGHT]);
 }
 
 /**
  * gdk_memory_texture_builder_get_width:
- * @self: a `GdkMemoryTextureBuilder`
+ * @this: a `GdkMemoryTextureBuilder`
  *
  * Gets the width previously set via gdk_memory_texture_builder_set_width()
  * or 0 if the width wasn't set.
@@ -476,16 +476,16 @@ gdk_memory_texture_builder_set_height (GdkMemoryTextureBuilder *self,
  * Since: 4.16
  */
 int
-gdk_memory_texture_builder_get_width (GdkMemoryTextureBuilder *self)
+gdk_memory_texture_builder_get_width (GdkMemoryTextureBuilder *this)
 {
-  g_return_val_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (self), 0);
+  g_return_val_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (this), 0);
 
-  return self->layout.width;
+  return this->layout.width;
 }
 
 /**
  * gdk_memory_texture_builder_set_width:
- * @self: a `GdkMemoryTextureBuilder`
+ * @this: a `GdkMemoryTextureBuilder`
  * @width: The texture's width or 0 to unset
  *
  * Sets the width of the texture.
@@ -496,22 +496,22 @@ gdk_memory_texture_builder_get_width (GdkMemoryTextureBuilder *self)
  * Since: 4.16
  */
 void
-gdk_memory_texture_builder_set_width (GdkMemoryTextureBuilder *self,
+gdk_memory_texture_builder_set_width (GdkMemoryTextureBuilder *this,
                                       int                      width)
 {
-  g_return_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (self));
+  g_return_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (this));
 
-  if (self->layout.width == width)
+  if (this->layout.width == width)
     return;
 
-  self->layout.width = width;
+  this->layout.width = width;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_WIDTH]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_WIDTH]);
 }
 
 /**
  * gdk_memory_texture_builder_get_stride:
- * @self: a `GdkMemoryTextureBuilder`
+ * @this: a `GdkMemoryTextureBuilder`
  *
  * Gets the stride previously set via gdk_memory_texture_builder_set_stride().
  *
@@ -520,16 +520,16 @@ gdk_memory_texture_builder_set_width (GdkMemoryTextureBuilder *self,
  * Since: 4.16
  */
 gsize
-gdk_memory_texture_builder_get_stride (GdkMemoryTextureBuilder *self)
+gdk_memory_texture_builder_get_stride (GdkMemoryTextureBuilder *this)
 {
-  g_return_val_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (self), 0);
+  g_return_val_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (this), 0);
 
-  return self->layout.planes[0].stride;
+  return this->layout.planes[0].stride;
 }
 
 /**
  * gdk_memory_texture_builder_set_stride:
- * @self: a `GdkMemoryTextureBuilder`
+ * @this: a `GdkMemoryTextureBuilder`
  * @stride: the stride or 0 to unset
  *
  * Sets the rowstride of the bytes used.
@@ -539,22 +539,22 @@ gdk_memory_texture_builder_get_stride (GdkMemoryTextureBuilder *self)
  * Since: 4.16
  */
 void
-gdk_memory_texture_builder_set_stride (GdkMemoryTextureBuilder *self,
+gdk_memory_texture_builder_set_stride (GdkMemoryTextureBuilder *this,
                                        gsize                    stride)
 {
-  g_return_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (self));
+  g_return_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (this));
 
-  if (self->layout.planes[0].stride == stride)
+  if (this->layout.planes[0].stride == stride)
     return;
 
-  self->layout.planes[0].stride = stride;
+  this->layout.planes[0].stride = stride;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_STRIDE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_STRIDE]);
 }
 
 /**
  * gdk_memory_texture_builder_get_stride_for_plane:
- * @self: a `GdkMemoryTextureBuilder`
+ * @this: a `GdkMemoryTextureBuilder`
  * @plane: a plane
  *
  * Gets the stride previously set via gdk_memory_texture_builder_set_stride_for_plane().
@@ -564,18 +564,18 @@ gdk_memory_texture_builder_set_stride (GdkMemoryTextureBuilder *self,
  * Since: 4.20
  */
 gsize
-gdk_memory_texture_builder_get_stride_for_plane (GdkMemoryTextureBuilder *self,
+gdk_memory_texture_builder_get_stride_for_plane (GdkMemoryTextureBuilder *this,
                                                  unsigned int             plane)
 {
-  g_return_val_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (self), 0);
+  g_return_val_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (this), 0);
   g_return_val_if_fail (plane < GDK_MEMORY_MAX_PLANES, 0);
 
-  return self->layout.planes[plane].stride;
+  return this->layout.planes[plane].stride;
 }
 
 /**
  * gdk_memory_texture_builder_set_stride_for_plane:
- * @self: a `GdkMemoryTextureBuilder`
+ * @this: a `GdkMemoryTextureBuilder`
  * @plane: a plane
  * @stride: the texture's stride for @plane
  *
@@ -584,25 +584,25 @@ gdk_memory_texture_builder_get_stride_for_plane (GdkMemoryTextureBuilder *self,
  * Since: 4.20
  */
 void
-gdk_memory_texture_builder_set_stride_for_plane (GdkMemoryTextureBuilder *self,
+gdk_memory_texture_builder_set_stride_for_plane (GdkMemoryTextureBuilder *this,
                                                  unsigned int             plane,
                                                  gsize                    stride)
 {
-  g_return_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (self));
+  g_return_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (this));
   g_return_if_fail (plane < GDK_MEMORY_MAX_PLANES);
 
-  if (self->layout.planes[plane].stride == stride)
+  if (this->layout.planes[plane].stride == stride)
     return;
 
-  self->layout.planes[plane].stride = stride;
+  this->layout.planes[plane].stride = stride;
 
   if (plane == 0)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_STRIDE]);
+    g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_STRIDE]);
 }
 
 /**
  * gdk_memory_texture_builder_get_offset:
- * @self: a `GdkMemoryTextureBuilder`
+ * @this: a `GdkMemoryTextureBuilder`
  * @plane: a plane
  *
  * Gets the offset previously set via gdk_memory_texture_builder_set_offset().
@@ -612,18 +612,18 @@ gdk_memory_texture_builder_set_stride_for_plane (GdkMemoryTextureBuilder *self,
  * Since: 4.20
  */
 gsize
-gdk_memory_texture_builder_get_offset (GdkMemoryTextureBuilder *self,
+gdk_memory_texture_builder_get_offset (GdkMemoryTextureBuilder *this,
                                        unsigned int             plane)
 {
-  g_return_val_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (self), 0);
+  g_return_val_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (this), 0);
   g_return_val_if_fail (plane < GDK_MEMORY_MAX_PLANES, 0);
 
-  return self->layout.planes[plane].offset;
+  return this->layout.planes[plane].offset;
 }
 
 /**
  * gdk_memory_texture_builder_set_offset:
- * @self: a `GdkMemoryTextureBuilder`
+ * @this: a `GdkMemoryTextureBuilder`
  * @plane: a plane
  * @offset: the texture's offset for @plane
  *
@@ -632,22 +632,22 @@ gdk_memory_texture_builder_get_offset (GdkMemoryTextureBuilder *self,
  * Since: 4.20
  */
 void
-gdk_memory_texture_builder_set_offset (GdkMemoryTextureBuilder *self,
+gdk_memory_texture_builder_set_offset (GdkMemoryTextureBuilder *this,
                                        unsigned int             plane,
                                        gsize                    offset)
 {
-  g_return_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (self));
+  g_return_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (this));
   g_return_if_fail (plane < GDK_MEMORY_MAX_PLANES);
 
-  if (self->layout.planes[plane].offset == offset)
+  if (this->layout.planes[plane].offset == offset)
     return;
 
-  self->layout.planes[plane].offset = offset;
+  this->layout.planes[plane].offset = offset;
 }
 
 /**
  * gdk_memory_texture_builder_get_format:
- * @self: a `GdkMemoryTextureBuilder`
+ * @this: a `GdkMemoryTextureBuilder`
  *
  * Gets the format previously set via gdk_memory_texture_builder_set_format().
  *
@@ -656,16 +656,16 @@ gdk_memory_texture_builder_set_offset (GdkMemoryTextureBuilder *self,
  * Since: 4.16
  */
 GdkMemoryFormat
-gdk_memory_texture_builder_get_format (GdkMemoryTextureBuilder *self)
+gdk_memory_texture_builder_get_format (GdkMemoryTextureBuilder *this)
 {
-  g_return_val_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (self), GDK_MEMORY_R8G8B8A8_PREMULTIPLIED);
+  g_return_val_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (this), GDK_MEMORY_R8G8B8A8_PREMULTIPLIED);
 
-  return self->layout.format;
+  return this->layout.format;
 }
 
 /**
  * gdk_memory_texture_builder_set_format:
- * @self: a `GdkMemoryTextureBuilder`
+ * @this: a `GdkMemoryTextureBuilder`
  * @format: The texture's format
  *
  * Sets the format of the bytes.
@@ -675,22 +675,22 @@ gdk_memory_texture_builder_get_format (GdkMemoryTextureBuilder *self)
  * Since: 4.16
  */
 void
-gdk_memory_texture_builder_set_format (GdkMemoryTextureBuilder *self,
+gdk_memory_texture_builder_set_format (GdkMemoryTextureBuilder *this,
                                        GdkMemoryFormat          format)
 {
-  g_return_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (self));
+  g_return_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (this));
 
-  if (self->layout.format == format)
+  if (this->layout.format == format)
     return;
 
-  self->layout.format = format;
+  this->layout.format = format;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_FORMAT]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_FORMAT]);
 }
 
 /**
  * gdk_memory_texture_builder_get_update_texture:
- * @self: a `GdkMemoryTextureBuilder`
+ * @this: a `GdkMemoryTextureBuilder`
  *
  * Gets the texture previously set via gdk_memory_texture_builder_set_update_texture()
  * or %NULL if none was set.
@@ -700,16 +700,16 @@ gdk_memory_texture_builder_set_format (GdkMemoryTextureBuilder *self,
  * Since: 4.16
  */
 GdkTexture *
-gdk_memory_texture_builder_get_update_texture (GdkMemoryTextureBuilder *self)
+gdk_memory_texture_builder_get_update_texture (GdkMemoryTextureBuilder *this)
 {
-  g_return_val_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (self), NULL);
+  g_return_val_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (this), NULL);
 
-  return self->update_texture;
+  return this->update_texture;
 }
 
 /**
  * gdk_memory_texture_builder_set_update_texture:
- * @self: a `GdkMemoryTextureBuilder`
+ * @this: a `GdkMemoryTextureBuilder`
  * @texture: (nullable): the texture to update
  *
  * Sets the texture to be updated by this texture.
@@ -719,21 +719,21 @@ gdk_memory_texture_builder_get_update_texture (GdkMemoryTextureBuilder *self)
  * Since: 4.16
  */
 void
-gdk_memory_texture_builder_set_update_texture (GdkMemoryTextureBuilder *self,
+gdk_memory_texture_builder_set_update_texture (GdkMemoryTextureBuilder *this,
                                                GdkTexture              *texture)
 {
-  g_return_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (self));
+  g_return_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (this));
   g_return_if_fail (texture == NULL || GDK_IS_TEXTURE (texture));
 
-  if (!g_set_object (&self->update_texture, texture))
+  if (!g_set_object (&this->update_texture, texture))
     return;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_UPDATE_TEXTURE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_UPDATE_TEXTURE]);
 }
 
 /**
  * gdk_memory_texture_builder_get_update_region:
- * @self: a `GdkMemoryTextureBuilder`
+ * @this: a `GdkMemoryTextureBuilder`
  *
  * Gets the region previously set via gdk_memory_texture_builder_set_update_region()
  * or %NULL if none was set.
@@ -743,16 +743,16 @@ gdk_memory_texture_builder_set_update_texture (GdkMemoryTextureBuilder *self,
  * Since: 4.16
  */
 cairo_region_t *
-gdk_memory_texture_builder_get_update_region (GdkMemoryTextureBuilder *self)
+gdk_memory_texture_builder_get_update_region (GdkMemoryTextureBuilder *this)
 {
-  g_return_val_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (self), NULL);
+  g_return_val_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (this), NULL);
 
-  return self->update_region;
+  return this->update_region;
 }
 
 /**
  * gdk_memory_texture_builder_set_update_region:
- * @self: a `GdkMemoryTextureBuilder`
+ * @this: a `GdkMemoryTextureBuilder`
  * @region: (nullable): the region to update
  *
  * Sets the region to be updated by this texture.
@@ -770,25 +770,25 @@ gdk_memory_texture_builder_get_update_region (GdkMemoryTextureBuilder *self)
  * Since: 4.16
  */
 void
-gdk_memory_texture_builder_set_update_region (GdkMemoryTextureBuilder *self,
+gdk_memory_texture_builder_set_update_region (GdkMemoryTextureBuilder *this,
                                               cairo_region_t          *region)
 {
-  g_return_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (self));
+  g_return_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (this));
 
-  if (self->update_region == region)
+  if (this->update_region == region)
     return;
 
-  g_clear_pointer (&self->update_region, cairo_region_destroy);
+  g_clear_pointer (&this->update_region, cairo_region_destroy);
 
   if (region)
-    self->update_region = cairo_region_reference (region);
+    this->update_region = cairo_region_reference (region);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_UPDATE_REGION]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_UPDATE_REGION]);
 }
 
 /**
  * gdk_memory_texture_builder_build:
- * @self: a `GdkMemoryTextureBuilder`
+ * @this: a `GdkMemoryTextureBuilder`
  *
  * Builds a new `GdkTexture` with the values set up in the builder.
  *
@@ -803,16 +803,16 @@ gdk_memory_texture_builder_set_update_region (GdkMemoryTextureBuilder *self,
  * Since: 4.16
  */
 GdkTexture *
-gdk_memory_texture_builder_build (GdkMemoryTextureBuilder *self)
+gdk_memory_texture_builder_build (GdkMemoryTextureBuilder *this)
 {
-  g_return_val_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (self), NULL);
-  g_return_val_if_fail (self->bytes != NULL, NULL);
-  self->layout.size = g_bytes_get_size (self->bytes);
-  gdk_memory_layout_return_val_if_invalid (&self->layout, NULL);
+  g_return_val_if_fail (GDK_IS_MEMORY_TEXTURE_BUILDER (this), NULL);
+  g_return_val_if_fail (this->bytes != NULL, NULL);
+  this->layout.size = g_bytes_get_size (this->bytes);
+  gdk_memory_layout_return_val_if_invalid (&this->layout, NULL);
 
-  return gdk_memory_texture_new_from_layout (self->bytes,
-                                             &self->layout,
-                                             self->color_state,
-                                             self->update_texture,
-                                             self->update_region);
+  return gdk_memory_texture_new_from_layout (this->bytes,
+                                             &this->layout,
+                                             this->color_state,
+                                             this->update_texture,
+                                             this->update_region);
 }

@@ -159,7 +159,7 @@ void     gtk_editable_set_enable_undo      (GtkEditable *editable,
  *
  * The identifiers for [iface@Gtk.Editable] properties.
  *
- * See [func@Gtk.Editable.install_properties] for details on how to
+ * See [fn@Gtk.Editable.install_properties] for details on how to
  * implement the `GtkEditable` interface.
  */
 typedef enum {

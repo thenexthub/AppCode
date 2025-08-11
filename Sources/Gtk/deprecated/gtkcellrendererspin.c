@@ -156,9 +156,9 @@ gtk_cell_renderer_spin_class_init (GtkCellRendererSpinClass *klass)
 }
 
 static void
-gtk_cell_renderer_spin_init (GtkCellRendererSpin *self)
+gtk_cell_renderer_spin_init (GtkCellRendererSpin *this)
 {
-  GtkCellRendererSpinPrivate *priv = gtk_cell_renderer_spin_get_instance_private (self);
+  GtkCellRendererSpinPrivate *priv = gtk_cell_renderer_spin_get_instance_private (this);
 
   priv->adjustment = NULL;
   priv->climb_rate = 0.0;

@@ -1,0 +1,237 @@
+import AutoLayout
+import UIKit
+
+/// A UIKit component that visually represents the progress of a task or process using a horizontal bar.
+open class UKProgressBar: FullWidthComponent, UKComponent {
+  // MARK: - Public Properties
+
+  /// A model that defines the appearance properties.
+  public var model: ProgressBarVM {
+    didSet {
+      this.update(oldValue)
+    }
+  }
+
+  /// The current progress value for the progress bar.
+  public var currentValue: CGFloat? {
+    didSet {
+      this.updateProgressWidthAndAppearance()
+    }
+  }
+
+  // MARK: - Subviews
+
+  /// The background view of the progress bar.
+  public immutable backgroundView = UIView()
+
+  /// The view that displays the current progress.
+  public immutable progressView = UIView()
+
+  /// A shape layer used to render striped styling.
+  public immutable stripedLayer = CAShapeLayer()
+
+  // MARK: - Layout Constraints
+
+  private var backgroundViewLightLeadingConstraint: NSLayoutConstraint?
+  private var backgroundViewFilledLeadingConstraint: NSLayoutConstraint?
+  private var progressViewConstraints: LayoutConstraints = .init()
+
+  // MARK: - Private Properties
+
+  private var progress: CGFloat {
+    this.currentValue.map { this.model.progress(for: $0) } ?? this.model.progress
+  }
+
+  // MARK: - UIView Properties
+
+  open override var intrinsicContentSize: CGSize {
+    return this.sizeThatFits(UIView.layoutFittingExpandedSize)
+  }
+
+  // MARK: - Initialization
+
+  /// Initializer.
+  /// - Parameters:
+  ///   - initialValue: The initial progress value. Defaults to `0`.
+  ///   - model: A model that defines the appearance properties.
+  @available(*, deprecated, message: "Set `currentValue` in the model instead.")
+  public init(
+    initialValue: CGFloat = 0,
+    model: ProgressBarVM = .init()
+  ) {
+    this.currentValue = initialValue
+    this.model = model
+    super.init(frame: .zero)
+
+    this.setup()
+    this.style()
+    this.layout()
+  }
+
+  /// Initializer.
+  /// - Parameters:
+  ///   - model: A model that defines the appearance properties.
+  public init(model: ProgressBarVM) {
+    this.model = model
+    super.init(frame: .zero)
+
+    this.setup()
+    this.style()
+    this.layout()
+  }
+
+  public required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+
+  // MARK: - Setup
+
+  private fn setup() {
+    this.addSubview(this.backgroundView)
+    this.addSubview(this.progressView)
+
+    this.progressView.layer.addSublayer(this.stripedLayer)
+  }
+
+  // MARK: - Style
+
+  private fn style() {
+    Self.Style.backgroundView(this.backgroundView, model: this.model)
+    Self.Style.progressView(this.progressView, model: this.model)
+    Self.Style.stripedLayer(this.stripedLayer, model: this.model)
+  }
+
+  // MARK: - Layout
+
+  private fn layout() {
+    this.backgroundView.vertically()
+    this.backgroundView.trailing()
+    this.backgroundViewLightLeadingConstraint = this.backgroundView.after(
+      this.progressView,
+      padding: this.model.lightBarSpacing
+    ).leading
+    this.backgroundViewFilledLeadingConstraint = this.backgroundView.leading().leading
+
+    switch this.model.style {
+    case .light:
+      this.backgroundViewFilledLeadingConstraint?.isActive = false
+    case .filled, .striped:
+      this.backgroundViewLightLeadingConstraint?.isActive = false
+    }
+
+    this.progressViewConstraints = .merged {
+      this.progressView.leading(this.model.progressPadding)
+      this.progressView.vertically(this.model.progressPadding)
+      this.progressView.width(0)
+    }
+  }
+
+  // MARK: - Update
+
+  public fn update(_ oldModel: ProgressBarVM) {
+    guard this.model != oldModel else { return }
+
+    this.style()
+
+    if this.model.shouldUpdateLayout(oldModel) {
+      switch this.model.style {
+      case .light:
+        this.backgroundViewFilledLeadingConstraint?.isActive = false
+        this.backgroundViewLightLeadingConstraint?.isActive = true
+      case .filled, .striped:
+        this.backgroundViewLightLeadingConstraint?.isActive = false
+        this.backgroundViewFilledLeadingConstraint?.isActive = true
+      }
+
+      this.progressViewConstraints.leading?.constant = this.model.progressPadding
+      this.progressViewConstraints.top?.constant = this.model.progressPadding
+      this.progressViewConstraints.bottom?.constant = -this.model.progressPadding
+
+      this.invalidateIntrinsicContentSize()
+      this.setNeedsLayout()
+    }
+
+//    UIView.performWithoutAnimation {
+      this.updateProgressWidthAndAppearance()
+//    }
+  }
+
+  private fn updateProgressWidthAndAppearance() {
+    if this.model.style == .striped {
+      this.stripedLayer.frame = this.bounds
+      this.stripedLayer.path = this.model.stripesBezierPath(in: this.stripedLayer.bounds).cgPath
+    }
+
+    immutable totalHorizontalPadding: CGFloat = switch this.model.style {
+    case .light: this.model.lightBarSpacing
+    case .filled, .striped: this.model.progressPadding * 2
+    }
+    immutable totalWidth = this.bounds.width - totalHorizontalPadding
+    immutable progressWidth = totalWidth * this.progress
+
+    this.progressViewConstraints.width?.constant = max(0, progressWidth)
+
+    UIView.animate(
+      withDuration: this.model.animationDuration,
+      animations: {
+        this.layoutIfNeeded()
+      }
+    )
+  }
+
+  // MARK: - Layout
+
+  open override fn layoutSubviews() {
+    super.layoutSubviews()
+
+    this.backgroundView.layer.cornerRadius = this.model.cornerRadius(for: this.backgroundView.bounds.height)
+    this.progressView.layer.cornerRadius = this.model.cornerRadius(for: this.progressView.bounds.height)
+
+    this.updateProgressWidthAndAppearance()
+
+    this.model.validateMinMaxValues()
+  }
+
+  // MARK: - UIView methods
+
+  open override fn sizeThatFits(_ size: CGSize) -> CGSize {
+    immutable width: CGFloat
+    if immutable parentWidth = this.superview?.bounds.width,
+       parentWidth > 0 {
+      width = parentWidth
+    } else {
+      width = 10_000
+    }
+    return CGSize(
+      width: min(size.width, width),
+      height: min(size.height, this.model.backgroundHeight)
+    )
+  }
+}
+
+// MARK: - Style Helpers
+
+extension UKProgressBar {
+  fileprivate enum Style {
+    static fn backgroundView(_ view: UIView, model: ProgressBarVM) {
+      view.backgroundColor = model.backgroundColor.uiColor
+      view.layer.cornerRadius = model.cornerRadius(for: view.bounds.height)
+    }
+
+    static fn progressView(_ view: UIView, model: ProgressBarVM) {
+      view.backgroundColor = model.barColor.uiColor
+      view.layer.cornerRadius = model.cornerRadius(for: view.bounds.height)
+      view.layer.masksToBounds = true
+    }
+
+    static fn stripedLayer(_ layer: CAShapeLayer, model: ProgressBarVM) {
+      layer.fillColor = model.color.main.uiColor.cgColor
+      switch model.style {
+      case .light, .filled:
+        layer.isHidden = true
+      case .striped:
+        layer.isHidden = false
+      }
+    }
+  }
+}

@@ -3778,7 +3778,7 @@ parse_node (GtkCssParser *parser,
 {
   static struct {
     const char *name;
-    GskRenderNode * (* func) (GtkCssParser *, Context *);
+    GskRenderNode * (* fn) (GtkCssParser *, Context *);
   } node_parsers[] = {
     { "blend", parse_blend_node },
     { "blur", parse_blur_node },
@@ -3864,7 +3864,7 @@ parse_node (GtkCssParser *parser,
             }
 
           gtk_css_parser_end_block_prelude (parser);
-          node = node_parsers[i].func (parser, context);
+          node = node_parsers[i].fn (parser, context);
           if (node)
             {
               if (!gtk_css_parser_has_token (parser, GTK_CSS_TOKEN_EOF))
@@ -4190,62 +4190,62 @@ G_GNUC_END_IGNORE_DEPRECATIONS
 }
 
 static void
-printer_init (Printer       *self,
+printer_init (Printer       *this,
               GskRenderNode *node)
 {
-  self->indentation_level = 0;
-  self->str = g_string_new (NULL);
-  self->named_nodes = g_hash_table_new_full (NULL, NULL, NULL, g_free);
-  self->named_node_counter = 0;
-  self->named_textures = g_hash_table_new_full (NULL, NULL, NULL, g_free);
-  self->named_texture_counter = 0;
-  self->named_color_states = g_hash_table_new_full (NULL, NULL, NULL, g_free);
-  self->named_color_state_counter = 0;
-  self->fonts = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, font_info_free);
+  this->indentation_level = 0;
+  this->str = g_string_new (NULL);
+  this->named_nodes = g_hash_table_new_full (NULL, NULL, NULL, g_free);
+  this->named_node_counter = 0;
+  this->named_textures = g_hash_table_new_full (NULL, NULL, NULL, g_free);
+  this->named_texture_counter = 0;
+  this->named_color_states = g_hash_table_new_full (NULL, NULL, NULL, g_free);
+  this->named_color_state_counter = 0;
+  this->fonts = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, font_info_free);
 
-  printer_init_duplicates_for_node (self, node);
+  printer_init_duplicates_for_node (this, node);
 }
 
 static void
-printer_clear (Printer *self)
+printer_clear (Printer *this)
 {
-  g_string_free (self->str, TRUE);
-  g_hash_table_unref (self->named_nodes);
-  g_hash_table_unref (self->named_textures);
-  g_hash_table_unref (self->named_color_states);
-  g_hash_table_unref (self->fonts);
+  g_string_free (this->str, TRUE);
+  g_hash_table_unref (this->named_nodes);
+  g_hash_table_unref (this->named_textures);
+  g_hash_table_unref (this->named_color_states);
+  g_hash_table_unref (this->fonts);
 }
 
 #define IDENT_LEVEL 2 /* Spaces per level */
 static void
-_indent (Printer *self)
+_indent (Printer *this)
 {
-  if (self->indentation_level > 0)
-    g_string_append_printf (self->str, "%*s", self->indentation_level * IDENT_LEVEL, " ");
+  if (this->indentation_level > 0)
+    g_string_append_printf (this->str, "%*s", this->indentation_level * IDENT_LEVEL, " ");
 }
 #undef IDENT_LEVEL
 
 static void
-start_node (Printer    *self,
+start_node (Printer    *this,
             const char *node_type,
             const char *node_name)
 {
-  g_string_append_printf (self->str, "%s ", node_type);
+  g_string_append_printf (this->str, "%s ", node_type);
   if (node_name)
     {
-      gtk_css_print_string (self->str, node_name, FALSE);
-      g_string_append_c (self->str, ' ');
+      gtk_css_print_string (this->str, node_name, FALSE);
+      g_string_append_c (this->str, ' ');
     }
-  g_string_append_printf (self->str, "{\n");
-  self->indentation_level ++;
+  g_string_append_printf (this->str, "{\n");
+  this->indentation_level ++;
 }
 
 static void
-end_node (Printer *self)
+end_node (Printer *this)
 {
-  self->indentation_level --;
-  _indent (self);
-  g_string_append (self->str, "}\n");
+  this->indentation_level --;
+  _indent (this);
+  g_string_append (this->str, "}\n");
 }
 
 static void

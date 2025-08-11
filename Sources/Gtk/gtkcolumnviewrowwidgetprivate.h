@@ -48,12 +48,12 @@ GType                   gtk_column_view_row_widget_get_type             (void) G
 GtkWidget *             gtk_column_view_row_widget_new                  (GtkListItemFactory     *factory,
                                                                          gboolean                is_header);
 
-void                    gtk_column_view_row_widget_add_child            (GtkColumnViewRowWidget *self,
+void                    gtk_column_view_row_widget_add_child            (GtkColumnViewRowWidget *this,
                                                                          GtkWidget              *child);
-void                    gtk_column_view_row_widget_reorder_child        (GtkColumnViewRowWidget *self,
+void                    gtk_column_view_row_widget_reorder_child        (GtkColumnViewRowWidget *this,
                                                                          GtkWidget              *child,
                                                                          guint                   position);
-void                    gtk_column_view_row_widget_remove_child         (GtkColumnViewRowWidget *self,
+void                    gtk_column_view_row_widget_remove_child         (GtkColumnViewRowWidget *this,
                                                                          GtkWidget              *child);
 
 G_END_DECLS

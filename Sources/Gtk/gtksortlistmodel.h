@@ -40,31 +40,31 @@ GDK_AVAILABLE_IN_ALL
 GtkSortListModel *      gtk_sort_list_model_new                 (GListModel            *model,
                                                                  GtkSorter             *sorter);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_sort_list_model_set_sorter          (GtkSortListModel       *self,
+void                    gtk_sort_list_model_set_sorter          (GtkSortListModel       *this,
                                                                  GtkSorter              *sorter);
 GDK_AVAILABLE_IN_ALL
-GtkSorter *             gtk_sort_list_model_get_sorter          (GtkSortListModel       *self);
+GtkSorter *             gtk_sort_list_model_get_sorter          (GtkSortListModel       *this);
 
 GDK_AVAILABLE_IN_4_12
-void                    gtk_sort_list_model_set_section_sorter  (GtkSortListModel       *self,
+void                    gtk_sort_list_model_set_section_sorter  (GtkSortListModel       *this,
                                                                  GtkSorter              *sorter);
 GDK_AVAILABLE_IN_4_12
-GtkSorter *             gtk_sort_list_model_get_section_sorter  (GtkSortListModel       *self);
+GtkSorter *             gtk_sort_list_model_get_section_sorter  (GtkSortListModel       *this);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_sort_list_model_set_model           (GtkSortListModel       *self,
+void                    gtk_sort_list_model_set_model           (GtkSortListModel       *this,
                                                                  GListModel             *model);
 GDK_AVAILABLE_IN_ALL
-GListModel *            gtk_sort_list_model_get_model           (GtkSortListModel       *self);
+GListModel *            gtk_sort_list_model_get_model           (GtkSortListModel       *this);
 
 GDK_AVAILABLE_IN_ALL
-void                    gtk_sort_list_model_set_incremental     (GtkSortListModel       *self,
+void                    gtk_sort_list_model_set_incremental     (GtkSortListModel       *this,
                                                                  gboolean                incremental);
 GDK_AVAILABLE_IN_ALL
-gboolean                gtk_sort_list_model_get_incremental     (GtkSortListModel       *self);
+gboolean                gtk_sort_list_model_get_incremental     (GtkSortListModel       *this);
 
 GDK_AVAILABLE_IN_ALL
-guint                   gtk_sort_list_model_get_pending         (GtkSortListModel       *self);
+guint                   gtk_sort_list_model_get_pending         (GtkSortListModel       *this);
 
 G_END_DECLS
 

@@ -572,7 +572,7 @@ gtk_spin_button_class_init (GtkSpinButtonClass *class)
 
   /**
    * GtkSpinButton::activate:
-   * @self: The widget on which the signal is emitted
+   * @this: The widget on which the signal is emitted
    *
    * Emitted when the spin button is activated.
    *
@@ -668,10 +668,10 @@ gtk_spin_button_editable_init (GtkEditableInterface *iface)
 }
 
 static gboolean
-gtk_spin_button_accessible_get_platform_state (GtkAccessible              *self,
+gtk_spin_button_accessible_get_platform_state (GtkAccessible              *this,
                                                GtkAccessiblePlatformState  state)
 {
-  return gtk_editable_delegate_get_accessible_platform_state (GTK_EDITABLE (self), state);
+  return gtk_editable_delegate_get_accessible_platform_state (GTK_EDITABLE (this), state);
 }
 
 static void

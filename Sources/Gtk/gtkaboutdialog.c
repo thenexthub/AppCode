@@ -82,7 +82,7 @@
  * use a string like `GTK team https://www.gtk.org`.
  *
  * To make constructing an about dialog as convenient as possible, you can
- * use the function [func@Gtk.show_about_dialog] which constructs and shows
+ * use the function [fn@Gtk.show_about_dialog] which constructs and shows
  * a dialog and keeps it around so that it can be shown again.
  *
  * Note that GTK sets a default title of `_("About %s")` on the dialog
@@ -389,7 +389,7 @@ gtk_about_dialog_class_init (GtkAboutDialogClass *klass)
    * The name of the program.
    *
    * If this is not set, it defaults to the value returned by
-   * [func@GLib.get_application_name].
+   * [fn@GLib.get_application_name].
    */
   props[PROP_NAME] =
     g_param_spec_string ("program-name", NULL, NULL,
@@ -578,7 +578,7 @@ gtk_about_dialog_class_init (GtkAboutDialogClass *klass)
    * A logo for the about box.
    *
    * If it is `NULL`, the default window icon set with
-   * [func@Gtk.Window.set_default_icon_name] will be used.
+   * [fn@Gtk.Window.set_default_icon_name] will be used.
    */
   props[PROP_LOGO] =
     g_param_spec_object ("logo", NULL, NULL,

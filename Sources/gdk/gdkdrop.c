@@ -86,7 +86,7 @@ static GParamSpec *properties[N_PROPERTIES] = { NULL, };
 G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE (GdkDrop, gdk_drop, G_TYPE_OBJECT)
 
 static void
-gdk_drop_default_status (GdkDrop       *self,
+gdk_drop_default_status (GdkDrop       *this,
                          GdkDragAction  actions,
                          GdkDragAction  preferred)
 {
@@ -107,20 +107,20 @@ gdk_drop_read_local_write_done (GObject      *drag,
 }
 
 static void
-gdk_drop_read_local_async (GdkDrop             *self,
+gdk_drop_read_local_async (GdkDrop             *this,
                            GdkContentFormats   *formats,
                            int                  io_priority,
                            GCancellable        *cancellable,
                            GAsyncReadyCallback  callback,
                            gpointer             user_data)
 {
-  GdkDropPrivate *priv = gdk_drop_get_instance_private (self);
+  GdkDropPrivate *priv = gdk_drop_get_instance_private (this);
   GdkContentFormats *content_formats;
   const char *mime_type;
   GTask *task;
   GdkContentProvider *content;
 
-  task = g_task_new (self, cancellable, callback, user_data);
+  task = g_task_new (this, cancellable, callback, user_data);
   g_task_set_priority (task, io_priority);
   g_task_set_source_tag (task, gdk_drop_read_local_async);
 
@@ -168,12 +168,12 @@ gdk_drop_read_local_async (GdkDrop             *self,
 }
 
 static GInputStream *
-gdk_drop_read_local_finish (GdkDrop         *self,
+gdk_drop_read_local_finish (GdkDrop         *this,
                             GAsyncResult    *result,
                             const char     **out_mime_type,
                             GError         **error)
 {
-  g_return_val_if_fail (g_task_is_valid (result, self), NULL);
+  g_return_val_if_fail (g_task_is_valid (result, this), NULL);
   g_return_val_if_fail (g_task_get_source_tag (G_TASK (result)) == gdk_drop_read_local_async, NULL);
 
   if (out_mime_type)
@@ -183,10 +183,10 @@ gdk_drop_read_local_finish (GdkDrop         *self,
 }
 
 static void
-gdk_drop_add_formats (GdkDrop           *self,
+gdk_drop_add_formats (GdkDrop           *this,
                       GdkContentFormats *formats)
 {
-  GdkDropPrivate *priv = gdk_drop_get_instance_private (self);
+  GdkDropPrivate *priv = gdk_drop_get_instance_private (this);
 
   formats = gdk_content_formats_union_deserialize_gtypes (gdk_content_formats_ref (formats));
 
@@ -205,13 +205,13 @@ gdk_drop_set_property (GObject      *gobject,
                        const GValue *value,
                        GParamSpec   *pspec)
 {
-  GdkDrop *self = GDK_DROP (gobject);
-  GdkDropPrivate *priv = gdk_drop_get_instance_private (self);
+  GdkDrop *this = GDK_DROP (gobject);
+  GdkDropPrivate *priv = gdk_drop_get_instance_private (this);
 
   switch (prop_id)
     {
     case PROP_ACTIONS:
-      gdk_drop_set_actions (self, g_value_get_flags (value));
+      gdk_drop_set_actions (this, g_value_get_flags (value));
       break;
 
     case PROP_DEVICE:
@@ -224,11 +224,11 @@ gdk_drop_set_property (GObject      *gobject,
     case PROP_DRAG:
       priv->drag = g_value_dup_object (value);
       if (priv->drag)
-        gdk_drop_add_formats (self, gdk_drag_get_formats (priv->drag));
+        gdk_drop_add_formats (this, gdk_drag_get_formats (priv->drag));
       break;
 
     case PROP_FORMATS:
-      gdk_drop_add_formats (self, g_value_get_boxed (value));
+      gdk_drop_add_formats (this, g_value_get_boxed (value));
       g_assert (priv->formats != NULL);
       break;
 
@@ -251,8 +251,8 @@ gdk_drop_get_property (GObject    *gobject,
                        GValue     *value,
                        GParamSpec *pspec)
 {
-  GdkDrop *self = GDK_DROP (gobject);
-  GdkDropPrivate *priv = gdk_drop_get_instance_private (self);
+  GdkDrop *this = GDK_DROP (gobject);
+  GdkDropPrivate *priv = gdk_drop_get_instance_private (this);
 
   switch (prop_id)
     {
@@ -289,8 +289,8 @@ gdk_drop_get_property (GObject    *gobject,
 static void
 gdk_drop_finalize (GObject *object)
 {
-  GdkDrop *self = GDK_DROP (object);
-  GdkDropPrivate *priv = gdk_drop_get_instance_private (self);
+  GdkDrop *this = GDK_DROP (object);
+  GdkDropPrivate *priv = gdk_drop_get_instance_private (this);
 
   /* someone forgot to send a LEAVE signal */
   g_warn_if_fail (!priv->entered);
@@ -401,49 +401,49 @@ gdk_drop_class_init (GdkDropClass *klass)
 }
 
 static void
-gdk_drop_init (GdkDrop *self)
+gdk_drop_init (GdkDrop *this)
 {
 }
 
 /**
  * gdk_drop_get_display:
- * @self: a `GdkDrop`
+ * @this: a `GdkDrop`
  *
- * Gets the `GdkDisplay` that @self was created for.
+ * Gets the `GdkDisplay` that @this was created for.
  *
  * Returns: (transfer none): a `GdkDisplay`
  */
 GdkDisplay *
-gdk_drop_get_display (GdkDrop *self)
+gdk_drop_get_display (GdkDrop *this)
 {
-  GdkDropPrivate *priv = gdk_drop_get_instance_private (self);
+  GdkDropPrivate *priv = gdk_drop_get_instance_private (this);
 
-  g_return_val_if_fail (GDK_IS_DROP (self), NULL);
+  g_return_val_if_fail (GDK_IS_DROP (this), NULL);
 
   return gdk_device_get_display (priv->device);
 }
 
 /**
  * gdk_drop_get_device:
- * @self: a `GdkDrop`
+ * @this: a `GdkDrop`
  *
  * Returns the `GdkDevice` performing the drop.
  *
  * Returns: (transfer none): The `GdkDevice` performing the drop.
  */
 GdkDevice *
-gdk_drop_get_device (GdkDrop *self)
+gdk_drop_get_device (GdkDrop *this)
 {
-  GdkDropPrivate *priv = gdk_drop_get_instance_private (self);
+  GdkDropPrivate *priv = gdk_drop_get_instance_private (this);
 
-  g_return_val_if_fail (GDK_IS_DROP (self), NULL);
+  g_return_val_if_fail (GDK_IS_DROP (this), NULL);
 
   return priv->device;
 }
 
 /**
  * gdk_drop_get_formats:
- * @self: a `GdkDrop`
+ * @this: a `GdkDrop`
  *
  * Returns the `GdkContentFormats` that the drop offers the data
  * to be read in.
@@ -451,41 +451,41 @@ gdk_drop_get_device (GdkDrop *self)
  * Returns: (transfer none): The possible `GdkContentFormats`
  */
 GdkContentFormats *
-gdk_drop_get_formats (GdkDrop *self)
+gdk_drop_get_formats (GdkDrop *this)
 {
-  GdkDropPrivate *priv = gdk_drop_get_instance_private (self);
+  GdkDropPrivate *priv = gdk_drop_get_instance_private (this);
 
-  g_return_val_if_fail (GDK_IS_DROP (self), NULL);
+  g_return_val_if_fail (GDK_IS_DROP (this), NULL);
 
   return priv->formats;
 }
 
 /**
  * gdk_drop_get_surface:
- * @self: a `GdkDrop`
+ * @this: a `GdkDrop`
  *
  * Returns the `GdkSurface` performing the drop.
  *
  * Returns: (transfer none): The `GdkSurface` performing the drop.
  */
 GdkSurface *
-gdk_drop_get_surface (GdkDrop *self)
+gdk_drop_get_surface (GdkDrop *this)
 {
-  GdkDropPrivate *priv = gdk_drop_get_instance_private (self);
+  GdkDropPrivate *priv = gdk_drop_get_instance_private (this);
 
-  g_return_val_if_fail (GDK_IS_DROP (self), NULL);
+  g_return_val_if_fail (GDK_IS_DROP (this), NULL);
 
   return priv->surface;
 }
 
 /**
  * gdk_drop_get_actions:
- * @self: a `GdkDrop`
+ * @this: a `GdkDrop`
  *
  * Returns the possible actions for this `GdkDrop`.
  *
  * If this value contains multiple actions - i.e.
- * [func@Gdk.DragAction.is_unique] returns false for the result -
+ * [fn@Gdk.DragAction.is_unique] returns false for the result -
  * [method@Gdk.Drop.finish] must choose the action to use when
  * accepting the drop. This will only happen if you passed
  * `GDK_ACTION_ASK` as one of the possible actions in
@@ -500,22 +500,22 @@ gdk_drop_get_surface (GdkDrop *self)
  * Returns: The possible `GdkDragActions`
  */
 GdkDragAction
-gdk_drop_get_actions (GdkDrop *self)
+gdk_drop_get_actions (GdkDrop *this)
 {
-  GdkDropPrivate *priv = gdk_drop_get_instance_private (self);
+  GdkDropPrivate *priv = gdk_drop_get_instance_private (this);
 
-  g_return_val_if_fail (GDK_IS_DROP (self), GDK_ACTION_NONE);
+  g_return_val_if_fail (GDK_IS_DROP (this), GDK_ACTION_NONE);
 
   return priv->actions;
 }
 
 void
-gdk_drop_set_actions (GdkDrop       *self,
+gdk_drop_set_actions (GdkDrop       *this,
                       GdkDragAction  actions)
 {
-  GdkDropPrivate *priv = gdk_drop_get_instance_private (self);
+  GdkDropPrivate *priv = gdk_drop_get_instance_private (this);
 
-  g_return_if_fail (GDK_IS_DROP (self));
+  g_return_if_fail (GDK_IS_DROP (this));
   g_return_if_fail (priv->state == GDK_DROP_STATE_NONE);
   g_return_if_fail ((actions & GDK_ACTION_ASK) == 0);
 
@@ -524,12 +524,12 @@ gdk_drop_set_actions (GdkDrop       *self,
 
   priv->actions = actions;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIONS]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ACTIONS]);
 }
 
 /**
  * gdk_drop_get_drag:
- * @self: a `GdkDrop`
+ * @this: a `GdkDrop`
  *
  * If this is an in-app drag-and-drop operation, returns the `GdkDrag`
  * that corresponds to this drop.
@@ -539,18 +539,18 @@ gdk_drop_set_actions (GdkDrop       *self,
  * Returns: (transfer none) (nullable): the corresponding `GdkDrag`
  */
 GdkDrag *
-gdk_drop_get_drag (GdkDrop *self)
+gdk_drop_get_drag (GdkDrop *this)
 {
-  GdkDropPrivate *priv = gdk_drop_get_instance_private (self);
+  GdkDropPrivate *priv = gdk_drop_get_instance_private (this);
 
-  g_return_val_if_fail (GDK_IS_DROP (self), 0);
+  g_return_val_if_fail (GDK_IS_DROP (this), 0);
 
   return priv->drag;
 }
 
 /**
  * gdk_drop_status:
- * @self: a `GdkDrop`
+ * @this: a `GdkDrop`
  * @actions: Supported actions of the destination, or `GDK_ACTION_NONE` to
  *    indicate that a drop will not be accepted
  * @preferred: A unique action that's a member of @actions indicating the
@@ -571,25 +571,25 @@ gdk_drop_get_drag (GdkDrop *self)
  * actions first and then later call this function again.
  */
 void
-gdk_drop_status (GdkDrop       *self,
+gdk_drop_status (GdkDrop       *this,
                  GdkDragAction  actions,
                  GdkDragAction  preferred)
 {
 #ifndef G_DISABLE_CHECKS
-  GdkDropPrivate *priv = gdk_drop_get_instance_private (self);
+  GdkDropPrivate *priv = gdk_drop_get_instance_private (this);
 #endif
 
-  g_return_if_fail (GDK_IS_DROP (self));
+  g_return_if_fail (GDK_IS_DROP (this));
   g_return_if_fail (priv->state != GDK_DROP_STATE_FINISHED);
   g_return_if_fail (gdk_drag_action_is_unique (preferred));
   g_return_if_fail ((preferred & actions) == preferred);
 
-  GDK_DROP_GET_CLASS (self)->status (self, actions, preferred);
+  GDK_DROP_GET_CLASS (this)->status (this, actions, preferred);
 }
 
 /**
  * gdk_drop_finish:
- * @self: a `GdkDrop`
+ * @this: a `GdkDrop`
  * @action: the action performed by the destination or `GDK_ACTION_NONE` if the
  *   drop failed
  *
@@ -599,35 +599,35 @@ gdk_drop_status (GdkDrop       *self,
  * available via [method@Gdk.Drop.get_actions].
  */
 void
-gdk_drop_finish (GdkDrop       *self,
+gdk_drop_finish (GdkDrop       *this,
                  GdkDragAction  action)
 {
-  GdkDropPrivate *priv = gdk_drop_get_instance_private (self);
+  GdkDropPrivate *priv = gdk_drop_get_instance_private (this);
 
-  g_return_if_fail (GDK_IS_DROP (self));
+  g_return_if_fail (GDK_IS_DROP (this));
   g_return_if_fail (priv->state == GDK_DROP_STATE_DROPPING);
   g_return_if_fail (gdk_drag_action_is_unique (action));
 
-  GDK_DROP_GET_CLASS (self)->finish (self, action);
+  GDK_DROP_GET_CLASS (this)->finish (this, action);
 
   priv->state = GDK_DROP_STATE_FINISHED;
 }
 
 static void
-gdk_drop_read_internal (GdkDrop             *self,
+gdk_drop_read_internal (GdkDrop             *this,
                         GdkContentFormats   *formats,
                         int                  io_priority,
                         GCancellable        *cancellable,
                         GAsyncReadyCallback  callback,
                         gpointer             user_data)
 {
-  GdkDropPrivate *priv = gdk_drop_get_instance_private (self);
+  GdkDropPrivate *priv = gdk_drop_get_instance_private (this);
 
   g_return_if_fail (priv->state != GDK_DROP_STATE_FINISHED);
 
   if (priv->drag)
     {
-      gdk_drop_read_local_async (self,
+      gdk_drop_read_local_async (this,
                                  formats,
                                  io_priority,
                                  cancellable,
@@ -636,7 +636,7 @@ gdk_drop_read_internal (GdkDrop             *self,
     }
   else
     {
-      GDK_DROP_GET_CLASS (self)->read_async (self,
+      GDK_DROP_GET_CLASS (this)->read_async (this,
                                              formats,
                                              io_priority,
                                              cancellable,
@@ -647,7 +647,7 @@ gdk_drop_read_internal (GdkDrop             *self,
 
 /**
  * gdk_drop_read_async:
- * @self: a `GdkDrop`
+ * @this: a `GdkDrop`
  * @mime_types: (array zero-terminated=1) (element-type utf8):
  *   pointer to an array of mime types
  * @io_priority: the I/O priority for the read operation
@@ -660,7 +660,7 @@ gdk_drop_read_internal (GdkDrop             *self,
  * in a format that complies with one of the mime types.
  */
 void
-gdk_drop_read_async (GdkDrop             *self,
+gdk_drop_read_async (GdkDrop             *this,
                      const char         **mime_types,
                      int                  io_priority,
                      GCancellable        *cancellable,
@@ -669,21 +669,21 @@ gdk_drop_read_async (GdkDrop             *self,
 {
   GdkContentFormats *formats;
 
-  g_return_if_fail (GDK_IS_DROP (self));
+  g_return_if_fail (GDK_IS_DROP (this));
   g_return_if_fail (mime_types != NULL && mime_types[0] != NULL);
   g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
   g_return_if_fail (callback != NULL);
 
   formats = gdk_content_formats_new (mime_types, g_strv_length ((char **) mime_types));
 
-  gdk_drop_read_internal (self, formats, io_priority, cancellable, callback, user_data);
+  gdk_drop_read_internal (this, formats, io_priority, cancellable, callback, user_data);
 
   gdk_content_formats_unref (formats);
 }
 
 /**
  * gdk_drop_read_finish:
- * @self: a `GdkDrop`
+ * @this: a `GdkDrop`
  * @result: a `GAsyncResult`
  * @out_mime_type: (out) (type utf8) (transfer none): return location for the used mime type
  * @error: (nullable): location to store error information on failure
@@ -700,21 +700,21 @@ gdk_drop_read_async (GdkDrop             *self,
  * Returns: (nullable) (transfer full): the `GInputStream`
  */
 GInputStream *
-gdk_drop_read_finish (GdkDrop       *self,
+gdk_drop_read_finish (GdkDrop       *this,
                       GAsyncResult  *result,
                       const char   **out_mime_type,
                       GError       **error)
 {
-  g_return_val_if_fail (GDK_IS_DROP (self), NULL);
+  g_return_val_if_fail (GDK_IS_DROP (this), NULL);
   g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
   if (g_async_result_is_tagged (result, gdk_drop_read_local_async))
     {
-      return gdk_drop_read_local_finish (self, result, out_mime_type, error);
+      return gdk_drop_read_local_finish (this, result, out_mime_type, error);
     }
   else
     {
-      return GDK_DROP_GET_CLASS (self)->read_finish (self, result, out_mime_type, error);
+      return GDK_DROP_GET_CLASS (this)->read_finish (this, result, out_mime_type, error);
     }
 }
 
@@ -772,7 +772,7 @@ free_value (gpointer value)
 }
 
 static void
-gdk_drop_read_value_internal (GdkDrop             *self,
+gdk_drop_read_value_internal (GdkDrop             *this,
                               GType                type,
                               gpointer             source_tag,
                               int                  io_priority,
@@ -780,7 +780,7 @@ gdk_drop_read_value_internal (GdkDrop             *self,
                               GAsyncReadyCallback  callback,
                               gpointer             user_data)
 {
-  GdkDropPrivate *priv = gdk_drop_get_instance_private (self);
+  GdkDropPrivate *priv = gdk_drop_get_instance_private (this);
   GdkContentFormatsBuilder *builder;
   GdkContentFormats *formats;
   GValue *value;
@@ -788,7 +788,7 @@ gdk_drop_read_value_internal (GdkDrop             *self,
 
   g_return_if_fail (priv->state != GDK_DROP_STATE_FINISHED);
 
-  task = g_task_new (self, cancellable, callback, user_data);
+  task = g_task_new (this, cancellable, callback, user_data);
   g_task_set_priority (task, io_priority);
   g_task_set_source_tag (task, source_tag);
   value = g_new0 (GValue, 1);
@@ -828,7 +828,7 @@ gdk_drop_read_value_internal (GdkDrop             *self,
   formats = gdk_content_formats_builder_free_to_formats (builder);
   formats = gdk_content_formats_union_deserialize_mime_types (formats);
 
-  gdk_drop_read_internal (self,
+  gdk_drop_read_internal (this,
                           formats,
                           io_priority,
                           cancellable,
@@ -840,7 +840,7 @@ gdk_drop_read_value_internal (GdkDrop             *self,
 
 /**
  * gdk_drop_read_value_async:
- * @self: a `GdkDrop`
+ * @this: a `GdkDrop`
  * @type: a `GType` to read
  * @io_priority: the I/O priority of the request.
  * @cancellable: (nullable): optional `GCancellable` object, %NULL to ignore.
@@ -852,21 +852,21 @@ gdk_drop_read_value_internal (GdkDrop             *self,
  *
  * For local drag-and-drop operations that are available in the given
  * `GType`, the value will be copied directly. Otherwise, GDK will
- * try to use [func@Gdk.content_deserialize_async] to convert the data.
+ * try to use [fn@Gdk.content_deserialize_async] to convert the data.
  */
 void
-gdk_drop_read_value_async (GdkDrop             *self,
+gdk_drop_read_value_async (GdkDrop             *this,
                            GType                type,
                            int                  io_priority,
                            GCancellable        *cancellable,
                            GAsyncReadyCallback  callback,
                            gpointer             user_data)
 {
-  g_return_if_fail (GDK_IS_DROP (self));
+  g_return_if_fail (GDK_IS_DROP (this));
   g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
   g_return_if_fail (callback != NULL);
 
-  gdk_drop_read_value_internal (self,
+  gdk_drop_read_value_internal (this,
                                 type,
                                 gdk_drop_read_value_async,
                                 io_priority,
@@ -877,7 +877,7 @@ gdk_drop_read_value_async (GdkDrop             *self,
 
 /**
  * gdk_drop_read_value_finish:
- * @self: a `GdkDrop`
+ * @this: a `GdkDrop`
  * @result: a `GAsyncResult`
  * @error: a `GError` location to store the error occurring
  *
@@ -888,11 +888,11 @@ gdk_drop_read_value_async (GdkDrop             *self,
  * Returns: (transfer none): a `GValue` containing the result.
  */
 const GValue *
-gdk_drop_read_value_finish (GdkDrop       *self,
+gdk_drop_read_value_finish (GdkDrop       *this,
                             GAsyncResult  *result,
                             GError       **error)
 {
-  g_return_val_if_fail (g_task_is_valid (result, self), NULL);
+  g_return_val_if_fail (g_task_is_valid (result, this), NULL);
   g_return_val_if_fail (g_task_get_source_tag (G_TASK (result)) == gdk_drop_read_value_async, NULL);
   g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
@@ -914,13 +914,13 @@ gdk_drop_do_emit_event (GdkEvent *event,
     }
 }
 void
-gdk_drop_emit_enter_event (GdkDrop  *self,
+gdk_drop_emit_enter_event (GdkDrop  *this,
                            gboolean  dont_queue,
                            double    x,
                            double    y,
                            guint32   time)
 {
-  GdkDropPrivate *priv = gdk_drop_get_instance_private (self);
+  GdkDropPrivate *priv = gdk_drop_get_instance_private (this);
   GdkEvent *event;
 
   g_warn_if_fail (!priv->entered);
@@ -928,7 +928,7 @@ gdk_drop_emit_enter_event (GdkDrop  *self,
   event = gdk_dnd_event_new (GDK_DRAG_ENTER,
                              priv->surface,
                              priv->device,
-                             self,
+                             this,
                              time,
                              0, 0);
 
@@ -938,13 +938,13 @@ gdk_drop_emit_enter_event (GdkDrop  *self,
 }
 
 void
-gdk_drop_emit_motion_event (GdkDrop  *self,
+gdk_drop_emit_motion_event (GdkDrop  *this,
                             gboolean  dont_queue,
                             double    x,
                             double    y,
                             guint32   time)
 {
-  GdkDropPrivate *priv = gdk_drop_get_instance_private (self);
+  GdkDropPrivate *priv = gdk_drop_get_instance_private (this);
   GdkEvent *event;
 
   g_warn_if_fail (priv->entered);
@@ -952,7 +952,7 @@ gdk_drop_emit_motion_event (GdkDrop  *self,
   event = gdk_dnd_event_new (GDK_DRAG_MOTION,
                              priv->surface,
                              priv->device,
-                             self,
+                             this,
                              time,
                              x, y);
 
@@ -960,11 +960,11 @@ gdk_drop_emit_motion_event (GdkDrop  *self,
 }
 
 void
-gdk_drop_emit_leave_event (GdkDrop  *self,
+gdk_drop_emit_leave_event (GdkDrop  *this,
                            gboolean  dont_queue,
                            guint32   time)
 {
-  GdkDropPrivate *priv = gdk_drop_get_instance_private (self);
+  GdkDropPrivate *priv = gdk_drop_get_instance_private (this);
   GdkEvent *event;
 
   g_warn_if_fail (priv->entered);
@@ -972,7 +972,7 @@ gdk_drop_emit_leave_event (GdkDrop  *self,
   event = gdk_dnd_event_new (GDK_DRAG_LEAVE,
                              priv->surface,
                              priv->device,
-                             self,
+                             this,
                              time,
                              0, 0);
 
@@ -982,13 +982,13 @@ gdk_drop_emit_leave_event (GdkDrop  *self,
 }
 
 void
-gdk_drop_emit_drop_event (GdkDrop  *self,
+gdk_drop_emit_drop_event (GdkDrop  *this,
                           gboolean  dont_queue,
                           double    x,
                           double    y,
                           guint32   time)
 {
-  GdkDropPrivate *priv = gdk_drop_get_instance_private (self);
+  GdkDropPrivate *priv = gdk_drop_get_instance_private (this);
   GdkEvent *event;
 
   g_warn_if_fail (priv->entered);
@@ -997,7 +997,7 @@ gdk_drop_emit_drop_event (GdkDrop  *self,
   event = gdk_dnd_event_new (GDK_DROP_START,
                              priv->surface,
                              priv->device,
-                             self,
+                             this,
                              time,
                              x, y);
 

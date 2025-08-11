@@ -42,6 +42,6 @@ GDK_AVAILABLE_IN_4_18
 GFile *gdk_android_content_file_from_uri (jobject uri);
 
 GDK_AVAILABLE_IN_4_18
-jobject gdk_android_content_file_get_uri_object (GdkAndroidContentFile *self);
+jobject gdk_android_content_file_get_uri_object (GdkAndroidContentFile *this);
 
 G_END_DECLS

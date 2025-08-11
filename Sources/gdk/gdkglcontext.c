@@ -30,7 +30,7 @@
  * A `GdkGLContext` is not tied to any particular normal framebuffer.
  * For instance, it cannot draw to the surface back buffer. The GDK
  * repaint system is in full control of the painting to that. Instead,
- * you can create render buffers or textures and use [func@cairo_draw_from_gl]
+ * you can create render buffers or textures and use [fn@cairo_draw_from_gl]
  * in the draw function of your widget to draw them. Then GDK will handle
  * the integration of your rendering with that of other widgets.
  *
@@ -67,8 +67,8 @@
  * You can now perform your drawing using OpenGL commands.
  *
  * You can check which `GdkGLContext` is the current one by using
- * [func@Gdk.GLContext.get_current]; you can also unset any `GdkGLContext`
- * that is currently set by calling [func@Gdk.GLContext.clear_current].
+ * [fn@Gdk.GLContext.get_current]; you can also unset any `GdkGLContext`
+ * that is currently set by calling [fn@Gdk.GLContext.clear_current].
  */
 
 #include "config.h"
@@ -234,12 +234,12 @@ gdk_gl_context_set_property (GObject      *object,
                              const GValue *value,
                              GParamSpec   *pspec)
 {
-  GdkGLContext *self = GDK_GL_CONTEXT (object);
+  GdkGLContext *this = GDK_GL_CONTEXT (object);
 
   switch (prop_id)
     {
     case PROP_ALLOWED_APIS:
-      gdk_gl_context_set_allowed_apis (self, g_value_get_flags (value));
+      gdk_gl_context_set_allowed_apis (this, g_value_get_flags (value));
       break;
 
     case PROP_SHARED_CONTEXT:
@@ -257,8 +257,8 @@ gdk_gl_context_get_property (GObject    *object,
                              GValue     *value,
                              GParamSpec *pspec)
 {
-  GdkGLContext *self = GDK_GL_CONTEXT (object);
-  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (self);
+  GdkGLContext *this = GDK_GL_CONTEXT (object);
+  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (this);
 
   switch (prop_id)
     {
@@ -524,10 +524,10 @@ gdk_gl_context_real_get_damage (GdkGLContext *context)
 }
 
 static gboolean
-gdk_gl_context_real_is_shared (GdkGLContext *self,
+gdk_gl_context_real_is_shared (GdkGLContext *this,
                                GdkGLContext *other)
 {
-  if (gdk_draw_context_get_display (GDK_DRAW_CONTEXT (self)) != gdk_draw_context_get_display (GDK_DRAW_CONTEXT (other)))
+  if (gdk_draw_context_get_display (GDK_DRAW_CONTEXT (this)) != gdk_draw_context_get_display (GDK_DRAW_CONTEXT (other)))
     return FALSE;
 
   /* XXX: Should we check es or legacy here? */
@@ -536,10 +536,10 @@ gdk_gl_context_real_is_shared (GdkGLContext *self,
 }
 
 static gboolean
-gdk_gl_context_real_is_current (GdkGLContext *self)
+gdk_gl_context_real_is_current (GdkGLContext *this)
 {
 #ifdef HAVE_EGL
-  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (self);
+  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (this);
 
   return priv->egl_context == eglGetCurrentContext ();
 #else
@@ -594,10 +594,10 @@ gdk_gl_context_real_make_current (GdkGLContext *context,
 
 #ifdef HAVE_EGL
 void
-gdk_gl_context_set_egl_native_window (GdkGLContext *self,
+gdk_gl_context_set_egl_native_window (GdkGLContext *this,
                                       gpointer      native_window)
 {
-  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (self);
+  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (this);
   GdkGLContext *current = NULL;
 
   /* This checks that all EGL platforms we support conform to the same struct sizes.
@@ -607,7 +607,7 @@ gdk_gl_context_set_egl_native_window (GdkGLContext *self,
 
   if (priv->egl_surface != NULL)
     {
-      GdkDrawContext *draw_context = GDK_DRAW_CONTEXT (self);
+      GdkDrawContext *draw_context = GDK_DRAW_CONTEXT (this);
       GdkDisplay *display = gdk_draw_context_get_display (draw_context);
 
       current = gdk_gl_context_clear_current_if_surface (gdk_draw_context_get_surface (draw_context));
@@ -626,11 +626,11 @@ gdk_gl_context_set_egl_native_window (GdkGLContext *self,
 }
 
 static void
-gdk_gl_context_ensure_egl_surface (GdkGLContext   *self,
+gdk_gl_context_ensure_egl_surface (GdkGLContext   *this,
                                    GdkMemoryDepth  depth)
 {
-  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (self);
-  GdkDrawContext *draw_context = GDK_DRAW_CONTEXT (self);
+  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (this);
+  GdkDrawContext *draw_context = GDK_DRAW_CONTEXT (this);
   GdkSurface *surface = gdk_draw_context_get_surface (draw_context);
   GdkDisplay *display = gdk_draw_context_get_display (draw_context);
 
@@ -825,10 +825,10 @@ static void
 gdk_gl_context_surface_detach (GdkDrawContext *draw_context)
 {
 #ifdef HAVE_EGL
-  GdkGLContext *self = GDK_GL_CONTEXT (draw_context);
-  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (self);
+  GdkGLContext *this = GDK_GL_CONTEXT (draw_context);
+  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (this);
 
-  gdk_gl_context_set_egl_native_window (self, NULL);
+  gdk_gl_context_set_egl_native_window (this, NULL);
   g_assert (priv->egl_native_window == NULL);
   g_assert (priv->egl_surface == NULL);
 
@@ -845,7 +845,7 @@ gdk_gl_context_surface_resized (GdkDrawContext *draw_context)
 }
 
 static guint
-gdk_gl_context_real_get_default_framebuffer (GdkGLContext *self)
+gdk_gl_context_real_get_default_framebuffer (GdkGLContext *this)
 {
   return 0;
 }
@@ -926,9 +926,9 @@ gdk_gl_context_class_init (GdkGLContextClass *klass)
 }
 
 static void
-gdk_gl_context_init (GdkGLContext *self)
+gdk_gl_context_init (GdkGLContext *this)
 {
-  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (self);
+  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (this);
 
   priv->allowed_apis = DEFAULT_ALLOWED_APIS;
 }
@@ -1042,10 +1042,10 @@ gdk_gl_context_label_object_printf  (GdkGLContext *context,
 
 
 gboolean
-gdk_gl_context_has_feature (GdkGLContext  *self,
+gdk_gl_context_has_feature (GdkGLContext  *this,
                             GdkGLFeatures  feature)
 {
-  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (self);
+  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (this);
 
   return (priv->features & feature) == feature;
 }
@@ -1207,15 +1207,15 @@ gdk_gl_context_set_required_version (GdkGLContext *context,
 }
 
 gboolean
-gdk_gl_context_check_gl_version (GdkGLContext       *self,
+gdk_gl_context_check_gl_version (GdkGLContext       *this,
                                  const GdkGLVersion *required_gl,
                                  const GdkGLVersion *required_gles)
 {
-  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (self);
+  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (this);
 
-  g_return_val_if_fail (GDK_IS_GL_CONTEXT (self), FALSE);
+  g_return_val_if_fail (GDK_IS_GL_CONTEXT (this), FALSE);
 
-  if (!gdk_gl_context_is_realized (self))
+  if (!gdk_gl_context_is_realized (this))
     return FALSE;
 
   switch (priv->api)
@@ -1314,12 +1314,12 @@ gdk_gl_context_set_is_legacy (GdkGLContext *context,
 
 /**
  * gdk_gl_context_is_shared:
- * @self: a `GdkGLContext`
- * @other: the `GdkGLContext` that should be compatible with @self
+ * @this: a `GdkGLContext`
+ * @other: the `GdkGLContext` that should be compatible with @this
  *
  * Checks if the two GL contexts can share resources.
  *
- * When they can, the texture IDs from @other can be used in @self. This
+ * When they can, the texture IDs from @other can be used in @this. This
  * is particularly useful when passing `GdkGLTexture` objects between
  * different contexts.
  *
@@ -1335,22 +1335,22 @@ gdk_gl_context_set_is_legacy (GdkGLContext *context,
  * Since: 4.4
  */
 gboolean
-gdk_gl_context_is_shared (GdkGLContext *self,
+gdk_gl_context_is_shared (GdkGLContext *this,
                           GdkGLContext *other)
 {
-  g_return_val_if_fail (GDK_IS_GL_CONTEXT (self), FALSE);
+  g_return_val_if_fail (GDK_IS_GL_CONTEXT (this), FALSE);
   g_return_val_if_fail (GDK_IS_GL_CONTEXT (other), FALSE);
 
-  if (!gdk_gl_context_is_realized (self) ||
+  if (!gdk_gl_context_is_realized (this) ||
       !gdk_gl_context_is_realized (other))
     return FALSE;
 
-  return GDK_GL_CONTEXT_GET_CLASS (self)->is_shared (self, other);
+  return GDK_GL_CONTEXT_GET_CLASS (this)->is_shared (this, other);
 }
 
 /**
  * gdk_gl_context_set_allowed_apis:
- * @self: a GL context
+ * @this: a GL context
  * @apis: the allowed APIs
  *
  * Sets the allowed APIs. When gdk_gl_context_realize() is called, only the
@@ -1364,24 +1364,24 @@ gdk_gl_context_is_shared (GdkGLContext *self,
  * Since: 4.6
  **/
 void
-gdk_gl_context_set_allowed_apis (GdkGLContext *self,
+gdk_gl_context_set_allowed_apis (GdkGLContext *this,
                                  GdkGLAPI      apis)
 {
-  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (self);
+  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (this);
 
-  g_return_if_fail (GDK_IS_GL_CONTEXT (self));
+  g_return_if_fail (GDK_IS_GL_CONTEXT (this));
 
   if (priv->allowed_apis == apis)
     return;
 
   priv->allowed_apis = apis;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ALLOWED_APIS]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ALLOWED_APIS]);
 }
 
 /**
  * gdk_gl_context_get_allowed_apis:
- * @self: a GL context
+ * @this: a GL context
  *
  * Gets the allowed APIs set via gdk_gl_context_set_allowed_apis().
  *
@@ -1390,18 +1390,18 @@ gdk_gl_context_set_allowed_apis (GdkGLContext *self,
  * Since: 4.6
  **/
 GdkGLAPI
-gdk_gl_context_get_allowed_apis (GdkGLContext *self)
+gdk_gl_context_get_allowed_apis (GdkGLContext *this)
 {
-  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (self);
+  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (this);
 
-  g_return_val_if_fail (GDK_IS_GL_CONTEXT (self), 0);
+  g_return_val_if_fail (GDK_IS_GL_CONTEXT (this), 0);
 
   return priv->allowed_apis;
 }
 
 /**
  * gdk_gl_context_get_api:
- * @self: a GL context
+ * @this: a GL context
  *
  * Gets the API currently in use.
  *
@@ -1412,21 +1412,21 @@ gdk_gl_context_get_allowed_apis (GdkGLContext *self)
  * Since: 4.6
  **/
 GdkGLAPI
-gdk_gl_context_get_api (GdkGLContext *self)
+gdk_gl_context_get_api (GdkGLContext *this)
 {
-  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (self);
+  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (this);
 
-  g_return_val_if_fail (GDK_IS_GL_CONTEXT (self), 0);
+  g_return_val_if_fail (GDK_IS_GL_CONTEXT (this), 0);
 
   return priv->api;
 }
 
 gboolean
-gdk_gl_context_is_api_allowed (GdkGLContext  *self,
+gdk_gl_context_is_api_allowed (GdkGLContext  *this,
                                GdkGLAPI       api,
                                GError       **error)
 {
-  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (self);
+  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (this);
   GdkGLAPI allowed_apis;
 
   allowed_apis = priv->allowed_apis;
@@ -1665,12 +1665,12 @@ gdk_gl_context_realize (GdkGLContext  *context,
 }
 
 static void
-gdk_gl_context_init_memory_flags (GdkGLContext *self)
+gdk_gl_context_init_memory_flags (GdkGLContext *this)
 {
-  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (self);
+  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (this);
   gsize i;
 
-  if (!gdk_gl_context_get_use_es (self))
+  if (!gdk_gl_context_get_use_es (this))
     {
       for (i = 0; i < G_N_ELEMENTS (priv->memory_flags); i++)
         {
@@ -2039,9 +2039,9 @@ gdk_gl_context_get_version (GdkGLContext *context,
 }
 
 const char *
-gdk_gl_context_get_glsl_version_string (GdkGLContext *self)
+gdk_gl_context_get_glsl_version_string (GdkGLContext *this)
 {
-  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (self);
+  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (this);
 
   if (priv->api == GDK_GL_API_GL)
     {
@@ -2172,10 +2172,10 @@ gdk_gl_context_get_current (void)
 }
 
 GdkGLMemoryFlags
-gdk_gl_context_get_format_flags (GdkGLContext    *self,
+gdk_gl_context_get_format_flags (GdkGLContext    *this,
                                  GdkMemoryFormat  format)
 {
-  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (self);
+  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (this);
 
   return priv->memory_flags[format];
 }
@@ -2184,9 +2184,9 @@ gdk_gl_context_get_format_flags (GdkGLContext    *self,
  * can be used
  */
 gboolean
-gdk_gl_context_has_vertex_arrays (GdkGLContext *self)
+gdk_gl_context_has_vertex_arrays (GdkGLContext *this)
 {
-  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (self);
+  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (this);
 
   switch (priv->api)
     {
@@ -2296,13 +2296,13 @@ gdk_gl_backend_use (GdkGLBackend backend_type)
 }
 
 gboolean
-gdk_gl_context_export_dmabuf (GdkGLContext *self,
+gdk_gl_context_export_dmabuf (GdkGLContext *this,
                               unsigned int  texture_id,
                               GdkDmabuf    *dmabuf)
 {
 #if defined(HAVE_EGL) && defined(HAVE_DMABUF)
-  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (self);
-  GdkDisplay *display = gdk_gl_context_get_display (self);
+  GdkGLContextPrivate *priv = gdk_gl_context_get_instance_private (this);
+  GdkDisplay *display = gdk_gl_context_get_display (this);
   EGLDisplay egl_display = gdk_display_get_egl_display (display);
   EGLContext egl_context = priv->egl_context;
   EGLint attribs[10];
@@ -2316,7 +2316,7 @@ gdk_gl_context_export_dmabuf (GdkGLContext *self,
   int strides[GDK_DMABUF_MAX_PLANES];
   int offsets[GDK_DMABUF_MAX_PLANES];
 
-  g_return_val_if_fail (GDK_IS_GL_CONTEXT (self), FALSE);
+  g_return_val_if_fail (GDK_IS_GL_CONTEXT (this), FALSE);
   g_return_val_if_fail (texture_id > 0, FALSE);
   g_return_val_if_fail (dmabuf != NULL, FALSE);
 
@@ -2423,7 +2423,7 @@ out:
 }
 
 static gboolean
-gdk_gl_context_find_format (GdkGLContext    *self,
+gdk_gl_context_find_format (GdkGLContext    *this,
                             GdkMemoryAlpha   alpha,
                             GLint            gl_format,
                             GLint            gl_type,
@@ -2440,12 +2440,12 @@ gdk_gl_context_find_format (GdkGLContext    *self,
       if (gdk_memory_format_alpha (format) != alpha)
         continue;
 
-      if (!(gdk_gl_context_get_format_flags (self, format) & GDK_GL_FORMAT_RENDERABLE))
+      if (!(gdk_gl_context_get_format_flags (this, format) & GDK_GL_FORMAT_RENDERABLE))
         continue;
 
       if (!gdk_memory_format_gl_format (format,
                                         0,
-                                        gdk_gl_context_get_use_es (self),
+                                        gdk_gl_context_get_use_es (this),
                                         &q_internal_format,
                                         &q_internal_srgb_format,
                                         &q_format,
@@ -2464,7 +2464,7 @@ gdk_gl_context_find_format (GdkGLContext    *self,
 }
 
 void
-gdk_gl_context_download (GdkGLContext          *self,
+gdk_gl_context_download (GdkGLContext          *this,
                          GLuint                 tex_id,
                          GdkMemoryFormat        tex_format,
                          GdkColorState         *tex_color_state,
@@ -2483,12 +2483,12 @@ gdk_gl_context_download (GdkGLContext          *self,
                                        * gdk_memory_format_get_plane_block_bytes (dest_layout->format, 0);
   expected_stride = (expected_stride + 3) & ~3;
 
-  if (!gdk_gl_context_get_use_es (self) &&
-      ((gdk_gl_context_get_format_flags (self, tex_format) & GDK_GL_FORMAT_USABLE) == GDK_GL_FORMAT_USABLE))
+  if (!gdk_gl_context_get_use_es (this) &&
+      ((gdk_gl_context_get_format_flags (this, tex_format) & GDK_GL_FORMAT_USABLE) == GDK_GL_FORMAT_USABLE))
     {
       if (!gdk_memory_format_gl_format (tex_format,
                                         0,
-                                        gdk_gl_context_get_use_es (self),
+                                        gdk_gl_context_get_use_es (this),
                                         &gl_internal_format, &gl_internal_srgb_format,
                                         &gl_format, &gl_type, &gl_swizzle))
         {
@@ -2545,12 +2545,12 @@ gdk_gl_context_download (GdkGLContext          *self,
       glGenFramebuffers (1, &fbo);
       glBindFramebuffer (GL_FRAMEBUFFER, fbo);
       glFramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_id, 0);
-      if (gdk_gl_context_check_version (self, "4.3", "3.1"))
+      if (gdk_gl_context_check_version (this, "4.3", "3.1"))
         {
           GLint read_format, read_type;
           glGetFramebufferParameteriv (GL_FRAMEBUFFER, GL_IMPLEMENTATION_COLOR_READ_FORMAT, &read_format);
           glGetFramebufferParameteriv (GL_FRAMEBUFFER, GL_IMPLEMENTATION_COLOR_READ_TYPE, &read_type);
-          if (gdk_gl_context_find_format (self, gdk_memory_format_alpha (tex_format), read_format, read_type, &actual_format))
+          if (gdk_gl_context_find_format (this, gdk_memory_format_alpha (tex_format), read_format, read_type, &actual_format))
             {
               gl_read_format = read_format;
               gl_read_type = read_type;
@@ -2563,7 +2563,7 @@ gdk_gl_context_download (GdkGLContext          *self,
 
               if (!gdk_memory_format_gl_format (actual_format,
                                                 0,
-                                                gdk_gl_context_get_use_es (self),
+                                                gdk_gl_context_get_use_es (this),
                                                 &gl_internal_format, &gl_internal_srgb_format,
                                                 &gl_read_format, &gl_read_type, &gl_swizzle))
                 {
@@ -2579,7 +2579,7 @@ gdk_gl_context_download (GdkGLContext          *self,
 
           if (!gdk_memory_format_gl_format (actual_format,
                                             0,
-                                            gdk_gl_context_get_use_es (self),
+                                            gdk_gl_context_get_use_es (this),
                                             &gl_internal_format, &gl_internal_srgb_format,
                                             &gl_read_format, &gl_read_type, &gl_swizzle))
             {

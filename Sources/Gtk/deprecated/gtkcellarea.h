@@ -518,7 +518,7 @@ void                  gtk_cell_area_request_renderer               (GtkCellArea 
  */
 void                 _gtk_cell_area_set_cell_data_func_with_proxy  (GtkCellArea           *area,
 								    GtkCellRenderer       *cell,
-								    GFunc                  func,
+								    GFunc                  fn,
 								    gpointer               func_data,
 								    GDestroyNotify         destroy,
 								    gpointer               proxy);

@@ -144,7 +144,7 @@ GDK_AVAILABLE_IN_ALL
 void    gtk_test_accessible_assertion_message_role      (const char        *domain,
                                                          const char        *file,
                                                          int                line,
-                                                         const char        *func,
+                                                         const char        *fn,
                                                          const char        *expr,
                                                          GtkAccessible     *accessible,
                                                          GtkAccessibleRole  expected_role,

@@ -263,21 +263,21 @@ disconnect_frame_clock (GdkSurface *surface)
 static void
 gdk_broadway_surface_constructed (GObject *object)
 {
-  GdkBroadwaySurface *self = GDK_BROADWAY_SURFACE (object);
+  GdkBroadwaySurface *this = GDK_BROADWAY_SURFACE (object);
   GdkSurface *surface = GDK_SURFACE (object);
   GdkBroadwayDisplay *broadway_display = GDK_BROADWAY_DISPLAY (gdk_surface_get_display (surface));
 
   if (!surface->parent)
-    broadway_display->toplevels = g_list_prepend (broadway_display->toplevels, self);
+    broadway_display->toplevels = g_list_prepend (broadway_display->toplevels, this);
 
-  self->resizible = TRUE;
-  self->id = _gdk_broadway_server_new_surface (broadway_display->server,
-                                               self->root_x,
-                                               self->root_y,
+  this->resizible = TRUE;
+  this->id = _gdk_broadway_server_new_surface (broadway_display->server,
+                                               this->root_x,
+                                               this->root_y,
                                                1, 1);
-  g_hash_table_insert (broadway_display->id_ht, GINT_TO_POINTER (self->id), surface);
+  g_hash_table_insert (broadway_display->id_ht, GINT_TO_POINTER (this->id), surface);
 
-  g_object_ref (self);
+  g_object_ref (this);
 
   G_OBJECT_CLASS (gdk_broadway_surface_parent_class)->constructed (object);
 
@@ -1391,20 +1391,20 @@ gdk_broadway_popup_init (GdkBroadwayPopup *popup)
 static void
 gdk_broadway_popup_constructed (GObject *object)
 {
-  GdkBroadwaySurface *self = GDK_BROADWAY_SURFACE (object);
-  GdkSurface *surface = GDK_SURFACE (self);
+  GdkBroadwaySurface *this = GDK_BROADWAY_SURFACE (object);
+  GdkSurface *surface = GDK_SURFACE (this);
   GdkBroadwayDisplay *broadway_display = GDK_BROADWAY_DISPLAY (gdk_surface_get_display (surface));
 
-  self->root_x = GDK_BROADWAY_SURFACE (surface->parent)->root_x;
-  self->root_y = GDK_BROADWAY_SURFACE (surface->parent)->root_y;
+  this->root_x = GDK_BROADWAY_SURFACE (surface->parent)->root_x;
+  this->root_y = GDK_BROADWAY_SURFACE (surface->parent)->root_y;
 
   gdk_surface_set_frame_clock (surface, gdk_surface_get_frame_clock (surface->parent));
 
   G_OBJECT_CLASS (gdk_broadway_popup_parent_class)->constructed (object);
 
   /* We treat the real parent as a default transient for to get stacking right */
-  self->transient_for = GDK_BROADWAY_SURFACE (surface->parent)->id;
-  _gdk_broadway_server_surface_set_transient_for (broadway_display->server, self->id, self->transient_for);
+  this->transient_for = GDK_BROADWAY_SURFACE (surface->parent)->id;
+  _gdk_broadway_server_surface_set_transient_for (broadway_display->server, this->id, this->transient_for);
 }
 
 static void

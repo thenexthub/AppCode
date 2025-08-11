@@ -68,24 +68,24 @@ struct _GtkTextClass
 
   /* Action signals
    */
-  void (* activate)           (GtkText         *self);
-  void (* move_cursor)        (GtkText         *self,
+  void (* activate)           (GtkText         *this);
+  void (* move_cursor)        (GtkText         *this,
                                GtkMovementStep  step,
                                int              count,
                                gboolean         extend);
-  void (* insert_at_cursor)   (GtkText         *self,
+  void (* insert_at_cursor)   (GtkText         *this,
                                const char      *str);
-  void (* delete_from_cursor) (GtkText         *self,
+  void (* delete_from_cursor) (GtkText         *this,
                                GtkDeleteType    type,
                                int              count);
-  void (* backspace)          (GtkText         *self);
-  void (* cut_clipboard)      (GtkText         *self);
-  void (* copy_clipboard)     (GtkText         *self);
-  void (* paste_clipboard)    (GtkText         *self);
-  void (* toggle_overwrite)   (GtkText         *self);
-  void (* insert_emoji)       (GtkText         *self);
-  void (* undo)               (GtkText         *self);
-  void (* redo)               (GtkText         *self);
+  void (* backspace)          (GtkText         *this);
+  void (* cut_clipboard)      (GtkText         *this);
+  void (* copy_clipboard)     (GtkText         *this);
+  void (* paste_clipboard)    (GtkText         *this);
+  void (* toggle_overwrite)   (GtkText         *this);
+  void (* insert_emoji)       (GtkText         *this);
+  void (* undo)               (GtkText         *this);
+  void (* redo)               (GtkText         *this);
 };
 
 char *              gtk_text_get_display_text   (GtkText    *entry,

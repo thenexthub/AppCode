@@ -44,7 +44,7 @@
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 
 typedef struct {
-  GtkFileChooserNative *self;
+  GtkFileChooserNative *this;
 
   GtkWidget *grab_widget;
 
@@ -102,9 +102,9 @@ typedef struct {
 
 
 static ULONG STDMETHODCALLTYPE
-ifiledialogevents_AddRef (IFileDialogEvents *self)
+ifiledialogevents_AddRef (IFileDialogEvents *this)
 {
-  FileDialogEvents *events = (FileDialogEvents *)self;
+  FileDialogEvents *events = (FileDialogEvents *)this;
   ULONG ref_count;
 
   G_LOCK (FileDialogEvents);
@@ -115,9 +115,9 @@ ifiledialogevents_AddRef (IFileDialogEvents *self)
 }
 
 static ULONG STDMETHODCALLTYPE
-ifiledialogevents_Release (IFileDialogEvents *self)
+ifiledialogevents_Release (IFileDialogEvents *this)
 {
-  FileDialogEvents *events = (FileDialogEvents *)self;
+  FileDialogEvents *events = (FileDialogEvents *)this;
   int ref_count;
 
   G_LOCK (FileDialogEvents);
@@ -125,21 +125,21 @@ ifiledialogevents_Release (IFileDialogEvents *self)
   G_UNLOCK (FileDialogEvents);
 
   if (ref_count == 0)
-    g_free (self);
+    g_free (this);
 
   return ref_count;
 }
 
 static HRESULT STDMETHODCALLTYPE
-ifiledialogevents_QueryInterface (IFileDialogEvents *self,
+ifiledialogevents_QueryInterface (IFileDialogEvents *this,
                                   REFIID       riid,
                                   LPVOID      *ppvObject)
 {
   if (IsEqualIID (riid, &IID_IUnknown) ||
       IsEqualIID (riid, &myIID_IFileDialogEvents))
     {
-      *ppvObject = self;
-      IUnknown_AddRef ((IUnknown *)self);
+      *ppvObject = this;
+      IUnknown_AddRef ((IUnknown *)this);
       return NOERROR;
     }
   else
@@ -150,14 +150,14 @@ ifiledialogevents_QueryInterface (IFileDialogEvents *self,
 }
 
 static HRESULT STDMETHODCALLTYPE
-ifiledialogevents_OnFileOk (IFileDialogEvents *self,
+ifiledialogevents_OnFileOk (IFileDialogEvents *this,
                             IFileDialog *pfd)
 {
   return S_OK;
 }
 
 static HRESULT STDMETHODCALLTYPE
-ifiledialogevents_OnFolderChanging (IFileDialogEvents *self,
+ifiledialogevents_OnFolderChanging (IFileDialogEvents *this,
                                     IFileDialog *pfd,
                                     IShellItem *psiFolder)
 {
@@ -165,10 +165,10 @@ ifiledialogevents_OnFolderChanging (IFileDialogEvents *self,
 }
 
 static HRESULT STDMETHODCALLTYPE
-ifiledialogevents_OnFolderChange (IFileDialogEvents *self,
+ifiledialogevents_OnFolderChange (IFileDialogEvents *this,
                                   IFileDialog *pfd)
 {
-  FileDialogEvents *events = (FileDialogEvents *)self;
+  FileDialogEvents *events = (FileDialogEvents *)this;
   IOleWindow *olew = NULL;
   HWND dialog_hwnd;
   HRESULT hr;
@@ -211,14 +211,14 @@ ifiledialogevents_OnFolderChange (IFileDialogEvents *self,
 }
 
 static HRESULT STDMETHODCALLTYPE
-ifiledialogevents_OnSelectionChange (IFileDialogEvents * self,
+ifiledialogevents_OnSelectionChange (IFileDialogEvents * this,
                                      IFileDialog *pfd)
 {
   return S_OK;
 }
 
 static HRESULT STDMETHODCALLTYPE
-ifiledialogevents_OnShareViolation (IFileDialogEvents * self,
+ifiledialogevents_OnShareViolation (IFileDialogEvents * this,
                                     IFileDialog *pfd,
                                     IShellItem *psi,
                                     FDE_SHAREVIOLATION_RESPONSE *pResponse)
@@ -227,10 +227,10 @@ ifiledialogevents_OnShareViolation (IFileDialogEvents * self,
 }
 
 static HRESULT STDMETHODCALLTYPE
-ifiledialogevents_OnTypeChange (IFileDialogEvents * self,
+ifiledialogevents_OnTypeChange (IFileDialogEvents * this,
                                 IFileDialog *pfd)
 {
-  FileDialogEvents *events = (FileDialogEvents *) self;
+  FileDialogEvents *events = (FileDialogEvents *) this;
   UINT fileType;
   HRESULT hr = IFileDialog_GetFileTypeIndex (pfd, &fileType);
   if (FAILED (hr))
@@ -239,17 +239,17 @@ ifiledialogevents_OnTypeChange (IFileDialogEvents * self,
       return S_OK;
     }
   fileType--; // fileTypeIndex starts at 1 
-  GListModel *filters = gtk_file_chooser_get_filters (GTK_FILE_CHOOSER (events->data->self));
+  GListModel *filters = gtk_file_chooser_get_filters (GTK_FILE_CHOOSER (events->data->this));
   GtkFileFilter *filter = g_list_model_get_item (filters, fileType);
-  events->data->self->current_filter = filter;
+  events->data->this->current_filter = filter;
   g_object_unref (filter);
   g_object_unref (filters);
-  g_object_notify (G_OBJECT (events->data->self), "filter");
+  g_object_notify (G_OBJECT (events->data->this), "filter");
   return S_OK;
 }
 
 static HRESULT STDMETHODCALLTYPE
-ifiledialogevents_OnOverwrite (IFileDialogEvents * self,
+ifiledialogevents_OnOverwrite (IFileDialogEvents * this,
                                IFileDialog *pfd,
                                IShellItem *psi,
                                FDE_OVERWRITE_RESPONSE *pResponse)
@@ -271,9 +271,9 @@ static IFileDialogEventsVtbl ifde_vtbl = {
 };
 
 static void
-file_dialog_events_send_close (IFileDialogEvents *self)
+file_dialog_events_send_close (IFileDialogEvents *this)
 {
-  FileDialogEvents *events = (FileDialogEvents *)self;
+  FileDialogEvents *events = (FileDialogEvents *)this;
 
   G_LOCK (FileDialogEvents);
 
@@ -333,7 +333,7 @@ filechooser_win32_thread_data_free (FilechooserWin32ThreadData *data)
     }
   g_clear_object (&data->shortcut_files);
   g_slist_free_full (data->files, g_object_unref);
-  g_clear_object (&data->self);
+  g_clear_object (&data->this);
   g_free (data->accept_label);
   g_free (data->cancel_label);
   g_free (data->title);
@@ -344,16 +344,16 @@ static gboolean
 filechooser_win32_thread_done (gpointer _data)
 {
   FilechooserWin32ThreadData *data = _data;
-  GtkFileChooserNative *self = data->self;
+  GtkFileChooserNative *this = data->this;
   GSList *l;
 
-  self->mode_data = NULL;
+  this->mode_data = NULL;
 
-  for (l = self->choices; l; l = l->next)
+  for (l = this->choices; l; l = l->next)
     {
       GtkFileChooserNativeChoice *choice = (GtkFileChooserNativeChoice*) l->data;
       int sel = g_array_index (data->choices_selections, int,
-                                g_slist_position (self->choices, l));
+                                g_slist_position (this->choices, l));
 
       if (sel >= 0)
         {
@@ -372,11 +372,11 @@ filechooser_win32_thread_done (gpointer _data)
 
   if (!data->skip_response)
     {
-      g_slist_free_full (self->custom_files, g_object_unref);
-      self->custom_files = g_slist_reverse(data->files);
+      g_slist_free_full (this->custom_files, g_object_unref);
+      this->custom_files = g_slist_reverse(data->files);
       data->files = NULL;
 
-      _gtk_native_dialog_emit_response (GTK_NATIVE_DIALOG (data->self),
+      _gtk_native_dialog_emit_response (GTK_NATIVE_DIALOG (data->this),
                                         data->response);
     }
 
@@ -599,17 +599,17 @@ filechooser_win32_thread (gpointer _data)
       if (FAILED (hr))
         g_warning_hr ("Can't set default extension", hr);
 
-      if (data->self->current_filter)
+      if (data->this->current_filter)
         {
           GListModel *filters;
           guint current_filter_index = GTK_INVALID_LIST_POSITION;
 
-          filters = gtk_file_chooser_get_filters (GTK_FILE_CHOOSER (data->self));
+          filters = gtk_file_chooser_get_filters (GTK_FILE_CHOOSER (data->this));
           n_items = g_list_model_get_n_items (filters);
           for (j = 0; j < n_items; j++)
             {
               gpointer item = g_list_model_get_item (filters, j);
-              if (item == data->self->current_filter)
+              if (item == data->this->current_filter)
                 {
                   current_filter_index = j;
                   g_object_unref (item);
@@ -632,18 +632,18 @@ filechooser_win32_thread (gpointer _data)
         g_warning_hr ("Can't set current file type", hr);
     }
 
-  if (data->self->choices)
+  if (data->this->choices)
     {
       IFileDialogCustomize *pfdc;
       DWORD dialog_control_id = 0;
-      DWORD dialog_auxiliary_id = (DWORD) g_slist_length (data->self->choices);
+      DWORD dialog_auxiliary_id = (DWORD) g_slist_length (data->this->choices);
 
       hr = IFileDialog_QueryInterface (pfd, &IID_IFileDialogCustomize, (LPVOID *) &pfdc);
       if (SUCCEEDED (hr))
         {
           GSList *l;
 
-          for (l = data->self->choices; l; l = l->next, dialog_control_id++)
+          for (l = data->this->choices; l; l = l->next, dialog_control_id++)
             {
               GtkFileChooserNativeChoice *choice = (GtkFileChooserNativeChoice*) l->data;
 
@@ -756,24 +756,24 @@ filechooser_win32_thread (gpointer _data)
         }
     }
 
-  if (data->self->choices)
+  if (data->this->choices)
     {
       IFileDialogCustomize *pfdc = NULL;
 
       if (data->choices_selections)
         g_array_free (data->choices_selections, TRUE);
       data->choices_selections = g_array_sized_new (FALSE, FALSE, sizeof(int),
-                                                    g_slist_length (data->self->choices));
+                                                    g_slist_length (data->this->choices));
 
       hr = IFileDialog_QueryInterface (pfd, &IID_IFileDialogCustomize, (LPVOID *) &pfdc);
       if (SUCCEEDED (hr))
         {
           GSList *l;
 
-          for (l = data->self->choices; l; l = l->next)
+          for (l = data->this->choices; l; l = l->next)
             {
               GtkFileChooserNativeChoice *choice = (GtkFileChooserNativeChoice*) l->data;
-              DWORD dialog_item_id = (DWORD) g_slist_position (data->self->choices, l);
+              DWORD dialog_item_id = (DWORD) g_slist_position (data->this->choices, l);
               int val = -1;
 
               if (choice->options)
@@ -886,7 +886,7 @@ translate_mnemonics (const char *src)
 }
 
 gboolean
-gtk_file_chooser_native_win32_show (GtkFileChooserNative *self)
+gtk_file_chooser_native_win32_show (GtkFileChooserNative *this)
 {
   GThread *thread;
   FilechooserWin32ThreadData *data;
@@ -897,7 +897,7 @@ gtk_file_chooser_native_win32_show (GtkFileChooserNative *self)
 
   data = g_new0 (FilechooserWin32ThreadData, 1);
 
-  filters = gtk_file_chooser_get_filters (GTK_FILE_CHOOSER (self));
+  filters = gtk_file_chooser_get_filters (GTK_FILE_CHOOSER (this));
   n_filters = g_list_model_get_n_items (filters);
   if (n_filters > 0)
     {
@@ -915,24 +915,24 @@ gtk_file_chooser_native_win32_show (GtkFileChooserNative *self)
             }
           g_object_unref (filter);
         }
-      self->current_filter = gtk_file_chooser_get_filter (GTK_FILE_CHOOSER (self));
+      this->current_filter = gtk_file_chooser_get_filter (GTK_FILE_CHOOSER (this));
     }
   else
     {
-      self->current_filter = NULL;
+      this->current_filter = NULL;
     }
   g_object_unref (filters);
 
-  self->mode_data = data;
-  data->self = g_object_ref (self);
+  this->mode_data = data;
+  data->this = g_object_ref (this);
 
   data->shortcut_files =
-    gtk_file_chooser_get_shortcut_folders (GTK_FILE_CHOOSER (self->dialog));
+    gtk_file_chooser_get_shortcut_folders (GTK_FILE_CHOOSER (this->dialog));
 
-  data->accept_label = translate_mnemonics (self->accept_label);
-  data->cancel_label = translate_mnemonics (self->cancel_label);
+  data->accept_label = translate_mnemonics (this->accept_label);
+  data->cancel_label = translate_mnemonics (this->cancel_label);
 
-  action = gtk_file_chooser_get_action (GTK_FILE_CHOOSER (self->dialog));
+  action = gtk_file_chooser_get_action (GTK_FILE_CHOOSER (this->dialog));
   if (action == GTK_FILE_CHOOSER_ACTION_SAVE)
     data->save = TRUE;
 
@@ -941,31 +941,31 @@ gtk_file_chooser_native_win32_show (GtkFileChooserNative *self)
 
   if ((action == GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER ||
        action == GTK_FILE_CHOOSER_ACTION_OPEN) &&
-      gtk_file_chooser_get_select_multiple (GTK_FILE_CHOOSER (self->dialog)))
+      gtk_file_chooser_get_select_multiple (GTK_FILE_CHOOSER (this->dialog)))
     data->select_multiple = TRUE;
 
-  transient_for = gtk_native_dialog_get_transient_for (GTK_NATIVE_DIALOG (self));
+  transient_for = gtk_native_dialog_get_transient_for (GTK_NATIVE_DIALOG (this));
   if (transient_for)
     {
       gtk_widget_realize (GTK_WIDGET (transient_for));
       data->parent = gdk_win32_surface_get_handle (gtk_native_get_surface (GTK_NATIVE (transient_for)));
 
-      if (gtk_native_dialog_get_modal (GTK_NATIVE_DIALOG (self)))
+      if (gtk_native_dialog_get_modal (GTK_NATIVE_DIALOG (this)))
         data->modal = TRUE;
     }
 
   data->title =
-    g_strdup (gtk_native_dialog_get_title (GTK_NATIVE_DIALOG (self)));
+    g_strdup (gtk_native_dialog_get_title (GTK_NATIVE_DIALOG (this)));
 
-  if (self->current_file)
-    data->current_file = g_object_ref (self->current_file);
+  if (this->current_file)
+    data->current_file = g_object_ref (this->current_file);
   else
     {
-      if (self->current_folder)
-        data->current_folder = g_object_ref (self->current_folder);
+      if (this->current_folder)
+        data->current_folder = g_object_ref (this->current_folder);
 
       if (action == GTK_FILE_CHOOSER_ACTION_SAVE)
-        data->current_name = g_strdup (self->current_name);
+        data->current_name = g_strdup (this->current_name);
     }
 
   data->events = file_dialog_events_new (!data->modal, data);
@@ -987,9 +987,9 @@ gtk_file_chooser_native_win32_show (GtkFileChooserNative *self)
 }
 
 void
-gtk_file_chooser_native_win32_hide (GtkFileChooserNative *self)
+gtk_file_chooser_native_win32_hide (GtkFileChooserNative *this)
 {
-  FilechooserWin32ThreadData *data = self->mode_data;
+  FilechooserWin32ThreadData *data = this->mode_data;
 
   /* This is always set while dialog visible */
   g_assert (data != NULL);

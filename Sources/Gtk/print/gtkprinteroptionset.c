@@ -169,7 +169,7 @@ gtk_printer_option_set_get_groups (GtkPrinterOptionSet *set)
 void
 gtk_printer_option_set_foreach_in_group (GtkPrinterOptionSet     *set,
 					 const char              *group,
-					 GtkPrinterOptionSetFunc  func,
+					 GtkPrinterOptionSetFunc  fn,
 					 gpointer                 user_data)
 {
   GtkPrinterOption *option;
@@ -180,14 +180,14 @@ gtk_printer_option_set_foreach_in_group (GtkPrinterOptionSet     *set,
       option = g_ptr_array_index (set->array, i);
 
       if (group == NULL || g_strcmp0 (group, option->group) == 0)
-	func (option, user_data);
+	fn (option, user_data);
     }
 }
 
 void
 gtk_printer_option_set_foreach (GtkPrinterOptionSet *set,
-				GtkPrinterOptionSetFunc func,
+				GtkPrinterOptionSetFunc fn,
 				gpointer user_data)
 {
-  gtk_printer_option_set_foreach_in_group (set, NULL, func, user_data);
+  gtk_printer_option_set_foreach_in_group (set, NULL, fn, user_data);
 }

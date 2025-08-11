@@ -24,64 +24,64 @@ struct _GskGpuDeviceClass
 {
   GObjectClass parent_class;
 
-  GskGpuImage *         (* create_offscreen_image)                      (GskGpuDevice           *self,
+  GskGpuImage *         (* create_offscreen_image)                      (GskGpuDevice           *this,
                                                                          gboolean                with_mipmap,
                                                                          GdkMemoryFormat         format,
                                                                          gboolean                is_srgb,
                                                                          gsize                   width,
                                                                          gsize                   height);
-  GskGpuImage *         (* create_atlas_image)                          (GskGpuDevice           *self,
+  GskGpuImage *         (* create_atlas_image)                          (GskGpuDevice           *this,
                                                                          gsize                   width,
                                                                          gsize                   height);
-  GskGpuImage *         (* create_upload_image)                         (GskGpuDevice           *self,
+  GskGpuImage *         (* create_upload_image)                         (GskGpuDevice           *this,
                                                                          gboolean                with_mipmap,
                                                                          GdkMemoryFormat         format,
                                                                          GskGpuConversion        conv,
                                                                          gsize                   width,
                                                                          gsize                   height);
-  GskGpuImage *         (* create_download_image)                       (GskGpuDevice           *self,
+  GskGpuImage *         (* create_download_image)                       (GskGpuDevice           *this,
                                                                          GdkMemoryDepth          depth,
                                                                          gsize                   width,
                                                                          gsize                   height);
-  void                  (* make_current)                                (GskGpuDevice           *self);
+  void                  (* make_current)                                (GskGpuDevice           *this);
 
 };
 
 GType                   gsk_gpu_device_get_type                         (void) G_GNUC_CONST;
 
-void                    gsk_gpu_device_setup                            (GskGpuDevice           *self,
+void                    gsk_gpu_device_setup                            (GskGpuDevice           *this,
                                                                          GdkDisplay             *display,
                                                                          gsize                   max_image_size,
                                                                          gsize                   tile_size,
                                                                          gsize                   globals_alignment);
-void                    gsk_gpu_device_maybe_gc                         (GskGpuDevice           *self);
-void                    gsk_gpu_device_queue_gc                         (GskGpuDevice           *self);
-GdkDisplay *            gsk_gpu_device_get_display                      (GskGpuDevice           *self);
-GskGpuCache *           gsk_gpu_device_get_cache                        (GskGpuDevice           *self);
-gsize                   gsk_gpu_device_get_max_image_size               (GskGpuDevice           *self);
-gsize                   gsk_gpu_device_get_tile_size                    (GskGpuDevice           *self);
-gsize                   gsk_gpu_device_get_globals_aligned_size         (GskGpuDevice           *self);
+void                    gsk_gpu_device_maybe_gc                         (GskGpuDevice           *this);
+void                    gsk_gpu_device_queue_gc                         (GskGpuDevice           *this);
+GdkDisplay *            gsk_gpu_device_get_display                      (GskGpuDevice           *this);
+GskGpuCache *           gsk_gpu_device_get_cache                        (GskGpuDevice           *this);
+gsize                   gsk_gpu_device_get_max_image_size               (GskGpuDevice           *this);
+gsize                   gsk_gpu_device_get_tile_size                    (GskGpuDevice           *this);
+gsize                   gsk_gpu_device_get_globals_aligned_size         (GskGpuDevice           *this);
 
-GskGpuImage *           gsk_gpu_device_create_offscreen_image           (GskGpuDevice           *self,
+GskGpuImage *           gsk_gpu_device_create_offscreen_image           (GskGpuDevice           *this,
                                                                          gboolean                with_mipmap,
                                                                          GdkMemoryFormat         format,
                                                                          gboolean                is_srgb,
                                                                          gsize                   width,
                                                                          gsize                   height);
-GskGpuImage *           gsk_gpu_device_create_atlas_image               (GskGpuDevice           *self,
+GskGpuImage *           gsk_gpu_device_create_atlas_image               (GskGpuDevice           *this,
                                                                          gsize                   width,
                                                                          gsize                   height);
-GskGpuImage *           gsk_gpu_device_create_upload_image              (GskGpuDevice           *self,
+GskGpuImage *           gsk_gpu_device_create_upload_image              (GskGpuDevice           *this,
                                                                          gboolean                with_mipmap,
                                                                          GdkMemoryFormat         format,
                                                                          GskGpuConversion        conv,
                                                                          gsize                   width,
                                                                          gsize                   height);
-GskGpuImage *           gsk_gpu_device_create_download_image            (GskGpuDevice           *self,
+GskGpuImage *           gsk_gpu_device_create_download_image            (GskGpuDevice           *this,
                                                                          GdkMemoryDepth          depth,
                                                                          gsize                   width,
                                                                          gsize                   height);
-void                    gsk_gpu_device_make_current                     (GskGpuDevice           *self);
+void                    gsk_gpu_device_make_current                     (GskGpuDevice           *this);
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GskGpuDevice, g_object_unref)
 

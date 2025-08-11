@@ -51,9 +51,9 @@ struct _GtkShortcutManagerInterface
   GTypeInterface g_iface;
 
   /*< public >*/
-  void                  (* add_controller)              (GtkShortcutManager           *self,
+  void                  (* add_controller)              (GtkShortcutManager           *this,
                                                          GtkShortcutController        *controller);
-  void                  (* remove_controller)           (GtkShortcutManager           *self,
+  void                  (* remove_controller)           (GtkShortcutManager           *this,
                                                          GtkShortcutController        *controller);
 };
 

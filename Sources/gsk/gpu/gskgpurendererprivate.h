@@ -27,21 +27,21 @@ struct _GskGpuRendererClass
 
   GskGpuDevice *        (* get_device)                                  (GdkDisplay             *display,
                                                                          GError                **error);
-  GdkDrawContext *      (* create_context)                              (GskGpuRenderer         *self,
+  GdkDrawContext *      (* create_context)                              (GskGpuRenderer         *this,
                                                                          GdkDisplay             *display,
                                                                          GdkSurface             *surface,
                                                                          GskGpuOptimizations    *supported,
                                                                          GError                **error);
 
-  void                  (* make_current)                                (GskGpuRenderer         *self);
-  gpointer              (* save_current)                                (GskGpuRenderer         *self);
-  void                  (* restore_current)                             (GskGpuRenderer         *self,
+  void                  (* make_current)                                (GskGpuRenderer         *this);
+  gpointer              (* save_current)                                (GskGpuRenderer         *this);
+  void                  (* restore_current)                             (GskGpuRenderer         *this,
                                                                          gpointer                current);
-  GskGpuImage *         (* get_backbuffer)                              (GskGpuRenderer         *self);
+  GskGpuImage *         (* get_backbuffer)                              (GskGpuRenderer         *this);
 };
 
-GdkDrawContext *        gsk_gpu_renderer_get_context                    (GskGpuRenderer         *self);
-GskGpuDevice *          gsk_gpu_renderer_get_device                     (GskGpuRenderer         *self);
+GdkDrawContext *        gsk_gpu_renderer_get_context                    (GskGpuRenderer         *this);
+GskGpuDevice *          gsk_gpu_renderer_get_device                     (GskGpuRenderer         *this);
 
 G_END_DECLS
 

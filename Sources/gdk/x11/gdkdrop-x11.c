@@ -92,7 +92,7 @@ static gboolean        xdnd_drop_filter     (GdkSurface   *surface,
 
 static const struct {
   const char *atom_name;
-  gboolean (* func) (GdkSurface *surface, const XEvent *event);
+  gboolean (* fn) (GdkSurface *surface, const XEvent *event);
 } xdnd_filters[] = {
   { "XdndEnter",                    xdnd_enter_filter },
   { "XdndLeave",                    xdnd_leave_filter },
@@ -729,7 +729,7 @@ gdk_x11_drop_filter (GdkSurface   *surface,
       if (xevent->xclient.message_type != gdk_x11_get_xatom_by_name_for_display (display, xdnd_filters[i].atom_name))
         continue;
 
-      if (xdnd_filters[i].func (surface, xevent))
+      if (xdnd_filters[i].fn (surface, xevent))
         return TRUE;
       else
         return FALSE;

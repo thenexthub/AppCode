@@ -27,8 +27,8 @@
 
 G_BEGIN_DECLS
 
-GVariant * gtk_at_spi_socket_to_ref (GtkAtSpiSocket *self);
-void gtk_at_spi_socket_embed (GtkAtSpiSocket  *self,
+GVariant * gtk_at_spi_socket_to_ref (GtkAtSpiSocket *this);
+void gtk_at_spi_socket_embed (GtkAtSpiSocket  *this,
                               GDBusConnection *connection);
 
 G_END_DECLS

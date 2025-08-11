@@ -3171,9 +3171,9 @@ gdk_win32_toplevel_get_property (GObject    *object,
 static void
 gdk_win32_toplevel_finalize (GObject *object)
 {
-  GdkWin32Surface *self = GDK_WIN32_SURFACE (object);
+  GdkWin32Surface *this = GDK_WIN32_SURFACE (object);
 
-  g_signal_handlers_disconnect_by_func (self,
+  g_signal_handlers_disconnect_by_func (this,
                                         gdk_win32_toplevel_state_callback,
                                         NULL);
 
@@ -3424,7 +3424,7 @@ gdk_win32_drag_surface_iface_init (GdkDragSurfaceInterface *iface)
 
 /*<private>
  * gdk_win32_surface_set_dcomp_content:
- * @self: The surface to set the content on
+ * @this: The surface to set the content on
  * @dcomp_content: (nullable): The content to set.
  * 
  * Sets the content to be displayed in the surface.
@@ -3443,17 +3443,17 @@ gdk_win32_drag_surface_iface_init (GdkDragSurfaceInterface *iface)
  * See gdk_win32_display_get_dcomp_device() for details.
  */
 void
-gdk_win32_surface_set_dcomp_content (GdkWin32Surface *self,
+gdk_win32_surface_set_dcomp_content (GdkWin32Surface *this,
                                      IUnknown        *dcomp_content)
 {
   GdkWin32Display *display;
   IDCompositionDevice *dcomp_device;
 
-  display = GDK_WIN32_DISPLAY (gdk_surface_get_display (GDK_SURFACE (self)));
+  display = GDK_WIN32_DISPLAY (gdk_surface_get_display (GDK_SURFACE (this)));
   dcomp_device = gdk_win32_display_get_dcomp_device (display);
   g_return_if_fail (dcomp_device != NULL);
 
-  hr_warn (IDCompositionVisual_SetContent (self->dcomp_visual, dcomp_content));
+  hr_warn (IDCompositionVisual_SetContent (this->dcomp_visual, dcomp_content));
   hr_warn (IDCompositionDevice_Commit (dcomp_device));
 }
 

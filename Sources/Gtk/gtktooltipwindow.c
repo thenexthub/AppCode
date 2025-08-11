@@ -359,9 +359,9 @@ gtk_tooltip_window_class_init (GtkTooltipWindowClass *klass)
 }
 
 static void
-gtk_tooltip_window_init (GtkTooltipWindow *self)
+gtk_tooltip_window_init (GtkTooltipWindow *this)
 {
-  gtk_widget_init_template (GTK_WIDGET (self));
+  gtk_widget_init_template (GTK_WIDGET (this));
 }
 
 GtkWidget *

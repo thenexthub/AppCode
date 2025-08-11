@@ -362,7 +362,7 @@ struct _GtkIconThemeClass
 {
   GObjectClass parent_class;
 
-  void (* changed)  (GtkIconTheme *self);
+  void (* changed)  (GtkIconTheme *this);
 };
 
 /* This lock protects both IconTheme.icon_cache and the dependent Icon.in_cache.
@@ -430,20 +430,20 @@ static GtkIconPaintable *theme_lookup_icon                (IconTheme        *the
                                                            const char       *icon_name,
                                                            int               size,
                                                            int               scale);
-static void              theme_subdir_load                (GtkIconTheme     *self,
+static void              theme_subdir_load                (GtkIconTheme     *this,
                                                            IconTheme        *theme,
                                                            GKeyFile         *theme_file,
                                                            char             *subdir);
-static void              do_theme_change                  (GtkIconTheme     *self);
-static void              blow_themes                      (GtkIconTheme     *self);
-static gboolean          rescan_themes                    (GtkIconTheme     *self);
+static void              do_theme_change                  (GtkIconTheme     *this);
+static void              blow_themes                      (GtkIconTheme     *this);
+static gboolean          rescan_themes                    (GtkIconTheme     *this);
 static inline IconCacheFlag
                          suffix_from_name                 (const char       *name);
-static void              gtk_icon_theme_unset_display     (GtkIconTheme     *self);
-static void              gtk_icon_theme_set_display       (GtkIconTheme     *self,
+static void              gtk_icon_theme_unset_display     (GtkIconTheme     *this);
+static void              gtk_icon_theme_set_display       (GtkIconTheme     *this,
                                                            GdkDisplay       *display);
-static void              update_current_theme__mainthread (GtkIconTheme     *self);
-static gboolean          ensure_valid_themes              (GtkIconTheme     *self);
+static void              update_current_theme__mainthread (GtkIconTheme     *this);
+static gboolean          ensure_valid_themes              (GtkIconTheme     *this);
 
 
 static guint signal_changed = 0;
@@ -530,15 +530,15 @@ gtk_icon_theme_ref_dispose (GtkIconThemeRef *ref)
 }
 
 static void
-gtk_icon_theme_lock (GtkIconTheme *self)
+gtk_icon_theme_lock (GtkIconTheme *this)
 {
-  g_mutex_lock (&self->ref->lock);
+  g_mutex_lock (&this->ref->lock);
 }
 
 static void
-gtk_icon_theme_unlock (GtkIconTheme *self)
+gtk_icon_theme_unlock (GtkIconTheme *this)
 {
-  g_mutex_unlock (&self->ref->lock);
+  g_mutex_unlock (&this->ref->lock);
 }
 
 
@@ -674,8 +674,8 @@ icon_uncached_cb (GtkIconPaintable *icon)
                 icon,
                 g_strjoinv (",", icon->key.icon_names),
                 icon->key.size, icon->key.flags,
-                self,
-                icon_theme != NULL ? g_hash_table_size (self->icon_cache) : 0));
+                this,
+                icon_theme != NULL ? g_hash_table_size (this->icon_cache) : 0));
   g_assert (icon->in_cache != NULL);
   icon->in_cache = NULL;
 }
@@ -765,7 +765,7 @@ G_DEFINE_TYPE (GtkIconTheme, gtk_icon_theme, G_TYPE_OBJECT)
  *
  * Icon theme objects are used to lookup up an icon by name
  * in a particular icon theme. Usually, you’ll want to use
- * [func@Gtk.IconTheme.get_for_display] rather than creating
+ * [fn@Gtk.IconTheme.get_for_display] rather than creating
  * a new icon theme object for scratch.
  *
  * Returns: the newly created `GtkIconTheme` object.
@@ -782,21 +782,21 @@ load_theme_thread  (GTask        *task,
                     gpointer      task_data,
                     GCancellable *cancellable)
 {
-  GtkIconTheme *self = GTK_ICON_THEME (source_object);
+  GtkIconTheme *this = GTK_ICON_THEME (source_object);
 
-  gtk_icon_theme_lock (self);
-  ensure_valid_themes (self);
-  gtk_icon_theme_unlock (self);
+  gtk_icon_theme_lock (this);
+  ensure_valid_themes (this);
+  gtk_icon_theme_unlock (this);
   g_task_return_pointer (task, NULL, NULL);
 }
 
 static void
-gtk_icon_theme_load_in_thread (GtkIconTheme *self)
+gtk_icon_theme_load_in_thread (GtkIconTheme *this)
 {
   GTask *task;
 
-  task = g_task_new (self, NULL, NULL, NULL);
-  g_task_set_task_data (task, g_object_ref (self), g_object_unref);
+  task = g_task_new (this, NULL, NULL, NULL);
+  g_task_set_task_data (task, g_object_ref (this), g_object_unref);
   g_task_run_in_thread (task, load_theme_thread);
   g_object_unref (task);
 }
@@ -821,25 +821,25 @@ gtk_icon_theme_load_in_thread (GtkIconTheme *self)
 GtkIconTheme *
 gtk_icon_theme_get_for_display (GdkDisplay *display)
 {
-  GtkIconTheme *self;
+  GtkIconTheme *this;
 
   g_return_val_if_fail (GDK_IS_DISPLAY (display), NULL);
 
-  self = g_object_get_data (G_OBJECT (display), "gtk-icon-theme");
-  if (!self)
+  this = g_object_get_data (G_OBJECT (display), "gtk-icon-theme");
+  if (!this)
     {
-      self = gtk_icon_theme_new ();
-      self->is_display_singleton = TRUE;
-      g_object_set_data (G_OBJECT (display), I_("gtk-icon-theme"), self);
+      this = gtk_icon_theme_new ();
+      this->is_display_singleton = TRUE;
+      g_object_set_data (G_OBJECT (display), I_("gtk-icon-theme"), this);
 
       /* Call this after setting the user-data, because it recurses into gtk_icon_theme_get_for_display via the thememing machinery */
-      gtk_icon_theme_set_display (self, display);
+      gtk_icon_theme_set_display (this, display);
 
       /* Queue early read of the default themes, we read the icon theme name in set_display(). */
-      gtk_icon_theme_load_in_thread (self);
+      gtk_icon_theme_load_in_thread (this);
     }
 
-  return self;
+  return this;
 }
 
 enum {
@@ -859,28 +859,28 @@ gtk_icon_theme_get_property (GObject      *object,
                              GValue       *value,
                              GParamSpec   *pspec)
 {
-  GtkIconTheme *self = GTK_ICON_THEME (object);
+  GtkIconTheme *this = GTK_ICON_THEME (object);
 
   switch (prop_id)
     {
     case PROP_DISPLAY:
-      g_value_set_object (value, self->display);
+      g_value_set_object (value, this->display);
       break;
 
     case PROP_ICON_NAMES:
-      g_value_take_boxed (value, gtk_icon_theme_get_icon_names (self));
+      g_value_take_boxed (value, gtk_icon_theme_get_icon_names (this));
       break;
 
     case PROP_SEARCH_PATH:
-      g_value_set_boxed (value, self->search_path);
+      g_value_set_boxed (value, this->search_path);
       break;
 
     case PROP_RESOURCE_PATH:
-      g_value_set_boxed (value, self->resource_path);
+      g_value_set_boxed (value, this->resource_path);
       break;
 
     case PROP_THEME_NAME:
-      g_value_take_string (value, gtk_icon_theme_get_theme_name (self));
+      g_value_take_string (value, gtk_icon_theme_get_theme_name (this));
       break;
 
     default:
@@ -895,24 +895,24 @@ gtk_icon_theme_set_property (GObject      *object,
                              const GValue *value,
                              GParamSpec   *pspec)
 {
-  GtkIconTheme *self = GTK_ICON_THEME (object);
+  GtkIconTheme *this = GTK_ICON_THEME (object);
 
   switch (prop_id)
     {
     case PROP_DISPLAY:
-      gtk_icon_theme_set_display (self, g_value_get_object (value));
+      gtk_icon_theme_set_display (this, g_value_get_object (value));
       break;
 
     case PROP_SEARCH_PATH:
-      gtk_icon_theme_set_search_path (self, g_value_get_boxed (value));
+      gtk_icon_theme_set_search_path (this, g_value_get_boxed (value));
       break;
 
     case PROP_RESOURCE_PATH:
-      gtk_icon_theme_set_resource_path (self, g_value_get_boxed (value));
+      gtk_icon_theme_set_resource_path (this, g_value_get_boxed (value));
       break;
 
     case PROP_THEME_NAME:
-      gtk_icon_theme_set_theme_name (self, g_value_get_string (value));
+      gtk_icon_theme_set_theme_name (this, g_value_get_string (value));
       break;
 
     default:
@@ -933,7 +933,7 @@ gtk_icon_theme_class_init (GtkIconThemeClass *klass)
 
   /**
    * GtkIconTheme::changed:
-   * @self: the icon theme
+   * @this: the icon theme
    *
    * Emitted when the icon theme changes.
    *
@@ -1029,58 +1029,58 @@ display_closed__mainthread_unlocked (GdkDisplay      *display,
                                      gboolean         is_error,
                                      GtkIconThemeRef *ref)
 {
-  GtkIconTheme *self = gtk_icon_theme_ref_aquire (ref);
+  GtkIconTheme *this = gtk_icon_theme_ref_aquire (ref);
   gboolean was_display_singleton;
 
-  if (self)
+  if (this)
     {
       /* This is only set at construction and accessed here in the main thread, so no locking necessary */
-      was_display_singleton = self->is_display_singleton;
+      was_display_singleton = this->is_display_singleton;
       if (was_display_singleton)
         {
           g_object_set_data (G_OBJECT (display), I_("gtk-icon-theme"), NULL);
-          self->is_display_singleton = FALSE;
+          this->is_display_singleton = FALSE;
         }
 
-      gtk_icon_theme_unset_display (self);
-      update_current_theme__mainthread (self);
+      gtk_icon_theme_unset_display (this);
+      update_current_theme__mainthread (this);
 
       if (was_display_singleton)
-        g_object_unref (self);
+        g_object_unref (this);
     }
 
   gtk_icon_theme_ref_release (ref);
 }
 
 static void
-update_current_theme__mainthread (GtkIconTheme *self)
+update_current_theme__mainthread (GtkIconTheme *this)
 {
 #define theme_changed(_old, _new) \
   ((_old && !_new) || (!_old && _new) || \
    (_old && _new && strcmp (_old, _new) != 0))
 
-  if (!self->custom_theme)
+  if (!this->custom_theme)
     {
       char *theme = NULL;
       gboolean changed = FALSE;
 
-      if (self->display)
+      if (this->display)
         {
-          GtkSettings *settings = gtk_settings_get_for_display (self->display);
+          GtkSettings *settings = gtk_settings_get_for_display (this->display);
           g_object_get (settings, "gtk-icon-theme-name", &theme, NULL);
         }
 
-      if (theme_changed (self->current_theme, theme))
+      if (theme_changed (this->current_theme, theme))
         {
-          g_free (self->current_theme);
-          self->current_theme = theme;
+          g_free (this->current_theme);
+          this->current_theme = theme;
           changed = TRUE;
         }
       else
         g_free (theme);
 
       if (changed)
-        do_theme_change (self);
+        do_theme_change (this);
     }
 #undef theme_changed
 }
@@ -1092,75 +1092,75 @@ theme_changed__mainthread_unlocked (GtkSettings     *settings,
                                     GParamSpec      *pspec,
                                     GtkIconThemeRef *ref)
 {
-  GtkIconTheme *self = gtk_icon_theme_ref_aquire (ref);
+  GtkIconTheme *this = gtk_icon_theme_ref_aquire (ref);
 
-  if (self)
+  if (this)
     {
-      update_current_theme__mainthread (self);
+      update_current_theme__mainthread (this);
 
       /* Queue early read of the new theme */
-      gtk_icon_theme_load_in_thread (self);
+      gtk_icon_theme_load_in_thread (this);
     }
 
   gtk_icon_theme_ref_release (ref);
 }
 
 static void
-gtk_icon_theme_unset_display (GtkIconTheme *self)
+gtk_icon_theme_unset_display (GtkIconTheme *this)
 {
-  if (self->display)
+  if (this->display)
     {
-      g_signal_handlers_disconnect_by_func (self->display,
+      g_signal_handlers_disconnect_by_func (this->display,
                                             (gpointer) display_closed__mainthread_unlocked,
-                                            self->ref);
-      g_signal_handlers_disconnect_by_func (self->display_settings,
+                                            this->ref);
+      g_signal_handlers_disconnect_by_func (this->display_settings,
                                             (gpointer) theme_changed__mainthread_unlocked,
-                                            self->ref);
+                                            this->ref);
 
-      self->display = NULL;
-      self->display_settings = NULL;
+      this->display = NULL;
+      this->display_settings = NULL;
 
-      g_object_notify_by_pspec (G_OBJECT (self), props[PROP_DISPLAY]);
+      g_object_notify_by_pspec (G_OBJECT (this), props[PROP_DISPLAY]);
     }
 }
 
 void
-gtk_icon_theme_set_display (GtkIconTheme *self,
+gtk_icon_theme_set_display (GtkIconTheme *this,
                             GdkDisplay   *display)
 {
-  g_return_if_fail (GTK_ICON_THEME (self));
+  g_return_if_fail (GTK_ICON_THEME (this));
   g_return_if_fail (display == NULL || GDK_IS_DISPLAY (display));
 
-  gtk_icon_theme_lock (self);
+  gtk_icon_theme_lock (this);
 
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
 
-  gtk_icon_theme_unset_display (self);
+  gtk_icon_theme_unset_display (this);
 
   if (display)
     {
-      self->display = display;
-      self->display_settings = gtk_settings_get_for_display (display);
+      this->display = display;
+      this->display_settings = gtk_settings_get_for_display (display);
 
       g_signal_connect_data (display, "closed",
                              G_CALLBACK (display_closed__mainthread_unlocked),
-                             gtk_icon_theme_ref_ref (self->ref),
+                             gtk_icon_theme_ref_ref (this->ref),
                              (GClosureNotify)gtk_icon_theme_ref_unref,
                              0);
-      g_signal_connect_data (self->display_settings, "notify::gtk-icon-theme-name",
+      g_signal_connect_data (this->display_settings, "notify::gtk-icon-theme-name",
                              G_CALLBACK (theme_changed__mainthread_unlocked),
-                             gtk_icon_theme_ref_ref (self->ref),
+                             gtk_icon_theme_ref_ref (this->ref),
                              (GClosureNotify)gtk_icon_theme_ref_unref,
                              0);
 
-      g_object_notify_by_pspec (G_OBJECT (self), props[PROP_DISPLAY]);
+      g_object_notify_by_pspec (G_OBJECT (this), props[PROP_DISPLAY]);
     }
 
-  update_current_theme__mainthread (self);
+  update_current_theme__mainthread (this);
 
-  gtk_icon_theme_unlock (self);
+  gtk_icon_theme_unlock (this);
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 }
 
 static void
@@ -1173,140 +1173,140 @@ free_dir_mtime (IconThemeDirMtime *dir_mtime)
 }
 
 static void
-gtk_icon_theme_init (GtkIconTheme *self)
+gtk_icon_theme_init (GtkIconTheme *this)
 {
   const char * const *xdg_data_dirs;
   int i, j;
   int len;
 
-  self->ref = gtk_icon_theme_ref_new (self);
+  this->ref = gtk_icon_theme_ref_new (this);
 
-  self->icon_cache = g_hash_table_new_full (icon_key_hash, icon_key_equal, NULL,
+  this->icon_cache = g_hash_table_new_full (icon_key_hash, icon_key_equal, NULL,
                                             (GDestroyNotify)icon_uncached_cb);
 
-  self->custom_theme = FALSE;
-  self->dir_mtimes = g_array_new (FALSE, TRUE, sizeof (IconThemeDirMtime));
-  g_array_set_clear_func (self->dir_mtimes, (GDestroyNotify)free_dir_mtime);
+  this->custom_theme = FALSE;
+  this->dir_mtimes = g_array_new (FALSE, TRUE, sizeof (IconThemeDirMtime));
+  g_array_set_clear_func (this->dir_mtimes, (GDestroyNotify)free_dir_mtime);
 
   xdg_data_dirs = g_get_system_data_dirs ();
   for (i = 0; xdg_data_dirs[i]; i++) ;
 
   len = 2 * i + 3;
 
-  self->search_path = g_new (char *, len);
+  this->search_path = g_new (char *, len);
 
   i = 0;
-  self->search_path[i++] = g_build_filename (g_get_user_data_dir (), "icons", NULL);
-  self->search_path[i++] = g_build_filename (g_get_home_dir (), ".icons", NULL);
+  this->search_path[i++] = g_build_filename (g_get_user_data_dir (), "icons", NULL);
+  this->search_path[i++] = g_build_filename (g_get_home_dir (), ".icons", NULL);
 
   for (j = 0; xdg_data_dirs[j]; j++)
-    self->search_path[i++] = g_build_filename (xdg_data_dirs[j], "icons", NULL);
+    this->search_path[i++] = g_build_filename (xdg_data_dirs[j], "icons", NULL);
 
   for (j = 0; xdg_data_dirs[j]; j++)
-    self->search_path[i++] = g_build_filename (xdg_data_dirs[j], "pixmaps", NULL);
+    this->search_path[i++] = g_build_filename (xdg_data_dirs[j], "pixmaps", NULL);
 
-  self->search_path[i] = NULL;
+  this->search_path[i] = NULL;
 
-  self->resource_path = g_new (char *, 2);
-  self->resource_path[0] = g_strdup ("/org/gtk/libgtk/icons/");
-  self->resource_path[1] = NULL;
+  this->resource_path = g_new (char *, 2);
+  this->resource_path[0] = g_strdup ("/org/gtk/libgtk/icons/");
+  this->resource_path[1] = NULL;
 
-  self->themes_valid = FALSE;
-  self->themes = NULL;
-  self->unthemed_icons = NULL;
+  this->themes_valid = FALSE;
+  this->themes = NULL;
+  this->unthemed_icons = NULL;
 }
 
 static gboolean
 theme_changed_idle__mainthread_unlocked (gpointer user_data)
 {
   GtkIconThemeRef *ref = (GtkIconThemeRef *)user_data;
-  GtkIconTheme *self;
+  GtkIconTheme *this;
   GdkDisplay *display = NULL;
 
-  self = gtk_icon_theme_ref_aquire (ref);
-  if (self)
+  this = gtk_icon_theme_ref_aquire (ref);
+  if (this)
     {
-      g_object_ref (self); /* Ensure theme lives during the changed signal emissions */
+      g_object_ref (this); /* Ensure theme lives during the changed signal emissions */
 
-      self->theme_changed_idle = 0;
+      this->theme_changed_idle = 0;
 
-      if (self->display && self->is_display_singleton)
-        display = g_object_ref (self->display);
+      if (this->display && this->is_display_singleton)
+        display = g_object_ref (this->display);
     }
   gtk_icon_theme_ref_release (ref);
 
-  if (self)
+  if (this)
     {
       /* Emit signals outside locks. */
-      g_signal_emit (self, signal_changed, 0);
+      g_signal_emit (this, signal_changed, 0);
 
       if (display)
         {
-          GtkSettings *settings = gtk_settings_get_for_display (self->display);
+          GtkSettings *settings = gtk_settings_get_for_display (this->display);
           gtk_style_provider_changed (GTK_STYLE_PROVIDER (settings));
           gtk_system_setting_changed (display, GTK_SYSTEM_SETTING_ICON_THEME);
           g_object_unref (display);
         }
 
-      g_object_unref (self);
+      g_object_unref (this);
     }
 
   return FALSE;
 }
 
 static void
-queue_theme_changed (GtkIconTheme *self)
+queue_theme_changed (GtkIconTheme *this)
 {
-  if (!self->theme_changed_idle)
+  if (!this->theme_changed_idle)
     {
-      self->theme_changed_idle = g_idle_add_full (GTK_PRIORITY_RESIZE - 2,
+      this->theme_changed_idle = g_idle_add_full (GTK_PRIORITY_RESIZE - 2,
                                                   theme_changed_idle__mainthread_unlocked,
-                                                  gtk_icon_theme_ref_ref (self->ref),
+                                                  gtk_icon_theme_ref_ref (this->ref),
                                                   (GDestroyNotify)gtk_icon_theme_ref_unref);
-      gdk_source_set_static_name_by_id (self->theme_changed_idle, "[gtk] theme_changed_idle");
+      gdk_source_set_static_name_by_id (this->theme_changed_idle, "[gtk] theme_changed_idle");
     }
 }
 
 static void
-do_theme_change (GtkIconTheme *self)
+do_theme_change (GtkIconTheme *this)
 {
-  icon_cache_clear (self);
+  icon_cache_clear (this);
 
-  if (!self->themes_valid)
+  if (!this->themes_valid)
     return;
 
-  GTK_DISPLAY_DEBUG (self->display, ICONTHEME, "change to icon theme \"%s\"", self->current_theme);
-  blow_themes (self);
+  GTK_DISPLAY_DEBUG (this->display, ICONTHEME, "change to icon theme \"%s\"", this->current_theme);
+  blow_themes (this);
 
-  queue_theme_changed (self);
+  queue_theme_changed (this);
 }
 
 static void
-blow_themes (GtkIconTheme *self)
+blow_themes (GtkIconTheme *this)
 {
-  if (self->themes_valid)
+  if (this->themes_valid)
     {
-      g_list_free_full (self->themes, (GDestroyNotify) theme_destroy);
-      g_array_set_size (self->dir_mtimes, 0);
-      g_hash_table_destroy (self->unthemed_icons);
-      gtk_string_set_destroy (&self->icons);
+      g_list_free_full (this->themes, (GDestroyNotify) theme_destroy);
+      g_array_set_size (this->dir_mtimes, 0);
+      g_hash_table_destroy (this->unthemed_icons);
+      gtk_string_set_destroy (&this->icons);
     }
-  self->themes = NULL;
-  self->unthemed_icons = NULL;
-  self->themes_valid = FALSE;
-  self->serial++;
+  this->themes = NULL;
+  this->unthemed_icons = NULL;
+  this->themes_valid = FALSE;
+  this->serial++;
 }
 
 int
-gtk_icon_theme_get_serial (GtkIconTheme *self)
+gtk_icon_theme_get_serial (GtkIconTheme *this)
 {
-  return self->serial;
+  return this->serial;
 }
 
 static void
 gtk_icon_theme_dispose (GObject *object)
 {
-  GtkIconTheme *self = GTK_ICON_THEME (object);
+  GtkIconTheme *this = GTK_ICON_THEME (object);
 
   /* We make sure all outstanding GtkIconThemeRefs to us are NULLed
    * out so that no other threads than the one running finalize will
@@ -1319,7 +1319,7 @@ gtk_icon_theme_dispose (GObject *object)
    * this is ok as it is allowed to resurrect objects in dispose
    * (but not in finalize).
    */
-  gtk_icon_theme_ref_dispose (self->ref);
+  gtk_icon_theme_ref_dispose (this->ref);
 
   G_OBJECT_CLASS (gtk_icon_theme_parent_class)->dispose (object);
 }
@@ -1327,35 +1327,35 @@ gtk_icon_theme_dispose (GObject *object)
 static void
 gtk_icon_theme_finalize (GObject *object)
 {
-  GtkIconTheme *self = GTK_ICON_THEME (object);
+  GtkIconTheme *this = GTK_ICON_THEME (object);
 
   /* We don't actually need to take the lock here, because by now
      there can be no other threads that own a ref to this object, but
      technically this is considered "locked" */
 
-  icon_cache_clear (self);
+  icon_cache_clear (this);
 
-  if (self->theme_changed_idle)
-    g_source_remove (self->theme_changed_idle);
+  if (this->theme_changed_idle)
+    g_source_remove (this->theme_changed_idle);
 
-  gtk_icon_theme_unset_display (self);
+  gtk_icon_theme_unset_display (this);
 
-  g_free (self->current_theme);
+  g_free (this->current_theme);
 
-  g_strfreev (self->search_path);
-  g_strfreev (self->resource_path);
+  g_strfreev (this->search_path);
+  g_strfreev (this->resource_path);
 
-  blow_themes (self);
-  g_array_free (self->dir_mtimes, TRUE);
+  blow_themes (this);
+  g_array_free (this->dir_mtimes, TRUE);
 
-  gtk_icon_theme_ref_unref (self->ref);
+  gtk_icon_theme_ref_unref (this->ref);
 
   G_OBJECT_CLASS (gtk_icon_theme_parent_class)->finalize (object);
 }
 
 /**
  * gtk_icon_theme_set_search_path:
- * @self: a `GtkIconTheme`
+ * @this: a `GtkIconTheme`
  * @path: (array zero-terminated=1) (element-type filename) (nullable): NULL-terminated
  *   array of directories that are searched for icon themes
  *
@@ -1376,29 +1376,29 @@ gtk_icon_theme_finalize (GObject *object)
  * rather than directly on the icon path.)
  */
 void
-gtk_icon_theme_set_search_path (GtkIconTheme       *self,
+gtk_icon_theme_set_search_path (GtkIconTheme       *this,
                                 const char * const *path)
 {
   char **search_path;
 
-  g_return_if_fail (GTK_IS_ICON_THEME (self));
+  g_return_if_fail (GTK_IS_ICON_THEME (this));
 
-  gtk_icon_theme_lock (self);
+  gtk_icon_theme_lock (this);
 
   search_path = g_strdupv ((char **)path);
-  g_strfreev (self->search_path);
-  self->search_path = search_path;
+  g_strfreev (this->search_path);
+  this->search_path = search_path;
 
-  do_theme_change (self);
+  do_theme_change (this);
 
-  gtk_icon_theme_unlock (self);
+  gtk_icon_theme_unlock (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), props[PROP_SEARCH_PATH]);
+  g_object_notify_by_pspec (G_OBJECT (this), props[PROP_SEARCH_PATH]);
 }
 
 /**
  * gtk_icon_theme_get_search_path:
- * @self: a `GtkIconTheme`
+ * @this: a `GtkIconTheme`
  *
  * Gets the current search path.
  *
@@ -1408,24 +1408,24 @@ gtk_icon_theme_set_search_path (GtkIconTheme       *self,
  *   a list of icon theme path directories
  */
 char **
-gtk_icon_theme_get_search_path (GtkIconTheme  *self)
+gtk_icon_theme_get_search_path (GtkIconTheme  *this)
 {
   char **paths;
 
-  g_return_val_if_fail (GTK_IS_ICON_THEME (self), NULL);
+  g_return_val_if_fail (GTK_IS_ICON_THEME (this), NULL);
 
-  gtk_icon_theme_lock (self);
+  gtk_icon_theme_lock (this);
 
-  paths = g_strdupv (self->search_path);
+  paths = g_strdupv (this->search_path);
 
-  gtk_icon_theme_unlock (self);
+  gtk_icon_theme_unlock (this);
 
   return paths;
 }
 
 /**
  * gtk_icon_theme_add_search_path:
- * @self: a `GtkIconTheme`
+ * @this: a `GtkIconTheme`
  * @path: (type filename): directory name to append to the icon path
  *
  * Appends a directory to the search path.
@@ -1433,29 +1433,29 @@ gtk_icon_theme_get_search_path (GtkIconTheme  *self)
  * See [method@Gtk.IconTheme.set_search_path].
  */
 void
-gtk_icon_theme_add_search_path (GtkIconTheme *self,
+gtk_icon_theme_add_search_path (GtkIconTheme *this,
                                 const char   *path)
 {
   char **paths;
   int len;
 
-  g_return_if_fail (GTK_IS_ICON_THEME (self));
+  g_return_if_fail (GTK_IS_ICON_THEME (this));
   g_return_if_fail (path != NULL);
  
-  len = g_strv_length (self->search_path);
+  len = g_strv_length (this->search_path);
   paths = g_new (char *, len + 2);
-  memcpy (paths, self->search_path, sizeof (char *) * len);
+  memcpy (paths, this->search_path, sizeof (char *) * len);
   paths[len] = (char *)path;
   paths[len + 1] = NULL;
 
-  gtk_icon_theme_set_search_path (self, (const char * const *)paths);
+  gtk_icon_theme_set_search_path (this, (const char * const *)paths);
 
   g_free (paths);
 }
 
 /**
  * gtk_icon_theme_set_resource_path:
- * @self: a `GtkIconTheme`
+ * @this: a `GtkIconTheme`
  * @path: (array zero-terminated=1) (element-type utf8) (nullable): 
  *   NULL-terminated array of resource paths
  *   that are searched for icons
@@ -1473,29 +1473,29 @@ gtk_icon_theme_add_search_path (GtkIconTheme *self,
  * but they are treated like unthemed icons.
  */
 void
-gtk_icon_theme_set_resource_path (GtkIconTheme       *self,
+gtk_icon_theme_set_resource_path (GtkIconTheme       *this,
                                   const char * const *path)
 {
   char **search_path;
 
-  g_return_if_fail (GTK_IS_ICON_THEME (self));
+  g_return_if_fail (GTK_IS_ICON_THEME (this));
 
-  gtk_icon_theme_lock (self);
+  gtk_icon_theme_lock (this);
 
   search_path = g_strdupv ((char **)path);
-  g_strfreev (self->resource_path);
-  self->resource_path = search_path;
+  g_strfreev (this->resource_path);
+  this->resource_path = search_path;
 
-  do_theme_change (self);
+  do_theme_change (this);
 
-  gtk_icon_theme_unlock (self);
+  gtk_icon_theme_unlock (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), props[PROP_RESOURCE_PATH]);
+  g_object_notify_by_pspec (G_OBJECT (this), props[PROP_RESOURCE_PATH]);
 }
 
 /**
  * gtk_icon_theme_get_resource_path:
- * @self: a `GtkIconTheme`
+ * @this: a `GtkIconTheme`
  *
  * Gets the current resource path.
  *
@@ -1505,24 +1505,24 @@ gtk_icon_theme_set_resource_path (GtkIconTheme       *self,
  *   A list of resource paths
  */
 char **
-gtk_icon_theme_get_resource_path (GtkIconTheme  *self)
+gtk_icon_theme_get_resource_path (GtkIconTheme  *this)
 {
   char **paths;
 
-  g_return_val_if_fail (GTK_IS_ICON_THEME (self), NULL);
+  g_return_val_if_fail (GTK_IS_ICON_THEME (this), NULL);
 
-  gtk_icon_theme_lock (self);
+  gtk_icon_theme_lock (this);
 
-  paths = g_strdupv (self->resource_path);
+  paths = g_strdupv (this->resource_path);
 
-  gtk_icon_theme_unlock (self);
+  gtk_icon_theme_unlock (this);
 
   return paths;
 }
 
 /**
  * gtk_icon_theme_add_resource_path:
- * @self: a `GtkIconTheme`
+ * @this: a `GtkIconTheme`
  * @path: a resource path
  *
  * Adds a resource path that will be looked at when looking
@@ -1534,29 +1534,29 @@ gtk_icon_theme_get_resource_path (GtkIconTheme  *self)
  * available as part of the icon theme.
  */
 void
-gtk_icon_theme_add_resource_path (GtkIconTheme *self,
+gtk_icon_theme_add_resource_path (GtkIconTheme *this,
                                   const char   *path)
 {
   char **paths;
   int len;
 
-  g_return_if_fail (GTK_IS_ICON_THEME (self));
+  g_return_if_fail (GTK_IS_ICON_THEME (this));
   g_return_if_fail (path != NULL);
  
-  len = g_strv_length (self->resource_path);
+  len = g_strv_length (this->resource_path);
   paths = g_new (char *, len + 2);
-  memcpy (paths, self->resource_path, sizeof (char *) * len);
+  memcpy (paths, this->resource_path, sizeof (char *) * len);
   paths[len] = (char *)path;
   paths[len + 1] = NULL;
 
-  gtk_icon_theme_set_resource_path (self, (const char * const *)paths);
+  gtk_icon_theme_set_resource_path (this, (const char * const *)paths);
 
   g_free (paths);
 }
 
 /**
  * gtk_icon_theme_set_theme_name:
- * @self: a `GtkIconTheme`
+ * @this: a `GtkIconTheme`
  * @theme_name: (nullable): name of icon theme to use instead of
  *   configured theme, or %NULL to unset a previously set custom theme
  *
@@ -1564,79 +1564,79 @@ gtk_icon_theme_add_resource_path (GtkIconTheme *self,
  * overriding system configuration.
  *
  * This function cannot be called on the icon theme objects returned
- * from [func@Gtk.IconTheme.get_for_display].
+ * from [fn@Gtk.IconTheme.get_for_display].
  */
 void
-gtk_icon_theme_set_theme_name (GtkIconTheme *self,
+gtk_icon_theme_set_theme_name (GtkIconTheme *this,
                                const char   *theme_name)
 {
-  g_return_if_fail (GTK_IS_ICON_THEME (self));
-  g_return_if_fail (!self->is_display_singleton);
+  g_return_if_fail (GTK_IS_ICON_THEME (this));
+  g_return_if_fail (!this->is_display_singleton);
 
-  gtk_icon_theme_lock (self);
+  gtk_icon_theme_lock (this);
 
   if (theme_name != NULL)
     {
-      self->custom_theme = TRUE;
-      if (!self->current_theme || strcmp (theme_name, self->current_theme) != 0)
+      this->custom_theme = TRUE;
+      if (!this->current_theme || strcmp (theme_name, this->current_theme) != 0)
         {
-          g_free (self->current_theme);
-          self->current_theme = g_strdup (theme_name);
+          g_free (this->current_theme);
+          this->current_theme = g_strdup (theme_name);
 
-          do_theme_change (self);
+          do_theme_change (this);
         }
     }
   else
     {
-      if (self->custom_theme)
+      if (this->custom_theme)
         {
-          self->custom_theme = FALSE;
-          update_current_theme__mainthread (self);
+          this->custom_theme = FALSE;
+          update_current_theme__mainthread (this);
         }
     }
 
-  gtk_icon_theme_unlock (self);
+  gtk_icon_theme_unlock (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), props[PROP_THEME_NAME]);
+  g_object_notify_by_pspec (G_OBJECT (this), props[PROP_THEME_NAME]);
 }
 
 /**
  * gtk_icon_theme_get_theme_name:
- * @self: a `GtkIconTheme`
+ * @this: a `GtkIconTheme`
  *
  * Gets the current icon theme name.
  *
  * Returns: (transfer full): the current icon theme name,
  */
 char *
-gtk_icon_theme_get_theme_name (GtkIconTheme *self)
+gtk_icon_theme_get_theme_name (GtkIconTheme *this)
 {
   char *theme_name;
 
-  g_return_val_if_fail (GTK_IS_ICON_THEME (self), NULL);
+  g_return_val_if_fail (GTK_IS_ICON_THEME (this), NULL);
 
-  gtk_icon_theme_lock (self);
+  gtk_icon_theme_lock (this);
 
-  if (self->custom_theme)
-    theme_name = g_strdup (self->current_theme);
+  if (this->custom_theme)
+    theme_name = g_strdup (this->current_theme);
   else
     {
-      if (self->display)
+      if (this->display)
         {
-          GtkSettings *settings = gtk_settings_get_for_display (self->display);
+          GtkSettings *settings = gtk_settings_get_for_display (this->display);
           g_object_get (settings, "gtk-icon-theme-name", &theme_name, NULL);
         }
       else
         theme_name = NULL;
     }
 
-  gtk_icon_theme_unlock (self);
+  gtk_icon_theme_unlock (this);
 
   return theme_name;
 }
 
 static void
-insert_theme (GtkIconTheme *self,
+insert_theme (GtkIconTheme *this,
               const char   *theme_name)
 {
   int i;
@@ -1649,7 +1649,7 @@ insert_theme (GtkIconTheme *self,
   GKeyFile *theme_file;
   GStatBuf stat_buf;
 
-  for (l = self->themes; l != NULL; l = l->next)
+  for (l = this->themes; l != NULL; l = l->next)
     {
       theme = l->data;
       if (strcmp (theme->name, theme_name) == 0)
@@ -1657,11 +1657,11 @@ insert_theme (GtkIconTheme *self,
     }
 
   theme_file = NULL;
-  for (i = 0; self->search_path[i]; i++)
+  for (i = 0; this->search_path[i]; i++)
     {
       IconThemeDirMtime dir_mtime;
 
-      path = g_build_filename (self->search_path[i], theme_name, NULL);
+      path = g_build_filename (this->search_path[i], theme_name, NULL);
       dir_mtime.cache = NULL;
       dir_mtime.dir = path;
       if (g_stat (path, &stat_buf) == 0 && S_ISDIR (stat_buf.st_mode))
@@ -1691,7 +1691,7 @@ insert_theme (GtkIconTheme *self,
           dir_mtime.exists = FALSE;
         }
 
-      g_array_append_val (self->dir_mtimes, dir_mtime);
+      g_array_append_val (this->dir_mtimes, dir_mtime);
     }
 
   if (theme_file == NULL)
@@ -1728,15 +1728,15 @@ insert_theme (GtkIconTheme *self,
   scaled_dirs = g_key_file_get_string_list (theme_file, "Icon Theme", "ScaledDirectories", NULL, NULL);
 
   theme = theme_new (theme_name, theme_file);
-  self->themes = g_list_prepend (self->themes, theme);
+  this->themes = g_list_prepend (this->themes, theme);
 
   for (i = 0; dirs[i] != NULL; i++)
-    theme_subdir_load (self, theme, theme_file, dirs[i]);
+    theme_subdir_load (this, theme, theme_file, dirs[i]);
 
   if (scaled_dirs)
     {
       for (i = 0; scaled_dirs[i] != NULL; i++)
-        theme_subdir_load (self, theme, theme_file, scaled_dirs[i]);
+        theme_subdir_load (this, theme, theme_file, scaled_dirs[i]);
     }
 
   g_strfreev (dirs);
@@ -1750,7 +1750,7 @@ insert_theme (GtkIconTheme *self,
   if (themes)
     {
       for (i = 0; themes[i] != NULL; i++)
-        insert_theme (self, themes[i]);
+        insert_theme (this, themes[i]);
 
       g_strfreev (themes);
     }
@@ -1788,7 +1788,7 @@ strip_suffix (const char    *filename,
 }
 
 static void
-add_unthemed_icon (GtkIconTheme *self,
+add_unthemed_icon (GtkIconTheme *this,
                    const char   *dir,
                    const char   *file,
                    gboolean      is_resource)
@@ -1806,7 +1806,7 @@ add_unthemed_icon (GtkIconTheme *self,
   abs_file = g_build_filename (dir, file, NULL);
   base_name = strip_suffix (file, new_suffix);
 
-  unthemed_icon = g_hash_table_lookup (self->unthemed_icons, base_name);
+  unthemed_icon = g_hash_table_lookup (this->unthemed_icons, base_name);
 
   if (unthemed_icon)
     {
@@ -1848,12 +1848,12 @@ add_unthemed_icon (GtkIconTheme *self,
         unthemed_icon->no_svg_filename = abs_file;
 
       /* takes ownership of base_name */
-      g_hash_table_replace (self->unthemed_icons, base_name, unthemed_icon);
+      g_hash_table_replace (this->unthemed_icons, base_name, unthemed_icon);
     }
 }
 
 static void
-load_themes (GtkIconTheme *self)
+load_themes (GtkIconTheme *this)
 {
   GDir *gdir;
   int base;
@@ -1862,24 +1862,24 @@ load_themes (GtkIconTheme *self)
   GStatBuf stat_buf;
   int j;
 
-  gtk_string_set_init (&self->icons);
+  gtk_string_set_init (&this->icons);
 
-  if (self->current_theme)
-    insert_theme (self, self->current_theme);
+  if (this->current_theme)
+    insert_theme (this, this->current_theme);
 
-  insert_theme (self, FALLBACK_ICON_THEME);
-  self->themes = g_list_reverse (self->themes);
+  insert_theme (this, FALLBACK_ICON_THEME);
+  this->themes = g_list_reverse (this->themes);
 
-  self->unthemed_icons = g_hash_table_new_full (g_str_hash, g_str_equal,
+  this->unthemed_icons = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                 g_free, (GDestroyNotify)free_unthemed_icon);
 
-  for (base = 0; self->search_path[base]; base++)
+  for (base = 0; this->search_path[base]; base++)
     {
       IconThemeDirMtime *dir_mtime;
-      dir = self->search_path[base];
+      dir = this->search_path[base];
 
-      g_array_set_size (self->dir_mtimes, self->dir_mtimes->len + 1);
-      dir_mtime = &g_array_index (self->dir_mtimes, IconThemeDirMtime, self->dir_mtimes->len - 1);
+      g_array_set_size (this->dir_mtimes, this->dir_mtimes->len + 1);
+      dir_mtime = &g_array_index (this->dir_mtimes, IconThemeDirMtime, this->dir_mtimes->len - 1);
 
       dir_mtime->dir = g_strdup (dir);
       dir_mtime->mtime = 0;
@@ -1900,37 +1900,37 @@ load_themes (GtkIconTheme *self)
         continue;
 
       while ((file = g_dir_read_name (gdir)))
-        add_unthemed_icon (self, dir, file, FALSE);
+        add_unthemed_icon (this, dir, file, FALSE);
 
       g_dir_close (gdir);
     }
 
-  for (j = 0; self->resource_path[j]; j++)
+  for (j = 0; this->resource_path[j]; j++)
     {
       char **children;
       int i;
 
-      dir = self->resource_path[j];
+      dir = this->resource_path[j];
       children = g_resources_enumerate_children (dir, 0, NULL);
       if (!children)
         continue;
 
       for (i = 0; children[i]; i++)
-        add_unthemed_icon (self, dir, children[i], TRUE);
+        add_unthemed_icon (this, dir, children[i], TRUE);
 
       g_strfreev (children);
     }
 
-  self->themes_valid = TRUE;
+  this->themes_valid = TRUE;
 
-  self->last_stat_time = g_get_monotonic_time ();
+  this->last_stat_time = g_get_monotonic_time ();
 
-  if (GTK_DISPLAY_DEBUG_CHECK (self->display, ICONTHEME))
+  if (GTK_DISPLAY_DEBUG_CHECK (this->display, ICONTHEME))
     {
       GList *l;
       GString *s;
       s = g_string_new ("Current icon themes ");
-      for (l = self->themes; l; l = l->next)
+      for (l = this->themes; l; l = l->next)
         {
           IconTheme *theme = l->data;
           g_string_append (s, theme->name);
@@ -1939,41 +1939,41 @@ load_themes (GtkIconTheme *self)
       gdk_debug_message ("%s", s->str);
       g_string_free (s, TRUE);
 
-      dump_string_set (&self->icons);
+      dump_string_set (&this->icons);
     }
 }
 
 static gboolean
-ensure_valid_themes (GtkIconTheme *self)
+ensure_valid_themes (GtkIconTheme *this)
 {
-  gboolean was_valid = self->themes_valid;
+  gboolean was_valid = this->themes_valid;
 
-  if (self->themes_valid)
+  if (this->themes_valid)
     {
       gint64 now = g_get_monotonic_time ();
 
-      if ((now - self->last_stat_time) / G_USEC_PER_SEC > 5)
+      if ((now - this->last_stat_time) / G_USEC_PER_SEC > 5)
         {
-          if (rescan_themes (self))
+          if (rescan_themes (this))
             {
-              icon_cache_clear (self);
-              blow_themes (self);
+              icon_cache_clear (this);
+              blow_themes (this);
             }
         }
     }
 
-  if (!self->themes_valid)
+  if (!this->themes_valid)
     {
       gint64 before G_GNUC_UNUSED;
 
       before = GDK_PROFILER_CURRENT_TIME;
 
-      load_themes (self);
+      load_themes (this);
 
-      gdk_profiler_end_mark (before, "Icon theme load", self->current_theme);
+      gdk_profiler_end_mark (before, "Icon theme load", this->current_theme);
 
       if (was_valid)
-        queue_theme_changed (self);
+        queue_theme_changed (this);
     }
 
   return TRUE;
@@ -1992,7 +1992,7 @@ icon_name_is_symbolic (const char *icon_name,
 }
 
 static GtkIconPaintable *
-real_choose_icon (GtkIconTheme      *self,
+real_choose_icon (GtkIconTheme      *this,
                   const char        *icon_names[],
                   int                size,
                   int                scale,
@@ -2006,7 +2006,7 @@ real_choose_icon (GtkIconTheme      *self,
   int i;
   IconKey key;
 
-  if (!ensure_valid_themes (self))
+  if (!ensure_valid_themes (this))
     return NULL;
 
   key.icon_names = (char **)icon_names;
@@ -2015,13 +2015,13 @@ real_choose_icon (GtkIconTheme      *self,
   key.flags = flags;
 
   /* This is used in the icontheme unit test */
-  if (GTK_DISPLAY_DEBUG_CHECK (self->display, ICONTHEME))
+  if (GTK_DISPLAY_DEBUG_CHECK (this->display, ICONTHEME))
     {
       for (i = 0; icon_names[i]; i++)
         gdk_debug_message ("\tlookup name: %s", icon_names[i]);
     }
 
-  icon = icon_cache_lookup (self, &key);
+  icon = icon_cache_lookup (this, &key);
   if (icon)
     return icon;
 
@@ -2033,12 +2033,12 @@ real_choose_icon (GtkIconTheme      *self,
    * In other words: We prefer symbolic icons in inherited themes over
    * generic icons in the theme.
    */
-  for (l = self->themes; l; l = l->next)
+  for (l = this->themes; l; l = l->next)
     {
       theme = l->data;
       for (i = 0; icon_names[i] && icon_name_is_symbolic (icon_names[i], -1); i++)
         {
-          icon_name = gtk_string_set_lookup (&self->icons, icon_names[i]);
+          icon_name = gtk_string_set_lookup (&this->icons, icon_names[i]);
           if (icon_name)
             {
               icon = theme_lookup_icon (theme, icon_name, size, scale);
@@ -2048,13 +2048,13 @@ real_choose_icon (GtkIconTheme      *self,
         }
     }
 
-  for (l = self->themes; l; l = l->next)
+  for (l = this->themes; l; l = l->next)
     {
       theme = l->data;
 
       for (i = 0; icon_names[i]; i++)
         {
-          icon_name = gtk_string_set_lookup (&self->icons, icon_names[i]);
+          icon_name = gtk_string_set_lookup (&this->icons, icon_names[i]);
           if (icon_name)
             {
               icon = theme_lookup_icon (theme, icon_name, size, scale);
@@ -2068,7 +2068,7 @@ real_choose_icon (GtkIconTheme      *self,
 
   for (i = 0; icon_names[i]; i++)
     {
-      unthemed_icon = g_hash_table_lookup (self->unthemed_icons, icon_names[i]);
+      unthemed_icon = g_hash_table_lookup (this->unthemed_icons, icon_names[i]);
       if (unthemed_icon)
         {
           const char *name;
@@ -2132,11 +2132,11 @@ G_GNUC_END_IGNORE_DEPRECATIONS
       if (GTK_DEBUG_CHECK (ICONFALLBACK))
         {
           char *s = g_strjoinv (", ", (char **)icon_names);
-          gdk_debug_message ("No icon found in %s (or fallbacks) for: %s", self->current_theme, s);
+          gdk_debug_message ("No icon found in %s (or fallbacks) for: %s", this->current_theme, s);
           g_free (s);
         }
       
-      return real_choose_icon (self,
+      return real_choose_icon (this,
                                (const char*[2]) { "image-missing", NULL },
                                size,
                                scale,
@@ -2151,7 +2151,7 @@ G_GNUC_END_IGNORE_DEPRECATIONS
   icon->key.scale = scale;
   icon->key.flags = flags;
 
-  icon_cache_add (self, icon);
+  icon_cache_add (this, icon);
 
   return icon;
 }
@@ -2167,7 +2167,7 @@ icon_name_list_add_icon (GtkStrvBuilder *icons,
 }
 
 static GtkIconPaintable *
-choose_icon (GtkIconTheme      *self,
+choose_icon (GtkIconTheme      *this,
              const char        *icon_names[],
              int                size,
              int                scale,
@@ -2221,7 +2221,7 @@ choose_icon (GtkIconTheme      *self,
             icon_name_list_add_icon (&new_names, dir_suffix, g_strdup (icon_names[i]));
         }
 
-      icon = real_choose_icon (self,
+      icon = real_choose_icon (this,
                                (const char **) gtk_strv_builder_get_data (&new_names),
                                size,
                                scale,
@@ -2245,7 +2245,7 @@ choose_icon (GtkIconTheme      *self,
             icon_name_list_add_icon (&new_names, dir_suffix, g_strdup (icon_names[i]));
         }
 
-      icon = real_choose_icon (self,
+      icon = real_choose_icon (this,
                                (const char **) gtk_strv_builder_get_data (&new_names),
                                size,
                                scale,
@@ -2261,7 +2261,7 @@ choose_icon (GtkIconTheme      *self,
           icon_name_list_add_icon (&new_names, dir_suffix, g_strdup (icon_names[i]));
         }
 
-      icon = real_choose_icon (self,
+      icon = real_choose_icon (this,
                                (const char **) gtk_strv_builder_get_data (&new_names),
                                size,
                                scale,
@@ -2271,7 +2271,7 @@ choose_icon (GtkIconTheme      *self,
     }
   else
     {
-      icon = real_choose_icon (self,
+      icon = real_choose_icon (this,
                                icon_names,
                                size,
                                scale,
@@ -2287,15 +2287,15 @@ load_icon_thread (GTask        *task,
                   gpointer      task_data,
                   GCancellable *cancellable)
 {
-  GtkIconPaintable *self = GTK_ICON_PAINTABLE (source_object);
+  GtkIconPaintable *this = GTK_ICON_PAINTABLE (source_object);
 
-  gtk_icon_paintable_load_in_thread (self);
+  gtk_icon_paintable_load_in_thread (this);
   g_task_return_pointer (task, NULL, NULL);
 }
 
 /**
  * gtk_icon_theme_lookup_icon:
- * @self: a `GtkIconTheme`
+ * @this: a `GtkIconTheme`
  * @icon_name: the name of the icon to lookup
  * @fallbacks: (nullable) (array zero-terminated=1): fallback names
  * @size: desired icon size, in application pixels
@@ -2324,7 +2324,7 @@ load_icon_thread (GTask        *task,
  *   containing the icon.
  */
 GtkIconPaintable *
-gtk_icon_theme_lookup_icon (GtkIconTheme       *self,
+gtk_icon_theme_lookup_icon (GtkIconTheme       *this,
                             const char         *icon_name,
                             const char         *fallbacks[],
                             int                 size,
@@ -2334,13 +2334,13 @@ gtk_icon_theme_lookup_icon (GtkIconTheme       *self,
 {
   GtkIconPaintable *icon;
 
-  g_return_val_if_fail (GTK_IS_ICON_THEME (self), NULL);
+  g_return_val_if_fail (GTK_IS_ICON_THEME (this), NULL);
   g_return_val_if_fail (icon_name != NULL, NULL);
   g_return_val_if_fail (scale >= 1, NULL);
 
-  GTK_DISPLAY_DEBUG (self->display, ICONTHEME, "looking up icon %s for scale %d", icon_name, scale);
+  GTK_DISPLAY_DEBUG (this->display, ICONTHEME, "looking up icon %s for scale %d", icon_name, scale);
 
-  gtk_icon_theme_lock (self);
+  gtk_icon_theme_lock (this);
 
   if (fallbacks)
     {
@@ -2351,7 +2351,7 @@ gtk_icon_theme_lookup_icon (GtkIconTheme       *self,
       memcpy (&names[1], fallbacks, sizeof (char *) * n_fallbacks);
       names[n_fallbacks + 1] = NULL;
 
-      icon = choose_icon (self, names, size, scale, direction, flags);
+      icon = choose_icon (this, names, size, scale, direction, flags);
 
       g_free (names);
     }
@@ -2362,10 +2362,10 @@ gtk_icon_theme_lookup_icon (GtkIconTheme       *self,
       names[0] = icon_name;
       names[1] = NULL;
 
-      icon = choose_icon (self, names, size, scale, direction, flags);
+      icon = choose_icon (this, names, size, scale, direction, flags);
     }
 
-  gtk_icon_theme_unlock (self);
+  gtk_icon_theme_unlock (this);
 
   if (flags & GTK_ICON_LOOKUP_PRELOAD)
     {
@@ -2405,55 +2405,55 @@ gtk_icon_theme_error_quark (void)
 
 /**
  * gtk_icon_theme_has_icon:
- * @self: a `GtkIconTheme`
+ * @this: a `GtkIconTheme`
  * @icon_name: the name of an icon
  *
  * Checks whether an icon theme includes an icon
  * for a particular name.
  *
- * Returns: %TRUE if @self includes an
+ * Returns: %TRUE if @this includes an
  *  icon for @icon_name.
  */
 gboolean
-gtk_icon_theme_has_icon (GtkIconTheme *self,
+gtk_icon_theme_has_icon (GtkIconTheme *this,
                          const char   *icon_name)
 {
   gboolean res = FALSE;
 
-  g_return_val_if_fail (GTK_IS_ICON_THEME (self), FALSE);
+  g_return_val_if_fail (GTK_IS_ICON_THEME (this), FALSE);
   g_return_val_if_fail (icon_name != NULL, FALSE);
 
-  gtk_icon_theme_lock (self);
+  gtk_icon_theme_lock (this);
 
-  ensure_valid_themes (self);
+  ensure_valid_themes (this);
 
-  if (gtk_string_set_lookup (&self->icons, icon_name) != NULL ||
-      g_hash_table_contains (self->unthemed_icons, icon_name))
+  if (gtk_string_set_lookup (&this->icons, icon_name) != NULL ||
+      g_hash_table_contains (this->unthemed_icons, icon_name))
     {
       res = TRUE;
       goto out;
     }
 
  out:
-  gtk_icon_theme_unlock (self);
+  gtk_icon_theme_unlock (this);
 
   return res;
 }
 
 /**
  * gtk_icon_theme_has_gicon:
- * @self: a `GtkIconTheme`
+ * @this: a `GtkIconTheme`
  * @gicon: a `GIcon`
  *
  * Checks whether an icon theme includes an icon
  * for a particular `GIcon`.
  *
- * Returns: %TRUE if @self includes an icon for @gicon
+ * Returns: %TRUE if @this includes an icon for @gicon
  *
  * Since: 4.2
  */
 gboolean
-gtk_icon_theme_has_gicon (GtkIconTheme *self,
+gtk_icon_theme_has_gicon (GtkIconTheme *this,
                           GIcon        *gicon)
 {
   const char * const *names;
@@ -2464,14 +2464,14 @@ gtk_icon_theme_has_gicon (GtkIconTheme *self,
 
   names = g_themed_icon_get_names (G_THEMED_ICON (gicon));
 
-  gtk_icon_theme_lock (self);
+  gtk_icon_theme_lock (this);
 
-  ensure_valid_themes (self);
+  ensure_valid_themes (this);
 
   for (int i = 0; names[i]; i++)
     {
-      if (gtk_string_set_lookup (&self->icons, names[i]) != NULL ||
-          g_hash_table_contains (self->unthemed_icons, names[i]))
+      if (gtk_string_set_lookup (&this->icons, names[i]) != NULL ||
+          g_hash_table_contains (this->unthemed_icons, names[i]))
         {
           res = TRUE;
           goto out;
@@ -2479,7 +2479,7 @@ gtk_icon_theme_has_gicon (GtkIconTheme *self,
     }
 
  out:
-  gtk_icon_theme_unlock (self);
+  gtk_icon_theme_unlock (this);
 
   return res;
 }
@@ -2498,7 +2498,7 @@ add_size (gpointer key,
 
 /**
  * gtk_icon_theme_get_icon_sizes:
- * @self: a `GtkIconTheme`
+ * @this: a `GtkIconTheme`
  * @icon_name: the name of an icon
  *
  * Returns an array of integers describing the sizes at which
@@ -2513,7 +2513,7 @@ add_size (gpointer key,
  *   longer needed.
  */
 int *
-gtk_icon_theme_get_icon_sizes (GtkIconTheme *self,
+gtk_icon_theme_get_icon_sizes (GtkIconTheme *this,
                                const char   *icon_name)
 {
   GList *l;
@@ -2522,17 +2522,17 @@ gtk_icon_theme_get_icon_sizes (GtkIconTheme *self,
   int *result, *r;
   const char *interned_icon_name;
 
-  g_return_val_if_fail (GTK_IS_ICON_THEME (self), NULL);
+  g_return_val_if_fail (GTK_IS_ICON_THEME (this), NULL);
 
-  gtk_icon_theme_lock (self);
+  gtk_icon_theme_lock (this);
 
-  ensure_valid_themes (self);
+  ensure_valid_themes (this);
 
   sizes = g_hash_table_new (g_direct_hash, g_direct_equal);
 
-  interned_icon_name = gtk_string_set_lookup (&self->icons, icon_name);
+  interned_icon_name = gtk_string_set_lookup (&this->icons, icon_name);
 
-  for (l = self->themes; l; l = l->next)
+  for (l = this->themes; l; l = l->next)
     {
       IconTheme *theme = l->data;
 
@@ -2558,7 +2558,7 @@ gtk_icon_theme_get_icon_sizes (GtkIconTheme *self,
   g_hash_table_foreach (sizes, add_size, &r);
   g_hash_table_destroy (sizes);
 
-  gtk_icon_theme_unlock (self);
+  gtk_icon_theme_unlock (this);
 
   return result;
 }
@@ -2575,7 +2575,7 @@ add_key_to_hash (gpointer key,
 
 /**
  * gtk_icon_theme_get_icon_names:
- * @self: a `GtkIconTheme`
+ * @this: a `GtkIconTheme`
  *
  * Lists the names of icons in the current icon theme.
  *
@@ -2584,7 +2584,7 @@ add_key_to_hash (gpointer key,
  *   free the array using g_strfreev().
  */
 char **
-gtk_icon_theme_get_icon_names (GtkIconTheme *self)
+gtk_icon_theme_get_icon_names (GtkIconTheme *this)
 {
   GHashTable *icons;
   GHashTableIter iter;
@@ -2592,14 +2592,14 @@ gtk_icon_theme_get_icon_names (GtkIconTheme *self)
   char *key;
   int i;
 
-  gtk_icon_theme_lock (self);
+  gtk_icon_theme_lock (this);
 
-  ensure_valid_themes (self);
+  ensure_valid_themes (this);
 
   icons = g_hash_table_new (g_str_hash, g_str_equal);
-  gtk_string_set_list (&self->icons, icons);
+  gtk_string_set_list (&this->icons, icons);
 
-  g_hash_table_foreach (self->unthemed_icons, add_key_to_hash, icons);
+  g_hash_table_foreach (this->unthemed_icons, add_key_to_hash, icons);
 
   names = g_new (char *, g_hash_table_size (icons) + 1);
 
@@ -2612,21 +2612,21 @@ gtk_icon_theme_get_icon_names (GtkIconTheme *self)
 
   g_hash_table_destroy (icons);
 
-  gtk_icon_theme_unlock (self);
+  gtk_icon_theme_unlock (this);
 
   return names;
 }
 
 static gboolean
-rescan_themes (GtkIconTheme *self)
+rescan_themes (GtkIconTheme *this)
 {
   int stat_res;
   GStatBuf stat_buf;
   guint i;
 
-  for (i = 0; i < self->dir_mtimes->len; i++)
+  for (i = 0; i < this->dir_mtimes->len; i++)
     {
-      const IconThemeDirMtime *dir_mtime = &g_array_index (self->dir_mtimes, IconThemeDirMtime, i);
+      const IconThemeDirMtime *dir_mtime = &g_array_index (this->dir_mtimes, IconThemeDirMtime, i);
 
       stat_res = g_stat (dir_mtime->dir, &stat_buf);
 
@@ -2643,7 +2643,7 @@ rescan_themes (GtkIconTheme *self)
       return TRUE;
     }
 
-  self->last_stat_time = g_get_monotonic_time ();
+  this->last_stat_time = g_get_monotonic_time ();
 
   return FALSE;
 }
@@ -2928,7 +2928,7 @@ theme_lookup_icon (IconTheme  *theme,
 }
 
 static GHashTable *
-scan_directory (GtkIconTheme  *self,
+scan_directory (GtkIconTheme  *this,
                 char          *full_dir,
                 GtkStringSet  *set)
 {
@@ -2936,7 +2936,7 @@ scan_directory (GtkIconTheme  *self,
   const char *name;
   GHashTable *icons = NULL;
 
-  GTK_DISPLAY_DEBUG (self->display, ICONTHEME, "scanning directory %s", full_dir);
+  GTK_DISPLAY_DEBUG (this->display, ICONTHEME, "scanning directory %s", full_dir);
 
   gdir = g_dir_open (full_dir, 0, NULL);
 
@@ -2968,7 +2968,7 @@ scan_directory (GtkIconTheme  *self,
 }
 
 static GHashTable *
-scan_resource_directory (GtkIconTheme  *self,
+scan_resource_directory (GtkIconTheme  *this,
                          const char    *full_dir,
                          GtkStringSet  *set)
 {
@@ -2976,7 +2976,7 @@ scan_resource_directory (GtkIconTheme  *self,
   char **children;
   int i;
 
-  GTK_DISPLAY_DEBUG (self->display, ICONTHEME, "scanning resource directory %s", full_dir);
+  GTK_DISPLAY_DEBUG (this->display, ICONTHEME, "scanning resource directory %s", full_dir);
 
   children = g_resources_enumerate_children (full_dir, 0, NULL);
 
@@ -3121,7 +3121,7 @@ theme_add_dir_with_icons (IconTheme *theme,
 }
 
 static void
-theme_subdir_load (GtkIconTheme *self,
+theme_subdir_load (GtkIconTheme *this,
                    IconTheme    *theme,
                    GKeyFile     *theme_file,
                    char         *subdir)
@@ -3187,9 +3187,9 @@ theme_subdir_load (GtkIconTheme *self,
 
   str = g_string_sized_new (256);
 
-  for (i = 0; i < self->dir_mtimes->len; i++)
+  for (i = 0; i < this->dir_mtimes->len; i++)
     {
-      IconThemeDirMtime *dir_mtime = &g_array_index (self->dir_mtimes, IconThemeDirMtime, i);
+      IconThemeDirMtime *dir_mtime = &g_array_index (this->dir_mtimes, IconThemeDirMtime, i);
 
       if (!dir_mtime->exists)
         continue; /* directory doesn't exist */
@@ -3211,9 +3211,9 @@ theme_subdir_load (GtkIconTheme *self,
             }
 
           if (dir_mtime->cache != NULL)
-            icons = gtk_icon_cache_list_icons_in_directory (dir_mtime->cache, subdir, &self->icons);
+            icons = gtk_icon_cache_list_icons_in_directory (dir_mtime->cache, subdir, &this->icons);
           else
-            icons = scan_directory (self, str->str, &self->icons);
+            icons = scan_directory (this, str->str, &this->icons);
 
           if (icons)
             {
@@ -3231,11 +3231,11 @@ theme_subdir_load (GtkIconTheme *self,
     {
       int r;
 
-      for (r = 0; self->resource_path[r]; r++)
+      for (r = 0; this->resource_path[r]; r++)
         {
           GHashTable *icons;
 
-          g_string_assign (str, self->resource_path[r]);
+          g_string_assign (str, this->resource_path[r]);
           if (str->str[str->len - 1] != '/')
             g_string_append_c (str, '/');
           g_string_append (str, subdir);
@@ -3243,7 +3243,7 @@ theme_subdir_load (GtkIconTheme *self,
           if (str->str[str->len - 1] != '/')
             g_string_append_c (str, '/');
 
-          icons = scan_resource_directory (self, str->str, &self->icons);
+          icons = scan_resource_directory (this, str->str, &this->icons);
           if (icons)
             {
               theme_add_dir_with_icons (theme,
@@ -3261,7 +3261,7 @@ theme_subdir_load (GtkIconTheme *self,
 
 /**
  * gtk_icon_theme_lookup_by_gicon:
- * @self: a `GtkIconTheme`
+ * @this: a `GtkIconTheme`
  * @icon: the `GIcon` to look up
  * @size: desired icon size, in application pixels
  * @scale: the desired scale
@@ -3277,7 +3277,7 @@ theme_subdir_load (GtkIconTheme *self,
  *   information about the icon. Unref with g_object_unref()
  */
 GtkIconPaintable *
-gtk_icon_theme_lookup_by_gicon (GtkIconTheme       *self,
+gtk_icon_theme_lookup_by_gicon (GtkIconTheme       *this,
                                 GIcon              *gicon,
                                 int                 size,
                                 int                 scale,
@@ -3287,7 +3287,7 @@ gtk_icon_theme_lookup_by_gicon (GtkIconTheme       *self,
   GtkIconPaintable *paintable = NULL;
   GdkTexture *texture;
 
-  g_return_val_if_fail (GTK_IS_ICON_THEME (self), NULL);
+  g_return_val_if_fail (GTK_IS_ICON_THEME (this), NULL);
   g_return_val_if_fail (G_IS_ICON (gicon), NULL);
   g_return_val_if_fail (size > 0, NULL);
   g_return_val_if_fail (scale > 0, NULL);
@@ -3324,7 +3324,7 @@ G_GNUC_END_IGNORE_DEPRECATIONS
       const char **names;
 
       names = (const char **) g_themed_icon_get_names (G_THEMED_ICON (gicon));
-      paintable = gtk_icon_theme_lookup_icon (self, names[0], &names[1], size, scale, direction, flags);
+      paintable = gtk_icon_theme_lookup_icon (this, names[0], &names[1], size, scale, direction, flags);
     }
   else
     {
@@ -3338,7 +3338,7 @@ G_GNUC_END_IGNORE_DEPRECATIONS
 
 /**
  * gtk_icon_theme_get_display:
- * @self: a `GtkIconTheme`
+ * @this: a `GtkIconTheme`
  *
  * Returns the display that the `GtkIconTheme` object was
  * created for.
@@ -3346,9 +3346,9 @@ G_GNUC_END_IGNORE_DEPRECATIONS
  * Returns: (nullable) (transfer none): the display of @icon_theme
  */
 GdkDisplay *
-gtk_icon_theme_get_display (GtkIconTheme *self)
+gtk_icon_theme_get_display (GtkIconTheme *this)
 {
-  g_return_val_if_fail (GTK_IS_ICON_THEME (self), NULL);
+  g_return_val_if_fail (GTK_IS_ICON_THEME (this), NULL);
 
-  return self->display;
+  return this->display;
 }

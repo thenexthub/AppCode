@@ -109,7 +109,7 @@ void              gtk_print_settings_unset                   (GtkPrintSettings  
 							      const char           *key);
 GDK_AVAILABLE_IN_ALL
 void              gtk_print_settings_foreach                 (GtkPrintSettings     *settings,
-							      GtkPrintSettingsFunc  func,
+							      GtkPrintSettingsFunc  fn,
 							      gpointer              user_data);
 GDK_AVAILABLE_IN_ALL
 gboolean          gtk_print_settings_get_bool                (GtkPrintSettings     *settings,

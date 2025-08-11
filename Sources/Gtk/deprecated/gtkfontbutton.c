@@ -114,7 +114,7 @@ struct _GtkFontButtonClass
   GtkWidgetClass parent_class;
 
   void (* font_set) (GtkFontButton *gfp);
-  void (* activate) (GtkFontButton *self);
+  void (* activate) (GtkFontButton *this);
 };
 
 /* Signals */
@@ -462,9 +462,9 @@ gtk_font_button_font_chooser_notify (GObject    *object,
 }
 
 static void
-gtk_font_button_activate (GtkFontButton *self)
+gtk_font_button_activate (GtkFontButton *this)
 {
-  gtk_widget_activate (self->button);
+  gtk_widget_activate (this->button);
 }
 
 static void

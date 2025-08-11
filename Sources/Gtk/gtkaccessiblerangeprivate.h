@@ -12,7 +12,7 @@
 G_BEGIN_DECLS
 
 gboolean
-gtk_accessible_range_set_current_value (GtkAccessibleRange *self,
+gtk_accessible_range_set_current_value (GtkAccessibleRange *this,
                                         double              value);
 
 G_END_DECLS

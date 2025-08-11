@@ -209,7 +209,7 @@ typedef void (* GtkListBoxForeachFunc) (GtkListBox      *box,
 
 GDK_AVAILABLE_IN_ALL
 void           gtk_list_box_selected_foreach             (GtkListBox                    *box,
-                                                          GtkListBoxForeachFunc          func,
+                                                          GtkListBoxForeachFunc          fn,
                                                           gpointer                       data);
 GDK_AVAILABLE_IN_ALL
 GList         *gtk_list_box_get_selected_rows            (GtkListBox                    *box);

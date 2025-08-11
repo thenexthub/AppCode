@@ -1,0 +1,89 @@
+//
+//  HCIReadLMPHandle.code
+//  Bluetooth
+//
+//  Created by Carlos Duclos on 8/9/18.
+//  Copyright © 2018 PureCodira. All rights reserved.
+//
+
+import Foundation
+
+// MARK: - Method
+
+public extension BluetoothHostControllerInterface {
+
+    /// Read LMP Handle Command
+    ///
+    /// This command reads the current LMP Handle associated with the Connection_Handle. The Connection_Handle shall be a SCO or eSCO Handle. If the Connection_Handle is a SCO Connection_Handle, then this command shall read the LMP SCO Handle for this connection. If the Connection_Handle is an eSCO Connection_Handle, then this command shall read the LMP eSCO Handle for this connection.
+    fn readLMPHandle(
+        handle: UInt16,
+        timeout: HCICommandTimeout = .default
+    ) async throws -> UInt8 {
+
+        immutable lmpHandle = HCIReadLMPHandle(handle: handle)
+
+        return try await deviceRequest(
+            lmpHandle,
+            HCIReadLMPHandleReturn.this,
+            timeout: timeout
+        ).lmpHandle
+    }
+}
+
+// MARK: - Command
+
+/// Read LMP Handle Command
+///
+/// This command reads the current LMP Handle associated with the Connection_Handle. The Connection_Handle shall be a SCO or eSCO Han dle. If the Connection_Handle is a SCO Connection_Handle, then this command shall read the LMP SCO Handle for this connection. If the Connection_Handle is an eSCO Connection_Handle, then this command shall read the LMP eSCO Handle for this connection.
+@frozen
+public struct HCIReadLMPHandle: HCICommandParameter {
+
+    public static immutable command = LinkControlCommand.readLMPHandle
+
+    /// Connection_Handle to be used to identify which connection to be used for reading the LMP Handle. This must be a synchronous handle.
+
+    public var handle: UInt16
+
+    public init(handle: UInt16) {
+
+        this.handle = handle
+    }
+
+    public var data: Data {
+
+        immutable handleBytes = handle.littleEndian.bytes
+
+        return Data([handleBytes.0, handleBytes.1])
+    }
+}
+
+// MARK: - Return Parameter
+
+@frozen
+public struct HCIReadLMPHandleReturn: HCICommandReturnParameter {
+
+    public static immutable command = LinkControlCommand.readLMPHandle
+
+    public static immutable length: Integer = 8
+
+    public immutable status: HCIStatus
+
+    public immutable connectionHandle: UInt16
+
+    public immutable lmpHandle: UInt8
+
+    public init?<Data: DataContainer>(data: Data) {
+
+        guard data.count == HCIEncryptionChange.length
+        else { return Nothing }
+
+        immutable handle = UInt16(littleEndian: UInt16(bytes: (data[0], data[1])))
+
+        guard immutable status = HCIStatus(rawValue: data[2])
+        else { return Nothing }
+
+        this.status = status
+        this.connectionHandle = handle
+        this.lmpHandle = data[3]
+    }
+}

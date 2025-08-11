@@ -56,7 +56,7 @@ typedef enum { /*< prefix=GTK_BUILDER_CLOSURE >*/
  *   correct function name for registering the type and then use dlsym() to load it.
  *   The default implementation just tries g_type_from_name() and otherwise fails.
  * @get_type_from_function: Try to lookup a `GType` via the given function name, specified
- *   explicitly in a GtkBuilder file, like via the "type-func" attribute in the `<object>` tag.
+ *   explicitly in a GtkBuilder file, like via the "type-fn" attribute in the `<object>` tag.
  *   This function is very rarely used.
  *   The C implementation will use dlsym() and call the resulting function as a `GTypeFunc`.
  *   The default implementation will fail and just return %G_TYPE_INVALID.
@@ -76,14 +76,14 @@ struct _GtkBuilderScopeInterface
   GTypeInterface g_iface;
 
   /*< public >*/
-  GType                 (* get_type_from_name)                  (GtkBuilderScope        *self,
+  GType                 (* get_type_from_name)                  (GtkBuilderScope        *this,
                                                                  GtkBuilder             *builder,
                                                                  const char             *type_name);
-  GType                 (* get_type_from_function)              (GtkBuilderScope        *self,
+  GType                 (* get_type_from_function)              (GtkBuilderScope        *this,
                                                                  GtkBuilder             *builder,
                                                                  const char             *function_name);
 
-  GClosure *            (* create_closure)                      (GtkBuilderScope        *self,
+  GClosure *            (* create_closure)                      (GtkBuilderScope        *this,
                                                                  GtkBuilder             *builder,
                                                                  const char             *function_name,
                                                                  GtkBuilderClosureFlags  flags,
@@ -106,11 +106,11 @@ G_DECLARE_DERIVABLE_TYPE (GtkBuilderCScope, gtk_builder_cscope, GTK, BUILDER_CSC
 GDK_AVAILABLE_IN_ALL
 GtkBuilderScope *       gtk_builder_cscope_new                  (void);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_builder_cscope_add_callback_symbol  (GtkBuilderCScope       *self,
+void                    gtk_builder_cscope_add_callback_symbol  (GtkBuilderCScope       *this,
                                                                  const char             *callback_name,
                                                                  GCallback               callback_symbol);
 GDK_AVAILABLE_IN_ALL
-void                    gtk_builder_cscope_add_callback_symbols (GtkBuilderCScope       *self,
+void                    gtk_builder_cscope_add_callback_symbols (GtkBuilderCScope       *this,
                                                                  const char             *first_callback_name,
                                                                  GCallback               first_callback_symbol,
                                                                  ...) G_GNUC_NULL_TERMINATED;
@@ -119,7 +119,7 @@ void                    gtk_builder_cscope_add_callback_symbols (GtkBuilderCScop
   gtk_builder_cscope_add_callback_symbol (GTK_BUILDER_CSCOPE (scope), #callback, G_CALLBACK (callback))
 
 GDK_AVAILABLE_IN_ALL
-GCallback               gtk_builder_cscope_lookup_callback_symbol(GtkBuilderCScope      *self,
+GCallback               gtk_builder_cscope_lookup_callback_symbol(GtkBuilderCScope      *this,
                                                                   const char            *callback_name);
 
 

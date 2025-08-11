@@ -100,81 +100,81 @@ struct _GdkMacosDisplayClass
 
 
 GdkDisplay      *_gdk_macos_display_open                           (const char      *display_name);
-int              _gdk_macos_display_get_fd                         (GdkMacosDisplay *self);
-void             _gdk_macos_display_queue_events                   (GdkMacosDisplay *self);
-void             _gdk_macos_display_to_display_coords              (GdkMacosDisplay *self,
+int              _gdk_macos_display_get_fd                         (GdkMacosDisplay *this);
+void             _gdk_macos_display_queue_events                   (GdkMacosDisplay *this);
+void             _gdk_macos_display_to_display_coords              (GdkMacosDisplay *this,
                                                                     int              x,
                                                                     int              y,
                                                                     int             *out_x,
                                                                     int             *out_y);
-void             _gdk_macos_display_from_display_coords            (GdkMacosDisplay *self,
+void             _gdk_macos_display_from_display_coords            (GdkMacosDisplay *this,
                                                                     int              x,
                                                                     int              y,
                                                                     int             *out_x,
                                                                     int             *out_y);
-NSScreen        *_gdk_macos_display_get_screen_at_display_coords   (GdkMacosDisplay *self,
+NSScreen        *_gdk_macos_display_get_screen_at_display_coords   (GdkMacosDisplay *this,
                                                                     int              x,
                                                                     int              y);
-GdkMonitor      *_gdk_macos_display_get_monitor_at_coords          (GdkMacosDisplay *self,
+GdkMonitor      *_gdk_macos_display_get_monitor_at_coords          (GdkMacosDisplay *this,
                                                                     int              x,
                                                                     int              y);
-GdkMonitor      *_gdk_macos_display_get_monitor_at_display_coords  (GdkMacosDisplay *self,
+GdkMonitor      *_gdk_macos_display_get_monitor_at_display_coords  (GdkMacosDisplay *this,
                                                                     int              x,
                                                                     int              y);
-void             _gdk_macos_display_surface_added                  (GdkMacosDisplay *self,
+void             _gdk_macos_display_surface_added                  (GdkMacosDisplay *this,
                                                                     GdkMacosSurface *surface);
-GdkEvent        *_gdk_macos_display_translate                      (GdkMacosDisplay *self,
+GdkEvent        *_gdk_macos_display_translate                      (GdkMacosDisplay *this,
                                                                     NSEvent         *event);
-void             _gdk_macos_display_feedback_init                  (GdkMacosDisplay *self);
-void             _gdk_macos_display_feedback_destroy               (GdkMacosDisplay *self);
-void             _gdk_macos_display_break_all_grabs                (GdkMacosDisplay *self,
+void             _gdk_macos_display_feedback_init                  (GdkMacosDisplay *this);
+void             _gdk_macos_display_feedback_destroy               (GdkMacosDisplay *this);
+void             _gdk_macos_display_break_all_grabs                (GdkMacosDisplay *this,
                                                                     guint32          time);
-GdkModifierType  _gdk_macos_display_get_current_keyboard_modifiers (GdkMacosDisplay *self);
-GdkModifierType  _gdk_macos_display_get_current_mouse_modifiers    (GdkMacosDisplay *self);
-GdkMacosSurface *_gdk_macos_display_get_surface_at_display_coords  (GdkMacosDisplay *self,
+GdkModifierType  _gdk_macos_display_get_current_keyboard_modifiers (GdkMacosDisplay *this);
+GdkModifierType  _gdk_macos_display_get_current_mouse_modifiers    (GdkMacosDisplay *this);
+GdkMacosSurface *_gdk_macos_display_get_surface_at_display_coords  (GdkMacosDisplay *this,
                                                                     double           x,
                                                                     double           y,
                                                                     int             *surface_x,
                                                                     int             *surface_y);
-void             _gdk_macos_display_reload_monitors                (GdkMacosDisplay *self);
-void             _gdk_macos_display_surface_removed                (GdkMacosDisplay *self,
+void             _gdk_macos_display_reload_monitors                (GdkMacosDisplay *this);
+void             _gdk_macos_display_surface_removed                (GdkMacosDisplay *this,
                                                                     GdkMacosSurface *surface);
-NSWindow        *_gdk_macos_display_find_native_under_pointer      (GdkMacosDisplay *self,
+NSWindow        *_gdk_macos_display_find_native_under_pointer      (GdkMacosDisplay *this,
                                                                     int             *x,
                                                                     int             *y);
-gboolean         _gdk_macos_display_get_setting                    (GdkMacosDisplay *self,
+gboolean         _gdk_macos_display_get_setting                    (GdkMacosDisplay *this,
                                                                     const char      *setting,
                                                                     GValue          *value);
-void             _gdk_macos_display_reload_settings                (GdkMacosDisplay *self);
-void             _gdk_macos_display_surface_resigned_main          (GdkMacosDisplay *self,
+void             _gdk_macos_display_reload_settings                (GdkMacosDisplay *this);
+void             _gdk_macos_display_surface_resigned_main          (GdkMacosDisplay *this,
                                                                     GdkMacosSurface *surface);
-void             _gdk_macos_display_surface_became_main            (GdkMacosDisplay *self,
+void             _gdk_macos_display_surface_became_main            (GdkMacosDisplay *this,
                                                                     GdkMacosSurface *surface);
-void             _gdk_macos_display_surface_resigned_key           (GdkMacosDisplay *self,
+void             _gdk_macos_display_surface_resigned_key           (GdkMacosDisplay *this,
                                                                     GdkMacosSurface *surface);
-void             _gdk_macos_display_surface_became_key             (GdkMacosDisplay *self,
+void             _gdk_macos_display_surface_became_key             (GdkMacosDisplay *this,
                                                                     GdkMacosSurface *surface);
-void             _gdk_macos_display_clear_sorting                  (GdkMacosDisplay *self);
-const GList     *_gdk_macos_display_get_surfaces                   (GdkMacosDisplay *self);
-void             _gdk_macos_display_send_event                     (GdkMacosDisplay *self,
+void             _gdk_macos_display_clear_sorting                  (GdkMacosDisplay *this);
+const GList     *_gdk_macos_display_get_surfaces                   (GdkMacosDisplay *this);
+void             _gdk_macos_display_send_event                     (GdkMacosDisplay *this,
                                                                     NSEvent         *nsevent);
-void             _gdk_macos_display_warp_pointer                   (GdkMacosDisplay *self,
+void             _gdk_macos_display_warp_pointer                   (GdkMacosDisplay *this,
                                                                     int              x,
                                                                     int              y);
 NSEvent         *_gdk_macos_display_get_matching_nsevent           (GdkEvent        *event);
 NSEvent         *_gdk_macos_display_get_exact_nsevent              (GdkEvent        *event);
 NSEvent         *_gdk_macos_display_get_last_nsevent               (void);
-GdkDrag         *_gdk_macos_display_find_drag                      (GdkMacosDisplay *self,
+GdkDrag         *_gdk_macos_display_find_drag                      (GdkMacosDisplay *this,
                                                                     NSInteger        sequence_number);
-GdkDrop         *_gdk_macos_display_find_drop                      (GdkMacosDisplay *self,
+GdkDrop         *_gdk_macos_display_find_drop                      (GdkMacosDisplay *this,
                                                                     NSInteger        sequence_number);
-void             _gdk_macos_display_set_drag                       (GdkMacosDisplay *self,
+void             _gdk_macos_display_set_drag                       (GdkMacosDisplay *this,
                                                                     NSInteger        sequence_number,
                                                                     GdkDrag         *drag);
-void             _gdk_macos_display_set_drop                       (GdkMacosDisplay *self,
+void             _gdk_macos_display_set_drop                       (GdkMacosDisplay *this,
                                                                     NSInteger        sequence_number,
                                                                     GdkDrop         *drop);
-void             _gdk_macos_display_position_surface               (GdkMacosDisplay *self,
+void             _gdk_macos_display_position_surface               (GdkMacosDisplay *this,
                                                                     GdkMacosSurface *surface,
                                                                     GdkMonitor      *monitor,
                                                                     int             *x,

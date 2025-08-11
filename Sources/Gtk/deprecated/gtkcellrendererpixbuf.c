@@ -61,7 +61,7 @@ static void gtk_cell_renderer_pixbuf_set_property  (GObject                    *
 						    guint                       param_id,
 						    const GValue               *value,
 						    GParamSpec                 *pspec);
-static void gtk_cell_renderer_pixbuf_get_size   (GtkCellRendererPixbuf      *self,
+static void gtk_cell_renderer_pixbuf_get_size   (GtkCellRendererPixbuf      *this,
 						 GtkWidget                  *widget,
 						 const GdkRectangle         *rectangle,
 						 int                        *x_offset,
@@ -439,7 +439,7 @@ create_icon_helper (GtkCellRendererPixbuf *cellpixbuf,
 }
 
 static void
-gtk_cell_renderer_pixbuf_get_size (GtkCellRendererPixbuf *self,
+gtk_cell_renderer_pixbuf_get_size (GtkCellRendererPixbuf *this,
 				   GtkWidget             *widget,
 				   const GdkRectangle    *cell_area,
 				   int                   *x_offset,
@@ -447,8 +447,8 @@ gtk_cell_renderer_pixbuf_get_size (GtkCellRendererPixbuf *self,
 				   int                   *width,
 				   int                   *height)
 {
-  GtkCellRendererPixbufPrivate *priv = gtk_cell_renderer_pixbuf_get_instance_private (self);
-  GtkCellRenderer *cell = GTK_CELL_RENDERER (self);
+  GtkCellRendererPixbufPrivate *priv = gtk_cell_renderer_pixbuf_get_instance_private (this);
+  GtkCellRenderer *cell = GTK_CELL_RENDERER (this);
   int pixbuf_width;
   int pixbuf_height;
   int calc_width;
@@ -461,7 +461,7 @@ gtk_cell_renderer_pixbuf_get_size (GtkCellRendererPixbuf *self,
   gtk_style_context_save (context);
   gtk_style_context_add_class (context, "image");
   gtk_icon_size_set_style_classes (gtk_style_context_get_node (context), priv->icon_size);
-  icon_helper = create_icon_helper (self, widget);
+  icon_helper = create_icon_helper (this, widget);
 
   if (_gtk_icon_helper_get_is_empty (icon_helper))
     pixbuf_width = pixbuf_height = 0;

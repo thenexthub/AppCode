@@ -121,29 +121,29 @@ static void
 gtk_picture_snapshot (GtkWidget   *widget,
                       GtkSnapshot *snapshot)
 {
-  GtkPicture *self = GTK_PICTURE (widget);
+  GtkPicture *this = GTK_PICTURE (widget);
   double ratio;
   int x, y, width, height;
   double w, h;
 
-  if (self->paintable == NULL)
+  if (this->paintable == NULL)
     return;
 
   width = gtk_widget_get_width (widget);
   height = gtk_widget_get_height (widget);
-  ratio = gdk_paintable_get_intrinsic_aspect_ratio (self->paintable);
+  ratio = gdk_paintable_get_intrinsic_aspect_ratio (this->paintable);
 
-  if (self->content_fit == GTK_CONTENT_FIT_FILL || ratio == 0)
+  if (this->content_fit == GTK_CONTENT_FIT_FILL || ratio == 0)
     {
-      gdk_paintable_snapshot (self->paintable, snapshot, width, height);
+      gdk_paintable_snapshot (this->paintable, snapshot, width, height);
     }
   else
     {
       double picture_ratio = (double) width / height;
-      int paintable_width = gdk_paintable_get_intrinsic_width (self->paintable);
-      int paintable_height = gdk_paintable_get_intrinsic_height (self->paintable);
+      int paintable_width = gdk_paintable_get_intrinsic_width (this->paintable);
+      int paintable_height = gdk_paintable_get_intrinsic_height (this->paintable);
 
-      if (self->content_fit == GTK_CONTENT_FIT_SCALE_DOWN &&
+      if (this->content_fit == GTK_CONTENT_FIT_SCALE_DOWN &&
           width >= paintable_width && height >= paintable_height)
         {
           w = paintable_width;
@@ -151,7 +151,7 @@ gtk_picture_snapshot (GtkWidget   *widget,
         }
       else if (ratio > picture_ratio)
         {
-          if (self->content_fit == GTK_CONTENT_FIT_COVER)
+          if (this->content_fit == GTK_CONTENT_FIT_COVER)
             {
               w = height * ratio;
               h = height;
@@ -164,7 +164,7 @@ gtk_picture_snapshot (GtkWidget   *widget,
         }
       else
         {
-          if (self->content_fit == GTK_CONTENT_FIT_COVER)
+          if (this->content_fit == GTK_CONTENT_FIT_COVER)
             {
               w = width;
               h = width / ratio;
@@ -184,7 +184,7 @@ gtk_picture_snapshot (GtkWidget   *widget,
 
       gtk_snapshot_save (snapshot);
       gtk_snapshot_translate (snapshot, &GRAPHENE_POINT_INIT (x, y));
-      gdk_paintable_snapshot (self->paintable, snapshot, w, h);
+      gdk_paintable_snapshot (this->paintable, snapshot, w, h);
       gtk_snapshot_restore (snapshot);
     }
 }
@@ -204,13 +204,13 @@ gtk_picture_measure (GtkWidget      *widget,
                      int           *minimum_baseline,
                      int           *natural_baseline)
 {
-  GtkPicture *self = GTK_PICTURE (widget);
+  GtkPicture *this = GTK_PICTURE (widget);
   GtkCssStyle *style;
   double min_width, min_height, nat_width, nat_height;
   double default_size;
 
   /* for_size = 0 below is treated as -1, but we want to return zeros. */
-  if (self->paintable == NULL || for_size == 0)
+  if (this->paintable == NULL || for_size == 0)
     {
       *minimum = 0;
       *natural = 0;
@@ -220,26 +220,26 @@ gtk_picture_measure (GtkWidget      *widget,
   style = gtk_css_node_get_style (gtk_widget_get_css_node (widget));
   default_size = gtk_css_number_value_get (style->icon->icon_size, 100);
 
-  if (self->can_shrink)
+  if (this->can_shrink)
     {
       min_width = min_height = 0;
     }
   else
     {
-      gdk_paintable_compute_concrete_size (self->paintable,
+      gdk_paintable_compute_concrete_size (this->paintable,
                                            0, 0,
                                            default_size, default_size,
                                            &min_width, &min_height);
     }
 
-  if (for_size > 0 && self->content_fit == GTK_CONTENT_FIT_SCALE_DOWN)
+  if (for_size > 0 && this->content_fit == GTK_CONTENT_FIT_SCALE_DOWN)
     {
       double opposite_intrinsic_size;
 
       if (orientation == GTK_ORIENTATION_HORIZONTAL)
-        opposite_intrinsic_size = gdk_paintable_get_intrinsic_height (self->paintable);
+        opposite_intrinsic_size = gdk_paintable_get_intrinsic_height (this->paintable);
       else
-        opposite_intrinsic_size = gdk_paintable_get_intrinsic_width (self->paintable);
+        opposite_intrinsic_size = gdk_paintable_get_intrinsic_width (this->paintable);
 
       if (opposite_intrinsic_size != 0 && opposite_intrinsic_size < for_size)
         for_size = opposite_intrinsic_size;
@@ -247,7 +247,7 @@ gtk_picture_measure (GtkWidget      *widget,
 
   if (orientation == GTK_ORIENTATION_HORIZONTAL)
     {
-      gdk_paintable_compute_concrete_size (self->paintable,
+      gdk_paintable_compute_concrete_size (this->paintable,
                                            0,
                                            for_size < 0 ? 0 : for_size,
                                            default_size, default_size,
@@ -257,7 +257,7 @@ gtk_picture_measure (GtkWidget      *widget,
     }
   else
     {
-      gdk_paintable_compute_concrete_size (self->paintable,
+      gdk_paintable_compute_concrete_size (this->paintable,
                                            for_size < 0 ? 0 : for_size,
                                            0,
                                            default_size, default_size,
@@ -273,34 +273,34 @@ gtk_picture_set_property (GObject      *object,
                           const GValue *value,
                           GParamSpec   *pspec)
 {
-  GtkPicture *self = GTK_PICTURE (object);
+  GtkPicture *this = GTK_PICTURE (object);
 
   switch (prop_id)
     {
     case PROP_PAINTABLE:
-      gtk_picture_set_paintable (self, g_value_get_object (value));
+      gtk_picture_set_paintable (this, g_value_get_object (value));
       break;
 
     case PROP_FILE:
-      gtk_picture_set_file (self, g_value_get_object (value));
+      gtk_picture_set_file (this, g_value_get_object (value));
       break;
 
     case PROP_ALTERNATIVE_TEXT:
-      gtk_picture_set_alternative_text (self, g_value_get_string (value));
+      gtk_picture_set_alternative_text (this, g_value_get_string (value));
       break;
 
     case PROP_KEEP_ASPECT_RATIO:
       G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-      gtk_picture_set_keep_aspect_ratio (self, g_value_get_boolean (value));
+      gtk_picture_set_keep_aspect_ratio (this, g_value_get_boolean (value));
       G_GNUC_END_IGNORE_DEPRECATIONS
       break;
 
     case PROP_CAN_SHRINK:
-      gtk_picture_set_can_shrink (self, g_value_get_boolean (value));
+      gtk_picture_set_can_shrink (this, g_value_get_boolean (value));
       break;
 
     case PROP_CONTENT_FIT:
-      gtk_picture_set_content_fit (self, g_value_get_enum (value));
+      gtk_picture_set_content_fit (this, g_value_get_enum (value));
       break;
 
     default:
@@ -315,34 +315,34 @@ gtk_picture_get_property (GObject     *object,
                           GValue      *value,
                           GParamSpec  *pspec)
 {
-  GtkPicture *self = GTK_PICTURE (object);
+  GtkPicture *this = GTK_PICTURE (object);
 
   switch (prop_id)
     {
     case PROP_PAINTABLE:
-      g_value_set_object (value, self->paintable);
+      g_value_set_object (value, this->paintable);
       break;
 
     case PROP_FILE:
-      g_value_set_object (value, self->file);
+      g_value_set_object (value, this->file);
       break;
 
     case PROP_ALTERNATIVE_TEXT:
-      g_value_set_string (value, self->alternative_text);
+      g_value_set_string (value, this->alternative_text);
       break;
 
     case PROP_KEEP_ASPECT_RATIO:
       G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-      g_value_set_boolean (value, gtk_picture_get_keep_aspect_ratio (self));
+      g_value_set_boolean (value, gtk_picture_get_keep_aspect_ratio (this));
       G_GNUC_END_IGNORE_DEPRECATIONS
       break;
 
     case PROP_CAN_SHRINK:
-      g_value_set_boolean (value, self->can_shrink);
+      g_value_set_boolean (value, this->can_shrink);
       break;
 
     case PROP_CONTENT_FIT:
-      g_value_set_enum (value, self->content_fit);
+      g_value_set_enum (value, this->content_fit);
       break;
 
     default:
@@ -353,50 +353,50 @@ gtk_picture_get_property (GObject     *object,
 
 static void
 gtk_picture_paintable_invalidate_contents (GdkPaintable *paintable,
-                                           GtkPicture   *self)
+                                           GtkPicture   *this)
 {
-  gtk_widget_queue_draw (GTK_WIDGET (self));
+  gtk_widget_queue_draw (GTK_WIDGET (this));
 }
 
 static void
 gtk_picture_paintable_invalidate_size (GdkPaintable *paintable,
-                                       GtkPicture   *self)
+                                       GtkPicture   *this)
 {
-  gtk_widget_queue_resize (GTK_WIDGET (self));
+  gtk_widget_queue_resize (GTK_WIDGET (this));
 }
 
 static void
-gtk_picture_clear_paintable (GtkPicture *self)
+gtk_picture_clear_paintable (GtkPicture *this)
 {
   guint flags;
 
-  if (self->paintable == NULL)
+  if (this->paintable == NULL)
     return;
 
-  flags = gdk_paintable_get_flags (self->paintable);
+  flags = gdk_paintable_get_flags (this->paintable);
 
   if ((flags & GDK_PAINTABLE_STATIC_CONTENTS) == 0)
-    g_signal_handlers_disconnect_by_func (self->paintable,
+    g_signal_handlers_disconnect_by_func (this->paintable,
                                           gtk_picture_paintable_invalidate_contents,
-                                          self);
+                                          this);
 
   if ((flags & GDK_PAINTABLE_STATIC_SIZE) == 0)
-    g_signal_handlers_disconnect_by_func (self->paintable,
+    g_signal_handlers_disconnect_by_func (this->paintable,
                                           gtk_picture_paintable_invalidate_size,
-                                          self);
+                                          this);
 
-  g_object_unref (self->paintable);
+  g_object_unref (this->paintable);
 }
 
 static void
 gtk_picture_dispose (GObject *object)
 {
-  GtkPicture *self = GTK_PICTURE (object);
+  GtkPicture *this = GTK_PICTURE (object);
 
-  gtk_picture_clear_paintable (self);
+  gtk_picture_clear_paintable (this);
 
-  g_clear_object (&self->file);
-  g_clear_pointer (&self->alternative_text, g_free);
+  g_clear_object (&this->file);
+  g_clear_pointer (&this->alternative_text, g_free);
 
   G_OBJECT_CLASS (gtk_picture_parent_class)->dispose (object);
 };
@@ -490,12 +490,12 @@ gtk_picture_class_init (GtkPictureClass *class)
 }
 
 static void
-gtk_picture_init (GtkPicture *self)
+gtk_picture_init (GtkPicture *this)
 {
-  self->can_shrink = TRUE;
-  self->content_fit = GTK_CONTENT_FIT_CONTAIN;
+  this->can_shrink = TRUE;
+  this->content_fit = GTK_CONTENT_FIT_CONTAIN;
 
-  gtk_widget_set_overflow (GTK_WIDGET (self), GTK_OVERFLOW_HIDDEN);
+  gtk_widget_set_overflow (GTK_WIDGET (this), GTK_OVERFLOW_HIDDEN);
 }
 
 /**
@@ -670,10 +670,10 @@ gtk_picture_new_for_resource (const char *resource_path)
 
 /**
  * gtk_picture_set_file:
- * @self: a `GtkPicture`
+ * @this: a `GtkPicture`
  * @file: (nullable): a `GFile`
  *
- * Makes @self load and display @file.
+ * Makes @this load and display @file.
  *
  * See [ctor@Gtk.Picture.new_for_file] for details.
  *
@@ -684,58 +684,58 @@ gtk_picture_new_for_resource (const char *resource_path)
  *     [method@Gtk.Image.set_from_paintable].
  */
 void
-gtk_picture_set_file (GtkPicture *self,
+gtk_picture_set_file (GtkPicture *this,
                       GFile      *file)
 {
   GdkPaintable *paintable;
 
-  g_return_if_fail (GTK_IS_PICTURE (self));
+  g_return_if_fail (GTK_IS_PICTURE (this));
   g_return_if_fail (file == NULL || G_IS_FILE (file));
 
-  if (self->file == file)
+  if (this->file == file)
     return;
 
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
 
-  g_set_object (&self->file, file);
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_FILE]);
+  g_set_object (&this->file, file);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_FILE]);
 
   if (file)
-    paintable = gdk_paintable_new_from_file_scaled (file, gtk_widget_get_scale_factor (GTK_WIDGET (self)));
+    paintable = gdk_paintable_new_from_file_scaled (file, gtk_widget_get_scale_factor (GTK_WIDGET (this)));
   else
     paintable = NULL;
 
-  gtk_picture_set_paintable (self, paintable);
+  gtk_picture_set_paintable (this, paintable);
   g_clear_object (&paintable);
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 }
 
 /**
  * gtk_picture_get_file:
- * @self: a `GtkPicture`
+ * @this: a `GtkPicture`
  *
- * Gets the `GFile` currently displayed if @self is displaying a file.
+ * Gets the `GFile` currently displayed if @this is displaying a file.
  *
- * If @self is not displaying a file, for example when
+ * If @this is not displaying a file, for example when
  * [method@Gtk.Picture.set_paintable] was used, then %NULL is returned.
  *
- * Returns: (nullable) (transfer none): The `GFile` displayed by @self.
+ * Returns: (nullable) (transfer none): The `GFile` displayed by @this.
  */
 GFile *
-gtk_picture_get_file (GtkPicture *self)
+gtk_picture_get_file (GtkPicture *this)
 {
-  g_return_val_if_fail (GTK_IS_PICTURE (self), FALSE);
+  g_return_val_if_fail (GTK_IS_PICTURE (this), FALSE);
 
-  return self->file;
+  return this->file;
 }
 
 /**
  * gtk_picture_set_filename:
- * @self: a `GtkPicture`
+ * @this: a `GtkPicture`
  * @filename: (type filename) (nullable): the filename to play
  *
- * Makes @self load and display the given @filename.
+ * Makes @this load and display the given @filename.
  *
  * This is a utility function that calls [method@Gtk.Picture.set_file].
  *
@@ -746,19 +746,19 @@ gtk_picture_get_file (GtkPicture *self)
  *     [method@Gtk.Image.set_from_paintable].
  */
 void
-gtk_picture_set_filename (GtkPicture *self,
+gtk_picture_set_filename (GtkPicture *this,
                           const char *filename)
 {
   GFile *file;
 
-  g_return_if_fail (GTK_IS_PICTURE (self));
+  g_return_if_fail (GTK_IS_PICTURE (this));
 
   if (filename)
     file = g_file_new_for_path (filename);
   else
     file = NULL;
 
-  gtk_picture_set_file (self, file);
+  gtk_picture_set_file (this, file);
 
   if (file)
     g_object_unref (file);
@@ -766,21 +766,21 @@ gtk_picture_set_filename (GtkPicture *self,
 
 /**
  * gtk_picture_set_resource:
- * @self: a `GtkPicture`
+ * @this: a `GtkPicture`
  * @resource_path: (nullable): the resource to set
  *
- * Makes @self load and display the resource at the given
+ * Makes @this load and display the resource at the given
  * @resource_path.
  *
  * This is a utility function that calls [method@Gtk.Picture.set_file].
  */
 void
-gtk_picture_set_resource (GtkPicture *self,
+gtk_picture_set_resource (GtkPicture *this,
                           const char *resource_path)
 {
   GFile *file;
 
-  g_return_if_fail (GTK_IS_PICTURE (self));
+  g_return_if_fail (GTK_IS_PICTURE (this));
 
   if (resource_path)
     {
@@ -799,7 +799,7 @@ gtk_picture_set_resource (GtkPicture *self,
       file = NULL;
     }
 
-  gtk_picture_set_file (self, file);
+  gtk_picture_set_file (this, file);
 
   if (file)
     g_object_unref (file);
@@ -807,7 +807,7 @@ gtk_picture_set_resource (GtkPicture *self,
 
 /**
  * gtk_picture_set_pixbuf:
- * @self: a `GtkPicture`
+ * @this: a `GtkPicture`
  * @pixbuf: (nullable): a `GdkPixbuf`
  *
  * Sets a `GtkPicture` to show a `GdkPixbuf`.
@@ -819,12 +819,12 @@ gtk_picture_set_resource (GtkPicture *self,
  * Deprecated: 4.12: Use [method@Gtk.Picture.set_paintable] instead
  */
 void
-gtk_picture_set_pixbuf (GtkPicture *self,
+gtk_picture_set_pixbuf (GtkPicture *this,
                         GdkPixbuf  *pixbuf)
 {
   GdkTexture *texture;
 
-  g_return_if_fail (GTK_IS_PICTURE (self));
+  g_return_if_fail (GTK_IS_PICTURE (this));
   g_return_if_fail (pixbuf == NULL || GDK_IS_PIXBUF (pixbuf));
 
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS
@@ -834,7 +834,7 @@ G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     texture = NULL;
 G_GNUC_END_IGNORE_DEPRECATIONS
 
-  gtk_picture_set_paintable (self, GDK_PAINTABLE (texture));
+  gtk_picture_set_paintable (this, GDK_PAINTABLE (texture));
 
   if (texture)
     g_object_unref (texture);
@@ -856,37 +856,37 @@ paintable_size_equal (GdkPaintable *one,
 
 /**
  * gtk_picture_set_paintable:
- * @self: a `GtkPicture`
+ * @this: a `GtkPicture`
  * @paintable: (nullable): a `GdkPaintable`
  *
- * Makes @self display the given @paintable.
+ * Makes @this display the given @paintable.
  *
  * If @paintable is `NULL`, nothing will be displayed.
  *
  * See [ctor@Gtk.Picture.new_for_paintable] for details.
  */
 void
-gtk_picture_set_paintable (GtkPicture   *self,
+gtk_picture_set_paintable (GtkPicture   *this,
                            GdkPaintable *paintable)
 {
   gboolean size_changed;
 
-  g_return_if_fail (GTK_IS_PICTURE (self));
+  g_return_if_fail (GTK_IS_PICTURE (this));
   g_return_if_fail (paintable == NULL || GDK_IS_PAINTABLE (paintable));
 
-  if (self->paintable == paintable)
+  if (this->paintable == paintable)
     return;
 
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
 
   if (paintable)
     g_object_ref (paintable);
 
-  size_changed = !paintable_size_equal (self->paintable, paintable);
+  size_changed = !paintable_size_equal (this->paintable, paintable);
  
-  gtk_picture_clear_paintable (self);
+  gtk_picture_clear_paintable (this);
 
-  self->paintable = paintable;
+  this->paintable = paintable;
 
   if (paintable)
     {
@@ -896,51 +896,51 @@ gtk_picture_set_paintable (GtkPicture   *self,
         g_signal_connect (paintable,
                           "invalidate-contents",
                           G_CALLBACK (gtk_picture_paintable_invalidate_contents),
-                          self);
+                          this);
 
       if ((flags & GDK_PAINTABLE_STATIC_SIZE) == 0)
         g_signal_connect (paintable,
                           "invalidate-size",
                           G_CALLBACK (gtk_picture_paintable_invalidate_size),
-                          self);
+                          this);
     }
 
   if (size_changed)
-    gtk_widget_queue_resize (GTK_WIDGET (self));
+    gtk_widget_queue_resize (GTK_WIDGET (this));
   else
-    gtk_widget_queue_draw (GTK_WIDGET (self));
+    gtk_widget_queue_draw (GTK_WIDGET (this));
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_PAINTABLE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_PAINTABLE]);
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 }
 
 /**
  * gtk_picture_get_paintable:
- * @self: a `GtkPicture`
+ * @this: a `GtkPicture`
  *
  * Gets the `GdkPaintable` being displayed by the `GtkPicture`.
  *
  * Returns: (nullable) (transfer none): the displayed paintable
  */
 GdkPaintable *
-gtk_picture_get_paintable (GtkPicture *self)
+gtk_picture_get_paintable (GtkPicture *this)
 {
-  g_return_val_if_fail (GTK_IS_PICTURE (self), NULL);
+  g_return_val_if_fail (GTK_IS_PICTURE (this), NULL);
 
-  return self->paintable;
+  return this->paintable;
 }
 
 /**
  * gtk_picture_set_keep_aspect_ratio:
- * @self: a `GtkPicture`
+ * @this: a `GtkPicture`
  * @keep_aspect_ratio: whether to keep aspect ratio
  *
- * If set to %TRUE, the @self will render its contents according to
+ * If set to %TRUE, the @this will render its contents according to
  * their aspect ratio.
  *
  * That means that empty space may show up at the top/bottom or
- * left/right of @self.
+ * left/right of @this.
  *
  * If set to %FALSE or if the contents provide no aspect ratio,
  * the contents will be stretched over the picture's whole area.
@@ -951,41 +951,41 @@ gtk_picture_get_paintable (GtkPicture *self)
  *   otherwise it will set it to `GTK_CONTENT_FIT_FILL`.
  */
 void
-gtk_picture_set_keep_aspect_ratio (GtkPicture *self,
+gtk_picture_set_keep_aspect_ratio (GtkPicture *this,
                                    gboolean    keep_aspect_ratio)
 {
   if (keep_aspect_ratio)
-    gtk_picture_set_content_fit (self, GTK_CONTENT_FIT_CONTAIN);
+    gtk_picture_set_content_fit (this, GTK_CONTENT_FIT_CONTAIN);
   else
-    gtk_picture_set_content_fit (self, GTK_CONTENT_FIT_FILL);
+    gtk_picture_set_content_fit (this, GTK_CONTENT_FIT_FILL);
 }
 
 /**
  * gtk_picture_get_keep_aspect_ratio:
- * @self: a `GtkPicture`
+ * @this: a `GtkPicture`
  *
  * Returns whether the `GtkPicture` preserves its contents aspect ratio.
  *
- * Returns: %TRUE if the self tries to keep the contents' aspect ratio
+ * Returns: %TRUE if the this tries to keep the contents' aspect ratio
  *
  * Deprecated: 4.8: Use [method@Gtk.Picture.get_content_fit] instead. This will
  *   now return `FALSE` only if [property@Gtk.Picture:content-fit] is
  *   `GTK_CONTENT_FIT_FILL`. Returns `TRUE` otherwise.
  */
 gboolean
-gtk_picture_get_keep_aspect_ratio (GtkPicture *self)
+gtk_picture_get_keep_aspect_ratio (GtkPicture *this)
 {
-  g_return_val_if_fail (GTK_IS_PICTURE (self), TRUE);
+  g_return_val_if_fail (GTK_IS_PICTURE (this), TRUE);
 
-  return self->content_fit != GTK_CONTENT_FIT_FILL;
+  return this->content_fit != GTK_CONTENT_FIT_FILL;
 }
 
 /**
  * gtk_picture_set_can_shrink:
- * @self: a `GtkPicture`
- * @can_shrink: if @self can be made smaller than its contents
+ * @this: a `GtkPicture`
+ * @can_shrink: if @this can be made smaller than its contents
  *
- * If set to %TRUE, the @self can be made smaller than its contents.
+ * If set to %TRUE, the @this can be made smaller than its contents.
  *
  * The contents will then be scaled down when rendering.
  *
@@ -997,40 +997,40 @@ gtk_picture_get_keep_aspect_ratio (GtkPicture *self)
  * [method@Gtk.Widget.set_halign] and [method@Gtk.Widget.set_valign].
  */
 void
-gtk_picture_set_can_shrink (GtkPicture *self,
+gtk_picture_set_can_shrink (GtkPicture *this,
                             gboolean    can_shrink)
 {
-  g_return_if_fail (GTK_IS_PICTURE (self));
+  g_return_if_fail (GTK_IS_PICTURE (this));
 
-  if (self->can_shrink == can_shrink)
+  if (this->can_shrink == can_shrink)
     return;
 
-  self->can_shrink = can_shrink;
+  this->can_shrink = can_shrink;
 
-  gtk_widget_queue_resize (GTK_WIDGET (self));
+  gtk_widget_queue_resize (GTK_WIDGET (this));
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_CAN_SHRINK]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_CAN_SHRINK]);
 }
 
 /**
  * gtk_picture_get_can_shrink:
- * @self: a `GtkPicture`
+ * @this: a `GtkPicture`
  *
  * Returns whether the `GtkPicture` respects its contents size.
  *
  * Returns: %TRUE if the picture can be made smaller than its contents
  */
 gboolean
-gtk_picture_get_can_shrink (GtkPicture *self)
+gtk_picture_get_can_shrink (GtkPicture *this)
 {
-  g_return_val_if_fail (GTK_IS_PICTURE (self), FALSE);
+  g_return_val_if_fail (GTK_IS_PICTURE (this), FALSE);
 
-  return self->can_shrink;
+  return this->can_shrink;
 }
 
 /**
  * gtk_picture_set_content_fit:
- * @self: a `GtkPicture`
+ * @this: a `GtkPicture`
  * @content_fit: the content fit mode
  *
  * Sets how the content should be resized to fit the `GtkPicture`.
@@ -1040,38 +1040,38 @@ gtk_picture_get_can_shrink (GtkPicture *self)
  * Since: 4.8
  */
 void
-gtk_picture_set_content_fit (GtkPicture    *self,
+gtk_picture_set_content_fit (GtkPicture    *this,
                              GtkContentFit  content_fit)
 {
   gboolean notify_keep_aspect_ratio;
   gboolean queue_resize;
 
-  g_return_if_fail (GTK_IS_PICTURE (self));
+  g_return_if_fail (GTK_IS_PICTURE (this));
 
-  if (self->content_fit == content_fit)
+  if (this->content_fit == content_fit)
     return;
 
   notify_keep_aspect_ratio = (content_fit == GTK_CONTENT_FIT_FILL ||
-                              self->content_fit == GTK_CONTENT_FIT_FILL);
+                              this->content_fit == GTK_CONTENT_FIT_FILL);
   queue_resize = (content_fit == GTK_CONTENT_FIT_SCALE_DOWN ||
-                  self->content_fit == GTK_CONTENT_FIT_SCALE_DOWN);
+                  this->content_fit == GTK_CONTENT_FIT_SCALE_DOWN);
 
-  self->content_fit = content_fit;
+  this->content_fit = content_fit;
 
   if (queue_resize)
-    gtk_widget_queue_resize (GTK_WIDGET (self));
+    gtk_widget_queue_resize (GTK_WIDGET (this));
   else
-    gtk_widget_queue_draw (GTK_WIDGET (self));
+    gtk_widget_queue_draw (GTK_WIDGET (this));
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_CONTENT_FIT]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_CONTENT_FIT]);
 
   if (notify_keep_aspect_ratio)
-      g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_KEEP_ASPECT_RATIO]);
+      g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_KEEP_ASPECT_RATIO]);
 }
 
 /**
  * gtk_picture_get_content_fit:
- * @self: a `GtkPicture`
+ * @this: a `GtkPicture`
  *
  * Returns the fit mode for the content of the `GtkPicture`.
  *
@@ -1082,16 +1082,16 @@ gtk_picture_set_content_fit (GtkPicture    *self,
  * Since: 4.8
  */
 GtkContentFit
-gtk_picture_get_content_fit (GtkPicture *self)
+gtk_picture_get_content_fit (GtkPicture *this)
 {
-  g_return_val_if_fail (GTK_IS_PICTURE (self), FALSE);
+  g_return_val_if_fail (GTK_IS_PICTURE (this), FALSE);
 
-  return self->content_fit;
+  return this->content_fit;
 }
 
 /**
  * gtk_picture_set_alternative_text:
- * @self: a `GtkPicture`
+ * @this: a `GtkPicture`
  * @alternative_text: (nullable): a textual description of the contents
  *
  * Sets an alternative textual description for the picture contents.
@@ -1103,39 +1103,39 @@ gtk_picture_get_content_fit (GtkPicture *self)
  * If the picture cannot be described textually, set this property to %NULL.
  */
 void
-gtk_picture_set_alternative_text (GtkPicture *self,
+gtk_picture_set_alternative_text (GtkPicture *this,
                                   const char *alternative_text)
 {
-  g_return_if_fail (GTK_IS_PICTURE (self));
+  g_return_if_fail (GTK_IS_PICTURE (this));
 
-  if (g_strcmp0 (self->alternative_text, alternative_text) == 0)
+  if (g_strcmp0 (this->alternative_text, alternative_text) == 0)
     return;
 
-  g_free (self->alternative_text);
-  self->alternative_text = g_strdup (alternative_text);
+  g_free (this->alternative_text);
+  this->alternative_text = g_strdup (alternative_text);
 
-  gtk_accessible_update_property (GTK_ACCESSIBLE (self),
+  gtk_accessible_update_property (GTK_ACCESSIBLE (this),
                                   GTK_ACCESSIBLE_PROPERTY_DESCRIPTION, alternative_text,
                                   -1);
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ALTERNATIVE_TEXT]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ALTERNATIVE_TEXT]);
 }
 
 /**
  * gtk_picture_get_alternative_text:
- * @self: a `GtkPicture`
+ * @this: a `GtkPicture`
  *
  * Gets the alternative textual description of the picture.
  *
  * The returned string will be %NULL if the picture cannot be described textually.
  *
- * Returns: (nullable) (transfer none): the alternative textual description of @self.
+ * Returns: (nullable) (transfer none): the alternative textual description of @this.
  */
 const char *
-gtk_picture_get_alternative_text (GtkPicture *self)
+gtk_picture_get_alternative_text (GtkPicture *this)
 {
-  g_return_val_if_fail (GTK_IS_PICTURE (self), NULL);
+  g_return_val_if_fail (GTK_IS_PICTURE (this), NULL);
 
-  return self->alternative_text;
+  return this->alternative_text;
 }
 

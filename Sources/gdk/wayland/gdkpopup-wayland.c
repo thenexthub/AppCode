@@ -1040,10 +1040,10 @@ gdk_wayland_popup_init (GdkWaylandPopup *popup)
 static void
 gdk_wayland_popup_constructed (GObject *object)
 {
-  GdkWaylandPopup *self = GDK_WAYLAND_POPUP (object);
-  GdkSurface *surface = GDK_SURFACE (self);
+  GdkWaylandPopup *this = GDK_WAYLAND_POPUP (object);
+  GdkSurface *surface = GDK_SURFACE (this);
 
-  gdk_surface_set_frame_clock (surface, gdk_surface_get_frame_clock (gdk_popup_get_parent (GDK_POPUP (self))));
+  gdk_surface_set_frame_clock (surface, gdk_surface_get_frame_clock (gdk_popup_get_parent (GDK_POPUP (this))));
 
   G_OBJECT_CLASS (gdk_wayland_popup_parent_class)->constructed (object);
 }

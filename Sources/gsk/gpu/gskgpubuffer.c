@@ -23,38 +23,38 @@ gsk_gpu_buffer_class_init (GskGpuBufferClass *klass)
 }
 
 static void
-gsk_gpu_buffer_init (GskGpuBuffer *self)
+gsk_gpu_buffer_init (GskGpuBuffer *this)
 {
 }
 
 void
-gsk_gpu_buffer_setup (GskGpuBuffer *self,
+gsk_gpu_buffer_setup (GskGpuBuffer *this,
                       gsize         size)
 {
-  GskGpuBufferPrivate *priv = gsk_gpu_buffer_get_instance_private (self);
+  GskGpuBufferPrivate *priv = gsk_gpu_buffer_get_instance_private (this);
 
   priv->size = size;
 }
 
 gsize
-gsk_gpu_buffer_get_size (GskGpuBuffer *self)
+gsk_gpu_buffer_get_size (GskGpuBuffer *this)
 {
-  GskGpuBufferPrivate *priv = gsk_gpu_buffer_get_instance_private (self);
+  GskGpuBufferPrivate *priv = gsk_gpu_buffer_get_instance_private (this);
 
   return priv->size;
 }
 
 guchar *
-gsk_gpu_buffer_map (GskGpuBuffer *self)
+gsk_gpu_buffer_map (GskGpuBuffer *this)
 {
-  return GSK_GPU_BUFFER_GET_CLASS (self)->map (self);
+  return GSK_GPU_BUFFER_GET_CLASS (this)->map (this);
 }
 
 void
-gsk_gpu_buffer_unmap (GskGpuBuffer *self,
+gsk_gpu_buffer_unmap (GskGpuBuffer *this,
                       gsize         used)
 {
-  GSK_GPU_BUFFER_GET_CLASS (self)->unmap (self, used);
+  GSK_GPU_BUFFER_GET_CLASS (this)->unmap (this, used);
 
   profiler_buffer_uploads += used;
   gdk_profiler_set_int_counter (profiler_buffer_uploads_id, profiler_buffer_uploads);

@@ -655,7 +655,7 @@ gdk_dmabuf_close_fds (GdkDmabuf *dmabuf)
 }
 
 gboolean
-gdk_memory_layout_init_from_dmabuf (GdkMemoryLayout *self,
+gdk_memory_layout_init_from_dmabuf (GdkMemoryLayout *this,
                                     const GdkDmabuf *dmabuf,
                                     gboolean         premultiplied,
                                     gsize            width,
@@ -667,28 +667,28 @@ gdk_memory_layout_init_from_dmabuf (GdkMemoryLayout *self,
   if (dmabuf->modifier != DRM_FORMAT_MOD_LINEAR)
     return FALSE;
 
-  if (!gdk_memory_format_find_by_dmabuf_fourcc (dmabuf->fourcc, premultiplied, &self->format, &is_yuv))
+  if (!gdk_memory_format_find_by_dmabuf_fourcc (dmabuf->fourcc, premultiplied, &this->format, &is_yuv))
     return FALSE;
 
-  if (!gdk_memory_format_is_block_boundary (self->format, width, height))
+  if (!gdk_memory_format_is_block_boundary (this->format, width, height))
     return FALSE;
 
-  g_return_val_if_fail (dmabuf->n_planes == gdk_memory_format_get_n_planes (self->format), FALSE);
+  g_return_val_if_fail (dmabuf->n_planes == gdk_memory_format_get_n_planes (this->format), FALSE);
 
-  self->width = width;
-  self->height = height;
+  this->width = width;
+  this->height = height;
 
   for (i = 0; i < dmabuf->n_planes; i++)
     {
-      self->planes[i].offset = dmabuf->planes[i].offset;
-      self->planes[i].stride = dmabuf->planes[i].stride;
+      this->planes[i].offset = dmabuf->planes[i].offset;
+      this->planes[i].stride = dmabuf->planes[i].stride;
     }
 
-  self->size = self->planes[dmabuf->n_planes - 1].offset + 
-               (self->height - 1) / gdk_memory_format_get_plane_block_height (self->format, dmabuf->n_planes - 1)
-                                  * self->planes[dmabuf->n_planes - 1].stride +
-               self->width / gdk_memory_format_get_plane_block_width (self->format, dmabuf->n_planes - 1)
-                           * gdk_memory_format_get_plane_block_bytes (self->format, dmabuf->n_planes - 1);
+  this->size = this->planes[dmabuf->n_planes - 1].offset + 
+               (this->height - 1) / gdk_memory_format_get_plane_block_height (this->format, dmabuf->n_planes - 1)
+                                  * this->planes[dmabuf->n_planes - 1].stride +
+               this->width / gdk_memory_format_get_plane_block_width (this->format, dmabuf->n_planes - 1)
+                           * gdk_memory_format_get_plane_block_bytes (this->format, dmabuf->n_planes - 1);
 
   return TRUE;
 }

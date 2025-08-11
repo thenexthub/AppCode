@@ -372,10 +372,10 @@ gdk_wayland_toplevel_update_size (GdkSurface               *surface,
                                   int32_t                   height,
                                   const GdkFractionalScale *scale)
 {
-  GdkWaylandToplevel *self = GDK_WAYLAND_TOPLEVEL (surface);
+  GdkWaylandToplevel *this = GDK_WAYLAND_TOPLEVEL (surface);
   int x, y;
 
-  switch (self->gravity)
+  switch (this->gravity)
     {
     case GDK_GRAVITY_STATIC:
     case GDK_GRAVITY_NORTH_WEST:
@@ -400,7 +400,7 @@ gdk_wayland_toplevel_update_size (GdkSurface               *surface,
       g_assert_not_reached ();
     }
 
-  switch (self->gravity)
+  switch (this->gravity)
     {
     case GDK_GRAVITY_STATIC:
     case GDK_GRAVITY_NORTH_WEST:
@@ -1341,36 +1341,36 @@ gdk_wayland_toplevel_set_transient_for (GdkWaylandToplevel *toplevel,
 }
 
 static gboolean
-maybe_set_xdg_toplevel_icon (GdkWaylandToplevel *self)
+maybe_set_xdg_toplevel_icon (GdkWaylandToplevel *this)
 {
-  GdkWaylandDisplay *display_wayland = GDK_WAYLAND_DISPLAY (gdk_surface_get_display (GDK_SURFACE (self)));
+  GdkWaylandDisplay *display_wayland = GDK_WAYLAND_DISPLAY (gdk_surface_get_display (GDK_SURFACE (this)));
 
   if (display_wayland->toplevel_icon == NULL ||
-      self->display_server.xdg_toplevel == NULL)
+      this->display_server.xdg_toplevel == NULL)
     return FALSE;
 
   xdg_toplevel_icon_manager_v1_set_icon (display_wayland->toplevel_icon,
-                                         self->display_server.xdg_toplevel,
-                                         self->display_server.toplevel_icon);
+                                         this->display_server.xdg_toplevel,
+                                         this->display_server.toplevel_icon);
 
   return TRUE;
 }
 
 static void
-gdk_wayland_toplevel_set_icon_list (GdkWaylandToplevel *self,
+gdk_wayland_toplevel_set_icon_list (GdkWaylandToplevel *this,
                                     GList              *textures)
 {
-  GdkWaylandDisplay *display_wayland = GDK_WAYLAND_DISPLAY (gdk_surface_get_display (GDK_SURFACE (self)));
-  GdkWaylandSurface *wayland_surface = GDK_WAYLAND_SURFACE (self);
+  GdkWaylandDisplay *display_wayland = GDK_WAYLAND_DISPLAY (gdk_surface_get_display (GDK_SURFACE (this)));
+  GdkWaylandSurface *wayland_surface = GDK_WAYLAND_SURFACE (this);
 
   if (display_wayland->toplevel_icon == NULL)
     return;
 
-  g_clear_pointer (&self->display_server.toplevel_icon, xdg_toplevel_icon_v1_destroy);
-  g_list_free_full (self->icons, (GDestroyNotify) wl_buffer_destroy);
-  self->icons = NULL;
+  g_clear_pointer (&this->display_server.toplevel_icon, xdg_toplevel_icon_v1_destroy);
+  g_list_free_full (this->icons, (GDestroyNotify) wl_buffer_destroy);
+  this->icons = NULL;
 
-  self->display_server.toplevel_icon = xdg_toplevel_icon_manager_v1_create_icon (display_wayland->toplevel_icon);
+  this->display_server.toplevel_icon = xdg_toplevel_icon_manager_v1_create_icon (display_wayland->toplevel_icon);
 
   for (GList *l = textures; l; l = l->next)
     {
@@ -1378,11 +1378,11 @@ gdk_wayland_toplevel_set_icon_list (GdkWaylandToplevel *self,
       struct wl_buffer *buffer;
 
       buffer = _gdk_wayland_shm_texture_get_wl_buffer (display_wayland, texture);
-      self->icons = g_list_prepend (self->icons, buffer);
-      xdg_toplevel_icon_v1_add_buffer (self->display_server.toplevel_icon, buffer, 1);
+      this->icons = g_list_prepend (this->icons, buffer);
+      xdg_toplevel_icon_v1_add_buffer (this->display_server.toplevel_icon, buffer, 1);
     }
 
-  if (maybe_set_xdg_toplevel_icon (self))
+  if (maybe_set_xdg_toplevel_icon (this))
     {
       gdk_profiler_add_mark (GDK_PROFILER_CURRENT_TIME, 0, "Wayland surface commit", NULL);
       wl_surface_commit (wayland_surface->display_server.wl_surface);
@@ -1390,29 +1390,29 @@ gdk_wayland_toplevel_set_icon_list (GdkWaylandToplevel *self,
 }
 
 static void
-gdk_wayland_toplevel_set_decorated (GdkWaylandToplevel *self,
+gdk_wayland_toplevel_set_decorated (GdkWaylandToplevel *this,
                                     gboolean            decorated)
 {
-  GdkWaylandDisplay *display_wayland = GDK_WAYLAND_DISPLAY (gdk_surface_get_display (GDK_SURFACE (self)));
+  GdkWaylandDisplay *display_wayland = GDK_WAYLAND_DISPLAY (gdk_surface_get_display (GDK_SURFACE (this)));
 
-  if (self->decorated == decorated)
+  if (this->decorated == decorated)
     return;
 
-  self->decorated = decorated;
+  this->decorated = decorated;
 
   if (display_wayland->server_decoration_manager)
     {
-      if (self->server_decoration == NULL)
-        self->server_decoration =
+      if (this->server_decoration == NULL)
+        this->server_decoration =
             org_kde_kwin_server_decoration_manager_create (display_wayland->server_decoration_manager,
-                                                           gdk_wayland_surface_get_wl_surface (GDK_SURFACE (self)));
+                                                           gdk_wayland_surface_get_wl_surface (GDK_SURFACE (this)));
 
-      org_kde_kwin_server_decoration_request_mode (self->server_decoration,
+      org_kde_kwin_server_decoration_request_mode (this->server_decoration,
                                                    decorated ? ORG_KDE_KWIN_SERVER_DECORATION_MANAGER_MODE_SERVER
                                                              : ORG_KDE_KWIN_SERVER_DECORATION_MANAGER_MODE_CLIENT);
     }
 
-  g_object_notify (G_OBJECT (self), "decorated");
+  g_object_notify (G_OBJECT (this), "decorated");
 }
 
 #define LAST_PROP 1
@@ -1547,27 +1547,27 @@ gdk_wayland_toplevel_get_property (GObject    *object,
 static void
 gdk_wayland_toplevel_finalize (GObject *object)
 {
-  GdkWaylandToplevel *self = GDK_WAYLAND_TOPLEVEL (object);
+  GdkWaylandToplevel *this = GDK_WAYLAND_TOPLEVEL (object);
   GdkWaylandDisplay *display_wayland = GDK_WAYLAND_DISPLAY (gdk_surface_get_display (GDK_SURFACE (object)));
 
-  display_wayland->toplevels = g_list_remove (display_wayland->toplevels, self);
+  display_wayland->toplevels = g_list_remove (display_wayland->toplevels, this);
 
-  unset_transient_for_exported (self);
+  unset_transient_for_exported (this);
 
-  g_free (self->application.application_id);
-  g_free (self->application.app_menu_path);
-  g_free (self->application.menubar_path);
-  g_free (self->application.window_object_path);
-  g_free (self->application.application_object_path);
-  g_free (self->application.unique_bus_name);
+  g_free (this->application.application_id);
+  g_free (this->application.app_menu_path);
+  g_free (this->application.menubar_path);
+  g_free (this->application.window_object_path);
+  g_free (this->application.application_object_path);
+  g_free (this->application.unique_bus_name);
 
-  g_free (self->title);
-  g_clear_pointer (&self->shortcuts_inhibitors, g_hash_table_unref);
+  g_free (this->title);
+  g_clear_pointer (&this->shortcuts_inhibitors, g_hash_table_unref);
 
-  g_clear_pointer (&self->idle_inhibitor, zwp_idle_inhibitor_v1_destroy);
+  g_clear_pointer (&this->idle_inhibitor, zwp_idle_inhibitor_v1_destroy);
 
-  g_clear_pointer (&self->display_server.toplevel_icon, xdg_toplevel_icon_v1_destroy);
-  g_list_free_full (self->icons, (GDestroyNotify) wl_buffer_destroy);
+  g_clear_pointer (&this->display_server.toplevel_icon, xdg_toplevel_icon_v1_destroy);
+  g_list_free_full (this->icons, (GDestroyNotify) wl_buffer_destroy);
 
   G_OBJECT_CLASS (gdk_wayland_toplevel_parent_class)->finalize (object);
 }
@@ -2448,12 +2448,12 @@ gdk_wayland_toplevel_set_dbus_properties (GdkToplevel *toplevel,
 void
 gdk_wayland_toplevel_destroy (GdkToplevel *toplevel)
 {
-  GdkWaylandToplevel *self = GDK_WAYLAND_TOPLEVEL (toplevel);
+  GdkWaylandToplevel *this = GDK_WAYLAND_TOPLEVEL (toplevel);
 
-  while (self->exported)
+  while (this->exported)
     {
-      GdkWaylandExported *exported = self->exported->data;
-      self->exported = g_list_delete_link (self->exported, self->exported);
+      GdkWaylandExported *exported = this->exported->data;
+      this->exported = g_list_delete_link (this->exported, this->exported);
       if (exported->handle == NULL)
         {
           GTask *task;

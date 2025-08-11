@@ -1,5 +1,5 @@
 //
-//  JavaRetainedValue.swift
+//  JavaRetainedValue.code
 //  AndroidAppCode
 //
 //  Created by Alsey Coleman Miller on 6/9/25.
@@ -9,7 +9,7 @@ import JavaKit
 import JavaRuntime
 
 /// Java class that retains a Codira value for the duration of its lifetime.
-@JavaClass("com.pureswift.swiftandroid.CodiraObject")
+@JavaClass("com.pureswift.codeandroid.CodiraObject")
 open class CodiraObject: JavaObject {
     
     @JavaMethod
@@ -22,7 +22,7 @@ open class CodiraObject: JavaObject {
     open fn getType() -> String
 }
 
-@JavaImplementation("com.pureswift.swiftandroid.CodiraObject")
+@JavaImplementation("com.pureswift.codeandroid.CodiraObject")
 extension CodiraObject {
     
     @JavaMethod

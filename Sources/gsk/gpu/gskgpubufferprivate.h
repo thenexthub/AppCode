@@ -22,20 +22,20 @@ struct _GskGpuBufferClass
 {
   GObjectClass parent_class;
 
-  guchar *              (* map)                                         (GskGpuBuffer           *self);
-  void                  (* unmap)                                       (GskGpuBuffer           *self,
+  guchar *              (* map)                                         (GskGpuBuffer           *this);
+  void                  (* unmap)                                       (GskGpuBuffer           *this,
                                                                          gsize                   used);
 };
 
 GType                   gsk_gpu_buffer_get_type                         (void) G_GNUC_CONST;
 
-void                    gsk_gpu_buffer_setup                            (GskGpuBuffer           *self,
+void                    gsk_gpu_buffer_setup                            (GskGpuBuffer           *this,
                                                                          gsize                   size);
 
-gsize                   gsk_gpu_buffer_get_size                         (GskGpuBuffer           *self);
+gsize                   gsk_gpu_buffer_get_size                         (GskGpuBuffer           *this);
 
-guchar *                gsk_gpu_buffer_map                              (GskGpuBuffer           *self);
-void                    gsk_gpu_buffer_unmap                            (GskGpuBuffer           *self,
+guchar *                gsk_gpu_buffer_map                              (GskGpuBuffer           *this);
+void                    gsk_gpu_buffer_unmap                            (GskGpuBuffer           *this,
                                                                          gsize                   used);
 
 

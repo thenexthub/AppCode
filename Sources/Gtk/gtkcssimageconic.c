@@ -37,19 +37,19 @@ gtk_css_image_conic_snapshot (GtkCssImage        *image,
                               double              width,
                               double              height)
 {
-  GtkCssImageConic *self = GTK_CSS_IMAGE_CONIC (image);
+  GtkCssImageConic *this = GTK_CSS_IMAGE_CONIC (image);
   GskGradientStop *stops;
   int i, last;
   double offset, hint;
 
-  stops = g_newa (GskGradientStop, self->n_stops);
+  stops = g_newa (GskGradientStop, this->n_stops);
 
   last = -1;
   offset = 0;
   hint = 0;
-  for (i = 0; i < self->n_stops; i++)
+  for (i = 0; i < this->n_stops; i++)
     {
-      const GtkCssImageConicColorStop *stop = &self->color_stops[i];
+      const GtkCssImageConicColorStop *stop = &this->color_stops[i];
       double pos, step;
 
       if (stop->offset == NULL)
@@ -62,7 +62,7 @@ gtk_css_image_conic_snapshot (GtkCssImage        *image,
 
           if (i == 0)
             pos = 0.0;
-          else if (i + 1 == self->n_stops)
+          else if (i + 1 == this->n_stops)
             pos = 1.0;
           else
             continue;
@@ -78,7 +78,7 @@ gtk_css_image_conic_snapshot (GtkCssImage        *image,
       step = (pos - offset) / (i - last);
       for (last = last + 1; last <= i; last++)
         {
-          stop = &self->color_stops[last];
+          stop = &this->color_stops[last];
 
           offset += step;
 
@@ -100,25 +100,25 @@ gtk_css_image_conic_snapshot (GtkCssImage        *image,
       last = i;
     }
 
-  if (self->color_space != GTK_CSS_COLOR_SPACE_SRGB)
+  if (this->color_space != GTK_CSS_COLOR_SPACE_SRGB)
     g_warning_once ("Gradient interpolation color spaces are not supported yet");
 
   gtk_snapshot_add_conic_gradient (
           snapshot,
           &GRAPHENE_RECT_INIT (0, 0, width, height),
-          &GRAPHENE_POINT_INIT (_gtk_css_position_value_get_x (self->center, width),
-                                _gtk_css_position_value_get_y (self->center, height)),
-          gtk_css_number_value_get (self->rotation, 360),
-          gtk_css_color_space_get_color_state (self->color_space),
-          gtk_css_hue_interpolation_to_hue_interpolation (self->hue_interp),
-          stops, self->n_stops);
+          &GRAPHENE_POINT_INIT (_gtk_css_position_value_get_x (this->center, width),
+                                _gtk_css_position_value_get_y (this->center, height)),
+          gtk_css_number_value_get (this->rotation, 360),
+          gtk_css_color_space_get_color_state (this->color_space),
+          gtk_css_hue_interpolation_to_hue_interpolation (this->hue_interp),
+          stops, this->n_stops);
 
-  for (i = 0; i < self->n_stops; i++)
+  for (i = 0; i < this->n_stops; i++)
     gdk_color_finish (&stops[i].color);
 }
 
 static guint
-gtk_css_image_conic_parse_color_stop (GtkCssImageConic *self,
+gtk_css_image_conic_parse_color_stop (GtkCssImageConic *this,
                                       GtkCssParser      *parser,
                                       GArray            *stop_array)
 {
@@ -186,7 +186,7 @@ fail:
 }
 
 static guint
-gtk_css_image_conic_parse_first_arg (GtkCssImageConic *self,
+gtk_css_image_conic_parse_first_arg (GtkCssImageConic *this,
                                      GtkCssParser      *parser,
                                      GArray            *stop_array)
 {
@@ -199,21 +199,21 @@ gtk_css_image_conic_parse_first_arg (GtkCssImageConic *self,
     {
       if (!has_colorspace && gtk_css_color_interpolation_method_can_parse (parser))
         {
-          if (!gtk_css_color_interpolation_method_parse (parser, &self->color_space, &self->hue_interp))
+          if (!gtk_css_color_interpolation_method_parse (parser, &this->color_space, &this->hue_interp))
             return 0;
           has_colorspace = TRUE;
         }
       else if (!has_rotation && gtk_css_parser_try_ident (parser, "from"))
         {
-          self->rotation = gtk_css_number_value_parse (parser, GTK_CSS_PARSE_ANGLE);
-          if (self->rotation == NULL)
+          this->rotation = gtk_css_number_value_parse (parser, GTK_CSS_PARSE_ANGLE);
+          if (this->rotation == NULL)
             return 0;
           has_rotation = TRUE;
         }
       else if (!has_center && gtk_css_parser_try_ident (parser, "at"))
         {
-          self->center = _gtk_css_position_value_parse (parser);
-          if (self->center == NULL)
+          this->center = _gtk_css_position_value_parse (parser);
+          if (this->center == NULL)
             return 0;
           has_center = TRUE;
         }
@@ -224,7 +224,7 @@ gtk_css_image_conic_parse_first_arg (GtkCssImageConic *self,
         }
       else
         {
-          if (gtk_css_image_conic_parse_color_stop (self, parser, stop_array))
+          if (gtk_css_image_conic_parse_color_stop (this, parser, stop_array))
             {
               retval = 2;
               break;
@@ -234,10 +234,10 @@ gtk_css_image_conic_parse_first_arg (GtkCssImageConic *self,
   while (!(has_colorspace && has_rotation && has_center));
 
   if (!has_rotation)
-    self->rotation = gtk_css_number_value_new (0, GTK_CSS_DEG);
+    this->rotation = gtk_css_number_value_new (0, GTK_CSS_DEG);
 
   if (!has_center)
-    self->center = _gtk_css_position_value_new (gtk_css_number_value_new (50, GTK_CSS_PERCENT),
+    this->center = _gtk_css_position_value_new (gtk_css_number_value_new (50, GTK_CSS_PERCENT),
                                                 gtk_css_number_value_new (50, GTK_CSS_PERCENT));
 
   return retval;
@@ -245,7 +245,7 @@ gtk_css_image_conic_parse_first_arg (GtkCssImageConic *self,
 
 typedef struct
 {
-  GtkCssImageConic *self;
+  GtkCssImageConic *this;
   GArray *stop_array;
 } ParseData;
 
@@ -255,19 +255,19 @@ gtk_css_image_conic_parse_arg (GtkCssParser *parser,
                                 gpointer      user_data)
 {
   ParseData *parse_data = user_data;
-  GtkCssImageConic *self = parse_data->self;
+  GtkCssImageConic *this = parse_data->this;
 
   if (arg == 0)
-    return gtk_css_image_conic_parse_first_arg (self, parser, parse_data->stop_array);
+    return gtk_css_image_conic_parse_first_arg (this, parser, parse_data->stop_array);
   else
-    return gtk_css_image_conic_parse_color_stop (self, parser, parse_data->stop_array);
+    return gtk_css_image_conic_parse_color_stop (this, parser, parse_data->stop_array);
 }
 
 static gboolean
 gtk_css_image_conic_parse (GtkCssImage  *image,
                             GtkCssParser *parser)
 {
-  GtkCssImageConic *self = GTK_CSS_IMAGE_CONIC (image);
+  GtkCssImageConic *this = GTK_CSS_IMAGE_CONIC (image);
   ParseData parse_data;
   gboolean success;
 
@@ -277,7 +277,7 @@ gtk_css_image_conic_parse (GtkCssImage  *image,
       return FALSE;
     }
 
-  parse_data.self = self;
+  parse_data.this = this;
   parse_data.stop_array = g_array_new (TRUE, FALSE, sizeof (GtkCssImageConicColorStop));
 
   success = gtk_css_parser_consume_function (parser, 3, G_MAXUINT, gtk_css_image_conic_parse_arg, &parse_data);
@@ -288,8 +288,8 @@ gtk_css_image_conic_parse (GtkCssImage  *image,
     }
   else
     {
-      self->n_stops = parse_data.stop_array->len;
-      self->color_stops = (GtkCssImageConicColorStop *)g_array_free (parse_data.stop_array, FALSE);
+      this->n_stops = parse_data.stop_array->len;
+      this->color_stops = (GtkCssImageConicColorStop *)g_array_free (parse_data.stop_array, FALSE);
     }
 
   return success;
@@ -299,42 +299,42 @@ static void
 gtk_css_image_conic_print (GtkCssImage *image,
                            GString     *string)
 {
-  GtkCssImageConic *self = GTK_CSS_IMAGE_CONIC (image);
+  GtkCssImageConic *this = GTK_CSS_IMAGE_CONIC (image);
   gboolean written = FALSE;
   guint i;
 
   g_string_append (string, "conic-gradient(");
 
-  if (self->center)
+  if (this->center)
     {
       GtkCssValue *compare = _gtk_css_position_value_new (gtk_css_number_value_new (50, GTK_CSS_PERCENT),
                                                           gtk_css_number_value_new (50, GTK_CSS_PERCENT));
 
-      if (!gtk_css_value_equal (self->center, compare))
+      if (!gtk_css_value_equal (this->center, compare))
         {
           g_string_append (string, "at ");
-          gtk_css_value_print (self->center, string);
+          gtk_css_value_print (this->center, string);
           written = TRUE;
         }
 
       gtk_css_value_unref (compare);
     }
 
-  if (self->rotation && gtk_css_number_value_get (self->rotation, 360) != 0)
+  if (this->rotation && gtk_css_number_value_get (this->rotation, 360) != 0)
     {
       if (written)
         g_string_append_c (string, ' ');
       g_string_append (string, "from ");
-      gtk_css_value_print (self->rotation, string);
+      gtk_css_value_print (this->rotation, string);
       written = TRUE;
     }
 
-  if (self->color_space != GTK_CSS_COLOR_SPACE_SRGB)
+  if (this->color_space != GTK_CSS_COLOR_SPACE_SRGB)
     {
       if (written)
         g_string_append_c (string, ' ');
-      gtk_css_color_interpolation_method_print (self->color_space,
-                                                self->hue_interp,
+      gtk_css_color_interpolation_method_print (this->color_space,
+                                                this->hue_interp,
                                                 string);
       written = TRUE;
     }
@@ -342,9 +342,9 @@ gtk_css_image_conic_print (GtkCssImage *image,
   if (written)
     g_string_append (string, ", ");
 
-  for (i = 0; i < self->n_stops; i++)
+  for (i = 0; i < this->n_stops; i++)
     {
-      const GtkCssImageConicColorStop *stop = &self->color_stops[i];
+      const GtkCssImageConicColorStop *stop = &this->color_stops[i];
 
       if (i > 0)
         g_string_append (string, ", ");
@@ -372,22 +372,22 @@ gtk_css_image_conic_compute (GtkCssImage          *image,
                              guint                 property_id,
                              GtkCssComputeContext *context)
 {
-  GtkCssImageConic *self = GTK_CSS_IMAGE_CONIC (image);
+  GtkCssImageConic *this = GTK_CSS_IMAGE_CONIC (image);
   GtkCssImageConic *copy;
   guint i;
 
   copy = g_object_new (GTK_TYPE_CSS_IMAGE_CONIC, NULL);
 
-  copy->center = gtk_css_value_compute (self->center, property_id, context);
-  copy->rotation = gtk_css_value_compute (self->rotation, property_id, context);
-  copy->color_space = self->color_space;
-  copy->hue_interp = self->hue_interp;
+  copy->center = gtk_css_value_compute (this->center, property_id, context);
+  copy->rotation = gtk_css_value_compute (this->rotation, property_id, context);
+  copy->color_space = this->color_space;
+  copy->hue_interp = this->hue_interp;
 
-  copy->n_stops = self->n_stops;
-  copy->color_stops = g_new (GtkCssImageConicColorStop, self->n_stops);
-  for (i = 0; i < self->n_stops; i++)
+  copy->n_stops = this->n_stops;
+  copy->color_stops = g_new (GtkCssImageConicColorStop, this->n_stops);
+  for (i = 0; i < this->n_stops; i++)
     {
-      const GtkCssImageConicColorStop *stop = &self->color_stops[i];
+      const GtkCssImageConicColorStop *stop = &this->color_stops[i];
       GtkCssImageConicColorStop *scopy = &copy->color_stops[i];
 
       scopy->color = gtk_css_value_compute (stop->color, property_id, context);
@@ -535,12 +535,12 @@ gtk_css_image_conic_equal (GtkCssImage *image1,
 static void
 gtk_css_image_conic_dispose (GObject *object)
 {
-  GtkCssImageConic *self = GTK_CSS_IMAGE_CONIC (object);
+  GtkCssImageConic *this = GTK_CSS_IMAGE_CONIC (object);
   guint i;
 
-  for (i = 0; i < self->n_stops; i ++)
+  for (i = 0; i < this->n_stops; i ++)
     {
-      GtkCssImageConicColorStop *stop = &self->color_stops[i];
+      GtkCssImageConicColorStop *stop = &this->color_stops[i];
 
       gtk_css_value_unref (stop->color);
       if (stop->offset)
@@ -548,10 +548,10 @@ gtk_css_image_conic_dispose (GObject *object)
       if (stop->transition_hint)
         gtk_css_value_unref (stop->transition_hint);
     }
-  g_free (self->color_stops);
+  g_free (this->color_stops);
 
-  g_clear_pointer (&self->center, gtk_css_value_unref);
-  g_clear_pointer (&self->rotation, gtk_css_value_unref);
+  g_clear_pointer (&this->center, gtk_css_value_unref);
+  g_clear_pointer (&this->rotation, gtk_css_value_unref);
 
   G_OBJECT_CLASS (gtk_css_image_conic_parent_class)->dispose (object);
 }
@@ -559,17 +559,17 @@ gtk_css_image_conic_dispose (GObject *object)
 static gboolean
 gtk_css_image_conic_is_computed (GtkCssImage *image)
 {
-  GtkCssImageConic *self = GTK_CSS_IMAGE_CONIC (image);
+  GtkCssImageConic *this = GTK_CSS_IMAGE_CONIC (image);
   guint i;
   gboolean computed = TRUE;
 
-  computed = !self->center || gtk_css_value_is_computed (self->center);
-  computed &= !self->rotation || gtk_css_value_is_computed (self->rotation);
+  computed = !this->center || gtk_css_value_is_computed (this->center);
+  computed &= !this->rotation || gtk_css_value_is_computed (this->rotation);
 
   if (computed)
-    for (i = 0; i < self->n_stops; i ++)
+    for (i = 0; i < this->n_stops; i ++)
       {
-        const GtkCssImageConicColorStop *stop = &self->color_stops[i];
+        const GtkCssImageConicColorStop *stop = &this->color_stops[i];
 
         if (stop->transition_hint && !gtk_css_value_is_computed (stop->transition_hint))
           {
@@ -596,11 +596,11 @@ gtk_css_image_conic_is_computed (GtkCssImage *image)
 static gboolean
 gtk_css_image_conic_contains_current_color (GtkCssImage *image)
 {
-  GtkCssImageConic *self = GTK_CSS_IMAGE_CONIC (image);
+  GtkCssImageConic *this = GTK_CSS_IMAGE_CONIC (image);
 
-  for (guint i = 0; i < self->n_stops; i ++)
+  for (guint i = 0; i < this->n_stops; i ++)
     {
-      const GtkCssImageConicColorStop *stop = &self->color_stops[i];
+      const GtkCssImageConicColorStop *stop = &this->color_stops[i];
 
       if (gtk_css_value_contains_current_color (stop->color))
         return TRUE;
@@ -614,7 +614,7 @@ gtk_css_image_conic_resolve (GtkCssImage          *image,
                              GtkCssComputeContext *context,
                              GtkCssValue          *current_color)
 {
-  GtkCssImageConic *self = GTK_CSS_IMAGE_CONIC (image);
+  GtkCssImageConic *this = GTK_CSS_IMAGE_CONIC (image);
   GtkCssImageConic *resolved;
 
   if (!gtk_css_image_conic_contains_current_color (image))
@@ -622,25 +622,25 @@ gtk_css_image_conic_resolve (GtkCssImage          *image,
 
   resolved = g_object_new (GTK_TYPE_CSS_IMAGE_CONIC, NULL);
 
-  resolved->center = gtk_css_value_ref (self->center);
-  resolved->rotation = gtk_css_value_ref (self->rotation);
+  resolved->center = gtk_css_value_ref (this->center);
+  resolved->rotation = gtk_css_value_ref (this->rotation);
 
-  resolved->n_stops = self->n_stops;
-  resolved->color_stops = g_new (GtkCssImageConicColorStop, self->n_stops);
+  resolved->n_stops = this->n_stops;
+  resolved->color_stops = g_new (GtkCssImageConicColorStop, this->n_stops);
 
-  for (guint i = 0; i < self->n_stops; i++)
+  for (guint i = 0; i < this->n_stops; i++)
     {
-      if (self->color_stops[i].transition_hint)
-        resolved->color_stops[i].transition_hint = gtk_css_value_ref (self->color_stops[i].transition_hint);
+      if (this->color_stops[i].transition_hint)
+        resolved->color_stops[i].transition_hint = gtk_css_value_ref (this->color_stops[i].transition_hint);
       else
         resolved->color_stops[i].transition_hint = NULL;
 
-      if (self->color_stops[i].offset)
-        resolved->color_stops[i].offset = gtk_css_value_ref (self->color_stops[i].offset);
+      if (this->color_stops[i].offset)
+        resolved->color_stops[i].offset = gtk_css_value_ref (this->color_stops[i].offset);
       else
         resolved->color_stops[i].offset = NULL;
 
-      resolved->color_stops[i].color = gtk_css_value_resolve (self->color_stops[i].color, context, current_color);
+      resolved->color_stops[i].color = gtk_css_value_resolve (this->color_stops[i].color, context, current_color);
     }
 
   return GTK_CSS_IMAGE (resolved);
@@ -666,7 +666,7 @@ gtk_css_image_conic_class_init (GtkCssImageConicClass *klass)
 }
 
 static void
-gtk_css_image_conic_init (GtkCssImageConic *self)
+gtk_css_image_conic_init (GtkCssImageConic *this)
 {
 }
 

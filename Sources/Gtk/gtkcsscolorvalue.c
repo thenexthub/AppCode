@@ -1789,7 +1789,7 @@ parse_color_color_channel (GtkCssParser *parser,
 }
 
 static gboolean
-parse_color_function (GtkCssParser     *self,
+parse_color_function (GtkCssParser     *this,
                       gboolean          parse_color_space,
                       gboolean          allow_alpha,
                       gboolean          require_alpha,
@@ -1809,15 +1809,15 @@ parse_color_function (GtkCssParser     *self,
       max_args++;
     }
 
-  token = gtk_css_parser_get_token (self);
+  token = gtk_css_parser_get_token (this);
   g_return_val_if_fail (gtk_css_token_is (token, GTK_CSS_TOKEN_FUNCTION), FALSE);
 
   g_strlcpy (function_name, gtk_css_token_get_string (token), 64);
-  gtk_css_parser_start_block (self);
+  gtk_css_parser_start_block (this);
 
-  if (gtk_css_parser_try_ident (self, "from"))
+  if (gtk_css_parser_try_ident (this, "from"))
     {
-      data->ctx.color = gtk_css_color_value_parse (self);
+      data->ctx.color = gtk_css_color_value_parse (this);
       data->syntax = COLOR_SYNTAX_MODERN;
       data->serialize_as_rgb = FALSE;
     }
@@ -1825,11 +1825,11 @@ parse_color_function (GtkCssParser     *self,
   arg = 0;
   while (TRUE)
     {
-      guint parse_args = parse_func (self, data, arg);
+      guint parse_args = parse_func (this, data, arg);
       if (parse_args == 0)
         break;
       arg += parse_args;
-      token = gtk_css_parser_get_token (self);
+      token = gtk_css_parser_get_token (this);
 
       if (data->syntax == COLOR_SYNTAX_DETECTING)
         {
@@ -1849,7 +1849,7 @@ parse_color_function (GtkCssParser     *self,
         {
           if (arg < min_args)
             {
-              gtk_css_parser_error_syntax (self, "%s() requires at least %u arguments", function_name, min_args);
+              gtk_css_parser_error_syntax (this, "%s() requires at least %u arguments", function_name, min_args);
               break;
             }
           else
@@ -1862,49 +1862,49 @@ parse_color_function (GtkCssParser     *self,
         {
           if (data->syntax == COLOR_SYNTAX_MODERN)
             {
-              gtk_css_parser_error_syntax (self, "Commas aren't allowed in modern %s() syntax", function_name);
+              gtk_css_parser_error_syntax (this, "Commas aren't allowed in modern %s() syntax", function_name);
               break;
             }
 
           if (arg >= max_args)
             {
-              gtk_css_parser_error_syntax (self, "Expected ')' at end of %s()", function_name);
+              gtk_css_parser_error_syntax (this, "Expected ')' at end of %s()", function_name);
               break;
             }
 
-          gtk_css_parser_consume_token (self);
+          gtk_css_parser_consume_token (this);
           continue;
         }
       else if (data->syntax == COLOR_SYNTAX_LEGACY)
         {
-          gtk_css_parser_error_syntax (self, "Unexpected data at end of %s() argument", function_name);
+          gtk_css_parser_error_syntax (this, "Unexpected data at end of %s() argument", function_name);
           break;
         }
       else if (arg == min_args)
         {
           if (gtk_css_token_is_delim (token, '/'))
             {
-              gtk_css_parser_consume_token (self);
+              gtk_css_parser_consume_token (this);
               continue;
             }
 
           if (arg >= max_args)
             {
-              gtk_css_parser_error_syntax (self, "Expected ')' at end of %s()", function_name);
+              gtk_css_parser_error_syntax (this, "Expected ')' at end of %s()", function_name);
               break;
             }
 
-          gtk_css_parser_error_syntax (self, "Expected '/' or ')'");
+          gtk_css_parser_error_syntax (this, "Expected '/' or ')'");
           break;
         }
       else if (arg >= max_args)
         {
-          gtk_css_parser_error_syntax (self, "Expected ')' at end of %s()", function_name);
+          gtk_css_parser_error_syntax (this, "Expected ')' at end of %s()", function_name);
           break;
         }
     }
 
-  gtk_css_parser_end_block (self);
+  gtk_css_parser_end_block (this);
 
   return result;
 }

@@ -70,26 +70,26 @@ enum {
 static GParamSpec *properties [N_PROPS];
 
 static void
-set_accessible_role (GtkAtSpiSocket    *self,
+set_accessible_role (GtkAtSpiSocket    *this,
                      GtkAccessibleRole  role)
 {
   g_return_if_fail (!gtk_accessible_role_is_abstract (role));
 
-  if (self->at_context == NULL || !gtk_at_context_is_realized (self->at_context))
+  if (this->at_context == NULL || !gtk_at_context_is_realized (this->at_context))
     {
-      self->accessible_role = role;
+      this->accessible_role = role;
 
-      if (self->at_context != NULL)
-        gtk_at_context_set_accessible_role (self->at_context, role);
+      if (this->at_context != NULL)
+        gtk_at_context_set_accessible_role (this->at_context, role);
 
-      g_object_notify (G_OBJECT (self), "accessible-role");
+      g_object_notify (G_OBJECT (this), "accessible-role");
     }
   else
     {
-      char *role_str = g_enum_to_string (GTK_TYPE_ACCESSIBLE_ROLE, self->accessible_role);
+      char *role_str = g_enum_to_string (GTK_TYPE_ACCESSIBLE_ROLE, this->accessible_role);
 
       g_critical ("%s already has an accessible role of type “%s”",
-                  G_OBJECT_TYPE_NAME (self),
+                  G_OBJECT_TYPE_NAME (this),
                   role_str);
 
       g_free (role_str);
@@ -101,36 +101,36 @@ gtk_at_spi_socket_initable_init (GInitable     *initable,
                                  GCancellable  *cancellable,
                                  GError       **error)
 {
-  GtkAtSpiSocket *self = (GtkAtSpiSocket *) initable;
+  GtkAtSpiSocket *this = (GtkAtSpiSocket *) initable;
 
   g_assert (GTK_IS_AT_SPI_SOCKET (initable));
 
-  if (self->bus_name == NULL || !g_dbus_is_name (self->bus_name))
+  if (this->bus_name == NULL || !g_dbus_is_name (this->bus_name))
     {
       g_set_error (error, G_DBUS_ERROR, G_DBUS_ERROR_INVALID_ARGS, "Invalid bus name");
       return FALSE;
     }
 
-  if (self->object_path == NULL || !g_variant_is_object_path (self->object_path))
+  if (this->object_path == NULL || !g_variant_is_object_path (this->object_path))
     {
       g_set_error (error, G_DBUS_ERROR, G_DBUS_ERROR_INVALID_ARGS, "Invalid object path");
       return FALSE;
     }
 
-  self->at_context = gtk_at_context_create (self->accessible_role,
-                                            GTK_ACCESSIBLE (self),
+  this->at_context = gtk_at_context_create (this->accessible_role,
+                                            GTK_ACCESSIBLE (this),
                                             gdk_display_get_default ());
 
   /* Sockets are strictly specific to AT-SPI */
-  if (self->at_context != NULL && !GTK_IS_AT_SPI_CONTEXT (self->at_context))
+  if (this->at_context != NULL && !GTK_IS_AT_SPI_CONTEXT (this->at_context))
     {
       g_set_error (error, G_IO_ERROR, G_IO_ERROR_NOT_SUPPORTED,
                    "AT-SPI sockets can only be used with the AT-SPI backend");
-      g_clear_object (&self->at_context);
+      g_clear_object (&this->at_context);
       return FALSE;
     }
 
-  gtk_accessible_update_state (GTK_ACCESSIBLE (self),
+  gtk_accessible_update_state (GTK_ACCESSIBLE (this),
                                GTK_ACCESSIBLE_STATE_HIDDEN, TRUE,
                                -1);
 
@@ -146,18 +146,18 @@ g_initable_interface_init (GInitableIface *iface)
 static GtkATContext *
 gtk_at_spi_socket_get_at_context (GtkAccessible *accessible)
 {
-  GtkAtSpiSocket *self = (GtkAtSpiSocket *) accessible;
+  GtkAtSpiSocket *this = (GtkAtSpiSocket *) accessible;
 
   g_assert (GTK_IS_AT_SPI_SOCKET (accessible));
 
-  if (self->at_context != NULL)
-    return g_object_ref (self->at_context);
+  if (this->at_context != NULL)
+    return g_object_ref (this->at_context);
 
   return NULL;
 }
 
 static gboolean
-gtk_at_spi_socket_get_platform_state (GtkAccessible              *self,
+gtk_at_spi_socket_get_platform_state (GtkAccessible              *this,
                                       GtkAccessiblePlatformState  state)
 {
   return FALSE;
@@ -211,14 +211,14 @@ gtk_accessible_interface_init (GtkAccessibleInterface *iface)
 static void
 gtk_at_spi_socket_dispose (GObject *object)
 {
-  GtkAtSpiSocket *self = (GtkAtSpiSocket *)object;
+  GtkAtSpiSocket *this = (GtkAtSpiSocket *)object;
 
-  g_cancellable_cancel (self->cancellable);
+  g_cancellable_cancel (this->cancellable);
 
-  g_clear_pointer (&self->object_path, g_free);
-  g_clear_pointer (&self->bus_name, g_free);
-  g_clear_object (&self->cancellable);
-  g_clear_object (&self->at_context);
+  g_clear_pointer (&this->object_path, g_free);
+  g_clear_pointer (&this->bus_name, g_free);
+  g_clear_object (&this->cancellable);
+  g_clear_object (&this->at_context);
 
   G_OBJECT_CLASS (gtk_at_spi_socket_parent_class)->dispose (object);
 }
@@ -229,20 +229,20 @@ gtk_at_spi_socket_get_property (GObject    *object,
                                 GValue     *value,
                                 GParamSpec *pspec)
 {
-  GtkAtSpiSocket *self = GTK_AT_SPI_SOCKET (object);
+  GtkAtSpiSocket *this = GTK_AT_SPI_SOCKET (object);
 
   switch (prop_id)
     {
     case PROP_ACCESSIBLE_ROLE:
-      g_value_set_enum (value, self->accessible_role);
+      g_value_set_enum (value, this->accessible_role);
       break;
 
     case PROP_BUS_NAME:
-      g_value_set_string (value, self->bus_name);
+      g_value_set_string (value, this->bus_name);
       break;
 
     case PROP_OBJECT_PATH:
-      g_value_set_string (value, self->object_path);
+      g_value_set_string (value, this->object_path);
       break;
 
     default:
@@ -256,20 +256,20 @@ gtk_at_spi_socket_set_property (GObject      *object,
                                 const GValue *value,
                                 GParamSpec   *pspec)
 {
-  GtkAtSpiSocket *self = GTK_AT_SPI_SOCKET (object);
+  GtkAtSpiSocket *this = GTK_AT_SPI_SOCKET (object);
 
   switch (prop_id)
     {
     case PROP_ACCESSIBLE_ROLE:
-      set_accessible_role (self, g_value_get_enum (value));
+      set_accessible_role (this, g_value_get_enum (value));
       break;
 
     case PROP_BUS_NAME:
-      self->bus_name = g_value_dup_string (value);
+      this->bus_name = g_value_dup_string (value);
       break;
 
     case PROP_OBJECT_PATH:
-      self->object_path = g_value_dup_string (value);
+      this->object_path = g_value_dup_string (value);
       break;
 
     default:
@@ -323,31 +323,31 @@ gtk_at_spi_socket_class_init (GtkAtSpiSocketClass *klass)
 }
 
 static void
-gtk_at_spi_socket_init (GtkAtSpiSocket *self)
+gtk_at_spi_socket_init (GtkAtSpiSocket *this)
 {
-  self->accessible_role = GTK_ACCESSIBLE_ROLE_GENERIC;
+  this->accessible_role = GTK_ACCESSIBLE_ROLE_GENERIC;
 }
 
 GVariant *
-gtk_at_spi_socket_to_ref (GtkAtSpiSocket *self)
+gtk_at_spi_socket_to_ref (GtkAtSpiSocket *this)
 {
-  return g_variant_new ("(so)", self->bus_name, self->object_path);
+  return g_variant_new ("(so)", this->bus_name, this->object_path);
 }
 
 static void
-update_embedded_state (GtkAtSpiSocket *self,
+update_embedded_state (GtkAtSpiSocket *this,
                        gboolean        embedded)
 {
-  if (self->embedded == embedded)
+  if (this->embedded == embedded)
     return;
 
-  gtk_accessible_update_state (GTK_ACCESSIBLE (self),
+  gtk_accessible_update_state (GTK_ACCESSIBLE (this),
                                GTK_ACCESSIBLE_STATE_HIDDEN, !embedded,
                                -1);
 
-  self->embedded = embedded;
+  this->embedded = embedded;
 
-  g_clear_object (&self->cancellable);
+  g_clear_object (&this->cancellable);
 }
 
 static void
@@ -355,7 +355,7 @@ socket_embedded_cb (GObject      *source_object,
                     GAsyncResult *result,
                     gpointer      user_data)
 {
-  GtkAtSpiSocket *self = (GtkAtSpiSocket *)user_data;
+  GtkAtSpiSocket *this = (GtkAtSpiSocket *)user_data;
   GVariant *res = NULL;
   GError *error = NULL;
 
@@ -370,43 +370,43 @@ socket_embedded_cb (GObject      *source_object,
       if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
         {
           g_warning ("Error embedding AT-SPI socket: %s", error->message);
-          update_embedded_state (self, FALSE);
+          update_embedded_state (this, FALSE);
         }
       g_clear_error (&error);
       return;
     }
 
-  update_embedded_state (self, TRUE);
+  update_embedded_state (this, TRUE);
 }
 
 void
-gtk_at_spi_socket_embed (GtkAtSpiSocket  *self,
+gtk_at_spi_socket_embed (GtkAtSpiSocket  *this,
                          GDBusConnection *connection)
 {
   const char *context_path = NULL;
 
-  if (self->at_context == NULL)
+  if (this->at_context == NULL)
     return;
 
-  if (self->embedded || self->cancellable != NULL)
+  if (this->embedded || this->cancellable != NULL)
     return;
 
-  context_path = gtk_at_spi_context_get_context_path (GTK_AT_SPI_CONTEXT (self->at_context));
+  context_path = gtk_at_spi_context_get_context_path (GTK_AT_SPI_CONTEXT (this->at_context));
 
-  self->cancellable = g_cancellable_new ();
+  this->cancellable = g_cancellable_new ();
 
   g_dbus_connection_call (connection,
-                          self->bus_name,
-                          self->object_path,
+                          this->bus_name,
+                          this->object_path,
                           "org.a11y.atspi.Socket",
                           "Embedded",
                           g_variant_new ("(s)", context_path),
                           NULL,
                           G_DBUS_CALL_FLAGS_NO_AUTO_START,
                           -1,
-                          self->cancellable,
+                          this->cancellable,
                           socket_embedded_cb,
-                          self);
+                          this);
 }
 
 /**
@@ -447,7 +447,7 @@ gtk_at_spi_socket_new (const char  *bus_name,
 
 /**
  * gtk_at_spi_socket_get_bus_name:
- * @self: a #GtkAtSpiSocket
+ * @this: a #GtkAtSpiSocket
  *
  * Retrieves the bus name of the remote accessible object that the
  * socket is connected to.
@@ -457,16 +457,16 @@ gtk_at_spi_socket_new (const char  *bus_name,
  * Since: 4.14
  */
 const char *
-gtk_at_spi_socket_get_bus_name (GtkAtSpiSocket *self)
+gtk_at_spi_socket_get_bus_name (GtkAtSpiSocket *this)
 {
-  g_return_val_if_fail (GTK_IS_AT_SPI_SOCKET (self), NULL);
+  g_return_val_if_fail (GTK_IS_AT_SPI_SOCKET (this), NULL);
 
-  return self->bus_name;
+  return this->bus_name;
 }
 
 /**
  * gtk_at_spi_socket_get_object_path:
- * @self: a #GtkAtSpiSocket
+ * @this: a #GtkAtSpiSocket
  *
  * Retrieves the object path of the remote accessible object that
  * the socket is connected to.
@@ -477,9 +477,9 @@ gtk_at_spi_socket_get_bus_name (GtkAtSpiSocket *self)
  * Since: 4.14
  */
 const char *
-gtk_at_spi_socket_get_object_path (GtkAtSpiSocket *self)
+gtk_at_spi_socket_get_object_path (GtkAtSpiSocket *this)
 {
-  g_return_val_if_fail (GTK_IS_AT_SPI_SOCKET (self), NULL);
+  g_return_val_if_fail (GTK_IS_AT_SPI_SOCKET (this), NULL);
 
-  return self->object_path;
+  return this->object_path;
 }

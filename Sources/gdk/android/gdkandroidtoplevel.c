@@ -65,10 +65,10 @@ gdk_android_toplevel_activity_request_free (GdkAndroidToplevelActivityRequest *d
   }
 
 static void
-gdk_android_toplevel_update_title (GdkAndroidToplevel *self);
+gdk_android_toplevel_update_title (GdkAndroidToplevel *this);
 
 static void
-gdk_android_toplevel_update_window (GdkAndroidToplevel *self);
+gdk_android_toplevel_update_window (GdkAndroidToplevel *this);
 
 void
 _gdk_android_toplevel_bind_native (JNIEnv *env, jobject this,
@@ -77,20 +77,20 @@ _gdk_android_toplevel_bind_native (JNIEnv *env, jobject this,
   gdk_android_set_latest_activity (env, this);
 
   GdkAndroidDisplay *display = gdk_android_display_get_display_instance ();
-  GdkAndroidToplevel *self = g_hash_table_lookup (display->surfaces, (gpointer) native_identifier);
-  gdk_android_check_toplevel_throw (self, this);
+  GdkAndroidToplevel *this = g_hash_table_lookup (display->surfaces, (gpointer) native_identifier);
+  gdk_android_check_toplevel_throw (this, this);
 
-  g_debug ("TRACE: Toplevel.BindNative (%p)", self);
+  g_debug ("TRACE: Toplevel.BindNative (%p)", this);
 
-  if (self->activity)
-    (*env)->DeleteGlobalRef (env, self->activity);
-  self->activity = (*env)->NewGlobalRef (env, this);
+  if (this->activity)
+    (*env)->DeleteGlobalRef (env, this->activity);
+  this->activity = (*env)->NewGlobalRef (env, this);
   (*env)->SetLongField (env, this, gdk_android_get_java_cache ()->toplevel.native_identifier, native_identifier);
 
   (*env)->CallVoidMethod (env, this, gdk_android_get_java_cache ()->toplevel.attach_toplevel_surface);
 
-  gdk_android_toplevel_update_title (self);
-  gdk_android_toplevel_update_window (self);
+  gdk_android_toplevel_update_title (this);
+  gdk_android_toplevel_update_window (this);
 
   gdk_android_display_update_night_mode (display, this);
 }
@@ -108,11 +108,11 @@ _gdk_android_toplevel_on_state_change (JNIEnv *env, jobject this, jboolean has_f
   glong identifier = (*env)->GetLongField (env, this, gdk_android_get_java_cache ()->toplevel.native_identifier);
 
   GdkAndroidDisplay *display = gdk_android_display_get_display_instance ();
-  GdkAndroidToplevel *self = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
-  gdk_android_check_toplevel (self);
-  GdkSurface *surface = (GdkSurface *) self;
+  GdkAndroidToplevel *this = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
+  gdk_android_check_toplevel (this);
+  GdkSurface *surface = (GdkSurface *) this;
 
-  g_debug ("TRACE: Toplevel.OnStateChenge (%p)", self);
+  g_debug ("TRACE: Toplevel.OnStateChenge (%p)", this);
 
   GdkToplevelState unset = 0;
   GdkToplevelState set = 0;
@@ -135,11 +135,11 @@ _gdk_android_toplevel_on_back_press (JNIEnv *env, jobject this)
   glong identifier = (*env)->GetLongField (env, this, gdk_android_get_java_cache ()->toplevel.native_identifier);
 
   GdkAndroidDisplay *display = gdk_android_display_get_display_instance ();
-  GdkAndroidToplevel *self = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
-  gdk_android_check_toplevel (self);
-  GdkSurface *surface = (GdkSurface *) self;
+  GdkAndroidToplevel *this = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
+  gdk_android_check_toplevel (this);
+  GdkSurface *surface = (GdkSurface *) this;
 
-  g_debug ("TRACE: Toplevel.OnBackPress (%p)", self);
+  g_debug ("TRACE: Toplevel.OnBackPress (%p)", this);
 
   GdkEvent *event = gdk_delete_event_new (surface);
   gdk_surface_handle_event (event);
@@ -152,22 +152,22 @@ _gdk_android_toplevel_on_destroy (JNIEnv *env, jobject this)
   glong identifier = (*env)->GetLongField (env, this, gdk_android_get_java_cache ()->toplevel.native_identifier);
 
   GdkAndroidDisplay *display = gdk_android_display_get_display_instance ();
-  GdkAndroidToplevel *self = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
-  gdk_android_check_toplevel (self);
-  GdkAndroidSurface *surface_impl = (GdkAndroidSurface *) self;
-  GdkSurface *surface = (GdkSurface *) self;
+  GdkAndroidToplevel *this = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
+  gdk_android_check_toplevel (this);
+  GdkAndroidSurface *surface_impl = (GdkAndroidSurface *) this;
+  GdkSurface *surface = (GdkSurface *) this;
 
-  g_debug ("TRACE: On Destroy GdkAndroidToplevel %lx, (%p)", identifier, (gpointer) self);
+  g_debug ("TRACE: On Destroy GdkAndroidToplevel %lx, (%p)", identifier, (gpointer) this);
 
   if (!GDK_SURFACE_DESTROYED (surface))
     {
       if (!surface_impl->visible)
         {
-          self->did_spawn_activity = FALSE;
+          this->did_spawn_activity = FALSE;
           return;
         }
 
-      g_info ("GdkAndroidToplevel (%p): OS destroyed activity", (gpointer) self);
+      g_info ("GdkAndroidToplevel (%p): OS destroyed activity", (gpointer) this);
       // TODO: is there no better way of letting GTK know a surface no longer exits?
       //  the issue with this is, that if a toplevel with modal is open (grabbed),
       //  the delete event on any other widget will not be handled (see gtkmain.c,
@@ -178,7 +178,7 @@ _gdk_android_toplevel_on_destroy (JNIEnv *env, jobject this)
 
       if (!GDK_SURFACE_DESTROYED (surface))
         {
-          g_warning ("GdkAndroidToplevel (%p): Force destroying activity", (gpointer) self);
+          g_warning ("GdkAndroidToplevel (%p): Force destroying activity", (gpointer) this);
           _gdk_surface_destroy (surface, TRUE);
         }
     }
@@ -198,10 +198,10 @@ _gdk_android_toplevel_on_activity_result (JNIEnv *env, jobject this,
   glong identifier = (*env)->GetLongField (env, this, gdk_android_get_java_cache ()->toplevel.native_identifier);
 
   GdkAndroidDisplay *display = gdk_android_display_get_display_instance ();
-  GdkAndroidToplevel *self = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
-  gdk_android_check_toplevel (self);
+  GdkAndroidToplevel *this = g_hash_table_lookup (display->surfaces, (gpointer) identifier);
+  gdk_android_check_toplevel (this);
 
-  GdkAndroidToplevelActivityRequest *data = g_hash_table_lookup (self->activity_requests,
+  GdkAndroidToplevelActivityRequest *data = g_hash_table_lookup (this->activity_requests,
                                                                  GUINT_TO_POINTER((guint)request_code));
   g_return_if_fail (data != NULL);
 
@@ -214,39 +214,39 @@ _gdk_android_toplevel_on_activity_result (JNIEnv *env, jobject this,
   g_task_return_int (data->task, response_code);
 
   data->task = NULL;
-  g_hash_table_remove (self->activity_requests, GUINT_TO_POINTER((guint)request_code));
+  g_hash_table_remove (this->activity_requests, GUINT_TO_POINTER((guint)request_code));
 }
 
 static void
 gdk_android_toplevel_present (GdkToplevel *toplevel, GdkToplevelLayout *layout)
 {
-  GdkAndroidToplevel *self = GDK_ANDROID_TOPLEVEL (toplevel);
-  GdkAndroidSurface *surface_impl = (GdkAndroidSurface *)self;
-  GdkSurface *surface = (GdkSurface *) self;
+  GdkAndroidToplevel *this = GDK_ANDROID_TOPLEVEL (toplevel);
+  GdkAndroidSurface *surface_impl = (GdkAndroidSurface *)this;
+  GdkSurface *surface = (GdkSurface *) this;
 
   surface_impl->visible = TRUE;
 
-  if (layout != self->layout)
+  if (layout != this->layout)
     {
-      g_clear_pointer (&self->layout, gdk_toplevel_layout_unref);
-      self->layout = gdk_toplevel_layout_copy (layout);
+      g_clear_pointer (&this->layout, gdk_toplevel_layout_unref);
+      this->layout = gdk_toplevel_layout_copy (layout);
     }
 
   JNIEnv *env = gdk_android_get_env ();
   (*env)->PushLocalFrame (env, 4);
-  g_debug ("TRACE: Android.Toplevel present called: %p", (void *) self->intent);
-  if (!GDK_SURFACE_IS_MAPPED (surface) && !self->did_spawn_activity)
+  g_debug ("TRACE: Android.Toplevel present called: %p", (void *) this->intent);
+  if (!GDK_SURFACE_IS_MAPPED (surface) && !this->did_spawn_activity)
     {
-      if (self->monitor)
+      if (this->monitor)
         {
-          gdk_android_monitor_drop_toplevel (self->monitor);
-          g_object_unref (self->monitor);
+          gdk_android_monitor_drop_toplevel (this->monitor);
+          g_object_unref (this->monitor);
         }
       if (surface->transient_for && GDK_ANDROID_TOPLEVEL (surface->transient_for)->monitor)
-        self->monitor = g_object_ref (GDK_ANDROID_TOPLEVEL (surface->transient_for)->monitor);
+        this->monitor = g_object_ref (GDK_ANDROID_TOPLEVEL (surface->transient_for)->monitor);
       else
-        self->monitor = (GdkAndroidMonitor *) gdk_android_monitor_new (gdk_surface_get_display (surface));
-      gdk_android_monitor_add_toplevel (self->monitor);
+        this->monitor = (GdkAndroidMonitor *) gdk_android_monitor_new (gdk_surface_get_display (surface));
+      gdk_android_monitor_add_toplevel (this->monitor);
 
       g_debug ("Spawning activity for toplevel: (transient %p)", surface->transient_for);
       jobject parent = surface->transient_for ? GDK_ANDROID_TOPLEVEL (surface->transient_for)->activity : NULL;
@@ -257,22 +257,22 @@ gdk_android_toplevel_present (GdkToplevel *toplevel, GdkToplevelLayout *layout)
           if (!is_bound)
             {
               (*env)->CallVoidMethod (env, parent, gdk_android_get_java_cache ()->toplevel.bind_native,
-                                      (jlong)self);
+                                      (jlong)this);
               goto skip_new_activity;
             }
           else
-            (*env)->CallObjectMethod (env, self->intent, gdk_android_get_java_cache ()->a_intent.add_flags,
+            (*env)->CallObjectMethod (env, this->intent, gdk_android_get_java_cache ()->a_intent.add_flags,
                                       gdk_android_get_java_cache ()->a_intent.flag_activity_new_task | gdk_android_get_java_cache ()->a_intent.flag_activity_multiple_task);
         }
 
-      (*env)->CallVoidMethod (env, parent, gdk_android_get_java_cache ()->a_activity.start_activity, self->intent);
+      (*env)->CallVoidMethod (env, parent, gdk_android_get_java_cache ()->a_activity.start_activity, this->intent);
 skip_new_activity:
-      self->did_spawn_activity = TRUE;
+      this->did_spawn_activity = TRUE;
     }
   else if (surface_impl->surface)
     {
       (*env)->CallVoidMethod (env, surface_impl->surface, gdk_android_get_java_cache ()->surface.set_visibility, TRUE);
-      gdk_android_toplevel_update_window (self);
+      gdk_android_toplevel_update_window (this);
     }
 
   (*env)->PopLocalFrame (env, NULL);
@@ -281,22 +281,22 @@ skip_new_activity:
 static gboolean
 gdk_android_toplevel_minimize (GdkToplevel *toplevel)
 {
-  GdkAndroidToplevel *self = GDK_ANDROID_TOPLEVEL (toplevel);
+  GdkAndroidToplevel *this = GDK_ANDROID_TOPLEVEL (toplevel);
   JNIEnv *env = gdk_android_get_env ();
-  return (*env)->CallBooleanMethod (env, self->activity, gdk_android_get_java_cache ()->a_activity.move_task_to_back, TRUE);
+  return (*env)->CallBooleanMethod (env, this->activity, gdk_android_get_java_cache ()->a_activity.move_task_to_back, TRUE);
 }
 
 static void
 gdk_android_toplevel_focus (GdkToplevel *toplevel, guint32 timestamp)
 {
-  GdkAndroidToplevel *self = GDK_ANDROID_TOPLEVEL (toplevel);
-  if (!self->activity)
+  GdkAndroidToplevel *this = GDK_ANDROID_TOPLEVEL (toplevel);
+  if (!this->activity)
     return;
 
   JNIEnv *env = gdk_android_get_env ();
   (*env)->PushLocalFrame (env, 1);
-  jobject activity_service = (*env)->CallObjectMethod (env, self->activity, gdk_android_get_java_cache ()->a_context.get_system_service, gdk_android_get_java_cache ()->a_context.activity_service);
-  jint task_id = (*env)->CallIntMethod (env, self->activity, gdk_android_get_java_cache ()->a_activity.get_task_id);
+  jobject activity_service = (*env)->CallObjectMethod (env, this->activity, gdk_android_get_java_cache ()->a_context.get_system_service, gdk_android_get_java_cache ()->a_context.activity_service);
+  jint task_id = (*env)->CallIntMethod (env, this->activity, gdk_android_get_java_cache ()->a_activity.get_task_id);
   (*env)->CallVoidMethod (env, activity_service, gdk_android_get_java_cache ()->a_activity_manager.move_task_to_font, task_id, 0, NULL);
   (*env)->PopLocalFrame (env, NULL);
 }
@@ -358,40 +358,40 @@ enum
 static void
 gdk_android_toplevel_finalize (GObject *object)
 {
-  GdkAndroidToplevel *self = GDK_ANDROID_TOPLEVEL (object);
+  GdkAndroidToplevel *this = GDK_ANDROID_TOPLEVEL (object);
 
-  g_hash_table_unref (self->activity_requests);
+  g_hash_table_unref (this->activity_requests);
 
-  if (self->layout)
-    gdk_toplevel_layout_unref (self->layout);
-  g_free (self->title);
+  if (this->layout)
+    gdk_toplevel_layout_unref (this->layout);
+  g_free (this->title);
 
-  if (self->monitor)
+  if (this->monitor)
     {
-      gdk_android_monitor_drop_toplevel (self->monitor);
-      g_object_unref (self->monitor);
+      gdk_android_monitor_drop_toplevel (this->monitor);
+      g_object_unref (this->monitor);
     }
 
   JNIEnv *env = gdk_android_get_env ();
-  if (self->activity)
-    (*env)->DeleteGlobalRef (env, self->activity);
-  if (self->intent)
-    (*env)->DeleteGlobalRef (env, self->intent);
+  if (this->activity)
+    (*env)->DeleteGlobalRef (env, this->activity);
+  if (this->intent)
+    (*env)->DeleteGlobalRef (env, this->intent);
   G_OBJECT_CLASS (gdk_android_toplevel_parent_class)->finalize (object);
 }
 
 static void
 gdk_android_display_night_mode_changed (GdkAndroidDisplay  *display,
                                         GParamSpec         *pspec,
-                                        GdkAndroidToplevel *self)
+                                        GdkAndroidToplevel *this)
 {
-  gdk_android_toplevel_update_window (self);
+  gdk_android_toplevel_update_window (this);
 }
 
 static void
 gdk_android_toplevel_constructed (GObject *object)
 {
-  GdkAndroidToplevel *self = GDK_ANDROID_TOPLEVEL (object);
+  GdkAndroidToplevel *this = GDK_ANDROID_TOPLEVEL (object);
 
   JNIEnv *env = gdk_android_get_env ();
   (*env)->PushLocalFrame (env, 2);
@@ -402,42 +402,42 @@ gdk_android_toplevel_constructed (GObject *object)
   (*env)->CallObjectMethod (env, intent,
                             gdk_android_get_java_cache ()->a_intent.put_extra_long,
                             gdk_android_get_java_cache ()->toplevel.toplevel_identifier_key,
-                            (glong) self);
-  self->intent = (*env)->NewGlobalRef (env, intent);
+                            (glong) this);
+  this->intent = (*env)->NewGlobalRef (env, intent);
   (*env)->PopLocalFrame (env, NULL);
 
-  GdkDisplay *display = gdk_surface_get_display ((GdkSurface *) self);
-  g_signal_connect_object (display, "notify::night-mode", G_CALLBACK (gdk_android_display_night_mode_changed), self, G_CONNECT_DEFAULT);
+  GdkDisplay *display = gdk_surface_get_display ((GdkSurface *) this);
+  g_signal_connect_object (display, "notify::night-mode", G_CALLBACK (gdk_android_display_night_mode_changed), this, G_CONNECT_DEFAULT);
 
   G_OBJECT_CLASS (gdk_android_toplevel_parent_class)->constructed (object);
 
   // on android, the window is always "maximized" as to avoid rounded corners
-  gdk_synthesize_surface_state ((GdkSurface *) self, 0, GDK_TOPLEVEL_STATE_MAXIMIZED);
+  gdk_synthesize_surface_state ((GdkSurface *) this, 0, GDK_TOPLEVEL_STATE_MAXIMIZED);
 }
 
 static void
-gdk_android_toplevel_update_title (GdkAndroidToplevel *self)
+gdk_android_toplevel_update_title (GdkAndroidToplevel *this)
 {
-  if (!self->activity)
+  if (!this->activity)
     return;
 
   JNIEnv *env = gdk_android_get_env ();
   (*env)->PushLocalFrame (env, 1);
 
-  jstring jtitle = gdk_android_utf8_to_java (self->title);
-  (*env)->CallVoidMethod (env, self->activity, gdk_android_get_java_cache ()->toplevel.post_title, jtitle);
+  jstring jtitle = gdk_android_utf8_to_java (this->title);
+  (*env)->CallVoidMethod (env, this->activity, gdk_android_get_java_cache ()->toplevel.post_title, jtitle);
 
   (*env)->PopLocalFrame (env, NULL);
 }
 
 static void
-gdk_android_toplevel_set_title (GdkAndroidToplevel *self, const gchar *title)
+gdk_android_toplevel_set_title (GdkAndroidToplevel *this, const gchar *title)
 {
-  g_clear_pointer (&self->title, g_free);
-  self->title = g_strdup (title);
-  gdk_android_toplevel_update_title (self);
+  g_clear_pointer (&this->title, g_free);
+  this->title = g_strdup (title);
+  gdk_android_toplevel_update_title (this);
 
-  g_object_notify ((GObject *) self, "title");
+  g_object_notify ((GObject *) this, "title");
 }
 
 static void
@@ -446,8 +446,8 @@ gdk_android_toplevel_get_property (GObject    *object,
                                    GValue     *value,
                                    GParamSpec *pspec)
 {
-  GdkAndroidToplevel *self = GDK_ANDROID_TOPLEVEL (object);
-  GdkSurface *surface = (GdkSurface *) self;
+  GdkAndroidToplevel *this = GDK_ANDROID_TOPLEVEL (object);
+  GdkSurface *surface = (GdkSurface *) this;
 
   switch (prop_id)
     {
@@ -456,7 +456,7 @@ gdk_android_toplevel_get_property (GObject    *object,
       break;
 
     case N_PROPERTIES + GDK_TOPLEVEL_PROP_TITLE:
-      g_value_set_string (value, self->title);
+      g_value_set_string (value, this->title);
       break;
 
     case N_PROPERTIES + GDK_TOPLEVEL_PROP_STARTUP_ID:
@@ -512,13 +512,13 @@ gdk_android_toplevel_set_property (GObject      *object,
                                    const GValue *value,
                                    GParamSpec   *pspec)
 {
-  GdkAndroidToplevel *self = GDK_ANDROID_TOPLEVEL (object);
-  GdkSurface *surface = (GdkSurface *) self;
+  GdkAndroidToplevel *this = GDK_ANDROID_TOPLEVEL (object);
+  GdkSurface *surface = (GdkSurface *) this;
 
   switch (prop_id)
     {
     case N_PROPERTIES + GDK_TOPLEVEL_PROP_TITLE:
-      gdk_android_toplevel_set_title (self, g_value_get_string (value));
+      gdk_android_toplevel_set_title (this, g_value_get_string (value));
       break;
 
     case N_PROPERTIES + GDK_TOPLEVEL_PROP_STARTUP_ID:
@@ -564,30 +564,30 @@ gdk_android_toplevel_set_property (GObject      *object,
 /*static void
 gdk_android_surface_request_layout (GdkSurface *surface)
 {
-        GdkAndroidSurface *self = GDK_ANDROID_SURFACE(surface);
+        GdkAndroidSurface *this = GDK_ANDROID_SURFACE(surface);
 }*/
 
 static void
 gdk_android_toplevel_hide (GdkSurface *surface)
 {
-  GdkAndroidToplevel *self = (GdkAndroidToplevel *) surface;
+  GdkAndroidToplevel *this = (GdkAndroidToplevel *) surface;
   GDK_SURFACE_CLASS (gdk_android_toplevel_parent_class)->hide (surface);
 
   JNIEnv *env = gdk_android_get_env ();
-  (*env)->CallVoidMethod (env, self->activity, gdk_android_get_java_cache ()->a_activity.finish);
+  (*env)->CallVoidMethod (env, this->activity, gdk_android_get_java_cache ()->a_activity.finish);
 }
 
 static gboolean
 gdk_android_toplevel_compute_size (GdkSurface *surface)
 {
-  GdkAndroidToplevel *self = GDK_ANDROID_TOPLEVEL (surface);
-  GdkAndroidSurface *surface_impl = (GdkAndroidSurface *)self;
+  GdkAndroidToplevel *this = GDK_ANDROID_TOPLEVEL (surface);
+  GdkAndroidSurface *surface_impl = (GdkAndroidSurface *)this;
 
   GdkToplevelSize size;
   gdk_toplevel_size_init (&size,
                           ceilf (surface_impl->cfg.width / surface_impl->cfg.scale),
                           ceilf (surface_impl->cfg.height / surface_impl->cfg.scale));
-  gdk_toplevel_notify_compute_size ((GdkToplevel *) self, &size);
+  gdk_toplevel_notify_compute_size ((GdkToplevel *) this, &size);
 
   g_warn_if_fail (size.width > 0);
   g_warn_if_fail (size.height > 0);
@@ -600,11 +600,11 @@ gdk_android_toplevel_compute_size (GdkSurface *surface)
 static void
 gdk_android_toplevel_destroy (GdkSurface *surface, gboolean foreign_destroy)
 {
-  GdkAndroidToplevel *self = GDK_ANDROID_TOPLEVEL (surface);
+  GdkAndroidToplevel *this = GDK_ANDROID_TOPLEVEL (surface);
 
   JNIEnv *env = gdk_android_get_env ();
-  if (!foreign_destroy && self->activity)
-    (*env)->CallVoidMethod (env, self->activity, gdk_android_get_java_cache ()->a_activity.finish);
+  if (!foreign_destroy && this->activity)
+    (*env)->CallVoidMethod (env, this->activity, gdk_android_get_java_cache ()->a_activity.finish);
 
   g_clear_object (&surface->transient_for);
   GDK_SURFACE_CLASS (gdk_android_toplevel_parent_class)->destroy (surface, foreign_destroy);
@@ -613,12 +613,12 @@ gdk_android_toplevel_destroy (GdkSurface *surface, gboolean foreign_destroy)
 static void
 gdk_android_toplevel_on_layout (GdkAndroidSurface *surface)
 {
-  GdkAndroidToplevel *self = GDK_ANDROID_TOPLEVEL (surface);
+  GdkAndroidToplevel *this = GDK_ANDROID_TOPLEVEL (surface);
   GdkRectangle bounds = {
     .x = surface->cfg.x, .y = surface->cfg.y,
     .width = surface->cfg.width, .height = surface->cfg.height
   };
-  gdk_android_monitor_update (self->monitor, &bounds, surface->cfg.scale);
+  gdk_android_monitor_update (this->monitor, &bounds, surface->cfg.scale);
 }
 
 static void
@@ -643,40 +643,40 @@ gdk_android_toplevel_class_init (GdkAndroidToplevelClass *klass)
 }
 
 static void
-gdk_android_toplevel_init (GdkAndroidToplevel *self)
+gdk_android_toplevel_init (GdkAndroidToplevel *this)
 {
-  self->activity_request_counter = 2048; // reserve some lower activity request codes
-  self->activity_requests = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, (GDestroyNotify)gdk_android_toplevel_activity_request_free);
+  this->activity_request_counter = 2048; // reserve some lower activity request codes
+  this->activity_requests = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, (GDestroyNotify)gdk_android_toplevel_activity_request_free);
 }
 
 static const GdkRGBA light_bg = { .red = 0xf6 / 255.f, .green = 0xf5 / 255.f, .blue = 0xf4 / 255.f, .alpha = 1.f };
 static const GdkRGBA dark_bg = { .red = 0x35 / 255.f, .green = 0x35 / 255.f, .blue = 0x35 / 255.f, .alpha = 1.f };
 const GdkRGBA *
-gdk_android_toplevel_get_bars_color (GdkAndroidToplevel *self)
+gdk_android_toplevel_get_bars_color (GdkAndroidToplevel *this)
 {
-  GdkDisplay *display = gdk_surface_get_display ((GdkSurface *) self);
+  GdkDisplay *display = gdk_surface_get_display ((GdkSurface *) this);
   if (gdk_android_display_get_night_mode (GDK_ANDROID_DISPLAY (display)) == GDK_ANDROID_DISPLAY_NIGHT_YES)
     return &dark_bg;
   return &light_bg;
 }
 
 static void
-gdk_android_toplevel_update_window (GdkAndroidToplevel *self)
+gdk_android_toplevel_update_window (GdkAndroidToplevel *this)
 {
-  if (!self->activity)
+  if (!this->activity)
     return;
   gboolean is_fullscreen;
-  if (!self->layout || !gdk_toplevel_layout_get_fullscreen (self->layout, &is_fullscreen))
+  if (!this->layout || !gdk_toplevel_layout_get_fullscreen (this->layout, &is_fullscreen))
     is_fullscreen = FALSE;
   JNIEnv *env = gdk_android_get_env ();
-  (*env)->CallVoidMethod (env, self->activity, gdk_android_get_java_cache ()->toplevel.post_window_configuration,
-                          gdk_android_utils_color_to_android (gdk_android_toplevel_get_bars_color (self)),
+  (*env)->CallVoidMethod (env, this->activity, gdk_android_get_java_cache ()->toplevel.post_window_configuration,
+                          gdk_android_utils_color_to_android (gdk_android_toplevel_get_bars_color (this)),
                           is_fullscreen);
 }
 
 /**
  * gdk_android_toplevel_get_activity: (skip)
- * @self: (transfer none): the toplevel
+ * @this: (transfer none): the toplevel
  *
  * Get the
  * [Android Activity object](https://developer.android.com/reference/android/app/Activity)
@@ -687,36 +687,36 @@ gdk_android_toplevel_update_window (GdkAndroidToplevel *self)
  * Since: 4.18
  */
 jobject
-gdk_android_toplevel_get_activity (GdkAndroidToplevel *self)
+gdk_android_toplevel_get_activity (GdkAndroidToplevel *this)
 {
-  g_return_val_if_fail (GDK_IS_ANDROID_TOPLEVEL (self), FALSE);
+  g_return_val_if_fail (GDK_IS_ANDROID_TOPLEVEL (this), FALSE);
   JNIEnv *env = gdk_android_get_env();
-  return (*env)->NewLocalRef (env, self->activity);
+  return (*env)->NewLocalRef (env, this->activity);
 }
 
 /**
  * gdk_android_toplevel_launch_activity: (skip)
- * @self: (transfer none): the toplevel
+ * @this: (transfer none): the toplevel
  * @intent: [Intent](https://developer.android.com/reference/android/content/Intent) to launch
  * @error: return location for a [struct@GLib.Error]
  *
- * Launch a new activity defined by @intent with @self as parent.
+ * Launch a new activity defined by @intent with @this as parent.
  *
  * Returns: true if successful, false otherwise
  *
  * Since: 4.18
  */
 gboolean
-gdk_android_toplevel_launch_activity (GdkAndroidToplevel *self,
+gdk_android_toplevel_launch_activity (GdkAndroidToplevel *this,
                                       jobject             intent,
                                       GError            **error)
 {
-  g_return_val_if_fail (GDK_IS_ANDROID_TOPLEVEL (self), FALSE);
+  g_return_val_if_fail (GDK_IS_ANDROID_TOPLEVEL (this), FALSE);
   JNIEnv *env = gdk_android_get_env();
   g_return_val_if_fail ((*env)->IsInstanceOf (env, intent,
                                           gdk_android_get_java_cache ()->a_intent.klass), FALSE);
 
-  (*env)->CallVoidMethod (env, self->activity,
+  (*env)->CallVoidMethod (env, this->activity,
                           gdk_android_get_java_cache ()->a_activity.start_activity,
                           intent);
 
@@ -734,28 +734,28 @@ gdk_android_toplevel_cancel_launched_activity (GCancellable *cancellable,
 }
 /**
  * gdk_android_toplevel_launch_activity_for_result_async: (skip)
- * @self: (transfer none): the toplevel
+ * @this: (transfer none): the toplevel
  * @intent: [Intent](https://developer.android.com/reference/android/content/Intent) to launch
  * @cancellable: (nullable): [class@Gio.Cancellable] that stops the launched activity when cancelled
- * @callback: (scope async) (closure user_data): a [func@Gio.AsyncReadyCallback] to call when the launched activity exits
+ * @callback: (scope async) (closure user_data): a [fn@Gio.AsyncReadyCallback] to call when the launched activity exits
  * @user_data: the data to pass to @callback
  *
- * Launch a new activity defined by @intent with @self as parent for
+ * Launch a new activity defined by @intent with @this as parent for
  * which you would like a result when it finished.
  */
 void
-gdk_android_toplevel_launch_activity_for_result_async (GdkAndroidToplevel *self,
+gdk_android_toplevel_launch_activity_for_result_async (GdkAndroidToplevel *this,
                                                        jobject             intent,
                                                        GCancellable       *cancellable,
                                                        GAsyncReadyCallback callback,
                                                        gpointer            user_data)
 {
-  g_return_if_fail (GDK_IS_ANDROID_TOPLEVEL (self));
+  g_return_if_fail (GDK_IS_ANDROID_TOPLEVEL (this));
   JNIEnv *env = gdk_android_get_env();
   g_return_if_fail ((*env)->IsInstanceOf (env, intent,
                                           gdk_android_get_java_cache ()->a_intent.klass));
 
-  GTask *task = g_task_new (self, cancellable, callback, user_data);
+  GTask *task = g_task_new (this, cancellable, callback, user_data);
   g_task_set_source_tag (task, gdk_android_toplevel_launch_activity_for_result_async);
 
   GError *err = NULL;
@@ -765,8 +765,8 @@ gdk_android_toplevel_launch_activity_for_result_async (GdkAndroidToplevel *self,
       return;
     }
 
-  guint request_code = self->activity_request_counter++;
-  (*env)->CallVoidMethod (env, self->activity,
+  guint request_code = this->activity_request_counter++;
+  (*env)->CallVoidMethod (env, this->activity,
                           gdk_android_get_java_cache ()->a_activity.start_activity_for_result,
                           intent, request_code);
 
@@ -777,7 +777,7 @@ gdk_android_toplevel_launch_activity_for_result_async (GdkAndroidToplevel *self,
     }
 
   GdkAndroidToplevelActivityRequest *data = g_new(GdkAndroidToplevelActivityRequest, 1);
-  data->parent_activity = (*env)->NewGlobalRef (env, self->activity);
+  data->parent_activity = (*env)->NewGlobalRef (env, this->activity);
   data->request_code = request_code;
   data->task = task;
   if (cancellable)
@@ -785,12 +785,12 @@ gdk_android_toplevel_launch_activity_for_result_async (GdkAndroidToplevel *self,
                                              G_CALLBACK (gdk_android_toplevel_cancel_launched_activity),
                                              data, NULL);
 
-  g_hash_table_insert (self->activity_requests, GUINT_TO_POINTER (request_code), data);
+  g_hash_table_insert (this->activity_requests, GUINT_TO_POINTER (request_code), data);
 }
 
 /**
  * gdk_android_toplevel_launch_activity_for_result_finish: (skip)
- * @self: (transfer none): the toplevel
+ * @this: (transfer none): the toplevel
  * @result: The [iface@Gio.AsyncResult] passed to the callback
  * @response: (out): The result code of the exited activity
  * @data: (out) (optional) (nullable): Local reference to the [Intent](https://developer.android.com/reference/android/content/Intent) object returned by the exited activity
@@ -801,7 +801,7 @@ gdk_android_toplevel_launch_activity_for_result_async (GdkAndroidToplevel *self,
  * Returns: true if successful, false otherwise
  */
 gboolean
-gdk_android_toplevel_launch_activity_for_result_finish (GdkAndroidToplevel *self,
+gdk_android_toplevel_launch_activity_for_result_finish (GdkAndroidToplevel *this,
                                                         GAsyncResult       *result,
                                                         jint               *response,
                                                         jobject            *data,

@@ -38,7 +38,7 @@
  * @param a the array in which a range is to be reversed
  * @param hi the index after the last element in the range to be reversed
  */
-static void gtk_tim_sort(reverse_range) (GtkTimSort *self,
+static void gtk_tim_sort(reverse_range) (GtkTimSort *this,
                                          gpointer    a,
                                          gsize       hi)
 {
@@ -83,38 +83,38 @@ static void gtk_tim_sort(reverse_range) (GtkTimSort *self,
  *          the specified array
  */
 static gsize
-gtk_tim_sort(prepare_run) (GtkTimSort    *self,
+gtk_tim_sort(prepare_run) (GtkTimSort    *this,
                            GtkTimSortRun *out_change)
 {
   gsize run_hi = 1;
   char *cur;
   char *next;
 
-  if (self->size <= run_hi)
+  if (this->size <= run_hi)
     {
       gtk_tim_sort_set_change (out_change, NULL, 0);
-      return self->size;
+      return this->size;
     }
 
-  cur = INCPTR (self->base);
+  cur = INCPTR (this->base);
   next = INCPTR (cur);
   run_hi++;
 
   /* Find end of run, and reverse range if descending */
-  if (gtk_tim_sort_compare (self, cur, self->base) < 0)          /* Descending */
+  if (gtk_tim_sort_compare (this, cur, this->base) < 0)          /* Descending */
     {
-      while (run_hi < self->size && gtk_tim_sort_compare (self, next, cur) < 0)
+      while (run_hi < this->size && gtk_tim_sort_compare (this, next, cur) < 0)
         {
           run_hi++;
           cur = next;
           next = INCPTR (next);
         }
-      gtk_tim_sort(reverse_range) (self, self->base, run_hi);
-      gtk_tim_sort_set_change (out_change, self->base, run_hi);
+      gtk_tim_sort(reverse_range) (this, this->base, run_hi);
+      gtk_tim_sort_set_change (out_change, this->base, run_hi);
     }
   else                          /* Ascending */
     {
-      while (run_hi < self->size && gtk_tim_sort_compare (self, next, cur) >= 0)
+      while (run_hi < this->size && gtk_tim_sort_compare (this, next, cur) >= 0)
         {
           run_hi++;
           cur = next;
@@ -142,7 +142,7 @@ gtk_tim_sort(prepare_run) (GtkTimSort    *self,
  * @param start the index of the first element in the range that is
  *        not already known to be sorted ({@code lo <= start <= hi})
  */
-static void gtk_tim_sort(binary_sort) (GtkTimSort    *self,
+static void gtk_tim_sort(binary_sort) (GtkTimSort    *this,
                                        gpointer       a,
                                        gsize          hi,
                                        gsize          start,
@@ -176,7 +176,7 @@ static void gtk_tim_sort(binary_sort) (GtkTimSort    *self,
         {
           gsize mid = right >> 1;
           gpointer midp = ELEM (leftp, mid);
-          if (gtk_tim_sort_compare (self, startp, midp) < 0)
+          if (gtk_tim_sort_compare (this, startp, midp) < 0)
             {
               right = mid;
             }
@@ -222,25 +222,25 @@ static void gtk_tim_sort(binary_sort) (GtkTimSort    *self,
 }
 
 static gboolean
-gtk_tim_sort(merge_append) (GtkTimSort    *self,
+gtk_tim_sort(merge_append) (GtkTimSort    *this,
                             GtkTimSortRun *out_change)
 {
   /* Identify next run */
   gsize run_len;
 
-  run_len = gtk_tim_sort(prepare_run) (self, out_change);
+  run_len = gtk_tim_sort(prepare_run) (this, out_change);
   if (run_len == 0)
     return FALSE;
 
-  /* If run is short, extend to min(self->min_run, self->size) */
-  if (run_len < self->min_run)
+  /* If run is short, extend to min(this->min_run, this->size) */
+  if (run_len < this->min_run)
     {
-      gsize force = MIN (self->size, self->min_run);
-      gtk_tim_sort(binary_sort) (self, self->base, force, run_len, out_change);
+      gsize force = MIN (this->size, this->min_run);
+      gtk_tim_sort(binary_sort) (this, this->base, force, run_len, out_change);
       run_len = force;
     }
   /* Push run onto pending-run stack, and maybe merge */
-  gtk_tim_sort_push_run (self, self->base, run_len);
+  gtk_tim_sort_push_run (this, this->base, run_len);
 
   return TRUE;
 }
@@ -263,7 +263,7 @@ gtk_tim_sort(merge_append) (GtkTimSort    *self,
  *    should follow it.
  */
 static gsize
-gtk_tim_sort(gallop_left) (GtkTimSort *self,
+gtk_tim_sort(gallop_left) (GtkTimSort *this,
                            gpointer    key,
                            gpointer    base,
                            gsize       len,
@@ -274,12 +274,12 @@ gtk_tim_sort(gallop_left) (GtkTimSort *self,
   gsize ofs = 1;
 
   g_assert (len > 0 && hint < len);
-  if (gtk_tim_sort_compare (self, key, hintp) > 0)
+  if (gtk_tim_sort_compare (this, key, hintp) > 0)
     {
       /* Gallop right until a[hint+last_ofs] < key <= a[hint+ofs] */
       gsize max_ofs = len - hint;
       while (ofs < max_ofs
-             && gtk_tim_sort_compare (self, key, ELEM (hintp, ofs)) > 0)
+             && gtk_tim_sort_compare (this, key, ELEM (hintp, ofs)) > 0)
         {
           last_ofs = ofs;
           ofs = (ofs << 1) + 1;                 /* eventually this becomes SIZE_MAX */
@@ -297,7 +297,7 @@ gtk_tim_sort(gallop_left) (GtkTimSort *self,
       const gsize max_ofs = hint + 1;
       gsize tmp;
       while (ofs < max_ofs
-             && gtk_tim_sort_compare (self, key, ELEM_REV (hintp, ofs)) <= 0)
+             && gtk_tim_sort_compare (this, key, ELEM_REV (hintp, ofs)) <= 0)
         {
           last_ofs = ofs;
           ofs = (ofs << 1) + 1;                 /* no need to check for overflow */
@@ -324,7 +324,7 @@ gtk_tim_sort(gallop_left) (GtkTimSort *self,
       /* http://stackoverflow.com/questions/4844165/safe-integer-middle-value-formula */
       gsize m = (last_ofs & ofs) + ((last_ofs ^ ofs) >> 1);
 
-      if (gtk_tim_sort_compare (self, key, ELEM (base, m)) > 0)
+      if (gtk_tim_sort_compare (this, key, ELEM (base, m)) > 0)
         last_ofs = m + 1;                        /* a[m] < key */
       else
         ofs = m;                        /* key <= a[m] */
@@ -346,7 +346,7 @@ gtk_tim_sort(gallop_left) (GtkTimSort *self,
  * @return the int k,  0 <= k <= n such that a[b + k - 1] <= key < a[b + k]
  */
 static gsize
-gtk_tim_sort(gallop_right) (GtkTimSort *self,
+gtk_tim_sort(gallop_right) (GtkTimSort *this,
                             gpointer    key,
                             gpointer    base,
                             gsize       len,
@@ -358,13 +358,13 @@ gtk_tim_sort(gallop_right) (GtkTimSort *self,
 
   g_assert (len > 0 && hint < len);
 
-  if (gtk_tim_sort_compare (self, key, hintp) < 0)
+  if (gtk_tim_sort_compare (this, key, hintp) < 0)
     {
       /* Gallop left until a[hint - ofs] <= key < a[hint - last_ofs] */
       gsize max_ofs = hint + 1;
       gsize tmp;
       while (ofs < max_ofs
-             && gtk_tim_sort_compare (self, key, ELEM_REV (hintp, ofs)) < 0)
+             && gtk_tim_sort_compare (this, key, ELEM_REV (hintp, ofs)) < 0)
         {
           last_ofs = ofs;
           ofs = (ofs << 1) + 1;                 /* no need to check for overflow */
@@ -382,7 +382,7 @@ gtk_tim_sort(gallop_right) (GtkTimSort *self,
     {
       gsize max_ofs = len - hint;
       while (ofs < max_ofs
-             && gtk_tim_sort_compare (self, key, ELEM (hintp, ofs)) >= 0)
+             && gtk_tim_sort_compare (this, key, ELEM (hintp, ofs)) >= 0)
         {
           last_ofs = ofs;
           ofs = (ofs << 1) + 1;                 /* no need to check for overflow */
@@ -406,7 +406,7 @@ gtk_tim_sort(gallop_right) (GtkTimSort *self,
       /* gsize m = last_ofs + ((ofs - last_ofs) >> 1); */
       gsize m = (last_ofs & ofs) + ((last_ofs ^ ofs) >> 1);
 
-      if (gtk_tim_sort_compare (self, key, ELEM (base, m)) < 0)
+      if (gtk_tim_sort_compare (this, key, ELEM (base, m)) < 0)
         ofs = m;                        /* key < a[m] */
       else
         last_ofs = m + 1;                        /* a[m] <= key */
@@ -432,14 +432,14 @@ gtk_tim_sort(gallop_right) (GtkTimSort *self,
  * @param len2  length of second run to be merged (must be > 0)
  */
 static void
-gtk_tim_sort(merge_lo) (GtkTimSort *self,
+gtk_tim_sort(merge_lo) (GtkTimSort *this,
                         gpointer    base1,
                         gsize       len1,
                         gpointer    base2,
                         gsize       len2)
 {
   /* Copy first run into temp array */
-  gpointer tmp = gtk_tim_sort_ensure_capacity (self, len1);
+  gpointer tmp = gtk_tim_sort_ensure_capacity (this, len1);
   char *cursor1;
   char *cursor2;
   char *dest;
@@ -475,7 +475,7 @@ gtk_tim_sort(merge_lo) (GtkTimSort *self,
     }
 
   /* Use local variable for performance */
-  min_gallop = self->min_gallop;
+  min_gallop = this->min_gallop;
 
   while (TRUE)
     {
@@ -489,7 +489,7 @@ gtk_tim_sort(merge_lo) (GtkTimSort *self,
       do
         {
           g_assert (len1 > 1 && len2 > 0);
-          if (gtk_tim_sort_compare (self, cursor2, cursor1) < 0)
+          if (gtk_tim_sort_compare (this, cursor2, cursor1) < 0)
             {
               ASSIGN (dest, cursor2);
               dest = INCPTR (dest);
@@ -524,7 +524,7 @@ gtk_tim_sort(merge_lo) (GtkTimSort *self,
       do
         {
           g_assert (len1 > 1 && len2 > 0);
-          count1 = gtk_tim_sort(gallop_right) (self, cursor2, cursor1, len1, 0);
+          count1 = gtk_tim_sort(gallop_right) (this, cursor2, cursor1, len1, 0);
           if (count1 != 0)
             {
               memcpy (dest, cursor1, LEN (count1));                 /* POP: can't overlap */
@@ -540,7 +540,7 @@ gtk_tim_sort(merge_lo) (GtkTimSort *self,
           if (--len2 == 0)
             goto outer;
 
-          count2 = gtk_tim_sort(gallop_left) (self, cursor1, cursor2, len2, 0);
+          count2 = gtk_tim_sort(gallop_left) (this, cursor1, cursor2, len2, 0);
           if (count2 != 0)
             {
               memmove (dest, cursor2, LEN (count2));                 /* POP: might overlap */
@@ -562,7 +562,7 @@ gtk_tim_sort(merge_lo) (GtkTimSort *self,
       min_gallop += 2;           /* Penalize for leaving gallop mode */
     }                           /* End of "outer" loop */
 outer:
-  self->min_gallop = min_gallop < 1 ? 1 : min_gallop;        /* Write back to field */
+  this->min_gallop = min_gallop < 1 ? 1 : min_gallop;        /* Write back to field */
 
   if (len1 == 1)
     {
@@ -595,14 +595,14 @@ outer:
  * @param len2  length of second run to be merged (must be > 0)
  */
 static void
-gtk_tim_sort(merge_hi) (GtkTimSort *self,
+gtk_tim_sort(merge_hi) (GtkTimSort *this,
                         gpointer    base1,
                         gsize       len1,
                         gpointer    base2,
                         gsize       len2)
 {
   /* Copy second run into temp array */
-  gpointer tmp = gtk_tim_sort_ensure_capacity (self, len2);
+  gpointer tmp = gtk_tim_sort_ensure_capacity (this, len2);
   char *cursor1;        /* Indexes into a */
   char *cursor2;        /* Indexes into tmp array */
   char *dest;           /* Indexes into a */
@@ -637,7 +637,7 @@ gtk_tim_sort(merge_hi) (GtkTimSort *self,
     }
 
   /* Use local variable for performance */
-  min_gallop = self->min_gallop;
+  min_gallop = this->min_gallop;
 
   while (TRUE)
     {
@@ -651,7 +651,7 @@ gtk_tim_sort(merge_hi) (GtkTimSort *self,
       do
         {
           g_assert (len1 > 0 && len2 > 1);
-          if (gtk_tim_sort_compare (self, cursor2, cursor1) < 0)
+          if (gtk_tim_sort_compare (this, cursor2, cursor1) < 0)
             {
               ASSIGN (dest, cursor1);
               dest = DECPTR (dest);
@@ -682,7 +682,7 @@ gtk_tim_sort(merge_hi) (GtkTimSort *self,
       do
         {
           g_assert (len1 > 0 && len2 > 1);
-          count1 = len1 - gtk_tim_sort(gallop_right) (self, cursor2, base1, len1, len1 - 1);
+          count1 = len1 - gtk_tim_sort(gallop_right) (this, cursor2, base1, len1, len1 - 1);
           if (count1 != 0)
             {
               dest = ELEM_REV (dest, count1);
@@ -699,7 +699,7 @@ gtk_tim_sort(merge_hi) (GtkTimSort *self,
           if (--len2 == 1)
             goto outer;
 
-          count2 = len2 - gtk_tim_sort(gallop_left) (self, cursor1, tmp, len2, len2 - 1);
+          count2 = len2 - gtk_tim_sort(gallop_left) (this, cursor1, tmp, len2, len2 - 1);
           if (count2 != 0)
             {
               dest = ELEM_REV (dest, count2);
@@ -721,7 +721,7 @@ gtk_tim_sort(merge_hi) (GtkTimSort *self,
       min_gallop += 2;           /* Penalize for leaving gallop mode */
     }                           /* End of "outer" loop */
 outer:
-  self->min_gallop = min_gallop < 1 ? 1 : min_gallop;        /* Write back to field */
+  this->min_gallop = min_gallop < 1 ? 1 : min_gallop;        /* Write back to field */
 
   if (len2 == 1)
     {
@@ -753,18 +753,18 @@ outer:
  * @param i stack index of the first of the two runs to merge
  */
 static void
-gtk_tim_sort(merge_at) (GtkTimSort    *self,
+gtk_tim_sort(merge_at) (GtkTimSort    *this,
                         gsize          i,
                         GtkTimSortRun *out_change)
 {
-  gpointer base1 = self->run[i].base;
-  gsize len1 = self->run[i].len;
-  gpointer base2 = self->run[i + 1].base;
-  gsize len2 = self->run[i + 1].len;
+  gpointer base1 = this->run[i].base;
+  gsize len1 = this->run[i].len;
+  gpointer base2 = this->run[i + 1].base;
+  gsize len2 = this->run[i + 1].len;
   gsize k;
 
-  g_assert (self->pending_runs >= 2);
-  g_assert (i == self->pending_runs - 2 || i == self->pending_runs - 3);
+  g_assert (this->pending_runs >= 2);
+  g_assert (i == this->pending_runs - 2 || i == this->pending_runs - 3);
   g_assert (len1 > 0 && len2 > 0);
   g_assert (ELEM (base1, len1) == base2);
 
@@ -772,7 +772,7 @@ gtk_tim_sort(merge_at) (GtkTimSort    *self,
    * Find where the first element of run2 goes in run1. Prior elements
    * in run1 can be ignored (because they're already in place).
    */
-  k = gtk_tim_sort(gallop_right) (self, base2, base1, len1, 0);
+  k = gtk_tim_sort(gallop_right) (this, base2, base1, len1, 0);
   base1 = ELEM (base1, k);
   len1 -= k;
   if (len1 == 0)
@@ -785,7 +785,7 @@ gtk_tim_sort(merge_at) (GtkTimSort    *self,
    * Find where the last element of run1 goes in run2. Subsequent elements
    * in run2 can be ignored (because they're already in place).
    */
-  len2 = gtk_tim_sort(gallop_left) (self,
+  len2 = gtk_tim_sort(gallop_left) (this,
                                     ELEM (base1, len1 - 1),
                                     base2, len2, len2 - 1);
   if (len2 == 0)
@@ -797,38 +797,38 @@ gtk_tim_sort(merge_at) (GtkTimSort    *self,
   /* Merge remaining runs, using tmp array with min(len1, len2) elements */
   if (len1 <= len2)
     {
-      if (len1 > self->max_merge_size)
+      if (len1 > this->max_merge_size)
         {
-          base1 = ELEM (self->run[i].base, self->run[i].len - self->max_merge_size);
-          gtk_tim_sort(merge_lo) (self, base1, self->max_merge_size, base2, len2);
-          gtk_tim_sort_set_change (out_change, base1, self->max_merge_size + len2);
-          self->run[i].len -= self->max_merge_size;
-          self->run[i + 1].base = ELEM_REV (self->run[i + 1].base, self->max_merge_size);
-          self->run[i + 1].len += self->max_merge_size;
-          g_assert (ELEM (self->run[i].base, self->run[i].len) == self->run[i + 1].base);
+          base1 = ELEM (this->run[i].base, this->run[i].len - this->max_merge_size);
+          gtk_tim_sort(merge_lo) (this, base1, this->max_merge_size, base2, len2);
+          gtk_tim_sort_set_change (out_change, base1, this->max_merge_size + len2);
+          this->run[i].len -= this->max_merge_size;
+          this->run[i + 1].base = ELEM_REV (this->run[i + 1].base, this->max_merge_size);
+          this->run[i + 1].len += this->max_merge_size;
+          g_assert (ELEM (this->run[i].base, this->run[i].len) == this->run[i + 1].base);
           return;
         }
       else
         {
-          gtk_tim_sort(merge_lo) (self, base1, len1, base2, len2);
+          gtk_tim_sort(merge_lo) (this, base1, len1, base2, len2);
           gtk_tim_sort_set_change (out_change, base1, len1 + len2);
         }
     }
   else
     {
-      if (len2 > self->max_merge_size)
+      if (len2 > this->max_merge_size)
         {
-          gtk_tim_sort(merge_hi) (self, base1, len1, base2, self->max_merge_size);
-          gtk_tim_sort_set_change (out_change, base1, len1 + self->max_merge_size);
-          self->run[i].len += self->max_merge_size;
-          self->run[i + 1].base = ELEM (self->run[i + 1].base, self->max_merge_size);
-          self->run[i + 1].len -= self->max_merge_size;
-          g_assert (ELEM (self->run[i].base, self->run[i].len) == self->run[i + 1].base);
+          gtk_tim_sort(merge_hi) (this, base1, len1, base2, this->max_merge_size);
+          gtk_tim_sort_set_change (out_change, base1, len1 + this->max_merge_size);
+          this->run[i].len += this->max_merge_size;
+          this->run[i + 1].base = ELEM (this->run[i + 1].base, this->max_merge_size);
+          this->run[i + 1].len -= this->max_merge_size;
+          g_assert (ELEM (this->run[i].base, this->run[i].len) == this->run[i + 1].base);
           return;
         }
       else
         {
-          gtk_tim_sort(merge_hi) (self, base1, len1, base2, len2);
+          gtk_tim_sort(merge_hi) (this, base1, len1, base2, len2);
           gtk_tim_sort_set_change (out_change, base1, len1 + len2);
         }
     }
@@ -839,10 +839,10 @@ done:
    * run now, also slide over the last run (which isn't involved
    * in this merge).  The current run (i+1) goes away in any case.
    */
-  self->run[i].len += self->run[i + 1].len;
-  if (i == self->pending_runs - 3)
-    self->run[i + 1] = self->run[i + 2];
-  self->pending_runs--;
+  this->run[i].len += this->run[i + 1].len;
+  if (i == this->pending_runs - 3)
+    this->run[i + 1] = this->run[i + 2];
+  this->pending_runs--;
 }
 
 
@@ -866,16 +866,16 @@ done:
  *
  */
 static gboolean
-gtk_tim_sort(merge_collapse) (GtkTimSort *self,
+gtk_tim_sort(merge_collapse) (GtkTimSort *this,
                               GtkTimSortRun *out_change)
 {
-  GtkTimSortRun *run = self->run;
+  GtkTimSortRun *run = this->run;
   gsize n;
 
-  if (self->pending_runs <= 1)
+  if (this->pending_runs <= 1)
     return FALSE;
 
-  n = self->pending_runs - 2;
+  n = this->pending_runs - 2;
   if ((n > 0 && run[n - 1].len <= run[n].len + run[n + 1].len) ||
       (n > 1 && run[n - 2].len <= run[n].len + run[n - 1].len))
     {
@@ -887,7 +887,7 @@ gtk_tim_sort(merge_collapse) (GtkTimSort *self,
       return FALSE; /* Invariant is established */
     }
   
-  gtk_tim_sort(merge_at) (self, n, out_change);
+  gtk_tim_sort(merge_at) (this, n, out_change);
   return TRUE;
 }
 
@@ -896,34 +896,34 @@ gtk_tim_sort(merge_collapse) (GtkTimSort *self,
  * called once, to complete the sort.
  */
 static gboolean
-gtk_tim_sort(merge_force_collapse) (GtkTimSort    *self,
+gtk_tim_sort(merge_force_collapse) (GtkTimSort    *this,
                                     GtkTimSortRun *out_change)
 {
   gsize n;
 
-  if (self->pending_runs <= 1)
+  if (this->pending_runs <= 1)
     return FALSE;
 
-  n = self->pending_runs - 2;
-  if (n > 0 && self->run[n - 1].len < self->run[n + 1].len)
+  n = this->pending_runs - 2;
+  if (n > 0 && this->run[n - 1].len < this->run[n + 1].len)
     n--;
-  gtk_tim_sort(merge_at) (self, n, out_change);
+  gtk_tim_sort(merge_at) (this, n, out_change);
   return TRUE;
 }
 
 static gboolean
-gtk_tim_sort(step) (GtkTimSort    *self,
+gtk_tim_sort(step) (GtkTimSort    *this,
                     GtkTimSortRun *out_change)
 {
-  g_assert (self);
+  g_assert (this);
 
-  if (gtk_tim_sort(merge_collapse) (self, out_change))
+  if (gtk_tim_sort(merge_collapse) (this, out_change))
     return TRUE;
 
-  if (gtk_tim_sort(merge_append) (self, out_change))
+  if (gtk_tim_sort(merge_append) (this, out_change))
     return TRUE;
 
-  if (gtk_tim_sort(merge_force_collapse) (self, out_change))
+  if (gtk_tim_sort(merge_force_collapse) (this, out_change))
     return TRUE;
 
   return FALSE;

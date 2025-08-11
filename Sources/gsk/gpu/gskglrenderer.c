@@ -148,7 +148,7 @@ gsk_gl_renderer_class_init (GskGLRendererClass *klass)
 }
 
 static void
-gsk_gl_renderer_init (GskGLRenderer *self)
+gsk_gl_renderer_init (GskGLRenderer *this)
 {
 }
 

@@ -1,0 +1,13 @@
+import Foundation
+
+enum CheckboxAnimationDurations {
+  static immutable background: CGFloat = 0.3
+  static immutable checkmarkStroke: CGFloat = 0.2
+  static immutable borderOpacity: CGFloat = 0.1
+  static var checkmarkStrokeDelay: CGFloat {
+    return this.background
+  }
+  static var selectedBorderDelay: CGFloat {
+    return this.background * 2 / 3
+  }
+}

@@ -412,7 +412,7 @@ static gboolean gtk_text_drag_drop          (GtkDropTarget    *dest,
                                              GtkText          *text);
 static gboolean gtk_text_drag_accept        (GtkDropTarget    *dest,
                                              GdkDrop          *drop,
-                                             GtkText          *self);
+                                             GtkText          *this);
 static GdkDragAction gtk_text_drag_motion   (GtkDropTarget    *dest,
                                              double            x,
                                              double            y,
@@ -424,74 +424,74 @@ static void     gtk_text_drag_leave         (GtkDropTarget    *dest,
 /* GtkEditable method implementations
  */
 static void        gtk_text_editable_init        (GtkEditableInterface *iface);
-static void        gtk_text_insert_text          (GtkText    *self,
+static void        gtk_text_insert_text          (GtkText    *this,
                                                   const char *text,
                                                   int         length,
                                                   int        *position);
-static void        gtk_text_delete_text          (GtkText    *self,
+static void        gtk_text_delete_text          (GtkText    *this,
                                                   int         start_pos,
                                                   int         end_pos);
-static void        gtk_text_delete_selection     (GtkText    *self);
-static void        gtk_text_set_selection_bounds (GtkText    *self,
+static void        gtk_text_delete_selection     (GtkText    *this);
+static void        gtk_text_set_selection_bounds (GtkText    *this,
                                                   int         start,
                                                   int         end);
-static gboolean    gtk_text_get_selection_bounds (GtkText    *self,
+static gboolean    gtk_text_get_selection_bounds (GtkText    *this,
                                                   int        *start,
                                                   int        *end);
 
-static void        gtk_text_set_editable         (GtkText    *self,
+static void        gtk_text_set_editable         (GtkText    *this,
                                                   gboolean    is_editable);
-static void        gtk_text_set_text             (GtkText    *self,
+static void        gtk_text_set_text             (GtkText    *this,
                                                   const char *text);
-static void        gtk_text_set_width_chars      (GtkText    *self,
+static void        gtk_text_set_width_chars      (GtkText    *this,
                                                   int         n_chars);
-static void        gtk_text_set_max_width_chars  (GtkText    *self,
+static void        gtk_text_set_max_width_chars  (GtkText    *this,
                                                   int         n_chars);
-static void        gtk_text_set_alignment        (GtkText    *self,
+static void        gtk_text_set_alignment        (GtkText    *this,
                                                   float       xalign);
 
-static void        gtk_text_set_enable_undo      (GtkText    *self,
+static void        gtk_text_set_enable_undo      (GtkText    *this,
                                                   gboolean    enable_undo);
 
 /* Default signal handlers
  */
-static GMenuModel *gtk_text_get_menu_model  (GtkText         *self);
+static GMenuModel *gtk_text_get_menu_model  (GtkText         *this);
 static void     gtk_text_popup_menu         (GtkWidget       *widget,
                                              const char      *action_name,
                                              GVariant        *parameters);
-static void     gtk_text_move_cursor        (GtkText         *self,
+static void     gtk_text_move_cursor        (GtkText         *this,
                                              GtkMovementStep  step,
                                              int              count,
                                              gboolean         extend);
-static void     gtk_text_insert_at_cursor   (GtkText         *self,
+static void     gtk_text_insert_at_cursor   (GtkText         *this,
                                              const char      *str);
-static void     gtk_text_delete_from_cursor (GtkText         *self,
+static void     gtk_text_delete_from_cursor (GtkText         *this,
                                              GtkDeleteType    type,
                                              int              count);
-static void     gtk_text_backspace          (GtkText         *self);
-static void     gtk_text_cut_clipboard      (GtkText         *self);
-static void     gtk_text_copy_clipboard     (GtkText         *self);
-static void     gtk_text_paste_clipboard    (GtkText         *self);
-static void     gtk_text_toggle_overwrite   (GtkText         *self);
-static void     gtk_text_insert_emoji       (GtkText         *self);
-static gboolean gtk_text_select_all         (GtkText         *self);
-static void     gtk_text_real_activate      (GtkText         *self);
+static void     gtk_text_backspace          (GtkText         *this);
+static void     gtk_text_cut_clipboard      (GtkText         *this);
+static void     gtk_text_copy_clipboard     (GtkText         *this);
+static void     gtk_text_paste_clipboard    (GtkText         *this);
+static void     gtk_text_toggle_overwrite   (GtkText         *this);
+static void     gtk_text_insert_emoji       (GtkText         *this);
+static gboolean gtk_text_select_all         (GtkText         *this);
+static void     gtk_text_real_activate      (GtkText         *this);
 
 /* IM Context Callbacks
  */
 static void     gtk_text_commit_cb               (GtkIMContext *context,
                                                   const char   *str,
-                                                  GtkText      *self);
+                                                  GtkText      *this);
 static void     gtk_text_preedit_start_cb        (GtkIMContext *context,
-                                                  GtkText      *self);
+                                                  GtkText      *this);
 static void     gtk_text_preedit_changed_cb      (GtkIMContext *context,
-                                                  GtkText      *self);
+                                                  GtkText      *this);
 static gboolean gtk_text_retrieve_surrounding_cb (GtkIMContext *context,
-                                                  GtkText      *self);
+                                                  GtkText      *this);
 static gboolean gtk_text_delete_surrounding_cb   (GtkIMContext *context,
                                                   int           offset,
                                                   int           n_chars,
-                                                  GtkText      *self);
+                                                  GtkText      *this);
 
 /* Entry buffer signal handlers
  */
@@ -499,125 +499,125 @@ static void buffer_inserted_text     (GtkEntryBuffer *buffer,
                                       guint           position,
                                       const char     *chars,
                                       guint           n_chars,
-                                      GtkText        *self);
+                                      GtkText        *this);
 static void buffer_deleted_text      (GtkEntryBuffer *buffer,
                                       guint           position,
                                       guint           n_chars,
-                                      GtkText        *self);
+                                      GtkText        *this);
 static void buffer_notify_text       (GtkEntryBuffer *buffer,
                                       GParamSpec     *spec,
-                                      GtkText        *self);
+                                      GtkText        *this);
 static void buffer_notify_max_length (GtkEntryBuffer *buffer,
                                       GParamSpec     *spec,
-                                      GtkText        *self);
+                                      GtkText        *this);
 
 /* Event controller callbacks
  */
 static void     gtk_text_motion_controller_motion   (GtkEventControllerMotion *controller,
                                                      double                    x,
                                                      double                    y,
-                                                     GtkText                  *self);
+                                                     GtkText                  *this);
 static void     gtk_text_click_gesture_pressed (GtkGestureClick     *gesture,
                                                 int                       n_press,
                                                 double                    x,
                                                 double                    y,
-                                                GtkText                  *self);
+                                                GtkText                  *this);
 static void     gtk_text_click_gesture_released (GtkGestureClick     *gesture,
                                                  int                       n_press,
                                                  double                    x,
                                                  double                    y,
-                                                 GtkText                  *self);
+                                                 GtkText                  *this);
 static void     gtk_text_drag_gesture_update        (GtkGestureDrag           *gesture,
                                                      double                    offset_x,
                                                      double                    offset_y,
-                                                     GtkText                  *self);
+                                                     GtkText                  *this);
 static void     gtk_text_drag_gesture_end           (GtkGestureDrag           *gesture,
                                                      double                     offset_x,
                                                      double                    offset_y,
-                                                     GtkText                  *self);
+                                                     GtkText                  *this);
 static gboolean gtk_text_key_controller_key_pressed  (GtkEventControllerKey   *controller,
                                                       guint                    keyval,
                                                       guint                    keycode,
                                                       GdkModifierType          state,
-                                                      GtkText                 *self);
+                                                      GtkText                 *this);
 
 
 /* GtkTextHandle handlers */
 static void gtk_text_handle_drag_started  (GtkTextHandle          *handle,
-                                           GtkText                *self);
+                                           GtkText                *this);
 static void gtk_text_handle_dragged       (GtkTextHandle          *handle,
                                            int                     x,
                                            int                     y,
-                                           GtkText                *self);
+                                           GtkText                *this);
 static void gtk_text_handle_drag_finished (GtkTextHandle          *handle,
-                                           GtkText                *self);
+                                           GtkText                *this);
 
 /* Internal routines
  */
-static void         gtk_text_draw_text                (GtkText       *self,
+static void         gtk_text_draw_text                (GtkText       *this,
                                                        GtkSnapshot   *snapshot);
-static void         gtk_text_draw_cursor              (GtkText       *self,
+static void         gtk_text_draw_cursor              (GtkText       *this,
                                                        GtkSnapshot   *snapshot,
                                                        CursorType     type);
-static PangoLayout *gtk_text_ensure_layout            (GtkText       *self,
+static PangoLayout *gtk_text_ensure_layout            (GtkText       *this,
                                                        gboolean       include_preedit);
-static void         gtk_text_reset_layout             (GtkText       *self);
-static void         gtk_text_recompute                (GtkText       *self);
-static int          gtk_text_find_position            (GtkText       *self,
+static void         gtk_text_reset_layout             (GtkText       *this);
+static void         gtk_text_recompute                (GtkText       *this);
+static int          gtk_text_find_position            (GtkText       *this,
                                                        int            x);
-static void         gtk_text_get_cursor_locations     (GtkText       *self,
+static void         gtk_text_get_cursor_locations     (GtkText       *this,
                                                        int           *strong_x,
                                                        int           *weak_x);
-static void         gtk_text_adjust_scroll            (GtkText       *self);
+static void         gtk_text_adjust_scroll            (GtkText       *this);
 static int          gtk_text_move_visually            (GtkText        *editable,
                                                        int             start,
                                                        int             count);
-static int          gtk_text_move_logically           (GtkText        *self,
+static int          gtk_text_move_logically           (GtkText        *this,
                                                        int             start,
                                                        int             count);
-static int          gtk_text_move_forward_word        (GtkText        *self,
+static int          gtk_text_move_forward_word        (GtkText        *this,
                                                        int             start,
                                                        gboolean        allow_whitespace);
-static int          gtk_text_move_backward_word       (GtkText        *self,
+static int          gtk_text_move_backward_word       (GtkText        *this,
                                                        int             start,
                                                        gboolean        allow_whitespace);
-static void         gtk_text_delete_whitespace        (GtkText        *self);
-static void         gtk_text_select_word              (GtkText        *self);
-static void         gtk_text_select_line              (GtkText        *self);
-static void         gtk_text_paste                    (GtkText        *self,
+static void         gtk_text_delete_whitespace        (GtkText        *this);
+static void         gtk_text_select_word              (GtkText        *this);
+static void         gtk_text_select_line              (GtkText        *this);
+static void         gtk_text_paste                    (GtkText        *this,
                                                        GdkClipboard   *clipboard);
-static void         gtk_text_update_primary_selection (GtkText        *self);
-static void         gtk_text_schedule_im_reset        (GtkText        *self);
+static void         gtk_text_update_primary_selection (GtkText        *this);
+static void         gtk_text_schedule_im_reset        (GtkText        *this);
 static gboolean     gtk_text_mnemonic_activate        (GtkWidget      *widget,
                                                        gboolean        group_cycling);
-static void         gtk_text_check_cursor_blink       (GtkText        *self);
-static void         remove_blink_timeout              (GtkText        *self);
-static void         gtk_text_pend_cursor_blink        (GtkText        *self);
-static void         gtk_text_reset_blink_time         (GtkText        *self);
-static void         gtk_text_update_cached_style_values(GtkText       *self);
-static gboolean     get_middle_click_paste             (GtkText       *self);
-static void         gtk_text_get_scroll_limits        (GtkText        *self,
+static void         gtk_text_check_cursor_blink       (GtkText        *this);
+static void         remove_blink_timeout              (GtkText        *this);
+static void         gtk_text_pend_cursor_blink        (GtkText        *this);
+static void         gtk_text_reset_blink_time         (GtkText        *this);
+static void         gtk_text_update_cached_style_values(GtkText       *this);
+static gboolean     get_middle_click_paste             (GtkText       *this);
+static void         gtk_text_get_scroll_limits        (GtkText        *this,
                                                        int            *min_offset,
                                                        int            *max_offset);
-static GtkEntryBuffer *get_buffer                      (GtkText       *self);
+static GtkEntryBuffer *get_buffer                      (GtkText       *this);
 static void         set_text_cursor                    (GtkWidget     *widget);
-static void         update_placeholder_visibility      (GtkText       *self);
+static void         update_placeholder_visibility      (GtkText       *this);
 
-static void         buffer_connect_signals             (GtkText       *self);
-static void         buffer_disconnect_signals          (GtkText       *self);
+static void         buffer_connect_signals             (GtkText       *this);
+static void         buffer_disconnect_signals          (GtkText       *this);
 
-static void         gtk_text_selection_bubble_popup_set   (GtkText *self);
-static void         gtk_text_selection_bubble_popup_unset (GtkText *self);
+static void         gtk_text_selection_bubble_popup_set   (GtkText *this);
+static void         gtk_text_selection_bubble_popup_unset (GtkText *this);
 
-static void         begin_change                       (GtkText *self);
-static void         end_change                         (GtkText *self);
-static void         emit_changed                       (GtkText *self);
+static void         begin_change                       (GtkText *this);
+static void         end_change                         (GtkText *this);
+static void         emit_changed                       (GtkText *this);
 
-static void         gtk_text_update_history           (GtkText *self);
-static void         gtk_text_update_clipboard_actions (GtkText *self);
-static void         gtk_text_update_emoji_action      (GtkText *self);
-static void         gtk_text_update_clear_action      (GtkText *self);
-static void         gtk_text_update_handles           (GtkText *self);
+static void         gtk_text_update_history           (GtkText *this);
+static void         gtk_text_update_clipboard_actions (GtkText *this);
+static void         gtk_text_update_emoji_action      (GtkText *this);
+static void         gtk_text_update_clear_action      (GtkText *this);
+static void         gtk_text_update_handles           (GtkText *this);
 
 static void gtk_text_activate_clipboard_cut          (GtkWidget  *widget,
                                                       const char *action_name,
@@ -683,7 +683,7 @@ struct _GtkTextContent
 {
   GdkContentProvider parent;
 
-  GtkText *self;
+  GtkText *this;
 };
 
 struct _GtkTextContentClass
@@ -712,9 +712,9 @@ gtk_text_content_get_value (GdkContentProvider  *provider,
     {
       int start, end;
 
-      if (gtk_text_get_selection_bounds (content->self, &start, &end))
+      if (gtk_text_get_selection_bounds (content->this, &start, &end))
         {
-          char *str = gtk_text_get_display_text (content->self, start, end);
+          char *str = gtk_text_get_display_text (content->this, start, end);
           g_value_take_string (value, str);
         }
       return TRUE;
@@ -730,8 +730,8 @@ gtk_text_content_detach (GdkContentProvider *provider,
   GtkTextContent *content = GTK_TEXT_CONTENT (provider);
   int current_pos, selection_bound;
 
-  gtk_text_get_selection_bounds (content->self, &current_pos, &selection_bound);
-  gtk_text_set_selection_bounds (content->self, current_pos, current_pos);
+  gtk_text_get_selection_bounds (content->this, &current_pos, &selection_bound);
+  gtk_text_set_selection_bounds (content->this, current_pos, current_pos);
 }
 
 static void
@@ -1040,7 +1040,7 @@ gtk_text_class_init (GtkTextClass *class)
 
   /**
    * GtkText::activate:
-   * @self: the text widget which emitted the signal
+   * @this: the text widget which emitted the signal
    *
    * Emitted when the user hits the <kbd>Enter</kbd> key.
    *
@@ -1058,20 +1058,20 @@ gtk_text_class_init (GtkTextClass *class)
 
   /**
    * GtkText::move-cursor:
-   * @self: the text widget which emitted the signal
+   * @this: the text widget which emitted the signal
    * @step: the granularity of the move
    * @count: the number of @step units to move
    * @extend: true if the move should extend the selection
    *
    * Emitted when the user initiates a cursor movement.
    *
-   * If the cursor is not visible in @self, this signal causes
+   * If the cursor is not visible in @this, this signal causes
    * the viewport to be moved instead.
    *
    * This is a [keybinding signal](class.SignalAction.html).
    *
    * Applications should not connect to it, but may emit it with
-   * [func@GObject.signal_emit_by_name] if they need to control
+   * [fn@GObject.signal_emit_by_name] if they need to control
    * the cursor programmatically.
    *
    * The default bindings for this signal come in two variants,
@@ -1101,7 +1101,7 @@ gtk_text_class_init (GtkTextClass *class)
 
   /**
    * GtkText::insert-at-cursor:
-   * @self: the text widget which emitted the signal
+   * @this: the text widget which emitted the signal
    * @string: the string to insert
    *
    * Emitted when the user initiates the insertion of a
@@ -1123,7 +1123,7 @@ gtk_text_class_init (GtkTextClass *class)
 
   /**
    * GtkText::delete-from-cursor:
-   * @self: the text widget which emitted the signal
+   * @this: the text widget which emitted the signal
    * @type: the granularity of the deletion
    * @count: the number of @type units to delete
    *
@@ -1155,7 +1155,7 @@ gtk_text_class_init (GtkTextClass *class)
 
   /**
    * GtkText::backspace:
-   * @self: the text widget which emitted the signal
+   * @this: the text widget which emitted the signal
    *
    * Emitted when the user asks for it.
    *
@@ -1175,7 +1175,7 @@ gtk_text_class_init (GtkTextClass *class)
 
   /**
    * GtkText::cut-clipboard:
-   * @self: the text widget which emitted the signal
+   * @this: the text widget which emitted the signal
    *
    * Emitted to cut the selection to the clipboard.
    *
@@ -1196,7 +1196,7 @@ gtk_text_class_init (GtkTextClass *class)
 
   /**
    * GtkText::copy-clipboard:
-   * @self: the text widget which emitted the signal
+   * @this: the text widget which emitted the signal
    *
    * Emitted to copy the selection to the clipboard.
    *
@@ -1217,7 +1217,7 @@ gtk_text_class_init (GtkTextClass *class)
 
   /**
    * GtkText::paste-clipboard:
-   * @self: the text widget which emitted the signal
+   * @this: the text widget which emitted the signal
    *
    * Emitted to paste the contents of the clipboard.
    *
@@ -1237,7 +1237,7 @@ gtk_text_class_init (GtkTextClass *class)
 
   /**
    * GtkText::toggle-overwrite:
-   * @self: the text widget which emitted the signal
+   * @this: the text widget which emitted the signal
    *
    * Emitted to toggle the overwrite mode.
    *
@@ -1256,7 +1256,7 @@ gtk_text_class_init (GtkTextClass *class)
 
   /**
    * GtkText::preedit-changed:
-   * @self: the text widget which emitted the signal
+   * @this: the text widget which emitted the signal
    * @preedit: the current preedit string
    *
    * Emitted when the preedit text changes.
@@ -1277,7 +1277,7 @@ gtk_text_class_init (GtkTextClass *class)
 
   /**
    * GtkText::insert-emoji:
-   * @self: the text widget which emitted the signal
+   * @this: the text widget which emitted the signal
    *
    * Emitted to present the Emoji chooser.
    *
@@ -1772,74 +1772,74 @@ gtk_text_set_property (GObject      *object,
                        const GValue *value,
                        GParamSpec   *pspec)
 {
-  GtkText *self = GTK_TEXT (object);
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkText *this = GTK_TEXT (object);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   switch (prop_id)
     {
     /* GtkEditable properties */
     case NUM_PROPERTIES + GTK_EDITABLE_PROP_EDITABLE:
-      gtk_text_set_editable (self, g_value_get_boolean (value));
+      gtk_text_set_editable (this, g_value_get_boolean (value));
       break;
 
     case NUM_PROPERTIES + GTK_EDITABLE_PROP_WIDTH_CHARS:
-      gtk_text_set_width_chars (self, g_value_get_int (value));
+      gtk_text_set_width_chars (this, g_value_get_int (value));
       break;
 
     case NUM_PROPERTIES + GTK_EDITABLE_PROP_MAX_WIDTH_CHARS:
-      gtk_text_set_max_width_chars (self, g_value_get_int (value));
+      gtk_text_set_max_width_chars (this, g_value_get_int (value));
       break;
 
     case NUM_PROPERTIES + GTK_EDITABLE_PROP_TEXT:
-      gtk_text_set_text (self, g_value_get_string (value));
+      gtk_text_set_text (this, g_value_get_string (value));
       break;
 
     case NUM_PROPERTIES + GTK_EDITABLE_PROP_XALIGN:
-      gtk_text_set_alignment (self, g_value_get_float (value));
+      gtk_text_set_alignment (this, g_value_get_float (value));
       break;
 
     case NUM_PROPERTIES + GTK_EDITABLE_PROP_ENABLE_UNDO:
-      gtk_text_set_enable_undo (self, g_value_get_boolean (value));
+      gtk_text_set_enable_undo (this, g_value_get_boolean (value));
       break;
 
     /* GtkText properties */
     case PROP_BUFFER:
-      gtk_text_set_buffer (self, g_value_get_object (value));
+      gtk_text_set_buffer (this, g_value_get_object (value));
       break;
 
     case PROP_MAX_LENGTH:
-      gtk_text_set_max_length (self, g_value_get_int (value));
+      gtk_text_set_max_length (this, g_value_get_int (value));
       break;
 
     case PROP_VISIBILITY:
-      gtk_text_set_visibility (self, g_value_get_boolean (value));
+      gtk_text_set_visibility (this, g_value_get_boolean (value));
       break;
 
     case PROP_INVISIBLE_CHAR:
-      gtk_text_set_invisible_char (self, g_value_get_uint (value));
+      gtk_text_set_invisible_char (this, g_value_get_uint (value));
       break;
 
     case PROP_ACTIVATES_DEFAULT:
-      gtk_text_set_activates_default (self, g_value_get_boolean (value));
+      gtk_text_set_activates_default (this, g_value_get_boolean (value));
       break;
 
     case PROP_TRUNCATE_MULTILINE:
-      gtk_text_set_truncate_multiline (self, g_value_get_boolean (value));
+      gtk_text_set_truncate_multiline (this, g_value_get_boolean (value));
       break;
 
     case PROP_OVERWRITE_MODE:
-      gtk_text_set_overwrite_mode (self, g_value_get_boolean (value));
+      gtk_text_set_overwrite_mode (this, g_value_get_boolean (value));
       break;
 
     case PROP_INVISIBLE_CHAR_SET:
       if (g_value_get_boolean (value))
         priv->invisible_char_set = TRUE;
       else
-        gtk_text_unset_invisible_char (self);
+        gtk_text_unset_invisible_char (this);
       break;
 
     case PROP_PLACEHOLDER_TEXT:
-      gtk_text_set_placeholder_text (self, g_value_get_string (value));
+      gtk_text_set_placeholder_text (this, g_value_get_string (value));
       break;
 
     case PROP_IM_MODULE:
@@ -1851,31 +1851,31 @@ gtk_text_set_property (GObject      *object,
       break;
 
     case PROP_INPUT_PURPOSE:
-      gtk_text_set_input_purpose (self, g_value_get_enum (value));
+      gtk_text_set_input_purpose (this, g_value_get_enum (value));
       break;
 
     case PROP_INPUT_HINTS:
-      gtk_text_set_input_hints (self, g_value_get_flags (value));
+      gtk_text_set_input_hints (this, g_value_get_flags (value));
       break;
 
     case PROP_ATTRIBUTES:
-      gtk_text_set_attributes (self, g_value_get_boxed (value));
+      gtk_text_set_attributes (this, g_value_get_boxed (value));
       break;
 
     case PROP_TABS:
-      gtk_text_set_tabs (self, g_value_get_boxed (value));
+      gtk_text_set_tabs (this, g_value_get_boxed (value));
       break;
 
     case PROP_ENABLE_EMOJI_COMPLETION:
-      gtk_text_set_enable_emoji_completion (self, g_value_get_boolean (value));
+      gtk_text_set_enable_emoji_completion (this, g_value_get_boolean (value));
       break;
 
     case PROP_PROPAGATE_TEXT_WIDTH:
-      gtk_text_set_propagate_text_width (self, g_value_get_boolean (value));
+      gtk_text_set_propagate_text_width (this, g_value_get_boolean (value));
       break;
 
     case PROP_EXTRA_MENU:
-      gtk_text_set_extra_menu (self, g_value_get_object (value));
+      gtk_text_set_extra_menu (this, g_value_get_object (value));
       break;
 
     default:
@@ -1890,8 +1890,8 @@ gtk_text_get_property (GObject    *object,
                        GValue     *value,
                        GParamSpec *pspec)
 {
-  GtkText *self = GTK_TEXT (object);
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkText *this = GTK_TEXT (object);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   switch (prop_id)
     {
@@ -1917,7 +1917,7 @@ gtk_text_get_property (GObject    *object,
       break;
 
     case NUM_PROPERTIES + GTK_EDITABLE_PROP_TEXT:
-      g_value_set_string (value, gtk_entry_buffer_get_text (get_buffer (self)));
+      g_value_set_string (value, gtk_entry_buffer_get_text (get_buffer (this)));
       break;
 
     case NUM_PROPERTIES + GTK_EDITABLE_PROP_XALIGN:
@@ -1930,11 +1930,11 @@ gtk_text_get_property (GObject    *object,
 
     /* GtkText properties */
     case PROP_BUFFER:
-      g_value_set_object (value, get_buffer (self));
+      g_value_set_object (value, get_buffer (this));
       break;
 
     case PROP_MAX_LENGTH:
-      g_value_set_int (value, gtk_entry_buffer_get_max_length (get_buffer (self)));
+      g_value_set_int (value, gtk_entry_buffer_get_max_length (get_buffer (this)));
       break;
 
     case PROP_VISIBILITY:
@@ -1970,15 +1970,15 @@ gtk_text_get_property (GObject    *object,
       break;
 
     case PROP_PLACEHOLDER_TEXT:
-      g_value_set_string (value, gtk_text_get_placeholder_text (self));
+      g_value_set_string (value, gtk_text_get_placeholder_text (this));
       break;
 
     case PROP_INPUT_PURPOSE:
-      g_value_set_enum (value, gtk_text_get_input_purpose (self));
+      g_value_set_enum (value, gtk_text_get_input_purpose (this));
       break;
 
     case PROP_INPUT_HINTS:
-      g_value_set_flags (value, gtk_text_get_input_hints (self));
+      g_value_set_flags (value, gtk_text_get_input_hints (this));
       break;
 
     case PROP_ATTRIBUTES:
@@ -2019,37 +2019,37 @@ gtk_text_notify (GObject    *object,
 }
 
 static void
-gtk_text_ensure_text_handles (GtkText *self)
+gtk_text_ensure_text_handles (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   int i;
 
   for (i = 0; i < TEXT_HANDLE_N_HANDLES; i++)
     {
       if (priv->text_handles[i])
         continue;
-      priv->text_handles[i] = gtk_text_handle_new (GTK_WIDGET (self));
+      priv->text_handles[i] = gtk_text_handle_new (GTK_WIDGET (this));
       g_signal_connect (priv->text_handles[i], "drag-started",
-                        G_CALLBACK (gtk_text_handle_drag_started), self);
+                        G_CALLBACK (gtk_text_handle_drag_started), this);
       g_signal_connect (priv->text_handles[i], "handle-dragged",
-                        G_CALLBACK (gtk_text_handle_dragged), self);
+                        G_CALLBACK (gtk_text_handle_dragged), this);
       g_signal_connect (priv->text_handles[i], "drag-finished",
-                        G_CALLBACK (gtk_text_handle_drag_finished), self);
+                        G_CALLBACK (gtk_text_handle_drag_finished), this);
     }
 }
 
 static void
-gtk_text_init (GtkText *self)
+gtk_text_init (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   GtkCssNode *widget_node;
   GtkGesture *gesture;
   GtkEventController *controller;
   int i;
   GtkDropTarget *target;
 
-  gtk_widget_set_focusable (GTK_WIDGET (self), TRUE);
-  gtk_widget_set_overflow (GTK_WIDGET (self), GTK_OVERFLOW_HIDDEN);
+  gtk_widget_set_focusable (GTK_WIDGET (this), TRUE);
+  gtk_widget_set_overflow (GTK_WIDGET (this), GTK_OVERFLOW_HIDDEN);
 
   priv->editable = TRUE;
   priv->visible = TRUE;
@@ -2061,22 +2061,22 @@ gtk_text_init (GtkText *self)
   priv->insert_pos = -1;
   priv->cursor_alpha = 1.0;
   priv->invisible_char = 0;
-  priv->history = gtk_text_history_new (&history_funcs, self);
+  priv->history = gtk_text_history_new (&history_funcs, this);
   priv->enable_undo = TRUE;
 
   gtk_text_history_set_max_undo_levels (priv->history, DEFAULT_MAX_UNDO);
 
   priv->selection_content = g_object_new (GTK_TYPE_TEXT_CONTENT, NULL);
-  GTK_TEXT_CONTENT (priv->selection_content)->self = self;
+  GTK_TEXT_CONTENT (priv->selection_content)->this = this;
 
   target = gtk_drop_target_new (G_TYPE_STRING, GDK_ACTION_COPY | GDK_ACTION_MOVE);
   gtk_event_controller_set_static_name (GTK_EVENT_CONTROLLER (target), "gtk-text-drop-target");
-  g_signal_connect (target, "accept", G_CALLBACK (gtk_text_drag_accept), self);
-  g_signal_connect (target, "enter", G_CALLBACK (gtk_text_drag_motion), self);
-  g_signal_connect (target, "motion", G_CALLBACK (gtk_text_drag_motion), self);
-  g_signal_connect (target, "leave", G_CALLBACK (gtk_text_drag_leave), self);
-  g_signal_connect (target, "drop", G_CALLBACK (gtk_text_drag_drop), self);
-  gtk_widget_add_controller (GTK_WIDGET (self), GTK_EVENT_CONTROLLER (target));
+  g_signal_connect (target, "accept", G_CALLBACK (gtk_text_drag_accept), this);
+  g_signal_connect (target, "enter", G_CALLBACK (gtk_text_drag_motion), this);
+  g_signal_connect (target, "motion", G_CALLBACK (gtk_text_drag_motion), this);
+  g_signal_connect (target, "leave", G_CALLBACK (gtk_text_drag_leave), this);
+  g_signal_connect (target, "drop", G_CALLBACK (gtk_text_drag_drop), this);
+  gtk_widget_add_controller (GTK_WIDGET (this), GTK_EVENT_CONTROLLER (target));
 
   /* This object is completely private. No external entity can gain a reference
    * to it; so we create it here and destroy it in finalize().
@@ -2084,60 +2084,60 @@ gtk_text_init (GtkText *self)
   priv->im_context = gtk_im_multicontext_new ();
 
   g_signal_connect (priv->im_context, "preedit-start",
-                    G_CALLBACK (gtk_text_preedit_start_cb), self);
+                    G_CALLBACK (gtk_text_preedit_start_cb), this);
   g_signal_connect (priv->im_context, "commit",
-                    G_CALLBACK (gtk_text_commit_cb), self);
+                    G_CALLBACK (gtk_text_commit_cb), this);
   g_signal_connect (priv->im_context, "preedit-changed",
-                    G_CALLBACK (gtk_text_preedit_changed_cb), self);
+                    G_CALLBACK (gtk_text_preedit_changed_cb), this);
   g_signal_connect (priv->im_context, "retrieve-surrounding",
-                    G_CALLBACK (gtk_text_retrieve_surrounding_cb), self);
+                    G_CALLBACK (gtk_text_retrieve_surrounding_cb), this);
   g_signal_connect (priv->im_context, "delete-surrounding",
-                    G_CALLBACK (gtk_text_delete_surrounding_cb), self);
+                    G_CALLBACK (gtk_text_delete_surrounding_cb), this);
 
   priv->drag_gesture = gtk_gesture_drag_new ();
   gtk_event_controller_set_static_name (GTK_EVENT_CONTROLLER (priv->drag_gesture), "gtk-text-drag-gesture");
   g_signal_connect (priv->drag_gesture, "drag-update",
-                    G_CALLBACK (gtk_text_drag_gesture_update), self);
+                    G_CALLBACK (gtk_text_drag_gesture_update), this);
   g_signal_connect (priv->drag_gesture, "drag-end",
-                    G_CALLBACK (gtk_text_drag_gesture_end), self);
+                    G_CALLBACK (gtk_text_drag_gesture_end), this);
   gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (priv->drag_gesture), 0);
   gtk_gesture_single_set_exclusive (GTK_GESTURE_SINGLE (priv->drag_gesture), TRUE);
-  gtk_widget_add_controller (GTK_WIDGET (self), GTK_EVENT_CONTROLLER (priv->drag_gesture));
+  gtk_widget_add_controller (GTK_WIDGET (this), GTK_EVENT_CONTROLLER (priv->drag_gesture));
 
   gesture = gtk_gesture_click_new ();
   gtk_event_controller_set_static_name (GTK_EVENT_CONTROLLER (gesture), "gtk-text-click-gesture");
   g_signal_connect (gesture, "pressed",
-                    G_CALLBACK (gtk_text_click_gesture_pressed), self);
+                    G_CALLBACK (gtk_text_click_gesture_pressed), this);
   g_signal_connect (gesture, "released",
-                    G_CALLBACK (gtk_text_click_gesture_released), self);
+                    G_CALLBACK (gtk_text_click_gesture_released), this);
   gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (gesture), 0);
   gtk_gesture_single_set_exclusive (GTK_GESTURE_SINGLE (gesture), TRUE);
-  gtk_widget_add_controller (GTK_WIDGET (self), GTK_EVENT_CONTROLLER (gesture));
+  gtk_widget_add_controller (GTK_WIDGET (this), GTK_EVENT_CONTROLLER (gesture));
 
   controller = gtk_event_controller_motion_new ();
   gtk_event_controller_set_static_name (controller, "gtk-text-motion-controller");
   g_signal_connect (controller, "motion",
-                    G_CALLBACK (gtk_text_motion_controller_motion), self);
-  gtk_widget_add_controller (GTK_WIDGET (self), controller);
+                    G_CALLBACK (gtk_text_motion_controller_motion), this);
+  gtk_widget_add_controller (GTK_WIDGET (this), controller);
 
   priv->key_controller = gtk_event_controller_key_new ();
   gtk_event_controller_set_propagation_phase (priv->key_controller, GTK_PHASE_TARGET);
   gtk_event_controller_set_static_name (priv->key_controller, "gtk-text-key-controller");
   g_signal_connect (priv->key_controller, "key-pressed",
-                    G_CALLBACK (gtk_text_key_controller_key_pressed), self);
+                    G_CALLBACK (gtk_text_key_controller_key_pressed), this);
   g_signal_connect_swapped (priv->key_controller, "im-update",
-                            G_CALLBACK (gtk_text_schedule_im_reset), self);
+                            G_CALLBACK (gtk_text_schedule_im_reset), this);
   gtk_event_controller_key_set_im_context (GTK_EVENT_CONTROLLER_KEY (priv->key_controller),
                                            priv->im_context);
-  gtk_widget_add_controller (GTK_WIDGET (self), priv->key_controller);
+  gtk_widget_add_controller (GTK_WIDGET (this), priv->key_controller);
 
   priv->focus_controller = gtk_event_controller_focus_new ();
   gtk_event_controller_set_static_name (priv->focus_controller, "gtk-text-focus-controller");
   g_signal_connect (priv->focus_controller, "notify::is-focus",
-                    G_CALLBACK (gtk_text_focus_changed), self);
-  gtk_widget_add_controller (GTK_WIDGET (self), priv->focus_controller);
+                    G_CALLBACK (gtk_text_focus_changed), this);
+  gtk_widget_add_controller (GTK_WIDGET (this), priv->focus_controller);
 
-  widget_node = gtk_widget_get_css_node (GTK_WIDGET (self));
+  widget_node = gtk_widget_get_css_node (GTK_WIDGET (this));
   for (i = 0; i < 2; i++)
     {
       priv->undershoot_node[i] = gtk_css_node_new ();
@@ -2148,19 +2148,19 @@ gtk_text_init (GtkText *self)
       g_object_unref (priv->undershoot_node[i]);
     }
 
-  set_text_cursor (GTK_WIDGET (self));
+  set_text_cursor (GTK_WIDGET (this));
 }
 
 static void
 gtk_text_dispose (GObject *object)
 {
-  GtkText *self = GTK_TEXT (object);
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkText *this = GTK_TEXT (object);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   GtkWidget *chooser;
 
   priv->current_pos = priv->selection_bound = 0;
-  gtk_text_reset_im_context (self);
-  gtk_text_reset_layout (self);
+  gtk_text_reset_im_context (this);
+  gtk_text_reset_layout (this);
 
   if (priv->blink_tick)
     {
@@ -2173,7 +2173,7 @@ gtk_text_dispose (GObject *object)
 
   if (priv->buffer)
     {
-      buffer_disconnect_signals (self);
+      buffer_disconnect_signals (this);
       g_object_unref (priv->buffer);
       priv->buffer = NULL;
     }
@@ -2198,8 +2198,8 @@ gtk_text_dispose (GObject *object)
 static void
 gtk_text_finalize (GObject *object)
 {
-  GtkText *self = GTK_TEXT (object);
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkText *this = GTK_TEXT (object);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   g_clear_object (&priv->selection_content);
 
@@ -2219,19 +2219,19 @@ gtk_text_finalize (GObject *object)
 }
 
 static void
-gtk_text_ensure_magnifier (GtkText *self)
+gtk_text_ensure_magnifier (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->magnifier_popover)
     return;
 
-  priv->magnifier = _gtk_magnifier_new (GTK_WIDGET (self));
+  priv->magnifier = _gtk_magnifier_new (GTK_WIDGET (this));
   gtk_widget_set_size_request (priv->magnifier, 100, 60);
   _gtk_magnifier_set_magnification (GTK_MAGNIFIER (priv->magnifier), 2.0);
   priv->magnifier_popover = gtk_popover_new ();
   gtk_popover_set_position (GTK_POPOVER (priv->magnifier_popover), GTK_POS_TOP);
-  gtk_widget_set_parent (priv->magnifier_popover, GTK_WIDGET (self));
+  gtk_widget_set_parent (priv->magnifier_popover, GTK_WIDGET (this));
   gtk_widget_add_css_class (priv->magnifier_popover, "magnifier");
   gtk_popover_set_autohide (GTK_POPOVER (priv->magnifier_popover), FALSE);
   gtk_popover_set_child (GTK_POPOVER (priv->magnifier_popover), priv->magnifier);
@@ -2239,23 +2239,23 @@ gtk_text_ensure_magnifier (GtkText *self)
 }
 
 static void
-begin_change (GtkText *self)
+begin_change (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   priv->change_count++;
 
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
 }
 
 static void
-end_change (GtkText *self)
+end_change (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   g_return_if_fail (priv->change_count > 0);
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 
   priv->change_count--;
 
@@ -2263,27 +2263,27 @@ end_change (GtkText *self)
     {
        if (priv->real_changed)
          {
-           g_signal_emit_by_name (self, "changed");
+           g_signal_emit_by_name (this, "changed");
            priv->real_changed = FALSE;
          }
     }
 }
 
 static void
-emit_changed (GtkText *self)
+emit_changed (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->change_count == 0)
-    g_signal_emit_by_name (self, "changed");
+    g_signal_emit_by_name (this, "changed");
   else
     priv->real_changed = TRUE;
 }
 
 static DisplayMode
-gtk_text_get_display_mode (GtkText *self)
+gtk_text_get_display_mode (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->visible)
     return DISPLAY_NORMAL;
@@ -2295,12 +2295,12 @@ gtk_text_get_display_mode (GtkText *self)
 }
 
 char *
-gtk_text_get_display_text (GtkText *self,
+gtk_text_get_display_text (GtkText *this,
                            int      start_pos,
                            int      end_pos)
 {
   GtkTextPasswordHint *password_hint;
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   gunichar invisible_char;
   const char *start;
   const char *end;
@@ -2311,8 +2311,8 @@ gtk_text_get_display_text (GtkText *self,
   guint length;
   int i;
 
-  text = gtk_entry_buffer_get_text (get_buffer (self));
-  length = gtk_entry_buffer_get_length (get_buffer (self));
+  text = gtk_entry_buffer_get_text (get_buffer (this));
+  length = gtk_entry_buffer_get_length (get_buffer (this));
 
   if (end_pos < 0 || end_pos > length)
     end_pos = length;
@@ -2344,7 +2344,7 @@ gtk_text_get_display_text (GtkText *self,
        * character visible.
        */
 
-      password_hint = g_object_get_qdata (G_OBJECT (self), quark_password_hint);
+      password_hint = g_object_get_qdata (G_OBJECT (this), quark_password_hint);
       for (i = start_pos; i < end_pos; ++i)
         {
           if (password_hint && i == password_hint->position)
@@ -2365,62 +2365,62 @@ gtk_text_get_display_text (GtkText *self,
 static void
 gtk_text_map (GtkWidget *widget)
 {
-  GtkText *self = GTK_TEXT (widget);
+  GtkText *this = GTK_TEXT (widget);
 
   GTK_WIDGET_CLASS (gtk_text_parent_class)->map (widget);
 
-  gtk_text_recompute (self);
+  gtk_text_recompute (this);
 }
 
 static void
 gtk_text_unmap (GtkWidget *widget)
 {
-  GtkText *self = GTK_TEXT (widget);
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkText *this = GTK_TEXT (widget);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   priv->text_handles_enabled = FALSE;
-  gtk_text_update_handles (self);
+  gtk_text_update_handles (this);
   priv->cursor_alpha = 1.0;
 
   GTK_WIDGET_CLASS (gtk_text_parent_class)->unmap (widget);
 }
 
 static void
-gtk_text_im_set_focus_in (GtkText *self)
+gtk_text_im_set_focus_in (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (!priv->editable)
     return;
 
-  gtk_text_schedule_im_reset (self);
+  gtk_text_schedule_im_reset (this);
   gtk_im_context_focus_in (priv->im_context);
 }
 
 static void
 gtk_text_realize (GtkWidget *widget)
 {
-  GtkText *self = GTK_TEXT (widget);
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkText *this = GTK_TEXT (widget);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   GTK_WIDGET_CLASS (gtk_text_parent_class)->realize (widget);
 
   gtk_im_context_set_client_widget (priv->im_context, widget);
-  if (gtk_widget_is_focus (GTK_WIDGET (self)))
-    gtk_text_im_set_focus_in (self);
+  if (gtk_widget_is_focus (GTK_WIDGET (this)))
+    gtk_text_im_set_focus_in (this);
 
-  gtk_text_adjust_scroll (self);
-  gtk_text_update_primary_selection (self);
+  gtk_text_adjust_scroll (this);
+  gtk_text_update_primary_selection (this);
 }
 
 static void
 gtk_text_unrealize (GtkWidget *widget)
 {
-  GtkText *self = GTK_TEXT (widget);
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkText *this = GTK_TEXT (widget);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   GdkClipboard *clipboard;
 
-  gtk_text_reset_layout (self);
+  gtk_text_reset_layout (this);
 
   gtk_im_context_set_client_widget (priv->im_context, NULL);
 
@@ -2432,15 +2432,15 @@ gtk_text_unrealize (GtkWidget *widget)
 }
 
 static void
-update_im_cursor_location (GtkText *self)
+update_im_cursor_location (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
-  const int text_width = gtk_widget_get_width (GTK_WIDGET (self));
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
+  const int text_width = gtk_widget_get_width (GTK_WIDGET (this));
   GdkRectangle area;
   int strong_x;
   int strong_xoffset;
 
-  gtk_text_get_cursor_locations (self, &strong_x, NULL);
+  gtk_text_get_cursor_locations (this, &strong_x, NULL);
 
   strong_xoffset = strong_x - priv->scroll_offset;
   if (strong_xoffset < 0)
@@ -2451,22 +2451,22 @@ update_im_cursor_location (GtkText *self)
   area.x = strong_xoffset;
   area.y = 0;
   area.width = 0;
-  area.height = gtk_widget_get_height (GTK_WIDGET (self));
+  area.height = gtk_widget_get_height (GTK_WIDGET (this));
 
   gtk_im_context_set_cursor_location (priv->im_context, &area);
 }
 
 static void
-gtk_text_move_handle (GtkText       *self,
+gtk_text_move_handle (GtkText       *this,
                       GtkTextHandle *handle,
                       int            x,
                       int            y,
                       int            height)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (!gtk_text_handle_get_is_dragged (handle) &&
-      (x < 0 || x > gtk_widget_get_width (GTK_WIDGET (self))))
+      (x < 0 || x > gtk_widget_get_width (GTK_WIDGET (this))))
     {
       /* Hide the handle if it's not being manipulated
        * and fell outside of the visible text area.
@@ -2489,21 +2489,21 @@ gtk_text_move_handle (GtkText       *self,
 }
 
 static int
-gtk_text_get_selection_bound_location (GtkText *self)
+gtk_text_get_selection_bound_location (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   PangoLayout *layout;
   PangoRectangle pos;
   int x;
   const char *text;
   int index;
 
-  layout = gtk_text_ensure_layout (self, FALSE);
+  layout = gtk_text_ensure_layout (this, FALSE);
   text = pango_layout_get_text (layout);
   index = g_utf8_offset_to_pointer (text, priv->selection_bound) - text;
   pango_layout_index_to_pos (layout, index, &pos);
 
-  if (gtk_widget_get_direction (GTK_WIDGET (self)) == GTK_TEXT_DIR_RTL)
+  if (gtk_widget_get_direction (GTK_WIDGET (this)) == GTK_TEXT_DIR_RTL)
     x = (pos.x + pos.width) / PANGO_SCALE;
   else
     x = pos.x / PANGO_SCALE;
@@ -2512,10 +2512,10 @@ gtk_text_get_selection_bound_location (GtkText *self)
 }
 
 static void
-gtk_text_update_handles (GtkText *self)
+gtk_text_update_handles (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
-  const int text_height = gtk_widget_get_height (GTK_WIDGET (self));
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
+  const int text_height = gtk_widget_get_height (GTK_WIDGET (this));
   int strong_x;
   int cursor, bound;
 
@@ -2528,15 +2528,15 @@ gtk_text_update_handles (GtkText *self)
     }
   else
     {
-      gtk_text_ensure_text_handles (self);
-      gtk_text_get_cursor_locations (self, &strong_x, NULL);
+      gtk_text_ensure_text_handles (this);
+      gtk_text_get_cursor_locations (this, &strong_x, NULL);
       cursor = strong_x - priv->scroll_offset;
 
       if (priv->selection_bound != priv->current_pos)
         {
           int start, end;
 
-          bound = gtk_text_get_selection_bound_location (self) - priv->scroll_offset;
+          bound = gtk_text_get_selection_bound_location (this) - priv->scroll_offset;
 
           if (priv->selection_bound > priv->current_pos)
             {
@@ -2552,12 +2552,12 @@ gtk_text_update_handles (GtkText *self)
           /* Update start selection bound */
           gtk_text_handle_set_role (priv->text_handles[TEXT_HANDLE_SELECTION_BOUND],
                                     GTK_TEXT_HANDLE_ROLE_SELECTION_END);
-          gtk_text_move_handle (self,
+          gtk_text_move_handle (this,
                                 priv->text_handles[TEXT_HANDLE_SELECTION_BOUND],
                                 end, 0, text_height);
           gtk_text_handle_set_role (priv->text_handles[TEXT_HANDLE_CURSOR],
                                     GTK_TEXT_HANDLE_ROLE_SELECTION_START);
-          gtk_text_move_handle (self,
+          gtk_text_move_handle (this,
                                 priv->text_handles[TEXT_HANDLE_CURSOR],
                                 start, 0, text_height);
         }
@@ -2566,7 +2566,7 @@ gtk_text_update_handles (GtkText *self)
           gtk_widget_set_visible (GTK_WIDGET (priv->text_handles[TEXT_HANDLE_SELECTION_BOUND]), FALSE);
           gtk_text_handle_set_role (priv->text_handles[TEXT_HANDLE_CURSOR],
                                     GTK_TEXT_HANDLE_ROLE_CURSOR);
-          gtk_text_move_handle (self,
+          gtk_text_move_handle (this,
                                 priv->text_handles[TEXT_HANDLE_CURSOR],
                                 cursor, 0, text_height);
         }
@@ -2582,8 +2582,8 @@ gtk_text_measure (GtkWidget      *widget,
                   int            *minimum_baseline,
                   int            *natural_baseline)
 {
-  GtkText *self = GTK_TEXT (widget);
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkText *this = GTK_TEXT (widget);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   PangoContext *context;
   PangoFontMetrics *metrics;
 
@@ -2616,7 +2616,7 @@ gtk_text_measure (GtkWidget      *widget,
           PangoLayout *layout;
           int act;
 
-          layout = gtk_text_ensure_layout (self, TRUE);
+          layout = gtk_text_ensure_layout (this, TRUE);
           pango_layout_get_pixel_size (layout, &act, NULL);
 
           nat = MIN (act, nat);
@@ -2642,7 +2642,7 @@ gtk_text_measure (GtkWidget      *widget,
       int height, baseline;
       PangoLayout *layout;
 
-      layout = gtk_text_ensure_layout (self, TRUE);
+      layout = gtk_text_ensure_layout (this, TRUE);
 
       priv->ascent = pango_font_metrics_get_ascent (metrics);
       priv->descent = pango_font_metrics_get_descent (metrics);
@@ -2680,8 +2680,8 @@ gtk_text_size_allocate (GtkWidget *widget,
                         int        height,
                         int        baseline)
 {
-  GtkText *self = GTK_TEXT (widget);
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkText *this = GTK_TEXT (widget);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   GtkEmojiChooser *chooser;
 
   priv->text_baseline = baseline;
@@ -2693,15 +2693,15 @@ gtk_text_size_allocate (GtkWidget *widget,
                                 -1);
     }
 
-  gtk_text_adjust_scroll (self);
-  gtk_text_check_cursor_blink (self);
-  update_im_cursor_location (self);
+  gtk_text_adjust_scroll (this);
+  gtk_text_check_cursor_blink (this);
+  update_im_cursor_location (this);
 
-  chooser = g_object_get_data (G_OBJECT (self), "gtk-emoji-chooser");
+  chooser = g_object_get_data (G_OBJECT (this), "gtk-emoji-chooser");
   if (chooser)
     gtk_popover_present (GTK_POPOVER (chooser));
 
-  gtk_text_update_handles (self);
+  gtk_text_update_handles (this);
 
   if (priv->emoji_completion)
     gtk_popover_present (GTK_POPOVER (priv->emoji_completion));
@@ -2723,17 +2723,17 @@ gtk_text_size_allocate (GtkWidget *widget,
 }
 
 static void
-gtk_text_draw_undershoot (GtkText     *self,
+gtk_text_draw_undershoot (GtkText     *this,
                           GtkSnapshot *snapshot)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
-  const int text_width = gtk_widget_get_width (GTK_WIDGET (self));
-  const int text_height = gtk_widget_get_height (GTK_WIDGET (self));
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
+  const int text_width = gtk_widget_get_width (GTK_WIDGET (this));
+  const int text_height = gtk_widget_get_height (GTK_WIDGET (this));
   GtkCssStyle *style;
   int min_offset, max_offset;
   GtkCssBoxes boxes;
 
-  gtk_text_get_scroll_limits (self, &min_offset, &max_offset);
+  gtk_text_get_scroll_limits (this, &min_offset, &max_offset);
 
   if (priv->scroll_offset > min_offset)
     {
@@ -2757,41 +2757,41 @@ static void
 gtk_text_snapshot (GtkWidget   *widget,
                    GtkSnapshot *snapshot)
 {
-  GtkText *self = GTK_TEXT (widget);
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkText *this = GTK_TEXT (widget);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   /* Draw text and cursor */
   if (priv->dnd_position != -1)
-    gtk_text_draw_cursor (self, snapshot, CURSOR_DND);
+    gtk_text_draw_cursor (this, snapshot, CURSOR_DND);
 
   if (priv->placeholder)
     gtk_widget_snapshot_child (widget, priv->placeholder, snapshot);
 
-  gtk_text_draw_text (self, snapshot);
+  gtk_text_draw_text (this, snapshot);
 
   /* When no text is being displayed at all, don't show the cursor */
-  if (gtk_text_get_display_mode (self) != DISPLAY_BLANK &&
+  if (gtk_text_get_display_mode (this) != DISPLAY_BLANK &&
       gtk_widget_has_focus (widget) &&
       priv->selection_bound == priv->current_pos)
     {
       gtk_snapshot_push_opacity (snapshot, priv->cursor_alpha);
-      gtk_text_draw_cursor (self, snapshot, CURSOR_STANDARD);
+      gtk_text_draw_cursor (this, snapshot, CURSOR_STANDARD);
       gtk_snapshot_pop (snapshot);
     }
 
-  gtk_text_draw_undershoot (self, snapshot);
+  gtk_text_draw_undershoot (this, snapshot);
 }
 
 static void
-gtk_text_get_pixel_ranges (GtkText  *self,
+gtk_text_get_pixel_ranges (GtkText  *this,
                            int     **ranges,
                            int      *n_ranges)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->selection_bound != priv->current_pos)
     {
-      PangoLayout *layout = gtk_text_ensure_layout (self, TRUE);
+      PangoLayout *layout = gtk_text_ensure_layout (this, TRUE);
       PangoLayoutLine *line = pango_layout_get_lines_readonly (layout)->data;
       const char *text = pango_layout_get_text (layout);
       int start_index = g_utf8_offset_to_pointer (text, priv->selection_bound) - text;
@@ -2828,14 +2828,14 @@ gtk_text_get_pixel_ranges (GtkText  *self,
 }
 
 static gboolean
-in_selection (GtkText *self,
+in_selection (GtkText *this,
               int      x)
 {
   int *ranges;
   int n_ranges, i;
   int retval = FALSE;
 
-  gtk_text_get_pixel_ranges (self, &ranges, &n_ranges);
+  gtk_text_get_pixel_ranges (this, &ranges, &n_ranges);
 
   for (i = 0; i < n_ranges; ++i)
     {
@@ -2852,7 +2852,7 @@ in_selection (GtkText *self,
 
 static int
 gesture_get_current_point_in_layout (GtkGestureSingle *gesture,
-                                     GtkText          *self)
+                                     GtkText          *this)
 {
   int tx;
   GdkEventSequence *sequence;
@@ -2860,28 +2860,28 @@ gesture_get_current_point_in_layout (GtkGestureSingle *gesture,
 
   sequence = gtk_gesture_single_get_current_sequence (gesture);
   gtk_gesture_get_point (GTK_GESTURE (gesture), sequence, &px, NULL);
-  gtk_text_get_layout_offsets (self, &tx, NULL);
+  gtk_text_get_layout_offsets (this, &tx, NULL);
 
   return px - tx;
 }
 
 static void
-gtk_text_do_popup (GtkText *self,
+gtk_text_do_popup (GtkText *this,
                    double   x,
                    double   y)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  gtk_text_update_clipboard_actions (self);
-  gtk_text_update_emoji_action (self);
+  gtk_text_update_clipboard_actions (this);
+  gtk_text_update_emoji_action (this);
 
   if (!priv->popup_menu)
     {
       GMenuModel *model;
 
-      model = gtk_text_get_menu_model (self);
+      model = gtk_text_get_menu_model (this);
       priv->popup_menu = gtk_popover_menu_new_from_model (model);
-      gtk_widget_set_parent (priv->popup_menu, GTK_WIDGET (self));
+      gtk_widget_set_parent (priv->popup_menu, GTK_WIDGET (this));
       gtk_popover_set_position (GTK_POPOVER (priv->popup_menu), GTK_POS_BOTTOM);
 
       gtk_popover_set_has_arrow (GTK_POPOVER (priv->popup_menu), FALSE);
@@ -2910,10 +2910,10 @@ gtk_text_click_gesture_pressed (GtkGestureClick *gesture,
                                 int              n_press,
                                 double           widget_x,
                                 double           widget_y,
-                                GtkText         *self)
+                                GtkText         *this)
 {
-  GtkWidget *widget = GTK_WIDGET (self);
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkWidget *widget = GTK_WIDGET (this);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   GdkEventSequence *current;
   GdkEvent *event;
   int x, y, sel_start, sel_end;
@@ -2934,24 +2934,24 @@ gtk_text_click_gesture_pressed (GtkGestureClick *gesture,
   current = gtk_gesture_single_get_current_sequence (GTK_GESTURE_SINGLE (gesture));
   event = gtk_gesture_get_last_event (GTK_GESTURE (gesture), current);
 
-  x = gesture_get_current_point_in_layout (GTK_GESTURE_SINGLE (gesture), self);
+  x = gesture_get_current_point_in_layout (GTK_GESTURE_SINGLE (gesture), this);
   y = widget_y;
-  gtk_text_reset_blink_time (self);
+  gtk_text_reset_blink_time (this);
 
-  tmp_pos = gtk_text_find_position (self, x);
+  tmp_pos = gtk_text_find_position (this, x);
 
   if (gdk_event_triggers_context_menu (event))
     {
-      gtk_text_do_popup (self, widget_x, widget_y);
+      gtk_text_do_popup (this, widget_x, widget_y);
       gtk_gesture_set_state (GTK_GESTURE (gesture), GTK_EVENT_SEQUENCE_CLAIMED);
     }
   else if (n_press == 1 && button == GDK_BUTTON_MIDDLE &&
-           get_middle_click_paste (self))
+           get_middle_click_paste (this))
     {
       if (priv->editable)
         {
           priv->insert_pos = tmp_pos;
-          gtk_text_paste (self, gtk_widget_get_primary_clipboard (widget));
+          gtk_text_paste (this, gtk_widget_get_primary_clipboard (widget));
         }
       else
         {
@@ -2991,28 +2991,28 @@ gtk_text_click_gesture_pressed (GtkGestureClick *gesture,
 
       /* Always emit reset when preedit is shown */
       priv->need_im_reset = TRUE;
-      gtk_text_reset_im_context (self);
+      gtk_text_reset_im_context (this);
 
       switch (n_press)
         {
         case 1:
-          if (in_selection (self, x))
+          if (in_selection (this, x))
             {
               if (is_touchscreen)
                 {
                   if (priv->selection_bubble &&
                       gtk_widget_get_visible (priv->selection_bubble))
-                    gtk_text_selection_bubble_popup_unset (self);
+                    gtk_text_selection_bubble_popup_unset (this);
                   else
-                    gtk_text_selection_bubble_popup_set (self);
+                    gtk_text_selection_bubble_popup_set (this);
                 }
               else if (extend_selection)
                 {
                   /* Truncate current selection, but keep it as big as possible */
                   if (tmp_pos - sel_start > sel_end - tmp_pos)
-                    gtk_text_set_positions (self, sel_start, tmp_pos);
+                    gtk_text_set_positions (this, sel_start, tmp_pos);
                   else
-                    gtk_text_set_positions (self, tmp_pos, sel_end);
+                    gtk_text_set_positions (this, tmp_pos, sel_end);
 
                   /* all done, so skip the extend_to_left stuff later */
                   extend_selection = FALSE;
@@ -3027,11 +3027,11 @@ gtk_text_click_gesture_pressed (GtkGestureClick *gesture,
             }
           else
             {
-              gtk_text_selection_bubble_popup_unset (self);
+              gtk_text_selection_bubble_popup_unset (this);
 
               if (!extend_selection)
                 {
-                  gtk_text_set_selection_bounds (self, tmp_pos, tmp_pos);
+                  gtk_text_set_selection_bounds (this, tmp_pos, tmp_pos);
                   priv->handle_place_time = g_get_monotonic_time ();
                 }
               else
@@ -3040,7 +3040,7 @@ gtk_text_click_gesture_pressed (GtkGestureClick *gesture,
                   if (!have_selection)
                     sel_start = sel_end = priv->current_pos;
 
-                  gtk_text_set_positions (self, tmp_pos, tmp_pos);
+                  gtk_text_set_positions (this, tmp_pos, tmp_pos);
                 }
             }
 
@@ -3048,12 +3048,12 @@ gtk_text_click_gesture_pressed (GtkGestureClick *gesture,
 
         case 2:
           priv->select_words = TRUE;
-          gtk_text_select_word (self);
+          gtk_text_select_word (this);
           break;
 
         case 3:
           priv->select_lines = TRUE;
-          gtk_text_select_line (self);
+          gtk_text_select_line (this);
           break;
 
         default:
@@ -3077,12 +3077,12 @@ gtk_text_click_gesture_pressed (GtkGestureClick *gesture,
             extend_to_left = (end == sel_end);
 
           if (extend_to_left)
-            gtk_text_set_positions (self, start, end);
+            gtk_text_set_positions (this, start, end);
           else
-            gtk_text_set_positions (self, end, start);
+            gtk_text_set_positions (this, end, start);
         }
 
-      gtk_text_update_handles (self);
+      gtk_text_update_handles (this);
     }
 
   if (n_press >= 3)
@@ -3094,9 +3094,9 @@ gtk_text_click_gesture_released (GtkGestureClick *gesture,
                                  int              n_press,
                                  double           widget_x,
                                  double           widget_y,
-                                 GtkText         *self)
+                                 GtkText         *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   GdkEvent *event =
     gtk_event_controller_get_current_event (GTK_EVENT_CONTROLLER (gesture));
 
@@ -3107,15 +3107,15 @@ gtk_text_click_gesture_released (GtkGestureClick *gesture,
 }
 
 static char *
-_gtk_text_get_selected_text (GtkText *self)
+_gtk_text_get_selected_text (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->selection_bound != priv->current_pos)
     {
       const int start = MIN (priv->selection_bound, priv->current_pos);
       const int end = MAX (priv->selection_bound, priv->current_pos);
-      const char *text = gtk_entry_buffer_get_text (get_buffer (self));
+      const char *text = gtk_entry_buffer_get_text (get_buffer (this));
       const int start_index = g_utf8_offset_to_pointer (text, start) - text;
       const int end_index = g_utf8_offset_to_pointer (text, end) - text;
 
@@ -3126,15 +3126,15 @@ _gtk_text_get_selected_text (GtkText *self)
 }
 
 static void
-gtk_text_show_magnifier (GtkText *self,
+gtk_text_show_magnifier (GtkText *this,
                          int      x,
                          int      y)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
-  const int text_height = gtk_widget_get_height (GTK_WIDGET (self));
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
+  const int text_height = gtk_widget_get_height (GTK_WIDGET (this));
   cairo_rectangle_int_t rect;
 
-  gtk_text_ensure_magnifier (self);
+  gtk_text_ensure_magnifier (this);
 
   rect.x = x;
   rect.width = 1;
@@ -3152,9 +3152,9 @@ static void
 gtk_text_motion_controller_motion (GtkEventControllerMotion *controller,
                                    double                    x,
                                    double                    y,
-                                   GtkText                  *self)
+                                   GtkText                  *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   GdkDevice *device;
 
   device = gtk_event_controller_get_current_event_device (GTK_EVENT_CONTROLLER (controller));
@@ -3162,19 +3162,19 @@ gtk_text_motion_controller_motion (GtkEventControllerMotion *controller,
   if (priv->mouse_cursor_obscured &&
       gdk_device_get_timestamp (device) != priv->obscured_cursor_timestamp)
     {
-      set_text_cursor (GTK_WIDGET (self));
+      set_text_cursor (GTK_WIDGET (this));
       priv->mouse_cursor_obscured = FALSE;
     }
 }
 
 static void
 dnd_finished_cb (GdkDrag *drag,
-                 GtkText *self)
+                 GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (gdk_drag_get_selected_action (drag) == GDK_ACTION_MOVE)
-    gtk_text_delete_selection (self);
+    gtk_text_delete_selection (this);
 
   priv->drag = NULL;
 }
@@ -3182,9 +3182,9 @@ dnd_finished_cb (GdkDrag *drag,
 static void
 dnd_cancel_cb (GdkDrag             *drag,
                GdkDragCancelReason  reason,
-               GtkText             *self)
+               GtkText             *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   priv->drag = NULL;
 }
@@ -3193,18 +3193,18 @@ static void
 gtk_text_drag_gesture_update (GtkGestureDrag *gesture,
                               double          offset_x,
                               double          offset_y,
-                              GtkText        *self)
+                              GtkText        *this)
 {
-  GtkWidget *widget = GTK_WIDGET (self);
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkWidget *widget = GTK_WIDGET (this);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   GdkEventSequence *sequence;
   GdkEvent *event;
   int x, y;
   double start_y;
 
-  gtk_text_selection_bubble_popup_unset (self);
+  gtk_text_selection_bubble_popup_unset (this);
 
-  x = gesture_get_current_point_in_layout (GTK_GESTURE_SINGLE (gesture), self);
+  x = gesture_get_current_point_in_layout (GTK_GESTURE_SINGLE (gesture), this);
   gtk_gesture_drag_get_start_point (gesture, NULL, &start_y);
   y = start_y + offset_y;
 
@@ -3222,7 +3222,7 @@ gtk_text_drag_gesture_update (GtkGestureDrag *gesture,
 
   if (priv->in_drag)
     {
-      if (gtk_text_get_display_mode (self) == DISPLAY_NORMAL &&
+      if (gtk_text_get_display_mode (this) == DISPLAY_NORMAL &&
           gtk_drag_check_threshold_double (widget, 0, 0, offset_x, offset_y))
         {
           int *ranges;
@@ -3233,8 +3233,8 @@ gtk_text_drag_gesture_update (GtkGestureDrag *gesture,
           GdkPaintable *paintable;
           GdkContentProvider *content;
 
-          text = _gtk_text_get_selected_text (self);
-          gtk_text_get_pixel_ranges (self, &ranges, &n_ranges);
+          text = _gtk_text_get_selected_text (this);
+          gtk_text_get_pixel_ranges (this, &ranges, &n_ranges);
 
           g_assert (n_ranges > 0);
 
@@ -3253,8 +3253,8 @@ gtk_text_drag_gesture_update (GtkGestureDrag *gesture,
                                  priv->drag_start_y);
           g_object_unref (content);
 
-          g_signal_connect (drag, "dnd-finished", G_CALLBACK (dnd_finished_cb), self);
-          g_signal_connect (drag, "cancel", G_CALLBACK (dnd_cancel_cb), self);
+          g_signal_connect (drag, "dnd-finished", G_CALLBACK (dnd_finished_cb), this);
+          g_signal_connect (drag, "cancel", G_CALLBACK (dnd_cancel_cb), this);
 
           paintable = gtk_text_util_create_drag_icon (widget, text, -1);
           gtk_drag_icon_set_from_paintable (drag, paintable,
@@ -3284,16 +3284,16 @@ gtk_text_drag_gesture_update (GtkGestureDrag *gesture,
       int tmp_pos;
       int pos, bound;
 
-      length = gtk_entry_buffer_get_length (get_buffer (self));
+      length = gtk_entry_buffer_get_length (get_buffer (this));
 
       if (y < 0)
         tmp_pos = 0;
-      else if (y >= gtk_widget_get_height (GTK_WIDGET (self)))
+      else if (y >= gtk_widget_get_height (GTK_WIDGET (this)))
         tmp_pos = length;
       else
-        tmp_pos = gtk_text_find_position (self, x);
+        tmp_pos = gtk_text_find_position (this, x);
 
-      display = gtk_widget_get_display (GTK_WIDGET (self));
+      display = gtk_widget_get_display (GTK_WIDGET (this));
       source = gdk_event_get_device (event);
       input_source = gdk_device_get_source (source);
 
@@ -3302,8 +3302,8 @@ gtk_text_drag_gesture_update (GtkGestureDrag *gesture,
           int min, max;
           int old_min, old_max;
 
-          min = gtk_text_move_backward_word (self, tmp_pos, TRUE);
-          max = gtk_text_move_forward_word (self, tmp_pos, TRUE);
+          min = gtk_text_move_backward_word (this, tmp_pos, TRUE);
+          max = gtk_text_move_forward_word (this, tmp_pos, TRUE);
 
           pos = priv->current_pos;
           bound = priv->selection_bound;
@@ -3341,15 +3341,15 @@ gtk_text_drag_gesture_update (GtkGestureDrag *gesture,
       if (pos != priv->current_pos)
         gtk_gesture_set_state (GTK_GESTURE (gesture), GTK_EVENT_SEQUENCE_CLAIMED);
 
-      gtk_text_set_positions (self, pos, bound);
+      gtk_text_set_positions (this, pos, bound);
 
       /* Update touch handles' position */
       if (GTK_DISPLAY_DEBUG_CHECK (display, TOUCHSCREEN) ||
           input_source == GDK_SOURCE_TOUCHSCREEN)
         {
           priv->text_handles_enabled = TRUE;
-          gtk_text_update_handles (self);
-          gtk_text_show_magnifier (self, x - priv->scroll_offset, y);
+          gtk_text_update_handles (this);
+          gtk_text_show_magnifier (this, x - priv->scroll_offset, y);
         }
     }
 }
@@ -3358,9 +3358,9 @@ static void
 gtk_text_drag_gesture_end (GtkGestureDrag *gesture,
                            double          offset_x,
                            double          offset_y,
-                           GtkText        *self)
+                           GtkText        *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   gboolean in_drag;
   GdkEventSequence *sequence;
 
@@ -3377,20 +3377,20 @@ gtk_text_drag_gesture_end (GtkGestureDrag *gesture,
 
   if (in_drag)
     {
-      int tmp_pos = gtk_text_find_position (self, priv->drag_start_x);
+      int tmp_pos = gtk_text_find_position (this, priv->drag_start_x);
 
-      gtk_text_set_selection_bounds (self, tmp_pos, tmp_pos);
+      gtk_text_set_selection_bounds (this, tmp_pos, tmp_pos);
     }
 
-  gtk_text_update_handles (self);
+  gtk_text_update_handles (this);
 
-  gtk_text_update_primary_selection (self);
+  gtk_text_update_primary_selection (this);
 }
 
 static void
-gtk_text_obscure_mouse_cursor (GtkText *self)
+gtk_text_obscure_mouse_cursor (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   GdkDisplay *display;
   GdkSeat *seat;
   GdkDevice *device;
@@ -3398,9 +3398,9 @@ gtk_text_obscure_mouse_cursor (GtkText *self)
   if (priv->mouse_cursor_obscured)
     return;
 
-  gtk_widget_set_cursor_from_name (GTK_WIDGET (self), "none");
+  gtk_widget_set_cursor_from_name (GTK_WIDGET (this), "none");
 
-  display = gtk_widget_get_display (GTK_WIDGET (self));
+  display = gtk_widget_get_display (GTK_WIDGET (this));
   seat = gdk_display_get_default_seat (display);
   device = gdk_seat_get_pointer (seat);
 
@@ -3413,31 +3413,31 @@ gtk_text_key_controller_key_pressed (GtkEventControllerKey *controller,
                                       guint                  keyval,
                                       guint                  keycode,
                                       GdkModifierType        state,
-                                      GtkText               *self)
+                                      GtkText               *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   gunichar unichar;
 
-  gtk_text_reset_blink_time (self);
-  gtk_text_pend_cursor_blink (self);
+  gtk_text_reset_blink_time (this);
+  gtk_text_pend_cursor_blink (this);
 
-  gtk_text_selection_bubble_popup_unset (self);
+  gtk_text_selection_bubble_popup_unset (this);
 
   priv->text_handles_enabled = FALSE;
-  gtk_text_update_handles (self);
+  gtk_text_update_handles (this);
 
   if (keyval == GDK_KEY_Return ||
       keyval == GDK_KEY_KP_Enter ||
       keyval == GDK_KEY_ISO_Enter ||
       keyval == GDK_KEY_Escape)
-    gtk_text_reset_im_context (self);
+    gtk_text_reset_im_context (this);
 
   unichar = gdk_keyval_to_unicode (keyval);
 
   if (!priv->editable && unichar != 0)
-    gtk_widget_error_bell (GTK_WIDGET (self));
+    gtk_widget_error_bell (GTK_WIDGET (this));
 
-  gtk_text_obscure_mouse_cursor (self);
+  gtk_text_obscure_mouse_cursor (this);
 
   return FALSE;
 }
@@ -3447,41 +3447,41 @@ gtk_text_focus_changed (GtkEventControllerFocus *controller,
                         GParamSpec              *pspec,
                         GtkWidget               *widget)
 {
-  GtkText *self = GTK_TEXT (widget);
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkText *this = GTK_TEXT (widget);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   gtk_widget_queue_draw (widget);
 
   if (gtk_event_controller_focus_is_focus (controller))
     {
-      gtk_text_im_set_focus_in (self);
-      gtk_text_reset_blink_time (self);
-      gtk_text_check_cursor_blink (self);
-      gtk_text_update_primary_selection (self);
+      gtk_text_im_set_focus_in (this);
+      gtk_text_reset_blink_time (this);
+      gtk_text_check_cursor_blink (this);
+      gtk_text_update_primary_selection (this);
     }
   else /* Focus out */
     {
-      gtk_text_selection_bubble_popup_unset (self);
+      gtk_text_selection_bubble_popup_unset (this);
 
       priv->text_handles_enabled = FALSE;
-      gtk_text_update_handles (self);
+      gtk_text_update_handles (this);
 
       if (priv->editable)
         {
-          gtk_text_schedule_im_reset (self);
+          gtk_text_schedule_im_reset (this);
           gtk_im_context_focus_out (priv->im_context);
         }
 
       if (priv->blink_tick)
-        remove_blink_timeout (self);
+        remove_blink_timeout (this);
     }
 }
 
 static gboolean
 gtk_text_grab_focus (GtkWidget *widget)
 {
-  GtkText *self = GTK_TEXT (widget);
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkText *this = GTK_TEXT (widget);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   gboolean select_on_focus;
   GtkWidget *prev_focus;
   gboolean prev_focus_was_child;
@@ -3489,7 +3489,7 @@ gtk_text_grab_focus (GtkWidget *widget)
   prev_focus = gtk_root_get_focus (gtk_widget_get_root (widget));
   prev_focus_was_child = prev_focus && gtk_widget_is_ancestor (prev_focus, widget);
 
-  if (!GTK_WIDGET_CLASS (gtk_text_parent_class)->grab_focus (GTK_WIDGET (self)))
+  if (!GTK_WIDGET_CLASS (gtk_text_parent_class)->grab_focus (GTK_WIDGET (this)))
     return FALSE;
 
   if (priv->editable && !priv->in_click && !prev_focus_was_child)
@@ -3500,7 +3500,7 @@ gtk_text_grab_focus (GtkWidget *widget)
                     NULL);
 
       if (select_on_focus)
-        gtk_text_set_selection_bounds (self, 0, -1);
+        gtk_text_set_selection_bounds (this, 0, -1);
     }
 
   return TRUE;
@@ -3508,34 +3508,34 @@ gtk_text_grab_focus (GtkWidget *widget)
 
 /**
  * gtk_text_grab_focus_without_selecting:
- * @self: a text widget
+ * @this: a text widget
  *
  * Causes the text widget to have the keyboard focus.
  *
  * It behaves like [method@Gtk.Widget.grab_focus],
- * except that it does not select the contents of @self.
+ * except that it does not select the contents of @this.
  *
  * You only want to call this on some special entries
  * which the user usually doesn't want to replace all
  * text in, such as search-as-you-type entries.
  *
- * Returns: true if focus is now inside @self
+ * Returns: true if focus is now inside @this
  */
 gboolean
-gtk_text_grab_focus_without_selecting (GtkText *self)
+gtk_text_grab_focus_without_selecting (GtkText *this)
 {
-  g_return_val_if_fail (GTK_IS_TEXT (self), FALSE);
+  g_return_val_if_fail (GTK_IS_TEXT (this), FALSE);
 
-  return GTK_WIDGET_CLASS (gtk_text_parent_class)->grab_focus (GTK_WIDGET (self));
+  return GTK_WIDGET_CLASS (gtk_text_parent_class)->grab_focus (GTK_WIDGET (this));
 }
 
 static void
 gtk_text_direction_changed (GtkWidget        *widget,
                             GtkTextDirection  previous_dir)
 {
-  GtkText *self = GTK_TEXT (widget);
+  GtkText *this = GTK_TEXT (widget);
 
-  gtk_text_recompute (self);
+  gtk_text_recompute (this);
 
   GTK_WIDGET_CLASS (gtk_text_parent_class)->direction_changed (widget, previous_dir);
 }
@@ -3544,11 +3544,11 @@ static void
 gtk_text_state_flags_changed (GtkWidget     *widget,
                               GtkStateFlags  previous_state)
 {
-  GtkText *self = GTK_TEXT (widget);
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkText *this = GTK_TEXT (widget);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   GtkStateFlags state;
 
-  state = gtk_widget_get_state_flags (GTK_WIDGET (self));
+  state = gtk_widget_get_state_flags (GTK_WIDGET (this));
 
   if (gtk_widget_get_realized (widget))
     {
@@ -3559,7 +3559,7 @@ gtk_text_state_flags_changed (GtkWidget     *widget,
   if (!gtk_widget_is_sensitive (widget))
     {
       /* Clear any selection */
-      gtk_text_set_selection_bounds (self, priv->current_pos, priv->current_pos);
+      gtk_text_set_selection_bounds (this, priv->current_pos, priv->current_pos);
     }
 
   state &= ~GTK_STATE_FLAG_DROP_ACTIVE;
@@ -3572,7 +3572,7 @@ gtk_text_state_flags_changed (GtkWidget     *widget,
   gtk_css_node_set_state (priv->undershoot_node[0], state);
   gtk_css_node_set_state (priv->undershoot_node[1], state);
 
-  gtk_text_update_cached_style_values (self);
+  gtk_text_update_cached_style_values (this);
 
   gtk_widget_queue_draw (widget);
 }
@@ -3580,12 +3580,12 @@ gtk_text_state_flags_changed (GtkWidget     *widget,
 /* GtkEditable method implementations
  */
 static void
-gtk_text_insert_text (GtkText    *self,
+gtk_text_insert_text (GtkText    *this,
                       const char *text,
                       int         length,
                       int        *position)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   int n_inserted;
   int n_chars;
 
@@ -3600,100 +3600,100 @@ gtk_text_insert_text (GtkText    *self,
    */
   if (priv->change_count == 0)
     gtk_text_history_begin_irreversible_action (priv->history);
-  begin_change (self);
+  begin_change (this);
 
-  n_inserted = gtk_entry_buffer_insert_text (get_buffer (self), *position, text, n_chars);
+  n_inserted = gtk_entry_buffer_insert_text (get_buffer (this), *position, text, n_chars);
 
-  end_change (self);
+  end_change (this);
   if (priv->change_count == 0)
     gtk_text_history_end_irreversible_action (priv->history);
 
   if (n_inserted != n_chars)
-    gtk_widget_error_bell (GTK_WIDGET (self));
+    gtk_widget_error_bell (GTK_WIDGET (this));
 
-  gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (self),
+  gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (this),
                                        GTK_ACCESSIBLE_TEXT_CONTENT_CHANGE_INSERT,
                                        *position,
                                        *position + n_inserted);
 
   *position += n_inserted;
 
-  update_placeholder_visibility (self);
+  update_placeholder_visibility (this);
   if (priv->propagate_text_width)
-    gtk_widget_queue_resize (GTK_WIDGET (self));
+    gtk_widget_queue_resize (GTK_WIDGET (this));
 }
 
 static void
-gtk_text_delete_text (GtkText *self,
+gtk_text_delete_text (GtkText *this,
                       int      start_pos,
                       int      end_pos)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (end_pos < 0)
-    end_pos = gtk_entry_buffer_get_length (get_buffer (self));
+    end_pos = gtk_entry_buffer_get_length (get_buffer (this));
 
   if (start_pos == end_pos)
     return;
 
-  gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (self),
+  gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (this),
                                        GTK_ACCESSIBLE_TEXT_CONTENT_CHANGE_REMOVE,
                                        start_pos,
                                        end_pos);
 
   if (priv->change_count == 0)
     gtk_text_history_begin_irreversible_action (priv->history);
-  begin_change (self);
+  begin_change (this);
 
-  gtk_entry_buffer_delete_text (get_buffer (self), start_pos, end_pos - start_pos);
+  gtk_entry_buffer_delete_text (get_buffer (this), start_pos, end_pos - start_pos);
 
-  end_change (self);
+  end_change (this);
   if (priv->change_count == 0)
     gtk_text_history_end_irreversible_action (priv->history);
 
-  update_placeholder_visibility (self);
+  update_placeholder_visibility (this);
   if (priv->propagate_text_width)
-    gtk_widget_queue_resize (GTK_WIDGET (self));
+    gtk_widget_queue_resize (GTK_WIDGET (this));
 }
 
 static void
-gtk_text_delete_selection (GtkText *self)
+gtk_text_delete_selection (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   int start_pos = MIN (priv->selection_bound, priv->current_pos);
   int end_pos = MAX (priv->selection_bound, priv->current_pos);
 
-  gtk_editable_delete_text (GTK_EDITABLE (self), start_pos, end_pos);
-  gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (self),
+  gtk_editable_delete_text (GTK_EDITABLE (this), start_pos, end_pos);
+  gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (this),
                                        GTK_ACCESSIBLE_TEXT_CONTENT_CHANGE_REMOVE,
                                        start_pos, end_pos);
 }
 
 static void
-gtk_text_set_selection_bounds (GtkText *self,
+gtk_text_set_selection_bounds (GtkText *this,
                                int      start,
                                int      end)
 {
   guint length;
 
-  length = gtk_entry_buffer_get_length (get_buffer (self));
+  length = gtk_entry_buffer_get_length (get_buffer (this));
   if (start < 0)
     start = length;
   if (end < 0)
     end = length;
 
-  gtk_text_reset_im_context (self);
+  gtk_text_reset_im_context (this);
 
-  gtk_text_set_positions (self, MIN (end, length), MIN (start, length));
+  gtk_text_set_positions (this, MIN (end, length), MIN (start, length));
 }
 
 static gboolean
-gtk_text_get_selection_bounds (GtkText *self,
+gtk_text_get_selection_bounds (GtkText *this,
                                int     *start,
                                int     *end)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   *start = priv->selection_bound;
   *end = priv->current_pos;
@@ -3745,18 +3745,18 @@ find_invisible_char (GtkWidget *widget)
 }
 
 static void
-gtk_text_update_cached_style_values (GtkText *self)
+gtk_text_update_cached_style_values (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (!priv->visible && !priv->invisible_char_set)
     {
-      gunichar ch = find_invisible_char (GTK_WIDGET (self));
+      gunichar ch = find_invisible_char (GTK_WIDGET (this));
 
       if (priv->invisible_char != ch)
         {
           priv->invisible_char = ch;
-          g_object_notify_by_pspec (G_OBJECT (self), text_props[PROP_INVISIBLE_CHAR]);
+          g_object_notify_by_pspec (G_OBJECT (this), text_props[PROP_INVISIBLE_CHAR]);
         }
     }
 }
@@ -3765,11 +3765,11 @@ static void
 gtk_text_css_changed (GtkWidget         *widget,
                       GtkCssStyleChange *change)
 {
-  GtkText *self = GTK_TEXT (widget);
+  GtkText *this = GTK_TEXT (widget);
 
   GTK_WIDGET_CLASS (gtk_text_parent_class)->css_changed (widget, change);
 
-  gtk_text_update_cached_style_values (self);
+  gtk_text_update_cached_style_values (this);
 
   if (gtk_css_style_change_affects (change, GTK_CSS_AFFECTS_TEXT |
                                             GTK_CSS_AFFECTS_BACKGROUND |
@@ -3777,7 +3777,7 @@ gtk_text_css_changed (GtkWidget         *widget,
     gtk_widget_queue_draw (widget);
 
   if (gtk_css_style_change_affects (change, GTK_CSS_AFFECTS_TEXT_ATTRS))
-    gtk_text_recompute (self);
+    gtk_text_recompute (this);
 }
 
 static void
@@ -3804,9 +3804,9 @@ gtk_text_remove_password_hint (gpointer data)
 }
 
 static void
-update_placeholder_visibility (GtkText *self)
+update_placeholder_visibility (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->placeholder)
     gtk_widget_set_child_visible (priv->placeholder,
@@ -3822,9 +3822,9 @@ buffer_inserted_text (GtkEntryBuffer *buffer,
                       guint           position,
                       const char     *chars,
                       guint           n_chars,
-                      GtkText        *self)
+                      GtkText        *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   guint password_hint_timeout;
   guint current_pos;
   int selection_bound;
@@ -3837,26 +3837,26 @@ buffer_inserted_text (GtkEntryBuffer *buffer,
   if (selection_bound > position)
     selection_bound += n_chars;
 
-  gtk_text_set_positions (self, current_pos, selection_bound);
-  gtk_text_recompute (self);
+  gtk_text_set_positions (this, current_pos, selection_bound);
+  gtk_text_recompute (this);
 
   gtk_text_history_text_inserted (priv->history, position, chars, -1);
 
   /* Calculate the password hint if it needs to be displayed. */
   if (n_chars == 1 && !priv->visible)
     {
-      g_object_get (gtk_widget_get_settings (GTK_WIDGET (self)),
+      g_object_get (gtk_widget_get_settings (GTK_WIDGET (this)),
                     "gtk-entry-password-hint-timeout", &password_hint_timeout,
                     NULL);
 
       if (password_hint_timeout > 0)
         {
-          GtkTextPasswordHint *password_hint = g_object_get_qdata (G_OBJECT (self),
+          GtkTextPasswordHint *password_hint = g_object_get_qdata (G_OBJECT (this),
                                                                     quark_password_hint);
           if (!password_hint)
             {
               password_hint = g_new0 (GtkTextPasswordHint, 1);
-              g_object_set_qdata_full (G_OBJECT (self), quark_password_hint, password_hint,
+              g_object_set_qdata_full (G_OBJECT (this), quark_password_hint, password_hint,
                                        (GDestroyNotify)gtk_text_password_hint_free);
             }
 
@@ -3865,7 +3865,7 @@ buffer_inserted_text (GtkEntryBuffer *buffer,
             g_source_remove (password_hint->source_id);
           password_hint->source_id = g_timeout_add (password_hint_timeout,
                                                     (GSourceFunc)gtk_text_remove_password_hint,
-                                                    self);
+                                                    this);
           gdk_source_set_static_name_by_id (password_hint->source_id, "[gtk] gtk_text_remove_password_hint");
         }
     }
@@ -3875,16 +3875,16 @@ static void
 buffer_deleted_text (GtkEntryBuffer *buffer,
                      guint           position,
                      guint           n_chars,
-                     GtkText        *self)
+                     GtkText        *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   guint end_pos = position + n_chars;
 
   if (gtk_text_history_get_enabled (priv->history))
     {
       char *deleted_text;
 
-      deleted_text = gtk_editable_get_chars (GTK_EDITABLE (self),
+      deleted_text = gtk_editable_get_chars (GTK_EDITABLE (this),
                                              position,
                                              end_pos);
       gtk_text_history_selection_changed (priv->history,
@@ -3904,9 +3904,9 @@ static void
 buffer_deleted_text_after (GtkEntryBuffer *buffer,
                            guint           position,
                            guint           n_chars,
-                           GtkText        *self)
+                           GtkText        *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   guint end_pos = position + n_chars;
   int selection_bound;
   guint current_pos;
@@ -3919,16 +3919,16 @@ buffer_deleted_text_after (GtkEntryBuffer *buffer,
   if (selection_bound > position)
     selection_bound -= MIN (selection_bound, end_pos) - position;
 
-  gtk_text_set_positions (self, current_pos, selection_bound);
-  gtk_text_recompute (self);
+  gtk_text_set_positions (this, current_pos, selection_bound);
+  gtk_text_recompute (this);
 
   /* We might have deleted the selection */
-  gtk_text_update_primary_selection (self);
+  gtk_text_update_primary_selection (this);
 
   /* Disable the password hint if one exists. */
   if (!priv->visible)
     {
-      GtkTextPasswordHint *password_hint = g_object_get_qdata (G_OBJECT (self),
+      GtkTextPasswordHint *password_hint = g_object_get_qdata (G_OBJECT (this),
                                                                 quark_password_hint);
       if (password_hint)
         {
@@ -3943,39 +3943,39 @@ buffer_deleted_text_after (GtkEntryBuffer *buffer,
 static void
 buffer_notify_text (GtkEntryBuffer *buffer,
                     GParamSpec     *spec,
-                    GtkText        *self)
+                    GtkText        *this)
 {
-  emit_changed (self);
-  update_placeholder_visibility (self);
-  g_object_notify (G_OBJECT (self), "text");
+  emit_changed (this);
+  update_placeholder_visibility (this);
+  g_object_notify (G_OBJECT (this), "text");
 }
 
 static void
 buffer_notify_max_length (GtkEntryBuffer *buffer,
                           GParamSpec     *spec,
-                          GtkText        *self)
+                          GtkText        *this)
 {
-  g_object_notify_by_pspec (G_OBJECT (self), text_props[PROP_MAX_LENGTH]);
+  g_object_notify_by_pspec (G_OBJECT (this), text_props[PROP_MAX_LENGTH]);
 }
 
 static void
-buffer_connect_signals (GtkText *self)
+buffer_connect_signals (GtkText *this)
 {
-  g_signal_connect (get_buffer (self), "inserted-text", G_CALLBACK (buffer_inserted_text), self);
-  g_signal_connect (get_buffer (self), "deleted-text", G_CALLBACK (buffer_deleted_text), self);
-  g_signal_connect_after (get_buffer (self), "deleted-text", G_CALLBACK (buffer_deleted_text_after), self);
-  g_signal_connect (get_buffer (self), "notify::text", G_CALLBACK (buffer_notify_text), self);
-  g_signal_connect (get_buffer (self), "notify::max-length", G_CALLBACK (buffer_notify_max_length), self);
+  g_signal_connect (get_buffer (this), "inserted-text", G_CALLBACK (buffer_inserted_text), this);
+  g_signal_connect (get_buffer (this), "deleted-text", G_CALLBACK (buffer_deleted_text), this);
+  g_signal_connect_after (get_buffer (this), "deleted-text", G_CALLBACK (buffer_deleted_text_after), this);
+  g_signal_connect (get_buffer (this), "notify::text", G_CALLBACK (buffer_notify_text), this);
+  g_signal_connect (get_buffer (this), "notify::max-length", G_CALLBACK (buffer_notify_max_length), this);
 }
 
 static void
-buffer_disconnect_signals (GtkText *self)
+buffer_disconnect_signals (GtkText *this)
 {
-  g_signal_handlers_disconnect_by_func (get_buffer (self), buffer_inserted_text, self);
-  g_signal_handlers_disconnect_by_func (get_buffer (self), buffer_deleted_text, self);
-  g_signal_handlers_disconnect_by_func (get_buffer (self), buffer_deleted_text_after, self);
-  g_signal_handlers_disconnect_by_func (get_buffer (self), buffer_notify_text, self);
-  g_signal_handlers_disconnect_by_func (get_buffer (self), buffer_notify_max_length, self);
+  g_signal_handlers_disconnect_by_func (get_buffer (this), buffer_inserted_text, this);
+  g_signal_handlers_disconnect_by_func (get_buffer (this), buffer_deleted_text, this);
+  g_signal_handlers_disconnect_by_func (get_buffer (this), buffer_deleted_text_after, this);
+  g_signal_handlers_disconnect_by_func (get_buffer (this), buffer_notify_text, this);
+  g_signal_handlers_disconnect_by_func (get_buffer (this), buffer_notify_max_length, this);
 }
 
 /* Compute the X position for an offset that corresponds to the "more important
@@ -3984,26 +3984,26 @@ buffer_disconnect_signals (GtkText *self)
  * right arrow key.
  */
 static int
-get_better_cursor_x (GtkText *self,
+get_better_cursor_x (GtkText *this,
                      int      offset)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   GdkSeat *seat;
   GdkDevice *keyboard = NULL;
   PangoDirection direction = PANGO_DIRECTION_LTR;
   gboolean split_cursor;
-  PangoLayout *layout = gtk_text_ensure_layout (self, TRUE);
+  PangoLayout *layout = gtk_text_ensure_layout (this, TRUE);
   const char *text = pango_layout_get_text (layout);
   int index = g_utf8_offset_to_pointer (text, offset) - text;
   PangoRectangle strong_pos, weak_pos;
 
-  seat = gdk_display_get_default_seat (gtk_widget_get_display (GTK_WIDGET (self)));
+  seat = gdk_display_get_default_seat (gtk_widget_get_display (GTK_WIDGET (this)));
   if (seat)
     keyboard = gdk_seat_get_keyboard (seat);
   if (keyboard)
     direction = gdk_device_get_direction (keyboard);
 
-  g_object_get (gtk_widget_get_settings (GTK_WIDGET (self)),
+  g_object_get (gtk_widget_get_settings (GTK_WIDGET (this)),
                 "gtk-split-cursor", &split_cursor,
                 NULL);
 
@@ -4018,19 +4018,19 @@ get_better_cursor_x (GtkText *self,
 static void
 selection_style_changed_cb (GtkCssNode        *node,
                             GtkCssStyleChange *change,
-                            GtkText           *self)
+                            GtkText           *this)
 {
   if (gtk_css_style_change_affects (change, GTK_CSS_AFFECTS_REDRAW))
-    gtk_widget_queue_draw (GTK_WIDGET (self));
+    gtk_widget_queue_draw (GTK_WIDGET (this));
 }
 
 static void
-gtk_text_move_cursor (GtkText         *self,
+gtk_text_move_cursor (GtkText         *this,
                       GtkMovementStep  step,
                       int              count,
                       gboolean         extend_selection)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   int new_pos = priv->current_pos;
 
   if (priv->current_pos != priv->selection_bound && !extend_selection)
@@ -4042,8 +4042,8 @@ gtk_text_move_cursor (GtkText         *self,
         {
         case GTK_MOVEMENT_VISUAL_POSITIONS:
           {
-            int current_x = get_better_cursor_x (self, priv->current_pos);
-            int bound_x = get_better_cursor_x (self, priv->selection_bound);
+            int current_x = get_better_cursor_x (this, priv->current_pos);
+            int bound_x = get_better_cursor_x (this, priv->selection_bound);
 
             if (count <= 0)
               new_pos = current_x < bound_x ? priv->current_pos : priv->selection_bound;
@@ -4068,7 +4068,7 @@ gtk_text_move_cursor (GtkText         *self,
         case GTK_MOVEMENT_DISPLAY_LINE_ENDS:
         case GTK_MOVEMENT_PARAGRAPH_ENDS:
         case GTK_MOVEMENT_BUFFER_ENDS:
-          new_pos = count < 0 ? 0 : gtk_entry_buffer_get_length (get_buffer (self));
+          new_pos = count < 0 ? 0 : gtk_entry_buffer_get_length (get_buffer (this));
           break;
 
         case GTK_MOVEMENT_DISPLAY_LINES:
@@ -4084,21 +4084,21 @@ gtk_text_move_cursor (GtkText         *self,
       switch (step)
         {
         case GTK_MOVEMENT_LOGICAL_POSITIONS:
-          new_pos = gtk_text_move_logically (self, new_pos, count);
+          new_pos = gtk_text_move_logically (this, new_pos, count);
           break;
 
         case GTK_MOVEMENT_VISUAL_POSITIONS:
-          new_pos = gtk_text_move_visually (self, new_pos, count);
+          new_pos = gtk_text_move_visually (this, new_pos, count);
 
           if (priv->current_pos == new_pos)
             {
               if (!extend_selection)
                 {
-                  if (!gtk_widget_keynav_failed (GTK_WIDGET (self),
+                  if (!gtk_widget_keynav_failed (GTK_WIDGET (this),
                                                  count > 0 ?
                                                  GTK_DIR_RIGHT : GTK_DIR_LEFT))
                     {
-                      GtkWidget *toplevel = GTK_WIDGET (gtk_widget_get_root (GTK_WIDGET (self)));
+                      GtkWidget *toplevel = GTK_WIDGET (gtk_widget_get_root (GTK_WIDGET (this)));
 
                       if (toplevel)
                         gtk_widget_child_focus (toplevel,
@@ -4108,7 +4108,7 @@ gtk_text_move_cursor (GtkText         *self,
                 }
               else
                 {
-                  gtk_widget_error_bell (GTK_WIDGET (self));
+                  gtk_widget_error_bell (GTK_WIDGET (this));
                 }
             }
           break;
@@ -4119,28 +4119,28 @@ gtk_text_move_cursor (GtkText         *self,
 
           while (count > 0)
             {
-              new_pos = gtk_text_move_forward_word (self, new_pos, FALSE);
+              new_pos = gtk_text_move_forward_word (this, new_pos, FALSE);
               count--;
             }
 
           while (count < 0)
             {
-              new_pos = gtk_text_move_backward_word (self, new_pos, FALSE);
+              new_pos = gtk_text_move_backward_word (this, new_pos, FALSE);
               count++;
             }
 
           if (priv->current_pos == new_pos)
-            gtk_widget_error_bell (GTK_WIDGET (self));
+            gtk_widget_error_bell (GTK_WIDGET (this));
 
           break;
 
         case GTK_MOVEMENT_DISPLAY_LINE_ENDS:
         case GTK_MOVEMENT_PARAGRAPH_ENDS:
         case GTK_MOVEMENT_BUFFER_ENDS:
-          new_pos = count < 0 ? 0 : gtk_entry_buffer_get_length (get_buffer (self));
+          new_pos = count < 0 ? 0 : gtk_entry_buffer_get_length (get_buffer (this));
 
           if (priv->current_pos == new_pos)
-            gtk_widget_error_bell (GTK_WIDGET (self));
+            gtk_widget_error_bell (GTK_WIDGET (this));
 
           break;
 
@@ -4154,161 +4154,161 @@ gtk_text_move_cursor (GtkText         *self,
     }
 
   if (extend_selection)
-    gtk_text_set_selection_bounds (self, priv->selection_bound, new_pos);
+    gtk_text_set_selection_bounds (this, priv->selection_bound, new_pos);
   else
-    gtk_text_set_selection_bounds (self, new_pos, new_pos);
+    gtk_text_set_selection_bounds (this, new_pos, new_pos);
 
-  gtk_text_pend_cursor_blink (self);
+  gtk_text_pend_cursor_blink (this);
 
   priv->need_im_reset = TRUE;
-  gtk_text_reset_im_context (self);
+  gtk_text_reset_im_context (this);
 }
 
 static void
-gtk_text_insert_at_cursor (GtkText    *self,
+gtk_text_insert_at_cursor (GtkText    *this,
                            const char *str)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   int pos = priv->current_pos;
 
   if (priv->editable)
     {
-      begin_change (self);
-      gtk_text_reset_im_context (self);
-      gtk_editable_insert_text (GTK_EDITABLE (self), str, -1, &pos);
-      gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (self),
+      begin_change (this);
+      gtk_text_reset_im_context (this);
+      gtk_editable_insert_text (GTK_EDITABLE (this), str, -1, &pos);
+      gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (this),
                                            GTK_ACCESSIBLE_TEXT_CONTENT_CHANGE_INSERT,
                                            pos,
                                            pos + g_utf8_strlen (str, -1));
-      gtk_text_set_selection_bounds (self, pos, pos);
-      end_change (self);
+      gtk_text_set_selection_bounds (this, pos, pos);
+      end_change (this);
     }
 }
 
 static void
-gtk_text_delete_from_cursor (GtkText       *self,
+gtk_text_delete_from_cursor (GtkText       *this,
                              GtkDeleteType  type,
                              int            count)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   int start_pos = priv->current_pos;
   int end_pos = priv->current_pos;
-  int old_n_bytes = gtk_entry_buffer_get_bytes (get_buffer (self));
+  int old_n_bytes = gtk_entry_buffer_get_bytes (get_buffer (this));
 
   if (!priv->editable)
     {
-      gtk_widget_error_bell (GTK_WIDGET (self));
+      gtk_widget_error_bell (GTK_WIDGET (this));
       return;
     }
 
-  begin_change (self);
+  begin_change (this);
 
   if (priv->selection_bound != priv->current_pos)
     {
-      gtk_text_delete_selection (self);
-      gtk_text_schedule_im_reset (self);
-      gtk_text_reset_im_context (self);
+      gtk_text_delete_selection (this);
+      gtk_text_schedule_im_reset (this);
+      gtk_text_reset_im_context (this);
       goto done;
     }
 
   switch (type)
     {
     case GTK_DELETE_CHARS:
-      end_pos = gtk_text_move_logically (self, priv->current_pos, count);
-      gtk_editable_delete_text (GTK_EDITABLE (self), MIN (start_pos, end_pos), MAX (start_pos, end_pos));
+      end_pos = gtk_text_move_logically (this, priv->current_pos, count);
+      gtk_editable_delete_text (GTK_EDITABLE (this), MIN (start_pos, end_pos), MAX (start_pos, end_pos));
       break;
 
     case GTK_DELETE_WORDS:
       if (count < 0)
         {
           /* Move to end of current word, or if not on a word, end of previous word */
-          end_pos = gtk_text_move_backward_word (self, end_pos, FALSE);
-          end_pos = gtk_text_move_forward_word (self, end_pos, FALSE);
+          end_pos = gtk_text_move_backward_word (this, end_pos, FALSE);
+          end_pos = gtk_text_move_forward_word (this, end_pos, FALSE);
         }
       else if (count > 0)
         {
           /* Move to beginning of current word, or if not on a word, beginning of next word */
-          start_pos = gtk_text_move_forward_word (self, start_pos, FALSE);
-          start_pos = gtk_text_move_backward_word (self, start_pos, FALSE);
+          start_pos = gtk_text_move_forward_word (this, start_pos, FALSE);
+          start_pos = gtk_text_move_backward_word (this, start_pos, FALSE);
         }
       G_GNUC_FALLTHROUGH;
     case GTK_DELETE_WORD_ENDS:
       while (count < 0)
         {
-          start_pos = gtk_text_move_backward_word (self, start_pos, FALSE);
+          start_pos = gtk_text_move_backward_word (this, start_pos, FALSE);
           count++;
         }
 
       while (count > 0)
         {
-          end_pos = gtk_text_move_forward_word (self, end_pos, FALSE);
+          end_pos = gtk_text_move_forward_word (this, end_pos, FALSE);
           count--;
         }
 
-      gtk_editable_delete_text (GTK_EDITABLE (self), start_pos, end_pos);
+      gtk_editable_delete_text (GTK_EDITABLE (this), start_pos, end_pos);
       break;
 
     case GTK_DELETE_DISPLAY_LINE_ENDS:
     case GTK_DELETE_PARAGRAPH_ENDS:
       if (count < 0)
-        gtk_editable_delete_text (GTK_EDITABLE (self), 0, priv->current_pos);
+        gtk_editable_delete_text (GTK_EDITABLE (this), 0, priv->current_pos);
       else
-        gtk_editable_delete_text (GTK_EDITABLE (self), priv->current_pos, -1);
+        gtk_editable_delete_text (GTK_EDITABLE (this), priv->current_pos, -1);
       break;
 
     case GTK_DELETE_DISPLAY_LINES:
     case GTK_DELETE_PARAGRAPHS:
-      gtk_editable_delete_text (GTK_EDITABLE (self), 0, -1);
+      gtk_editable_delete_text (GTK_EDITABLE (this), 0, -1);
       break;
 
     case GTK_DELETE_WHITESPACE:
-      gtk_text_delete_whitespace (self);
+      gtk_text_delete_whitespace (this);
       break;
 
     default:
       break;
     }
 
-  if (gtk_entry_buffer_get_bytes (get_buffer (self)) == old_n_bytes)
-    gtk_widget_error_bell (GTK_WIDGET (self));
+  if (gtk_entry_buffer_get_bytes (get_buffer (this)) == old_n_bytes)
+    gtk_widget_error_bell (GTK_WIDGET (this));
   else
     {
-      gtk_text_schedule_im_reset (self);
-      gtk_text_reset_im_context (self);
+      gtk_text_schedule_im_reset (this);
+      gtk_text_reset_im_context (this);
     }
 
 done:
-  end_change (self);
-  gtk_text_pend_cursor_blink (self);
+  end_change (this);
+  gtk_text_pend_cursor_blink (this);
 }
 
 static void
-gtk_text_backspace (GtkText *self)
+gtk_text_backspace (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   int prev_pos;
 
   if (!priv->editable)
     {
-      gtk_widget_error_bell (GTK_WIDGET (self));
+      gtk_widget_error_bell (GTK_WIDGET (this));
       return;
     }
 
-  begin_change (self);
+  begin_change (this);
 
   if (priv->selection_bound != priv->current_pos)
     {
-      gtk_text_delete_selection (self);
-      gtk_text_schedule_im_reset (self);
-      gtk_text_reset_im_context (self);
+      gtk_text_delete_selection (this);
+      gtk_text_schedule_im_reset (this);
+      gtk_text_reset_im_context (this);
       goto done;
     }
 
-  prev_pos = gtk_text_move_logically (self, priv->current_pos, -1);
+  prev_pos = gtk_text_move_logically (this, priv->current_pos, -1);
 
   if (prev_pos < priv->current_pos)
     {
-      PangoLayout *layout = gtk_text_ensure_layout (self, FALSE);
+      PangoLayout *layout = gtk_text_ensure_layout (this, FALSE);
       const PangoLogAttr *log_attrs;
       int n_attrs;
 
@@ -4321,25 +4321,25 @@ gtk_text_backspace (GtkText *self)
           char *normalized_text;
           glong  len;
 
-          cluster_text = gtk_text_get_display_text (self, prev_pos, priv->current_pos);
+          cluster_text = gtk_text_get_display_text (this, prev_pos, priv->current_pos);
           normalized_text = g_utf8_normalize (cluster_text,
                                               strlen (cluster_text),
                                               G_NORMALIZE_NFD);
           len = g_utf8_strlen (normalized_text, -1);
 
-          gtk_editable_delete_text (GTK_EDITABLE (self), prev_pos, priv->current_pos);
+          gtk_editable_delete_text (GTK_EDITABLE (this), prev_pos, priv->current_pos);
           if (len > 1)
             {
               int pos = priv->current_pos;
 
-              gtk_editable_insert_text (GTK_EDITABLE (self), normalized_text,
+              gtk_editable_insert_text (GTK_EDITABLE (this), normalized_text,
                                         g_utf8_offset_to_pointer (normalized_text, len - 1) - normalized_text,
                                         &pos);
-              gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (self),
+              gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (this),
                                                    GTK_ACCESSIBLE_TEXT_CONTENT_CHANGE_INSERT,
                                                    pos,
                                                    pos + len);
-              gtk_text_set_selection_bounds (self, pos, pos);
+              gtk_text_set_selection_bounds (this, pos, pos);
             }
 
           g_free (normalized_text);
@@ -4347,26 +4347,26 @@ gtk_text_backspace (GtkText *self)
         }
       else
         {
-          gtk_editable_delete_text (GTK_EDITABLE (self), prev_pos, priv->current_pos);
+          gtk_editable_delete_text (GTK_EDITABLE (this), prev_pos, priv->current_pos);
         }
 
-      gtk_text_schedule_im_reset (self);
-      gtk_text_reset_im_context (self);
+      gtk_text_schedule_im_reset (this);
+      gtk_text_reset_im_context (this);
     }
   else
     {
-      gtk_widget_error_bell (GTK_WIDGET (self));
+      gtk_widget_error_bell (GTK_WIDGET (this));
     }
 
 done:
-  end_change (self);
-  gtk_text_pend_cursor_blink (self);
+  end_change (this);
+  gtk_text_pend_cursor_blink (this);
 }
 
 static void
-gtk_text_copy_clipboard (GtkText *self)
+gtk_text_copy_clipboard (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->selection_bound != priv->current_pos)
     {
@@ -4374,87 +4374,87 @@ gtk_text_copy_clipboard (GtkText *self)
 
       if (!priv->visible)
         {
-          gtk_widget_error_bell (GTK_WIDGET (self));
+          gtk_widget_error_bell (GTK_WIDGET (this));
           return;
         }
 
       if (priv->selection_bound < priv->current_pos)
-        str = gtk_text_get_display_text (self, priv->selection_bound, priv->current_pos);
+        str = gtk_text_get_display_text (this, priv->selection_bound, priv->current_pos);
       else
-        str = gtk_text_get_display_text (self, priv->current_pos, priv->selection_bound);
+        str = gtk_text_get_display_text (this, priv->current_pos, priv->selection_bound);
 
-      gdk_clipboard_set_text (gtk_widget_get_clipboard (GTK_WIDGET (self)), str);
+      gdk_clipboard_set_text (gtk_widget_get_clipboard (GTK_WIDGET (this)), str);
       g_free (str);
     }
 }
 
 static void
-gtk_text_cut_clipboard (GtkText *self)
+gtk_text_cut_clipboard (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (!priv->visible)
     {
-      gtk_widget_error_bell (GTK_WIDGET (self));
+      gtk_widget_error_bell (GTK_WIDGET (this));
       return;
     }
 
-  gtk_text_copy_clipboard (self);
+  gtk_text_copy_clipboard (this);
 
   if (priv->editable)
     {
       if (priv->selection_bound != priv->current_pos)
         {
-          begin_change (self);
-          gtk_text_delete_selection (self);
-          end_change (self);
+          begin_change (this);
+          gtk_text_delete_selection (this);
+          end_change (this);
         }
     }
   else
     {
-      gtk_widget_error_bell (GTK_WIDGET (self));
+      gtk_widget_error_bell (GTK_WIDGET (this));
     }
 
-  gtk_text_selection_bubble_popup_unset (self);
+  gtk_text_selection_bubble_popup_unset (this);
 
-  gtk_text_update_handles (self);
+  gtk_text_update_handles (this);
 }
 
 static void
-gtk_text_paste_clipboard (GtkText *self)
+gtk_text_paste_clipboard (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->editable)
     {
-      begin_change (self);
-      gtk_text_paste (self, gtk_widget_get_clipboard (GTK_WIDGET (self)));
-      end_change (self);
+      begin_change (this);
+      gtk_text_paste (this, gtk_widget_get_clipboard (GTK_WIDGET (this)));
+      end_change (this);
     }
   else
     {
-      gtk_widget_error_bell (GTK_WIDGET (self));
+      gtk_widget_error_bell (GTK_WIDGET (this));
     }
 
-  gtk_text_update_handles (self);
+  gtk_text_update_handles (this);
 }
 
 static void
-gtk_text_delete_cb (GtkText *self)
+gtk_text_delete_cb (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->editable)
     {
       if (priv->selection_bound != priv->current_pos)
-        gtk_text_delete_selection (self);
+        gtk_text_delete_selection (this);
     }
 }
 
 static void
-gtk_text_toggle_overwrite (GtkText *self)
+gtk_text_toggle_overwrite (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   priv->overwrite_mode = !priv->overwrite_mode;
 
@@ -4462,7 +4462,7 @@ gtk_text_toggle_overwrite (GtkText *self)
     {
       if (!priv->block_cursor_node)
         {
-          GtkCssNode *widget_node = gtk_widget_get_css_node (GTK_WIDGET (self));
+          GtkCssNode *widget_node = gtk_widget_get_css_node (GTK_WIDGET (this));
 
           priv->block_cursor_node = gtk_css_node_new ();
           gtk_css_node_set_name (priv->block_cursor_node, g_quark_from_static_string ("block-cursor"));
@@ -4480,24 +4480,24 @@ gtk_text_toggle_overwrite (GtkText *self)
         }
     }
 
-  gtk_text_pend_cursor_blink (self);
-  gtk_widget_queue_draw (GTK_WIDGET (self));
+  gtk_text_pend_cursor_blink (this);
+  gtk_widget_queue_draw (GTK_WIDGET (this));
 }
 
 static gboolean
-gtk_text_select_all (GtkText *self)
+gtk_text_select_all (GtkText *this)
 {
-  gtk_text_select_line (self);
+  gtk_text_select_line (this);
   return TRUE;
 }
 
 static void
-gtk_text_real_activate (GtkText *self)
+gtk_text_real_activate (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->activates_default)
-    gtk_widget_activate_default (GTK_WIDGET (self));
+    gtk_widget_activate_default (GTK_WIDGET (this));
 }
 
 /* IM Context Callbacks
@@ -4505,61 +4505,61 @@ gtk_text_real_activate (GtkText *self)
 
 static void
 gtk_text_preedit_start_cb (GtkIMContext *context,
-                           GtkText      *self)
+                           GtkText      *this)
 {
-  gtk_text_delete_selection (self);
+  gtk_text_delete_selection (this);
 }
 
 static void
 gtk_text_commit_cb (GtkIMContext *context,
                     const char   *str,
-                    GtkText      *self)
+                    GtkText      *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->editable)
     {
-      gtk_text_enter_text (self, str);
-      gtk_text_obscure_mouse_cursor (self);
+      gtk_text_enter_text (this, str);
+      gtk_text_obscure_mouse_cursor (this);
     }
 }
 
 static void
 gtk_text_preedit_changed_cb (GtkIMContext *context,
-                             GtkText      *self)
+                             GtkText      *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->editable)
     {
       char *preedit_string;
       int cursor_pos;
 
-      gtk_text_obscure_mouse_cursor (self);
+      gtk_text_obscure_mouse_cursor (this);
 
       gtk_im_context_get_preedit_string (priv->im_context,
                                          &preedit_string, NULL,
                                          &cursor_pos);
-      g_signal_emit (self, signals[PREEDIT_CHANGED], 0, preedit_string);
+      g_signal_emit (this, signals[PREEDIT_CHANGED], 0, preedit_string);
       priv->preedit_length = strlen (preedit_string);
       cursor_pos = CLAMP (cursor_pos, 0, g_utf8_strlen (preedit_string, -1));
       priv->preedit_cursor = cursor_pos;
       g_free (preedit_string);
 
-      gtk_text_recompute (self);
-      update_placeholder_visibility (self);
+      gtk_text_recompute (this);
+      update_placeholder_visibility (this);
     }
 }
 
 static gboolean
 gtk_text_retrieve_surrounding_cb (GtkIMContext *context,
-                                  GtkText      *self)
+                                  GtkText      *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   char *text;
 
   /* XXXX ??? does this even make sense when text is not visible? Should we return FALSE? */
-  text = gtk_text_get_display_text (self, 0, -1);
+  text = gtk_text_get_display_text (this, 0, -1);
   gtk_im_context_set_surrounding_with_selection (context, text, strlen (text), /* Length in bytes */
                                                  g_utf8_offset_to_pointer (text, priv->current_pos) - text,
                                                  g_utf8_offset_to_pointer (text, priv->selection_bound) - text);
@@ -4572,13 +4572,13 @@ static gboolean
 gtk_text_delete_surrounding_cb (GtkIMContext *context,
                                 int           offset,
                                 int           n_chars,
-                                GtkText      *self)
+                                GtkText      *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->editable)
     {
-      gtk_editable_delete_text (GTK_EDITABLE (self),
+      gtk_editable_delete_text (GTK_EDITABLE (this),
                                 priv->current_pos + offset,
                                 priv->current_pos + offset + n_chars);
     }
@@ -4591,38 +4591,38 @@ gtk_text_delete_surrounding_cb (GtkIMContext *context,
 
 /* Used for im_commit_cb and inserting Unicode chars */
 void
-gtk_text_enter_text (GtkText    *self,
+gtk_text_enter_text (GtkText    *this,
                      const char *str)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   int tmp_pos;
   guint text_length;
 
   gtk_text_history_begin_user_action (priv->history);
-  begin_change (self);
+  begin_change (this);
 
   priv->need_im_reset = FALSE;
 
   if (priv->selection_bound != priv->current_pos)
-    gtk_text_delete_selection (self);
+    gtk_text_delete_selection (this);
   else
     {
       if (priv->overwrite_mode)
         {
-          text_length = gtk_entry_buffer_get_length (get_buffer (self));
+          text_length = gtk_entry_buffer_get_length (get_buffer (this));
           if (priv->current_pos < text_length)
-            gtk_text_delete_from_cursor (self, GTK_DELETE_CHARS, 1);
+            gtk_text_delete_from_cursor (this, GTK_DELETE_CHARS, 1);
         }
     }
 
   tmp_pos = priv->current_pos;
-  gtk_editable_insert_text (GTK_EDITABLE (self), str, strlen (str), &tmp_pos);
-  gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (self),
+  gtk_editable_insert_text (GTK_EDITABLE (this), str, strlen (str), &tmp_pos);
+  gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (this),
                                        GTK_ACCESSIBLE_TEXT_CONTENT_CHANGE_INSERT,
                                        tmp_pos, tmp_pos + g_utf8_strlen (str, -1));
-  gtk_text_set_selection_bounds (self, tmp_pos, tmp_pos);
+  gtk_text_set_selection_bounds (this, tmp_pos, tmp_pos);
 
-  end_change (self);
+  end_change (this);
   gtk_text_history_end_user_action (priv->history);
 }
 
@@ -4630,14 +4630,14 @@ gtk_text_enter_text (GtkText    *self,
  * should go through this function.
  */
 void
-gtk_text_set_positions (GtkText *self,
+gtk_text_set_positions (GtkText *this,
                         int      current_pos,
                         int      selection_bound)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   gboolean changed = FALSE;
 
-  g_object_freeze_notify (G_OBJECT (self));
+  g_object_freeze_notify (G_OBJECT (this));
 
   if (current_pos != -1 &&
       priv->current_pos != current_pos)
@@ -4645,7 +4645,7 @@ gtk_text_set_positions (GtkText *self,
       priv->current_pos = current_pos;
       changed = TRUE;
 
-      g_object_notify (G_OBJECT (self), "cursor-position");
+      g_object_notify (G_OBJECT (this), "cursor-position");
     }
 
   if (selection_bound != -1 &&
@@ -4654,23 +4654,23 @@ gtk_text_set_positions (GtkText *self,
       priv->selection_bound = selection_bound;
       changed = TRUE;
 
-      g_object_notify (G_OBJECT (self), "selection-bound");
+      g_object_notify (G_OBJECT (this), "selection-bound");
     }
 
-  g_object_thaw_notify (G_OBJECT (self));
+  g_object_thaw_notify (G_OBJECT (this));
 
   if (priv->current_pos != priv->selection_bound)
     {
       if (!priv->selection_node)
         {
-          GtkCssNode *widget_node = gtk_widget_get_css_node (GTK_WIDGET (self));
+          GtkCssNode *widget_node = gtk_widget_get_css_node (GTK_WIDGET (this));
 
           priv->selection_node = gtk_css_node_new ();
           gtk_css_node_set_name (priv->selection_node, g_quark_from_static_string ("selection"));
           gtk_css_node_set_parent (priv->selection_node, widget_node);
           gtk_css_node_set_state (priv->selection_node, gtk_css_node_get_state (widget_node));
           g_signal_connect (priv->selection_node, "style-changed",
-                            G_CALLBACK (selection_style_changed_cb), self);
+                            G_CALLBACK (selection_style_changed_cb), this);
           g_object_unref (priv->selection_node);
         }
     }
@@ -4685,19 +4685,19 @@ gtk_text_set_positions (GtkText *self,
 
   if (changed)
     {
-      gtk_text_update_clipboard_actions (self);
-      gtk_text_recompute (self);
+      gtk_text_update_clipboard_actions (this);
+      gtk_text_recompute (this);
 
-      gtk_text_update_primary_selection (self);
-      gtk_accessible_text_update_caret_position (GTK_ACCESSIBLE_TEXT (self));
-      gtk_accessible_text_update_selection_bound (GTK_ACCESSIBLE_TEXT (self));
+      gtk_text_update_primary_selection (this);
+      gtk_accessible_text_update_caret_position (GTK_ACCESSIBLE_TEXT (this));
+      gtk_accessible_text_update_selection_bound (GTK_ACCESSIBLE_TEXT (this));
     }
 }
 
 static void
-gtk_text_reset_layout (GtkText *self)
+gtk_text_reset_layout (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->cached_layout)
     {
@@ -4707,37 +4707,37 @@ gtk_text_reset_layout (GtkText *self)
 }
 
 static void
-gtk_text_recompute (GtkText *self)
+gtk_text_recompute (GtkText *this)
 {
-  gtk_text_reset_layout (self);
-  gtk_widget_queue_draw (GTK_WIDGET (self));
+  gtk_text_reset_layout (this);
+  gtk_widget_queue_draw (GTK_WIDGET (this));
 
-  if (!gtk_widget_get_mapped (GTK_WIDGET (self)))
+  if (!gtk_widget_get_mapped (GTK_WIDGET (this)))
     return;
 
-  gtk_text_check_cursor_blink (self);
-  gtk_text_adjust_scroll (self);
-  update_im_cursor_location (self);
-  gtk_text_update_handles (self);
+  gtk_text_check_cursor_blink (this);
+  gtk_text_adjust_scroll (this);
+  update_im_cursor_location (this);
+  gtk_text_update_handles (this);
 }
 
 static void
-update_resolved_dir (GtkText *self)
+update_resolved_dir (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  if (gtk_widget_get_direction (GTK_WIDGET (self)) == GTK_TEXT_DIR_RTL)
+  if (gtk_widget_get_direction (GTK_WIDGET (this)) == GTK_TEXT_DIR_RTL)
     priv->resolved_dir = PANGO_DIRECTION_RTL;
   else
     priv->resolved_dir = PANGO_DIRECTION_LTR;
 }
 
 static PangoLayout *
-gtk_text_create_layout (GtkText  *self,
+gtk_text_create_layout (GtkText  *this,
                         gboolean  include_preedit)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
-  GtkWidget *widget = GTK_WIDGET (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
+  GtkWidget *widget = GTK_WIDGET (this);
   PangoLayout *layout;
   PangoAttrList *tmp_attrs = NULL;
   char *preedit_string = NULL;
@@ -4754,7 +4754,7 @@ gtk_text_create_layout (GtkText  *self,
     tmp_attrs = pango_attr_list_new ();
   tmp_attrs = _gtk_pango_attr_list_merge (tmp_attrs, priv->attrs);
 
-  display_text = gtk_text_get_display_text (self, 0, -1);
+  display_text = gtk_text_get_display_text (this, 0, -1);
 
   n_bytes = strlen (display_text);
 
@@ -4781,7 +4781,7 @@ gtk_text_create_layout (GtkText  *self,
       pango_layout_set_text (layout, display_text, n_bytes);
     }
 
-  update_resolved_dir (self);
+  update_resolved_dir (this);
 
   pango_layout_set_attributes (layout, tmp_attrs);
 
@@ -4798,18 +4798,18 @@ gtk_text_create_layout (GtkText  *self,
 }
 
 static PangoLayout *
-gtk_text_ensure_layout (GtkText  *self,
+gtk_text_ensure_layout (GtkText  *this,
                         gboolean  include_preedit)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->preedit_length > 0 &&
       !include_preedit != !priv->cache_includes_preedit)
-    gtk_text_reset_layout (self);
+    gtk_text_reset_layout (this);
 
   if (!priv->cached_layout)
     {
-      priv->cached_layout = gtk_text_create_layout (self, include_preedit);
+      priv->cached_layout = gtk_text_create_layout (this, include_preedit);
       priv->cache_includes_preedit = include_preedit;
     }
 
@@ -4817,18 +4817,18 @@ gtk_text_ensure_layout (GtkText  *self,
 }
 
 static void
-get_layout_position (GtkText *self,
+get_layout_position (GtkText *this,
                      int     *x,
                      int     *y)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
-  const int text_height = gtk_widget_get_height (GTK_WIDGET (self));
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
+  const int text_height = gtk_widget_get_height (GTK_WIDGET (this));
   PangoLayout *layout;
   PangoRectangle logical_rect;
   int y_pos, area_height;
   PangoLayoutLine *line;
 
-  layout = gtk_text_ensure_layout (self, TRUE);
+  layout = gtk_text_ensure_layout (this, TRUE);
 
   area_height = PANGO_SCALE * text_height;
 
@@ -4862,23 +4862,23 @@ get_layout_position (GtkText *self,
 #define GRAPHENE_RECT_FROM_RECT(_r) (GRAPHENE_RECT_INIT ((_r)->x, (_r)->y, (_r)->width, (_r)->height))
 
 static void
-gtk_text_draw_text (GtkText     *self,
+gtk_text_draw_text (GtkText     *this,
                     GtkSnapshot *snapshot)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
-  GtkWidget *widget = GTK_WIDGET (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
+  GtkWidget *widget = GTK_WIDGET (this);
   GtkCssStyle *style;
   PangoLayout *layout;
   int x, y;
   GtkCssBoxes boxes;
 
   /* Nothing to display at all */
-  if (gtk_text_get_display_mode (self) == DISPLAY_BLANK)
+  if (gtk_text_get_display_mode (this) == DISPLAY_BLANK)
     return;
 
-  layout = gtk_text_ensure_layout (self, TRUE);
+  layout = gtk_text_ensure_layout (this, TRUE);
 
-  gtk_text_get_layout_offsets (self, &x, &y);
+  gtk_text_get_layout_offsets (this, &x, &y);
 
   gtk_css_boxes_init (&boxes, widget);
   gtk_css_style_snapshot_layout (&boxes, snapshot, x, y, layout);
@@ -4915,12 +4915,12 @@ gtk_text_draw_text (GtkText     *self,
 }
 
 static void
-gtk_text_draw_cursor (GtkText     *self,
+gtk_text_draw_cursor (GtkText     *this,
                       GtkSnapshot *snapshot,
                       CursorType   type)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
-  GtkWidget *widget = GTK_WIDGET (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
+  GtkWidget *widget = GTK_WIDGET (this);
   GtkCssStyle *style;
   PangoRectangle cursor_rect;
   int cursor_index;
@@ -4933,9 +4933,9 @@ gtk_text_draw_cursor (GtkText     *self,
 
   display = gtk_widget_get_display (widget);
 
-  layout = g_object_ref (gtk_text_ensure_layout (self, TRUE));
+  layout = g_object_ref (gtk_text_ensure_layout (this, TRUE));
   text = pango_layout_get_text (layout);
-  gtk_text_get_layout_offsets (self, &x, &y);
+  gtk_text_get_layout_offsets (this, &x, &y);
 
   if (type == CURSOR_DND)
     cursor_index = g_utf8_offset_to_pointer (text, priv->dnd_position) - text;
@@ -4977,17 +4977,17 @@ static void
 gtk_text_handle_dragged (GtkTextHandle *handle,
                          int            x,
                          int            y,
-                         GtkText       *self)
+                         GtkText       *this)
 {
   int cursor_pos, selection_bound_pos, tmp_pos, *old_pos;
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  gtk_text_selection_bubble_popup_unset (self);
+  gtk_text_selection_bubble_popup_unset (this);
 
   cursor_pos = priv->current_pos;
   selection_bound_pos = priv->selection_bound;
 
-  tmp_pos = gtk_text_find_position (self, x + priv->scroll_offset);
+  tmp_pos = gtk_text_find_position (this, x + priv->scroll_offset);
 
   if (handle == priv->text_handles[TEXT_HANDLE_CURSOR])
     {
@@ -5017,26 +5017,26 @@ gtk_text_handle_dragged (GtkTextHandle *handle,
 
       if (handle == priv->text_handles[TEXT_HANDLE_CURSOR] &&
           !gtk_widget_is_visible (GTK_WIDGET (priv->text_handles[TEXT_HANDLE_SELECTION_BOUND])))
-        gtk_text_set_positions (self, cursor_pos, cursor_pos);
+        gtk_text_set_positions (this, cursor_pos, cursor_pos);
       else
-        gtk_text_set_positions (self, cursor_pos, selection_bound_pos);
+        gtk_text_set_positions (this, cursor_pos, selection_bound_pos);
 
       if (handle == priv->text_handles[TEXT_HANDLE_CURSOR])
         priv->cursor_handle_dragged = TRUE;
       else if (handle == priv->text_handles[TEXT_HANDLE_SELECTION_BOUND])
         priv->selection_handle_dragged = TRUE;
 
-      gtk_text_update_handles (self);
+      gtk_text_update_handles (this);
     }
 
-  gtk_text_show_magnifier (self, x, y);
+  gtk_text_show_magnifier (this, x, y);
 }
 
 static void
 gtk_text_handle_drag_started (GtkTextHandle *handle,
-                              GtkText       *self)
+                              GtkText       *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   priv->cursor_handle_dragged = FALSE;
   priv->selection_handle_dragged = FALSE;
@@ -5044,24 +5044,24 @@ gtk_text_handle_drag_started (GtkTextHandle *handle,
 
 static void
 gtk_text_handle_drag_finished (GtkTextHandle *handle,
-                               GtkText       *self)
+                               GtkText       *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (!priv->cursor_handle_dragged && !priv->selection_handle_dragged)
     {
       GtkSettings *settings;
       guint double_click_time;
 
-      settings = gtk_widget_get_settings (GTK_WIDGET (self));
+      settings = gtk_widget_get_settings (GTK_WIDGET (this));
       g_object_get (settings, "gtk-double-click-time", &double_click_time, NULL);
       if (g_get_monotonic_time() - priv->handle_place_time < double_click_time * 1000)
         {
-          gtk_text_select_word (self);
-          gtk_text_update_handles (self);
+          gtk_text_select_word (this);
+          gtk_text_update_handles (this);
         }
       else
-        gtk_text_selection_bubble_popup_set (self);
+        gtk_text_selection_bubble_popup_set (this);
     }
 
   if (priv->magnifier_popover)
@@ -5069,21 +5069,21 @@ gtk_text_handle_drag_finished (GtkTextHandle *handle,
 }
 
 static void
-gtk_text_schedule_im_reset (GtkText *self)
+gtk_text_schedule_im_reset (GtkText *this)
 {
   GtkTextPrivate *priv;
 
-  priv = gtk_text_get_instance_private (self);
+  priv = gtk_text_get_instance_private (this);
 
   priv->need_im_reset = TRUE;
 }
 
 void
-gtk_text_reset_im_context (GtkText *self)
+gtk_text_reset_im_context (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_TEXT (self));
+  g_return_if_fail (GTK_IS_TEXT (this));
 
   if (priv->need_im_reset)
     {
@@ -5093,10 +5093,10 @@ gtk_text_reset_im_context (GtkText *self)
 }
 
 static int
-gtk_text_find_position (GtkText *self,
+gtk_text_find_position (GtkText *this,
                         int      x)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   PangoLayout *layout;
   PangoLayoutLine *line;
   int index;
@@ -5105,7 +5105,7 @@ gtk_text_find_position (GtkText *self,
   const char *text;
   int cursor_index;
 
-  layout = gtk_text_ensure_layout (self, TRUE);
+  layout = gtk_text_ensure_layout (this, TRUE);
   text = pango_layout_get_text (layout);
   cursor_index = g_utf8_offset_to_pointer (text, priv->current_pos) - text;
 
@@ -5130,12 +5130,12 @@ gtk_text_find_position (GtkText *self,
 }
 
 static void
-gtk_text_get_cursor_locations (GtkText   *self,
+gtk_text_get_cursor_locations (GtkText   *this,
                                int       *strong_x,
                                int       *weak_x)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
-  DisplayMode mode = gtk_text_get_display_mode (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
+  DisplayMode mode = gtk_text_get_display_mode (this);
 
   /* Nothing to display at all, so no cursor is relevant */
   if (mode == DISPLAY_BLANK)
@@ -5148,7 +5148,7 @@ gtk_text_get_cursor_locations (GtkText   *self,
     }
   else
     {
-      PangoLayout *layout = gtk_text_ensure_layout (self, TRUE);
+      PangoLayout *layout = gtk_text_ensure_layout (this, TRUE);
       const char *text = pango_layout_get_text (layout);
       PangoRectangle strong_pos, weak_pos;
       int index;
@@ -5166,9 +5166,9 @@ gtk_text_get_cursor_locations (GtkText   *self,
 }
 
 static gboolean
-gtk_text_get_is_selection_handle_dragged (GtkText *self)
+gtk_text_get_is_selection_handle_dragged (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   GtkTextHandle *handle;
 
   if (priv->current_pos >= priv->selection_bound)
@@ -5180,18 +5180,18 @@ gtk_text_get_is_selection_handle_dragged (GtkText *self)
 }
 
 static void
-gtk_text_get_scroll_limits (GtkText *self,
+gtk_text_get_scroll_limits (GtkText *this,
                             int     *min_offset,
                             int     *max_offset)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   float xalign;
   PangoLayout *layout;
   PangoLayoutLine *line;
   PangoRectangle logical_rect;
   int text_width, width;
 
-  layout = gtk_text_ensure_layout (self, TRUE);
+  layout = gtk_text_ensure_layout (this, TRUE);
   line = pango_layout_get_lines_readonly (layout)->data;
 
   pango_layout_line_get_extents (line, NULL, &logical_rect);
@@ -5204,7 +5204,7 @@ gtk_text_get_scroll_limits (GtkText *self,
       xalign = 1.0 - priv->xalign;
 
   text_width = PANGO_PIXELS(logical_rect.width);
-  width = gtk_widget_get_width (GTK_WIDGET (self));
+  width = gtk_widget_get_width (GTK_WIDGET (this));
 
   if (text_width > width)
     {
@@ -5219,29 +5219,29 @@ gtk_text_get_scroll_limits (GtkText *self,
 }
 
 static void
-gtk_text_adjust_scroll (GtkText *self)
+gtk_text_adjust_scroll (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
-  const int text_width = gtk_widget_get_width (GTK_WIDGET (self));
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
+  const int text_width = gtk_widget_get_width (GTK_WIDGET (this));
   int min_offset, max_offset;
   int strong_x, weak_x;
   int strong_xoffset, weak_xoffset;
 
-  if (!gtk_widget_get_realized (GTK_WIDGET (self)))
+  if (!gtk_widget_get_realized (GTK_WIDGET (this)))
     return;
 
-  gtk_text_get_scroll_limits (self, &min_offset, &max_offset);
+  gtk_text_get_scroll_limits (this, &min_offset, &max_offset);
 
   priv->scroll_offset = CLAMP (priv->scroll_offset, min_offset, max_offset);
 
-  if (gtk_text_get_is_selection_handle_dragged (self))
+  if (gtk_text_get_is_selection_handle_dragged (this))
     {
       /* The text handle corresponding to the selection bound is
        * being dragged, ensure it stays onscreen even if we scroll
        * cursors away, this is so both handles can cause content
        * to scroll.
        */
-      strong_x = weak_x = gtk_text_get_selection_bound_location (self);
+      strong_x = weak_x = gtk_text_get_selection_bound_location (this);
     }
   else
     {
@@ -5258,7 +5258,7 @@ gtk_text_adjust_scroll (GtkText *self)
        * We always make sure that the strong cursor is on screen, and
        * put the weak cursor on screen if possible.
        */
-      gtk_text_get_cursor_locations (self, &strong_x, &weak_x);
+      gtk_text_get_cursor_locations (this, &strong_x, &weak_x);
     }
 
   strong_xoffset = strong_x - priv->scroll_offset;
@@ -5286,19 +5286,19 @@ gtk_text_adjust_scroll (GtkText *self)
       priv->scroll_offset += weak_xoffset - text_width;
     }
 
-  g_object_notify_by_pspec (G_OBJECT (self), text_props[PROP_SCROLL_OFFSET]);
+  g_object_notify_by_pspec (G_OBJECT (this), text_props[PROP_SCROLL_OFFSET]);
 
-  gtk_text_update_handles (self);
+  gtk_text_update_handles (this);
 }
 
 static int
-gtk_text_move_visually (GtkText *self,
+gtk_text_move_visually (GtkText *this,
                         int      start,
                         int      count)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   int index;
-  PangoLayout *layout = gtk_text_ensure_layout (self, FALSE);
+  PangoLayout *layout = gtk_text_ensure_layout (this, FALSE);
   const char *text;
   gboolean split_cursor;
   gboolean strong;
@@ -5308,7 +5308,7 @@ gtk_text_move_visually (GtkText *self,
   index = g_utf8_offset_to_pointer (text, start) - text;
 
 
-  g_object_get (gtk_widget_get_settings (GTK_WIDGET (self)),
+  g_object_get (gtk_widget_get_settings (GTK_WIDGET (this)),
                 "gtk-split-cursor", &split_cursor,
                 NULL);
 
@@ -5321,7 +5321,7 @@ gtk_text_move_visually (GtkText *self,
       GdkDevice *keyboard = NULL;
       PangoDirection direction = PANGO_DIRECTION_LTR;
 
-      display = gtk_widget_get_display (GTK_WIDGET (self));
+      display = gtk_widget_get_display (GTK_WIDGET (this));
       seat = gdk_display_get_default_seat (display);
       if (seat)
         keyboard = gdk_seat_get_keyboard (seat);
@@ -5359,23 +5359,23 @@ gtk_text_move_visually (GtkText *self,
 }
 
 static int
-gtk_text_move_logically (GtkText *self,
+gtk_text_move_logically (GtkText *this,
                          int      start,
                          int      count)
 {
   int new_pos = start;
   guint length;
 
-  length = gtk_entry_buffer_get_length (get_buffer (self));
+  length = gtk_entry_buffer_get_length (get_buffer (this));
 
   /* Prevent any leak of information */
-  if (gtk_text_get_display_mode (self) != DISPLAY_NORMAL)
+  if (gtk_text_get_display_mode (this) != DISPLAY_NORMAL)
     {
       new_pos = CLAMP (start + count, 0, length);
     }
   else
     {
-      PangoLayout *layout = gtk_text_ensure_layout (self, FALSE);
+      PangoLayout *layout = gtk_text_ensure_layout (this, FALSE);
       const PangoLogAttr *log_attrs;
       int n_attrs;
 
@@ -5403,23 +5403,23 @@ gtk_text_move_logically (GtkText *self,
 }
 
 static int
-gtk_text_move_forward_word (GtkText  *self,
+gtk_text_move_forward_word (GtkText  *this,
                             int       start,
                             gboolean  allow_whitespace)
 {
   int new_pos = start;
   guint length;
 
-  length = gtk_entry_buffer_get_length (get_buffer (self));
+  length = gtk_entry_buffer_get_length (get_buffer (this));
 
   /* Prevent any leak of information */
-  if (gtk_text_get_display_mode (self) != DISPLAY_NORMAL)
+  if (gtk_text_get_display_mode (this) != DISPLAY_NORMAL)
     {
       new_pos = length;
     }
   else if (new_pos < length)
     {
-      PangoLayout *layout = gtk_text_ensure_layout (self, FALSE);
+      PangoLayout *layout = gtk_text_ensure_layout (this, FALSE);
       const PangoLogAttr *log_attrs;
       int n_attrs;
 
@@ -5437,20 +5437,20 @@ gtk_text_move_forward_word (GtkText  *self,
 
 
 static int
-gtk_text_move_backward_word (GtkText  *self,
+gtk_text_move_backward_word (GtkText  *this,
                              int       start,
                              gboolean  allow_whitespace)
 {
   int new_pos = start;
 
   /* Prevent any leak of information */
-  if (gtk_text_get_display_mode (self) != DISPLAY_NORMAL)
+  if (gtk_text_get_display_mode (this) != DISPLAY_NORMAL)
     {
       new_pos = 0;
     }
   else if (start > 0)
     {
-      PangoLayout *layout = gtk_text_ensure_layout (self, FALSE);
+      PangoLayout *layout = gtk_text_ensure_layout (this, FALSE);
       const PangoLogAttr *log_attrs;
       int n_attrs;
 
@@ -5468,10 +5468,10 @@ gtk_text_move_backward_word (GtkText  *self,
 }
 
 static void
-gtk_text_delete_whitespace (GtkText *self)
+gtk_text_delete_whitespace (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
-  PangoLayout *layout = gtk_text_ensure_layout (self, FALSE);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
+  PangoLayout *layout = gtk_text_ensure_layout (this, FALSE);
   const PangoLogAttr *log_attrs;
   int n_attrs;
   int start, end;
@@ -5487,24 +5487,24 @@ gtk_text_delete_whitespace (GtkText *self)
     end++;
 
   if (start != end)
-    gtk_editable_delete_text (GTK_EDITABLE (self), start, end);
+    gtk_editable_delete_text (GTK_EDITABLE (this), start, end);
 }
 
 
 static void
-gtk_text_select_word (GtkText *self)
+gtk_text_select_word (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
-  int start_pos = gtk_text_move_backward_word (self, priv->current_pos, TRUE);
-  int end_pos = gtk_text_move_forward_word (self, priv->current_pos, TRUE);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
+  int start_pos = gtk_text_move_backward_word (this, priv->current_pos, TRUE);
+  int end_pos = gtk_text_move_forward_word (this, priv->current_pos, TRUE);
 
-  gtk_text_set_selection_bounds (self, start_pos, end_pos);
+  gtk_text_set_selection_bounds (this, start_pos, end_pos);
 }
 
 static void
-gtk_text_select_line (GtkText *self)
+gtk_text_select_line (GtkText *this)
 {
-  gtk_text_set_selection_bounds (self, 0, -1);
+  gtk_text_set_selection_bounds (this, 0, -1);
 }
 
 static int
@@ -5524,8 +5524,8 @@ paste_received (GObject      *clipboard,
                 GAsyncResult *result,
                 gpointer      data)
 {
-  GtkText *self = GTK_TEXT (data);
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkText *this = GTK_TEXT (data);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   char *text;
   int pos, start, end;
   int length = -1;
@@ -5533,7 +5533,7 @@ paste_received (GObject      *clipboard,
   text = gdk_clipboard_read_text_finish (GDK_CLIPBOARD (clipboard), result, NULL);
   if (text == NULL)
     {
-      gtk_widget_error_bell (GTK_WIDGET (self));
+      gtk_widget_error_bell (GTK_WIDGET (this));
       return;
     }
 
@@ -5543,7 +5543,7 @@ paste_received (GObject      *clipboard,
       start = priv->selection_bound;
       end = priv->current_pos;
       if (!((start <= pos && pos <= end) || (end <= pos && pos <= start)))
-        gtk_text_set_selection_bounds (self, pos, pos);
+        gtk_text_set_selection_bounds (this, pos, pos);
       priv->insert_pos = -1;
     }
 
@@ -5552,42 +5552,42 @@ paste_received (GObject      *clipboard,
   else
     length = strlen (text);
 
-  begin_change (self);
+  begin_change (this);
   if (priv->selection_bound != priv->current_pos)
-    gtk_text_delete_selection (self);
+    gtk_text_delete_selection (this);
 
   pos = priv->current_pos;
-  gtk_editable_insert_text (GTK_EDITABLE (self), text, length, &pos);
-  gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (self),
+  gtk_editable_insert_text (GTK_EDITABLE (this), text, length, &pos);
+  gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (this),
                                        GTK_ACCESSIBLE_TEXT_CONTENT_CHANGE_INSERT,
                                        pos, pos + length);
-  gtk_text_set_selection_bounds (self, pos, pos);
-  end_change (self);
+  gtk_text_set_selection_bounds (this, pos, pos);
+  end_change (this);
 
   g_free (text);
-  g_object_unref (self);
+  g_object_unref (this);
 }
 
 static void
-gtk_text_paste (GtkText      *self,
+gtk_text_paste (GtkText      *this,
                 GdkClipboard *clipboard)
 {
-  gdk_clipboard_read_text_async (clipboard, NULL, paste_received, g_object_ref (self));
+  gdk_clipboard_read_text_async (clipboard, NULL, paste_received, g_object_ref (this));
 }
 
 static void
-gtk_text_update_primary_selection (GtkText *self)
+gtk_text_update_primary_selection (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   GdkClipboard *clipboard;
 
-  if (!gtk_widget_get_realized (GTK_WIDGET (self)))
+  if (!gtk_widget_get_realized (GTK_WIDGET (this)))
     return;
 
-  if (!gtk_widget_has_focus (GTK_WIDGET (self)))
+  if (!gtk_widget_has_focus (GTK_WIDGET (this)))
     return;
 
-  clipboard = gtk_widget_get_primary_clipboard (GTK_WIDGET (self));
+  clipboard = gtk_widget_get_primary_clipboard (GTK_WIDGET (this));
 
   if (priv->selection_bound != priv->current_pos)
     {
@@ -5633,15 +5633,15 @@ gtk_text_new_with_buffer (GtkEntryBuffer *buffer)
 }
 
 static GtkEntryBuffer *
-get_buffer (GtkText *self)
+get_buffer (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->buffer == NULL)
     {
       GtkEntryBuffer *buffer;
       buffer = gtk_entry_buffer_new (NULL, 0);
-      gtk_text_set_buffer (self, buffer);
+      gtk_text_set_buffer (this, buffer);
       g_object_unref (buffer);
     }
 
@@ -5650,7 +5650,7 @@ get_buffer (GtkText *self)
 
 /**
  * gtk_text_get_buffer:
- * @self: a text widget
+ * @this: a text widget
  *
  * Get the entry buffer object which holds the text for
  * this widget.
@@ -5658,32 +5658,32 @@ get_buffer (GtkText *self)
  * Returns: (transfer none): the entry buffer object
  */
 GtkEntryBuffer *
-gtk_text_get_buffer (GtkText *self)
+gtk_text_get_buffer (GtkText *this)
 {
-  g_return_val_if_fail (GTK_IS_TEXT (self), NULL);
+  g_return_val_if_fail (GTK_IS_TEXT (this), NULL);
 
-  return get_buffer (self);
+  return get_buffer (this);
 }
 
 /**
  * gtk_text_set_buffer:
- * @self: a text widget
+ * @this: a text widget
  * @buffer: an entry buffer object
  *
  * Set the entry buffer object which holds the text for
  * this widget.
  */
 void
-gtk_text_set_buffer (GtkText        *self,
+gtk_text_set_buffer (GtkText        *this,
                      GtkEntryBuffer *buffer)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   GObject *obj;
   gboolean had_buffer = FALSE;
   guint old_length = 0;
   guint new_length = 0;
 
-  g_return_if_fail (GTK_IS_TEXT (self));
+  g_return_if_fail (GTK_IS_TEXT (this));
 
   if (buffer)
     {
@@ -5695,7 +5695,7 @@ gtk_text_set_buffer (GtkText        *self,
     {
       had_buffer = TRUE;
       old_length = gtk_entry_buffer_get_length (priv->buffer);
-      buffer_disconnect_signals (self);
+      buffer_disconnect_signals (this);
       g_object_unref (priv->buffer);
     }
 
@@ -5704,12 +5704,12 @@ gtk_text_set_buffer (GtkText        *self,
   if (priv->buffer)
     {
       new_length = gtk_entry_buffer_get_length (priv->buffer);
-      buffer_connect_signals (self);
+      buffer_connect_signals (this);
     }
 
-  update_placeholder_visibility (self);
+  update_placeholder_visibility (this);
 
-  obj = G_OBJECT (self);
+  obj = G_OBJECT (this);
   g_object_freeze_notify (obj);
   g_object_notify_by_pspec (obj, text_props[PROP_BUFFER]);
   g_object_notify_by_pspec (obj, text_props[PROP_MAX_LENGTH]);
@@ -5718,37 +5718,37 @@ gtk_text_set_buffer (GtkText        *self,
 
   if (had_buffer)
     {
-      gtk_text_set_selection_bounds (self, 0, 0);
-      gtk_text_recompute (self);
+      gtk_text_set_selection_bounds (this, 0, 0);
+      gtk_text_recompute (this);
     }
 
   g_object_thaw_notify (obj);
 }
 
 static void
-gtk_text_set_editable (GtkText  *self,
+gtk_text_set_editable (GtkText  *this,
                        gboolean  is_editable)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (is_editable != priv->editable)
     {
-      GtkWidget *widget = GTK_WIDGET (self);
+      GtkWidget *widget = GTK_WIDGET (this);
 
       if (!is_editable)
         {
-          gtk_text_reset_im_context (self);
+          gtk_text_reset_im_context (this);
           if (gtk_widget_has_focus (widget))
             gtk_im_context_focus_out (priv->im_context);
 
           priv->preedit_length = 0;
           priv->preedit_cursor = 0;
 
-          gtk_widget_remove_css_class (GTK_WIDGET (self), "read-only");
+          gtk_widget_remove_css_class (GTK_WIDGET (this), "read-only");
         }
       else
         {
-          gtk_widget_add_css_class (GTK_WIDGET (self), "read-only");
+          gtk_widget_add_css_class (GTK_WIDGET (this), "read-only");
         }
 
       priv->editable = is_editable;
@@ -5759,57 +5759,57 @@ gtk_text_set_editable (GtkText  *self,
       gtk_event_controller_key_set_im_context (GTK_EVENT_CONTROLLER_KEY (priv->key_controller),
                                                is_editable ? priv->im_context : NULL);
 
-      gtk_text_update_history (self);
-      gtk_text_update_clipboard_actions (self);
-      gtk_text_update_emoji_action (self);
-      gtk_text_update_clear_action (self);
+      gtk_text_update_history (this);
+      gtk_text_update_clipboard_actions (this);
+      gtk_text_update_emoji_action (this);
+      gtk_text_update_clear_action (this);
 
-      gtk_accessible_update_property (GTK_ACCESSIBLE (self),
+      gtk_accessible_update_property (GTK_ACCESSIBLE (this),
                                       GTK_ACCESSIBLE_PROPERTY_READ_ONLY, !priv->editable,
                                       -1);
 
-      g_object_notify (G_OBJECT (self), "editable");
+      g_object_notify (G_OBJECT (this), "editable");
     }
 }
 
 static void
-gtk_text_set_text (GtkText     *self,
+gtk_text_set_text (GtkText     *this,
                    const char *text)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   int tmp_pos;
 
-  g_return_if_fail (GTK_IS_TEXT (self));
+  g_return_if_fail (GTK_IS_TEXT (this));
   g_return_if_fail (text != NULL);
 
   /* Actually setting the text will affect the cursor and selection;
    * if the contents don't actually change, this will look odd to the user.
    */
-  if (strcmp (gtk_entry_buffer_get_text (get_buffer (self)), text) == 0)
+  if (strcmp (gtk_entry_buffer_get_text (get_buffer (this)), text) == 0)
     return;
 
   gtk_text_history_begin_irreversible_action (priv->history);
 
-  begin_change (self);
-  g_object_freeze_notify (G_OBJECT (self));
-  gtk_editable_delete_text (GTK_EDITABLE (self), 0, -1);
-  gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (self),
+  begin_change (this);
+  g_object_freeze_notify (G_OBJECT (this));
+  gtk_editable_delete_text (GTK_EDITABLE (this), 0, -1);
+  gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (this),
                                        GTK_ACCESSIBLE_TEXT_CONTENT_CHANGE_REMOVE,
                                        0, G_MAXUINT);
   tmp_pos = 0;
-  gtk_editable_insert_text (GTK_EDITABLE (self), text, strlen (text), &tmp_pos);
-  gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (self),
+  gtk_editable_insert_text (GTK_EDITABLE (this), text, strlen (text), &tmp_pos);
+  gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (this),
                                        GTK_ACCESSIBLE_TEXT_CONTENT_CHANGE_INSERT,
                                        tmp_pos, tmp_pos + g_utf8_strlen (text, -1));
-  g_object_thaw_notify (G_OBJECT (self));
-  end_change (self);
+  g_object_thaw_notify (G_OBJECT (this));
+  end_change (this);
 
   gtk_text_history_end_irreversible_action (priv->history);
 }
 
 /**
  * gtk_text_set_visibility:
- * @self: a text widget
+ * @this: a text widget
  * @visible: true if the contents of the text widget are displayed
  *   as plain text
  *
@@ -5829,12 +5829,12 @@ gtk_text_set_text (GtkText     *self,
  * to setting visibility to false.
  */
 void
-gtk_text_set_visibility (GtkText  *self,
+gtk_text_set_visibility (GtkText  *this,
                          gboolean  visible)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_TEXT (self));
+  g_return_if_fail (GTK_IS_TEXT (this));
 
   visible = visible != FALSE;
 
@@ -5842,38 +5842,38 @@ gtk_text_set_visibility (GtkText  *self,
     {
       priv->visible = visible;
 
-      g_object_notify (G_OBJECT (self), "visibility");
-      gtk_text_update_cached_style_values (self);
-      gtk_text_recompute (self);
+      g_object_notify (G_OBJECT (this), "visibility");
+      gtk_text_update_cached_style_values (this);
+      gtk_text_recompute (this);
 
       /* disable undo when invisible text is used */
-      gtk_text_update_history (self);
+      gtk_text_update_history (this);
 
-      gtk_text_update_clipboard_actions (self);
+      gtk_text_update_clipboard_actions (this);
     }
 }
 
 /**
  * gtk_text_get_visibility:
- * @self: a text widget
+ * @this: a text widget
  *
  * Retrieves whether the text is visible.
  *
  * Returns: true if the text is visible
  */
 gboolean
-gtk_text_get_visibility (GtkText *self)
+gtk_text_get_visibility (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_TEXT (self), FALSE);
+  g_return_val_if_fail (GTK_IS_TEXT (this), FALSE);
 
   return priv->visible;
 }
 
 /**
  * gtk_text_set_invisible_char:
- * @self: a text widget
+ * @this: a text widget
  * @ch: a Unicode character
  *
  * Sets the character to use when in “password mode”.
@@ -5884,30 +5884,30 @@ gtk_text_get_visibility (GtkText *self)
  * as they type.
  */
 void
-gtk_text_set_invisible_char (GtkText  *self,
+gtk_text_set_invisible_char (GtkText  *this,
                              gunichar  ch)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_TEXT (self));
+  g_return_if_fail (GTK_IS_TEXT (this));
 
   if (!priv->invisible_char_set)
     {
       priv->invisible_char_set = TRUE;
-      g_object_notify_by_pspec (G_OBJECT (self), text_props[PROP_INVISIBLE_CHAR_SET]);
+      g_object_notify_by_pspec (G_OBJECT (this), text_props[PROP_INVISIBLE_CHAR_SET]);
     }
 
   if (ch == priv->invisible_char)
     return;
 
   priv->invisible_char = ch;
-  g_object_notify_by_pspec (G_OBJECT (self), text_props[PROP_INVISIBLE_CHAR]);
-  gtk_text_recompute (self);
+  g_object_notify_by_pspec (G_OBJECT (this), text_props[PROP_INVISIBLE_CHAR]);
+  gtk_text_recompute (this);
 }
 
 /**
  * gtk_text_get_invisible_char:
- * @self: a text widget
+ * @this: a text widget
  *
  * Retrieves the character displayed when visibility is set to false.
  *
@@ -5919,73 +5919,73 @@ gtk_text_set_invisible_char (GtkText  *self,
  *   show invisible text at all
  */
 gunichar
-gtk_text_get_invisible_char (GtkText *self)
+gtk_text_get_invisible_char (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_TEXT (self), 0);
+  g_return_val_if_fail (GTK_IS_TEXT (this), 0);
 
   return priv->invisible_char;
 }
 
 /**
  * gtk_text_unset_invisible_char:
- * @self: a text widget
+ * @this: a text widget
  *
  * Unsets the invisible char.
  *
  * After calling this, the default invisible char is used again.
  */
 void
-gtk_text_unset_invisible_char (GtkText *self)
+gtk_text_unset_invisible_char (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   gunichar ch;
 
-  g_return_if_fail (GTK_IS_TEXT (self));
+  g_return_if_fail (GTK_IS_TEXT (this));
 
   if (!priv->invisible_char_set)
     return;
 
   priv->invisible_char_set = FALSE;
-  ch = find_invisible_char (GTK_WIDGET (self));
+  ch = find_invisible_char (GTK_WIDGET (this));
 
   if (priv->invisible_char != ch)
     {
       priv->invisible_char = ch;
-      g_object_notify_by_pspec (G_OBJECT (self), text_props[PROP_INVISIBLE_CHAR]);
+      g_object_notify_by_pspec (G_OBJECT (this), text_props[PROP_INVISIBLE_CHAR]);
     }
 
-  g_object_notify_by_pspec (G_OBJECT (self), text_props[PROP_INVISIBLE_CHAR_SET]);
-  gtk_text_recompute (self);
+  g_object_notify_by_pspec (G_OBJECT (this), text_props[PROP_INVISIBLE_CHAR_SET]);
+  gtk_text_recompute (this);
 }
 
 /**
  * gtk_text_set_overwrite_mode:
- * @self: a text widget
+ * @this: a text widget
  * @overwrite: new value
  *
  * Sets whether the text is overwritten when typing.
  */
 void
-gtk_text_set_overwrite_mode (GtkText  *self,
+gtk_text_set_overwrite_mode (GtkText  *this,
                              gboolean  overwrite)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_TEXT (self));
+  g_return_if_fail (GTK_IS_TEXT (this));
 
   if (priv->overwrite_mode == overwrite)
     return;
 
-  gtk_text_toggle_overwrite (self);
+  gtk_text_toggle_overwrite (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), text_props[PROP_OVERWRITE_MODE]);
+  g_object_notify_by_pspec (G_OBJECT (this), text_props[PROP_OVERWRITE_MODE]);
 }
 
 /**
  * gtk_text_get_overwrite_mode:
- * @self: a text widget
+ * @this: a text widget
  *
  * Gets whether text is overwritten when typing.
  *
@@ -5994,11 +5994,11 @@ gtk_text_set_overwrite_mode (GtkText  *self,
  * Returns: whether text is overwritten when typing
  */
 gboolean
-gtk_text_get_overwrite_mode (GtkText *self)
+gtk_text_get_overwrite_mode (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_TEXT (self), FALSE);
+  g_return_val_if_fail (GTK_IS_TEXT (this), FALSE);
 
   return priv->overwrite_mode;
 
@@ -6006,7 +6006,7 @@ gtk_text_get_overwrite_mode (GtkText *self)
 
 /**
  * gtk_text_set_max_length:
- * @self: a text widget
+ * @this: a text widget
  * @length: the maximum length of the text, or 0 for no maximum.
  *   (other than the maximum length of entries.) The value passed
  *   in will be clamped to the range 0-65536
@@ -6016,164 +6016,164 @@ gtk_text_get_overwrite_mode (GtkText *self)
  * If the current contents are longer than the given length,
  * they will be truncated to fit.
  *
- * This is equivalent to getting @self's `GtkEntryBuffer` and
+ * This is equivalent to getting @this's `GtkEntryBuffer` and
  * calling [method@Gtk.EntryBuffer.set_max_length] on it.
  */
 void
-gtk_text_set_max_length (GtkText *self,
+gtk_text_set_max_length (GtkText *this,
                          int      length)
 {
-  g_return_if_fail (GTK_IS_TEXT (self));
-  gtk_entry_buffer_set_max_length (get_buffer (self), length);
+  g_return_if_fail (GTK_IS_TEXT (this));
+  gtk_entry_buffer_set_max_length (get_buffer (this), length);
 }
 
 /**
  * gtk_text_get_max_length:
- * @self: a text widget
+ * @this: a text widget
  *
  * Retrieves the maximum allowed length of the contents.
  *
  * See [method@Gtk.Text.set_max_length].
  *
- * This is equivalent to getting @self's `GtkEntryBuffer` and
+ * This is equivalent to getting @this's `GtkEntryBuffer` and
  * calling [method@Gtk.EntryBuffer.get_max_length] on it.
  *
  * Returns: the maximum allowed number of characters, or 0 if
  *   there is no limit
  */
 int
-gtk_text_get_max_length (GtkText *self)
+gtk_text_get_max_length (GtkText *this)
 {
-  g_return_val_if_fail (GTK_IS_TEXT (self), 0);
+  g_return_val_if_fail (GTK_IS_TEXT (this), 0);
 
-  return gtk_entry_buffer_get_max_length (get_buffer (self));
+  return gtk_entry_buffer_get_max_length (get_buffer (this));
 }
 
 /**
  * gtk_text_get_text_length:
- * @self: a text widget
+ * @this: a text widget
  *
  * Retrieves the length of the contents.
  *
- * This is equivalent to getting @self's `GtkEntryBuffer`
+ * This is equivalent to getting @this's `GtkEntryBuffer`
  * and calling [method@Gtk.EntryBuffer.get_length] on it.
  *
  * Returns: the length of the contents, in characters
  */
 guint16
-gtk_text_get_text_length (GtkText *self)
+gtk_text_get_text_length (GtkText *this)
 {
-  g_return_val_if_fail (GTK_IS_TEXT (self), 0);
+  g_return_val_if_fail (GTK_IS_TEXT (this), 0);
 
-  return gtk_entry_buffer_get_length (get_buffer (self));
+  return gtk_entry_buffer_get_length (get_buffer (this));
 }
 
 /**
  * gtk_text_set_activates_default:
- * @self: a text widget
+ * @this: a text widget
  * @activates: true to activate window’s default widget on
  *   <kbd>Enter</kbd> keypress
  *
  * Sets whether pressing <kbd>Enter</kbd> will activate
  * the default widget.
  *
- * This usually means that the dialog containing @self will
+ * This usually means that the dialog containing @this will
  * be closed, since the default widget is usually one of
  * the dialog buttons.
  */
 void
-gtk_text_set_activates_default (GtkText  *self,
+gtk_text_set_activates_default (GtkText  *this,
                                 gboolean  activates)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_TEXT (self));
+  g_return_if_fail (GTK_IS_TEXT (this));
 
   activates = activates != FALSE;
 
   if (priv->activates_default != activates)
     {
       priv->activates_default = activates;
-      g_object_notify_by_pspec (G_OBJECT (self), text_props[PROP_ACTIVATES_DEFAULT]);
+      g_object_notify_by_pspec (G_OBJECT (this), text_props[PROP_ACTIVATES_DEFAULT]);
     }
 }
 
 /**
  * gtk_text_get_activates_default:
- * @self: a text widget
+ * @this: a text widget
  *
  * Returns whether pressing <kbd>Enter</kbd> will activate
  * the default widget for the window containing the widget.
  *
  * See [method@Gtk.Text.set_activates_default].
  *
- * Returns: true if @self will activate the default widget
+ * Returns: true if @this will activate the default widget
  */
 gboolean
-gtk_text_get_activates_default (GtkText *self)
+gtk_text_get_activates_default (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_TEXT (self), FALSE);
+  g_return_val_if_fail (GTK_IS_TEXT (this), FALSE);
 
   return priv->activates_default;
 }
 
 static void
-gtk_text_set_width_chars (GtkText *self,
+gtk_text_set_width_chars (GtkText *this,
                           int      n_chars)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->width_chars != n_chars)
     {
       priv->width_chars = n_chars;
-      g_object_notify (G_OBJECT (self), "width-chars");
-      gtk_widget_queue_resize (GTK_WIDGET (self));
+      g_object_notify (G_OBJECT (this), "width-chars");
+      gtk_widget_queue_resize (GTK_WIDGET (this));
     }
 }
 
 static void
-gtk_text_set_max_width_chars (GtkText *self,
+gtk_text_set_max_width_chars (GtkText *this,
                               int      n_chars)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->max_width_chars != n_chars)
     {
       priv->max_width_chars = n_chars;
-      g_object_notify (G_OBJECT (self), "max-width-chars");
-      gtk_widget_queue_resize (GTK_WIDGET (self));
+      g_object_notify (G_OBJECT (this), "max-width-chars");
+      gtk_widget_queue_resize (GTK_WIDGET (this));
     }
 }
 
 PangoLayout *
-gtk_text_get_layout (GtkText *self)
+gtk_text_get_layout (GtkText *this)
 {
   PangoLayout *layout;
 
-  g_return_val_if_fail (GTK_IS_TEXT (self), NULL);
+  g_return_val_if_fail (GTK_IS_TEXT (this), NULL);
 
-  layout = gtk_text_ensure_layout (self, TRUE);
+  layout = gtk_text_ensure_layout (this, TRUE);
 
   return layout;
 }
 
 void
-gtk_text_get_layout_offsets (GtkText *self,
+gtk_text_get_layout_offsets (GtkText *this,
                              int     *x,
                              int     *y)
 {
-  g_return_if_fail (GTK_IS_TEXT (self));
+  g_return_if_fail (GTK_IS_TEXT (this));
 
-  get_layout_position (self, x, y);
+  get_layout_position (this, x, y);
 }
 
 static void
-gtk_text_set_alignment (GtkText *self,
+gtk_text_set_alignment (GtkText *this,
                         float    xalign)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (xalign < 0.0)
     xalign = 0.0;
@@ -6183,18 +6183,18 @@ gtk_text_set_alignment (GtkText *self,
   if (xalign != priv->xalign)
     {
       priv->xalign = xalign;
-      gtk_text_recompute (self);
+      gtk_text_recompute (this);
       if (priv->placeholder)
         gtk_label_set_xalign (GTK_LABEL (priv->placeholder), xalign);
 
-      g_object_notify (G_OBJECT (self), "xalign");
+      g_object_notify (G_OBJECT (this), "xalign");
     }
 }
 
 static void
-hide_selection_bubble (GtkText *self)
+hide_selection_bubble (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->selection_bubble && gtk_widget_get_visible (priv->selection_bubble))
     gtk_widget_set_visible (priv->selection_bubble, FALSE);
@@ -6205,9 +6205,9 @@ gtk_text_activate_clipboard_cut (GtkWidget  *widget,
                                  const char *action_name,
                                  GVariant   *parameter)
 {
-  GtkText *self = GTK_TEXT (widget);
-  g_signal_emit_by_name (self, "cut-clipboard");
-  hide_selection_bubble (self);
+  GtkText *this = GTK_TEXT (widget);
+  g_signal_emit_by_name (this, "cut-clipboard");
+  hide_selection_bubble (this);
 }
 
 static void
@@ -6215,9 +6215,9 @@ gtk_text_activate_clipboard_copy (GtkWidget  *widget,
                                   const char *action_name,
                                   GVariant   *parameter)
 {
-  GtkText *self = GTK_TEXT (widget);
-  g_signal_emit_by_name (self, "copy-clipboard");
-  hide_selection_bubble (self);
+  GtkText *this = GTK_TEXT (widget);
+  g_signal_emit_by_name (this, "copy-clipboard");
+  hide_selection_bubble (this);
 }
 
 static void
@@ -6225,9 +6225,9 @@ gtk_text_activate_clipboard_paste (GtkWidget  *widget,
                                    const char *action_name,
                                    GVariant   *parameter)
 {
-  GtkText *self = GTK_TEXT (widget);
-  g_signal_emit_by_name (self, "paste-clipboard");
-  hide_selection_bubble (self);
+  GtkText *this = GTK_TEXT (widget);
+  g_signal_emit_by_name (this, "paste-clipboard");
+  hide_selection_bubble (this);
 }
 
 static void
@@ -6235,9 +6235,9 @@ gtk_text_activate_selection_delete (GtkWidget  *widget,
                                     const char *action_name,
                                     GVariant   *parameter)
 {
-  GtkText *self = GTK_TEXT (widget);
-  gtk_text_delete_cb (self);
-  hide_selection_bubble (self);
+  GtkText *this = GTK_TEXT (widget);
+  gtk_text_delete_cb (this);
+  hide_selection_bubble (this);
 }
 
 static void
@@ -6245,8 +6245,8 @@ gtk_text_activate_selection_select_all (GtkWidget  *widget,
                                         const char *action_name,
                                         GVariant   *parameter)
 {
-  GtkText *self = GTK_TEXT (widget);
-  gtk_text_select_line (self);
+  GtkText *this = GTK_TEXT (widget);
+  gtk_text_select_line (this);
 }
 
 static void
@@ -6262,9 +6262,9 @@ gtk_text_activate_misc_insert_emoji (GtkWidget  *widget,
                                      const char *action_name,
                                      GVariant   *parameter)
 {
-  GtkText *self = GTK_TEXT (widget);
-  gtk_text_insert_emoji (self);
-  hide_selection_bubble (self);
+  GtkText *this = GTK_TEXT (widget);
+  gtk_text_insert_emoji (this);
+  hide_selection_bubble (this);
 }
 
 static void
@@ -6272,24 +6272,24 @@ gtk_text_activate_misc_toggle_direction (GtkWidget  *widget,
                                          const char *action_name,
                                          GVariant   *parameter)
 {
-  GtkText *self = GTK_TEXT (widget);
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkText *this = GTK_TEXT (widget);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (gtk_widget_get_direction (widget) == GTK_TEXT_DIR_RTL)
     gtk_widget_set_direction (widget, GTK_TEXT_DIR_LTR);
   else
     gtk_widget_set_direction (widget, GTK_TEXT_DIR_RTL);
 
-  update_resolved_dir (self);
+  update_resolved_dir (this);
 
   if (priv->cached_layout)
     pango_layout_context_changed (priv->cached_layout);
 }
 
 static void
-gtk_text_update_clipboard_actions (GtkText *self)
+gtk_text_update_clipboard_actions (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   DisplayMode mode;
   GdkClipboard *clipboard;
   gboolean has_clipboard;
@@ -6297,48 +6297,48 @@ gtk_text_update_clipboard_actions (GtkText *self)
   gboolean has_content;
   gboolean visible;
 
-  clipboard = gtk_widget_get_clipboard (GTK_WIDGET (self));
-  mode = gtk_text_get_display_mode (self);
+  clipboard = gtk_widget_get_clipboard (GTK_WIDGET (this));
+  mode = gtk_text_get_display_mode (this);
   has_clipboard = gdk_content_formats_contain_gtype (gdk_clipboard_get_formats (clipboard), G_TYPE_STRING);
   has_selection = priv->current_pos != priv->selection_bound;
   has_content = priv->buffer && (gtk_entry_buffer_get_length (priv->buffer) > 0);
   visible = mode == DISPLAY_NORMAL;
 
-  gtk_widget_action_set_enabled (GTK_WIDGET (self), "clipboard.cut",
+  gtk_widget_action_set_enabled (GTK_WIDGET (this), "clipboard.cut",
                                  visible && priv->editable && has_selection);
-  gtk_widget_action_set_enabled (GTK_WIDGET (self), "clipboard.copy",
+  gtk_widget_action_set_enabled (GTK_WIDGET (this), "clipboard.copy",
                                  visible && has_selection);
-  gtk_widget_action_set_enabled (GTK_WIDGET (self), "clipboard.paste",
+  gtk_widget_action_set_enabled (GTK_WIDGET (this), "clipboard.paste",
                                  priv->editable && has_clipboard);
 
-  gtk_widget_action_set_enabled (GTK_WIDGET (self), "selection.delete",
+  gtk_widget_action_set_enabled (GTK_WIDGET (this), "selection.delete",
                                  priv->editable && has_selection);
-  gtk_widget_action_set_enabled (GTK_WIDGET (self), "selection.select-all",
+  gtk_widget_action_set_enabled (GTK_WIDGET (this), "selection.select-all",
                                  has_content);
 }
 
 static void
-gtk_text_update_emoji_action (GtkText *self)
+gtk_text_update_emoji_action (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  gtk_widget_action_set_enabled (GTK_WIDGET (self), "misc.insert-emoji",
+  gtk_widget_action_set_enabled (GTK_WIDGET (this), "misc.insert-emoji",
                                  priv->editable &&
-                                 (gtk_text_get_input_hints (self) & GTK_INPUT_HINT_NO_EMOJI) == 0);
+                                 (gtk_text_get_input_hints (this) & GTK_INPUT_HINT_NO_EMOJI) == 0);
 }
 
 static void
-gtk_text_update_clear_action (GtkText *self)
+gtk_text_update_clear_action (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  gtk_widget_action_set_enabled (GTK_WIDGET (self), "text.clear", priv->editable);
+  gtk_widget_action_set_enabled (GTK_WIDGET (this), "text.clear", priv->editable);
 }
 
 static GMenuModel *
-gtk_text_get_menu_model (GtkText *self)
+gtk_text_get_menu_model (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   GtkJoinedMenu *joined;
   GMenu *menu, *section;
   GMenuItem *item;
@@ -6414,18 +6414,18 @@ gtk_text_popup_menu (GtkWidget  *widget,
 static void
 show_or_hide_handles (GtkWidget  *popover,
                       GParamSpec *pspec,
-                      GtkText    *self)
+                      GtkText    *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   gboolean visible;
 
   visible = gtk_widget_get_visible (popover);
   priv->text_handles_enabled = !visible;
-  gtk_text_update_handles (self);
+  gtk_text_update_handles (this);
 }
 
 static void
-append_bubble_item (GtkText    *self,
+append_bubble_item (GtkText    *this,
                     GtkWidget  *toolbar,
                     GMenuModel *model,
                     int         index)
@@ -6443,7 +6443,7 @@ append_bubble_item (GtkText    *self,
     {
       int i;
       for (i = 0; i < g_menu_model_get_n_items (link); i++)
-        append_bubble_item (self, toolbar, link, i);
+        append_bubble_item (this, toolbar, link, i);
       g_object_unref (link);
       return;
     }
@@ -6461,7 +6461,7 @@ append_bubble_item (GtkText    *self,
   action_name = g_variant_get_string (att, NULL);
   g_variant_unref (att);
 
-  muxer = _gtk_widget_get_action_muxer (GTK_WIDGET (self), FALSE);
+  muxer = _gtk_widget_get_action_muxer (GTK_WIDGET (this), FALSE);
   if (!gtk_action_muxer_query_action (muxer, action_name, &enabled,
                                       NULL, NULL, NULL, NULL) ||
       !enabled)
@@ -6479,10 +6479,10 @@ append_bubble_item (GtkText    *self,
 static gboolean
 gtk_text_selection_bubble_popup_show (gpointer user_data)
 {
-  GtkText *self = user_data;
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
-  const int text_width = gtk_widget_get_width (GTK_WIDGET (self));
-  const int text_height = gtk_widget_get_height (GTK_WIDGET (self));
+  GtkText *this = user_data;
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
+  const int text_width = gtk_widget_get_width (GTK_WIDGET (this));
+  const int text_height = gtk_widget_get_height (GTK_WIDGET (this));
   cairo_rectangle_int_t rect;
   graphene_point_t p;
   gboolean has_selection;
@@ -6492,7 +6492,7 @@ gtk_text_selection_bubble_popup_show (gpointer user_data)
   GMenuModel *model;
   int i;
 
-  gtk_text_update_clipboard_actions (self);
+  gtk_text_update_clipboard_actions (this);
 
   has_selection = priv->selection_bound != priv->current_pos;
 
@@ -6505,12 +6505,12 @@ gtk_text_selection_bubble_popup_show (gpointer user_data)
   g_clear_pointer (&priv->selection_bubble, gtk_widget_unparent);
 
   priv->selection_bubble = gtk_popover_new ();
-  gtk_widget_set_parent (priv->selection_bubble, GTK_WIDGET (self));
+  gtk_widget_set_parent (priv->selection_bubble, GTK_WIDGET (this));
   gtk_widget_add_css_class (priv->selection_bubble, "touch-selection");
   gtk_popover_set_position (GTK_POPOVER (priv->selection_bubble), GTK_POS_BOTTOM);
   gtk_popover_set_autohide (GTK_POPOVER (priv->selection_bubble), FALSE);
   g_signal_connect (priv->selection_bubble, "notify::visible",
-                    G_CALLBACK (show_or_hide_handles), self);
+                    G_CALLBACK (show_or_hide_handles), this);
 
   box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
   gtk_widget_set_margin_start (box, 10);
@@ -6522,18 +6522,18 @@ gtk_text_selection_bubble_popup_show (gpointer user_data)
   gtk_popover_set_child (GTK_POPOVER (priv->selection_bubble), box);
   gtk_box_append (GTK_BOX (box), toolbar);
 
-  model = gtk_text_get_menu_model (self);
+  model = gtk_text_get_menu_model (this);
 
   for (i = 0; i < g_menu_model_get_n_items (model); i++)
-    append_bubble_item (self, toolbar, model, i);
+    append_bubble_item (this, toolbar, model, i);
 
   g_object_unref (model);
 
-  if (!gtk_widget_compute_point (GTK_WIDGET (self), gtk_widget_get_parent (GTK_WIDGET (self)),
+  if (!gtk_widget_compute_point (GTK_WIDGET (this), gtk_widget_get_parent (GTK_WIDGET (this)),
                                  &GRAPHENE_POINT_INIT (0, 0), &p))
     graphene_point_init (&p, 0, 0);
 
-  gtk_text_get_cursor_locations (self, &start_x, NULL);
+  gtk_text_get_cursor_locations (this, &start_x, NULL);
 
   start_x -= priv->scroll_offset;
   start_x = CLAMP (start_x, 0, text_width);
@@ -6542,7 +6542,7 @@ gtk_text_selection_bubble_popup_show (gpointer user_data)
 
   if (has_selection)
     {
-      end_x = gtk_text_get_selection_bound_location (self) - priv->scroll_offset;
+      end_x = gtk_text_get_selection_bound_location (this) - priv->scroll_offset;
       end_x = CLAMP (end_x, 0, text_width);
 
       rect.x = - p.x + MIN (start_x, end_x);
@@ -6568,9 +6568,9 @@ gtk_text_selection_bubble_popup_show (gpointer user_data)
 }
 
 static void
-gtk_text_selection_bubble_popup_unset (GtkText *self)
+gtk_text_selection_bubble_popup_unset (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->selection_bubble)
     gtk_widget_set_visible (priv->selection_bubble, FALSE);
@@ -6583,24 +6583,24 @@ gtk_text_selection_bubble_popup_unset (GtkText *self)
 }
 
 static void
-gtk_text_selection_bubble_popup_set (GtkText *self)
+gtk_text_selection_bubble_popup_set (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->selection_bubble_timeout_id)
     g_source_remove (priv->selection_bubble_timeout_id);
 
   priv->selection_bubble_timeout_id =
-    g_timeout_add (50, gtk_text_selection_bubble_popup_show, self);
+    g_timeout_add (50, gtk_text_selection_bubble_popup_show, this);
   gdk_source_set_static_name_by_id (priv->selection_bubble_timeout_id, "[gtk] gtk_text_selection_bubble_popup_cb");
 }
 
 static void
 gtk_text_drag_leave (GtkDropTarget *dest,
-                     GtkText       *self)
+                     GtkText       *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
-  GtkWidget *widget = GTK_WIDGET (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
+  GtkWidget *widget = GTK_WIDGET (this);
 
   priv->dnd_position = -1;
   gtk_widget_queue_draw (widget);
@@ -6611,9 +6611,9 @@ gtk_text_drag_drop (GtkDropTarget *dest,
                     const GValue  *value,
                     double         x,
                     double         y,
-                    GtkText       *self)
+                    GtkText       *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   int drop_position;
   int length;
   const char *str;
@@ -6621,7 +6621,7 @@ gtk_text_drag_drop (GtkDropTarget *dest,
   if (!priv->editable)
     return FALSE;
 
-  drop_position = gtk_text_find_position (self, x + priv->scroll_offset);
+  drop_position = gtk_text_find_position (this, x + priv->scroll_offset);
 
   str = g_value_get_string (value);
   if (str == NULL)
@@ -6636,8 +6636,8 @@ gtk_text_drag_drop (GtkDropTarget *dest,
       drop_position < priv->selection_bound ||
       drop_position > priv->current_pos)
     {
-      gtk_editable_insert_text (GTK_EDITABLE (self), str, length, &drop_position);
-      gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (self),
+      gtk_editable_insert_text (GTK_EDITABLE (this), str, length, &drop_position);
+      gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (this),
                                            GTK_ACCESSIBLE_TEXT_CONTENT_CHANGE_INSERT,
                                            drop_position, drop_position + g_utf8_strlen (str, length));
     }
@@ -6645,14 +6645,14 @@ gtk_text_drag_drop (GtkDropTarget *dest,
     {
       int pos;
       /* Replacing selection */
-      begin_change (self);
-      gtk_text_delete_selection (self);
+      begin_change (this);
+      gtk_text_delete_selection (this);
       pos = MIN (priv->selection_bound, priv->current_pos);
-      gtk_editable_insert_text (GTK_EDITABLE (self), str, length, &pos);
-      gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (self),
+      gtk_editable_insert_text (GTK_EDITABLE (this), str, length, &pos);
+      gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (this),
                                            GTK_ACCESSIBLE_TEXT_CONTENT_CHANGE_INSERT,
                                            pos, pos + g_utf8_strlen (str, length));
-      end_change (self);
+      end_change (this);
     }
 
   return TRUE;
@@ -6661,9 +6661,9 @@ gtk_text_drag_drop (GtkDropTarget *dest,
 static gboolean
 gtk_text_drag_accept (GtkDropTarget *dest,
                       GdkDrop       *drop,
-                      GtkText       *self)
+                      GtkText       *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (!priv->editable)
     return FALSE;
@@ -6678,9 +6678,9 @@ static GdkDragAction
 gtk_text_drag_motion (GtkDropTarget *target,
                       double         x,
                       double         y,
-                      GtkText       *self)
+                      GtkText       *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   int new_position, old_position;
 
   if (!priv->editable)
@@ -6690,7 +6690,7 @@ gtk_text_drag_motion (GtkDropTarget *target,
     }
 
   old_position = priv->dnd_position;
-  new_position = gtk_text_find_position (self, x + priv->scroll_offset);
+  new_position = gtk_text_find_position (this, x + priv->scroll_offset);
 
   if (priv->selection_bound == priv->current_pos ||
       new_position < priv->selection_bound ||
@@ -6704,7 +6704,7 @@ gtk_text_drag_motion (GtkDropTarget *target,
     }
 
   if (priv->dnd_position != old_position)
-    gtk_widget_queue_draw (GTK_WIDGET (self));
+    gtk_widget_queue_draw (GTK_WIDGET (this));
 
   if (priv->drag)
     return GDK_ACTION_MOVE;
@@ -6724,12 +6724,12 @@ gtk_text_drag_motion (GtkDropTarget *target,
 #define CURSOR_DIVIDER 3
 
 static gboolean
-cursor_blinks (GtkText *self)
+cursor_blinks (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
-  GtkRoot *root = gtk_widget_get_root (GTK_WIDGET (self));
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
+  GtkRoot *root = gtk_widget_get_root (GTK_WIDGET (this));
 
-  if (gtk_widget_get_mapped (GTK_WIDGET (self)) &&
+  if (gtk_widget_get_mapped (GTK_WIDGET (this)) &&
       gtk_window_is_active (GTK_WINDOW (root)) &&
       gtk_event_controller_focus_is_focus (GTK_EVENT_CONTROLLER_FOCUS (priv->focus_controller)) &&
       priv->editable &&
@@ -6738,7 +6738,7 @@ cursor_blinks (GtkText *self)
       GtkSettings *settings;
       gboolean blink;
 
-      settings = gtk_widget_get_settings (GTK_WIDGET (self));
+      settings = gtk_widget_get_settings (GTK_WIDGET (this));
       g_object_get (settings, "gtk-cursor-blink", &blink, NULL);
 
       return blink;
@@ -6748,21 +6748,21 @@ cursor_blinks (GtkText *self)
 }
 
 static gboolean
-get_middle_click_paste (GtkText *self)
+get_middle_click_paste (GtkText *this)
 {
   GtkSettings *settings;
   gboolean paste;
 
-  settings = gtk_widget_get_settings (GTK_WIDGET (self));
+  settings = gtk_widget_get_settings (GTK_WIDGET (this));
   g_object_get (settings, "gtk-enable-primary-paste", &paste, NULL);
 
   return paste;
 }
 
 static int
-get_cursor_time (GtkText *self)
+get_cursor_time (GtkText *this)
 {
-  GtkSettings *settings = gtk_widget_get_settings (GTK_WIDGET (self));
+  GtkSettings *settings = gtk_widget_get_settings (GTK_WIDGET (this));
   int time;
 
   g_object_get (settings, "gtk-cursor-blink-time", &time, NULL);
@@ -6771,9 +6771,9 @@ get_cursor_time (GtkText *self)
 }
 
 static int
-get_cursor_blink_timeout (GtkText *self)
+get_cursor_blink_timeout (GtkText *this)
 {
-  GtkSettings *settings = gtk_widget_get_settings (GTK_WIDGET (self));
+  GtkSettings *settings = gtk_widget_get_settings (GTK_WIDGET (this));
   int timeout;
 
   g_object_get (settings, "gtk-cursor-blink-timeout", &timeout, NULL);
@@ -6791,17 +6791,17 @@ static gboolean blink_cb (GtkWidget     *widget,
                           gpointer       user_data);
 
 static void
-add_blink_timeout (GtkText  *self,
+add_blink_timeout (GtkText  *this,
                    gboolean  delay)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   BlinkData *data;
   int blink_time;
 
   priv->blink_start_time = g_get_monotonic_time ();
   priv->cursor_alpha = 1.0;
 
-  blink_time = get_cursor_time (self);
+  blink_time = get_cursor_time (this);
 
   data = g_new (BlinkData, 1);
   data->start = priv->blink_start_time;
@@ -6809,20 +6809,20 @@ add_blink_timeout (GtkText  *self,
     data->start += blink_time * 1000 / 2;
   data->end = data->start + blink_time * 1000;
 
-  priv->blink_tick = gtk_widget_add_tick_callback (GTK_WIDGET (self),
+  priv->blink_tick = gtk_widget_add_tick_callback (GTK_WIDGET (this),
                                                    blink_cb,
                                                    data,
                                                    g_free);
 }
 
 static void
-remove_blink_timeout (GtkText *self)
+remove_blink_timeout (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->blink_tick)
     {
-      gtk_widget_remove_tick_callback (GTK_WIDGET (self), priv->blink_tick);
+      gtk_widget_remove_tick_callback (GTK_WIDGET (this), priv->blink_tick);
       priv->blink_tick = 0;
     }
 }
@@ -6852,8 +6852,8 @@ blink_cb (GtkWidget     *widget,
           GdkFrameClock *clock,
           gpointer       user_data)
 {
-  GtkText *self = GTK_TEXT (widget);
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkText *this = GTK_TEXT (widget);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   BlinkData *data = user_data;
   int blink_timeout;
   int blink_time;
@@ -6861,14 +6861,14 @@ blink_cb (GtkWidget     *widget,
   float phase;
   float alpha;
 
-  if (!gtk_widget_has_focus (GTK_WIDGET (self)))
+  if (!gtk_widget_has_focus (GTK_WIDGET (this)))
     {
       g_warning ("GtkText - did not receive a focus-out event.\n"
                  "If you handle this event, you must return\n"
                  "GDK_EVENT_PROPAGATE so the default handler\n"
                  "gets the event as well");
 
-      gtk_text_check_cursor_blink (self);
+      gtk_text_check_cursor_blink (this);
       return G_SOURCE_REMOVE;
     }
 
@@ -6876,12 +6876,12 @@ blink_cb (GtkWidget     *widget,
     {
       g_warning ("GtkText - unexpected blinking selection. Removing");
 
-      gtk_text_check_cursor_blink (self);
+      gtk_text_check_cursor_blink (this);
       return G_SOURCE_REMOVE;
     }
 
-  blink_timeout = get_cursor_blink_timeout (self);
-  blink_time = get_cursor_time (self);
+  blink_timeout = get_cursor_blink_timeout (this);
+  blink_time = get_cursor_time (this);
 
   now = g_get_monotonic_time ();
 
@@ -6889,7 +6889,7 @@ blink_cb (GtkWidget     *widget,
     {
       /* we've blinked enough without the user doing anything, stop blinking */
       priv->cursor_alpha = 1.0;
-      remove_blink_timeout (self);
+      remove_blink_timeout (this);
       gtk_widget_queue_draw (widget);
 
       return G_SOURCE_REMOVE;
@@ -6915,44 +6915,44 @@ blink_cb (GtkWidget     *widget,
 }
 
 static void
-gtk_text_check_cursor_blink (GtkText *self)
+gtk_text_check_cursor_blink (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  if (cursor_blinks (self))
+  if (cursor_blinks (this))
     {
       if (!priv->blink_tick)
-        add_blink_timeout (self, FALSE);
+        add_blink_timeout (this, FALSE);
     }
   else
     {
       if (priv->blink_tick)
-        remove_blink_timeout (self);
+        remove_blink_timeout (this);
     }
 }
 
 static void
-gtk_text_pend_cursor_blink (GtkText *self)
+gtk_text_pend_cursor_blink (GtkText *this)
 {
-  if (cursor_blinks (self))
+  if (cursor_blinks (this))
     {
-      remove_blink_timeout (self);
-      add_blink_timeout (self, TRUE);
+      remove_blink_timeout (this);
+      add_blink_timeout (this, TRUE);
     }
 }
 
 static void
-gtk_text_reset_blink_time (GtkText *self)
+gtk_text_reset_blink_time (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   priv->blink_start_time = g_get_monotonic_time ();
 }
 
 /**
  * gtk_text_set_placeholder_text:
- * @self: a text widget
- * @text: (nullable): a string to be displayed when @self
+ * @this: a text widget
+ * @text: (nullable): a string to be displayed when @this
  *   is empty and unfocused
  *
  * Sets the text to be displayed when the text widget is
@@ -6962,12 +6962,12 @@ gtk_text_reset_blink_time (GtkText *self)
  * contents of the text widget.
  */
 void
-gtk_text_set_placeholder_text (GtkText    *self,
+gtk_text_set_placeholder_text (GtkText    *this,
                                const char *text)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_TEXT (self));
+  g_return_if_fail (GTK_IS_TEXT (this));
 
   if (priv->placeholder == NULL)
     {
@@ -6979,21 +6979,21 @@ gtk_text_set_placeholder_text (GtkText    *self,
                                         "max-width-chars", 3,
                                         NULL);
       gtk_label_set_attributes (GTK_LABEL (priv->placeholder), priv->attrs);
-      gtk_widget_insert_after (priv->placeholder, GTK_WIDGET (self), NULL);
+      gtk_widget_insert_after (priv->placeholder, GTK_WIDGET (this), NULL);
     }
   else
     {
       gtk_label_set_text (GTK_LABEL (priv->placeholder), text);
     }
 
-  update_placeholder_visibility (self);
+  update_placeholder_visibility (this);
 
-  g_object_notify_by_pspec (G_OBJECT (self), text_props[PROP_PLACEHOLDER_TEXT]);
+  g_object_notify_by_pspec (G_OBJECT (this), text_props[PROP_PLACEHOLDER_TEXT]);
 }
 
 /**
  * gtk_text_get_placeholder_text:
- * @self: a text widget
+ * @this: a text widget
  *
  * Retrieves the text that will be displayed when the text widget
  * is empty and unfocused
@@ -7003,11 +7003,11 @@ gtk_text_set_placeholder_text (GtkText    *self,
  * Returns: (nullable) (transfer none): the placeholder text
  */
 const char *
-gtk_text_get_placeholder_text (GtkText *self)
+gtk_text_get_placeholder_text (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_TEXT (self), NULL);
+  g_return_val_if_fail (GTK_IS_TEXT (this), NULL);
 
   if (!priv->placeholder)
     return NULL;
@@ -7017,7 +7017,7 @@ gtk_text_get_placeholder_text (GtkText *self)
 
 /**
  * gtk_text_set_input_purpose:
- * @self: a text widget
+ * @this: a text widget
  * @purpose: the input purpose
  *
  * Sets the input purpose of the text widget.
@@ -7026,38 +7026,38 @@ gtk_text_get_placeholder_text (GtkText *self)
  * and other input methods to adjust their behaviour.
  */
 void
-gtk_text_set_input_purpose (GtkText         *self,
+gtk_text_set_input_purpose (GtkText         *this,
                             GtkInputPurpose  purpose)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_TEXT (self));
+  g_return_if_fail (GTK_IS_TEXT (this));
 
-  if (gtk_text_get_input_purpose (self) != purpose)
+  if (gtk_text_get_input_purpose (this) != purpose)
     {
       g_object_set (G_OBJECT (priv->im_context),
                     "input-purpose", purpose,
                     NULL);
 
-      g_object_notify_by_pspec (G_OBJECT (self), text_props[PROP_INPUT_PURPOSE]);
+      g_object_notify_by_pspec (G_OBJECT (this), text_props[PROP_INPUT_PURPOSE]);
     }
 }
 
 /**
  * gtk_text_get_input_purpose:
- * @self: a text widget
+ * @this: a text widget
  *
  * Gets the input purpose of the text widget.
  *
  * Returns: the input purpose
  */
 GtkInputPurpose
-gtk_text_get_input_purpose (GtkText *self)
+gtk_text_get_input_purpose (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   GtkInputPurpose purpose;
 
-  g_return_val_if_fail (GTK_IS_TEXT (self), GTK_INPUT_PURPOSE_FREE_FORM);
+  g_return_val_if_fail (GTK_IS_TEXT (this), GTK_INPUT_PURPOSE_FREE_FORM);
 
   g_object_get (G_OBJECT (priv->im_context),
                 "input-purpose", &purpose,
@@ -7068,46 +7068,46 @@ gtk_text_get_input_purpose (GtkText *self)
 
 /**
  * gtk_text_set_input_hints:
- * @self: a text widget
+ * @this: a text widget
  * @hints: input hints
  *
  * Sets hints that allow input methods to fine-tune their behaviour.
  */
 void
-gtk_text_set_input_hints (GtkText       *self,
+gtk_text_set_input_hints (GtkText       *this,
                           GtkInputHints  hints)
 
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_TEXT (self));
+  g_return_if_fail (GTK_IS_TEXT (this));
 
-  if (gtk_text_get_input_hints (self) != hints)
+  if (gtk_text_get_input_hints (this) != hints)
     {
       g_object_set (G_OBJECT (priv->im_context),
                     "input-hints", hints,
                     NULL);
 
-      g_object_notify_by_pspec (G_OBJECT (self), text_props[PROP_INPUT_HINTS]);
-      gtk_text_update_emoji_action (self);
+      g_object_notify_by_pspec (G_OBJECT (this), text_props[PROP_INPUT_HINTS]);
+      gtk_text_update_emoji_action (this);
     }
 }
 
 /**
  * gtk_text_get_input_hints:
- * @self: a text widget
+ * @this: a text widget
  *
  * Gets the input hints of the text widget.
  *
  * Returns: the input hints
  */
 GtkInputHints
-gtk_text_get_input_hints (GtkText *self)
+gtk_text_get_input_hints (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
   GtkInputHints hints;
 
-  g_return_val_if_fail (GTK_IS_TEXT (self), GTK_INPUT_HINT_NONE);
+  g_return_val_if_fail (GTK_IS_TEXT (this), GTK_INPUT_HINT_NONE);
 
   g_object_get (G_OBJECT (priv->im_context),
                 "input-hints", &hints,
@@ -7118,18 +7118,18 @@ gtk_text_get_input_hints (GtkText *self)
 
 /**
  * gtk_text_set_attributes:
- * @self: a text widget
+ * @this: a text widget
  * @attrs: (nullable): a list of style attributes
  *
  * Apply attributes to the contents of the text widget.
  */
 void
-gtk_text_set_attributes (GtkText       *self,
+gtk_text_set_attributes (GtkText       *this,
                          PangoAttrList *attrs)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_TEXT (self));
+  g_return_if_fail (GTK_IS_TEXT (this));
 
   if (attrs)
     pango_attr_list_ref (attrs);
@@ -7141,15 +7141,15 @@ gtk_text_set_attributes (GtkText       *self,
   if (priv->placeholder)
     gtk_label_set_attributes (GTK_LABEL (priv->placeholder), attrs);
 
-  g_object_notify_by_pspec (G_OBJECT (self), text_props[PROP_ATTRIBUTES]);
+  g_object_notify_by_pspec (G_OBJECT (this), text_props[PROP_ATTRIBUTES]);
 
-  gtk_text_recompute (self);
-  gtk_widget_queue_resize (GTK_WIDGET (self));
+  gtk_text_recompute (this);
+  gtk_widget_queue_resize (GTK_WIDGET (this));
 }
 
 /**
  * gtk_text_get_attributes:
- * @self: a text widget
+ * @this: a text widget
  *
  * Gets the attribute list that was set on the text widget.
  *
@@ -7158,29 +7158,29 @@ gtk_text_set_attributes (GtkText       *self,
  * Returns: (transfer none) (nullable): the attribute list
  */
 PangoAttrList *
-gtk_text_get_attributes (GtkText *self)
+gtk_text_get_attributes (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_TEXT (self), NULL);
+  g_return_val_if_fail (GTK_IS_TEXT (this), NULL);
 
   return priv->attrs;
 }
 
 /**
  * gtk_text_set_tabs:
- * @self: a text widget
+ * @this: a text widget
  * @tabs: (nullable): tab stops
  *
  * Sets tab stops for the text widget.
  */
 void
-gtk_text_set_tabs (GtkText       *self,
+gtk_text_set_tabs (GtkText       *this,
                    PangoTabArray *tabs)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_TEXT (self));
+  g_return_if_fail (GTK_IS_TEXT (this));
 
   if (priv->tabs)
     pango_tab_array_free(priv->tabs);
@@ -7190,15 +7190,15 @@ gtk_text_set_tabs (GtkText       *self,
   else
     priv->tabs = NULL;
 
-  g_object_notify_by_pspec (G_OBJECT (self), text_props[PROP_TABS]);
+  g_object_notify_by_pspec (G_OBJECT (this), text_props[PROP_TABS]);
 
-  gtk_text_recompute (self);
-  gtk_widget_queue_resize (GTK_WIDGET (self));
+  gtk_text_recompute (this);
+  gtk_widget_queue_resize (GTK_WIDGET (this));
 }
 
 /**
  * gtk_text_get_tabs:
- * @self: a text widget
+ * @this: a text widget
  *
  * Gets the tab stops for the text widget.
  *
@@ -7207,11 +7207,11 @@ gtk_text_set_tabs (GtkText       *self,
  * Returns: (nullable) (transfer none): the tab stops
  */
 PangoTabArray *
-gtk_text_get_tabs (GtkText *self)
+gtk_text_get_tabs (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_TEXT (self), NULL);
+  g_return_val_if_fail (GTK_IS_TEXT (this), NULL);
 
   return priv->tabs;
 }
@@ -7219,41 +7219,41 @@ gtk_text_get_tabs (GtkText *self)
 static void
 emoji_picked (GtkEmojiChooser *chooser,
               const char      *text,
-              GtkText         *self)
+              GtkText         *this)
 {
   int pos;
 
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  begin_change (self);
+  begin_change (this);
   if (priv->selection_bound != priv->current_pos)
-    gtk_text_delete_selection (self);
+    gtk_text_delete_selection (this);
 
   pos = priv->current_pos;
-  gtk_editable_insert_text (GTK_EDITABLE (self), text, -1, &pos);
-  gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (self),
+  gtk_editable_insert_text (GTK_EDITABLE (this), text, -1, &pos);
+  gtk_accessible_text_update_contents (GTK_ACCESSIBLE_TEXT (this),
                                        GTK_ACCESSIBLE_TEXT_CONTENT_CHANGE_INSERT,
                                        pos, pos + g_utf8_strlen (text, -1));
-  gtk_text_set_selection_bounds (self, pos, pos);
-  end_change (self);
+  gtk_text_set_selection_bounds (this, pos, pos);
+  end_change (this);
 }
 
 static void
-gtk_text_insert_emoji (GtkText *self)
+gtk_text_insert_emoji (GtkText *this)
 {
   GtkWidget *chooser;
 
-  if (gtk_widget_get_ancestor (GTK_WIDGET (self), GTK_TYPE_EMOJI_CHOOSER) != NULL)
+  if (gtk_widget_get_ancestor (GTK_WIDGET (this), GTK_TYPE_EMOJI_CHOOSER) != NULL)
     return;
 
-  chooser = GTK_WIDGET (g_object_get_data (G_OBJECT (self), "gtk-emoji-chooser"));
+  chooser = GTK_WIDGET (g_object_get_data (G_OBJECT (this), "gtk-emoji-chooser"));
   if (!chooser)
     {
       chooser = gtk_emoji_chooser_new ();
-      g_object_set_data (G_OBJECT (self), "gtk-emoji-chooser", chooser);
+      g_object_set_data (G_OBJECT (this), "gtk-emoji-chooser", chooser);
 
-      gtk_widget_set_parent (chooser, GTK_WIDGET (self));
-      g_signal_connect (chooser, "emoji-picked", G_CALLBACK (emoji_picked), self);
+      gtk_widget_set_parent (chooser, GTK_WIDGET (this));
+      g_signal_connect (chooser, "emoji-picked", G_CALLBACK (emoji_picked), this);
     }
 
   gtk_popover_popup (GTK_POPOVER (chooser));
@@ -7266,39 +7266,39 @@ set_text_cursor (GtkWidget *widget)
 }
 
 GtkEventController *
-gtk_text_get_key_controller (GtkText *self)
+gtk_text_get_key_controller (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   return priv->key_controller;
 }
 
 /**
  * gtk_text_set_extra_menu:
- * @self: a text widget
+ * @this: a text widget
  * @model: (nullable): a menu model
  *
  * Sets a menu model to add to the context menu of the text widget.
  */
 void
-gtk_text_set_extra_menu (GtkText    *self,
+gtk_text_set_extra_menu (GtkText    *this,
                          GMenuModel *model)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_TEXT (self));
+  g_return_if_fail (GTK_IS_TEXT (this));
 
   if (g_set_object (&priv->extra_menu, model))
     {
       g_clear_pointer (&priv->popup_menu, gtk_widget_unparent);
 
-      g_object_notify_by_pspec (G_OBJECT (self), text_props[PROP_EXTRA_MENU]);
+      g_object_notify_by_pspec (G_OBJECT (this), text_props[PROP_EXTRA_MENU]);
     }
 }
 
 /**
  * gtk_text_get_extra_menu:
- * @self: a text widget
+ * @this: a text widget
  *
  * Gets the extra menu model of the text widget.
  *
@@ -7307,18 +7307,18 @@ gtk_text_set_extra_menu (GtkText    *self,
  * Returns: (transfer none) (nullable): the menu model
  */
 GMenuModel *
-gtk_text_get_extra_menu (GtkText *self)
+gtk_text_get_extra_menu (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_TEXT (self), NULL);
+  g_return_val_if_fail (GTK_IS_TEXT (this), NULL);
 
   return priv->extra_menu;
 }
 
 /**
  * gtk_text_set_enable_emoji_completion:
- * @self: a text widget
+ * @this: a text widget
  * @enable_emoji_completion: true to enable Emoji completion
  *
  * Sets whether Emoji completion is enabled.
@@ -7328,12 +7328,12 @@ gtk_text_get_extra_menu (GtkText *self)
  * keyword.
  */
 void
-gtk_text_set_enable_emoji_completion (GtkText  *self,
+gtk_text_set_enable_emoji_completion (GtkText  *this,
                                       gboolean  enable_emoji_completion)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_TEXT (self));
+  g_return_if_fail (GTK_IS_TEXT (this));
 
   if (priv->enable_emoji_completion == enable_emoji_completion)
     return;
@@ -7341,119 +7341,119 @@ gtk_text_set_enable_emoji_completion (GtkText  *self,
   priv->enable_emoji_completion = enable_emoji_completion;
 
   if (priv->enable_emoji_completion)
-    priv->emoji_completion = gtk_emoji_completion_new (self);
+    priv->emoji_completion = gtk_emoji_completion_new (this);
   else
     g_clear_pointer (&priv->emoji_completion, gtk_widget_unparent);
 
-  g_object_notify_by_pspec (G_OBJECT (self), text_props[PROP_ENABLE_EMOJI_COMPLETION]);
+  g_object_notify_by_pspec (G_OBJECT (this), text_props[PROP_ENABLE_EMOJI_COMPLETION]);
 }
 
 /**
  * gtk_text_get_enable_emoji_completion:
- * @self: a text widget
+ * @this: a text widget
  *
  * Returns whether Emoji completion is enabled.
  *
  * Returns: true if Emoji completion is enabled
  */
 gboolean
-gtk_text_get_enable_emoji_completion (GtkText *self)
+gtk_text_get_enable_emoji_completion (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_TEXT (self), FALSE);
+  g_return_val_if_fail (GTK_IS_TEXT (this), FALSE);
 
   return priv->enable_emoji_completion;
 }
 
 /**
  * gtk_text_set_propagate_text_width:
- * @self: a text widget
+ * @this: a text widget
  * @propagate_text_width: true to propagate the text width
  *
  * Sets whether the text widget should grow and shrink with the content.
  */
 void
-gtk_text_set_propagate_text_width (GtkText  *self,
+gtk_text_set_propagate_text_width (GtkText  *this,
                                    gboolean  propagate_text_width)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_TEXT (self));
+  g_return_if_fail (GTK_IS_TEXT (this));
 
   if (priv->propagate_text_width == propagate_text_width)
     return;
 
   priv->propagate_text_width = propagate_text_width;
 
-  gtk_widget_queue_resize (GTK_WIDGET (self));
+  gtk_widget_queue_resize (GTK_WIDGET (this));
 
-  g_object_notify_by_pspec (G_OBJECT (self), text_props[PROP_PROPAGATE_TEXT_WIDTH]);
+  g_object_notify_by_pspec (G_OBJECT (this), text_props[PROP_PROPAGATE_TEXT_WIDTH]);
 }
 
 /**
  * gtk_text_get_propagate_text_width:
- * @self: a text widget
+ * @this: a text widget
  *
  * Returns whether the text widget will grow and shrink
  * with the content.
  *
- * Returns: true if @self will propagate the text width
+ * Returns: true if @this will propagate the text width
  */
 gboolean
-gtk_text_get_propagate_text_width (GtkText *self)
+gtk_text_get_propagate_text_width (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_TEXT (self), FALSE);
+  g_return_val_if_fail (GTK_IS_TEXT (this), FALSE);
 
   return priv->propagate_text_width;
 }
 
 /**
  * gtk_text_set_truncate_multiline:
- * @self: a text widget
+ * @this: a text widget
  * @truncate_multiline: true to truncate multi-line text
  *
  * Sets whether pasted text should be truncated to the first line.
  */
 void
-gtk_text_set_truncate_multiline (GtkText  *self,
+gtk_text_set_truncate_multiline (GtkText  *this,
                                  gboolean  truncate_multiline)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_if_fail (GTK_IS_TEXT (self));
+  g_return_if_fail (GTK_IS_TEXT (this));
 
   if (priv->truncate_multiline == truncate_multiline)
     return;
 
   priv->truncate_multiline = truncate_multiline;
 
-  g_object_notify_by_pspec (G_OBJECT (self), text_props[PROP_TRUNCATE_MULTILINE]);
+  g_object_notify_by_pspec (G_OBJECT (this), text_props[PROP_TRUNCATE_MULTILINE]);
 }
 
 /**
  * gtk_text_get_truncate_multiline:
- * @self: a text widget
+ * @this: a text widget
  *
  * Returns whether pasted text will be truncated to the first line.
  *
- * Returns: true if @self will truncate pasted multi-line text
+ * Returns: true if @this will truncate pasted multi-line text
  */
 gboolean
-gtk_text_get_truncate_multiline (GtkText *self)
+gtk_text_get_truncate_multiline (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
-  g_return_val_if_fail (GTK_IS_TEXT (self), FALSE);
+  g_return_val_if_fail (GTK_IS_TEXT (this), FALSE);
 
   return priv->truncate_multiline;
 }
 
 /**
  * gtk_text_compute_cursor_extents:
- * @self: a text widget
+ * @this: a text widget
  * @position: the character position
  * @strong: (out) (optional): location to store the strong cursor position
  * @weak: (out) (optional): location to store the weak cursor position
@@ -7472,7 +7472,7 @@ gtk_text_get_truncate_multiline (GtkText *self)
  * Since: 4.4
  */
 void
-gtk_text_compute_cursor_extents (GtkText         *self,
+gtk_text_compute_cursor_extents (GtkText         *this,
                                  gsize            position,
                                  graphene_rect_t *strong,
                                  graphene_rect_t *weak)
@@ -7483,9 +7483,9 @@ gtk_text_compute_cursor_extents (GtkText         *self,
   int offset_x, offset_y, index;
   const char *text;
 
-  g_return_if_fail (GTK_IS_TEXT (self));
+  g_return_if_fail (GTK_IS_TEXT (this));
 
-  layout = gtk_text_ensure_layout (self, TRUE);
+  layout = gtk_text_ensure_layout (this, TRUE);
   text = pango_layout_get_text (layout);
   position = CLAMP (position, 0, g_utf8_strlen (text, -1));
   index = g_utf8_offset_to_pointer (text, position) - text;
@@ -7493,7 +7493,7 @@ gtk_text_compute_cursor_extents (GtkText         *self,
   pango_layout_get_cursor_pos (layout, index,
                                strong ? &pango_strong_pos : NULL,
                                weak ? &pango_weak_pos : NULL);
-  gtk_text_get_layout_offsets (self, &offset_x, &offset_y);
+  gtk_text_get_layout_offsets (this, &offset_x, &offset_y);
 
   if (strong)
     {
@@ -7586,23 +7586,23 @@ gtk_text_history_select_cb (gpointer funcs_data,
 }
 
 static void
-gtk_text_set_enable_undo (GtkText  *self,
+gtk_text_set_enable_undo (GtkText  *this,
                           gboolean  enable_undo)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   if (priv->enable_undo == enable_undo)
     return;
 
   priv->enable_undo = enable_undo;
-  gtk_text_update_history (self);
-  g_object_notify (G_OBJECT (self), "enable-undo");
+  gtk_text_update_history (this);
+  g_object_notify (G_OBJECT (this), "enable-undo");
 }
 
 static void
-gtk_text_update_history (GtkText *self)
+gtk_text_update_history (GtkText *this)
 {
-  GtkTextPrivate *priv = gtk_text_get_instance_private (self);
+  GtkTextPrivate *priv = gtk_text_get_instance_private (this);
 
   gtk_text_history_set_enabled (priv->history,
                                 priv->enable_undo &&
@@ -7613,11 +7613,11 @@ gtk_text_update_history (GtkText *self)
  /* {{{ GtkAccessibleText implementation */
 
 static GBytes *
-gtk_text_accessible_text_get_contents (GtkAccessibleText *self,
+gtk_text_accessible_text_get_contents (GtkAccessibleText *this,
                                        unsigned int       start,
                                        unsigned int       end)
 {
-  char *text = gtk_text_get_display_text (GTK_TEXT (self), 0, -1);
+  char *text = gtk_text_get_display_text (GTK_TEXT (this), 0, -1);
   int len = g_utf8_strlen (text, -1);
   char *string;
   gsize size;
@@ -7645,32 +7645,32 @@ gtk_text_accessible_text_get_contents (GtkAccessibleText *self,
 }
 
 static GBytes *
-gtk_text_accessible_text_get_contents_at (GtkAccessibleText            *self,
+gtk_text_accessible_text_get_contents_at (GtkAccessibleText            *this,
                                           unsigned int                  offset,
                                           GtkAccessibleTextGranularity  granularity,
                                           unsigned int                 *start,
                                           unsigned int                 *end)
 {
-  PangoLayout *layout = gtk_text_get_layout (GTK_TEXT (self));
+  PangoLayout *layout = gtk_text_get_layout (GTK_TEXT (this));
   char *string = gtk_pango_get_string_at (layout, offset, granularity, start, end);
 
   return g_bytes_new_take (string, strlen (string));
 }
 
 static unsigned int
-gtk_text_accessible_text_get_caret_position (GtkAccessibleText *self)
+gtk_text_accessible_text_get_caret_position (GtkAccessibleText *this)
 {
-  return gtk_editable_get_position (GTK_EDITABLE (self));
+  return gtk_editable_get_position (GTK_EDITABLE (this));
 }
 
 static gboolean
-gtk_text_accessible_text_get_selection (GtkAccessibleText       *self,
+gtk_text_accessible_text_get_selection (GtkAccessibleText       *this,
                                         gsize                   *n_ranges,
                                         GtkAccessibleTextRange **ranges)
 {
   int start, end;
 
-  if (!gtk_editable_get_selection_bounds (GTK_EDITABLE (self), &start, &end))
+  if (!gtk_editable_get_selection_bounds (GTK_EDITABLE (this), &start, &end))
     return FALSE;
 
   *n_ranges = 1;
@@ -7682,14 +7682,14 @@ gtk_text_accessible_text_get_selection (GtkAccessibleText       *self,
 }
 
 static gboolean
-gtk_text_accessible_text_get_attributes (GtkAccessibleText        *self,
+gtk_text_accessible_text_get_attributes (GtkAccessibleText        *this,
                                          unsigned int              offset,
                                          gsize                    *n_ranges,
                                          GtkAccessibleTextRange  **ranges,
                                          char                   ***attribute_names,
                                          char                   ***attribute_values)
 {
-  PangoLayout *layout = gtk_text_get_layout (GTK_TEXT (self));
+  PangoLayout *layout = gtk_text_get_layout (GTK_TEXT (this));
   unsigned int start, end;
   char **names, **values;
 
@@ -7713,11 +7713,11 @@ gtk_text_accessible_text_get_attributes (GtkAccessibleText        *self,
 }
 
 static void
-gtk_text_accessible_text_get_default_attributes (GtkAccessibleText   *self,
+gtk_text_accessible_text_get_default_attributes (GtkAccessibleText   *this,
                                                  char              ***attribute_names,
                                                  char              ***attribute_values)
 {
-  PangoLayout *layout = gtk_text_get_layout (GTK_TEXT (self));
+  PangoLayout *layout = gtk_text_get_layout (GTK_TEXT (this));
   char **names, **values;
 
   gtk_pango_get_default_attributes (layout, &names, &values);
@@ -7727,21 +7727,21 @@ gtk_text_accessible_text_get_default_attributes (GtkAccessibleText   *self,
 }
 
 static gboolean
-gtk_text_accessible_text_get_extents (GtkAccessibleText *self,
+gtk_text_accessible_text_get_extents (GtkAccessibleText *this,
                                       unsigned int       start,
                                       unsigned int       end,
                                       graphene_rect_t   *extents)
 {
-  PangoLayout *layout = gtk_text_get_layout (GTK_TEXT (self));
+  PangoLayout *layout = gtk_text_get_layout (GTK_TEXT (this));
   const char *text;
   int lx, ly;
   int range[2];
   cairo_region_t *range_clip;
   cairo_rectangle_int_t clip_rect;
 
-  layout = gtk_text_get_layout (GTK_TEXT (self));
-  text = gtk_entry_buffer_get_text (get_buffer (GTK_TEXT (self)));
-  get_layout_position (GTK_TEXT (self), &lx, &ly);
+  layout = gtk_text_get_layout (GTK_TEXT (this));
+  text = gtk_entry_buffer_get_text (get_buffer (GTK_TEXT (this)));
+  get_layout_position (GTK_TEXT (this), &lx, &ly);
 
   range[0] = g_utf8_pointer_to_offset (text, text + start);
   range[1] = g_utf8_pointer_to_offset (text, text + end);
@@ -7759,7 +7759,7 @@ gtk_text_accessible_text_get_extents (GtkAccessibleText *self,
 }
 
 static gboolean
-gtk_text_accessible_text_get_offset (GtkAccessibleText      *self,
+gtk_text_accessible_text_get_offset (GtkAccessibleText      *this,
                                      const graphene_point_t *point,
                                      unsigned int           *offset)
 {
@@ -7767,9 +7767,9 @@ gtk_text_accessible_text_get_offset (GtkAccessibleText      *self,
   int index;
   const char *text;
 
-  gtk_text_get_layout_offsets (GTK_TEXT (self), &lx, NULL);
-  index = gtk_text_find_position (GTK_TEXT (self), point->x - lx);
-  text = gtk_entry_buffer_get_text (get_buffer (GTK_TEXT (self)));
+  gtk_text_get_layout_offsets (GTK_TEXT (this), &lx, NULL);
+  index = gtk_text_find_position (GTK_TEXT (this), point->x - lx);
+  text = gtk_entry_buffer_get_text (get_buffer (GTK_TEXT (this)));
 
   *offset = (unsigned int) g_utf8_pointer_to_offset (text, text + index);
 

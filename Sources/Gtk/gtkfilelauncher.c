@@ -83,16 +83,16 @@ static GParamSpec *properties[NUM_PROPERTIES];
 G_DEFINE_TYPE (GtkFileLauncher, gtk_file_launcher, G_TYPE_OBJECT)
 
 static void
-gtk_file_launcher_init (GtkFileLauncher *self)
+gtk_file_launcher_init (GtkFileLauncher *this)
 {
 }
 
 static void
 gtk_file_launcher_finalize (GObject *object)
 {
-  GtkFileLauncher *self = GTK_FILE_LAUNCHER (object);
+  GtkFileLauncher *this = GTK_FILE_LAUNCHER (object);
 
-  g_clear_object (&self->file);
+  g_clear_object (&this->file);
 
   G_OBJECT_CLASS (gtk_file_launcher_parent_class)->finalize (object);
 }
@@ -103,20 +103,20 @@ gtk_file_launcher_get_property (GObject      *object,
                                 GValue       *value,
                                 GParamSpec   *pspec)
 {
-  GtkFileLauncher *self = GTK_FILE_LAUNCHER (object);
+  GtkFileLauncher *this = GTK_FILE_LAUNCHER (object);
 
   switch (property_id)
     {
     case PROP_FILE:
-      g_value_set_object (value, self->file);
+      g_value_set_object (value, this->file);
       break;
 
     case PROP_ALWAYS_ASK:
-      g_value_set_boolean (value, self->always_ask);
+      g_value_set_boolean (value, this->always_ask);
       break;
 
     case PROP_WRITABLE:
-      g_value_set_boolean (value, self->writable);
+      g_value_set_boolean (value, this->writable);
       break;
 
     default:
@@ -131,20 +131,20 @@ gtk_file_launcher_set_property (GObject      *object,
                                 const GValue *value,
                                 GParamSpec   *pspec)
 {
-  GtkFileLauncher *self = GTK_FILE_LAUNCHER (object);
+  GtkFileLauncher *this = GTK_FILE_LAUNCHER (object);
 
   switch (property_id)
     {
     case PROP_FILE:
-      gtk_file_launcher_set_file (self, g_value_get_object (value));
+      gtk_file_launcher_set_file (this, g_value_get_object (value));
       break;
 
     case PROP_ALWAYS_ASK:
-      gtk_file_launcher_set_always_ask (self, g_value_get_boolean (value));
+      gtk_file_launcher_set_always_ask (this, g_value_get_boolean (value));
       break;
 
     case PROP_WRITABLE:
-      gtk_file_launcher_set_writable (self, g_value_get_boolean (value));
+      gtk_file_launcher_set_writable (this, g_value_get_boolean (value));
       break;
 
     default:
@@ -228,7 +228,7 @@ gtk_file_launcher_new (GFile *file)
 
 /**
  * gtk_file_launcher_get_file:
- * @self: a file launcher
+ * @this: a file launcher
  *
  * Gets the file that will be opened.
  *
@@ -237,16 +237,16 @@ gtk_file_launcher_new (GFile *file)
  * Since: 4.10
  */
 GFile *
-gtk_file_launcher_get_file (GtkFileLauncher *self)
+gtk_file_launcher_get_file (GtkFileLauncher *this)
 {
-  g_return_val_if_fail (GTK_IS_FILE_LAUNCHER (self), NULL);
+  g_return_val_if_fail (GTK_IS_FILE_LAUNCHER (this), NULL);
 
-  return self->file;
+  return this->file;
 }
 
 /**
  * gtk_file_launcher_set_file:
- * @self: a file launcher
+ * @this: a file launcher
  * @file: (nullable): the file
  *
  * Sets the file that will be opened.
@@ -254,21 +254,21 @@ gtk_file_launcher_get_file (GtkFileLauncher *self)
  * Since: 4.10
  */
 void
-gtk_file_launcher_set_file (GtkFileLauncher *self,
+gtk_file_launcher_set_file (GtkFileLauncher *this,
                             GFile           *file)
 {
-  g_return_if_fail (GTK_IS_FILE_LAUNCHER (self));
+  g_return_if_fail (GTK_IS_FILE_LAUNCHER (this));
   g_return_if_fail (file == NULL || G_IS_FILE (file));
 
-  if (!g_set_object (&self->file, file))
+  if (!g_set_object (&this->file, file))
     return;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_FILE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_FILE]);
 }
 
 /**
  * gtk_file_launcher_get_always_ask:
- * @self: a file launcher
+ * @this: a file launcher
  *
  * Returns whether to ask the user which app to use.
  *
@@ -277,16 +277,16 @@ gtk_file_launcher_set_file (GtkFileLauncher *self,
  * Since: 4.12
  */
 gboolean
-gtk_file_launcher_get_always_ask (GtkFileLauncher *self)
+gtk_file_launcher_get_always_ask (GtkFileLauncher *this)
 {
-  g_return_val_if_fail (GTK_IS_FILE_LAUNCHER (self), FALSE);
+  g_return_val_if_fail (GTK_IS_FILE_LAUNCHER (this), FALSE);
 
-  return self->always_ask;
+  return this->always_ask;
 }
 
 /**
  * gtk_file_launcher_set_always_ask:
- * @self: a file launcher
+ * @this: a file launcher
  * @always_ask: whether to always ask
  *
  * Sets whether to always ask the user which app to use.
@@ -297,22 +297,22 @@ gtk_file_launcher_get_always_ask (GtkFileLauncher *self)
  * Since: 4.12
  */
 void
-gtk_file_launcher_set_always_ask (GtkFileLauncher *self,
+gtk_file_launcher_set_always_ask (GtkFileLauncher *this,
                                   gboolean         always_ask)
 {
-  g_return_if_fail (GTK_IS_FILE_LAUNCHER (self));
+  g_return_if_fail (GTK_IS_FILE_LAUNCHER (this));
 
-  if (self->always_ask == always_ask)
+  if (this->always_ask == always_ask)
     return;
 
-  self->always_ask = always_ask;
+  this->always_ask = always_ask;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ALWAYS_ASK]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_ALWAYS_ASK]);
 }
 
 /**
  * gtk_file_launcher_get_writable:
- * @self: a file launcher
+ * @this: a file launcher
  *
  * Returns whether to make the file writable for the handler.
  *
@@ -321,16 +321,16 @@ gtk_file_launcher_set_always_ask (GtkFileLauncher *self,
  * Since: 4.14
  */
 gboolean
-gtk_file_launcher_get_writable (GtkFileLauncher *self)
+gtk_file_launcher_get_writable (GtkFileLauncher *this)
 {
-  g_return_val_if_fail (GTK_IS_FILE_LAUNCHER (self), FALSE);
+  g_return_val_if_fail (GTK_IS_FILE_LAUNCHER (this), FALSE);
 
-  return self->writable;
+  return this->writable;
 }
 
 /**
  * gtk_file_launcher_set_writable:
- * @self: a file launcher
+ * @this: a file launcher
  * @writable: whether to make the file writable
  *
  * Sets whether to make the file writable for the handler.
@@ -338,17 +338,17 @@ gtk_file_launcher_get_writable (GtkFileLauncher *self)
  * Since: 4.14
  */
 void
-gtk_file_launcher_set_writable (GtkFileLauncher *self,
+gtk_file_launcher_set_writable (GtkFileLauncher *this,
                                 gboolean         writable)
 {
-  g_return_if_fail (GTK_IS_FILE_LAUNCHER (self));
+  g_return_if_fail (GTK_IS_FILE_LAUNCHER (this));
 
-  if (self->writable == writable)
+  if (this->writable == writable)
     return;
 
-  self->writable = writable;
+  this->writable = writable;
 
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_WRITABLE]);
+  g_object_notify_by_pspec (G_OBJECT (this), properties[PROP_WRITABLE]);
 }
 
 /* }}} */
@@ -531,7 +531,7 @@ gtk_show_file_android (GFile               *file,
 
 /**
  * gtk_file_launcher_launch:
- * @self: a file launcher
+ * @this: a file launcher
  * @parent: (nullable): the parent window
  * @cancellable: (nullable): a cancellable to cancel the operation
  * @callback: (scope async) (closure user_data): a callback to call when the
@@ -545,7 +545,7 @@ gtk_show_file_android (GFile               *file,
  * Since: 4.10
  */
 void
-gtk_file_launcher_launch (GtkFileLauncher     *self,
+gtk_file_launcher_launch (GtkFileLauncher     *this,
                           GtkWindow           *parent,
                           GCancellable        *cancellable,
                           GAsyncReadyCallback  callback,
@@ -556,13 +556,13 @@ gtk_file_launcher_launch (GtkFileLauncher     *self,
   GdkDisplay *display;
 #endif
 
-  g_return_if_fail (GTK_IS_FILE_LAUNCHER (self));
+  g_return_if_fail (GTK_IS_FILE_LAUNCHER (this));
 
-  task = g_task_new (self, cancellable, callback, user_data);
+  task = g_task_new (this, cancellable, callback, user_data);
   g_task_set_check_cancellable (task, FALSE);
   g_task_set_source_tag (task, gtk_file_launcher_launch);
 
-  if (self->file == NULL)
+  if (this->file == NULL)
     {
       g_task_return_new_error (task,
                                GTK_DIALOG_ERROR, GTK_DIALOG_ERROR_FAILED,
@@ -572,13 +572,13 @@ gtk_file_launcher_launch (GtkFileLauncher     *self,
     }
 
 #if defined (G_OS_WIN32)
-  char *path = g_file_get_path (self->file);
-  gtk_show_uri_win32 (parent, path, self->always_ask, cancellable, show_uri_done, task);
+  char *path = g_file_get_path (this->file);
+  gtk_show_uri_win32 (parent, path, this->always_ask, cancellable, show_uri_done, task);
   g_free (path);
 #elif defined (GDK_WINDOWING_ANDROID)
   GError *err = NULL;
   GdkAndroidToplevel* toplevel = GDK_ANDROID_TOPLEVEL (gtk_native_get_surface (GTK_NATIVE (parent)));
-  if (gtk_show_file_android (self->file, toplevel, self->writable, self->always_ask, &err))
+  if (gtk_show_file_android (this->file, toplevel, this->writable, this->always_ask, &err))
     g_task_return_boolean (task, TRUE);
   else
     g_task_return_error (task, err);
@@ -593,17 +593,17 @@ gtk_file_launcher_launch (GtkFileLauncher     *self,
     {
       GtkOpenuriFlags flags = 0;
 
-      if (self->always_ask)
+      if (this->always_ask)
         flags |= GTK_OPENURI_FLAGS_ASK;
 
-      if (self->writable)
+      if (this->writable)
         flags |= GTK_OPENURI_FLAGS_WRITABLE;
 
-      gtk_openuri_portal_open_async (self->file, FALSE, flags, parent, cancellable, open_done, task);
+      gtk_openuri_portal_open_async (this->file, FALSE, flags, parent, cancellable, open_done, task);
     }
   else
     {
-      char *uri = g_file_get_uri (self->file);
+      char *uri = g_file_get_uri (this->file);
 
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS
       gtk_show_uri_full (parent, uri, GDK_CURRENT_TIME, cancellable, show_uri_done, task);
@@ -616,7 +616,7 @@ G_GNUC_END_IGNORE_DEPRECATIONS
 
 /**
  * gtk_file_launcher_launch_finish:
- * @self: a file launcher
+ * @this: a file launcher
  * @result: the result
  * @error: return location for a [enum@Gtk.DialogError] or [enum@Gio.Error] error
  *
@@ -628,12 +628,12 @@ G_GNUC_END_IGNORE_DEPRECATIONS
  * Since: 4.10
  */
 gboolean
-gtk_file_launcher_launch_finish (GtkFileLauncher  *self,
+gtk_file_launcher_launch_finish (GtkFileLauncher  *this,
                                  GAsyncResult     *result,
                                  GError          **error)
 {
-  g_return_val_if_fail (GTK_IS_FILE_LAUNCHER (self), FALSE);
-  g_return_val_if_fail (g_task_is_valid (result, self), FALSE);
+  g_return_val_if_fail (GTK_IS_FILE_LAUNCHER (this), FALSE);
+  g_return_val_if_fail (g_task_is_valid (result, this), FALSE);
   g_return_val_if_fail (g_task_get_source_tag (G_TASK (result)) == gtk_file_launcher_launch, FALSE);
 
   return g_task_propagate_boolean (G_TASK (result), error);
@@ -641,7 +641,7 @@ gtk_file_launcher_launch_finish (GtkFileLauncher  *self,
 
 /**
  * gtk_file_launcher_open_containing_folder:
- * @self: a file launcher
+ * @this: a file launcher
  * @parent: (nullable): the parent window
  * @cancellable: (nullable): a cancellable to cancel the operation
  * @callback: (scope async) (closure user_data): a callback to call when the
@@ -656,7 +656,7 @@ gtk_file_launcher_launch_finish (GtkFileLauncher  *self,
  * Since: 4.10
  */
 void
-gtk_file_launcher_open_containing_folder (GtkFileLauncher     *self,
+gtk_file_launcher_open_containing_folder (GtkFileLauncher     *this,
                                           GtkWindow           *parent,
                                           GCancellable        *cancellable,
                                           GAsyncReadyCallback  callback,
@@ -664,13 +664,13 @@ gtk_file_launcher_open_containing_folder (GtkFileLauncher     *self,
 {
   GTask *task;
 
-  g_return_if_fail (GTK_IS_FILE_LAUNCHER (self));
+  g_return_if_fail (GTK_IS_FILE_LAUNCHER (this));
 
-  task = g_task_new (self, cancellable, callback, user_data);
+  task = g_task_new (this, cancellable, callback, user_data);
   g_task_set_check_cancellable (task, FALSE);
   g_task_set_source_tag (task, gtk_file_launcher_open_containing_folder);
 
-  if (self->file == NULL)
+  if (this->file == NULL)
     {
       g_task_return_new_error (task,
                                GTK_DIALOG_ERROR, GTK_DIALOG_ERROR_FAILED,
@@ -679,7 +679,7 @@ gtk_file_launcher_open_containing_folder (GtkFileLauncher     *self,
       return;
     }
 
-  if (!g_file_is_native (self->file))
+  if (!g_file_is_native (this->file))
     {
       g_task_return_new_error (task,
                                GTK_DIALOG_ERROR, GTK_DIALOG_ERROR_FAILED,
@@ -699,12 +699,12 @@ gtk_file_launcher_open_containing_folder (GtkFileLauncher     *self,
     {
       GtkOpenuriFlags flags = 0;
 
-      gtk_openuri_portal_open_async (self->file, TRUE, flags, parent, cancellable, open_done, task);
+      gtk_openuri_portal_open_async (this->file, TRUE, flags, parent, cancellable, open_done, task);
     }
   else
 #endif // not G_OS_WIN32
     {
-      char *uri = g_file_get_uri (self->file);
+      char *uri = g_file_get_uri (this->file);
 
       show_item (parent, uri, cancellable, task);
 
@@ -715,7 +715,7 @@ gtk_file_launcher_open_containing_folder (GtkFileLauncher     *self,
 
 /**
  * gtk_file_launcher_open_containing_folder_finish:
- * @self: a file launcher
+ * @this: a file launcher
  * @result: the result
  * @error: return location for a [enum@Gtk.DialogError] or [enum@Gio.Error] error
  *
@@ -727,12 +727,12 @@ gtk_file_launcher_open_containing_folder (GtkFileLauncher     *self,
  * Since: 4.10
  */
 gboolean
-gtk_file_launcher_open_containing_folder_finish (GtkFileLauncher  *self,
+gtk_file_launcher_open_containing_folder_finish (GtkFileLauncher  *this,
                                                  GAsyncResult     *result,
                                                  GError          **error)
 {
-  g_return_val_if_fail (GTK_IS_FILE_LAUNCHER (self), FALSE);
-  g_return_val_if_fail (g_task_is_valid (result, self), FALSE);
+  g_return_val_if_fail (GTK_IS_FILE_LAUNCHER (this), FALSE);
+  g_return_val_if_fail (g_task_is_valid (result, this), FALSE);
   g_return_val_if_fail (g_task_get_source_tag (G_TASK (result)) == gtk_file_launcher_open_containing_folder, FALSE);
 
   return g_task_propagate_boolean (G_TASK (result), error);

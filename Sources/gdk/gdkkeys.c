@@ -296,7 +296,7 @@ gdk_keyval_is_lower (guint keyval)
  * Returns the direction of effective layout of the keymap.
  *
  * The direction of a layout is the direction of the majority of its
- * symbols. See [func@Pango.unichar_direction].
+ * symbols. See [fn@Pango.unichar_direction].
  *
  * Returns: `PANGO_DIRECTION_LTR` or `PANGO_DIRECTION_RTL`
  *   if it can determine the direction, and `PANGO_DIRECTION_NEUTRAL`

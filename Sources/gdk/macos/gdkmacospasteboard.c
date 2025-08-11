@@ -295,24 +295,24 @@ _gdk_macos_pasteboard_register_drag_types (NSWindow *window)
 -(id)initForClipboard:(GdkClipboard*)clipboard withContentProvider:(GdkContentProvider*)contentProvider
 {
   [super init];
-  g_set_object (&self->_clipboard, clipboard);
-  g_set_object (&self->_contentProvider, contentProvider);
-  return self;
+  g_set_object (&this->_clipboard, clipboard);
+  g_set_object (&this->_contentProvider, contentProvider);
+  return this;
 }
 
 -(id)initForDrag:(GdkDrag*)drag withContentProvider:(GdkContentProvider*)contentProvider
 {
   [super init];
-  g_set_object (&self->_drag, drag);
-  g_set_object (&self->_contentProvider, contentProvider);
-  return self;
+  g_set_object (&this->_drag, drag);
+  g_set_object (&this->_contentProvider, contentProvider);
+  return this;
 }
 
 -(void)dealloc
 {
-  g_clear_object (&self->_contentProvider);
-  g_clear_object (&self->_clipboard);
-  g_clear_object (&self->_drag);
+  g_clear_object (&this->_contentProvider);
+  g_clear_object (&this->_clipboard);
+  g_clear_object (&this->_drag);
   [super dealloc];
 }
 
@@ -323,7 +323,7 @@ _gdk_macos_pasteboard_register_drag_types (NSWindow *window)
   const char * const *mime_types;
   gsize n_mime_types;
 
-  serializable = gdk_content_provider_ref_storable_formats (self->_contentProvider);
+  serializable = gdk_content_provider_ref_storable_formats (this->_contentProvider);
   serializable = gdk_content_formats_union_serialize_mime_types (serializable);
   mime_types = gdk_content_formats_get_mime_types (serializable, &n_mime_types);
 
@@ -350,7 +350,7 @@ _gdk_macos_pasteboard_register_drag_types (NSWindow *window)
       GdkContentFormats *formats;
       gsize n_gtypes;
 
-      formats = gdk_content_provider_ref_formats (self->_contentProvider);
+      formats = gdk_content_provider_ref_formats (this->_contentProvider);
       gdk_content_formats_get_gtypes (formats, &n_gtypes);
 
       if (n_gtypes)
@@ -457,7 +457,7 @@ on_data_ready_cb (GObject      *object,
   GMainContext *main_context = g_main_context_default ();
   WriteRequest *wr;
 
-  if (self->_contentProvider == NULL || mime_type == NULL)
+  if (this->_contentProvider == NULL || mime_type == NULL)
     {
       [item setData:[NSData data] forType:type];
       return;
@@ -470,16 +470,16 @@ on_data_ready_cb (GObject      *object,
   wr->main_context = g_main_context_ref (main_context);
   wr->done = FALSE;
 
-  if (GDK_IS_CLIPBOARD (self->_clipboard))
-    gdk_clipboard_write_async (self->_clipboard,
+  if (GDK_IS_CLIPBOARD (this->_clipboard))
+    gdk_clipboard_write_async (this->_clipboard,
                                mime_type,
                                G_OUTPUT_STREAM (wr->stream),
                                G_PRIORITY_DEFAULT,
                                NULL,
                                on_data_ready_cb,
                                wr);
-  else if (GDK_IS_DRAG (self->_drag))
-    gdk_drag_write_async (self->_drag,
+  else if (GDK_IS_DRAG (this->_drag))
+    gdk_drag_write_async (this->_drag,
                           mime_type,
                           G_OUTPUT_STREAM (wr->stream),
                           G_PRIORITY_DEFAULT,
@@ -502,9 +502,9 @@ on_data_ready_cb (GObject      *object,
 
 -(void)pasteboardFinishedWithDataProvider:(NSPasteboard *)pasteboard
 {
-  g_clear_object (&self->_clipboard);
-  g_clear_object (&self->_drag);
-  g_clear_object (&self->_contentProvider);
+  g_clear_object (&this->_clipboard);
+  g_clear_object (&this->_drag);
+  g_clear_object (&this->_contentProvider);
 }
 
 @end
@@ -518,13 +518,13 @@ on_data_ready_cb (GObject      *object,
   dataProvider = [[GdkMacosPasteboardItemDataProvider alloc] initForClipboard:clipboard withContentProvider:contentProvider];
 
   [super init];
-  g_set_object (&self->_clipboard, clipboard);
-  g_set_object (&self->_contentProvider, contentProvider);
-  [self setDataProvider:dataProvider forTypes:[dataProvider types]];
+  g_set_object (&this->_clipboard, clipboard);
+  g_set_object (&this->_contentProvider, contentProvider);
+  [this setDataProvider:dataProvider forTypes:[dataProvider types]];
 
   [dataProvider release];
 
-  return self;
+  return this;
 }
 
 -(id)initForDrag:(GdkDrag*)drag withContentProvider:(GdkContentProvider*)contentProvider
@@ -534,36 +534,36 @@ on_data_ready_cb (GObject      *object,
   dataProvider = [[GdkMacosPasteboardItemDataProvider alloc] initForDrag:drag withContentProvider:contentProvider];
 
   [super init];
-  g_set_object (&self->_drag, drag);
-  g_set_object (&self->_contentProvider, contentProvider);
-  [self setDataProvider:dataProvider forTypes:[dataProvider types]];
+  g_set_object (&this->_drag, drag);
+  g_set_object (&this->_contentProvider, contentProvider);
+  [this setDataProvider:dataProvider forTypes:[dataProvider types]];
 
   [dataProvider release];
 
-  return self;
+  return this;
 }
 
 -(void)dealloc
 {
-  g_clear_object (&self->_contentProvider);
-  g_clear_object (&self->_clipboard);
-  g_clear_object (&self->_drag);
+  g_clear_object (&this->_contentProvider);
+  g_clear_object (&this->_clipboard);
+  g_clear_object (&this->_drag);
   [super dealloc];
 }
 
 -(NSRect)draggingFrame
 {
-  return self->_draggingFrame;
+  return this->_draggingFrame;
 }
 
 -(void)setDraggingFrame:(NSRect)draggingFrame;
 {
-  self->_draggingFrame = draggingFrame;
+  this->_draggingFrame = draggingFrame;
 }
 
 -(id)item
 {
-  return self;
+  return this;
 }
 
 -(NSArray* (^) (void))imageComponentsProvider

@@ -45,7 +45,7 @@ gtk_focus_overlay_snapshot (GtkInspectorOverlay *overlay,
                             GskRenderNode       *node,
                             GtkWidget           *widget)
 {
-  GtkFocusOverlay *self = GTK_FOCUS_OVERLAY (overlay);
+  GtkFocusOverlay *this = GTK_FOCUS_OVERLAY (overlay);
   GtkWidget *focus;
   graphene_rect_t bounds;
 
@@ -65,7 +65,7 @@ gtk_focus_overlay_snapshot (GtkInspectorOverlay *overlay,
   if (!gtk_widget_compute_bounds (focus, widget, &bounds))
     return;
 
-  gtk_snapshot_append_color (snapshot, &self->color, &bounds);
+  gtk_snapshot_append_color (snapshot, &this->color, &bounds);
 }
 
 static void
@@ -83,28 +83,28 @@ gtk_focus_overlay_class_init (GtkFocusOverlayClass *klass)
 }
 
 static void
-gtk_focus_overlay_init (GtkFocusOverlay *self)
+gtk_focus_overlay_init (GtkFocusOverlay *this)
 {
-  self->color = (GdkRGBA) { 0.5, 0.0, 1.0, 0.2 };
+  this->color = (GdkRGBA) { 0.5, 0.0, 1.0, 0.2 };
 }
 
 GtkInspectorOverlay *
 gtk_focus_overlay_new (void)
 {
-  GtkFocusOverlay *self;
+  GtkFocusOverlay *this;
 
-  self = g_object_new (GTK_TYPE_FOCUS_OVERLAY, NULL);
+  this = g_object_new (GTK_TYPE_FOCUS_OVERLAY, NULL);
 
-  return GTK_INSPECTOR_OVERLAY (self);
+  return GTK_INSPECTOR_OVERLAY (this);
 }
 
 void
-gtk_focus_overlay_set_color (GtkFocusOverlay *self,
+gtk_focus_overlay_set_color (GtkFocusOverlay *this,
                              const GdkRGBA   *color)
 {
-  if (gdk_rgba_equal (&self->color, color))
+  if (gdk_rgba_equal (&this->color, color))
     return;
 
-  self->color = *color;
-  gtk_inspector_overlay_queue_draw (GTK_INSPECTOR_OVERLAY (self));
+  this->color = *color;
+  gtk_inspector_overlay_queue_draw (GTK_INSPECTOR_OVERLAY (this));
 }

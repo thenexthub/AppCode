@@ -87,7 +87,7 @@ gtk_baseline_overlay_snapshot (GtkInspectorOverlay *overlay,
 }
 
 static void
-gtk_baseline_overlay_init (GtkBaselineOverlay *self)
+gtk_baseline_overlay_init (GtkBaselineOverlay *this)
 {
 }
 

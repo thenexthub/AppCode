@@ -38,32 +38,32 @@ typedef void (* GtkAtSpiRootRegisterFunc) (GtkAtSpiRoot *root,
                                            GtkAtSpiContext *context);
 
 void
-gtk_at_spi_root_queue_register (GtkAtSpiRoot *self,
+gtk_at_spi_root_queue_register (GtkAtSpiRoot *this,
                                 GtkAtSpiContext *context,
-                                GtkAtSpiRootRegisterFunc func);
+                                GtkAtSpiRootRegisterFunc fn);
 
 void
-gtk_at_spi_root_unregister (GtkAtSpiRoot *self,
+gtk_at_spi_root_unregister (GtkAtSpiRoot *this,
                             GtkAtSpiContext *context);
 
 GDBusConnection *
-gtk_at_spi_root_get_connection (GtkAtSpiRoot *self);
+gtk_at_spi_root_get_connection (GtkAtSpiRoot *this);
 
 GtkAtSpiCache *
-gtk_at_spi_root_get_cache (GtkAtSpiRoot *self);
+gtk_at_spi_root_get_cache (GtkAtSpiRoot *this);
 
 const char *
-gtk_at_spi_root_get_base_path (GtkAtSpiRoot *self);
+gtk_at_spi_root_get_base_path (GtkAtSpiRoot *this);
 
 GVariant *
-gtk_at_spi_root_to_ref (GtkAtSpiRoot *self);
+gtk_at_spi_root_to_ref (GtkAtSpiRoot *this);
 
 void
-gtk_at_spi_root_child_changed (GtkAtSpiRoot             *self,
+gtk_at_spi_root_child_changed (GtkAtSpiRoot             *this,
                                GtkAccessibleChildChange  change,
                                GtkAccessible            *child);
 
 gboolean
-gtk_at_spi_root_has_event_listeners (GtkAtSpiRoot *self);
+gtk_at_spi_root_has_event_listeners (GtkAtSpiRoot *this);
 
 G_END_DECLS

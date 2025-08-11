@@ -130,7 +130,7 @@ void              gtk_scale_clear_marks        (GtkScale        *scale);
 
 GDK_AVAILABLE_IN_ALL
 void              gtk_scale_set_format_value_func (GtkScale                *scale,
-                                                   GtkScaleFormatValueFunc  func,
+                                                   GtkScaleFormatValueFunc  fn,
                                                    gpointer                 user_data,
                                                    GDestroyNotify           destroy_notify);
 

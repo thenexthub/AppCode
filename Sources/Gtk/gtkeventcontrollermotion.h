@@ -45,9 +45,9 @@ GDK_AVAILABLE_IN_ALL
 GtkEventController *gtk_event_controller_motion_new      (void);
 
 GDK_AVAILABLE_IN_ALL
-gboolean            gtk_event_controller_motion_contains_pointer   (GtkEventControllerMotion *self);
+gboolean            gtk_event_controller_motion_contains_pointer   (GtkEventControllerMotion *this);
 GDK_AVAILABLE_IN_ALL
-gboolean            gtk_event_controller_motion_is_pointer         (GtkEventControllerMotion *self);
+gboolean            gtk_event_controller_motion_is_pointer         (GtkEventControllerMotion *this);
 
 G_END_DECLS
 

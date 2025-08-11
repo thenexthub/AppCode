@@ -46,47 +46,47 @@ GtkWidget *     gtk_grid_view_new                               (GtkSelectionMod
 
 GDK_AVAILABLE_IN_ALL
 GtkSelectionModel *
-                gtk_grid_view_get_model                         (GtkGridView            *self);
+                gtk_grid_view_get_model                         (GtkGridView            *this);
 GDK_AVAILABLE_IN_ALL
-void            gtk_grid_view_set_model                         (GtkGridView            *self,
+void            gtk_grid_view_set_model                         (GtkGridView            *this,
                                                                  GtkSelectionModel      *model);
 GDK_AVAILABLE_IN_ALL
-void            gtk_grid_view_set_factory                       (GtkGridView            *self,
+void            gtk_grid_view_set_factory                       (GtkGridView            *this,
                                                                  GtkListItemFactory     *factory);
 GDK_AVAILABLE_IN_ALL
 GtkListItemFactory *
-                gtk_grid_view_get_factory                       (GtkGridView            *self);
+                gtk_grid_view_get_factory                       (GtkGridView            *this);
 GDK_AVAILABLE_IN_ALL
-guint           gtk_grid_view_get_min_columns                   (GtkGridView            *self);
+guint           gtk_grid_view_get_min_columns                   (GtkGridView            *this);
 GDK_AVAILABLE_IN_ALL
-void            gtk_grid_view_set_min_columns                   (GtkGridView            *self,
+void            gtk_grid_view_set_min_columns                   (GtkGridView            *this,
                                                                  guint                   min_columns);
 GDK_AVAILABLE_IN_ALL
-guint           gtk_grid_view_get_max_columns                   (GtkGridView            *self);
+guint           gtk_grid_view_get_max_columns                   (GtkGridView            *this);
 GDK_AVAILABLE_IN_ALL
-void            gtk_grid_view_set_max_columns                   (GtkGridView            *self,
+void            gtk_grid_view_set_max_columns                   (GtkGridView            *this,
                                                                  guint                   max_columns);
 GDK_AVAILABLE_IN_ALL
-void            gtk_grid_view_set_enable_rubberband             (GtkGridView            *self,
+void            gtk_grid_view_set_enable_rubberband             (GtkGridView            *this,
                                                                  gboolean                enable_rubberband);
 GDK_AVAILABLE_IN_ALL
-gboolean        gtk_grid_view_get_enable_rubberband             (GtkGridView            *self);
+gboolean        gtk_grid_view_get_enable_rubberband             (GtkGridView            *this);
 
 GDK_AVAILABLE_IN_4_12
-void            gtk_grid_view_set_tab_behavior                  (GtkGridView            *self,
+void            gtk_grid_view_set_tab_behavior                  (GtkGridView            *this,
                                                                  GtkListTabBehavior      tab_behavior);
 GDK_AVAILABLE_IN_4_12
 GtkListTabBehavior
-                gtk_grid_view_get_tab_behavior                  (GtkGridView            *self);
+                gtk_grid_view_get_tab_behavior                  (GtkGridView            *this);
 
 GDK_AVAILABLE_IN_ALL
-void            gtk_grid_view_set_single_click_activate         (GtkGridView            *self,
+void            gtk_grid_view_set_single_click_activate         (GtkGridView            *this,
                                                                  gboolean                single_click_activate);
 GDK_AVAILABLE_IN_ALL
-gboolean        gtk_grid_view_get_single_click_activate         (GtkGridView            *self);
+gboolean        gtk_grid_view_get_single_click_activate         (GtkGridView            *this);
 
 GDK_AVAILABLE_IN_4_12
-void            gtk_grid_view_scroll_to                         (GtkGridView            *self,
+void            gtk_grid_view_scroll_to                         (GtkGridView            *this,
                                                                  guint                   pos,
                                                                  GtkListScrollFlags      flags,
                                                                  GtkScrollInfo          *scroll);

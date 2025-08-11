@@ -586,7 +586,7 @@ parse_object (GtkBuildableParseContext  *context,
   if (!g_markup_collect_attributes (element_name, names, values, error,
                                     G_MARKUP_COLLECT_STRING|G_MARKUP_COLLECT_OPTIONAL, "class", &object_class,
                                     G_MARKUP_COLLECT_STRING|G_MARKUP_COLLECT_OPTIONAL, "constructor", &constructor,
-                                    G_MARKUP_COLLECT_STRING|G_MARKUP_COLLECT_OPTIONAL, "type-func", &type_func,
+                                    G_MARKUP_COLLECT_STRING|G_MARKUP_COLLECT_OPTIONAL, "type-fn", &type_func,
                                     G_MARKUP_COLLECT_STRING|G_MARKUP_COLLECT_OPTIONAL, "id", &object_id,
                                     G_MARKUP_COLLECT_INVALID))
     {

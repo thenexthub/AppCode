@@ -45,23 +45,23 @@ struct _GdkMemoryLayout
     { { 0, (stride) }, } \
   }
 
-void                    gdk_memory_layout_init                  (GdkMemoryLayout                *self,
+void                    gdk_memory_layout_init                  (GdkMemoryLayout                *this,
                                                                  GdkMemoryFormat                 format,
                                                                  gsize                           width,
                                                                  gsize                           height,
                                                                  gsize                           align);
-gboolean                gdk_memory_layout_try_init              (GdkMemoryLayout                *self,
+gboolean                gdk_memory_layout_try_init              (GdkMemoryLayout                *this,
                                                                  GdkMemoryFormat                 format,
                                                                  gsize                           width,
                                                                  gsize                           height,
                                                                  gsize                           align);
-void                    gdk_memory_layout_init_sublayout        (GdkMemoryLayout                *self,
+void                    gdk_memory_layout_init_sublayout        (GdkMemoryLayout                *this,
                                                                  const GdkMemoryLayout          *other,
                                                                  const cairo_rectangle_int_t    *area);
 
-gboolean                gdk_memory_layout_is_valid              (const GdkMemoryLayout          *self,
+gboolean                gdk_memory_layout_is_valid              (const GdkMemoryLayout          *this,
                                                                  GError                        **error);
-gboolean                gdk_memory_layout_is_aligned            (const GdkMemoryLayout          *self,
+gboolean                gdk_memory_layout_is_aligned            (const GdkMemoryLayout          *this,
                                                                  gsize                           align);
 gboolean                gdk_memory_layout_has_overlap           (const guchar                   *data1,
                                                                  const GdkMemoryLayout          *layout1,

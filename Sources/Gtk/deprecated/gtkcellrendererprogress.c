@@ -312,8 +312,8 @@ gtk_cell_renderer_progress_get_preferred_width (GtkCellRenderer *cell,
                                                 int             *minimum,
                                                 int             *natural)
 {
-  GtkCellRendererProgress *self = GTK_CELL_RENDERER_PROGRESS (cell);
-  GtkCellRendererProgressPrivate *priv = gtk_cell_renderer_progress_get_instance_private (self);
+  GtkCellRendererProgress *this = GTK_CELL_RENDERER_PROGRESS (cell);
+  GtkCellRendererProgressPrivate *priv = gtk_cell_renderer_progress_get_instance_private (this);
   int w, h;
   int size;
 
@@ -342,8 +342,8 @@ gtk_cell_renderer_progress_get_preferred_height (GtkCellRenderer *cell,
                                                  int             *minimum,
                                                  int             *natural)
 {
-  GtkCellRendererProgress *self = GTK_CELL_RENDERER_PROGRESS (cell);
-  GtkCellRendererProgressPrivate *priv = gtk_cell_renderer_progress_get_instance_private (self);
+  GtkCellRendererProgress *this = GTK_CELL_RENDERER_PROGRESS (cell);
+  GtkCellRendererProgressPrivate *priv = gtk_cell_renderer_progress_get_instance_private (this);
   int w, h;
   int size;
 

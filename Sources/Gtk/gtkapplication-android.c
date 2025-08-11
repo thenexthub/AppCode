@@ -46,7 +46,7 @@ gtk_application_impl_android_uninhibit (GtkApplicationImpl *impl, guint cookie)
 {}
 
 static void
-gtk_application_impl_android_init (GtkApplicationImplAndroid *self)
+gtk_application_impl_android_init (GtkApplicationImplAndroid *this)
 {}
 
 static void

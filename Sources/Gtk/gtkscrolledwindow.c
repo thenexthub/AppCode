@@ -2661,19 +2661,19 @@ gtk_scrolled_window_get_kinetic_scrolling (GtkScrolledWindow *scrolled_window)
 static void
 gtk_scrolled_window_dispose (GObject *object)
 {
-  GtkScrolledWindow *self = GTK_SCROLLED_WINDOW (object);
-  GtkScrolledWindowPrivate *priv = gtk_scrolled_window_get_instance_private (self);
+  GtkScrolledWindow *this = GTK_SCROLLED_WINDOW (object);
+  GtkScrolledWindowPrivate *priv = gtk_scrolled_window_get_instance_private (this);
 
   g_clear_pointer (&priv->child, gtk_widget_unparent);
 
-  remove_indicator (self, &priv->hindicator);
-  remove_indicator (self, &priv->vindicator);
+  remove_indicator (this, &priv->hindicator);
+  remove_indicator (this, &priv->vindicator);
 
   if (priv->hscrollbar)
     {
       GtkAdjustment *hadjustment = gtk_scrollbar_get_adjustment (GTK_SCROLLBAR (priv->hscrollbar));
 
-      g_signal_handlers_disconnect_by_data (hadjustment, self);
+      g_signal_handlers_disconnect_by_data (hadjustment, this);
       g_signal_handlers_disconnect_by_data (hadjustment, &priv->hindicator);
 
       gtk_widget_unparent (priv->hscrollbar);
@@ -2684,7 +2684,7 @@ gtk_scrolled_window_dispose (GObject *object)
     {
       GtkAdjustment *vadjustment = gtk_scrollbar_get_adjustment (GTK_SCROLLBAR (priv->vscrollbar));
 
-      g_signal_handlers_disconnect_by_data (vadjustment, self);
+      g_signal_handlers_disconnect_by_data (vadjustment, this);
       g_signal_handlers_disconnect_by_data (vadjustment, &priv->vindicator);
 
       gtk_widget_unparent (priv->vscrollbar);
@@ -2693,7 +2693,7 @@ gtk_scrolled_window_dispose (GObject *object)
 
   if (priv->deceleration_id)
     {
-      gtk_widget_remove_tick_callback (GTK_WIDGET (self), priv->deceleration_id);
+      gtk_widget_remove_tick_callback (GTK_WIDGET (this), priv->deceleration_id);
       priv->deceleration_id = 0;
     }
 

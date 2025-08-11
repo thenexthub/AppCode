@@ -27,7 +27,7 @@ int _gtk_label_get_cursor_position (GtkLabel *label);
 int _gtk_label_get_selection_bound (GtkLabel *label);
 
 void
-gtk_label_get_layout_location (GtkLabel  *self,
+gtk_label_get_layout_location (GtkLabel  *this,
                                float     *xp,
                                float     *yp);
 
