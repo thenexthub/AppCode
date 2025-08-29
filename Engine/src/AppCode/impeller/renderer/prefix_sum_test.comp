@@ -1,0 +1,58 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) 2025 NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+// Creation Date: Saturday, May 10, 2025.
+//
+//===----------------------------------------------------------------------===//
+
+layout(local_size_x_id = 0) in;
+layout(std430) buffer;
+
+#include <impeller/prefix_sum.glsl>
+
+#define BLOCK_SIZE 1024
+
+layout(binding = 0) readonly buffer InputData {
+  uint count;
+  uint data[];
+}
+input_data;
+
+layout(binding = 1) writeonly buffer OutputData {
+  uint data[];
+}
+output_data;
+
+// Needs to be number of threads per threadgroup.
+shared uint memory[BLOCK_SIZE];
+
+void main() {
+  uint ident = gl_GlobalInvocationID.x;
+
+  uint value = 0;
+  if (ident < input_data.count) {
+    value = input_data.data[ident];
+  }
+
+  if (ident < BLOCK_SIZE) {
+    memory[ident] = value;
+  }
+
+  barrier();
+
+  ExclusivePrefixSum(ident, memory, BLOCK_SIZE);
+
+  if (ident < input_data.count) {
+    // Convert exclusive to inclusive sum.
+    output_data.data[ident] = memory[ident] + value;
+  }
+}

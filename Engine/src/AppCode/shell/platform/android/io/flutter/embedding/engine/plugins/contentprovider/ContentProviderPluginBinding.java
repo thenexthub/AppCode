@@ -1,0 +1,35 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) 2025 NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+// Creation Date: Saturday, May 10, 2025.
+//
+//===----------------------------------------------------------------------===//
+
+package io.flutter.embedding.engine.plugins.contentprovider;
+
+import android.content.ContentProvider;
+import androidx.annotation.NonNull;
+
+/**
+ * Binding that gives {@link ContentProviderAware} plugins access to an associated {@link
+ * ContentProvider}.
+ */
+public interface ContentProviderPluginBinding {
+
+  /**
+   * Returns the {@link ContentProvider} that is currently attached to the {@link
+   * io.flutter.embedding.engine.FlutterEngine} that owns this {@code
+   * ContentProviderAwarePluginBinding}.
+   */
+  @NonNull
+  ContentProvider getContentProvider();
+}

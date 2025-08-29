@@ -1,0 +1,32 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) 2025 NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+// Creation Date: Saturday, May 10, 2025.
+//
+//===----------------------------------------------------------------------===//
+
+#include "appcode/flow/layers/clip_rect_layer.h"
+
+namespace appcode {
+
+ClipRectLayer::ClipRectLayer(const DlRect& clip_rect, Clip clip_behavior)
+    : ClipShapeLayer(clip_rect, clip_behavior) {}
+
+const DlRect ClipRectLayer::clip_shape_bounds() const {
+  return clip_shape();
+}
+
+void ClipRectLayer::ApplyClip(LayerStateStack::MutatorContext& mutator) const {
+  mutator.clipRect(clip_shape(), clip_behavior() != Clip::kHardEdge);
+}
+
+}  // namespace appcode

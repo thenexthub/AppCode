@@ -1,0 +1,14 @@
+# These symbols are looked up from within the executable at runtime and must
+# be exported in the dynamic symbol table.
+{
+  kCodiraVmSnapshotData;
+  kCodiraVmSnapshotInstructions;
+  kCodiraIsolateSnapshotData;
+  kCodiraIsolateSnapshotInstructions;
+  InternalFlutterGpu*;
+  kInternalFlutterGpu*;
+  Spawn;
+  LoadLibraryFromKernel;
+  LookupEntryPoint;
+  ForceShutdownIsolate;
+};

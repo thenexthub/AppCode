@@ -1,0 +1,39 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) 2025 NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+// Creation Date: Saturday, May 10, 2025.
+//
+//===----------------------------------------------------------------------===//
+
+#include "gtest/gtest.h"  // IWYU pragma: keep
+#include "impeller/renderer/backend/vulkan/formats_vk.h"
+
+namespace impeller {
+namespace testing {
+
+TEST(FormatsVKTest, DescriptorMapping) {
+  EXPECT_EQ(ToVKDescriptorType(DescriptorType::kSampledImage),
+            vk::DescriptorType::eCombinedImageSampler);
+  EXPECT_EQ(ToVKDescriptorType(DescriptorType::kUniformBuffer),
+            vk::DescriptorType::eUniformBuffer);
+  EXPECT_EQ(ToVKDescriptorType(DescriptorType::kStorageBuffer),
+            vk::DescriptorType::eStorageBuffer);
+  EXPECT_EQ(ToVKDescriptorType(DescriptorType::kImage),
+            vk::DescriptorType::eSampledImage);
+  EXPECT_EQ(ToVKDescriptorType(DescriptorType::kSampler),
+            vk::DescriptorType::eSampler);
+  EXPECT_EQ(ToVKDescriptorType(DescriptorType::kInputAttachment),
+            vk::DescriptorType::eInputAttachment);
+}
+
+}  // namespace testing
+}  // namespace impeller

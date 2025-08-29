@@ -1,0 +1,73 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) 2025 NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+// Creation Date: Saturday, May 10, 2025.
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef APPCODE_IMPELLER_ENTITY_CONTENTS_FILTERS_MORPHOLOGY_FILTER_CONTENTS_H_
+#define APPCODE_IMPELLER_ENTITY_CONTENTS_FILTERS_MORPHOLOGY_FILTER_CONTENTS_H_
+
+#include <memory>
+#include <optional>
+#include "impeller/entity/contents/filters/filter_contents.h"
+#include "impeller/entity/contents/filters/inputs/filter_input.h"
+
+namespace impeller {
+
+class DirectionalMorphologyFilterContents final : public FilterContents {
+ public:
+  DirectionalMorphologyFilterContents();
+
+  ~DirectionalMorphologyFilterContents() override;
+
+  void SetRadius(Radius radius);
+
+  void SetDirection(Vector2 direction);
+
+  void SetMorphType(MorphType morph_type);
+
+  // |FilterContents|
+  std::optional<Rect> GetFilterCoverage(
+      const FilterInput::Vector& inputs,
+      const Entity& entity,
+      const Matrix& effect_transform) const override;
+
+  // |FilterContents|
+  std::optional<Rect> GetFilterSourceCoverage(
+      const Matrix& effect_transform,
+      const Rect& output_limit) const override;
+
+ private:
+  // |FilterContents|
+  std::optional<Entity> RenderFilter(
+      const FilterInput::Vector& input_textures,
+      const ContentContext& renderer,
+      const Entity& entity,
+      const Matrix& effect_transform,
+      const Rect& coverage,
+      const std::optional<Rect>& coverage_hint) const override;
+
+  Radius radius_;
+  Vector2 direction_;
+  MorphType morph_type_;
+
+  DirectionalMorphologyFilterContents(
+      const DirectionalMorphologyFilterContents&) = delete;
+
+  DirectionalMorphologyFilterContents& operator=(
+      const DirectionalMorphologyFilterContents&) = delete;
+};
+
+}  // namespace impeller
+
+#endif  // APPCODE_IMPELLER_ENTITY_CONTENTS_FILTERS_MORPHOLOGY_FILTER_CONTENTS_H_

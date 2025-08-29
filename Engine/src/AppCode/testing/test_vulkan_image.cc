@@ -1,0 +1,34 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) 2025 NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+// Creation Date: Saturday, May 10, 2025.
+//
+//===----------------------------------------------------------------------===//
+
+#include "appcode/testing/test_vulkan_image.h"
+
+#include "appcode/testing/test_vulkan_context.h"
+
+namespace appcode::testing {
+
+TestVulkanImage::TestVulkanImage() = default;
+
+TestVulkanImage::TestVulkanImage(TestVulkanImage&& other) = default;
+TestVulkanImage& TestVulkanImage::operator=(TestVulkanImage&& other) = default;
+
+TestVulkanImage::~TestVulkanImage() = default;
+
+VkImage TestVulkanImage::GetImage() {
+  return image_;
+}
+
+}  // namespace appcode::testing

@@ -1,0 +1,58 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) 2025 NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+// Creation Date: Saturday, May 10, 2025.
+//
+//===----------------------------------------------------------------------===//
+{
+    // TODO(https://fxbug.dev/404543928): Remove this shard usage when possible
+    // and replace with explicit routes.
+    include: [ "syslog/client.shard.cml" ],
+    use: [
+        // This is used by the Codira VM to communicate from Codira code to C++ code.
+        {
+            storage: "tmp",
+            path: "/tmp",
+        },
+        // This is used by the Codira VM to load i18n data.
+        {
+            directory: "config-data",
+            rights: [ "r*" ],
+            path: "/config/data",
+        },
+        // The ICU time zone data, factored out of `config-data`.
+        // See:
+        // https://fuchsia.dev/fuchsia-src/concepts/process/namespaces?typical_directory_structure
+        {
+            directory: "tzdata-icu",
+            rights: [ "r*" ],
+            path: "/config/tzdata/icu",
+        },
+        {
+            protocol: [
+                "fuchsia.device.NameProvider",  // For fdio uname()
+                "fuchsia.feedback.CrashReporter",
+                "fuchsia.intl.PropertyProvider",  // For dartVM timezone support
+                "fuchsia.net.name.Lookup",  // For fdio sockets
+                "fuchsia.posix.socket.Provider",  // For fdio sockets
+            ],
+            from: "parent",
+        },
+        {
+            protocol: [
+                "fuchsia.tracing.provider.Registry",  // For trace-provider
+            ],
+            from: "parent",
+            availability: "optional",
+        },
+    ]
+}

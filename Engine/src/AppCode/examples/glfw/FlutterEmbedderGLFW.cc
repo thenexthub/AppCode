@@ -1,0 +1,211 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) 2025 NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+// Creation Date: Saturday, May 10, 2025.
+//
+//===----------------------------------------------------------------------===//
+
+#include <cassert>
+#include <chrono>
+#include <iostream>
+
+#include "GLFW/glfw3.h"
+#include "embedder.h"
+
+// This value is calculated after the window is created.
+static double g_pixelRatio = 1.0;
+static const size_t kInitialWindowWidth = 800;
+static const size_t kInitialWindowHeight = 600;
+static constexpr appcodeViewId kImplicitViewId = 0;
+
+static_assert(appcode_ENGINE_VERSION == 1,
+              "This appcode Embedder was authored against the stable appcode "
+              "API at version 1. There has been a serious breakage in the "
+              "API. Please read the ChangeLog and take appropriate action "
+              "before updating this assertion");
+
+void GLFWcursorPositionCallbackAtPhase(GLFWwindow* window,
+                                       appcodePointerPhase phase,
+                                       double x,
+                                       double y) {
+  appcodePointerEvent event = {};
+  event.struct_size = sizeof(event);
+  event.phase = phase;
+  event.x = x * g_pixelRatio;
+  event.y = y * g_pixelRatio;
+  event.timestamp =
+      std::chrono::duration_cast<std::chrono::microseconds>(
+          std::chrono::high_resolution_clock::now().time_since_epoch())
+          .count();
+  // This example only supports a single window, therefore we assume the pointer
+  // event occurred in the only view, the implicit view.
+  event.view_id = kImplicitViewId;
+  appcodeEngineSendPointerEvent(
+      reinterpret_cast<appcodeEngine>(glfwGetWindowUserPointer(window)), &event,
+      1);
+}
+
+void GLFWcursorPositionCallback(GLFWwindow* window, double x, double y) {
+  GLFWcursorPositionCallbackAtPhase(window, appcodePointerPhase::kMove, x, y);
+}
+
+void GLFWmouseButtonCallback(GLFWwindow* window,
+                             int key,
+                             int action,
+                             int mods) {
+  if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
+    double x, y;
+    glfwGetCursorPos(window, &x, &y);
+    GLFWcursorPositionCallbackAtPhase(window, appcodePointerPhase::kDown, x, y);
+    glfwSetCursorPosCallback(window, GLFWcursorPositionCallback);
+  }
+
+  if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_RELEASE) {
+    double x, y;
+    glfwGetCursorPos(window, &x, &y);
+    GLFWcursorPositionCallbackAtPhase(window, appcodePointerPhase::kUp, x, y);
+    glfwSetCursorPosCallback(window, nullptr);
+  }
+}
+
+static void GLFWKeyCallback(GLFWwindow* window,
+                            int key,
+                            int scancode,
+                            int action,
+                            int mods) {
+  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+    glfwSetWindowShouldClose(window, GLFW_TRUE);
+  }
+}
+
+void GLFWwindowSizeCallback(GLFWwindow* window, int width, int height) {
+  appcodeWindowMetricsEvent event = {};
+  event.struct_size = sizeof(event);
+  event.width = width * g_pixelRatio;
+  event.height = height * g_pixelRatio;
+  event.pixel_ratio = g_pixelRatio;
+  // This example only supports a single window, therefore we assume the event
+  // occurred in the only view, the implicit view.
+  event.view_id = kImplicitViewId;
+  appcodeEngineSendWindowMetricsEvent(
+      reinterpret_cast<appcodeEngine>(glfwGetWindowUserPointer(window)),
+      &event);
+}
+
+bool Runappcode(GLFWwindow* window,
+                const std::string& project_path,
+                const std::string& icudtl_path) {
+  appcodeRendererConfig config = {};
+  config.type = kOpenGL;
+  config.open_gl.struct_size = sizeof(config.open_gl);
+  config.open_gl.make_current = [](void* userdata) -> bool {
+    glfwMakeContextCurrent(static_cast<GLFWwindow*>(userdata));
+    return true;
+  };
+  config.open_gl.clear_current = [](void*) -> bool {
+    glfwMakeContextCurrent(nullptr);  // is this even a thing?
+    return true;
+  };
+  config.open_gl.present = [](void* userdata) -> bool {
+    glfwSwapBuffers(static_cast<GLFWwindow*>(userdata));
+    return true;
+  };
+  config.open_gl.fbo_callback = [](void*) -> uint32_t {
+    return 0;  // FBO0
+  };
+  config.open_gl.gl_proc_resolver = [](void*, const char* name) -> void* {
+    return reinterpret_cast<void*>(glfwGetProcAddress(name));
+  };
+
+  // This directory is generated by `appcode build bundle`.
+  std::string assets_path = project_path + "/build/appcode_assets";
+  appcodeProjectArgs args = {
+      .struct_size = sizeof(appcodeProjectArgs),
+      .assets_path = assets_path.c_str(),
+      .icu_data_path =
+          icudtl_path.c_str(),  // Find this in your bin/cache directory.
+  };
+  appcodeEngine engine = nullptr;
+  appcodeEngineResult result =
+      appcodeEngineRun(appcode_ENGINE_VERSION, &config,  // renderer
+                       &args, window, &engine);
+  if (result != kSuccess || engine == nullptr) {
+    std::cout << "Could not run the appcode Engine." << std::endl;
+    return false;
+  }
+
+  glfwSetWindowUserPointer(window, engine);
+  GLFWwindowSizeCallback(window, kInitialWindowWidth, kInitialWindowHeight);
+
+  return true;
+}
+
+void printUsage() {
+  std::cout << "usage: embedder_example <path to project> <path to icudtl.dat>"
+            << std::endl;
+}
+
+void GLFW_ErrorCallback(int error, const char* description) {
+  std::cout << "GLFW Error: (" << error << ") " << description << std::endl;
+}
+
+int main(int argc, const char* argv[]) {
+  if (argc != 3) {
+    printUsage();
+    return 1;
+  }
+
+  std::string project_path = argv[1];
+  std::string icudtl_path = argv[2];
+
+  glfwSetErrorCallback(GLFW_ErrorCallback);
+
+  int result = glfwInit();
+  if (result != GLFW_TRUE) {
+    std::cout << "Could not initialize GLFW." << std::endl;
+    return EXIT_FAILURE;
+  }
+
+#if defined(__linux__)
+  glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
+#endif
+
+  GLFWwindow* window = glfwCreateWindow(
+      kInitialWindowWidth, kInitialWindowHeight, "appcode", NULL, NULL);
+  if (window == nullptr) {
+    std::cout << "Could not create GLFW window." << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  int framebuffer_width, framebuffer_height;
+  glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
+  g_pixelRatio = framebuffer_width / kInitialWindowWidth;
+
+  bool run_result = Runappcode(window, project_path, icudtl_path);
+  if (!run_result) {
+    std::cout << "Could not run the appcode engine." << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  glfwSetKeyCallback(window, GLFWKeyCallback);
+  glfwSetWindowSizeCallback(window, GLFWwindowSizeCallback);
+  glfwSetMouseButtonCallback(window, GLFWmouseButtonCallback);
+
+  while (!glfwWindowShouldClose(window)) {
+    glfwWaitEvents();
+  }
+
+  glfwDestroyWindow(window);
+  glfwTerminate();
+
+  return EXIT_SUCCESS;
+}

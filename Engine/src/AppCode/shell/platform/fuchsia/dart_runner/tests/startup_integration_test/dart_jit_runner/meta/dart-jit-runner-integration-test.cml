@@ -1,0 +1,69 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) 2025 NeXTHub Corporation. All rights reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+//
+// This code is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// version 2 for more details (a copy is included in the LICENSE file that
+// accompanied this code).
+//
+// Author(-s): Tunjay Akbarli
+// Creation Date: Saturday, May 10, 2025.
+//
+//===----------------------------------------------------------------------===//
+
+{
+    include: [
+        "sys/testing/gtest_runner.shard.cml",
+        "sys/component/realm_builder_absolute.shard.cml",
+
+        // This test needs both the vulkan facet and the hermetic-tier-2 facet,
+        // so we are forced to make it a system test.
+        "sys/testing/system-test.shard.cml",
+        "syslog/client.shard.cml",
+    ],
+    program: {
+        binary: "bin/app",
+    },
+    offer: [
+        {
+            // Offer capabilities needed by components in this test realm.
+            // Keep it minimal, describe only what's actually needed.
+            protocol: [
+                "fuchsia.sysmem.Allocator",
+                "fuchsia.sysmem2.Allocator",
+                "fuchsia.tracing.provider.Registry",
+                "fuchsia.vulkan.loader.Loader",
+                "fuchsia.posix.socket.Provider",
+                "fuchsia.intl.PropertyProvider",
+            ],
+            from: "parent",
+            to: "#realm_builder",
+        },
+        {
+            directory: "pkg",
+            subdir: "config",
+            as: "config-data",
+            from: "framework",
+            to: "#realm_builder",
+        },
+        // See common.shard.cml.
+        {
+            directory: "tzdata-icu",
+            from: "framework",
+            to: "#realm_builder",
+        },
+    ],
+    // TODO(https://fxbug.dev/114584): Figure out how to bring these in as deps (if possible oot).
+    facets: {
+        "fuchsia.test": {
+            "deprecated-allowed-packages": [
+                "dart_jit_echo_server",
+                "test_manager",
+                "oot_dart_jit_runner"
+            ],
+        },
+    },
+}
