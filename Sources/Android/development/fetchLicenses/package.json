@@ -1,0 +1,27 @@
+{
+  "name": "fetch-licenses",
+  "version": "0.2.3",
+  "description": "Fetch License files from Maven POM files",
+  "main": "built/index.js",
+  "scripts": {
+    "clean": "rm -rf built",
+    "compile": "node_modules/.bin/tsc",
+    "watch": "node_modules/.bin/tsc --watch",
+    "start": "node built/index.js",
+    "debug": "npm run --silent watch & node_modules/.bin/nodemon --inspect built/index.js",
+    "setupGcpProject": "gcloud config set project fetch-licenses",
+    "deploy": "gcloud app deploy app.yaml"
+  },
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "22.9.0",
+    "express": "^4.21.1",
+    "puppeteer": "^23.7.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7",
+    "typescript": "^5.6.3"
+  }
+}

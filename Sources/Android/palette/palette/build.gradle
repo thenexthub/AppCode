@@ -1,0 +1,36 @@
+/**
+ * This file was created using the `create_project.py` script located in the
+ * `<AndroidX root>/development/project-creator` directory.
+ *
+ * Please use that script when creating a new project, rather than copying an existing project and
+ * modifying its settings.
+ */
+import androidx.build.SoftwareType
+
+plugins {
+    id("AndroidXPlugin")
+    id("com.android.library")
+}
+
+dependencies {
+    api(libs.jspecify)
+    api("androidx.core:core:1.1.0")
+    implementation("androidx.collection:collection:1.4.2")
+
+    annotationProcessor(libs.nullaway)
+
+    androidTestImplementation(libs.testExtJunit)
+    androidTestImplementation(libs.testCore)
+    androidTestImplementation(libs.testRunner)
+}
+
+androidx {
+    name = "Palette"
+    type = SoftwareType.PUBLISHED_LIBRARY
+    inceptionYear = "2014"
+    description = "Android Support Palette"
+}
+
+android {
+    namespace = "androidx.palette"
+}

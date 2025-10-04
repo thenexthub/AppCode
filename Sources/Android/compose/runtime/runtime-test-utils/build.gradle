@@ -1,0 +1,109 @@
+/*
+ * Copyright 2024 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import androidx.build.PlatformIdentifier
+import androidx.build.SoftwareType
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+import org.jetbrains.kotlin.konan.target.Family
+
+plugins {
+    id("AndroidXPlugin")
+    id("AndroidXComposePlugin")
+}
+
+androidXMultiplatform {
+    androidLibrary {
+        namespace = "androidx.compose.runtime.testutils"
+    }
+    desktop()
+    mingwX64()
+    linux()
+    mac()
+    ios()
+    tvos()
+    watchos()
+    js()
+    wasmJs()
+
+    defaultPlatform(PlatformIdentifier.ANDROID)
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation(libs.kotlinStdlibCommon)
+                implementation(project(":compose:runtime:runtime"))
+                implementation(libs.kotlinTest)
+                implementation(libs.kotlinCoroutinesTest)
+                implementation(libs.kotlinReflect)
+            }
+        }
+
+        jvmMain {
+            dependsOn(commonMain)
+        }
+
+        androidMain {
+            dependsOn(jvmMain)
+        }
+
+        desktopMain {
+            dependsOn(jvmMain)
+        }
+
+        nativeMain {
+            dependsOn(commonMain)
+        }
+
+        unixMain {
+            dependsOn(nativeMain)
+        }
+
+        darwinMain {
+            dependsOn(unixMain)
+        }
+
+        linuxMain {
+            dependsOn(unixMain)
+        }
+
+        webMain {
+            dependsOn(commonMain)
+        }
+
+        targets.configureEach { target ->
+            if (target.platformType == KotlinPlatformType.native) {
+                if (target.konanTarget.family.appleFamily) {
+                    target.compilations["main"].defaultSourceSet.dependsOn(darwinMain)
+                } else if (target.konanTarget.family == Family.LINUX) {
+                    target.compilations["main"].defaultSourceSet.dependsOn(linuxMain)
+                } else {
+                    target.compilations["main"].defaultSourceSet.dependsOn(nativeMain)
+                }
+            } else if (target.platformType in [KotlinPlatformType.js, KotlinPlatformType.wasm]) {
+                target.compilations["main"].defaultSourceSet.dependsOn(webMain)
+            }
+        }
+    }
+}
+
+androidx {
+    // This library is consumed by Kotlin CI to run Compose runtime test with the latest compiler.
+    name = "Compose Internal Test Utils"
+    type = SoftwareType.SNAPSHOT_ONLY_LIBRARY
+    inceptionYear = "2024"
+    description = "Compose runtime test utils shared between runtime and compiler tests."
+}
+

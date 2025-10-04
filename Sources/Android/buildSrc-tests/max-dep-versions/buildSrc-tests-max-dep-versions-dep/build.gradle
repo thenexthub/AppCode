@@ -1,0 +1,24 @@
+/**
+ * This file was created using the `create_project.py` script located in the
+ * `<AndroidX root>/development/project-creator` directory.
+ *
+ * Please use that script when creating a new project, rather than copying an existing project and
+ * modifying its settings.
+ */
+import androidx.build.SoftwareType
+
+plugins {
+    id("AndroidXPlugin")
+    id("com.android.library")
+}
+
+android {
+    namespace = "androidx.buildSrc.tests.lib"
+}
+
+androidx {
+    name = "Sample"
+    type = SoftwareType.SAMPLES
+    inceptionYear = "2020"
+    description = "This is a sample library for confirming that maxDepVersions builds work correctly"
+}

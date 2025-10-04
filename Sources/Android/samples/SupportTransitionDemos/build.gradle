@@ -1,0 +1,28 @@
+/**
+ * This file was created using the `create_project.py` script located in the
+ * `<AndroidX root>/development/project-creator` directory.
+ *
+ * Please use that script when creating a new project, rather than copying an existing project and
+ * modifying its settings.
+ */
+plugins {
+    id("AndroidXPlugin")
+    id("com.android.application")
+}
+
+dependencies {
+    api(libs.jspecify)
+    implementation(project(":transition:transition"))
+    implementation(project(":appcompat:appcompat"))
+    implementation(project(":recyclerview:recyclerview"))
+    implementation(project(":interpolator:interpolator"))
+}
+
+android {
+    aaptOptions {
+        additionalParameters "--no-version-transitions"
+    }
+    compileSdk = 36
+    namespace = "com.example.android.support.transition"
+}
+

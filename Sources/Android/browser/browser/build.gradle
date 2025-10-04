@@ -1,0 +1,70 @@
+/**
+ * This file was created using the `create_project.py` script located in the
+ * `<AndroidX root>/development/project-creator` directory.
+ *
+ * Please use that script when creating a new project, rather than copying an existing project and
+ * modifying its settings.
+ */
+import androidx.build.SoftwareType
+
+plugins {
+    id("AndroidXPlugin")
+    id("com.android.library")
+    id("androidx.stableaidl")
+}
+
+android {
+    buildFeatures {
+        aidl = true
+    }
+    buildTypes.configureEach {
+        stableAidl {
+            version = 1
+        }
+    }
+    namespace = "androidx.browser"
+}
+
+android {
+    compileSdk = 36
+}
+
+dependencies {
+    api(libs.jspecify)
+    api("androidx.core:core:1.10.0")
+    api("androidx.annotation:annotation:1.8.1")
+    api("androidx.annotation:annotation-experimental:1.4.1")
+    api(libs.guavaListenableFuture)
+
+    implementation("androidx.activity:activity:1.9.0")
+    implementation("androidx.collection:collection:1.4.2")
+    implementation("androidx.concurrent:concurrent-futures:1.0.0")
+    implementation("androidx.interpolator:interpolator:1.0.0")
+
+    annotationProcessor(libs.nullaway)
+
+    testImplementation(libs.testCore)
+    testImplementation(libs.testRunner)
+    testImplementation(libs.mockitoCore4)
+    testImplementation(libs.guavaAndroid)
+    testImplementation(libs.junit)
+
+    androidTestImplementation(libs.junit)
+    androidTestImplementation(libs.testMonitor)
+    androidTestImplementation("androidx.appcompat:appcompat:1.1.0")
+    androidTestImplementation(libs.testExtJunit)
+    androidTestImplementation(libs.testCore)
+    androidTestImplementation(libs.testRunner)
+    androidTestImplementation(libs.testRules)
+    androidTestImplementation(libs.mockitoCore)
+    androidTestImplementation(libs.dexmakerMockito)
+    androidTestImplementation(project(":internal-testutils-runtime"))
+}
+
+androidx {
+    name = "Browser"
+    type = SoftwareType.PUBLISHED_LIBRARY
+    inceptionYear = "2015"
+    description = "Provides support for embedding Custom Tabs in an app."
+    enableRobolectric()
+}

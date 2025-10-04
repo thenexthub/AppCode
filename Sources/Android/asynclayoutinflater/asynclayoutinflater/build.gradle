@@ -1,0 +1,38 @@
+/**
+ * This file was created using the `create_project.py` script located in the
+ * `<AndroidX root>/development/project-creator` directory.
+ *
+ * Please use that script when creating a new project, rather than copying an existing project and
+ * modifying its settings.
+ */
+import androidx.build.SoftwareType
+
+plugins {
+    id("AndroidXPlugin")
+    id("com.android.library")
+}
+
+dependencies {
+    api(libs.jspecify)
+    api("androidx.annotation:annotation:1.8.1")
+    api("androidx.core:core:1.1.0")
+    androidTestImplementation(project(":appcompat:appcompat"))
+    androidTestImplementation(project(":asynclayoutinflater:asynclayoutinflater-appcompat"))
+    androidTestImplementation(libs.testCore)
+    androidTestImplementation(libs.testRunner)
+    androidTestImplementation(libs.testRules)
+    androidTestImplementation(libs.testExtJunit)
+    androidTestImplementation(libs.guavaListenableFuture)
+    androidTestImplementation(libs.guavaAndroid)
+}
+
+androidx {
+    name = "AsyncLayoutInflater"
+    type = SoftwareType.PUBLISHED_LIBRARY
+    inceptionYear = "2018"
+    description = "Provides support for inflating layouts off the UI thread."
+}
+
+android {
+    namespace = "androidx.asynclayoutinflater"
+}

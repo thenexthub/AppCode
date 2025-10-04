@@ -1,0 +1,216 @@
+/*
+ * Copyright 2018 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * This file was created using the `create_project.py` script located in the
+ * `<AndroidX root>/development/project-creator` directory.
+ *
+ * Please use that script when creating a new project, rather than copying an existing project and
+ * modifying its settings.
+ */
+
+import androidx.build.SoftwareType
+import androidx.build.PlatformIdentifier
+import org.jetbrains.kotlin.konan.target.Family
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+
+plugins {
+    id("AndroidXPlugin")
+    alias(libs.plugins.kotlinSerialization)
+}
+
+androidXMultiplatform {
+    androidLibrary {
+        namespace = "androidx.lifecycle.viewmodel.savedstate"
+        optimization {
+            it.consumerKeepRules.publish = true
+            it.consumerKeepRules.files.add(new File("proguard-rules.pro"))
+        }
+    }
+    desktop()
+    mac()
+    linux()
+    ios()
+    watchos()
+    tvos()
+    mingwX64()
+    js()
+    wasmJs()
+
+    defaultPlatform(PlatformIdentifier.ANDROID)
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                api("androidx.annotation:annotation:1.9.1")
+                api(project(":savedstate:savedstate"))
+                api(project(":lifecycle:lifecycle-viewmodel"))
+                implementation(project(":lifecycle:lifecycle-common"))
+                api(libs.kotlinStdlib)
+                api(libs.kotlinCoroutinesCore)
+                api(libs.kotlinSerializationCore)
+            }
+        }
+
+        commonTest {
+            dependencies {
+                implementation(project(":lifecycle:lifecycle-runtime"))
+                implementation(libs.kotlinCoroutinesTest)
+            }
+        }
+
+        jvmMain {
+            dependsOn(commonMain)
+        }
+
+        jvmTest {
+            dependsOn(commonTest)
+        }
+
+        androidMain {
+            dependsOn(jvmMain)
+            dependencies {
+                api("androidx.core:core-ktx:1.2.0")
+                api(project(":lifecycle:lifecycle-livedata-core"))
+                api(libs.kotlinCoroutinesAndroid)
+            }
+        }
+
+        androidHostTest {
+            dependsOn(jvmTest)
+        }
+
+        androidDeviceTest {
+            dependsOn(jvmTest)
+            dependencies {
+                implementation(project(":lifecycle:lifecycle-livedata-core"))
+                implementation ("androidx.fragment:fragment:1.3.0")
+                implementation(project(":internal-testutils-runtime"))
+                implementation(project(":lifecycle:lifecycle-viewmodel"))
+                implementation(libs.truth)
+                implementation(libs.testExtJunit)
+                implementation(libs.testCore)
+                implementation(libs.testRunner)
+                implementation(libs.testRules)
+            }
+        }
+
+        nonAndroidMain {
+            dependsOn(commonMain)
+        }
+
+        nonAndroidTest {
+            dependsOn(commonTest)
+        }
+
+        desktopMain {
+            dependsOn(jvmMain)
+            dependsOn(nonAndroidMain)
+        }
+
+        desktopTest {
+            dependsOn(jvmTest)
+            dependsOn(nonAndroidTest)
+        }
+
+        nativeMain {
+            dependsOn(commonMain)
+            dependsOn(nonAndroidMain)
+        }
+
+        nativeTest {
+            dependsOn(commonTest)
+            dependsOn(nonAndroidTest)
+        }
+
+        darwinMain {
+            dependsOn(nativeMain)
+        }
+
+        darwinTest {
+            dependsOn(nativeTest)
+        }
+
+        linuxMain {
+            dependsOn(nativeMain)
+        }
+
+        linuxTest {
+            dependsOn(nativeTest)
+        }
+
+        mingwMain {
+            dependsOn(nativeMain)
+        }
+
+        mingwTest {
+            dependsOn(nativeTest)
+        }
+
+        webMain {
+            dependsOn(nonAndroidMain)
+        }
+
+        webTest {
+            dependsOn(nonAndroidTest)
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
+            }
+        }
+
+        targets.configureEach { target ->
+            if (target.platformType == KotlinPlatformType.native) {
+                if (target.konanTarget.family.appleFamily) {
+                    target.compilations["main"].defaultSourceSet.dependsOn(darwinMain)
+                    target.compilations["test"].defaultSourceSet.dependsOn(darwinTest)
+                } else if (target.konanTarget.family == Family.LINUX) {
+                    target.compilations["main"].defaultSourceSet.dependsOn(linuxMain)
+                    target.compilations["test"].defaultSourceSet.dependsOn(linuxTest)
+                } else if (target.konanTarget.family == Family.MINGW) {
+                    target.compilations["main"].defaultSourceSet.dependsOn(mingwMain)
+                    target.compilations["test"].defaultSourceSet.dependsOn(mingwTest)
+                } else {
+                    target.compilations["main"].defaultSourceSet.dependsOn(nativeMain)
+                    target.compilations["test"].defaultSourceSet.dependsOn(nativeTest)
+                }
+            } else if (target.platformType in [KotlinPlatformType.js, KotlinPlatformType.wasm]) {
+                target.compilations["main"].defaultSourceSet.dependsOn(webMain)
+                target.compilations["test"].defaultSourceSet.dependsOn(webTest)
+            }
+        }
+    }
+}
+
+dependencies {
+    constraints {
+        // Prevents symbols duplication with old versions of JetBrains' fork.
+        // Starting with version 2.9.2, this module is published as empty artifact with dependency
+        // to this androidx module.
+        // TODO: update this constrain to 2.9.3 once out due to https://youtrack.jetbrains.com/issue/CMP-8765
+        commonMainImplementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-savedstate:2.9.2") {
+            because "prevents symbols duplication"
+        }
+    }
+}
+
+androidx {
+    name = "Lifecycle ViewModel with SavedState"
+    type = SoftwareType.PUBLISHED_LIBRARY
+    inceptionYear = "2018"
+    description = "Android Lifecycle ViewModel"
+    samples(project(":lifecycle:lifecycle-viewmodel-savedstate-samples"))
+}
